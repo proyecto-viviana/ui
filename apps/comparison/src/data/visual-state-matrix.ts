@@ -595,6 +595,41 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Clicking Zephyr moves the controlled selected key from apollo to zephyr on both stacks.",
     },
   ],
+  checkbox: [
+    {
+      id: "styled.default",
+      label: "Styled default",
+      kind: "static",
+      react: "planned",
+      solid: "planned",
+      pairDiff: "planned",
+      note: "Checkbox is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the first visual tightening pass.",
+    },
+    {
+      id: "styled.selected-emphasized-xl",
+      label: "Selected emphasized XL",
+      kind: "static",
+      react: "snapshotted",
+      solid: "snapshotted",
+      pairDiff: "asserted",
+      spec: "e2e/checkbox-visual.spec.ts",
+      snapshots: [
+        "e2e/checkbox-visual.spec.ts-snapshots/checkbox-selected-emphasized-xl-react-chromium-linux.png",
+        "e2e/checkbox-visual.spec.ts-snapshots/checkbox-selected-emphasized-xl-solid-chromium-linux.png",
+      ],
+      note: "Selected emphasized XL Checkbox state is snapshotted and asserts checked semantics, S2 box/icon sizing, box color, and icon centerline geometry against React Spectrum.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts",
+      note: "The docs-style prop controls drive label text, size, selected, indeterminate, emphasized, disabled, read-only, and invalid state into both stacks.",
+    },
+  ],
   dialog: [
     {
       id: "styled.trigger.default",

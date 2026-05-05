@@ -48,6 +48,11 @@ import {
   serializeButtonDemoProps,
 } from "@comparison/data/button-demo";
 import {
+  checkboxDemoPropsFromWindow,
+  normalizeCheckboxDemoProps,
+  serializeCheckboxDemoProps,
+} from "@comparison/data/checkbox-demo";
+import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
   linkButtonDemoPropsFromWindow,
@@ -805,16 +810,45 @@ function ReactDialogDemo() {
 }
 
 function ReactCheckboxDemo() {
-  const [checked, setChecked] = useState(true);
+  const [demoProps, setDemoProps] = useState(checkboxDemoPropsFromWindow);
+  const [isSelected, setIsSelected] = useState(() => demoProps.isSelected);
+  const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "checkbox") {
+        const nextProps = normalizeCheckboxDemoProps(event.detail.props);
+        setDemoProps(nextProps);
+        setIsSelected(nextProps.isSelected);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
-      "data-comparison-checked": String(checked),
+      "data-comparison-checked": String(isSelected),
       children: jsx(SpectrumCheckbox, {
-        defaultSelected: true,
-        onChange: setChecked,
-        children: "Enable alerts",
+        "data-comparison-control-root": "checkbox",
+        "data-comparison-control-props": serializeCheckboxDemoProps({
+          ...demoProps,
+          isSelected,
+        }),
+        size: demoProps.size,
+        isSelected,
+        isIndeterminate: demoProps.isIndeterminate,
+        isEmphasized: demoProps.isEmphasized,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextSelected) => {
+          setIsSelected(nextSelected);
+          setDemoProps((current) => ({ ...current, isSelected: nextSelected }));
+        },
+        children: demoProps.children,
       }),
     }),
+    colorScheme,
   );
 }
 

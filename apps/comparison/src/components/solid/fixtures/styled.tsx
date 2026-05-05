@@ -8,6 +8,7 @@ import {
   ButtonGroup as SolidSpectrumButtonGroup,
   Card as SolidSpectrumCard,
   CardView as SolidSpectrumCardView,
+  Checkbox as SolidSpectrumCheckbox,
   LinkButton as SolidSpectrumLinkButton,
   Provider as SolidSpectrumProvider,
   SegmentedControl as SolidSpectrumSegmentedControl,
@@ -36,6 +37,12 @@ import {
   serializeButtonDemoProps,
   type ButtonDemoProps,
 } from "@comparison/data/button-demo";
+import {
+  checkboxDemoPropsFromWindow,
+  normalizeCheckboxDemoProps,
+  serializeCheckboxDemoProps,
+  type CheckboxDemoProps,
+} from "@comparison/data/checkbox-demo";
 import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
@@ -267,6 +274,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   actionbutton: () => h(SolidSpectrumActionButtonDemo, {}),
   actionbuttongroup: () => h(SolidSpectrumActionButtonGroupDemo, {}),
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
+  checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   linkbutton: () => h(SolidSpectrumLinkButtonDemo, {}),
   cardview: () => h(SolidSpectrumCardViewDemo, {}),
   segmentedcontrol: () => h(SolidSpectrumSegmentedControlDemo, {}),
@@ -412,6 +420,107 @@ function SolidSpectrumButtonDemo() {
           },
         },
         [hc("div", { class: "comparison-button-row" }, [renderedButton])],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumCheckboxDemo() {
+  const [demoProps, setDemoProps] = createSignal(checkboxDemoPropsFromWindow());
+  const [isSelected, setIsSelected] = createSignal(demoProps().isSelected);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "checkbox") {
+        const nextProps = normalizeCheckboxDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setIsSelected(nextProps.isSelected);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeCheckboxDemoProps({
+      ...demoProps(),
+      isSelected: isSelected(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-checked"() {
+            return String(isSelected());
+          },
+        },
+        [
+          hc(
+            SolidSpectrumCheckbox,
+            {
+              "data-comparison-control-root": "checkbox",
+              get "data-comparison-control-props"() {
+                return serializedProps();
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get isSelected() {
+                return isSelected();
+              },
+              get isIndeterminate() {
+                return demoProps().isIndeterminate;
+              },
+              get isEmphasized() {
+                return demoProps().isEmphasized;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              get isReadOnly() {
+                return demoProps().isReadOnly;
+              },
+              get isInvalid() {
+                return demoProps().isInvalid;
+              },
+              onChange: (nextSelected: boolean) => {
+                setIsSelected(nextSelected);
+                setDemoProps((current: CheckboxDemoProps) => ({
+                  ...current,
+                  isSelected: nextSelected,
+                }));
+              },
+            },
+            [() => demoProps().children],
+          ),
+        ],
       ),
     ],
   );

@@ -337,7 +337,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   let isReadOnly: boolean;
   let isInvalid: boolean;
   let labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
-  let inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  let inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
 
   if (groupState) {
     const itemAria = createCheckboxGroupItem(
@@ -355,7 +355,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     isReadOnly = itemAria.isReadOnly;
     isInvalid = itemAria.isInvalid;
     labelProps = itemAria.labelProps;
-    inputProps = itemAria.inputProps;
+    inputProps = () => itemAria.inputProps;
   } else {
     // Use getters to ensure props are read lazily inside reactive contexts
     const state = createToggleState({
@@ -388,7 +388,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     isReadOnly = checkboxAria.isReadOnly;
     isInvalid = checkboxAria.isInvalid;
     labelProps = checkboxAria.labelProps;
-    inputProps = checkboxAria.inputProps;
+    inputProps = () => checkboxAria.inputProps;
   }
   const describedBy = () => {
     const ids = [
@@ -454,7 +454,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       onFocus: _onFocus,
       onBlur: _onBlur,
       ...rest
-    } = inputProps as Record<string, unknown>;
+    } = inputProps() as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -468,16 +468,16 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   };
   const handleInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
     (
-      inputProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+      inputProps() as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
     ).onFocus?.(event);
     (
       focusProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
     ).onFocus?.(event);
   };
   const handleInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (inputProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
-      event,
-    );
+    (
+      inputProps() as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+    ).onBlur?.(event);
     (focusProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
       event,
     );

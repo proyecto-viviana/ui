@@ -162,8 +162,19 @@ function colorTokenToString(token: ColorToken, opacity?: string | number) {
   return result;
 }
 
+function compareColorStopNames(a: string, b: string): number {
+  const aMatch = /^(.*)-(\d+)$/.exec(a);
+  const bMatch = /^(.*)-(\d+)$/.exec(b);
+
+  if (aMatch && bMatch && aMatch[1] === bMatch[1]) {
+    return Number(aMatch[2]) - Number(bMatch[2]);
+  }
+
+  return a.localeCompare(b);
+}
+
 // Bumps up a color token by one stop, e.g. for hover/press states.
-let colorList = Object.keys(baseColors);
+let colorList = Object.keys(baseColors).sort(compareColorStopNames);
 function nextColorStop(name: string, token: string | ColorToken | ColorRef): ColorToken {
   if (typeof token === "object" && token.type === "ref") {
     let light = nextColorStop(token.light, baseColors[token.light]);

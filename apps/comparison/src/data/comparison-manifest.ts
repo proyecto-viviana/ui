@@ -345,6 +345,16 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 CardView and Card directly; Solid uses @proyecto-viviana/solid-spectrum CardView and Card over the shared headless GridList semantics.",
   }),
 
+  checkbox: styledLiveOfficialEntry({
+    slug: "checkbox",
+    title: "Checkbox",
+    category: "Components",
+    summary: "Binary selection control mounted on both stacks with controlled selected state.",
+    styledSummary: "React Spectrum Checkbox vs Solid Spectrum Checkbox.",
+    styledNote:
+      "React uses @react-spectrum/s2 Checkbox directly; Solid uses @proyecto-viviana/solid-spectrum Checkbox with S2-derived box, icon, baseline, and press-scale styling.",
+  }),
+
   tabs: {
     ...createGapEntry({
       slug: "tabs",
@@ -398,7 +408,6 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     (
       [
         ["textfield", "TextField"],
-        ["checkbox", "Checkbox"],
         ["dialog", "Dialog"],
         ["datepicker", "DatePicker"],
         ["searchfield", "SearchField"],

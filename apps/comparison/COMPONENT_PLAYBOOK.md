@@ -178,6 +178,20 @@ Work in this order:
 4. Run the focused Playwright suites after each slice and update the visual
    state matrix before committing.
 
+## Form/Input Batch Plan
+
+Process form and input primitives in a small batch because they share field
+labeling, validation, help text, and controlled value semantics. Start with the
+smallest independent control, then reuse the validation shape for larger field
+components.
+
+| Component   | React S2 reference to inspect                                                                                        | Solid surface to inspect                                                                                                             | Browser check                                                                                                                                                         | Committed guard                                                                                   |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Checkbox    | `@react-spectrum/s2/src/Checkbox.tsx`, especially `wrapper`, `box`, `iconStyles`, `CenterBaseline`, and `pressScale` | `packages/solid-spectrum/src/checkbox/index.tsx`, comparison route `/components/checkbox/?isSelected=true&isEmphasized=true&size=XL` | Compare React/Solid checked semantics, S2 box/icon size, emphasized selected color, disabled/read-only/invalid state props, label baseline, and click toggle behavior | `e2e/checkbox-visual.spec.ts` plus `e2e/modeled-controls-contract.spec.ts`                        |
+| TextField   | `@react-spectrum/s2/src/TextField.tsx` and `Field.tsx`                                                               | `packages/solid-spectrum/src/textfield/index.tsx`                                                                                    | Compare label/input/help-text grid, size, invalid icon, disabled/read-only value behavior, focus ring, and controlled value updates                                   | Planned after Checkbox so field shared styles can be ported deliberately                          |
+| SearchField | `@react-spectrum/s2/src/SearchField.tsx`, `TextField.tsx`, `Field.tsx`, and clear-button behavior                    | `packages/solid-spectrum/src/searchfield/index.tsx`                                                                                  | Compare field wrapper geometry, search icon, clear button visibility/press behavior, keyboard clearing, disabled/read-only states, and value updates                  | Planned after TextField because it depends on the field/control wrapper parity                    |
+| Switch      | `@react-spectrum/s2/src/Switch.tsx`                                                                                  | `packages/solid-spectrum/src/switch/ToggleSwitch.tsx`                                                                                | Compare switch role semantics, selected thumb/track geometry, emphasized/disabled/invalid treatment if supported, label baseline, and click toggle                    | Planned after Checkbox unless TextField/SearchField shared field work exposes a better dependency |
+
 ## Playwright CLI Inspection
 
 Use Playwright CLI for exploratory browser validation before accepting a visual

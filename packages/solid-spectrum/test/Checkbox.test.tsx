@@ -142,6 +142,17 @@ describe("Checkbox", () => {
       await user.click(checkbox);
       expect(onChangeSpy).toHaveBeenCalledWith(true);
     });
+
+    it("keeps the hidden input checked state in sync when the label is clicked", async () => {
+      render(() => <Checkbox>Accept terms</Checkbox>);
+      const checkbox = screen.getByRole("checkbox");
+      const label = checkbox.closest("label");
+
+      expect(label).toBeInTheDocument();
+      await user.click(label!);
+
+      expect(checkbox).toBeChecked();
+    });
   });
 
   describe("touch interaction", () => {

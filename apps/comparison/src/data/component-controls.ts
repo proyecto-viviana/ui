@@ -12,6 +12,7 @@ import {
   buttonStaticColorOptions,
   buttonVariantOptions,
 } from "./button-demo";
+import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
 import {
   actionButtonGroupDemoDefaults,
   buttonGroupAlignOptions,
@@ -152,6 +153,84 @@ const buttonControls: ComponentControlGroup = {
     "preventFocusOnPress",
   ],
   note: "Modeled from the S2 Button docs control surface. Icon placement is exposed as a visual control so the comparison docs can show text, icon-leading, icon-trailing, and icon-only states. Callback, form, and accessibility props are tracked as API coverage rather than visual controls.",
+};
+
+const checkboxControls: ComponentControlGroup = {
+  slug: "checkbox",
+  title: "Checkbox",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "children",
+      label: "children",
+      kind: "text",
+      defaultValue: checkboxDemoDefaults.children,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: checkboxDemoDefaults.size,
+      options: options(checkboxSizeOptions),
+    },
+    {
+      name: "isSelected",
+      label: "isSelected",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isIndeterminate",
+      label: "isIndeterminate",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isEmphasized",
+      label: "isEmphasized",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "children",
+    "size",
+    "isEmphasized",
+    "isSelected",
+    "defaultSelected",
+    "onChange",
+    "isIndeterminate",
+    "isDisabled",
+    "isReadOnly",
+    "isInvalid",
+    "isRequired",
+    "styles",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "excludeFromTabOrder",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Checkbox docs and source control surface. The viewer drives label text, S2 sizes, selected and indeterminate states, emphasized treatment, disabled/read-only behavior, and invalid styling into both stacks.",
 };
 
 const actionButtonControls: ComponentControlGroup = {
@@ -737,6 +816,7 @@ export const componentControlGroups = {
   actionbuttongroup: actionButtonGroupControls,
   button: buttonControls,
   buttongroup: buttonGroupControls,
+  checkbox: checkboxControls,
   linkbutton: linkButtonControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,
