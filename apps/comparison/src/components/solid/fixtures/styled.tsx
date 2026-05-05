@@ -403,6 +403,10 @@ function SolidSpectrumButtonDemo() {
           get "data-comparison-action-count"() {
             return String(actionCount());
           },
+          "data-comparison-control-root": "button",
+          get "data-comparison-control-props"() {
+            return serializeButtonDemoProps(demoProps());
+          },
           get "data-comparison-button-props"() {
             return serializeButtonDemoProps(demoProps());
           },

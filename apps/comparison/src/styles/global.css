@@ -365,6 +365,11 @@ body.s2-docs[data-theme="dark"] {
   font: inherit;
 }
 
+.s2-prop-control input,
+.s2-prop-control select {
+  scroll-margin-block: 96px;
+}
+
 .s2-radio-group {
   display: grid;
   gap: 8px;
@@ -625,7 +630,7 @@ body.s2-docs[data-theme="dark"] {
   border-top: 1px solid var(--s2-border-soft);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1320px) {
   .s2-layout {
     grid-template-columns: 210px minmax(0, 1fr);
   }

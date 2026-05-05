@@ -254,6 +254,8 @@ function ReactButtonDemo() {
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-action-count": String(actionCount),
+      "data-comparison-control-root": "button",
+      "data-comparison-control-props": serializeButtonDemoProps(demoProps),
       "data-comparison-button-props": serializeButtonDemoProps(demoProps),
       children: jsx("div", {
         className: "comparison-button-row",

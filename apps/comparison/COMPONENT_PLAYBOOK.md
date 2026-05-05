@@ -96,6 +96,11 @@ For each component:
   `data-comparison-control-props` on both stacks.
 - Add a Playwright test that changes the side-panel controls and asserts both
   stacks received the same props and rendered state.
+- Keep the side-panel controls physically clickable at the default Playwright
+  viewport. Sticky navigation must not cover long control forms.
+- Run `e2e/modeled-controls-contract.spec.ts`; it is the shared guard that every
+  `coverage: "modeled"` component is live on both styled stacks, has a modeled
+  side-panel form, and exposes matching serialized props from React and Solid.
 - Add a visual-state-matrix entry for `styled.props.controls`.
 
 If a component cannot meet this yet, leave the controls as a tracked gap and
