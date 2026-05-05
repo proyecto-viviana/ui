@@ -122,6 +122,11 @@ async function iconAlignmentContract(control: Locator) {
   });
 }
 
+async function controlProps(root: Locator) {
+  const value = await root.getAttribute("data-comparison-control-props");
+  return JSON.parse(value ?? "{}") as Record<string, string | boolean | number>;
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -207,5 +212,101 @@ test.describe("comparison single button-derived visual parity", () => {
     const fixtures = await singleControlFixtures(page, selectedCase);
     await expect(fixtures.reactControl).toHaveAttribute("aria-pressed", "true");
     await expect(fixtures.solidControl).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("LinkButton interactive prop controls drive both stacks", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/linkbutton/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const form = page.locator('[data-comparison-controls="linkbutton"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="children"]').fill("Open billing");
+    await form.locator('input[name="href"]').fill("https://example.com/billing");
+    await form.locator('select[name="variant"]').selectOption("accent");
+    await form.locator('input[name="fillStyle"][value="outline"]').check();
+    await form.locator('input[name="size"][value="XL"]').check();
+    await form.locator('input[name="iconPlacement"][value="start"]').check();
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel.locator('[data-comparison-control-root="linkbutton"]').first();
+    const solidRoot = solidPanel.locator('[data-comparison-control-root="linkbutton"]').first();
+
+    expect(await controlProps(reactRoot)).toMatchObject({
+      children: "Open billing",
+      href: "https://example.com/billing",
+      variant: "accent",
+      fillStyle: "outline",
+      size: "XL",
+      iconPlacement: "start",
+    });
+    expect(await controlProps(solidRoot)).toMatchObject({
+      children: "Open billing",
+      href: "https://example.com/billing",
+      variant: "accent",
+      fillStyle: "outline",
+      size: "XL",
+      iconPlacement: "start",
+    });
+    await expect(reactPanel.getByRole("link", { name: "Open billing" })).toHaveAttribute(
+      "href",
+      "https://example.com/billing",
+    );
+    await expect(solidPanel.getByRole("link", { name: "Open billing" })).toHaveAttribute(
+      "href",
+      "https://example.com/billing",
+    );
+  });
+
+  test("ToggleButton interactive prop controls drive both stacks", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/togglebutton/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const form = page.locator('[data-comparison-controls="togglebutton"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="size"][value="XL"]').check();
+    await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await form.locator('input[name="isEmphasized"]').check();
+    await form.locator('input[name="isSelected"]').check();
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel.locator('[data-comparison-control-root="togglebutton"]').first();
+    const solidRoot = solidPanel.locator('[data-comparison-control-root="togglebutton"]').first();
+
+    await expect(reactPanel.locator("[data-comparison-selected]").first()).toHaveAttribute(
+      "data-comparison-selected",
+      "true",
+    );
+    await expect(solidPanel.locator("[data-comparison-selected]").first()).toHaveAttribute(
+      "data-comparison-selected",
+      "true",
+    );
+    expect(await controlProps(reactRoot)).toMatchObject({
+      size: "XL",
+      iconPlacement: "start",
+      isEmphasized: true,
+      isSelected: true,
+    });
+    expect(await controlProps(solidRoot)).toMatchObject({
+      size: "XL",
+      iconPlacement: "start",
+      isEmphasized: true,
+      isSelected: true,
+    });
+    await expect(reactPanel.getByRole("button", { name: "Pin" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(solidPanel.getByRole("button", { name: "Pin" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 });

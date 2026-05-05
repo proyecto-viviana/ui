@@ -270,8 +270,8 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/button-family-contract.spec.ts",
-      note: "The docs-style prop controls drive the same children, size, staticColor, quiet, disabled, and pending props into both stacks.",
+      spec: "e2e/actionbutton-visual.spec.ts",
+      note: "The docs-style prop controls drive the same children, size, staticColor, icon placement, quiet, disabled, and pending props into both stacks.",
     },
     {
       id: "styled.pending.behavior",
@@ -322,6 +322,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       ],
       note: "Compact vertical XL icon-leading ActionButtonGroup state is snapshotted, compares toolbar orientation and planned group props, and asserts child icon/text centerline geometry against React Spectrum.",
     },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "The docs-style prop controls drive size, density, orientation, staticColor, icon placement, quiet, justified, and disabled props into both stacks.",
+    },
   ],
   buttongroup: [
     snapshottedDefaultState({
@@ -351,6 +361,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
         "e2e/grouped-button-controls-visual.spec.ts-snapshots/buttongroup-overflow-icon-start-solid-chromium-linux.png",
       ],
       note: "Constrained XL ButtonGroup state is snapshotted and asserts S2 overflow switching from horizontal to vertical, propagated size, wrapped width, and child icon/text centerline geometry.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "The docs-style prop controls drive orientation, alignment, size, icon placement, disabled state, and the comparison overflow width into both stacks.",
     },
   ],
   togglebutton: [
@@ -386,6 +406,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/button-family-contract.spec.ts",
       note: "Clicking the ToggleButton toggles selected-state data on both stacks.",
     },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/single-button-controls-visual.spec.ts",
+      note: "The docs-style prop controls drive children, size, staticColor, icon placement, quiet, emphasized, selected, and disabled props into both stacks.",
+    },
   ],
   linkbutton: [
     assertedDefaultState({
@@ -407,6 +437,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
         "e2e/single-button-controls-visual.spec.ts-snapshots/linkbutton-icon-only-solid-chromium-linux.png",
       ],
       note: "Icon-leading and icon-only LinkButton states are snapshotted, root/icon/text geometry is compared, and both stacks assert the same href link semantics.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/single-button-controls-visual.spec.ts",
+      note: "The docs-style prop controls drive children, href, variant, fillStyle, size, staticColor, icon placement, and disabled props into both stacks.",
     },
   ],
   togglebuttongroup: [
@@ -437,6 +477,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
         "e2e/grouped-button-controls-visual.spec.ts-snapshots/togglebuttongroup-compact-vertical-selected-icon-start-solid-chromium-linux.png",
       ],
       note: "Compact vertical XL emphasized icon-leading ToggleButtonGroup state is snapshotted, compares radiogroup orientation and planned group props, asserts selected key, and checks selected child icon/text centerline geometry.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "The docs-style prop controls drive selectionMode, selectedKeys, size, density, orientation, staticColor, icon placement, quiet, emphasized, justified, and disabled props into both stacks.",
     },
   ],
   segmentedcontrol: [

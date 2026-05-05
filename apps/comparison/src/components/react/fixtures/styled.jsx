@@ -48,6 +48,24 @@ import {
   serializeButtonDemoProps,
 } from "@comparison/data/button-demo";
 import {
+  actionButtonGroupDemoPropsFromWindow,
+  buttonGroupDemoPropsFromWindow,
+  linkButtonDemoPropsFromWindow,
+  normalizeActionButtonGroupDemoProps,
+  normalizeButtonGroupDemoProps,
+  normalizeLinkButtonDemoProps,
+  normalizeToggleButtonDemoProps,
+  normalizeToggleButtonGroupDemoProps,
+  selectedKeysSetFromText as selectedToggleKeysSetFromText,
+  serializeActionButtonGroupDemoProps,
+  serializeButtonGroupDemoProps,
+  serializeLinkButtonDemoProps,
+  serializeToggleButtonDemoProps,
+  serializeToggleButtonGroupDemoProps,
+  toggleButtonDemoPropsFromWindow,
+  toggleButtonGroupDemoPropsFromWindow,
+} from "@comparison/data/button-family-demo";
+import {
   comparisonThemeChangeEvent,
   getComparisonResolvedThemeFromDocument,
 } from "@comparison/data/theme";
@@ -102,16 +120,6 @@ function queryParamFromWindow(name) {
 function stringParamFromWindow(name, allowed, fallback) {
   const value = queryParamFromWindow(name);
   return allowed.includes(value) ? value : fallback;
-}
-
-function numberParamFromWindow(name) {
-  const value = queryParamFromWindow(name);
-  if (!value) {
-    return undefined;
-  }
-
-  const number = Number(value);
-  return Number.isFinite(number) && number > 0 ? number : undefined;
 }
 
 function selectedKeysParamFromWindow(fallback) {
@@ -170,15 +178,6 @@ function normalizeSelectBoxGroupDemoProps(props) {
           : "starter",
     isDisabled: props?.isDisabled === true,
   };
-}
-
-function iconPlacementFromWindow() {
-  if (typeof window === "undefined") {
-    return "none";
-  }
-
-  const value = new URLSearchParams(window.location.search).get("iconPlacement");
-  return value === "start" || value === "end" || value === "only" ? value : "none";
 }
 
 export const reactStyledFixtures = {
@@ -350,6 +349,8 @@ function ReactActionButtonDemo() {
     jsx("div", {
       className: "comparison-button-row",
       "data-comparison-action-count": String(actionCount),
+      "data-comparison-control-root": "actionbutton",
+      "data-comparison-control-props": serializeActionButtonDemoProps(demoProps),
       "data-comparison-actionbutton-props": serializeActionButtonDemoProps(demoProps),
       "data-comparison-actionbutton-pending": demoProps.isPending ? "true" : void 0,
       children: jsx(SpectrumActionButton, {
@@ -382,16 +383,7 @@ function useActionButtonDemoControls() {
 }
 
 function ReactActionButtonGroupDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const groupProps = {
-    size: stringParamFromWindow("size", ["XS", "S", "M", "L", "XL"], "M"),
-    density: stringParamFromWindow("density", ["regular", "compact"], "regular"),
-    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
-    isQuiet: booleanParamFromWindow("isQuiet"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    staticColor: stringParamFromWindow("staticColor", ["white", "black", "auto"], undefined),
-  };
+  const [groupProps, setGroupProps] = useState(actionButtonGroupDemoPropsFromWindow);
   const [selectedKeys, setSelectedKeys] = useState(() => selectedKeysParamFromWindow(["bold"]));
   const [actionKey, setActionKey] = useState("");
   const selectedKeyText = Array.from(selectedKeys).join(",");
@@ -399,6 +391,16 @@ function ReactActionButtonGroupDemo() {
     setActionKey(key);
     setSelectedKeys(new Set([key]));
   };
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actionbuttongroup") {
+        setGroupProps(normalizeActionButtonGroupDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-action-key": actionKey,
@@ -406,10 +408,9 @@ function ReactActionButtonGroupDemo() {
       children: jsx(SpectrumActionButtonGroup, {
         "aria-label": "Formatting actions",
         "data-comparison-group-root": "actionbuttongroup",
-        "data-comparison-group-props": JSON.stringify({
-          ...groupProps,
-          iconPlacement,
-        }),
+        "data-comparison-control-root": "actionbuttongroup",
+        "data-comparison-group-props": serializeActionButtonGroupDemoProps(groupProps),
+        "data-comparison-control-props": serializeActionButtonGroupDemoProps(groupProps),
         size: groupProps.size,
         density: groupProps.density,
         orientation: groupProps.orientation,
@@ -421,10 +422,10 @@ function ReactActionButtonGroupDemo() {
           jsx(
             SpectrumActionButton,
             {
-              "aria-label": iconPlacement === "only" ? item.label : void 0,
+              "aria-label": groupProps.iconPlacement === "only" ? item.label : void 0,
               "aria-pressed": selectedKeys.has(item.id),
               onPress: () => toggleKey(item.id),
-              children: renderSingleButtonFamilyChildren(item.label, iconPlacement),
+              children: renderSingleButtonFamilyChildren(item.label, groupProps.iconPlacement),
             },
             item.id,
           ),
@@ -435,26 +436,27 @@ function ReactActionButtonGroupDemo() {
 }
 
 function ReactButtonGroupDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const wrapWidth = numberParamFromWindow("wrapWidth");
-  const groupProps = {
-    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
-    align: stringParamFromWindow("align", ["start", "end", "center"], "start"),
-    size: stringParamFromWindow("size", ["S", "M", "L", "XL"], "M"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    wrapWidth,
-  };
-  const wrapStyle = wrapWidth ? { width: wrapWidth } : undefined;
+  const [groupProps, setGroupProps] = useState(buttonGroupDemoPropsFromWindow);
+  const wrapStyle = groupProps.wrapWidth ? { width: groupProps.wrapWidth } : undefined;
   const [actionKey, setActionKey] = useState("");
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "buttongroup") {
+        setGroupProps(normalizeButtonGroupDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-action-key": actionKey,
       children: jsxs(SpectrumButtonGroup, {
         "data-comparison-group-root": "buttongroup",
-        "data-comparison-group-props": JSON.stringify({
-          ...groupProps,
-          iconPlacement,
-        }),
+        "data-comparison-control-root": "buttongroup",
+        "data-comparison-group-props": serializeButtonGroupDemoProps(groupProps),
+        "data-comparison-control-props": serializeButtonGroupDemoProps(groupProps),
         orientation: groupProps.orientation,
         align: groupProps.align,
         size: groupProps.size,
@@ -463,15 +465,15 @@ function ReactButtonGroupDemo() {
         children: [
           jsx(SpectrumButton, {
             variant: "primary",
-            "aria-label": iconPlacement === "only" ? "Save" : void 0,
+            "aria-label": groupProps.iconPlacement === "only" ? "Save" : void 0,
             onPress: () => setActionKey("save"),
-            children: renderSingleButtonFamilyChildren("Save", iconPlacement),
+            children: renderSingleButtonFamilyChildren("Save", groupProps.iconPlacement),
           }),
           jsx(SpectrumButton, {
             variant: "secondary",
-            "aria-label": iconPlacement === "only" ? "Cancel" : void 0,
+            "aria-label": groupProps.iconPlacement === "only" ? "Cancel" : void 0,
             onPress: () => setActionKey("cancel"),
-            children: renderSingleButtonFamilyChildren("Cancel", iconPlacement),
+            children: renderSingleButtonFamilyChildren("Cancel", groupProps.iconPlacement),
           }),
         ],
       }),
@@ -481,16 +483,31 @@ function ReactButtonGroupDemo() {
 
 function ReactLinkButtonDemo() {
   const colorScheme = useComparisonResolvedTheme();
-  const iconPlacement = iconPlacementFromWindow();
+  const [demoProps, setDemoProps] = useState(linkButtonDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "linkbutton") {
+        setDemoProps(normalizeLinkButtonDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       className: "comparison-button-row",
       children: jsx(SpectrumLinkButton, {
-        href: "https://example.com/docs",
-        variant: "primary",
-        fillStyle: "fill",
-        "aria-label": iconPlacement === "only" ? "Open docs" : void 0,
-        children: renderSingleButtonFamilyChildren("Open docs", iconPlacement),
+        "data-comparison-control-root": "linkbutton",
+        "data-comparison-control-props": serializeLinkButtonDemoProps(demoProps),
+        href: demoProps.href,
+        variant: demoProps.variant,
+        fillStyle: demoProps.fillStyle,
+        size: demoProps.size,
+        staticColor: demoProps.staticColor,
+        isDisabled: demoProps.isDisabled,
+        "aria-label": demoProps.iconPlacement === "only" ? demoProps.children : void 0,
+        children: renderSingleButtonFamilyChildren(demoProps.children, demoProps.iconPlacement),
       }),
     }),
     colorScheme,
@@ -498,46 +515,79 @@ function ReactLinkButtonDemo() {
 }
 
 function ReactToggleButtonDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const [selected, setSelected] = useState(() => booleanParamFromWindow("isSelected"));
+  const [demoProps, setDemoProps] = useState(toggleButtonDemoPropsFromWindow);
+  const [selected, setSelected] = useState(demoProps.isSelected);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "togglebutton") {
+        const nextProps = normalizeToggleButtonDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelected(nextProps.isSelected);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected": String(selected),
       children: jsx(SpectrumToggleButton, {
+        "data-comparison-control-root": "togglebutton",
+        "data-comparison-control-props": serializeToggleButtonDemoProps({
+          ...demoProps,
+          isSelected: selected,
+        }),
+        size: demoProps.size,
+        staticColor: demoProps.staticColor,
+        isQuiet: demoProps.isQuiet,
+        isEmphasized: demoProps.isEmphasized,
+        isDisabled: demoProps.isDisabled,
         isSelected: selected,
         onChange: setSelected,
-        "aria-label": iconPlacement === "only" ? "Pin" : void 0,
-        children: renderSingleButtonFamilyChildren("Pin", iconPlacement),
+        "aria-label": demoProps.iconPlacement === "only" ? demoProps.children : void 0,
+        children: renderSingleButtonFamilyChildren(demoProps.children, demoProps.iconPlacement),
       }),
     }),
   );
 }
 
 function ReactToggleButtonGroupDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const groupProps = {
-    size: stringParamFromWindow("size", ["XS", "S", "M", "L", "XL"], "M"),
-    density: stringParamFromWindow("density", ["regular", "compact"], "regular"),
-    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
-    isQuiet: booleanParamFromWindow("isQuiet"),
-    isEmphasized: booleanParamFromWindow("isEmphasized"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    staticColor: stringParamFromWindow("staticColor", ["white", "black", "auto"], undefined),
-  };
-  const [selectedKeys, setSelectedKeys] = useState(() => selectedKeysParamFromWindow(["left"]));
+  const [groupProps, setGroupProps] = useState(toggleButtonGroupDemoPropsFromWindow);
+  const [selectedKeys, setSelectedKeys] = useState(() =>
+    selectedToggleKeysSetFromText(groupProps.selectedKeys, ["left"], groupProps.selectionMode),
+  );
   const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "togglebuttongroup") {
+        const nextProps = normalizeToggleButtonGroupDemoProps(event.detail.props ?? {});
+        setGroupProps(nextProps);
+        setSelectedKeys(
+          selectedToggleKeysSetFromText(nextProps.selectedKeys, ["left"], nextProps.selectionMode),
+        );
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-keys": Array.from(selectedKeys).join(","),
       children: jsxs(SpectrumToggleButtonGroup, {
         "aria-label": "Text alignment",
         "data-comparison-group-root": "togglebuttongroup",
-        "data-comparison-group-props": JSON.stringify({
+        "data-comparison-control-root": "togglebuttongroup",
+        "data-comparison-group-props": serializeToggleButtonGroupDemoProps({
           ...groupProps,
-          iconPlacement,
+          selectedKeys: Array.from(selectedKeys).join(","),
         }),
-        selectionMode: "single",
+        "data-comparison-control-props": serializeToggleButtonGroupDemoProps({
+          ...groupProps,
+          selectedKeys: Array.from(selectedKeys).join(","),
+        }),
+        selectionMode: groupProps.selectionMode,
         size: groupProps.size,
         density: groupProps.density,
         orientation: groupProps.orientation,
@@ -552,18 +602,18 @@ function ReactToggleButtonGroupDemo() {
         children: [
           jsx(SpectrumToggleButton, {
             id: "left",
-            "aria-label": iconPlacement === "only" ? "Left" : void 0,
-            children: renderSingleButtonFamilyChildren("Left", iconPlacement),
+            "aria-label": groupProps.iconPlacement === "only" ? "Left" : void 0,
+            children: renderSingleButtonFamilyChildren("Left", groupProps.iconPlacement),
           }),
           jsx(SpectrumToggleButton, {
             id: "center",
-            "aria-label": iconPlacement === "only" ? "Center" : void 0,
-            children: renderSingleButtonFamilyChildren("Center", iconPlacement),
+            "aria-label": groupProps.iconPlacement === "only" ? "Center" : void 0,
+            children: renderSingleButtonFamilyChildren("Center", groupProps.iconPlacement),
           }),
           jsx(SpectrumToggleButton, {
             id: "right",
-            "aria-label": iconPlacement === "only" ? "Right" : void 0,
-            children: renderSingleButtonFamilyChildren("Right", iconPlacement),
+            "aria-label": groupProps.iconPlacement === "only" ? "Right" : void 0,
+            children: renderSingleButtonFamilyChildren("Right", groupProps.iconPlacement),
           }),
         ],
       }),

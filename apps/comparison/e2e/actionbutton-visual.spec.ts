@@ -76,6 +76,10 @@ async function setComparisonTheme(page: Page, theme: "light" | "dark") {
   await page.locator(`input[name="comparisonTheme"][value="${theme}"]`).check();
 }
 
+async function serializedControlProps(root: Locator) {
+  return root.getAttribute("data-comparison-control-props");
+}
+
 async function actionButtonComputedContract(button: Locator) {
   return button.evaluate((element) => {
     const styles = window.getComputedStyle(element);
@@ -283,6 +287,56 @@ test.describe("comparison ActionButton visual parity", () => {
     ).toBeLessThanOrEqual(1);
     expect(solid.iconVisibility).toBe(react.iconVisibility);
     expect(solid.labelVisibility).toBe(react.labelVisibility);
+  });
+
+  test("ActionButton prop controls drive both implementations", async ({ page }) => {
+    const fixtures = await actionButtonFixtures(page);
+    const form = page.locator('[data-comparison-controls="actionbutton"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+
+    await form.locator('input[name="children"]').fill("Archive");
+    await form.locator('input[name="size"][value="XL"]').check();
+    await form.locator('input[name="staticColor"][value="black"]').check();
+    await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await form.locator('input[name="isQuiet"]').check();
+
+    const expected = JSON.stringify({
+      children: "Archive",
+      size: "XL",
+      staticColor: "black",
+      iconPlacement: "start",
+      isQuiet: true,
+      isDisabled: false,
+      isPending: false,
+    });
+
+    await expect(fixtures.reactRoot).toHaveAttribute(
+      "data-comparison-actionbutton-props",
+      expected,
+    );
+    await expect(fixtures.solidRoot).toHaveAttribute(
+      "data-comparison-actionbutton-props",
+      expected,
+    );
+    await expect
+      .poll(() =>
+        serializedControlProps(
+          fixtures.reactCanvas.locator('[data-comparison-control-root="actionbutton"]').first(),
+        ),
+      )
+      .toBe(expected);
+    await expect
+      .poll(() =>
+        serializedControlProps(
+          fixtures.solidCanvas.locator('[data-comparison-control-root="actionbutton"]').first(),
+        ),
+      )
+      .toBe(expected);
+    await expect(fixtures.reactCanvas.getByRole("button", { name: "Archive" })).toBeVisible();
+    await expect(fixtures.solidCanvas.getByRole("button", { name: "Archive" })).toHaveAttribute(
+      "data-size",
+      "XL",
+    );
   });
 
   for (const item of actionButtonCases) {

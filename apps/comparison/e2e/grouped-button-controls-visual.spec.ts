@@ -124,6 +124,11 @@ async function groupProps(root: Locator) {
   return JSON.parse(value ?? "{}") as Record<string, string | boolean | number>;
 }
 
+async function controlProps(root: Locator) {
+  const value = await root.getAttribute("data-comparison-control-props");
+  return JSON.parse(value ?? "{}") as Record<string, string | boolean | number>;
+}
+
 async function groupLayout(root: Locator) {
   return root.evaluate((element) => {
     const style = window.getComputedStyle(element);
@@ -267,4 +272,125 @@ test.describe("comparison grouped button controls visual parity", () => {
       expectNear(solid.gap, react.gap, 1, `${item.title} icon text gap`);
     });
   }
+
+  test("ActionButtonGroup interactive prop controls drive both stacks", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/actionbuttongroup/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const form = page.locator('[data-comparison-controls="actionbuttongroup"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="size"][value="XL"]').check();
+    await form.locator('input[name="density"][value="compact"]').check();
+    await form.locator('input[name="orientation"][value="vertical"]').check();
+    await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await form.locator('input[name="isQuiet"]').check();
+    await form.locator('input[name="isJustified"]').check();
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel
+      .locator('[data-comparison-control-root="actionbuttongroup"]')
+      .first();
+    const solidRoot = solidPanel
+      .locator('[data-comparison-control-root="actionbuttongroup"]')
+      .first();
+
+    const expected = {
+      size: "XL",
+      density: "compact",
+      orientation: "vertical",
+      iconPlacement: "start",
+      isQuiet: true,
+      isJustified: true,
+    };
+    expect(await controlProps(reactRoot)).toMatchObject(expected);
+    expect(await controlProps(solidRoot)).toMatchObject(expected);
+    await expect.poll(async () => (await groupLayout(reactRoot)).flexDirection).toBe("column");
+    await expect.poll(async () => (await groupLayout(solidRoot)).flexDirection).toBe("column");
+  });
+
+  test("ButtonGroup interactive prop controls drive both stacks", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/buttongroup/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const form = page.locator('[data-comparison-controls="buttongroup"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="size"][value="XL"]').check();
+    await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await form.locator('input[name="wrapWidth"]').fill("96");
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel.locator('[data-comparison-control-root="buttongroup"]').first();
+    const solidRoot = solidPanel.locator('[data-comparison-control-root="buttongroup"]').first();
+
+    const expected = {
+      orientation: "horizontal",
+      align: "start",
+      size: "XL",
+      iconPlacement: "start",
+      wrapWidth: 96,
+      isDisabled: false,
+    };
+    expect(await controlProps(reactRoot)).toMatchObject(expected);
+    expect(await controlProps(solidRoot)).toMatchObject(expected);
+    await expect.poll(async () => (await groupLayout(reactRoot)).flexDirection).toBe("column");
+    await expect.poll(async () => (await groupLayout(solidRoot)).flexDirection).toBe("column");
+  });
+
+  test("ToggleButtonGroup interactive prop controls drive both stacks", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/togglebuttongroup/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const form = page.locator('[data-comparison-controls="togglebuttongroup"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="selectedKeys"]').fill("center");
+    await form.locator('input[name="size"][value="XL"]').check();
+    await form.locator('input[name="density"][value="compact"]').check();
+    await form.locator('input[name="orientation"][value="vertical"]').check();
+    await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await form.locator('input[name="isEmphasized"]').check();
+    await form.locator('input[name="isJustified"]').check();
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel
+      .locator('[data-comparison-control-root="togglebuttongroup"]')
+      .first();
+    const solidRoot = solidPanel
+      .locator('[data-comparison-control-root="togglebuttongroup"]')
+      .first();
+
+    const expected = {
+      selectionMode: "single",
+      selectedKeys: "center",
+      size: "XL",
+      density: "compact",
+      orientation: "vertical",
+      iconPlacement: "start",
+      isEmphasized: true,
+      isJustified: true,
+    };
+    await expect(reactPanel.locator("[data-comparison-selected-keys]").first()).toHaveAttribute(
+      "data-comparison-selected-keys",
+      "center",
+    );
+    await expect(solidPanel.locator("[data-comparison-selected-keys]").first()).toHaveAttribute(
+      "data-comparison-selected-keys",
+      "center",
+    );
+    expect(await controlProps(reactRoot)).toMatchObject(expected);
+    expect(await controlProps(solidRoot)).toMatchObject(expected);
+    await expect.poll(async () => (await groupLayout(reactRoot)).flexDirection).toBe("column");
+    await expect.poll(async () => (await groupLayout(solidRoot)).flexDirection).toBe("column");
+  });
 });

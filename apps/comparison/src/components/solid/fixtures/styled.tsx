@@ -37,6 +37,29 @@ import {
   type ButtonDemoProps,
 } from "@comparison/data/button-demo";
 import {
+  actionButtonGroupDemoPropsFromWindow,
+  buttonGroupDemoPropsFromWindow,
+  linkButtonDemoPropsFromWindow,
+  normalizeActionButtonGroupDemoProps,
+  normalizeButtonGroupDemoProps,
+  normalizeLinkButtonDemoProps,
+  normalizeToggleButtonDemoProps,
+  normalizeToggleButtonGroupDemoProps,
+  selectedKeysSetFromText as selectedToggleKeysSetFromText,
+  serializeActionButtonGroupDemoProps,
+  serializeButtonGroupDemoProps,
+  serializeLinkButtonDemoProps,
+  serializeToggleButtonDemoProps,
+  serializeToggleButtonGroupDemoProps,
+  toggleButtonDemoPropsFromWindow,
+  toggleButtonGroupDemoPropsFromWindow,
+  type ActionButtonGroupDemoProps,
+  type ButtonGroupDemoProps,
+  type LinkButtonDemoProps,
+  type ToggleButtonDemoProps,
+  type ToggleButtonGroupDemoProps,
+} from "@comparison/data/button-family-demo";
+import {
   comparisonThemeChangeEvent,
   getComparisonResolvedThemeFromDocument,
   type ComparisonResolvedTheme,
@@ -114,16 +137,6 @@ function stringParamFromWindow<T extends string>(
 ) {
   const value = queryParamFromWindow(name);
   return allowed.includes(value as T) ? (value as T) : fallback;
-}
-
-function numberParamFromWindow(name: string) {
-  const value = queryParamFromWindow(name);
-  if (!value) {
-    return undefined;
-  }
-
-  const number = Number(value);
-  return Number.isFinite(number) && number > 0 ? number : undefined;
 }
 
 function selectedKeysParamFromWindow(fallback: string[]) {
@@ -216,39 +229,36 @@ function normalizeSelectBoxGroupDemoProps(
   };
 }
 
-function iconPlacementFromWindow(): SingleButtonIconPlacement {
-  if (typeof window === "undefined") {
-    return "none";
-  }
-
-  const value = new URLSearchParams(window.location.search).get("iconPlacement");
-  return value === "start" || value === "end" || value === "only" ? value : "none";
-}
-
 function solidSingleButtonFamilyChildren(
-  label: string,
-  iconPlacement: SingleButtonIconPlacement,
+  label: string | (() => string),
+  iconPlacement: SingleButtonIconPlacement | (() => SingleButtonIconPlacement),
   textClass: () => string,
 ) {
-  if (iconPlacement === "start") {
-    return [
-      () => h(SolidNewIcon, { "aria-hidden": "true" }),
-      () => h("span", { class: textClass(), "data-rsp-slot": "text" }, label),
-    ];
-  }
+  const currentLabel = () => (typeof label === "function" ? label() : label);
+  const currentIconPlacement = () =>
+    typeof iconPlacement === "function" ? iconPlacement() : iconPlacement;
 
-  if (iconPlacement === "end") {
-    return [
-      () => h("span", { class: textClass(), "data-rsp-slot": "text" }, label),
-      () => h(SolidNewIcon, { "aria-hidden": "true" }),
-    ];
-  }
+  return [
+    () => {
+      const text = h("span", { class: textClass(), "data-rsp-slot": "text" }, currentLabel());
+      const icon = h(SolidNewIcon, { "aria-hidden": "true" });
+      const placement = currentIconPlacement();
 
-  if (iconPlacement === "only") {
-    return [() => h(SolidNewIcon, { "aria-hidden": "true" })];
-  }
+      if (placement === "start") {
+        return [icon, text];
+      }
 
-  return [() => h("span", { class: textClass(), "data-rsp-slot": "text" }, label)];
+      if (placement === "end") {
+        return [text, icon];
+      }
+
+      if (placement === "only") {
+        return icon;
+      }
+
+      return text;
+    },
+  ];
 }
 
 export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixture>> = {
@@ -474,6 +484,10 @@ function SolidSpectrumActionButtonDemo() {
           get "data-comparison-action-count"() {
             return String(actionCount());
           },
+          "data-comparison-control-root": "actionbutton",
+          get "data-comparison-control-props"() {
+            return serializeActionButtonDemoProps(demoProps());
+          },
           get "data-comparison-actionbutton-props"() {
             return serializeActionButtonDemoProps(demoProps());
           },
@@ -488,24 +502,9 @@ function SolidSpectrumActionButtonDemo() {
 }
 
 function SolidSpectrumActionButtonGroupDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const groupProps = {
-    size: stringParamFromWindow("size", ["XS", "S", "M", "L", "XL"] as const, "M"),
-    density: stringParamFromWindow("density", ["regular", "compact"] as const, "regular"),
-    orientation: stringParamFromWindow(
-      "orientation",
-      ["horizontal", "vertical"] as const,
-      "horizontal",
-    ),
-    isQuiet: booleanParamFromWindow("isQuiet"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    staticColor: stringParamFromWindow(
-      "staticColor",
-      ["white", "black", "auto"] as const,
-      undefined,
-    ),
-  };
+  const [groupProps, setGroupProps] = createSignal<ActionButtonGroupDemoProps>(
+    actionButtonGroupDemoPropsFromWindow(),
+  );
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
     selectedKeysParamFromWindow(["bold"]),
   );
@@ -515,6 +514,52 @@ function SolidSpectrumActionButtonGroupDemo() {
     setActionKey(key);
     setSelectedKeys(new Set([key]));
   };
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actionbuttongroup") {
+        setGroupProps(normalizeActionButtonGroupDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
+  const renderedGroup = createMemo(() => {
+    const props = groupProps();
+    return hc(
+      SolidSpectrumActionButtonGroup,
+      {
+        "aria-label": "Formatting actions",
+        "data-comparison-group-root": "actionbuttongroup",
+        "data-comparison-control-root": "actionbuttongroup",
+        "data-comparison-group-props": serializeActionButtonGroupDemoProps(props),
+        "data-comparison-control-props": serializeActionButtonGroupDemoProps(props),
+        size: props.size,
+        density: props.density,
+        orientation: props.orientation,
+        isQuiet: props.isQuiet,
+        isJustified: props.isJustified,
+        isDisabled: props.isDisabled,
+        staticColor: props.staticColor,
+      },
+      actionItems.map((item: ActionItem) =>
+        hc(
+          SolidSpectrumActionButton,
+          {
+            "aria-label": props.iconPlacement === "only" ? item.label : undefined,
+            get "aria-pressed"() {
+              return selectedKeys().has(item.id);
+            },
+            onPress: (_event: unknown) => toggleKey(item.id),
+          },
+          solidSingleButtonFamilyChildren(item.label, props.iconPlacement, () =>
+            s2ActionButtonText({ isProgressVisible: false }),
+          ),
+        ),
+      ),
+    );
+  });
 
   return hc(
     SolidSpectrumProvider,
@@ -530,58 +575,70 @@ function SolidSpectrumActionButtonGroupDemo() {
             return selectedKeyText();
           },
         },
-        [
-          hc(
-            SolidSpectrumActionButtonGroup,
-            {
-              "aria-label": "Formatting actions",
-              "data-comparison-group-root": "actionbuttongroup",
-              "data-comparison-group-props": JSON.stringify({ ...groupProps, iconPlacement }),
-              size: groupProps.size,
-              density: groupProps.density,
-              orientation: groupProps.orientation,
-              isQuiet: groupProps.isQuiet,
-              isJustified: groupProps.isJustified,
-              isDisabled: groupProps.isDisabled,
-              staticColor: groupProps.staticColor,
-            },
-            actionItems.map((item: ActionItem) =>
-              hc(
-                SolidSpectrumActionButton,
-                {
-                  ...(iconPlacement === "only" ? { "aria-label": item.label } : {}),
-                  get "aria-pressed"() {
-                    return selectedKeys().has(item.id);
-                  },
-                  onPress: (_event: unknown) => toggleKey(item.id),
-                },
-                solidSingleButtonFamilyChildren(item.label, iconPlacement, () =>
-                  s2ActionButtonText({ isProgressVisible: false }),
-                ),
-              ),
-            ),
-          ),
-        ],
+        [renderedGroup],
       ),
     ],
   );
 }
 
 function SolidSpectrumButtonGroupDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const wrapWidth = numberParamFromWindow("wrapWidth");
-  const groupProps = {
-    orientation: stringParamFromWindow(
-      "orientation",
-      ["horizontal", "vertical"] as const,
-      "horizontal",
-    ),
-    align: stringParamFromWindow("align", ["start", "end", "center"] as const, "start"),
-    size: stringParamFromWindow("size", ["S", "M", "L", "XL"] as const, "M"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    wrapWidth,
-  };
+  const [groupProps, setGroupProps] = createSignal<ButtonGroupDemoProps>(
+    buttonGroupDemoPropsFromWindow(),
+  );
   const [actionKey, setActionKey] = createSignal("");
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "buttongroup") {
+        setGroupProps(normalizeButtonGroupDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
+  const renderedGroup = createMemo(() => {
+    const props = groupProps();
+    return hc(
+      SolidSpectrumButtonGroup,
+      {
+        "aria-label": "Approval actions",
+        "data-comparison-group-root": "buttongroup",
+        "data-comparison-control-root": "buttongroup",
+        "data-comparison-group-props": serializeButtonGroupDemoProps(props),
+        "data-comparison-control-props": serializeButtonGroupDemoProps(props),
+        orientation: props.orientation,
+        align: props.align,
+        size: props.size,
+        isDisabled: props.isDisabled,
+        UNSAFE_style: props.wrapWidth ? { width: `${props.wrapWidth}px` } : undefined,
+      },
+      [
+        hc(
+          SolidSpectrumButton,
+          {
+            variant: "primary",
+            "aria-label": props.iconPlacement === "only" ? "Save" : undefined,
+            onPress: (_event: unknown) => setActionKey("save"),
+          },
+          solidSingleButtonFamilyChildren("Save", props.iconPlacement, () =>
+            s2ButtonText({ isProgressVisible: false }),
+          ),
+        ),
+        hc(
+          SolidSpectrumButton,
+          {
+            variant: "secondary",
+            "aria-label": props.iconPlacement === "only" ? "Cancel" : undefined,
+            onPress: (_event: unknown) => setActionKey("cancel"),
+          },
+          solidSingleButtonFamilyChildren("Cancel", props.iconPlacement, () =>
+            s2ButtonText({ isProgressVisible: false }),
+          ),
+        ),
+      ],
+    );
+  });
 
   return hc(
     SolidSpectrumProvider,
@@ -594,45 +651,7 @@ function SolidSpectrumButtonGroupDemo() {
             return actionKey();
           },
         },
-        [
-          hc(
-            SolidSpectrumButtonGroup,
-            {
-              "aria-label": "Approval actions",
-              "data-comparison-group-root": "buttongroup",
-              "data-comparison-group-props": JSON.stringify({ ...groupProps, iconPlacement }),
-              orientation: groupProps.orientation,
-              align: groupProps.align,
-              size: groupProps.size,
-              isDisabled: groupProps.isDisabled,
-              UNSAFE_style: wrapWidth ? { width: `${wrapWidth}px` } : undefined,
-            },
-            [
-              hc(
-                SolidSpectrumButton,
-                {
-                  variant: "primary",
-                  ...(iconPlacement === "only" ? { "aria-label": "Save" } : {}),
-                  onPress: (_event: unknown) => setActionKey("save"),
-                },
-                solidSingleButtonFamilyChildren("Save", iconPlacement, () =>
-                  s2ButtonText({ isProgressVisible: false }),
-                ),
-              ),
-              hc(
-                SolidSpectrumButton,
-                {
-                  variant: "secondary",
-                  ...(iconPlacement === "only" ? { "aria-label": "Cancel" } : {}),
-                  onPress: (_event: unknown) => setActionKey("cancel"),
-                },
-                solidSingleButtonFamilyChildren("Cancel", iconPlacement, () =>
-                  s2ButtonText({ isProgressVisible: false }),
-                ),
-              ),
-            ],
-          ),
-        ],
+        [renderedGroup],
       ),
     ],
   );
@@ -642,17 +661,49 @@ function SolidSpectrumLinkButtonDemo() {
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
-  const iconPlacement = iconPlacementFromWindow();
+  const [demoProps, setDemoProps] = createSignal<LinkButtonDemoProps>(
+    linkButtonDemoPropsFromWindow(),
+  );
 
   onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "linkbutton") {
+        setDemoProps(normalizeLinkButtonDemoProps(event.detail.props ?? {}));
+      }
+    };
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
       }
     };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedLinkButton = createMemo(() => {
+    const props = demoProps();
+    return hc(
+      SolidSpectrumLinkButton,
+      {
+        "data-comparison-control-root": "linkbutton",
+        "data-comparison-control-props": serializeLinkButtonDemoProps(props),
+        href: props.href,
+        variant: props.variant,
+        fillStyle: props.fillStyle,
+        size: props.size,
+        staticColor: props.staticColor,
+        isDisabled: props.isDisabled,
+        "aria-label": props.iconPlacement === "only" ? props.children : undefined,
+      },
+      solidSingleButtonFamilyChildren(props.children, props.iconPlacement, () =>
+        s2ButtonText({ isProgressVisible: false }),
+      ),
+    );
   });
 
   return hc(
@@ -673,28 +724,57 @@ function SolidSpectrumLinkButtonDemo() {
             return colorScheme();
           },
         },
-        [
-          hc(
-            SolidSpectrumLinkButton,
-            {
-              href: "https://example.com/docs",
-              variant: "primary",
-              fillStyle: "fill",
-              ...(iconPlacement === "only" ? { "aria-label": "Open docs" } : {}),
-            },
-            solidSingleButtonFamilyChildren("Open docs", iconPlacement, () =>
-              s2ButtonText({ isProgressVisible: false }),
-            ),
-          ),
-        ],
+        [renderedLinkButton],
       ),
     ],
   );
 }
 
 function SolidSpectrumToggleButtonDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const [selected, setSelected] = createSignal(booleanParamFromWindow("isSelected"));
+  const [demoProps, setDemoProps] = createSignal<ToggleButtonDemoProps>(
+    toggleButtonDemoPropsFromWindow(),
+  );
+  const [selected, setSelected] = createSignal(demoProps().isSelected);
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "togglebutton") {
+        const nextProps = normalizeToggleButtonDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelected(nextProps.isSelected);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
+  const renderedToggleButton = createMemo(() => {
+    const props = demoProps();
+    const isSelected = selected();
+    return hc(
+      SolidSpectrumToggleButton,
+      {
+        "data-comparison-control-root": "togglebutton",
+        "data-comparison-control-props": serializeToggleButtonDemoProps({
+          ...props,
+          isSelected,
+        }),
+        size: props.size,
+        staticColor: props.staticColor,
+        isQuiet: props.isQuiet,
+        isEmphasized: props.isEmphasized,
+        isDisabled: props.isDisabled,
+        "aria-label": props.iconPlacement === "only" ? props.children : undefined,
+        isSelected,
+        onChange: setSelected,
+      },
+      solidSingleButtonFamilyChildren(
+        props.children,
+        props.iconPlacement,
+        () => s2ToggleButtonText,
+      ),
+    );
+  });
 
   return hc(
     SolidSpectrumProvider,
@@ -707,46 +787,18 @@ function SolidSpectrumToggleButtonDemo() {
             return String(selected());
           },
         },
-        [
-          hc(
-            SolidSpectrumToggleButton,
-            {
-              ...(iconPlacement === "only" ? { "aria-label": "Pin" } : {}),
-              get isSelected() {
-                return selected();
-              },
-              onChange: setSelected,
-            },
-            solidSingleButtonFamilyChildren("Pin", iconPlacement, () => s2ToggleButtonText),
-          ),
-        ],
+        [renderedToggleButton],
       ),
     ],
   );
 }
 
 function SolidSpectrumToggleButtonGroupDemo() {
-  const iconPlacement = iconPlacementFromWindow();
-  const groupProps = {
-    size: stringParamFromWindow("size", ["XS", "S", "M", "L", "XL"] as const, "M"),
-    density: stringParamFromWindow("density", ["regular", "compact"] as const, "regular"),
-    orientation: stringParamFromWindow(
-      "orientation",
-      ["horizontal", "vertical"] as const,
-      "horizontal",
-    ),
-    isQuiet: booleanParamFromWindow("isQuiet"),
-    isEmphasized: booleanParamFromWindow("isEmphasized"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    staticColor: stringParamFromWindow(
-      "staticColor",
-      ["white", "black", "auto"] as const,
-      undefined,
-    ),
-  };
+  const [groupProps, setGroupProps] = createSignal<ToggleButtonGroupDemoProps>(
+    toggleButtonGroupDemoPropsFromWindow(),
+  );
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
-    selectedKeysParamFromWindow(["left"]),
+    selectedToggleKeysSetFromText(groupProps().selectedKeys, ["left"], groupProps().selectionMode),
   );
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
@@ -754,14 +806,85 @@ function SolidSpectrumToggleButtonGroupDemo() {
   const selectedKeyText = createMemo(() => Array.from(selectedKeys()).join(","));
 
   onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "togglebuttongroup") {
+        const nextProps = normalizeToggleButtonGroupDemoProps(event.detail.props ?? {});
+        setGroupProps(nextProps);
+        setSelectedKeys(
+          selectedToggleKeysSetFromText(nextProps.selectedKeys, ["left"], nextProps.selectionMode),
+        );
+      }
+    };
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
       }
     };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedGroup = createMemo(() => {
+    const props = groupProps();
+    const selectedText = selectedKeyText();
+    const serializedProps = serializeToggleButtonGroupDemoProps({
+      ...props,
+      selectedKeys: selectedText,
+    });
+
+    return hc(
+      SolidSpectrumToggleButtonGroup,
+      {
+        "aria-label": "Text alignment",
+        "data-comparison-group-root": "togglebuttongroup",
+        "data-comparison-control-root": "togglebuttongroup",
+        "data-comparison-group-props": serializedProps,
+        "data-comparison-control-props": serializedProps,
+        selectionMode: props.selectionMode,
+        size: props.size,
+        density: props.density,
+        orientation: props.orientation,
+        isQuiet: props.isQuiet,
+        isEmphasized: props.isEmphasized,
+        isJustified: props.isJustified,
+        isDisabled: props.isDisabled,
+        staticColor: props.staticColor,
+        selectedKeys: selectedKeys(),
+        onSelectionChange: (keys: Set<string | number>) =>
+          setSelectedKeys(new Set(Array.from(keys, String))),
+      },
+      [
+        hc(
+          SolidSpectrumToggleButton,
+          {
+            id: "left",
+            "aria-label": props.iconPlacement === "only" ? "Left" : undefined,
+          },
+          solidSingleButtonFamilyChildren("Left", props.iconPlacement, () => s2ToggleButtonText),
+        ),
+        hc(
+          SolidSpectrumToggleButton,
+          {
+            id: "center",
+            "aria-label": props.iconPlacement === "only" ? "Center" : undefined,
+          },
+          solidSingleButtonFamilyChildren("Center", props.iconPlacement, () => s2ToggleButtonText),
+        ),
+        hc(
+          SolidSpectrumToggleButton,
+          {
+            id: "right",
+            "aria-label": props.iconPlacement === "only" ? "Right" : undefined,
+          },
+          solidSingleButtonFamilyChildren("Right", props.iconPlacement, () => s2ToggleButtonText),
+        ),
+      ],
+    );
   });
 
   return hc(
@@ -784,56 +907,7 @@ function SolidSpectrumToggleButtonGroupDemo() {
             return selectedKeyText();
           },
         },
-        [
-          hc(
-            SolidSpectrumToggleButtonGroup,
-            {
-              "aria-label": "Text alignment",
-              "data-comparison-group-root": "togglebuttongroup",
-              "data-comparison-group-props": JSON.stringify({ ...groupProps, iconPlacement }),
-              selectionMode: "single",
-              size: groupProps.size,
-              density: groupProps.density,
-              orientation: groupProps.orientation,
-              isQuiet: groupProps.isQuiet,
-              isEmphasized: groupProps.isEmphasized,
-              isJustified: groupProps.isJustified,
-              isDisabled: groupProps.isDisabled,
-              staticColor: groupProps.staticColor,
-              get selectedKeys() {
-                return selectedKeys();
-              },
-              onSelectionChange: (keys: Set<string | number>) =>
-                setSelectedKeys(new Set(Array.from(keys, String))),
-            },
-            [
-              hc(
-                SolidSpectrumToggleButton,
-                {
-                  id: "left",
-                  ...(iconPlacement === "only" ? { "aria-label": "Left" } : {}),
-                },
-                solidSingleButtonFamilyChildren("Left", iconPlacement, () => s2ToggleButtonText),
-              ),
-              hc(
-                SolidSpectrumToggleButton,
-                {
-                  id: "center",
-                  ...(iconPlacement === "only" ? { "aria-label": "Center" } : {}),
-                },
-                solidSingleButtonFamilyChildren("Center", iconPlacement, () => s2ToggleButtonText),
-              ),
-              hc(
-                SolidSpectrumToggleButton,
-                {
-                  id: "right",
-                  ...(iconPlacement === "only" ? { "aria-label": "Right" } : {}),
-                },
-                solidSingleButtonFamilyChildren("Right", iconPlacement, () => s2ToggleButtonText),
-              ),
-            ],
-          ),
-        ],
+        [renderedGroup],
       ),
     ],
   );
