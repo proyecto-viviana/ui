@@ -119,6 +119,59 @@ function selectedKeysParamFromWindow(fallback) {
   return new Set(value ? value.split(",").filter(Boolean) : fallback);
 }
 
+const segmentedControlKeys = ["list", "grid", "board"];
+
+function segmentedControlDemoPropsFromWindow() {
+  return {
+    selectedKey: stringParamFromWindow("selectedKey", segmentedControlKeys, "list"),
+    isJustified: booleanParamFromWindow("isJustified"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+}
+
+function normalizeSegmentedControlDemoProps(props) {
+  return {
+    selectedKey: segmentedControlKeys.includes(props?.selectedKey) ? props.selectedKey : "list",
+    isJustified: props?.isJustified === true,
+    isDisabled: props?.isDisabled === true,
+  };
+}
+
+function selectedKeysSetFromValue(value, fallback, selectionMode) {
+  const keys = String(value || fallback.join(","))
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+  return new Set(selectionMode === "single" ? keys.slice(0, 1) : keys);
+}
+
+function selectBoxGroupDemoPropsFromWindow() {
+  const selectionMode = stringParamFromWindow("selectionMode", ["single", "multiple"], "single");
+  return {
+    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
+    selectionMode,
+    selectedKeys: Array.from(
+      selectedKeysParamFromWindow(selectionMode === "multiple" ? ["starter", "pro"] : ["starter"]),
+    ).join(","),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+}
+
+function normalizeSelectBoxGroupDemoProps(props) {
+  const selectionMode = props?.selectionMode === "multiple" ? "multiple" : "single";
+  return {
+    orientation: props?.orientation === "vertical" ? "vertical" : "horizontal",
+    selectionMode,
+    selectedKeys:
+      typeof props?.selectedKeys === "string" && props.selectedKeys.trim()
+        ? props.selectedKeys
+        : selectionMode === "multiple"
+          ? "starter,pro"
+          : "starter",
+    isDisabled: props?.isDisabled === true,
+  };
+}
+
 function iconPlacementFromWindow() {
   if (typeof window === "undefined") {
     return "none";
@@ -520,13 +573,21 @@ function ReactToggleButtonGroupDemo() {
 }
 
 function ReactSegmentedControlDemo() {
-  const demoProps = {
-    selectedKey: stringParamFromWindow("selectedKey", ["list", "grid", "board"], "list"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-  };
+  const [demoProps, setDemoProps] = useState(segmentedControlDemoPropsFromWindow);
   const [selectedKey, setSelectedKey] = useState(demoProps.selectedKey);
   const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "segmentedcontrol") {
+        const nextProps = normalizeSegmentedControlDemoProps(event.detail.props);
+        setDemoProps(nextProps);
+        setSelectedKey(nextProps.selectedKey);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-key": selectedKey,
@@ -550,17 +611,25 @@ function ReactSegmentedControlDemo() {
 }
 
 function ReactSelectBoxGroupDemo() {
-  const demoProps = {
-    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
-    selectionMode: stringParamFromWindow("selectionMode", ["single", "multiple"], "single"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-  };
+  const [demoProps, setDemoProps] = useState(selectBoxGroupDemoPropsFromWindow);
   const [selectedKeys, setSelectedKeys] = useState(() =>
-    selectedKeysParamFromWindow(
-      demoProps.selectionMode === "multiple" ? ["starter", "pro"] : ["starter"],
-    ),
+    selectedKeysSetFromValue(demoProps.selectedKeys, ["starter"], demoProps.selectionMode),
   );
   const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "selectboxgroup") {
+        const nextProps = normalizeSelectBoxGroupDemoProps(event.detail.props);
+        setDemoProps(nextProps);
+        setSelectedKeys(
+          selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
+        );
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-keys": Array.from(selectedKeys).join(","),

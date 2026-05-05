@@ -220,9 +220,114 @@ const actionButtonControls: ComponentControlGroup = {
   note: "Modeled from the S2 ActionButton docs control surface. Icon-leading and icon-only content are exposed as visual controls; Avatar and Badge content remain tracked visual content gaps.",
 };
 
+const segmentedControlControls: ComponentControlGroup = {
+  slug: "segmentedcontrol",
+  title: "SegmentedControl",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "selectedKey",
+      label: "selectedKey",
+      kind: "radio",
+      defaultValue: "list",
+      options: [
+        { value: "list", label: "list" },
+        { value: "grid", label: "grid" },
+        { value: "board", label: "board" },
+      ],
+    },
+    {
+      name: "isJustified",
+      label: "isJustified",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "children",
+    "isDisabled",
+    "isJustified",
+    "selectedKey",
+    "defaultSelectedKey",
+    "onSelectionChange",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 SegmentedControl docs control surface. The viewer drives selectedKey, justified layout, and disabled state into both stacks so selection indicator and root background parity can be inspected interactively.",
+};
+
+const selectBoxGroupControls: ComponentControlGroup = {
+  slug: "selectboxgroup",
+  title: "SelectBoxGroup",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "orientation",
+      label: "orientation",
+      kind: "radio",
+      defaultValue: "horizontal",
+      options: [
+        { value: "horizontal", label: "horizontal" },
+        { value: "vertical", label: "vertical" },
+      ],
+    },
+    {
+      name: "selectionMode",
+      label: "selectionMode",
+      kind: "radio",
+      defaultValue: "single",
+      options: [
+        { value: "single", label: "single" },
+        { value: "multiple", label: "multiple" },
+      ],
+    },
+    {
+      name: "selectedKeys",
+      label: "selectedKeys",
+      kind: "text",
+      defaultValue: "starter",
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "children",
+    "items",
+    "selectionMode",
+    "selectedKeys",
+    "defaultSelectedKeys",
+    "onSelectionChange",
+    "orientation",
+    "isDisabled",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 SelectBoxGroup docs control surface. The viewer drives orientation, selection mode, selected key set, and disabled state into both stacks so hover text color and multi-select indicator parity can be inspected interactively.",
+};
+
 export const componentControlGroups = {
   actionbutton: actionButtonControls,
   button: buttonControls,
+  segmentedcontrol: segmentedControlControls,
+  selectboxgroup: selectBoxGroupControls,
 } as const satisfies Record<string, ComponentControlGroup>;
 
 export function getComponentControlGroup(entry: ComparisonEntry): ComponentControlGroup {

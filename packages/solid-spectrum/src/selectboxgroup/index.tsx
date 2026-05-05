@@ -17,7 +17,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../s2-style";
-import { focusRing, style } from "../s2-style";
+import { baseColor, focusRing, style } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { useProviderProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";
@@ -179,7 +179,8 @@ const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectB
   borderWidth: 2,
   borderColor: {
     default: "transparent",
-    isSelected: "[#222222]",
+    isSelected: "[light-dark(rgb(19, 19, 19), rgb(242, 242, 242))]",
+    isDisabled: "transparent",
   },
   backgroundColor: {
     default: "layer-2",
@@ -222,12 +223,12 @@ const selectBoxCheckboxBox = style<ListBoxOptionRenderProps>({
   transition: "default",
   forcedColorAdjust: "none",
   backgroundColor: {
-    default: "layer-2",
+    default: "[light-dark(rgb(255, 255, 255), rgb(17, 17, 17))]",
     isSelected: "neutral",
     isDisabled: "disabled",
   },
   borderColor: {
-    default: "[currentColor]",
+    default: "[light-dark(rgb(41, 41, 41), rgb(219, 219, 219))]",
     isDisabled: "disabled",
     isSelected: "transparent",
   },
@@ -247,7 +248,7 @@ const selectBoxIllustration = style<
   "--iconPrimary": {
     type: "color",
     value: {
-      default: "neutral",
+      default: baseColor("neutral"),
       isDisabled: "disabled",
     },
   },
@@ -272,7 +273,7 @@ const selectBoxDescription = style<
     },
   },
   color: {
-    default: "neutral",
+    default: baseColor("neutral"),
     isDisabled: "disabled",
   },
 });
@@ -303,7 +304,7 @@ const selectBoxLabel = style<ListBoxOptionRenderProps & { orientation?: SelectBo
     },
   },
   color: {
-    default: "neutral",
+    default: baseColor("neutral"),
     isDisabled: "disabled",
   },
 });

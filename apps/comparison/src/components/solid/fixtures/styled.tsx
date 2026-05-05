@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount, type JSX } from "solid-js";
+import { createEffect, createMemo, createSignal, onCleanup, onMount, type JSX } from "solid-js";
 import { hc, renderProp } from "../solid-h";
 import {
   ActionButton as SolidSpectrumActionButton,
@@ -129,6 +129,91 @@ function numberParamFromWindow(name: string) {
 function selectedKeysParamFromWindow(fallback: string[]) {
   const value = queryParamFromWindow("selectedKeys");
   return new Set(value ? value.split(",").filter(Boolean) : fallback);
+}
+
+const segmentedControlKeys = ["list", "grid", "board"] as const;
+type SegmentedControlKey = (typeof segmentedControlKeys)[number];
+
+interface SegmentedControlDemoProps {
+  selectedKey: SegmentedControlKey;
+  isJustified: boolean;
+  isDisabled: boolean;
+}
+
+function segmentedControlDemoPropsFromWindow(): SegmentedControlDemoProps {
+  return {
+    selectedKey: stringParamFromWindow("selectedKey", segmentedControlKeys, "list"),
+    isJustified: booleanParamFromWindow("isJustified"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+}
+
+function normalizeSegmentedControlDemoProps(props: Partial<SegmentedControlDemoProps>) {
+  return {
+    selectedKey: segmentedControlKeys.includes(props.selectedKey as SegmentedControlKey)
+      ? (props.selectedKey as SegmentedControlKey)
+      : "list",
+    isJustified: props.isJustified === true,
+    isDisabled: props.isDisabled === true,
+  };
+}
+
+type SelectBoxSelectionMode = "single" | "multiple";
+
+interface SelectBoxGroupDemoProps {
+  orientation: "horizontal" | "vertical";
+  selectionMode: SelectBoxSelectionMode;
+  selectedKeys: string;
+  isDisabled: boolean;
+}
+
+function selectedKeysSetFromValue(
+  value: string | undefined,
+  fallback: string[],
+  selectionMode: SelectBoxSelectionMode,
+) {
+  const keys = String(value || fallback.join(","))
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+  return new Set(selectionMode === "single" ? keys.slice(0, 1) : keys);
+}
+
+function selectBoxGroupDemoPropsFromWindow(): SelectBoxGroupDemoProps {
+  const selectionMode = stringParamFromWindow(
+    "selectionMode",
+    ["single", "multiple"] as const,
+    "single",
+  );
+  return {
+    orientation: stringParamFromWindow(
+      "orientation",
+      ["horizontal", "vertical"] as const,
+      "horizontal",
+    ),
+    selectionMode,
+    selectedKeys: Array.from(
+      selectedKeysParamFromWindow(selectionMode === "multiple" ? ["starter", "pro"] : ["starter"]),
+    ).join(","),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+}
+
+function normalizeSelectBoxGroupDemoProps(
+  props: Partial<SelectBoxGroupDemoProps>,
+): SelectBoxGroupDemoProps {
+  const selectionMode = props.selectionMode === "multiple" ? "multiple" : "single";
+  return {
+    orientation: props.orientation === "vertical" ? "vertical" : "horizontal",
+    selectionMode,
+    selectedKeys:
+      typeof props.selectedKeys === "string" && props.selectedKeys.trim()
+        ? props.selectedKeys
+        : selectionMode === "multiple"
+          ? "starter,pro"
+          : "starter",
+    isDisabled: props.isDisabled === true,
+  };
 }
 
 function iconPlacementFromWindow(): SingleButtonIconPlacement {
@@ -755,25 +840,42 @@ function SolidSpectrumToggleButtonGroupDemo() {
 }
 
 function SolidSpectrumSegmentedControlDemo() {
-  const demoProps = {
-    selectedKey: stringParamFromWindow("selectedKey", ["list", "grid", "board"] as const, "list"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-  };
-  const [selectedKey, setSelectedKey] = createSignal(demoProps.selectedKey);
+  const [demoProps, setDemoProps] = createSignal<SegmentedControlDemoProps>(
+    segmentedControlDemoPropsFromWindow(),
+  );
+  const [selectedKey, setSelectedKey] = createSignal(demoProps().selectedKey);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
+  let segmentedControlRoot: HTMLElement | undefined;
+
+  createEffect(() => {
+    segmentedControlRoot?.setAttribute(
+      "data-comparison-control-props",
+      JSON.stringify(demoProps()),
+    );
+  });
 
   onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "segmentedcontrol") {
+        const nextProps = normalizeSegmentedControlDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelectedKey(nextProps.selectedKey);
+      }
+    };
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
       }
     };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
   });
 
   return hc(
@@ -802,9 +904,18 @@ function SolidSpectrumSegmentedControlDemo() {
             {
               "aria-label": "View mode",
               "data-comparison-control-root": "segmentedcontrol",
-              "data-comparison-control-props": JSON.stringify(demoProps),
-              isJustified: demoProps.isJustified,
-              isDisabled: demoProps.isDisabled,
+              ref: (element: HTMLElement) => {
+                segmentedControlRoot = element;
+              },
+              get "data-comparison-control-props"() {
+                return JSON.stringify(demoProps());
+              },
+              get isJustified() {
+                return demoProps().isJustified;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
               get selectedKey() {
                 return selectedKey();
               },
@@ -823,38 +934,44 @@ function SolidSpectrumSegmentedControlDemo() {
 }
 
 function SolidSpectrumSelectBoxGroupDemo() {
-  const demoProps = {
-    orientation: stringParamFromWindow(
-      "orientation",
-      ["horizontal", "vertical"] as const,
-      "horizontal",
-    ),
-    selectionMode: stringParamFromWindow(
-      "selectionMode",
-      ["single", "multiple"] as const,
-      "single",
-    ),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-  };
+  const [demoProps, setDemoProps] = createSignal<SelectBoxGroupDemoProps>(
+    selectBoxGroupDemoPropsFromWindow(),
+  );
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
-    selectedKeysParamFromWindow(
-      demoProps.selectionMode === "multiple" ? ["starter", "pro"] : ["starter"],
-    ),
+    selectedKeysSetFromValue(demoProps().selectedKeys, ["starter"], demoProps().selectionMode),
   );
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
   const selectedKeyText = createMemo(() => Array.from(selectedKeys()).join(","));
+  let selectBoxGroupRoot: HTMLElement | undefined;
+
+  createEffect(() => {
+    selectBoxGroupRoot?.setAttribute("data-comparison-control-props", JSON.stringify(demoProps()));
+  });
 
   onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "selectboxgroup") {
+        const nextProps = normalizeSelectBoxGroupDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelectedKeys(
+          selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
+        );
+      }
+    };
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
       }
     };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
   });
 
   return hc(
@@ -883,10 +1000,21 @@ function SolidSpectrumSelectBoxGroupDemo() {
             {
               "aria-label": "Plans",
               "data-comparison-control-root": "selectboxgroup",
-              "data-comparison-control-props": JSON.stringify(demoProps),
-              orientation: demoProps.orientation,
-              selectionMode: demoProps.selectionMode,
-              isDisabled: demoProps.isDisabled,
+              ref: (element: HTMLElement) => {
+                selectBoxGroupRoot = element;
+              },
+              get "data-comparison-control-props"() {
+                return JSON.stringify(demoProps());
+              },
+              get orientation() {
+                return demoProps().orientation;
+              },
+              get selectionMode() {
+                return demoProps().selectionMode;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
               items: selectBoxItems,
               getKey: (item: (typeof selectBoxItems)[number]) => item.id,
               getTextValue: (item: (typeof selectBoxItems)[number]) => item.label,

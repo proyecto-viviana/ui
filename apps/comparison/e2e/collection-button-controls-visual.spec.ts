@@ -63,6 +63,7 @@ async function segmentedControlGeometry(root: Locator) {
 
     return {
       role: element.getAttribute("role"),
+      rootBackground: window.getComputedStyle(element).backgroundColor,
       selectedName: selected?.textContent?.trim() ?? "",
       selectedWidth: selectedRect == null ? null : Number(selectedRect.width.toFixed(4)),
       indicatorWidth: indicatorRect == null ? null : Number(indicatorRect.width.toFixed(4)),
@@ -134,6 +135,18 @@ async function selectBoxGeometry(root: Locator) {
   });
 }
 
+async function selectBoxHoverColors(page: Page, root: Locator) {
+  const option = root.locator('[role="option"]').filter({ hasText: "Pro" }).first();
+  const label = option.locator('[slot="label"], [data-rsp-slot="label"]').first();
+  const before = await label.evaluate((element) => window.getComputedStyle(element).color);
+  await option.hover();
+  await page.waitForTimeout(80);
+  const after = await label.evaluate((element) => window.getComputedStyle(element).color);
+  await clearPointer(page);
+
+  return { before, after };
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -196,6 +209,7 @@ test.describe("comparison collection button controls visual parity", () => {
 
     expect(react.role).toBe("radiogroup");
     expect(solid.role).toBe("radiogroup");
+    expect(solid.rootBackground).toBe(react.rootBackground);
     expect(react.selectedName).toBe("Grid");
     expect(solid.selectedName).toBe("Grid");
     expectNear(solid.selectedWidth, react.selectedWidth, 1, "SegmentedControl selected item width");
@@ -291,5 +305,88 @@ test.describe("comparison collection button controls visual parity", () => {
       2,
       "SelectBox label description gap",
     );
+  });
+
+  test("SelectBoxGroup hover text color follows React Spectrum state ramp", async ({ page }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "selectboxgroup",
+      "?selectionMode=single&selectedKeys=starter&orientation=horizontal",
+    );
+
+    const react = await selectBoxHoverColors(page, fixtures.reactRoot);
+    const solid = await selectBoxHoverColors(page, fixtures.solidRoot);
+
+    expect(react.after).not.toBe(react.before);
+    expect(solid.before).toBe(react.before);
+    expect(solid.after).toBe(react.after);
+  });
+
+  test("SegmentedControl interactive prop controls drive both stacks", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/segmentedcontrol/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const form = page.locator('[data-comparison-controls="segmentedcontrol"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="selectedKey"][value="grid"]').check();
+    await form.locator('input[name="isJustified"]').check();
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel
+      .locator('[data-comparison-control-root="segmentedcontrol"]')
+      .first();
+    const solidRoot = solidPanel
+      .locator('[data-comparison-control-root="segmentedcontrol"]')
+      .first();
+
+    await expect(reactPanel.locator("[data-comparison-selected-key]").first()).toHaveAttribute(
+      "data-comparison-selected-key",
+      "grid",
+    );
+    await expect(solidPanel.locator("[data-comparison-selected-key]").first()).toHaveAttribute(
+      "data-comparison-selected-key",
+      "grid",
+    );
+    expect(await controlProps(reactRoot)).toMatchObject({ selectedKey: "grid", isJustified: true });
+    expect(await controlProps(solidRoot)).toMatchObject({ selectedKey: "grid", isJustified: true });
+  });
+
+  test("SelectBoxGroup interactive prop controls drive both stacks", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/selectboxgroup/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const form = page.locator('[data-comparison-controls="selectboxgroup"]').first();
+    await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="selectionMode"][value="multiple"]').check();
+    await form.locator('input[name="selectedKeys"]').fill("starter,pro");
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel.locator('[data-comparison-control-root="selectboxgroup"]').first();
+    const solidRoot = solidPanel.locator('[data-comparison-control-root="selectboxgroup"]').first();
+
+    await expect(reactPanel.locator("[data-comparison-selected-keys]").first()).toHaveAttribute(
+      "data-comparison-selected-keys",
+      "starter,pro",
+    );
+    await expect(solidPanel.locator("[data-comparison-selected-keys]").first()).toHaveAttribute(
+      "data-comparison-selected-keys",
+      "starter,pro",
+    );
+    expect(await controlProps(reactRoot)).toMatchObject({
+      selectionMode: "multiple",
+      selectedKeys: "starter,pro",
+    });
+    expect(await controlProps(solidRoot)).toMatchObject({
+      selectionMode: "multiple",
+      selectedKeys: "starter,pro",
+    });
   });
 });

@@ -19,7 +19,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../s2-style";
-import { fontRelative, focusRing, style } from "../s2-style";
+import { baseColor, fontRelative, focusRing, style } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { control } from "../s2-internal/style-utils";
 import { IconContext } from "../icon/spectrum-icon";
@@ -85,7 +85,7 @@ const InternalSegmentedControlContext = createContext<InternalSegmentedControlCo
 const segmentedControl = style({
   display: "flex",
   gap: 4,
-  backgroundColor: "[#e8e8e8]",
+  backgroundColor: "[light-dark(rgb(233, 233, 233), rgb(44, 44, 44))]",
   borderRadius: "default",
   width: "fit",
 });
@@ -98,8 +98,8 @@ const segmentedControlItem = style<ToggleButtonRenderProps & { isJustified?: boo
   borderStyle: "none",
   backgroundColor: "transparent",
   color: {
-    default: "neutral-subdued",
-    isSelected: "neutral",
+    default: baseColor("neutral-subdued"),
+    isSelected: baseColor("neutral"),
     isDisabled: "disabled",
   },
   cursor: {
@@ -140,12 +140,12 @@ const selectionIndicator = style<{ isDisabled?: boolean }>({
   borderStyle: "solid",
   borderWidth: 2,
   borderColor: {
-    default: "[currentColor]",
+    default: "[light-dark(rgb(19, 19, 19), rgb(242, 242, 242))]",
     isDisabled: "disabled",
   },
   borderRadius: "lg",
   backgroundColor: {
-    default: "layer-2",
+    default: "[light-dark(rgb(255, 255, 255), rgb(17, 17, 17))]",
     forcedColors: "Highlight",
     isDisabled: "GrayText",
   },
