@@ -107,6 +107,19 @@ If a component cannot meet this yet, leave the controls as a tracked gap and
 record why in the visual state matrix. Do not mark the component complete while
 the interactive control surface is missing.
 
+## Component Navigation Groups
+
+Keep comparison navigation grouped by the same working batches used for porting
+and visual signoff. The shared source is
+`apps/comparison/src/data/component-groups.ts`; update it whenever a component
+is added, removed, or moved between batches. The sidebar must use collapsible
+groups on both the index page and component detail pages, and the active
+component's group should open by default.
+
+Run `e2e/sidebar-groups.spec.ts` after changing navigation groups. It asserts
+that groups can be collapsed and that detail pages open the active component's
+batch.
+
 ## Button-Family Batch Plan
 
 Process button-family components in small batches, but sign off each component

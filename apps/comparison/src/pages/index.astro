@@ -4,6 +4,7 @@ import {
   missingOfficialComparisonEntries,
   officialComparisonEntries,
 } from "@comparison/data/comparison-manifest";
+import { groupComparisonEntries } from "@comparison/data/component-groups";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
@@ -20,6 +21,7 @@ const entriesWithCoverage = comparisonEntries.map((entry) => ({
   entry,
   coverage: getComponentCoverage(entry, getComponentControlGroup(entry)),
 }));
+const sidebarGroups = groupComparisonEntries(comparisonEntries);
 
 const overallCoverage = Math.round(
   entriesWithCoverage.reduce((sum, item) => sum + item.coverage.overall, 0) /
@@ -56,12 +58,22 @@ const overallCoverage = Math.round(
 
     <div class="s2-layout">
       <aside class="s2-sidebar">
-        <nav class="s2-nav" aria-label="Documentation">
+        <nav class="s2-nav s2-nav--grouped" aria-label="Documentation">
           <p>Overview</p>
           <a href="/" aria-current="page">Getting started</a>
           <p>Components</p>
-          {comparisonEntries.map((item) => (
-            <a href={`/components/${item.slug}`}>{item.title}</a>
+          {sidebarGroups.map((group) => (
+            <details class="s2-nav-group" open>
+              <summary>
+                <span>{group.title}</span>
+                <span>{group.entries.length}</span>
+              </summary>
+              <div>
+                {group.entries.map((item) => (
+                  <a href={`/components/${item.slug}`}>{item.title}</a>
+                ))}
+              </div>
+            </details>
           ))}
           <p>Guides</p>
           <a href="/components/button">Visual parity</a>
