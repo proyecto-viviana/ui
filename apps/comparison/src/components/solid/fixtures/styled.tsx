@@ -755,7 +755,12 @@ function SolidSpectrumToggleButtonGroupDemo() {
 }
 
 function SolidSpectrumSegmentedControlDemo() {
-  const [selectedKey, setSelectedKey] = createSignal("list");
+  const demoProps = {
+    selectedKey: stringParamFromWindow("selectedKey", ["list", "grid", "board"] as const, "list"),
+    isJustified: booleanParamFromWindow("isJustified"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+  const [selectedKey, setSelectedKey] = createSignal(demoProps.selectedKey);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -796,6 +801,10 @@ function SolidSpectrumSegmentedControlDemo() {
             SolidSpectrumSegmentedControl,
             {
               "aria-label": "View mode",
+              "data-comparison-control-root": "segmentedcontrol",
+              "data-comparison-control-props": JSON.stringify(demoProps),
+              isJustified: demoProps.isJustified,
+              isDisabled: demoProps.isDisabled,
               get selectedKey() {
                 return selectedKey();
               },
@@ -814,7 +823,24 @@ function SolidSpectrumSegmentedControlDemo() {
 }
 
 function SolidSpectrumSelectBoxGroupDemo() {
-  const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set(["starter"]));
+  const demoProps = {
+    orientation: stringParamFromWindow(
+      "orientation",
+      ["horizontal", "vertical"] as const,
+      "horizontal",
+    ),
+    selectionMode: stringParamFromWindow(
+      "selectionMode",
+      ["single", "multiple"] as const,
+      "single",
+    ),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+  const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
+    selectedKeysParamFromWindow(
+      demoProps.selectionMode === "multiple" ? ["starter", "pro"] : ["starter"],
+    ),
+  );
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -856,7 +882,11 @@ function SolidSpectrumSelectBoxGroupDemo() {
             SolidSpectrumSelectBoxGroup,
             {
               "aria-label": "Plans",
-              orientation: "horizontal",
+              "data-comparison-control-root": "selectboxgroup",
+              "data-comparison-control-props": JSON.stringify(demoProps),
+              orientation: demoProps.orientation,
+              selectionMode: demoProps.selectionMode,
+              isDisabled: demoProps.isDisabled,
               items: selectBoxItems,
               getKey: (item: (typeof selectBoxItems)[number]) => item.id,
               getTextValue: (item: (typeof selectBoxItems)[number]) => item.label,
@@ -870,8 +900,10 @@ function SolidSpectrumSelectBoxGroupDemo() {
             },
             renderProp((item: (typeof selectBoxItems)[number]) =>
               hc(SolidSpectrumSelectBox, { id: item.id, textValue: item.label }, [
-                hc("strong", {}, [item.label]),
-                hc("span", {}, [item.description]),
+                hc("span", { slot: "label", "data-rsp-slot": "label" }, [item.label]),
+                hc("span", { slot: "description", "data-rsp-slot": "description" }, [
+                  item.description,
+                ]),
               ]),
             ),
           ),

@@ -105,6 +105,19 @@ Batch 2 intentionally leaves collection-specific selection visuals for Batch 3:
 and `SelectBoxGroup` still needs multi-select indicator, slot provider, and
 disabled item coverage.
 
+Batch 3 covers the collection-style controls that complete the current
+button-family surface: `SegmentedControl` and `SelectBoxGroup`.
+
+| Assumption                                                                                                          | React S2 reference to inspect                                                                                                                    | Solid surface to inspect                                                                                                                                                      | Browser check                                                                                                                                                                     | Committed guard                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| SegmentedControl uses the S2 sliding selection indicator, justified layout, disabled state, and selected geometry   | `@react-spectrum/s2/src/SegmentedControl.tsx`, especially `SelectionIndicator`, `ToggleGroupStateContext`, `control({icon: true})`, `pressScale` | `packages/solid-spectrum/src/segmentedcontrol/index.tsx`, comparison route `/components/segmentedcontrol/?selectedKey=grid&isJustified=true`                                  | Compare React/Solid radiogroup role, selected radio state, root/item geometry, selection indicator box, justified item widths, and pressed transform behavior before screenshots  | `e2e/collection-button-controls-visual.spec.ts` screenshot, selected indicator geometry, justified layout, and behavior checks |
+| SelectBoxGroup uses S2 grid sizing, label/description slots, horizontal layout, and multi-select checkbox indicator | `@react-spectrum/s2/src/SelectBoxGroup.tsx`, `Checkbox.tsx` `box`/`iconStyles`, `TextContext`, `IllustrationContext`, `pressScale`               | `packages/solid-spectrum/src/selectboxgroup/index.tsx`, comparison route `/components/selectboxgroup/?selectionMode=multiple&selectedKeys=starter,pro&orientation=horizontal` | Compare React/Solid listbox role, multi-selected option state, checkbox indicator visibility, label/description slot boxes, option grid dimensions, and horizontal text alignment | `e2e/collection-button-controls-visual.spec.ts` screenshot, slot geometry, multi-select indicator, and behavior checks         |
+
+Batch 3 does not make these controls complete. Remaining follow-up work after
+the first guard pass is keyboard navigation detail, strict pair-diff tightening,
+SegmentedControl icon-slot permutations, and SelectBoxGroup illustration-slot
+coverage.
+
 ## Playwright CLI Inspection
 
 Use Playwright CLI for exploratory browser validation before accepting a visual

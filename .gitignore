@@ -46,6 +46,7 @@ react-spectrum
 
 # Playwright CLI artifacts
 .playwright-cli/
+output/playwright/
 /table-page-screenshot.png
 /table-page-snapshot.yaml
 /table-page.png

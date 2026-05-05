@@ -123,7 +123,7 @@ export function Button(props: ButtonProps): JSX.Element {
     styleRecord["will-change"] = `${willChange} transform`.trim();
 
     if (renderProps.isPressed && buttonElement) {
-      const { width = 0, height = 0 } = buttonElement.getBoundingClientRect() ?? {};
+      const { width, height } = buttonElement.getBoundingClientRect();
       const perspective = Math.max(height, width / 3, 24);
       const transform = style.transform ?? "";
       style.transform = `${transform} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();

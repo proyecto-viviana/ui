@@ -1,7 +1,9 @@
 import {
   children as resolveChildren,
   createContext,
+  createEffect,
   type JSX,
+  Show,
   splitProps,
   useContext,
 } from "solid-js";
@@ -18,6 +20,7 @@ import type { StyleString } from "../s2-style";
 import { focusRing, style } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { useProviderProps } from "../provider";
+import Checkmark from "../icon/ui-icons/Checkmark";
 
 export type SelectBoxOrientation = "horizontal" | "vertical";
 
@@ -61,6 +64,7 @@ export interface SelectBoxProps extends Omit<
 
 interface SelectBoxContextValue {
   orientation?: SelectBoxOrientation;
+  selectionMode?: "single" | "multiple";
   isDisabled?: boolean;
 }
 
@@ -82,7 +86,9 @@ const selectBoxGroupStyles = style<{ orientation?: SelectBoxOrientation }>({
 const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectBoxOrientation }>({
   ...focusRing(),
   display: "grid",
+  gridAutoRows: "1fr",
   position: "relative",
+  font: "ui",
   boxSizing: "border-box",
   overflow: "hidden",
   width: {
@@ -91,22 +97,81 @@ const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectB
       horizontal: 368,
     },
   },
+  height: {
+    default: 170,
+    orientation: {
+      horizontal: "auto",
+    },
+  },
   minWidth: {
     default: 144,
     orientation: {
       horizontal: 188,
     },
   },
+  "--select-box-max-width": {
+    type: "width",
+    value: {
+      default: 170,
+      orientation: {
+        horizontal: 480,
+      },
+    },
+  },
+  maxWidth: "[min(100%,var(--select-box-max-width))]",
   minHeight: {
     default: 144,
     orientation: {
       horizontal: 80,
     },
   },
+  maxHeight: {
+    default: 170,
+    orientation: {
+      horizontal: 240,
+    },
+  },
   padding: {
     default: 24,
     orientation: {
       horizontal: 16,
+    },
+  },
+  paddingStart: {
+    orientation: {
+      horizontal: 32,
+    },
+  },
+  paddingEnd: {
+    orientation: {
+      horizontal: 24,
+    },
+  },
+  gridTemplateAreas: {
+    orientation: {
+      vertical: ["illustration", ".", "label"],
+      horizontal: ["illustration . label", "illustration . description"],
+    },
+  },
+  gridTemplateRows: {
+    orientation: {
+      vertical: ["min-content", 8, "min-content"],
+      horizontal: ["min-content", "min-content"],
+    },
+  },
+  rowGap: {
+    orientation: {
+      horizontal: 4,
+    },
+  },
+  gridTemplateColumns: {
+    orientation: {
+      horizontal: "[min-content 10px 1fr]",
+    },
+  },
+  alignContent: {
+    orientation: {
+      vertical: "center",
     },
   },
   borderRadius: "lg",
@@ -136,33 +201,111 @@ const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectB
   transition: "default",
 });
 
-const selectBoxContent = style<{ orientation?: SelectBoxOrientation }>({
-  display: "grid",
-  gap: {
-    default: 8,
-    orientation: {
-      horizontal: 2,
+const selectBoxSelectionIndicator = style({
+  position: "absolute",
+  top: 8,
+  insetStart: 8,
+  pointerEvents: "none",
+});
+
+const selectBoxCheckboxBox = style<ListBoxOptionRenderProps>({
+  ...focusRing(),
+  size: 16,
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 2,
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderRadius: "sm",
+  transition: "default",
+  forcedColorAdjust: "none",
+  backgroundColor: {
+    default: "layer-2",
+    isSelected: "neutral",
+    isDisabled: "disabled",
+  },
+  borderColor: {
+    default: "[currentColor]",
+    isDisabled: "disabled",
+    isSelected: "transparent",
+  },
+});
+
+const selectBoxCheckboxIcon = style({
+  pointerEvents: "none",
+});
+
+const selectBoxIllustration = style<
+  ListBoxOptionRenderProps & { orientation?: SelectBoxOrientation }
+>({
+  gridArea: "illustration",
+  alignSelf: "center",
+  justifySelf: "center",
+  minSize: 48,
+  "--iconPrimary": {
+    type: "color",
+    value: {
+      default: "neutral",
+      isDisabled: "disabled",
     },
   },
-  alignContent: {
-    default: "center",
+});
+
+const selectBoxDescription = style<
+  ListBoxOptionRenderProps & { orientation?: SelectBoxOrientation }
+>({
+  gridArea: "description",
+  alignSelf: "center",
+  display: {
+    default: "block",
     orientation: {
-      horizontal: "start",
+      vertical: "none",
     },
   },
-  justifyItems: {
-    default: "center",
-    orientation: {
-      horizontal: "start",
-    },
-  },
+  overflow: "hidden",
   textAlign: {
     default: "center",
     orientation: {
       horizontal: "start",
     },
   },
+  color: {
+    default: "neutral",
+    isDisabled: "disabled",
+  },
+});
+
+const selectBoxLabel = style<ListBoxOptionRenderProps & { orientation?: SelectBoxOrientation }>({
+  gridArea: "label",
+  alignSelf: "center",
+  justifySelf: {
+    default: "center",
+    orientation: {
+      horizontal: "start",
+    },
+  },
+  width: "full",
+  overflow: "hidden",
   minWidth: 0,
+  textAlign: {
+    default: "center",
+    orientation: {
+      horizontal: "start",
+    },
+  },
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+  fontWeight: {
+    orientation: {
+      horizontal: "bold",
+    },
+  },
+  color: {
+    default: "neutral",
+    isDisabled: "disabled",
+  },
 });
 
 /**
@@ -181,9 +324,14 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
     "class",
   ]);
   const orientation = (): SelectBoxOrientation => local.orientation ?? "vertical";
+  const selectionMode = (): "single" | "multiple" =>
+    local.selectionMode === "multiple" ? "multiple" : "single";
   const contextValue = {
     get orientation() {
       return orientation();
+    },
+    get selectionMode() {
+      return selectionMode();
     },
     get isDisabled() {
       return local.isDisabled;
@@ -203,7 +351,7 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
       <HeadlessListBox
         {...headlessProps}
         isDisabled={local.isDisabled}
-        selectionMode={local.selectionMode ?? "single"}
+        selectionMode={selectionMode()}
         layout="grid"
         orientation={orientation()}
         class={className}
@@ -217,6 +365,68 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
   );
 }
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
+function replaceManagedClass(element: Element, dataAttribute: string, nextClass: string): void {
+  const previousClass = element.getAttribute(dataAttribute);
+  for (const className of previousClass?.split(/\s+/).filter(Boolean) ?? []) {
+    element.classList.remove(className);
+  }
+
+  for (const className of nextClass.split(/\s+/).filter(Boolean)) {
+    element.classList.add(className);
+  }
+
+  element.setAttribute(dataAttribute, nextClass);
+}
+
+function applySlotClasses(
+  root: HTMLElement | undefined,
+  renderProps: ListBoxOptionRenderProps,
+  orientation: SelectBoxOrientation,
+  isDisabled: boolean,
+): void {
+  if (!root) {
+    return;
+  }
+
+  const slotState = {
+    ...renderProps,
+    isDisabled: renderProps.isDisabled || isDisabled,
+    orientation,
+  };
+
+  for (const element of Array.from(
+    root.querySelectorAll('[slot="illustration"], [data-rsp-slot="illustration"]'),
+  )) {
+    replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxIllustration(slotState));
+    element.setAttribute("data-rsp-slot", "illustration");
+  }
+
+  for (const element of Array.from(
+    root.querySelectorAll('[slot="label"], [data-rsp-slot="label"]'),
+  )) {
+    replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxLabel(slotState));
+    element.setAttribute("data-rsp-slot", "label");
+  }
+
+  for (const element of Array.from(
+    root.querySelectorAll('[slot="description"], [data-rsp-slot="description"]'),
+  )) {
+    replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxDescription(slotState));
+    element.setAttribute("data-rsp-slot", "description");
+  }
+}
+
 /**
  * SelectBox is a single selectable item in a SelectBoxGroup.
  */
@@ -228,9 +438,12 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
+    "ref",
   ]);
   const orientation = (): SelectBoxOrientation => context.orientation ?? "vertical";
+  const selectionMode = () => context.selectionMode ?? "single";
   const isDisabled = () => !!headlessProps.isDisabled || !!context.isDisabled;
+  let optionElement: HTMLLIElement | undefined;
   const getClassName = (renderProps: ListBoxOptionRenderProps): string =>
     [
       local.UNSAFE_className,
@@ -250,12 +463,29 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     ...(local.UNSAFE_style ?? {}),
   });
 
-  function SelectBoxContent() {
+  function SelectBoxContent(renderProps: ListBoxOptionRenderProps) {
     const resolvedChildren = resolveChildren(() => local.children);
+    createEffect(() => applySlotClasses(optionElement, renderProps, orientation(), isDisabled()));
+
     return (
-      <div class={selectBoxContent({ orientation: orientation() })} data-rsp-slot="content">
+      <>
+        <div class={selectBoxSelectionIndicator} aria-hidden="true">
+          <Show when={!renderProps.isDisabled && selectionMode() === "multiple"}>
+            <div class={selectBoxCheckboxBox(renderProps)} data-rsp-slot="selection-indicator">
+              <Checkmark
+                size="S"
+                class={selectBoxCheckboxIcon}
+                style={{
+                  "--iconPrimary": "var(--s2-container-bg, white)",
+                  width: "10px",
+                  height: "10px",
+                }}
+              />
+            </div>
+          </Show>
+        </div>
         {resolvedChildren()}
-      </div>
+      </>
     );
   }
 
@@ -263,11 +493,15 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     <HeadlessListBoxOption
       {...headlessProps}
       isDisabled={isDisabled()}
+      ref={(element) => {
+        optionElement = element;
+        assignRef(local.ref, element);
+      }}
       class={getClassName}
       style={getStyle}
       data-select-box=""
     >
-      <SelectBoxContent />
+      {(renderProps) => <SelectBoxContent {...renderProps} />}
     </HeadlessListBoxOption>
   );
 }

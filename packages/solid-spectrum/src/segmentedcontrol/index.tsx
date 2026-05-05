@@ -8,6 +8,8 @@ import {
   useContext,
 } from "solid-js";
 import {
+  SelectionIndicator,
+  SharedElementTransition,
   ToggleButton as HeadlessToggleButton,
   ToggleButtonGroup as HeadlessToggleButtonGroup,
   useToggleButtonGroupStateContext,
@@ -19,6 +21,7 @@ import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../s2-style";
 import { fontRelative, focusRing, style } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
+import { control } from "../s2-internal/style-utils";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { useProviderProps } from "../provider";
@@ -89,15 +92,10 @@ const segmentedControl = style({
 
 const segmentedControlItem = style<ToggleButtonRenderProps & { isJustified?: boolean }>({
   ...focusRing(),
-  display: "inline-flex",
-  alignItems: "center",
+  ...control({ shape: "default", icon: true }),
   justifyContent: "center",
   position: "relative",
-  minWidth: 0,
-  height: 32,
-  paddingX: 12,
   borderStyle: "none",
-  borderRadius: "default",
   backgroundColor: "transparent",
   color: {
     default: "neutral-subdued",
@@ -128,21 +126,28 @@ const segmentedControlItem = style<ToggleButtonRenderProps & { isJustified?: boo
   },
 });
 
-const selectedBackground = style<ToggleButtonRenderProps>({
+const selectionIndicator = style<{ isDisabled?: boolean }>({
   position: "absolute",
-  inset: 0,
+  top: 0,
+  left: 0,
+  width: "full",
+  height: "full",
+  contain: "strict",
+  transition: "[translate,width]",
+  transitionDuration: 200,
+  transitionTimingFunction: "out",
   boxSizing: "border-box",
   borderStyle: "solid",
   borderWidth: 2,
   borderColor: {
-    default: "[#222222]",
+    default: "[currentColor]",
     isDisabled: "disabled",
   },
   borderRadius: "lg",
-  backgroundColor: "[#ffffff]",
-  opacity: {
-    default: 0,
-    isSelected: 1,
+  backgroundColor: {
+    default: "layer-2",
+    forcedColors: "Highlight",
+    isDisabled: "GrayText",
   },
   pointerEvents: "none",
 });
@@ -212,13 +217,15 @@ export function SegmentedControl(props: SegmentedControlProps): JSX.Element {
       data-disabled={headlessProps.isDisabled ? "true" : undefined}
     >
       {() => (
-        <DefaultSelectionTracker
-          defaultSelectedKey={local.defaultSelectedKey}
-          selectedKey={local.selectedKey}
-          isJustified={local.isJustified}
-        >
-          {local.children}
-        </DefaultSelectionTracker>
+        <SharedElementTransition>
+          <DefaultSelectionTracker
+            defaultSelectedKey={local.defaultSelectedKey}
+            selectedKey={local.selectedKey}
+            isJustified={local.isJustified}
+          >
+            {local.children}
+          </DefaultSelectionTracker>
+        </SharedElementTransition>
       )}
     </HeadlessToggleButtonGroup>
   );
@@ -292,7 +299,7 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
     styleRecord["will-change"] = `${willChange} transform`.trim();
 
     if (renderProps.isPressed && buttonElement) {
-      const { width = 0, height = 0 } = buttonElement.getBoundingClientRect() ?? {};
+      const { width, height } = buttonElement.getBoundingClientRect();
       const perspective = Math.max(height, width / 3, 24);
       const transform = style.transform ?? "";
       style.transform = `${transform} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();
@@ -315,7 +322,10 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
 
     return (
       <>
-        <span class={selectedBackground(renderProps)} aria-hidden="true" />
+        <SelectionIndicator
+          isSelected={renderProps.isSelected}
+          class={selectionIndicator({ isDisabled: renderProps.isDisabled })}
+        />
         <IconContext.Provider value={iconContextValue}>
           <span class={itemContent}>
             {typeof content() === "string" ? (

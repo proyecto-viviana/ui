@@ -520,13 +520,22 @@ function ReactToggleButtonGroupDemo() {
 }
 
 function ReactSegmentedControlDemo() {
-  const [selectedKey, setSelectedKey] = useState("list");
+  const demoProps = {
+    selectedKey: stringParamFromWindow("selectedKey", ["list", "grid", "board"], "list"),
+    isJustified: booleanParamFromWindow("isJustified"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+  const [selectedKey, setSelectedKey] = useState(demoProps.selectedKey);
   const colorScheme = useComparisonResolvedTheme();
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-key": selectedKey,
       children: jsxs(SpectrumSegmentedControl, {
         "aria-label": "View mode",
+        "data-comparison-control-root": "segmentedcontrol",
+        "data-comparison-control-props": JSON.stringify(demoProps),
+        isJustified: demoProps.isJustified,
+        isDisabled: demoProps.isDisabled,
         selectedKey,
         onSelectionChange: (key) => setSelectedKey(String(key)),
         children: [
@@ -541,14 +550,27 @@ function ReactSegmentedControlDemo() {
 }
 
 function ReactSelectBoxGroupDemo() {
-  const [selectedKeys, setSelectedKeys] = useState(() => new Set(["starter"]));
+  const demoProps = {
+    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
+    selectionMode: stringParamFromWindow("selectionMode", ["single", "multiple"], "single"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+  };
+  const [selectedKeys, setSelectedKeys] = useState(() =>
+    selectedKeysParamFromWindow(
+      demoProps.selectionMode === "multiple" ? ["starter", "pro"] : ["starter"],
+    ),
+  );
   const colorScheme = useComparisonResolvedTheme();
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-keys": Array.from(selectedKeys).join(","),
       children: jsx(SpectrumSelectBoxGroup, {
         "aria-label": "Plans",
-        orientation: "horizontal",
+        "data-comparison-control-root": "selectboxgroup",
+        "data-comparison-control-props": JSON.stringify(demoProps),
+        orientation: demoProps.orientation,
+        selectionMode: demoProps.selectionMode,
+        isDisabled: demoProps.isDisabled,
         selectedKeys,
         onSelectionChange: (keys) => setSelectedKeys(keys === "all" ? new Set() : new Set(keys)),
         children: selectBoxItems.map((item) =>

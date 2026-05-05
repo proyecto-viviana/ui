@@ -442,7 +442,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   segmentedcontrol: [
     assertedDefaultState({
       slug: "segmentedcontrol",
-      note: "SegmentedControl default screenshots are committed for both sides and compared with an asserted threshold; selected, justified, keyboard, and strict pair-diff coverage remain open.",
+      note: "SegmentedControl default screenshots are committed for both sides and compared with an asserted threshold; keyboard, icon slots, and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",
@@ -454,11 +454,25 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/button-family-contract.spec.ts",
       note: "Clicking Grid moves the controlled selected key from list to grid on both stacks.",
     },
+    {
+      id: "styled.selection-indicator.justified",
+      label: "Justified selected indicator",
+      kind: "static",
+      react: "snapshotted",
+      solid: "snapshotted",
+      pairDiff: "asserted",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      snapshots: [
+        "e2e/collection-button-controls-visual.spec.ts-snapshots/segmentedcontrol-justified-selected-react-chromium-linux.png",
+        "e2e/collection-button-controls-visual.spec.ts-snapshots/segmentedcontrol-justified-selected-solid-chromium-linux.png",
+      ],
+      note: "Justified Grid-selected SegmentedControl state is snapshotted and asserts radiogroup semantics, selected key, equal item widths, and selection-indicator geometry against React Spectrum.",
+    },
   ],
   selectboxgroup: [
     assertedDefaultState({
       slug: "selectboxgroup",
-      note: "SelectBoxGroup default screenshots are committed for both sides and compared with an asserted threshold; multi-select, disabled, keyboard, and strict pair-diff coverage remain open.",
+      note: "SelectBoxGroup default screenshots are committed for both sides and compared with an asserted threshold; disabled items, keyboard, illustration slots, and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",
@@ -469,6 +483,20 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/button-family-contract.spec.ts",
       note: "Clicking Pro moves the controlled selected key from starter to pro on both stacks.",
+    },
+    {
+      id: "styled.selection.multiple-slots",
+      label: "Multiple selection and text slots",
+      kind: "static",
+      react: "snapshotted",
+      solid: "snapshotted",
+      pairDiff: "asserted",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      snapshots: [
+        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-horizontal-multiple-react-chromium-linux.png",
+        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-horizontal-multiple-solid-chromium-linux.png",
+      ],
+      note: "Horizontal multiple-selection SelectBoxGroup state is snapshotted and asserts listbox semantics, selected key set, checkbox indicator geometry, option dimensions, and label/description slot alignment.",
     },
   ],
   cardview: [
