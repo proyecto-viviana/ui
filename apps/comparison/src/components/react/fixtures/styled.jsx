@@ -91,13 +91,41 @@ function booleanParamFromWindow(name) {
   return value === "true" || value === "on" || value === "1";
 }
 
+function queryParamFromWindow(name) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function stringParamFromWindow(name, allowed, fallback) {
+  const value = queryParamFromWindow(name);
+  return allowed.includes(value) ? value : fallback;
+}
+
+function numberParamFromWindow(name) {
+  const value = queryParamFromWindow(name);
+  if (!value) {
+    return undefined;
+  }
+
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : undefined;
+}
+
+function selectedKeysParamFromWindow(fallback) {
+  const value = queryParamFromWindow("selectedKeys");
+  return new Set(value ? value.split(",").filter(Boolean) : fallback);
+}
+
 function iconPlacementFromWindow() {
   if (typeof window === "undefined") {
     return "none";
   }
 
   const value = new URLSearchParams(window.location.search).get("iconPlacement");
-  return value === "start" || value === "only" ? value : "none";
+  return value === "start" || value === "end" || value === "only" ? value : "none";
 }
 
 export const reactStyledFixtures = {
@@ -221,6 +249,10 @@ function renderSingleButtonFamilyChildren(label, iconPlacement) {
     return [jsx(ReactButtonIcon, {}, "icon"), jsx(SpectrumText, { children: label }, "text")];
   }
 
+  if (iconPlacement === "end") {
+    return [jsx(SpectrumText, { children: label }, "text"), jsx(ReactButtonIcon, {}, "icon")];
+  }
+
   if (iconPlacement === "only") {
     return jsx(ReactButtonIcon, {});
   }
@@ -297,7 +329,17 @@ function useActionButtonDemoControls() {
 }
 
 function ReactActionButtonGroupDemo() {
-  const [selectedKeys, setSelectedKeys] = useState(() => new Set(["bold"]));
+  const iconPlacement = iconPlacementFromWindow();
+  const groupProps = {
+    size: stringParamFromWindow("size", ["XS", "S", "M", "L", "XL"], "M"),
+    density: stringParamFromWindow("density", ["regular", "compact"], "regular"),
+    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
+    isQuiet: booleanParamFromWindow("isQuiet"),
+    isJustified: booleanParamFromWindow("isJustified"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+    staticColor: stringParamFromWindow("staticColor", ["white", "black", "auto"], undefined),
+  };
+  const [selectedKeys, setSelectedKeys] = useState(() => selectedKeysParamFromWindow(["bold"]));
   const [actionKey, setActionKey] = useState("");
   const selectedKeyText = Array.from(selectedKeys).join(",");
   const toggleKey = (key) => {
@@ -310,13 +352,26 @@ function ReactActionButtonGroupDemo() {
       "data-comparison-selected-keys": selectedKeyText,
       children: jsx(SpectrumActionButtonGroup, {
         "aria-label": "Formatting actions",
+        "data-comparison-group-root": "actionbuttongroup",
+        "data-comparison-group-props": JSON.stringify({
+          ...groupProps,
+          iconPlacement,
+        }),
+        size: groupProps.size,
+        density: groupProps.density,
+        orientation: groupProps.orientation,
+        isQuiet: groupProps.isQuiet,
+        isJustified: groupProps.isJustified,
+        isDisabled: groupProps.isDisabled,
+        staticColor: groupProps.staticColor,
         children: actionItems.map((item) =>
           jsx(
             SpectrumActionButton,
             {
+              "aria-label": iconPlacement === "only" ? item.label : void 0,
               "aria-pressed": selectedKeys.has(item.id),
               onPress: () => toggleKey(item.id),
-              children: item.label,
+              children: renderSingleButtonFamilyChildren(item.label, iconPlacement),
             },
             item.id,
           ),
@@ -327,21 +382,43 @@ function ReactActionButtonGroupDemo() {
 }
 
 function ReactButtonGroupDemo() {
+  const iconPlacement = iconPlacementFromWindow();
+  const wrapWidth = numberParamFromWindow("wrapWidth");
+  const groupProps = {
+    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
+    align: stringParamFromWindow("align", ["start", "end", "center"], "start"),
+    size: stringParamFromWindow("size", ["S", "M", "L", "XL"], "M"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+    wrapWidth,
+  };
+  const wrapStyle = wrapWidth ? { width: wrapWidth } : undefined;
   const [actionKey, setActionKey] = useState("");
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-action-key": actionKey,
       children: jsxs(SpectrumButtonGroup, {
+        "data-comparison-group-root": "buttongroup",
+        "data-comparison-group-props": JSON.stringify({
+          ...groupProps,
+          iconPlacement,
+        }),
+        orientation: groupProps.orientation,
+        align: groupProps.align,
+        size: groupProps.size,
+        isDisabled: groupProps.isDisabled,
+        UNSAFE_style: wrapStyle,
         children: [
           jsx(SpectrumButton, {
             variant: "primary",
+            "aria-label": iconPlacement === "only" ? "Save" : void 0,
             onPress: () => setActionKey("save"),
-            children: "Save",
+            children: renderSingleButtonFamilyChildren("Save", iconPlacement),
           }),
           jsx(SpectrumButton, {
             variant: "secondary",
+            "aria-label": iconPlacement === "only" ? "Cancel" : void 0,
             onPress: () => setActionKey("cancel"),
-            children: "Cancel",
+            children: renderSingleButtonFamilyChildren("Cancel", iconPlacement),
           }),
         ],
       }),
@@ -384,20 +461,57 @@ function ReactToggleButtonDemo() {
 }
 
 function ReactToggleButtonGroupDemo() {
-  const [selectedKeys, setSelectedKeys] = useState(() => new Set(["left"]));
+  const iconPlacement = iconPlacementFromWindow();
+  const groupProps = {
+    size: stringParamFromWindow("size", ["XS", "S", "M", "L", "XL"], "M"),
+    density: stringParamFromWindow("density", ["regular", "compact"], "regular"),
+    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
+    isQuiet: booleanParamFromWindow("isQuiet"),
+    isEmphasized: booleanParamFromWindow("isEmphasized"),
+    isJustified: booleanParamFromWindow("isJustified"),
+    isDisabled: booleanParamFromWindow("isDisabled"),
+    staticColor: stringParamFromWindow("staticColor", ["white", "black", "auto"], undefined),
+  };
+  const [selectedKeys, setSelectedKeys] = useState(() => selectedKeysParamFromWindow(["left"]));
   const colorScheme = useComparisonResolvedTheme();
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-keys": Array.from(selectedKeys).join(","),
       children: jsxs(SpectrumToggleButtonGroup, {
         "aria-label": "Text alignment",
+        "data-comparison-group-root": "togglebuttongroup",
+        "data-comparison-group-props": JSON.stringify({
+          ...groupProps,
+          iconPlacement,
+        }),
         selectionMode: "single",
+        size: groupProps.size,
+        density: groupProps.density,
+        orientation: groupProps.orientation,
+        isQuiet: groupProps.isQuiet,
+        isEmphasized: groupProps.isEmphasized,
+        isJustified: groupProps.isJustified,
+        isDisabled: groupProps.isDisabled,
+        staticColor: groupProps.staticColor,
         selectedKeys,
-        onSelectionChange: setSelectedKeys,
+        onSelectionChange: (keys) =>
+          setSelectedKeys(keys === "all" ? new Set() : new Set(Array.from(keys, String))),
         children: [
-          jsx(SpectrumToggleButton, { id: "left", children: "Left" }),
-          jsx(SpectrumToggleButton, { id: "center", children: "Center" }),
-          jsx(SpectrumToggleButton, { id: "right", children: "Right" }),
+          jsx(SpectrumToggleButton, {
+            id: "left",
+            "aria-label": iconPlacement === "only" ? "Left" : void 0,
+            children: renderSingleButtonFamilyChildren("Left", iconPlacement),
+          }),
+          jsx(SpectrumToggleButton, {
+            id: "center",
+            "aria-label": iconPlacement === "only" ? "Center" : void 0,
+            children: renderSingleButtonFamilyChildren("Center", iconPlacement),
+          }),
+          jsx(SpectrumToggleButton, {
+            id: "right",
+            "aria-label": iconPlacement === "only" ? "Right" : void 0,
+            children: renderSingleButtonFamilyChildren("Right", iconPlacement),
+          }),
         ],
       }),
     }),

@@ -296,7 +296,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   actionbuttongroup: [
     snapshottedDefaultState({
       slug: "actionbuttongroup",
-      note: "ActionButtonGroup default screenshots are committed for both sides and guarded by an asserted threshold; density, quiet, orientation, disabled group, keyboard, and stricter visual parity remain planned.",
+      note: "ActionButtonGroup default screenshots are committed for both sides and guarded by an asserted threshold; keyboard and stricter visual parity remain planned.",
     }),
     {
       id: "styled.selection.single-action",
@@ -308,11 +308,25 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/button-family-contract.spec.ts",
       note: "Pressing an action updates both the selected key and action callback data on both stacks.",
     },
+    {
+      id: "styled.group.props-icon",
+      label: "Group props and icon geometry",
+      kind: "static",
+      react: "snapshotted",
+      solid: "snapshotted",
+      pairDiff: "asserted",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      snapshots: [
+        "e2e/grouped-button-controls-visual.spec.ts-snapshots/actionbuttongroup-compact-vertical-icon-start-react-chromium-linux.png",
+        "e2e/grouped-button-controls-visual.spec.ts-snapshots/actionbuttongroup-compact-vertical-icon-start-solid-chromium-linux.png",
+      ],
+      note: "Compact vertical XL icon-leading ActionButtonGroup state is snapshotted, compares toolbar orientation and planned group props, and asserts child icon/text centerline geometry against React Spectrum.",
+    },
   ],
   buttongroup: [
     snapshottedDefaultState({
       slug: "buttongroup",
-      note: "ButtonGroup default screenshots are committed for both sides and guarded by an asserted threshold; orientation, alignment, disabled, overflow, stricter visual parity, and grouped interaction states remain planned.",
+      note: "ButtonGroup default screenshots are committed for both sides and guarded by an asserted threshold; disabled state, stricter visual parity, and grouped interaction states remain planned.",
     }),
     {
       id: "styled.grouped-actions.press",
@@ -323,6 +337,20 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/button-family-contract.spec.ts",
       note: "Grouped Save and Cancel actions update state on both stacks.",
+    },
+    {
+      id: "styled.overflow.icon",
+      label: "Overflow layout and icon geometry",
+      kind: "static",
+      react: "snapshotted",
+      solid: "snapshotted",
+      pairDiff: "asserted",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      snapshots: [
+        "e2e/grouped-button-controls-visual.spec.ts-snapshots/buttongroup-overflow-icon-start-react-chromium-linux.png",
+        "e2e/grouped-button-controls-visual.spec.ts-snapshots/buttongroup-overflow-icon-start-solid-chromium-linux.png",
+      ],
+      note: "Constrained XL ButtonGroup state is snapshotted and asserts S2 overflow switching from horizontal to vertical, propagated size, wrapped width, and child icon/text centerline geometry.",
     },
   ],
   togglebutton: [
@@ -384,7 +412,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   togglebuttongroup: [
     assertedDefaultState({
       slug: "togglebuttongroup",
-      note: "ToggleButtonGroup default screenshots are committed for both sides and compared with an asserted threshold; selected, keyboard, density, orientation, disabled, and strict pair-diff coverage remain open.",
+      note: "ToggleButtonGroup default screenshots are committed for both sides and compared with an asserted threshold; keyboard, disabled, and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",
@@ -395,6 +423,20 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/button-family-contract.spec.ts",
       note: "Clicking Center moves the controlled selected key from left to center on both stacks.",
+    },
+    {
+      id: "styled.group.props-icon",
+      label: "Group props, selection, and icon geometry",
+      kind: "static",
+      react: "snapshotted",
+      solid: "snapshotted",
+      pairDiff: "asserted",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      snapshots: [
+        "e2e/grouped-button-controls-visual.spec.ts-snapshots/togglebuttongroup-compact-vertical-selected-icon-start-react-chromium-linux.png",
+        "e2e/grouped-button-controls-visual.spec.ts-snapshots/togglebuttongroup-compact-vertical-selected-icon-start-solid-chromium-linux.png",
+      ],
+      note: "Compact vertical XL emphasized icon-leading ToggleButtonGroup state is snapshotted, compares radiogroup orientation and planned group props, asserts selected key, and checks selected child icon/text centerline geometry.",
     },
   ],
   segmentedcontrol: [

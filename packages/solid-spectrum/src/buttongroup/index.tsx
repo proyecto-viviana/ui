@@ -1,4 +1,4 @@
-import { type JSX, splitProps } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, type JSX, splitProps } from "solid-js";
 import type { StyleString } from "../s2-style";
 import { style } from "../s2-style";
 import { ButtonGroupContext } from "../button/group-context";
@@ -44,6 +44,13 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   const size = () => local.size ?? "M";
   const orientation = () => local.orientation ?? "horizontal";
   const align = () => local.align ?? "start";
+  const [hasOverflow, setHasOverflow] = createSignal(false);
+  let groupElement: HTMLDivElement | undefined;
+  let resizeObserver: ResizeObserver | undefined;
+  let measurementFrame = 0;
+
+  const effectiveOrientation = () =>
+    orientation() === "vertical" || hasOverflow() ? "vertical" : "horizontal";
   const className = () =>
     [
       local.UNSAFE_className,
@@ -51,7 +58,7 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
       s2ButtonGroup(
         {
           size: size(),
-          orientation: orientation(),
+          orientation: effectiveOrientation(),
           align: align(),
         },
         local.styles,
@@ -59,6 +66,66 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
+
+  const measureOverflow = () => {
+    if (!groupElement || orientation() !== "horizontal") {
+      setHasOverflow(false);
+      return;
+    }
+
+    const maxX = groupElement.offsetWidth + 1;
+    const overflows = Array.from(groupElement.children).some((child) => {
+      const element = child as HTMLElement;
+      return element.offsetLeft < 0 || element.offsetLeft + element.offsetWidth > maxX;
+    });
+    setHasOverflow(overflows);
+  };
+
+  const scheduleOverflowCheck = () => {
+    if (typeof requestAnimationFrame !== "function") {
+      measureOverflow();
+      return;
+    }
+
+    if (measurementFrame) {
+      cancelAnimationFrame(measurementFrame);
+    }
+
+    if (orientation() !== "horizontal") {
+      setHasOverflow(false);
+      return;
+    }
+
+    setHasOverflow(false);
+    measurementFrame = requestAnimationFrame(() => {
+      measurementFrame = 0;
+      measureOverflow();
+    });
+  };
+
+  onMount(() => {
+    if (typeof ResizeObserver !== "undefined" && groupElement?.parentElement) {
+      resizeObserver = new ResizeObserver(scheduleOverflowCheck);
+      resizeObserver.observe(groupElement.parentElement);
+    }
+    scheduleOverflowCheck();
+  });
+
+  createEffect(() => {
+    orientation();
+    align();
+    size();
+    local.children;
+    local.UNSAFE_style;
+    scheduleOverflowCheck();
+  });
+
+  onCleanup(() => {
+    if (measurementFrame) {
+      cancelAnimationFrame(measurementFrame);
+    }
+    resizeObserver?.disconnect();
+  });
 
   const contextValue = {
     get size() {
@@ -75,10 +142,13 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   return (
     <div
       {...domProps}
-      role={domProps.role ?? "group"}
+      ref={(element) => {
+        groupElement = element;
+      }}
       class={className()}
       style={local.UNSAFE_style}
-      data-orientation={orientation()}
+      data-orientation={effectiveOrientation()}
+      data-requested-orientation={orientation()}
       data-disabled={local.isDisabled || undefined}
     >
       <ButtonGroupContext.Provider value={contextValue}>

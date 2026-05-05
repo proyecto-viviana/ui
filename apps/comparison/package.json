@@ -9,7 +9,7 @@
     "build": "astro build",
     "report:gaps": "tsx scripts/report-catalogue-gaps.ts",
     "report:exports": "tsx scripts/report-s2-export-gaps.ts",
-    "test:button": "vp run build && playwright test e2e/button-visual.spec.ts e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
+    "test:button": "vp run build && playwright test e2e/button-visual.spec.ts e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/grouped-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
     "test:buttons": "vp run build && playwright test e2e/button-family-contract.spec.ts --reporter=line",
     "test:catalogue": "vp run build && playwright test e2e/catalogue-controls.spec.ts --reporter=line",
     "test:theme": "vp run build && playwright test e2e/component-theme-contract.spec.ts --reporter=line",
