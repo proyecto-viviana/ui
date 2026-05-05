@@ -20,13 +20,16 @@ first.
 6. Do not add or tune app-local Spectrum component CSS.
 7. If the Solid component is not migrated, mark it missing/gap.
 8. Match S2 props and TypeScript names in controls and fixtures.
-9. Cover light and dark themes.
-10. Cover component-specific states before screenshots. For time-based states,
+9. Add modeled interactive comparison controls for the component and verify the
+   controls drive both React and Solid. URL query states can seed fixtures, but
+   they do not replace the interactive control surface.
+10. Cover light and dark themes.
+11. Cover component-specific states before screenshots. For time-based states,
     verify the delayed visible phase and any derived disabled-like styling the
     source uses to normalize variants.
-11. Compare DOM slots, state attributes, computed styles, geometry, behavior, and
+12. Compare DOM slots, state attributes, computed styles, geometry, behavior, and
     screenshots.
-12. Commit snapshots only after the React and Solid implementations are both the
+13. Commit snapshots only after the React and Solid implementations are both the
     intended references.
 
 ## Validation Plan First
@@ -74,6 +77,31 @@ record the box/centerline/baseline measurements before accepting the state. The
 minimum icon matrix is start, end, icon-only, pending-with-icon, and each
 supported size that changes button height.
 
+## Interactive Controls Requirement
+
+Every component page must have a modeled interactive comparison control surface
+before it is considered complete. The controls should mirror the public S2 docs
+props that can change visible behavior, semantics, or interaction state. A route
+query fixture is useful for focused snapshots, but it is only a seed state; the
+side-panel controls must also be able to update the mounted React and Solid
+examples without a reload.
+
+For each component:
+
+- Add a `ComponentControlGroup` entry with `coverage: "modeled"` and the S2
+  docs prop names.
+- Add component defaults to the comparison page control script.
+- Wire both React and Solid fixtures to `comparison:controls-change`.
+- Expose a stable `data-comparison-control-root` and serialized
+  `data-comparison-control-props` on both stacks.
+- Add a Playwright test that changes the side-panel controls and asserts both
+  stacks received the same props and rendered state.
+- Add a visual-state-matrix entry for `styled.props.controls`.
+
+If a component cannot meet this yet, leave the controls as a tracked gap and
+record why in the visual state matrix. Do not mark the component complete while
+the interactive control surface is missing.
+
 ## Button-Family Batch Plan
 
 Process button-family components in small batches, but sign off each component
@@ -117,6 +145,33 @@ Batch 3 does not make these controls complete. Remaining follow-up work after
 the first guard pass is keyboard navigation detail, strict pair-diff tightening,
 SegmentedControl icon-slot permutations, and SelectBoxGroup illustration-slot
 coverage.
+
+## Button-Family Interactive-Control Retrofit
+
+Some button-family components already have URL-driven fixtures, screenshots, and
+geometry contracts, but that is not the same as a modeled interactive comparison
+surface. Retrofit them before moving to the next component family.
+
+| Component         | Current state                                                                 | Required follow-up                                                                               |
+| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Button            | Modeled controls, React/Solid fixture wiring, and side-panel Playwright guard | Keep as the reference implementation pattern for the rest of the family                          |
+| ActionButton      | Modeled controls and fixture wiring exist                                     | Add the same explicit side-panel Playwright guard shape used by Button                           |
+| LinkButton        | URL-driven icon fixtures and semantic/geometry guards exist                   | Add modeled controls, React/Solid event wiring, root prop serialization, and side-panel guard    |
+| ToggleButton      | URL-driven icon/selected fixtures and semantic/geometry guards exist          | Add modeled controls, selected-state event wiring, root prop serialization, and side-panel guard |
+| ButtonGroup       | URL-driven group fixture and geometry/overflow guards exist                   | Add modeled controls, React/Solid event wiring, group prop serialization, and side-panel guard   |
+| ActionButtonGroup | URL-driven group fixture and geometry/role guards exist                       | Add modeled controls, React/Solid event wiring, group prop serialization, and side-panel guard   |
+| ToggleButtonGroup | URL-driven group fixture and geometry/selection guards exist                  | Add modeled controls, selection event wiring, group prop serialization, and side-panel guard     |
+| SegmentedControl  | Modeled controls, React/Solid fixture wiring, and side-panel guard exist      | Continue with remaining visual gaps only after the interactive-control baseline stays green      |
+| SelectBoxGroup    | Modeled controls, React/Solid fixture wiring, and side-panel guard exist      | Continue with remaining visual gaps only after the interactive-control baseline stays green      |
+
+Work in this order:
+
+1. Normalize `ActionButton` to the `Button` side-panel guard pattern.
+2. Retrofit `LinkButton` and `ToggleButton` as the single-control slice.
+3. Retrofit `ButtonGroup`, `ActionButtonGroup`, and `ToggleButtonGroup` as the
+   grouped-control slice.
+4. Run the focused Playwright suites after each slice and update the visual
+   state matrix before committing.
 
 ## Playwright CLI Inspection
 
