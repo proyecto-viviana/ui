@@ -8,7 +8,7 @@
  * TextField context for proper accessibility and focus tracking.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
 import {
   TextField,
   TextFieldContext,
@@ -116,6 +116,34 @@ describe("TextField", () => {
 
       const field = screen.getByRole("textbox").closest(".solidaria-TextField");
       expect(field).toHaveAttribute("data-custom", "true");
+    });
+  });
+
+  describe("focus stability", () => {
+    it("keeps the same input node focused after a text input event", async () => {
+      render(() => <TestTextField />);
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+
+      input.focus();
+      fireEvent.input(input, { target: { value: "testx" } });
+      await Promise.resolve();
+
+      expect(input.isConnected).toBe(true);
+      expect(screen.getByRole("textbox")).toBe(input);
+      expect(document.activeElement).toBe(input);
+    });
+
+    it("keeps the same textarea node focused after a text input event", async () => {
+      render(() => <TestTextField input={TextArea} />);
+      const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+
+      textarea.focus();
+      fireEvent.input(textarea, { target: { value: "testx" } });
+      await Promise.resolve();
+
+      expect(textarea.isConnected).toBe(true);
+      expect(screen.getByRole("textbox")).toBe(textarea);
+      expect(document.activeElement).toBe(textarea);
     });
   });
 

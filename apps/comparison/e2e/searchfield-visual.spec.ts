@@ -67,14 +67,18 @@ async function searchFieldGeometry(root: Locator) {
         : helpTextLeaf;
     const searchIcon = fieldGroup?.querySelector<SVGElement>("div[slot='icon'] svg, svg");
     const clearButton = fieldGroup?.querySelector<HTMLButtonElement>("button");
+    const clearIcon = clearButton?.querySelector<SVGElement>("svg");
     const groupStyle = fieldGroup == null ? null : window.getComputedStyle(fieldGroup);
     const inputStyle = input == null ? null : window.getComputedStyle(input);
+    const clearButtonStyle = clearButton == null ? null : window.getComputedStyle(clearButton);
+    const clearIconStyle = clearIcon == null ? null : window.getComputedStyle(clearIcon);
     const helpStyle = helpText == null ? null : window.getComputedStyle(helpText);
     const labelRect = label?.getBoundingClientRect();
     const groupRect = fieldGroup?.getBoundingClientRect();
     const inputRect = input?.getBoundingClientRect();
     const iconRect = searchIcon?.getBoundingClientRect();
     const buttonRect = clearButton?.getBoundingClientRect();
+    const clearIconRect = clearIcon?.getBoundingClientRect();
     const helpRect = helpText?.getBoundingClientRect();
     const groupCenterY = groupRect == null ? null : groupRect.top + groupRect.height / 2;
     const inputCenterY = inputRect == null ? null : inputRect.top + inputRect.height / 2;
@@ -94,6 +98,7 @@ async function searchFieldGeometry(root: Locator) {
       input: relativeRect(inputRect, rootRect),
       searchIcon: relativeRect(iconRect, rootRect),
       clearButton: relativeRect(buttonRect, rootRect),
+      clearIcon: relativeRect(clearIconRect, rootRect),
       helpText: relativeRect(helpRect, rootRect),
       labelToGroupGap: numberOrNull(
         labelRect == null || groupRect == null ? null : groupRect.top - labelRect.bottom,
@@ -113,6 +118,12 @@ async function searchFieldGeometry(root: Locator) {
       groupBorderColor: groupStyle?.borderColor ?? null,
       groupBackground: groupStyle?.backgroundColor ?? null,
       inputColor: inputStyle?.color ?? null,
+      clearButtonComputedWidth: clearButtonStyle?.width ?? null,
+      clearButtonComputedHeight: clearButtonStyle?.height ?? null,
+      clearButtonFontSize: clearButtonStyle?.fontSize ?? null,
+      clearIconComputedWidth: clearIconStyle?.width ?? null,
+      clearIconComputedHeight: clearIconStyle?.height ?? null,
+      clearIconFontSize: clearIconStyle?.fontSize ?? null,
       helpColor: helpStyle?.color ?? null,
     };
   });
@@ -127,6 +138,10 @@ function expectNear(
   expect(received, `${label} should be present`).not.toBeNull();
   expect(expected, `${label} reference should be present`).not.toBeNull();
   expect(Math.abs((received ?? 0) - (expected ?? 0)), label).toBeLessThanOrEqual(tolerance);
+}
+
+function cssPixelNumber(value: string | null) {
+  return value == null ? null : Number.parseFloat(value);
 }
 
 test.describe("comparison SearchField visual parity", () => {
@@ -174,6 +189,8 @@ test.describe("comparison SearchField visual parity", () => {
     expect(solid.groupBackground).toBe(react.groupBackground);
     expect(solid.inputColor).toBe(react.inputColor);
     expect(solid.helpColor).toBe(react.helpColor);
+    expect(solid.clearButtonFontSize).toBe(react.clearButtonFontSize);
+    expect(solid.clearIconFontSize).toBe(react.clearIconFontSize);
 
     expectNear(
       solid.group?.width ?? null,
@@ -211,6 +228,48 @@ test.describe("comparison SearchField visual parity", () => {
       1,
       "SearchField clear button width",
     );
+    expectNear(
+      solid.clearButton?.height ?? null,
+      react.clearButton?.height ?? null,
+      1,
+      "SearchField clear button height",
+    );
+    expectNear(
+      cssPixelNumber(solid.clearButtonComputedWidth),
+      cssPixelNumber(react.clearButtonComputedWidth),
+      1,
+      "SearchField clear button computed width",
+    );
+    expectNear(
+      cssPixelNumber(solid.clearButtonComputedHeight),
+      cssPixelNumber(react.clearButtonComputedHeight),
+      1,
+      "SearchField clear button computed height",
+    );
+    expectNear(
+      solid.clearIcon?.width ?? null,
+      react.clearIcon?.width ?? null,
+      1,
+      "SearchField clear icon width",
+    );
+    expectNear(
+      solid.clearIcon?.height ?? null,
+      react.clearIcon?.height ?? null,
+      1,
+      "SearchField clear icon height",
+    );
+    expectNear(
+      cssPixelNumber(solid.clearIconComputedWidth),
+      cssPixelNumber(react.clearIconComputedWidth),
+      1,
+      "SearchField clear icon computed width",
+    );
+    expectNear(
+      cssPixelNumber(solid.clearIconComputedHeight),
+      cssPixelNumber(react.clearIconComputedHeight),
+      1,
+      "SearchField clear icon computed height",
+    );
     expectNear(solid.labelToGroupGap, react.labelToGroupGap, 1, "SearchField label-to-group gap");
     expectNear(solid.groupToHelpGap, react.groupToHelpGap, 1, "SearchField group-to-help gap");
     expectNear(solid.inputCenterDelta, react.inputCenterDelta, 1, "SearchField input centerline");
@@ -238,12 +297,32 @@ test.describe("comparison SearchField visual parity", () => {
         "status updated",
       );
 
+      await item.input.evaluate((input) => {
+        input.setAttribute("data-focus-stability-marker", "search-clear");
+      });
       await item.clear.click();
-      await expect(item.input).toHaveValue("");
-      await expect(item.panel.locator("[data-comparison-value]").first()).toHaveAttribute(
-        "data-comparison-value",
-        "",
-      );
+      const clearState = await item.panel.evaluate((panel) => {
+        const markedInputs = panel.querySelectorAll<HTMLInputElement>(
+          'input[data-focus-stability-marker="search-clear"]',
+        );
+        const input = markedInputs[0] ?? null;
+        return {
+          activeIsMarkedInput: input != null && document.activeElement === input,
+          activeTag: document.activeElement?.tagName ?? null,
+          inputValue: input?.value ?? null,
+          markedInputCount: markedInputs.length,
+          valueMarker:
+            panel.querySelector("[data-comparison-value]")?.getAttribute("data-comparison-value") ??
+            null,
+        };
+      });
+      expect(clearState).toEqual({
+        activeIsMarkedInput: true,
+        activeTag: "INPUT",
+        inputValue: "",
+        markedInputCount: 1,
+        valueMarker: "",
+      });
       await expect(item.panel.locator("[data-comparison-clear-count]").first()).toHaveAttribute(
         "data-comparison-clear-count",
         "1",

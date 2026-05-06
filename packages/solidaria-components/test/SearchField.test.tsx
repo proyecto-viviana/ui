@@ -140,6 +140,19 @@ describe("SearchField", () => {
 
       expect(input).toHaveValue("test");
     });
+
+    it("keeps the same input node focused after a text input event", async () => {
+      render(() => <TestSearchField fieldProps={{ defaultValue: "hello" }} />);
+      const input = screen.getByRole("searchbox") as HTMLInputElement;
+
+      input.focus();
+      fireEvent.input(input, { target: { value: "hellox" } });
+      await Promise.resolve();
+
+      expect(input.isConnected).toBe(true);
+      expect(screen.getByRole("searchbox")).toBe(input);
+      expect(document.activeElement).toBe(input);
+    });
   });
 
   // ============================================
@@ -170,6 +183,20 @@ describe("SearchField", () => {
       await waitFor(() => {
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
       });
+    });
+
+    it("keeps focus on the same input node immediately after clear", async () => {
+      render(() => <TestSearchField fieldProps={{ defaultValue: "hello" }} />);
+      const input = screen.getByRole("searchbox") as HTMLInputElement;
+      const clearButton = screen.getByRole("button");
+
+      input.focus();
+      await user.click(clearButton);
+
+      expect(input.isConnected).toBe(true);
+      expect(screen.getByRole("searchbox")).toBe(input);
+      expect(input).toHaveValue("");
+      expect(document.activeElement).toBe(input);
     });
 
     it("should fire onClear callback", async () => {

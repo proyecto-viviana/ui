@@ -196,7 +196,7 @@ function checkboxPressScaleStyle(
   element: HTMLDivElement | undefined,
   renderProps: CheckboxRenderProps,
 ): JSX.CSSProperties {
-  const pressStyle = { willChange: "transform" } as JSX.CSSProperties;
+  const pressStyle = { "will-change": "transform" } as JSX.CSSProperties;
 
   if (renderProps.isPressed && element) {
     const { width, height } = element.getBoundingClientRect();

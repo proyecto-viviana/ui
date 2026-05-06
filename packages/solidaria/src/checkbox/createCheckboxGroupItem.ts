@@ -64,6 +64,7 @@ export function createCheckboxGroupItem(
       ...p,
       isReadOnly: p.isReadOnly ?? state.isReadOnly,
       isDisabled: p.isDisabled ?? state.isDisabled,
+      isInvalid: p.isInvalid ?? state.isInvalid,
       name: p.name ?? groupData?.name,
       form: p.form ?? groupData?.form,
       isRequired: p.isRequired ?? state.isRequired(),

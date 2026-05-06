@@ -338,6 +338,14 @@ function requiredIconStyle(size: S2SearchFieldSize): JSX.CSSProperties {
   };
 }
 
+function clearIconStyle(size: S2SearchFieldSize): JSX.CSSProperties {
+  const pixelSize = size === "XL" ? 12 : size === "L" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
 export function SearchField(props: SearchFieldProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, [
@@ -480,7 +488,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             </CenterBaseline>
             <HeadlessSearchFieldInput class={inputClass()} />
             <HeadlessSearchFieldClearButton class={clearButtonClass}>
-              <CrossIcon size={size()} />
+              <CrossIcon size={size()} style={clearIconStyle(size())} />
             </HeadlessSearchFieldClearButton>
           </div>
 

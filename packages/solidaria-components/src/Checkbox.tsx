@@ -333,9 +333,9 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
 
   let isSelected: Accessor<boolean>;
   let isPressed: Accessor<boolean>;
-  let isDisabled: boolean;
-  let isReadOnly: boolean;
-  let isInvalid: boolean;
+  let isDisabled: Accessor<boolean>;
+  let isReadOnly: Accessor<boolean>;
+  let isInvalid: Accessor<boolean>;
   let labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   let inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
 
@@ -351,9 +351,6 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     );
     isSelected = itemAria.isSelected;
     isPressed = itemAria.isPressed;
-    isDisabled = itemAria.isDisabled;
-    isReadOnly = itemAria.isReadOnly;
-    isInvalid = itemAria.isInvalid;
     labelProps = itemAria.labelProps;
     inputProps = () => itemAria.inputProps;
   } else {
@@ -384,17 +381,17 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     );
     isSelected = checkboxAria.isSelected;
     isPressed = checkboxAria.isPressed;
-    isDisabled = checkboxAria.isDisabled;
-    isReadOnly = checkboxAria.isReadOnly;
-    isInvalid = checkboxAria.isInvalid;
     labelProps = checkboxAria.labelProps;
     inputProps = () => checkboxAria.inputProps;
   }
+  isDisabled = () => inputProps().disabled === true;
+  isReadOnly = () => inputProps()["aria-readonly"] === true;
+  isInvalid = () => inputProps()["aria-invalid"] === true;
   const describedBy = () => {
     const ids = [
       ariaProps["aria-describedby"],
       local.description ? descriptionId : undefined,
-      isInvalid && local.errorMessage ? errorMessageId : undefined,
+      isInvalid() && local.errorMessage ? errorMessageId : undefined,
     ].filter(Boolean);
     return ids.length ? ids.join(" ") : undefined;
   };
@@ -403,7 +400,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
-      return isDisabled || isReadOnly;
+      return isDisabled() || isReadOnly();
     },
     onHoverStart: local.onHoverStart,
     onHoverEnd: local.onHoverEnd,
@@ -417,9 +414,9 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     isPressed: isPressed(),
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
-    isDisabled,
-    isReadOnly,
-    isInvalid,
+    isDisabled: isDisabled(),
+    isReadOnly: isReadOnly(),
+    isInvalid: isInvalid(),
     isRequired: ariaProps.isRequired ?? false,
   }));
 
@@ -432,6 +429,42 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     },
     renderValues,
   );
+  const childRenderValues: CheckboxRenderProps = {
+    get isSelected() {
+      return isSelected();
+    },
+    get isIndeterminate() {
+      return local.isIndeterminate ?? false;
+    },
+    get isHovered() {
+      return isHovered();
+    },
+    get isPressed() {
+      return isPressed();
+    },
+    get isFocused() {
+      return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible();
+    },
+    get isDisabled() {
+      return isDisabled();
+    },
+    get isReadOnly() {
+      return isReadOnly();
+    },
+    get isInvalid() {
+      return isInvalid();
+    },
+    get isRequired() {
+      return ariaProps.isRequired ?? false;
+    },
+  };
+  const checkboxChildren = () => {
+    const children = mergedProps.children;
+    return typeof children === "function" ? children(childRenderValues) : children;
+  };
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
@@ -503,13 +536,13 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
           aria-describedby={describedBy()}
         />
       </VisuallyHidden>
-      {renderProps.renderChildren()}
+      {checkboxChildren()}
       <Show when={local.description}>
         <span id={descriptionId} slot="description">
           {local.description}
         </span>
       </Show>
-      <Show when={isInvalid && local.errorMessage}>
+      <Show when={isInvalid() && local.errorMessage}>
         <span id={errorMessageId} slot="errorMessage">
           {local.errorMessage}
         </span>
@@ -531,9 +564,9 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
         "data-hovered": isHovered() || undefined,
         "data-focused": isFocused() || undefined,
         "data-focus-visible": isFocusVisible() || undefined,
-        "data-disabled": isDisabled || undefined,
-        "data-readonly": isReadOnly || undefined,
-        "data-invalid": isInvalid || undefined,
+        "data-disabled": isDisabled() || undefined,
+        "data-readonly": isReadOnly() || undefined,
+        "data-invalid": isInvalid() || undefined,
         "data-required": ariaProps.isRequired || undefined,
       }) as JSX.LabelHTMLAttributes<HTMLLabelElement>,
   );
@@ -561,9 +594,9 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       data-hovered={isHovered() || undefined}
       data-focused={isFocused() || undefined}
       data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={isDisabled || undefined}
-      data-readonly={isReadOnly || undefined}
-      data-invalid={isInvalid || undefined}
+      data-disabled={isDisabled() || undefined}
+      data-readonly={isReadOnly() || undefined}
+      data-invalid={isInvalid() || undefined}
       data-required={ariaProps.isRequired || undefined}
     >
       {labelChildren()}

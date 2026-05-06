@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "vp run build:workspace-deps && astro build",
+    "build:workspace-deps": "vp run --filter @proyecto-viviana/solid-stately build && vp run --filter @proyecto-viviana/solidaria build && vp run --filter @proyecto-viviana/solidaria-components build && vp run --filter @proyecto-viviana/solid-spectrum build",
     "report:gaps": "tsx scripts/report-catalogue-gaps.ts",
     "report:exports": "tsx scripts/report-s2-export-gaps.ts",
     "test:button": "vp run build && playwright test e2e/button-visual.spec.ts e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/grouped-button-controls-visual.spec.ts e2e/collection-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
@@ -19,7 +20,7 @@
     "test:dialog": "vp run build && playwright test e2e/dialog-visual.spec.ts --reporter=line",
     "test:datepicker": "vp run build && playwright test e2e/datepicker-visual.spec.ts --reporter=line",
     "preview": "astro preview",
-    "typecheck": "astro check",
+    "typecheck": "vp run build:workspace-deps && astro check",
     "dev:worker": "XDG_CONFIG_HOME=/tmp/proyecto-viviana-wrangler vp exec wrangler dev --config wrangler.jsonc",
     "types": "XDG_CONFIG_HOME=/tmp/proyecto-viviana-wrangler vp exec wrangler types src/worker-configuration.d.ts --config wrangler.jsonc",
     "deploy": "vp run build && XDG_CONFIG_HOME=/tmp/proyecto-viviana-wrangler vp exec wrangler deploy --config wrangler.jsonc",

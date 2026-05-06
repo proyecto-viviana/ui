@@ -355,15 +355,26 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     },
     renderValues,
   );
-  const initialChildValue = state.value();
-  const childRenderValues = createMemo<SearchFieldRenderProps>(() => ({
-    isEmpty: initialChildValue === "",
-    isDisabled: ariaProps.isDisabled ?? false,
-    isInvalid: searchFieldAria.isInvalid ?? false,
-    isRequired: ariaProps.isRequired ?? false,
-    isReadOnly: ariaProps.isReadOnly ?? false,
-    value: initialChildValue,
-  }));
+  const childRenderValues: SearchFieldRenderProps = {
+    get isEmpty() {
+      return state.value() === "";
+    },
+    get isDisabled() {
+      return ariaProps.isDisabled ?? false;
+    },
+    get isInvalid() {
+      return searchFieldAria.isInvalid ?? false;
+    },
+    get isRequired() {
+      return ariaProps.isRequired ?? false;
+    },
+    get isReadOnly() {
+      return ariaProps.isReadOnly ?? false;
+    },
+    get value() {
+      return state.value();
+    },
+  };
 
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
@@ -402,7 +413,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   };
   const fieldChildren = () => {
     const children = local.children;
-    return typeof children === "function" ? children(childRenderValues()) : children;
+    return typeof children === "function" ? children(childRenderValues) : children;
   };
 
   return (

@@ -421,15 +421,29 @@ export function TextField(props: TextFieldProps): JSX.Element {
     },
     renderValues,
   );
-  const childRenderValues = createMemo<TextFieldRenderProps>(() => ({
-    isDisabled: ariaProps.isDisabled || false,
-    isInvalid: textFieldAria.isInvalid,
-    isReadOnly: ariaProps.isReadOnly || false,
-    isRequired: ariaProps.isRequired || false,
-    isHovered: false,
-    isFocused: false,
-    isFocusVisible: false,
-  }));
+  const childRenderValues: TextFieldRenderProps = {
+    get isDisabled() {
+      return ariaProps.isDisabled || false;
+    },
+    get isInvalid() {
+      return textFieldAria.isInvalid;
+    },
+    get isReadOnly() {
+      return ariaProps.isReadOnly || false;
+    },
+    get isRequired() {
+      return ariaProps.isRequired || false;
+    },
+    get isHovered() {
+      return isHovered();
+    },
+    get isFocused() {
+      return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible();
+    },
+  };
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
@@ -491,7 +505,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   };
   const fieldChildren = () => {
     const children = local.children;
-    return typeof children === "function" ? children(childRenderValues()) : children;
+    return typeof children === "function" ? children(childRenderValues) : children;
   };
   const rootProps = () =>
     ({

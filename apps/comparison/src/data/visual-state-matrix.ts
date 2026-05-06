@@ -629,6 +629,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/modeled-controls-contract.spec.ts",
       note: "The docs-style prop controls drive label text, size, selected, indeterminate, emphasized, disabled, read-only, and invalid state into both stacks.",
     },
+    {
+      id: "styled.dynamic-inactive-states",
+      label: "Dynamic inactive states",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/checkbox-visual.spec.ts",
+      note: "Side-panel invalid, read-only, and disabled states compare box/text colors against React Spectrum, and read-only/disabled hover and press affordances are suppressed on both stacks.",
+    },
   ],
   textfield: [
     {
