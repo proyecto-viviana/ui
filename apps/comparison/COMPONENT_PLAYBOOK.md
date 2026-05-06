@@ -102,11 +102,11 @@ For each component:
   visible slot content, geometry, or another real rendered effect. This is the
   main guard against reactive wiring bugs where the docs payload updates but the
   Solid component stays visually stale.
-- If fixtures or committed screenshots already cover an extra visual state such
-  as slot content, disabled items, or illustration variants, expose that state
-  in the side-panel controls too unless it is intentionally snapshot-only and
-  documented as such. Otherwise the docs surface hides real coverage and makes
-  the implementation look incomplete.
+- Keep the viewer controls faithful to the real React Spectrum S2 docs surface.
+  Do not invent extra knobs just because the comparison harness or a snapshot
+  route can model them. Source-only or snapshot-only states such as
+  illustration slots, disabled collection items, or special fixture data belong
+  in dedicated query routes and focused specs, not in the docs side panel.
 - Keep `data-comparison-control-root` singular. Put it on one stable wrapper
   element per stack, not on both the visible control and an internal hidden
   input. The modeled-controls contract assumes one root, and duplicate markers

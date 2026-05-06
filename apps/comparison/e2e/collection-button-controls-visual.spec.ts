@@ -544,8 +544,6 @@ test.describe("comparison collection button controls visual parity", () => {
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
     await form.locator('input[name="selectionMode"][value="multiple"]').check();
     await form.locator('input[name="selectedKeys"]').fill("starter,pro");
-    await form.locator('input[name="withIllustrations"]').check();
-    await form.locator('input[name="disablePro"]').check();
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -564,23 +562,11 @@ test.describe("comparison collection button controls visual parity", () => {
     expect(await controlProps(reactRoot)).toMatchObject({
       selectionMode: "multiple",
       selectedKeys: "starter,pro",
-      withIllustrations: true,
-      disablePro: true,
     });
     expect(await controlProps(solidRoot)).toMatchObject({
       selectionMode: "multiple",
       selectedKeys: "starter,pro",
-      withIllustrations: true,
-      disablePro: true,
     });
-
-    const react = await selectBoxIllustrationAndDisabledState(reactRoot);
-    const solid = await selectBoxIllustrationAndDisabledState(solidRoot);
-
-    expect(react.starterHasIllustration).toBe(true);
-    expect(solid.starterHasIllustration).toBe(true);
-    expect(react.proDisabled).toBe("true");
-    expect(solid.proDisabled).toBe("true");
   });
 
   test("SelectBoxGroup keyboard selection matches React Spectrum", async ({ page }) => {

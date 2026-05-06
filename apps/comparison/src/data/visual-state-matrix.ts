@@ -596,7 +596,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/collection-button-controls-visual.spec.ts",
-      note: "The docs-style prop controls drive orientation, selectionMode, selectedKeys, isDisabled, illustration slots, and the disabled Pro option into both stacks and assert real rendered slot/disabled DOM changes.",
+      note: "The docs-style prop controls drive the real S2 viewer surface only: orientation, selectionMode, selectedKeys, and isDisabled. Illustration-slot and disabled-item coverage stays on dedicated route states and specs.",
     },
     {
       id: "styled.keyboard.selection",

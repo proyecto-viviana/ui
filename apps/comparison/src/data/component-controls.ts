@@ -1149,18 +1149,6 @@ const selectBoxGroupControls: ComponentControlGroup = {
       kind: "switch",
       defaultValue: false,
     },
-    {
-      name: "withIllustrations",
-      label: "withIllustrations",
-      kind: "switch",
-      defaultValue: false,
-    },
-    {
-      name: "disablePro",
-      label: "disablePro",
-      kind: "switch",
-      defaultValue: false,
-    },
   ],
   apiProps: [
     "children",
@@ -1178,7 +1166,7 @@ const selectBoxGroupControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 SelectBoxGroup docs control surface plus source-only slot states. The viewer drives orientation, selection mode, selected key set, disabled state, illustration slots, and the disabled Pro option into both stacks so hover text color, slot content, and multi-select indicator parity can be inspected interactively.",
+  note: "Modeled from the S2 SelectBoxGroup docs control surface. The viewer drives orientation, selection mode, selected key set, and disabled state into both stacks. Source-only illustration and disabled-item coverage stays on dedicated route states and specs rather than extra docs controls.",
 };
 
 export const componentControlGroups = {
