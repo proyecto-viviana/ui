@@ -21,6 +21,7 @@ import {
   LinkButton as SolidSpectrumLinkButton,
   Provider as SolidSpectrumProvider,
   SearchField as SolidSpectrumSearchField,
+  Switch as SolidSpectrumSwitch,
   SegmentedControl as SolidSpectrumSegmentedControl,
   SegmentedControlItem as SolidSpectrumSegmentedControlItem,
   SelectBox as SolidSpectrumSelectBox,
@@ -73,6 +74,12 @@ import {
   serializeSearchFieldDemoProps,
   type SearchFieldDemoProps,
 } from "@comparison/data/searchfield-demo";
+import {
+  normalizeSwitchDemoProps,
+  serializeSwitchDemoProps,
+  switchDemoPropsFromWindow,
+  type SwitchDemoProps,
+} from "@comparison/data/switch-demo";
 import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
@@ -314,6 +321,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   segmentedcontrol: () => h(SolidSpectrumSegmentedControlDemo, {}),
   selectboxgroup: () => h(SolidSpectrumSelectBoxGroupDemo, {}),
   searchfield: () => h(SolidSpectrumSearchFieldDemo, {}),
+  switch: () => h(SolidSpectrumSwitchDemo, {}),
   textarea: () => h(SolidSpectrumTextAreaDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
   togglebutton: () => h(SolidSpectrumToggleButtonDemo, {}),
@@ -537,6 +545,101 @@ function SolidSpectrumCheckboxDemo() {
               onChange: (nextSelected: boolean) => {
                 setIsSelected(nextSelected);
                 setDemoProps((current: CheckboxDemoProps) => ({
+                  ...current,
+                  isSelected: nextSelected,
+                }));
+              },
+            },
+            [() => demoProps().children],
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumSwitchDemo() {
+  const [demoProps, setDemoProps] = createSignal<SwitchDemoProps>(switchDemoPropsFromWindow());
+  const [isSelected, setIsSelected] = createSignal(demoProps().isSelected);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "switch") {
+        const nextProps = normalizeSwitchDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setIsSelected(nextProps.isSelected);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeSwitchDemoProps({
+      ...demoProps(),
+      isSelected: isSelected(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-selected"() {
+            return String(isSelected());
+          },
+          "data-comparison-control-root": "switch",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(
+            SolidSpectrumSwitch,
+            {
+              get size() {
+                return demoProps().size;
+              },
+              get isSelected() {
+                return isSelected();
+              },
+              get isEmphasized() {
+                return demoProps().isEmphasized;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              get isReadOnly() {
+                return demoProps().isReadOnly;
+              },
+              onChange: (nextSelected: boolean) => {
+                setIsSelected(nextSelected);
+                setDemoProps((current: SwitchDemoProps) => ({
                   ...current,
                   isSelected: nextSelected,
                 }));

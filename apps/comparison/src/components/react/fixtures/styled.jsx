@@ -16,6 +16,7 @@ import {
   LinkButton as SpectrumLinkButton,
   Provider as SpectrumProvider,
   SearchField as SpectrumSearchField,
+  Switch as SpectrumSwitch,
   SegmentedControl as SpectrumSegmentedControl,
   SegmentedControlItem as SpectrumSegmentedControlItem,
   SelectBox as SpectrumSelectBox,
@@ -68,6 +69,11 @@ import {
   searchFieldDemoPropsFromWindow,
   serializeSearchFieldDemoProps,
 } from "@comparison/data/searchfield-demo";
+import {
+  normalizeSwitchDemoProps,
+  serializeSwitchDemoProps,
+  switchDemoPropsFromWindow,
+} from "@comparison/data/switch-demo";
 import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
@@ -223,6 +229,7 @@ export const reactStyledFixtures = {
   dialog: () => jsx(ReactDialogDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
   searchfield: () => jsx(ReactSearchFieldDemo, {}),
+  switch: () => jsx(ReactSwitchDemo, {}),
   cardview: () => jsx(ReactCardViewDemo, {}),
   segmentedcontrol: () => jsx(ReactSegmentedControlDemo, {}),
   selectboxgroup: () => jsx(ReactSelectBoxGroupDemo, {}),
@@ -1013,6 +1020,47 @@ function ReactSearchFieldDemo() {
           setDemoProps((current) => ({ ...current, value: "" }));
           setClearCount((count) => count + 1);
         },
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactSwitchDemo() {
+  const [demoProps, setDemoProps] = useState(switchDemoPropsFromWindow);
+  const [isSelected, setIsSelected] = useState(() => demoProps.isSelected);
+  const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "switch") {
+        const nextProps = normalizeSwitchDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setIsSelected(nextProps.isSelected);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-selected": String(isSelected),
+      "data-comparison-control-root": "switch",
+      "data-comparison-control-props": serializeSwitchDemoProps({
+        ...demoProps,
+        isSelected,
+      }),
+      children: jsx(SpectrumSwitch, {
+        size: demoProps.size,
+        isSelected,
+        isEmphasized: demoProps.isEmphasized,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        onChange: (nextSelected) => {
+          setIsSelected(nextSelected);
+          setDemoProps((current) => ({ ...current, isSelected: nextSelected }));
+        },
+        children: demoProps.children,
       }),
     }),
     colorScheme,

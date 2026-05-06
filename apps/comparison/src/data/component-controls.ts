@@ -14,6 +14,7 @@ import {
 } from "./button-demo";
 import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
+import { switchDemoDefaults, switchSizeOptions } from "./switch-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
 import {
@@ -233,6 +234,69 @@ const checkboxControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Checkbox docs and source control surface. The viewer drives label text, S2 sizes, selected and indeterminate states, emphasized treatment, disabled/read-only behavior, and invalid styling into both stacks.",
+};
+
+const switchControls: ComponentControlGroup = {
+  slug: "switch",
+  title: "Switch",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "children",
+      label: "children",
+      kind: "text",
+      defaultValue: switchDemoDefaults.children,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: switchDemoDefaults.size,
+      options: options(switchSizeOptions),
+    },
+    {
+      name: "isSelected",
+      label: "isSelected",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isEmphasized",
+      label: "isEmphasized",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "children",
+    "size",
+    "isSelected",
+    "defaultSelected",
+    "onChange",
+    "isEmphasized",
+    "isDisabled",
+    "isReadOnly",
+    "styles",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "excludeFromTabOrder",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Switch docs and source control surface. The viewer drives label text, S2 sizes, selected state, emphasized treatment, and disabled/read-only behavior into both stacks.",
 };
 
 const textFieldControls: ComponentControlGroup = {
@@ -1115,6 +1179,7 @@ export const componentControlGroups = {
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,
+  switch: switchControls,
   textarea: textAreaControls,
   textfield: textFieldControls,
   togglebutton: toggleButtonControls,

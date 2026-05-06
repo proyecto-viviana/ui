@@ -386,6 +386,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 SearchField directly; Solid uses @proyecto-viviana/solid-spectrum SearchField with S2-derived label, pill field group, search icon, clear button, input, help text, and validation styling.",
   }),
 
+  switch: styledLiveOfficialEntry({
+    slug: "switch",
+    title: "Switch",
+    category: "Components",
+    summary:
+      "Binary setting toggle with S2 track/handle geometry, press behavior, and controlled selected state.",
+    styledSummary: "React Spectrum Switch vs Solid Spectrum Switch.",
+    styledNote:
+      "React uses @react-spectrum/s2 Switch directly; Solid uses @proyecto-viviana/solid-spectrum Switch with S2-derived wrapper, track, handle transform, and handle press-scale styling.",
+  }),
+
   tabs: {
     ...createGapEntry({
       slug: "tabs",
