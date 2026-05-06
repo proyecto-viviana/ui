@@ -11,6 +11,7 @@ import {
   Checkbox as SolidSpectrumCheckbox,
   LinkButton as SolidSpectrumLinkButton,
   Provider as SolidSpectrumProvider,
+  SearchField as SolidSpectrumSearchField,
   SegmentedControl as SolidSpectrumSegmentedControl,
   SegmentedControlItem as SolidSpectrumSegmentedControlItem,
   SelectBox as SolidSpectrumSelectBox,
@@ -50,6 +51,12 @@ import {
   textFieldDemoPropsFromWindow,
   type TextFieldDemoProps,
 } from "@comparison/data/textfield-demo";
+import {
+  normalizeSearchFieldDemoProps,
+  searchFieldDemoPropsFromWindow,
+  serializeSearchFieldDemoProps,
+  type SearchFieldDemoProps,
+} from "@comparison/data/searchfield-demo";
 import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
@@ -286,6 +293,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   cardview: () => h(SolidSpectrumCardViewDemo, {}),
   segmentedcontrol: () => h(SolidSpectrumSegmentedControlDemo, {}),
   selectboxgroup: () => h(SolidSpectrumSelectBoxGroupDemo, {}),
+  searchfield: () => h(SolidSpectrumSearchFieldDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
   togglebutton: () => h(SolidSpectrumToggleButtonDemo, {}),
   togglebuttongroup: () => h(SolidSpectrumToggleButtonGroupDemo, {}),
@@ -642,6 +650,134 @@ function SolidSpectrumTextFieldDemo() {
                 ...current,
                 value: nextValue,
               }));
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumSearchFieldDemo() {
+  const [demoProps, setDemoProps] = createSignal<SearchFieldDemoProps>(
+    searchFieldDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(demoProps().value);
+  const [clearCount, setClearCount] = createSignal(0);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "searchfield") {
+        const nextProps = normalizeSearchFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeSearchFieldDemoProps({
+      ...demoProps(),
+      value: value(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-value"() {
+            return value();
+          },
+          get "data-comparison-clear-count"() {
+            return String(clearCount());
+          },
+        },
+        [
+          hc(SolidSpectrumSearchField, {
+            "data-comparison-control-root": "searchfield",
+            get "data-comparison-control-props"() {
+              return serializedProps();
+            },
+            get label() {
+              return demoProps().label;
+            },
+            get value() {
+              return value();
+            },
+            get placeholder() {
+              return demoProps().placeholder;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => {
+              const nextValue = event.currentTarget.value;
+              setValue(nextValue);
+              setDemoProps((current: SearchFieldDemoProps) => ({
+                ...current,
+                value: nextValue,
+              }));
+            },
+            onChange: (nextValue: string) => {
+              setValue(nextValue);
+              setDemoProps((current: SearchFieldDemoProps) => ({
+                ...current,
+                value: nextValue,
+              }));
+            },
+            onClear: () => {
+              setValue("");
+              setDemoProps((current: SearchFieldDemoProps) => ({
+                ...current,
+                value: "",
+              }));
+              setClearCount((count) => count + 1);
             },
           }),
         ],

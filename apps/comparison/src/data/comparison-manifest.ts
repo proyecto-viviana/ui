@@ -365,6 +365,16 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 TextField directly; Solid uses @proyecto-viviana/solid-spectrum TextField with S2-derived label, field group, input, help text, and validation styling.",
   }),
 
+  searchfield: styledLiveOfficialEntry({
+    slug: "searchfield",
+    title: "SearchField",
+    category: "Components",
+    summary: "Search text entry with S2 pill field layout, icon, clear action, and value state.",
+    styledSummary: "React Spectrum SearchField vs Solid Spectrum SearchField.",
+    styledNote:
+      "React uses @react-spectrum/s2 SearchField directly; Solid uses @proyecto-viviana/solid-spectrum SearchField with S2-derived label, pill field group, search icon, clear button, input, help text, and validation styling.",
+  }),
+
   tabs: {
     ...createGapEntry({
       slug: "tabs",
@@ -419,7 +429,6 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       [
         ["dialog", "Dialog"],
         ["datepicker", "DatePicker"],
-        ["searchfield", "SearchField"],
         ["tooltip", "Tooltip"],
         ["toast", "Toast"],
       ] as const

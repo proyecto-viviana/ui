@@ -58,6 +58,11 @@ import {
   textFieldDemoPropsFromWindow,
 } from "@comparison/data/textfield-demo";
 import {
+  normalizeSearchFieldDemoProps,
+  searchFieldDemoPropsFromWindow,
+  serializeSearchFieldDemoProps,
+} from "@comparison/data/searchfield-demo";
+import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
   linkButtonDemoPropsFromWindow,
@@ -907,22 +912,56 @@ function ReactDatePickerDemo() {
 }
 
 function ReactSearchFieldDemo() {
-  const [value, setValue] = useState("status");
+  const [demoProps, setDemoProps] = useState(searchFieldDemoPropsFromWindow);
+  const [value, setValue] = useState(() => searchFieldDemoPropsFromWindow().value);
   const [clearCount, setClearCount] = useState(0);
+  const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "searchfield") {
+        const nextProps = normalizeSearchFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const serializedProps = serializeSearchFieldDemoProps({
+    ...demoProps,
+    value,
+  });
+
   return renderReactSpectrumReference(
     jsx("div", {
-      "data-comparison-input-value": value,
+      "data-comparison-value": value,
       "data-comparison-clear-count": String(clearCount),
       children: jsx(SpectrumSearchField, {
-        label: "Search",
-        defaultValue: "status",
-        onChange: setValue,
+        "data-comparison-control-root": "searchfield",
+        "data-comparison-control-props": serializedProps,
+        label: demoProps.label,
+        value,
+        placeholder: demoProps.placeholder,
+        size: demoProps.size,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => {
+          setValue(nextValue);
+          setDemoProps((current) => ({ ...current, value: nextValue }));
+        },
         onClear: () => {
           setValue("");
+          setDemoProps((current) => ({ ...current, value: "" }));
           setClearCount((count) => count + 1);
         },
       }),
     }),
+    colorScheme,
   );
 }
 

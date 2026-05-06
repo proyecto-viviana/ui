@@ -36,14 +36,10 @@ describe("SearchField (solid-spectrum)", () => {
       expect(container.querySelector("svg")).toBeInTheDocument();
     });
 
-    it("hides search icon when hideSearchIcon is true", () => {
-      const { container } = render(() => <SearchField aria-label="Search" hideSearchIcon />);
-      // Only the clear button icon may remain (if value is present), but search icon should not
-      const svgs = container.querySelectorAll("svg");
-      // With no value, no clear button visible, search icon hidden
-      // The search icon should not be rendered
-      const searchIconParent = container.querySelector(".pointer-events-none");
-      expect(searchIconParent).not.toBeInTheDocument();
+    it("renders the S2 search icon consistently", () => {
+      const { container } = render(() => <SearchField aria-label="Search" />);
+      const searchIcon = container.querySelector('div[slot="icon"] svg');
+      expect(searchIcon).toBeInTheDocument();
     });
   });
 
@@ -121,8 +117,9 @@ describe("SearchField (solid-spectrum)", () => {
     });
 
     it("shows required indicator with label", () => {
-      render(() => <SearchField label="Search" isRequired />);
-      expect(screen.getByText("*")).toBeInTheDocument();
+      const { container } = render(() => <SearchField label="Search" isRequired />);
+      const requiredIcon = container.querySelector("label svg[aria-hidden='true']");
+      expect(requiredIcon).toBeInTheDocument();
     });
   });
 

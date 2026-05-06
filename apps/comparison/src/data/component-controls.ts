@@ -13,6 +13,7 @@ import {
   buttonVariantOptions,
 } from "./button-demo";
 import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
+import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
 import {
   actionButtonGroupDemoDefaults,
@@ -330,6 +331,104 @@ const textFieldControls: ComponentControlGroup = {
     "aria-describedby",
   ],
   note: "Modeled from the S2 TextField docs and source control surface. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, and controlled value changes into both stacks.",
+};
+
+const searchFieldControls: ComponentControlGroup = {
+  slug: "searchfield",
+  title: "SearchField",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: searchFieldDemoDefaults.label,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: searchFieldDemoDefaults.value,
+    },
+    {
+      name: "placeholder",
+      label: "placeholder",
+      kind: "text",
+      defaultValue: searchFieldDemoDefaults.placeholder,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: searchFieldDemoDefaults.size,
+      options: options(searchFieldSizeOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: searchFieldDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: searchFieldDemoDefaults.errorMessage,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "value",
+    "defaultValue",
+    "onChange",
+    "onSubmit",
+    "onClear",
+    "placeholder",
+    "size",
+    "description",
+    "errorMessage",
+    "isDisabled",
+    "isReadOnly",
+    "isRequired",
+    "isInvalid",
+    "name",
+    "maxLength",
+    "minLength",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 SearchField docs and source control surface. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, controlled value changes, and clear behavior into both stacks.",
 };
 
 const actionButtonControls: ComponentControlGroup = {
@@ -917,6 +1016,7 @@ export const componentControlGroups = {
   buttongroup: buttonGroupControls,
   checkbox: checkboxControls,
   linkbutton: linkButtonControls,
+  searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,
   textfield: textFieldControls,

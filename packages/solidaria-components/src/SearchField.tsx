@@ -5,7 +5,16 @@
  * Port of react-aria-components/src/SearchField.tsx
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext, Show } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createMemo,
+  onCleanup,
+  onMount,
+  splitProps,
+  useContext,
+  Show,
+} from "solid-js";
 import {
   createSearchField,
   createFocusRing,
@@ -122,6 +131,28 @@ interface SearchFieldContextValue {
 }
 
 export const SearchFieldContext = createContext<SearchFieldContextValue | null>(null);
+
+function eventWithCurrentTarget<T extends HTMLElement>(event: Event, element: T): Event {
+  return new Proxy(event, {
+    get(target, property, receiver) {
+      if (property === "target" || property === "currentTarget") {
+        return element;
+      }
+
+      const value = Reflect.get(target, property, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
+function clearDelegatedTextEntryHandlers(element: HTMLElement) {
+  const delegatedElement = element as HTMLElement & {
+    $$input?: unknown;
+    $$change?: unknown;
+  };
+  delete delegatedElement.$$input;
+  delete delegatedElement.$$change;
+}
 
 /**
  * A search field allows a user to enter and clear a search query.
@@ -324,6 +355,15 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     },
     renderValues,
   );
+  const initialChildValue = state.value();
+  const childRenderValues = createMemo<SearchFieldRenderProps>(() => ({
+    isEmpty: initialChildValue === "",
+    isDisabled: ariaProps.isDisabled ?? false,
+    isInvalid: searchFieldAria.isInvalid ?? false,
+    isRequired: ariaProps.isRequired ?? false,
+    isReadOnly: ariaProps.isReadOnly ?? false,
+    value: initialChildValue,
+  }));
 
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
@@ -360,6 +400,10 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     },
     setInputRef,
   };
+  const fieldChildren = () => {
+    const children = local.children;
+    return typeof children === "function" ? children(childRenderValues()) : children;
+  };
 
   return (
     <SearchFieldContext.Provider value={contextValue}>
@@ -373,7 +417,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
         data-required={ariaProps.isRequired || undefined}
         data-readonly={ariaProps.isReadOnly || undefined}
       >
-        {renderProps.renderChildren()}
+        {fieldChildren()}
       </div>
     </SearchFieldContext.Provider>
   );
@@ -413,6 +457,7 @@ export function SearchFieldLabel(props: {
  */
 export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
   const [local, domProps] = splitProps(props, ["class", "style", "slot"]);
+  let inputElement: HTMLInputElement | undefined;
 
   const context = useContext(SearchFieldContext);
   if (!context) {
@@ -457,13 +502,67 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
     return rest;
   };
 
+  const mergedInputProps = () =>
+    ({
+      ...domProps,
+      ...cleanInputProps(),
+      ...cleanFocusProps(),
+      ...cleanHoverProps(),
+    }) as Record<string, unknown>;
+
+  onMount(() => {
+    const element = inputElement;
+    if (!element) {
+      return;
+    }
+
+    const inputHandler = (event: Event) => {
+      const handler = mergedInputProps().onInput as
+        | JSX.EventHandler<HTMLInputElement, InputEvent>
+        | undefined;
+      handler?.(
+        eventWithCurrentTarget(event, element) as InputEvent & {
+          currentTarget: HTMLInputElement;
+          target: Element;
+        },
+      );
+      clearDelegatedTextEntryHandlers(element);
+      event.stopPropagation();
+    };
+    const changeHandler = (event: Event) => {
+      const handler = mergedInputProps().onChange as
+        | JSX.EventHandler<HTMLInputElement, Event>
+        | undefined;
+      handler?.(
+        eventWithCurrentTarget(event, element) as Event & {
+          currentTarget: HTMLInputElement;
+          target: Element;
+        },
+      );
+      clearDelegatedTextEntryHandlers(element);
+      event.stopPropagation();
+    };
+
+    element.addEventListener("input", inputHandler);
+    element.addEventListener("change", changeHandler);
+    clearDelegatedTextEntryHandlers(element);
+    onCleanup(() => {
+      element.removeEventListener("input", inputHandler);
+      element.removeEventListener("change", changeHandler);
+    });
+  });
+
   return (
     <input
-      {...domProps}
-      ref={context.setInputRef}
-      {...cleanInputProps()}
-      {...cleanFocusProps()}
-      {...cleanHoverProps()}
+      {...mergedInputProps()}
+      ref={(element) => {
+        inputElement = element;
+        context.setInputRef(element);
+        const ref = (domProps as { ref?: unknown }).ref;
+        if (typeof ref === "function") {
+          ref(element);
+        }
+      }}
       class={renderProps.class()}
       style={renderProps.style()}
       data-focused={isFocused() || undefined}

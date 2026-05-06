@@ -13,12 +13,16 @@ await import("../packages/solid-spectrum/src/icon/center-baseline");
 await import("../packages/solid-spectrum/src/button/s2-progress-circle-animation");
 await import("../packages/solid-spectrum/src/button/s2-button-styles");
 await import("../packages/solid-spectrum/src/button/s2-action-button-styles");
+await import("../packages/solid-spectrum/src/searchfield/s2-searchfield-styles");
 
 const css = [
   "/* Generated from vendored Adobe Spectrum 2 style declarations. Do not edit by hand. */",
   ...getS2CssAssets(),
   "",
-].join("\n\n");
+]
+  .join("\n\n")
+  .replace(/[ \t]+$/gm, "")
+  .replace(/\n+$/g, "\n");
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
