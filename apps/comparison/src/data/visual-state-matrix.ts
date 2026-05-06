@@ -552,7 +552,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   selectboxgroup: [
     assertedDefaultState({
       slug: "selectboxgroup",
-      note: "SelectBoxGroup default screenshots are committed for both sides and compared with an asserted threshold; disabled items, illustration slots, and strict pair-diff coverage remain open.",
+      note: "SelectBoxGroup default screenshots are committed for both sides and compared with an asserted threshold; strict pair-diff coverage remains open.",
     }),
     {
       id: "styled.selection.single",
@@ -607,6 +607,30 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/collection-button-controls-visual.spec.ts",
       note: "Focusing the Pro option and pressing Space adds it to the selected key set on both stacks and updates the controlled selection marker.",
+    },
+    {
+      id: "styled.disabled-item.illustration",
+      label: "Illustrated disabled item",
+      kind: "static",
+      react: "snapshotted",
+      solid: "snapshotted",
+      pairDiff: "asserted",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      snapshots: [
+        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-illustrated-disabled-react-chromium-linux.png",
+        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-illustrated-disabled-solid-chromium-linux.png",
+      ],
+      note: "Horizontal multiple SelectBoxGroup with illustration slots and a disabled Pro option is snapshotted and asserts illustration geometry, disabled-item label color, and disabled option state against React Spectrum.",
+    },
+    {
+      id: "styled.disabled-item.behavior",
+      label: "Disabled item behavior",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      note: "Attempting to click the disabled Pro option leaves the controlled selected key set unchanged on both stacks.",
     },
   ],
   cardview: [

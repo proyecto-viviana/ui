@@ -135,6 +135,42 @@ async function selectBoxGeometry(root: Locator) {
   });
 }
 
+async function selectBoxIllustrationAndDisabledState(root: Locator) {
+  return root.evaluate((element) => {
+    const starter = Array.from(element.querySelectorAll<HTMLElement>('[role="option"]')).find(
+      (option) => option.textContent?.includes("Starter"),
+    );
+    const pro = Array.from(element.querySelectorAll<HTMLElement>('[role="option"]')).find(
+      (option) => option.textContent?.includes("Pro"),
+    );
+    const starterRect = starter?.getBoundingClientRect();
+    const illustration = starter?.querySelector<HTMLElement>(
+      '[slot="illustration"], [data-rsp-slot="illustration"], img, svg',
+    );
+    const illustrationRect = illustration?.getBoundingClientRect();
+    const proLabel = pro?.querySelector<HTMLElement>('[slot="label"], [data-rsp-slot="label"]');
+
+    return {
+      starterHasIllustration: !!illustration,
+      illustrationWidth:
+        illustrationRect == null ? null : Number(illustrationRect.width.toFixed(4)),
+      illustrationHeight:
+        illustrationRect == null ? null : Number(illustrationRect.height.toFixed(4)),
+      illustrationLeft:
+        illustrationRect == null || starterRect == null
+          ? null
+          : Number((illustrationRect.left - starterRect.left).toFixed(4)),
+      illustrationTop:
+        illustrationRect == null || starterRect == null
+          ? null
+          : Number((illustrationRect.top - starterRect.top).toFixed(4)),
+      proDisabled: pro?.getAttribute("aria-disabled"),
+      proSelected: pro?.getAttribute("aria-selected"),
+      proLabelColor: proLabel == null ? null : window.getComputedStyle(proLabel).color,
+    };
+  });
+}
+
 async function selectBoxHoverColors(page: Page, root: Locator) {
   const option = root.locator('[role="option"]').filter({ hasText: "Pro" }).first();
   const label = option.locator('[slot="label"], [data-rsp-slot="label"]').first();
@@ -320,6 +356,92 @@ test.describe("comparison collection button controls visual parity", () => {
     expect(react.after).not.toBe(react.before);
     expect(solid.before).toBe(react.before);
     expect(solid.after).toBe(react.after);
+  });
+
+  test("SelectBoxGroup illustrated disabled option state has committed pair screenshots", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "selectboxgroup",
+      "?selectionMode=multiple&selectedKeys=starter&orientation=horizontal&withIllustrations=true&disablePro=true",
+    );
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "SelectBoxGroup illustrated disabled option state",
+      "selectboxgroup-illustrated-disabled",
+      { maxMismatchRatio: 0.42, maxDimensionDelta: 96, pixelThreshold: 64 },
+    );
+  });
+
+  test("SelectBoxGroup disabled item and illustration slot match React Spectrum", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "selectboxgroup",
+      "?selectionMode=multiple&selectedKeys=starter&orientation=horizontal&withIllustrations=true&disablePro=true",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      selectionMode: "multiple",
+      orientation: "horizontal",
+      selectedKeys: "starter",
+      withIllustrations: true,
+      disablePro: true,
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      selectionMode: "multiple",
+      orientation: "horizontal",
+      selectedKeys: "starter",
+      withIllustrations: true,
+      disablePro: true,
+    });
+
+    const react = await selectBoxIllustrationAndDisabledState(fixtures.reactRoot);
+    const solid = await selectBoxIllustrationAndDisabledState(fixtures.solidRoot);
+
+    expect(react.starterHasIllustration).toBe(true);
+    expect(solid.starterHasIllustration).toBe(true);
+    expectNear(solid.illustrationWidth, react.illustrationWidth, 1, "SelectBox illustration width");
+    expectNear(
+      solid.illustrationHeight,
+      react.illustrationHeight,
+      1,
+      "SelectBox illustration height",
+    );
+    expectNear(solid.illustrationLeft, react.illustrationLeft, 2, "SelectBox illustration left");
+    expectNear(solid.illustrationTop, react.illustrationTop, 2, "SelectBox illustration top");
+    expect(react.proDisabled).toBe("true");
+    expect(solid.proDisabled).toBe("true");
+    expect(react.proSelected).toBe("false");
+    expect(solid.proSelected).toBe("false");
+    expect(solid.proLabelColor).toBe(react.proLabelColor);
+
+    const reactPro = fixtures.reactRoot
+      .locator('[role="option"]')
+      .filter({ hasText: "Pro" })
+      .first();
+    const solidPro = fixtures.solidRoot
+      .locator('[role="option"]')
+      .filter({ hasText: "Pro" })
+      .first();
+
+    await reactPro.click({ force: true });
+    await solidPro.click({ force: true });
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter");
+    await expect(reactPro).toHaveAttribute("aria-selected", "false");
+    await expect(solidPro).toHaveAttribute("aria-selected", "false");
   });
 
   test("SegmentedControl interactive prop controls drive both stacks", async ({ page }) => {

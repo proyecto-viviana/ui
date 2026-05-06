@@ -133,6 +133,8 @@ const selectBoxItems = [
   { id: "pro", label: "Pro", description: "For growing teams" },
 ];
 
+const selectBoxIllustrationItems = new Set(["starter", "pro"]);
+
 const cardItems = [
   { id: "apollo", title: "Apollo", status: "Active" },
   { id: "zephyr", title: "Zephyr", status: "Queued" },
@@ -215,6 +217,8 @@ interface SelectBoxGroupDemoProps {
   selectionMode: SelectBoxSelectionMode;
   selectedKeys: string;
   isDisabled: boolean;
+  disablePro: boolean;
+  withIllustrations: boolean;
 }
 
 function selectedKeysSetFromValue(
@@ -246,6 +250,8 @@ function selectBoxGroupDemoPropsFromWindow(): SelectBoxGroupDemoProps {
       selectedKeysParamFromWindow(selectionMode === "multiple" ? ["starter", "pro"] : ["starter"]),
     ).join(","),
     isDisabled: booleanParamFromWindow("isDisabled"),
+    disablePro: booleanParamFromWindow("disablePro"),
+    withIllustrations: booleanParamFromWindow("withIllustrations"),
   };
 }
 
@@ -263,6 +269,8 @@ function normalizeSelectBoxGroupDemoProps(
           ? "starter,pro"
           : "starter",
     isDisabled: props.isDisabled === true,
+    disablePro: props.disablePro === true,
+    withIllustrations: props.withIllustrations === true,
   };
 }
 
@@ -1514,11 +1522,16 @@ function SolidSpectrumSelectBoxGroupDemo() {
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "selectboxgroup") {
-        const nextProps = normalizeSelectBoxGroupDemoProps(event.detail.props ?? {});
-        setDemoProps(nextProps);
-        setSelectedKeys(
-          selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
-        );
+        setDemoProps((current) => {
+          const nextProps = normalizeSelectBoxGroupDemoProps({
+            ...current,
+            ...(event.detail.props ?? {}),
+          });
+          setSelectedKeys(
+            selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
+          );
+          return nextProps;
+        });
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -1588,12 +1601,28 @@ function SolidSpectrumSelectBoxGroupDemo() {
                 ),
             },
             renderProp((item: (typeof selectBoxItems)[number]) =>
-              hc(SolidSpectrumSelectBox, { id: item.id, textValue: item.label }, [
-                hc("span", { slot: "label", "data-rsp-slot": "label" }, [item.label]),
-                hc("span", { slot: "description", "data-rsp-slot": "description" }, [
-                  item.description,
-                ]),
-              ]),
+              hc(
+                SolidSpectrumSelectBox,
+                {
+                  id: item.id,
+                  textValue: item.label,
+                  isDisabled: demoProps().disablePro && item.id === "pro",
+                },
+                [
+                  ...(demoProps().withIllustrations && selectBoxIllustrationItems.has(item.id)
+                    ? [
+                        hc(SolidNewIcon, {
+                          slot: "illustration",
+                          "data-rsp-slot": "illustration",
+                        }),
+                      ]
+                    : []),
+                  hc("span", { slot: "label", "data-rsp-slot": "label" }, [item.label]),
+                  hc("span", { slot: "description", "data-rsp-slot": "description" }, [
+                    item.description,
+                  ]),
+                ],
+              ),
             ),
           ),
         ],

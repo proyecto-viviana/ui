@@ -116,6 +116,8 @@ const selectBoxItems = [
   { id: "pro", label: "Pro", description: "For growing teams" },
 ];
 
+const selectBoxIllustrationItems = new Set(["starter", "pro"]);
+
 const cardItems = [
   { id: "apollo", title: "Apollo", status: "Active" },
   { id: "zephyr", title: "Zephyr", status: "Queued" },
@@ -183,6 +185,8 @@ function selectBoxGroupDemoPropsFromWindow() {
       selectedKeysParamFromWindow(selectionMode === "multiple" ? ["starter", "pro"] : ["starter"]),
     ).join(","),
     isDisabled: booleanParamFromWindow("isDisabled"),
+    disablePro: booleanParamFromWindow("disablePro"),
+    withIllustrations: booleanParamFromWindow("withIllustrations"),
   };
 }
 
@@ -198,6 +202,8 @@ function normalizeSelectBoxGroupDemoProps(props) {
           ? "starter,pro"
           : "starter",
     isDisabled: props?.isDisabled === true,
+    disablePro: props?.disablePro === true,
+    withIllustrations: props?.withIllustrations === true,
   };
 }
 
@@ -682,11 +688,13 @@ function ReactSelectBoxGroupDemo() {
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "selectboxgroup") {
-        const nextProps = normalizeSelectBoxGroupDemoProps(event.detail.props);
-        setDemoProps(nextProps);
-        setSelectedKeys(
-          selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
-        );
+        setDemoProps((current) => {
+          const nextProps = normalizeSelectBoxGroupDemoProps({ ...current, ...event.detail.props });
+          setSelectedKeys(
+            selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
+          );
+          return nextProps;
+        });
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
@@ -711,7 +719,11 @@ function ReactSelectBoxGroupDemo() {
             {
               id: item.id,
               textValue: item.label,
+              isDisabled: demoProps.disablePro && item.id === "pro",
               children: [
+                demoProps.withIllustrations && selectBoxIllustrationItems.has(item.id)
+                  ? jsx(ReactButtonIcon, { slot: "illustration" })
+                  : null,
                 jsx(SpectrumText, { slot: "label", children: item.label }),
                 jsx(SpectrumText, { slot: "description", children: item.description }),
               ],
