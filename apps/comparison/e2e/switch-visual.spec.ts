@@ -95,6 +95,53 @@ async function switchGeometry(root: Locator) {
   });
 }
 
+async function markSwitchMotionNodes(root: Locator, marker: string) {
+  return root.evaluate((element, id) => {
+    const track = Array.from(element.querySelectorAll<HTMLElement>("div")).find((candidate) => {
+      const style = window.getComputedStyle(candidate);
+      const rect = candidate.getBoundingClientRect();
+      return (
+        style.borderStyle !== "none" &&
+        Number.parseFloat(style.borderWidth) > 0 &&
+        rect.width > rect.height &&
+        rect.width >= 20 &&
+        rect.width <= 80 &&
+        rect.height >= 12 &&
+        rect.height <= 32
+      );
+    });
+    const thumb = track?.querySelector<HTMLElement>(":scope > div");
+
+    track?.setAttribute("data-comparison-track-probe", id);
+    thumb?.setAttribute("data-comparison-thumb-probe", id);
+
+    const style = thumb == null ? null : window.getComputedStyle(thumb);
+    return {
+      transform: style?.transform ?? null,
+      transitionDuration: style?.transitionDuration ?? null,
+    };
+  }, marker);
+}
+
+async function switchMotionProbe(root: Locator, marker: string) {
+  return root.evaluate((element, id) => {
+    const track = element.ownerDocument.querySelector<HTMLElement>(
+      `[data-comparison-track-probe="${id}"]`,
+    );
+    const thumb = element.ownerDocument.querySelector<HTMLElement>(
+      `[data-comparison-thumb-probe="${id}"]`,
+    );
+    const style = thumb == null ? null : window.getComputedStyle(thumb);
+
+    return {
+      sameTrackNode: track != null,
+      sameThumbNode: thumb != null,
+      transform: style?.transform ?? null,
+      transitionDuration: style?.transitionDuration ?? null,
+    };
+  }, marker);
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -186,6 +233,33 @@ test.describe("comparison Switch visual parity", () => {
         "true",
       );
     }
+  });
+
+  test("toggle preserves the transitioning thumb node on both stacks", async ({ page }) => {
+    const fixtures = await switchFixtures(page);
+
+    const reactBefore = await markSwitchMotionNodes(fixtures.reactRoot, "react");
+    const solidBefore = await markSwitchMotionNodes(fixtures.solidRoot, "solid");
+
+    expect(reactBefore.transitionDuration).not.toBe("0s");
+    expect(solidBefore.transitionDuration).not.toBe("0s");
+
+    await fixtures.reactLabel.click();
+    await fixtures.solidLabel.click();
+
+    await expect(fixtures.reactSwitch).toBeChecked();
+    await expect(fixtures.solidSwitch).toBeChecked();
+
+    const reactAfter = await switchMotionProbe(fixtures.reactRoot, "react");
+    const solidAfter = await switchMotionProbe(fixtures.solidRoot, "solid");
+
+    expect(reactAfter.sameTrackNode).toBe(true);
+    expect(reactAfter.sameThumbNode).toBe(true);
+    expect(reactAfter.transform).not.toBe(reactBefore.transform);
+
+    expect(solidAfter.sameTrackNode).toBe(true);
+    expect(solidAfter.sameThumbNode).toBe(true);
+    expect(solidAfter.transform).not.toBe(solidBefore.transform);
   });
 
   test("side-panel selected, disabled, and readonly states drive actual DOM on both stacks", async ({

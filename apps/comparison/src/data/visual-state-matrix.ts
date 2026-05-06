@@ -596,7 +596,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/collection-button-controls-visual.spec.ts",
-      note: "The docs-style prop controls drive orientation, selectionMode, selectedKeys, and isDisabled into both stacks.",
+      note: "The docs-style prop controls drive orientation, selectionMode, selectedKeys, isDisabled, illustration slots, and the disabled Pro option into both stacks and assert real rendered slot/disabled DOM changes.",
     },
     {
       id: "styled.keyboard.selection",
@@ -861,7 +861,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/switch-visual.spec.ts",
-      note: "Clicking the visible Switch label toggles the controlled selected-state marker on both React Spectrum and Solid.",
+      note: "Clicking the visible Switch label toggles the controlled selected-state marker on both React Spectrum and Solid, and the transition-carrying thumb DOM node stays mounted through the state change.",
     },
     {
       id: "styled.props.controls",

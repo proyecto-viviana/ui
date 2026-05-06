@@ -5,25 +5,29 @@ import {
   splitProps,
   type JSX,
 } from "solid-js";
-import { type Direction, useLocale } from "@proyecto-viviana/solidaria";
 import {
-  ToggleSwitch as HeadlessToggleSwitch,
-  type ToggleSwitchProps as HeadlessToggleSwitchProps,
+  createFocusRing,
+  createHover,
+  createSwitch,
+  type AriaSwitchProps,
+  type Direction,
+  useLocale,
+} from "@proyecto-viviana/solidaria";
+import {
+  VisuallyHidden,
+  filterDOMProps,
   type ToggleSwitchRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import { createToggleState } from "@proyecto-viviana/solid-stately";
 import { baseColor, focusRing, fontRelative, style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
-import { CenterBaseline } from "../icon/center-baseline";
 import { controlFont, controlSize, getAllowedOverrides } from "../s2-internal/style-utils";
 import { useProviderProps } from "../provider";
 
 export type SwitchSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2SwitchSize = "S" | "M" | "L" | "XL";
 
-export interface ToggleSwitchProps extends Omit<
-  HeadlessToggleSwitchProps,
-  "class" | "style" | "children"
-> {
+export interface ToggleSwitchProps extends Omit<AriaSwitchProps, "children"> {
   /** The size of the Switch. */
   size?: SwitchSize;
   /** Whether the Switch should be displayed with an emphasized style. */
@@ -116,6 +120,11 @@ const track = style<SwitchStyleState>({
 
 const disabledSelectedTrack = style({
   backgroundColor: disabledSelectedTrackBackground,
+});
+
+const centerBaselineWrapper = style({
+  display: "flex",
+  alignItems: "center",
 });
 
 const handle = style<SwitchStyleState>({
@@ -214,14 +223,58 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const mergedStyles = () => mergeStyles(local.styles);
   const direction = () => locale().direction;
   let handleElement: HTMLDivElement | undefined;
+  let inputRef: HTMLInputElement | null = null;
 
-  const getClassName = (renderProps: ToggleSwitchRenderProps): string =>
+  const state = createToggleState({
+    get isSelected() {
+      return headlessProps.isSelected;
+    },
+    get defaultSelected() {
+      return headlessProps.defaultSelected;
+    },
+    get onChange() {
+      return headlessProps.onChange;
+    },
+    get isReadOnly() {
+      return headlessProps.isReadOnly;
+    },
+  });
+
+  const switchAria = createSwitch(
+    () => ({
+      ...headlessProps,
+      children: typeof local.children === "function" ? true : local.children,
+    }),
+    state,
+    () => inputRef,
+  );
+
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return headlessProps.isDisabled || headlessProps.isReadOnly;
+    },
+  });
+
+  const renderState = (): ToggleSwitchRenderProps => ({
+    isSelected: switchAria.isSelected(),
+    isHovered: isHovered(),
+    isPressed: switchAria.isPressed(),
+    isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
+    isDisabled: switchAria.isDisabled,
+    isReadOnly: switchAria.isReadOnly,
+    isInvalid: switchAria.isInvalid,
+    state,
+  });
+
+  const getClassName = (): string =>
     [
       local.UNSAFE_className,
       local.class,
       wrapper(
         {
-          ...renderProps,
+          ...renderState(),
           isInForm: false,
           size: size(),
           isEmphasized: local.isEmphasized,
@@ -232,41 +285,83 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
-  const trackClass = (renderProps: ToggleSwitchRenderProps) =>
-    mergeStyles(
-      track({
-        ...renderProps,
-        size: size(),
-        isEmphasized: local.isEmphasized,
-      }),
-      renderProps.isSelected && renderProps.isDisabled && !local.isEmphasized
-        ? disabledSelectedTrack
-        : undefined,
-    );
+  const domProps = () => {
+    const filtered = filterDOMProps(headlessProps, { global: true });
+    delete (filtered as Record<string, unknown>).id;
+    delete (filtered as Record<string, unknown>).onClick;
+    return filtered;
+  };
 
-  const handleClass = (renderProps: ToggleSwitchRenderProps) =>
-    handle({
-      ...renderProps,
-      size: size(),
-      isEmphasized: local.isEmphasized,
-    });
+  const cleanLabelProps = () => {
+    const { ref: _ref, ...rest } = switchAria.labelProps as Record<string, unknown>;
+    return rest;
+  };
+
+  const cleanHoverProps = () => {
+    const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
+    return rest;
+  };
+
+  const cleanInputProps = () => {
+    const { ref: _ref, ...rest } = switchAria.inputProps as Record<string, unknown>;
+    return rest;
+  };
+
+  const cleanFocusProps = () => {
+    const { ref: _ref, ...rest } = focusProps as Record<string, unknown>;
+    return rest;
+  };
 
   return (
-    <HeadlessToggleSwitch {...headlessProps} class={getClassName} style={local.UNSAFE_style}>
-      {(renderProps: ToggleSwitchRenderProps) => (
-        <>
-          <CenterBaseline>
-            <div class={trackClass(renderProps)}>
-              <div
-                ref={handleElement}
-                class={handleClass(renderProps)}
-                style={switchHandlePressStyle(handleElement, renderProps, direction())}
-              />
-            </div>
-          </CenterBaseline>
-          {resolvedChildren()}
-        </>
-      )}
-    </HeadlessToggleSwitch>
+    <label
+      {...domProps()}
+      {...cleanLabelProps()}
+      {...cleanHoverProps()}
+      class={getClassName()}
+      style={local.UNSAFE_style}
+      data-selected={switchAria.isSelected() || undefined}
+      data-pressed={switchAria.isPressed() || undefined}
+      data-hovered={isHovered() || undefined}
+      data-focused={isFocused() || undefined}
+      data-focus-visible={isFocusVisible() || undefined}
+      data-disabled={switchAria.isDisabled || undefined}
+      data-readonly={switchAria.isReadOnly || undefined}
+    >
+      <VisuallyHidden>
+        <input
+          ref={(element) => (inputRef = element)}
+          {...cleanInputProps()}
+          {...cleanFocusProps()}
+        />
+      </VisuallyHidden>
+      <div class={centerBaselineWrapper}>
+        <span aria-hidden="true" style={{ width: 0, visibility: "hidden" }}>
+          {"\u00A0"}
+        </span>
+        <div
+          class={mergeStyles(
+            track({
+              ...renderState(),
+              size: size(),
+              isEmphasized: local.isEmphasized,
+            }),
+            renderState().isSelected && renderState().isDisabled && !local.isEmphasized
+              ? disabledSelectedTrack
+              : undefined,
+          )}
+        >
+          <div
+            ref={handleElement}
+            class={handle({
+              ...renderState(),
+              size: size(),
+              isEmphasized: local.isEmphasized,
+            })}
+            style={switchHandlePressStyle(handleElement, renderState(), direction())}
+          />
+        </div>
+      </div>
+      {resolvedChildren()}
+    </label>
   );
 }

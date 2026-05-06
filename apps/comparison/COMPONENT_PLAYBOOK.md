@@ -102,6 +102,11 @@ For each component:
   visible slot content, geometry, or another real rendered effect. This is the
   main guard against reactive wiring bugs where the docs payload updates but the
   Solid component stays visually stale.
+- If fixtures or committed screenshots already cover an extra visual state such
+  as slot content, disabled items, or illustration variants, expose that state
+  in the side-panel controls too unless it is intentionally snapshot-only and
+  documented as such. Otherwise the docs surface hides real coverage and makes
+  the implementation look incomplete.
 - Keep `data-comparison-control-root` singular. Put it on one stable wrapper
   element per stack, not on both the visible control and an internal hidden
   input. The modeled-controls contract assumes one root, and duplicate markers
@@ -249,6 +254,11 @@ not only URL params. URL fixtures catch initial rendering; side-panel controls
 catch whether Solid props remain reactive after mount. Disabled and read-only
 states should also be hovered/pressed in the browser to prove inactive controls
 do not keep hover or press affordances.
+
+For animated or transform-driven controls, verify that the mounted DOM node
+carrying the transition survives state changes. Matching screenshots are not
+enough if the Solid side remounts the thumb, handle, or track and skips the
+real motion.
 
 For styled links rendered inside the comparison viewer, explicitly verify
 computed colors on the real anchor. The docs app has its own anchor styling, and

@@ -594,17 +594,14 @@ function SolidSpectrumSwitchDemo() {
     }),
   );
 
-  return hc(
-    SolidSpectrumProvider,
-    {
-      get colorScheme() {
-        return colorScheme();
-      },
-      background: "base",
-      style: providerShellStyle,
+  return createComponent(SolidSpectrumProvider, {
+    get colorScheme() {
+      return colorScheme();
     },
-    [
-      hc(
+    background: "base",
+    style: providerShellStyle,
+    get children() {
+      return h(
         "div",
         {
           get "data-comparison-color-scheme"() {
@@ -619,38 +616,37 @@ function SolidSpectrumSwitchDemo() {
           },
         },
         [
-          hc(
-            SolidSpectrumSwitch,
-            {
-              get size() {
-                return demoProps().size;
-              },
-              get isSelected() {
-                return isSelected();
-              },
-              get isEmphasized() {
-                return demoProps().isEmphasized;
-              },
-              get isDisabled() {
-                return demoProps().isDisabled;
-              },
-              get isReadOnly() {
-                return demoProps().isReadOnly;
-              },
-              onChange: (nextSelected: boolean) => {
-                setIsSelected(nextSelected);
-                setDemoProps((current: SwitchDemoProps) => ({
-                  ...current,
-                  isSelected: nextSelected,
-                }));
-              },
+          createComponent(SolidSpectrumSwitch, {
+            get size() {
+              return demoProps().size;
             },
-            [() => demoProps().children],
-          ),
+            get isSelected() {
+              return isSelected();
+            },
+            get isEmphasized() {
+              return demoProps().isEmphasized;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            onChange: (nextSelected: boolean) => {
+              setIsSelected(nextSelected);
+              setDemoProps((current: SwitchDemoProps) => ({
+                ...current,
+                isSelected: nextSelected,
+              }));
+            },
+            get children() {
+              return demoProps().children;
+            },
+          }),
         ],
-      ),
-    ],
-  );
+      );
+    },
+  });
 }
 
 function SolidSpectrumTextFieldDemo() {

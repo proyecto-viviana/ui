@@ -158,6 +158,35 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     },
     renderValues,
   );
+  const childRenderValues: ToggleSwitchRenderProps = {
+    get isSelected() {
+      return switchAria.isSelected();
+    },
+    get isHovered() {
+      return isHovered();
+    },
+    get isPressed() {
+      return switchAria.isPressed();
+    },
+    get isFocused() {
+      return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible();
+    },
+    get isDisabled() {
+      return switchAria.isDisabled;
+    },
+    get isReadOnly() {
+      return switchAria.isReadOnly;
+    },
+    get isInvalid() {
+      return switchAria.isInvalid;
+    },
+    get state() {
+      return state;
+    },
+  };
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
@@ -181,6 +210,10 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const cleanFocusProps = () => {
     const { ref: _ref4, ...rest } = focusProps as Record<string, unknown>;
     return rest;
+  };
+  const switchChildren = () => {
+    const children = props.children;
+    return typeof children === "function" ? children(childRenderValues) : children;
   };
 
   return (
@@ -206,7 +239,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
           aria-describedby={describedBy()}
         />
       </VisuallyHidden>
-      {renderProps.renderChildren()}
+      {switchChildren()}
       <Show when={local.description}>
         <span id={descriptionId} slot="description">
           {local.description}
