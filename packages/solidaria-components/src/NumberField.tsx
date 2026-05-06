@@ -389,11 +389,8 @@ export function NumberFieldLabel(props: {
 /**
  * The input group for a number field (contains input and buttons).
  */
-export function NumberFieldGroup(props: {
-  children?: JSX.Element;
-  class?: string;
-  style?: JSX.CSSProperties;
-}): JSX.Element {
+export function NumberFieldGroup(props: JSX.HTMLAttributes<HTMLDivElement>): JSX.Element {
+  const [local, domProps] = splitProps(props, ["children", "class", "style"]);
   const context = useContext(NumberFieldContext);
   if (!context) {
     throw new Error("NumberFieldGroup must be used within a NumberField");
@@ -406,11 +403,12 @@ export function NumberFieldGroup(props: {
 
   return (
     <div
+      {...domProps}
       {...cleanGroupProps()}
-      class={props.class ?? "solidaria-NumberField-group"}
-      style={props.style}
+      class={local.class ?? "solidaria-NumberField-group"}
+      style={local.style}
     >
-      {props.children}
+      {local.children}
     </div>
   );
 }
@@ -551,12 +549,36 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
     const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
+  const preventFocusStutter = (event: MouseEvent | PointerEvent) => {
+    if (!isDisabled()) {
+      event.preventDefault();
+    }
+  };
+  const pressPropsWithoutFocusSteal = () => {
+    const rest = cleanPressProps() as Record<string, unknown> & {
+      onMouseDown?: JSX.EventHandler<HTMLElement, MouseEvent>;
+      onPointerDown?: JSX.EventHandler<HTMLElement, PointerEvent>;
+    };
+    const { onMouseDown, onPointerDown, ...others } = rest;
+
+    return {
+      ...others,
+      onMouseDown: (event: MouseEvent & { currentTarget: HTMLElement }) => {
+        preventFocusStutter(event);
+        onMouseDown?.(event as Parameters<NonNullable<typeof onMouseDown>>[0]);
+      },
+      onPointerDown: (event: PointerEvent & { currentTarget: HTMLElement }) => {
+        preventFocusStutter(event);
+        onPointerDown?.(event as Parameters<NonNullable<typeof onPointerDown>>[0]);
+      },
+    };
+  };
 
   return (
     <div
       {...domProps}
       {...divButtonProps()}
-      {...cleanPressProps()}
+      {...pressPropsWithoutFocusSteal()}
       {...cleanHoverProps()}
       role="button"
       tabIndex={-1}
@@ -632,12 +654,36 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
     const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
+  const preventFocusStutter = (event: MouseEvent | PointerEvent) => {
+    if (!isDisabled()) {
+      event.preventDefault();
+    }
+  };
+  const pressPropsWithoutFocusSteal = () => {
+    const rest = cleanPressProps() as Record<string, unknown> & {
+      onMouseDown?: JSX.EventHandler<HTMLElement, MouseEvent>;
+      onPointerDown?: JSX.EventHandler<HTMLElement, PointerEvent>;
+    };
+    const { onMouseDown, onPointerDown, ...others } = rest;
+
+    return {
+      ...others,
+      onMouseDown: (event: MouseEvent & { currentTarget: HTMLElement }) => {
+        preventFocusStutter(event);
+        onMouseDown?.(event as Parameters<NonNullable<typeof onMouseDown>>[0]);
+      },
+      onPointerDown: (event: PointerEvent & { currentTarget: HTMLElement }) => {
+        preventFocusStutter(event);
+        onPointerDown?.(event as Parameters<NonNullable<typeof onPointerDown>>[0]);
+      },
+    };
+  };
 
   return (
     <div
       {...domProps}
       {...divButtonProps()}
-      {...cleanPressProps()}
+      {...pressPropsWithoutFocusSteal()}
       {...cleanHoverProps()}
       role="button"
       tabIndex={-1}

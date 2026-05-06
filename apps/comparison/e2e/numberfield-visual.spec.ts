@@ -148,6 +148,34 @@ async function numberFieldGeometry(root: Locator) {
   });
 }
 
+async function numberFieldStepperState(root: Locator, index: number) {
+  return root.evaluate((element, buttonIndex) => {
+    const input = element.querySelector<HTMLInputElement>("input");
+    const fieldGroup = input?.parentElement ?? null;
+    const buttons = Array.from(
+      element.querySelectorAll<HTMLElement>("button,[role='button']"),
+    ).filter((candidate) => candidate.getBoundingClientRect().width > 0);
+    const button = buttons[buttonIndex] ?? null;
+    const icon = button?.querySelector<SVGElement>("svg") ?? null;
+    const groupStyle = fieldGroup == null ? null : window.getComputedStyle(fieldGroup);
+    const buttonStyle = button == null ? null : window.getComputedStyle(button);
+    const iconStyle = icon == null ? null : window.getComputedStyle(icon);
+
+    return {
+      activeIsInput: input != null && document.activeElement === input,
+      groupFocused: fieldGroup?.getAttribute("data-focused") ?? null,
+      inputFocused: input?.getAttribute("data-focused") ?? null,
+      groupBorderColor: groupStyle?.borderColor ?? null,
+      groupBoxShadow: groupStyle?.boxShadow ?? null,
+      buttonBackground: buttonStyle?.backgroundColor ?? null,
+      buttonColor: buttonStyle?.color ?? null,
+      buttonCursor: buttonStyle?.cursor ?? null,
+      iconWidth: iconStyle?.width ?? null,
+      iconHeight: iconStyle?.height ?? null,
+    };
+  }, index);
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -161,6 +189,29 @@ function expectNear(
 
 function cssPixelNumber(value: string | null) {
   return value == null ? null : Number.parseFloat(value);
+}
+
+function rgbChannels(value: string | null) {
+  const match = value?.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  return match == null ? null : match.slice(1, 4).map(Number);
+}
+
+function expectRgbNear(
+  received: string | null,
+  expected: string | null,
+  tolerance: number,
+  label: string,
+) {
+  const receivedChannels = rgbChannels(received);
+  const expectedChannels = rgbChannels(expected);
+  expect(receivedChannels, `${label} should be an rgb color`).not.toBeNull();
+  expect(expectedChannels, `${label} reference should be an rgb color`).not.toBeNull();
+  for (let index = 0; index < 3; index += 1) {
+    expect(
+      Math.abs((receivedChannels?.[index] ?? 0) - (expectedChannels?.[index] ?? 0)),
+      `${label} channel ${index}`,
+    ).toBeLessThanOrEqual(tolerance);
+  }
 }
 
 test.describe("comparison NumberField visual parity", () => {
@@ -340,6 +391,116 @@ test.describe("comparison NumberField visual parity", () => {
       await expect(item.panel.locator("[data-comparison-value]").first()).toHaveAttribute(
         "data-comparison-value",
         "9",
+      );
+    }
+  });
+
+  test("both steppers hover consistently and return focus to the input", async ({ page }) => {
+    const fixtures = await numberFieldFixtures(page);
+
+    const pairs = [
+      {
+        stack: "react",
+        panel: fixtures.reactPanel,
+        input: fixtures.reactInput,
+        root: fixtures.reactRoot,
+      },
+      {
+        stack: "solid",
+        panel: fixtures.solidPanel,
+        input: fixtures.solidInput,
+        root: fixtures.solidRoot,
+      },
+    ];
+
+    for (const buttonIndex of [0, 1]) {
+      await clearPointer(page);
+      await fixtures.reactRoot.locator("button,[role='button']").nth(buttonIndex).hover();
+      const reactHover = await numberFieldStepperState(fixtures.reactRoot, buttonIndex);
+      await clearPointer(page);
+      await fixtures.solidRoot.locator("button,[role='button']").nth(buttonIndex).hover();
+      const solidHover = await numberFieldStepperState(fixtures.solidRoot, buttonIndex);
+
+      expect(solidHover.buttonBackground).toBe(reactHover.buttonBackground);
+      expectRgbNear(solidHover.buttonColor, reactHover.buttonColor, 1, "NumberField stepper color");
+      expect(solidHover.buttonCursor).toBe(reactHover.buttonCursor);
+      expect(solidHover.iconWidth).toBe(reactHover.iconWidth);
+      expect(solidHover.iconHeight).toBe(reactHover.iconHeight);
+    }
+
+    for (const item of pairs) {
+      const buttons = item.root.locator("button,[role='button']");
+      await expect(buttons).toHaveCount(2);
+      await item.input.fill("8");
+      await item.input.focus();
+      await expect(item.input).toBeFocused();
+
+      const decrementBox = await buttons.nth(0).boundingBox();
+      expect(decrementBox, `${item.stack} decrement button should have a box`).not.toBeNull();
+      await page.mouse.move(
+        (decrementBox?.x ?? 0) + (decrementBox?.width ?? 0) / 2,
+        (decrementBox?.y ?? 0) + (decrementBox?.height ?? 0) / 2,
+      );
+      await page.mouse.down();
+      await expect
+        .poll(async () => numberFieldStepperState(item.root, 0))
+        .toMatchObject(
+          item.stack === "solid"
+            ? {
+                activeIsInput: true,
+                groupFocused: "true",
+              }
+            : { activeIsInput: true },
+        );
+      await page.mouse.up();
+      await expect(item.input).toHaveValue("7");
+      await expect
+        .poll(async () => numberFieldStepperState(item.root, 0))
+        .toMatchObject(
+          item.stack === "solid"
+            ? {
+                activeIsInput: true,
+                groupFocused: "true",
+              }
+            : { activeIsInput: true },
+        );
+      await expect(item.panel.locator("[data-comparison-value]").first()).toHaveAttribute(
+        "data-comparison-value",
+        "7",
+      );
+
+      const incrementBox = await buttons.nth(1).boundingBox();
+      expect(incrementBox, `${item.stack} increment button should have a box`).not.toBeNull();
+      await page.mouse.move(
+        (incrementBox?.x ?? 0) + (incrementBox?.width ?? 0) / 2,
+        (incrementBox?.y ?? 0) + (incrementBox?.height ?? 0) / 2,
+      );
+      await page.mouse.down();
+      await expect
+        .poll(async () => numberFieldStepperState(item.root, 1))
+        .toMatchObject(
+          item.stack === "solid"
+            ? {
+                activeIsInput: true,
+                groupFocused: "true",
+              }
+            : { activeIsInput: true },
+        );
+      await page.mouse.up();
+      await expect(item.input).toHaveValue("8");
+      await expect
+        .poll(async () => numberFieldStepperState(item.root, 1))
+        .toMatchObject(
+          item.stack === "solid"
+            ? {
+                activeIsInput: true,
+                groupFocused: "true",
+              }
+            : { activeIsInput: true },
+        );
+      await expect(item.panel.locator("[data-comparison-value]").first()).toHaveAttribute(
+        "data-comparison-value",
+        "8",
       );
     }
   });

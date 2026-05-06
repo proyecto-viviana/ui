@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { type JSX, splitProps, Show, useContext } from "solid-js";
+import { type JSX, createSignal, splitProps, Show, useContext } from "solid-js";
 import {
   NumberField as HeadlessNumberField,
   NumberFieldLabel as HeadlessNumberFieldLabel,
@@ -405,7 +405,7 @@ function iconSize(size: S2NumberFieldSize) {
 }
 
 function stepperIconStyle(size: S2NumberFieldSize): JSX.CSSProperties {
-  const pixelSize = size === "S" || size === "M" ? 8 : size === "L" ? 10 : 12;
+  const pixelSize = size === "S" ? 8 : size === "M" || size === "L" ? 10 : 12;
   return {
     width: `${pixelSize}px`,
     height: `${pixelSize}px`,
@@ -438,6 +438,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const [isFocusWithin, setIsFocusWithin] = createSignal(false);
 
   let decrementButtonElement: HTMLDivElement | undefined;
   let incrementButtonElement: HTMLDivElement | undefined;
@@ -477,7 +478,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     numberFieldGroup({
       ...renderProps,
       size: size(),
-      isFocusWithin: renderProps.isFocused,
+      isFocusWithin: isFocusWithin(),
       isStepperHidden: local.hideStepper,
     });
 
@@ -536,7 +537,24 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
             </div>
           </Show>
 
-          <HeadlessNumberFieldGroup class={groupClass(renderProps)} onPointerDown={focusFieldInput}>
+          <HeadlessNumberFieldGroup
+            class={groupClass(renderProps)}
+            onPointerDown={(event) => {
+              if (event.pointerType === "mouse") {
+                focusFieldInput(event);
+              }
+            }}
+            onTouchEnd={focusFieldInput}
+            onFocusIn={() => setIsFocusWithin(true)}
+            onFocusOut={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                setIsFocusWithin(false);
+              }
+            }}
+            data-focused={isFocusWithin() ? "true" : undefined}
+            data-disabled={renderProps.isDisabled ? "true" : undefined}
+            data-invalid={renderProps.isInvalid ? "true" : undefined}
+          >
             <HeadlessNumberFieldInput
               class={inputClass}
               placeholder={local.placeholder}
