@@ -112,17 +112,11 @@ const buttonMatrixCases: ButtonMatrixCase[] = [
   { id: "disabled", label: "Button disabled", params: { isDisabled: true } },
   { id: "pending", label: "Button pending", params: { isPending: true } },
   { id: "icon-start", label: "Button icon start", params: { iconPlacement: "start" } },
-  { id: "icon-end", label: "Button icon end", params: { iconPlacement: "end" } },
   { id: "icon-only", label: "Button icon only", params: { iconPlacement: "only" } },
   {
     id: "icon-start-xl",
     label: "Button icon start XL",
     params: { iconPlacement: "start", size: "XL" },
-  },
-  {
-    id: "icon-end-xl",
-    label: "Button icon end XL",
-    params: { iconPlacement: "end", size: "XL" },
   },
   {
     id: "icon-only-xl",
@@ -284,7 +278,7 @@ async function buttonPendingVisualContract(button: Locator) {
   };
 }
 
-type ButtonIconPlacement = "start" | "end" | "only";
+type ButtonIconPlacement = "start" | "only";
 type ButtonIconAlignmentCase = {
   iconPlacement: ButtonIconPlacement;
   size: "S" | "M" | "L" | "XL";
@@ -295,10 +289,6 @@ const buttonIconAlignmentCases: ButtonIconAlignmentCase[] = [
   { iconPlacement: "start", size: "M" },
   { iconPlacement: "start", size: "L" },
   { iconPlacement: "start", size: "XL" },
-  { iconPlacement: "end", size: "S" },
-  { iconPlacement: "end", size: "M" },
-  { iconPlacement: "end", size: "L" },
-  { iconPlacement: "end", size: "XL" },
   { iconPlacement: "only", size: "S" },
   { iconPlacement: "only", size: "M" },
   { iconPlacement: "only", size: "L" },
@@ -781,7 +771,6 @@ test.describe("comparison Button visual parity", () => {
   }) => {
     for (const item of [
       { iconPlacement: "start", size: "M" },
-      { iconPlacement: "end", size: "M" },
       { iconPlacement: "only", size: "M" },
       { iconPlacement: "start", size: "XL" },
     ] satisfies ButtonIconAlignmentCase[]) {

@@ -10,7 +10,7 @@ export const buttonVariantOptions = [
 export const buttonFillStyleOptions = ["fill", "outline"] as const;
 export const buttonSizeOptions = ["S", "M", "L", "XL"] as const;
 export const buttonStaticColorOptions = ["auto", "white", "black"] as const;
-export const buttonIconPlacementOptions = ["none", "start", "end", "only"] as const;
+export const buttonIconPlacementOptions = ["none", "start", "only"] as const;
 
 export type ButtonDemoVariant = (typeof buttonVariantOptions)[number];
 export type ButtonDemoFillStyle = (typeof buttonFillStyleOptions)[number];

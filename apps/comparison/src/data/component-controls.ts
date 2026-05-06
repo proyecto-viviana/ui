@@ -104,7 +104,6 @@ const buttonControls: ComponentControlGroup = {
       options: [
         { value: "none", label: "none" },
         { value: "start", label: "start" },
-        { value: "end", label: "end" },
         { value: "only", label: "only" },
       ],
     },

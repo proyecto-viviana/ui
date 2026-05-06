@@ -276,10 +276,6 @@ function solidSingleButtonFamilyChildren(
         return [icon, text];
       }
 
-      if (placement === "end") {
-        return [text, icon];
-      }
-
       if (placement === "only") {
         return icon;
       }
@@ -369,8 +365,9 @@ function SolidSpectrumButtonDemo() {
                 props.children,
               ),
           ]
-        : props.iconPlacement === "end"
-          ? [
+        : props.iconPlacement === "only"
+          ? [() => h(SolidNewIcon, { "aria-hidden": "true" })]
+          : [
               () =>
                 h(
                   "span",
@@ -380,21 +377,7 @@ function SolidSpectrumButtonDemo() {
                   },
                   props.children,
                 ),
-              () => h(SolidNewIcon, { "aria-hidden": "true" }),
-            ]
-          : props.iconPlacement === "only"
-            ? [() => h(SolidNewIcon, { "aria-hidden": "true" })]
-            : [
-                () =>
-                  h(
-                    "span",
-                    {
-                      class: s2ButtonText({ isProgressVisible: props.isPending }),
-                      "data-rsp-slot": "text",
-                    },
-                    props.children,
-                  ),
-              ];
+            ];
 
     return hc(
       SolidSpectrumButton,

@@ -136,6 +136,11 @@ Batch 1 intentionally leaves group context and collection selection details to
 Batch 2 and Batch 3. Do not mix group fixes into single-control work unless a
 shared button primitive regression blocks the single-control matrix.
 
+For the button family, treat icon placement as an observed React S2 contract,
+not a generic API knob. The current S2 reference uses leading icons and
+icon-only states here; do not model an `end` placement unless React S2 itself
+ships it for that control.
+
 For `LinkButton` premium/genai variants, interactive gradient parity still needs
 an explicit manual Playwright pass with navigation suppressed before sign-off.
 Keep that check in the validation checklist even when the committed guard only

@@ -306,13 +306,6 @@ function renderButtonChildren(demoProps) {
     ];
   }
 
-  if (demoProps.iconPlacement === "end") {
-    return [
-      jsx(SpectrumText, { children: demoProps.children }, "text"),
-      jsx(ReactButtonIcon, {}, "icon"),
-    ];
-  }
-
   if (demoProps.iconPlacement === "only") {
     return jsx(ReactButtonIcon, {});
   }
@@ -323,10 +316,6 @@ function renderButtonChildren(demoProps) {
 function renderSingleButtonFamilyChildren(label, iconPlacement) {
   if (iconPlacement === "start") {
     return [jsx(ReactButtonIcon, {}, "icon"), jsx(SpectrumText, { children: label }, "text")];
-  }
-
-  if (iconPlacement === "end") {
-    return [jsx(SpectrumText, { children: label }, "text"), jsx(ReactButtonIcon, {}, "icon")];
   }
 
   if (iconPlacement === "only") {
