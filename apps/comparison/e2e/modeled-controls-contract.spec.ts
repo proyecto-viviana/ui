@@ -44,6 +44,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (control.name === "selectedKeys" && group.slug === "selectboxgroup") {
       return "starter,pro";
     }
+    if (control.name === "selectedValue" && group.slug === "radiogroup") {
+      return "pro";
+    }
     return textControlValues[control.name] ?? `${group.slug}-${control.name}`;
   }
 

@@ -355,6 +355,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Checkbox directly; Solid uses @proyecto-viviana/solid-spectrum Checkbox with S2-derived box, icon, baseline, and press-scale styling.",
   }),
 
+  radiogroup: styledLiveOfficialEntry({
+    slug: "radiogroup",
+    title: "RadioGroup",
+    category: "Components",
+    summary:
+      "Single-selection option group with S2 field layout, radio geometry, help text, and controlled value state.",
+    styledSummary: "React Spectrum RadioGroup/Radio vs Solid Spectrum RadioGroup/Radio.",
+    styledNote:
+      "React uses @react-spectrum/s2 RadioGroup and Radio directly; Solid uses @proyecto-viviana/solid-spectrum RadioGroup and Radio with S2-derived field layout, wrapper, circle, and press-scale styling.",
+  }),
+
   textfield: styledLiveOfficialEntry({
     slug: "textfield",
     title: "TextField",

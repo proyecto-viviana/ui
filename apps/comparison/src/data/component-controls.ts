@@ -13,6 +13,11 @@ import {
   buttonVariantOptions,
 } from "./button-demo";
 import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
+import {
+  radioGroupDemoDefaults,
+  radioGroupOrientationOptions,
+  radioGroupSizeOptions,
+} from "./radiogroup-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
 import { switchDemoDefaults, switchSizeOptions } from "./switch-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
@@ -297,6 +302,108 @@ const switchControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Switch docs and source control surface. The viewer drives label text, S2 sizes, selected state, emphasized treatment, and disabled/read-only behavior into both stacks.",
+};
+
+const radioGroupControls: ComponentControlGroup = {
+  slug: "radiogroup",
+  title: "RadioGroup",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: radioGroupDemoDefaults.label,
+    },
+    {
+      name: "selectedValue",
+      label: "selectedValue",
+      kind: "text",
+      defaultValue: radioGroupDemoDefaults.selectedValue,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: radioGroupDemoDefaults.size,
+      options: options(radioGroupSizeOptions),
+    },
+    {
+      name: "orientation",
+      label: "orientation",
+      kind: "radio",
+      defaultValue: radioGroupDemoDefaults.orientation,
+      options: options(radioGroupOrientationOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: radioGroupDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: radioGroupDemoDefaults.errorMessage,
+    },
+    {
+      name: "isEmphasized",
+      label: "isEmphasized",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "children",
+    "label",
+    "value",
+    "defaultValue",
+    "onChange",
+    "size",
+    "orientation",
+    "description",
+    "errorMessage",
+    "isEmphasized",
+    "isDisabled",
+    "isReadOnly",
+    "isRequired",
+    "isInvalid",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 RadioGroup source control surface. The viewer drives label, selected value, S2 size, orientation, description/error text, emphasized treatment, and disabled/read-only/required/invalid states into both stacks.",
 };
 
 const textFieldControls: ComponentControlGroup = {
@@ -1176,6 +1283,7 @@ export const componentControlGroups = {
   buttongroup: buttonGroupControls,
   checkbox: checkboxControls,
   linkbutton: linkButtonControls,
+  radiogroup: radioGroupControls,
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,

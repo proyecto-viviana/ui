@@ -459,7 +459,7 @@ describe("RadioGroup", () => {
       expect(wrapperB).toHaveAttribute("data-selected");
     });
 
-    it("dot uses scale-0/scale-100 CSS classes for selected state visibility", () => {
+    it("renders S2 circle without legacy dot visibility classes", () => {
       render(() => (
         <RadioGroup aria-label="Test group" defaultValue="a">
           <Radio value="a">Option A</Radio>
@@ -467,13 +467,9 @@ describe("RadioGroup", () => {
         </RadioGroup>
       ));
       const radios = screen.getAllByRole("radio");
-      // The dot span is a child of the circle span, which is a sibling of the label text
       const wrapperA = radios[0].closest("label")!;
-      const dotA = wrapperA.querySelector(".scale-0, .scale-100");
-      // The dot element should exist and use scale-based visibility classes
-      expect(dotA).toBeTruthy();
-      expect(dotA!.className).toContain("scale-0");
-      expect(dotA!.className).toContain("[[data-selected]_&]:scale-100");
+      expect(wrapperA.querySelector(".scale-0, .scale-100")).toBeNull();
+      expect(wrapperA.querySelector("div div")).toBeTruthy();
     });
   });
 });

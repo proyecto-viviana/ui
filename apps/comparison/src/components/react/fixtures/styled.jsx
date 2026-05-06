@@ -15,6 +15,8 @@ import {
   Heading as SpectrumHeading,
   LinkButton as SpectrumLinkButton,
   Provider as SpectrumProvider,
+  Radio as SpectrumRadio,
+  RadioGroup as SpectrumRadioGroup,
   SearchField as SpectrumSearchField,
   Switch as SpectrumSwitch,
   SegmentedControl as SpectrumSegmentedControl,
@@ -54,6 +56,11 @@ import {
   normalizeCheckboxDemoProps,
   serializeCheckboxDemoProps,
 } from "@comparison/data/checkbox-demo";
+import {
+  normalizeRadioGroupDemoProps,
+  radioGroupDemoPropsFromWindow,
+  serializeRadioGroupDemoProps,
+} from "@comparison/data/radiogroup-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -120,6 +127,12 @@ const ReactButtonIcon = createIcon((props) =>
 const selectBoxItems = [
   { id: "starter", label: "Starter", description: "For small teams" },
   { id: "pro", label: "Pro", description: "For growing teams" },
+];
+
+const radioGroupItems = [
+  { value: "starter", label: "Starter" },
+  { value: "pro", label: "Pro" },
+  { value: "enterprise", label: "Enterprise" },
 ];
 
 const selectBoxIllustrationItems = new Set(["starter", "pro"]);
@@ -226,6 +239,7 @@ export const reactStyledFixtures = {
   textarea: () => jsx(ReactTextAreaDemo, {}),
   textfield: () => jsx(ReactTextFieldDemo, {}),
   checkbox: () => jsx(ReactCheckboxDemo, {}),
+  radiogroup: () => jsx(ReactRadioGroupDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
   searchfield: () => jsx(ReactSearchFieldDemo, {}),
@@ -949,6 +963,55 @@ function ReactCheckboxDemo() {
           setDemoProps((current) => ({ ...current, isSelected: nextSelected }));
         },
         children: demoProps.children,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactRadioGroupDemo() {
+  const [demoProps, setDemoProps] = useState(radioGroupDemoPropsFromWindow);
+  const [value, setValue] = useState(() => demoProps.selectedValue);
+  const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "radiogroup") {
+        const nextProps = normalizeRadioGroupDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.selectedValue);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-selected-value": value,
+      "data-comparison-control-root": "radiogroup",
+      "data-comparison-control-props": serializeRadioGroupDemoProps({
+        ...demoProps,
+        selectedValue: value,
+      }),
+      children: jsx(SpectrumRadioGroup, {
+        label: demoProps.label,
+        value,
+        size: demoProps.size,
+        orientation: demoProps.orientation,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isEmphasized: demoProps.isEmphasized,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => {
+          setValue(nextValue);
+          setDemoProps((current) => ({ ...current, selectedValue: nextValue }));
+        },
+        children: radioGroupItems.map((item) =>
+          jsx(SpectrumRadio, { value: item.value, children: item.label }, item.value),
+        ),
       }),
     }),
     colorScheme,

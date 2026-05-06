@@ -20,6 +20,8 @@ import {
   Checkbox as SolidSpectrumCheckbox,
   LinkButton as SolidSpectrumLinkButton,
   Provider as SolidSpectrumProvider,
+  Radio as SolidSpectrumRadio,
+  RadioGroup as SolidSpectrumRadioGroup,
   SearchField as SolidSpectrumSearchField,
   Switch as SolidSpectrumSwitch,
   SegmentedControl as SolidSpectrumSegmentedControl,
@@ -56,6 +58,12 @@ import {
   serializeCheckboxDemoProps,
   type CheckboxDemoProps,
 } from "@comparison/data/checkbox-demo";
+import {
+  normalizeRadioGroupDemoProps,
+  radioGroupDemoPropsFromWindow,
+  serializeRadioGroupDemoProps,
+  type RadioGroupDemoProps,
+} from "@comparison/data/radiogroup-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -138,6 +146,12 @@ const SolidNewIcon = createIcon((props: JSX.SvgSVGAttributes<SVGSVGElement>) => 
 const selectBoxItems = [
   { id: "starter", label: "Starter", description: "For small teams" },
   { id: "pro", label: "Pro", description: "For growing teams" },
+];
+
+const radioGroupItems = [
+  { value: "starter", label: "Starter" },
+  { value: "pro", label: "Pro" },
+  { value: "enterprise", label: "Enterprise" },
 ];
 
 const selectBoxIllustrationItems = new Set(["starter", "pro"]);
@@ -316,6 +330,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   actionbuttongroup: () => h(SolidSpectrumActionButtonGroupDemo, {}),
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
+  radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
   linkbutton: () => h(SolidSpectrumLinkButtonDemo, {}),
   cardview: () => h(SolidSpectrumCardViewDemo, {}),
   segmentedcontrol: () => h(SolidSpectrumSegmentedControlDemo, {}),
@@ -551,6 +566,123 @@ function SolidSpectrumCheckboxDemo() {
               },
             },
             [() => demoProps().children],
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumRadioGroupDemo() {
+  const [demoProps, setDemoProps] = createSignal<RadioGroupDemoProps>(
+    radioGroupDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(demoProps().selectedValue);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "radiogroup") {
+        const nextProps = normalizeRadioGroupDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.selectedValue);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeRadioGroupDemoProps({
+      ...demoProps(),
+      selectedValue: value(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-selected-value"() {
+            return value();
+          },
+          "data-comparison-control-root": "radiogroup",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(
+            SolidSpectrumRadioGroup,
+            {
+              get label() {
+                return demoProps().label;
+              },
+              get value() {
+                return value();
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get orientation() {
+                return demoProps().orientation;
+              },
+              get description() {
+                return demoProps().description;
+              },
+              get errorMessage() {
+                return demoProps().errorMessage;
+              },
+              get isEmphasized() {
+                return demoProps().isEmphasized;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              get isReadOnly() {
+                return demoProps().isReadOnly;
+              },
+              get isRequired() {
+                return demoProps().isRequired;
+              },
+              get isInvalid() {
+                return demoProps().isInvalid;
+              },
+              onChange: (nextValue: string) => {
+                setValue(nextValue);
+                setDemoProps((current: RadioGroupDemoProps) => ({
+                  ...current,
+                  selectedValue: nextValue,
+                }));
+              },
+            },
+            radioGroupItems.map((item) =>
+              hc(SolidSpectrumRadio, { value: item.value }, [item.label]),
+            ),
           ),
         ],
       ),
