@@ -389,6 +389,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 NumberField directly; Solid uses @proyecto-viviana/solid-spectrum NumberField with S2-derived label, field group, input, stepper buttons, help text, and validation styling.",
   }),
 
+  picker: styledLiveOfficialEntry({
+    slug: "picker",
+    title: "Picker",
+    category: "Components",
+    summary:
+      "Single-selection dropdown with S2 field layout, trigger, selected value, help text, validation, and listbox state.",
+    styledSummary: "React Spectrum Picker vs Solid Spectrum Picker.",
+    styledNote:
+      "React uses @react-spectrum/s2 Picker directly; Solid uses @proyecto-viviana/solid-spectrum Picker with S2-derived field layout, trigger, selected value, icons, help text, and validation styling over the Solid Select primitive.",
+  }),
+
   slider: styledLiveOfficialEntry({
     slug: "slider",
     title: "Slider",

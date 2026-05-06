@@ -24,6 +24,7 @@ import {
   radioGroupSizeOptions,
 } from "./radiogroup-demo";
 import { numberFieldDemoDefaults, numberFieldSizeOptions } from "./numberfield-demo";
+import { pickerDemoDefaults, pickerKeyOptions, pickerSizeOptions } from "./picker-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
 import {
   sliderDemoDefaults,
@@ -1032,6 +1033,110 @@ const textAreaControls: ComponentControlGroup = {
   note: "Modeled from the S2 TextArea source as the multiline TextField sibling. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, auto-height content, and controlled value changes into both stacks.",
 };
 
+const pickerControls: ComponentControlGroup = {
+  slug: "picker",
+  title: "Picker",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: pickerDemoDefaults.label,
+    },
+    {
+      name: "selectedKey",
+      label: "selectedKey",
+      kind: "radio",
+      defaultValue: pickerDemoDefaults.selectedKey,
+      options: options(pickerKeyOptions),
+    },
+    {
+      name: "placeholder",
+      label: "placeholder",
+      kind: "text",
+      defaultValue: pickerDemoDefaults.placeholder,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: pickerDemoDefaults.size,
+      options: options(pickerSizeOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: pickerDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: pickerDemoDefaults.errorMessage,
+    },
+    {
+      name: "isQuiet",
+      label: "isQuiet",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "selectedKey",
+    "defaultSelectedKey",
+    "onSelectionChange",
+    "placeholder",
+    "size",
+    "isQuiet",
+    "description",
+    "errorMessage",
+    "isDisabled",
+    "isRequired",
+    "isInvalid",
+    "items",
+    "children",
+    "disabledKeys",
+    "menuWidth",
+    "direction",
+    "align",
+    "shouldFlip",
+    "loadingState",
+    "renderValue",
+    "onLoadMore",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 Picker docs and source. The viewer drives label, selected key, placeholder, S2 size, quiet, description/error text, disabled, required, and invalid state into both stacks.",
+};
+
 const actionButtonControls: ComponentControlGroup = {
   slug: "actionbutton",
   title: "ActionButton",
@@ -1619,6 +1724,7 @@ export const componentControlGroups = {
   checkboxgroup: checkboxGroupControls,
   linkbutton: linkButtonControls,
   numberfield: numberFieldControls,
+  picker: pickerControls,
   radiogroup: radioGroupControls,
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,

@@ -16,6 +16,8 @@ import {
   Heading as SpectrumHeading,
   LinkButton as SpectrumLinkButton,
   NumberField as SpectrumNumberField,
+  Picker as SpectrumPicker,
+  PickerItem as SpectrumPickerItem,
   Provider as SpectrumProvider,
   Radio as SpectrumRadio,
   RadioGroup as SpectrumRadioGroup,
@@ -75,6 +77,12 @@ import {
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
 } from "@comparison/data/numberfield-demo";
+import {
+  normalizePickerDemoProps,
+  pickerDemoPropsFromWindow,
+  pickerItems,
+  serializePickerDemoProps,
+} from "@comparison/data/picker-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -266,6 +274,7 @@ export const reactStyledFixtures = {
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
+  picker: () => jsx(ReactPickerDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
@@ -971,6 +980,56 @@ function ReactNumberFieldDemo() {
           setValue(nextValue);
           setDemoProps((current) => ({ ...current, value: nextValue }));
         },
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactPickerDemo() {
+  const [demoProps, setDemoProps] = useState(pickerDemoPropsFromWindow);
+  const [selectedKey, setSelectedKey] = useState(() => demoProps.selectedKey);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "picker") {
+        const nextProps = normalizePickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelectedKey(nextProps.selectedKey);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "picker",
+      "data-comparison-control-props": serializePickerDemoProps({
+        ...demoProps,
+        selectedKey,
+      }),
+      "data-comparison-value": selectedKey,
+      children: jsx(SpectrumPicker, {
+        label: demoProps.label,
+        selectedKey,
+        placeholder: demoProps.placeholder,
+        size: demoProps.size,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isQuiet: demoProps.isQuiet,
+        isDisabled: demoProps.isDisabled,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onSelectionChange: (nextKey) => {
+          const nextSelectedKey = String(nextKey);
+          setSelectedKey(nextSelectedKey);
+          setDemoProps((current) => ({ ...current, selectedKey: nextSelectedKey }));
+        },
+        children: pickerItems.map((item) =>
+          jsx(SpectrumPickerItem, { id: item.id, children: item.label }, item.id),
+        ),
       }),
     }),
     colorScheme,

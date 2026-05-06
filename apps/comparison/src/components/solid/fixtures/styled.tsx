@@ -21,6 +21,7 @@ import {
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   LinkButton as SolidSpectrumLinkButton,
   NumberField as SolidSpectrumNumberField,
+  Picker as SolidSpectrumPicker,
   Provider as SolidSpectrumProvider,
   Radio as SolidSpectrumRadio,
   RadioGroup as SolidSpectrumRadioGroup,
@@ -80,6 +81,13 @@ import {
   serializeNumberFieldDemoProps,
   type NumberFieldDemoProps,
 } from "@comparison/data/numberfield-demo";
+import {
+  normalizePickerDemoProps,
+  pickerDemoPropsFromWindow,
+  pickerItems,
+  serializePickerDemoProps,
+  type PickerDemoProps,
+} from "@comparison/data/picker-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -360,6 +368,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
+  picker: () => h(SolidSpectrumPickerDemo, {}),
   radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
   linkbutton: () => h(SolidSpectrumLinkButtonDemo, {}),
   cardview: () => h(SolidSpectrumCardViewDemo, {}),
@@ -1283,6 +1292,116 @@ function SolidSpectrumNumberFieldDemo() {
               setDemoProps((current: NumberFieldDemoProps) => ({
                 ...current,
                 value: nextValue,
+              }));
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumPickerDemo() {
+  const [demoProps, setDemoProps] = createSignal<PickerDemoProps>(pickerDemoPropsFromWindow());
+  const [selectedKey, setSelectedKey] = createSignal(demoProps().selectedKey);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "picker") {
+        const nextProps = normalizePickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelectedKey(nextProps.selectedKey);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializePickerDemoProps({
+      ...demoProps(),
+      selectedKey: selectedKey(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "picker",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            return selectedKey();
+          },
+        },
+        [
+          hc(SolidSpectrumPicker, {
+            items: pickerItems,
+            getKey: (item: (typeof pickerItems)[number]) => item.id,
+            getTextValue: (item: (typeof pickerItems)[number]) => item.label,
+            get label() {
+              return demoProps().label;
+            },
+            get selectedKey() {
+              return selectedKey();
+            },
+            get placeholder() {
+              return demoProps().placeholder;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get isQuiet() {
+              return demoProps().isQuiet;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onSelectionChange: (nextKey: unknown) => {
+              const nextSelectedKey = String(nextKey);
+              setSelectedKey(nextSelectedKey as PickerDemoProps["selectedKey"]);
+              setDemoProps((current: PickerDemoProps) => ({
+                ...current,
+                selectedKey: nextSelectedKey as PickerDemoProps["selectedKey"],
               }));
             },
           }),

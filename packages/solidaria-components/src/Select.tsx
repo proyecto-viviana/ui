@@ -17,6 +17,7 @@ import {
   useContext,
   For,
   Show,
+  untrack,
 } from "solid-js";
 import {
   createSelect,
@@ -244,6 +245,7 @@ export interface SelectOptionProps<T> extends Omit<AriaOptionProps, "children" |
 
 interface SelectContextValue<T> {
   state: SelectState<T>;
+  rootRef: Accessor<HTMLElement | null>;
   triggerProps: JSX.HTMLAttributes<HTMLElement>;
   valueProps: JSX.HTMLAttributes<HTMLElement>;
   labelProps: JSX.HTMLAttributes<HTMLElement>;
@@ -395,6 +397,26 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
         ? state.selectedKeys() === "all" || (state.selectedKeys() as Set<Key>).size > 0
         : state.selectedKey() != null,
   }));
+  const childRenderValues: SelectRenderProps = {
+    get isOpen() {
+      return isOpen();
+    },
+    get isFocused() {
+      return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible();
+    },
+    get isDisabled() {
+      return resolveDisabled();
+    },
+    get isRequired() {
+      return !!ariaProps.isRequired;
+    },
+    get isSelected() {
+      return hasSelection();
+    },
+  };
 
   const renderProps = useRenderProps(
     {
@@ -448,7 +470,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     },
   };
   const focusTrigger = () => {
-    rootRef?.querySelector<HTMLElement>('[role="combobox"]')?.focus();
+    rootRef?.querySelector<HTMLElement>("button[aria-haspopup='listbox']")?.focus();
   };
   const hasSelection = () =>
     state.selectionMode() === "multiple"
@@ -508,88 +530,94 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     }
   });
 
-  const rootChildren = () => (
-    <>
-      <div {...containerProps}>
-        <select
-          {...hiddenSelectProps}
-          name={hasSelection() ? undefined : stateProps.name}
-          required={(ariaProps.isRequired && !hasSelection()) || undefined}
-          onInvalid={handleHiddenSelectInvalid}
-          onChange={handleHiddenSelectChange}
-        >
-          <Show when={state.selectionMode() !== "multiple"}>
-            <option selected={state.selectedKey() == null} />
+  const RootChildren = () => {
+    const selectChildren = untrack(() =>
+      typeof local.children === "function"
+        ? (local.children as (values: SelectRenderProps) => JSX.Element)(childRenderValues)
+        : local.children,
+    );
+
+    return (
+      <>
+        <div {...containerProps}>
+          <select
+            {...hiddenSelectProps}
+            name={hasSelection() ? undefined : stateProps.name}
+            required={(ariaProps.isRequired && !hasSelection()) || undefined}
+            onInvalid={handleHiddenSelectInvalid}
+            onChange={handleHiddenSelectChange}
+          >
+            <Show when={state.selectionMode() !== "multiple"}>
+              <option selected={state.selectedKey() == null} />
+            </Show>
+            <For each={stateProps.items}>
+              {(item) => {
+                const itemRecord = isObjectRecord(item) ? item : null;
+                const fallbackKey =
+                  itemRecord != null ? (toKey(itemRecord.key) ?? toKey(itemRecord.id)) : undefined;
+                const key = stateProps.getKey?.(item) ?? fallbackKey ?? String(item);
+                const fallbackTextValue =
+                  itemRecord != null
+                    ? (toTextValue(itemRecord.textValue) ?? toTextValue(itemRecord.label))
+                    : undefined;
+                const textValue =
+                  stateProps.getTextValue?.(item) ?? fallbackTextValue ?? String(item);
+                const selectedKeys = state.selectedKeys();
+                const isSelected =
+                  state.selectionMode() === "multiple"
+                    ? selectedKeys === "all"
+                      ? true
+                      : (selectedKeys as Set<Key>).has(key)
+                    : key === state.selectedKey();
+                return (
+                  <option value={String(key)} selected={isSelected}>
+                    {textValue}
+                  </option>
+                );
+              }}
+            </For>
+          </select>
+          <Show when={state.selectionMode() === "multiple" && stateProps.name}>
+            <For
+              each={
+                state.selectedKeys() === "all"
+                  ? Array.from(state.collection()).map((item) => item.key)
+                  : Array.from(state.selectedKeys() as Set<Key>)
+              }
+            >
+              {(key) => (
+                <input
+                  type="hidden"
+                  name={stateProps.name}
+                  form={ariaProps.form}
+                  value={String(key)}
+                  disabled={resolveDisabled()}
+                />
+              )}
+            </For>
           </Show>
-          <For each={stateProps.items}>
-            {(item) => {
-              const itemRecord = isObjectRecord(item) ? item : null;
-              const fallbackKey =
-                itemRecord != null ? (toKey(itemRecord.key) ?? toKey(itemRecord.id)) : undefined;
-              const key = stateProps.getKey?.(item) ?? fallbackKey ?? String(item);
-              const fallbackTextValue =
-                itemRecord != null
-                  ? (toTextValue(itemRecord.textValue) ?? toTextValue(itemRecord.label))
-                  : undefined;
-              const textValue =
-                stateProps.getTextValue?.(item) ?? fallbackTextValue ?? String(item);
-              const selectedKeys = state.selectedKeys();
-              const isSelected =
-                state.selectionMode() === "multiple"
-                  ? selectedKeys === "all"
-                    ? true
-                    : (selectedKeys as Set<Key>).has(key)
-                  : key === state.selectedKey();
-              return (
-                <option value={String(key)} selected={isSelected}>
-                  {textValue}
-                </option>
-              );
-            }}
-          </For>
-        </select>
-        <Show when={state.selectionMode() === "multiple" && stateProps.name}>
-          <For
-            each={
-              state.selectedKeys() === "all"
-                ? Array.from(state.collection()).map((item) => item.key)
-                : Array.from(state.selectedKeys() as Set<Key>)
+          <Show
+            when={
+              state.selectionMode() !== "multiple" && stateProps.name && state.selectedKey() != null
             }
           >
-            {(key) => (
-              <input
-                type="hidden"
-                name={stateProps.name}
-                form={ariaProps.form}
-                value={String(key)}
-                disabled={resolveDisabled()}
-              />
-            )}
-          </For>
+            <input
+              type="hidden"
+              name={stateProps.name}
+              form={ariaProps.form}
+              value={String(state.selectedKey())}
+              disabled={resolveDisabled()}
+            />
+          </Show>
+        </div>
+        <Show when={ariaProps.label}>
+          <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
         </Show>
-        <Show
-          when={
-            state.selectionMode() !== "multiple" && stateProps.name && state.selectedKey() != null
-          }
-        >
-          <input
-            type="hidden"
-            name={stateProps.name}
-            form={ariaProps.form}
-            value={String(state.selectedKey())}
-            disabled={resolveDisabled()}
-          />
-        </Show>
-      </div>
-      <Show when={ariaProps.label}>
-        <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
-      </Show>
-      {typeof local.children === "function"
-        ? (local.children as (values: SelectRenderProps) => JSX.Element)(renderValues())
-        : local.children}
-    </>
-  );
-  const rootProps = () =>
+        {selectChildren}
+      </>
+    );
+  };
+  const baseRootProps = () =>
     ({
       ...domProps(),
       ...cleanHoverProps(),
@@ -598,20 +626,32 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       style: renderProps.style(),
       slot: local.slot,
       "data-open": isOpen() || undefined,
-      "data-focused": isFocused() || undefined,
-      "data-focus-visible": isFocusVisible() || undefined,
       "data-disabled": resolveDisabled() || undefined,
       "data-required": ariaProps.isRequired || undefined,
       "data-invalid": isInvalid() || undefined,
       "data-hovered": isHovered() || undefined,
-      children: rootChildren(),
     }) as JSX.HTMLAttributes<HTMLDivElement>;
+  const RootContent = () => {
+    const renderedRootChildren = <RootChildren />;
+    const rootProps = () =>
+      ({
+        ...baseRootProps(),
+        children: renderedRootChildren,
+      }) as JSX.HTMLAttributes<HTMLDivElement>;
+
+    return local.render ? (
+      local.render(rootProps(), renderValues())
+    ) : (
+      <div {...baseRootProps()}>{renderedRootChildren}</div>
+    );
+  };
 
   return (
     <SelectContext.Provider
       value={
         {
           state,
+          rootRef: () => rootRef ?? null,
           get triggerProps() {
             return triggerPropsWithValidation();
           },
@@ -636,27 +676,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     >
       <SelectStateContext.Provider value={state}>
         <FieldErrorContext.Provider value={fieldErrorContext}>
-          {local.render ? (
-            local.render(rootProps(), renderValues())
-          ) : (
-            <div
-              {...domProps()}
-              {...cleanHoverProps()}
-              ref={setRootRef}
-              class={renderProps.class()}
-              style={renderProps.style()}
-              slot={local.slot}
-              data-open={isOpen() || undefined}
-              data-focused={isFocused() || undefined}
-              data-focus-visible={isFocusVisible() || undefined}
-              data-disabled={resolveDisabled() || undefined}
-              data-required={ariaProps.isRequired || undefined}
-              data-invalid={isInvalid() || undefined}
-              data-hovered={isHovered() || undefined}
-            >
-              {rootChildren()}
-            </div>
-          )}
+          <RootContent />
         </FieldErrorContext.Provider>
       </SelectStateContext.Provider>
     </SelectContext.Provider>
@@ -714,6 +734,8 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
     const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
+  const triggerAriaProps = () => context.triggerProps as Record<string, unknown>;
+  const menuAriaProps = () => context.menuProps as Record<string, unknown>;
   return (
     <button
       ref={triggerRef}
@@ -721,6 +743,16 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       {...cleanTriggerProps()}
       {...cleanHoverProps()}
       type="button"
+      id={triggerAriaProps().id as string | undefined}
+      tabIndex={state.isDisabled ? undefined : 0}
+      aria-label={triggerAriaProps()["aria-label"] as string | undefined}
+      aria-labelledby={triggerAriaProps()["aria-labelledby"] as string | undefined}
+      aria-haspopup="listbox"
+      aria-expanded={isOpen()}
+      aria-controls={isOpen() ? (menuAriaProps().id as string | undefined) : undefined}
+      aria-disabled={state.isDisabled || undefined}
+      aria-required={triggerAriaProps()["aria-required"] as boolean | undefined}
+      aria-describedby={triggerAriaProps()["aria-describedby"] as string | undefined}
       class={renderProps.class()}
       style={renderProps.style()}
       data-open={isOpen() || undefined}
@@ -830,7 +862,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   if (!context) {
     throw new Error("SelectListBox must be used within a Select");
   }
-  const { menuProps, state: selectState, isOpen } = context;
+  const { menuProps, rootRef, state: selectState, isOpen } = context;
   const state = selectState as SelectState<T>;
 
   createEffect(() => {
@@ -849,7 +881,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   let listBoxRef: HTMLUListElement | undefined;
 
   createInteractOutside({
-    ref: () => listBoxRef ?? null,
+    ref: () => rootRef() ?? listBoxRef ?? null,
     onInteractOutside: () => {
       if (isOpen()) {
         state.close();
@@ -1069,7 +1101,6 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
       return;
     }
     state.setSelectedKey(local.id);
-    state.setSelectedKeys([local.id]);
     state.close();
   };
 

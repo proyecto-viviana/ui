@@ -363,7 +363,6 @@ export function createSelect<T>(
         fieldProps as Record<string, unknown>,
         {
           id: buttonId,
-          role: "combobox",
           type: "button",
           tabIndex: isDisabled ? undefined : 0,
           "aria-haspopup": "listbox",
