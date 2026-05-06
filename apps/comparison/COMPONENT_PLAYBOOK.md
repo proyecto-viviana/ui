@@ -96,6 +96,12 @@ For each component:
   `data-comparison-control-props` on both stacks.
 - Add a Playwright test that changes the side-panel controls and asserts both
   stacks received the same props and rendered state.
+- Do not treat serialized props or comparison markers as sufficient proof that
+  controls work. The Playwright guard must assert the mounted component DOM and
+  behavior changed as well: selected item, disabled/read-only state, layout,
+  visible slot content, geometry, or another real rendered effect. This is the
+  main guard against reactive wiring bugs where the docs payload updates but the
+  Solid component stays visually stale.
 - Keep the side-panel controls physically clickable at the default Playwright
   viewport. Sticky navigation must not cover long control forms.
 - Run `e2e/modeled-controls-contract.spec.ts`; it is the shared guard that every

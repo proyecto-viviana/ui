@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { SegmentedControl, SegmentedControlItem } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
@@ -48,6 +48,33 @@ describe("SegmentedControl (solid-spectrum)", () => {
     expect(screen.getByRole("radio", { name: "List" })).toHaveAttribute("aria-checked", "false");
     expect(grid).toHaveAttribute("aria-checked", "true");
     expect(onSelectionChange).toHaveBeenCalledWith("grid");
+  });
+
+  it("updates the rendered selection when selectedKey changes externally", async () => {
+    function Demo() {
+      const [selectedKey, setSelectedKey] = createSignal("list");
+      return (
+        <>
+          <button type="button" onClick={() => setSelectedKey("grid")}>
+            Switch
+          </button>
+          <SegmentedControl aria-label="View mode" selectedKey={selectedKey()}>
+            <SegmentedControlItem id="list">List</SegmentedControlItem>
+            <SegmentedControlItem id="grid">Grid</SegmentedControlItem>
+          </SegmentedControl>
+        </>
+      );
+    }
+
+    render(() => <Demo />);
+
+    expect(screen.getByRole("radio", { name: "List" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "Grid" })).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(screen.getByRole("button", { name: "Switch" }));
+
+    expect(screen.getByRole("radio", { name: "List" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("radio", { name: "Grid" })).toHaveAttribute("aria-checked", "true");
   });
 
   it("passes disabled and justified state to the rendered control", async () => {

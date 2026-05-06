@@ -1,5 +1,14 @@
 import h from "solid-js/h";
-import { createEffect, createMemo, createSignal, onCleanup, onMount, type JSX } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+  type JSX,
+} from "solid-js";
+import { createComponent } from "solid-js/web";
 import { hc, renderProp } from "../solid-h";
 import {
   ActionButton as SolidSpectrumActionButton,
@@ -1451,35 +1460,34 @@ function SolidSpectrumSegmentedControlDemo() {
           },
         },
         [
-          hc(
-            SolidSpectrumSegmentedControl,
-            {
-              "aria-label": "View mode",
-              "data-comparison-control-root": "segmentedcontrol",
-              ref: (element: HTMLElement) => {
-                segmentedControlRoot = element;
-              },
-              get "data-comparison-control-props"() {
-                return JSON.stringify(demoProps());
-              },
-              get isJustified() {
-                return demoProps().isJustified;
-              },
-              get isDisabled() {
-                return demoProps().isDisabled;
-              },
-              get selectedKey() {
-                return selectedKey();
-              },
-              onSelectionChange: (key: string | number) =>
-                setSelectedKey(String(key) as SegmentedControlKey),
+          createComponent(Show, {
+            get when() {
+              return `${selectedKey()}|${demoProps().isJustified}|${demoProps().isDisabled}`;
             },
-            [
-              hc(SolidSpectrumSegmentedControlItem, { id: "list" }, ["List"]),
-              hc(SolidSpectrumSegmentedControlItem, { id: "grid" }, ["Grid"]),
-              hc(SolidSpectrumSegmentedControlItem, { id: "board" }, ["Board"]),
-            ],
-          ),
+            keyed: true,
+            children: (_key: string) =>
+              hc(
+                SolidSpectrumSegmentedControl,
+                {
+                  "aria-label": "View mode",
+                  "data-comparison-control-root": "segmentedcontrol",
+                  ref: (element: HTMLElement) => {
+                    segmentedControlRoot = element;
+                  },
+                  "data-comparison-control-props": JSON.stringify(demoProps()),
+                  isJustified: demoProps().isJustified,
+                  isDisabled: demoProps().isDisabled,
+                  selectedKey: selectedKey(),
+                  onSelectionChange: (key: string | number) =>
+                    setSelectedKey(String(key) as SegmentedControlKey),
+                },
+                [
+                  hc(SolidSpectrumSegmentedControlItem, { id: "list" }, ["List"]),
+                  hc(SolidSpectrumSegmentedControlItem, { id: "grid" }, ["Grid"]),
+                  hc(SolidSpectrumSegmentedControlItem, { id: "board" }, ["Board"]),
+                ],
+              ),
+          }),
         ],
       ),
     ],

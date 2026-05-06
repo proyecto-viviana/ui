@@ -332,6 +332,7 @@ test.describe("comparison collection button controls visual parity", () => {
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
     await form.locator('input[name="selectedKey"][value="grid"]').check();
     await form.locator('input[name="isJustified"]').check();
+    await form.locator('input[name="isDisabled"]').check();
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -351,8 +352,38 @@ test.describe("comparison collection button controls visual parity", () => {
       "data-comparison-selected-key",
       "grid",
     );
-    expect(await controlProps(reactRoot)).toMatchObject({ selectedKey: "grid", isJustified: true });
-    expect(await controlProps(solidRoot)).toMatchObject({ selectedKey: "grid", isJustified: true });
+    expect(await controlProps(reactRoot)).toMatchObject({
+      selectedKey: "grid",
+      isJustified: true,
+      isDisabled: true,
+    });
+    expect(await controlProps(solidRoot)).toMatchObject({
+      selectedKey: "grid",
+      isJustified: true,
+      isDisabled: true,
+    });
+    await expect(reactRoot.getByRole("radio", { name: "Grid" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await expect(solidRoot.getByRole("radio", { name: "Grid" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await expect(solidRoot).toHaveAttribute("data-justified", "true");
+    await expect(reactRoot).toHaveAttribute("data-disabled", "true");
+    await expect(solidRoot).toHaveAttribute("data-disabled", "true");
+    await expect(reactRoot.getByRole("radio", { name: "Grid" })).toBeDisabled();
+    await expect(solidRoot.getByRole("radio", { name: "Grid" })).toBeDisabled();
+
+    const reactGeometry = await segmentedControlGeometry(reactRoot);
+    const solidGeometry = await segmentedControlGeometry(solidRoot);
+    expect(
+      Math.max(...reactGeometry.itemWidths) - Math.min(...reactGeometry.itemWidths),
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.max(...solidGeometry.itemWidths) - Math.min(...solidGeometry.itemWidths),
+    ).toBeLessThanOrEqual(1);
   });
 
   test("SegmentedControl keyboard selection matches React Spectrum", async ({ page }) => {
