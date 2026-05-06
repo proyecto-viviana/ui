@@ -2,10 +2,18 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
 import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
+const invalidRequiredXLValue = "Notes\nFollow up\nQA owner";
+const invalidRequiredXLQuery = `?isInvalid=true&isRequired=true&size=XL&value=${encodeURIComponent(
+  invalidRequiredXLValue,
+)}`;
+
 async function textAreaFixtures(page: Page, query = "") {
   await pinComparisonTheme(page, "dark");
   await page.goto(`/components/textarea/${query}`);
   await page.waitForLoadState("networkidle");
+  await page.evaluate(async () => {
+    await document.fonts?.ready;
+  });
   await expect(page.locator("astro-island")).toHaveCount(0);
 
   const section = await styledSection(page);
@@ -31,20 +39,69 @@ async function textAreaFixtures(page: Page, query = "") {
 }
 
 async function waitForTextAreaAutoHeight(page: Page) {
-  await page.waitForFunction(() => {
-    const roots = Array.from(
-      document.querySelectorAll<HTMLElement>('[data-comparison-control-root="textarea"]'),
-    );
-    const textareas = roots
-      .map((root) => root.querySelector<HTMLTextAreaElement>("textarea"))
-      .filter((textarea): textarea is HTMLTextAreaElement => textarea != null);
-    const heights = textareas.map((textarea) => textarea.offsetHeight);
+  await page.waitForFunction(async () => {
+    type TextAreaState = {
+      offsetHeight: number;
+      scrollHeight: number;
+      rootHeight: number;
+      value: string;
+    };
+
+    const readState = (): TextAreaState[] | null => {
+      const roots = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-comparison-control-root="textarea"]'),
+      );
+      const textareas = roots
+        .map((root) => root.querySelector<HTMLTextAreaElement>("textarea"))
+        .filter((textarea): textarea is HTMLTextAreaElement => textarea != null);
+
+      if (roots.length !== 2 || textareas.length !== 2) {
+        return null;
+      }
+
+      return textareas.map((textarea, index) => ({
+        offsetHeight: textarea.offsetHeight,
+        scrollHeight: textarea.scrollHeight,
+        rootHeight: roots[index]?.getBoundingClientRect().height ?? 0,
+        value: textarea.value,
+      }));
+    };
+
+    const first = readState();
+    if (
+      first == null ||
+      first.some(
+        (state) =>
+          state.value.length === 0 ||
+          state.offsetHeight === 0 ||
+          state.scrollHeight === 0 ||
+          state.rootHeight === 0,
+      )
+    ) {
+      return false;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 180));
+
+    const second = readState();
+    if (second == null) {
+      return false;
+    }
 
     return (
-      roots.length === 2 &&
-      textareas.length === 2 &&
-      textareas.every((textarea) => Math.abs(textarea.offsetHeight - textarea.scrollHeight) <= 1) &&
-      Math.abs(heights[0] - heights[1]) <= 2
+      second.every((state, index) => {
+        const previous = first[index];
+        return (
+          state.value.length > 0 &&
+          Math.abs(state.offsetHeight - state.scrollHeight) <= 2 &&
+          Math.abs(state.offsetHeight - previous.offsetHeight) <= 1 &&
+          Math.abs(state.scrollHeight - previous.scrollHeight) <= 1 &&
+          Math.abs(state.rootHeight - previous.rootHeight) <= 1
+        );
+      }) &&
+      Math.abs(second[0].offsetHeight - second[1].offsetHeight) <= 2 &&
+      Math.abs(second[0].scrollHeight - second[1].scrollHeight) <= 2 &&
+      Math.abs(second[0].rootHeight - second[1].rootHeight) <= 2
     );
   });
 }
@@ -145,7 +202,7 @@ function expectNear(
 
 test.describe("comparison TextArea visual parity", () => {
   test("invalid required XL state has committed pair screenshots", async ({ page }) => {
-    const fixtures = await textAreaFixtures(page, "?isInvalid=true&isRequired=true&size=XL");
+    const fixtures = await textAreaFixtures(page, invalidRequiredXLQuery);
 
     await clearPointer(page);
     await expectScreenshotPair(
@@ -159,19 +216,19 @@ test.describe("comparison TextArea visual parity", () => {
   });
 
   test("invalid required XL geometry matches React Spectrum", async ({ page }) => {
-    const fixtures = await textAreaFixtures(page, "?isInvalid=true&isRequired=true&size=XL");
+    const fixtures = await textAreaFixtures(page, invalidRequiredXLQuery);
 
     expect(await controlProps(fixtures.reactRoot)).toMatchObject({
       size: "XL",
       isInvalid: true,
       isRequired: true,
-      value: "Quarterly planning notes\nFollow up with design.",
+      value: invalidRequiredXLValue,
     });
     expect(await controlProps(fixtures.solidRoot)).toMatchObject({
       size: "XL",
       isInvalid: true,
       isRequired: true,
-      value: "Quarterly planning notes\nFollow up with design.",
+      value: invalidRequiredXLValue,
     });
 
     const react = await textAreaGeometry(fixtures.reactRoot);

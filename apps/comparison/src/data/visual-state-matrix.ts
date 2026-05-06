@@ -923,7 +923,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
         "e2e/textarea-visual.spec.ts-snapshots/textarea-invalid-required-xl-react-chromium-linux.png",
         "e2e/textarea-visual.spec.ts-snapshots/textarea-invalid-required-xl-solid-chromium-linux.png",
       ],
-      note: "Invalid required XL TextArea state is snapshotted and asserts controlled multiline value, label/textarea/help-text geometry, auto-height, invalid icon placement, border/background color, and aria state against React Spectrum.",
+      note: "Invalid required XL TextArea state is snapshotted with deterministic short multiline content and asserts controlled value, settled auto-height, label/textarea/help-text geometry, invalid icon placement, border/background color, and aria state against React Spectrum.",
     },
     {
       id: "styled.value.change",

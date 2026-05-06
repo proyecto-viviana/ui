@@ -289,6 +289,13 @@ marker survives the browser event cycle. Clear buttons need an immediate
 post-click check that the value marker is empty and focus is already back on the
 same text-entry node, without waiting for a delayed refocus.
 
+For auto-sized or wrapping text fixtures, make the screenshot value
+deterministic. Use explicit line breaks or text that cannot cross a wrapping
+boundary under fallback fonts. Do not let committed screenshot dimensions depend
+on remote font timing; wait for font readiness where available, then assert the
+React and Solid text boxes have stayed settled and equal before taking the
+snapshot.
+
 Example artifacts:
 
 ```bash
