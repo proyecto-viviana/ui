@@ -448,6 +448,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/single-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive children, href, variant, fillStyle, size, staticColor, icon placement, and disabled props into both stacks.",
     },
+    {
+      id: "styled.primary-fill-colors",
+      label: "Primary fill colors",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/single-button-controls-visual.spec.ts",
+      note: "Primary filled LinkButton computed background, border, root text, and label text colors are asserted against React Spectrum in light and dark themes, and are guarded against comparison-page anchor resets.",
+    },
   ],
   togglebuttongroup: [
     assertedDefaultState({

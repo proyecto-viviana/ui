@@ -807,6 +807,11 @@ a {
   text-decoration: none;
 }
 
+.comparison-reference-canvas a {
+  color: revert-layer;
+  text-decoration: revert-layer;
+}
+
 .page-shell {
   position: relative;
   z-index: 1;

@@ -127,6 +127,24 @@ async function controlProps(root: Locator) {
   return JSON.parse(value ?? "{}") as Record<string, string | boolean | number>;
 }
 
+async function controlColors(root: Locator) {
+  return root.evaluate((element) => {
+    const rootStyle = window.getComputedStyle(element);
+    const text = element.querySelector<HTMLElement>('[data-rsp-slot="text"], [data-slot="label"]');
+    const textStyle = text == null ? null : window.getComputedStyle(text);
+    const referenceFrame = element.closest<HTMLElement>(".comparison-reference-frame");
+    const referenceStyle = referenceFrame == null ? null : window.getComputedStyle(referenceFrame);
+
+    return {
+      backgroundColor: rootStyle.backgroundColor,
+      borderColor: rootStyle.borderColor,
+      canvasColor: referenceStyle?.color ?? null,
+      color: rootStyle.color,
+      textColor: textStyle?.color ?? null,
+    };
+  });
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -199,6 +217,37 @@ test.describe("comparison single button-derived visual parity", () => {
 
     await expect(fixtures.reactControl).toHaveAttribute("href", "https://example.com/docs");
     await expect(fixtures.solidControl).toHaveAttribute("href", "https://example.com/docs");
+  });
+
+  test("LinkButton primary fill colors are not overridden by comparison anchor styles", async ({
+    page,
+  }) => {
+    for (const theme of ["light", "dark"] as const) {
+      await pinComparisonTheme(page, theme);
+      await page.goto("/components/linkbutton/?variant=primary&fillStyle=fill");
+      await page.waitForLoadState("networkidle");
+      await expect(page.locator("astro-island")).toHaveCount(0);
+      await clearPointer(page);
+
+      const section = await styledSection(page);
+      const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+      const solidPanel = await frameworkPanel(section, "Solidaria stack");
+      const reactRoot = reactPanel.locator('[data-comparison-control-root="linkbutton"]').first();
+      const solidRoot = solidPanel.locator('[data-comparison-control-root="linkbutton"]').first();
+      const react = await controlColors(reactRoot);
+      const solid = await controlColors(solidRoot);
+
+      expect(solid.backgroundColor).toBe(react.backgroundColor);
+      expect(solid.borderColor).toBe(react.borderColor);
+      expect(solid.color).toBe(react.color);
+      expect(solid.textColor).toBe(react.textColor);
+      expect(react.color).toBe(react.textColor);
+      expect(solid.color).toBe(solid.textColor);
+      expect(react.color).not.toBe(react.canvasColor);
+      expect(solid.color).not.toBe(solid.canvasColor);
+      expect(react.backgroundColor).not.toBe(react.color);
+      expect(solid.backgroundColor).not.toBe(solid.color);
+    }
   });
 
   test("ToggleButton selected URL state is reflected on both stacks", async ({ page }) => {
