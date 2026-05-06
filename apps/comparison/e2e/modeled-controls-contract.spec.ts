@@ -18,6 +18,13 @@ const textControlValues: Record<string, string> = {
   wrapWidth: "112",
 };
 
+const numberFieldTextControlValues: Record<string, string> = {
+  value: "8",
+  minValue: "0",
+  maxValue: "20",
+  step: "2",
+};
+
 function liveStyledEntry(group: ComponentControlGroup) {
   return comparisonEntries.find(
     (entry) =>
@@ -41,6 +48,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
   }
 
   if (control.kind === "text") {
+    if (group.slug === "numberfield" && control.name in numberFieldTextControlValues) {
+      return numberFieldTextControlValues[control.name];
+    }
     if (control.name === "selectedKeys" && group.slug === "selectboxgroup") {
       return "starter,pro";
     }
@@ -56,8 +66,15 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
   return nonDefaultOption(control);
 }
 
-function expectedSerializedValue(control: ComponentControl, value: string | boolean) {
+function expectedSerializedValue(
+  group: ComponentControlGroup,
+  control: ComponentControl,
+  value: string | boolean,
+) {
   if (control.name === "wrapWidth") {
+    return Number(value);
+  }
+  if (group.slug === "numberfield" && control.name in numberFieldTextControlValues) {
     return Number(value);
   }
   return value;
@@ -120,7 +137,7 @@ test.describe("modeled comparison controls contract", () => {
       const expectedProps: Record<string, unknown> = {};
       for (const control of group.controls) {
         const value = testValueForControl(group, control);
-        expectedProps[control.name] = expectedSerializedValue(control, value);
+        expectedProps[control.name] = expectedSerializedValue(group, control, value);
         await setControlValue(form, control, value);
       }
 

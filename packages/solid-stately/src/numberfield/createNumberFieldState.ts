@@ -262,7 +262,6 @@ export function createNumberFieldState(
   // Commit the current input value
   const commit = () => {
     ensureInitialized();
-    syncControlledValue();
     const p = getProps();
     const input = inputValue();
 

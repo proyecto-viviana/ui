@@ -378,6 +378,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 RadioGroup and Radio directly; Solid uses @proyecto-viviana/solid-spectrum RadioGroup and Radio with S2-derived field layout, wrapper, circle, and press-scale styling.",
   }),
 
+  numberfield: styledLiveOfficialEntry({
+    slug: "numberfield",
+    title: "NumberField",
+    category: "Components",
+    summary:
+      "Numeric text entry with S2 field layout, stepper controls, help text, validation, and controlled value state.",
+    styledSummary: "React Spectrum NumberField vs Solid Spectrum NumberField.",
+    styledNote:
+      "React uses @react-spectrum/s2 NumberField directly; Solid uses @proyecto-viviana/solid-spectrum NumberField with S2-derived label, field group, input, stepper buttons, help text, and validation styling.",
+  }),
+
   textfield: styledLiveOfficialEntry({
     slug: "textfield",
     title: "TextField",

@@ -23,6 +23,7 @@ import {
   radioGroupOrientationOptions,
   radioGroupSizeOptions,
 } from "./radiogroup-demo";
+import { numberFieldDemoDefaults, numberFieldSizeOptions } from "./numberfield-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
 import { switchDemoDefaults, switchSizeOptions } from "./switch-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
@@ -51,7 +52,7 @@ export interface ComponentControl {
   name: string;
   label: string;
   kind: ComponentControlKind;
-  defaultValue: string | boolean;
+  defaultValue: string | boolean | number;
   options?: readonly ComponentControlOption[];
 }
 
@@ -511,6 +512,127 @@ const radioGroupControls: ComponentControlGroup = {
     "aria-describedby",
   ],
   note: "Modeled from the S2 RadioGroup source control surface. The viewer drives label, selected value, S2 size, orientation, description/error text, emphasized treatment, and disabled/read-only/required/invalid states into both stacks.",
+};
+
+const numberFieldControls: ComponentControlGroup = {
+  slug: "numberfield",
+  title: "NumberField",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: numberFieldDemoDefaults.label,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: String(numberFieldDemoDefaults.value),
+    },
+    {
+      name: "placeholder",
+      label: "placeholder",
+      kind: "text",
+      defaultValue: numberFieldDemoDefaults.placeholder,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: numberFieldDemoDefaults.size,
+      options: options(numberFieldSizeOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: numberFieldDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: numberFieldDemoDefaults.errorMessage,
+    },
+    {
+      name: "minValue",
+      label: "minValue",
+      kind: "text",
+      defaultValue: String(numberFieldDemoDefaults.minValue),
+    },
+    {
+      name: "maxValue",
+      label: "maxValue",
+      kind: "text",
+      defaultValue: String(numberFieldDemoDefaults.maxValue),
+    },
+    {
+      name: "step",
+      label: "step",
+      kind: "text",
+      defaultValue: String(numberFieldDemoDefaults.step),
+    },
+    {
+      name: "hideStepper",
+      label: "hideStepper",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "value",
+    "defaultValue",
+    "onChange",
+    "placeholder",
+    "size",
+    "minValue",
+    "maxValue",
+    "step",
+    "hideStepper",
+    "description",
+    "errorMessage",
+    "isDisabled",
+    "isReadOnly",
+    "isRequired",
+    "isInvalid",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 NumberField source control surface. The viewer drives label, controlled numeric value, placeholder, S2 size, min/max/step, stepper visibility, description/error text, and disabled/read-only/required/invalid states into both stacks.",
 };
 
 const textFieldControls: ComponentControlGroup = {
@@ -1391,6 +1513,7 @@ export const componentControlGroups = {
   checkbox: checkboxControls,
   checkboxgroup: checkboxGroupControls,
   linkbutton: linkButtonControls,
+  numberfield: numberFieldControls,
   radiogroup: radioGroupControls,
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,

@@ -452,7 +452,7 @@ export function NumberFieldInput(props: NumberFieldInputProps): JSX.Element {
   );
 
   const cleanInputProps = () => {
-    const { ref: _ref, ...rest } = context.inputProps as Record<string, unknown>;
+    const { ref: _ref, onInput: _onInput, ...rest } = context.inputProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -463,6 +463,14 @@ export function NumberFieldInput(props: NumberFieldInputProps): JSX.Element {
     const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
+  const handleInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (event) => {
+    (
+      context.inputProps as unknown as { onInput?: JSX.EventHandler<HTMLInputElement, InputEvent> }
+    ).onInput?.(event);
+    (domProps as unknown as { onInput?: JSX.EventHandler<HTMLInputElement, InputEvent> }).onInput?.(
+      event,
+    );
+  };
 
   return (
     <input
@@ -471,6 +479,7 @@ export function NumberFieldInput(props: NumberFieldInputProps): JSX.Element {
       {...cleanInputProps()}
       {...cleanFocusProps()}
       {...cleanHoverProps()}
+      onInput={handleInput}
       class={renderProps.class()}
       style={renderProps.style()}
       data-focused={isFocused() || undefined}
@@ -530,6 +539,10 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
     const { ref: _ref, ...rest } = context.incrementButtonProps as Record<string, unknown>;
     return rest;
   };
+  const divButtonProps = () => {
+    const { disabled: _disabled, type: _type, ...rest } = cleanButtonProps();
+    return rest;
+  };
   const cleanPressProps = () => {
     const { ref: _ref, ...rest } = pressProps as Record<string, unknown>;
     return rest;
@@ -540,11 +553,14 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
   };
 
   return (
-    <button
+    <div
       {...domProps}
-      {...cleanButtonProps()}
+      {...divButtonProps()}
       {...cleanPressProps()}
       {...cleanHoverProps()}
+      role="button"
+      tabIndex={-1}
+      aria-disabled={isDisabled() || undefined}
       class={renderProps.class()}
       style={renderProps.style()}
       data-pressed={isPressed() || undefined}
@@ -552,7 +568,7 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
       data-disabled={isDisabled() || undefined}
     >
       {renderProps.renderChildren()}
-    </button>
+    </div>
   );
 }
 
@@ -604,6 +620,10 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
     const { ref: _ref, ...rest } = context.decrementButtonProps as Record<string, unknown>;
     return rest;
   };
+  const divButtonProps = () => {
+    const { disabled: _disabled, type: _type, ...rest } = cleanButtonProps();
+    return rest;
+  };
   const cleanPressProps = () => {
     const { ref: _ref, ...rest } = pressProps as Record<string, unknown>;
     return rest;
@@ -614,11 +634,14 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
   };
 
   return (
-    <button
+    <div
       {...domProps}
-      {...cleanButtonProps()}
+      {...divButtonProps()}
       {...cleanPressProps()}
       {...cleanHoverProps()}
+      role="button"
+      tabIndex={-1}
+      aria-disabled={isDisabled() || undefined}
       class={renderProps.class()}
       style={renderProps.style()}
       data-pressed={isPressed() || undefined}
@@ -626,7 +649,7 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
       data-disabled={isDisabled() || undefined}
     >
       {renderProps.renderChildren()}
-    </button>
+    </div>
   );
 }
 

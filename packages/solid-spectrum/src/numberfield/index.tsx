@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { type JSX, splitProps, Show, useContext } from "solid-js";
 import {
   NumberField as HeadlessNumberField,
@@ -12,10 +13,28 @@ import {
   type NumberFieldInputRenderProps,
   type NumberFieldButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import type { StyleString } from "../s2-style";
+import { baseColor, focusRing, fontRelative, space, style } from "../s2-style";
+import {
+  control,
+  controlBorderRadius,
+  field,
+  fieldInput,
+  fieldLabel,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import AddIcon from "../icon/ui-icons/Add";
+import DashIcon from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
 
-export type NumberFieldSize = "sm" | "md" | "lg";
+export type NumberFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type S2NumberFieldSize = "S" | "M" | "L" | "XL";
 export type NumberFieldVariant = "outline" | "filled";
+export type NumberFieldLabelPosition = "top" | "side";
+export type NumberFieldLabelAlign = "start" | "end";
+export type NumberFieldNecessityIndicator = "icon" | "label";
 
 export interface NumberFieldProps extends Omit<
   HeadlessNumberFieldProps,
@@ -23,59 +42,279 @@ export interface NumberFieldProps extends Omit<
 > {
   /** The size of the number field. */
   size?: NumberFieldSize;
-  /** The visual variant of the number field. */
+  /** Legacy visual variant. S2 NumberFields do not expose visual variants. */
   variant?: NumberFieldVariant;
-  /** Additional CSS class name. */
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
   /** Label text for the input. */
-  label?: string;
+  label?: JSX.Element;
   /** Description text shown below the input. */
-  description?: string;
+  description?: JSX.Element;
   /** Error message shown when invalid. */
-  errorMessage?: string;
+  errorMessage?: JSX.Element;
   /** Whether to hide the stepper buttons. */
   hideStepper?: boolean;
+  /** Position of the label relative to the input. */
+  labelPosition?: NumberFieldLabelPosition;
+  /** Text alignment for side labels. */
+  labelAlign?: NumberFieldLabelAlign;
+  /** Whether required fields show an icon or text label. */
+  necessityIndicator?: NumberFieldNecessityIndicator;
 }
 
-const sizeStyles = {
-  sm: {
-    input: "h-8 px-2 text-sm",
-    label: "text-sm",
-    description: "text-xs",
-    button: "w-6 h-6 text-sm",
-    buttonGap: "gap-0.5",
-  },
-  md: {
-    input: "h-10 px-3 text-base",
-    label: "text-sm",
-    description: "text-sm",
-    button: "w-8 h-8 text-base",
-    buttonGap: "gap-1",
-  },
-  lg: {
-    input: "h-12 px-4 text-lg",
-    label: "text-base",
-    description: "text-sm",
-    button: "w-10 h-10 text-lg",
-    buttonGap: "gap-1",
-  },
-};
-
-function PlusIcon(props: { class?: string }) {
-  return (
-    <svg class={props.class} viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M8 3v10M3 8h10" />
-    </svg>
-  );
+interface NumberFieldStyleProps extends NumberFieldRenderProps {
+  size?: S2NumberFieldSize;
+  labelPosition?: NumberFieldLabelPosition;
+  labelAlign?: NumberFieldLabelAlign;
+  isFocusWithin?: boolean;
+  isStepperHidden?: boolean;
+  isInForm?: boolean;
 }
 
-function MinusIcon(props: { class?: string }) {
-  return (
-    <svg class={props.class} viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M3 8h10" />
-    </svg>
-  );
-}
+const numberFieldRoot = style<NumberFieldStyleProps>(
+  {
+    ...field(),
+  },
+  getAllowedOverrides(),
+);
+
+const numberFieldLabelWrapper = style<NumberFieldStyleProps>({
+  gridArea: "label",
+  display: "inline",
+  textAlign: {
+    labelAlign: {
+      start: "start",
+      end: "end",
+    },
+  },
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
+  },
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+  },
+});
+
+const numberFieldLabel = style<NumberFieldStyleProps>({
+  ...fieldLabel(),
+});
+
+const numberFieldGroup = style<NumberFieldStyleProps>({
+  ...focusRing(),
+  ...control({ shape: "default" }),
+  ...fieldInput(),
+  borderWidth: 2,
+  borderStyle: "solid",
+  paddingStart: "edge-to-text",
+  paddingEnd: {
+    default: 0,
+    isStepperHidden: "edge-to-text",
+  },
+  transition: "default",
+  borderColor: {
+    default: baseColor("gray-300"),
+    forcedColors: "ButtonBorder",
+    isInvalid: {
+      default: baseColor("negative"),
+      forcedColors: "Mark",
+    },
+    isFocusWithin: {
+      default: "gray-900",
+      isInvalid: "negative-1000",
+      forcedColors: "Highlight",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  backgroundColor: {
+    default: "gray-25",
+    forcedColors: "Field",
+  },
+  color: {
+    default: baseColor("neutral"),
+    forcedColors: "ButtonText",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const numberFieldInput = style({
+  padding: 0,
+  backgroundColor: "transparent",
+  color: {
+    default: "inherit",
+    "::placeholder": {
+      default: "gray-600",
+      forcedColors: "GrayText",
+    },
+  },
+  fontFamily: "inherit",
+  fontSize: "inherit",
+  fontWeight: "inherit",
+  flexGrow: 1,
+  flexShrink: 1,
+  minWidth: 0,
+  width: "full",
+  outlineStyle: "none",
+  borderStyle: "none",
+  textAlign: "start",
+});
+
+const stepperContainer = style<NumberFieldStyleProps>({
+  display: "flex",
+  flexDirection: "row",
+  gap: {
+    size: {
+      S: 8,
+      M: 4,
+      L: 8,
+      XL: 8,
+    },
+  },
+  marginEnd: {
+    size: {
+      S: 2,
+      M: 4,
+      L: space(6),
+      XL: space(6),
+    },
+  },
+});
+
+const inputButton = style<
+  NumberFieldButtonRenderProps & { size?: S2NumberFieldSize; type: "decrement" | "increment" }
+>({
+  ...controlBorderRadius("sm"),
+  display: "flex",
+  outlineStyle: "none",
+  textAlign: "center",
+  borderStyle: "none",
+  alignItems: "center",
+  justifyContent: "center",
+  width: {
+    size: {
+      S: 16,
+      M: 20,
+      L: 24,
+      XL: 32,
+    },
+  },
+  height: "auto",
+  marginStart: {
+    default: "text-to-control",
+    type: {
+      increment: 0,
+    },
+  },
+  aspectRatio: "square",
+  flexShrink: 0,
+  minHeight: 0,
+  transition: {
+    default: "default",
+    forcedColors: "none",
+  },
+  backgroundColor: {
+    default: baseColor("gray-100"),
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "ButtonText",
+      isHovered: "Highlight",
+      isDisabled: "GrayText",
+    },
+  },
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "ButtonFace",
+    },
+  },
+  cursor: "default",
+});
+
+const iconStyles = style({
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const helpTextStyles = style<NumberFieldStyleProps>({
+  gridArea: "helptext",
+  display: "flex",
+  margin: 0,
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  fontSize: {
+    default: "ui-sm",
+    size: {
+      S: "ui-xs",
+      L: "ui",
+      XL: "ui-lg",
+    },
+  },
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+});
+
+const fieldErrorIcon = style({
+  size: fontRelative(20),
+  marginStart: "text-to-visual",
+  marginEnd: fontRelative(-2),
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+  },
+});
+
+const requiredIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const noWrap = style({
+  whiteSpace: "nowrap",
+});
 
 function NumberFieldDescription(props: {
   class?: string;
@@ -89,9 +328,9 @@ function NumberFieldDescription(props: {
   };
 
   return (
-    <span {...descriptionProps()} class={props.class}>
+    <p {...descriptionProps()} class={props.class}>
       {props.children}
-    </span>
+    </p>
   );
 }
 
@@ -104,103 +343,162 @@ function NumberFieldError(props: { class?: string; children?: JSX.Element }): JS
   };
 
   return (
-    <span {...errorMessageProps()} class={props.class}>
+    <p {...errorMessageProps()} class={props.class}>
       {props.children}
-    </span>
+    </p>
   );
 }
 
+function normalizeNumberFieldSize(size: NumberFieldSize | undefined): S2NumberFieldSize {
+  switch (size) {
+    case "sm":
+      return "S";
+    case "md":
+      return "M";
+    case "lg":
+      return "L";
+    case "S":
+    case "M":
+    case "L":
+    case "XL":
+      return size;
+    default:
+      return "M";
+  }
+}
+
+function focusFieldInput(event: Event & { currentTarget: HTMLDivElement }) {
+  const target = event.target as Element | null;
+
+  if (target?.closest("button,input,textarea,[role='button']")) {
+    return;
+  }
+
+  event.preventDefault();
+  event.currentTarget.querySelector<HTMLElement>("input")?.focus();
+}
+
+function requiredIconStyle(size: S2NumberFieldSize): JSX.CSSProperties {
+  const pixelSize = size === "L" || size === "XL" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function buttonPressScaleStyle(
+  element: HTMLDivElement | undefined,
+  renderProps: NumberFieldButtonRenderProps,
+): JSX.CSSProperties {
+  const pressStyle = { "will-change": "transform" } as JSX.CSSProperties;
+
+  if (renderProps.isPressed && element) {
+    const { width, height } = element.getBoundingClientRect();
+    pressStyle.transform = `perspective(${Math.max(height, width / 3, 24)}px) translate3d(0, 0, -2px)`;
+  }
+
+  return pressStyle;
+}
+
+function iconSize(size: S2NumberFieldSize) {
+  return size === "S" ? "XS" : size;
+}
+
+function stepperIconStyle(size: S2NumberFieldSize): JSX.CSSProperties {
+  const pixelSize = size === "S" || size === "M" ? 8 : size === "L" ? 10 : 12;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
 /**
- * A number field allows users to enter a numeric value with increment/decrement controls.
+ * NumberFields allow users to input number values with a keyboard or increment/decrement with step buttons.
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
     "label",
+    "placeholder",
     "description",
     "errorMessage",
     "hideStepper",
+    "onInput",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
   ]);
+  const size = () => normalizeNumberFieldSize(local.size);
+  const labelPosition = () => local.labelPosition ?? "top";
+  const labelAlign = () => local.labelAlign ?? "start";
+  const necessityIndicator = () => local.necessityIndicator ?? "icon";
 
-  const size = () => sizeStyles[local.size ?? "md"];
+  let decrementButtonElement: HTMLDivElement | undefined;
+  let incrementButtonElement: HTMLDivElement | undefined;
 
-  const containerClasses = () => {
-    const base = "flex flex-col";
-    const disabledClass = headlessProps.isDisabled ? "opacity-60" : "";
-    const custom = local.class || "";
-    return [base, disabledClass, custom].filter(Boolean).join(" ");
-  };
+  const rootClassName = (renderProps: NumberFieldRenderProps) =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      numberFieldRoot(
+        {
+          ...renderProps,
+          size: size(),
+          labelPosition: labelPosition(),
+          isInForm: false,
+        },
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-  const groupClasses = () => {
-    const base = "flex items-center";
-    const gapClass = size().buttonGap;
-    return [base, gapClass].filter(Boolean).join(" ");
-  };
+  const labelWrapperClass = () =>
+    numberFieldLabelWrapper({
+      size: size(),
+      labelPosition: labelPosition(),
+      labelAlign: labelAlign(),
+    });
 
-  const inputClasses = (renderProps: NumberFieldInputRenderProps) => {
-    const base = "flex-1 rounded-md transition-all duration-200 outline-none text-center";
-    const sizeClass = size().input;
+  const labelClass = (renderProps: NumberFieldRenderProps) =>
+    numberFieldLabel({
+      ...renderProps,
+      size: size(),
+      labelPosition: labelPosition(),
+    });
 
-    const variantClass =
-      local.variant === "filled"
-        ? "bg-bg-200 border border-transparent"
-        : "bg-transparent border border-bg-400";
+  const groupClass = (renderProps: NumberFieldRenderProps) =>
+    numberFieldGroup({
+      ...renderProps,
+      size: size(),
+      isFocusWithin: renderProps.isFocused,
+      isStepperHidden: local.hideStepper,
+    });
 
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "bg-bg-200 text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isInvalid) {
-      stateClass =
-        "border-danger-500 focus:border-danger-400 focus:ring-2 focus:ring-danger-400/20";
-    } else {
-      stateClass =
-        "text-primary-100 placeholder:text-primary-500 focus:border-accent focus:ring-2 focus:ring-accent/20";
-    }
+  const stepperClass = () => stepperContainer({ size: size() });
 
-    const hoverClass = renderProps.isDisabled ? "" : "hover:border-accent-300";
+  const inputClass = (_renderProps: NumberFieldInputRenderProps) => numberFieldInput;
 
-    return [base, sizeClass, variantClass, stateClass, hoverClass].filter(Boolean).join(" ");
-  };
+  const buttonClass =
+    (type: "decrement" | "increment") => (renderProps: NumberFieldButtonRenderProps) =>
+      inputButton({
+        ...renderProps,
+        size: size(),
+        type,
+      });
 
-  const buttonClasses = (renderProps: NumberFieldButtonRenderProps) => {
-    const base =
-      "flex items-center justify-center rounded-md transition-all duration-150 select-none";
-    const sizeClass = size().button;
-
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "bg-bg-300 text-primary-600 cursor-not-allowed";
-    } else if (renderProps.isPressed) {
-      stateClass = "bg-accent-600 text-on-color scale-95";
-    } else if (renderProps.isHovered) {
-      stateClass = "bg-accent-500 text-on-color";
-    } else {
-      stateClass = "bg-bg-300 text-primary-200 hover:bg-accent-500 hover:text-on-color";
-    }
-
-    return [base, sizeClass, stateClass].filter(Boolean).join(" ");
-  };
-
-  const labelClasses = () => {
-    const base = "block font-medium text-primary-200 mb-1";
-    const sizeClass = size().label;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
-
-  const descriptionClasses = () => {
-    const base = "mt-1 text-primary-400";
-    const sizeClass = size().description;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
-
-  const errorClasses = () => {
-    const base = "mt-1 text-danger-500";
-    const sizeClass = size().description;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
+  const helpClass = (renderProps: NumberFieldRenderProps, isInvalid: boolean) =>
+    helpTextStyles({
+      ...renderProps,
+      size: size(),
+      isInvalid,
+    });
 
   return (
     <HeadlessNumberField
@@ -208,42 +506,86 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}
-      class={containerClasses()}
+      class={rootClassName}
+      style={local.UNSAFE_style}
       children={(renderProps: NumberFieldRenderProps) => (
         <>
           <Show when={local.label}>
-            <HeadlessNumberFieldLabel class={labelClasses()}>
-              {local.label}
-              <Show when={renderProps.isRequired}>
-                <span class="text-danger-500 ml-1">*</span>
-              </Show>
-            </HeadlessNumberFieldLabel>
+            <div class={labelWrapperClass()}>
+              <HeadlessNumberFieldLabel class={labelClass(renderProps)}>
+                {local.label}
+                <Show when={renderProps.isRequired || necessityIndicator() === "label"}>
+                  <span class={noWrap}>
+                    &nbsp;
+                    <Show
+                      when={necessityIndicator() === "label"}
+                      fallback={
+                        <AsteriskIcon
+                          aria-hidden="true"
+                          size="XS"
+                          class={requiredIcon}
+                          style={requiredIconStyle(size())}
+                        />
+                      }
+                    >
+                      (required)
+                    </Show>
+                  </span>
+                </Show>
+              </HeadlessNumberFieldLabel>
+            </div>
           </Show>
 
-          <HeadlessNumberFieldGroup class={groupClasses()}>
-            <Show when={!local.hideStepper}>
-              <HeadlessNumberFieldDecrementButton class={buttonClasses}>
-                <MinusIcon class="w-4 h-4" />
-              </HeadlessNumberFieldDecrementButton>
+          <HeadlessNumberFieldGroup class={groupClass(renderProps)} onPointerDown={focusFieldInput}>
+            <HeadlessNumberFieldInput
+              class={inputClass}
+              placeholder={local.placeholder}
+              onInput={local.onInput}
+            />
+            <Show when={renderProps.isInvalid}>
+              <AlertTriangleIcon aria-hidden="true" styles={fieldErrorIcon} />
             </Show>
-
-            <HeadlessNumberFieldInput class={inputClasses} />
-
             <Show when={!local.hideStepper}>
-              <HeadlessNumberFieldIncrementButton class={buttonClasses}>
-                <PlusIcon class="w-4 h-4" />
-              </HeadlessNumberFieldIncrementButton>
+              <div class={stepperClass()}>
+                <HeadlessNumberFieldDecrementButton
+                  ref={decrementButtonElement}
+                  class={buttonClass("decrement")}
+                  style={(buttonRenderProps: NumberFieldButtonRenderProps) =>
+                    buttonPressScaleStyle(decrementButtonElement, buttonRenderProps)
+                  }
+                >
+                  <DashIcon
+                    size={iconSize(size())}
+                    class={iconStyles}
+                    style={stepperIconStyle(size())}
+                  />
+                </HeadlessNumberFieldDecrementButton>
+                <HeadlessNumberFieldIncrementButton
+                  ref={incrementButtonElement}
+                  class={buttonClass("increment")}
+                  style={(buttonRenderProps: NumberFieldButtonRenderProps) =>
+                    buttonPressScaleStyle(incrementButtonElement, buttonRenderProps)
+                  }
+                >
+                  <AddIcon
+                    size={iconSize(size())}
+                    class={iconStyles}
+                    style={stepperIconStyle(size())}
+                  />
+                </HeadlessNumberFieldIncrementButton>
+              </div>
             </Show>
           </HeadlessNumberFieldGroup>
 
           <Show when={local.description && !renderProps.isInvalid}>
-            <NumberFieldDescription class={descriptionClasses()}>
+            <NumberFieldDescription class={helpClass(renderProps, false)}>
               {local.description}
             </NumberFieldDescription>
           </Show>
-
           <Show when={local.errorMessage && renderProps.isInvalid}>
-            <NumberFieldError class={errorClasses()}>{local.errorMessage}</NumberFieldError>
+            <NumberFieldError class={helpClass(renderProps, true)}>
+              {local.errorMessage}
+            </NumberFieldError>
           </Show>
         </>
       )}

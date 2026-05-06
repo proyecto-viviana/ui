@@ -150,8 +150,6 @@ export function createToggle(
     },
     onPress(e: PressEvent) {
       getProps().onPress?.(e);
-      state.toggle();
-      ref()?.focus();
     },
     get isDisabled() {
       return isDisabled() || isReadOnly();
@@ -228,9 +226,7 @@ export function createToggle(
   const combinedIsPressed: Accessor<boolean> = () => isPressed() || isLabelPressed();
 
   return {
-    labelProps: mergeProps(labelPressProps, {
-      onClick: (e: MouseEvent) => e.preventDefault(),
-    }),
+    labelProps: labelPressProps as JSX.LabelHTMLAttributes<HTMLLabelElement>,
     get inputProps() {
       const p = getProps();
       return mergeProps(domProps(), {

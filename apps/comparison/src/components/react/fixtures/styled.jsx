@@ -15,6 +15,7 @@ import {
   DialogTrigger as SpectrumDialogTrigger,
   Heading as SpectrumHeading,
   LinkButton as SpectrumLinkButton,
+  NumberField as SpectrumNumberField,
   Provider as SpectrumProvider,
   Radio as SpectrumRadio,
   RadioGroup as SpectrumRadioGroup,
@@ -68,6 +69,11 @@ import {
   radioGroupDemoPropsFromWindow,
   serializeRadioGroupDemoProps,
 } from "@comparison/data/radiogroup-demo";
+import {
+  normalizeNumberFieldDemoProps,
+  numberFieldDemoPropsFromWindow,
+  serializeNumberFieldDemoProps,
+} from "@comparison/data/numberfield-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -253,6 +259,7 @@ export const reactStyledFixtures = {
   textfield: () => jsx(ReactTextFieldDemo, {}),
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
+  numberfield: () => jsx(ReactNumberFieldDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
@@ -899,6 +906,56 @@ function ReactTextAreaDemo() {
         size: demoProps.size,
         description: demoProps.description,
         errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => {
+          setValue(nextValue);
+          setDemoProps((current) => ({ ...current, value: nextValue }));
+        },
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactNumberFieldDemo() {
+  const [demoProps, setDemoProps] = useState(numberFieldDemoPropsFromWindow);
+  const [value, setValue] = useState(() => demoProps.value);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "numberfield") {
+        const nextProps = normalizeNumberFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "numberfield",
+      "data-comparison-control-props": serializeNumberFieldDemoProps({
+        ...demoProps,
+        value,
+      }),
+      "data-comparison-value": String(value),
+      children: jsx(SpectrumNumberField, {
+        label: demoProps.label,
+        value,
+        placeholder: demoProps.placeholder,
+        size: demoProps.size,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        minValue: demoProps.minValue,
+        maxValue: demoProps.maxValue,
+        step: demoProps.step,
+        hideStepper: demoProps.hideStepper,
         isDisabled: demoProps.isDisabled,
         isReadOnly: demoProps.isReadOnly,
         isRequired: demoProps.isRequired,

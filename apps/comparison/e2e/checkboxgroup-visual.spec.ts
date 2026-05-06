@@ -105,6 +105,45 @@ function expectNear(
 }
 
 test.describe("comparison CheckboxGroup visual parity", () => {
+  test("selection can add and remove multiple values on both stacks", async ({ page }) => {
+    const fixtures = await checkboxGroupFixtures(page);
+
+    for (const item of [
+      {
+        panel: fixtures.reactPanel,
+        root: fixtures.reactRoot,
+        email: fixtures.reactEmail,
+        sms: fixtures.reactSms,
+        emailTarget: fixtures.reactPanel.getByText("Email").first(),
+        smsTarget: fixtures.reactPanel.getByText("SMS").first(),
+      },
+      {
+        panel: fixtures.solidPanel,
+        root: fixtures.solidRoot,
+        email: fixtures.solidEmail,
+        sms: fixtures.solidSms,
+        emailTarget: fixtures.solidPanel.getByText("Email").first(),
+        smsTarget: fixtures.solidPanel.getByText("SMS").first(),
+      },
+    ]) {
+      await expect(item.email).toBeChecked();
+      await expect(item.sms).not.toBeChecked();
+      await item.smsTarget.click();
+      await expect(item.email).toBeChecked();
+      await expect(item.sms).toBeChecked();
+      await expect(item.root).toHaveAttribute("data-comparison-selected-values", "email,sms");
+
+      await item.emailTarget.click();
+      await expect(item.email).not.toBeChecked();
+      await expect(item.sms).toBeChecked();
+      await expect(item.root).toHaveAttribute("data-comparison-selected-values", "sms");
+      await expect(item.panel.locator("[data-comparison-selected-values]").first()).toHaveAttribute(
+        "data-comparison-selected-values",
+        "sms",
+      );
+    }
+  });
+
   test("selected emphasized XL invalid horizontal state matches React Spectrum geometry", async ({
     page,
   }) => {

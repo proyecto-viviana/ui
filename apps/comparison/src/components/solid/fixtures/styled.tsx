@@ -20,6 +20,7 @@ import {
   Checkbox as SolidSpectrumCheckbox,
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   LinkButton as SolidSpectrumLinkButton,
+  NumberField as SolidSpectrumNumberField,
   Provider as SolidSpectrumProvider,
   Radio as SolidSpectrumRadio,
   RadioGroup as SolidSpectrumRadioGroup,
@@ -72,6 +73,12 @@ import {
   serializeRadioGroupDemoProps,
   type RadioGroupDemoProps,
 } from "@comparison/data/radiogroup-demo";
+import {
+  normalizeNumberFieldDemoProps,
+  numberFieldDemoPropsFromWindow,
+  serializeNumberFieldDemoProps,
+  type NumberFieldDemoProps,
+} from "@comparison/data/numberfield-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -345,6 +352,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
+  numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
   radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
   linkbutton: () => h(SolidSpectrumLinkButtonDemo, {}),
   cardview: () => h(SolidSpectrumCardViewDemo, {}),
@@ -1135,6 +1143,136 @@ function SolidSpectrumTextAreaDemo() {
             onChange: (nextValue: string) => {
               setValue(nextValue);
               setDemoProps((current: TextAreaDemoProps) => ({
+                ...current,
+                value: nextValue,
+              }));
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumNumberFieldDemo() {
+  const [demoProps, setDemoProps] = createSignal<NumberFieldDemoProps>(
+    numberFieldDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(demoProps().value);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "numberfield") {
+        const nextProps = normalizeNumberFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeNumberFieldDemoProps({
+      ...demoProps(),
+      value: value(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "numberfield",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            return String(value());
+          },
+        },
+        [
+          hc(SolidSpectrumNumberField, {
+            get label() {
+              return demoProps().label;
+            },
+            get value() {
+              return value();
+            },
+            get placeholder() {
+              return demoProps().placeholder;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get minValue() {
+              return demoProps().minValue;
+            },
+            get maxValue() {
+              return demoProps().maxValue;
+            },
+            get step() {
+              return demoProps().step;
+            },
+            get hideStepper() {
+              return demoProps().hideStepper;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => {
+              const nextValue = Number(event.currentTarget.value);
+              if (Number.isFinite(nextValue)) {
+                setValue(nextValue);
+                setDemoProps((current: NumberFieldDemoProps) => ({
+                  ...current,
+                  value: nextValue,
+                }));
+              }
+            },
+            onChange: (nextValue: number) => {
+              setValue(nextValue);
+              setDemoProps((current: NumberFieldDemoProps) => ({
                 ...current,
                 value: nextValue,
               }));
