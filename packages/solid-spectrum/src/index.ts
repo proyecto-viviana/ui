@@ -118,7 +118,12 @@ export type {
 
 // Checkbox
 export { Checkbox, CheckboxGroup } from "./checkbox";
-export type { CheckboxGroupProps, CheckboxProps, CheckboxSize } from "./checkbox";
+export type {
+  CheckboxGroupOrientation,
+  CheckboxGroupProps,
+  CheckboxProps,
+  CheckboxSize,
+} from "./checkbox";
 
 // Color
 export {

@@ -14,6 +14,11 @@ import {
 } from "./button-demo";
 import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
 import {
+  checkboxGroupDemoDefaults,
+  checkboxGroupOrientationOptions,
+  checkboxGroupSizeOptions,
+} from "./checkboxgroup-demo";
+import {
   radioGroupDemoDefaults,
   radioGroupOrientationOptions,
   radioGroupSizeOptions,
@@ -239,6 +244,108 @@ const checkboxControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Checkbox docs and source control surface. The viewer drives label text, S2 sizes, selected and indeterminate states, emphasized treatment, disabled/read-only behavior, and invalid styling into both stacks.",
+};
+
+const checkboxGroupControls: ComponentControlGroup = {
+  slug: "checkboxgroup",
+  title: "CheckboxGroup",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: checkboxGroupDemoDefaults.label,
+    },
+    {
+      name: "selectedValues",
+      label: "selectedValues",
+      kind: "text",
+      defaultValue: checkboxGroupDemoDefaults.selectedValues,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: checkboxGroupDemoDefaults.size,
+      options: options(checkboxGroupSizeOptions),
+    },
+    {
+      name: "orientation",
+      label: "orientation",
+      kind: "radio",
+      defaultValue: checkboxGroupDemoDefaults.orientation,
+      options: options(checkboxGroupOrientationOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: checkboxGroupDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: checkboxGroupDemoDefaults.errorMessage,
+    },
+    {
+      name: "isEmphasized",
+      label: "isEmphasized",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "children",
+    "label",
+    "value",
+    "defaultValue",
+    "onChange",
+    "size",
+    "orientation",
+    "description",
+    "errorMessage",
+    "isEmphasized",
+    "isDisabled",
+    "isReadOnly",
+    "isRequired",
+    "isInvalid",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 CheckboxGroup source control surface. The viewer drives label, selected values, S2 size, orientation, description/error text, emphasized treatment, and disabled/read-only/required/invalid states into both stacks.",
 };
 
 const switchControls: ComponentControlGroup = {
@@ -1282,6 +1389,7 @@ export const componentControlGroups = {
   button: buttonControls,
   buttongroup: buttonGroupControls,
   checkbox: checkboxControls,
+  checkboxgroup: checkboxGroupControls,
   linkbutton: linkButtonControls,
   radiogroup: radioGroupControls,
   searchfield: searchFieldControls,

@@ -694,6 +694,37 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Side-panel invalid, read-only, and disabled states compare box/text colors against React Spectrum, and read-only/disabled hover and press affordances are suppressed on both stacks.",
     },
   ],
+  checkboxgroup: [
+    {
+      id: "styled.default",
+      label: "Styled default",
+      kind: "static",
+      react: "planned",
+      solid: "planned",
+      pairDiff: "planned",
+      note: "CheckboxGroup is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+    },
+    {
+      id: "styled.selected-emphasized-invalid-xl",
+      label: "Selected emphasized invalid XL",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/checkboxgroup-visual.spec.ts",
+      note: "Horizontal XL emphasized invalid CheckboxGroup state asserts selected values, group semantics, orientation layout, S2 checkbox child size/color propagation, help text, and invalid state against React Spectrum.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts",
+      note: "The docs-style prop controls drive label, selected values, size, orientation, description/error text, emphasized, disabled, read-only, required, and invalid state into both stacks.",
+    },
+  ],
   radiogroup: [
     {
       id: "styled.default",

@@ -8,6 +8,7 @@ import {
   Card as SpectrumCard,
   CardView as SpectrumCardView,
   Checkbox as SpectrumCheckbox,
+  CheckboxGroup as SpectrumCheckboxGroup,
   Content as SpectrumContent,
   DatePicker as SpectrumDatePicker,
   Dialog as SpectrumDialog,
@@ -56,6 +57,12 @@ import {
   normalizeCheckboxDemoProps,
   serializeCheckboxDemoProps,
 } from "@comparison/data/checkbox-demo";
+import {
+  checkboxGroupDemoPropsFromWindow,
+  normalizeCheckboxGroupDemoProps,
+  selectedValuesArrayFromText,
+  serializeCheckboxGroupDemoProps,
+} from "@comparison/data/checkboxgroup-demo";
 import {
   normalizeRadioGroupDemoProps,
   radioGroupDemoPropsFromWindow,
@@ -133,6 +140,12 @@ const radioGroupItems = [
   { value: "starter", label: "Starter" },
   { value: "pro", label: "Pro" },
   { value: "enterprise", label: "Enterprise" },
+];
+
+const checkboxGroupItems = [
+  { value: "email", label: "Email" },
+  { value: "sms", label: "SMS" },
+  { value: "push", label: "Push" },
 ];
 
 const selectBoxIllustrationItems = new Set(["starter", "pro"]);
@@ -239,6 +252,7 @@ export const reactStyledFixtures = {
   textarea: () => jsx(ReactTextAreaDemo, {}),
   textfield: () => jsx(ReactTextFieldDemo, {}),
   checkbox: () => jsx(ReactCheckboxDemo, {}),
+  checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
@@ -963,6 +977,59 @@ function ReactCheckboxDemo() {
           setDemoProps((current) => ({ ...current, isSelected: nextSelected }));
         },
         children: demoProps.children,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactCheckboxGroupDemo() {
+  const [demoProps, setDemoProps] = useState(checkboxGroupDemoPropsFromWindow);
+  const [value, setValue] = useState(() =>
+    selectedValuesArrayFromText(demoProps.selectedValues, ["email"]),
+  );
+  const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "checkboxgroup") {
+        const nextProps = normalizeCheckboxGroupDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(selectedValuesArrayFromText(nextProps.selectedValues, ["email"]));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const selectedValues = value.join(",");
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-selected-values": selectedValues,
+      "data-comparison-control-root": "checkboxgroup",
+      "data-comparison-control-props": serializeCheckboxGroupDemoProps({
+        ...demoProps,
+        selectedValues,
+      }),
+      children: jsx(SpectrumCheckboxGroup, {
+        label: demoProps.label,
+        value,
+        size: demoProps.size,
+        orientation: demoProps.orientation,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isEmphasized: demoProps.isEmphasized,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => {
+          setValue(nextValue.map(String));
+          setDemoProps((current) => ({ ...current, selectedValues: nextValue.join(",") }));
+        },
+        children: checkboxGroupItems.map((item) =>
+          jsx(SpectrumCheckbox, { value: item.value, children: item.label }, item.value),
+        ),
       }),
     }),
     colorScheme,

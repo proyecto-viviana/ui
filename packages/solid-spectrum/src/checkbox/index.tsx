@@ -1,10 +1,13 @@
 // @ts-nocheck
 import {
   children as resolveChildren,
+  createContext,
+  createUniqueId,
   type JSX,
   splitProps,
   mergeProps as solidMergeProps,
   Show,
+  useContext,
 } from "solid-js";
 import {
   Checkbox as HeadlessCheckbox,
@@ -20,6 +23,8 @@ import {
   controlBorderRadius,
   controlFont,
   controlSize,
+  field,
+  fieldLabel,
   getAllowedOverrides,
 } from "../s2-internal/style-utils";
 import { CenterBaseline } from "../icon/center-baseline";
@@ -29,6 +34,14 @@ import { useProviderProps } from "../provider";
 
 export type CheckboxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2CheckboxSize = "S" | "M" | "L" | "XL";
+export type CheckboxGroupOrientation = "horizontal" | "vertical";
+
+interface CheckboxGroupStyleContextValue {
+  size?: CheckboxSize;
+  isEmphasized?: boolean;
+}
+
+const CheckboxGroupStyleContext = createContext<CheckboxGroupStyleContextValue>({});
 
 export interface CheckboxProps extends Omit<
   HeadlessCheckboxProps,
@@ -54,24 +67,112 @@ export interface CheckboxGroupProps extends Omit<
   HeadlessCheckboxGroupProps,
   "class" | "children" | "style"
 > {
-  /** Additional CSS class name. */
+  /** The size of the Checkboxes in the CheckboxGroup. */
+  size?: CheckboxSize;
+  /** The axis the checkboxes should align with. */
+  orientation?: CheckboxGroupOrientation;
+  /** Whether the Checkboxes should be displayed with an emphasized style. */
+  isEmphasized?: boolean;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
   /** Children checkboxes. */
   children?: JSX.Element;
   /** Label for the group. */
-  label?: string;
+  label?: JSX.Element;
   /** Description for the group. */
-  description?: string;
+  description?: JSX.Element;
   /** Error message when invalid. */
-  errorMessage?: string;
+  errorMessage?: JSX.Element;
 }
 
 interface CheckboxStyleProps {
   size?: S2CheckboxSize;
   isEmphasized?: boolean;
+  orientation?: CheckboxGroupOrientation;
+  labelPosition?: "top" | "side";
+  labelAlign?: "start" | "end";
+  isInForm?: boolean;
 }
 
 type CheckboxStyleState = CheckboxRenderProps & CheckboxStyleProps;
+type CheckboxGroupStyleState = CheckboxGroupRenderProps & CheckboxStyleProps;
+
+const checkboxGroupRoot = style<CheckboxGroupStyleState>(
+  {
+    ...field(),
+    "--field-gap": {
+      type: "rowGap",
+      value: "calc(var(--field-height) - 1lh)",
+    },
+  },
+  getAllowedOverrides(),
+);
+
+const checkboxGroupLabelWrapper = style<CheckboxGroupStyleState>({
+  gridArea: "label",
+  display: "inline",
+  textAlign: {
+    labelAlign: {
+      start: "start",
+      end: "end",
+    },
+  },
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
+  },
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+  },
+});
+
+const checkboxGroupLabel = style<CheckboxGroupStyleState>({
+  ...fieldLabel(),
+});
+
+const checkboxGroupItems = style<CheckboxGroupStyleState>({
+  gridArea: "input",
+  display: "flex",
+  flexDirection: {
+    orientation: {
+      vertical: "column",
+      horizontal: "row",
+    },
+  },
+  lineHeight: "ui",
+  rowGap: "--field-gap",
+  columnGap: 16,
+  flexWrap: "wrap",
+});
+
+const checkboxGroupHelpText = style<CheckboxGroupStyleState>({
+  gridArea: "helptext",
+  display: "flex",
+  margin: 0,
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+});
 
 const wrapper = style<CheckboxStyleState & { isInForm?: boolean }>(
   {
@@ -218,12 +319,9 @@ function checkboxIconSizeStyle(size: number): JSX.CSSProperties {
  *
  */
 export function Checkbox(props: CheckboxProps): JSX.Element {
+  const groupStyleContext = useContext(CheckboxGroupStyleContext);
   const providerProps = useProviderProps(props);
-  const defaultProps: Partial<CheckboxProps> = {
-    size: "M",
-  };
-
-  const merged = solidMergeProps(defaultProps, providerProps);
+  const merged = solidMergeProps(providerProps);
 
   const [local, headlessProps] = splitProps(merged, [
     "size",
@@ -235,7 +333,8 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     "children",
   ]);
 
-  const size = () => normalizeCheckboxSize(local.size);
+  const size = () => normalizeCheckboxSize(local.size ?? groupStyleContext.size);
+  const isEmphasized = () => local.isEmphasized ?? groupStyleContext.isEmphasized;
   let boxElement: HTMLDivElement | undefined;
 
   const getClassName = (renderProps: CheckboxRenderProps): string => {
@@ -246,7 +345,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
         {
           ...renderProps,
           size: size(),
-          isEmphasized: local.isEmphasized,
+          isEmphasized: isEmphasized(),
           isInForm: false,
         },
         local.styles,
@@ -266,7 +365,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
               ...renderProps,
               isSelected: renderProps.isSelected || renderProps.isIndeterminate,
               size: size(),
-              isEmphasized: local.isEmphasized,
+              isEmphasized: isEmphasized(),
             })}
             style={checkboxPressScaleStyle(boxElement, renderProps)}
           >
@@ -310,36 +409,120 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
  *
  */
 export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const defaultProps: Partial<CheckboxGroupProps> = {
+    orientation: "vertical",
+  };
+  const mergedProps = solidMergeProps(defaultProps, providerProps);
   const [local, headlessProps] = splitProps(mergedProps, [
+    "size",
+    "orientation",
+    "isEmphasized",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
     "label",
     "description",
     "errorMessage",
+    "children",
   ]);
+  const size = () => normalizeCheckboxSize(local.size);
+  const idBase = createUniqueId();
+  const labelId = `${idBase}-label`;
+  const descriptionId = `${idBase}-description`;
+  const errorId = `${idBase}-error`;
 
-  const getClassName = (renderProps: CheckboxGroupRenderProps): string => {
-    const base = "flex flex-col gap-2";
-    const disabledClass = renderProps.isDisabled ? "opacity-50" : "";
-    const custom = local.class || "";
-    return [base, disabledClass, custom].filter(Boolean).join(" ");
+  const ariaDescribedBy = () => {
+    const ids = [
+      headlessProps["aria-describedby"],
+      local.description ? descriptionId : undefined,
+      local.errorMessage && headlessProps.isInvalid ? errorId : undefined,
+    ].filter(Boolean);
+    return ids.length ? ids.join(" ") : undefined;
   };
+
+  const getClassName = (renderProps: CheckboxGroupRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      checkboxGroupRoot(
+        {
+          ...renderProps,
+          size: size(),
+          labelPosition: "top",
+          labelAlign: "start",
+          isInForm: false,
+        },
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   const renderChildren = (renderProps: CheckboxGroupRenderProps) => (
     <>
       <Show when={local.label}>
-        <span class="text-sm font-medium text-primary-200">{local.label}</span>
+        <div
+          class={checkboxGroupLabelWrapper({
+            ...renderProps,
+            size: size(),
+            labelPosition: "top",
+          })}
+        >
+          <span id={labelId} class={checkboxGroupLabel({ ...renderProps, size: size() })}>
+            {local.label}
+          </span>
+        </div>
       </Show>
-      <div class="flex flex-col gap-2">{props.children}</div>
+      <div
+        class={checkboxGroupItems({
+          ...renderProps,
+          size: size(),
+          orientation: local.orientation,
+        })}
+      >
+        {local.children}
+      </div>
       <Show when={local.description && !renderProps.isInvalid}>
-        <span class="text-sm text-primary-400">{local.description}</span>
+        <div id={descriptionId} class={checkboxGroupHelpText({ ...renderProps, size: size() })}>
+          {local.description}
+        </div>
       </Show>
-      <Show when={local.errorMessage && renderProps.isInvalid}>
-        <span class="text-sm text-danger-400">{local.errorMessage}</span>
+      <Show when={local.errorMessage}>
+        <div
+          id={errorId}
+          role="alert"
+          class={checkboxGroupHelpText({ ...renderProps, size: size(), isInvalid: true })}
+          style={{ display: renderProps.isInvalid ? undefined : "none" }}
+        >
+          {local.errorMessage}
+        </div>
       </Show>
     </>
   );
+
   return (
-    <HeadlessCheckboxGroup {...headlessProps} class={getClassName} children={renderChildren} />
+    <CheckboxGroupStyleContext.Provider
+      value={{
+        get size() {
+          return local.size;
+        },
+        get isEmphasized() {
+          return local.isEmphasized;
+        },
+      }}
+    >
+      <HeadlessCheckboxGroup
+        {...headlessProps}
+        aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
+        aria-describedby={ariaDescribedBy()}
+        class={getClassName}
+        style={local.UNSAFE_style}
+        data-size={local.size ?? "md"}
+      >
+        {renderChildren}
+      </HeadlessCheckboxGroup>
+    </CheckboxGroupStyleContext.Provider>
   );
 }
