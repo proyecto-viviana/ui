@@ -45,6 +45,15 @@ describe("TextField", () => {
       expect((input as HTMLInputElement).value).toBe("hello");
     });
 
+    it("calls onChange for browser input events", () => {
+      render(() => <TextField aria-label="Test input" onChange={onChangeSpy} />);
+      const input = screen.getByRole("textbox");
+
+      fireEvent.input(input, { target: { value: "typed" } });
+
+      expect(onChangeSpy).toHaveBeenCalledWith("typed");
+    });
+
     it("supports defaultValue", () => {
       render(() => <TextField aria-label="Test input" defaultValue="initial" />);
       const input = screen.getByRole("textbox") as HTMLInputElement;
@@ -85,9 +94,9 @@ describe("TextField", () => {
     });
 
     it("can focus readonly input", async () => {
-      render(() => <TextField aria-label="Test input" isReadOnly />);
+      const { container } = render(() => <TextField aria-label="Test input" isReadOnly />);
       const input = screen.getByRole("textbox");
-      const field = input.parentElement as HTMLElement;
+      const field = container.firstElementChild as HTMLElement;
 
       input.focus();
       expect(field).toHaveAttribute("data-focused", "true");
@@ -102,8 +111,8 @@ describe("TextField", () => {
     });
 
     it("shows required indicator when label is present", () => {
-      render(() => <TextField label="Name" isRequired />);
-      expect(screen.getByText("*")).toBeInTheDocument();
+      const { container } = render(() => <TextField label="Name" isRequired />);
+      expect(container.querySelector("label svg")).toBeInTheDocument();
     });
   });
 
@@ -195,16 +204,16 @@ describe("TextField", () => {
     // Focus state tracking works by using userEvent.click which properly triggers
     // focus handlers, unlike fireEvent.focus which doesn't fully simulate browser behavior.
     it("sets data-focused when input is focused", async () => {
-      render(() => <TextField aria-label="Test input" />);
+      const { container } = render(() => <TextField aria-label="Test input" />);
       const input = screen.getByRole("textbox");
-      const field = input.parentElement as HTMLElement;
+      const field = container.firstElementChild as HTMLElement;
 
       input.focus();
       expect(field).toHaveAttribute("data-focused", "true");
     });
 
     it("removes data-focused when input loses focus", async () => {
-      render(() => (
+      const { container } = render(() => (
         <>
           <TextField aria-label="Test input" />
           <button>Other</button>
@@ -212,7 +221,7 @@ describe("TextField", () => {
       ));
       const input = screen.getByRole("textbox");
       const otherButton = screen.getByRole("button");
-      const field = input.parentElement as HTMLElement;
+      const field = container.firstElementChild as HTMLElement;
 
       input.focus();
       expect(field).toHaveAttribute("data-focused", "true");

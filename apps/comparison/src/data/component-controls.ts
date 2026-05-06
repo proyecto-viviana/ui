@@ -13,6 +13,7 @@ import {
   buttonVariantOptions,
 } from "./button-demo";
 import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
+import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
 import {
   actionButtonGroupDemoDefaults,
   buttonGroupAlignOptions,
@@ -231,6 +232,104 @@ const checkboxControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Checkbox docs and source control surface. The viewer drives label text, S2 sizes, selected and indeterminate states, emphasized treatment, disabled/read-only behavior, and invalid styling into both stacks.",
+};
+
+const textFieldControls: ComponentControlGroup = {
+  slug: "textfield",
+  title: "TextField",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: textFieldDemoDefaults.label,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: textFieldDemoDefaults.value,
+    },
+    {
+      name: "placeholder",
+      label: "placeholder",
+      kind: "text",
+      defaultValue: textFieldDemoDefaults.placeholder,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: textFieldDemoDefaults.size,
+      options: options(textFieldSizeOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: textFieldDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: textFieldDemoDefaults.errorMessage,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "value",
+    "defaultValue",
+    "onChange",
+    "placeholder",
+    "size",
+    "description",
+    "errorMessage",
+    "isDisabled",
+    "isReadOnly",
+    "isRequired",
+    "isInvalid",
+    "type",
+    "name",
+    "pattern",
+    "maxLength",
+    "minLength",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 TextField docs and source control surface. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, and controlled value changes into both stacks.",
 };
 
 const actionButtonControls: ComponentControlGroup = {
@@ -820,6 +919,7 @@ export const componentControlGroups = {
   linkbutton: linkButtonControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,
+  textfield: textFieldControls,
   togglebutton: toggleButtonControls,
   togglebuttongroup: toggleButtonGroupControls,
 } as const satisfies Record<string, ComponentControlGroup>;

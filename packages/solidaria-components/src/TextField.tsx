@@ -12,6 +12,8 @@ import {
   createMemo,
   createSignal,
   createEffect,
+  onCleanup,
+  onMount,
   splitProps,
 } from "solid-js";
 import {
@@ -120,6 +122,28 @@ export function Label(props: LabelProps): JSX.Element {
 
 export interface InputProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "children"> {}
 
+function eventWithCurrentTarget<T extends HTMLElement>(event: Event, element: T): Event {
+  return new Proxy(event, {
+    get(target, property, receiver) {
+      if (property === "target" || property === "currentTarget") {
+        return element;
+      }
+
+      const value = Reflect.get(target, property, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
+function clearDelegatedTextEntryHandlers(element: HTMLElement) {
+  const delegatedElement = element as HTMLElement & {
+    $$input?: unknown;
+    $$change?: unknown;
+  };
+  delete delegatedElement.$$input;
+  delete delegatedElement.$$change;
+}
+
 /**
  * An input element that automatically wires up to the parent TextField context.
  * This enables focus tracking, validation, and accessibility props to flow from
@@ -127,10 +151,7 @@ export interface InputProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElemen
  */
 export function Input(props: InputProps): JSX.Element {
   const context = useContext(TextFieldContext);
-
-  createEffect(() => {
-    context?.setInputId?.(props.id);
-  });
+  let inputElement: HTMLInputElement | undefined;
 
   // Merge context inputProps with local props (local props take precedence)
   const mergedProps = () => {
@@ -149,7 +170,64 @@ export function Input(props: InputProps): JSX.Element {
     return props.class == null ? { ...props, class: "solidaria-Input" } : props;
   };
 
-  return <input {...mergedProps()} />;
+  createEffect(() => {
+    context?.setInputId?.((mergedProps() as { id?: string }).id);
+  });
+
+  onMount(() => {
+    const element = inputElement;
+    if (!element) {
+      return;
+    }
+
+    const inputHandler = (event: Event) => {
+      const handler = mergedProps().onInput as
+        | JSX.EventHandler<HTMLInputElement, InputEvent>
+        | undefined;
+      handler?.(
+        eventWithCurrentTarget(event, element) as InputEvent & {
+          currentTarget: HTMLInputElement;
+          target: Element;
+        },
+      );
+      clearDelegatedTextEntryHandlers(element);
+      event.stopPropagation();
+    };
+    const changeHandler = (event: Event) => {
+      const handler = mergedProps().onChange as
+        | JSX.EventHandler<HTMLInputElement, Event>
+        | undefined;
+      handler?.(
+        eventWithCurrentTarget(event, element) as Event & {
+          currentTarget: HTMLInputElement;
+          target: Element;
+        },
+      );
+      clearDelegatedTextEntryHandlers(element);
+      event.stopPropagation();
+    };
+
+    element.addEventListener("input", inputHandler);
+    element.addEventListener("change", changeHandler);
+    clearDelegatedTextEntryHandlers(element);
+    onCleanup(() => {
+      element.removeEventListener("input", inputHandler);
+      element.removeEventListener("change", changeHandler);
+    });
+  });
+
+  return (
+    <input
+      {...mergedProps()}
+      ref={(element) => {
+        inputElement = element;
+        const ref = props.ref;
+        if (typeof ref === "function") {
+          ref(element);
+        }
+      }}
+    />
+  );
 }
 
 export interface TextAreaProps extends Omit<
@@ -164,6 +242,7 @@ export interface TextAreaProps extends Omit<
  */
 export function TextArea(props: TextAreaProps): JSX.Element {
   const context = useContext(TextFieldContext);
+  let textAreaElement: HTMLTextAreaElement | undefined;
 
   // Merge context inputProps with local props (local props take precedence)
   // Note: TextArea uses inputProps from context since it's an input variant
@@ -183,7 +262,60 @@ export function TextArea(props: TextAreaProps): JSX.Element {
     return props.class == null ? { ...props, class: "solidaria-TextArea" } : props;
   };
 
-  return <textarea {...mergedProps()} />;
+  onMount(() => {
+    const element = textAreaElement;
+    if (!element) {
+      return;
+    }
+
+    const inputHandler = (event: Event) => {
+      const handler = mergedProps().onInput as
+        | JSX.EventHandler<HTMLTextAreaElement, InputEvent>
+        | undefined;
+      handler?.(
+        eventWithCurrentTarget(event, element) as InputEvent & {
+          currentTarget: HTMLTextAreaElement;
+          target: Element;
+        },
+      );
+      clearDelegatedTextEntryHandlers(element);
+      event.stopPropagation();
+    };
+    const changeHandler = (event: Event) => {
+      const handler = mergedProps().onChange as
+        | JSX.EventHandler<HTMLTextAreaElement, Event>
+        | undefined;
+      handler?.(
+        eventWithCurrentTarget(event, element) as Event & {
+          currentTarget: HTMLTextAreaElement;
+          target: Element;
+        },
+      );
+      clearDelegatedTextEntryHandlers(element);
+      event.stopPropagation();
+    };
+
+    element.addEventListener("input", inputHandler);
+    element.addEventListener("change", changeHandler);
+    clearDelegatedTextEntryHandlers(element);
+    onCleanup(() => {
+      element.removeEventListener("input", inputHandler);
+      element.removeEventListener("change", changeHandler);
+    });
+  });
+
+  return (
+    <textarea
+      {...mergedProps()}
+      ref={(element) => {
+        textAreaElement = element;
+        const ref = props.ref;
+        if (typeof ref === "function") {
+          ref(element);
+        }
+      }}
+    />
+  );
 }
 
 /**
@@ -289,6 +421,15 @@ export function TextField(props: TextFieldProps): JSX.Element {
     },
     renderValues,
   );
+  const childRenderValues = createMemo<TextFieldRenderProps>(() => ({
+    isDisabled: ariaProps.isDisabled || false,
+    isInvalid: textFieldAria.isInvalid,
+    isReadOnly: ariaProps.isReadOnly || false,
+    isRequired: ariaProps.isRequired || false,
+    isHovered: false,
+    isFocused: false,
+    isFocusVisible: false,
+  }));
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
@@ -348,7 +489,10 @@ export function TextField(props: TextFieldProps): JSX.Element {
     },
     setInputId,
   };
-  const fieldChildren = () => renderProps.renderChildren();
+  const fieldChildren = () => {
+    const children = local.children;
+    return typeof children === "function" ? children(childRenderValues()) : children;
+  };
   const rootProps = () =>
     ({
       ...domProps(),

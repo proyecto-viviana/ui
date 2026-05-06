@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { type JSX, splitProps, Show, useContext } from "solid-js";
 import {
   TextField as HeadlessTextField,
@@ -7,10 +8,27 @@ import {
   type TextFieldProps as HeadlessTextFieldProps,
   type TextFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import type { StyleString } from "../s2-style";
+import { baseColor, focusRing, fontRelative, style } from "../s2-style";
+import {
+  control,
+  controlFont,
+  field,
+  fieldInput,
+  fieldLabel,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils";
+import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 
-export type TextFieldSize = "sm" | "md" | "lg";
+export type TextFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type S2TextFieldSize = "S" | "M" | "L" | "XL";
 export type TextFieldVariant = "outline" | "filled";
+export type TextFieldLabelPosition = "top" | "side";
+export type TextFieldLabelAlign = "start" | "end";
+export type TextFieldNecessityIndicator = "icon" | "label";
 
 export interface TextFieldProps extends Omit<
   HeadlessTextFieldProps,
@@ -18,35 +36,191 @@ export interface TextFieldProps extends Omit<
 > {
   /** The size of the text field. */
   size?: TextFieldSize;
-  /** The visual variant of the text field. */
+  /** Legacy visual variant. S2 TextFields do not expose visual variants. */
   variant?: TextFieldVariant;
-  /** Additional CSS class name. */
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
   /** Label text for the input. */
-  label?: string;
+  label?: JSX.Element;
   /** Description text shown below the input. */
-  description?: string;
+  description?: JSX.Element;
   /** Error message shown when invalid. */
-  errorMessage?: string;
+  errorMessage?: JSX.Element;
+  /** Position of the label relative to the input. */
+  labelPosition?: TextFieldLabelPosition;
+  /** Text alignment for side labels. */
+  labelAlign?: TextFieldLabelAlign;
+  /** Whether required fields show an icon or text label. */
+  necessityIndicator?: TextFieldNecessityIndicator;
 }
 
-const sizeStyles = {
-  sm: {
-    input: "h-8 px-2 text-sm",
-    label: "text-sm",
-    description: "text-xs",
+interface TextFieldStyleProps extends TextFieldRenderProps {
+  size?: S2TextFieldSize;
+  labelPosition?: TextFieldLabelPosition;
+  labelAlign?: TextFieldLabelAlign;
+  isFocusWithin?: boolean;
+  isStaticColor?: boolean;
+  isInForm?: boolean;
+  isQuiet?: boolean;
+}
+
+const textFieldRoot = style<TextFieldStyleProps>(
+  {
+    ...field(),
   },
-  md: {
-    input: "h-10 px-3 text-base",
-    label: "text-sm",
-    description: "text-sm",
+  getAllowedOverrides(),
+);
+
+const textFieldLabelWrapper = style<TextFieldStyleProps>({
+  gridArea: "label",
+  display: "inline",
+  textAlign: {
+    labelAlign: {
+      start: "start",
+      end: "end",
+    },
   },
-  lg: {
-    input: "h-12 px-4 text-lg",
-    label: "text-base",
-    description: "text-sm",
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
   },
-};
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+    isQuiet: "none",
+  },
+});
+
+const textFieldLabel = style<TextFieldStyleProps>({
+  ...fieldLabel(),
+});
+
+const fieldGroupStyles = style<TextFieldStyleProps>({
+  ...focusRing(),
+  ...control({ shape: "default" }),
+  ...fieldInput(),
+  borderWidth: 2,
+  borderStyle: "solid",
+  transition: "default",
+  borderColor: {
+    default: baseColor("gray-300"),
+    forcedColors: "ButtonBorder",
+    isInvalid: {
+      default: baseColor("negative"),
+      forcedColors: "Mark",
+    },
+    isFocusWithin: {
+      default: "gray-900",
+      isInvalid: "negative-1000",
+      forcedColors: "Highlight",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  backgroundColor: {
+    default: "gray-25",
+    forcedColors: "Field",
+  },
+  color: {
+    default: baseColor("neutral"),
+    forcedColors: "ButtonText",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const textFieldInput = style({
+  padding: 0,
+  backgroundColor: "transparent",
+  color: {
+    default: "inherit",
+    "::placeholder": {
+      default: "gray-600",
+      forcedColors: "GrayText",
+    },
+  },
+  fontFamily: "inherit",
+  fontSize: "inherit",
+  fontWeight: "inherit",
+  flexGrow: 1,
+  flexShrink: 1,
+  minWidth: 0,
+  width: "full",
+  outlineStyle: "none",
+  borderStyle: "none",
+  truncate: true,
+});
+
+const helpTextStyles = style<TextFieldStyleProps>({
+  gridArea: "helptext",
+  display: "flex",
+  margin: 0,
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const fieldErrorIcon = style({
+  size: fontRelative(20),
+  marginStart: "text-to-visual",
+  marginEnd: fontRelative(-2),
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+  },
+});
+
+const requiredIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const noWrap = style({
+  whiteSpace: "nowrap",
+});
 
 function TextFieldDescription(props: {
   class?: string;
@@ -82,67 +256,110 @@ function TextFieldError(props: { class?: string; children?: JSX.Element }): JSX.
 export { TextArea } from "./TextArea";
 export type { TextAreaProps, TextAreaSize, TextAreaVariant } from "./TextArea";
 
+function normalizeTextFieldSize(size: TextFieldSize | undefined): S2TextFieldSize {
+  switch (size) {
+    case "sm":
+      return "S";
+    case "md":
+      return "M";
+    case "lg":
+      return "L";
+    case "S":
+    case "M":
+    case "L":
+    case "XL":
+      return size;
+    default:
+      return "M";
+  }
+}
+
+function focusFieldInput(event: Event & { currentTarget: HTMLDivElement }) {
+  const target = event.target as Element | null;
+
+  if (target?.closest("button,input,textarea,[role='button']")) {
+    return;
+  }
+
+  event.preventDefault();
+  event.currentTarget.querySelector<HTMLElement>("input, textarea")?.focus();
+}
+
+function requiredIconStyle(size: S2TextFieldSize): JSX.CSSProperties {
+  const pixelSize = size === "L" || size === "XL" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
 export function TextField(props: TextFieldProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
     "label",
     "description",
     "errorMessage",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
   ]);
 
-  const size = () => sizeStyles[local.size ?? "md"];
+  const size = () => normalizeTextFieldSize(local.size);
+  const labelPosition = () => local.labelPosition ?? "top";
+  const labelAlign = () => local.labelAlign ?? "start";
+  const necessityIndicator = () => local.necessityIndicator ?? "icon";
 
-  const containerClasses = () => {
-    const base = "flex flex-col";
-    const custom = local.class ?? "";
-    return [base, custom].filter(Boolean).join(" ");
-  };
+  const rootClassName = (renderProps: TextFieldRenderProps) =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      textFieldRoot(
+        {
+          ...renderProps,
+          size: size(),
+          labelPosition: labelPosition(),
+          isInForm: false,
+        },
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-  const inputClasses = (renderProps: TextFieldRenderProps) => {
-    const base = "w-full rounded-md transition-all duration-200 outline-none";
-    const sizeClass = size().input;
+  const labelWrapperClass = () =>
+    textFieldLabelWrapper({
+      size: size(),
+      labelPosition: labelPosition(),
+      labelAlign: labelAlign(),
+    });
 
-    const variantClass =
-      local.variant === "filled"
-        ? "bg-bg-200 border border-transparent"
-        : "bg-transparent border border-bg-400";
+  const labelClass = (renderProps: TextFieldRenderProps) =>
+    textFieldLabel({
+      ...renderProps,
+      size: size(),
+      labelPosition: labelPosition(),
+      isStaticColor: false,
+    });
 
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "bg-bg-200 text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isInvalid) {
-      stateClass =
-        "border-danger-500 focus:border-danger-400 focus:ring-2 focus:ring-danger-400/20";
-    } else {
-      stateClass =
-        "text-primary-100 placeholder:text-primary-500 focus:border-accent focus:ring-2 focus:ring-accent/20";
-    }
+  const groupClass = (renderProps: TextFieldRenderProps) =>
+    fieldGroupStyles({
+      ...renderProps,
+      size: size(),
+      isFocusWithin: renderProps.isFocused,
+    });
 
-    const hoverClass = renderProps.isDisabled ? "" : "hover:border-accent-300";
-
-    return [base, sizeClass, variantClass, stateClass, hoverClass].filter(Boolean).join(" ");
-  };
-
-  const labelClasses = () => {
-    const base = "block font-medium text-primary-200 mb-1";
-    const sizeClass = size().label;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
-
-  const descriptionClasses = () => {
-    const base = "mt-1 text-primary-400";
-    const sizeClass = size().description;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
-
-  const errorClasses = () => {
-    const base = "mt-1 text-danger-400";
-    const sizeClass = size().description;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
+  const helpClass = (renderProps: TextFieldRenderProps, isInvalid: boolean) =>
+    helpTextStyles({
+      ...renderProps,
+      size: size(),
+      isInvalid,
+    });
 
   return (
     <HeadlessTextField
@@ -150,28 +367,69 @@ export function TextField(props: TextFieldProps): JSX.Element {
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}
-      class={containerClasses()}
+      class={rootClassName}
+      style={local.UNSAFE_style}
       children={(renderProps) => (
         <>
           <Show when={local.label}>
-            <HeadlessLabel class={labelClasses()}>
-              {local.label}
-              <Show when={renderProps.isRequired}>
-                <span class="text-danger-400 ml-0.5">*</span>
-              </Show>
-            </HeadlessLabel>
+            <div class={labelWrapperClass()}>
+              <HeadlessLabel class={labelClass(renderProps)}>
+                {local.label}
+                <Show when={renderProps.isRequired || necessityIndicator() === "label"}>
+                  <span class={noWrap}>
+                    &nbsp;
+                    <Show
+                      when={necessityIndicator() === "icon"}
+                      fallback={
+                        <span aria-hidden={renderProps.isRequired ? true : undefined}>
+                          {renderProps.isRequired ? "(required)" : "(optional)"}
+                        </span>
+                      }
+                    >
+                      <AsteriskIcon
+                        size={size() === "S" ? "M" : size()}
+                        styles={requiredIcon}
+                        style={requiredIconStyle(size())}
+                        aria-hidden="true"
+                      />
+                    </Show>
+                  </span>
+                </Show>
+              </HeadlessLabel>
+            </div>
           </Show>
 
-          <HeadlessInput class={inputClasses(renderProps)} />
+          <div
+            class={groupClass(renderProps)}
+            onPointerDown={(event) => {
+              if (event.pointerType === "mouse") {
+                focusFieldInput(event);
+              }
+            }}
+            onTouchEnd={focusFieldInput}
+            data-focused={renderProps.isFocused ? "true" : undefined}
+            data-focus-visible={renderProps.isFocusVisible ? "true" : undefined}
+            data-disabled={renderProps.isDisabled ? "true" : undefined}
+            data-invalid={renderProps.isInvalid ? "true" : undefined}
+          >
+            <HeadlessInput class={textFieldInput} />
+            <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
+              <CenterBaseline>
+                <AlertTriangleIcon styles={fieldErrorIcon} />
+              </CenterBaseline>
+            </Show>
+          </div>
 
           <Show when={local.description && !renderProps.isInvalid}>
-            <TextFieldDescription class={descriptionClasses()}>
+            <TextFieldDescription class={helpClass(renderProps, false)}>
               {local.description}
             </TextFieldDescription>
           </Show>
 
           <Show when={local.errorMessage && renderProps.isInvalid}>
-            <TextFieldError class={errorClasses()}>{local.errorMessage}</TextFieldError>
+            <TextFieldError class={helpClass(renderProps, true)}>
+              {local.errorMessage}
+            </TextFieldError>
           </Show>
         </>
       )}

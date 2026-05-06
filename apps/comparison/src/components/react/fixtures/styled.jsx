@@ -53,6 +53,11 @@ import {
   serializeCheckboxDemoProps,
 } from "@comparison/data/checkbox-demo";
 import {
+  normalizeTextFieldDemoProps,
+  serializeTextFieldDemoProps,
+  textFieldDemoPropsFromWindow,
+} from "@comparison/data/textfield-demo";
+import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
   linkButtonDemoPropsFromWindow,
@@ -769,16 +774,48 @@ function renderTabsDemo() {
 }
 
 function ReactTextFieldDemo() {
-  const [value, setValue] = useState("Quarterly report");
+  const [demoProps, setDemoProps] = useState(textFieldDemoPropsFromWindow);
+  const [value, setValue] = useState(() => demoProps.value);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "textfield") {
+        const nextProps = normalizeTextFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
+      "data-comparison-control-root": "textfield",
+      "data-comparison-control-props": serializeTextFieldDemoProps({
+        ...demoProps,
+        value,
+      }),
       "data-comparison-value": value,
       children: jsx(SpectrumTextField, {
-        label: "Name",
-        defaultValue: "Quarterly report",
-        onChange: setValue,
+        label: demoProps.label,
+        value,
+        placeholder: demoProps.placeholder,
+        size: demoProps.size,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => {
+          setValue(nextValue);
+          setDemoProps((current) => ({ ...current, value: nextValue }));
+        },
       }),
     }),
+    colorScheme,
   );
 }
 

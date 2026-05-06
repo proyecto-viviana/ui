@@ -90,6 +90,22 @@ export function createTextField<
   T extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement,
 >(props: MaybeAccessor<AriaTextFieldProps>, ref?: (el: T) => void): TextFieldAria<T> {
   const getProps = () => access(props);
+  let lastInputValue: string | undefined;
+
+  const eventWithCurrentTarget = (
+    event: InputEvent,
+    element: HTMLInputElement | HTMLTextAreaElement,
+  ) =>
+    new Proxy(event, {
+      get(target, property, receiver) {
+        if (property === "target" || property === "currentTarget") {
+          return element;
+        }
+
+        const value = Reflect.get(target, property, receiver);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
 
   // Get field accessibility props (label, description, error message)
   const { labelProps, fieldProps, descriptionProps, errorMessageProps } = createField(props);
@@ -133,7 +149,9 @@ export function createTextField<
         value: p.value ?? p.defaultValue ?? "",
         onChange: (e: Event) => {
           const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-          p.onChange?.(target.value);
+          if (target.value !== lastInputValue) {
+            p.onChange?.(target.value);
+          }
         },
         // Don't include type and pattern for textarea elements
         type: isTextarea ? undefined : (p.type ?? "text"),
@@ -164,7 +182,15 @@ export function createTextField<
 
         // Input events
         onBeforeInput: p.onBeforeInput,
-        onInput: p.onInput,
+        onInput: (e: InputEvent) => {
+          const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+          const nextValue = target.value;
+          p.onInput?.(
+            eventWithCurrentTarget(e, target) as Parameters<NonNullable<typeof p.onInput>>[0],
+          );
+          lastInputValue = nextValue;
+          p.onChange?.(nextValue);
+        },
       },
       focusableProps as Record<string, unknown>,
       fieldProps as Record<string, unknown>,

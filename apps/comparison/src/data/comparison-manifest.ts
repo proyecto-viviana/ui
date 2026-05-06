@@ -355,6 +355,16 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Checkbox directly; Solid uses @proyecto-viviana/solid-spectrum Checkbox with S2-derived box, icon, baseline, and press-scale styling.",
   }),
 
+  textfield: styledLiveOfficialEntry({
+    slug: "textfield",
+    title: "TextField",
+    category: "Components",
+    summary: "Single-line text entry with S2 field layout, help text, validation, and value state.",
+    styledSummary: "React Spectrum TextField vs Solid Spectrum TextField.",
+    styledNote:
+      "React uses @react-spectrum/s2 TextField directly; Solid uses @proyecto-viviana/solid-spectrum TextField with S2-derived label, field group, input, help text, and validation styling.",
+  }),
+
   tabs: {
     ...createGapEntry({
       slug: "tabs",
@@ -407,7 +417,6 @@ const entryOverrides: Record<string, ComparisonEntry> = {
   ...Object.fromEntries(
     (
       [
-        ["textfield", "TextField"],
         ["dialog", "Dialog"],
         ["datepicker", "DatePicker"],
         ["searchfield", "SearchField"],

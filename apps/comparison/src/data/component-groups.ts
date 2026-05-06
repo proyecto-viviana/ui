@@ -132,7 +132,9 @@ export function groupComparisonEntries(
     }))
     .filter((group) => group.entries.length > 0);
 
-  const groupedSlugs = new Set(componentGroupDefinitions.flatMap((group) => group.slugs));
+  const groupedSlugs = new Set<ComparisonSlug>(
+    componentGroupDefinitions.flatMap((group) => group.slugs),
+  );
   const otherEntries = entries.filter((entry) => !groupedSlugs.has(entry.slug));
 
   if (otherEntries.length > 0) {
