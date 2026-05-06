@@ -235,6 +235,49 @@ test.describe("comparison Switch visual parity", () => {
     }
   });
 
+  test("keyboard toggles selected state and moves the handle on both stacks", async ({ page }) => {
+    const fixtures = await switchFixtures(page);
+
+    for (const item of [
+      { panel: fixtures.reactPanel, root: fixtures.reactRoot, control: fixtures.reactSwitch },
+      { panel: fixtures.solidPanel, root: fixtures.solidRoot, control: fixtures.solidSwitch },
+    ]) {
+      const before = await switchGeometry(item.root);
+      await expect(item.control).not.toBeChecked();
+      await item.control.focus();
+      await expect(item.control).toBeFocused();
+
+      await item.control.press("Enter");
+      await expect(item.control).toBeChecked();
+      await expect(item.control).toBeFocused();
+      await expect(item.panel.locator("[data-comparison-selected]").first()).toHaveAttribute(
+        "data-comparison-selected",
+        "true",
+      );
+
+      expect(before.handleOffsetX, "Switch handle offset before Enter").not.toBeNull();
+      await expect
+        .poll(async () => (await switchGeometry(item.root)).handleOffsetX)
+        .toBeGreaterThan(before.handleOffsetX! + 1);
+      const afterEnter = await switchGeometry(item.root);
+      expect(afterEnter.handleOffsetX, "Switch handle offset after Enter").not.toBeNull();
+
+      await item.control.press("Space");
+      await expect(item.control).not.toBeChecked();
+      await expect(item.control).toBeFocused();
+      await expect(item.panel.locator("[data-comparison-selected]").first()).toHaveAttribute(
+        "data-comparison-selected",
+        "false",
+      );
+
+      await expect
+        .poll(async () => (await switchGeometry(item.root)).handleOffsetX)
+        .toBeLessThan(afterEnter.handleOffsetX! - 1);
+      const afterSpace = await switchGeometry(item.root);
+      expect(afterSpace.handleOffsetX, "Switch handle offset after Space").not.toBeNull();
+    }
+  });
+
   test("toggle preserves the transitioning thumb node on both stacks", async ({ page }) => {
     const fixtures = await switchFixtures(page);
 

@@ -655,10 +655,6 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     }
 
     if (!isValidKeyboardEvent(e, e.currentTarget)) {
-      // Allow event to propagate for invalid keys
-      if (e.key === "Enter") {
-        e.stopPropagation();
-      }
       return;
     }
 
@@ -735,11 +731,20 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
     removeAllGlobalListeners();
 
-    // Prevent default to avoid triggering native action
-    e.preventDefault();
+    // Prevent default for non-native interactive elements, but preserve native
+    // input behavior such as checkbox Space toggling.
+    if (shouldPreventDefaultKeyboard(getEventTarget(e) as Element, e.key)) {
+      e.preventDefault();
+    }
 
-    // Fire synthetic click for keyboard activation
-    if (pressState.isOverTarget && pressState.target) {
+    const shouldSynthesizeClick =
+      pressState.isOverTarget &&
+      pressState.target instanceof HTMLElement &&
+      shouldPreventDefaultKeyboard(pressState.target, e.key);
+
+    // Fire synthetic click for keyboard activation when the target does not
+    // have native keyboard click behavior.
+    if (shouldSynthesizeClick) {
       triggerSyntheticClick(e, pressState.target as HTMLElement);
     }
 
@@ -754,9 +759,9 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       }, 0);
     }
 
-    // For Space key, the click fires after keyup
-    // Set flag to ignore it
-    if (e.key === " ") {
+    // For Space key on non-native targets, the click fires after keyup.
+    // Set flag to ignore it when we already synthesized the click.
+    if (e.key === " " && shouldSynthesizeClick) {
       pressState.ignoreClickAfterPress = true;
     }
 

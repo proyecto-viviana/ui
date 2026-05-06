@@ -7,7 +7,7 @@
  * This is a 1:1 port of @react-stately/radio's useRadioGroupState.
  */
 
-import { createSignal, Accessor, untrack } from "solid-js";
+import { createMemo, createSignal, Accessor, untrack } from "solid-js";
 import { type MaybeAccessor, access } from "../utils";
 import { createId } from "../ssr";
 import {
@@ -133,16 +133,21 @@ export function createRadioGroupState(props: MaybeAccessor<RadioGroupProps> = {}
   // from our reactive state (e.g., clicking a radio unchecks siblings in the DOM)
   const [syncVersion, setSyncVersion] = createSignal(0);
 
+  const controlledValue = createMemo<string | null | undefined>(() => {
+    const value = getProps().value;
+    return value === undefined ? undefined : (value ?? null);
+  });
+
   // Determine if controlled - must be reactive to handle dynamic props
-  const isControlled = () => getProps().value !== undefined;
+  const isControlled = () => controlledValue() !== undefined;
 
   // Get current value - reactive for both controlled and uncontrolled modes
   const selectedValue: Accessor<string | null> = () => {
-    const p = getProps();
     // In controlled mode, always read from props.value reactively
     // In uncontrolled mode, read from internal signal
-    if (p.value !== undefined) {
-      return p.value ?? null;
+    const value = controlledValue();
+    if (value !== undefined) {
+      return value;
     }
     return internalValue();
   };

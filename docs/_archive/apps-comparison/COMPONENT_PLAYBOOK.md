@@ -84,7 +84,16 @@ Examples:
 - For overlays, assert open state, outside-click dismissal, Escape dismissal,
   focus containment, and focus return.
 - For fields and selection components, assert value changes, keyboard paths,
-  disabled/read-only behavior, and selection updates.
+  disabled/read-only behavior, and selection updates. Selection assertions must
+  compare the rendered DOM state too, such as `checked`, active/focused element,
+  visible handle/thumb position, and repeated label clicks. A data marker can
+  update while a hidden input, ref-backed sync effect, or inline style remains
+  stale.
+- When behavior is stale on Solid but the comparison marker updates, inspect each
+  layer against the React counterpart before patching: state, aria hook,
+  headless component, S2 wrapper, and comparison fixture. Pay special attention
+  to render-prop lifecycles, zero-arg Solid child accessors, and whether hidden
+  native inputs or thumbs stay mounted across controlled prop updates.
 
 ## 4. Measure Before Styling
 

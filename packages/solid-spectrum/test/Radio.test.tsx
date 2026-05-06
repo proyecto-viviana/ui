@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { RadioGroup, Radio } from "../src/radio";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
 
 // setupUser is consolidated in solid-spectrum-test-utils.
 
@@ -121,6 +123,83 @@ describe("RadioGroup", () => {
 
       await user.click(radios[1]);
       expect(onChangeSpy).toHaveBeenCalledWith("b");
+    });
+
+    it("keeps controlled value reactive", async () => {
+      function Demo() {
+        const [value, setValue] = createSignal("a");
+        return (
+          <RadioGroup aria-label="Test group" value={value()} onChange={setValue}>
+            <Radio value="a">Option A</Radio>
+            <Radio value="b">Option B</Radio>
+            <Radio value="c">Option C</Radio>
+          </RadioGroup>
+        );
+      }
+
+      render(() => <Demo />);
+
+      const radios = screen.getAllByRole("radio");
+      expect(radios[0]).toBeChecked();
+      await user.click(screen.getByText("Option B"));
+      await waitFor(() => expect(radios[1]).toBeChecked());
+      expect(radios[0]).not.toBeChecked();
+      expect(screen.getAllByRole("radio")[1]).toBe(radios[1]);
+
+      await user.click(screen.getByText("Option C"));
+      await waitFor(() => expect(radios[2]).toBeChecked());
+      expect(radios[1]).not.toBeChecked();
+      expect(screen.getAllByRole("radio")[2]).toBe(radios[2]);
+    });
+
+    it("keeps controlled value reactive through comparison h composition", async () => {
+      function Demo() {
+        const [value, setValue] = createSignal("a");
+
+        return hc(
+          "div",
+          {
+            get "data-value"() {
+              return value();
+            },
+          },
+          [
+            hc(
+              RadioGroup,
+              {
+                "aria-label": "Test group",
+                get value() {
+                  return value();
+                },
+                onChange: setValue,
+              },
+              [
+                hc(Radio, { value: "a" }, ["Option A"]),
+                hc(Radio, { value: "b" }, ["Option B"]),
+                hc(Radio, { value: "c" }, ["Option C"]),
+              ],
+            ),
+          ],
+        );
+      }
+
+      render(() => hc(Demo, {}));
+
+      const root = screen.getByRole("radiogroup").closest("[data-value]")!;
+      const radios = screen.getAllByRole("radio");
+
+      expect(radios[0]).toBeChecked();
+      await user.click(screen.getByText("Option B"));
+      expect(root).toHaveAttribute("data-value", "b");
+      await waitFor(() => expect(radios[1]).toBeChecked());
+      expect(radios[0]).not.toBeChecked();
+      expect(screen.getAllByRole("radio")[1]).toBe(radios[1]);
+
+      await user.click(screen.getByText("Option C"));
+      expect(root).toHaveAttribute("data-value", "c");
+      await waitFor(() => expect(radios[2]).toBeChecked());
+      expect(radios[1]).not.toBeChecked();
+      expect(screen.getAllByRole("radio")[2]).toBe(radios[2]);
     });
   });
 

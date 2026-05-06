@@ -356,7 +356,18 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   };
 
   return (
-    <HeadlessCheckbox {...headlessProps} class={getClassName} style={local.UNSAFE_style}>
+    <HeadlessCheckbox
+      {...headlessProps}
+      isSelected={headlessProps.isSelected}
+      defaultSelected={headlessProps.defaultSelected}
+      onChange={headlessProps.onChange}
+      isDisabled={headlessProps.isDisabled}
+      isReadOnly={headlessProps.isReadOnly}
+      isInvalid={headlessProps.isInvalid}
+      isIndeterminate={headlessProps.isIndeterminate}
+      class={getClassName}
+      style={local.UNSAFE_style}
+    >
       {(renderProps: CheckboxRenderProps) => {
         const checkbox = (
           <div
@@ -515,6 +526,13 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     >
       <HeadlessCheckboxGroup
         {...headlessProps}
+        value={headlessProps.value}
+        defaultValue={headlessProps.defaultValue}
+        onChange={headlessProps.onChange}
+        isDisabled={headlessProps.isDisabled}
+        isReadOnly={headlessProps.isReadOnly}
+        isRequired={headlessProps.isRequired}
+        isInvalid={headlessProps.isInvalid}
         aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
         aria-describedby={ariaDescribedBy()}
         class={getClassName}

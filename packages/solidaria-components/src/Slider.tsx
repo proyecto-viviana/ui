@@ -232,7 +232,7 @@ export function Slider(props: SliderProps): JSX.Element {
     inputRef = el;
   };
 
-  const { labelProps, groupProps, trackProps, thumbProps, inputProps, outputProps } = createSlider(
+  const sliderAria = createSlider(
     ariaProps,
     state,
     () => trackRef ?? null,
@@ -289,7 +289,7 @@ export function Slider(props: SliderProps): JSX.Element {
   );
 
   const cleanGroupProps = () => {
-    const { ref: _ref, ...rest } = groupProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = sliderAria.groupProps as Record<string, unknown>;
     return rest;
   };
 
@@ -297,13 +297,25 @@ export function Slider(props: SliderProps): JSX.Element {
     <SliderContext.Provider
       value={{
         state,
-        trackProps,
-        thumbProps,
-        outputProps,
-        inputProps,
-        trackRef,
+        get trackProps() {
+          return sliderAria.trackProps;
+        },
+        get thumbProps() {
+          return sliderAria.thumbProps;
+        },
+        get outputProps() {
+          return sliderAria.outputProps;
+        },
+        get inputProps() {
+          return sliderAria.inputProps;
+        },
+        get trackRef() {
+          return trackRef;
+        },
         setTrackRef,
-        inputRef,
+        get inputRef() {
+          return inputRef;
+        },
         setInputRef,
       }}
     >
@@ -317,7 +329,7 @@ export function Slider(props: SliderProps): JSX.Element {
         data-dragging={state.isDragging() || undefined}
       >
         <Show when={ariaProps.label}>
-          <span {...labelProps}>{ariaProps.label}</span>
+          <span {...sliderAria.labelProps}>{ariaProps.label}</span>
         </Show>
 
         {sliderChildren()}
@@ -337,7 +349,7 @@ export function SliderTrack(props: SliderTrackProps): JSX.Element {
     throw new Error("SliderTrack must be used within a Slider");
   }
 
-  const { state, trackProps, setTrackRef } = context;
+  const { state, setTrackRef } = context;
 
   const renderValues = createMemo<SliderTrackRenderProps>(() => ({
     isDisabled: state.isDisabled,
@@ -357,12 +369,12 @@ export function SliderTrack(props: SliderTrackProps): JSX.Element {
   );
 
   const cleanTrackProps = () => {
-    const { ref: _ref, style: trackStyle, ...rest } = trackProps as Record<string, unknown>;
+    const { ref: _ref, style: trackStyle, ...rest } = context.trackProps as Record<string, unknown>;
     return rest;
   };
 
   const mergedStyle = () => {
-    const trackStyle = (trackProps as { style?: Record<string, string> }).style || {};
+    const trackStyle = (context.trackProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...trackStyle, ...renderStyle };
   };
@@ -391,10 +403,10 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
 
   const context = useContext(SliderContext);
   if (!context) {
-    throw new Error("SliderFill must be used within a Slider");
+    throw new Error("SliderThumb must be used within a Slider");
   }
 
-  const { state, thumbProps, inputProps, setInputRef } = context;
+  const { state, setInputRef } = context;
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
@@ -425,7 +437,7 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
   );
 
   const cleanThumbProps = () => {
-    const { ref: _ref, style: thumbStyle, ...rest } = thumbProps as Record<string, unknown>;
+    const { ref: _ref, style: thumbStyle, ...rest } = context.thumbProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -438,12 +450,12 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
   };
 
   const mergedStyle = () => {
-    const thumbStyle = (thumbProps as { style?: Record<string, string> }).style || {};
+    const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...thumbStyle, ...renderStyle };
   };
   const cleanInputProps = () => {
-    const { ref: _ref, ...rest } = inputProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = context.inputProps as Record<string, unknown>;
     return rest;
   };
   const mergedInputProps = () =>
@@ -481,10 +493,10 @@ export function SliderOutput(props: SliderOutputProps): JSX.Element {
 
   const context = useContext(SliderContext);
   if (!context) {
-    throw new Error("SliderThumb must be used within a Slider");
+    throw new Error("SliderOutput must be used within a Slider");
   }
 
-  const { state, outputProps } = context;
+  const { state } = context;
 
   const renderValues = createMemo<SliderOutputRenderProps>(() => ({
     value: state.value(),
@@ -506,7 +518,7 @@ export function SliderOutput(props: SliderOutputProps): JSX.Element {
     return rest;
   };
   const cleanOutputProps = () => {
-    const { ref: _ref, ...rest } = outputProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = context.outputProps as Record<string, unknown>;
     return rest;
   };
 

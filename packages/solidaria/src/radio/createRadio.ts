@@ -113,14 +113,13 @@ export function createRadio(
   // We track `syncVersion` to ensure this effect runs on EVERY selection attempt,
   // even in controlled mode where isSelected() may not change.
   createEffect(() => {
-    const inputEl = ref();
-    if (!inputEl) return;
-
     // The WeakMap accessor is outside the public API to maintain React Aria parity.
     const syncVersion = radioGroupSyncVersion.get(state);
     syncVersion?.();
 
     const shouldBeChecked = isSelected();
+    const inputEl = ref();
+    if (!inputEl) return;
 
     if (inputEl.checked !== shouldBeChecked) {
       inputEl.checked = shouldBeChecked;

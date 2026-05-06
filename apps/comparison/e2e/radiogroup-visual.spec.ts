@@ -22,8 +22,12 @@ async function radioGroupFixtures(page: Page, query = "") {
     solidPanel,
     reactRoot,
     solidRoot,
+    reactStarter: reactPanel.getByRole("radio", { name: "Starter" }).first(),
     reactPro: reactPanel.getByRole("radio", { name: "Pro" }).first(),
+    reactEnterprise: reactPanel.getByRole("radio", { name: "Enterprise" }).first(),
+    solidStarter: solidPanel.getByRole("radio", { name: "Starter" }).first(),
     solidPro: solidPanel.getByRole("radio", { name: "Pro" }).first(),
+    solidEnterprise: solidPanel.getByRole("radio", { name: "Enterprise" }).first(),
   };
 }
 
@@ -95,6 +99,49 @@ function expectNear(
 }
 
 test.describe("comparison RadioGroup visual parity", () => {
+  test("label clicks can select multiple values in sequence on both stacks", async ({ page }) => {
+    const fixtures = await radioGroupFixtures(page);
+
+    for (const item of [
+      {
+        panel: fixtures.reactPanel,
+        root: fixtures.reactRoot,
+        starter: fixtures.reactStarter,
+        pro: fixtures.reactPro,
+        enterprise: fixtures.reactEnterprise,
+      },
+      {
+        panel: fixtures.solidPanel,
+        root: fixtures.solidRoot,
+        starter: fixtures.solidStarter,
+        pro: fixtures.solidPro,
+        enterprise: fixtures.solidEnterprise,
+      },
+    ]) {
+      await expect(item.starter).toBeChecked();
+      await expect(item.pro).not.toBeChecked();
+      await expect(item.enterprise).not.toBeChecked();
+
+      await item.panel.getByText("Pro", { exact: true }).click();
+      await expect(item.root).toHaveAttribute("data-comparison-selected-value", "pro");
+      await expect(item.pro).toBeChecked();
+      await expect(item.starter).not.toBeChecked();
+      await expect(item.enterprise).not.toBeChecked();
+
+      await item.panel.getByText("Enterprise", { exact: true }).click();
+      await expect(item.root).toHaveAttribute("data-comparison-selected-value", "enterprise");
+      await expect(item.enterprise).toBeChecked();
+      await expect(item.pro).not.toBeChecked();
+      await expect(item.starter).not.toBeChecked();
+
+      await item.panel.getByText("Starter", { exact: true }).click();
+      await expect(item.root).toHaveAttribute("data-comparison-selected-value", "starter");
+      await expect(item.starter).toBeChecked();
+      await expect(item.pro).not.toBeChecked();
+      await expect(item.enterprise).not.toBeChecked();
+    }
+  });
+
   test("selected emphasized XL invalid horizontal state matches React Spectrum geometry", async ({
     page,
   }) => {

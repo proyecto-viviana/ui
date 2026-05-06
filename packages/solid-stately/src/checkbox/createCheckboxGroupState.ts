@@ -7,7 +7,7 @@
  * This is a 1:1 port of @react-stately/checkbox's useCheckboxGroupState.
  */
 
-import { createSignal, Accessor } from "solid-js";
+import { createMemo, createSignal, Accessor } from "solid-js";
 import { type MaybeAccessor, access } from "../utils";
 import {
   createFormValidationState,
@@ -103,11 +103,13 @@ export function createCheckboxGroupState(
 
   const [internalValue, setInternalValue] = createSignal<readonly string[]>(initialValue);
 
-  const isControlled = () => getProps().value !== undefined;
+  const controlledValue = createMemo<readonly string[] | undefined>(() => getProps().value);
+
+  const isControlled = () => controlledValue() !== undefined;
 
   const value: Accessor<readonly string[]> = () => {
-    const p = getProps();
-    return isControlled() ? (p.value ?? []) : internalValue();
+    const controlled = controlledValue();
+    return controlled !== undefined ? controlled : internalValue();
   };
 
   const isRequired: Accessor<boolean> = () => {

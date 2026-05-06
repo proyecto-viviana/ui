@@ -248,6 +248,20 @@ test.describe("comparison Checkbox visual parity", () => {
         "data-comparison-checked",
         "true",
       );
+
+      await item.panel.getByText("Enable alerts", { exact: true }).click();
+      await expect(item.checkbox).not.toBeChecked();
+      await expect(item.panel.locator("[data-comparison-checked]").first()).toHaveAttribute(
+        "data-comparison-checked",
+        "false",
+      );
+
+      await item.root.click();
+      await expect(item.checkbox).toBeChecked();
+      await expect(item.panel.locator("[data-comparison-checked]").first()).toHaveAttribute(
+        "data-comparison-checked",
+        "true",
+      );
     }
   });
 

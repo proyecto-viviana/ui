@@ -129,6 +129,9 @@ export function createToggle(
     get onPressUp() {
       return getProps().onPressUp;
     },
+    get onClick() {
+      return getProps().onClick;
+    },
     get isDisabled() {
       return isDisabled();
     },
@@ -148,8 +151,13 @@ export function createToggle(
     get onPressUp() {
       return getProps().onPressUp;
     },
+    get onClick() {
+      return getProps().onClick;
+    },
     onPress(e: PressEvent) {
       getProps().onPress?.(e);
+      state.toggle();
+      ref()?.focus();
     },
     get isDisabled() {
       return isDisabled() || isReadOnly();
@@ -226,7 +234,9 @@ export function createToggle(
   const combinedIsPressed: Accessor<boolean> = () => isPressed() || isLabelPressed();
 
   return {
-    labelProps: labelPressProps as JSX.LabelHTMLAttributes<HTMLLabelElement>,
+    labelProps: mergeProps(labelPressProps, {
+      onClick: (e: MouseEvent) => e.preventDefault(),
+    }) as JSX.LabelHTMLAttributes<HTMLLabelElement>,
     get inputProps() {
       const p = getProps();
       return mergeProps(domProps(), {

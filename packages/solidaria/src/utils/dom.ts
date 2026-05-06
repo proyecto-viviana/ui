@@ -183,27 +183,11 @@ export function isHTMLAnchorLink(target: Element): boolean {
  * Whether to prevent default on keyboard events for this element.
  */
 export function shouldPreventDefaultKeyboard(target: Element, key: string): boolean {
-  const tagName = target.tagName.toLowerCase();
-
-  // Never prevent default on inputs - they handle their own behavior
-  if (tagName === "input" || tagName === "textarea" || tagName === "select") {
-    return false;
+  if (target instanceof HTMLInputElement) {
+    return !isValidInputKey(target, key);
   }
 
-  // Don't prevent default on links for Enter (native navigation)
-  if ((tagName === "a" || target.getAttribute("role") === "link") && key === "Enter") {
-    return false;
-  }
-
-  // Buttons with submit/reset type should not prevent default
-  if (tagName === "button") {
-    const type = (target as HTMLButtonElement).type;
-    if (type === "submit" || type === "reset") {
-      return false;
-    }
-  }
-
-  return true;
+  return shouldPreventDefaultUp(target);
 }
 
 /**

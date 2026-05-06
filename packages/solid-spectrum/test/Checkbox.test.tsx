@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
-import { Checkbox } from "../src/checkbox";
+import { render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
+import { Checkbox, CheckboxGroup } from "../src/checkbox";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
 
 // setupUser is consolidated in solid-spectrum-test-utils.
 
@@ -69,6 +71,82 @@ describe("Checkbox", () => {
 
       await user.click(checkbox);
       expect(onChangeSpy).toHaveBeenCalledWith(true);
+    });
+
+    it("keeps the controlled hidden input stable while toggling", async () => {
+      function Demo() {
+        const [isSelected, setIsSelected] = createSignal(false);
+        return (
+          <Checkbox isSelected={isSelected()} onChange={setIsSelected}>
+            Enable alerts
+          </Checkbox>
+        );
+      }
+
+      render(() => <Demo />);
+
+      const checkbox = screen.getByRole("checkbox");
+      await user.click(screen.getByText("Enable alerts"));
+      await waitFor(() => expect(checkbox).toBeChecked());
+      expect(screen.getByRole("checkbox")).toBe(checkbox);
+
+      await user.click(screen.getByText("Enable alerts"));
+      await waitFor(() => expect(checkbox).not.toBeChecked());
+      expect(screen.getByRole("checkbox")).toBe(checkbox);
+    });
+
+    it("keeps CheckboxGroup controlled values reactive through comparison h composition", async () => {
+      function Demo() {
+        const [value, setValue] = createSignal<string[]>(["email"]);
+
+        return hc(
+          "div",
+          {
+            get "data-value"() {
+              return value().join(",");
+            },
+          },
+          [
+            hc(
+              CheckboxGroup,
+              {
+                "aria-label": "Notifications",
+                get value() {
+                  return value();
+                },
+                onChange(nextValue: string[]) {
+                  setValue(nextValue);
+                },
+              },
+              [
+                hc(Checkbox, { value: "email" }, ["Email"]),
+                hc(Checkbox, { value: "sms" }, ["SMS"]),
+                hc(Checkbox, { value: "push" }, ["Push"]),
+              ],
+            ),
+          ],
+        );
+      }
+
+      render(() => hc(Demo, {}));
+
+      const root = screen.getByRole("group").closest("[data-value]")!;
+      const checkboxes = screen.getAllByRole("checkbox");
+
+      expect(checkboxes[0]).toBeChecked();
+      expect(checkboxes[1]).not.toBeChecked();
+
+      await user.click(screen.getByText("SMS"));
+      await waitFor(() => expect(checkboxes[1]).toBeChecked());
+      expect(checkboxes[0]).toBeChecked();
+      expect(root).toHaveAttribute("data-value", "email,sms");
+      expect(screen.getAllByRole("checkbox")[1]).toBe(checkboxes[1]);
+
+      await user.click(screen.getByText("Email"));
+      await waitFor(() => expect(checkboxes[0]).not.toBeChecked());
+      expect(checkboxes[1]).toBeChecked();
+      expect(root).toHaveAttribute("data-value", "sms");
+      expect(screen.getAllByRole("checkbox")[0]).toBe(checkboxes[0]);
     });
   });
 

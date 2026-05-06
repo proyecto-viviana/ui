@@ -308,6 +308,39 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
+  const renderChildren = (renderProps: RadioGroupRenderProps) => (
+    <>
+      <Show when={local.label}>
+        <div
+          class={radioGroupLabelWrapper({
+            ...renderProps,
+            size: size(),
+            labelPosition: "top",
+          })}
+        >
+          <span id={labelId} class={radioGroupLabel({ ...renderProps, size: size() })}>
+            {local.label}
+          </span>
+        </div>
+      </Show>
+      <div class={radioGroupItems({ ...renderProps, size: size() })}>{local.children}</div>
+      <Show when={local.description && !renderProps.isInvalid}>
+        <div id={descriptionId} class={radioGroupHelpText({ ...renderProps, size: size() })}>
+          {local.description}
+        </div>
+      </Show>
+      <Show when={local.errorMessage}>
+        <div
+          id={errorId}
+          role="alert"
+          class={radioGroupHelpText({ ...renderProps, size: size(), isInvalid: true })}
+          style={{ display: renderProps.isInvalid ? undefined : "none" }}
+        >
+          {local.errorMessage}
+        </div>
+      </Show>
+    </>
+  );
 
   return (
     <RadioStyleContext.Provider
@@ -322,6 +355,13 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
     >
       <HeadlessRadioGroup
         {...headlessProps}
+        value={headlessProps.value}
+        defaultValue={headlessProps.defaultValue}
+        onChange={headlessProps.onChange}
+        isDisabled={headlessProps.isDisabled}
+        isReadOnly={headlessProps.isReadOnly}
+        isRequired={headlessProps.isRequired}
+        isInvalid={headlessProps.isInvalid}
         orientation={local.orientation}
         aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
         aria-describedby={ariaDescribedBy()}
@@ -329,39 +369,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
         style={local.UNSAFE_style}
         data-size={radioDataSize(local.size)}
       >
-        {(renderProps) => (
-          <>
-            <Show when={local.label}>
-              <div
-                class={radioGroupLabelWrapper({
-                  ...renderProps,
-                  size: size(),
-                  labelPosition: "top",
-                })}
-              >
-                <span id={labelId} class={radioGroupLabel({ ...renderProps, size: size() })}>
-                  {local.label}
-                </span>
-              </div>
-            </Show>
-            <div class={radioGroupItems({ ...renderProps, size: size() })}>{local.children}</div>
-            <Show when={local.description && !renderProps.isInvalid}>
-              <div id={descriptionId} class={radioGroupHelpText({ ...renderProps, size: size() })}>
-                {local.description}
-              </div>
-            </Show>
-            <Show when={local.errorMessage}>
-              <div
-                id={errorId}
-                role="alert"
-                class={radioGroupHelpText({ ...renderProps, size: size(), isInvalid: true })}
-                style={{ display: renderProps.isInvalid ? undefined : "none" }}
-              >
-                {local.errorMessage}
-              </div>
-            </Show>
-          </>
-        )}
+        {renderChildren}
       </HeadlessRadioGroup>
     </RadioStyleContext.Provider>
   );

@@ -241,15 +241,26 @@ test.describe("comparison Slider visual parity", () => {
       );
 
     for (const item of [
-      { panel: fixtures.reactPanel, slider: fixtures.reactSlider },
-      { panel: fixtures.solidPanel, slider: fixtures.solidSlider },
+      { panel: fixtures.reactPanel, root: fixtures.reactRoot, slider: fixtures.reactSlider },
+      { panel: fixtures.solidPanel, root: fixtures.solidRoot, slider: fixtures.solidSlider },
     ]) {
       await expect.poll(async () => sliderValue(item.slider)).toBe("40");
+      const before = await sliderGeometry(item.root);
       await item.slider.focus();
       await expect(item.slider).toBeFocused();
       await item.slider.press("ArrowRight");
       await expect.poll(async () => sliderValue(item.slider)).toBe("41");
       await expect(item.slider).toBeFocused();
+      const after = await sliderGeometry(item.root);
+      expect(
+        after.slider?.x,
+        "Slider thumb x should be present after keyboard change",
+      ).toBeDefined();
+      expect(
+        before.slider?.x,
+        "Slider thumb x should be present before keyboard change",
+      ).toBeDefined();
+      expect(after.slider!.x).toBeGreaterThan(before.slider!.x + 0.5);
       await expect(item.panel.locator("[data-comparison-value]").first()).toHaveAttribute(
         "data-comparison-value",
         "41",

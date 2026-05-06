@@ -1,6 +1,7 @@
 // @ts-nocheck
 import {
   children as resolveChildren,
+  createSignal,
   mergeProps as solidMergeProps,
   splitProps,
   type JSX,
@@ -223,22 +224,14 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const mergedStyles = () => mergeStyles(local.styles);
   const direction = () => locale().direction;
   let handleElement: HTMLDivElement | undefined;
-  let inputRef: HTMLInputElement | null = null;
+  const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
 
-  const state = createToggleState({
-    get isSelected() {
-      return headlessProps.isSelected;
-    },
-    get defaultSelected() {
-      return headlessProps.defaultSelected;
-    },
-    get onChange() {
-      return headlessProps.onChange;
-    },
-    get isReadOnly() {
-      return headlessProps.isReadOnly;
-    },
-  });
+  const state = createToggleState(() => ({
+    isSelected: headlessProps.isSelected,
+    defaultSelected: headlessProps.defaultSelected,
+    onChange: headlessProps.onChange,
+    isReadOnly: headlessProps.isReadOnly,
+  }));
 
   const switchAria = createSwitch(
     () => ({
@@ -246,7 +239,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       children: typeof local.children === "function" ? true : local.children,
     }),
     state,
-    () => inputRef,
+    inputElement,
   );
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
@@ -328,11 +321,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       data-readonly={switchAria.isReadOnly || undefined}
     >
       <VisuallyHidden>
-        <input
-          ref={(element) => (inputRef = element)}
-          {...cleanInputProps()}
-          {...cleanFocusProps()}
-        />
+        <input ref={setInputElement} {...cleanInputProps()} {...cleanFocusProps()} />
       </VisuallyHidden>
       <div class={centerBaselineWrapper}>
         <span aria-hidden="true" style={{ width: 0, visibility: "hidden" }}>

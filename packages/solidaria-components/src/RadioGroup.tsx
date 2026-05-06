@@ -10,6 +10,7 @@ import {
   type ParentProps,
   createContext,
   createMemo,
+  createSignal,
   createUniqueId,
   splitProps,
   useContext,
@@ -211,33 +212,15 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     : props;
   const [local, ariaProps] = splitProps(mergedProps, ["class", "style", "render", "ref", "slot"]);
 
-  // Create radio group state
-  // We pass a function that returns props so that createRadioGroupState
-  // can access props reactively. The props object itself is a proxy in SolidJS,
-  // so accessing props.value inside a reactive context will track changes.
-  const state = createRadioGroupState({
-    get value() {
-      return mergedProps.value;
-    },
-    get defaultValue() {
-      return mergedProps.defaultValue;
-    },
-    get onChange() {
-      return mergedProps.onChange;
-    },
-    get isDisabled() {
-      return mergedProps.isDisabled;
-    },
-    get isReadOnly() {
-      return mergedProps.isReadOnly;
-    },
-    get isRequired() {
-      return mergedProps.isRequired;
-    },
-    get isInvalid() {
-      return mergedProps.isInvalid;
-    },
-  });
+  const state = createRadioGroupState(() => ({
+    value: mergedProps.value,
+    defaultValue: mergedProps.defaultValue,
+    onChange: mergedProps.onChange,
+    isDisabled: mergedProps.isDisabled,
+    isReadOnly: mergedProps.isReadOnly,
+    isRequired: mergedProps.isRequired,
+    isInvalid: mergedProps.isInvalid,
+  }));
 
   // Create radio group aria props
   const groupAria = createRadioGroup(
@@ -341,31 +324,53 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     },
   };
 
-  // Resolve children - we need to pass render props if children is a function
-  // but we use props.children directly (not renderProps.renderChildren())
-  // to preserve SolidJS context propagation for nested components like Radio
-  const resolvedChildren = () => {
-    const children = props.children;
-    if (typeof children === "function") {
-      return children(renderValues());
-    }
-    return children;
+  const GroupChildren = () => {
+    const childRenderValues: RadioGroupRenderProps = {
+      get orientation() {
+        return (ariaProps.orientation as Orientation) ?? "vertical";
+      },
+      get isDisabled() {
+        return state.isDisabled;
+      },
+      get isReadOnly() {
+        return state.isReadOnly;
+      },
+      get isRequired() {
+        return state.isRequired;
+      },
+      get isInvalid() {
+        return isInvalid();
+      },
+      get state() {
+        return state;
+      },
+    };
+    const renderedChildren = createMemo(() => {
+      const children = props.children;
+      if (typeof children === "function") {
+        return children.length > 0
+          ? children(childRenderValues)
+          : (children as unknown as () => JSX.Element)();
+      }
+      return children;
+    });
+
+    return (
+      <>
+        {renderedChildren()}
+        <Show when={mergedProps.description}>
+          <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
+            {mergedProps.description}
+          </div>
+        </Show>
+        <Show when={isInvalid() && mergedProps.errorMessage}>
+          <div {...(groupAria.errorMessageProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
+            {mergedProps.errorMessage}
+          </div>
+        </Show>
+      </>
+    );
   };
-  const groupChildren = () => (
-    <>
-      {resolvedChildren()}
-      <Show when={mergedProps.description}>
-        <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-          {mergedProps.description}
-        </div>
-      </Show>
-      <Show when={isInvalid() && mergedProps.errorMessage}>
-        <div {...(groupAria.errorMessageProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-          {mergedProps.errorMessage}
-        </div>
-      </Show>
-    </>
-  );
   const groupEventProps = {
     onInvalidCapture: handleGroupInvalidCapture,
     onChangeCapture: handleGroupChangeCapture,
@@ -387,7 +392,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
       "data-readonly": state.isReadOnly || undefined,
       "data-required": state.isRequired || undefined,
       "data-invalid": isInvalid() || undefined,
-      children: groupChildren(),
+      children: <GroupChildren />,
     }) as unknown as JSX.HTMLAttributes<HTMLDivElement>;
 
   return (
@@ -413,7 +418,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
             data-required={state.isRequired || undefined}
             data-invalid={isInvalid() || undefined}
           >
-            {groupChildren()}
+            <GroupChildren />
           </div>
         )}
       </FieldErrorContext.Provider>
@@ -426,7 +431,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
  * This is rendered inside the RadioGroup's context provider.
  */
 function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): JSX.Element {
-  let inputRef: HTMLInputElement | null = null;
+  const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const { state } = props;
   const contextProps = useContext(RadioContext);
   const contextSlotProps = contextProps?.slots?.[props.radioProps.slot ?? "default"];
@@ -486,7 +491,7 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       children: typeof radioProps.children === "function" ? true : radioProps.children,
     }),
     state,
-    () => inputRef,
+    inputElement,
   );
 
   // Create focus ring
@@ -622,7 +627,7 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     assignRef(local.ref, el);
   };
   const setInputRef = (el: HTMLInputElement) => {
-    inputRef = el;
+    setInputElement(el);
     el.addEventListener("invalid", (event) => {
       state.updateValidation(getNativeValidation(el));
       state.commitValidation();
@@ -637,20 +642,23 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       assignRef(ref, el);
     }
   };
+  const hiddenInput = (
+    <VisuallyHidden>
+      <input
+        ref={setInputRef}
+        {...cleanInputProps()}
+        {...cleanFocusProps()}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        onInvalid={handleInputInvalid}
+        onChange={handleInputChange}
+        onClick={handleInputClick}
+      />
+    </VisuallyHidden>
+  );
   const labelChildren = () => (
     <>
-      <VisuallyHidden>
-        <input
-          ref={setInputRef}
-          {...cleanInputProps()}
-          {...cleanFocusProps()}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          onInvalid={handleInputInvalid}
-          onChange={handleInputChange}
-          onClick={handleInputClick}
-        />
-      </VisuallyHidden>
+      {hiddenInput}
       {renderProps.renderChildren()}
       <Show when={local.description}>
         <span id={descriptionId} slot="description">

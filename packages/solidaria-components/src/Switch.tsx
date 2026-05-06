@@ -7,7 +7,15 @@
  * Named "ToggleSwitch" to avoid conflict with SolidJS's built-in Switch component.
  */
 
-import { type JSX, createContext, createMemo, createUniqueId, splitProps, Show } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  splitProps,
+  Show,
+} from "solid-js";
 import {
   createSwitch,
   createFocusRing,
@@ -84,7 +92,7 @@ export const ToggleSwitchContext = createContext<ToggleSwitchProps | null>(null)
  * ```
  */
 export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
-  let inputRef: HTMLInputElement | null = null;
+  const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
 
   const [local, ariaProps] = splitProps(props, [
     "class",
@@ -97,20 +105,12 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const errorMessageId = createUniqueId();
 
   // Use getters to ensure props are read lazily inside reactive contexts
-  const state = createToggleState({
-    get isSelected() {
-      return ariaProps.isSelected;
-    },
-    get defaultSelected() {
-      return ariaProps.defaultSelected;
-    },
-    get onChange() {
-      return ariaProps.onChange;
-    },
-    get isReadOnly() {
-      return ariaProps.isReadOnly;
-    },
-  });
+  const state = createToggleState(() => ({
+    isSelected: ariaProps.isSelected,
+    defaultSelected: ariaProps.defaultSelected,
+    onChange: ariaProps.onChange,
+    isReadOnly: ariaProps.isReadOnly,
+  }));
 
   const switchAria = createSwitch(
     () => ({
@@ -118,7 +118,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       children: typeof props.children === "function" ? true : props.children,
     }),
     state,
-    () => inputRef,
+    inputElement,
   );
   const describedBy = () => {
     const ids = [
@@ -233,7 +233,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     >
       <VisuallyHidden>
         <input
-          ref={(el) => (inputRef = el)}
+          ref={setInputElement}
           {...cleanInputProps()}
           {...cleanFocusProps()}
           aria-describedby={describedBy()}

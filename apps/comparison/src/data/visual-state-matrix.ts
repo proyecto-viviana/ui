@@ -691,7 +691,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/checkbox-visual.spec.ts",
-      note: "Side-panel invalid, read-only, and disabled states compare box/text colors against React Spectrum, and read-only/disabled hover and press affordances are suppressed on both stacks.",
+      note: "Side-panel invalid, read-only, and disabled states compare box/text colors against React Spectrum, read-only/disabled hover and press affordances are suppressed, and repeated label clicks update the checked DOM state on both stacks.",
     },
   ],
   checkboxgroup: [
@@ -712,7 +712,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/checkboxgroup-visual.spec.ts",
-      note: "Horizontal XL emphasized invalid CheckboxGroup state asserts selected values, group semantics, orientation layout, S2 checkbox child size/color propagation, help text, and invalid state against React Spectrum.",
+      note: "Horizontal XL emphasized invalid CheckboxGroup state asserts selected values, group semantics, orientation layout, S2 checkbox child size/color propagation, help text, invalid state, and repeated multi-selection updates against React Spectrum.",
     },
     {
       id: "styled.props.controls",
@@ -744,6 +744,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/radiogroup-visual.spec.ts",
       note: "Horizontal XL emphasized invalid RadioGroup state asserts selected value, radiogroup orientation, label color, S2 circle size/border/color, help text, and invalid state against React Spectrum.",
+    },
+    {
+      id: "styled.selection.change",
+      label: "Repeated selection change",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/radiogroup-visual.spec.ts",
+      note: "Sequential label clicks assert both the comparison selected-value marker and the actual checked radio DOM state on React Spectrum and Solid.",
     },
     {
       id: "styled.props.controls",
@@ -833,7 +843,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/slider-visual.spec.ts",
-      note: "Keyboard activation in the controlled Slider updates the comparison value marker and keeps focus on the slider on both React Spectrum and Solid.",
+      note: "Keyboard activation in the controlled Slider updates the comparison value marker, keeps focus, and moves the visible thumb geometry on both React Spectrum and Solid.",
     },
     {
       id: "styled.props.controls",
@@ -1013,7 +1023,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/switch-visual.spec.ts",
-      note: "Clicking the visible Switch label toggles the controlled selected-state marker on both React Spectrum and Solid, and the transition-carrying thumb DOM node stays mounted through the state change.",
+      note: "Clicking the visible Switch label and keyboard activation toggle the controlled selected-state marker on both React Spectrum and Solid, move the handle geometry, and keep the transition-carrying thumb DOM node mounted through the state change.",
     },
     {
       id: "styled.props.controls",

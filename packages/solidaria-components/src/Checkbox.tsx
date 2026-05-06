@@ -11,6 +11,7 @@ import {
   createContext,
   useContext,
   createMemo,
+  createSignal,
   createUniqueId,
   splitProps,
   Show,
@@ -155,29 +156,15 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   ]);
 
   // Use getters to ensure props are read lazily inside reactive contexts
-  const state = createCheckboxGroupState({
-    get value() {
-      return ariaProps.value;
-    },
-    get defaultValue() {
-      return ariaProps.defaultValue;
-    },
-    get onChange() {
-      return ariaProps.onChange;
-    },
-    get isDisabled() {
-      return ariaProps.isDisabled;
-    },
-    get isReadOnly() {
-      return ariaProps.isReadOnly;
-    },
-    get isRequired() {
-      return ariaProps.isRequired;
-    },
-    get isInvalid() {
-      return ariaProps.isInvalid;
-    },
-  });
+  const state = createCheckboxGroupState(() => ({
+    value: ariaProps.value,
+    defaultValue: ariaProps.defaultValue,
+    onChange: ariaProps.onChange,
+    isDisabled: ariaProps.isDisabled,
+    isReadOnly: ariaProps.isReadOnly,
+    isRequired: ariaProps.isRequired,
+    isInvalid: ariaProps.isInvalid,
+  }));
 
   const groupAria = createCheckboxGroup(
     () => ({
@@ -225,15 +212,35 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
   };
 
-  // Resolve children - we need to pass render props if children is a function
-  // but we use props.children directly (not renderProps.renderChildren())
-  // to preserve SolidJS context propagation for nested components like Checkbox
-  const resolvedChildren = () => {
-    const children = props.children;
-    if (typeof children === "function") {
-      return children(renderValues());
-    }
-    return children;
+  const GroupChildren = () => {
+    const childRenderValues: CheckboxGroupRenderProps = {
+      get isDisabled() {
+        return state.isDisabled;
+      },
+      get isReadOnly() {
+        return state.isReadOnly;
+      },
+      get isRequired() {
+        return state.isRequired();
+      },
+      get isInvalid() {
+        return groupAria.isInvalid;
+      },
+      get state() {
+        return state;
+      },
+    };
+    const renderedChildren = createMemo(() => {
+      const children = props.children;
+      if (typeof children === "function") {
+        return children.length > 0
+          ? children(childRenderValues)
+          : (children as unknown as () => JSX.Element)();
+      }
+      return children;
+    });
+
+    return <>{renderedChildren()}</>;
   };
 
   return (
@@ -249,7 +256,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         data-required={ariaProps.isRequired || undefined}
         data-invalid={groupAria.isInvalid || undefined}
       >
-        {resolvedChildren()}
+        <GroupChildren />
         <Show when={props.description}>
           <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
             {props.description}
@@ -284,7 +291,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
  * ```
  */
 export function Checkbox(props: CheckboxProps): JSX.Element {
-  let inputRef: HTMLInputElement | null = null;
+  const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const contextProps = useContext(CheckboxContext);
   const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
   const contextBaseProps = createMemo<CheckboxProps>(() => {
@@ -347,7 +354,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
         children: typeof mergedProps.children === "function" ? true : mergedProps.children,
       }),
       groupState,
-      () => inputRef,
+      inputElement,
     );
     isSelected = itemAria.isSelected;
     isPressed = itemAria.isPressed;
@@ -355,20 +362,12 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     inputProps = () => itemAria.inputProps;
   } else {
     // Use getters to ensure props are read lazily inside reactive contexts
-    const state = createToggleState({
-      get isSelected() {
-        return ariaProps.isSelected;
-      },
-      get defaultSelected() {
-        return ariaProps.defaultSelected;
-      },
-      get onChange() {
-        return ariaProps.onChange;
-      },
-      get isReadOnly() {
-        return ariaProps.isReadOnly;
-      },
-    });
+    const state = createToggleState(() => ({
+      isSelected: ariaProps.isSelected,
+      defaultSelected: ariaProps.defaultSelected,
+      onChange: ariaProps.onChange,
+      isReadOnly: ariaProps.isReadOnly,
+    }));
 
     const checkboxAria = createCheckbox(
       () => ({
@@ -377,7 +376,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
         children: typeof mergedProps.children === "function" ? true : mergedProps.children,
       }),
       state,
-      () => inputRef,
+      inputElement,
     );
     isSelected = checkboxAria.isSelected;
     isPressed = checkboxAria.isPressed;
@@ -519,23 +518,26 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     assignRef(local.ref, el);
   };
   const setInputRef = (el: HTMLInputElement) => {
-    inputRef = el;
+    setInputElement(el);
     for (const ref of inputRefs()) {
       assignRef(ref, el);
     }
   };
+  const hiddenInput = (
+    <VisuallyHidden>
+      <input
+        ref={setInputRef}
+        {...cleanInputProps()}
+        {...cleanFocusProps()}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        aria-describedby={describedBy()}
+      />
+    </VisuallyHidden>
+  );
   const labelChildren = () => (
     <>
-      <VisuallyHidden>
-        <input
-          ref={setInputRef}
-          {...cleanInputProps()}
-          {...cleanFocusProps()}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          aria-describedby={describedBy()}
-        />
-      </VisuallyHidden>
+      {hiddenInput}
       {checkboxChildren()}
       <Show when={local.description}>
         <span id={descriptionId} slot="description">
