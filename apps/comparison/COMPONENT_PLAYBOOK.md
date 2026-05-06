@@ -41,6 +41,13 @@ specific enough that implementation assumptions are testable.
 Include:
 
 - React S2 component and source files reviewed.
+- Layer-by-layer parity notes against the React implementation. For each
+  component, inspect the public S2 wrapper, style declarations, slot/context
+  providers, state hooks, React Aria behavior hooks, shared interaction/focus
+  utilities, and comparison fixture wiring against the Solid counterpart. Record
+  any lifecycle, timing, focus, selection, disabled/read-only, generated-style,
+  or prop-normalization differences before deciding whether they are intentional
+  gaps or bugs to port.
 - Props, slots, wrapper structure, provider/context behavior, and generated style
   declarations to port.
 - Static states to compare: default, variants, sizes, disabled/read-only,
