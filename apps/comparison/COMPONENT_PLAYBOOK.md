@@ -170,8 +170,8 @@ button-family surface: `SegmentedControl` and `SelectBoxGroup`.
 | SelectBoxGroup uses S2 grid sizing, label/description hover color, slots, horizontal layout, and multi-select checkbox indicator   | `@react-spectrum/s2/src/SelectBoxGroup.tsx`, `Checkbox.tsx` `box`/`iconStyles`, `TextContext`, `IllustrationContext`, `pressScale`               | `packages/solid-spectrum/src/selectboxgroup/index.tsx`, comparison route `/components/selectboxgroup/?selectionMode=multiple&selectedKeys=starter,pro&orientation=horizontal` | Compare React/Solid listbox role, multi-selected option state, checkbox indicator visibility, label/description slot boxes, hover text color, option grid dimensions, prop controls, and horizontal text alignment | `e2e/collection-button-controls-visual.spec.ts` screenshot, slot geometry, hover text color, multi-select indicator, prop controls, and behavior checks |
 
 Batch 3 does not make these controls complete. Remaining follow-up work after
-the first guard pass is keyboard navigation detail, strict pair-diff tightening,
-SegmentedControl icon-slot permutations, and SelectBoxGroup illustration-slot
+the first guard pass is strict pair-diff tightening, SegmentedControl
+icon-slot permutations, and SelectBoxGroup illustration-slot and disabled-item
 coverage.
 
 ## Button-Family Interactive-Control Retrofit

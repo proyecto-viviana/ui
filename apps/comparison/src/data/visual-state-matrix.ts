@@ -502,7 +502,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   segmentedcontrol: [
     assertedDefaultState({
       slug: "segmentedcontrol",
-      note: "SegmentedControl default screenshots are committed for both sides and compared with an asserted threshold; keyboard, icon slots, and strict pair-diff coverage remain open.",
+      note: "SegmentedControl default screenshots are committed for both sides and compared with an asserted threshold; icon slots and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",
@@ -538,11 +538,21 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/collection-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive selectedKey, isJustified, and isDisabled into both stacks.",
     },
+    {
+      id: "styled.keyboard.selection",
+      label: "Keyboard selection",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      note: "Focusing the Grid radio and pressing Space selects it on both stacks and updates the controlled selected-key marker.",
+    },
   ],
   selectboxgroup: [
     assertedDefaultState({
       slug: "selectboxgroup",
-      note: "SelectBoxGroup default screenshots are committed for both sides and compared with an asserted threshold; disabled items, keyboard, illustration slots, and strict pair-diff coverage remain open.",
+      note: "SelectBoxGroup default screenshots are committed for both sides and compared with an asserted threshold; disabled items, illustration slots, and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",
@@ -587,6 +597,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/collection-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive orientation, selectionMode, selectedKeys, and isDisabled into both stacks.",
+    },
+    {
+      id: "styled.keyboard.selection",
+      label: "Keyboard multi-selection",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      note: "Focusing the Pro option and pressing Space adds it to the selected key set on both stacks and updates the controlled selection marker.",
     },
   ],
   cardview: [

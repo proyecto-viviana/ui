@@ -355,6 +355,32 @@ test.describe("comparison collection button controls visual parity", () => {
     expect(await controlProps(solidRoot)).toMatchObject({ selectedKey: "grid", isJustified: true });
   });
 
+  test("SegmentedControl keyboard selection matches React Spectrum", async ({ page }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "segmentedcontrol",
+      "?selectedKey=list&isJustified=true",
+    );
+
+    const reactGrid = fixtures.reactRoot.getByRole("radio", { name: "Grid" });
+    await reactGrid.focus();
+    await page.keyboard.press("Space");
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "grid");
+    await expect(reactGrid).toHaveAttribute("aria-checked", "true");
+
+    const solidGrid = fixtures.solidRoot.getByRole("radio", { name: "Grid" });
+    await solidGrid.focus();
+    await page.keyboard.press("Space");
+
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "grid");
+    await expect(solidGrid).toHaveAttribute("aria-checked", "true");
+  });
+
   test("SelectBoxGroup interactive prop controls drive both stacks", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto("/components/selectboxgroup/");
@@ -388,5 +414,37 @@ test.describe("comparison collection button controls visual parity", () => {
       selectionMode: "multiple",
       selectedKeys: "starter,pro",
     });
+  });
+
+  test("SelectBoxGroup keyboard selection matches React Spectrum", async ({ page }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "selectboxgroup",
+      "?selectionMode=multiple&selectedKeys=starter&orientation=horizontal",
+    );
+
+    const reactPro = fixtures.reactRoot
+      .locator('[role="option"]')
+      .filter({ hasText: "Pro" })
+      .first();
+    await reactPro.focus();
+    await page.keyboard.press("Space");
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter,pro");
+    await expect(reactPro).toHaveAttribute("aria-selected", "true");
+
+    const solidPro = fixtures.solidRoot
+      .locator('[role="option"]')
+      .filter({ hasText: "Pro" })
+      .first();
+    await solidPro.focus();
+    await page.keyboard.press("Space");
+
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter,pro");
+    await expect(solidPro).toHaveAttribute("aria-selected", "true");
   });
 });
