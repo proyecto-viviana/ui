@@ -163,11 +163,11 @@ body.s2-docs[data-theme="dark"] {
 
 .s2-layout {
   display: grid;
-  grid-template-columns: 240px minmax(0, 860px) 220px;
-  gap: 48px;
-  width: min(1440px, 100%);
+  grid-template-columns: 220px minmax(0, 1fr) 168px;
+  gap: 32px;
+  width: min(1680px, 100%);
   margin: 0 auto;
-  padding: 40px 32px 96px;
+  padding: 36px 28px 88px;
 }
 
 .s2-sidebar,
@@ -274,7 +274,7 @@ body.s2-docs[data-theme="dark"] {
 
 .s2-main {
   display: grid;
-  gap: 40px;
+  gap: 34px;
   min-width: 0;
 }
 
@@ -309,7 +309,7 @@ body.s2-docs[data-theme="dark"] {
 
 .s2-example {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 240px);
   overflow: hidden;
   border: 1px solid var(--s2-border);
   border-radius: 8px;
@@ -317,17 +317,19 @@ body.s2-docs[data-theme="dark"] {
 }
 
 .s2-example-preview {
+  display: grid;
+  gap: 14px;
   min-width: 0;
-  padding: 28px;
+  padding: 20px;
   background: var(--s2-bg-raised);
 }
 
 .s2-example-controls {
   display: grid;
   align-content: start;
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
-  padding: 24px;
+  padding: 18px;
   border-left: 1px solid var(--s2-border);
   background: var(--s2-bg);
 }
@@ -338,22 +340,24 @@ body.s2-docs[data-theme="dark"] {
   letter-spacing: 0;
 }
 
-.s2-example-controls p {
+.s2-example-note {
   margin: 0;
   color: var(--s2-text-muted);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .s2-comparison-frame {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
   align-items: stretch;
 }
 
 .s2-framework-panel {
   display: grid;
   grid-template-rows: auto minmax(140px, 1fr);
-  overflow: hidden;
+  overflow: auto;
   border: 1px solid var(--s2-border);
   border-radius: 8px;
   background: var(--s2-bg);
@@ -384,7 +388,8 @@ body.s2-docs[data-theme="dark"] {
   display: grid;
   place-items: center;
   min-height: 150px;
-  padding: 24px;
+  padding: 16px;
+  overflow: auto;
 }
 
 .s2-framework-panel .comparison-reference-frame {
@@ -397,7 +402,7 @@ body.s2-docs[data-theme="dark"] {
 
 .s2-framework-panel .comparison-reference-canvas {
   inline-size: max-content;
-  max-inline-size: 100%;
+  max-inline-size: none;
   justify-self: center;
   place-items: center;
   min-height: auto;
