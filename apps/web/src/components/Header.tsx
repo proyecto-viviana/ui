@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/solid-router";
 import { GitHubIcon, Logo } from "@proyecto-viviana/solid-spectrum";
 import { createSignal, onMount, onCleanup, Show } from "solid-js";
-import { useSilapseTheme, useSilapseColors } from "@/utils/theme";
+import { useTheme, useThemeColors } from "@/utils/theme";
 
 function useScrollDirection() {
   const [isVisible, setIsVisible] = createSignal(true);
@@ -30,15 +30,15 @@ function useScrollDirection() {
 // ========================================
 
 function ThemeToggle() {
-  const { isDark, toggleTheme } = useSilapseTheme();
-  const getColors = useSilapseColors();
+  const { isDark, toggleTheme } = useTheme();
+  const getColors = useThemeColors();
   const colors = () => getColors();
 
   return (
     <button
       onClick={toggleTheme}
       title={isDark() ? "Switch to light mode" : "Switch to dark mode"}
-      class="flex items-center justify-center w-8 h-8 border-2 cursor-pointer bg-transparent transition-[border-color] duration-200 silapse-clip-box-sm"
+      class="flex items-center justify-center w-8 h-8 border-2 cursor-pointer bg-transparent transition-[border-color] duration-200"
       style={{ "border-color": colors().muted }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = isDark() ? colors().blue : colors().pink;
@@ -94,7 +94,7 @@ function ThemeToggle() {
 
 export function Header() {
   const location = useLocation();
-  const getColors = useSilapseColors();
+  const getColors = useThemeColors();
   const headerVisible = useScrollDirection();
 
   const isActive = (path: string) => {
@@ -134,7 +134,7 @@ export function Header() {
       >
         {/* Left: Logo + Title */}
         <Link
-          to="/silapse"
+          to="/solid-spectrum"
           style={{
             display: "flex",
             "align-items": "center",
@@ -147,30 +147,30 @@ export function Header() {
 
         {/* Right: Nav + GitHub + Theme Toggle */}
         <nav class="flex items-center gap-3">
-          <SilapseNavLink
-            href="/silapse/docs"
+          <NavLink
+            href="/solid-spectrum/docs"
             color="blue"
-            isActive={isActive("/silapse/docs")}
+            isActive={isActive("/solid-spectrum/docs")}
             colors={colors()}
           >
             DOCS
-          </SilapseNavLink>
-          <SilapseNavLink
-            href="/silapse/playground"
+          </NavLink>
+          <NavLink
+            href="/solid-spectrum/playground"
             color="pink"
-            isActive={isActive("/silapse/playground")}
+            isActive={isActive("/solid-spectrum/playground")}
             colors={colors()}
           >
             PLAYGROUND
-          </SilapseNavLink>
-          <SilapseNavLink
-            href="/silapse/ecosystem"
+          </NavLink>
+          <NavLink
+            href="/solid-spectrum/ecosystem"
             color="blue"
-            isActive={isActive("/silapse/ecosystem")}
+            isActive={isActive("/solid-spectrum/ecosystem")}
             colors={colors()}
           >
             ECOSYSTEM
-          </SilapseNavLink>
+          </NavLink>
 
           {/* GitHub */}
           <a
@@ -203,14 +203,14 @@ export function Header() {
 }
 
 // ========================================
-// NAV LINK (angular Silapse button)
+// NAV LINK
 // ========================================
 
-function SilapseNavLink(props: {
+function NavLink(props: {
   href: string;
   color: "blue" | "pink";
   isActive: boolean;
-  colors: ReturnType<ReturnType<typeof useSilapseColors>>;
+  colors: ReturnType<ReturnType<typeof useThemeColors>>;
   children: string;
 }) {
   const wireColor = () => (props.color === "blue" ? props.colors.blue : props.colors.pink);
@@ -218,7 +218,7 @@ function SilapseNavLink(props: {
   return (
     <Link
       to={props.href}
-      class="silapse-clip-box-sm"
+      class=""
       style={{
         "font-family": "'Jost', sans-serif",
         "font-size": "12px",

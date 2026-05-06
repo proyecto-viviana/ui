@@ -10,678 +10,706 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as IndexRouteImport } from "./routes/index";
-import { Route as SilapseIndexRouteImport } from "./routes/silapse/index";
-import { Route as SilapsePlaygroundRouteImport } from "./routes/silapse/playground";
-import { Route as SilapseEcosystemRouteImport } from "./routes/silapse/ecosystem";
-import { Route as SilapseDocsRouteRouteImport } from "./routes/silapse/docs/route";
-import { Route as SilapseDocsIndexRouteImport } from "./routes/silapse/docs/index";
-import { Route as SilapseDocsInstallationRouteImport } from "./routes/silapse/docs/installation";
-import { Route as SilapseDocsHooksCreatePressRouteImport } from "./routes/silapse/docs/hooks/create-press";
-import { Route as SilapseDocsHooksCreateButtonRouteImport } from "./routes/silapse/docs/hooks/create-button";
-import { Route as SilapseDocsComponentsVirtualizerRouteImport } from "./routes/silapse/docs/components/virtualizer";
-import { Route as SilapseDocsComponentsTreeRouteImport } from "./routes/silapse/docs/components/tree";
-import { Route as SilapseDocsComponentsTooltipRouteImport } from "./routes/silapse/docs/components/tooltip";
-import { Route as SilapseDocsComponentsToolbarRouteImport } from "./routes/silapse/docs/components/toolbar";
-import { Route as SilapseDocsComponentsToastRouteImport } from "./routes/silapse/docs/components/toast";
-import { Route as SilapseDocsComponentsTimefieldRouteImport } from "./routes/silapse/docs/components/timefield";
-import { Route as SilapseDocsComponentsTextfieldRouteImport } from "./routes/silapse/docs/components/textfield";
-import { Route as SilapseDocsComponentsTextareaRouteImport } from "./routes/silapse/docs/components/textarea";
-import { Route as SilapseDocsComponentsTaggroupRouteImport } from "./routes/silapse/docs/components/taggroup";
-import { Route as SilapseDocsComponentsTabsRouteImport } from "./routes/silapse/docs/components/tabs";
-import { Route as SilapseDocsComponentsTableRouteImport } from "./routes/silapse/docs/components/table";
-import { Route as SilapseDocsComponentsSwitchRouteImport } from "./routes/silapse/docs/components/switch";
-import { Route as SilapseDocsComponentsSliderRouteImport } from "./routes/silapse/docs/components/slider";
-import { Route as SilapseDocsComponentsSeparatorRouteImport } from "./routes/silapse/docs/components/separator";
-import { Route as SilapseDocsComponentsSelectRouteImport } from "./routes/silapse/docs/components/select";
-import { Route as SilapseDocsComponentsSearchfieldRouteImport } from "./routes/silapse/docs/components/searchfield";
-import { Route as SilapseDocsComponentsRangecalendarRouteImport } from "./routes/silapse/docs/components/rangecalendar";
-import { Route as SilapseDocsComponentsProviderRouteImport } from "./routes/silapse/docs/components/provider";
-import { Route as SilapseDocsComponentsProgressbarRouteImport } from "./routes/silapse/docs/components/progressbar";
-import { Route as SilapseDocsComponentsPopoverRouteImport } from "./routes/silapse/docs/components/popover";
-import { Route as SilapseDocsComponentsPickerRouteImport } from "./routes/silapse/docs/components/picker";
-import { Route as SilapseDocsComponentsNumberfieldRouteImport } from "./routes/silapse/docs/components/numberfield";
-import { Route as SilapseDocsComponentsMeterRouteImport } from "./routes/silapse/docs/components/meter";
-import { Route as SilapseDocsComponentsMenuRouteImport } from "./routes/silapse/docs/components/menu";
-import { Route as SilapseDocsComponentsLinkRouteImport } from "./routes/silapse/docs/components/link";
-import { Route as SilapseDocsComponentsGridlistRouteImport } from "./routes/silapse/docs/components/gridlist";
-import { Route as SilapseDocsComponentsFiletriggerRouteImport } from "./routes/silapse/docs/components/filetrigger";
-import { Route as SilapseDocsComponentsDropzoneRouteImport } from "./routes/silapse/docs/components/dropzone";
-import { Route as SilapseDocsComponentsDisclosureRouteImport } from "./routes/silapse/docs/components/disclosure";
-import { Route as SilapseDocsComponentsDialogRouteImport } from "./routes/silapse/docs/components/dialog";
-import { Route as SilapseDocsComponentsDaterangepickerRouteImport } from "./routes/silapse/docs/components/daterangepicker";
-import { Route as SilapseDocsComponentsDatepickerRouteImport } from "./routes/silapse/docs/components/datepicker";
-import { Route as SilapseDocsComponentsDatefieldRouteImport } from "./routes/silapse/docs/components/datefield";
-import { Route as SilapseDocsComponentsContextualhelpRouteImport } from "./routes/silapse/docs/components/contextualhelp";
-import { Route as SilapseDocsComponentsComboboxRouteImport } from "./routes/silapse/docs/components/combobox";
-import { Route as SilapseDocsComponentsColorRouteImport } from "./routes/silapse/docs/components/color";
-import { Route as SilapseDocsComponentsCheckboxRouteImport } from "./routes/silapse/docs/components/checkbox";
-import { Route as SilapseDocsComponentsCalendarRouteImport } from "./routes/silapse/docs/components/calendar";
-import { Route as SilapseDocsComponentsButtonRouteImport } from "./routes/silapse/docs/components/button";
-import { Route as SilapseDocsComponentsBreadcrumbsRouteImport } from "./routes/silapse/docs/components/breadcrumbs";
-import { Route as SilapseDocsComponentsBadgeRouteImport } from "./routes/silapse/docs/components/badge";
-import { Route as SilapseDocsComponentsAlertdialogRouteImport } from "./routes/silapse/docs/components/alertdialog";
-import { Route as SilapseDocsComponentsActiongroupRouteImport } from "./routes/silapse/docs/components/actiongroup";
-import { Route as SilapseDocsComponentsActionbarRouteImport } from "./routes/silapse/docs/components/actionbar";
-import { Route as SilapseDocsComponentsAccordionRouteImport } from "./routes/silapse/docs/components/accordion";
+import { Route as SolidSpectrumIndexRouteImport } from "./routes/solid-spectrum/index";
+import { Route as SolidSpectrumPlaygroundRouteImport } from "./routes/solid-spectrum/playground";
+import { Route as SolidSpectrumEcosystemRouteImport } from "./routes/solid-spectrum/ecosystem";
+import { Route as SolidSpectrumDocsRouteRouteImport } from "./routes/solid-spectrum/docs/route";
+import { Route as SolidSpectrumDocsIndexRouteImport } from "./routes/solid-spectrum/docs/index";
+import { Route as SolidSpectrumDocsInstallationRouteImport } from "./routes/solid-spectrum/docs/installation";
+import { Route as SolidSpectrumDocsHooksCreatePressRouteImport } from "./routes/solid-spectrum/docs/hooks/create-press";
+import { Route as SolidSpectrumDocsHooksCreateButtonRouteImport } from "./routes/solid-spectrum/docs/hooks/create-button";
+import { Route as SolidSpectrumDocsComponentsVirtualizerRouteImport } from "./routes/solid-spectrum/docs/components/virtualizer";
+import { Route as SolidSpectrumDocsComponentsTreeRouteImport } from "./routes/solid-spectrum/docs/components/tree";
+import { Route as SolidSpectrumDocsComponentsTooltipRouteImport } from "./routes/solid-spectrum/docs/components/tooltip";
+import { Route as SolidSpectrumDocsComponentsToolbarRouteImport } from "./routes/solid-spectrum/docs/components/toolbar";
+import { Route as SolidSpectrumDocsComponentsToastRouteImport } from "./routes/solid-spectrum/docs/components/toast";
+import { Route as SolidSpectrumDocsComponentsTimefieldRouteImport } from "./routes/solid-spectrum/docs/components/timefield";
+import { Route as SolidSpectrumDocsComponentsTextfieldRouteImport } from "./routes/solid-spectrum/docs/components/textfield";
+import { Route as SolidSpectrumDocsComponentsTextareaRouteImport } from "./routes/solid-spectrum/docs/components/textarea";
+import { Route as SolidSpectrumDocsComponentsTaggroupRouteImport } from "./routes/solid-spectrum/docs/components/taggroup";
+import { Route as SolidSpectrumDocsComponentsTabsRouteImport } from "./routes/solid-spectrum/docs/components/tabs";
+import { Route as SolidSpectrumDocsComponentsTableRouteImport } from "./routes/solid-spectrum/docs/components/table";
+import { Route as SolidSpectrumDocsComponentsSwitchRouteImport } from "./routes/solid-spectrum/docs/components/switch";
+import { Route as SolidSpectrumDocsComponentsSliderRouteImport } from "./routes/solid-spectrum/docs/components/slider";
+import { Route as SolidSpectrumDocsComponentsSeparatorRouteImport } from "./routes/solid-spectrum/docs/components/separator";
+import { Route as SolidSpectrumDocsComponentsSelectRouteImport } from "./routes/solid-spectrum/docs/components/select";
+import { Route as SolidSpectrumDocsComponentsSearchfieldRouteImport } from "./routes/solid-spectrum/docs/components/searchfield";
+import { Route as SolidSpectrumDocsComponentsRangecalendarRouteImport } from "./routes/solid-spectrum/docs/components/rangecalendar";
+import { Route as SolidSpectrumDocsComponentsProviderRouteImport } from "./routes/solid-spectrum/docs/components/provider";
+import { Route as SolidSpectrumDocsComponentsProgressbarRouteImport } from "./routes/solid-spectrum/docs/components/progressbar";
+import { Route as SolidSpectrumDocsComponentsPopoverRouteImport } from "./routes/solid-spectrum/docs/components/popover";
+import { Route as SolidSpectrumDocsComponentsPickerRouteImport } from "./routes/solid-spectrum/docs/components/picker";
+import { Route as SolidSpectrumDocsComponentsNumberfieldRouteImport } from "./routes/solid-spectrum/docs/components/numberfield";
+import { Route as SolidSpectrumDocsComponentsMeterRouteImport } from "./routes/solid-spectrum/docs/components/meter";
+import { Route as SolidSpectrumDocsComponentsMenuRouteImport } from "./routes/solid-spectrum/docs/components/menu";
+import { Route as SolidSpectrumDocsComponentsLinkRouteImport } from "./routes/solid-spectrum/docs/components/link";
+import { Route as SolidSpectrumDocsComponentsGridlistRouteImport } from "./routes/solid-spectrum/docs/components/gridlist";
+import { Route as SolidSpectrumDocsComponentsFiletriggerRouteImport } from "./routes/solid-spectrum/docs/components/filetrigger";
+import { Route as SolidSpectrumDocsComponentsDropzoneRouteImport } from "./routes/solid-spectrum/docs/components/dropzone";
+import { Route as SolidSpectrumDocsComponentsDisclosureRouteImport } from "./routes/solid-spectrum/docs/components/disclosure";
+import { Route as SolidSpectrumDocsComponentsDialogRouteImport } from "./routes/solid-spectrum/docs/components/dialog";
+import { Route as SolidSpectrumDocsComponentsDaterangepickerRouteImport } from "./routes/solid-spectrum/docs/components/daterangepicker";
+import { Route as SolidSpectrumDocsComponentsDatepickerRouteImport } from "./routes/solid-spectrum/docs/components/datepicker";
+import { Route as SolidSpectrumDocsComponentsDatefieldRouteImport } from "./routes/solid-spectrum/docs/components/datefield";
+import { Route as SolidSpectrumDocsComponentsContextualhelpRouteImport } from "./routes/solid-spectrum/docs/components/contextualhelp";
+import { Route as SolidSpectrumDocsComponentsComboboxRouteImport } from "./routes/solid-spectrum/docs/components/combobox";
+import { Route as SolidSpectrumDocsComponentsColorRouteImport } from "./routes/solid-spectrum/docs/components/color";
+import { Route as SolidSpectrumDocsComponentsCheckboxRouteImport } from "./routes/solid-spectrum/docs/components/checkbox";
+import { Route as SolidSpectrumDocsComponentsCalendarRouteImport } from "./routes/solid-spectrum/docs/components/calendar";
+import { Route as SolidSpectrumDocsComponentsButtonRouteImport } from "./routes/solid-spectrum/docs/components/button";
+import { Route as SolidSpectrumDocsComponentsBreadcrumbsRouteImport } from "./routes/solid-spectrum/docs/components/breadcrumbs";
+import { Route as SolidSpectrumDocsComponentsBadgeRouteImport } from "./routes/solid-spectrum/docs/components/badge";
+import { Route as SolidSpectrumDocsComponentsAlertdialogRouteImport } from "./routes/solid-spectrum/docs/components/alertdialog";
+import { Route as SolidSpectrumDocsComponentsActiongroupRouteImport } from "./routes/solid-spectrum/docs/components/actiongroup";
+import { Route as SolidSpectrumDocsComponentsActionbarRouteImport } from "./routes/solid-spectrum/docs/components/actionbar";
+import { Route as SolidSpectrumDocsComponentsAccordionRouteImport } from "./routes/solid-spectrum/docs/components/accordion";
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
-const SilapseIndexRoute = SilapseIndexRouteImport.update({
-  id: "/silapse/",
-  path: "/silapse/",
+const SolidSpectrumIndexRoute = SolidSpectrumIndexRouteImport.update({
+  id: "/solid-spectrum/",
+  path: "/solid-spectrum/",
   getParentRoute: () => rootRouteImport,
 } as any);
-const SilapsePlaygroundRoute = SilapsePlaygroundRouteImport.update({
-  id: "/silapse/playground",
-  path: "/silapse/playground",
+const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
+  id: "/solid-spectrum/playground",
+  path: "/solid-spectrum/playground",
   getParentRoute: () => rootRouteImport,
 } as any);
-const SilapseEcosystemRoute = SilapseEcosystemRouteImport.update({
-  id: "/silapse/ecosystem",
-  path: "/silapse/ecosystem",
+const SolidSpectrumEcosystemRoute = SolidSpectrumEcosystemRouteImport.update({
+  id: "/solid-spectrum/ecosystem",
+  path: "/solid-spectrum/ecosystem",
   getParentRoute: () => rootRouteImport,
 } as any);
-const SilapseDocsRouteRoute = SilapseDocsRouteRouteImport.update({
-  id: "/silapse/docs",
-  path: "/silapse/docs",
+const SolidSpectrumDocsRouteRoute = SolidSpectrumDocsRouteRouteImport.update({
+  id: "/solid-spectrum/docs",
+  path: "/solid-spectrum/docs",
   getParentRoute: () => rootRouteImport,
 } as any);
-const SilapseDocsIndexRoute = SilapseDocsIndexRouteImport.update({
+const SolidSpectrumDocsIndexRoute = SolidSpectrumDocsIndexRouteImport.update({
   id: "/",
   path: "/",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsInstallationRoute = SilapseDocsInstallationRouteImport.update({
+const SolidSpectrumDocsInstallationRoute = SolidSpectrumDocsInstallationRouteImport.update({
   id: "/installation",
   path: "/installation",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsHooksCreatePressRoute = SilapseDocsHooksCreatePressRouteImport.update({
+const SolidSpectrumDocsHooksCreatePressRoute = SolidSpectrumDocsHooksCreatePressRouteImport.update({
   id: "/hooks/create-press",
   path: "/hooks/create-press",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsHooksCreateButtonRoute = SilapseDocsHooksCreateButtonRouteImport.update({
-  id: "/hooks/create-button",
-  path: "/hooks/create-button",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsVirtualizerRoute = SilapseDocsComponentsVirtualizerRouteImport.update({
-  id: "/components/virtualizer",
-  path: "/components/virtualizer",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsTreeRoute = SilapseDocsComponentsTreeRouteImport.update({
+const SolidSpectrumDocsHooksCreateButtonRoute =
+  SolidSpectrumDocsHooksCreateButtonRouteImport.update({
+    id: "/hooks/create-button",
+    path: "/hooks/create-button",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsVirtualizerRoute =
+  SolidSpectrumDocsComponentsVirtualizerRouteImport.update({
+    id: "/components/virtualizer",
+    path: "/components/virtualizer",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsTreeRoute = SolidSpectrumDocsComponentsTreeRouteImport.update({
   id: "/components/tree",
   path: "/components/tree",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsTooltipRoute = SilapseDocsComponentsTooltipRouteImport.update({
-  id: "/components/tooltip",
-  path: "/components/tooltip",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsToolbarRoute = SilapseDocsComponentsToolbarRouteImport.update({
-  id: "/components/toolbar",
-  path: "/components/toolbar",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsToastRoute = SilapseDocsComponentsToastRouteImport.update({
+const SolidSpectrumDocsComponentsTooltipRoute =
+  SolidSpectrumDocsComponentsTooltipRouteImport.update({
+    id: "/components/tooltip",
+    path: "/components/tooltip",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsToolbarRoute =
+  SolidSpectrumDocsComponentsToolbarRouteImport.update({
+    id: "/components/toolbar",
+    path: "/components/toolbar",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsToastRoute = SolidSpectrumDocsComponentsToastRouteImport.update({
   id: "/components/toast",
   path: "/components/toast",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsTimefieldRoute = SilapseDocsComponentsTimefieldRouteImport.update({
-  id: "/components/timefield",
-  path: "/components/timefield",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsTextfieldRoute = SilapseDocsComponentsTextfieldRouteImport.update({
-  id: "/components/textfield",
-  path: "/components/textfield",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsTextareaRoute = SilapseDocsComponentsTextareaRouteImport.update({
-  id: "/components/textarea",
-  path: "/components/textarea",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsTaggroupRoute = SilapseDocsComponentsTaggroupRouteImport.update({
-  id: "/components/taggroup",
-  path: "/components/taggroup",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsTabsRoute = SilapseDocsComponentsTabsRouteImport.update({
+const SolidSpectrumDocsComponentsTimefieldRoute =
+  SolidSpectrumDocsComponentsTimefieldRouteImport.update({
+    id: "/components/timefield",
+    path: "/components/timefield",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsTextfieldRoute =
+  SolidSpectrumDocsComponentsTextfieldRouteImport.update({
+    id: "/components/textfield",
+    path: "/components/textfield",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsTextareaRoute =
+  SolidSpectrumDocsComponentsTextareaRouteImport.update({
+    id: "/components/textarea",
+    path: "/components/textarea",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsTaggroupRoute =
+  SolidSpectrumDocsComponentsTaggroupRouteImport.update({
+    id: "/components/taggroup",
+    path: "/components/taggroup",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsTabsRoute = SolidSpectrumDocsComponentsTabsRouteImport.update({
   id: "/components/tabs",
   path: "/components/tabs",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsTableRoute = SilapseDocsComponentsTableRouteImport.update({
+const SolidSpectrumDocsComponentsTableRoute = SolidSpectrumDocsComponentsTableRouteImport.update({
   id: "/components/table",
   path: "/components/table",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsSwitchRoute = SilapseDocsComponentsSwitchRouteImport.update({
+const SolidSpectrumDocsComponentsSwitchRoute = SolidSpectrumDocsComponentsSwitchRouteImport.update({
   id: "/components/switch",
   path: "/components/switch",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsSliderRoute = SilapseDocsComponentsSliderRouteImport.update({
+const SolidSpectrumDocsComponentsSliderRoute = SolidSpectrumDocsComponentsSliderRouteImport.update({
   id: "/components/slider",
   path: "/components/slider",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsSeparatorRoute = SilapseDocsComponentsSeparatorRouteImport.update({
-  id: "/components/separator",
-  path: "/components/separator",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsSelectRoute = SilapseDocsComponentsSelectRouteImport.update({
+const SolidSpectrumDocsComponentsSeparatorRoute =
+  SolidSpectrumDocsComponentsSeparatorRouteImport.update({
+    id: "/components/separator",
+    path: "/components/separator",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsSelectRoute = SolidSpectrumDocsComponentsSelectRouteImport.update({
   id: "/components/select",
   path: "/components/select",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsSearchfieldRoute = SilapseDocsComponentsSearchfieldRouteImport.update({
-  id: "/components/searchfield",
-  path: "/components/searchfield",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsRangecalendarRoute =
-  SilapseDocsComponentsRangecalendarRouteImport.update({
+const SolidSpectrumDocsComponentsSearchfieldRoute =
+  SolidSpectrumDocsComponentsSearchfieldRouteImport.update({
+    id: "/components/searchfield",
+    path: "/components/searchfield",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsRangecalendarRoute =
+  SolidSpectrumDocsComponentsRangecalendarRouteImport.update({
     id: "/components/rangecalendar",
     path: "/components/rangecalendar",
-    getParentRoute: () => SilapseDocsRouteRoute,
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any);
-const SilapseDocsComponentsProviderRoute = SilapseDocsComponentsProviderRouteImport.update({
-  id: "/components/provider",
-  path: "/components/provider",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsProgressbarRoute = SilapseDocsComponentsProgressbarRouteImport.update({
-  id: "/components/progressbar",
-  path: "/components/progressbar",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsPopoverRoute = SilapseDocsComponentsPopoverRouteImport.update({
-  id: "/components/popover",
-  path: "/components/popover",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsPickerRoute = SilapseDocsComponentsPickerRouteImport.update({
+const SolidSpectrumDocsComponentsProviderRoute =
+  SolidSpectrumDocsComponentsProviderRouteImport.update({
+    id: "/components/provider",
+    path: "/components/provider",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsProgressbarRoute =
+  SolidSpectrumDocsComponentsProgressbarRouteImport.update({
+    id: "/components/progressbar",
+    path: "/components/progressbar",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsPopoverRoute =
+  SolidSpectrumDocsComponentsPopoverRouteImport.update({
+    id: "/components/popover",
+    path: "/components/popover",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsPickerRoute = SolidSpectrumDocsComponentsPickerRouteImport.update({
   id: "/components/picker",
   path: "/components/picker",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsNumberfieldRoute = SilapseDocsComponentsNumberfieldRouteImport.update({
-  id: "/components/numberfield",
-  path: "/components/numberfield",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsMeterRoute = SilapseDocsComponentsMeterRouteImport.update({
+const SolidSpectrumDocsComponentsNumberfieldRoute =
+  SolidSpectrumDocsComponentsNumberfieldRouteImport.update({
+    id: "/components/numberfield",
+    path: "/components/numberfield",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsMeterRoute = SolidSpectrumDocsComponentsMeterRouteImport.update({
   id: "/components/meter",
   path: "/components/meter",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsMenuRoute = SilapseDocsComponentsMenuRouteImport.update({
+const SolidSpectrumDocsComponentsMenuRoute = SolidSpectrumDocsComponentsMenuRouteImport.update({
   id: "/components/menu",
   path: "/components/menu",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsLinkRoute = SilapseDocsComponentsLinkRouteImport.update({
+const SolidSpectrumDocsComponentsLinkRoute = SolidSpectrumDocsComponentsLinkRouteImport.update({
   id: "/components/link",
   path: "/components/link",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsGridlistRoute = SilapseDocsComponentsGridlistRouteImport.update({
-  id: "/components/gridlist",
-  path: "/components/gridlist",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsFiletriggerRoute = SilapseDocsComponentsFiletriggerRouteImport.update({
-  id: "/components/filetrigger",
-  path: "/components/filetrigger",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsDropzoneRoute = SilapseDocsComponentsDropzoneRouteImport.update({
-  id: "/components/dropzone",
-  path: "/components/dropzone",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsDisclosureRoute = SilapseDocsComponentsDisclosureRouteImport.update({
-  id: "/components/disclosure",
-  path: "/components/disclosure",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsDialogRoute = SilapseDocsComponentsDialogRouteImport.update({
+const SolidSpectrumDocsComponentsGridlistRoute =
+  SolidSpectrumDocsComponentsGridlistRouteImport.update({
+    id: "/components/gridlist",
+    path: "/components/gridlist",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsFiletriggerRoute =
+  SolidSpectrumDocsComponentsFiletriggerRouteImport.update({
+    id: "/components/filetrigger",
+    path: "/components/filetrigger",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsDropzoneRoute =
+  SolidSpectrumDocsComponentsDropzoneRouteImport.update({
+    id: "/components/dropzone",
+    path: "/components/dropzone",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsDisclosureRoute =
+  SolidSpectrumDocsComponentsDisclosureRouteImport.update({
+    id: "/components/disclosure",
+    path: "/components/disclosure",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsDialogRoute = SolidSpectrumDocsComponentsDialogRouteImport.update({
   id: "/components/dialog",
   path: "/components/dialog",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsDaterangepickerRoute =
-  SilapseDocsComponentsDaterangepickerRouteImport.update({
+const SolidSpectrumDocsComponentsDaterangepickerRoute =
+  SolidSpectrumDocsComponentsDaterangepickerRouteImport.update({
     id: "/components/daterangepicker",
     path: "/components/daterangepicker",
-    getParentRoute: () => SilapseDocsRouteRoute,
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any);
-const SilapseDocsComponentsDatepickerRoute = SilapseDocsComponentsDatepickerRouteImport.update({
-  id: "/components/datepicker",
-  path: "/components/datepicker",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsDatefieldRoute = SilapseDocsComponentsDatefieldRouteImport.update({
-  id: "/components/datefield",
-  path: "/components/datefield",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsContextualhelpRoute =
-  SilapseDocsComponentsContextualhelpRouteImport.update({
+const SolidSpectrumDocsComponentsDatepickerRoute =
+  SolidSpectrumDocsComponentsDatepickerRouteImport.update({
+    id: "/components/datepicker",
+    path: "/components/datepicker",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsDatefieldRoute =
+  SolidSpectrumDocsComponentsDatefieldRouteImport.update({
+    id: "/components/datefield",
+    path: "/components/datefield",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsContextualhelpRoute =
+  SolidSpectrumDocsComponentsContextualhelpRouteImport.update({
     id: "/components/contextualhelp",
     path: "/components/contextualhelp",
-    getParentRoute: () => SilapseDocsRouteRoute,
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any);
-const SilapseDocsComponentsComboboxRoute = SilapseDocsComponentsComboboxRouteImport.update({
-  id: "/components/combobox",
-  path: "/components/combobox",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsColorRoute = SilapseDocsComponentsColorRouteImport.update({
+const SolidSpectrumDocsComponentsComboboxRoute =
+  SolidSpectrumDocsComponentsComboboxRouteImport.update({
+    id: "/components/combobox",
+    path: "/components/combobox",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsColorRoute = SolidSpectrumDocsComponentsColorRouteImport.update({
   id: "/components/color",
   path: "/components/color",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsCheckboxRoute = SilapseDocsComponentsCheckboxRouteImport.update({
-  id: "/components/checkbox",
-  path: "/components/checkbox",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsCalendarRoute = SilapseDocsComponentsCalendarRouteImport.update({
-  id: "/components/calendar",
-  path: "/components/calendar",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsButtonRoute = SilapseDocsComponentsButtonRouteImport.update({
+const SolidSpectrumDocsComponentsCheckboxRoute =
+  SolidSpectrumDocsComponentsCheckboxRouteImport.update({
+    id: "/components/checkbox",
+    path: "/components/checkbox",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsCalendarRoute =
+  SolidSpectrumDocsComponentsCalendarRouteImport.update({
+    id: "/components/calendar",
+    path: "/components/calendar",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsButtonRoute = SolidSpectrumDocsComponentsButtonRouteImport.update({
   id: "/components/button",
   path: "/components/button",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsBreadcrumbsRoute = SilapseDocsComponentsBreadcrumbsRouteImport.update({
-  id: "/components/breadcrumbs",
-  path: "/components/breadcrumbs",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsBadgeRoute = SilapseDocsComponentsBadgeRouteImport.update({
+const SolidSpectrumDocsComponentsBreadcrumbsRoute =
+  SolidSpectrumDocsComponentsBreadcrumbsRouteImport.update({
+    id: "/components/breadcrumbs",
+    path: "/components/breadcrumbs",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsBadgeRoute = SolidSpectrumDocsComponentsBadgeRouteImport.update({
   id: "/components/badge",
   path: "/components/badge",
-  getParentRoute: () => SilapseDocsRouteRoute,
+  getParentRoute: () => SolidSpectrumDocsRouteRoute,
 } as any);
-const SilapseDocsComponentsAlertdialogRoute = SilapseDocsComponentsAlertdialogRouteImport.update({
-  id: "/components/alertdialog",
-  path: "/components/alertdialog",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsActiongroupRoute = SilapseDocsComponentsActiongroupRouteImport.update({
-  id: "/components/actiongroup",
-  path: "/components/actiongroup",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsActionbarRoute = SilapseDocsComponentsActionbarRouteImport.update({
-  id: "/components/actionbar",
-  path: "/components/actionbar",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
-const SilapseDocsComponentsAccordionRoute = SilapseDocsComponentsAccordionRouteImport.update({
-  id: "/components/accordion",
-  path: "/components/accordion",
-  getParentRoute: () => SilapseDocsRouteRoute,
-} as any);
+const SolidSpectrumDocsComponentsAlertdialogRoute =
+  SolidSpectrumDocsComponentsAlertdialogRouteImport.update({
+    id: "/components/alertdialog",
+    path: "/components/alertdialog",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsActiongroupRoute =
+  SolidSpectrumDocsComponentsActiongroupRouteImport.update({
+    id: "/components/actiongroup",
+    path: "/components/actiongroup",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsActionbarRoute =
+  SolidSpectrumDocsComponentsActionbarRouteImport.update({
+    id: "/components/actionbar",
+    path: "/components/actionbar",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
+const SolidSpectrumDocsComponentsAccordionRoute =
+  SolidSpectrumDocsComponentsAccordionRouteImport.update({
+    id: "/components/accordion",
+    path: "/components/accordion",
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
-  "/silapse/docs": typeof SilapseDocsRouteRouteWithChildren;
-  "/silapse/ecosystem": typeof SilapseEcosystemRoute;
-  "/silapse/playground": typeof SilapsePlaygroundRoute;
-  "/silapse/": typeof SilapseIndexRoute;
-  "/silapse/docs/installation": typeof SilapseDocsInstallationRoute;
-  "/silapse/docs/": typeof SilapseDocsIndexRoute;
-  "/silapse/docs/components/accordion": typeof SilapseDocsComponentsAccordionRoute;
-  "/silapse/docs/components/actionbar": typeof SilapseDocsComponentsActionbarRoute;
-  "/silapse/docs/components/actiongroup": typeof SilapseDocsComponentsActiongroupRoute;
-  "/silapse/docs/components/alertdialog": typeof SilapseDocsComponentsAlertdialogRoute;
-  "/silapse/docs/components/badge": typeof SilapseDocsComponentsBadgeRoute;
-  "/silapse/docs/components/breadcrumbs": typeof SilapseDocsComponentsBreadcrumbsRoute;
-  "/silapse/docs/components/button": typeof SilapseDocsComponentsButtonRoute;
-  "/silapse/docs/components/calendar": typeof SilapseDocsComponentsCalendarRoute;
-  "/silapse/docs/components/checkbox": typeof SilapseDocsComponentsCheckboxRoute;
-  "/silapse/docs/components/color": typeof SilapseDocsComponentsColorRoute;
-  "/silapse/docs/components/combobox": typeof SilapseDocsComponentsComboboxRoute;
-  "/silapse/docs/components/contextualhelp": typeof SilapseDocsComponentsContextualhelpRoute;
-  "/silapse/docs/components/datefield": typeof SilapseDocsComponentsDatefieldRoute;
-  "/silapse/docs/components/datepicker": typeof SilapseDocsComponentsDatepickerRoute;
-  "/silapse/docs/components/daterangepicker": typeof SilapseDocsComponentsDaterangepickerRoute;
-  "/silapse/docs/components/dialog": typeof SilapseDocsComponentsDialogRoute;
-  "/silapse/docs/components/disclosure": typeof SilapseDocsComponentsDisclosureRoute;
-  "/silapse/docs/components/dropzone": typeof SilapseDocsComponentsDropzoneRoute;
-  "/silapse/docs/components/filetrigger": typeof SilapseDocsComponentsFiletriggerRoute;
-  "/silapse/docs/components/gridlist": typeof SilapseDocsComponentsGridlistRoute;
-  "/silapse/docs/components/link": typeof SilapseDocsComponentsLinkRoute;
-  "/silapse/docs/components/menu": typeof SilapseDocsComponentsMenuRoute;
-  "/silapse/docs/components/meter": typeof SilapseDocsComponentsMeterRoute;
-  "/silapse/docs/components/numberfield": typeof SilapseDocsComponentsNumberfieldRoute;
-  "/silapse/docs/components/picker": typeof SilapseDocsComponentsPickerRoute;
-  "/silapse/docs/components/popover": typeof SilapseDocsComponentsPopoverRoute;
-  "/silapse/docs/components/progressbar": typeof SilapseDocsComponentsProgressbarRoute;
-  "/silapse/docs/components/provider": typeof SilapseDocsComponentsProviderRoute;
-  "/silapse/docs/components/rangecalendar": typeof SilapseDocsComponentsRangecalendarRoute;
-  "/silapse/docs/components/searchfield": typeof SilapseDocsComponentsSearchfieldRoute;
-  "/silapse/docs/components/select": typeof SilapseDocsComponentsSelectRoute;
-  "/silapse/docs/components/separator": typeof SilapseDocsComponentsSeparatorRoute;
-  "/silapse/docs/components/slider": typeof SilapseDocsComponentsSliderRoute;
-  "/silapse/docs/components/switch": typeof SilapseDocsComponentsSwitchRoute;
-  "/silapse/docs/components/table": typeof SilapseDocsComponentsTableRoute;
-  "/silapse/docs/components/tabs": typeof SilapseDocsComponentsTabsRoute;
-  "/silapse/docs/components/taggroup": typeof SilapseDocsComponentsTaggroupRoute;
-  "/silapse/docs/components/textarea": typeof SilapseDocsComponentsTextareaRoute;
-  "/silapse/docs/components/textfield": typeof SilapseDocsComponentsTextfieldRoute;
-  "/silapse/docs/components/timefield": typeof SilapseDocsComponentsTimefieldRoute;
-  "/silapse/docs/components/toast": typeof SilapseDocsComponentsToastRoute;
-  "/silapse/docs/components/toolbar": typeof SilapseDocsComponentsToolbarRoute;
-  "/silapse/docs/components/tooltip": typeof SilapseDocsComponentsTooltipRoute;
-  "/silapse/docs/components/tree": typeof SilapseDocsComponentsTreeRoute;
-  "/silapse/docs/components/virtualizer": typeof SilapseDocsComponentsVirtualizerRoute;
-  "/silapse/docs/hooks/create-button": typeof SilapseDocsHooksCreateButtonRoute;
-  "/silapse/docs/hooks/create-press": typeof SilapseDocsHooksCreatePressRoute;
+  "/solid-spectrum/docs": typeof SolidSpectrumDocsRouteRouteWithChildren;
+  "/solid-spectrum/ecosystem": typeof SolidSpectrumEcosystemRoute;
+  "/solid-spectrum/playground": typeof SolidSpectrumPlaygroundRoute;
+  "/solid-spectrum/": typeof SolidSpectrumIndexRoute;
+  "/solid-spectrum/docs/installation": typeof SolidSpectrumDocsInstallationRoute;
+  "/solid-spectrum/docs/": typeof SolidSpectrumDocsIndexRoute;
+  "/solid-spectrum/docs/components/accordion": typeof SolidSpectrumDocsComponentsAccordionRoute;
+  "/solid-spectrum/docs/components/actionbar": typeof SolidSpectrumDocsComponentsActionbarRoute;
+  "/solid-spectrum/docs/components/actiongroup": typeof SolidSpectrumDocsComponentsActiongroupRoute;
+  "/solid-spectrum/docs/components/alertdialog": typeof SolidSpectrumDocsComponentsAlertdialogRoute;
+  "/solid-spectrum/docs/components/badge": typeof SolidSpectrumDocsComponentsBadgeRoute;
+  "/solid-spectrum/docs/components/breadcrumbs": typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
+  "/solid-spectrum/docs/components/button": typeof SolidSpectrumDocsComponentsButtonRoute;
+  "/solid-spectrum/docs/components/calendar": typeof SolidSpectrumDocsComponentsCalendarRoute;
+  "/solid-spectrum/docs/components/checkbox": typeof SolidSpectrumDocsComponentsCheckboxRoute;
+  "/solid-spectrum/docs/components/color": typeof SolidSpectrumDocsComponentsColorRoute;
+  "/solid-spectrum/docs/components/combobox": typeof SolidSpectrumDocsComponentsComboboxRoute;
+  "/solid-spectrum/docs/components/contextualhelp": typeof SolidSpectrumDocsComponentsContextualhelpRoute;
+  "/solid-spectrum/docs/components/datefield": typeof SolidSpectrumDocsComponentsDatefieldRoute;
+  "/solid-spectrum/docs/components/datepicker": typeof SolidSpectrumDocsComponentsDatepickerRoute;
+  "/solid-spectrum/docs/components/daterangepicker": typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
+  "/solid-spectrum/docs/components/dialog": typeof SolidSpectrumDocsComponentsDialogRoute;
+  "/solid-spectrum/docs/components/disclosure": typeof SolidSpectrumDocsComponentsDisclosureRoute;
+  "/solid-spectrum/docs/components/dropzone": typeof SolidSpectrumDocsComponentsDropzoneRoute;
+  "/solid-spectrum/docs/components/filetrigger": typeof SolidSpectrumDocsComponentsFiletriggerRoute;
+  "/solid-spectrum/docs/components/gridlist": typeof SolidSpectrumDocsComponentsGridlistRoute;
+  "/solid-spectrum/docs/components/link": typeof SolidSpectrumDocsComponentsLinkRoute;
+  "/solid-spectrum/docs/components/menu": typeof SolidSpectrumDocsComponentsMenuRoute;
+  "/solid-spectrum/docs/components/meter": typeof SolidSpectrumDocsComponentsMeterRoute;
+  "/solid-spectrum/docs/components/numberfield": typeof SolidSpectrumDocsComponentsNumberfieldRoute;
+  "/solid-spectrum/docs/components/picker": typeof SolidSpectrumDocsComponentsPickerRoute;
+  "/solid-spectrum/docs/components/popover": typeof SolidSpectrumDocsComponentsPopoverRoute;
+  "/solid-spectrum/docs/components/progressbar": typeof SolidSpectrumDocsComponentsProgressbarRoute;
+  "/solid-spectrum/docs/components/provider": typeof SolidSpectrumDocsComponentsProviderRoute;
+  "/solid-spectrum/docs/components/rangecalendar": typeof SolidSpectrumDocsComponentsRangecalendarRoute;
+  "/solid-spectrum/docs/components/searchfield": typeof SolidSpectrumDocsComponentsSearchfieldRoute;
+  "/solid-spectrum/docs/components/select": typeof SolidSpectrumDocsComponentsSelectRoute;
+  "/solid-spectrum/docs/components/separator": typeof SolidSpectrumDocsComponentsSeparatorRoute;
+  "/solid-spectrum/docs/components/slider": typeof SolidSpectrumDocsComponentsSliderRoute;
+  "/solid-spectrum/docs/components/switch": typeof SolidSpectrumDocsComponentsSwitchRoute;
+  "/solid-spectrum/docs/components/table": typeof SolidSpectrumDocsComponentsTableRoute;
+  "/solid-spectrum/docs/components/tabs": typeof SolidSpectrumDocsComponentsTabsRoute;
+  "/solid-spectrum/docs/components/taggroup": typeof SolidSpectrumDocsComponentsTaggroupRoute;
+  "/solid-spectrum/docs/components/textarea": typeof SolidSpectrumDocsComponentsTextareaRoute;
+  "/solid-spectrum/docs/components/textfield": typeof SolidSpectrumDocsComponentsTextfieldRoute;
+  "/solid-spectrum/docs/components/timefield": typeof SolidSpectrumDocsComponentsTimefieldRoute;
+  "/solid-spectrum/docs/components/toast": typeof SolidSpectrumDocsComponentsToastRoute;
+  "/solid-spectrum/docs/components/toolbar": typeof SolidSpectrumDocsComponentsToolbarRoute;
+  "/solid-spectrum/docs/components/tooltip": typeof SolidSpectrumDocsComponentsTooltipRoute;
+  "/solid-spectrum/docs/components/tree": typeof SolidSpectrumDocsComponentsTreeRoute;
+  "/solid-spectrum/docs/components/virtualizer": typeof SolidSpectrumDocsComponentsVirtualizerRoute;
+  "/solid-spectrum/docs/hooks/create-button": typeof SolidSpectrumDocsHooksCreateButtonRoute;
+  "/solid-spectrum/docs/hooks/create-press": typeof SolidSpectrumDocsHooksCreatePressRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
-  "/silapse/ecosystem": typeof SilapseEcosystemRoute;
-  "/silapse/playground": typeof SilapsePlaygroundRoute;
-  "/silapse": typeof SilapseIndexRoute;
-  "/silapse/docs/installation": typeof SilapseDocsInstallationRoute;
-  "/silapse/docs": typeof SilapseDocsIndexRoute;
-  "/silapse/docs/components/accordion": typeof SilapseDocsComponentsAccordionRoute;
-  "/silapse/docs/components/actionbar": typeof SilapseDocsComponentsActionbarRoute;
-  "/silapse/docs/components/actiongroup": typeof SilapseDocsComponentsActiongroupRoute;
-  "/silapse/docs/components/alertdialog": typeof SilapseDocsComponentsAlertdialogRoute;
-  "/silapse/docs/components/badge": typeof SilapseDocsComponentsBadgeRoute;
-  "/silapse/docs/components/breadcrumbs": typeof SilapseDocsComponentsBreadcrumbsRoute;
-  "/silapse/docs/components/button": typeof SilapseDocsComponentsButtonRoute;
-  "/silapse/docs/components/calendar": typeof SilapseDocsComponentsCalendarRoute;
-  "/silapse/docs/components/checkbox": typeof SilapseDocsComponentsCheckboxRoute;
-  "/silapse/docs/components/color": typeof SilapseDocsComponentsColorRoute;
-  "/silapse/docs/components/combobox": typeof SilapseDocsComponentsComboboxRoute;
-  "/silapse/docs/components/contextualhelp": typeof SilapseDocsComponentsContextualhelpRoute;
-  "/silapse/docs/components/datefield": typeof SilapseDocsComponentsDatefieldRoute;
-  "/silapse/docs/components/datepicker": typeof SilapseDocsComponentsDatepickerRoute;
-  "/silapse/docs/components/daterangepicker": typeof SilapseDocsComponentsDaterangepickerRoute;
-  "/silapse/docs/components/dialog": typeof SilapseDocsComponentsDialogRoute;
-  "/silapse/docs/components/disclosure": typeof SilapseDocsComponentsDisclosureRoute;
-  "/silapse/docs/components/dropzone": typeof SilapseDocsComponentsDropzoneRoute;
-  "/silapse/docs/components/filetrigger": typeof SilapseDocsComponentsFiletriggerRoute;
-  "/silapse/docs/components/gridlist": typeof SilapseDocsComponentsGridlistRoute;
-  "/silapse/docs/components/link": typeof SilapseDocsComponentsLinkRoute;
-  "/silapse/docs/components/menu": typeof SilapseDocsComponentsMenuRoute;
-  "/silapse/docs/components/meter": typeof SilapseDocsComponentsMeterRoute;
-  "/silapse/docs/components/numberfield": typeof SilapseDocsComponentsNumberfieldRoute;
-  "/silapse/docs/components/picker": typeof SilapseDocsComponentsPickerRoute;
-  "/silapse/docs/components/popover": typeof SilapseDocsComponentsPopoverRoute;
-  "/silapse/docs/components/progressbar": typeof SilapseDocsComponentsProgressbarRoute;
-  "/silapse/docs/components/provider": typeof SilapseDocsComponentsProviderRoute;
-  "/silapse/docs/components/rangecalendar": typeof SilapseDocsComponentsRangecalendarRoute;
-  "/silapse/docs/components/searchfield": typeof SilapseDocsComponentsSearchfieldRoute;
-  "/silapse/docs/components/select": typeof SilapseDocsComponentsSelectRoute;
-  "/silapse/docs/components/separator": typeof SilapseDocsComponentsSeparatorRoute;
-  "/silapse/docs/components/slider": typeof SilapseDocsComponentsSliderRoute;
-  "/silapse/docs/components/switch": typeof SilapseDocsComponentsSwitchRoute;
-  "/silapse/docs/components/table": typeof SilapseDocsComponentsTableRoute;
-  "/silapse/docs/components/tabs": typeof SilapseDocsComponentsTabsRoute;
-  "/silapse/docs/components/taggroup": typeof SilapseDocsComponentsTaggroupRoute;
-  "/silapse/docs/components/textarea": typeof SilapseDocsComponentsTextareaRoute;
-  "/silapse/docs/components/textfield": typeof SilapseDocsComponentsTextfieldRoute;
-  "/silapse/docs/components/timefield": typeof SilapseDocsComponentsTimefieldRoute;
-  "/silapse/docs/components/toast": typeof SilapseDocsComponentsToastRoute;
-  "/silapse/docs/components/toolbar": typeof SilapseDocsComponentsToolbarRoute;
-  "/silapse/docs/components/tooltip": typeof SilapseDocsComponentsTooltipRoute;
-  "/silapse/docs/components/tree": typeof SilapseDocsComponentsTreeRoute;
-  "/silapse/docs/components/virtualizer": typeof SilapseDocsComponentsVirtualizerRoute;
-  "/silapse/docs/hooks/create-button": typeof SilapseDocsHooksCreateButtonRoute;
-  "/silapse/docs/hooks/create-press": typeof SilapseDocsHooksCreatePressRoute;
+  "/solid-spectrum/ecosystem": typeof SolidSpectrumEcosystemRoute;
+  "/solid-spectrum/playground": typeof SolidSpectrumPlaygroundRoute;
+  "/solid-spectrum": typeof SolidSpectrumIndexRoute;
+  "/solid-spectrum/docs/installation": typeof SolidSpectrumDocsInstallationRoute;
+  "/solid-spectrum/docs": typeof SolidSpectrumDocsIndexRoute;
+  "/solid-spectrum/docs/components/accordion": typeof SolidSpectrumDocsComponentsAccordionRoute;
+  "/solid-spectrum/docs/components/actionbar": typeof SolidSpectrumDocsComponentsActionbarRoute;
+  "/solid-spectrum/docs/components/actiongroup": typeof SolidSpectrumDocsComponentsActiongroupRoute;
+  "/solid-spectrum/docs/components/alertdialog": typeof SolidSpectrumDocsComponentsAlertdialogRoute;
+  "/solid-spectrum/docs/components/badge": typeof SolidSpectrumDocsComponentsBadgeRoute;
+  "/solid-spectrum/docs/components/breadcrumbs": typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
+  "/solid-spectrum/docs/components/button": typeof SolidSpectrumDocsComponentsButtonRoute;
+  "/solid-spectrum/docs/components/calendar": typeof SolidSpectrumDocsComponentsCalendarRoute;
+  "/solid-spectrum/docs/components/checkbox": typeof SolidSpectrumDocsComponentsCheckboxRoute;
+  "/solid-spectrum/docs/components/color": typeof SolidSpectrumDocsComponentsColorRoute;
+  "/solid-spectrum/docs/components/combobox": typeof SolidSpectrumDocsComponentsComboboxRoute;
+  "/solid-spectrum/docs/components/contextualhelp": typeof SolidSpectrumDocsComponentsContextualhelpRoute;
+  "/solid-spectrum/docs/components/datefield": typeof SolidSpectrumDocsComponentsDatefieldRoute;
+  "/solid-spectrum/docs/components/datepicker": typeof SolidSpectrumDocsComponentsDatepickerRoute;
+  "/solid-spectrum/docs/components/daterangepicker": typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
+  "/solid-spectrum/docs/components/dialog": typeof SolidSpectrumDocsComponentsDialogRoute;
+  "/solid-spectrum/docs/components/disclosure": typeof SolidSpectrumDocsComponentsDisclosureRoute;
+  "/solid-spectrum/docs/components/dropzone": typeof SolidSpectrumDocsComponentsDropzoneRoute;
+  "/solid-spectrum/docs/components/filetrigger": typeof SolidSpectrumDocsComponentsFiletriggerRoute;
+  "/solid-spectrum/docs/components/gridlist": typeof SolidSpectrumDocsComponentsGridlistRoute;
+  "/solid-spectrum/docs/components/link": typeof SolidSpectrumDocsComponentsLinkRoute;
+  "/solid-spectrum/docs/components/menu": typeof SolidSpectrumDocsComponentsMenuRoute;
+  "/solid-spectrum/docs/components/meter": typeof SolidSpectrumDocsComponentsMeterRoute;
+  "/solid-spectrum/docs/components/numberfield": typeof SolidSpectrumDocsComponentsNumberfieldRoute;
+  "/solid-spectrum/docs/components/picker": typeof SolidSpectrumDocsComponentsPickerRoute;
+  "/solid-spectrum/docs/components/popover": typeof SolidSpectrumDocsComponentsPopoverRoute;
+  "/solid-spectrum/docs/components/progressbar": typeof SolidSpectrumDocsComponentsProgressbarRoute;
+  "/solid-spectrum/docs/components/provider": typeof SolidSpectrumDocsComponentsProviderRoute;
+  "/solid-spectrum/docs/components/rangecalendar": typeof SolidSpectrumDocsComponentsRangecalendarRoute;
+  "/solid-spectrum/docs/components/searchfield": typeof SolidSpectrumDocsComponentsSearchfieldRoute;
+  "/solid-spectrum/docs/components/select": typeof SolidSpectrumDocsComponentsSelectRoute;
+  "/solid-spectrum/docs/components/separator": typeof SolidSpectrumDocsComponentsSeparatorRoute;
+  "/solid-spectrum/docs/components/slider": typeof SolidSpectrumDocsComponentsSliderRoute;
+  "/solid-spectrum/docs/components/switch": typeof SolidSpectrumDocsComponentsSwitchRoute;
+  "/solid-spectrum/docs/components/table": typeof SolidSpectrumDocsComponentsTableRoute;
+  "/solid-spectrum/docs/components/tabs": typeof SolidSpectrumDocsComponentsTabsRoute;
+  "/solid-spectrum/docs/components/taggroup": typeof SolidSpectrumDocsComponentsTaggroupRoute;
+  "/solid-spectrum/docs/components/textarea": typeof SolidSpectrumDocsComponentsTextareaRoute;
+  "/solid-spectrum/docs/components/textfield": typeof SolidSpectrumDocsComponentsTextfieldRoute;
+  "/solid-spectrum/docs/components/timefield": typeof SolidSpectrumDocsComponentsTimefieldRoute;
+  "/solid-spectrum/docs/components/toast": typeof SolidSpectrumDocsComponentsToastRoute;
+  "/solid-spectrum/docs/components/toolbar": typeof SolidSpectrumDocsComponentsToolbarRoute;
+  "/solid-spectrum/docs/components/tooltip": typeof SolidSpectrumDocsComponentsTooltipRoute;
+  "/solid-spectrum/docs/components/tree": typeof SolidSpectrumDocsComponentsTreeRoute;
+  "/solid-spectrum/docs/components/virtualizer": typeof SolidSpectrumDocsComponentsVirtualizerRoute;
+  "/solid-spectrum/docs/hooks/create-button": typeof SolidSpectrumDocsHooksCreateButtonRoute;
+  "/solid-spectrum/docs/hooks/create-press": typeof SolidSpectrumDocsHooksCreatePressRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
-  "/silapse/docs": typeof SilapseDocsRouteRouteWithChildren;
-  "/silapse/ecosystem": typeof SilapseEcosystemRoute;
-  "/silapse/playground": typeof SilapsePlaygroundRoute;
-  "/silapse/": typeof SilapseIndexRoute;
-  "/silapse/docs/installation": typeof SilapseDocsInstallationRoute;
-  "/silapse/docs/": typeof SilapseDocsIndexRoute;
-  "/silapse/docs/components/accordion": typeof SilapseDocsComponentsAccordionRoute;
-  "/silapse/docs/components/actionbar": typeof SilapseDocsComponentsActionbarRoute;
-  "/silapse/docs/components/actiongroup": typeof SilapseDocsComponentsActiongroupRoute;
-  "/silapse/docs/components/alertdialog": typeof SilapseDocsComponentsAlertdialogRoute;
-  "/silapse/docs/components/badge": typeof SilapseDocsComponentsBadgeRoute;
-  "/silapse/docs/components/breadcrumbs": typeof SilapseDocsComponentsBreadcrumbsRoute;
-  "/silapse/docs/components/button": typeof SilapseDocsComponentsButtonRoute;
-  "/silapse/docs/components/calendar": typeof SilapseDocsComponentsCalendarRoute;
-  "/silapse/docs/components/checkbox": typeof SilapseDocsComponentsCheckboxRoute;
-  "/silapse/docs/components/color": typeof SilapseDocsComponentsColorRoute;
-  "/silapse/docs/components/combobox": typeof SilapseDocsComponentsComboboxRoute;
-  "/silapse/docs/components/contextualhelp": typeof SilapseDocsComponentsContextualhelpRoute;
-  "/silapse/docs/components/datefield": typeof SilapseDocsComponentsDatefieldRoute;
-  "/silapse/docs/components/datepicker": typeof SilapseDocsComponentsDatepickerRoute;
-  "/silapse/docs/components/daterangepicker": typeof SilapseDocsComponentsDaterangepickerRoute;
-  "/silapse/docs/components/dialog": typeof SilapseDocsComponentsDialogRoute;
-  "/silapse/docs/components/disclosure": typeof SilapseDocsComponentsDisclosureRoute;
-  "/silapse/docs/components/dropzone": typeof SilapseDocsComponentsDropzoneRoute;
-  "/silapse/docs/components/filetrigger": typeof SilapseDocsComponentsFiletriggerRoute;
-  "/silapse/docs/components/gridlist": typeof SilapseDocsComponentsGridlistRoute;
-  "/silapse/docs/components/link": typeof SilapseDocsComponentsLinkRoute;
-  "/silapse/docs/components/menu": typeof SilapseDocsComponentsMenuRoute;
-  "/silapse/docs/components/meter": typeof SilapseDocsComponentsMeterRoute;
-  "/silapse/docs/components/numberfield": typeof SilapseDocsComponentsNumberfieldRoute;
-  "/silapse/docs/components/picker": typeof SilapseDocsComponentsPickerRoute;
-  "/silapse/docs/components/popover": typeof SilapseDocsComponentsPopoverRoute;
-  "/silapse/docs/components/progressbar": typeof SilapseDocsComponentsProgressbarRoute;
-  "/silapse/docs/components/provider": typeof SilapseDocsComponentsProviderRoute;
-  "/silapse/docs/components/rangecalendar": typeof SilapseDocsComponentsRangecalendarRoute;
-  "/silapse/docs/components/searchfield": typeof SilapseDocsComponentsSearchfieldRoute;
-  "/silapse/docs/components/select": typeof SilapseDocsComponentsSelectRoute;
-  "/silapse/docs/components/separator": typeof SilapseDocsComponentsSeparatorRoute;
-  "/silapse/docs/components/slider": typeof SilapseDocsComponentsSliderRoute;
-  "/silapse/docs/components/switch": typeof SilapseDocsComponentsSwitchRoute;
-  "/silapse/docs/components/table": typeof SilapseDocsComponentsTableRoute;
-  "/silapse/docs/components/tabs": typeof SilapseDocsComponentsTabsRoute;
-  "/silapse/docs/components/taggroup": typeof SilapseDocsComponentsTaggroupRoute;
-  "/silapse/docs/components/textarea": typeof SilapseDocsComponentsTextareaRoute;
-  "/silapse/docs/components/textfield": typeof SilapseDocsComponentsTextfieldRoute;
-  "/silapse/docs/components/timefield": typeof SilapseDocsComponentsTimefieldRoute;
-  "/silapse/docs/components/toast": typeof SilapseDocsComponentsToastRoute;
-  "/silapse/docs/components/toolbar": typeof SilapseDocsComponentsToolbarRoute;
-  "/silapse/docs/components/tooltip": typeof SilapseDocsComponentsTooltipRoute;
-  "/silapse/docs/components/tree": typeof SilapseDocsComponentsTreeRoute;
-  "/silapse/docs/components/virtualizer": typeof SilapseDocsComponentsVirtualizerRoute;
-  "/silapse/docs/hooks/create-button": typeof SilapseDocsHooksCreateButtonRoute;
-  "/silapse/docs/hooks/create-press": typeof SilapseDocsHooksCreatePressRoute;
+  "/solid-spectrum/docs": typeof SolidSpectrumDocsRouteRouteWithChildren;
+  "/solid-spectrum/ecosystem": typeof SolidSpectrumEcosystemRoute;
+  "/solid-spectrum/playground": typeof SolidSpectrumPlaygroundRoute;
+  "/solid-spectrum/": typeof SolidSpectrumIndexRoute;
+  "/solid-spectrum/docs/installation": typeof SolidSpectrumDocsInstallationRoute;
+  "/solid-spectrum/docs/": typeof SolidSpectrumDocsIndexRoute;
+  "/solid-spectrum/docs/components/accordion": typeof SolidSpectrumDocsComponentsAccordionRoute;
+  "/solid-spectrum/docs/components/actionbar": typeof SolidSpectrumDocsComponentsActionbarRoute;
+  "/solid-spectrum/docs/components/actiongroup": typeof SolidSpectrumDocsComponentsActiongroupRoute;
+  "/solid-spectrum/docs/components/alertdialog": typeof SolidSpectrumDocsComponentsAlertdialogRoute;
+  "/solid-spectrum/docs/components/badge": typeof SolidSpectrumDocsComponentsBadgeRoute;
+  "/solid-spectrum/docs/components/breadcrumbs": typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
+  "/solid-spectrum/docs/components/button": typeof SolidSpectrumDocsComponentsButtonRoute;
+  "/solid-spectrum/docs/components/calendar": typeof SolidSpectrumDocsComponentsCalendarRoute;
+  "/solid-spectrum/docs/components/checkbox": typeof SolidSpectrumDocsComponentsCheckboxRoute;
+  "/solid-spectrum/docs/components/color": typeof SolidSpectrumDocsComponentsColorRoute;
+  "/solid-spectrum/docs/components/combobox": typeof SolidSpectrumDocsComponentsComboboxRoute;
+  "/solid-spectrum/docs/components/contextualhelp": typeof SolidSpectrumDocsComponentsContextualhelpRoute;
+  "/solid-spectrum/docs/components/datefield": typeof SolidSpectrumDocsComponentsDatefieldRoute;
+  "/solid-spectrum/docs/components/datepicker": typeof SolidSpectrumDocsComponentsDatepickerRoute;
+  "/solid-spectrum/docs/components/daterangepicker": typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
+  "/solid-spectrum/docs/components/dialog": typeof SolidSpectrumDocsComponentsDialogRoute;
+  "/solid-spectrum/docs/components/disclosure": typeof SolidSpectrumDocsComponentsDisclosureRoute;
+  "/solid-spectrum/docs/components/dropzone": typeof SolidSpectrumDocsComponentsDropzoneRoute;
+  "/solid-spectrum/docs/components/filetrigger": typeof SolidSpectrumDocsComponentsFiletriggerRoute;
+  "/solid-spectrum/docs/components/gridlist": typeof SolidSpectrumDocsComponentsGridlistRoute;
+  "/solid-spectrum/docs/components/link": typeof SolidSpectrumDocsComponentsLinkRoute;
+  "/solid-spectrum/docs/components/menu": typeof SolidSpectrumDocsComponentsMenuRoute;
+  "/solid-spectrum/docs/components/meter": typeof SolidSpectrumDocsComponentsMeterRoute;
+  "/solid-spectrum/docs/components/numberfield": typeof SolidSpectrumDocsComponentsNumberfieldRoute;
+  "/solid-spectrum/docs/components/picker": typeof SolidSpectrumDocsComponentsPickerRoute;
+  "/solid-spectrum/docs/components/popover": typeof SolidSpectrumDocsComponentsPopoverRoute;
+  "/solid-spectrum/docs/components/progressbar": typeof SolidSpectrumDocsComponentsProgressbarRoute;
+  "/solid-spectrum/docs/components/provider": typeof SolidSpectrumDocsComponentsProviderRoute;
+  "/solid-spectrum/docs/components/rangecalendar": typeof SolidSpectrumDocsComponentsRangecalendarRoute;
+  "/solid-spectrum/docs/components/searchfield": typeof SolidSpectrumDocsComponentsSearchfieldRoute;
+  "/solid-spectrum/docs/components/select": typeof SolidSpectrumDocsComponentsSelectRoute;
+  "/solid-spectrum/docs/components/separator": typeof SolidSpectrumDocsComponentsSeparatorRoute;
+  "/solid-spectrum/docs/components/slider": typeof SolidSpectrumDocsComponentsSliderRoute;
+  "/solid-spectrum/docs/components/switch": typeof SolidSpectrumDocsComponentsSwitchRoute;
+  "/solid-spectrum/docs/components/table": typeof SolidSpectrumDocsComponentsTableRoute;
+  "/solid-spectrum/docs/components/tabs": typeof SolidSpectrumDocsComponentsTabsRoute;
+  "/solid-spectrum/docs/components/taggroup": typeof SolidSpectrumDocsComponentsTaggroupRoute;
+  "/solid-spectrum/docs/components/textarea": typeof SolidSpectrumDocsComponentsTextareaRoute;
+  "/solid-spectrum/docs/components/textfield": typeof SolidSpectrumDocsComponentsTextfieldRoute;
+  "/solid-spectrum/docs/components/timefield": typeof SolidSpectrumDocsComponentsTimefieldRoute;
+  "/solid-spectrum/docs/components/toast": typeof SolidSpectrumDocsComponentsToastRoute;
+  "/solid-spectrum/docs/components/toolbar": typeof SolidSpectrumDocsComponentsToolbarRoute;
+  "/solid-spectrum/docs/components/tooltip": typeof SolidSpectrumDocsComponentsTooltipRoute;
+  "/solid-spectrum/docs/components/tree": typeof SolidSpectrumDocsComponentsTreeRoute;
+  "/solid-spectrum/docs/components/virtualizer": typeof SolidSpectrumDocsComponentsVirtualizerRoute;
+  "/solid-spectrum/docs/hooks/create-button": typeof SolidSpectrumDocsHooksCreateButtonRoute;
+  "/solid-spectrum/docs/hooks/create-press": typeof SolidSpectrumDocsHooksCreatePressRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | "/"
-    | "/silapse/docs"
-    | "/silapse/ecosystem"
-    | "/silapse/playground"
-    | "/silapse/"
-    | "/silapse/docs/installation"
-    | "/silapse/docs/"
-    | "/silapse/docs/components/accordion"
-    | "/silapse/docs/components/actionbar"
-    | "/silapse/docs/components/actiongroup"
-    | "/silapse/docs/components/alertdialog"
-    | "/silapse/docs/components/badge"
-    | "/silapse/docs/components/breadcrumbs"
-    | "/silapse/docs/components/button"
-    | "/silapse/docs/components/calendar"
-    | "/silapse/docs/components/checkbox"
-    | "/silapse/docs/components/color"
-    | "/silapse/docs/components/combobox"
-    | "/silapse/docs/components/contextualhelp"
-    | "/silapse/docs/components/datefield"
-    | "/silapse/docs/components/datepicker"
-    | "/silapse/docs/components/daterangepicker"
-    | "/silapse/docs/components/dialog"
-    | "/silapse/docs/components/disclosure"
-    | "/silapse/docs/components/dropzone"
-    | "/silapse/docs/components/filetrigger"
-    | "/silapse/docs/components/gridlist"
-    | "/silapse/docs/components/link"
-    | "/silapse/docs/components/menu"
-    | "/silapse/docs/components/meter"
-    | "/silapse/docs/components/numberfield"
-    | "/silapse/docs/components/picker"
-    | "/silapse/docs/components/popover"
-    | "/silapse/docs/components/progressbar"
-    | "/silapse/docs/components/provider"
-    | "/silapse/docs/components/rangecalendar"
-    | "/silapse/docs/components/searchfield"
-    | "/silapse/docs/components/select"
-    | "/silapse/docs/components/separator"
-    | "/silapse/docs/components/slider"
-    | "/silapse/docs/components/switch"
-    | "/silapse/docs/components/table"
-    | "/silapse/docs/components/tabs"
-    | "/silapse/docs/components/taggroup"
-    | "/silapse/docs/components/textarea"
-    | "/silapse/docs/components/textfield"
-    | "/silapse/docs/components/timefield"
-    | "/silapse/docs/components/toast"
-    | "/silapse/docs/components/toolbar"
-    | "/silapse/docs/components/tooltip"
-    | "/silapse/docs/components/tree"
-    | "/silapse/docs/components/virtualizer"
-    | "/silapse/docs/hooks/create-button"
-    | "/silapse/docs/hooks/create-press";
+    | "/solid-spectrum/docs"
+    | "/solid-spectrum/ecosystem"
+    | "/solid-spectrum/playground"
+    | "/solid-spectrum/"
+    | "/solid-spectrum/docs/installation"
+    | "/solid-spectrum/docs/"
+    | "/solid-spectrum/docs/components/accordion"
+    | "/solid-spectrum/docs/components/actionbar"
+    | "/solid-spectrum/docs/components/actiongroup"
+    | "/solid-spectrum/docs/components/alertdialog"
+    | "/solid-spectrum/docs/components/badge"
+    | "/solid-spectrum/docs/components/breadcrumbs"
+    | "/solid-spectrum/docs/components/button"
+    | "/solid-spectrum/docs/components/calendar"
+    | "/solid-spectrum/docs/components/checkbox"
+    | "/solid-spectrum/docs/components/color"
+    | "/solid-spectrum/docs/components/combobox"
+    | "/solid-spectrum/docs/components/contextualhelp"
+    | "/solid-spectrum/docs/components/datefield"
+    | "/solid-spectrum/docs/components/datepicker"
+    | "/solid-spectrum/docs/components/daterangepicker"
+    | "/solid-spectrum/docs/components/dialog"
+    | "/solid-spectrum/docs/components/disclosure"
+    | "/solid-spectrum/docs/components/dropzone"
+    | "/solid-spectrum/docs/components/filetrigger"
+    | "/solid-spectrum/docs/components/gridlist"
+    | "/solid-spectrum/docs/components/link"
+    | "/solid-spectrum/docs/components/menu"
+    | "/solid-spectrum/docs/components/meter"
+    | "/solid-spectrum/docs/components/numberfield"
+    | "/solid-spectrum/docs/components/picker"
+    | "/solid-spectrum/docs/components/popover"
+    | "/solid-spectrum/docs/components/progressbar"
+    | "/solid-spectrum/docs/components/provider"
+    | "/solid-spectrum/docs/components/rangecalendar"
+    | "/solid-spectrum/docs/components/searchfield"
+    | "/solid-spectrum/docs/components/select"
+    | "/solid-spectrum/docs/components/separator"
+    | "/solid-spectrum/docs/components/slider"
+    | "/solid-spectrum/docs/components/switch"
+    | "/solid-spectrum/docs/components/table"
+    | "/solid-spectrum/docs/components/tabs"
+    | "/solid-spectrum/docs/components/taggroup"
+    | "/solid-spectrum/docs/components/textarea"
+    | "/solid-spectrum/docs/components/textfield"
+    | "/solid-spectrum/docs/components/timefield"
+    | "/solid-spectrum/docs/components/toast"
+    | "/solid-spectrum/docs/components/toolbar"
+    | "/solid-spectrum/docs/components/tooltip"
+    | "/solid-spectrum/docs/components/tree"
+    | "/solid-spectrum/docs/components/virtualizer"
+    | "/solid-spectrum/docs/hooks/create-button"
+    | "/solid-spectrum/docs/hooks/create-press";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
-    | "/silapse/ecosystem"
-    | "/silapse/playground"
-    | "/silapse"
-    | "/silapse/docs/installation"
-    | "/silapse/docs"
-    | "/silapse/docs/components/accordion"
-    | "/silapse/docs/components/actionbar"
-    | "/silapse/docs/components/actiongroup"
-    | "/silapse/docs/components/alertdialog"
-    | "/silapse/docs/components/badge"
-    | "/silapse/docs/components/breadcrumbs"
-    | "/silapse/docs/components/button"
-    | "/silapse/docs/components/calendar"
-    | "/silapse/docs/components/checkbox"
-    | "/silapse/docs/components/color"
-    | "/silapse/docs/components/combobox"
-    | "/silapse/docs/components/contextualhelp"
-    | "/silapse/docs/components/datefield"
-    | "/silapse/docs/components/datepicker"
-    | "/silapse/docs/components/daterangepicker"
-    | "/silapse/docs/components/dialog"
-    | "/silapse/docs/components/disclosure"
-    | "/silapse/docs/components/dropzone"
-    | "/silapse/docs/components/filetrigger"
-    | "/silapse/docs/components/gridlist"
-    | "/silapse/docs/components/link"
-    | "/silapse/docs/components/menu"
-    | "/silapse/docs/components/meter"
-    | "/silapse/docs/components/numberfield"
-    | "/silapse/docs/components/picker"
-    | "/silapse/docs/components/popover"
-    | "/silapse/docs/components/progressbar"
-    | "/silapse/docs/components/provider"
-    | "/silapse/docs/components/rangecalendar"
-    | "/silapse/docs/components/searchfield"
-    | "/silapse/docs/components/select"
-    | "/silapse/docs/components/separator"
-    | "/silapse/docs/components/slider"
-    | "/silapse/docs/components/switch"
-    | "/silapse/docs/components/table"
-    | "/silapse/docs/components/tabs"
-    | "/silapse/docs/components/taggroup"
-    | "/silapse/docs/components/textarea"
-    | "/silapse/docs/components/textfield"
-    | "/silapse/docs/components/timefield"
-    | "/silapse/docs/components/toast"
-    | "/silapse/docs/components/toolbar"
-    | "/silapse/docs/components/tooltip"
-    | "/silapse/docs/components/tree"
-    | "/silapse/docs/components/virtualizer"
-    | "/silapse/docs/hooks/create-button"
-    | "/silapse/docs/hooks/create-press";
+    | "/solid-spectrum/ecosystem"
+    | "/solid-spectrum/playground"
+    | "/solid-spectrum"
+    | "/solid-spectrum/docs/installation"
+    | "/solid-spectrum/docs"
+    | "/solid-spectrum/docs/components/accordion"
+    | "/solid-spectrum/docs/components/actionbar"
+    | "/solid-spectrum/docs/components/actiongroup"
+    | "/solid-spectrum/docs/components/alertdialog"
+    | "/solid-spectrum/docs/components/badge"
+    | "/solid-spectrum/docs/components/breadcrumbs"
+    | "/solid-spectrum/docs/components/button"
+    | "/solid-spectrum/docs/components/calendar"
+    | "/solid-spectrum/docs/components/checkbox"
+    | "/solid-spectrum/docs/components/color"
+    | "/solid-spectrum/docs/components/combobox"
+    | "/solid-spectrum/docs/components/contextualhelp"
+    | "/solid-spectrum/docs/components/datefield"
+    | "/solid-spectrum/docs/components/datepicker"
+    | "/solid-spectrum/docs/components/daterangepicker"
+    | "/solid-spectrum/docs/components/dialog"
+    | "/solid-spectrum/docs/components/disclosure"
+    | "/solid-spectrum/docs/components/dropzone"
+    | "/solid-spectrum/docs/components/filetrigger"
+    | "/solid-spectrum/docs/components/gridlist"
+    | "/solid-spectrum/docs/components/link"
+    | "/solid-spectrum/docs/components/menu"
+    | "/solid-spectrum/docs/components/meter"
+    | "/solid-spectrum/docs/components/numberfield"
+    | "/solid-spectrum/docs/components/picker"
+    | "/solid-spectrum/docs/components/popover"
+    | "/solid-spectrum/docs/components/progressbar"
+    | "/solid-spectrum/docs/components/provider"
+    | "/solid-spectrum/docs/components/rangecalendar"
+    | "/solid-spectrum/docs/components/searchfield"
+    | "/solid-spectrum/docs/components/select"
+    | "/solid-spectrum/docs/components/separator"
+    | "/solid-spectrum/docs/components/slider"
+    | "/solid-spectrum/docs/components/switch"
+    | "/solid-spectrum/docs/components/table"
+    | "/solid-spectrum/docs/components/tabs"
+    | "/solid-spectrum/docs/components/taggroup"
+    | "/solid-spectrum/docs/components/textarea"
+    | "/solid-spectrum/docs/components/textfield"
+    | "/solid-spectrum/docs/components/timefield"
+    | "/solid-spectrum/docs/components/toast"
+    | "/solid-spectrum/docs/components/toolbar"
+    | "/solid-spectrum/docs/components/tooltip"
+    | "/solid-spectrum/docs/components/tree"
+    | "/solid-spectrum/docs/components/virtualizer"
+    | "/solid-spectrum/docs/hooks/create-button"
+    | "/solid-spectrum/docs/hooks/create-press";
   id:
     | "__root__"
     | "/"
-    | "/silapse/docs"
-    | "/silapse/ecosystem"
-    | "/silapse/playground"
-    | "/silapse/"
-    | "/silapse/docs/installation"
-    | "/silapse/docs/"
-    | "/silapse/docs/components/accordion"
-    | "/silapse/docs/components/actionbar"
-    | "/silapse/docs/components/actiongroup"
-    | "/silapse/docs/components/alertdialog"
-    | "/silapse/docs/components/badge"
-    | "/silapse/docs/components/breadcrumbs"
-    | "/silapse/docs/components/button"
-    | "/silapse/docs/components/calendar"
-    | "/silapse/docs/components/checkbox"
-    | "/silapse/docs/components/color"
-    | "/silapse/docs/components/combobox"
-    | "/silapse/docs/components/contextualhelp"
-    | "/silapse/docs/components/datefield"
-    | "/silapse/docs/components/datepicker"
-    | "/silapse/docs/components/daterangepicker"
-    | "/silapse/docs/components/dialog"
-    | "/silapse/docs/components/disclosure"
-    | "/silapse/docs/components/dropzone"
-    | "/silapse/docs/components/filetrigger"
-    | "/silapse/docs/components/gridlist"
-    | "/silapse/docs/components/link"
-    | "/silapse/docs/components/menu"
-    | "/silapse/docs/components/meter"
-    | "/silapse/docs/components/numberfield"
-    | "/silapse/docs/components/picker"
-    | "/silapse/docs/components/popover"
-    | "/silapse/docs/components/progressbar"
-    | "/silapse/docs/components/provider"
-    | "/silapse/docs/components/rangecalendar"
-    | "/silapse/docs/components/searchfield"
-    | "/silapse/docs/components/select"
-    | "/silapse/docs/components/separator"
-    | "/silapse/docs/components/slider"
-    | "/silapse/docs/components/switch"
-    | "/silapse/docs/components/table"
-    | "/silapse/docs/components/tabs"
-    | "/silapse/docs/components/taggroup"
-    | "/silapse/docs/components/textarea"
-    | "/silapse/docs/components/textfield"
-    | "/silapse/docs/components/timefield"
-    | "/silapse/docs/components/toast"
-    | "/silapse/docs/components/toolbar"
-    | "/silapse/docs/components/tooltip"
-    | "/silapse/docs/components/tree"
-    | "/silapse/docs/components/virtualizer"
-    | "/silapse/docs/hooks/create-button"
-    | "/silapse/docs/hooks/create-press";
+    | "/solid-spectrum/docs"
+    | "/solid-spectrum/ecosystem"
+    | "/solid-spectrum/playground"
+    | "/solid-spectrum/"
+    | "/solid-spectrum/docs/installation"
+    | "/solid-spectrum/docs/"
+    | "/solid-spectrum/docs/components/accordion"
+    | "/solid-spectrum/docs/components/actionbar"
+    | "/solid-spectrum/docs/components/actiongroup"
+    | "/solid-spectrum/docs/components/alertdialog"
+    | "/solid-spectrum/docs/components/badge"
+    | "/solid-spectrum/docs/components/breadcrumbs"
+    | "/solid-spectrum/docs/components/button"
+    | "/solid-spectrum/docs/components/calendar"
+    | "/solid-spectrum/docs/components/checkbox"
+    | "/solid-spectrum/docs/components/color"
+    | "/solid-spectrum/docs/components/combobox"
+    | "/solid-spectrum/docs/components/contextualhelp"
+    | "/solid-spectrum/docs/components/datefield"
+    | "/solid-spectrum/docs/components/datepicker"
+    | "/solid-spectrum/docs/components/daterangepicker"
+    | "/solid-spectrum/docs/components/dialog"
+    | "/solid-spectrum/docs/components/disclosure"
+    | "/solid-spectrum/docs/components/dropzone"
+    | "/solid-spectrum/docs/components/filetrigger"
+    | "/solid-spectrum/docs/components/gridlist"
+    | "/solid-spectrum/docs/components/link"
+    | "/solid-spectrum/docs/components/menu"
+    | "/solid-spectrum/docs/components/meter"
+    | "/solid-spectrum/docs/components/numberfield"
+    | "/solid-spectrum/docs/components/picker"
+    | "/solid-spectrum/docs/components/popover"
+    | "/solid-spectrum/docs/components/progressbar"
+    | "/solid-spectrum/docs/components/provider"
+    | "/solid-spectrum/docs/components/rangecalendar"
+    | "/solid-spectrum/docs/components/searchfield"
+    | "/solid-spectrum/docs/components/select"
+    | "/solid-spectrum/docs/components/separator"
+    | "/solid-spectrum/docs/components/slider"
+    | "/solid-spectrum/docs/components/switch"
+    | "/solid-spectrum/docs/components/table"
+    | "/solid-spectrum/docs/components/tabs"
+    | "/solid-spectrum/docs/components/taggroup"
+    | "/solid-spectrum/docs/components/textarea"
+    | "/solid-spectrum/docs/components/textfield"
+    | "/solid-spectrum/docs/components/timefield"
+    | "/solid-spectrum/docs/components/toast"
+    | "/solid-spectrum/docs/components/toolbar"
+    | "/solid-spectrum/docs/components/tooltip"
+    | "/solid-spectrum/docs/components/tree"
+    | "/solid-spectrum/docs/components/virtualizer"
+    | "/solid-spectrum/docs/hooks/create-button"
+    | "/solid-spectrum/docs/hooks/create-press";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
-  SilapseDocsRouteRoute: typeof SilapseDocsRouteRouteWithChildren;
-  SilapseEcosystemRoute: typeof SilapseEcosystemRoute;
-  SilapsePlaygroundRoute: typeof SilapsePlaygroundRoute;
-  SilapseIndexRoute: typeof SilapseIndexRoute;
+  SolidSpectrumDocsRouteRoute: typeof SolidSpectrumDocsRouteRouteWithChildren;
+  SolidSpectrumEcosystemRoute: typeof SolidSpectrumEcosystemRoute;
+  SolidSpectrumPlaygroundRoute: typeof SolidSpectrumPlaygroundRoute;
+  SolidSpectrumIndexRoute: typeof SolidSpectrumIndexRoute;
 }
 
 declare module "@tanstack/solid-router" {
@@ -693,494 +721,494 @@ declare module "@tanstack/solid-router" {
       preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/silapse/": {
-      id: "/silapse/";
-      path: "/silapse";
-      fullPath: "/silapse/";
-      preLoaderRoute: typeof SilapseIndexRouteImport;
+    "/solid-spectrum/": {
+      id: "/solid-spectrum/";
+      path: "/solid-spectrum";
+      fullPath: "/solid-spectrum/";
+      preLoaderRoute: typeof SolidSpectrumIndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/silapse/playground": {
-      id: "/silapse/playground";
-      path: "/silapse/playground";
-      fullPath: "/silapse/playground";
-      preLoaderRoute: typeof SilapsePlaygroundRouteImport;
+    "/solid-spectrum/playground": {
+      id: "/solid-spectrum/playground";
+      path: "/solid-spectrum/playground";
+      fullPath: "/solid-spectrum/playground";
+      preLoaderRoute: typeof SolidSpectrumPlaygroundRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/silapse/ecosystem": {
-      id: "/silapse/ecosystem";
-      path: "/silapse/ecosystem";
-      fullPath: "/silapse/ecosystem";
-      preLoaderRoute: typeof SilapseEcosystemRouteImport;
+    "/solid-spectrum/ecosystem": {
+      id: "/solid-spectrum/ecosystem";
+      path: "/solid-spectrum/ecosystem";
+      fullPath: "/solid-spectrum/ecosystem";
+      preLoaderRoute: typeof SolidSpectrumEcosystemRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/silapse/docs": {
-      id: "/silapse/docs";
-      path: "/silapse/docs";
-      fullPath: "/silapse/docs";
-      preLoaderRoute: typeof SilapseDocsRouteRouteImport;
+    "/solid-spectrum/docs": {
+      id: "/solid-spectrum/docs";
+      path: "/solid-spectrum/docs";
+      fullPath: "/solid-spectrum/docs";
+      preLoaderRoute: typeof SolidSpectrumDocsRouteRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/silapse/docs/": {
-      id: "/silapse/docs/";
+    "/solid-spectrum/docs/": {
+      id: "/solid-spectrum/docs/";
       path: "/";
-      fullPath: "/silapse/docs/";
-      preLoaderRoute: typeof SilapseDocsIndexRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/";
+      preLoaderRoute: typeof SolidSpectrumDocsIndexRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/installation": {
-      id: "/silapse/docs/installation";
+    "/solid-spectrum/docs/installation": {
+      id: "/solid-spectrum/docs/installation";
       path: "/installation";
-      fullPath: "/silapse/docs/installation";
-      preLoaderRoute: typeof SilapseDocsInstallationRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/installation";
+      preLoaderRoute: typeof SolidSpectrumDocsInstallationRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/hooks/create-press": {
-      id: "/silapse/docs/hooks/create-press";
+    "/solid-spectrum/docs/hooks/create-press": {
+      id: "/solid-spectrum/docs/hooks/create-press";
       path: "/hooks/create-press";
-      fullPath: "/silapse/docs/hooks/create-press";
-      preLoaderRoute: typeof SilapseDocsHooksCreatePressRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/hooks/create-press";
+      preLoaderRoute: typeof SolidSpectrumDocsHooksCreatePressRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/hooks/create-button": {
-      id: "/silapse/docs/hooks/create-button";
+    "/solid-spectrum/docs/hooks/create-button": {
+      id: "/solid-spectrum/docs/hooks/create-button";
       path: "/hooks/create-button";
-      fullPath: "/silapse/docs/hooks/create-button";
-      preLoaderRoute: typeof SilapseDocsHooksCreateButtonRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/hooks/create-button";
+      preLoaderRoute: typeof SolidSpectrumDocsHooksCreateButtonRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/virtualizer": {
-      id: "/silapse/docs/components/virtualizer";
+    "/solid-spectrum/docs/components/virtualizer": {
+      id: "/solid-spectrum/docs/components/virtualizer";
       path: "/components/virtualizer";
-      fullPath: "/silapse/docs/components/virtualizer";
-      preLoaderRoute: typeof SilapseDocsComponentsVirtualizerRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/virtualizer";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsVirtualizerRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/tree": {
-      id: "/silapse/docs/components/tree";
+    "/solid-spectrum/docs/components/tree": {
+      id: "/solid-spectrum/docs/components/tree";
       path: "/components/tree";
-      fullPath: "/silapse/docs/components/tree";
-      preLoaderRoute: typeof SilapseDocsComponentsTreeRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/tree";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTreeRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/tooltip": {
-      id: "/silapse/docs/components/tooltip";
+    "/solid-spectrum/docs/components/tooltip": {
+      id: "/solid-spectrum/docs/components/tooltip";
       path: "/components/tooltip";
-      fullPath: "/silapse/docs/components/tooltip";
-      preLoaderRoute: typeof SilapseDocsComponentsTooltipRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/tooltip";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTooltipRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/toolbar": {
-      id: "/silapse/docs/components/toolbar";
+    "/solid-spectrum/docs/components/toolbar": {
+      id: "/solid-spectrum/docs/components/toolbar";
       path: "/components/toolbar";
-      fullPath: "/silapse/docs/components/toolbar";
-      preLoaderRoute: typeof SilapseDocsComponentsToolbarRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/toolbar";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsToolbarRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/toast": {
-      id: "/silapse/docs/components/toast";
+    "/solid-spectrum/docs/components/toast": {
+      id: "/solid-spectrum/docs/components/toast";
       path: "/components/toast";
-      fullPath: "/silapse/docs/components/toast";
-      preLoaderRoute: typeof SilapseDocsComponentsToastRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/toast";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsToastRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/timefield": {
-      id: "/silapse/docs/components/timefield";
+    "/solid-spectrum/docs/components/timefield": {
+      id: "/solid-spectrum/docs/components/timefield";
       path: "/components/timefield";
-      fullPath: "/silapse/docs/components/timefield";
-      preLoaderRoute: typeof SilapseDocsComponentsTimefieldRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/timefield";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTimefieldRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/textfield": {
-      id: "/silapse/docs/components/textfield";
+    "/solid-spectrum/docs/components/textfield": {
+      id: "/solid-spectrum/docs/components/textfield";
       path: "/components/textfield";
-      fullPath: "/silapse/docs/components/textfield";
-      preLoaderRoute: typeof SilapseDocsComponentsTextfieldRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/textfield";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextfieldRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/textarea": {
-      id: "/silapse/docs/components/textarea";
+    "/solid-spectrum/docs/components/textarea": {
+      id: "/solid-spectrum/docs/components/textarea";
       path: "/components/textarea";
-      fullPath: "/silapse/docs/components/textarea";
-      preLoaderRoute: typeof SilapseDocsComponentsTextareaRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/textarea";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextareaRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/taggroup": {
-      id: "/silapse/docs/components/taggroup";
+    "/solid-spectrum/docs/components/taggroup": {
+      id: "/solid-spectrum/docs/components/taggroup";
       path: "/components/taggroup";
-      fullPath: "/silapse/docs/components/taggroup";
-      preLoaderRoute: typeof SilapseDocsComponentsTaggroupRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/taggroup";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTaggroupRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/tabs": {
-      id: "/silapse/docs/components/tabs";
+    "/solid-spectrum/docs/components/tabs": {
+      id: "/solid-spectrum/docs/components/tabs";
       path: "/components/tabs";
-      fullPath: "/silapse/docs/components/tabs";
-      preLoaderRoute: typeof SilapseDocsComponentsTabsRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/tabs";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTabsRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/table": {
-      id: "/silapse/docs/components/table";
+    "/solid-spectrum/docs/components/table": {
+      id: "/solid-spectrum/docs/components/table";
       path: "/components/table";
-      fullPath: "/silapse/docs/components/table";
-      preLoaderRoute: typeof SilapseDocsComponentsTableRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/table";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTableRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/switch": {
-      id: "/silapse/docs/components/switch";
+    "/solid-spectrum/docs/components/switch": {
+      id: "/solid-spectrum/docs/components/switch";
       path: "/components/switch";
-      fullPath: "/silapse/docs/components/switch";
-      preLoaderRoute: typeof SilapseDocsComponentsSwitchRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/switch";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSwitchRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/slider": {
-      id: "/silapse/docs/components/slider";
+    "/solid-spectrum/docs/components/slider": {
+      id: "/solid-spectrum/docs/components/slider";
       path: "/components/slider";
-      fullPath: "/silapse/docs/components/slider";
-      preLoaderRoute: typeof SilapseDocsComponentsSliderRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/slider";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSliderRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/separator": {
-      id: "/silapse/docs/components/separator";
+    "/solid-spectrum/docs/components/separator": {
+      id: "/solid-spectrum/docs/components/separator";
       path: "/components/separator";
-      fullPath: "/silapse/docs/components/separator";
-      preLoaderRoute: typeof SilapseDocsComponentsSeparatorRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/separator";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSeparatorRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/select": {
-      id: "/silapse/docs/components/select";
+    "/solid-spectrum/docs/components/select": {
+      id: "/solid-spectrum/docs/components/select";
       path: "/components/select";
-      fullPath: "/silapse/docs/components/select";
-      preLoaderRoute: typeof SilapseDocsComponentsSelectRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/select";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSelectRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/searchfield": {
-      id: "/silapse/docs/components/searchfield";
+    "/solid-spectrum/docs/components/searchfield": {
+      id: "/solid-spectrum/docs/components/searchfield";
       path: "/components/searchfield";
-      fullPath: "/silapse/docs/components/searchfield";
-      preLoaderRoute: typeof SilapseDocsComponentsSearchfieldRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/searchfield";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSearchfieldRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/rangecalendar": {
-      id: "/silapse/docs/components/rangecalendar";
+    "/solid-spectrum/docs/components/rangecalendar": {
+      id: "/solid-spectrum/docs/components/rangecalendar";
       path: "/components/rangecalendar";
-      fullPath: "/silapse/docs/components/rangecalendar";
-      preLoaderRoute: typeof SilapseDocsComponentsRangecalendarRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/rangecalendar";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsRangecalendarRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/provider": {
-      id: "/silapse/docs/components/provider";
+    "/solid-spectrum/docs/components/provider": {
+      id: "/solid-spectrum/docs/components/provider";
       path: "/components/provider";
-      fullPath: "/silapse/docs/components/provider";
-      preLoaderRoute: typeof SilapseDocsComponentsProviderRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/provider";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsProviderRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/progressbar": {
-      id: "/silapse/docs/components/progressbar";
+    "/solid-spectrum/docs/components/progressbar": {
+      id: "/solid-spectrum/docs/components/progressbar";
       path: "/components/progressbar";
-      fullPath: "/silapse/docs/components/progressbar";
-      preLoaderRoute: typeof SilapseDocsComponentsProgressbarRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/progressbar";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsProgressbarRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/popover": {
-      id: "/silapse/docs/components/popover";
+    "/solid-spectrum/docs/components/popover": {
+      id: "/solid-spectrum/docs/components/popover";
       path: "/components/popover";
-      fullPath: "/silapse/docs/components/popover";
-      preLoaderRoute: typeof SilapseDocsComponentsPopoverRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/popover";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsPopoverRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/picker": {
-      id: "/silapse/docs/components/picker";
+    "/solid-spectrum/docs/components/picker": {
+      id: "/solid-spectrum/docs/components/picker";
       path: "/components/picker";
-      fullPath: "/silapse/docs/components/picker";
-      preLoaderRoute: typeof SilapseDocsComponentsPickerRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/picker";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsPickerRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/numberfield": {
-      id: "/silapse/docs/components/numberfield";
+    "/solid-spectrum/docs/components/numberfield": {
+      id: "/solid-spectrum/docs/components/numberfield";
       path: "/components/numberfield";
-      fullPath: "/silapse/docs/components/numberfield";
-      preLoaderRoute: typeof SilapseDocsComponentsNumberfieldRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/numberfield";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsNumberfieldRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/meter": {
-      id: "/silapse/docs/components/meter";
+    "/solid-spectrum/docs/components/meter": {
+      id: "/solid-spectrum/docs/components/meter";
       path: "/components/meter";
-      fullPath: "/silapse/docs/components/meter";
-      preLoaderRoute: typeof SilapseDocsComponentsMeterRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/meter";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsMeterRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/menu": {
-      id: "/silapse/docs/components/menu";
+    "/solid-spectrum/docs/components/menu": {
+      id: "/solid-spectrum/docs/components/menu";
       path: "/components/menu";
-      fullPath: "/silapse/docs/components/menu";
-      preLoaderRoute: typeof SilapseDocsComponentsMenuRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/menu";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsMenuRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/link": {
-      id: "/silapse/docs/components/link";
+    "/solid-spectrum/docs/components/link": {
+      id: "/solid-spectrum/docs/components/link";
       path: "/components/link";
-      fullPath: "/silapse/docs/components/link";
-      preLoaderRoute: typeof SilapseDocsComponentsLinkRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/link";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsLinkRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/gridlist": {
-      id: "/silapse/docs/components/gridlist";
+    "/solid-spectrum/docs/components/gridlist": {
+      id: "/solid-spectrum/docs/components/gridlist";
       path: "/components/gridlist";
-      fullPath: "/silapse/docs/components/gridlist";
-      preLoaderRoute: typeof SilapseDocsComponentsGridlistRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/gridlist";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsGridlistRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/filetrigger": {
-      id: "/silapse/docs/components/filetrigger";
+    "/solid-spectrum/docs/components/filetrigger": {
+      id: "/solid-spectrum/docs/components/filetrigger";
       path: "/components/filetrigger";
-      fullPath: "/silapse/docs/components/filetrigger";
-      preLoaderRoute: typeof SilapseDocsComponentsFiletriggerRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/filetrigger";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsFiletriggerRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/dropzone": {
-      id: "/silapse/docs/components/dropzone";
+    "/solid-spectrum/docs/components/dropzone": {
+      id: "/solid-spectrum/docs/components/dropzone";
       path: "/components/dropzone";
-      fullPath: "/silapse/docs/components/dropzone";
-      preLoaderRoute: typeof SilapseDocsComponentsDropzoneRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/dropzone";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDropzoneRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/disclosure": {
-      id: "/silapse/docs/components/disclosure";
+    "/solid-spectrum/docs/components/disclosure": {
+      id: "/solid-spectrum/docs/components/disclosure";
       path: "/components/disclosure";
-      fullPath: "/silapse/docs/components/disclosure";
-      preLoaderRoute: typeof SilapseDocsComponentsDisclosureRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/disclosure";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDisclosureRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/dialog": {
-      id: "/silapse/docs/components/dialog";
+    "/solid-spectrum/docs/components/dialog": {
+      id: "/solid-spectrum/docs/components/dialog";
       path: "/components/dialog";
-      fullPath: "/silapse/docs/components/dialog";
-      preLoaderRoute: typeof SilapseDocsComponentsDialogRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/dialog";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDialogRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/daterangepicker": {
-      id: "/silapse/docs/components/daterangepicker";
+    "/solid-spectrum/docs/components/daterangepicker": {
+      id: "/solid-spectrum/docs/components/daterangepicker";
       path: "/components/daterangepicker";
-      fullPath: "/silapse/docs/components/daterangepicker";
-      preLoaderRoute: typeof SilapseDocsComponentsDaterangepickerRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/daterangepicker";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/datepicker": {
-      id: "/silapse/docs/components/datepicker";
+    "/solid-spectrum/docs/components/datepicker": {
+      id: "/solid-spectrum/docs/components/datepicker";
       path: "/components/datepicker";
-      fullPath: "/silapse/docs/components/datepicker";
-      preLoaderRoute: typeof SilapseDocsComponentsDatepickerRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/datepicker";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatepickerRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/datefield": {
-      id: "/silapse/docs/components/datefield";
+    "/solid-spectrum/docs/components/datefield": {
+      id: "/solid-spectrum/docs/components/datefield";
       path: "/components/datefield";
-      fullPath: "/silapse/docs/components/datefield";
-      preLoaderRoute: typeof SilapseDocsComponentsDatefieldRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/datefield";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatefieldRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/contextualhelp": {
-      id: "/silapse/docs/components/contextualhelp";
+    "/solid-spectrum/docs/components/contextualhelp": {
+      id: "/solid-spectrum/docs/components/contextualhelp";
       path: "/components/contextualhelp";
-      fullPath: "/silapse/docs/components/contextualhelp";
-      preLoaderRoute: typeof SilapseDocsComponentsContextualhelpRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/contextualhelp";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsContextualhelpRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/combobox": {
-      id: "/silapse/docs/components/combobox";
+    "/solid-spectrum/docs/components/combobox": {
+      id: "/solid-spectrum/docs/components/combobox";
       path: "/components/combobox";
-      fullPath: "/silapse/docs/components/combobox";
-      preLoaderRoute: typeof SilapseDocsComponentsComboboxRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/combobox";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsComboboxRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/color": {
-      id: "/silapse/docs/components/color";
+    "/solid-spectrum/docs/components/color": {
+      id: "/solid-spectrum/docs/components/color";
       path: "/components/color";
-      fullPath: "/silapse/docs/components/color";
-      preLoaderRoute: typeof SilapseDocsComponentsColorRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/color";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsColorRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/checkbox": {
-      id: "/silapse/docs/components/checkbox";
+    "/solid-spectrum/docs/components/checkbox": {
+      id: "/solid-spectrum/docs/components/checkbox";
       path: "/components/checkbox";
-      fullPath: "/silapse/docs/components/checkbox";
-      preLoaderRoute: typeof SilapseDocsComponentsCheckboxRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/checkbox";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsCheckboxRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/calendar": {
-      id: "/silapse/docs/components/calendar";
+    "/solid-spectrum/docs/components/calendar": {
+      id: "/solid-spectrum/docs/components/calendar";
       path: "/components/calendar";
-      fullPath: "/silapse/docs/components/calendar";
-      preLoaderRoute: typeof SilapseDocsComponentsCalendarRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/calendar";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsCalendarRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/button": {
-      id: "/silapse/docs/components/button";
+    "/solid-spectrum/docs/components/button": {
+      id: "/solid-spectrum/docs/components/button";
       path: "/components/button";
-      fullPath: "/silapse/docs/components/button";
-      preLoaderRoute: typeof SilapseDocsComponentsButtonRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/button";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsButtonRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/breadcrumbs": {
-      id: "/silapse/docs/components/breadcrumbs";
+    "/solid-spectrum/docs/components/breadcrumbs": {
+      id: "/solid-spectrum/docs/components/breadcrumbs";
       path: "/components/breadcrumbs";
-      fullPath: "/silapse/docs/components/breadcrumbs";
-      preLoaderRoute: typeof SilapseDocsComponentsBreadcrumbsRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/breadcrumbs";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/badge": {
-      id: "/silapse/docs/components/badge";
+    "/solid-spectrum/docs/components/badge": {
+      id: "/solid-spectrum/docs/components/badge";
       path: "/components/badge";
-      fullPath: "/silapse/docs/components/badge";
-      preLoaderRoute: typeof SilapseDocsComponentsBadgeRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/badge";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsBadgeRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/alertdialog": {
-      id: "/silapse/docs/components/alertdialog";
+    "/solid-spectrum/docs/components/alertdialog": {
+      id: "/solid-spectrum/docs/components/alertdialog";
       path: "/components/alertdialog";
-      fullPath: "/silapse/docs/components/alertdialog";
-      preLoaderRoute: typeof SilapseDocsComponentsAlertdialogRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/alertdialog";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsAlertdialogRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/actiongroup": {
-      id: "/silapse/docs/components/actiongroup";
+    "/solid-spectrum/docs/components/actiongroup": {
+      id: "/solid-spectrum/docs/components/actiongroup";
       path: "/components/actiongroup";
-      fullPath: "/silapse/docs/components/actiongroup";
-      preLoaderRoute: typeof SilapseDocsComponentsActiongroupRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/actiongroup";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsActiongroupRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/actionbar": {
-      id: "/silapse/docs/components/actionbar";
+    "/solid-spectrum/docs/components/actionbar": {
+      id: "/solid-spectrum/docs/components/actionbar";
       path: "/components/actionbar";
-      fullPath: "/silapse/docs/components/actionbar";
-      preLoaderRoute: typeof SilapseDocsComponentsActionbarRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/actionbar";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsActionbarRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
-    "/silapse/docs/components/accordion": {
-      id: "/silapse/docs/components/accordion";
+    "/solid-spectrum/docs/components/accordion": {
+      id: "/solid-spectrum/docs/components/accordion";
       path: "/components/accordion";
-      fullPath: "/silapse/docs/components/accordion";
-      preLoaderRoute: typeof SilapseDocsComponentsAccordionRouteImport;
-      parentRoute: typeof SilapseDocsRouteRoute;
+      fullPath: "/solid-spectrum/docs/components/accordion";
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsAccordionRouteImport;
+      parentRoute: typeof SolidSpectrumDocsRouteRoute;
     };
   }
 }
 
-interface SilapseDocsRouteRouteChildren {
-  SilapseDocsInstallationRoute: typeof SilapseDocsInstallationRoute;
-  SilapseDocsIndexRoute: typeof SilapseDocsIndexRoute;
-  SilapseDocsComponentsAccordionRoute: typeof SilapseDocsComponentsAccordionRoute;
-  SilapseDocsComponentsActionbarRoute: typeof SilapseDocsComponentsActionbarRoute;
-  SilapseDocsComponentsActiongroupRoute: typeof SilapseDocsComponentsActiongroupRoute;
-  SilapseDocsComponentsAlertdialogRoute: typeof SilapseDocsComponentsAlertdialogRoute;
-  SilapseDocsComponentsBadgeRoute: typeof SilapseDocsComponentsBadgeRoute;
-  SilapseDocsComponentsBreadcrumbsRoute: typeof SilapseDocsComponentsBreadcrumbsRoute;
-  SilapseDocsComponentsButtonRoute: typeof SilapseDocsComponentsButtonRoute;
-  SilapseDocsComponentsCalendarRoute: typeof SilapseDocsComponentsCalendarRoute;
-  SilapseDocsComponentsCheckboxRoute: typeof SilapseDocsComponentsCheckboxRoute;
-  SilapseDocsComponentsColorRoute: typeof SilapseDocsComponentsColorRoute;
-  SilapseDocsComponentsComboboxRoute: typeof SilapseDocsComponentsComboboxRoute;
-  SilapseDocsComponentsContextualhelpRoute: typeof SilapseDocsComponentsContextualhelpRoute;
-  SilapseDocsComponentsDatefieldRoute: typeof SilapseDocsComponentsDatefieldRoute;
-  SilapseDocsComponentsDatepickerRoute: typeof SilapseDocsComponentsDatepickerRoute;
-  SilapseDocsComponentsDaterangepickerRoute: typeof SilapseDocsComponentsDaterangepickerRoute;
-  SilapseDocsComponentsDialogRoute: typeof SilapseDocsComponentsDialogRoute;
-  SilapseDocsComponentsDisclosureRoute: typeof SilapseDocsComponentsDisclosureRoute;
-  SilapseDocsComponentsDropzoneRoute: typeof SilapseDocsComponentsDropzoneRoute;
-  SilapseDocsComponentsFiletriggerRoute: typeof SilapseDocsComponentsFiletriggerRoute;
-  SilapseDocsComponentsGridlistRoute: typeof SilapseDocsComponentsGridlistRoute;
-  SilapseDocsComponentsLinkRoute: typeof SilapseDocsComponentsLinkRoute;
-  SilapseDocsComponentsMenuRoute: typeof SilapseDocsComponentsMenuRoute;
-  SilapseDocsComponentsMeterRoute: typeof SilapseDocsComponentsMeterRoute;
-  SilapseDocsComponentsNumberfieldRoute: typeof SilapseDocsComponentsNumberfieldRoute;
-  SilapseDocsComponentsPickerRoute: typeof SilapseDocsComponentsPickerRoute;
-  SilapseDocsComponentsPopoverRoute: typeof SilapseDocsComponentsPopoverRoute;
-  SilapseDocsComponentsProgressbarRoute: typeof SilapseDocsComponentsProgressbarRoute;
-  SilapseDocsComponentsProviderRoute: typeof SilapseDocsComponentsProviderRoute;
-  SilapseDocsComponentsRangecalendarRoute: typeof SilapseDocsComponentsRangecalendarRoute;
-  SilapseDocsComponentsSearchfieldRoute: typeof SilapseDocsComponentsSearchfieldRoute;
-  SilapseDocsComponentsSelectRoute: typeof SilapseDocsComponentsSelectRoute;
-  SilapseDocsComponentsSeparatorRoute: typeof SilapseDocsComponentsSeparatorRoute;
-  SilapseDocsComponentsSliderRoute: typeof SilapseDocsComponentsSliderRoute;
-  SilapseDocsComponentsSwitchRoute: typeof SilapseDocsComponentsSwitchRoute;
-  SilapseDocsComponentsTableRoute: typeof SilapseDocsComponentsTableRoute;
-  SilapseDocsComponentsTabsRoute: typeof SilapseDocsComponentsTabsRoute;
-  SilapseDocsComponentsTaggroupRoute: typeof SilapseDocsComponentsTaggroupRoute;
-  SilapseDocsComponentsTextareaRoute: typeof SilapseDocsComponentsTextareaRoute;
-  SilapseDocsComponentsTextfieldRoute: typeof SilapseDocsComponentsTextfieldRoute;
-  SilapseDocsComponentsTimefieldRoute: typeof SilapseDocsComponentsTimefieldRoute;
-  SilapseDocsComponentsToastRoute: typeof SilapseDocsComponentsToastRoute;
-  SilapseDocsComponentsToolbarRoute: typeof SilapseDocsComponentsToolbarRoute;
-  SilapseDocsComponentsTooltipRoute: typeof SilapseDocsComponentsTooltipRoute;
-  SilapseDocsComponentsTreeRoute: typeof SilapseDocsComponentsTreeRoute;
-  SilapseDocsComponentsVirtualizerRoute: typeof SilapseDocsComponentsVirtualizerRoute;
-  SilapseDocsHooksCreateButtonRoute: typeof SilapseDocsHooksCreateButtonRoute;
-  SilapseDocsHooksCreatePressRoute: typeof SilapseDocsHooksCreatePressRoute;
+interface SolidSpectrumDocsRouteRouteChildren {
+  SolidSpectrumDocsInstallationRoute: typeof SolidSpectrumDocsInstallationRoute;
+  SolidSpectrumDocsIndexRoute: typeof SolidSpectrumDocsIndexRoute;
+  SolidSpectrumDocsComponentsAccordionRoute: typeof SolidSpectrumDocsComponentsAccordionRoute;
+  SolidSpectrumDocsComponentsActionbarRoute: typeof SolidSpectrumDocsComponentsActionbarRoute;
+  SolidSpectrumDocsComponentsActiongroupRoute: typeof SolidSpectrumDocsComponentsActiongroupRoute;
+  SolidSpectrumDocsComponentsAlertdialogRoute: typeof SolidSpectrumDocsComponentsAlertdialogRoute;
+  SolidSpectrumDocsComponentsBadgeRoute: typeof SolidSpectrumDocsComponentsBadgeRoute;
+  SolidSpectrumDocsComponentsBreadcrumbsRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
+  SolidSpectrumDocsComponentsButtonRoute: typeof SolidSpectrumDocsComponentsButtonRoute;
+  SolidSpectrumDocsComponentsCalendarRoute: typeof SolidSpectrumDocsComponentsCalendarRoute;
+  SolidSpectrumDocsComponentsCheckboxRoute: typeof SolidSpectrumDocsComponentsCheckboxRoute;
+  SolidSpectrumDocsComponentsColorRoute: typeof SolidSpectrumDocsComponentsColorRoute;
+  SolidSpectrumDocsComponentsComboboxRoute: typeof SolidSpectrumDocsComponentsComboboxRoute;
+  SolidSpectrumDocsComponentsContextualhelpRoute: typeof SolidSpectrumDocsComponentsContextualhelpRoute;
+  SolidSpectrumDocsComponentsDatefieldRoute: typeof SolidSpectrumDocsComponentsDatefieldRoute;
+  SolidSpectrumDocsComponentsDatepickerRoute: typeof SolidSpectrumDocsComponentsDatepickerRoute;
+  SolidSpectrumDocsComponentsDaterangepickerRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
+  SolidSpectrumDocsComponentsDialogRoute: typeof SolidSpectrumDocsComponentsDialogRoute;
+  SolidSpectrumDocsComponentsDisclosureRoute: typeof SolidSpectrumDocsComponentsDisclosureRoute;
+  SolidSpectrumDocsComponentsDropzoneRoute: typeof SolidSpectrumDocsComponentsDropzoneRoute;
+  SolidSpectrumDocsComponentsFiletriggerRoute: typeof SolidSpectrumDocsComponentsFiletriggerRoute;
+  SolidSpectrumDocsComponentsGridlistRoute: typeof SolidSpectrumDocsComponentsGridlistRoute;
+  SolidSpectrumDocsComponentsLinkRoute: typeof SolidSpectrumDocsComponentsLinkRoute;
+  SolidSpectrumDocsComponentsMenuRoute: typeof SolidSpectrumDocsComponentsMenuRoute;
+  SolidSpectrumDocsComponentsMeterRoute: typeof SolidSpectrumDocsComponentsMeterRoute;
+  SolidSpectrumDocsComponentsNumberfieldRoute: typeof SolidSpectrumDocsComponentsNumberfieldRoute;
+  SolidSpectrumDocsComponentsPickerRoute: typeof SolidSpectrumDocsComponentsPickerRoute;
+  SolidSpectrumDocsComponentsPopoverRoute: typeof SolidSpectrumDocsComponentsPopoverRoute;
+  SolidSpectrumDocsComponentsProgressbarRoute: typeof SolidSpectrumDocsComponentsProgressbarRoute;
+  SolidSpectrumDocsComponentsProviderRoute: typeof SolidSpectrumDocsComponentsProviderRoute;
+  SolidSpectrumDocsComponentsRangecalendarRoute: typeof SolidSpectrumDocsComponentsRangecalendarRoute;
+  SolidSpectrumDocsComponentsSearchfieldRoute: typeof SolidSpectrumDocsComponentsSearchfieldRoute;
+  SolidSpectrumDocsComponentsSelectRoute: typeof SolidSpectrumDocsComponentsSelectRoute;
+  SolidSpectrumDocsComponentsSeparatorRoute: typeof SolidSpectrumDocsComponentsSeparatorRoute;
+  SolidSpectrumDocsComponentsSliderRoute: typeof SolidSpectrumDocsComponentsSliderRoute;
+  SolidSpectrumDocsComponentsSwitchRoute: typeof SolidSpectrumDocsComponentsSwitchRoute;
+  SolidSpectrumDocsComponentsTableRoute: typeof SolidSpectrumDocsComponentsTableRoute;
+  SolidSpectrumDocsComponentsTabsRoute: typeof SolidSpectrumDocsComponentsTabsRoute;
+  SolidSpectrumDocsComponentsTaggroupRoute: typeof SolidSpectrumDocsComponentsTaggroupRoute;
+  SolidSpectrumDocsComponentsTextareaRoute: typeof SolidSpectrumDocsComponentsTextareaRoute;
+  SolidSpectrumDocsComponentsTextfieldRoute: typeof SolidSpectrumDocsComponentsTextfieldRoute;
+  SolidSpectrumDocsComponentsTimefieldRoute: typeof SolidSpectrumDocsComponentsTimefieldRoute;
+  SolidSpectrumDocsComponentsToastRoute: typeof SolidSpectrumDocsComponentsToastRoute;
+  SolidSpectrumDocsComponentsToolbarRoute: typeof SolidSpectrumDocsComponentsToolbarRoute;
+  SolidSpectrumDocsComponentsTooltipRoute: typeof SolidSpectrumDocsComponentsTooltipRoute;
+  SolidSpectrumDocsComponentsTreeRoute: typeof SolidSpectrumDocsComponentsTreeRoute;
+  SolidSpectrumDocsComponentsVirtualizerRoute: typeof SolidSpectrumDocsComponentsVirtualizerRoute;
+  SolidSpectrumDocsHooksCreateButtonRoute: typeof SolidSpectrumDocsHooksCreateButtonRoute;
+  SolidSpectrumDocsHooksCreatePressRoute: typeof SolidSpectrumDocsHooksCreatePressRoute;
 }
 
-const SilapseDocsRouteRouteChildren: SilapseDocsRouteRouteChildren = {
-  SilapseDocsInstallationRoute: SilapseDocsInstallationRoute,
-  SilapseDocsIndexRoute: SilapseDocsIndexRoute,
-  SilapseDocsComponentsAccordionRoute: SilapseDocsComponentsAccordionRoute,
-  SilapseDocsComponentsActionbarRoute: SilapseDocsComponentsActionbarRoute,
-  SilapseDocsComponentsActiongroupRoute: SilapseDocsComponentsActiongroupRoute,
-  SilapseDocsComponentsAlertdialogRoute: SilapseDocsComponentsAlertdialogRoute,
-  SilapseDocsComponentsBadgeRoute: SilapseDocsComponentsBadgeRoute,
-  SilapseDocsComponentsBreadcrumbsRoute: SilapseDocsComponentsBreadcrumbsRoute,
-  SilapseDocsComponentsButtonRoute: SilapseDocsComponentsButtonRoute,
-  SilapseDocsComponentsCalendarRoute: SilapseDocsComponentsCalendarRoute,
-  SilapseDocsComponentsCheckboxRoute: SilapseDocsComponentsCheckboxRoute,
-  SilapseDocsComponentsColorRoute: SilapseDocsComponentsColorRoute,
-  SilapseDocsComponentsComboboxRoute: SilapseDocsComponentsComboboxRoute,
-  SilapseDocsComponentsContextualhelpRoute: SilapseDocsComponentsContextualhelpRoute,
-  SilapseDocsComponentsDatefieldRoute: SilapseDocsComponentsDatefieldRoute,
-  SilapseDocsComponentsDatepickerRoute: SilapseDocsComponentsDatepickerRoute,
-  SilapseDocsComponentsDaterangepickerRoute: SilapseDocsComponentsDaterangepickerRoute,
-  SilapseDocsComponentsDialogRoute: SilapseDocsComponentsDialogRoute,
-  SilapseDocsComponentsDisclosureRoute: SilapseDocsComponentsDisclosureRoute,
-  SilapseDocsComponentsDropzoneRoute: SilapseDocsComponentsDropzoneRoute,
-  SilapseDocsComponentsFiletriggerRoute: SilapseDocsComponentsFiletriggerRoute,
-  SilapseDocsComponentsGridlistRoute: SilapseDocsComponentsGridlistRoute,
-  SilapseDocsComponentsLinkRoute: SilapseDocsComponentsLinkRoute,
-  SilapseDocsComponentsMenuRoute: SilapseDocsComponentsMenuRoute,
-  SilapseDocsComponentsMeterRoute: SilapseDocsComponentsMeterRoute,
-  SilapseDocsComponentsNumberfieldRoute: SilapseDocsComponentsNumberfieldRoute,
-  SilapseDocsComponentsPickerRoute: SilapseDocsComponentsPickerRoute,
-  SilapseDocsComponentsPopoverRoute: SilapseDocsComponentsPopoverRoute,
-  SilapseDocsComponentsProgressbarRoute: SilapseDocsComponentsProgressbarRoute,
-  SilapseDocsComponentsProviderRoute: SilapseDocsComponentsProviderRoute,
-  SilapseDocsComponentsRangecalendarRoute: SilapseDocsComponentsRangecalendarRoute,
-  SilapseDocsComponentsSearchfieldRoute: SilapseDocsComponentsSearchfieldRoute,
-  SilapseDocsComponentsSelectRoute: SilapseDocsComponentsSelectRoute,
-  SilapseDocsComponentsSeparatorRoute: SilapseDocsComponentsSeparatorRoute,
-  SilapseDocsComponentsSliderRoute: SilapseDocsComponentsSliderRoute,
-  SilapseDocsComponentsSwitchRoute: SilapseDocsComponentsSwitchRoute,
-  SilapseDocsComponentsTableRoute: SilapseDocsComponentsTableRoute,
-  SilapseDocsComponentsTabsRoute: SilapseDocsComponentsTabsRoute,
-  SilapseDocsComponentsTaggroupRoute: SilapseDocsComponentsTaggroupRoute,
-  SilapseDocsComponentsTextareaRoute: SilapseDocsComponentsTextareaRoute,
-  SilapseDocsComponentsTextfieldRoute: SilapseDocsComponentsTextfieldRoute,
-  SilapseDocsComponentsTimefieldRoute: SilapseDocsComponentsTimefieldRoute,
-  SilapseDocsComponentsToastRoute: SilapseDocsComponentsToastRoute,
-  SilapseDocsComponentsToolbarRoute: SilapseDocsComponentsToolbarRoute,
-  SilapseDocsComponentsTooltipRoute: SilapseDocsComponentsTooltipRoute,
-  SilapseDocsComponentsTreeRoute: SilapseDocsComponentsTreeRoute,
-  SilapseDocsComponentsVirtualizerRoute: SilapseDocsComponentsVirtualizerRoute,
-  SilapseDocsHooksCreateButtonRoute: SilapseDocsHooksCreateButtonRoute,
-  SilapseDocsHooksCreatePressRoute: SilapseDocsHooksCreatePressRoute,
+const SolidSpectrumDocsRouteRouteChildren: SolidSpectrumDocsRouteRouteChildren = {
+  SolidSpectrumDocsInstallationRoute: SolidSpectrumDocsInstallationRoute,
+  SolidSpectrumDocsIndexRoute: SolidSpectrumDocsIndexRoute,
+  SolidSpectrumDocsComponentsAccordionRoute: SolidSpectrumDocsComponentsAccordionRoute,
+  SolidSpectrumDocsComponentsActionbarRoute: SolidSpectrumDocsComponentsActionbarRoute,
+  SolidSpectrumDocsComponentsActiongroupRoute: SolidSpectrumDocsComponentsActiongroupRoute,
+  SolidSpectrumDocsComponentsAlertdialogRoute: SolidSpectrumDocsComponentsAlertdialogRoute,
+  SolidSpectrumDocsComponentsBadgeRoute: SolidSpectrumDocsComponentsBadgeRoute,
+  SolidSpectrumDocsComponentsBreadcrumbsRoute: SolidSpectrumDocsComponentsBreadcrumbsRoute,
+  SolidSpectrumDocsComponentsButtonRoute: SolidSpectrumDocsComponentsButtonRoute,
+  SolidSpectrumDocsComponentsCalendarRoute: SolidSpectrumDocsComponentsCalendarRoute,
+  SolidSpectrumDocsComponentsCheckboxRoute: SolidSpectrumDocsComponentsCheckboxRoute,
+  SolidSpectrumDocsComponentsColorRoute: SolidSpectrumDocsComponentsColorRoute,
+  SolidSpectrumDocsComponentsComboboxRoute: SolidSpectrumDocsComponentsComboboxRoute,
+  SolidSpectrumDocsComponentsContextualhelpRoute: SolidSpectrumDocsComponentsContextualhelpRoute,
+  SolidSpectrumDocsComponentsDatefieldRoute: SolidSpectrumDocsComponentsDatefieldRoute,
+  SolidSpectrumDocsComponentsDatepickerRoute: SolidSpectrumDocsComponentsDatepickerRoute,
+  SolidSpectrumDocsComponentsDaterangepickerRoute: SolidSpectrumDocsComponentsDaterangepickerRoute,
+  SolidSpectrumDocsComponentsDialogRoute: SolidSpectrumDocsComponentsDialogRoute,
+  SolidSpectrumDocsComponentsDisclosureRoute: SolidSpectrumDocsComponentsDisclosureRoute,
+  SolidSpectrumDocsComponentsDropzoneRoute: SolidSpectrumDocsComponentsDropzoneRoute,
+  SolidSpectrumDocsComponentsFiletriggerRoute: SolidSpectrumDocsComponentsFiletriggerRoute,
+  SolidSpectrumDocsComponentsGridlistRoute: SolidSpectrumDocsComponentsGridlistRoute,
+  SolidSpectrumDocsComponentsLinkRoute: SolidSpectrumDocsComponentsLinkRoute,
+  SolidSpectrumDocsComponentsMenuRoute: SolidSpectrumDocsComponentsMenuRoute,
+  SolidSpectrumDocsComponentsMeterRoute: SolidSpectrumDocsComponentsMeterRoute,
+  SolidSpectrumDocsComponentsNumberfieldRoute: SolidSpectrumDocsComponentsNumberfieldRoute,
+  SolidSpectrumDocsComponentsPickerRoute: SolidSpectrumDocsComponentsPickerRoute,
+  SolidSpectrumDocsComponentsPopoverRoute: SolidSpectrumDocsComponentsPopoverRoute,
+  SolidSpectrumDocsComponentsProgressbarRoute: SolidSpectrumDocsComponentsProgressbarRoute,
+  SolidSpectrumDocsComponentsProviderRoute: SolidSpectrumDocsComponentsProviderRoute,
+  SolidSpectrumDocsComponentsRangecalendarRoute: SolidSpectrumDocsComponentsRangecalendarRoute,
+  SolidSpectrumDocsComponentsSearchfieldRoute: SolidSpectrumDocsComponentsSearchfieldRoute,
+  SolidSpectrumDocsComponentsSelectRoute: SolidSpectrumDocsComponentsSelectRoute,
+  SolidSpectrumDocsComponentsSeparatorRoute: SolidSpectrumDocsComponentsSeparatorRoute,
+  SolidSpectrumDocsComponentsSliderRoute: SolidSpectrumDocsComponentsSliderRoute,
+  SolidSpectrumDocsComponentsSwitchRoute: SolidSpectrumDocsComponentsSwitchRoute,
+  SolidSpectrumDocsComponentsTableRoute: SolidSpectrumDocsComponentsTableRoute,
+  SolidSpectrumDocsComponentsTabsRoute: SolidSpectrumDocsComponentsTabsRoute,
+  SolidSpectrumDocsComponentsTaggroupRoute: SolidSpectrumDocsComponentsTaggroupRoute,
+  SolidSpectrumDocsComponentsTextareaRoute: SolidSpectrumDocsComponentsTextareaRoute,
+  SolidSpectrumDocsComponentsTextfieldRoute: SolidSpectrumDocsComponentsTextfieldRoute,
+  SolidSpectrumDocsComponentsTimefieldRoute: SolidSpectrumDocsComponentsTimefieldRoute,
+  SolidSpectrumDocsComponentsToastRoute: SolidSpectrumDocsComponentsToastRoute,
+  SolidSpectrumDocsComponentsToolbarRoute: SolidSpectrumDocsComponentsToolbarRoute,
+  SolidSpectrumDocsComponentsTooltipRoute: SolidSpectrumDocsComponentsTooltipRoute,
+  SolidSpectrumDocsComponentsTreeRoute: SolidSpectrumDocsComponentsTreeRoute,
+  SolidSpectrumDocsComponentsVirtualizerRoute: SolidSpectrumDocsComponentsVirtualizerRoute,
+  SolidSpectrumDocsHooksCreateButtonRoute: SolidSpectrumDocsHooksCreateButtonRoute,
+  SolidSpectrumDocsHooksCreatePressRoute: SolidSpectrumDocsHooksCreatePressRoute,
 };
 
-const SilapseDocsRouteRouteWithChildren = SilapseDocsRouteRoute._addFileChildren(
-  SilapseDocsRouteRouteChildren,
+const SolidSpectrumDocsRouteRouteWithChildren = SolidSpectrumDocsRouteRoute._addFileChildren(
+  SolidSpectrumDocsRouteRouteChildren,
 );
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SilapseDocsRouteRoute: SilapseDocsRouteRouteWithChildren,
-  SilapseEcosystemRoute: SilapseEcosystemRoute,
-  SilapsePlaygroundRoute: SilapsePlaygroundRoute,
-  SilapseIndexRoute: SilapseIndexRoute,
+  SolidSpectrumDocsRouteRoute: SolidSpectrumDocsRouteRouteWithChildren,
+  SolidSpectrumEcosystemRoute: SolidSpectrumEcosystemRoute,
+  SolidSpectrumPlaygroundRoute: SolidSpectrumPlaygroundRoute,
+  SolidSpectrumIndexRoute: SolidSpectrumIndexRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

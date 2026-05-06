@@ -1,5 +1,5 @@
 import { type JSX, For, Show } from "solid-js";
-import { useSilapseColors } from "@/utils/theme";
+import { useThemeColors } from "@/utils/theme";
 
 export interface PropDefinition {
   name: string;
@@ -20,7 +20,7 @@ const FONT_BODY = "'Sen', system-ui, sans-serif";
 const FONT_MONO = "'JetBrains Mono', monospace";
 
 export function DocPage(props: DocPageProps) {
-  const getColors = useSilapseColors();
+  const getColors = useThemeColors();
   const colors = () => getColors();
 
   return (
@@ -89,7 +89,7 @@ export interface ExampleProps {
 }
 
 export function Example(props: ExampleProps) {
-  const getColors = useSilapseColors();
+  const getColors = useThemeColors();
   const colors = () => getColors();
 
   return (
@@ -151,7 +151,7 @@ export interface PropsTableProps {
 }
 
 export function PropsTable(props: PropsTableProps) {
-  const getColors = useSilapseColors();
+  const getColors = useThemeColors();
   const colors = () => getColors();
 
   return (
@@ -213,7 +213,6 @@ export function PropsTable(props: PropsTableProps) {
                         "font-size": "12px",
                         "font-weight": "500",
                         border: `1px solid ${colors().blue}40`,
-                        "clip-path": "polygon(2px 0, 100% 0, calc(100% - 2px) 100%, 0 100%)",
                       }}
                     >
                       {prop.name}
@@ -250,7 +249,7 @@ export function PropsTable(props: PropsTableProps) {
 }
 
 export function AccessibilitySection(props: { children: JSX.Element }) {
-  const getColors = useSilapseColors();
+  const getColors = useThemeColors();
   const colors = () => getColors();
 
   return (

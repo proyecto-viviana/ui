@@ -28,7 +28,7 @@ Compares bundle sizes between Proyecto Viviana and React Spectrum across three s
 #### 1. Single Button
 
 **What:** Minimal component import
-**PV:** `import { Button } from '@proyecto-viviana/silapse'`
+**PV:** `import { Button } from '@proyecto-viviana/solid-spectrum'`
 **RS:** `import { Button } from '@adobe/react-spectrum'`
 **Why:** Shows "cost to add one button" including runtime overhead
 
@@ -42,7 +42,7 @@ Compares bundle sizes between Proyecto Viviana and React Spectrum across three s
 #### 3. Full Library
 
 **What:** Import all exports
-**PV:** `export * from '@proyecto-viviana/silapse'`
+**PV:** `export * from '@proyecto-viviana/solid-spectrum'`
 **RS:** `export * from '@adobe/react-spectrum'`
 **Why:** Shows total library footprint (unrealistic but useful for comparison)
 

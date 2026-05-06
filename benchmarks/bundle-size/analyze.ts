@@ -113,7 +113,7 @@ async function readPackageJson(path: string): Promise<Record<string, any> | unde
 
 async function getPackageVersions(): Promise<{ pv: string; rs: string }> {
   const [pvPackage, comparisonPackage] = await Promise.all([
-    readPackageJson(resolve(__dirname, "../../packages/silapse/package.json")),
+    readPackageJson(resolve(__dirname, "../../packages/solid-spectrum/package.json")),
     readPackageJson(resolve(__dirname, "../../apps/comparison/package.json")),
   ]);
 

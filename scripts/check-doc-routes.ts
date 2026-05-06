@@ -1,8 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 
-const docsBasePath = "/silapse/docs";
-const componentsDir = "apps/web/src/routes/silapse/docs/components";
-const hooksDir = "apps/web/src/routes/silapse/docs/hooks";
+const docsBasePath = "/solid-spectrum/docs";
+const componentsDir = "apps/web/src/routes/solid-spectrum/docs/components";
+const hooksDir = "apps/web/src/routes/solid-spectrum/docs/hooks";
 const routeTreeFile = "apps/web/src/routeTree.gen.ts";
 
 async function listRouteSlugs(dir: string): Promise<string[]> {

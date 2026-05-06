@@ -7,7 +7,7 @@
 import { describe, it, expect } from "vitest";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { ListBox, ListBoxOption } from "@proyecto-viviana/silapse";
+import { ListBox, ListBoxOption } from "@proyecto-viviana/solid-spectrum";
 
 describe("List Performance (PV)", () => {
   const ITERATIONS = 5; // Fewer iterations for large lists

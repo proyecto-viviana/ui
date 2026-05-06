@@ -39,14 +39,9 @@ export default defineConfig({
         __dirname,
         "packages/solidaria-components/src/index.ts",
       ),
-      "@proyecto-viviana/silapse": resolve(__dirname, "packages/silapse/src/index.ts"),
       "@proyecto-viviana/solidaria-test-utils": resolve(
         __dirname,
         "packages/solidaria-test-utils/src/index.ts",
-      ),
-      "@proyecto-viviana/silapse-test-utils": resolve(
-        __dirname,
-        "packages/silapse-test-utils/src/index.ts",
       ),
     },
   },

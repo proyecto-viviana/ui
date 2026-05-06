@@ -4,7 +4,17 @@
 /* Scan UI package for Tailwind classes */
 @source "../../../packages/solid-spectrum/src/**/*.tsx";
 
-/* Viviana UI Theme — Silapse Design System (canonical values from silapse/theme.css) */
+/* Docs site semantic tokens — bound to solid-spectrum's data-color-scheme attribute. */
+:where(:root) {
+  --docs-bg: var(--s2-container-bg);
+  --docs-bg-elevated: light-dark(rgb(248, 248, 248), rgb(27, 27, 27));
+  --docs-text: light-dark(rgb(23, 23, 23), rgb(250, 250, 250));
+  --docs-text-secondary: light-dark(rgb(82, 82, 82), rgb(163, 163, 163));
+  --docs-border: light-dark(rgb(229, 229, 229), rgb(38, 38, 38));
+  --docs-accent: light-dark(rgb(38, 128, 235), rgb(75, 163, 255));
+}
+
+/* Viviana UI theme tokens */
 @theme {
   /* Breakpoints */
   --breakpoint-xxs: 320px;
@@ -53,7 +63,7 @@
   --color-bg-400: #111111;
   --color-bg-light: #515151;
 
-  /* Primary — Silapse blue scale */
+  /* Primary — blue scale */
   --color-primary: #75abc7;
   --color-primary-50: #081018;
   --color-primary-100: #ddf4ff;
@@ -66,7 +76,7 @@
   --color-primary-800: #0d419d;
   --color-primary-900: #050a12;
 
-  /* Accent — Silapse pink */
+  /* Accent — pink */
   --color-accent: #df5c9a;
   --color-accent-50: #100810;
   --color-accent-100: #0f0508;
@@ -319,16 +329,6 @@
   }
   to {
     stroke-dashoffset: 0;
-  }
-}
-
-/* Silapse wire pulse — animated dash traveling along SVG paths */
-@keyframes silapse-pulse {
-  0% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: -58;
   }
 }
 
@@ -662,97 +662,6 @@
   transform: rotateX(2deg) rotateY(-2deg);
 }
 
-/* ===== SILAPSE DESIGN SYSTEM UTILITIES ===== */
-
-/* Angular clip-path corners — signature Silapse aesthetic */
-.silapse-clip-sm {
-  clip-path: polygon(2px 0, 100% 0, calc(100% - 2px) 100%, 0 100%);
-}
-
-.silapse-clip {
-  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
-}
-
-.silapse-clip-lg {
-  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-}
-
-.silapse-clip-xl {
-  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
-}
-
-/* Angular box clip (cuts all 4 corners) */
-.silapse-clip-box {
-  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
-}
-
-.silapse-clip-box-sm {
-  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
-}
-
-.silapse-clip-box-lg {
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-}
-
-/* Silapse neon glows (drop-shadow for clipped elements) */
-.silapse-glow-pink {
-  filter: drop-shadow(0 0 4px rgba(255, 160, 213, 0.6));
-}
-
-.silapse-glow-blue {
-  filter: drop-shadow(0 0 4px rgba(128, 204, 255, 0.6));
-}
-
-.silapse-glow-pink-strong {
-  filter: drop-shadow(0 0 8px rgba(255, 160, 213, 0.6));
-}
-
-.silapse-glow-blue-strong {
-  filter: drop-shadow(0 0 8px rgba(128, 204, 255, 0.6));
-}
-
-/* Silapse button base */
-.silapse-button {
-  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
-  transition:
-    filter 0.15s ease,
-    background 0.15s ease;
-  border: none;
-  cursor: pointer;
-  font-family: "Jost", sans-serif;
-  font-weight: 600;
-}
-
-.silapse-button:hover {
-  filter: drop-shadow(0 0 6px rgba(255, 160, 213, 0.5));
-}
-
-/* Silapse accent borders */
-.silapse-border-bottom {
-  border-bottom: 2px solid var(--color-accent);
-}
-
-.silapse-border-left {
-  border-left: 3px solid var(--color-accent);
-}
-
-/* Light mode Silapse glow overrides */
-[data-theme="light"] .silapse-glow-pink {
-  filter: drop-shadow(0 0 4px rgba(160, 37, 88, 0.4));
-}
-
-[data-theme="light"] .silapse-glow-blue {
-  filter: drop-shadow(0 0 4px rgba(30, 96, 144, 0.4));
-}
-
-[data-theme="light"] .silapse-glow-pink-strong {
-  filter: drop-shadow(0 0 8px rgba(160, 37, 88, 0.5));
-}
-
-[data-theme="light"] .silapse-glow-blue-strong {
-  filter: drop-shadow(0 0 8px rgba(30, 96, 144, 0.5));
-}
-
 /* ===== FOCUS STATES ===== */
 .focus-glow:focus-visible {
   outline: none;
@@ -789,7 +698,7 @@
   color: var(--color-primary-100);
 }
 
-/* ===== DOCS CONTENT — Silapse overrides for doc page chrome ===== */
+/* ===== DOCS CONTENT — overrides for doc page chrome ===== */
 /* Kill rounded corners on doc page wrappers (not inside live PV component demos) */
 .docs-content .not-prose > div,
 .docs-content .not-prose > table {
@@ -801,7 +710,7 @@
   box-shadow: none;
 }
 
-/* Fix old text color tokens to use Silapse-compatible values */
+/* Fix old text color tokens to use legacy values */
 .docs-content .text-bg-300 {
   color: var(--color-primary-600);
 }
@@ -859,7 +768,7 @@
 }
 
 /* ===== LIGHT MODE ===== */
-[data-theme="light"] {
+[data-color-scheme="light"] {
   /* Grey scale */
   --color-grey-100: #f5f5f5;
   --color-grey-200: #e5e5e5;
@@ -898,7 +807,7 @@
   --color-bg-400: #dbe8ef;
   --color-bg-light: #ffffff;
 
-  /* Primary — Silapse blue */
+  /* Primary — blue */
   --color-primary: #75abc7;
   --color-primary-50: #f0f7ff;
   --color-primary-100: #06131d;
@@ -911,7 +820,7 @@
   --color-primary-800: #9dcce4;
   --color-primary-900: #0d2a3d;
 
-  /* Accent — Silapse pink */
+  /* Accent — pink */
   --color-accent: #df5c9a;
   --color-accent-100: #fef2f7;
   --color-accent-200: #7d1c48;
@@ -998,42 +907,42 @@
 }
 
 /* Light mode glass overrides */
-[data-theme="light"] .glass {
+[data-color-scheme="light"] .glass {
   background: rgba(236, 242, 245, 0.6);
   border-color: rgba(25, 80, 115, 0.1);
 }
 
-[data-theme="light"] .glass-subtle {
+[data-color-scheme="light"] .glass-subtle {
   background: rgba(236, 242, 245, 0.4);
   border-color: rgba(25, 80, 115, 0.08);
 }
 
-[data-theme="light"] .glass-strong {
+[data-color-scheme="light"] .glass-strong {
   background: rgba(244, 248, 250, 0.8);
   border-color: rgba(25, 80, 115, 0.15);
 }
 
 /* Light mode glow overrides */
-[data-theme="light"] .glow-accent {
+[data-color-scheme="light"] .glow-accent {
   box-shadow:
     0 0 20px rgba(160, 37, 88, 0.2),
     0 0 40px rgba(160, 37, 88, 0.08);
 }
 
-[data-theme="light"] .glow-primary {
+[data-color-scheme="light"] .glow-primary {
   box-shadow:
     0 0 20px rgba(25, 80, 115, 0.2),
     0 0 40px rgba(25, 80, 115, 0.08);
 }
 
 /* Light mode selection */
-[data-theme="light"] ::selection {
+[data-color-scheme="light"] ::selection {
   background: rgba(160, 37, 88, 0.2);
   color: var(--color-primary-100);
 }
 
 /* Light mode focus */
-[data-theme="light"] .focus-glow:focus-visible {
+[data-color-scheme="light"] .focus-glow:focus-visible {
   box-shadow:
     0 0 0 2px var(--color-bg-400),
     0 0 0 4px var(--color-accent-300),
@@ -1041,12 +950,12 @@
 }
 
 /* Light mode hover glow */
-[data-theme="light"] .hover-glow:hover {
+[data-color-scheme="light"] .hover-glow:hover {
   box-shadow: 0 0 30px rgba(160, 37, 88, 0.15);
 }
 
 /* Light mode gradient mesh */
-[data-theme="light"] .gradient-mesh {
+[data-color-scheme="light"] .gradient-mesh {
   background:
     radial-gradient(ellipse at 20% 20%, rgba(160, 37, 88, 0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 80%, rgba(25, 80, 115, 0.06) 0%, transparent 50%),
@@ -1054,7 +963,7 @@
     var(--color-bg-300);
 }
 
-[data-theme="light"] .gradient-mesh-animated {
+[data-color-scheme="light"] .gradient-mesh-animated {
   background:
     radial-gradient(ellipse at 20% 20%, rgba(160, 37, 88, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 80%, rgba(25, 80, 115, 0.08) 0%, transparent 50%),
@@ -1065,12 +974,12 @@
 }
 
 /* Light mode decorative patterns */
-[data-theme="light"] .pattern-grid {
+[data-color-scheme="light"] .pattern-grid {
   background-image:
     linear-gradient(rgba(25, 80, 115, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(25, 80, 115, 0.05) 1px, transparent 1px);
 }
 
-[data-theme="light"] .pattern-dots {
+[data-color-scheme="light"] .pattern-dots {
   background-image: radial-gradient(rgba(25, 80, 115, 0.1) 1px, transparent 1px);
 }
