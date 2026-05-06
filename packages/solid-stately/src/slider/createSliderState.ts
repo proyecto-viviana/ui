@@ -98,17 +98,21 @@ function snapToStep(value: number, min: number, max: number, step: number): numb
 export function createSliderState(props: MaybeAccessor<SliderStateProps>): SliderState {
   const getProps = () => access(props);
 
-  // Get static values with defaults
-  const minValue = getProps().minValue ?? DEFAULT_MIN;
-  const maxValue = getProps().maxValue ?? DEFAULT_MAX;
-  const step = getProps().step ?? DEFAULT_STEP;
-  const orientation = getProps().orientation ?? "horizontal";
-  const isDisabled = getProps().isDisabled ?? false;
+  const initialProps = getProps();
+  const initialMinValue = initialProps.minValue ?? DEFAULT_MIN;
+  const initialMaxValue = initialProps.maxValue ?? DEFAULT_MAX;
+  const initialStep = initialProps.step ?? DEFAULT_STEP;
 
-  // Calculate page step (10% of range, snapped to step)
-  const pageStep = Math.max(
-    step,
-    snapToStep((maxValue - minValue) / 10, 0, maxValue - minValue, step),
+  const minValue = createMemo(() => getProps().minValue ?? DEFAULT_MIN);
+  const maxValue = createMemo(() => getProps().maxValue ?? DEFAULT_MAX);
+  const step = createMemo(() => getProps().step ?? DEFAULT_STEP);
+  const orientation = createMemo(() => getProps().orientation ?? "horizontal");
+  const isDisabled = createMemo(() => getProps().isDisabled ?? false);
+  const pageStep = createMemo(() =>
+    Math.max(
+      step(),
+      snapToStep((maxValue() - minValue()) / 10, 0, maxValue() - minValue(), step()),
+    ),
   );
 
   // Controlled vs uncontrolled
@@ -116,7 +120,12 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
 
   // Internal signal for uncontrolled mode
   const [internalValue, setInternalValue] = createSignal(
-    snapToStep(getProps().defaultValue ?? minValue, minValue, maxValue, step),
+    snapToStep(
+      initialProps.defaultValue ?? initialMinValue,
+      initialMinValue,
+      initialMaxValue,
+      initialStep,
+    ),
   );
 
   // Dragging and focus state
@@ -126,13 +135,13 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
   // Current value accessor
   const value = createMemo(() => {
     const p = getProps();
-    const rawValue = isControlled() ? (p.value ?? minValue) : internalValue();
-    return snapToStep(rawValue, minValue, maxValue, step);
+    const rawValue = isControlled() ? (p.value ?? minValue()) : internalValue();
+    return snapToStep(rawValue, minValue(), maxValue(), step());
   });
 
   // Value as percent (0-1)
   const getValuePercent = createMemo(() => {
-    return (value() - minValue) / (maxValue - minValue);
+    return (value() - minValue()) / (maxValue() - minValue());
   });
 
   // Formatted value
@@ -144,10 +153,10 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
 
   // Set value function
   const setValue = (newValue: number) => {
-    if (isDisabled) return;
+    if (isDisabled()) return;
 
     const p = getProps();
-    const snappedValue = snapToStep(newValue, minValue, maxValue, step);
+    const snappedValue = snapToStep(newValue, minValue(), maxValue(), step());
 
     if (!isControlled()) {
       setInternalValue(snappedValue);
@@ -159,7 +168,7 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
   // Set value by percent
   const setValuePercent = (percent: number) => {
     const clampedPercent = clamp(percent, 0, 1);
-    const newValue = clampedPercent * (maxValue - minValue) + minValue;
+    const newValue = clampedPercent * (maxValue() - minValue()) + minValue();
     setValue(newValue);
   };
 
@@ -176,13 +185,13 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
 
   // Increment/decrement
   const increment = (stepMultiplier = 1) => {
-    if (isDisabled) return;
-    setValue(value() + step * stepMultiplier);
+    if (isDisabled()) return;
+    setValue(value() + step() * stepMultiplier);
   };
 
   const decrement = (stepMultiplier = 1) => {
-    if (isDisabled) return;
-    setValue(value() - step * stepMultiplier);
+    if (isDisabled()) return;
+    setValue(value() - step() * stepMultiplier);
   };
 
   // Set focused state
@@ -202,11 +211,23 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
     setFocused,
     increment,
     decrement,
-    minValue,
-    maxValue,
-    step,
-    pageStep,
-    orientation,
-    isDisabled,
+    get minValue() {
+      return minValue();
+    },
+    get maxValue() {
+      return maxValue();
+    },
+    get step() {
+      return step();
+    },
+    get pageStep() {
+      return pageStep();
+    },
+    get orientation() {
+      return orientation();
+    },
+    get isDisabled() {
+      return isDisabled();
+    },
   };
 }

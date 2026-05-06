@@ -219,14 +219,16 @@ describe("Regression: SearchField", () => {
 });
 
 describe("Regression: Slider", () => {
-  it("renders with role, aria-value attrs, and snapshot", () => {
+  it("renders with range input semantics and snapshot", () => {
     const { container } = render(() => (
       <Slider label="Volume" value={40} minValue={0} maxValue={100} />
     ));
-    const slider = screen.getByRole("slider");
-    expect(slider).toHaveAttribute("aria-valuenow", "40");
-    expect(slider).toHaveAttribute("aria-valuemin", "0");
-    expect(slider).toHaveAttribute("aria-valuemax", "100");
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    expect(slider).toHaveAttribute("type", "range");
+    expect(slider.value).toBe("40");
+    expect(slider.min).toBe("0");
+    expect(slider.max).toBe("100");
+    expect(slider).toHaveAttribute("aria-valuetext", "40");
     expect(screen.getByText("Volume")).toBeInTheDocument();
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });

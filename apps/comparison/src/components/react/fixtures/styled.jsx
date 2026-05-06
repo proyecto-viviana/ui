@@ -20,6 +20,7 @@ import {
   Radio as SpectrumRadio,
   RadioGroup as SpectrumRadioGroup,
   SearchField as SpectrumSearchField,
+  Slider as SpectrumSlider,
   Switch as SpectrumSwitch,
   SegmentedControl as SpectrumSegmentedControl,
   SegmentedControlItem as SpectrumSegmentedControlItem,
@@ -89,6 +90,11 @@ import {
   searchFieldDemoPropsFromWindow,
   serializeSearchFieldDemoProps,
 } from "@comparison/data/searchfield-demo";
+import {
+  normalizeSliderDemoProps,
+  serializeSliderDemoProps,
+  sliderDemoPropsFromWindow,
+} from "@comparison/data/slider-demo";
 import {
   normalizeSwitchDemoProps,
   serializeSwitchDemoProps,
@@ -268,6 +274,7 @@ export const reactStyledFixtures = {
   cardview: () => jsx(ReactCardViewDemo, {}),
   segmentedcontrol: () => jsx(ReactSegmentedControlDemo, {}),
   selectboxgroup: () => jsx(ReactSelectBoxGroupDemo, {}),
+  slider: () => jsx(ReactSliderDemo, {}),
   tooltip: renderTooltipDemo,
   toast: renderToastGap,
 };
@@ -960,6 +967,52 @@ function ReactNumberFieldDemo() {
         isReadOnly: demoProps.isReadOnly,
         isRequired: demoProps.isRequired,
         isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => {
+          setValue(nextValue);
+          setDemoProps((current) => ({ ...current, value: nextValue }));
+        },
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactSliderDemo() {
+  const [demoProps, setDemoProps] = useState(sliderDemoPropsFromWindow);
+  const [value, setValue] = useState(() => demoProps.value);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "slider") {
+        const nextProps = normalizeSliderDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "slider",
+      "data-comparison-control-props": serializeSliderDemoProps({
+        ...demoProps,
+        value,
+      }),
+      "data-comparison-value": String(value),
+      children: jsx(SpectrumSlider, {
+        label: demoProps.label,
+        value,
+        minValue: demoProps.minValue,
+        maxValue: demoProps.maxValue,
+        step: demoProps.step,
+        size: demoProps.size,
+        trackStyle: demoProps.trackStyle,
+        thumbStyle: demoProps.thumbStyle,
+        isEmphasized: demoProps.isEmphasized,
+        isDisabled: demoProps.isDisabled,
         onChange: (nextValue) => {
           setValue(nextValue);
           setDemoProps((current) => ({ ...current, value: nextValue }));

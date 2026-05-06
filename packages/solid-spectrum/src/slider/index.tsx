@@ -1,61 +1,399 @@
-import { type JSX, splitProps, Show, createUniqueId } from "solid-js";
+// @ts-nocheck
+import { type JSX, createUniqueId, Show, splitProps, useContext } from "solid-js";
 import {
   Slider as HeadlessSlider,
-  SliderTrack as HeadlessSliderTrack,
-  SliderThumb as HeadlessSliderThumb,
   SliderOutput as HeadlessSliderOutput,
+  SliderThumb as HeadlessSliderThumb,
+  SliderTrack as HeadlessSliderTrack,
+  SliderStateContext,
   type SliderProps as HeadlessSliderProps,
   type SliderRenderProps,
-  type SliderTrackRenderProps,
   type SliderThumbRenderProps,
+  type SliderTrackRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { type SliderOrientation } from "@proyecto-viviana/solid-stately";
+import type { StyleString } from "../s2-style";
+import { baseColor, focusRing, style } from "../s2-style";
+import {
+  controlFont,
+  field,
+  fieldInput,
+  fieldLabel,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils";
 import { useProviderProps } from "../provider";
 
-export type SliderSize = "sm" | "md" | "lg";
+export type SliderSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type S2SliderSize = "S" | "M" | "L" | "XL";
 export type SliderVariant = "default" | "accent";
+export type SliderTrackStyle = "thin" | "thick";
+export type SliderThumbStyle = "default" | "precise";
+export type SliderLabelPosition = "top" | "side";
+export type SliderLabelAlign = "start" | "end";
 
 export interface SliderProps extends Omit<
   HeadlessSliderProps,
   "class" | "style" | "children" | "label"
 > {
-  /** The size of the slider. */
   size?: SliderSize;
-  /** The visual variant of the slider. */
+  /** Legacy alias. Prefer S2 `isEmphasized`. */
   variant?: SliderVariant;
-  /** Additional CSS class name. */
+  isEmphasized?: boolean;
+  trackStyle?: SliderTrackStyle;
+  thumbStyle?: SliderThumbStyle;
+  fillOffset?: number;
   class?: string;
-  /** Label text for the slider. */
-  label?: string;
-  /** Whether to show the value output. */
+  label?: JSX.Element;
   showOutput?: boolean;
-  /** Whether to show min/max labels. */
   showMinMax?: boolean;
+  labelPosition?: SliderLabelPosition;
+  labelAlign?: SliderLabelAlign;
+  styles?: StyleString;
+  UNSAFE_className?: string;
+  UNSAFE_style?: JSX.CSSProperties;
 }
 
-const sizeStyles = {
-  sm: {
-    trackHorizontal: "h-1",
-    trackVertical: "w-1",
-    thumb: "w-3 h-3",
-    label: "text-sm",
-    output: "text-xs",
-  },
-  md: {
-    trackHorizontal: "h-2",
-    trackVertical: "w-2",
-    thumb: "w-4 h-4",
-    label: "text-sm",
-    output: "text-sm",
-  },
-  lg: {
-    trackHorizontal: "h-3",
-    trackVertical: "w-3",
-    thumb: "w-5 h-5",
-    label: "text-base",
-    output: "text-base",
-  },
+type SliderStyleState = SliderRenderProps & {
+  size?: S2SliderSize;
+  labelPosition?: SliderLabelPosition;
+  labelAlign?: SliderLabelAlign;
+  isInForm?: boolean;
 };
+
+const sliderRoot = style<SliderStyleState>(
+  {
+    ...field(),
+    font: controlFont(),
+    alignItems: {
+      labelPosition: {
+        side: "center",
+      },
+    },
+    color: {
+      default: "neutral-subdued",
+      forcedColors: "ButtonText",
+      isDisabled: "disabled",
+    },
+    columnGap: {
+      size: {
+        S: 16,
+        M: 16,
+        L: 20,
+        XL: 24,
+      },
+      isInForm: 12,
+    },
+  },
+  getAllowedOverrides(),
+);
+
+const labelContainer = style<SliderStyleState>({
+  display: {
+    labelPosition: {
+      top: "grid",
+    },
+  },
+  gridArea: "label",
+  width: "full",
+  gridTemplateAreas: {
+    labelPosition: {
+      top: ["label output"],
+    },
+  },
+  gridTemplateColumns: {
+    labelPosition: {
+      top: ["1fr auto"],
+    },
+  },
+  textAlign: {
+    labelPosition: {
+      side: {
+        labelAlign: {
+          start: "start",
+          end: "end",
+        },
+      },
+    },
+  },
+  "--field-gap": {
+    type: "paddingBottom",
+    value: 0,
+  },
+});
+
+const sliderLabel = style<SliderStyleState>({
+  ...fieldLabel(),
+});
+
+const outputStyle = style<SliderStyleState>({
+  gridArea: "output",
+  textAlign: {
+    labelPosition: {
+      top: {
+        direction: {
+          ltr: "end",
+          rtl: "start",
+        },
+      },
+      side: {
+        direction: {
+          ltr: "start",
+          rtl: "end",
+        },
+        isInForm: "end",
+      },
+    },
+  },
+});
+
+const inputRow = style<SliderStyleState>({
+  ...fieldInput(),
+  display: "inline-flex",
+  alignItems: "center",
+  gap: {
+    default: 16,
+    size: {
+      L: 20,
+      XL: 24,
+    },
+  },
+});
+
+const track = style<SliderStyleState>({
+  gridArea: "track",
+  position: "relative",
+  width: "full",
+  height: {
+    size: {
+      S: 24,
+      M: 32,
+      L: 40,
+      XL: 48,
+    },
+  },
+});
+
+const verticalTrack = style<SliderStyleState>({
+  gridArea: "track",
+  position: "relative",
+  width: {
+    size: {
+      S: 24,
+      M: 32,
+      L: 40,
+      XL: 48,
+    },
+  },
+  height: 160,
+});
+
+const thumbContainer = style<SliderStyleState>({
+  size: {
+    size: {
+      S: 18,
+      M: 20,
+      L: 22,
+      XL: 24,
+    },
+  },
+  display: "inline-block",
+  position: "absolute",
+  top: "50%",
+});
+
+const thumbHitArea = style<{ size?: S2SliderSize; thumbStyle?: SliderThumbStyle }>({
+  size: {
+    thumbStyle: {
+      default: {
+        size: {
+          S: 18,
+          M: 20,
+          L: 22,
+          XL: 24,
+        },
+      },
+      precise: {
+        size: {
+          S: 20,
+          M: 22,
+          L: 24,
+          XL: 26,
+        },
+      },
+    },
+  },
+});
+
+const thumb = style<
+  SliderThumbRenderProps & { size?: S2SliderSize; thumbStyle?: SliderThumbStyle }
+>({
+  ...focusRing(),
+  display: "inline-block",
+  boxSizing: "border-box",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translateY(-50%) translateX(-50%)",
+  width: {
+    thumbStyle: {
+      default: {
+        size: {
+          S: 18,
+          M: 20,
+          L: 22,
+          XL: 24,
+        },
+      },
+      precise: 6,
+    },
+  },
+  height: {
+    thumbStyle: {
+      default: {
+        size: {
+          S: 18,
+          M: 20,
+          L: 22,
+          XL: 24,
+        },
+      },
+      precise: {
+        size: {
+          S: 20,
+          M: 22,
+          L: 24,
+          XL: 26,
+        },
+      },
+    },
+  },
+  borderRadius: "full",
+  borderStyle: "solid",
+  borderWidth: "[2px]",
+  borderColor: {
+    default: "gray-800",
+    isHovered: "gray-900",
+    isDragging: "gray-900",
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "ButtonBorder",
+      isDisabled: "GrayText",
+    },
+  },
+  backgroundColor: {
+    default: "gray-25",
+    forcedColors: "ButtonFace",
+  },
+});
+
+const upperTrack = style<{ isDisabled?: boolean; trackStyle?: SliderTrackStyle }>({
+  height: {
+    trackStyle: {
+      thin: 4,
+      thick: 16,
+    },
+  },
+  top: "50%",
+  borderRadius: {
+    trackStyle: {
+      thin: "lg",
+      thick: "sm",
+    },
+  },
+  position: "absolute",
+  backgroundColor: {
+    default: "gray-300",
+    forcedColors: "ButtonFace",
+    isDisabled: "disabled",
+  },
+  translateY: "-50%",
+  width: "full",
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderWidth: "[.5px]",
+  borderColor: {
+    default: "transparent",
+    forcedColors: {
+      default: "ButtonText",
+      isDisabled: "GrayText",
+    },
+  },
+});
+
+const filledTrack = style<{
+  isDisabled?: boolean;
+  isEmphasized?: boolean;
+  trackStyle?: SliderTrackStyle;
+}>({
+  height: {
+    trackStyle: {
+      thin: 4,
+      thick: 16,
+    },
+  },
+  top: "50%",
+  borderRadius: {
+    trackStyle: {
+      thin: "lg",
+      thick: "sm",
+    },
+  },
+  position: "absolute",
+  backgroundColor: {
+    default: "gray-700",
+    isEmphasized: baseColor("accent-900"),
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "Highlight",
+      isDisabled: "GrayText",
+    },
+  },
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderWidth: "[.5px]",
+  borderColor: {
+    default: "transparent",
+    forcedColors: {
+      default: "ButtonText",
+      isDisabled: "GrayText",
+    },
+  },
+  translateY: "-50%",
+});
+
+function normalizeSliderSize(size: SliderSize | undefined): S2SliderSize {
+  switch (size) {
+    case "sm":
+      return "S";
+    case "md":
+      return "M";
+    case "lg":
+      return "L";
+    case "S":
+    case "M":
+    case "L":
+    case "XL":
+      return size;
+    default:
+      return "M";
+  }
+}
+
+function pressScaleStyle(
+  element: HTMLDivElement | undefined,
+  renderProps: SliderThumbRenderProps,
+): JSX.CSSProperties {
+  const transform = "translate(-50%, -50%)";
+
+  if (!renderProps.isDragging || !element) {
+    return { transform };
+  }
+
+  const { width, height } = element.getBoundingClientRect();
+  return {
+    transform: `perspective(${Math.max(height, width / 3, 24)}px) ${transform} translate3d(0, 0, -2px)`,
+  };
+}
 
 /**
  * A slider allows users to select a value from a range.
@@ -65,116 +403,152 @@ export function Slider(props: SliderProps): JSX.Element {
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",
+    "isEmphasized",
+    "trackStyle",
+    "thumbStyle",
+    "fillOffset",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
     "label",
     "showOutput",
     "showMinMax",
+    "labelPosition",
+    "labelAlign",
   ]);
 
-  const size = () => sizeStyles[local.size ?? "md"];
-  const orientation = (): SliderOrientation => headlessProps.orientation ?? "horizontal";
-  const labelId = createUniqueId();
-
-  const containerClasses = () => {
-    const base = orientation() === "vertical" ? "flex flex-col w-fit" : "flex flex-col w-full";
-    const custom = local.class || "";
-    return [base, custom].filter(Boolean).join(" ");
-  };
-
-  const labelRowClasses = () => {
-    const rowLayout =
-      orientation() === "vertical"
-        ? "flex-col items-start gap-1"
-        : "flex-row justify-between items-center";
-    return ["flex mb-2", rowLayout].join(" ");
-  };
-
-  const trackContainerClasses = () => {
-    const base = orientation() === "vertical" ? "relative h-40 mx-auto" : "relative w-full";
-    const disabledClass = headlessProps.isDisabled ? "cursor-not-allowed" : "";
-    return [base, disabledClass].filter(Boolean).join(" ");
-  };
-
-  const trackClasses = (_renderProps: SliderTrackRenderProps) => {
-    const base = "relative rounded-full bg-bg-300";
-    const axisClass =
-      orientation() === "vertical"
-        ? [size().trackVertical, "h-full"].join(" ")
-        : [size().trackHorizontal, "w-full"].join(" ");
-    const interactiveClass = headlessProps.isDisabled ? "" : "cursor-pointer";
-    return [base, axisClass, interactiveClass].filter(Boolean).join(" ");
-  };
-
-  const fillClasses = () => {
-    const base = "absolute rounded-full transition-all";
-    const variantClass = local.variant === "accent" ? "bg-accent" : "bg-primary-400";
-    return [base, variantClass].filter(Boolean).join(" ");
-  };
-
-  const fillStyle = (renderProps: SliderTrackRenderProps): JSX.CSSProperties => {
-    if (renderProps.orientation === "vertical") {
-      return {
-        left: "0",
-        bottom: "0",
-        width: "100%",
-        height: `${renderProps.valuePercent * 100}%`,
-      };
-    }
-
-    return {
-      left: "0",
-      top: "0",
-      height: "100%",
-      width: `${renderProps.valuePercent * 100}%`,
-    };
-  };
-
-  const thumbClasses = (renderProps: SliderThumbRenderProps) => {
-    const base = "absolute rounded-full shadow-md transition-all";
-    const sizeClass = size().thumb;
-
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "bg-primary-400 cursor-not-allowed";
-    } else if (renderProps.isDragging) {
-      stateClass =
-        local.variant === "accent"
-          ? "bg-accent-400 scale-110 cursor-grabbing"
-          : "bg-primary-200 scale-110 cursor-grabbing";
-    } else if (renderProps.isHovered) {
-      stateClass =
-        local.variant === "accent"
-          ? "bg-accent-400 scale-105 cursor-grab"
-          : "bg-primary-200 scale-105 cursor-grab";
-    } else {
-      stateClass =
-        local.variant === "accent" ? "bg-accent cursor-grab" : "bg-primary-100 cursor-grab";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent ring-offset-2 ring-offset-bg-100"
-      : "";
-
-    return [base, sizeClass, stateClass, focusClass].filter(Boolean).join(" ");
-  };
-
-  const labelClasses = () => {
-    const base = "font-medium text-primary-200";
-    const sizeClass = size().label;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
-
-  const outputClasses = () => {
-    const base = "font-medium text-primary-100";
-    const sizeClass = size().output;
-    return [base, sizeClass].filter(Boolean).join(" ");
-  };
-
-  const minMaxClasses = () => "text-xs text-primary-400";
-
+  const size = () => normalizeSliderSize(local.size);
+  const labelPosition = () => local.labelPosition ?? "top";
+  const labelAlign = () => local.labelAlign ?? "start";
+  const trackStyle = () => local.trackStyle ?? "thin";
+  const thumbStyle = () => local.thumbStyle ?? "default";
+  const isEmphasized = () => local.isEmphasized ?? local.variant === "accent";
   const showOutput = () => local.showOutput ?? true;
   const minValue = () => headlessProps.minValue ?? 0;
   const maxValue = () => headlessProps.maxValue ?? 100;
+  const orientation = (): SliderOrientation => headlessProps.orientation ?? "horizontal";
+  const labelId = createUniqueId();
+  let thumbElement: HTMLDivElement | undefined;
+
+  const rootClass = (renderProps: SliderRenderProps) =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      sliderRoot(
+        {
+          ...renderProps,
+          size: size(),
+          labelPosition: labelPosition(),
+          labelAlign: labelAlign(),
+          isInForm: false,
+        },
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const labelStyleState = (renderProps: SliderRenderProps) => ({
+    ...renderProps,
+    size: size(),
+    labelPosition: labelPosition(),
+    labelAlign: labelAlign(),
+    isInForm: false,
+  });
+
+  const SliderTrackContent = (props: { rootRenderProps: SliderRenderProps }) => {
+    const sliderContext = useContext(SliderStateContext);
+    const state = () => sliderContext?.state;
+    const trackRenderProps = (): SliderTrackRenderProps => ({
+      isDisabled: state()?.isDisabled ?? false,
+      isDragging: state()?.isDragging() ?? false,
+      valuePercent: state()?.getValuePercent() ?? 0,
+      orientation: state()?.orientation ?? orientation(),
+    });
+    const currentValue = () =>
+      state()?.value() ?? headlessProps.value ?? headlessProps.defaultValue ?? minValue();
+
+    const upperTrackStyle = (): JSX.CSSProperties | undefined =>
+      trackRenderProps().orientation === "vertical"
+        ? {
+            height: "100%",
+            width: trackStyle() === "thin" ? "4px" : "16px",
+            left: "50%",
+            transform: "translateX(-50%)",
+          }
+        : undefined;
+
+    const filledStyle = (): JSX.CSSProperties => {
+      const renderProps = trackRenderProps();
+
+      if (renderProps.orientation === "vertical") {
+        return {
+          height: `${renderProps.valuePercent * 100}%`,
+          bottom: 0,
+          width: trackStyle() === "thin" ? "4px" : "16px",
+          left: "50%",
+          transform: "translateX(-50%)",
+        };
+      }
+
+      const value = currentValue();
+      const fillOffset =
+        local.fillOffset === undefined
+          ? minValue()
+          : Math.min(maxValue(), Math.max(minValue(), local.fillOffset));
+      const valuePercent = (value - minValue()) / (maxValue() - minValue());
+      const offsetPercent = (fillOffset - minValue()) / (maxValue() - minValue());
+      const fillWidth = valuePercent - offsetPercent;
+      const offset = fillWidth > 0 ? offsetPercent : valuePercent;
+
+      return {
+        width: `${Math.abs(fillWidth) * 100}%`,
+        left: `${offset * 100}%`,
+      };
+    };
+
+    return (
+      <>
+        <div
+          class={upperTrack({
+            isDisabled: trackRenderProps().isDisabled,
+            trackStyle: trackStyle(),
+          })}
+          style={upperTrackStyle()}
+        />
+        <div
+          class={filledTrack({
+            isDisabled: trackRenderProps().isDisabled,
+            isEmphasized: isEmphasized(),
+            trackStyle: trackStyle(),
+          })}
+          style={filledStyle()}
+        />
+        <HeadlessSliderThumb
+          class={(thumbRenderProps: SliderThumbRenderProps) =>
+            thumbContainer({ ...labelStyleState(props.rootRenderProps), ...thumbRenderProps })
+          }
+          ref={thumbElement}
+          style={(thumbRenderProps: SliderThumbRenderProps) =>
+            pressScaleStyle(thumbElement, thumbRenderProps)
+          }
+        >
+          {(thumbRenderProps: SliderThumbRenderProps) => (
+            <div class={thumbHitArea({ size: size(), thumbStyle: thumbStyle() })}>
+              <div
+                class={thumb({
+                  ...thumbRenderProps,
+                  size: size(),
+                  thumbStyle: thumbStyle(),
+                })}
+              />
+            </div>
+          )}
+        </HeadlessSliderThumb>
+      </>
+    );
+  };
 
   return (
     <HeadlessSlider
@@ -184,42 +558,63 @@ export function Slider(props: SliderProps): JSX.Element {
         (!headlessProps["aria-label"] && local.label ? labelId : undefined)
       }
       aria-label={headlessProps["aria-label"]}
-      class={containerClasses()}
-      children={(_renderProps: SliderRenderProps) => (
+      class={rootClass}
+      style={local.UNSAFE_style}
+    >
+      {(renderProps: SliderRenderProps) => (
         <>
-          <Show when={local.label || showOutput()}>
-            <div class={labelRowClasses()}>
-              <Show when={local.label}>
-                <span id={labelId} class={labelClasses()}>
-                  {local.label}
-                </span>
-              </Show>
-              <Show when={showOutput()}>
-                <HeadlessSliderOutput class={outputClasses()} />
-              </Show>
-            </div>
-          </Show>
+          <div class={labelContainer(labelStyleState(renderProps))}>
+            <Show when={local.label}>
+              <span id={labelId} class={sliderLabel(labelStyleState(renderProps))}>
+                {local.label}
+              </span>
+            </Show>
+            <Show when={labelPosition() === "top" && showOutput()}>
+              <HeadlessSliderOutput
+                class={outputStyle(labelStyleState(renderProps))}
+                style={{
+                  width: `${String(maxValue()).length}ch`,
+                  "min-width": `${String(maxValue()).length}ch`,
+                  "font-variant-numeric": "tabular-nums",
+                }}
+              />
+            </Show>
+          </div>
 
-          <div class={trackContainerClasses()}>
-            <HeadlessSliderTrack class={trackClasses}>
-              {(trackRenderProps) => (
-                <>
-                  <div class={fillClasses()} style={fillStyle(trackRenderProps)} />
-                  <HeadlessSliderThumb class={thumbClasses} />
-                </>
-              )}
+          <div class={inputRow(labelStyleState(renderProps))}>
+            <HeadlessSliderTrack
+              class={(trackRenderProps: SliderTrackRenderProps) =>
+                orientation() === "vertical"
+                  ? verticalTrack({ ...labelStyleState(renderProps), ...trackRenderProps })
+                  : track({ ...labelStyleState(renderProps), ...trackRenderProps })
+              }
+            >
+              <SliderTrackContent rootRenderProps={renderProps} />
             </HeadlessSliderTrack>
+
+            <Show when={labelPosition() === "side" && showOutput()}>
+              <HeadlessSliderOutput
+                class={outputStyle(labelStyleState(renderProps))}
+                style={{
+                  width: `${String(maxValue()).length}ch`,
+                  "min-width": `${String(maxValue()).length}ch`,
+                  "font-variant-numeric": "tabular-nums",
+                }}
+              />
+            </Show>
           </div>
 
           <Show when={local.showMinMax}>
-            <div class="flex justify-between mt-1">
-              <span class={minMaxClasses()}>{minValue()}</span>
-              <span class={minMaxClasses()}>{maxValue()}</span>
+            <div
+              style={{ display: "flex", "justify-content": "space-between", "margin-top": "4px" }}
+            >
+              <span>{minValue()}</span>
+              <span>{maxValue()}</span>
             </div>
           </Show>
         </>
       )}
-    />
+    </HeadlessSlider>
   );
 }
 

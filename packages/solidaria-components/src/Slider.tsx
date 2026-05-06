@@ -10,6 +10,7 @@ import {
   createSlider,
   createFocusRing,
   createHover,
+  mergeProps,
   type AriaSliderProps,
 } from "@proyecto-viviana/solidaria";
 import {
@@ -25,6 +26,7 @@ import {
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { VisuallyHidden } from "./VisuallyHidden";
 
 export interface SliderRenderProps {
   /** Whether the slider is disabled. */
@@ -145,6 +147,8 @@ interface SliderContextValue {
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
   trackRef: HTMLElement | undefined;
   setTrackRef: (el: HTMLElement) => void;
+  inputRef: HTMLInputElement | undefined;
+  setInputRef: (el: HTMLInputElement) => void;
 }
 
 export const SliderContext = createContext<SliderContextValue | null>(null);
@@ -171,7 +175,16 @@ export function Slider(props: SliderProps): JSX.Element {
       "locale",
       "formatOptions",
     ],
-    ["label", "aria-label", "aria-labelledby", "aria-describedby", "isDisabled", "id"],
+    [
+      "label",
+      "aria-label",
+      "aria-labelledby",
+      "aria-describedby",
+      "isDisabled",
+      "id",
+      "name",
+      "form",
+    ],
   );
 
   const state = createSliderState({
@@ -214,11 +227,16 @@ export function Slider(props: SliderProps): JSX.Element {
   const setTrackRef = (el: HTMLElement) => {
     trackRef = el;
   };
+  let inputRef: HTMLInputElement | undefined;
+  const setInputRef = (el: HTMLInputElement) => {
+    inputRef = el;
+  };
 
   const { labelProps, groupProps, trackProps, thumbProps, inputProps, outputProps } = createSlider(
     ariaProps,
     state,
     () => trackRef ?? null,
+    () => inputRef ?? null,
   );
 
   const renderValues = createMemo<SliderRenderProps>(() => ({
@@ -240,6 +258,32 @@ export function Slider(props: SliderProps): JSX.Element {
     renderValues,
   );
 
+  const childRenderValues: SliderRenderProps = {
+    get isDisabled() {
+      return state.isDisabled;
+    },
+    get isDragging() {
+      return state.isDragging();
+    },
+    get isFocused() {
+      return state.isFocused();
+    },
+    get value() {
+      return state.value();
+    },
+    get valuePercent() {
+      return state.getValuePercent();
+    },
+    get orientation() {
+      return state.orientation;
+    },
+  };
+
+  const sliderChildren = () => {
+    const children = props.children;
+    return typeof children === "function" ? children(childRenderValues) : children;
+  };
+
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
@@ -259,6 +303,8 @@ export function Slider(props: SliderProps): JSX.Element {
         inputProps,
         trackRef,
         setTrackRef,
+        inputRef,
+        setInputRef,
       }}
     >
       <div
@@ -274,10 +320,7 @@ export function Slider(props: SliderProps): JSX.Element {
           <span {...labelProps}>{ariaProps.label}</span>
         </Show>
 
-        {renderProps.renderChildren()}
-
-        {/* Hidden input for form submission */}
-        <input {...inputProps} />
+        {sliderChildren()}
       </div>
     </SliderContext.Provider>
   );
@@ -351,7 +394,7 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
     throw new Error("SliderFill must be used within a Slider");
   }
 
-  const { state, thumbProps } = context;
+  const { state, thumbProps, inputProps, setInputRef } = context;
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
@@ -399,21 +442,32 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
     const renderStyle = renderProps.style() || {};
     return { ...thumbStyle, ...renderStyle };
   };
+  const cleanInputProps = () => {
+    const { ref: _ref, ...rest } = inputProps as Record<string, unknown>;
+    return rest;
+  };
+  const mergedInputProps = () =>
+    mergeProps(
+      cleanInputProps() as Record<string, unknown>,
+      cleanFocusProps() as Record<string, unknown>,
+    ) as JSX.InputHTMLAttributes<HTMLInputElement>;
 
   return (
     <div
       {...domProps}
       {...cleanThumbProps()}
-      {...cleanFocusProps()}
       {...cleanHoverProps()}
       class={renderProps.class()}
       style={mergedStyle()}
       data-disabled={state.isDisabled || undefined}
       data-dragging={state.isDragging() || undefined}
-      data-focused={isFocused() || undefined}
+      data-focused={isFocused() || state.isFocused() || undefined}
       data-focus-visible={isFocusVisible() || undefined}
       data-hovered={isHovered() || undefined}
     >
+      <VisuallyHidden>
+        <input ref={setInputRef} {...mergedInputProps()} />
+      </VisuallyHidden>
       {renderProps.renderChildren()}
     </div>
   );

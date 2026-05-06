@@ -389,6 +389,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 NumberField directly; Solid uses @proyecto-viviana/solid-spectrum NumberField with S2-derived label, field group, input, stepper buttons, help text, and validation styling.",
   }),
 
+  slider: styledLiveOfficialEntry({
+    slug: "slider",
+    title: "Slider",
+    category: "Components",
+    summary:
+      "Single-thumb range input with S2 field layout, track, fill, thumb, and controlled value state.",
+    styledSummary: "React Spectrum Slider vs Solid Spectrum Slider.",
+    styledNote:
+      "React uses @react-spectrum/s2 Slider directly; Solid uses @proyecto-viviana/solid-spectrum Slider with S2-derived label/output, track, filled track, thumb hit area, and thumb styling.",
+  }),
+
   textfield: styledLiveOfficialEntry({
     slug: "textfield",
     title: "TextField",

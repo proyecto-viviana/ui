@@ -8,11 +8,11 @@ import { type JSX, onCleanup, onMount } from "solid-js";
 import { createLabel } from "../label/createLabel";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { filterDOMProps } from "../utils/filterDOMProps";
+import { focusWithoutScrolling } from "../utils/focus";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { SliderState, SliderOrientation } from "@proyecto-viviana/solid-stately";
-import { useLocale } from "../i18n";
 
 export interface AriaSliderProps {
   /** An ID for the slider. */
@@ -29,6 +29,10 @@ export interface AriaSliderProps {
   "aria-describedby"?: string;
   /** The orientation of the slider. */
   orientation?: SliderOrientation;
+  /** The name for the form input. */
+  name?: string;
+  /** The form element this input belongs to. */
+  form?: string;
 }
 
 export interface SliderAria {
@@ -53,10 +57,10 @@ export function createSlider(
   props: MaybeAccessor<AriaSliderProps>,
   state: SliderState,
   trackRef?: () => HTMLElement | null,
+  inputRef?: () => HTMLInputElement | null,
 ): SliderAria {
   const getProps = () => access(props);
   const id = createId(getProps().id);
-  const locale = useLocale();
 
   // Generate IDs for associated elements
   const inputId = `${id}-input`;
@@ -123,6 +127,7 @@ export function createSlider(
 
     const percent = getPositionFromPointer(e.clientX, e.clientY);
     state.setValuePercent(percent);
+    focusWithoutScrolling(inputRef?.() ?? null);
     state.setDragging(true);
   };
 
@@ -144,43 +149,15 @@ export function createSlider(
     }
 
     currentPointerId = null;
+    focusWithoutScrolling(inputRef?.() ?? null);
     state.setDragging(false);
   };
 
-  // Keyboard navigation for thumb
+  // Keyboard navigation that is not consistently handled by the native range input.
   const onThumbKeyDown = (e: KeyboardEvent) => {
     if (state.isDisabled) return;
 
-    const isVertical = state.orientation === "vertical";
-    const isRTL = locale().direction === "rtl";
-    const shouldIncrementOnArrowRight = !isVertical && !isRTL;
-    const shouldIncrementOnArrowLeft = !isVertical && isRTL;
-
     switch (e.key) {
-      case "ArrowRight":
-      case "ArrowUp":
-        e.preventDefault();
-        if (
-          (e.key === "ArrowRight" && shouldIncrementOnArrowRight) ||
-          (e.key === "ArrowUp" && isVertical)
-        ) {
-          state.increment();
-        } else {
-          state.decrement();
-        }
-        break;
-      case "ArrowLeft":
-      case "ArrowDown":
-        e.preventDefault();
-        if (
-          (e.key === "ArrowLeft" && shouldIncrementOnArrowLeft) ||
-          (e.key === "ArrowDown" && isVertical)
-        ) {
-          state.increment();
-        } else {
-          state.decrement();
-        }
-        break;
       case "PageUp":
         e.preventDefault();
         state.increment(state.pageStep / state.step);
@@ -216,6 +193,7 @@ export function createSlider(
     e.preventDefault();
     e.stopPropagation(); // Prevent track from also handling
     currentPointerId = e.pointerId;
+    focusWithoutScrolling(inputRef?.() ?? null);
 
     // Capture pointer on document for smooth dragging
     document.body.setPointerCapture(e.pointerId);
@@ -241,6 +219,7 @@ export function createSlider(
     }
 
     currentPointerId = null;
+    focusWithoutScrolling(inputRef?.() ?? null);
     state.setDragging(false);
   };
 
@@ -297,61 +276,51 @@ export function createSlider(
       const percent = state.getValuePercent();
       const isVertical = state.orientation === "vertical";
 
+      return {
+        onPointerDown: onThumbPointerDown,
+        onKeyDown: onThumbKeyDown,
+        style: {
+          position: "absolute",
+          [isVertical ? "bottom" : "left"]: `${percent * 100}%`,
+          transform: isVertical ? "translateY(50%)" : "translateX(-50%)",
+          "touch-action": "none",
+        },
+        "data-disabled": state.isDisabled || undefined,
+        "data-dragging": state.isDragging() || undefined,
+      } as JSX.HTMLAttributes<HTMLElement>;
+    },
+    get inputProps() {
+      const p = getProps();
+
       return mergeProps(
         focusProps as Record<string, unknown>,
         {
-          role: "slider",
-          tabIndex: state.isDisabled ? undefined : 0,
-          "aria-valuemin": state.minValue,
-          "aria-valuemax": state.maxValue,
-          "aria-valuenow": state.value(),
-          "aria-valuetext": state.getFormattedValue(),
+          type: "range",
+          id: inputId,
+          min: state.minValue,
+          max: state.maxValue,
+          step: state.step,
+          value: state.value(),
+          name: p.name,
+          form: p.form,
+          disabled: state.isDisabled,
           "aria-orientation": state.orientation,
-          "aria-disabled": state.isDisabled || undefined,
+          "aria-valuetext": state.getFormattedValue(),
           "aria-labelledby": labelledBy(),
           "aria-label": labelledBy() ? undefined : ariaLabel(),
-          onPointerDown: onThumbPointerDown,
-          onKeyDown: onThumbKeyDown,
+          tabIndex: state.isDisabled ? undefined : 0,
+          onInput: (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            state.setValue(parseFloat(target.value));
+          },
+          onChange: (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            state.setValue(parseFloat(target.value));
+          },
           onFocus,
           onBlur,
-          style: {
-            position: "absolute",
-            [isVertical ? "bottom" : "left"]: `${percent * 100}%`,
-            transform: isVertical ? "translateY(50%)" : "translateX(-50%)",
-          },
-          "data-disabled": state.isDisabled || undefined,
-          "data-dragging": state.isDragging() || undefined,
-          "data-focus-visible": isFocusVisible() || undefined,
         } as Record<string, unknown>,
-      ) as JSX.HTMLAttributes<HTMLElement>;
-    },
-    get inputProps() {
-      return {
-        type: "range",
-        id: inputId,
-        min: state.minValue,
-        max: state.maxValue,
-        step: state.step,
-        value: state.value(),
-        disabled: state.isDisabled,
-        "aria-hidden": true,
-        tabIndex: -1,
-        style: {
-          position: "absolute",
-          width: "1px",
-          height: "1px",
-          padding: "0",
-          margin: "-1px",
-          overflow: "hidden",
-          clip: "rect(0, 0, 0, 0)",
-          "white-space": "nowrap",
-          border: "0",
-        },
-        onChange: (e: Event) => {
-          const target = e.target as HTMLInputElement;
-          state.setValue(parseFloat(target.value));
-        },
-      } as JSX.InputHTMLAttributes<HTMLInputElement>;
+      ) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get outputProps() {
       return {

@@ -25,6 +25,12 @@ import {
 } from "./radiogroup-demo";
 import { numberFieldDemoDefaults, numberFieldSizeOptions } from "./numberfield-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
+import {
+  sliderDemoDefaults,
+  sliderSizeOptions,
+  sliderThumbStyleOptions,
+  sliderTrackStyleOptions,
+} from "./slider-demo";
 import { switchDemoDefaults, switchSizeOptions } from "./switch-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
@@ -633,6 +639,105 @@ const numberFieldControls: ComponentControlGroup = {
     "aria-describedby",
   ],
   note: "Modeled from the S2 NumberField source control surface. The viewer drives label, controlled numeric value, placeholder, S2 size, min/max/step, stepper visibility, description/error text, and disabled/read-only/required/invalid states into both stacks.",
+};
+
+const sliderControls: ComponentControlGroup = {
+  slug: "slider",
+  title: "Slider",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: sliderDemoDefaults.label,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: String(sliderDemoDefaults.value),
+    },
+    {
+      name: "minValue",
+      label: "minValue",
+      kind: "text",
+      defaultValue: String(sliderDemoDefaults.minValue),
+    },
+    {
+      name: "maxValue",
+      label: "maxValue",
+      kind: "text",
+      defaultValue: String(sliderDemoDefaults.maxValue),
+    },
+    {
+      name: "step",
+      label: "step",
+      kind: "text",
+      defaultValue: String(sliderDemoDefaults.step),
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: sliderDemoDefaults.size,
+      options: options(sliderSizeOptions),
+    },
+    {
+      name: "trackStyle",
+      label: "trackStyle",
+      kind: "radio",
+      defaultValue: sliderDemoDefaults.trackStyle,
+      options: options(sliderTrackStyleOptions),
+    },
+    {
+      name: "thumbStyle",
+      label: "thumbStyle",
+      kind: "radio",
+      defaultValue: sliderDemoDefaults.thumbStyle,
+      options: options(sliderThumbStyleOptions),
+    },
+    {
+      name: "isEmphasized",
+      label: "isEmphasized",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "value",
+    "defaultValue",
+    "onChange",
+    "onChangeEnd",
+    "minValue",
+    "maxValue",
+    "step",
+    "size",
+    "isEmphasized",
+    "trackStyle",
+    "thumbStyle",
+    "fillOffset",
+    "formatOptions",
+    "name",
+    "form",
+    "isDisabled",
+    "labelPosition",
+    "labelAlign",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 Slider source control surface. The viewer drives label, controlled numeric value, min/max/step, S2 size, emphasized treatment, track/thumb style, and disabled state into both stacks.",
 };
 
 const textFieldControls: ComponentControlGroup = {
@@ -1518,6 +1623,7 @@ export const componentControlGroups = {
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,
+  slider: sliderControls,
   switch: switchControls,
   textarea: textAreaControls,
   textfield: textFieldControls,

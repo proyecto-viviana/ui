@@ -25,6 +25,7 @@ import {
   Radio as SolidSpectrumRadio,
   RadioGroup as SolidSpectrumRadioGroup,
   SearchField as SolidSpectrumSearchField,
+  Slider as SolidSpectrumSlider,
   Switch as SolidSpectrumSwitch,
   SegmentedControl as SolidSpectrumSegmentedControl,
   SegmentedControlItem as SolidSpectrumSegmentedControlItem,
@@ -97,6 +98,12 @@ import {
   serializeSearchFieldDemoProps,
   type SearchFieldDemoProps,
 } from "@comparison/data/searchfield-demo";
+import {
+  normalizeSliderDemoProps,
+  serializeSliderDemoProps,
+  sliderDemoPropsFromWindow,
+  type SliderDemoProps,
+} from "@comparison/data/slider-demo";
 import {
   normalizeSwitchDemoProps,
   serializeSwitchDemoProps,
@@ -359,6 +366,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   segmentedcontrol: () => h(SolidSpectrumSegmentedControlDemo, {}),
   selectboxgroup: () => h(SolidSpectrumSelectBoxGroupDemo, {}),
   searchfield: () => h(SolidSpectrumSearchFieldDemo, {}),
+  slider: () => h(SolidSpectrumSliderDemo, {}),
   switch: () => h(SolidSpectrumSwitchDemo, {}),
   textarea: () => h(SolidSpectrumTextAreaDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
@@ -1273,6 +1281,112 @@ function SolidSpectrumNumberFieldDemo() {
             onChange: (nextValue: number) => {
               setValue(nextValue);
               setDemoProps((current: NumberFieldDemoProps) => ({
+                ...current,
+                value: nextValue,
+              }));
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumSliderDemo() {
+  const [demoProps, setDemoProps] = createSignal<SliderDemoProps>(sliderDemoPropsFromWindow());
+  const [value, setValue] = createSignal(demoProps().value);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "slider") {
+        const nextProps = normalizeSliderDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeSliderDemoProps({
+      ...demoProps(),
+      value: value(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "slider",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            return String(value());
+          },
+        },
+        [
+          hc(SolidSpectrumSlider, {
+            get label() {
+              return demoProps().label;
+            },
+            get value() {
+              return value();
+            },
+            get minValue() {
+              return demoProps().minValue;
+            },
+            get maxValue() {
+              return demoProps().maxValue;
+            },
+            get step() {
+              return demoProps().step;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get trackStyle() {
+              return demoProps().trackStyle;
+            },
+            get thumbStyle() {
+              return demoProps().thumbStyle;
+            },
+            get isEmphasized() {
+              return demoProps().isEmphasized;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            onChange: (nextValue: number) => {
+              setValue(nextValue);
+              setDemoProps((current: SliderDemoProps) => ({
                 ...current,
                 value: nextValue,
               }));

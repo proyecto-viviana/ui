@@ -25,6 +25,13 @@ const numberFieldTextControlValues: Record<string, string> = {
   step: "2",
 };
 
+const sliderTextControlValues: Record<string, string> = {
+  value: "72",
+  minValue: "0",
+  maxValue: "100",
+  step: "5",
+};
+
 function liveStyledEntry(group: ComponentControlGroup) {
   return comparisonEntries.find(
     (entry) =>
@@ -51,6 +58,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (group.slug === "numberfield" && control.name in numberFieldTextControlValues) {
       return numberFieldTextControlValues[control.name];
     }
+    if (group.slug === "slider" && control.name in sliderTextControlValues) {
+      return sliderTextControlValues[control.name];
+    }
     if (control.name === "selectedKeys" && group.slug === "selectboxgroup") {
       return "starter,pro";
     }
@@ -75,6 +85,9 @@ function expectedSerializedValue(
     return Number(value);
   }
   if (group.slug === "numberfield" && control.name in numberFieldTextControlValues) {
+    return Number(value);
+  }
+  if (group.slug === "slider" && control.name in sliderTextControlValues) {
     return Number(value);
   }
   return value;
