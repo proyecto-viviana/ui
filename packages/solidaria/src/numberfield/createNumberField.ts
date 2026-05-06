@@ -10,6 +10,8 @@ import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { NumberFieldState } from "@proyecto-viviana/solid-stately";
+import type { AriaButtonProps } from "../button/types";
+import type { PressEvent } from "../interactions";
 
 export interface AriaNumberFieldProps {
   /** A label for the number field. */
@@ -66,9 +68,9 @@ export interface NumberFieldAria {
   /** Props for the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
   /** Props for the increment button. */
-  incrementButtonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+  incrementButtonProps: AriaButtonProps;
   /** Props for the decrement button. */
-  decrementButtonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+  decrementButtonProps: AriaButtonProps;
   /** Props for the description element. */
   descriptionProps: JSX.HTMLAttributes<HTMLElement>;
   /** Props for the error message element. */
@@ -190,18 +192,71 @@ export function createNumberField(
     getProps().onKeyUp?.(e);
   };
 
-  // Handle increment button
-  const onIncrementPress = () => {
-    state.increment();
-    // Return focus to input
-    inputRef?.()?.focus();
+  const onButtonPressStart = (e: PressEvent) => {
+    const input = inputRef?.();
+
+    // Keep existing input focus in place. This avoids hiding software keyboards
+    // and prevents a blur/refocus flicker when mouse pressing the steppers.
+    if (input && input.ownerDocument.activeElement === input) {
+      return;
+    }
+
+    if (e.pointerType === "mouse") {
+      input?.focus();
+    } else if (e.target instanceof HTMLElement) {
+      e.target.focus();
+    }
   };
 
-  // Handle decrement button
-  const onDecrementPress = () => {
-    state.decrement();
-    // Return focus to input
-    inputRef?.()?.focus();
+  let incrementTouchPressUp = false;
+  let decrementTouchPressUp = false;
+
+  const onIncrementPressStart = (e: PressEvent) => {
+    if (e.pointerType !== "touch") {
+      state.increment();
+    } else {
+      incrementTouchPressUp = false;
+    }
+
+    onButtonPressStart(e);
+  };
+
+  const onIncrementPressUp = (e: PressEvent) => {
+    if (e.pointerType === "touch") {
+      incrementTouchPressUp = true;
+    }
+  };
+
+  const onIncrementPressEnd = (e: PressEvent) => {
+    if (e.pointerType === "touch" && incrementTouchPressUp) {
+      state.increment();
+    }
+
+    incrementTouchPressUp = false;
+  };
+
+  const onDecrementPressStart = (e: PressEvent) => {
+    if (e.pointerType !== "touch") {
+      state.decrement();
+    } else {
+      decrementTouchPressUp = false;
+    }
+
+    onButtonPressStart(e);
+  };
+
+  const onDecrementPressUp = (e: PressEvent) => {
+    if (e.pointerType === "touch") {
+      decrementTouchPressUp = true;
+    }
+  };
+
+  const onDecrementPressEnd = (e: PressEvent) => {
+    if (e.pointerType === "touch" && decrementTouchPressUp) {
+      state.decrement();
+    }
+
+    decrementTouchPressUp = false;
   };
 
   // Build aria-describedby
@@ -268,36 +323,36 @@ export function createNumberField(
       ) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get incrementButtonProps() {
-      const p = getProps();
-      const isDisabled = p.isDisabled ?? state.isDisabled();
-      const canIncrement = state.canIncrement();
-
       return {
         id: incrementId,
-        type: "button" as const,
-        tabIndex: -1, // Exclude from tab order
         "aria-label": `Increase ${getLabelText()}`,
         "aria-controls": inputId,
-        disabled: isDisabled || !canIncrement,
-        onClick: onIncrementPress,
-        onMouseDown: (e: MouseEvent) => e.preventDefault(), // Prevent focus
-      } as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+        excludeFromTabOrder: true,
+        preventFocusOnPress: true,
+        allowFocusWhenDisabled: true,
+        get isDisabled() {
+          return !state.canIncrement();
+        },
+        onPressStart: onIncrementPressStart,
+        onPressUp: onIncrementPressUp,
+        onPressEnd: onIncrementPressEnd,
+      } as AriaButtonProps;
     },
     get decrementButtonProps() {
-      const p = getProps();
-      const isDisabled = p.isDisabled ?? state.isDisabled();
-      const canDecrement = state.canDecrement();
-
       return {
         id: decrementId,
-        type: "button" as const,
-        tabIndex: -1, // Exclude from tab order
         "aria-label": `Decrease ${getLabelText()}`,
         "aria-controls": inputId,
-        disabled: isDisabled || !canDecrement,
-        onClick: onDecrementPress,
-        onMouseDown: (e: MouseEvent) => e.preventDefault(), // Prevent focus
-      } as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+        excludeFromTabOrder: true,
+        preventFocusOnPress: true,
+        allowFocusWhenDisabled: true,
+        get isDisabled() {
+          return !state.canDecrement();
+        },
+        onPressStart: onDecrementPressStart,
+        onPressUp: onDecrementPressUp,
+        onPressEnd: onDecrementPressEnd,
+      } as AriaButtonProps;
     },
     get descriptionProps() {
       return {

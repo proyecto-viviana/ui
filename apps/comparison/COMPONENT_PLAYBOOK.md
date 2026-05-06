@@ -47,6 +47,11 @@ Include:
   validation, density, static color, and slot/content permutations.
 - Interaction states to compare: hover, focus-visible, pressed, selected/open,
   keyboard navigation, dismissal, and focus return.
+- For field-like components and any control with embedded buttons, compare the
+  full focus lifecycle, not only final focus. Pointer interactions such as clear,
+  increment/decrement, menu trigger, and picker buttons must not emit a transient
+  input blur/focusout if React S2 keeps focus stable. Record the React event
+  order first, then assert the Solid event order or absence of blur matches it.
 - Temporal states to compare: pending/loading delays, spinner visibility,
   press-scale transforms, overlay animation frames, and delayed state
   normalization.

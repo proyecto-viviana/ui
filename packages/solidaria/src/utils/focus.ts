@@ -3,7 +3,7 @@
  * Based on @react-aria/utils focus utilities.
  */
 
-import { getOwnerDocument } from "./dom";
+import { getEventTarget, getOwnerDocument, getOwnerWindow, isFocusable } from "./dom";
 
 /**
  * Focuses an element without scrolling the page.
@@ -63,75 +63,77 @@ function getScrollableAncestors(element: Element): Element[] {
   return ancestors;
 }
 
-let ignoreFocus = false;
-let preventFocusTimeout: ReturnType<typeof setTimeout> | null = null;
-
 /**
  * Prevents focus from moving to a new element temporarily.
  * Used when clicking on a button that shouldn't steal focus.
  */
-export function preventFocus(target: Element): void {
-  const focusableAncestor = findFocusableAncestor(target);
-  if (!focusableAncestor) return;
+export function preventFocus(target: Element | null): (() => void) | undefined {
+  while (target && !isFocusable(target)) {
+    target = target.parentElement;
+  }
 
-  const document = getOwnerDocument(target);
-  const activeElement = document.activeElement;
+  const ownerWindow = getOwnerWindow(target);
+  const activeElement = ownerWindow.document.activeElement as HTMLElement | null;
 
-  ignoreFocus = true;
+  if (!activeElement || activeElement === target) {
+    return undefined;
+  }
 
-  // Capture focus events and prevent them from changing focus
-  const onFocus = (e: Event) => {
-    if (ignoreFocus) {
-      e.stopImmediatePropagation();
-      if (activeElement && activeElement !== document.body) {
-        (activeElement as HTMLElement).focus();
+  let isRefocusing = false;
+
+  const onBlur = (event: FocusEvent) => {
+    if (getEventTarget(event) === activeElement || isRefocusing) {
+      event.stopImmediatePropagation();
+    }
+  };
+
+  const onFocusOut = (event: FocusEvent) => {
+    if (getEventTarget(event) === activeElement || isRefocusing) {
+      event.stopImmediatePropagation();
+
+      if (!target && !isRefocusing) {
+        isRefocusing = true;
+        focusWithoutScrolling(activeElement);
+        cleanup();
       }
     }
   };
 
-  const onBlur = (e: Event) => {
-    if (ignoreFocus) {
-      e.stopImmediatePropagation();
+  const onFocus = (event: FocusEvent) => {
+    if (getEventTarget(event) === target || isRefocusing) {
+      event.stopImmediatePropagation();
     }
   };
 
-  const el = focusableAncestor as HTMLElement;
-  el.addEventListener("focus", onFocus, true);
-  el.addEventListener("blur", onBlur, true);
-  el.addEventListener("focusin", onFocus, true);
-  el.addEventListener("focusout", onBlur, true);
+  const onFocusIn = (event: FocusEvent) => {
+    if (getEventTarget(event) === target || isRefocusing) {
+      event.stopImmediatePropagation();
 
-  if (preventFocusTimeout != null) {
-    clearTimeout(preventFocusTimeout);
-  }
-
-  preventFocusTimeout = setTimeout(() => {
-    ignoreFocus = false;
-    el.removeEventListener("focus", onFocus, true);
-    el.removeEventListener("blur", onBlur, true);
-    el.removeEventListener("focusin", onFocus, true);
-    el.removeEventListener("focusout", onBlur, true);
-    preventFocusTimeout = null;
-  }, 0);
-}
-
-/**
- * Finds the closest focusable ancestor or the element itself.
- */
-function findFocusableAncestor(element: Element): Element | null {
-  let current: Element | null = element;
-
-  while (current) {
-    if (
-      current.hasAttribute("tabindex") ||
-      ["INPUT", "BUTTON", "SELECT", "TEXTAREA", "A"].includes(current.tagName)
-    ) {
-      return current;
+      if (!isRefocusing) {
+        isRefocusing = true;
+        focusWithoutScrolling(activeElement);
+        cleanup();
+      }
     }
-    current = current.parentElement;
+  };
+
+  ownerWindow.addEventListener("blur", onBlur, true);
+  ownerWindow.addEventListener("focusout", onFocusOut, true);
+  ownerWindow.addEventListener("focusin", onFocusIn, true);
+  ownerWindow.addEventListener("focus", onFocus, true);
+
+  const raf = ownerWindow.requestAnimationFrame(cleanup);
+
+  function cleanup() {
+    ownerWindow.cancelAnimationFrame(raf);
+    ownerWindow.removeEventListener("blur", onBlur, true);
+    ownerWindow.removeEventListener("focusout", onFocusOut, true);
+    ownerWindow.removeEventListener("focusin", onFocusIn, true);
+    ownerWindow.removeEventListener("focus", onFocus, true);
+    isRefocusing = false;
   }
 
-  return element;
+  return cleanup;
 }
 
 /**

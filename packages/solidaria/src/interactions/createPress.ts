@@ -135,6 +135,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     userSelect: undefined as string | undefined,
     metaKeyEvents: null as Map<string, KeyboardEvent> | null,
     clickCleanup: null as (() => void) | null,
+    focusCleanup: null as (() => void) | null,
   };
 
   // Global listeners manager
@@ -263,6 +264,11 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       pressState.clickCleanup = null;
     }
 
+    if (pressState.focusCleanup) {
+      pressState.focusCleanup();
+      pressState.focusCleanup = null;
+    }
+
     if (!props.allowTextSelectionOnPress) {
       restoreTextSelection(pressState.target as HTMLElement);
     }
@@ -329,7 +335,8 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
       // Prevent focus if requested
       if (props.preventFocusOnPress) {
-        preventFocus(e.currentTarget);
+        pressState.focusCleanup?.();
+        pressState.focusCleanup = preventFocus(getEventTarget(e) as Element | null) ?? null;
       }
       e.stopPropagation();
     }
@@ -586,6 +593,11 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     const shouldStopPropagation = triggerPressStart(e, pressState.pointerType);
     if (shouldStopPropagation) {
       e.stopPropagation();
+    }
+
+    if (props.preventFocusOnPress) {
+      pressState.focusCleanup?.();
+      pressState.focusCleanup = preventFocus(getEventTarget(e) as Element | null) ?? null;
     }
 
     addGlobalListener("mouseup", onMouseUpFallback);
@@ -872,6 +884,10 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     if (pressState.clickCleanup) {
       pressState.clickCleanup();
       pressState.clickCleanup = null;
+    }
+    if (pressState.focusCleanup) {
+      pressState.focusCleanup();
+      pressState.focusCleanup = null;
     }
   });
 

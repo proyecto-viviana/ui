@@ -176,6 +176,57 @@ async function numberFieldStepperState(root: Locator, index: number) {
   }, index);
 }
 
+async function resetNumberFieldFocusEvents(root: Locator) {
+  await root.evaluate((element) => {
+    const input = element.querySelector<HTMLInputElement>("input");
+    const fieldGroup = input?.parentElement ?? null;
+    const events: Array<{
+      type: string;
+      target: string;
+      active: string;
+      inputConnected: boolean;
+      currentInputIsOriginal: boolean;
+    }> = [];
+    const record = (event: FocusEvent) => {
+      events.push({
+        type: event.type,
+        target: event.target instanceof HTMLElement ? event.target.tagName : "",
+        active: document.activeElement instanceof HTMLElement ? document.activeElement.tagName : "",
+        inputConnected: input?.isConnected ?? false,
+        currentInputIsOriginal: element.querySelector<HTMLInputElement>("input") === input,
+      });
+    };
+
+    input?.addEventListener("blur", record, true);
+    input?.addEventListener("focusout", record, true);
+    fieldGroup?.addEventListener("focusout", record, true);
+
+    (
+      element as HTMLElement & {
+        __numberFieldFocusEvents?: typeof events;
+      }
+    ).__numberFieldFocusEvents = events;
+  });
+}
+
+async function numberFieldFocusEvents(root: Locator) {
+  return root.evaluate((element) => {
+    return (
+      (
+        element as HTMLElement & {
+          __numberFieldFocusEvents?: Array<{
+            type: string;
+            target: string;
+            active: string;
+            inputConnected: boolean;
+            currentInputIsOriginal: boolean;
+          }>;
+        }
+      ).__numberFieldFocusEvents ?? []
+    );
+  });
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -437,6 +488,7 @@ test.describe("comparison NumberField visual parity", () => {
 
       const decrementBox = await buttons.nth(0).boundingBox();
       expect(decrementBox, `${item.stack} decrement button should have a box`).not.toBeNull();
+      await resetNumberFieldFocusEvents(item.root);
       await page.mouse.move(
         (decrementBox?.x ?? 0) + (decrementBox?.width ?? 0) / 2,
         (decrementBox?.y ?? 0) + (decrementBox?.height ?? 0) / 2,
@@ -468,9 +520,14 @@ test.describe("comparison NumberField visual parity", () => {
         "data-comparison-value",
         "7",
       );
+      expect(
+        await numberFieldFocusEvents(item.root),
+        `${item.stack} decrement stepper should not emit transient input blur/focusout`,
+      ).toEqual([]);
 
       const incrementBox = await buttons.nth(1).boundingBox();
       expect(incrementBox, `${item.stack} increment button should have a box`).not.toBeNull();
+      await resetNumberFieldFocusEvents(item.root);
       await page.mouse.move(
         (incrementBox?.x ?? 0) + (incrementBox?.width ?? 0) / 2,
         (incrementBox?.y ?? 0) + (incrementBox?.height ?? 0) / 2,
@@ -502,6 +559,10 @@ test.describe("comparison NumberField visual parity", () => {
         "data-comparison-value",
         "8",
       );
+      expect(
+        await numberFieldFocusEvents(item.root),
+        `${item.stack} increment stepper should not emit transient input blur/focusout`,
+      ).toEqual([]);
     }
   });
 });

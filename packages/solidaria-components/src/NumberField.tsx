@@ -8,10 +8,11 @@
 import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
 import {
   createNumberField,
+  createButton,
   createFocusRing,
   createHover,
-  createPress,
   type AriaNumberFieldProps,
+  type AriaButtonProps,
 } from "@proyecto-viviana/solidaria";
 import { createNumberFieldState, type NumberFieldState } from "@proyecto-viviana/solid-stately";
 import {
@@ -113,8 +114,8 @@ export interface NumberFieldDecrementButtonProps extends SlotProps {
 interface NumberFieldContextValue {
   state: NumberFieldState;
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
-  incrementButtonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>;
-  decrementButtonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+  incrementButtonProps: AriaButtonProps;
+  decrementButtonProps: AriaButtonProps;
   labelProps: JSX.HTMLAttributes<HTMLElement>;
   groupProps: JSX.HTMLAttributes<HTMLElement>;
   descriptionProps: JSX.HTMLAttributes<HTMLElement>;
@@ -301,6 +302,29 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     renderValues,
   );
 
+  const childRenderValues: NumberFieldRenderProps = {
+    get isDisabled() {
+      return ariaProps.isDisabled ?? false;
+    },
+    get isInvalid() {
+      return ariaProps.isInvalid ?? false;
+    },
+    get isRequired() {
+      return ariaProps.isRequired ?? false;
+    },
+    get isReadOnly() {
+      return ariaProps.isReadOnly ?? false;
+    },
+    get value() {
+      return state.numberValue();
+    },
+  };
+
+  const fieldChildren = () => {
+    const children = local.children;
+    return typeof children === "function" ? children(childRenderValues) : children;
+  };
+
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
@@ -355,7 +379,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
           data-required={ariaProps.isRequired || undefined}
           data-readonly={ariaProps.isReadOnly || undefined}
         >
-          {renderProps.renderChildren()}
+          {fieldChildren()}
         </div>
       </NumberFieldContext.Provider>
     </NumberFieldStateContext.Provider>
@@ -500,12 +524,13 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
     throw new Error("NumberFieldIncrementButton must be used within a NumberField");
   }
 
-  const { isPressed, pressProps } = createPress({
+  const isDisabled = () => context.isDisabled || !context.state.canIncrement();
+
+  const buttonAria = createButton({
+    ...(context.incrementButtonProps as Record<string, unknown>),
+    elementType: "div",
     get isDisabled() {
-      return context.isDisabled || !context.state.canIncrement();
-    },
-    onPress: () => {
-      (context.incrementButtonProps.onClick as ((e?: MouseEvent) => void) | undefined)?.();
+      return isDisabled();
     },
   });
 
@@ -515,10 +540,8 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
     },
   });
 
-  const isDisabled = () => context.isDisabled || !context.state.canIncrement();
-
   const renderValues = createMemo<NumberFieldButtonRenderProps>(() => ({
-    isPressed: isPressed(),
+    isPressed: buttonAria.isPressed(),
     isHovered: isHovered(),
     isDisabled: isDisabled(),
   }));
@@ -534,58 +557,23 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
   );
 
   const cleanButtonProps = () => {
-    const { ref: _ref, ...rest } = context.incrementButtonProps as Record<string, unknown>;
-    return rest;
-  };
-  const divButtonProps = () => {
-    const { disabled: _disabled, type: _type, ...rest } = cleanButtonProps();
-    return rest;
-  };
-  const cleanPressProps = () => {
-    const { ref: _ref, ...rest } = pressProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = buttonAria.buttonProps as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
     const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
-  const preventFocusStutter = (event: MouseEvent | PointerEvent) => {
-    if (!isDisabled()) {
-      event.preventDefault();
-    }
-  };
-  const pressPropsWithoutFocusSteal = () => {
-    const rest = cleanPressProps() as Record<string, unknown> & {
-      onMouseDown?: JSX.EventHandler<HTMLElement, MouseEvent>;
-      onPointerDown?: JSX.EventHandler<HTMLElement, PointerEvent>;
-    };
-    const { onMouseDown, onPointerDown, ...others } = rest;
-
-    return {
-      ...others,
-      onMouseDown: (event: MouseEvent & { currentTarget: HTMLElement }) => {
-        preventFocusStutter(event);
-        onMouseDown?.(event as Parameters<NonNullable<typeof onMouseDown>>[0]);
-      },
-      onPointerDown: (event: PointerEvent & { currentTarget: HTMLElement }) => {
-        preventFocusStutter(event);
-        onPointerDown?.(event as Parameters<NonNullable<typeof onPointerDown>>[0]);
-      },
-    };
-  };
 
   return (
     <div
       {...domProps}
-      {...divButtonProps()}
-      {...pressPropsWithoutFocusSteal()}
+      {...cleanButtonProps()}
       {...cleanHoverProps()}
-      role="button"
-      tabIndex={-1}
       aria-disabled={isDisabled() || undefined}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-pressed={isPressed() || undefined}
+      data-pressed={buttonAria.isPressed() || undefined}
       data-hovered={isHovered() || undefined}
       data-disabled={isDisabled() || undefined}
     >
@@ -605,12 +593,13 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
     throw new Error("NumberFieldDecrementButton must be used within a NumberField");
   }
 
-  const { isPressed, pressProps } = createPress({
+  const isDisabled = () => context.isDisabled || !context.state.canDecrement();
+
+  const buttonAria = createButton({
+    ...(context.decrementButtonProps as Record<string, unknown>),
+    elementType: "div",
     get isDisabled() {
-      return context.isDisabled || !context.state.canDecrement();
-    },
-    onPress: () => {
-      (context.decrementButtonProps.onClick as ((e?: MouseEvent) => void) | undefined)?.();
+      return isDisabled();
     },
   });
 
@@ -620,10 +609,8 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
     },
   });
 
-  const isDisabled = () => context.isDisabled || !context.state.canDecrement();
-
   const renderValues = createMemo<NumberFieldButtonRenderProps>(() => ({
-    isPressed: isPressed(),
+    isPressed: buttonAria.isPressed(),
     isHovered: isHovered(),
     isDisabled: isDisabled(),
   }));
@@ -639,58 +626,23 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
   );
 
   const cleanButtonProps = () => {
-    const { ref: _ref, ...rest } = context.decrementButtonProps as Record<string, unknown>;
-    return rest;
-  };
-  const divButtonProps = () => {
-    const { disabled: _disabled, type: _type, ...rest } = cleanButtonProps();
-    return rest;
-  };
-  const cleanPressProps = () => {
-    const { ref: _ref, ...rest } = pressProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = buttonAria.buttonProps as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
     const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
-  const preventFocusStutter = (event: MouseEvent | PointerEvent) => {
-    if (!isDisabled()) {
-      event.preventDefault();
-    }
-  };
-  const pressPropsWithoutFocusSteal = () => {
-    const rest = cleanPressProps() as Record<string, unknown> & {
-      onMouseDown?: JSX.EventHandler<HTMLElement, MouseEvent>;
-      onPointerDown?: JSX.EventHandler<HTMLElement, PointerEvent>;
-    };
-    const { onMouseDown, onPointerDown, ...others } = rest;
-
-    return {
-      ...others,
-      onMouseDown: (event: MouseEvent & { currentTarget: HTMLElement }) => {
-        preventFocusStutter(event);
-        onMouseDown?.(event as Parameters<NonNullable<typeof onMouseDown>>[0]);
-      },
-      onPointerDown: (event: PointerEvent & { currentTarget: HTMLElement }) => {
-        preventFocusStutter(event);
-        onPointerDown?.(event as Parameters<NonNullable<typeof onPointerDown>>[0]);
-      },
-    };
-  };
 
   return (
     <div
       {...domProps}
-      {...divButtonProps()}
-      {...pressPropsWithoutFocusSteal()}
+      {...cleanButtonProps()}
       {...cleanHoverProps()}
-      role="button"
-      tabIndex={-1}
       aria-disabled={isDisabled() || undefined}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-pressed={isPressed() || undefined}
+      data-pressed={buttonAria.isPressed() || undefined}
       data-hovered={isHovered() || undefined}
       data-disabled={isDisabled() || undefined}
     >

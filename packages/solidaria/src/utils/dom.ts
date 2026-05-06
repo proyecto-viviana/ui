@@ -82,9 +82,10 @@ export function isFocusable(element: Element): boolean {
     return true;
   }
 
-  // Check for tabIndex
+  // A negative tabIndex is not tabbable, but it is still programmatically focusable.
+  // React Aria's focusable selector includes all tabindex values for this reason.
   const tabIndex = element.getAttribute("tabindex");
-  if (tabIndex != null && tabIndex !== "-1") {
+  if (tabIndex != null) {
     return true;
   }
 
