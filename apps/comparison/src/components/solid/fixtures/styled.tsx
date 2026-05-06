@@ -16,6 +16,7 @@ import {
   SegmentedControlItem as SolidSpectrumSegmentedControlItem,
   SelectBox as SolidSpectrumSelectBox,
   SelectBoxGroup as SolidSpectrumSelectBoxGroup,
+  TextArea as SolidSpectrumTextArea,
   TextField as SolidSpectrumTextField,
   ToggleButton as SolidSpectrumToggleButton,
   ToggleButtonGroup as SolidSpectrumToggleButtonGroup,
@@ -51,6 +52,12 @@ import {
   textFieldDemoPropsFromWindow,
   type TextFieldDemoProps,
 } from "@comparison/data/textfield-demo";
+import {
+  normalizeTextAreaDemoProps,
+  serializeTextAreaDemoProps,
+  textAreaDemoPropsFromWindow,
+  type TextAreaDemoProps,
+} from "@comparison/data/textarea-demo";
 import {
   normalizeSearchFieldDemoProps,
   searchFieldDemoPropsFromWindow,
@@ -294,6 +301,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   segmentedcontrol: () => h(SolidSpectrumSegmentedControlDemo, {}),
   selectboxgroup: () => h(SolidSpectrumSelectBoxGroupDemo, {}),
   searchfield: () => h(SolidSpectrumSearchFieldDemo, {}),
+  textarea: () => h(SolidSpectrumTextAreaDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
   togglebutton: () => h(SolidSpectrumToggleButtonDemo, {}),
   togglebuttongroup: () => h(SolidSpectrumToggleButtonGroupDemo, {}),
@@ -647,6 +655,120 @@ function SolidSpectrumTextFieldDemo() {
             onChange: (nextValue: string) => {
               setValue(nextValue);
               setDemoProps((current: TextFieldDemoProps) => ({
+                ...current,
+                value: nextValue,
+              }));
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumTextAreaDemo() {
+  const [demoProps, setDemoProps] = createSignal<TextAreaDemoProps>(textAreaDemoPropsFromWindow());
+  const [value, setValue] = createSignal(demoProps().value);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "textarea") {
+        const nextProps = normalizeTextAreaDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeTextAreaDemoProps({
+      ...demoProps(),
+      value: value(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-value"() {
+            return value();
+          },
+        },
+        [
+          hc(SolidSpectrumTextArea, {
+            "data-comparison-control-root": "textarea",
+            get "data-comparison-control-props"() {
+              return serializedProps();
+            },
+            get label() {
+              return demoProps().label;
+            },
+            get value() {
+              return value();
+            },
+            get placeholder() {
+              return demoProps().placeholder;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onInput: (event: InputEvent & { currentTarget: HTMLTextAreaElement }) => {
+              const nextValue = event.currentTarget.value;
+              setValue(nextValue);
+              setDemoProps((current: TextAreaDemoProps) => ({
+                ...current,
+                value: nextValue,
+              }));
+            },
+            onChange: (nextValue: string) => {
+              setValue(nextValue);
+              setDemoProps((current: TextAreaDemoProps) => ({
                 ...current,
                 value: nextValue,
               }));

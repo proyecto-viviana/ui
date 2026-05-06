@@ -25,6 +25,7 @@ import {
   TabPanel as SpectrumTabPanel,
   Tabs as SpectrumTabs,
   Text as SpectrumText,
+  TextArea as SpectrumTextArea,
   TextField as SpectrumTextField,
   Tooltip as SpectrumTooltip,
   TooltipTrigger as SpectrumTooltipTrigger,
@@ -57,6 +58,11 @@ import {
   serializeTextFieldDemoProps,
   textFieldDemoPropsFromWindow,
 } from "@comparison/data/textfield-demo";
+import {
+  normalizeTextAreaDemoProps,
+  serializeTextAreaDemoProps,
+  textAreaDemoPropsFromWindow,
+} from "@comparison/data/textarea-demo";
 import {
   normalizeSearchFieldDemoProps,
   searchFieldDemoPropsFromWindow,
@@ -205,6 +211,7 @@ export const reactStyledFixtures = {
   togglebutton: () => jsx(ReactToggleButtonDemo, {}),
   togglebuttongroup: () => jsx(ReactToggleButtonGroupDemo, {}),
   tabs: renderTabsDemo,
+  textarea: () => jsx(ReactTextAreaDemo, {}),
   textfield: () => jsx(ReactTextFieldDemo, {}),
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
@@ -804,6 +811,52 @@ function ReactTextFieldDemo() {
       }),
       "data-comparison-value": value,
       children: jsx(SpectrumTextField, {
+        label: demoProps.label,
+        value,
+        placeholder: demoProps.placeholder,
+        size: demoProps.size,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => {
+          setValue(nextValue);
+          setDemoProps((current) => ({ ...current, value: nextValue }));
+        },
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactTextAreaDemo() {
+  const [demoProps, setDemoProps] = useState(textAreaDemoPropsFromWindow);
+  const [value, setValue] = useState(() => demoProps.value);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "textarea") {
+        const nextProps = normalizeTextAreaDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "textarea",
+      "data-comparison-control-props": serializeTextAreaDemoProps({
+        ...demoProps,
+        value,
+      }),
+      "data-comparison-value": value,
+      children: jsx(SpectrumTextArea, {
         label: demoProps.label,
         value,
         placeholder: demoProps.placeholder,

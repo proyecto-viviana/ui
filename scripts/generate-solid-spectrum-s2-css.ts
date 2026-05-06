@@ -14,6 +14,7 @@ await import("../packages/solid-spectrum/src/button/s2-progress-circle-animation
 await import("../packages/solid-spectrum/src/button/s2-button-styles");
 await import("../packages/solid-spectrum/src/button/s2-action-button-styles");
 await import("../packages/solid-spectrum/src/searchfield/s2-searchfield-styles");
+await import("../packages/solid-spectrum/src/textfield/s2-textarea-styles");
 
 const css = [
   "/* Generated from vendored Adobe Spectrum 2 style declarations. Do not edit by hand. */",

@@ -14,6 +14,7 @@ import {
 } from "./button-demo";
 import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
+import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
 import {
   actionButtonGroupDemoDefaults,
@@ -429,6 +430,102 @@ const searchFieldControls: ComponentControlGroup = {
     "aria-describedby",
   ],
   note: "Modeled from the S2 SearchField docs and source control surface. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, controlled value changes, and clear behavior into both stacks.",
+};
+
+const textAreaControls: ComponentControlGroup = {
+  slug: "textarea",
+  title: "TextArea",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: textAreaDemoDefaults.label,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: textAreaDemoDefaults.value,
+    },
+    {
+      name: "placeholder",
+      label: "placeholder",
+      kind: "text",
+      defaultValue: textAreaDemoDefaults.placeholder,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: textAreaDemoDefaults.size,
+      options: options(textAreaSizeOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: textAreaDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: textAreaDemoDefaults.errorMessage,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "value",
+    "defaultValue",
+    "onChange",
+    "placeholder",
+    "size",
+    "description",
+    "errorMessage",
+    "isDisabled",
+    "isReadOnly",
+    "isRequired",
+    "isInvalid",
+    "name",
+    "maxLength",
+    "minLength",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 TextArea source as the multiline TextField sibling. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, auto-height content, and controlled value changes into both stacks.",
 };
 
 const actionButtonControls: ComponentControlGroup = {
@@ -1019,6 +1116,7 @@ export const componentControlGroups = {
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,
+  textarea: textAreaControls,
   textfield: textFieldControls,
   togglebutton: toggleButtonControls,
   togglebuttongroup: toggleButtonGroupControls,

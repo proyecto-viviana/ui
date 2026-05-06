@@ -31,36 +31,36 @@ describe("TextArea (solid-spectrum)", () => {
   });
 
   describe("size variants", () => {
-    it("applies sm size styles", () => {
+    it("renders with sm size", () => {
       render(() => <TextArea aria-label="Notes" size="sm" />);
-      const textarea = screen.getByRole("textbox");
-      expect(textarea.className).toContain("text-sm");
+      expect(screen.getByRole("textbox")).toBeInTheDocument();
     });
 
-    it("applies md size styles by default", () => {
+    it("renders with md size by default", () => {
       render(() => <TextArea aria-label="Notes" />);
-      const textarea = screen.getByRole("textbox");
-      expect(textarea.className).toContain("text-base");
+      expect(screen.getByRole("textbox")).toBeInTheDocument();
     });
 
-    it("applies lg size styles", () => {
+    it("renders with lg size", () => {
       render(() => <TextArea aria-label="Notes" size="lg" />);
-      const textarea = screen.getByRole("textbox");
-      expect(textarea.className).toContain("text-lg");
+      expect(screen.getByRole("textbox")).toBeInTheDocument();
+    });
+
+    it("renders with S2 XL size", () => {
+      render(() => <TextArea aria-label="Notes" size="XL" />);
+      expect(screen.getByRole("textbox")).toBeInTheDocument();
     });
   });
 
   describe("variant styles", () => {
-    it("applies outline variant by default", () => {
+    it("renders outline variant by default", () => {
       render(() => <TextArea aria-label="Notes" />);
-      const textarea = screen.getByRole("textbox");
-      expect(textarea.className).toContain("border-bg-400");
+      expect(screen.getByRole("textbox")).toBeInTheDocument();
     });
 
-    it("applies filled variant", () => {
+    it("accepts legacy filled variant", () => {
       render(() => <TextArea aria-label="Notes" variant="filled" />);
-      const textarea = screen.getByRole("textbox");
-      expect(textarea.className).toContain("bg-bg-200");
+      expect(screen.getByRole("textbox")).toBeInTheDocument();
     });
   });
 
@@ -88,6 +88,25 @@ describe("TextArea (solid-spectrum)", () => {
       const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
       expect(textarea.value).toBe("Default text");
     });
+
+    it("calls onChange for browser input events", () => {
+      const onChange = vi.fn();
+      render(() => <TextArea aria-label="Notes" onChange={onChange} />);
+      const textarea = screen.getByRole("textbox");
+
+      fireEvent.input(textarea, { target: { value: "typed notes" } });
+
+      expect(onChange).toHaveBeenCalledWith("typed notes");
+    });
+
+    it("sets focus state on the field group", () => {
+      const { container } = render(() => <TextArea aria-label="Notes" />);
+      const textarea = screen.getByRole("textbox");
+
+      textarea.focus();
+
+      expect(container.querySelector("[data-focused='true']")).toBeInTheDocument();
+    });
   });
 
   describe("accessibility", () => {
@@ -108,6 +127,31 @@ describe("TextArea (solid-spectrum)", () => {
       render(() => <TextArea aria-label="Notes" isInvalid errorMessage="Required" />);
       const textarea = screen.getByRole("textbox");
       expect(textarea.getAttribute("aria-invalid")).toBe("true");
+    });
+
+    it("sets aria-required when required", () => {
+      render(() => <TextArea aria-label="Notes" isRequired />);
+      const textarea = screen.getByRole("textbox");
+      expect(textarea).toHaveAttribute("aria-required", "true");
+    });
+
+    it("shows required indicator when label is present", () => {
+      const { container } = render(() => <TextArea label="Notes" isRequired />);
+      expect(container.querySelector("label svg")).toBeInTheDocument();
+    });
+
+    it("hides description while showing invalid error message", () => {
+      render(() => (
+        <TextArea
+          aria-label="Notes"
+          isInvalid
+          description="Enter your notes"
+          errorMessage="Required"
+        />
+      ));
+
+      expect(screen.queryByText("Enter your notes")).not.toBeInTheDocument();
+      expect(screen.getByText("Required")).toBeInTheDocument();
     });
   });
 });

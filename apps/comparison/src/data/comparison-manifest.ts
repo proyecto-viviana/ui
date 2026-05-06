@@ -365,6 +365,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 TextField directly; Solid uses @proyecto-viviana/solid-spectrum TextField with S2-derived label, field group, input, help text, and validation styling.",
   }),
 
+  textarea: styledLiveOfficialEntry({
+    slug: "textarea",
+    title: "TextArea",
+    category: "Components",
+    summary:
+      "Multiline text entry with S2 field layout, auto-height textarea, help text, validation, and value state.",
+    styledSummary: "React Spectrum TextArea vs Solid Spectrum TextArea.",
+    styledNote:
+      "React uses @react-spectrum/s2 TextArea directly; Solid uses @proyecto-viviana/solid-spectrum TextArea with S2-derived label, field group, textarea input, help text, auto-height, and validation styling.",
+  }),
+
   searchfield: styledLiveOfficialEntry({
     slug: "searchfield",
     title: "SearchField",
