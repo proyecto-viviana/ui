@@ -1,4 +1,10 @@
-import { children as resolveChildren, mergeProps, splitProps, type JSX } from "solid-js";
+import {
+  children as resolveChildren,
+  createSignal,
+  mergeProps,
+  splitProps,
+  type JSX,
+} from "solid-js";
 import {
   Link as HeadlessLink,
   type LinkProps as HeadlessLinkProps,
@@ -67,6 +73,17 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
   const fillStyle = (): ButtonFillStyle => local.fillStyle ?? "fill";
   const size = (): ButtonSize => local.size ?? "M";
   const mergedStyles = () => mergeStyles(groupContext?.styles, local.styles);
+  const [isHovered, setIsHovered] = createSignal(false);
+  const [isPressed, setIsPressed] = createSignal(false);
+
+  const gradientClass = () =>
+    s2ButtonGradient({
+      isHovered: isHovered(),
+      isPressed: isPressed(),
+      isDisabled: !!headlessProps.isDisabled,
+      isPending: false,
+      variant: variant() as Extract<ButtonVariant, "premium" | "genai">,
+    });
 
   const getClassName = (renderProps: LinkRenderProps): string =>
     [
@@ -125,17 +142,7 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
 
     return (
       <>
-        {variant() === "genai" || variant() === "premium" ? (
-          <span
-            class={s2ButtonGradient({
-              isHovered: false,
-              isPressed: false,
-              isDisabled: false,
-              isPending: false,
-              variant: variant() as Extract<ButtonVariant, "premium" | "genai">,
-            })}
-          />
-        ) : null}
+        {variant() === "genai" || variant() === "premium" ? <span class={gradientClass()} /> : null}
         <IconContext.Provider value={iconContextValue}>
           <ResolvedContent />
         </IconContext.Provider>
@@ -148,6 +155,18 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       {...headlessProps}
       class={getClassName}
       style={getStyle}
+      onHoverChange={(hovered) => {
+        setIsHovered(hovered);
+        headlessProps.onHoverChange?.(hovered);
+      }}
+      onPressStart={(event) => {
+        setIsPressed(true);
+        headlessProps.onPressStart?.(event);
+      }}
+      onPressEnd={(event) => {
+        setIsPressed(false);
+        headlessProps.onPressEnd?.(event);
+      }}
       data-variant={variant()}
       data-style={fillStyle()}
       data-size={size()}

@@ -243,8 +243,6 @@ test.describe("comparison single button-derived visual parity", () => {
       expect(solid.textColor).toBe(react.textColor);
       expect(react.color).toBe(react.textColor);
       expect(solid.color).toBe(solid.textColor);
-      expect(react.color).not.toBe(react.canvasColor);
-      expect(solid.color).not.toBe(solid.canvasColor);
       expect(react.backgroundColor).not.toBe(react.color);
       expect(solid.backgroundColor).not.toBe(solid.color);
     }

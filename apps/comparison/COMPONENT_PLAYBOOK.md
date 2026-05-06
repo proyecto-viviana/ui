@@ -136,6 +136,11 @@ Batch 1 intentionally leaves group context and collection selection details to
 Batch 2 and Batch 3. Do not mix group fixes into single-control work unless a
 shared button primitive regression blocks the single-control matrix.
 
+For `LinkButton` premium/genai variants, interactive gradient parity still needs
+an explicit manual Playwright pass with navigation suppressed before sign-off.
+Keep that check in the validation checklist even when the committed guard only
+covers geometry, href semantics, and comparison-page color resets.
+
 Batch 2 covers grouped button-derived controls with button-context propagation
 and layout behavior: `ActionButtonGroup`, `ButtonGroup`, and
 `ToggleButtonGroup`.
