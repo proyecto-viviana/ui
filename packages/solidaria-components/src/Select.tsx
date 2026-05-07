@@ -910,6 +910,8 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   const { listBoxProps } = createListBox(
     {
       ...(menuProps as unknown as AriaListBoxProps),
+      shouldSelectOnPressUp: true,
+      shouldFocusOnHover: true,
       shouldSelectOnFocus: local.isInPopover === true ? false : undefined,
       get isDisabled() {
         return state.isDisabled;
@@ -1033,6 +1035,17 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
       get "aria-label"() {
         return ariaProps["aria-label"] ?? local.textValue;
       },
+      shouldSelectOnPressUp: true,
+      shouldFocusOnHover: true,
+      get onHoverStart() {
+        return ariaProps.onHoverStart;
+      },
+      get onHoverEnd() {
+        return ariaProps.onHoverEnd;
+      },
+      get onHoverChange() {
+        return ariaProps.onHoverChange;
+      },
     },
     {
       ...createSelectListStateAdapter(state),
@@ -1068,18 +1081,12 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     },
   );
 
-  const { isHovered, hoverProps } = createHover({
-    get isDisabled() {
-      return optionAria.isDisabled();
-    },
-  });
-
   const renderValues = createMemo<SelectOptionRenderProps>(() => ({
     isSelected: optionAria.isSelected(),
     isFocused: optionAria.isFocused(),
     isFocusVisible: optionAria.isFocusVisible(),
     isPressed: optionAria.isPressed(),
-    isHovered: isHovered(),
+    isHovered: optionAria.isHovered(),
     isDisabled: optionAria.isDisabled(),
   }));
 
@@ -1124,10 +1131,6 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     }) as JSX.EventHandler<HTMLLIElement, MouseEvent>;
     return rest;
   };
-  const cleanHoverProps = () => {
-    const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
   const selectOption = () => {
     if (optionAria.isDisabled()) {
       return;
@@ -1149,14 +1152,13 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
       <li
         {...cleanOptionProps()}
-        {...cleanHoverProps()}
         class={renderProps.class()}
         style={renderProps.style()}
         data-selected={optionAria.isSelected() || undefined}
         data-focused={optionAria.isFocused() || undefined}
         data-focus-visible={optionAria.isFocusVisible() || undefined}
         data-pressed={optionAria.isPressed() || undefined}
-        data-hovered={isHovered() || undefined}
+        data-hovered={optionAria.isHovered() || undefined}
         data-disabled={optionAria.isDisabled() || undefined}
       >
         {hasPrimitiveLabel() ? (

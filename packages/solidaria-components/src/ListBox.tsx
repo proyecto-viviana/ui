@@ -21,7 +21,6 @@ import {
   createListBox,
   createOption,
   createFocusRing,
-  createHover,
   mergeProps,
   type AriaListBoxProps,
   type AriaOptionProps,
@@ -706,31 +705,28 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
       get shouldSelectOnPressUp() {
         return ariaProps.shouldSelectOnPressUp;
       },
+      get shouldFocusOnHover() {
+        return ariaProps.shouldFocusOnHover;
+      },
+      get onHoverStart() {
+        return ariaProps.onHoverStart;
+      },
+      get onHoverEnd() {
+        return ariaProps.onHoverEnd;
+      },
+      get onHoverChange() {
+        return ariaProps.onHoverChange;
+      },
     },
     state,
   );
-
-  const { isHovered, hoverProps } = createHover({
-    get isDisabled() {
-      return optionAria.isDisabled();
-    },
-    onHoverStart(e) {
-      (ariaProps as Record<string, (e: unknown) => void>).onHoverStart?.(e);
-    },
-    onHoverEnd(e) {
-      (ariaProps as Record<string, (e: unknown) => void>).onHoverEnd?.(e);
-    },
-    onHoverChange(isHovering) {
-      (ariaProps as Record<string, (isHovering: boolean) => void>).onHoverChange?.(isHovering);
-    },
-  });
 
   const renderValues = createMemo<ListBoxOptionRenderProps>(() => ({
     isSelected: optionAria.isSelected(),
     isFocused: optionAria.isFocused(),
     isFocusVisible: optionAria.isFocusVisible(),
     isPressed: optionAria.isPressed(),
-    isHovered: isHovered(),
+    isHovered: optionAria.isHovered(),
     isDisabled: optionAria.isDisabled(),
   }));
 
@@ -783,10 +779,6 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
     }
     return rest;
   };
-  const cleanHoverProps = () => {
-    const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
   const domProps = () => filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
 
   return (
@@ -799,7 +791,6 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         {...mergeProps(
           domProps(),
           cleanOptionProps(),
-          cleanHoverProps(),
           (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
           (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
         )}
@@ -809,7 +800,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         data-focused={optionAria.isFocused() || undefined}
         data-focus-visible={optionAria.isFocusVisible() || undefined}
         data-pressed={optionAria.isPressed() || undefined}
-        data-hovered={isHovered() || undefined}
+        data-hovered={optionAria.isHovered() || undefined}
         data-disabled={optionAria.isDisabled() || undefined}
         data-dragging={draggableItem()?.isDragging || undefined}
         data-drop-target={droppableItem()?.isDropTarget || undefined}

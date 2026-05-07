@@ -74,7 +74,9 @@ Include:
 - For menu/list popovers, compare mouse-open and keyboard-open separately. The
   focused option can legitimately differ by input modality, so assert the active
   descendant, DOM focus target, `data-focus-visible`, rendered text color, and
-  outline for both paths before accepting the open state.
+  outline for both paths before accepting the open state. Also hover a
+  non-selected row and assert that the hover-driven focused state, background,
+  and text color match the React Spectrum row.
 - Which checks are behavior assertions, computed-style assertions,
   Playwright CLI inspection artifacts, and committed Playwright test snapshots.
 

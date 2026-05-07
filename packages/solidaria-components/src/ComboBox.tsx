@@ -983,15 +983,20 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       get onAction() {
         return local.onAction;
       },
+      shouldSelectOnPressUp: true,
+      shouldFocusOnHover: true,
+      get onHoverStart() {
+        return ariaProps.onHoverStart;
+      },
+      get onHoverEnd() {
+        return ariaProps.onHoverEnd;
+      },
+      get onHoverChange() {
+        return ariaProps.onHoverChange;
+      },
     },
     createComboBoxListStateAdapter(state),
   );
-
-  const { isHovered, hoverProps } = createHover({
-    get isDisabled() {
-      return optionAria.isDisabled();
-    },
-  });
 
   const isOptionFocusVisible = () =>
     optionAria.isFocusVisible() ||
@@ -1002,7 +1007,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     isFocused: optionAria.isFocused(),
     isFocusVisible: isOptionFocusVisible(),
     isPressed: optionAria.isPressed(),
-    isHovered: isHovered(),
+    isHovered: optionAria.isHovered(),
     isDisabled: optionAria.isDisabled(),
   }));
 
@@ -1024,23 +1029,18 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
     return rest;
   };
-  const cleanHoverProps = () => {
-    const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
 
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
       <li
         {...cleanOptionProps()}
-        {...cleanHoverProps()}
         class={renderProps.class()}
         style={renderProps.style()}
         data-selected={optionAria.isSelected() || undefined}
         data-focused={optionAria.isFocused() || undefined}
         data-focus-visible={isOptionFocusVisible() || undefined}
         data-pressed={optionAria.isPressed() || undefined}
-        data-hovered={isHovered() || undefined}
+        data-hovered={optionAria.isHovered() || undefined}
         data-disabled={optionAria.isDisabled() || undefined}
       >
         {renderProps.renderChildren()}

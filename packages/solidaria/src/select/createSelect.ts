@@ -196,7 +196,11 @@ export function createSelect<T>(
     get isDisabled() {
       return getProps().isDisabled ?? state.isDisabled;
     },
-    onPress() {
+    onPress(e) {
+      if (e.pointerType === "keyboard") {
+        return;
+      }
+
       if (state.isOpen()) {
         state.close();
       } else {

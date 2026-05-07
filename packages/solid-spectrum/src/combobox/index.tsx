@@ -538,8 +538,12 @@ function ComboBoxFieldGroup(props: {
   children: JSX.Element;
 }) {
   const context = useContext(HeadlessComboBoxContext) as {
+    isFocused?: () => boolean;
+    isFocusVisible?: () => boolean;
     setTriggerRef?: (el: HTMLElement | null) => void;
   } | null;
+  const isFocused = () => context?.isFocused?.() ?? props.renderProps.isFocused;
+  const isFocusVisible = () => context?.isFocusVisible?.() ?? props.renderProps.isFocusVisible;
 
   onCleanup(() => context?.setTriggerRef?.(null));
 
@@ -550,7 +554,8 @@ function ComboBoxFieldGroup(props: {
       class={comboBoxFieldGroup({
         ...props.renderProps,
         size: props.size(),
-        isFocusWithin: props.renderProps.isFocused,
+        isFocusWithin: isFocused(),
+        isFocusVisible: isFocusVisible(),
       })}
       onPointerDown={(event) => {
         if (event.pointerType === "mouse") {
@@ -558,8 +563,8 @@ function ComboBoxFieldGroup(props: {
         }
       }}
       onTouchEnd={focusFieldInput}
-      data-focused={props.renderProps.isFocused ? "true" : undefined}
-      data-focus-visible={props.renderProps.isFocusVisible ? "true" : undefined}
+      data-focused={isFocused() ? "true" : undefined}
+      data-focus-visible={isFocusVisible() ? "true" : undefined}
       data-disabled={props.renderProps.isDisabled ? "true" : undefined}
       data-invalid={props.renderProps.isInvalid ? "true" : undefined}
     >

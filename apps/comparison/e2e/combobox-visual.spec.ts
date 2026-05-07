@@ -183,6 +183,10 @@ async function openListMetrics(root: Locator) {
       listboxMargin: listboxStyle?.margin ?? null,
       optionGridAreas: optionStyle?.gridTemplateAreas ?? null,
       optionGridColumns: optionStyle?.gridTemplateColumns ?? null,
+      firstOptionDataFocused: firstOption?.hasAttribute("data-focused") ?? false,
+      firstOptionDataHovered: firstOption?.hasAttribute("data-hovered") ?? false,
+      firstOptionBackground: optionStyle?.backgroundColor ?? null,
+      firstOptionColor: optionStyle?.color ?? null,
       optionLeftInset:
         listboxRect == null || optionRect == null
           ? null
@@ -207,6 +211,60 @@ async function waitForOpenListMetrics(root: Locator, label: string) {
     .poll(() => openListMetrics(root), label)
     .toMatchObject({ ariaExpanded: "true", hasListbox: true, hasPopover: true });
   return openListMetrics(root);
+}
+
+async function hoverFirstOpenOption(page: Page, root: Locator, label: string) {
+  const point = await root.evaluate((element) => {
+    const input = element.querySelector<HTMLInputElement>('input[role="combobox"]');
+    const button = element.querySelector<HTMLButtonElement>("button[aria-haspopup='listbox']");
+    const listboxId = input?.getAttribute("aria-controls") ?? button?.getAttribute("aria-controls");
+    const listbox =
+      (listboxId ? document.getElementById(listboxId) : null) ??
+      Array.from(document.querySelectorAll<HTMLElement>("[role='listbox']")).find((candidate) =>
+        candidate.textContent?.includes("Enterprise"),
+      ) ??
+      null;
+    const firstOption = listbox?.querySelector<HTMLElement>("[role='option']");
+    const rect = firstOption?.getBoundingClientRect();
+
+    return rect == null ? null : { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  });
+
+  expect(point, `${label} first option should be measurable`).not.toBeNull();
+  await page.mouse.move(point!.x, point!.y);
+  await expect
+    .poll(() => openListMetrics(root), label)
+    .toMatchObject({ firstOptionDataFocused: true });
+  return openListMetrics(root);
+}
+
+async function tabUntilActive(page: Page, root: Locator, label: string) {
+  for (let index = 0; index < 80; index += 1) {
+    await page.keyboard.press("Tab");
+    if (await root.evaluate((element) => element.contains(document.activeElement))) {
+      return;
+    }
+  }
+
+  throw new Error(`${label} did not receive keyboard focus`);
+}
+
+async function comboBoxFocusRingMetrics(root: Locator) {
+  return root.evaluate((element) => {
+    const input = element.querySelector<HTMLInputElement>('input[role="combobox"]');
+    const fieldGroup = input?.parentElement ?? null;
+    const fieldStyle = fieldGroup == null ? null : window.getComputedStyle(fieldGroup);
+
+    return {
+      activeIsInput: document.activeElement === input,
+      inputFocusVisible: input?.hasAttribute("data-focus-visible") ?? false,
+      fieldGroupFocusVisible: fieldGroup?.hasAttribute("data-focus-visible") ?? false,
+      fieldGroupOutlineStyle: fieldStyle?.outlineStyle ?? null,
+      fieldGroupOutlineWidth: fieldStyle?.outlineWidth ?? null,
+      fieldGroupOutlineColor: fieldStyle?.outlineColor ?? null,
+      fieldGroupOutlineOffset: fieldStyle?.outlineOffset ?? null,
+    };
+  });
 }
 
 function expectNear(
@@ -326,6 +384,47 @@ test.describe("comparison ComboBox visual parity", () => {
     }
   });
 
+  test("keyboard focus ring covers the field group", async ({ page }) => {
+    const fixtures = await comboBoxFixtures(page, "?size=XL");
+
+    await tabUntilActive(page, fixtures.reactRoot, "React ComboBox");
+    const react = await comboBoxFocusRingMetrics(fixtures.reactRoot);
+
+    await tabUntilActive(page, fixtures.solidRoot, "Solid ComboBox");
+    const solid = await comboBoxFocusRingMetrics(fixtures.solidRoot);
+
+    expect(solid.activeIsInput).toBe(react.activeIsInput);
+    expect(solid.inputFocusVisible).toBe(react.inputFocusVisible);
+    expect(solid.fieldGroupFocusVisible).toBe(react.fieldGroupFocusVisible);
+    expect(solid.fieldGroupOutlineStyle).toBe(react.fieldGroupOutlineStyle);
+    expect(solid.fieldGroupOutlineWidth).toBe(react.fieldGroupOutlineWidth);
+    expect(solid.fieldGroupOutlineColor).toBe(react.fieldGroupOutlineColor);
+    expect(solid.fieldGroupOutlineOffset).toBe(react.fieldGroupOutlineOffset);
+  });
+
+  test("Enter on the focused input follows React Spectrum closed behavior", async ({ page }) => {
+    const fixtures = await comboBoxFixtures(page, "?size=XL");
+
+    for (const item of [
+      { stack: "react", root: fixtures.reactRoot, input: fixtures.reactInput },
+      { stack: "solid", root: fixtures.solidRoot, input: fixtures.solidInput },
+    ]) {
+      await item.input.focus();
+      await page.keyboard.press("Enter");
+      await expect(item.input, `${item.stack} input remains collapsed`).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      await expect(item.root, `${item.stack} committed key remains stable`).toHaveAttribute(
+        "data-comparison-value",
+        "pro",
+      );
+      await expect
+        .poll(() => item.input.evaluate((element) => document.activeElement === element))
+        .toBe(true);
+    }
+  });
+
   test("selection and open list layout match React Spectrum", async ({ page }) => {
     const fixtures = await comboBoxFixtures(page, "?size=XL");
 
@@ -372,6 +471,11 @@ test.describe("comparison ComboBox visual parity", () => {
       fixtures.reactRoot,
       "React ComboBox open list metrics",
     );
+    const reactHover = await hoverFirstOpenOption(
+      page,
+      fixtures.reactRoot,
+      "React ComboBox hovered option",
+    );
     await page.keyboard.press("Escape");
     await expect(fixtures.reactInput).toHaveAttribute("aria-expanded", "false");
 
@@ -379,6 +483,11 @@ test.describe("comparison ComboBox visual parity", () => {
     const solid = await waitForOpenListMetrics(
       fixtures.solidRoot,
       "Solid ComboBox open list metrics",
+    );
+    const solidHover = await hoverFirstOpenOption(
+      page,
+      fixtures.solidRoot,
+      "Solid ComboBox hovered option",
     );
 
     expect(solid.rootListboxCount).toBe(0);
@@ -389,6 +498,10 @@ test.describe("comparison ComboBox visual parity", () => {
     expect(solid.optionGridAreas).toBe(react.optionGridAreas);
     expect(solid.optionGridAreas).not.toBe("none");
     expect(solid.optionGridColumns).toBe(react.optionGridColumns);
+    expect(solidHover.firstOptionDataFocused).toBe(reactHover.firstOptionDataFocused);
+    expect(solidHover.firstOptionDataHovered).toBe(reactHover.firstOptionDataHovered);
+    expect(solidHover.firstOptionBackground).toBe(reactHover.firstOptionBackground);
+    expect(solidHover.firstOptionColor).toBe(reactHover.firstOptionColor);
     expect(solid.labelGridArea).toBe(react.labelGridArea);
     expect(solid.labelFontWeight).toBe(react.labelFontWeight);
     expect(solid.labelMarginTop).toBe(react.labelMarginTop);

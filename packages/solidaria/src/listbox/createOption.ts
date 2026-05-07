@@ -5,7 +5,7 @@
 
 import { type JSX, type Accessor } from "solid-js";
 import { createPress } from "../interactions/createPress";
-import { createHover } from "../interactions/createHover";
+import { createHover, type HoverEvents } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
@@ -25,6 +25,12 @@ export interface AriaOptionProps {
   shouldSelectOnPressUp?: boolean;
   /** Whether to focus the option on hover. */
   shouldFocusOnHover?: boolean;
+  /** Handler called when hover starts. */
+  onHoverStart?: HoverEvents["onHoverStart"];
+  /** Handler called when hover ends. */
+  onHoverEnd?: HoverEvents["onHoverEnd"];
+  /** Handler called when hover state changes. */
+  onHoverChange?: HoverEvents["onHoverChange"];
   /** Handler called when the option is activated. */
   onAction?: () => void;
 }
@@ -44,6 +50,8 @@ export interface OptionAria {
   isFocusVisible: Accessor<boolean>;
   /** Whether the option is currently pressed. */
   isPressed: Accessor<boolean>;
+  /** Whether the option is currently hovered. */
+  isHovered: Accessor<boolean>;
   /** Whether the option is disabled. */
   isDisabled: Accessor<boolean>;
 }
@@ -107,11 +115,18 @@ export function createOption<T>(
     get isDisabled() {
       return isDisabled();
     },
-    onHoverStart() {
+    onHoverStart(e) {
       const shouldFocus = getProps().shouldFocusOnHover ?? getData()?.shouldFocusOnHover;
       if (shouldFocus) {
         state.setFocusedKey(getProps().key);
       }
+      getProps().onHoverStart?.(e);
+    },
+    onHoverEnd(e) {
+      getProps().onHoverEnd?.(e);
+    },
+    onHoverChange(isHovering) {
+      getProps().onHoverChange?.(isHovering);
     },
   });
 
@@ -159,6 +174,7 @@ export function createOption<T>(
     isFocused,
     isFocusVisible: () => isFocused() && isFocusVisible(),
     isPressed,
+    isHovered,
     isDisabled,
   };
 }

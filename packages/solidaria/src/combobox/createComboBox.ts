@@ -670,6 +670,8 @@ export function createComboBox<T>(
         "aria-labelledby": inputId,
         "aria-multiselectable": isMulti || undefined,
         tabIndex: -1,
+        shouldSelectOnPressUp: true,
+        shouldFocusOnHover: true,
         // Track pointerdown inside listbox to prevent blur from closing
         // Use capture phase because createPress calls stopPropagation on pointerdown
         onPointerDownCapture: () => {

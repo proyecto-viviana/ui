@@ -176,6 +176,10 @@ async function openListMetrics(root: Locator) {
       listboxMargin: listboxStyle?.margin ?? null,
       optionGridAreas: optionStyle?.gridTemplateAreas ?? null,
       optionGridColumns: optionStyle?.gridTemplateColumns ?? null,
+      firstOptionDataFocused: firstOption?.hasAttribute("data-focused") ?? false,
+      firstOptionDataHovered: firstOption?.hasAttribute("data-hovered") ?? false,
+      firstOptionBackground: optionStyle?.backgroundColor ?? null,
+      firstOptionColor: optionStyle?.color ?? null,
       optionLeftInset:
         listboxRect == null || optionRect == null
           ? null
@@ -199,6 +203,30 @@ async function waitForOpenListMetrics(root: Locator, label: string) {
   await expect
     .poll(() => openListMetrics(root), label)
     .toMatchObject({ ariaExpanded: "true", hasListbox: true, hasPopover: true });
+  return openListMetrics(root);
+}
+
+async function hoverFirstOpenOption(page: Page, root: Locator, label: string) {
+  const point = await root.evaluate((element) => {
+    const button = element.querySelector<HTMLButtonElement>("button[aria-haspopup='listbox']");
+    const listboxId = button?.getAttribute("aria-controls");
+    const listbox =
+      (listboxId ? document.getElementById(listboxId) : null) ??
+      Array.from(document.querySelectorAll<HTMLElement>("[role='listbox']")).find((candidate) =>
+        candidate.textContent?.includes("Enterprise"),
+      ) ??
+      null;
+    const firstOption = listbox?.querySelector<HTMLElement>("[role='option']");
+    const rect = firstOption?.getBoundingClientRect();
+
+    return rect == null ? null : { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  });
+
+  expect(point, `${label} first option should be measurable`).not.toBeNull();
+  await page.mouse.move(point!.x, point!.y);
+  await expect
+    .poll(() => openListMetrics(root), label)
+    .toMatchObject({ firstOptionDataFocused: true });
   return openListMetrics(root);
 }
 
@@ -384,6 +412,32 @@ test.describe("comparison Picker visual parity", () => {
     }
   });
 
+  test("Enter opens the trigger menu without committing selection", async ({ page }) => {
+    const fixtures = await pickerFixtures(page, "?size=XL");
+
+    for (const item of [
+      { stack: "react", root: fixtures.reactRoot, button: fixtures.reactButton },
+      { stack: "solid", root: fixtures.solidRoot, button: fixtures.solidButton },
+    ]) {
+      await item.button.focus();
+      await page.keyboard.press("Enter");
+      await expect
+        .poll(() => openListMetrics(item.root), `${item.stack} opens on Enter`)
+        .toMatchObject({
+          activeRole: "option",
+          activeText: "Pro",
+          activeIsFocusedOption: true,
+          selectedText: "Pro",
+          focusedText: "Pro",
+          comparisonValue: "pro",
+          ariaExpanded: "true",
+        });
+
+      await page.keyboard.press("Escape");
+      await expect(item.button).toHaveAttribute("aria-expanded", "false");
+    }
+  });
+
   test("open list popover and option layout match React Spectrum", async ({ page }) => {
     const fixtures = await pickerFixtures(page, "?size=XL");
 
@@ -392,6 +446,11 @@ test.describe("comparison Picker visual parity", () => {
       fixtures.reactRoot,
       "React Picker open list metrics",
     );
+    const reactHover = await hoverFirstOpenOption(
+      page,
+      fixtures.reactRoot,
+      "React Picker hovered option",
+    );
     await page.keyboard.press("Escape");
     await expect(fixtures.reactButton).toHaveAttribute("aria-expanded", "false");
 
@@ -399,6 +458,11 @@ test.describe("comparison Picker visual parity", () => {
     const solid = await waitForOpenListMetrics(
       fixtures.solidRoot,
       "Solid Picker open list metrics",
+    );
+    const solidHover = await hoverFirstOpenOption(
+      page,
+      fixtures.solidRoot,
+      "Solid Picker hovered option",
     );
 
     expect(solid.rootListboxCount).toBe(0);
@@ -409,6 +473,10 @@ test.describe("comparison Picker visual parity", () => {
     expect(solid.optionGridAreas).toBe(react.optionGridAreas);
     expect(solid.optionGridAreas).not.toBe("none");
     expect(solid.optionGridColumns).toBe(react.optionGridColumns);
+    expect(solidHover.firstOptionDataFocused).toBe(reactHover.firstOptionDataFocused);
+    expect(solidHover.firstOptionDataHovered).toBe(reactHover.firstOptionDataHovered);
+    expect(solidHover.firstOptionBackground).toBe(reactHover.firstOptionBackground);
+    expect(solidHover.firstOptionColor).toBe(reactHover.firstOptionColor);
     expect(solid.labelGridArea).toBe(react.labelGridArea);
     expect(solid.labelFontWeight).toBe(react.labelFontWeight);
     expect(solid.labelMarginTop).toBe(react.labelMarginTop);
