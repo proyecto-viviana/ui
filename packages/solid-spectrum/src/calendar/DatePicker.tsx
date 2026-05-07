@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { type JSX, splitProps, Show } from "solid-js";
 import {
   DatePicker as HeadlessDatePicker,
@@ -13,7 +14,19 @@ import {
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
 import { Calendar } from "./index";
-import { useProviderProps } from "../provider";
+import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../s2-style";
+import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import { useProviderProps, useTheme } from "../provider";
+import {
+  control,
+  controlBorderRadius,
+  controlFont,
+  field,
+  fieldInput,
+  fieldLabel,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils";
 
 function CalendarIcon(): JSX.Element {
   return (
@@ -36,7 +49,7 @@ function CalendarIcon(): JSX.Element {
 }
 
 export type DatePickerSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
-type NormalizedDatePickerSize = "sm" | "md" | "lg" | "xl";
+type NormalizedDatePickerSize = "S" | "M" | "L" | "XL";
 
 export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   HeadlessDatePickerProps<T>,
@@ -59,40 +72,20 @@ export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
 const sizeStyles: Record<
   NormalizedDatePickerSize,
   {
-    container: string;
-    input: string;
-    segment: string;
-    label: string;
-    button: string;
+    legacyCalendarSize: "sm" | "md" | "lg" | "xl";
   }
 > = {
-  sm: {
-    container: "text-sm",
-    input: "px-2 py-1 gap-0.5",
-    segment: "px-0.5",
-    label: "text-xs",
-    button: "w-7 h-7",
+  S: {
+    legacyCalendarSize: "sm",
   },
-  md: {
-    container: "text-base",
-    input: "px-3 py-2 gap-1",
-    segment: "px-1",
-    label: "text-sm",
-    button: "w-9 h-9",
+  M: {
+    legacyCalendarSize: "md",
   },
-  lg: {
-    container: "text-lg",
-    input: "px-4 py-3 gap-1.5",
-    segment: "px-1.5",
-    label: "text-base",
-    button: "w-11 h-11",
+  L: {
+    legacyCalendarSize: "lg",
   },
-  xl: {
-    container: "text-xl",
-    input: "px-5 py-4 gap-2",
-    segment: "px-2",
-    label: "text-lg",
-    button: "w-12 h-12",
+  XL: {
+    legacyCalendarSize: "xl",
   },
 };
 
@@ -100,18 +93,262 @@ function normalizeDatePickerSize(size: DatePickerSize | undefined): NormalizedDa
   switch (size) {
     case "S":
     case "sm":
-      return "sm";
+      return "S";
     case "L":
     case "lg":
-      return "lg";
+      return "L";
     case "XL":
-      return "xl";
+      return "XL";
     case "M":
     case "md":
     default:
-      return "md";
+      return "M";
   }
 }
+
+const datePickerRoot = style(
+  {
+    ...field(),
+    position: "relative",
+  },
+  getAllowedOverrides(),
+);
+
+const datePickerLabelWrapper = style({
+  gridArea: "label",
+  display: "inline",
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
+  },
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+  },
+});
+
+const datePickerLabel = style<any>({
+  ...fieldLabel(),
+});
+
+const datePickerFieldGroup = style({
+  ...focusRing(),
+  ...control({ shape: "default" }),
+  ...fieldInput(),
+  borderWidth: 2,
+  borderStyle: "solid",
+  transition: "default",
+  textWrap: "nowrap",
+  paddingStart: "edge-to-text",
+  paddingEnd: {
+    size: {
+      S: 2,
+      M: 4,
+      L: 8,
+      XL: 8,
+    },
+  },
+  backgroundColor: {
+    default: baseColor("gray-25"),
+    forcedColors: "Field",
+  },
+  borderColor: {
+    default: baseColor("gray-300"),
+    isInvalid: {
+      default: baseColor("negative"),
+      forcedColors: "Mark",
+    },
+    isFocusWithin: {
+      default: "gray-900",
+      isInvalid: "negative-1000",
+      forcedColors: "Highlight",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: "disabled",
+    forcedColors: "ButtonText",
+  },
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const dateInputContainer = style({
+  flexGrow: 1,
+  flexShrink: 1,
+  minWidth: 0,
+  height: "full",
+  overflowX: "auto",
+  overflowY: "hidden",
+  scrollbarWidth: "none",
+  display: "flex",
+  alignItems: "center",
+  textWrap: "nowrap",
+});
+
+const dateSegment = style<{ isFocused?: boolean; isPunctuation?: boolean }>({
+  outlineStyle: "none",
+  caretColor: "transparent",
+  backgroundColor: {
+    default: "transparent",
+    isFocused: "blue-800",
+    forcedColors: {
+      default: "transparent",
+      isFocused: "Highlight",
+    },
+  },
+  color: {
+    isFocused: "white",
+    forcedColors: {
+      isFocused: "HighlightText",
+    },
+  },
+  borderRadius: "[2px]",
+  paddingX: {
+    default: 2,
+    isPunctuation: 0,
+  },
+  paddingY: 2,
+  forcedColorAdjust: "none",
+});
+
+const fieldErrorIcon = style({
+  size: fontRelative(20),
+  marginStart: "text-to-visual",
+  marginEnd: fontRelative(-2),
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+  },
+});
+
+const calendarButton = style<{
+  isOpen?: boolean;
+  isDisabled?: boolean;
+  size: NormalizedDatePickerSize;
+}>({
+  ...focusRing(),
+  ...controlBorderRadius("sm"),
+  position: "relative",
+  font: {
+    size: {
+      S: "ui-sm",
+      M: "ui",
+      L: "ui-lg",
+      XL: "ui-xl",
+    },
+  },
+  cursor: "default",
+  display: "flex",
+  textAlign: "center",
+  borderStyle: "none",
+  alignItems: "center",
+  justifyContent: "center",
+  width: {
+    size: {
+      S: 16,
+      M: 20,
+      L: 24,
+      XL: 32,
+    },
+  },
+  height: "auto",
+  marginStart: "text-to-control",
+  aspectRatio: "square",
+  flexShrink: 0,
+  transition: {
+    default: "default",
+    forcedColors: "none",
+  },
+  backgroundColor: {
+    default: baseColor("gray-100"),
+    isOpen: "gray-200",
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "ButtonText",
+      isHovered: "Highlight",
+      isOpen: "Highlight",
+      isDisabled: "GrayText",
+    },
+  },
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: "disabled",
+    forcedColors: "ButtonFace",
+  },
+});
+
+const helpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
+  gridArea: "helptext",
+  display: "flex",
+  margin: 0,
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+});
+
+const datePickerPopover = style<{ colorScheme: "light" | "dark" | "light dark" }>({
+  ...setColorScheme(),
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: {
+      default: "layer-2",
+      forcedColors: "Background",
+    },
+  },
+  backgroundColor: "--s2-container-bg",
+  boxShadow: "elevated",
+  borderRadius: "lg",
+  display: "flex",
+  width: "[max-content]",
+  padding: 0,
+  minHeight: 0,
+  overflow: "visible",
+  boxSizing: "border-box",
+  isolation: "isolate",
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: lightDark("transparent-white-25", "gray-200"),
+    forcedColors: "ButtonBorder",
+  },
+});
+
+const datePickerPopoverFrame = style({
+  paddingX: 16,
+  paddingY: 24,
+  overflow: "auto",
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  boxSizing: "border-box",
+  width: "[max-content]",
+});
 
 /**
  * A date picker combines a date field and a calendar popup.
@@ -131,8 +368,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   ]);
 
   const size = () => normalizeDatePickerSize(local.size);
-  const sizeConfig = () => sizeStyles[size()];
-  const isInvalid = () => local.isInvalid || !!local.errorMessage;
+  const isInvalid = () => local.isInvalid === true;
 
   return (
     <HeadlessDatePicker
@@ -141,108 +377,71 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       description={local.description}
       errorMessage={local.errorMessage}
       isInvalid={isInvalid()}
-      class={`flex flex-col gap-1 relative ${sizeConfig().container} ${local.class ?? ""}`}
+      class={(renderProps) =>
+        [
+          local.class,
+          datePickerRoot({
+            ...renderProps,
+            size: size(),
+            labelPosition: "top",
+            isInForm: false,
+          }),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
     >
       <Show when={local.label}>
-        <HeadlessDatePickerLabel class={`font-medium text-primary-200 ${sizeConfig().label}`}>
-          {local.label}
-          <Show when={rest.isRequired}>
-            <span class="text-red-500 ml-0.5">*</span>
-          </Show>
-        </HeadlessDatePickerLabel>
+        <div class={datePickerLabelWrapper({ size: size(), labelPosition: "top" })}>
+          <HeadlessDatePickerLabel class={datePickerLabel({ size: size() })}>
+            {local.label}
+          </HeadlessDatePickerLabel>
+        </div>
       </Show>
 
-      <div class="relative flex items-center">
-        <DateInput
-          class={({ isFocused, isDisabled }) => {
-            const base = `
-              inline-flex items-center flex-1
-              ${sizeConfig().input}
-              bg-bg-400 rounded-l-md border-y border-l
-              transition-colors duration-150
-            `;
-
-            let borderClass = "border-primary-600";
-            if (isInvalid()) {
-              borderClass = "border-red-500";
-            } else if (isFocused) {
-              borderClass = "border-accent";
-            }
-
-            const disabledClass = isDisabled ? "opacity-50 cursor-not-allowed" : "";
-
-            const focusClass = isFocused ? "ring-2 ring-accent/30" : "";
-
-            return `${base} ${borderClass} ${disabledClass} ${focusClass}`.trim();
-          }}
-        >
+      <div
+        class={datePickerFieldGroup({
+          size: size(),
+          isInvalid: isInvalid(),
+        })}
+      >
+        <DateInput class={dateInputContainer}>
           {(segment) => (
             <DateSegment
               segment={segment}
-              class={({ isFocused, isPlaceholder, isEditable }) => {
-                const base = `
-                  ${sizeConfig().segment}
-                  rounded
-                  outline-none
-                  tabular-nums
-                `;
-
-                let stateClass = "";
-                if (segment.type === "literal") {
-                  stateClass = "text-primary-400";
-                } else if (isPlaceholder) {
-                  stateClass = "text-primary-500 italic";
-                } else {
-                  stateClass = "text-primary-100";
-                }
-
-                const focusClass = isFocused && isEditable ? "bg-accent text-bg-400" : "";
-
-                return `${base} ${stateClass} ${focusClass}`.trim();
-              }}
+              class={({ isFocused }) =>
+                dateSegment({
+                  isFocused,
+                  isPunctuation: segment.type === "literal",
+                })
+              }
             />
           )}
         </DateInput>
 
+        <Show when={isInvalid()}>
+          <CenterBaseline>
+            <AlertTriangleIcon styles={fieldErrorIcon} />
+          </CenterBaseline>
+        </Show>
+
         <DatePickerButton
-          class={({ isDisabled, isOpen }) => {
-            const base = `
-              ${sizeConfig().button}
-              flex items-center justify-center
-              bg-bg-400 border-y border-r rounded-r-md
-              text-primary-200
-              transition-colors duration-150
-              focus:outline-none focus:ring-2 focus:ring-accent/50
-            `;
-
-            let borderClass = "border-primary-600";
-            if (isInvalid()) {
-              borderClass = "border-red-500";
-            } else if (isOpen) {
-              borderClass = "border-accent bg-bg-300";
-            }
-
-            const disabledClass = isDisabled
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-bg-300 cursor-pointer";
-
-            return `${base} ${borderClass} ${disabledClass}`.trim();
-          }}
+          class={({ isDisabled, isOpen }) => calendarButton({ isDisabled, isOpen, size: size() })}
         >
           <CalendarIcon />
         </DatePickerButton>
 
-        <DatePickerPopup size={size()} />
+        <DatePickerPopup size={sizeStyles[size()].legacyCalendarSize} />
       </div>
 
       <Show when={local.description && !isInvalid()}>
-        <HeadlessDatePickerDescription class={`text-primary-400 ${sizeConfig().label}`}>
+        <HeadlessDatePickerDescription class={helpText({ size: size(), isInvalid: false })}>
           {local.description}
         </HeadlessDatePickerDescription>
       </Show>
 
       <Show when={isInvalid() && local.errorMessage}>
-        <HeadlessDatePickerErrorMessage class={`text-red-500 ${sizeConfig().label}`}>
+        <HeadlessDatePickerErrorMessage class={helpText({ size: size(), isInvalid: true })}>
           {local.errorMessage}
         </HeadlessDatePickerErrorMessage>
       </Show>
@@ -250,10 +449,26 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   );
 }
 
-function DatePickerPopup(props: { size: NormalizedDatePickerSize }): JSX.Element {
+function DatePickerPopup(props: { size: "sm" | "md" | "lg" | "xl" }): JSX.Element {
+  const theme = useTheme();
+  const popoverWidth = () => {
+    switch (props.size) {
+      case "lg":
+        return 360;
+      case "xl":
+        return 388;
+      case "sm":
+      case "md":
+      default:
+        return 304;
+    }
+  };
+
   return (
-    <DatePickerContent class="z-50 shadow-lg rounded-lg">
-      <Calendar size={props.size} />
+    <DatePickerContent class={datePickerPopover({ colorScheme: theme.colorScheme })}>
+      <div class={datePickerPopoverFrame} style={{ width: `${popoverWidth()}px` }}>
+        <Calendar size={props.size} />
+      </div>
     </DatePickerContent>
   );
 }

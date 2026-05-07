@@ -1195,7 +1195,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-field-react-chromium-linux.png",
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-field-solid-chromium-linux.png",
       ],
-      note: "Committed screenshots exist for the closed field and the live Solid fixture is guarded. Strict React-vs-Solid visual parity remains planned because Solid still uses the legacy calendar/date skin.",
+      note: "Committed screenshots exist for the closed field and the live Solid fixture is guarded. Solid now uses generated S2 field/calendar styling with explicit light/dark theme coverage; strict React-vs-Solid visual parity remains planned.",
     },
     {
       id: "styled.calendar.open",
@@ -1209,7 +1209,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-popover-react-chromium-linux.png",
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-popover-solid-chromium-linux.png",
       ],
-      note: "Covers open calendar geometry and committed screenshots for both sides. Strict React-vs-Solid visual parity remains planned while the Solid calendar popover is still legacy-styled.",
+      note: "Covers open calendar geometry and committed screenshots for both sides. The Solid popover surface and calendar grid now use generated S2 styling and theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
     },
     {
       id: "styled.calendar.select-date",

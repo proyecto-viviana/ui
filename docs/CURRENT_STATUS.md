@@ -8,12 +8,11 @@ records intent and recent evidence, not a substitute for `git status`.
 
 ### Current state
 
-- DatePicker is now the active S2 parity slice after the SelectBoxGroup follow-up
-  commits. The comparison viewer was the first gap: the manifest marked the
-  styled route as parity/live-ish, but the Solid styled fixture map did not
-  include `datepicker`, so `/components/datepicker/` rendered the missing
-  fallback in the Solid panel while the visual-state matrix still claimed
-  snapshotted Solid coverage.
+- DatePicker remains the active S2 parity slice after the SelectBoxGroup
+  follow-up commits. The first DatePicker commit wired the comparison fixture,
+  but the Solid component still used dead legacy utility classes and looked
+  effectively unstyled. This follow-up moves the Solid DatePicker field,
+  trigger, popover surface, and Calendar grid onto generated S2 styling.
 - React S2 source was inspected in:
   `apps/comparison/node_modules/@react-spectrum/s2/src/DatePicker.tsx`,
   `DateField.tsx`, and `Calendar.tsx`.
@@ -21,7 +20,8 @@ records intent and recent evidence, not a substitute for `git status`.
   `packages/solid-spectrum/src/calendar/DatePicker.tsx`,
   `packages/solid-spectrum/src/calendar/index.tsx`,
   `packages/solidaria-components/src/DatePicker.tsx`, and the comparison
-  DatePicker fixtures/control data.
+  DatePicker fixtures/control data. This latest follow-up only touched the
+  `solid-spectrum` DatePicker/Calendar styling plus comparison guards/docs.
 - The Solid styled DatePicker fixture is now mounted from
   `@proyecto-viviana/solid-spectrum`, and the route exposes modeled controls
   for `label`, `size`, `description`, `errorMessage`, `isDisabled`,
@@ -30,13 +30,23 @@ records intent and recent evidence, not a substitute for `git status`.
   form/input demo-model pattern. React and Solid fixtures both serialize the
   same DatePicker prop model and listen for `comparison:controls-change`.
 - Solid DatePicker/Calendar now accept S2 size names `S`, `M`, `L`, and `XL`
-  in addition to the old `sm`, `md`, and `lg` aliases. This is normalization
-  only; the underlying Solid date/calendar visuals are still legacy-styled, not
-  full S2.
-- The DatePicker visual-state matrix was corrected: closed field and open
-  popover screenshots are guarded, but strict React-vs-Solid visual pair parity
-  is now marked `planned`, not `strict`, because Solid still uses the legacy
-  date/calendar skin.
+  in addition to the old `sm`, `md`, and `lg` aliases. The field, segmented
+  input, trigger button, invalid icon/help text, popover shell, calendar
+  heading/nav buttons, and calendar cells now use S2 style-runtime classes and
+  theme tokens.
+- DatePicker no longer treats the mere presence of an `errorMessage` prop as
+  invalid. Default route state now shows description text in both stacks; the
+  invalid/error branch is only active when `isInvalid=true`.
+- The DatePicker popover explicitly applies the current color scheme with
+  `setColorScheme()` because the content is portaled. Browser checks and e2e
+  coverage now assert the field and portaled calendar colors change across
+  light and dark theme toggles.
+- The Calendar root uses escaped arbitrary `calc(...)` width, and the DatePicker
+  popover frame sets explicit per-size widths. This prevents the fixed-position
+  dialog from collapsing to one cell while the table overflows.
+- The DatePicker visual-state matrix now says Solid uses generated S2
+  field/calendar styling with explicit theme coverage, while strict
+  React-vs-Solid visual pair parity remains planned.
 - Browser inspection found a real interaction gap: Solid DatePicker dismissed
   on Escape but focus became inactive instead of returning to the calendar
   trigger. `packages/solidaria-components/src/DatePicker.tsx` now restores
@@ -66,24 +76,27 @@ records intent and recent evidence, not a substitute for `git status`.
   drives both React and Solid panels.
 - The committed `e2e/datepicker-visual.spec.ts` now fails if the Solid panel
   silently falls back to missing content, if DatePicker query props stop
-  reaching either stack, if Escape stops returning focus to the trigger, or if
-  selection/dismissal stop closing the popover.
+  reaching either stack, if Escape stops returning focus to the trigger, if
+  selection/dismissal stop closing the popover, if the Solid popover collapses
+  around an overflowing calendar table, or if the Solid field/portaled popover
+  stop reacting to light/dark theme changes.
 - Validated with:
 
   ```bash
   vp run --filter @proyecto-viviana/solidaria-components build
   vp run --filter @proyecto-viviana/solid-spectrum build
   vp run --filter @proyecto-viviana/comparison build
-  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/datepicker-visual.spec.ts --update-snapshots --reporter=line
-  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/datepicker-visual.spec.ts --reporter=line
-  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/modeled-controls-contract.spec.ts -g "DatePicker side-panel controls" --reporter=line
-  vp fmt packages/solid-spectrum/src/s2-generated.css --write
+  vp exec --filter @proyecto-viviana/comparison playwright test e2e/datepicker-visual.spec.ts --update-snapshots --reporter=line
+  vp exec --filter @proyecto-viviana/comparison playwright test e2e/datepicker-visual.spec.ts --reporter=line
+  vp exec --filter @proyecto-viviana/comparison playwright test e2e/modeled-controls-contract.spec.ts --grep DatePicker --reporter=line
+  vp fmt apps/comparison/e2e/datepicker-visual.spec.ts apps/comparison/src/data/visual-state-matrix.ts packages/solid-spectrum/src/calendar/DatePicker.tsx packages/solid-spectrum/src/calendar/index.tsx packages/solid-spectrum/src/s2-generated.css docs/CURRENT_STATUS.md --write
   ```
 
 - Chromium Playwright still needs escalation outside the sandbox on this host
   due `sandbox_host_linux.cc:41 shutdown: Operation not permitted`.
-- Focused DatePicker spec result: 2 passed.
+- Focused DatePicker spec result: 3 passed.
 - Focused DatePicker modeled-controls result: 1 passed.
+- Commit for this follow-up: `Style DatePicker with S2 tokens`.
 
 ### Known traps
 
@@ -91,30 +104,33 @@ records intent and recent evidence, not a substitute for `git status`.
   Solid fixture map is missing a component. For DatePicker and future date/time
   work, assert `[data-comparison-control-root]` exists in both framework panels
   before trusting screenshots or state matrix rows.
-- Solid DatePicker currently uses legacy utility-class styling. Do not mark
-  DatePicker strict visual parity until the Solid DateField/DatePicker/Calendar
-  internals are migrated to the S2 style runtime and strict pair diffs can be
-  tightened again.
+- DatePicker now uses generated S2 styling, but strict pair parity is still not
+  achieved. Do not mark DatePicker strict visual parity until DateField shared
+  segmented-input styling, Calendar header-cell styling, focus-visible
+  timelines, disabled/unavailable date states, and tighter geometry thresholds
+  have been checked against React S2.
 - Solid headless DatePicker does not forward arbitrary `data-*` props from the
   styled wrapper into the rendered root. Put the comparison control marker on
   one stable fixture wrapper unless the headless component starts forwarding
   those props.
-- `size` is a layout/style contract for DatePicker. Test `S`, `M`, `L`, and
-  `XL` explicitly when migrating the real S2 styles because React changes field
-  font, padding, button size, and calendar icon size by branch.
+- `size` is a layout/style contract for DatePicker. The current e2e guard
+  covers default `M` plus invalid/required `XL`; test `S`, `L`, and more
+  calendar layout states explicitly before tightening strict pair diffs.
 - Escape focus return is an interaction-timeline contract, not a final
   screenshot property. Keep the e2e focus-return assertion when moving the
   popup to a fuller S2 implementation.
 
 ### Next likely work
 
-- Continue DatePicker parity by migrating Solid DateField/DatePicker/Calendar
-  from legacy utility classes to the S2 style runtime, then tighten the current
-  wide DatePicker screenshot thresholds and mark pair diffs strict only after
-  computed geometry matches React.
+- Continue DatePicker parity by extracting the segmented-input styling into
+  DateField/TimeField, adding Calendar header-cell styling support, and
+  validating more Calendar branches: disabled/unavailable dates, selected/today
+  combinations, hover/press/focus-visible, month paging, min/max, and
+  multi-month layout.
 - DateField and TimeField are natural follow-ups because DatePicker reuses the
-  same segmented input contracts. DateRangePicker should reuse the Escape
-  focus-return fix and then get its own route/control coverage.
+  same segmented input contracts. DateRangePicker should reuse the DatePicker
+  styling/width/theme work plus the Escape focus-return fix, then get its own
+  route/control coverage.
 
 ---
 

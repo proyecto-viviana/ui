@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection } from "./comparison-page";
+import { pinComparisonTheme } from "./visual-diff";
 
 type ElementGeometry = {
   x: number;
@@ -154,9 +155,16 @@ async function openCalendar(card: Locator) {
 }
 
 async function pickFirstEnabledDate(popover: Locator) {
-  const cell = popover.locator('[role="gridcell"]:not([aria-disabled="true"])').first();
-  await expect(cell).toBeVisible();
-  await cell.click();
+  const cellContent = popover
+    .locator(
+      [
+        '[role="gridcell"] [role="button"]:not([data-disabled]):not([data-outside-month])',
+        '[role="gridcell"] button:not([disabled])',
+      ].join(", "),
+    )
+    .first();
+  await expect(cellContent).toBeVisible();
+  await cellContent.click();
 }
 
 async function calendarPopup(page: Page) {
@@ -183,6 +191,66 @@ async function calendarPopup(page: Page) {
 
 async function expectNoCalendarPopup(page: Page) {
   await expect(page.locator('[role="grid"]')).toHaveCount(0);
+}
+
+async function solidDatePickerColors(page: Page) {
+  return page.evaluate(() => {
+    const solidCard = Array.from(document.querySelectorAll("article.s2-framework-panel")).find(
+      (element) => element.textContent?.includes("solid-spectrum"),
+    );
+    if (!solidCard) {
+      throw new Error("Could not find Solid DatePicker comparison card");
+    }
+
+    const root = solidCard.querySelector('[data-comparison-control-root="datepicker"]');
+    if (!root) {
+      throw new Error("Could not find Solid DatePicker root");
+    }
+
+    const fieldGroup = Array.from(root.querySelectorAll("div")).find(
+      (element) =>
+        element.textContent === "mm/dd/yyyy" &&
+        getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)",
+    );
+    if (!fieldGroup) {
+      throw new Error("Could not find styled Solid DatePicker field group");
+    }
+
+    const rootStyle = getComputedStyle(root);
+    const fieldStyle = getComputedStyle(fieldGroup);
+
+    return {
+      colorScheme: rootStyle.colorScheme,
+      rootColor: rootStyle.color,
+      fieldBackground: fieldStyle.backgroundColor,
+      fieldBorderColor: fieldStyle.borderColor,
+      descriptionVisible: root.textContent?.includes("Choose the project due date.") ?? false,
+      errorVisible: root.textContent?.includes("Select a due date.") ?? false,
+    };
+  });
+}
+
+async function solidCalendarPopoverColors(page: Page) {
+  return page.evaluate(() => {
+    const popover = Array.from(
+      document.querySelectorAll(".comparison-popover, [role='dialog']"),
+    ).find((element) => element.querySelector('[role="grid"]'));
+    if (!popover) {
+      throw new Error("Could not find open Solid DatePicker calendar popover");
+    }
+
+    const firstCell = popover.querySelector('[role="gridcell"]');
+    const popoverStyle = getComputedStyle(popover);
+    const cellStyle = firstCell ? getComputedStyle(firstCell) : null;
+
+    return {
+      colorScheme: popoverStyle.colorScheme,
+      background: popoverStyle.backgroundColor,
+      color: popoverStyle.color,
+      outlineColor: popoverStyle.outlineColor,
+      cellColor: cellStyle?.color ?? null,
+    };
+  });
 }
 
 test.describe("comparison DatePicker visual parity", () => {
@@ -328,5 +396,56 @@ test.describe("comparison DatePicker visual parity", () => {
     assertVisibleFieldGeometry(reactGeometry);
     assertVisibleFieldGeometry(solidGeometry);
     expect(solidGeometry.height).toBeGreaterThan(reactGeometry.height * 0.5);
+  });
+
+  test("Solid DatePicker field and portaled calendar respond to light and dark themes", async ({
+    page,
+  }) => {
+    await pinComparisonTheme(page, "light");
+    await page.goto("/components/datepicker/");
+    await page.waitForLoadState("networkidle");
+
+    const section = await styledSection(page);
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+    const lightField = await solidDatePickerColors(page);
+
+    await expect(solidRoot).toHaveAttribute("data-comparison-color-scheme", "light");
+    expect(lightField.colorScheme).toContain("light");
+    expect(lightField.descriptionVisible).toBe(true);
+    expect(lightField.errorVisible).toBe(false);
+    expect(lightField.fieldBackground).not.toBe("rgba(0, 0, 0, 0)");
+
+    await solidCard.getByRole("button", { name: /calendar|open calendar|choose date/i }).click();
+    const lightPopover = await solidCalendarPopoverColors(page);
+    expect(lightPopover.colorScheme).toContain("light");
+    expect(lightPopover.background).not.toBe("rgba(0, 0, 0, 0)");
+
+    await page.keyboard.press("Escape");
+    await expectNoCalendarPopup(page);
+
+    await page.getByRole("radio", { name: "dark" }).click();
+    await expect(solidRoot).toHaveAttribute("data-comparison-color-scheme", "dark");
+    await expect
+      .poll(async () => (await solidDatePickerColors(page)).fieldBackground, {
+        message: "Solid DatePicker field background should update after switching to dark theme",
+      })
+      .not.toBe(lightField.fieldBackground);
+    const darkField = await solidDatePickerColors(page);
+
+    expect(darkField.colorScheme).toContain("dark");
+    expect(darkField.descriptionVisible).toBe(true);
+    expect(darkField.errorVisible).toBe(false);
+    expect(darkField.rootColor).not.toBe(lightField.rootColor);
+    expect(darkField.fieldBackground).not.toBe(lightField.fieldBackground);
+    expect(darkField.fieldBorderColor).not.toBe(lightField.fieldBorderColor);
+
+    await solidCard.getByRole("button", { name: /calendar|open calendar|choose date/i }).click();
+    const darkPopover = await solidCalendarPopoverColors(page);
+
+    expect(darkPopover.colorScheme).toContain("dark");
+    expect(darkPopover.background).not.toBe(lightPopover.background);
+    expect(darkPopover.color).not.toBe(lightPopover.color);
+    expect(darkPopover.cellColor).not.toBe(lightPopover.cellColor);
   });
 });
