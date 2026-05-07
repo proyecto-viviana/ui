@@ -8,6 +8,99 @@ records intent and recent evidence, not a substitute for `git status`.
 
 ### Current state
 
+- The latest in-progress slice continues the Form/Input batch after
+  `44f2b43 Update handoff after ComboBox press fix`.
+- SearchField S2 parity was tightened against live React Spectrum S2 behavior
+  and source:
+  `apps/comparison/node_modules/@react-spectrum/s2/src/SearchField.tsx`,
+  `TextField.tsx`, and `Field.tsx`.
+- Solid SearchField now merges its SearchField-specific field-group padding
+  override through `mergeStyles`, matching React S2's `FieldGroup` plus
+  SearchField `styles={style({paddingStart: 'pill', paddingEnd: 0})}` path.
+  The failing live geometry was React 228px group width, 24px start padding,
+  0px end padding versus Solid 240px, 18px, 18px.
+- The obsolete plain CSS SearchField pill-padding helper was removed from
+  `packages/solid-spectrum/src/searchfield/s2-searchfield-styles.ts` and the
+  generated S2 CSS now drops only that stale utility class.
+- The comparison viewer had a modeled-controls regression for Picker:
+  `apps/comparison/src/pages/components/[slug].astro` omitted `picker` from
+  the side-panel defaults map, so the generic controls script dispatched empty
+  props. The viewer defaults now match `pickerDemoDefaults`. This did not
+  change Picker overlay, selection, press, or focus code.
+
+### Validation and evidence
+
+- Validation plan before coding:
+  - React S2 files: `SearchField.tsx`, `TextField.tsx`, `Field.tsx`.
+  - Solid files: `packages/solid-spectrum/src/searchfield/index.tsx`,
+    `packages/solid-spectrum/src/searchfield/s2-searchfield-styles.ts`,
+    `packages/solidaria-components/src/SearchField.tsx`.
+  - Routes/query states:
+    `/components/searchfield/?isInvalid=true&isRequired=true&size=XL` and
+    `/components/picker/` for side-panel modeled controls.
+  - Expected roles: SearchField textbox/search input plus clear button when
+    non-empty; Picker button/combobox-like select trigger remains covered by
+    existing Picker specs.
+  - Browser checks: root/group/input/search-icon/clear-button geometry,
+    controlled typing and clear, post-clear focus stability, side-panel prop
+    dispatch into both React and Solid roots.
+- Live browser probe after the SearchField fix confirmed both React and Solid
+  field groups at 228px width, 24px start padding, and 0px end padding for the
+  invalid required XL route.
+- Validated with:
+
+  ```bash
+  vp run build
+  vp run --filter @proyecto-viviana/solid-spectrum build
+  vp run --filter @proyecto-viviana/comparison build
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/searchfield-visual.spec.ts --reporter=line
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/modeled-controls-contract.spec.ts -g "Picker side-panel controls" --reporter=line
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/numberfield-visual.spec.ts -g "both steppers hover" --reporter=line
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/checkbox-visual.spec.ts e2e/checkboxgroup-visual.spec.ts e2e/radiogroup-visual.spec.ts e2e/numberfield-visual.spec.ts e2e/searchfield-visual.spec.ts e2e/switch-visual.spec.ts e2e/textfield-visual.spec.ts e2e/textarea-visual.spec.ts e2e/slider-visual.spec.ts e2e/modeled-controls-contract.spec.ts --reporter=line
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/searchfield-visual.spec.ts e2e/modeled-controls-contract.spec.ts -g "SearchField|Picker side-panel controls" --reporter=line
+  vp fmt packages/solid-spectrum/src/s2-generated.css --write
+  git diff --check
+  ```
+
+- Browser Playwright needed escalation outside the sandbox after Chromium
+  started failing with `sandbox_host_linux.cc:41 shutdown: Operation not
+permitted`. The escalated focused and full comparison runs passed.
+- Full focused form/input suite result: 51 passed.
+- Final focused SearchField plus Picker modeled-controls result after the last
+  comparison rebuild: 5 passed.
+
+### Known traps
+
+- SearchField's React S2 field group starts from the shared `FieldGroup` style
+  but then applies a SearchField-specific style override. In Solid, that kind
+  of override must use `mergeStyles`; appending a plain CSS class can lose to
+  generated S2 class order and change intrinsic field width.
+- The generated S2 CSS can pick up formatter churn after the build generator
+  runs. Re-run `vp fmt packages/solid-spectrum/src/s2-generated.css --write`
+  before committing if the generated CSS diff is larger than the intended
+  class-level change.
+- The comparison viewer defaults map is part of the product surface. A modeled
+  `ComponentControlGroup` is not sufficient if the page script lacks matching
+  defaults for that slug.
+- Do not reopen Picker overlay/press behavior for this slice. The only Picker
+  change here is viewer-side controls dispatch.
+
+### Next likely work
+
+- Continue the form/input tightening pass by re-running the matrix and choosing
+  the next actual failing or planned state. Date/time controls are likely the
+  next broader batch once form/input remains green.
+- If a shared field style changes again, re-run TextField, TextArea,
+  SearchField, NumberField, Picker, ComboBox, and modeled-controls guards.
+- Commit for this slice: `Fix SearchField S2 padding parity` (latest commit at
+  handoff update time).
+
+---
+
+## Previous Entry - 2026-05-07
+
+### Current state
+
 - The latest code slice is `4eaaad5 Fix ComboBox first option press`, after
   `8e1113c docs: add S2 parity handoff lifecycle`,
   `08b5fae Prevent Picker portal focus scroll`, and

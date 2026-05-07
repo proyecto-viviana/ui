@@ -2776,13 +2776,6 @@
 }
 
 @layer _.a {
-  .i3BOHe {
-    padding-inline-start: calc(var(--F, var(--M)) / 2);
-    padding-inline-end: 0px;
-  }
-}
-
-@layer _.a {
   .zc3JFe {
     &::-webkit-search-cancel-button {
       display: none;

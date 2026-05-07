@@ -12,6 +12,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../s2-style";
 import { baseColor, focusRing, fontRelative, style } from "../s2-style";
+import { mergeStyles } from "../s2-style/runtime";
 import {
   control,
   controlFont,
@@ -26,7 +27,7 @@ import SearchIcon from "../icon/s2wf-icons/SearchIcon";
 import CrossIcon from "../icon/ui-icons/Cross";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
-import { hideWebkitSearchCancelButton, searchFieldPillPadding } from "./s2-searchfield-styles";
+import { hideWebkitSearchCancelButton } from "./s2-searchfield-styles";
 
 export type SearchFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2SearchFieldSize = "S" | "M" | "L" | "XL";
@@ -166,6 +167,11 @@ const searchFieldGroup = style<SearchFieldStyleProps>({
     default: "text",
     isDisabled: "default",
   },
+});
+
+const searchFieldGroupPillPadding = style({
+  paddingStart: "pill",
+  paddingEnd: 0,
 });
 
 const searchIconWrapper = style({
@@ -402,14 +408,14 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     });
 
   const groupClass = (renderProps: SearchFieldRenderProps) =>
-    [
+    mergeStyles(
       searchFieldGroup({
         ...renderProps,
         size: size(),
         isFocusWithin: isFocusWithin(),
       }),
-      searchFieldPillPadding,
-    ].join(" ");
+      searchFieldGroupPillPadding,
+    );
 
   const inputClass = () => [searchFieldInput, hideWebkitSearchCancelButton].join(" ");
 
