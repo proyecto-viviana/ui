@@ -25,6 +25,10 @@ export interface AriaOptionProps {
   shouldSelectOnPressUp?: boolean;
   /** Whether to focus the option on hover. */
   shouldFocusOnHover?: boolean;
+  /** Whether the option should use virtual focus instead of receiving DOM focus. */
+  shouldUseVirtualFocus?: boolean;
+  /** Whether press-up may occur without the press starting on this option. */
+  allowsDifferentPressOrigin?: boolean;
   /** Handler called when hover starts. */
   onHoverStart?: HoverEvents["onHoverStart"];
   /** Handler called when hover ends. */
@@ -86,6 +90,14 @@ export function createOption<T>(
     return getProps().shouldSelectOnPressUp ?? getData()?.shouldSelectOnPressUp ?? true;
   };
 
+  const shouldUseVirtualFocus = () => {
+    return getProps().shouldUseVirtualFocus ?? false;
+  };
+
+  const allowsDifferentPressOrigin = () => {
+    return getProps().allowsDifferentPressOrigin ?? false;
+  };
+
   const selectAndAction = () => {
     const key = getProps().key;
     if (state.selectionMode() !== "none") {
@@ -99,13 +111,29 @@ export function createOption<T>(
     get isDisabled() {
       return isDisabled();
     },
+    get preventFocusOnPress() {
+      return shouldUseVirtualFocus();
+    },
     onPressStart(e) {
       if (!shouldSelectOnPressUp() && e.pointerType !== "keyboard" && e.pointerType !== "virtual") {
         selectAndAction();
       }
     },
+    onPressUp(e) {
+      if (shouldSelectOnPressUp() && allowsDifferentPressOrigin() && e.pointerType === "mouse") {
+        selectAndAction();
+      }
+    },
     onPress(e) {
-      if (shouldSelectOnPressUp() || e.pointerType === "keyboard" || e.pointerType === "virtual") {
+      if (
+        (shouldSelectOnPressUp() && !allowsDifferentPressOrigin()) ||
+        (shouldSelectOnPressUp() &&
+          allowsDifferentPressOrigin() &&
+          e.pointerType !== "keyboard" &&
+          e.pointerType !== "mouse") ||
+        e.pointerType === "keyboard" ||
+        e.pointerType === "virtual"
+      ) {
         selectAndAction();
       }
     },
@@ -154,7 +182,7 @@ export function createOption<T>(
           "aria-label": ariaLabel,
           "aria-labelledby": !ariaLabel ? labelId : undefined,
           "aria-describedby": descriptionId,
-          tabIndex: isFocused() ? 0 : -1,
+          tabIndex: shouldUseVirtualFocus() ? undefined : isFocused() ? 0 : -1,
           "data-selected": isSelected() || undefined,
           "data-focused": isFocused() || undefined,
           "data-focus-visible": isFocusVisible() || undefined,

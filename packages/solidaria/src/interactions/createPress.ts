@@ -320,20 +320,6 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     }
 
     if (e.button === 0) {
-      if (!pressState.isPressed) {
-        pressState.isPressed = true;
-        pressState.isOverTarget = true;
-        pressState.target = e.currentTarget;
-        pressState.pointerType = isVirtualClick(e) ? "virtual" : "mouse";
-
-        if (!props.allowTextSelectionOnPress) {
-          disableTextSelection(pressState.target as HTMLElement);
-        }
-
-        triggerPressStart(e, pressState.pointerType);
-      }
-
-      // Prevent focus if requested
       if (props.preventFocusOnPress) {
         pressState.focusCleanup?.();
         pressState.focusCleanup = preventFocus(getEventTarget(e) as Element | null) ?? null;
@@ -409,6 +395,16 @@ export function createPress(props: CreatePressProps = {}): PressResult {
   const onPointerCancel = (e: PointerEvent): void => {
     if (e.pointerId === pressState.activePointerId) {
       cancel(e);
+    }
+  };
+
+  const onPointerUpTarget: JSX.EventHandler<HTMLElement, PointerEvent> = (e) => {
+    if (!nodeContains(e.currentTarget, getEventTarget(e)) || pressState.pointerType === "virtual") {
+      return;
+    }
+
+    if (e.button === 0 && !pressState.isPressed) {
+      triggerPressUp(e, (pressState.pointerType || e.pointerType || "mouse") as PointerType);
     }
   };
 
@@ -850,6 +846,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
           onDragStart,
           // Pointer events (preferred when available)
           onPointerDown,
+          onPointerUp: onPointerUpTarget,
           onPointerEnter,
           onPointerLeave,
           // Mouse down only for focus prevention when using pointer events

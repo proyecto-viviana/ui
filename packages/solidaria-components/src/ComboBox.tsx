@@ -881,36 +881,12 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
 
   const items = () => Array.from(state.collection());
 
-  // Prevent focus from being lost when clicking in the listbox
-  // This is critical - if we don't prevent default, the input loses focus
-  // and the blur handler closes the menu before the click can be processed
-  // We need to attach this in the ref callback to use capture phase
-  let cleanupFocusGuard: (() => void) | undefined;
-
-  const setupMouseDownHandler = (el: HTMLUListElement) => {
-    cleanupFocusGuard?.();
-    cleanupFocusGuard = undefined;
-
+  const setListBoxElement = (el: HTMLUListElement) => {
     listBoxRef = el;
     setListBoxRef(el);
-    if (el) {
-      const mouseHandler = (e: MouseEvent) => {
-        e.preventDefault();
-      };
-      const pointerHandler = (e: PointerEvent) => {
-        e.preventDefault();
-      };
-      el.addEventListener("mousedown", mouseHandler, true); // capture phase
-      el.addEventListener("pointerdown", pointerHandler, true); // capture phase
-      cleanupFocusGuard = () => {
-        el.removeEventListener("mousedown", mouseHandler, true);
-        el.removeEventListener("pointerdown", pointerHandler, true);
-      };
-    }
   };
 
   onCleanup(() => {
-    cleanupFocusGuard?.();
     setListBoxRef(null);
   });
 
@@ -918,7 +894,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
     <Show when={isOpen()}>
       <ul
         {...domProps}
-        ref={setupMouseDownHandler}
+        ref={setListBoxElement}
         {...cleanContextProps()}
         {...cleanListBoxProps()}
         class={renderProps.class()}
@@ -985,6 +961,8 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       },
       shouldSelectOnPressUp: true,
       shouldFocusOnHover: true,
+      shouldUseVirtualFocus: true,
+      allowsDifferentPressOrigin: true,
       get onHoverStart() {
         return ariaProps.onHoverStart;
       },

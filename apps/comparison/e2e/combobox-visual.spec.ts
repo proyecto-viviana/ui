@@ -238,6 +238,29 @@ async function hoverFirstOpenOption(page: Page, root: Locator, label: string) {
   return openListMetrics(root);
 }
 
+async function clickOpenOption(page: Page, root: Locator, optionText: string, label: string) {
+  const point = await root.evaluate((element, targetText) => {
+    const input = element.querySelector<HTMLInputElement>('input[role="combobox"]');
+    const button = element.querySelector<HTMLButtonElement>("button[aria-haspopup='listbox']");
+    const listboxId = input?.getAttribute("aria-controls") ?? button?.getAttribute("aria-controls");
+    const listbox =
+      (listboxId ? document.getElementById(listboxId) : null) ??
+      Array.from(document.querySelectorAll<HTMLElement>("[role='listbox']")).find((candidate) =>
+        candidate.textContent?.includes(String(targetText)),
+      ) ??
+      null;
+    const option = Array.from(listbox?.querySelectorAll<HTMLElement>("[role='option']") ?? []).find(
+      (candidate) => candidate.textContent?.trim() === targetText,
+    );
+    const rect = option?.getBoundingClientRect();
+
+    return rect == null ? null : { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }, optionText);
+
+  expect(point, `${label} option should be measurable`).not.toBeNull();
+  await page.mouse.click(point!.x, point!.y);
+}
+
 async function tabUntilActive(page: Page, root: Locator, label: string) {
   for (let index = 0; index < 80; index += 1) {
     await page.keyboard.press("Tab");
@@ -419,6 +442,60 @@ test.describe("comparison ComboBox visual parity", () => {
         "data-comparison-value",
         "pro",
       );
+      await expect
+        .poll(() => item.input.evaluate((element) => document.activeElement === element))
+        .toBe(true);
+    }
+  });
+
+  test("first pointer selection commits and closes the list", async ({ page }) => {
+    const fixtures = await comboBoxFixtures(page, "?size=XL");
+
+    for (const item of [
+      {
+        stack: "react",
+        root: fixtures.reactRoot,
+        input: fixtures.reactInput,
+        button: fixtures.reactButton,
+      },
+      {
+        stack: "solid",
+        root: fixtures.solidRoot,
+        input: fixtures.solidInput,
+        button: fixtures.solidButton,
+      },
+    ]) {
+      await expect(item.root, `${item.stack} initial key`).toHaveAttribute(
+        "data-comparison-value",
+        "pro",
+      );
+      await item.button.click();
+      await expect(item.input, `${item.stack} opens on first pointer trigger`).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+
+      await expect
+        .poll(() => openListMetrics(item.root), `${item.stack} first pointer list opens`)
+        .toMatchObject({ hasListbox: true, ariaExpanded: "true" });
+      await clickOpenOption(page, item.root, "Enterprise", `${item.stack} Enterprise`);
+
+      await expect(item.root, `${item.stack} first pointer selection commits`).toHaveAttribute(
+        "data-comparison-value",
+        "enterprise",
+      );
+      await expect(item.root, `${item.stack} first pointer input marker updates`).toHaveAttribute(
+        "data-comparison-input-value",
+        "Enterprise",
+      );
+      await expect(item.input, `${item.stack} input shows selected option`).toHaveValue(
+        "Enterprise",
+      );
+      await expect(
+        item.input,
+        `${item.stack} list closes after first pointer selection`,
+      ).toHaveAttribute("aria-expanded", "false");
+      await expect(page.locator("[role='listbox']")).toHaveCount(0);
       await expect
         .poll(() => item.input.evaluate((element) => document.activeElement === element))
         .toBe(true);
