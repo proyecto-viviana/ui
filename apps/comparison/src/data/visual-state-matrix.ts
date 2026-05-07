@@ -1189,13 +1189,13 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "static",
       react: "snapshotted",
       solid: "snapshotted",
-      pairDiff: "strict",
+      pairDiff: "planned",
       spec: "e2e/datepicker-visual.spec.ts",
       snapshots: [
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-field-react-chromium-linux.png",
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-field-solid-chromium-linux.png",
       ],
-      note: "Committed screenshots exist for the closed field; React-vs-Solid pair diff is strict zero-tolerance.",
+      note: "Committed screenshots exist for the closed field and the live Solid fixture is guarded. Strict React-vs-Solid visual parity remains planned because Solid still uses the legacy calendar/date skin.",
     },
     {
       id: "styled.calendar.open",
@@ -1203,13 +1203,13 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "overlay",
       react: "snapshotted",
       solid: "snapshotted",
-      pairDiff: "strict",
+      pairDiff: "planned",
       spec: "e2e/datepicker-visual.spec.ts",
       snapshots: [
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-popover-react-chromium-linux.png",
         "e2e/datepicker-visual.spec.ts-snapshots/datepicker-popover-solid-chromium-linux.png",
       ],
-      note: "Covers open calendar geometry, committed screenshots for both sides, and strict zero-tolerance pair diff.",
+      note: "Covers open calendar geometry and committed screenshots for both sides. Strict React-vs-Solid visual parity remains planned while the Solid calendar popover is still legacy-styled.",
     },
     {
       id: "styled.calendar.select-date",
@@ -1230,6 +1230,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/datepicker-visual.spec.ts",
       note: "Outside click dismissal is asserted for both implementations.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts",
+      note: "Side-panel controls dispatch label, size, validation, disabled, required, and help text props into both mounted styled stacks.",
     },
   ],
 };

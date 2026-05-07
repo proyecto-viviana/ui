@@ -21,6 +21,7 @@ import {
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
+  DatePicker as SolidSpectrumDatePicker,
   LinkButton as SolidSpectrumLinkButton,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
@@ -99,6 +100,12 @@ import {
   serializeComboBoxDemoProps,
   type ComboBoxDemoProps,
 } from "@comparison/data/combobox-demo";
+import {
+  datePickerDemoPropsFromWindow,
+  normalizeDatePickerDemoProps,
+  serializeDatePickerDemoProps,
+  type DatePickerDemoProps,
+} from "@comparison/data/datepicker-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -423,6 +430,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
+  datepicker: () => h(SolidSpectrumDatePickerDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
   picker: () => h(SolidSpectrumPickerDemo, {}),
   radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
@@ -783,6 +791,97 @@ function SolidSpectrumCheckboxGroupDemo() {
               hc(SolidSpectrumCheckbox, { value: item.value }, [item.label]),
             ),
           ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumDatePickerDemo() {
+  const [demoProps, setDemoProps] = createSignal<DatePickerDemoProps>(
+    datePickerDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal("");
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "datepicker") {
+        const nextProps = normalizeDatePickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue("");
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeDatePickerDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-value"() {
+            return value();
+          },
+          "data-comparison-control-root": "datepicker",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(SolidSpectrumDatePicker, {
+            class: "comparison-datepicker-root",
+            get label() {
+              return demoProps().label;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onChange: (nextValue: unknown) => {
+              setValue(nextValue == null ? "" : String(nextValue));
+            },
+          }),
         ],
       ),
     ],

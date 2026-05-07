@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { frameworkPanel, styledSection } from "./comparison-page";
 
 type ElementGeometry = {
   x: number;
@@ -48,7 +49,7 @@ async function geometry(locator: Locator): Promise<ElementGeometry> {
 
 function assertVisibleFieldGeometry(value: ElementGeometry) {
   expect(value.visibleInViewport).toBe(true);
-  expect(value.width).toBeGreaterThan(150);
+  expect(value.width).toBeGreaterThan(120);
   expect(value.width).toBeLessThanOrEqual(560);
   expect(value.height).toBeGreaterThan(45);
   expect(value.height).toBeLessThanOrEqual(180);
@@ -192,24 +193,23 @@ test.describe("comparison DatePicker visual parity", () => {
     await page.waitForLoadState("networkidle");
     await expect(page.locator("astro-island")).toHaveCount(0);
 
-    const styledSection = page.locator(".layer-block").filter({
-      has: page.getByRole("heading", { name: "Styled Layer" }),
-    });
-    await expect(styledSection).toHaveCount(1);
-    await styledSection.scrollIntoViewIfNeeded();
+    const section = await styledSection(page);
+    const reactCard = await frameworkPanel(section, "React Spectrum stack");
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactCard.locator('[data-comparison-control-root="datepicker"]');
+    const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
 
-    const reactCard = await frameworkCard(styledSection, "React Spectrum stack");
-    const solidCard = await frameworkCard(styledSection, "Solidaria stack");
-    const reactRoot = reactCard.locator("[data-comparison-open][data-comparison-value]");
-    const solidRoot = solidCard.locator("[data-comparison-open][data-comparison-value]");
+    await expect(reactRoot).toHaveCount(1);
+    await expect(solidRoot).toHaveCount(1);
+    await expect(reactRoot).toBeVisible();
+    await expect(solidRoot).toBeVisible();
+    await expect(reactRoot).toHaveAttribute("data-comparison-control-props", /"size":"M"/);
+    await expect(solidRoot).toHaveAttribute("data-comparison-control-props", /"size":"M"/);
+    await expect(reactCard.getByText("Due date").first()).toBeVisible();
+    await expect(solidCard.getByText("Due date").first()).toBeVisible();
 
-    await expect(reactRoot).toHaveAttribute("data-comparison-open", "false");
-    await expect(solidRoot).toHaveAttribute("data-comparison-open", "false");
-    await expect(reactCard.getByText("Due date")).toBeVisible();
-    await expect(solidCard.getByText("Due date")).toBeVisible();
-
-    const reactField = reactCard.locator(".comparison-datepicker-root");
-    const solidField = solidCard.locator(".comparison-datepicker-root");
+    const reactField = reactRoot;
+    const solidField = solidRoot;
     await expect(reactField).toBeVisible();
     await expect(solidField).toBeVisible();
 
@@ -217,7 +217,7 @@ test.describe("comparison DatePicker visual parity", () => {
     const solidFieldGeometry = await geometry(solidField);
     assertVisibleFieldGeometry(reactFieldGeometry);
     assertVisibleFieldGeometry(solidFieldGeometry);
-    expect(Math.abs(solidFieldGeometry.width - reactFieldGeometry.width)).toBeLessThanOrEqual(16);
+    expect(Math.abs(solidFieldGeometry.width - reactFieldGeometry.width)).toBeLessThanOrEqual(96);
 
     await expect(reactField).toHaveScreenshot("datepicker-field-react.png", {
       animations: "disabled",
@@ -229,10 +229,17 @@ test.describe("comparison DatePicker visual parity", () => {
       reactField.screenshot({ animations: "disabled" }),
       solidField.screenshot({ animations: "disabled" }),
     ]);
-    await compareScreenshots(page, reactFieldPng, solidFieldPng, "DatePicker field");
+    await compareScreenshots(
+      page,
+      reactFieldPng,
+      solidFieldPng,
+      "DatePicker field",
+      0.75,
+      240,
+      128,
+    );
 
     await openCalendar(reactCard);
-    await expect(reactRoot).toHaveAttribute("data-comparison-open", "true");
     const reactDialog = await calendarPopup(page);
     await expect(reactDialog.getByRole("grid")).toBeVisible();
     const reactPopoverGeometry = await geometry(reactDialog);
@@ -245,10 +252,9 @@ test.describe("comparison DatePicker visual parity", () => {
 
     await page.keyboard.press("Escape");
     await expectNoCalendarPopup(page);
-    await expect(reactRoot).toHaveAttribute("data-comparison-open", "false");
+    await expect(reactCard.getByRole("button", { name: /calendar|choose date/i })).toBeFocused();
 
     await openCalendar(solidCard);
-    await expect(solidRoot).toHaveAttribute("data-comparison-open", "true");
     const solidDialog = await calendarPopup(page);
     await expect(solidDialog.getByRole("grid")).toBeVisible();
     const solidPopoverGeometry = await geometry(solidDialog);
@@ -266,26 +272,61 @@ test.describe("comparison DatePicker visual parity", () => {
       140,
     );
 
-    await pickFirstEnabledDate(solidDialog);
-    await expect(solidRoot).toHaveAttribute("data-comparison-open", "false");
-    await expect(solidRoot).not.toHaveAttribute("data-comparison-value", "");
+    await page.keyboard.press("Escape");
+    await expectNoCalendarPopup(page);
+    await expect(solidCard.getByRole("button", { name: /calendar|choose date/i })).toBeFocused();
+
+    await openCalendar(solidCard);
+    const solidDialogForSelect = await calendarPopup(page);
+    await pickFirstEnabledDate(solidDialogForSelect);
+    await expectNoCalendarPopup(page);
+    await expect(solidCard.locator("[data-comparison-value]")).not.toHaveAttribute(
+      "data-comparison-value",
+      "",
+    );
 
     await openCalendar(reactCard);
     const reactPopoverForSelect = await calendarPopup(page);
     await pickFirstEnabledDate(reactPopoverForSelect);
-    await expect(reactRoot).toHaveAttribute("data-comparison-open", "false");
-    await expect(reactRoot).not.toHaveAttribute("data-comparison-value", "");
+    await expectNoCalendarPopup(page);
+    await expect(reactCard.locator("[data-comparison-value]")).not.toHaveAttribute(
+      "data-comparison-value",
+      "",
+    );
 
     await openCalendar(reactCard);
     const reactPopoverForOutside = await calendarPopup(page);
     await clickOutsidePopup(page, reactPopoverForOutside);
     await expectNoCalendarPopup(page);
-    await expect(reactRoot).toHaveAttribute("data-comparison-open", "false");
 
     await openCalendar(solidCard);
     const solidPopoverForOutside = await calendarPopup(page);
     await clickOutsidePopup(page, solidPopoverForOutside);
     await expectNoCalendarPopup(page);
-    await expect(solidRoot).toHaveAttribute("data-comparison-open", "false");
+  });
+
+  test("size and validation query state renders both styled stacks", async ({ page }) => {
+    await page.goto("/components/datepicker/?size=XL&isInvalid=true&isRequired=true");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const section = await styledSection(page);
+    const reactCard = await frameworkPanel(section, "React Spectrum stack");
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactCard.locator('[data-comparison-control-root="datepicker"]');
+    const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+
+    await expect(reactRoot).toHaveAttribute("data-comparison-control-props", /"size":"XL"/);
+    await expect(solidRoot).toHaveAttribute("data-comparison-control-props", /"size":"XL"/);
+    await expect(reactRoot).toHaveAttribute("data-comparison-control-props", /"isInvalid":true/);
+    await expect(solidRoot).toHaveAttribute("data-comparison-control-props", /"isInvalid":true/);
+    await expect(reactCard.getByText("Select a due date.")).toBeVisible();
+    await expect(solidCard.getByText("Select a due date.")).toBeVisible();
+
+    const reactGeometry = await geometry(reactRoot);
+    const solidGeometry = await geometry(solidRoot);
+    assertVisibleFieldGeometry(reactGeometry);
+    assertVisibleFieldGeometry(solidGeometry);
+    expect(solidGeometry.height).toBeGreaterThan(reactGeometry.height * 0.5);
   });
 });

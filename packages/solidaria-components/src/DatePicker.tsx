@@ -749,6 +749,7 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
                 event.preventDefault();
                 event.stopPropagation();
                 context.overlayState.close();
+                requestAnimationFrame(() => context.triggerRef()?.focus());
               }
             }}
           >
@@ -826,6 +827,7 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
                 event.preventDefault();
                 event.stopPropagation();
                 context.overlayState.close();
+                requestAnimationFrame(() => context.triggerRef()?.focus());
               }
             }}
           >

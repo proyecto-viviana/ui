@@ -19,6 +19,7 @@ import {
   checkboxGroupSizeOptions,
 } from "./checkboxgroup-demo";
 import { comboBoxDemoDefaults, comboBoxKeyOptions, comboBoxSizeOptions } from "./combobox-demo";
+import { datePickerDemoDefaults, datePickerSizeOptions } from "./datepicker-demo";
 import {
   radioGroupDemoDefaults,
   radioGroupOrientationOptions,
@@ -1243,6 +1244,87 @@ const comboBoxControls: ComponentControlGroup = {
   note: "Modeled from the S2 ComboBox docs and source. The viewer drives label, selected key, input value, placeholder, S2 size, description/error text, disabled, required, and invalid state into both stacks.",
 };
 
+const datePickerControls: ComponentControlGroup = {
+  slug: "datepicker",
+  title: "DatePicker",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: datePickerDemoDefaults.label,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: datePickerDemoDefaults.size,
+      options: options(datePickerSizeOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: datePickerDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: datePickerDemoDefaults.errorMessage,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "description",
+    "errorMessage",
+    "isRequired",
+    "isDisabled",
+    "isReadOnly",
+    "isInvalid",
+    "size",
+    "placeholderValue",
+    "minValue",
+    "maxValue",
+    "granularity",
+    "hourCycle",
+    "hideTimeZone",
+    "maxVisibleMonths",
+    "pageBehavior",
+    "firstDayOfWeek",
+    "isDateUnavailable",
+    "shouldFlip",
+    "onChange",
+    "onOpenChange",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 DatePicker docs control surface for label, size, validation, disabled, required, and help text. Calendar paging, date availability, time granularity, and multi-month popover states remain dedicated visual/behavior route states.",
+};
+
 const actionButtonControls: ComponentControlGroup = {
   slug: "actionbutton",
   title: "ActionButton",
@@ -1829,6 +1911,7 @@ export const componentControlGroups = {
   checkbox: checkboxControls,
   checkboxgroup: checkboxGroupControls,
   combobox: comboBoxControls,
+  datepicker: datePickerControls,
   linkbutton: linkButtonControls,
   numberfield: numberFieldControls,
   picker: pickerControls,

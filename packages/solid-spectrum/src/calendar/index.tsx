@@ -11,7 +11,8 @@ import {
 import type { CalendarStateProps } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 
-export type CalendarSize = "sm" | "md" | "lg";
+export type CalendarSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "xl";
+type NormalizedCalendarSize = "sm" | "md" | "lg" | "xl";
 
 export interface CalendarProps<T extends DateValue = DateValue> extends Omit<
   CalendarStateProps<T>,
@@ -29,7 +30,10 @@ export interface CalendarProps<T extends DateValue = DateValue> extends Omit<
   "aria-label"?: string;
 }
 
-const sizeStyles = {
+const sizeStyles: Record<
+  NormalizedCalendarSize,
+  { container: string; header: string; cell: string; button: string }
+> = {
   sm: {
     container: "w-64",
     header: "text-sm",
@@ -48,7 +52,30 @@ const sizeStyles = {
     cell: "w-12 h-12 text-base",
     button: "w-10 h-10",
   },
+  xl: {
+    container: "w-[28rem]",
+    header: "text-xl",
+    cell: "w-14 h-14 text-lg",
+    button: "w-11 h-11",
+  },
 };
+
+function normalizeCalendarSize(size: CalendarSize | undefined): NormalizedCalendarSize {
+  switch (size) {
+    case "S":
+    case "sm":
+      return "sm";
+    case "L":
+    case "lg":
+      return "lg";
+    case "XL":
+      return "xl";
+    case "M":
+    case "md":
+    default:
+      return "md";
+  }
+}
 
 /**
  * A calendar displays a grid of days and allows users to select a date.
@@ -57,7 +84,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
   const mergedProps = useProviderProps(props);
   const [local, rest] = splitProps(mergedProps, ["size", "class", "showWeekNumbers", "aria-label"]);
 
-  const size = () => local.size ?? "md";
+  const size = () => normalizeCalendarSize(local.size);
   const sizeConfig = () => sizeStyles[size()];
 
   return (

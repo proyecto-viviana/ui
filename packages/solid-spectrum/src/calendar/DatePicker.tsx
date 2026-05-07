@@ -35,7 +35,8 @@ function CalendarIcon(): JSX.Element {
   );
 }
 
-export type DatePickerSize = "sm" | "md" | "lg";
+export type DatePickerSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type NormalizedDatePickerSize = "sm" | "md" | "lg" | "xl";
 
 export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   HeadlessDatePickerProps<T>,
@@ -55,7 +56,16 @@ export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   placeholder?: string;
 }
 
-const sizeStyles = {
+const sizeStyles: Record<
+  NormalizedDatePickerSize,
+  {
+    container: string;
+    input: string;
+    segment: string;
+    label: string;
+    button: string;
+  }
+> = {
   sm: {
     container: "text-sm",
     input: "px-2 py-1 gap-0.5",
@@ -77,7 +87,31 @@ const sizeStyles = {
     label: "text-base",
     button: "w-11 h-11",
   },
+  xl: {
+    container: "text-xl",
+    input: "px-5 py-4 gap-2",
+    segment: "px-2",
+    label: "text-lg",
+    button: "w-12 h-12",
+  },
 };
+
+function normalizeDatePickerSize(size: DatePickerSize | undefined): NormalizedDatePickerSize {
+  switch (size) {
+    case "S":
+    case "sm":
+      return "sm";
+    case "L":
+    case "lg":
+      return "lg";
+    case "XL":
+      return "xl";
+    case "M":
+    case "md":
+    default:
+      return "md";
+  }
+}
 
 /**
  * A date picker combines a date field and a calendar popup.
@@ -96,7 +130,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
     "placeholder",
   ]);
 
-  const size = () => local.size ?? "md";
+  const size = () => normalizeDatePickerSize(local.size);
   const sizeConfig = () => sizeStyles[size()];
   const isInvalid = () => local.isInvalid || !!local.errorMessage;
 
@@ -216,7 +250,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   );
 }
 
-function DatePickerPopup(props: { size: DatePickerSize }): JSX.Element {
+function DatePickerPopup(props: { size: NormalizedDatePickerSize }): JSX.Element {
   return (
     <DatePickerContent class="z-50 shadow-lg rounded-lg">
       <Calendar size={props.size} />

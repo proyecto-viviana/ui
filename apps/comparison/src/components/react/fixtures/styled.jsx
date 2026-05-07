@@ -94,6 +94,11 @@ import {
   serializeComboBoxDemoProps,
 } from "@comparison/data/combobox-demo";
 import {
+  datePickerDemoPropsFromWindow,
+  normalizeDatePickerDemoProps,
+  serializeDatePickerDemoProps,
+} from "@comparison/data/datepicker-demo";
+import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
   textFieldDemoPropsFromWindow,
@@ -1369,14 +1374,35 @@ function ReactRadioGroupDemo() {
 }
 
 function ReactDatePickerDemo() {
+  const [demoProps, setDemoProps] = useState(datePickerDemoPropsFromWindow);
   const [value, setValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "datepicker") {
+        const nextProps = normalizeDatePickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue("");
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-value": value,
       "data-comparison-open": String(isOpen),
       children: jsx(SpectrumDatePicker, {
-        label: "Due date",
+        "data-comparison-control-root": "datepicker",
+        "data-comparison-control-props": serializeDatePickerDemoProps(demoProps),
+        label: demoProps.label,
+        size: demoProps.size,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
         onChange: (nextValue) => setValue(nextValue == null ? "" : String(nextValue)),
         onOpenChange: setIsOpen,
         UNSAFE_className: "comparison-datepicker-root",

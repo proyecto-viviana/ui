@@ -546,10 +546,12 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             `Styled ${title}`,
             `React Spectrum ${title} vs Solid styled implementation.`,
             title === "Toast" ? "tracked" : "live",
-            "missing",
-            title === "Toast"
-              ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
-              : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
+            title === "DatePicker" ? "live" : "missing",
+            title === "DatePicker"
+              ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum; S2 styling parity remains partial and guarded by focused DatePicker specs."
+              : title === "Toast"
+                ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
+                : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
           ),
           components: layerTrack(
             `Component ${title}`,
