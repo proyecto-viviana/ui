@@ -52,6 +52,11 @@ Include:
   declarations to port.
 - Static states to compare: default, variants, sizes, disabled/read-only,
   validation, density, static color, and slot/content permutations.
+- Treat props that switch layout contracts as separate required states, not
+  optional permutations. For example, an `orientation` prop often changes grid
+  areas, rows, columns, slot visibility, and alignment. Test each orientation
+  with the same computed geometry depth instead of assuming one orientation
+  proves the other.
 - Interaction states to compare: hover, focus-visible, pressed, selected/open,
   keyboard navigation, dismissal, and focus return.
 - For field-like components and any control with embedded buttons, compare the
@@ -93,6 +98,15 @@ Do not start coding from a generic component checklist alone. Name the actual
 React S2 source files, expected state attributes, target accessible roles, and
 the exact query/state URLs to open in Playwright. If a row cannot be tested yet,
 record why and mark it as a tracked gap in the visual state matrix.
+
+Double-check the prop matrix before signoff. Representative states are not
+enough when different prop values route through different layout/style branches.
+For each layout-switching prop, open the exact URL in the comparison viewer and
+assert the branch-specific computed contract: grid-template areas/rows/columns,
+slot offsets, root/list defaults, and visible content geometry. This guard was
+added after SelectBoxGroup passed horizontal checks while
+`?orientation=vertical` still auto-placed its illustration and label
+incorrectly.
 
 If the component contains icons, the plan must include explicit React-vs-Solid
 icon alignment checks. Do not rely on visual memory. Inspect the React Spectrum
