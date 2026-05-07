@@ -88,6 +88,10 @@ function handlePointerEvent(e: PointerEvent | MouseEvent) {
 }
 
 function handleClickEvent(e: MouseEvent) {
+  if (!e.isTrusted) {
+    return;
+  }
+
   const isOpening = (openLink as { isOpening?: boolean }).isOpening;
   if (!isOpening && isVirtualClick(e)) {
     hasEventBeforeFocus = true;

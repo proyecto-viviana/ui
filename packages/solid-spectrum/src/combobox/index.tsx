@@ -286,7 +286,7 @@ const comboBoxListBox = style<ComboBoxListBoxRenderProps & { size?: S2ComboBoxSi
   fontSize: controlFont(),
   outlineStyle: "none",
   margin: 0,
-  padding: 0,
+  padding: 8,
   listStyleType: "none",
 });
 
@@ -303,7 +303,7 @@ const comboBoxPopover = style({
   boxShadow: "elevated",
   borderRadius: "lg",
   display: "flex",
-  padding: 8,
+  padding: 0,
   minHeight: 0,
   overflow: "visible",
   boxSizing: "border-box",
@@ -314,6 +314,12 @@ const comboBoxPopover = style({
     default: lightDark("transparent-white-25", "gray-200"),
     forcedColors: "ButtonBorder",
   },
+});
+
+const comboBoxListBoxFrame = style({
+  display: "flex",
+  width: "full",
+  height: "full",
 });
 
 const comboBoxOption = style<ComboBoxOptionStyleProps>({
@@ -365,10 +371,14 @@ const comboBoxOption = style<ComboBoxOptionStyleProps>({
   transition: "default",
 });
 
-const comboBoxOptionLabel = style({
+const comboBoxOptionLabel = style<{ size?: S2ComboBoxSize }>({
   gridArea: "label",
   display: "block",
   flexGrow: 1,
+  font: controlFont(),
+  color: "inherit",
+  fontWeight: "medium",
+  marginTop: "--labelPadding",
   truncate: true,
 });
 
@@ -448,6 +458,14 @@ const requiredIcon = style({
 const noWrap = style({
   whiteSpace: "nowrap",
 });
+
+function isPrimitiveText(value: unknown): value is string | number {
+  return typeof value === "string" || typeof value === "number";
+}
+
+function isTextOnlyChildren(value: unknown): boolean {
+  return isPrimitiveText(value) || (Array.isArray(value) && value.every(isPrimitiveText));
+}
 
 function normalizeComboBoxSize(size: ComboBoxSize | undefined): S2ComboBoxSize {
   switch (size) {
@@ -603,7 +621,7 @@ function ComboBoxListBoxPopover(props: {
         width: "var(--trigger-width)",
       })}
     >
-      {props.children}
+      <div class={comboBoxListBoxFrame}>{props.children}</div>
     </HeadlessPopover>
   );
 }
@@ -885,8 +903,8 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             style={comboBoxCheckmarkIconStyle(size)}
             aria-hidden="true"
           />
-          {typeof local.children === "string" ? (
-            <span class={comboBoxOptionLabel} data-rsp-slot="text">
+          {isTextOnlyChildren(local.children) ? (
+            <span slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
               {local.children}
             </span>
           ) : (

@@ -261,7 +261,7 @@ const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>(
   outlineStyle: "none",
   margin: 0,
   listStyleType: "none",
-  padding: 0,
+  padding: 8,
 });
 
 const pickerPopover = style({
@@ -277,7 +277,7 @@ const pickerPopover = style({
   boxShadow: "elevated",
   borderRadius: "lg",
   display: "flex",
-  padding: 8,
+  padding: 0,
   minHeight: 0,
   overflow: "visible",
   boxSizing: "border-box",
@@ -288,6 +288,12 @@ const pickerPopover = style({
     default: lightDark("transparent-white-25", "gray-200"),
     forcedColors: "ButtonBorder",
   },
+});
+
+const pickerListBoxFrame = style({
+  display: "flex",
+  width: "full",
+  height: "full",
 });
 
 const pickerOption = style<PickerOptionStyleProps>({
@@ -338,10 +344,14 @@ const pickerOption = style<PickerOptionStyleProps>({
   transition: "default",
 });
 
-const pickerOptionLabel = style({
+const pickerOptionLabel = style<{ size?: S2PickerSize }>({
   gridArea: "label",
   display: "block",
   flexGrow: 1,
+  font: controlFont(),
+  color: "inherit",
+  fontWeight: "medium",
+  marginTop: "--labelPadding",
   truncate: true,
 });
 
@@ -391,6 +401,14 @@ const requiredIcon = style({
 const noWrap = style({
   whiteSpace: "nowrap",
 });
+
+function isPrimitiveText(value: unknown): value is string | number {
+  return typeof value === "string" || typeof value === "number";
+}
+
+function isTextOnlyChildren(value: unknown): boolean {
+  return isPrimitiveText(value) || (Array.isArray(value) && value.every(isPrimitiveText));
+}
 
 function normalizePickerSize(size: PickerSize | undefined): S2PickerSize {
   switch (size) {
@@ -482,7 +500,7 @@ function PickerListBoxPopover(props: {
         width: props.isQuiet() ? "calc(var(--trigger-width) - 24px)" : "var(--trigger-width)",
       })}
     >
-      {props.children}
+      <div class={pickerListBoxFrame}>{props.children}</div>
     </HeadlessPopover>
   );
 }
@@ -759,7 +777,13 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             style={pickerCheckmarkIconStyle(size)}
             aria-hidden="true"
           />
-          <span class={pickerOptionLabel}>{local.children}</span>
+          {isTextOnlyChildren(local.children) ? (
+            <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
+              {local.children}
+            </span>
+          ) : (
+            local.children
+          )}
         </>
       )}
     </HeadlessSelectOption>

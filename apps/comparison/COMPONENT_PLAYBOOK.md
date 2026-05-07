@@ -71,6 +71,10 @@ Include:
   commit behavior, dismissal, and focus return. Also confirm the generated S2
   CSS contains rules for every class used by the Solid port; a class in DOM with
   no generated rule is a porting bug, not a visual-tuning issue.
+- For menu/list popovers, compare mouse-open and keyboard-open separately. The
+  focused option can legitimately differ by input modality, so assert the active
+  descendant, DOM focus target, `data-focus-visible`, rendered text color, and
+  outline for both paths before accepting the open state.
 - Which checks are behavior assertions, computed-style assertions,
   Playwright CLI inspection artifacts, and committed Playwright test snapshots.
 

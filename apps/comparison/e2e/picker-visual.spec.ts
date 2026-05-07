@@ -148,6 +148,13 @@ async function openListMetrics(root: Locator) {
     const listboxStyle = listbox == null ? null : window.getComputedStyle(listbox);
     const dialogStyle = dialog == null ? null : window.getComputedStyle(dialog);
     const optionStyle = firstOption == null ? null : window.getComputedStyle(firstOption);
+    const label =
+      firstOption?.querySelector<HTMLElement>(
+        "[slot='label'], [data-slot='label'], [data-rsp-slot='text'], span",
+      ) ?? null;
+    const labelStyle = label == null ? null : window.getComputedStyle(label);
+    const listboxRect = listbox?.getBoundingClientRect();
+    const optionRect = firstOption?.getBoundingClientRect();
     const checkmarkRect = checkmark?.getBoundingClientRect();
 
     return {
@@ -164,10 +171,24 @@ async function openListMetrics(root: Locator) {
       hasPopover: dialog != null,
       popoverBackground: dialogStyle?.backgroundColor ?? null,
       popoverShadow: dialogStyle?.boxShadow ?? null,
+      popoverPadding: dialogStyle?.padding ?? null,
       listboxPadding: listboxStyle?.padding ?? null,
       listboxMargin: listboxStyle?.margin ?? null,
       optionGridAreas: optionStyle?.gridTemplateAreas ?? null,
       optionGridColumns: optionStyle?.gridTemplateColumns ?? null,
+      optionLeftInset:
+        listboxRect == null || optionRect == null
+          ? null
+          : Number((optionRect.left - listboxRect.left).toFixed(4)),
+      optionTopInset:
+        listboxRect == null || optionRect == null
+          ? null
+          : Number((optionRect.top - listboxRect.top).toFixed(4)),
+      optionWidth: optionRect == null ? null : Number(optionRect.width.toFixed(4)),
+      optionHeight: optionRect == null ? null : Number(optionRect.height.toFixed(4)),
+      labelGridArea: labelStyle?.gridArea ?? null,
+      labelFontWeight: labelStyle?.fontWeight ?? null,
+      labelMarginTop: labelStyle?.marginTop ?? null,
       checkmarkWidth: checkmarkRect == null ? null : Number(checkmarkRect.width.toFixed(4)),
       checkmarkHeight: checkmarkRect == null ? null : Number(checkmarkRect.height.toFixed(4)),
     };
@@ -383,11 +404,18 @@ test.describe("comparison Picker visual parity", () => {
     expect(solid.rootListboxCount).toBe(0);
     expect(solid.popoverBackground).toBe(react.popoverBackground);
     expect(solid.popoverShadow).toBe(react.popoverShadow);
-    expect(solid.listboxPadding).toBe(react.listboxPadding);
+    expect(solid.popoverPadding).toBe(react.popoverPadding);
     expect(solid.listboxMargin).toBe(react.listboxMargin);
     expect(solid.optionGridAreas).toBe(react.optionGridAreas);
     expect(solid.optionGridAreas).not.toBe("none");
     expect(solid.optionGridColumns).toBe(react.optionGridColumns);
+    expect(solid.labelGridArea).toBe(react.labelGridArea);
+    expect(solid.labelFontWeight).toBe(react.labelFontWeight);
+    expect(solid.labelMarginTop).toBe(react.labelMarginTop);
+    expectNear(solid.optionLeftInset, react.optionLeftInset, 1, "Picker option left inset");
+    expectNear(solid.optionTopInset, react.optionTopInset, 1, "Picker option top inset");
+    expectNear(solid.optionWidth, react.optionWidth, 1, "Picker option width");
+    expectNear(solid.optionHeight, react.optionHeight, 1, "Picker option height");
     expectNear(solid.checkmarkWidth, react.checkmarkWidth, 1, "Picker list checkmark width");
     expectNear(solid.checkmarkHeight, react.checkmarkHeight, 1, "Picker list checkmark height");
   });

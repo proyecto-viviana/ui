@@ -956,11 +956,12 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     "onAction",
   ]);
 
-  const context = useContext(ComboBoxStateContext);
-  if (!context) {
+  const stateContext = useContext(ComboBoxStateContext);
+  const comboBoxContext = useContext(ComboBoxContext);
+  if (!stateContext) {
     throw new Error("ComboBoxOption must be used within a ComboBox");
   }
-  const state = context as ComboBoxState<T>;
+  const state = stateContext as ComboBoxState<T>;
   const optionId = () => {
     const listBoxId = getComboBoxData(state as ComboBoxState<unknown>)?.listBoxId;
     return listBoxId ? `${listBoxId}-option-${local.id}` : String(local.id);
@@ -992,10 +993,14 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     },
   });
 
+  const isOptionFocusVisible = () =>
+    optionAria.isFocusVisible() ||
+    (optionAria.isFocused() && (comboBoxContext?.isFocusVisible() ?? false));
+
   const renderValues = createMemo<ComboBoxOptionRenderProps>(() => ({
     isSelected: optionAria.isSelected(),
     isFocused: optionAria.isFocused(),
-    isFocusVisible: optionAria.isFocusVisible(),
+    isFocusVisible: isOptionFocusVisible(),
     isPressed: optionAria.isPressed(),
     isHovered: isHovered(),
     isDisabled: optionAria.isDisabled(),
@@ -1033,7 +1038,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         style={renderProps.style()}
         data-selected={optionAria.isSelected() || undefined}
         data-focused={optionAria.isFocused() || undefined}
-        data-focus-visible={optionAria.isFocusVisible() || undefined}
+        data-focus-visible={isOptionFocusVisible() || undefined}
         data-pressed={optionAria.isPressed() || undefined}
         data-hovered={isHovered() || undefined}
         data-disabled={optionAria.isDisabled() || undefined}

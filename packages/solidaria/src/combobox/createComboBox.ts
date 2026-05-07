@@ -332,10 +332,25 @@ export function createComboBox<T>(
     get isDisabled() {
       return getProps().isDisabled ?? state.isDisabled;
     },
-    onPress() {
-      state.toggle(null, "manual");
-      // Focus input after toggling
+    preventFocusOnPress: true,
+    onPressStart(e) {
+      if (e.pointerType === "touch") {
+        return;
+      }
+
       inputRef()?.focus();
+      state.toggle(
+        e.pointerType === "keyboard" || e.pointerType === "virtual" ? "first" : null,
+        "manual",
+      );
+    },
+    onPress(e) {
+      if (e.pointerType !== "touch") {
+        return;
+      }
+
+      inputRef()?.focus();
+      state.toggle(null, "manual");
     },
   });
 
