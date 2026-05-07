@@ -98,9 +98,14 @@ async function selectBoxGeometry(root: Locator) {
       '[slot="description"], [data-rsp-slot="description"]',
     );
     const checkboxIcon = firstSelected?.querySelector<SVGElement>("svg");
+    const illustration = firstSelected?.querySelector<HTMLElement>(
+      '[slot="illustration"], [data-slot="illustration"], [data-rsp-slot="illustration"]',
+    );
     const labelRect = label?.getBoundingClientRect();
     const descriptionRect = description?.getBoundingClientRect();
     const iconRect = checkboxIcon?.getBoundingClientRect();
+    const illustrationRect = illustration?.getBoundingClientRect();
+    const optionStyle = firstSelected == null ? null : window.getComputedStyle(firstSelected);
 
     return {
       role: element.getAttribute("role"),
@@ -109,8 +114,23 @@ async function selectBoxGeometry(root: Locator) {
       rootPadding: rootStyle.padding,
       rootListStyleType: rootStyle.listStyleType,
       selectedCount: selectedOptions.length,
+      optionGridTemplateAreas: optionStyle?.gridTemplateAreas ?? null,
+      optionGridTemplateColumns: optionStyle?.gridTemplateColumns ?? null,
+      optionGridTemplateRows: optionStyle?.gridTemplateRows ?? null,
       optionWidth: optionRect == null ? null : Number(optionRect.width.toFixed(4)),
       optionHeight: optionRect == null ? null : Number(optionRect.height.toFixed(4)),
+      illustrationWidth:
+        illustrationRect == null ? null : Number(illustrationRect.width.toFixed(4)),
+      illustrationHeight:
+        illustrationRect == null ? null : Number(illustrationRect.height.toFixed(4)),
+      illustrationLeft:
+        illustrationRect == null || optionRect == null
+          ? null
+          : Number((illustrationRect.left - optionRect.left).toFixed(4)),
+      illustrationTop:
+        illustrationRect == null || optionRect == null
+          ? null
+          : Number((illustrationRect.top - optionRect.top).toFixed(4)),
       labelLeft:
         labelRect == null || optionRect == null
           ? null
@@ -302,6 +322,49 @@ test.describe("comparison collection button controls visual parity", () => {
       "selectboxgroup-horizontal-multiple",
       { maxMismatchRatio: 0.18, maxDimensionDelta: 48, pixelThreshold: 64 },
     );
+  });
+
+  test("SelectBoxGroup vertical illustration and label alignment matches React Spectrum", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(page, "selectboxgroup", "?orientation=vertical");
+
+    const react = await selectBoxGeometry(fixtures.reactRoot);
+    const solid = await selectBoxGeometry(fixtures.solidRoot);
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({ orientation: "vertical" });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({ orientation: "vertical" });
+    expect(react.optionGridTemplateAreas).toBe('"illustration" "." "label"');
+    expect(solid.optionGridTemplateAreas).toBe(react.optionGridTemplateAreas);
+    expect(solid.optionGridTemplateColumns).toBe(react.optionGridTemplateColumns);
+    expect(solid.optionGridTemplateRows).toBe(react.optionGridTemplateRows);
+    expectNear(solid.optionWidth, react.optionWidth, 1, "vertical SelectBox option width");
+    expectNear(solid.optionHeight, react.optionHeight, 1, "vertical SelectBox option height");
+    expectNear(
+      solid.illustrationWidth,
+      react.illustrationWidth,
+      1,
+      "vertical SelectBox illustration width",
+    );
+    expectNear(
+      solid.illustrationHeight,
+      react.illustrationHeight,
+      1,
+      "vertical SelectBox illustration height",
+    );
+    expectNear(
+      solid.illustrationLeft,
+      react.illustrationLeft,
+      1,
+      "vertical SelectBox illustration left",
+    );
+    expectNear(
+      solid.illustrationTop,
+      react.illustrationTop,
+      1,
+      "vertical SelectBox illustration top",
+    );
+    expectNear(solid.labelLeft, react.labelLeft, 1, "vertical SelectBox label left");
   });
 
   test("SelectBoxGroup renders multi-select indicators and slots like React Spectrum", async ({

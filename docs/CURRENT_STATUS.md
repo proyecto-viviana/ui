@@ -28,9 +28,9 @@ records intent and recent evidence, not a substitute for `git status`.
   fixtures. The default `/components/selectboxgroup/` product surface therefore
   shows illustration artwork without requiring a hidden query parameter.
 - Solid now normalizes `slot`, `data-slot`, and `data-rsp-slot` children, then
-  applies the horizontal grid areas and illustrated row sizing after slot
-  discovery. The illustrated horizontal state now shows 48x48 artwork in both
-  React and Solid.
+  applies the SelectBox grid areas and illustrated row sizing after slot
+  discovery. The illustrated horizontal and vertical states now show 48x48
+  artwork in both React and Solid.
 - A second follow-up fixed the remaining ugly alignment regression in the
   comparison viewer. React's SelectBoxGroup root is a `div`, while Solid's root
   is a semantic `ul`; Solid was still inheriting browser list defaults
@@ -48,6 +48,8 @@ records intent and recent evidence, not a substitute for `git status`.
 - Commit for this slice: `Fix SelectBoxGroup illustration layout parity`.
 - Follow-up commit for root alignment: `Fix SelectBoxGroup root list spacing`.
 - Follow-up test-only commit: `Guard SelectBoxGroup interactive root geometry`.
+- Follow-up commit for exact vertical route:
+  `Fix SelectBoxGroup vertical slot alignment`.
 
 ### Validation and evidence
 
@@ -79,6 +81,14 @@ records intent and recent evidence, not a substitute for `git status`.
   `http://127.0.0.1:4322/components/selectboxgroup/` preview) showed the same
   corrected root geometry and illustration geometry. The side-panel interaction
   path was also checked after changing `selectionMode` to `multiple`.
+- The exact reported route
+  `http://localhost:4321/components/selectboxgroup?orientation=vertical` exposed
+  another slot-grid miss: Solid vertical options computed
+  `grid-template-areas: none`, columns `59px 107px`, and auto-placed the
+  illustration beside the label. React computes `"illustration" "." "label"`,
+  columns `166px`, rows `48px 8px 18px`. Solid now applies that vertical grid
+  explicitly and a focused browser probe on the rebuilt preview confirmed the
+  same vertical illustration and label geometry as React.
 - Validated with:
 
   ```bash
@@ -90,12 +100,17 @@ records intent and recent evidence, not a substitute for `git status`.
   vp run --filter @proyecto-viviana/comparison build
   COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup" --reporter=line
   COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup interactive prop controls" --reporter=line
+  vp run --filter @proyecto-viviana/solid-spectrum build
+  vp run --filter @proyecto-viviana/comparison build
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup" --reporter=line
   ```
 
 - The focused SelectBoxGroup suite result after snapshot refresh and threshold
   tightening: 7 passed.
 - The focused SelectBoxGroup suite result after the root reset and root geometry
   assertions: 7 passed.
+- The focused SelectBoxGroup suite result after the exact vertical route fix:
+  8 passed.
 
 ### Why the tests did not catch it earlier
 
@@ -110,6 +125,9 @@ records intent and recent evidence, not a substitute for `git status`.
 - The tests also lacked root-level geometry checks. The broken state still had
   roles, options, labels, and SVGs in the DOM, but Solid's native `ul` margin and
   padding shifted the rendered product surface.
+- The later `?orientation=vertical` regression survived because the guards were
+  biased toward horizontal and interactive control paths. Vertical needs its own
+  grid-template-area/row/column and illustration/label offset assertions.
 
 ### Known traps
 
@@ -120,6 +138,9 @@ records intent and recent evidence, not a substitute for `git status`.
   padding, list-style, root width, and option offset against React. Browser UA
   list styles can make the component look obviously wrong while ARIA and slot
   assertions still pass.
+- Always check both orientations. Horizontal and vertical SelectBox slot grids
+  can fail independently because the Solid workaround applies computed inline
+  grid templates after slot discovery.
 - React icons and illustrations are separate S2 paths. `createIcon` remains a
   20px icon even with `slot="illustration"`; use `createIllustration` when the
   fixture is meant to exercise SelectBoxGroup illustration behavior.

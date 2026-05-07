@@ -439,9 +439,13 @@ function applySlotClasses(
       : '"illustration . label"';
     root.style.gridTemplateRows = hasIllustration ? "18px 30px" : "min-content";
   } else {
-    root.style.removeProperty("grid-template-areas");
-    root.style.removeProperty("grid-template-rows");
+    root.style.gridTemplateAreas = '"illustration" "." "label"';
+    root.style.gridTemplateRows = "48px 8px 18px";
+    root.style.gridTemplateColumns = "1fr";
+    return;
   }
+
+  root.style.removeProperty("grid-template-columns");
 }
 
 /**
