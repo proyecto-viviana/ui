@@ -207,6 +207,8 @@ export interface SelectListBoxProps<T> extends SlotProps {
   children?: (item: T) => JSX.Element;
   /** Content to display when the listbox has no items. */
   renderEmptyState?: () => JSX.Element;
+  /** Whether the listbox is rendered inside an overlay popover. */
+  isInPopover?: boolean;
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<SelectListBoxRenderProps>;
   /** The inline style for the element. */
@@ -246,6 +248,8 @@ export interface SelectOptionProps<T> extends Omit<AriaOptionProps, "children" |
 interface SelectContextValue<T> {
   state: SelectState<T>;
   rootRef: Accessor<HTMLElement | null>;
+  triggerRef: Accessor<HTMLElement | null>;
+  setTriggerRef: (el: HTMLElement | null) => void;
   triggerProps: JSX.HTMLAttributes<HTMLElement>;
   valueProps: JSX.HTMLAttributes<HTMLElement>;
   labelProps: JSX.HTMLAttributes<HTMLElement>;
@@ -470,7 +474,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     },
   };
   const focusTrigger = () => {
-    rootRef?.querySelector<HTMLElement>("button[aria-haspopup='listbox']")?.focus();
+    triggerRef?.focus();
   };
   const hasSelection = () =>
     state.selectionMode() === "multiple"
@@ -529,6 +533,10 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       setSelectValidation(DEFAULT_VALIDATION_RESULT);
     }
   });
+  let triggerRef: HTMLElement | null = null;
+  const setTriggerRef = (el: HTMLElement | null) => {
+    triggerRef = el;
+  };
 
   const RootChildren = () => {
     const selectChildren = untrack(() =>
@@ -652,6 +660,8 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
         {
           state,
           rootRef: () => rootRef ?? null,
+          triggerRef: () => triggerRef,
+          setTriggerRef,
           get triggerProps() {
             return triggerPropsWithValidation();
           },
@@ -695,6 +705,10 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
   }
   const { isOpen, isFocused, isFocusVisible, state } = context;
   let triggerRef: HTMLButtonElement | undefined;
+  const setTriggerRef = (el: HTMLButtonElement) => {
+    triggerRef = el;
+    context.setTriggerRef(el);
+  };
 
   createEffect(() => {
     if (context.autoFocus) {
@@ -738,7 +752,7 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
   const menuAriaProps = () => context.menuProps as Record<string, unknown>;
   return (
     <button
-      ref={triggerRef}
+      ref={setTriggerRef}
       {...domProps}
       {...cleanTriggerProps()}
       {...cleanHoverProps()}
@@ -856,6 +870,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     "slot",
     "children",
     "renderEmptyState",
+    "isInPopover",
   ]);
 
   const context = useContext(SelectContext);
@@ -888,13 +903,14 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       }
     },
     get isDisabled() {
-      return !isOpen();
+      return !isOpen() || local.isInPopover === true;
     },
   });
 
   const { listBoxProps } = createListBox(
     {
       ...(menuProps as unknown as AriaListBoxProps),
+      shouldSelectOnFocus: local.isInPopover === true ? false : undefined,
       get isDisabled() {
         return state.isDisabled;
       },
@@ -925,40 +941,65 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   };
 
   const items = () => Array.from(state.collection());
+  createEffect(() => {
+    if (!isOpen()) return;
+    const focusedKey = state.focusedKey();
+    if (focusedKey == null) return;
+
+    queueMicrotask(() => {
+      const option = Array.from(
+        listBoxRef?.querySelectorAll<HTMLElement>("[role='option']") ?? [],
+      ).find((element) => element.id === String(focusedKey));
+      if (option && document.activeElement !== option) {
+        option.focus();
+      }
+    });
+  });
+
+  const listBox = () => (
+    <ul
+      ref={(el) => (listBoxRef = el)}
+      {...domProps}
+      {...cleanMenuProps()}
+      {...cleanListBoxProps()}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      data-focused={state.isFocused() || undefined}
+      data-empty={state.collection().size === 0 || undefined}
+    >
+      {state.collection().size === 0 && local.renderEmptyState ? (
+        <li role="option" style={{ display: "contents" }} data-empty-state>
+          {local.renderEmptyState()}
+        </li>
+      ) : (
+        <Show
+          when={local.children}
+          fallback={
+            <For each={items()}>
+              {(node) => <SelectOption id={node.key}>{node.textValue}</SelectOption>}
+            </For>
+          }
+        >
+          <For each={items()}>
+            {(node) => (node.value != null ? local.children!(node.value) : null)}
+          </For>
+        </Show>
+      )}
+    </ul>
+  );
 
   return (
     <Show when={isOpen()}>
-      <FocusScope restoreFocus autoFocus>
-        <ul
-          ref={(el) => (listBoxRef = el)}
-          {...domProps}
-          {...cleanMenuProps()}
-          {...cleanListBoxProps()}
-          class={renderProps.class()}
-          style={renderProps.style()}
-          data-focused={state.isFocused() || undefined}
-          data-empty={state.collection().size === 0 || undefined}
-        >
-          {state.collection().size === 0 && local.renderEmptyState ? (
-            <li role="option" style={{ display: "contents" }} data-empty-state>
-              {local.renderEmptyState()}
-            </li>
-          ) : (
-            <Show
-              when={local.children}
-              fallback={
-                <For each={items()}>
-                  {(node) => <SelectOption id={node.key}>{node.textValue}</SelectOption>}
-                </For>
-              }
-            >
-              <For each={items()}>
-                {(node) => (node.value != null ? local.children!(node.value) : null)}
-              </For>
-            </Show>
-          )}
-        </ul>
-      </FocusScope>
+      <Show
+        when={local.isInPopover}
+        fallback={
+          <FocusScope restoreFocus autoFocus>
+            {listBox()}
+          </FocusScope>
+        }
+      >
+        {listBox()}
+      </Show>
     </Show>
   );
 }

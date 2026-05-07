@@ -65,6 +65,12 @@ Include:
 - Geometry checks to run before screenshots: root box, slot boxes, icon box,
   text box, centerline delta, baseline-sensitive text/icon alignment, and
   overlay placement.
+- For overlay and list-backed controls, validate the actual React S2 popup/list
+  structure before implementing: portal location, popover container styles,
+  list padding, option grid/classes, DOM focus target, keyboard preview vs
+  commit behavior, dismissal, and focus return. Also confirm the generated S2
+  CSS contains rules for every class used by the Solid port; a class in DOM with
+  no generated rule is a porting bug, not a visual-tuning issue.
 - Which checks are behavior assertions, computed-style assertions,
   Playwright CLI inspection artifacts, and committed Playwright test snapshots.
 

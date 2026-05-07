@@ -1237,7 +1237,7 @@ export const style = createTheme({
     gridTemplateColumns: new ArbitraryProperty("gridTemplateColumns", gridTrack),
     gridTemplateRows: new ArbitraryProperty("gridTemplateRows", gridTrack),
     gridTemplateAreas: new ArbitraryProperty("gridTemplateAreas", (value: readonly string[]) =>
-      value.map((v) => `"${v}"`).join(""),
+      value.map((v) => `"${v}"`).join(" "),
     ),
     float: ["inline-start", "inline-end", "right", "left", "none"] as const,
     clear: ["inline-start", "inline-end", "left", "right", "both", "none"] as const,

@@ -42,6 +42,11 @@ export interface AriaListBoxProps {
   shouldSelectOnPressUp?: boolean;
   /** Whether to focus items on hover. */
   shouldFocusOnHover?: boolean;
+  /**
+   * Whether keyboard focus movement should also update selection in single selection mode.
+   * @default true
+   */
+  shouldSelectOnFocus?: boolean;
   /** Whether type-to-select is disabled. @default false */
   disallowTypeAhead?: boolean;
 }
@@ -191,6 +196,7 @@ export function createListBox<T>(
 
     const collection = state.collection();
     const shouldWrap = p.shouldFocusWrap ?? false;
+    const shouldSelectOnFocus = p.shouldSelectOnFocus ?? true;
 
     switch (e.key) {
       case "ArrowDown": {
@@ -198,7 +204,7 @@ export function createListBox<T>(
         const nextKey = findNextEnabledKey(state, state.focusedKey(), "next", shouldWrap);
         if (nextKey != null) {
           state.setFocusedKey(nextKey);
-          if (!e.shiftKey && state.selectionMode() === "single") {
+          if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
             state.replaceSelection(nextKey);
           } else if (e.shiftKey && state.selectionMode() === "multiple") {
             state.extendSelection(nextKey, collection);
@@ -211,7 +217,7 @@ export function createListBox<T>(
         const prevKey = findNextEnabledKey(state, state.focusedKey(), "prev", shouldWrap);
         if (prevKey != null) {
           state.setFocusedKey(prevKey);
-          if (!e.shiftKey && state.selectionMode() === "single") {
+          if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
             state.replaceSelection(prevKey);
           } else if (e.shiftKey && state.selectionMode() === "multiple") {
             state.extendSelection(prevKey, collection);
@@ -227,7 +233,7 @@ export function createListBox<T>(
           if (e.ctrlKey && e.shiftKey && state.selectionMode() === "multiple") {
             // Select from current to first
             state.extendSelection(firstKey, collection);
-          } else if (!e.shiftKey && state.selectionMode() === "single") {
+          } else if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
             state.replaceSelection(firstKey);
           }
         }
@@ -241,7 +247,7 @@ export function createListBox<T>(
           if (e.ctrlKey && e.shiftKey && state.selectionMode() === "multiple") {
             // Select from current to last
             state.extendSelection(lastKey, collection);
-          } else if (!e.shiftKey && state.selectionMode() === "single") {
+          } else if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
             state.replaceSelection(lastKey);
           }
         }

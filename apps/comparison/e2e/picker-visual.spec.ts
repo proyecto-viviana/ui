@@ -127,6 +127,60 @@ async function triggerStability(root: Locator) {
   });
 }
 
+async function openListMetrics(root: Locator) {
+  return root.evaluate((element) => {
+    const button = element.querySelector<HTMLButtonElement>("button[aria-haspopup='listbox']");
+    const listboxId = button?.getAttribute("aria-controls");
+    const listbox =
+      (listboxId ? document.getElementById(listboxId) : null) ??
+      Array.from(document.querySelectorAll<HTMLElement>("[role='listbox']")).find((candidate) =>
+        candidate.textContent?.includes("Enterprise"),
+      ) ??
+      null;
+    const dialog = listbox?.closest<HTMLElement>("[role='dialog']") ?? null;
+    const options = Array.from(listbox?.querySelectorAll<HTMLElement>("[role='option']") ?? []);
+    const selectedOption = options.find(
+      (option) => option.getAttribute("aria-selected") === "true",
+    );
+    const focusedOption = options.find((option) => option.hasAttribute("data-focused"));
+    const firstOption = options[0] ?? null;
+    const checkmark = firstOption?.querySelector<SVGElement>("svg") ?? null;
+    const listboxStyle = listbox == null ? null : window.getComputedStyle(listbox);
+    const dialogStyle = dialog == null ? null : window.getComputedStyle(dialog);
+    const optionStyle = firstOption == null ? null : window.getComputedStyle(firstOption);
+    const checkmarkRect = checkmark?.getBoundingClientRect();
+
+    return {
+      activeRole: document.activeElement?.getAttribute("role") ?? null,
+      activeText: document.activeElement?.textContent?.trim() ?? null,
+      activeIsFocusedOption: document.activeElement === focusedOption,
+      activeInDialog: dialog?.contains(document.activeElement) ?? false,
+      selectedText: selectedOption?.textContent?.trim() ?? null,
+      focusedText: focusedOption?.textContent?.trim() ?? null,
+      comparisonValue: element.getAttribute("data-comparison-value"),
+      ariaExpanded: button?.getAttribute("aria-expanded") ?? null,
+      rootListboxCount: element.querySelectorAll("[role='listbox']").length,
+      hasListbox: listbox != null,
+      hasPopover: dialog != null,
+      popoverBackground: dialogStyle?.backgroundColor ?? null,
+      popoverShadow: dialogStyle?.boxShadow ?? null,
+      listboxPadding: listboxStyle?.padding ?? null,
+      listboxMargin: listboxStyle?.margin ?? null,
+      optionGridAreas: optionStyle?.gridTemplateAreas ?? null,
+      optionGridColumns: optionStyle?.gridTemplateColumns ?? null,
+      checkmarkWidth: checkmarkRect == null ? null : Number(checkmarkRect.width.toFixed(4)),
+      checkmarkHeight: checkmarkRect == null ? null : Number(checkmarkRect.height.toFixed(4)),
+    };
+  });
+}
+
+async function waitForOpenListMetrics(root: Locator, label: string) {
+  await expect
+    .poll(() => openListMetrics(root), label)
+    .toMatchObject({ ariaExpanded: "true", hasListbox: true, hasPopover: true });
+  return openListMetrics(root);
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -256,5 +310,85 @@ test.describe("comparison Picker visual parity", () => {
           ariaExpanded: "false",
         });
     }
+  });
+
+  test("keyboard navigation moves focus before committing selection", async ({ page }) => {
+    const fixtures = await pickerFixtures(page, "?size=XL");
+
+    for (const item of [
+      { stack: "react", root: fixtures.reactRoot, button: fixtures.reactButton },
+      { stack: "solid", root: fixtures.solidRoot, button: fixtures.solidButton },
+    ]) {
+      await expect(item.root).toHaveAttribute("data-comparison-value", "pro");
+      await item.button.focus();
+      await item.button.press("ArrowDown");
+
+      await expect
+        .poll(() => openListMetrics(item.root), `${item.stack} opens on ArrowDown`)
+        .toMatchObject({
+          activeRole: "option",
+          activeText: "Pro",
+          activeIsFocusedOption: true,
+          activeInDialog: true,
+          selectedText: "Pro",
+          focusedText: "Pro",
+          comparisonValue: "pro",
+          ariaExpanded: "true",
+        });
+
+      await page.keyboard.press("ArrowDown");
+      await expect
+        .poll(() => openListMetrics(item.root), `${item.stack} previews focused option`)
+        .toMatchObject({
+          activeRole: "option",
+          activeText: "Enterprise",
+          activeIsFocusedOption: true,
+          selectedText: "Pro",
+          focusedText: "Enterprise",
+          comparisonValue: "pro",
+          ariaExpanded: "true",
+        });
+
+      await page.keyboard.press("Enter");
+      await expect(item.root).toHaveAttribute("data-comparison-value", "enterprise");
+      await expect(item.button).toContainText("Enterprise");
+      await expect(item.button).toHaveAttribute("aria-expanded", "false");
+      await expect
+        .poll(async () => triggerStability(item.root))
+        .toMatchObject({
+          activeIsButton: true,
+          buttonText: "Enterprise",
+          ariaExpanded: "false",
+        });
+    }
+  });
+
+  test("open list popover and option layout match React Spectrum", async ({ page }) => {
+    const fixtures = await pickerFixtures(page, "?size=XL");
+
+    await fixtures.reactButton.click();
+    const react = await waitForOpenListMetrics(
+      fixtures.reactRoot,
+      "React Picker open list metrics",
+    );
+    await page.keyboard.press("Escape");
+    await expect(fixtures.reactButton).toHaveAttribute("aria-expanded", "false");
+
+    await fixtures.solidButton.click();
+    const solid = await waitForOpenListMetrics(
+      fixtures.solidRoot,
+      "Solid Picker open list metrics",
+    );
+
+    expect(solid.rootListboxCount).toBe(0);
+    expect(solid.popoverBackground).toBe(react.popoverBackground);
+    expect(solid.popoverShadow).toBe(react.popoverShadow);
+    expect(solid.listboxPadding).toBe(react.listboxPadding);
+    expect(solid.listboxMargin).toBe(react.listboxMargin);
+    expect(solid.optionGridAreas).toBe(react.optionGridAreas);
+    expect(solid.optionGridAreas).not.toBe("none");
+    expect(solid.optionGridColumns).toBe(react.optionGridColumns);
+    expectNear(solid.checkmarkWidth, react.checkmarkWidth, 1, "Picker list checkmark width");
+    expectNear(solid.checkmarkHeight, react.checkmarkHeight, 1, "Picker list checkmark height");
   });
 });

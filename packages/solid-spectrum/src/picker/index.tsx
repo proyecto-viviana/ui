@@ -2,10 +2,12 @@
 import { type JSX, createContext, splitProps, useContext, Show } from "solid-js";
 import {
   Select as HeadlessSelect,
+  SelectContext as HeadlessSelectContext,
   SelectTrigger as HeadlessSelectTrigger,
   SelectValue as HeadlessSelectValue,
   SelectListBox as HeadlessSelectListBox,
   SelectOption as HeadlessSelectOption,
+  Popover as HeadlessPopover,
   type SelectProps as HeadlessSelectProps,
   type SelectRenderProps,
   type SelectTriggerRenderProps,
@@ -16,11 +18,21 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, fontRelative, style } from "../s2-style";
+import {
+  baseColor,
+  focusRing,
+  fontRelative,
+  lightDark,
+  setColorScheme,
+  space,
+  style,
+} from "../s2-style";
+import { edgeToText } from "../s2-style/spectrum-theme";
 import {
   control,
   controlBorderRadius,
   controlFont,
+  controlSize,
   field,
   fieldInput,
   fieldLabel,
@@ -31,7 +43,7 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
-import { useProviderProps } from "../provider";
+import { useProviderProps, useTheme } from "../provider";
 
 export type PickerSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -239,76 +251,119 @@ const pickerHelpText = style<PickerStyleProps>({
 });
 
 const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>({
-  position: "absolute",
-  zIndex: 50,
-  insetInlineStart: 0,
-  top: "full",
-  marginTop: {
-    size: {
-      S: "[6px]",
-      M: "[6px]",
-      L: "[7px]",
-      XL: "[8px]",
-    },
-  },
   width: "full",
-  minWidth: "full",
-  maxHeight: 320,
-  overflow: "auto",
-  outlineStyle: "none",
-  padding: 8,
   boxSizing: "border-box",
-  backgroundColor: "gray-50",
-  boxShadow: "emphasized",
-  borderRadius: "lg",
+  maxHeight: "[inherit]",
+  overflowY: "auto",
+  overflowX: "hidden",
   fontFamily: "sans",
   fontSize: controlFont(),
+  outlineStyle: "none",
+  margin: 0,
+  listStyleType: "none",
+  padding: 0,
+});
+
+const pickerPopover = style({
+  ...setColorScheme(),
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: {
+      default: "layer-2",
+      forcedColors: "Background",
+    },
+  },
+  backgroundColor: "--s2-container-bg",
+  boxShadow: "elevated",
+  borderRadius: "lg",
+  display: "flex",
+  padding: 8,
+  minHeight: 0,
+  overflow: "visible",
+  boxSizing: "border-box",
+  isolation: "isolate",
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: lightDark("transparent-white-25", "gray-200"),
+    forcedColors: "ButtonBorder",
+  },
 });
 
 const pickerOption = style<PickerOptionStyleProps>({
-  display: "grid",
-  gridTemplateColumns: ["auto", "minmax(0, 1fr)"],
-  alignItems: "center",
-  columnGap: "text-to-visual",
-  minHeight: {
-    size: {
-      S: 24,
-      M: 32,
-      L: 40,
-      XL: 48,
-    },
+  ...focusRing(),
+  ...control({ shape: "default", wrap: true, icon: true }),
+  columnGap: 0,
+  paddingX: 0,
+  paddingBottom: "--labelPadding",
+  backgroundColor: {
+    default: "transparent",
+    isFocused: baseColor("gray-100").isFocusVisible,
   },
-  paddingX: "edge-to-text",
-  borderRadius: "sm",
   color: {
     default: baseColor("neutral"),
-    isDisabled: "disabled",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
   },
-  backgroundColor: {
-    isFocused: "gray-200",
-    isHovered: "gray-200",
-    isPressed: "gray-300",
+  position: "relative",
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
+  display: "grid",
+  gridTemplateAreas: [". checkmark icon label .", ". . . description ."],
+  gridTemplateColumns: {
+    size: {
+      S: [edgeToText(24), "auto", "auto", "minmax(0, 1fr)", edgeToText(24)],
+      M: [edgeToText(32), "auto", "auto", "minmax(0, 1fr)", edgeToText(32)],
+      L: [edgeToText(40), "auto", "auto", "minmax(0, 1fr)", edgeToText(40)],
+      XL: [edgeToText(48), "auto", "auto", "minmax(0, 1fr)", edgeToText(48)],
+    },
   },
+  gridTemplateRows: {
+    default: "auto minmax(0, min-content)",
+    ":has([slot=description])": "auto auto",
+  },
+  rowGap: {
+    ":has([slot=description])": space(1),
+  },
+  alignItems: "baseline",
+  minHeight: controlSize(),
+  height: "min",
+  textDecoration: "none",
   cursor: {
     default: "default",
     isDisabled: "default",
   },
-  outlineStyle: "none",
+  transition: "default",
 });
 
 const pickerOptionLabel = style({
+  gridArea: "label",
+  display: "block",
+  flexGrow: 1,
   truncate: true,
 });
 
 const pickerCheckmark = style<PickerOptionStyleProps>({
+  gridArea: "checkmark",
   visibility: {
     default: "hidden",
     isSelected: "visible",
   },
+  color: baseColor("accent"),
+  marginEnd: "text-to-control",
+  aspectRatio: "square",
   flexShrink: 0,
   "--iconPrimary": {
     type: "fill",
-    value: "currentColor",
+    value: {
+      default: "currentColor",
+      forcedColors: {
+        default: "Highlight",
+        isFocused: "HighlightText",
+      },
+    },
   },
 });
 
@@ -361,6 +416,75 @@ function requiredIconStyle(size: S2PickerSize): JSX.CSSProperties {
     width: `${pixelSize}px`,
     height: `${pixelSize}px`,
   };
+}
+
+function pickerCheckmarkIconStyle(size: S2PickerSize): JSX.CSSProperties {
+  const pixelSize = size === "XL" ? 14 : size === "L" ? 12 : 10;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function pickerMenuOffset(size: S2PickerSize): number {
+  switch (size) {
+    case "S":
+    case "M":
+      return 6;
+    case "L":
+      return 7;
+    case "XL":
+      return 8;
+  }
+}
+
+function PickerListBoxPopover(props: {
+  size: () => S2PickerSize;
+  isQuiet: () => boolean;
+  children: JSX.Element;
+}) {
+  const theme = useTheme();
+  const selectContext = useContext(HeadlessSelectContext) as {
+    state?: { close?: () => void };
+    isOpen?: () => boolean;
+    triggerRef?: () => HTMLElement | null;
+    rootRef?: () => HTMLElement | null;
+  } | null;
+  const triggerRef = () =>
+    selectContext?.triggerRef?.() ??
+    selectContext?.rootRef?.()?.querySelector<HTMLElement>("button[aria-haspopup='listbox']") ??
+    null;
+
+  return (
+    <HeadlessPopover
+      trigger="Select"
+      triggerRef={triggerRef}
+      isOpen={selectContext?.isOpen?.() ?? false}
+      onOpenChange={(open) => {
+        if (!open) {
+          selectContext?.state?.close?.();
+        }
+      }}
+      placement="bottom start"
+      offset={pickerMenuOffset(props.size())}
+      shouldFlip={true}
+      autoFocus={false}
+      class={(renderProps) =>
+        pickerPopover({
+          ...renderProps,
+          colorScheme: theme.colorScheme,
+          isArrowShown: false,
+          isSubmenu: false,
+        })
+      }
+      style={() => ({
+        minWidth: props.isQuiet() ? "192px" : "var(--trigger-width)",
+        width: props.isQuiet() ? "calc(var(--trigger-width) - 24px)" : "var(--trigger-width)",
+      })}
+    >
+      {props.children}
+    </HeadlessPopover>
+  );
 }
 
 function PickerLabel(props: {
@@ -585,11 +709,14 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
             <Show when={local.errorMessage && isInvalid()}>
               <p class={helpClass(renderProps)}>{local.errorMessage}</p>
             </Show>
-            <HeadlessSelectListBox
-              class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
-            >
-              {listBoxChildren}
-            </HeadlessSelectListBox>
+            <PickerListBoxPopover size={size} isQuiet={isQuiet}>
+              <HeadlessSelectListBox
+                isInPopover
+                class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
+              >
+                {listBoxChildren}
+              </HeadlessSelectListBox>
+            </PickerListBoxPopover>
           </>
         )}
       />
@@ -629,6 +756,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
           <CheckmarkIcon
             size={size === "S" ? "XS" : size}
             styles={pickerCheckmark({ ...renderProps, size })}
+            style={pickerCheckmarkIconStyle(size)}
             aria-hidden="true"
           />
           <span class={pickerOptionLabel}>{local.children}</span>

@@ -119,6 +119,11 @@ export interface PopoverProps extends SlotProps {
   defaultOpen?: boolean;
   /** Handler called when the popover's open state changes. */
   onOpenChange?: (isOpen: boolean) => void;
+  /**
+   * Whether focus should move to the popover container on open.
+   * @default true
+   */
+  autoFocus?: boolean;
   /** Whether the popover is entering (for animations). */
   isEntering?: boolean;
   /** Whether the popover is exiting (for animations). */
@@ -222,6 +227,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     "isOpen",
     "defaultOpen",
     "onOpenChange",
+    "autoFocus",
     "isEntering",
     "isExiting",
   ]);
@@ -399,6 +405,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   // Ensure Escape handling works even when popover content has no focusable children.
   createEffect(() => {
     if (!isOpen() || !shouldBeDialog()) return;
+    if ((local.autoFocus ?? true) === false) return;
     if (!popoverRef) return;
     if (resolvedTrigger() === "SubmenuTrigger") return;
     if (document.activeElement !== popoverRef) {
@@ -425,7 +432,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     <PopoverContext.Provider
       value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
     >
-      <FocusScope contain={shouldBeDialog()} restoreFocus autoFocus>
+      <FocusScope contain={shouldBeDialog()} restoreFocus autoFocus={local.autoFocus ?? true}>
         <div
           {...domProps()}
           {...cleanPopoverProps()}
