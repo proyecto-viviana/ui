@@ -107,6 +107,7 @@ const comboBoxData = new WeakMap<object, ComboBoxData>();
 
 interface ComboBoxData {
   id: string;
+  listBoxId: string;
 }
 
 export function getComboBoxData(state: ComboBoxState<unknown>): ComboBoxData | undefined {
@@ -190,7 +191,7 @@ export function createComboBox<T>(
 
   // Share data with child options
   createEffect(() => {
-    comboBoxData.set(state, { id });
+    comboBoxData.set(state, { id, listBoxId });
 
     onCleanup(() => {
       comboBoxData.delete(state);

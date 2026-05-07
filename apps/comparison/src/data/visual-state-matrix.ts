@@ -725,6 +725,37 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "The docs-style prop controls drive label, selected values, size, orientation, description/error text, emphasized, disabled, read-only, required, and invalid state into both stacks.",
     },
   ],
+  combobox: [
+    {
+      id: "styled.default",
+      label: "Styled default",
+      kind: "static",
+      react: "planned",
+      solid: "planned",
+      pairDiff: "planned",
+      note: "ComboBox is now wired on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+    },
+    {
+      id: "styled.open-list.layout",
+      label: "Open list popover layout",
+      kind: "interaction",
+      react: "planned",
+      solid: "planned",
+      pairDiff: "planned",
+      spec: "e2e/combobox-visual.spec.ts",
+      note: "The focused guard should compare the S2 field group, input/button/icon geometry, actual portal popover background/shadow, list padding, option grid areas/columns, active-descendant focus management, and checkmark sizing against React Spectrum.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts",
+      note: "The docs-style prop controls drive label, selected key, input value, placeholder, size, description/error message, disabled, required, and invalid state into both stacks.",
+    },
+  ],
   radiogroup: [
     {
       id: "styled.default",

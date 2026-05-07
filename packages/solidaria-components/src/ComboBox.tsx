@@ -20,6 +20,7 @@ import {
   createComboBox,
   createListBox,
   createOption,
+  getComboBoxData,
   createHover,
   createInteractOutside,
   mergeProps,
@@ -272,12 +273,12 @@ export interface ComboBoxOptionProps<T>
 
 interface ComboBoxContextValue<T> {
   state: ComboBoxState<T>;
-  inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
-  buttonProps: JSX.HTMLAttributes<HTMLElement>;
-  listBoxProps: JSX.HTMLAttributes<HTMLElement>;
-  labelProps: JSX.HTMLAttributes<HTMLElement>;
-  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
-  errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
+  inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
+  buttonProps: () => JSX.HTMLAttributes<HTMLElement>;
+  listBoxProps: () => JSX.HTMLAttributes<HTMLElement>;
+  labelProps: () => JSX.HTMLAttributes<HTMLElement>;
+  descriptionProps: () => JSX.HTMLAttributes<HTMLElement>;
+  errorMessageProps: () => JSX.HTMLAttributes<HTMLElement>;
   isOpen: Accessor<boolean>;
   isFocused: Accessor<boolean>;
   isFocusVisible: Accessor<boolean>;
@@ -286,6 +287,8 @@ interface ComboBoxContextValue<T> {
   setInputRef: (el: HTMLInputElement | null) => void;
   buttonRef: () => HTMLElement | null;
   setButtonRef: (el: HTMLElement | null) => void;
+  triggerRef: () => HTMLElement | null;
+  setTriggerRef: (el: HTMLElement | null) => void;
   listBoxRef: () => HTMLElement | null;
   setListBoxRef: (el: HTMLElement | null) => void;
   slots?: Record<string, Partial<ComboBoxProps<T>>>;
@@ -337,6 +340,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
 
   let inputRef: HTMLInputElement | null = null;
   let buttonRef: HTMLElement | null = null;
+  let triggerRef: HTMLElement | null = null;
   let listBoxRef: HTMLElement | null = null;
 
   const state = createComboBoxState<T>({
@@ -494,12 +498,12 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       value={
         {
           state,
-          inputProps: comboBoxAria.inputProps,
-          buttonProps: comboBoxAria.buttonProps,
-          listBoxProps: comboBoxAria.listBoxProps,
-          labelProps: comboBoxAria.labelProps,
-          descriptionProps: comboBoxAria.descriptionProps,
-          errorMessageProps: comboBoxAria.errorMessageProps,
+          inputProps: () => comboBoxAria.inputProps,
+          buttonProps: () => comboBoxAria.buttonProps,
+          listBoxProps: () => comboBoxAria.listBoxProps,
+          labelProps: () => comboBoxAria.labelProps,
+          descriptionProps: () => comboBoxAria.descriptionProps,
+          errorMessageProps: () => comboBoxAria.errorMessageProps,
           isOpen: comboBoxAria.isOpen,
           isFocused: comboBoxAria.isFocused,
           isFocusVisible: comboBoxAria.isFocusVisible,
@@ -511,6 +515,10 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           buttonRef: () => buttonRef,
           setButtonRef: (el) => {
             buttonRef = el;
+          },
+          triggerRef: () => triggerRef,
+          setTriggerRef: (el) => {
+            triggerRef = el;
           },
           listBoxRef: () => listBoxRef,
           setListBoxRef: (el) => {
@@ -564,7 +572,7 @@ export function ComboBoxLabel(props: ComboBoxLabelProps): JSX.Element {
   }
 
   const cleanLabelProps = () => {
-    const { ref: _ref, ...rest } = context.labelProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = context.labelProps() as Record<string, unknown>;
     return rest;
   };
 
@@ -587,7 +595,7 @@ export function ComboBoxDescription(props: ComboBoxDescriptionProps): JSX.Elemen
   }
 
   const cleanDescriptionProps = () => {
-    const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = context.descriptionProps() as Record<string, unknown>;
     return rest;
   };
 
@@ -610,7 +618,7 @@ export function ComboBoxErrorMessage(props: ComboBoxErrorMessageProps): JSX.Elem
   }
 
   const cleanErrorMessageProps = () => {
-    const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = context.errorMessageProps() as Record<string, unknown>;
     return rest;
   };
 
@@ -631,7 +639,7 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
   if (!context) {
     throw new Error("ComboBoxInput must be used within a ComboBox");
   }
-  const { inputProps, isOpen, isFocused, isFocusVisible, state, setInputRef } = context;
+  const { isOpen, isFocused, isFocusVisible, state, setInputRef } = context;
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
@@ -659,7 +667,7 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
   );
 
   const cleanInputProps = () => {
-    const { ref: _ref1, value: _value, ...rest } = inputProps as Record<string, unknown>;
+    const { ref: _ref1, value: _value, ...rest } = context.inputProps() as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
@@ -752,7 +760,7 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
   if (!context) {
     throw new Error("ComboBoxButton must be used within a ComboBox");
   }
-  const { buttonProps, isOpen, isFocused, state, setButtonRef } = context;
+  const { isOpen, isFocused, state, setButtonRef } = context;
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
@@ -779,7 +787,7 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
   );
 
   const cleanButtonProps = () => {
-    const { ref: _ref1, ...rest } = buttonProps as Record<string, unknown>;
+    const { ref: _ref1, ...rest } = context.buttonProps() as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
@@ -816,14 +824,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   if (!context) {
     throw new Error("ComboBoxListBox must be used within a ComboBox");
   }
-  const {
-    listBoxProps: contextListBoxProps,
-    state: comboBoxState,
-    isOpen,
-    inputRef,
-    buttonRef,
-    setListBoxRef,
-  } = context;
+  const { state: comboBoxState, isOpen, inputRef, buttonRef, setListBoxRef } = context;
   const state = comboBoxState as ComboBoxState<T>;
 
   let listBoxRef: HTMLUListElement | undefined;
@@ -852,7 +853,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
 
   // Create listbox aria props using ComboBoxState's ListState-compatible interface
   const { listBoxProps } = createListBox(
-    contextListBoxProps as unknown as AriaListBoxProps,
+    context.listBoxProps as unknown as AriaListBoxProps,
     createComboBoxListStateAdapter(state),
   );
 
@@ -870,7 +871,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   );
 
   const cleanContextProps = () => {
-    const { ref: _ref1, ...rest } = contextListBoxProps as Record<string, unknown>;
+    const { ref: _ref1, ...rest } = context.listBoxProps() as Record<string, unknown>;
     return rest;
   };
   const cleanListBoxProps = () => {
@@ -960,11 +961,18 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     throw new Error("ComboBoxOption must be used within a ComboBox");
   }
   const state = context as ComboBoxState<T>;
+  const optionId = () => {
+    const listBoxId = getComboBoxData(state as ComboBoxState<unknown>)?.listBoxId;
+    return listBoxId ? `${listBoxId}-option-${local.id}` : String(local.id);
+  };
 
   // Create option aria props using ComboBoxState's ListState-compatible interface
   const optionAria = createOption<T>(
     {
       key: local.id,
+      get optionId() {
+        return optionId();
+      },
       get isDisabled() {
         return ariaProps.isDisabled;
       },

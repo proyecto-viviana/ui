@@ -383,6 +383,19 @@ export function createComboBoxState<T = unknown>(
 
     menuOpenTrigger = trigger ?? "focus";
     setFocusStrategy(strategy);
+    if (!overlayState.isOpen()) {
+      const key = selectedKey();
+      const nextFocusedKey =
+        key != null && !listState.isDisabled(key)
+          ? key
+          : strategy === "first"
+            ? displayedCollection().getFirstKey()
+            : strategy === "last"
+              ? displayedCollection().getLastKey()
+              : null;
+      listState.setFocused(true);
+      listState.setFocusedKey(nextFocusedKey);
+    }
     overlayState.open();
   };
 
@@ -461,6 +474,7 @@ export function createComboBoxState<T = unknown>(
       } else {
         // Select the focused item
         setSelectedKey(focusedKey);
+        closeMenu();
       }
     } else {
       commitValue();

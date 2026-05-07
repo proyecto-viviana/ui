@@ -9,6 +9,8 @@ import {
   CardView as SpectrumCardView,
   Checkbox as SpectrumCheckbox,
   CheckboxGroup as SpectrumCheckboxGroup,
+  ComboBox as SpectrumComboBox,
+  ComboBoxItem as SpectrumComboBoxItem,
   Content as SpectrumContent,
   DatePicker as SpectrumDatePicker,
   Dialog as SpectrumDialog,
@@ -83,6 +85,13 @@ import {
   pickerItems,
   serializePickerDemoProps,
 } from "@comparison/data/picker-demo";
+import {
+  comboBoxDemoPropsFromWindow,
+  comboBoxItems,
+  comboBoxLabelForKey,
+  normalizeComboBoxDemoProps,
+  serializeComboBoxDemoProps,
+} from "@comparison/data/combobox-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -273,6 +282,7 @@ export const reactStyledFixtures = {
   textfield: () => jsx(ReactTextFieldDemo, {}),
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
+  combobox: () => jsx(ReactComboBoxDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
   picker: () => jsx(ReactPickerDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
@@ -1030,6 +1040,70 @@ function ReactPickerDemo() {
         children: pickerItems.map((item) =>
           jsx(SpectrumPickerItem, { id: item.id, children: item.label }, item.id),
         ),
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactComboBoxDemo() {
+  const [demoProps, setDemoProps] = useState(comboBoxDemoPropsFromWindow);
+  const [selectedKey, setSelectedKey] = useState(() => demoProps.selectedKey);
+  const [inputValue, setInputValue] = useState(() => demoProps.inputValue);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "combobox") {
+        const nextProps = normalizeComboBoxDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelectedKey(nextProps.selectedKey);
+        setInputValue(nextProps.inputValue);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "combobox",
+      "data-comparison-control-props": serializeComboBoxDemoProps({
+        ...demoProps,
+        selectedKey,
+        inputValue,
+      }),
+      "data-comparison-value": selectedKey,
+      "data-comparison-input-value": inputValue,
+      children: jsx(SpectrumComboBox, {
+        label: demoProps.label,
+        selectedKey,
+        inputValue,
+        placeholder: demoProps.placeholder,
+        size: demoProps.size,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onSelectionChange: (nextKey) => {
+          const nextSelectedKey = String(nextKey);
+          const nextInputValue = comboBoxLabelForKey(nextSelectedKey);
+          setSelectedKey(nextSelectedKey);
+          setInputValue(nextInputValue);
+          setDemoProps((current) => ({
+            ...current,
+            selectedKey: nextSelectedKey,
+            inputValue: nextInputValue,
+          }));
+        },
+        onInputChange: (nextValue) => {
+          setInputValue(nextValue);
+          setDemoProps((current) => ({ ...current, inputValue: nextValue }));
+        },
+        children: (item) =>
+          jsx(SpectrumComboBoxItem, { id: item.id, children: item.label }, item.id),
+        items: comboBoxItems,
       }),
     }),
     colorScheme,

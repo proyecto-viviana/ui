@@ -1,58 +1,95 @@
-import { type JSX, splitProps, createContext, useContext, Show } from "solid-js";
+// @ts-nocheck
+import { type JSX, createContext, onCleanup, Show, splitProps, useContext } from "solid-js";
 import {
   ComboBox as HeadlessComboBox,
-  ComboBoxInput as HeadlessComboBoxInput,
-  ComboBoxLabel as HeadlessComboBoxLabel,
+  ComboBoxButton as HeadlessComboBoxButton,
+  ComboBoxContext as HeadlessComboBoxContext,
   ComboBoxDescription as HeadlessComboBoxDescription,
   ComboBoxErrorMessage as HeadlessComboBoxErrorMessage,
-  ComboBoxButton as HeadlessComboBoxButton,
+  ComboBoxInput as HeadlessComboBoxInput,
+  ComboBoxLabel as HeadlessComboBoxLabel,
   ComboBoxListBox as HeadlessComboBoxListBox,
   ComboBoxOption as HeadlessComboBoxOption,
-  ComboBoxTagGroup as HeadlessComboBoxTagGroup,
   ComboBoxTag as HeadlessComboBoxTag,
+  ComboBoxTagGroup as HeadlessComboBoxTagGroup,
+  Popover as HeadlessPopover,
   defaultContainsFilter,
-  type ComboBoxProps as HeadlessComboBoxProps,
-  type ComboBoxInputProps as HeadlessComboBoxInputProps,
   type ComboBoxButtonProps as HeadlessComboBoxButtonProps,
+  type ComboBoxButtonRenderProps,
+  type ComboBoxInputProps as HeadlessComboBoxInputProps,
+  type ComboBoxInputRenderProps,
   type ComboBoxListBoxProps as HeadlessComboBoxListBoxProps,
+  type ComboBoxListBoxRenderProps,
   type ComboBoxOptionProps as HeadlessComboBoxOptionProps,
+  type ComboBoxOptionRenderProps,
+  type ComboBoxProps as HeadlessComboBoxProps,
+  type ComboBoxRenderProps,
   type ComboBoxTagGroupProps as HeadlessComboBoxTagGroupProps,
   type ComboBoxTagProps as HeadlessComboBoxTagProps,
-  type ComboBoxRenderProps,
-  type ComboBoxInputRenderProps,
-  type ComboBoxButtonRenderProps,
-  type ComboBoxListBoxRenderProps,
-  type ComboBoxOptionRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { Key, FilterFn, MenuTriggerAction } from "@proyecto-viviana/solid-stately";
-import { useProviderProps } from "../provider";
+import type { FilterFn, Key, MenuTriggerAction } from "@proyecto-viviana/solid-stately";
+import type { StyleString } from "../s2-style";
+import {
+  baseColor,
+  focusRing,
+  fontRelative,
+  lightDark,
+  setColorScheme,
+  space,
+  style,
+} from "../s2-style";
+import { edgeToText } from "../s2-style/spectrum-theme";
+import {
+  control,
+  controlBorderRadius,
+  controlFont,
+  controlSize,
+  field,
+  fieldInput,
+  fieldLabel,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils";
+import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import CheckmarkIcon from "../icon/ui-icons/Checkmark";
+import ChevronIcon from "../icon/ui-icons/Chevron";
+import { useProviderProps, useTheme } from "../provider";
 
-export type ComboBoxSize = "sm" | "md" | "lg";
+export type ComboBoxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type S2ComboBoxSize = "S" | "M" | "L" | "XL";
+export type ComboBoxLabelPosition = "top" | "side";
+export type ComboBoxLabelAlign = "start" | "end";
+export type ComboBoxNecessityIndicator = "icon" | "label";
 
-const ComboBoxSizeContext = createContext<ComboBoxSize>("md");
-
-export interface ComboBoxProps<T> extends Omit<HeadlessComboBoxProps<T>, "class" | "style"> {
-  /** The size of the combobox. */
+export interface ComboBoxProps<T> extends Omit<
+  HeadlessComboBoxProps<T>,
+  "class" | "style" | "children"
+> {
   size?: ComboBoxSize;
-  /** Additional CSS class name. */
+  styles?: StyleString;
+  UNSAFE_className?: string;
+  UNSAFE_style?: JSX.CSSProperties;
   class?: string;
-  /** Label for the combobox. */
-  label?: string;
-  /** Description for the combobox. */
-  description?: string;
-  /** Error message when invalid. */
-  errorMessage?: string;
-  /** Whether the combobox is invalid. */
+  label?: JSX.Element;
+  description?: JSX.Element;
+  errorMessage?: JSX.Element;
   isInvalid?: boolean;
+  labelPosition?: ComboBoxLabelPosition;
+  labelAlign?: ComboBoxLabelAlign;
+  necessityIndicator?: ComboBoxNecessityIndicator;
+  direction?: "bottom" | "top";
+  align?: "start" | "end";
+  menuWidth?: number;
+  shouldFlip?: boolean;
+  children?: JSX.Element | ((item: T) => JSX.Element);
 }
 
 export interface ComboBoxInputProps extends Omit<HeadlessComboBoxInputProps, "class" | "style"> {
-  /** Additional CSS class name. */
   class?: string;
 }
 
 export interface ComboBoxButtonProps extends Omit<HeadlessComboBoxButtonProps, "class" | "style"> {
-  /** Additional CSS class name. */
   class?: string;
 }
 
@@ -60,7 +97,6 @@ export interface ComboBoxListBoxProps<T> extends Omit<
   HeadlessComboBoxListBoxProps<T>,
   "class" | "style"
 > {
-  /** Additional CSS class name. */
   class?: string;
 }
 
@@ -68,243 +104,796 @@ export interface ComboBoxOptionProps<T> extends Omit<
   HeadlessComboBoxOptionProps<T>,
   "class" | "style"
 > {
-  /** Additional CSS class name. */
   class?: string;
 }
 
-const sizeStyles = {
-  sm: {
-    wrapper: "h-8",
-    input: "h-8 text-sm pl-3 pr-8",
-    button: "h-8 w-8",
-    label: "text-sm",
-    option: "text-sm py-1.5 px-3",
-    icon: "h-4 w-4",
-  },
-  md: {
-    wrapper: "h-10",
-    input: "h-10 text-base pl-4 pr-10",
-    button: "h-10 w-10",
-    label: "text-base",
-    option: "text-base py-2 px-4",
-    icon: "h-5 w-5",
-  },
-  lg: {
-    wrapper: "h-12",
-    input: "h-12 text-lg pl-5 pr-12",
-    button: "h-12 w-12",
-    label: "text-lg",
-    option: "text-lg py-2.5 px-5",
-    icon: "h-6 w-6",
-  },
-};
-
-/**
- * A combobox combines a text input with a listbox, allowing users to filter a list of options.
- *
- */
-export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, [
-    "size",
-    "class",
-    "label",
-    "description",
-    "errorMessage",
-    "isInvalid",
-  ]);
-
-  const size = local.size ?? "md";
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: ComboBoxRenderProps): string => {
-    const base = "relative inline-flex flex-col gap-1.5";
-    const disabledClass = renderProps.isDisabled ? "opacity-50" : "";
-    return [base, disabledClass, customClass].filter(Boolean).join(" ");
-  };
-
-  return (
-    <ComboBoxSizeContext.Provider value={size}>
-      <HeadlessComboBox
-        {...headlessProps}
-        label={local.label}
-        description={local.isInvalid ? undefined : local.description}
-        errorMessage={local.isInvalid ? local.errorMessage : undefined}
-        isInvalid={local.isInvalid}
-        class={getClassName}
-      >
-        <Show when={local.label}>
-          <HeadlessComboBoxLabel class={`text-primary-200 font-medium ${sizeStyles[size].label}`}>
-            {local.label}
-          </HeadlessComboBoxLabel>
-        </Show>
-        {props.children as JSX.Element}
-        <Show when={local.description && !local.isInvalid}>
-          <HeadlessComboBoxDescription class="text-primary-400 text-sm">
-            {local.description}
-          </HeadlessComboBoxDescription>
-        </Show>
-        <Show when={local.errorMessage && local.isInvalid}>
-          <HeadlessComboBoxErrorMessage class="text-danger-400 text-sm">
-            {local.errorMessage}
-          </HeadlessComboBoxErrorMessage>
-        </Show>
-      </HeadlessComboBox>
-    </ComboBoxSizeContext.Provider>
-  );
+interface ComboBoxStyleProps extends ComboBoxRenderProps {
+  size?: S2ComboBoxSize;
+  labelPosition?: ComboBoxLabelPosition;
+  labelAlign?: ComboBoxLabelAlign;
+  isFocusWithin?: boolean;
+  isStaticColor?: boolean;
+  isInForm?: boolean;
 }
 
-/**
- * A wrapper for the input and button that provides proper styling.
- */
-export function ComboBoxInputGroup(props: { children: JSX.Element; class?: string }): JSX.Element {
-  const size = useContext(ComboBoxSizeContext);
-  const styles = () => sizeStyles[size];
+interface ComboBoxButtonStyleProps extends ComboBoxButtonRenderProps {
+  size?: S2ComboBoxSize;
+  isOpen?: boolean;
+}
+
+interface ComboBoxOptionStyleProps extends ComboBoxOptionRenderProps {
+  size?: S2ComboBoxSize;
+  isLink?: boolean;
+}
+
+const ComboBoxSizeContext = createContext<S2ComboBoxSize>("M");
+
+const comboBoxRoot = style<ComboBoxStyleProps>(
+  {
+    ...field(),
+  },
+  getAllowedOverrides(),
+);
+
+const comboBoxLabelWrapper = style<ComboBoxStyleProps>({
+  gridArea: "label",
+  display: "inline",
+  textAlign: {
+    labelAlign: {
+      start: "start",
+      end: "end",
+    },
+  },
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
+  },
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+  },
+});
+
+const comboBoxLabel = style<ComboBoxStyleProps>({
+  ...fieldLabel(),
+});
+
+const comboBoxFieldGroup = style<ComboBoxStyleProps>({
+  ...focusRing(),
+  ...control({ shape: "default" }),
+  ...fieldInput(),
+  paddingStart: "edge-to-text",
+  paddingEnd: "calc(self(height, self(minHeight)) * 3 / 16)",
+  borderWidth: 2,
+  borderStyle: "solid",
+  transition: "default",
+  borderColor: {
+    default: baseColor("gray-300"),
+    forcedColors: "ButtonBorder",
+    isInvalid: {
+      default: baseColor("negative"),
+      forcedColors: "Mark",
+    },
+    isFocusWithin: {
+      default: "gray-900",
+      isInvalid: "negative-1000",
+      forcedColors: "Highlight",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  backgroundColor: {
+    default: "gray-25",
+    forcedColors: "Field",
+  },
+  color: {
+    default: baseColor("neutral"),
+    forcedColors: "ButtonText",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const comboBoxInput = style({
+  padding: 0,
+  backgroundColor: "transparent",
+  color: {
+    default: "inherit",
+    "::placeholder": {
+      default: "gray-600",
+      forcedColors: "GrayText",
+    },
+  },
+  fontFamily: "inherit",
+  fontSize: "inherit",
+  fontWeight: "inherit",
+  flexGrow: 1,
+  flexShrink: 1,
+  minWidth: 0,
+  width: "full",
+  outlineStyle: "none",
+  borderStyle: "none",
+  truncate: true,
+});
+
+const inputButton = style<ComboBoxButtonStyleProps>({
+  ...controlBorderRadius("sm"),
+  display: "flex",
+  outlineStyle: "none",
+  textAlign: "center",
+  borderStyle: "none",
+  alignItems: "center",
+  justifyContent: "center",
+  size: {
+    size: {
+      S: 16,
+      M: 20,
+      L: 24,
+      XL: 32,
+    },
+  },
+  marginStart: "text-to-control",
+  aspectRatio: "square",
+  flexShrink: 0,
+  transition: {
+    default: "default",
+    forcedColors: "none",
+  },
+  backgroundColor: {
+    default: baseColor("gray-100"),
+    isOpen: "gray-200",
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "ButtonText",
+      isHovered: "Highlight",
+      isOpen: "Highlight",
+      isDisabled: "GrayText",
+    },
+  },
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: "disabled",
+    forcedColors: "ButtonFace",
+  },
+});
+
+const comboBoxChevron = style({
+  flexShrink: 0,
+  rotate: 90,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const comboBoxListBox = style<ComboBoxListBoxRenderProps & { size?: S2ComboBoxSize }>({
+  width: "full",
+  boxSizing: "border-box",
+  maxHeight: "[inherit]",
+  overflowY: "auto",
+  overflowX: "hidden",
+  fontFamily: "sans",
+  fontSize: controlFont(),
+  outlineStyle: "none",
+  margin: 0,
+  padding: 0,
+  listStyleType: "none",
+});
+
+const comboBoxPopover = style({
+  ...setColorScheme(),
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: {
+      default: "layer-2",
+      forcedColors: "Background",
+    },
+  },
+  backgroundColor: "--s2-container-bg",
+  boxShadow: "elevated",
+  borderRadius: "lg",
+  display: "flex",
+  padding: 8,
+  minHeight: 0,
+  overflow: "visible",
+  boxSizing: "border-box",
+  isolation: "isolate",
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: lightDark("transparent-white-25", "gray-200"),
+    forcedColors: "ButtonBorder",
+  },
+});
+
+const comboBoxOption = style<ComboBoxOptionStyleProps>({
+  ...focusRing(),
+  ...control({ shape: "default", wrap: true, icon: true }),
+  columnGap: 0,
+  paddingX: 0,
+  paddingBottom: "--labelPadding",
+  backgroundColor: {
+    default: "transparent",
+    isFocused: baseColor("gray-100").isFocusVisible,
+  },
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  position: "relative",
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
+  display: "grid",
+  gridTemplateAreas: [". checkmark icon label .", ". . . description ."],
+  gridTemplateColumns: {
+    size: {
+      S: [edgeToText(24), "auto", "auto", "minmax(0, 1fr)", edgeToText(24)],
+      M: [edgeToText(32), "auto", "auto", "minmax(0, 1fr)", edgeToText(32)],
+      L: [edgeToText(40), "auto", "auto", "minmax(0, 1fr)", edgeToText(40)],
+      XL: [edgeToText(48), "auto", "auto", "minmax(0, 1fr)", edgeToText(48)],
+    },
+  },
+  gridTemplateRows: {
+    default: "auto minmax(0, min-content)",
+    ":has([slot=description])": "auto auto",
+  },
+  rowGap: {
+    ":has([slot=description])": space(1),
+  },
+  alignItems: "baseline",
+  minHeight: controlSize(),
+  height: "min",
+  textDecoration: "none",
+  cursor: {
+    default: "default",
+    isLink: "pointer",
+    isDisabled: "default",
+  },
+  transition: "default",
+});
+
+const comboBoxOptionLabel = style({
+  gridArea: "label",
+  display: "block",
+  flexGrow: 1,
+  truncate: true,
+});
+
+const comboBoxCheckmark = style<ComboBoxOptionStyleProps>({
+  gridArea: "checkmark",
+  visibility: {
+    default: "hidden",
+    isSelected: "visible",
+  },
+  color: baseColor("accent"),
+  marginEnd: "text-to-control",
+  aspectRatio: "square",
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "currentColor",
+      forcedColors: {
+        default: "Highlight",
+        isFocused: "HighlightText",
+      },
+    },
+  },
+});
+
+const helpTextStyles = style<ComboBoxStyleProps>({
+  gridArea: "helptext",
+  display: "flex",
+  margin: 0,
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const fieldErrorIcon = style({
+  size: fontRelative(20),
+  marginStart: "text-to-visual",
+  marginEnd: fontRelative(-2),
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+  },
+});
+
+const requiredIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const noWrap = style({
+  whiteSpace: "nowrap",
+});
+
+function normalizeComboBoxSize(size: ComboBoxSize | undefined): S2ComboBoxSize {
+  switch (size) {
+    case "sm":
+      return "S";
+    case "md":
+      return "M";
+    case "lg":
+      return "L";
+    case "S":
+    case "M":
+    case "L":
+    case "XL":
+      return size;
+    default:
+      return "M";
+  }
+}
+
+function requiredIconStyle(size: S2ComboBoxSize): JSX.CSSProperties {
+  const pixelSize = size === "L" || size === "XL" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function comboBoxCheckmarkIconStyle(size: S2ComboBoxSize): JSX.CSSProperties {
+  const pixelSize = size === "XL" ? 14 : size === "L" ? 12 : 10;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function comboBoxChevronIconStyle(size: S2ComboBoxSize): JSX.CSSProperties {
+  const pixelSize = size === "XL" ? 14 : size === "L" ? 12 : 10;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function comboBoxMenuOffset(size: S2ComboBoxSize): number {
+  switch (size) {
+    case "S":
+    case "M":
+      return 6;
+    case "L":
+      return 7;
+    case "XL":
+      return 8;
+  }
+}
+
+function focusFieldInput(event: Event & { currentTarget: HTMLDivElement }) {
+  const target = event.target as Element | null;
+
+  if (target?.closest("button,input,textarea,[role='button']")) {
+    return;
+  }
+
+  event.preventDefault();
+  event.currentTarget.querySelector<HTMLElement>("input, textarea")?.focus();
+}
+
+function ComboBoxFieldGroup(props: {
+  renderProps: ComboBoxRenderProps;
+  size: () => S2ComboBoxSize;
+  children: JSX.Element;
+}) {
+  const context = useContext(HeadlessComboBoxContext) as {
+    setTriggerRef?: (el: HTMLElement | null) => void;
+  } | null;
+
+  onCleanup(() => context?.setTriggerRef?.(null));
 
   return (
-    <div class={`relative flex items-center ${styles().wrapper} ${props.class ?? ""}`}>
+    <div
+      ref={(el) => context?.setTriggerRef?.(el)}
+      role="presentation"
+      class={comboBoxFieldGroup({
+        ...props.renderProps,
+        size: props.size(),
+        isFocusWithin: props.renderProps.isFocused,
+      })}
+      onPointerDown={(event) => {
+        if (event.pointerType === "mouse") {
+          focusFieldInput(event);
+        }
+      }}
+      onTouchEnd={focusFieldInput}
+      data-focused={props.renderProps.isFocused ? "true" : undefined}
+      data-focus-visible={props.renderProps.isFocusVisible ? "true" : undefined}
+      data-disabled={props.renderProps.isDisabled ? "true" : undefined}
+      data-invalid={props.renderProps.isInvalid ? "true" : undefined}
+    >
       {props.children}
     </div>
   );
 }
 
-/**
- * The text input for a combobox.
- */
-export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["class"]);
-  const size = useContext(ComboBoxSizeContext);
-  const styles = () => sizeStyles[size];
-  const customClass = local.class ?? "";
+function ComboBoxListBoxPopover(props: {
+  size: () => S2ComboBoxSize;
+  direction: () => "bottom" | "top";
+  align: () => "start" | "end";
+  menuWidth: () => number | undefined;
+  shouldFlip: () => boolean;
+  children: JSX.Element;
+}) {
+  const theme = useTheme();
+  const comboBoxContext = useContext(HeadlessComboBoxContext) as {
+    state?: { close?: () => void };
+    isOpen?: () => boolean;
+    triggerRef?: () => HTMLElement | null;
+    inputRef?: () => HTMLElement | null;
+    buttonRef?: () => HTMLElement | null;
+  } | null;
 
-  const getClassName = (renderProps: ComboBoxInputRenderProps): string => {
-    const base = "w-full rounded-lg border-2 transition-all duration-200 outline-none";
-    const sizeClass = styles().input;
-
-    let colorClass: string;
-    if (renderProps.isDisabled) {
-      colorClass = "border-bg-300 bg-bg-200 text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isOpen) {
-      colorClass = "border-accent bg-bg-300 text-primary-100";
-    } else if (renderProps.isHovered) {
-      colorClass = "border-accent-300 bg-bg-300 text-primary-100";
-    } else {
-      colorClass = "border-primary-600 bg-bg-400 text-primary-200";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-
-    return [base, sizeClass, colorClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
-
-  return <HeadlessComboBoxInput {...headlessProps} class={getClassName} />;
-}
-
-/**
- * The trigger button for a combobox.
- * SSR-compatible - renders children or chevron icon directly without render props.
- */
-export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["class"]);
-  const size = useContext(ComboBoxSizeContext);
-  const sizeStyle = sizeStyles[size];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: ComboBoxButtonRenderProps): string => {
-    const base =
-      "absolute right-0 top-0 flex items-center justify-center transition-all duration-200 rounded-r-lg";
-    const sizeClass = sizeStyle.button;
-
-    let colorClass: string;
-    if (renderProps.isDisabled) {
-      colorClass = "text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isOpen) {
-      colorClass = "text-accent";
-    } else if (renderProps.isHovered) {
-      colorClass = "text-accent-300 cursor-pointer";
-    } else {
-      colorClass = "text-primary-400 cursor-pointer hover:text-primary-200";
-    }
-
-    return [base, sizeClass, colorClass, customClass].filter(Boolean).join(" ");
-  };
+  const triggerRef = () =>
+    comboBoxContext?.triggerRef?.() ??
+    comboBoxContext?.inputRef?.()?.parentElement ??
+    comboBoxContext?.inputRef?.() ??
+    comboBoxContext?.buttonRef?.() ??
+    null;
 
   return (
-    <HeadlessComboBoxButton {...headlessProps} class={getClassName}>
+    <HeadlessPopover
+      trigger="ComboBox"
+      triggerRef={triggerRef}
+      isOpen={comboBoxContext?.isOpen?.() ?? false}
+      onOpenChange={(open) => {
+        if (!open) {
+          comboBoxContext?.state?.close?.();
+        }
+      }}
+      isNonModal
+      placement={`${props.direction()} ${props.align()}`}
+      offset={comboBoxMenuOffset(props.size())}
+      shouldFlip={props.shouldFlip()}
+      autoFocus={false}
+      class={(renderProps) =>
+        comboBoxPopover({
+          ...renderProps,
+          colorScheme: theme.colorScheme,
+          isArrowShown: false,
+          isSubmenu: false,
+        })
+      }
+      style={() => ({
+        "--trigger-width": props.menuWidth() == null ? undefined : `${props.menuWidth()}px`,
+        minWidth: "var(--trigger-width)",
+        width: "var(--trigger-width)",
+      })}
+    >
+      {props.children}
+    </HeadlessPopover>
+  );
+}
+
+function ComboBoxFieldLabel(props: {
+  label: JSX.Element;
+  size: S2ComboBoxSize;
+  isDisabled: boolean;
+  isRequired: boolean;
+  labelPosition: ComboBoxLabelPosition;
+  labelAlign: ComboBoxLabelAlign;
+  necessityIndicator: ComboBoxNecessityIndicator;
+}) {
+  return (
+    <span
+      class={comboBoxLabel({
+        size: props.size,
+        isDisabled: props.isDisabled,
+        isRequired: props.isRequired,
+        labelPosition: props.labelPosition,
+        labelAlign: props.labelAlign,
+        isStaticColor: false,
+      })}
+    >
+      {props.label}
+      <Show when={props.isRequired || props.necessityIndicator === "label"}>
+        <span class={noWrap}>
+          &nbsp;
+          <Show
+            when={props.necessityIndicator === "icon"}
+            fallback={
+              <span aria-hidden={props.isRequired ? true : undefined}>
+                {props.isRequired ? "(required)" : "(optional)"}
+              </span>
+            }
+          >
+            <AsteriskIcon
+              size={props.size === "S" ? "M" : props.size}
+              styles={requiredIcon}
+              style={requiredIconStyle(props.size)}
+              aria-hidden="true"
+            />
+          </Show>
+        </span>
+      </Show>
+    </span>
+  );
+}
+
+export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
+  const mergedProps = useProviderProps(props);
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "size",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "label",
+    "description",
+    "errorMessage",
+    "isInvalid",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "direction",
+    "align",
+    "menuWidth",
+    "shouldFlip",
+    "children",
+  ]);
+
+  const size = () => normalizeComboBoxSize(local.size);
+  const labelPosition = () => local.labelPosition ?? "top";
+  const labelAlign = () => local.labelAlign ?? "start";
+  const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const direction = () => local.direction ?? "bottom";
+  const align = () => local.align ?? "start";
+  const shouldFlip = () => local.shouldFlip ?? true;
+
+  const rootClassName = (renderProps: ComboBoxRenderProps) =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      comboBoxRoot(
+        {
+          ...renderProps,
+          size: size(),
+          labelPosition: labelPosition(),
+          isInForm: false,
+        },
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const labelWrapperClass = () =>
+    comboBoxLabelWrapper({
+      size: size(),
+      labelPosition: labelPosition(),
+      labelAlign: labelAlign(),
+    });
+
+  const buttonClass = (renderProps: ComboBoxButtonRenderProps) =>
+    inputButton({
+      ...renderProps,
+      size: size(),
+      isOpen: renderProps.isOpen,
+    });
+
+  const helpClass = (renderProps: ComboBoxRenderProps, isInvalid: boolean) =>
+    helpTextStyles({
+      ...renderProps,
+      size: size(),
+      isInvalid,
+    });
+
+  const listBoxChildren = typeof local.children === "function" ? local.children : undefined;
+
+  return (
+    <ComboBoxSizeContext.Provider value={size()}>
+      <HeadlessComboBox
+        {...headlessProps}
+        allowsEmptyCollection
+        label={local.label}
+        description={local.description}
+        errorMessage={local.errorMessage}
+        isInvalid={local.isInvalid}
+        class={rootClassName}
+        style={local.UNSAFE_style}
+        children={(renderProps: ComboBoxRenderProps) => (
+          <>
+            <Show when={local.label}>
+              <div class={labelWrapperClass()}>
+                <HeadlessComboBoxLabel>
+                  <ComboBoxFieldLabel
+                    label={local.label}
+                    size={size()}
+                    isDisabled={renderProps.isDisabled}
+                    isRequired={renderProps.isRequired}
+                    labelPosition={labelPosition()}
+                    labelAlign={labelAlign()}
+                    necessityIndicator={necessityIndicator()}
+                  />
+                </HeadlessComboBoxLabel>
+              </div>
+            </Show>
+
+            <ComboBoxFieldGroup renderProps={renderProps} size={size}>
+              <HeadlessComboBoxInput class={comboBoxInput} />
+              <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
+                <CenterBaseline>
+                  <AlertTriangleIcon styles={fieldErrorIcon} />
+                </CenterBaseline>
+              </Show>
+              <HeadlessComboBoxButton class={buttonClass}>
+                <ChevronIcon
+                  size={size()}
+                  styles={comboBoxChevron}
+                  style={comboBoxChevronIconStyle(size())}
+                />
+              </HeadlessComboBoxButton>
+            </ComboBoxFieldGroup>
+
+            <Show when={local.description && !renderProps.isInvalid}>
+              <HeadlessComboBoxDescription class={helpClass(renderProps, false)}>
+                {local.description}
+              </HeadlessComboBoxDescription>
+            </Show>
+
+            <Show when={local.errorMessage && renderProps.isInvalid}>
+              <HeadlessComboBoxErrorMessage class={helpClass(renderProps, true)}>
+                {local.errorMessage}
+              </HeadlessComboBoxErrorMessage>
+            </Show>
+
+            <ComboBoxListBoxPopover
+              size={size}
+              direction={direction}
+              align={align}
+              menuWidth={() => local.menuWidth}
+              shouldFlip={shouldFlip}
+            >
+              <HeadlessComboBoxListBox
+                class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+              >
+                {listBoxChildren}
+              </HeadlessComboBoxListBox>
+            </ComboBoxListBoxPopover>
+          </>
+        )}
+      />
+    </ComboBoxSizeContext.Provider>
+  );
+}
+
+export function ComboBoxInputGroup(props: { children: JSX.Element; class?: string }): JSX.Element {
+  const context = useContext(HeadlessComboBoxContext) as {
+    setTriggerRef?: (el: HTMLElement | null) => void;
+  } | null;
+
+  onCleanup(() => context?.setTriggerRef?.(null));
+
+  return (
+    <div ref={(el) => context?.setTriggerRef?.(el)} class={props.class}>
+      {props.children}
+    </div>
+  );
+}
+
+export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
+  const [local, headlessProps] = splitProps(props, ["class"]);
+  return (
+    <HeadlessComboBoxInput
+      {...headlessProps}
+      class={[comboBoxInput, local.class].filter(Boolean).join(" ")}
+    />
+  );
+}
+
+export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
+  const [local, headlessProps] = splitProps(props, ["class"]);
+  const size = useContext(ComboBoxSizeContext);
+  const buttonClass = (renderProps: ComboBoxButtonRenderProps) =>
+    [
+      inputButton({
+        ...renderProps,
+        size,
+        isOpen: renderProps.isOpen,
+      }),
+      local.class,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  return (
+    <HeadlessComboBoxButton {...headlessProps} class={buttonClass}>
       {props.children || (
-        <ChevronIcon
-          class={`${sizeStyle.icon} transition-transform duration-200 data-open:rotate-180`}
-        />
+        <ChevronIcon size={size} styles={comboBoxChevron} style={comboBoxChevronIconStyle(size)} />
       )}
     </HeadlessComboBoxButton>
   );
 }
 
-/**
- * The listbox popup for a combobox.
- */
 export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
-  const customClass = local.class ?? "";
+  const size = useContext(ComboBoxSizeContext);
+  const listClass = (renderProps: ComboBoxListBoxRenderProps) =>
+    [comboBoxListBox({ ...renderProps, size }), local.class].filter(Boolean).join(" ");
 
-  const getClassName = (_renderProps: ComboBoxListBoxRenderProps): string => {
-    const base =
-      "absolute z-50 mt-1 w-full rounded-lg border-2 border-primary-600 bg-bg-400 py-1 shadow-lg max-h-60 overflow-auto";
-    return [base, customClass].filter(Boolean).join(" ");
-  };
-
-  return (
-    <HeadlessComboBoxListBox {...headlessProps} class={getClassName} children={props.children} />
-  );
+  return <HeadlessComboBoxListBox {...headlessProps} class={listClass} children={props.children} />;
 }
 
-/**
- * An option in a combobox listbox.
- * SSR-compatible - renders check icon and content directly without render props.
- */
 export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
+  const [local, headlessProps] = splitProps(props, ["class", "children"]);
   const size = useContext(ComboBoxSizeContext);
-  const sizeStyle = sizeStyles[size];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: ComboBoxOptionRenderProps): string => {
-    const base = "flex items-center gap-2 cursor-pointer transition-colors duration-150";
-    const sizeClass = sizeStyle.option;
-
-    let colorClass: string;
-    if (renderProps.isDisabled) {
-      colorClass = "text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isSelected) {
-      colorClass = "bg-accent/20 text-accent";
-    } else if (renderProps.isFocused || renderProps.isHovered) {
-      colorClass = "bg-bg-300 text-primary-100";
-    } else {
-      colorClass = "text-primary-200";
-    }
-
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    return [base, sizeClass, colorClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
-
-  // Compute padding for non-selected items to align with check icon
-  const iconPadding: Record<ComboBoxSize, string> = {
-    sm: "pl-6", // h-4 icon + gap
-    md: "pl-7", // h-5 icon + gap
-    lg: "pl-8", // h-6 icon + gap
-  };
+  const isLink = () => (props as Record<string, unknown>).href != null;
+  const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
+    [
+      comboBoxOption({
+        ...renderProps,
+        size,
+        isLink: isLink(),
+      }),
+      local.class,
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const checkClass = (renderProps: ComboBoxOptionRenderProps) =>
+    comboBoxCheckmark({ ...renderProps, size });
 
   return (
-    <HeadlessComboBoxOption {...headlessProps} class={getClassName}>
-      <CheckIcon class={`${sizeStyle.icon} text-accent shrink-0 hidden data-selected:block`} />
-      <span class={`flex-1 data-selected:pl-0 ${iconPadding[size]}`}>
-        {props.children as JSX.Element}
-      </span>
+    <HeadlessComboBoxOption {...headlessProps} class={optionClass}>
+      {(renderProps: ComboBoxOptionRenderProps) => (
+        <>
+          <CheckmarkIcon
+            size={size === "S" ? "XS" : size}
+            styles={checkClass(renderProps)}
+            style={comboBoxCheckmarkIconStyle(size)}
+            aria-hidden="true"
+          />
+          {typeof local.children === "string" ? (
+            <span class={comboBoxOptionLabel} data-rsp-slot="text">
+              {local.children}
+            </span>
+          ) : (
+            local.children
+          )}
+        </>
+      )}
     </HeadlessComboBoxOption>
   );
 }
@@ -313,64 +902,19 @@ export interface ComboBoxTagGroupProps extends Omit<
   HeadlessComboBoxTagGroupProps,
   "class" | "style"
 > {
-  /** Additional CSS class name. */
   class?: string;
 }
 
-/**
- * Renders selected items as removable tags/pills in multi-select mode.
- */
 export function ComboBoxTagGroup(props: ComboBoxTagGroupProps): JSX.Element {
-  const customClass = props.class ?? "";
-
-  return (
-    <HeadlessComboBoxTagGroup
-      {...props}
-      class={`flex flex-wrap gap-1 py-1 ${customClass}`.trim()}
-    />
-  );
+  return <HeadlessComboBoxTagGroup {...props} />;
 }
 
 export interface ComboBoxTagProps extends Omit<HeadlessComboBoxTagProps, "class" | "style"> {
-  /** Additional CSS class name. */
   class?: string;
 }
 
-/**
- * A styled tag/pill representing a selected item in a multi-select combobox.
- */
 export function ComboBoxTag(props: ComboBoxTagProps): JSX.Element {
-  const size = useContext(ComboBoxSizeContext);
-  const customClass = props.class ?? "";
-
-  const sizeTagStyles: Record<ComboBoxSize, string> = {
-    sm: "text-xs px-1.5 py-0.5 gap-0.5",
-    md: "text-sm px-2 py-0.5 gap-1",
-    lg: "text-base px-2.5 py-1 gap-1",
-  };
-
-  return (
-    <HeadlessComboBoxTag
-      {...props}
-      class={`inline-flex items-center rounded-full bg-accent/20 text-accent font-medium ${sizeTagStyles[size]} ${customClass}`.trim()}
-    />
-  );
-}
-
-function ChevronIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg class={props.class} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
-  );
-}
-
-function CheckIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg class={props.class} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
+  return <HeadlessComboBoxTag {...props} />;
 }
 
 ComboBox.InputGroup = ComboBoxInputGroup;
@@ -383,5 +927,5 @@ ComboBox.Tag = ComboBoxTag;
 
 export const Item = ComboBoxOption;
 
-export type { Key, FilterFn, MenuTriggerAction };
+export type { FilterFn, Key, MenuTriggerAction };
 export { defaultContainsFilter };

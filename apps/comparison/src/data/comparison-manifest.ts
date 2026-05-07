@@ -367,6 +367,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 CheckboxGroup and Checkbox directly; Solid uses @proyecto-viviana/solid-spectrum CheckboxGroup and Checkbox with S2-derived field layout and group-propagated checkbox size/emphasis.",
   }),
 
+  combobox: styledLiveOfficialEntry({
+    slug: "combobox",
+    title: "ComboBox",
+    category: "Components",
+    summary:
+      "Filterable single-selection field with S2 field layout, text input, trigger button, help text, validation, and listbox state.",
+    styledSummary: "React Spectrum ComboBox vs Solid Spectrum ComboBox.",
+    styledNote:
+      "React uses @react-spectrum/s2 ComboBox and ComboBoxItem directly; Solid uses @proyecto-viviana/solid-spectrum ComboBox and ComboBoxItem with S2-derived field layout, trigger button, input, help text, validation styling, and listbox popover over the Solid ComboBox primitive.",
+  }),
+
   radiogroup: styledLiveOfficialEntry({
     slug: "radiogroup",
     title: "RadioGroup",

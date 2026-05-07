@@ -15,6 +15,8 @@ import type { ListState, Key } from "@proyecto-viviana/solid-stately";
 export interface AriaOptionProps {
   /** The unique key for the option. */
   key: Key;
+  /** Optional DOM id for the option element. Defaults to the key. */
+  optionId?: string;
   /** Whether the option is disabled. */
   isDisabled?: boolean;
   /** An accessible label for the option. */
@@ -130,7 +132,8 @@ export function createOption<T>(
         focusProps as Record<string, unknown>,
         {
           role: "option",
-          id: String(key),
+          id: getProps().optionId ?? String(key),
+          "data-key": String(key),
           "aria-selected": selectionMode !== "none" ? isSelected() : undefined,
           "aria-disabled": isDisabled() || undefined,
           "aria-label": ariaLabel,

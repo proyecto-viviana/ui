@@ -19,6 +19,8 @@ import {
   CardView as SolidSpectrumCardView,
   Checkbox as SolidSpectrumCheckbox,
   CheckboxGroup as SolidSpectrumCheckboxGroup,
+  ComboBox as SolidSpectrumComboBox,
+  ComboBoxItem as SolidSpectrumComboBoxItem,
   LinkButton as SolidSpectrumLinkButton,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
@@ -88,6 +90,14 @@ import {
   serializePickerDemoProps,
   type PickerDemoProps,
 } from "@comparison/data/picker-demo";
+import {
+  comboBoxDemoPropsFromWindow,
+  comboBoxItems,
+  comboBoxLabelForKey,
+  normalizeComboBoxDemoProps,
+  serializeComboBoxDemoProps,
+  type ComboBoxDemoProps,
+} from "@comparison/data/combobox-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -367,6 +377,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
+  combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
   picker: () => h(SolidSpectrumPickerDemo, {}),
   radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
@@ -1405,6 +1416,137 @@ function SolidSpectrumPickerDemo() {
               }));
             },
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumComboBoxDemo() {
+  const [demoProps, setDemoProps] = createSignal<ComboBoxDemoProps>(comboBoxDemoPropsFromWindow());
+  const [selectedKey, setSelectedKey] = createSignal(demoProps().selectedKey);
+  const [inputValue, setInputValue] = createSignal(demoProps().inputValue);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "combobox") {
+        const nextProps = normalizeComboBoxDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setSelectedKey(nextProps.selectedKey);
+        setInputValue(nextProps.inputValue);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeComboBoxDemoProps({
+      ...demoProps(),
+      selectedKey: selectedKey(),
+      inputValue: inputValue(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "combobox",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            return selectedKey();
+          },
+          get "data-comparison-input-value"() {
+            return inputValue();
+          },
+        },
+        [
+          hc(
+            SolidSpectrumComboBox,
+            {
+              items: comboBoxItems,
+              getKey: (item: (typeof comboBoxItems)[number]) => item.id,
+              getTextValue: (item: (typeof comboBoxItems)[number]) => item.label,
+              get label() {
+                return demoProps().label;
+              },
+              get selectedKey() {
+                return selectedKey();
+              },
+              get inputValue() {
+                return inputValue();
+              },
+              get placeholder() {
+                return demoProps().placeholder;
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get description() {
+                return demoProps().description;
+              },
+              get errorMessage() {
+                return demoProps().errorMessage;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              get isRequired() {
+                return demoProps().isRequired;
+              },
+              get isInvalid() {
+                return demoProps().isInvalid;
+              },
+              onSelectionChange: (nextKey: unknown) => {
+                const nextSelectedKey = String(nextKey);
+                setSelectedKey(nextSelectedKey as ComboBoxDemoProps["selectedKey"]);
+                setInputValue(comboBoxLabelForKey(nextSelectedKey));
+                setDemoProps((current: ComboBoxDemoProps) => ({
+                  ...current,
+                  selectedKey: nextSelectedKey as ComboBoxDemoProps["selectedKey"],
+                  inputValue: comboBoxLabelForKey(nextSelectedKey),
+                }));
+              },
+              onInputChange: (nextValue: string) => {
+                setInputValue(nextValue);
+                setDemoProps((current: ComboBoxDemoProps) => ({
+                  ...current,
+                  inputValue: nextValue,
+                }));
+              },
+            },
+            renderProp((item: (typeof comboBoxItems)[number]) =>
+              hc(SolidSpectrumComboBoxItem, { id: item.id }, item.label),
+            ),
+          ),
         ],
       ),
     ],
