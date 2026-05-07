@@ -144,9 +144,14 @@ async function selectBoxIllustrationAndDisabledState(root: Locator) {
       (option) => option.textContent?.includes("Pro"),
     );
     const starterRect = starter?.getBoundingClientRect();
-    const illustration = starter?.querySelector<HTMLElement>(
-      '[slot="illustration"], [data-rsp-slot="illustration"], img, svg',
-    );
+    const illustration =
+      starter?.querySelector<HTMLElement>(
+        '[slot="illustration"], [data-slot="illustration"], [data-rsp-slot="illustration"], img',
+      ) ??
+      Array.from(starter?.querySelectorAll<SVGElement>("svg") ?? []).find((candidate) => {
+        const rect = candidate.getBoundingClientRect();
+        return rect.width >= 18 && rect.height >= 18;
+      });
     const illustrationRect = illustration?.getBoundingClientRect();
     const proLabel = pro?.querySelector<HTMLElement>('[slot="label"], [data-rsp-slot="label"]');
 
@@ -287,7 +292,7 @@ test.describe("comparison collection button controls visual parity", () => {
       fixtures.solidCanvas,
       "SelectBoxGroup horizontal multiple state",
       "selectboxgroup-horizontal-multiple",
-      { maxMismatchRatio: 0.42, maxDimensionDelta: 96, pixelThreshold: 64 },
+      { maxMismatchRatio: 0.18, maxDimensionDelta: 48, pixelThreshold: 64 },
     );
   });
 
@@ -374,7 +379,7 @@ test.describe("comparison collection button controls visual parity", () => {
       fixtures.solidCanvas,
       "SelectBoxGroup illustrated disabled option state",
       "selectboxgroup-illustrated-disabled",
-      { maxMismatchRatio: 0.42, maxDimensionDelta: 96, pixelThreshold: 64 },
+      { maxMismatchRatio: 0.12, maxDimensionDelta: 48, pixelThreshold: 64 },
     );
   });
 
@@ -562,11 +567,15 @@ test.describe("comparison collection button controls visual parity", () => {
     expect(await controlProps(reactRoot)).toMatchObject({
       selectionMode: "multiple",
       selectedKeys: "starter,pro",
+      withIllustrations: true,
     });
     expect(await controlProps(solidRoot)).toMatchObject({
       selectionMode: "multiple",
       selectedKeys: "starter,pro",
+      withIllustrations: true,
     });
+    await expect(reactRoot.locator('[data-slot="illustration"]').first()).toBeVisible();
+    await expect(solidRoot.locator('[data-slot="illustration"]').first()).toBeVisible();
   });
 
   test("SelectBoxGroup keyboard selection matches React Spectrum", async ({ page }) => {

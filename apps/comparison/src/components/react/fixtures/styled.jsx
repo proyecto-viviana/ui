@@ -42,6 +42,7 @@ import {
   ToggleButton as SpectrumToggleButton,
   ToggleButtonGroup as SpectrumToggleButtonGroup,
   createIcon,
+  createIllustration,
 } from "@react-spectrum/s2";
 import "@react-spectrum/s2/page.css";
 import {
@@ -160,6 +161,41 @@ const ReactButtonIcon = createIcon((props) =>
   }),
 );
 
+const ReactPlanIllustration = createIllustration((props) =>
+  jsxs("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 48 48",
+    ...props,
+    children: [
+      jsx("rect", {
+        x: "6",
+        y: "10",
+        width: "36",
+        height: "28",
+        rx: "7",
+        fill: "var(--iconPrimary, #222)",
+        opacity: "0.16",
+      }),
+      jsx("path", {
+        d: "M15 31V19h18v12H15Zm3-3h12v-6H18v6Z",
+        fill: "var(--iconPrimary, #222)",
+      }),
+      jsx("circle", {
+        cx: "17",
+        cy: "15",
+        r: "3",
+        fill: "var(--iconPrimary, #222)",
+      }),
+      jsx("circle", {
+        cx: "31",
+        cy: "35",
+        r: "3",
+        fill: "var(--iconPrimary, #222)",
+      }),
+    ],
+  }),
+);
+
 const selectBoxItems = [
   { id: "starter", label: "Starter", description: "For small teams" },
   { id: "pro", label: "Pro", description: "For growing teams" },
@@ -184,12 +220,16 @@ const cardItems = [
   { id: "zephyr", title: "Zephyr", status: "Queued" },
 ];
 
-function booleanParamFromWindow(name) {
+function booleanParamFromWindow(name, fallback = false) {
   if (typeof window === "undefined") {
-    return false;
+    return fallback;
   }
 
   const value = new URLSearchParams(window.location.search).get(name);
+  if (value == null) {
+    return fallback;
+  }
+
   return value === "true" || value === "on" || value === "1";
 }
 
@@ -247,7 +287,7 @@ function selectBoxGroupDemoPropsFromWindow() {
     ).join(","),
     isDisabled: booleanParamFromWindow("isDisabled"),
     disablePro: booleanParamFromWindow("disablePro"),
-    withIllustrations: booleanParamFromWindow("withIllustrations"),
+    withIllustrations: booleanParamFromWindow("withIllustrations", true),
   };
 }
 
@@ -264,7 +304,7 @@ function normalizeSelectBoxGroupDemoProps(props) {
           : "starter",
     isDisabled: props?.isDisabled === true,
     disablePro: props?.disablePro === true,
-    withIllustrations: props?.withIllustrations === true,
+    withIllustrations: props?.withIllustrations !== false,
   };
 }
 
@@ -790,7 +830,7 @@ function ReactSelectBoxGroupDemo() {
               isDisabled: demoProps.disablePro && item.id === "pro",
               children: [
                 demoProps.withIllustrations && selectBoxIllustrationItems.has(item.id)
-                  ? jsx(ReactButtonIcon, { slot: "illustration" })
+                  ? jsx(ReactPlanIllustration, { slot: "illustration" })
                   : null,
                 jsx(SpectrumText, { slot: "label", children: item.label }),
                 jsx(SpectrumText, { slot: "description", children: item.description }),

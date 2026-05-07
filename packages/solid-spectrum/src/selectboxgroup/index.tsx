@@ -69,7 +69,6 @@ interface SelectBoxContextValue {
 }
 
 const SelectBoxContext = createContext<SelectBoxContextValue>({ orientation: "vertical" });
-
 const selectBoxGroupStyles = style<{ orientation?: SelectBoxOrientation }>({
   display: "grid",
   gridAutoRows: "1fr",
@@ -150,18 +149,11 @@ const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectB
   gridTemplateAreas: {
     orientation: {
       vertical: ["illustration", ".", "label"],
-      horizontal: ["illustration . label", "illustration . description"],
     },
   },
   gridTemplateRows: {
     orientation: {
       vertical: ["min-content", 8, "min-content"],
-      horizontal: ["min-content", "min-content"],
-    },
-  },
-  rowGap: {
-    orientation: {
-      horizontal: 4,
     },
   },
   gridTemplateColumns: {
@@ -407,24 +399,45 @@ function applySlotClasses(
   };
 
   for (const element of Array.from(
-    root.querySelectorAll('[slot="illustration"], [data-rsp-slot="illustration"]'),
+    root.querySelectorAll(
+      '[slot="illustration"], [data-slot="illustration"], [data-rsp-slot="illustration"]',
+    ),
   )) {
     replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxIllustration(slotState));
     element.setAttribute("data-rsp-slot", "illustration");
   }
 
   for (const element of Array.from(
-    root.querySelectorAll('[slot="label"], [data-rsp-slot="label"]'),
+    root.querySelectorAll('[slot="label"], [data-slot="label"], [data-rsp-slot="label"]'),
   )) {
     replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxLabel(slotState));
     element.setAttribute("data-rsp-slot", "label");
   }
 
   for (const element of Array.from(
-    root.querySelectorAll('[slot="description"], [data-rsp-slot="description"]'),
+    root.querySelectorAll(
+      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
+    ),
   )) {
     replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxDescription(slotState));
     element.setAttribute("data-rsp-slot", "description");
+  }
+
+  if (orientation === "horizontal") {
+    const hasIllustration = !!root.querySelector(
+      '[slot="illustration"], [data-slot="illustration"], [data-rsp-slot="illustration"]',
+    );
+    const hasDescription = !!root.querySelector(
+      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
+    );
+
+    root.style.gridTemplateAreas = hasDescription
+      ? '"illustration . label" "illustration . description"'
+      : '"illustration . label"';
+    root.style.gridTemplateRows = hasIllustration ? "18px 30px" : "min-content";
+  } else {
+    root.style.removeProperty("grid-template-areas");
+    root.style.removeProperty("grid-template-rows");
   }
 }
 

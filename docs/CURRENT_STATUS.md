@@ -8,6 +8,111 @@ records intent and recent evidence, not a substitute for `git status`.
 
 ### Current state
 
+- SelectBoxGroup horizontal illustration parity was repaired after a regression
+  report. The issue was in
+  `packages/solid-spectrum/src/selectboxgroup/index.tsx`.
+- React S2 reference was checked in
+  `apps/comparison/node_modules/@react-spectrum/s2/src/SelectBoxGroup.tsx`.
+  React uses horizontal grid areas
+  `"illustration . label" "illustration . description"` and slot providers
+  for label, description, and illustration behavior.
+- Solid was emitting/applying horizontal SelectBox classes that computed to
+  `grid-template-areas: none` in Chromium, so label, description, and the
+  illustration slot auto-placed incorrectly.
+- A follow-up check showed the comparison fixtures were also using `createIcon`
+  for `slot="illustration"`, which only produced a small 20px glyph. React now
+  uses S2 `createIllustration`; Solid exposes and uses a matching
+  `createIllustration` helper for this fixture.
+- The actual viewer default now sets SelectBoxGroup `withIllustrations: true`
+  in `apps/comparison/src/pages/components/[slug].astro` and in both framework
+  fixtures. The default `/components/selectboxgroup/` product surface therefore
+  shows illustration artwork without requiring a hidden query parameter.
+- Solid now normalizes `slot`, `data-slot`, and `data-rsp-slot` children, then
+  applies the horizontal grid areas and illustrated row sizing after slot
+  discovery. The illustrated horizontal state now shows 48x48 artwork in both
+  React and Solid.
+- The SelectBoxGroup screenshot gates in
+  `apps/comparison/e2e/collection-button-controls-visual.spec.ts` were tightened
+  from `0.42` mismatch / `96px` dimension tolerance to `0.18` or `0.12`
+  mismatch / `48px` dimension tolerance, and the illustration helper no longer
+  accepts the selection-indicator SVG as proof that the illustration is visible.
+- Commit for this slice: `Fix SelectBoxGroup illustration layout parity`.
+
+### Validation and evidence
+
+- Validation plan before coding:
+  - React S2 file: `SelectBoxGroup.tsx`.
+  - Solid file: `packages/solid-spectrum/src/selectboxgroup/index.tsx`.
+  - Route/query states:
+    `/components/selectboxgroup/?selectionMode=multiple&selectedKeys=starter,pro&orientation=horizontal`
+    and
+    `/components/selectboxgroup/?selectionMode=multiple&selectedKeys=starter&orientation=horizontal&withIllustrations=true&disablePro=true`.
+  - Expected roles: listbox root, option items, selected starter/pro states,
+    disabled Pro option, no selection change on forced disabled press.
+  - Browser checks: option size, grid areas/rows/columns, label/description
+    positions, visible illustration geometry, hover text ramp, interactive
+    controls dispatch, keyboard selection commit.
+- Live probe after the illustration follow-up showed React and Solid both at
+  368x84 for the first horizontal illustrated option, with label/description
+  left at 92px and the illustration visible at 48x48, left 34px, top 18px
+  relative to the option.
+- Live probe for default `/components/selectboxgroup/` confirmed both mounted
+  roots serialize `withIllustrations: true` and both render visible 48x48
+  illustration SVGs.
+- Validated with:
+
+  ```bash
+  vp run --filter @proyecto-viviana/comparison build
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup.*committed pair screenshots|SelectBoxGroup illustrated disabled option state has committed pair screenshots" --update-snapshots --reporter=line
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup" --reporter=line
+  vp fmt packages/solid-spectrum/src/s2-generated.css --write
+  ```
+
+- The focused SelectBoxGroup suite result after snapshot refresh and threshold
+  tightening: 7 passed.
+
+### Why the tests did not catch it earlier
+
+- They do catch it when the SelectBoxGroup spec is run; the current broken
+  state failed the focused SelectBoxGroup suite before the fix.
+- Recent form/input focused runs did not include
+  `e2e/collection-button-controls-visual.spec.ts`, so this collection-control
+  regression was outside the executed batch.
+- The old screenshot thresholds were too broad for this component, and the
+  illustration helper could match an unrelated SVG. That made the durable guard
+  weaker than the live regression required.
+
+### Known traps
+
+- Do not rely on final screenshots alone for SelectBoxGroup. Inspect computed
+  grid areas, rows, columns, and slot geometry because invalid grid-area CSS can
+  leave the DOM present but visually wrong.
+- React icons and illustrations are separate S2 paths. `createIcon` remains a
+  20px icon even with `slot="illustration"`; use `createIllustration` when the
+  fixture is meant to exercise SelectBoxGroup illustration behavior.
+- A raw `css()` class imported directly in component source may remain in the JS
+  bundle without being emitted into the page CSS. Verify computed styles in the
+  comparison viewer after rebuilds.
+- SelectBoxGroup lives with collection/button controls, not the form/input
+  specs. Run its focused spec after shared collection, listbox, icon, or slot
+  style changes.
+
+### Next likely work
+
+- Continue the S2 parity queue from the current status after this commit. If
+  staying near form/input, DateField, DatePicker, DateRangePicker, and TimeField
+  remain likely candidates, but first re-check the current visual matrix and git
+  state.
+- If shared icon or generated S2 style handling changes, rerun the focused
+  SelectBoxGroup spec because illustration visibility can regress while the DOM
+  still contains an SVG.
+
+---
+
+## Previous Entry - 2026-05-07
+
+### Current state
+
 - The latest in-progress slice continues the Form/Input batch after
   `44f2b43 Update handoff after ComboBox press fix`.
 - SearchField S2 parity was tightened against live React Spectrum S2 behavior

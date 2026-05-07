@@ -197,8 +197,8 @@ export { Form } from "./form";
 export type { FormProps } from "./form";
 
 // Icons and illustrations
-export { createIcon, IconContext } from "./icon";
-export type { IconContextValue, SpectrumIconProps } from "./icon";
+export { createIcon, createIllustration, IconContext, IllustrationContext } from "./icon";
+export type { IconContextValue, SpectrumIconProps, SpectrumIllustrationProps } from "./icon";
 
 // IllustratedMessage
 export { IllustratedMessage } from "./illustratedmessage";

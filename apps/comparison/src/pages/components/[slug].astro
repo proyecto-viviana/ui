@@ -484,6 +484,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
           selectionMode: "single",
           selectedKeys: "starter",
           isDisabled: false,
+          withIllustrations: true,
         },
         searchfield: {
           label: "Search",
@@ -555,6 +556,12 @@ const layerTitles: Record<ComparisonLayerId, string> = {
         const data = new FormData(form);
         const values = {};
         for (const [key, defaultValue] of Object.entries(defaults)) {
+          const hasControl = Array.from(form.elements).some((field) => field.name === key);
+          if (!hasControl) {
+            values[key] = defaultValue;
+            continue;
+          }
+
           values[key] =
             typeof defaultValue === "boolean"
               ? data.get(key) === "on"
@@ -612,9 +619,12 @@ const layerTitles: Record<ComparisonLayerId, string> = {
         const params = new URLSearchParams(window.location.search);
         const initial = { ...defaults };
         for (const [key, defaultValue] of Object.entries(defaults)) {
+          const hasParam = params.has(key);
           initial[key] =
             typeof defaultValue === "boolean"
-              ? params.get(key) === "true"
+              ? hasParam
+                ? params.get(key) === "true"
+                : defaultValue
               : params.get(key) || defaultValue;
         }
         writeControls(initial);

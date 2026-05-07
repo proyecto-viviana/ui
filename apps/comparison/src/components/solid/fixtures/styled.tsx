@@ -39,6 +39,7 @@ import {
   ToggleButton as SolidSpectrumToggleButton,
   ToggleButtonGroup as SolidSpectrumToggleButtonGroup,
   createIcon,
+  createIllustration,
 } from "@proyecto-viviana/solid-spectrum";
 import { s2ButtonText } from "../../../../../../packages/solid-spectrum/src/button/s2-button-styles";
 import {
@@ -183,6 +184,46 @@ const SolidNewIcon = createIcon((props: JSX.SvgSVGAttributes<SVGSVGElement>) => 
   )() as JSX.Element;
 });
 
+const SolidPlanIllustration = createIllustration((props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
+  const { class: className, ...rest } = props;
+  return h(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 48 48",
+      ...rest,
+      class: className,
+    },
+    [
+      h("rect", {
+        x: "6",
+        y: "10",
+        width: "36",
+        height: "28",
+        rx: "7",
+        fill: "var(--iconPrimary, #222)",
+        opacity: "0.16",
+      }),
+      h("path", {
+        d: "M15 31V19h18v12H15Zm3-3h12v-6H18v6Z",
+        fill: "var(--iconPrimary, #222)",
+      }),
+      h("circle", {
+        cx: "17",
+        cy: "15",
+        r: "3",
+        fill: "var(--iconPrimary, #222)",
+      }),
+      h("circle", {
+        cx: "31",
+        cy: "35",
+        r: "3",
+        fill: "var(--iconPrimary, #222)",
+      }),
+    ],
+  )() as JSX.Element;
+});
+
 const selectBoxItems = [
   { id: "starter", label: "Starter", description: "For small teams" },
   { id: "pro", label: "Pro", description: "For growing teams" },
@@ -209,12 +250,16 @@ const cardItems = [
 
 type SingleButtonIconPlacement = "none" | "start" | "end" | "only";
 
-function booleanParamFromWindow(name: string) {
+function booleanParamFromWindow(name: string, fallback = false) {
   if (typeof window === "undefined") {
-    return false;
+    return fallback;
   }
 
   const value = new URLSearchParams(window.location.search).get(name);
+  if (value == null) {
+    return fallback;
+  }
+
   return value === "true" || value === "on" || value === "1";
 }
 
@@ -318,7 +363,7 @@ function selectBoxGroupDemoPropsFromWindow(): SelectBoxGroupDemoProps {
     ).join(","),
     isDisabled: booleanParamFromWindow("isDisabled"),
     disablePro: booleanParamFromWindow("disablePro"),
-    withIllustrations: booleanParamFromWindow("withIllustrations"),
+    withIllustrations: booleanParamFromWindow("withIllustrations", true),
   };
 }
 
@@ -337,7 +382,7 @@ function normalizeSelectBoxGroupDemoProps(
           : "starter",
     isDisabled: props.isDisabled === true,
     disablePro: props.disablePro === true,
-    withIllustrations: props.withIllustrations === true,
+    withIllustrations: props.withIllustrations !== false,
   };
 }
 
@@ -2490,8 +2535,9 @@ function SolidSpectrumSelectBoxGroupDemo() {
                 [
                   ...(demoProps().withIllustrations && selectBoxIllustrationItems.has(item.id)
                     ? [
-                        hc(SolidNewIcon, {
+                        hc(SolidPlanIllustration, {
                           slot: "illustration",
+                          size: "S",
                           "data-rsp-slot": "illustration",
                         }),
                       ]
