@@ -8,7 +8,9 @@ records intent and recent evidence, not a substitute for `git status`.
 
 ### Current state
 
-- `main` is at `08b5fae Prevent Picker portal focus scroll`, after
+- The latest code slice is `4eaaad5 Fix ComboBox first option press`, after
+  `8e1113c docs: add S2 parity handoff lifecycle`,
+  `08b5fae Prevent Picker portal focus scroll`, and
   `0b81125 Fix Picker and ComboBox menu parity`.
 - The latest completed slice focused on Picker and ComboBox overlay behavior,
   focus stability, option styling, and comparison guards.
@@ -21,6 +23,12 @@ records intent and recent evidence, not a substitute for `git status`.
   `packages/solidaria-components/src/Select.tsx`,
   `packages/solidaria/src/index.ts`, and
   `apps/comparison/e2e/picker-visual.spec.ts`.
+- `4eaaad5` fixed ComboBox's first option pointer selection. The first click
+  could leave the option stuck in pressed/hovered state because Solid started a
+  press from the pointer-event branch's `mousedown` fallback even when
+  `pointerdown` did not start on the option. The fix aligns ComboBox listbox
+  options with React Aria's virtual focus, different-press-origin, and target
+  `pointerup` behavior.
 
 ### Validation and evidence
 
@@ -33,7 +41,17 @@ records intent and recent evidence, not a substitute for `git status`.
   layout.
 - ComboBox guards cover invalid required XL geometry, browser typing with focus
   and controlled marker stability, keyboard focus ring, closed Enter behavior,
-  and selected open list layout.
+  first pointer option commit/close behavior, and selected open list layout.
+- Validated `4eaaad5` with:
+
+  ```bash
+  vp run --filter @proyecto-viviana/solidaria build
+  vp run --filter @proyecto-viviana/solidaria-components build
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/combobox-visual.spec.ts -g "first pointer selection" --reporter=line
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/combobox-visual.spec.ts --reporter=line
+  git diff --check
+  ```
+
 - Useful rerun command:
 
   ```bash
@@ -55,6 +73,10 @@ records intent and recent evidence, not a substitute for `git status`.
 - First-open portal behavior is a separate state. Check page scroll before and
   after opening, the active element, the actual DOM focus target, and focus
   return.
+- ComboBox first pointer selection is sensitive to the native event sequence.
+  In Chromium, the first click can deliver `pointerdown` and `mousedown` to
+  different hit-test targets around a portaled option. The pointer-event branch
+  must not start a press from `mousedown`; it should only preserve focus there.
 - Picker and ComboBox bugs can cross wrapper code, headless hooks, adapter
   identity/lifecycle, focus utilities, and generated S2 styling. Inspect each
   layer against React S2 before patching a symptom in one layer.
