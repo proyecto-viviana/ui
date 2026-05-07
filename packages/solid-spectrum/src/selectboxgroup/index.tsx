@@ -72,6 +72,9 @@ const SelectBoxContext = createContext<SelectBoxContextValue>({ orientation: "ve
 const selectBoxGroupStyles = style<{ orientation?: SelectBoxOrientation }>({
   display: "grid",
   gridAutoRows: "1fr",
+  margin: 0,
+  padding: 0,
+  listStyleType: "none",
   gap: 24,
   justifyContent: "center",
   gridTemplateColumns: {

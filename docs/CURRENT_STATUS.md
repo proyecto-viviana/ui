@@ -31,12 +31,22 @@ records intent and recent evidence, not a substitute for `git status`.
   applies the horizontal grid areas and illustrated row sizing after slot
   discovery. The illustrated horizontal state now shows 48x48 artwork in both
   React and Solid.
+- A second follow-up fixed the remaining ugly alignment regression in the
+  comparison viewer. React's SelectBoxGroup root is a `div`, while Solid's root
+  is a semantic `ul`; Solid was still inheriting browser list defaults
+  (`margin: 15px 0px`, `padding-left: 40px`, `list-style-type: disc`). The
+  Solid root now resets margin, padding, and list style so options start at the
+  same root offset as React.
 - The SelectBoxGroup screenshot gates in
   `apps/comparison/e2e/collection-button-controls-visual.spec.ts` were tightened
   from `0.42` mismatch / `96px` dimension tolerance to `0.18` or `0.12`
   mismatch / `48px` dimension tolerance, and the illustration helper no longer
   accepts the selection-indicator SVG as proof that the illustration is visible.
+- The SelectBoxGroup geometry guard now also asserts root width, root margin,
+  root padding, root list style, and the first option's left offset inside the
+  root. This is the guard that would have caught the `ul` UA-style regression.
 - Commit for this slice: `Fix SelectBoxGroup illustration layout parity`.
+- Follow-up commit for root alignment: `Fix SelectBoxGroup root list spacing`.
 
 ### Validation and evidence
 
@@ -59,6 +69,10 @@ records intent and recent evidence, not a substitute for `git status`.
 - Live probe for default `/components/selectboxgroup/` confirmed both mounted
   roots serialize `withIllustrations: true` and both render visible 48x48
   illustration SVGs.
+- Live probe after the root reset confirmed React and Solid roots both measure
+  368px wide with `margin: 0px`, `padding: 0px`, Solid `list-style-type: none`,
+  first option root offset `0px`, option size 368x84, illustration 48x48 at
+  left 34px/top 18px, and label/description left 92px.
 - Validated with:
 
   ```bash
@@ -66,10 +80,15 @@ records intent and recent evidence, not a substitute for `git status`.
   COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup.*committed pair screenshots|SelectBoxGroup illustrated disabled option state has committed pair screenshots" --update-snapshots --reporter=line
   COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup" --reporter=line
   vp fmt packages/solid-spectrum/src/s2-generated.css --write
+  vp run --filter @proyecto-viviana/solid-spectrum build
+  vp run --filter @proyecto-viviana/comparison build
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup" --reporter=line
   ```
 
 - The focused SelectBoxGroup suite result after snapshot refresh and threshold
   tightening: 7 passed.
+- The focused SelectBoxGroup suite result after the root reset and root geometry
+  assertions: 7 passed.
 
 ### Why the tests did not catch it earlier
 
@@ -81,12 +100,19 @@ records intent and recent evidence, not a substitute for `git status`.
 - The old screenshot thresholds were too broad for this component, and the
   illustration helper could match an unrelated SVG. That made the durable guard
   weaker than the live regression required.
+- The tests also lacked root-level geometry checks. The broken state still had
+  roles, options, labels, and SVGs in the DOM, but Solid's native `ul` margin and
+  padding shifted the rendered product surface.
 
 ### Known traps
 
 - Do not rely on final screenshots alone for SelectBoxGroup. Inspect computed
   grid areas, rows, columns, and slot geometry because invalid grid-area CSS can
   leave the DOM present but visually wrong.
+- Because Solid uses a `ul` for SelectBoxGroup, always verify root margin,
+  padding, list-style, root width, and option offset against React. Browser UA
+  list styles can make the component look obviously wrong while ARIA and slot
+  assertions still pass.
 - React icons and illustrations are separate S2 paths. `createIcon` remains a
   20px icon even with `slot="illustration"`; use `createIllustration` when the
   fixture is meant to exercise SelectBoxGroup illustration behavior.

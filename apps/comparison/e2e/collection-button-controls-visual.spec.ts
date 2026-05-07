@@ -88,6 +88,8 @@ async function selectBoxGeometry(root: Locator) {
       (option) => option.getAttribute("aria-selected") === "true",
     );
     const firstSelected = selectedOptions[0];
+    const rootRect = element.getBoundingClientRect();
+    const rootStyle = window.getComputedStyle(element);
     const optionRect = firstSelected?.getBoundingClientRect();
     const label = firstSelected?.querySelector<HTMLElement>(
       '[slot="label"], [data-rsp-slot="label"]',
@@ -102,6 +104,10 @@ async function selectBoxGeometry(root: Locator) {
 
     return {
       role: element.getAttribute("role"),
+      rootWidth: Number(rootRect.width.toFixed(4)),
+      rootMargin: rootStyle.margin,
+      rootPadding: rootStyle.padding,
+      rootListStyleType: rootStyle.listStyleType,
       selectedCount: selectedOptions.length,
       optionWidth: optionRect == null ? null : Number(optionRect.width.toFixed(4)),
       optionHeight: optionRect == null ? null : Number(optionRect.height.toFixed(4)),
@@ -131,6 +137,8 @@ async function selectBoxGeometry(root: Locator) {
         iconRect == null || optionRect == null
           ? null
           : Number((iconRect.top - optionRect.top).toFixed(4)),
+      optionLeftInRoot:
+        optionRect == null ? null : Number((optionRect.left - rootRect.left).toFixed(4)),
     };
   });
 }
@@ -328,6 +336,11 @@ test.describe("comparison collection button controls visual parity", () => {
     expect(solid.role).toBe("listbox");
     expect(react.selectedCount).toBe(2);
     expect(solid.selectedCount).toBe(2);
+    expectNear(solid.rootWidth, react.rootWidth, 1, "SelectBoxGroup root width");
+    expect(solid.rootMargin).toBe("0px");
+    expect(solid.rootPadding).toBe("0px");
+    expect(solid.rootListStyleType).toBe("none");
+    expectNear(solid.optionLeftInRoot, react.optionLeftInRoot, 1, "SelectBox option root offset");
     expectNear(solid.optionWidth, react.optionWidth, 4, "SelectBox option width");
     expectNear(solid.optionHeight, react.optionHeight, 4, "SelectBox option height");
     expectNear(solid.checkboxWidth, react.checkboxWidth, 1, "SelectBox checkbox icon width");
