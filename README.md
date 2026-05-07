@@ -36,10 +36,12 @@ vp test run packages         # unit suite
 
 Tracked project docs live under [`docs/`](./docs):
 
-1. [`docs/adr/0001-s2-styling-source-of-truth.md`](./docs/adr/0001-s2-styling-source-of-truth.md)
-2. [`docs/s2-styling-and-package-plan.md`](./docs/s2-styling-and-package-plan.md)
-3. [`docs/release-policy.md`](./docs/release-policy.md)
-4. [`docs/tooling.md`](./docs/tooling.md)
+1. [`docs/CURRENT_STATUS.md`](./docs/CURRENT_STATUS.md) - check this first
+   before continuing S2 parity work.
+2. [`docs/adr/0001-s2-styling-source-of-truth.md`](./docs/adr/0001-s2-styling-source-of-truth.md)
+3. [`docs/s2-styling-and-package-plan.md`](./docs/s2-styling-and-package-plan.md)
+4. [`docs/release-policy.md`](./docs/release-policy.md)
+5. [`docs/tooling.md`](./docs/tooling.md)
 
 ## License
 

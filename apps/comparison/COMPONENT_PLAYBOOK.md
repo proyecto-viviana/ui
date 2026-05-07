@@ -101,6 +101,37 @@ record the box/centerline/baseline measurements before accepting the state. The
 minimum icon matrix is start, end, icon-only, pending-with-icon, and each
 supported size that changes button height.
 
+## End-of-Component Lifecycle
+
+A component or batch is not complete until
+[`docs/CURRENT_STATUS.md`](../../docs/CURRENT_STATUS.md) has a fresh handoff
+entry. Record the current state, commits, validation that passed, known traps,
+next likely work, and any skipped checks with reasons. The handoff update is
+part of the done definition, not cleanup after the fact.
+
+Before declaring completion:
+
+- Re-open the live React Spectrum S2 reference and the React S2 source. Confirm
+  the Solid behavior matches the actual wrapper structure, slots, state
+  derivation, overlay behavior, and interaction timing before trusting the
+  comparison screenshot.
+- Compare interaction timelines, not only final screenshots. First-open portal
+  behavior, page scroll stability, focus target, active descendant,
+  `data-focus-visible`, hover state, keyboard open behavior, selection commit,
+  dismissal, and focus return all need direct checks when the component can
+  expose them.
+- Validate comparison viewer controls as a product surface. Side-panel controls
+  must be clickable at the default viewport and must drive the mounted React and
+  Solid DOM, not only serialized marker props.
+- Keep viewer controls faithful to public React Spectrum S2 docs props. Do not
+  invent extra knobs for states React S2 does not expose; use dedicated query
+  routes and focused specs for source-only or fixture-only states.
+- For shared-layer bugs, inspect every involved layer before patching symptoms:
+  public S2 wrapper, Solid wrapper, headless hook, adapter identity/lifecycle,
+  focus utilities, generated S2 styles, and comparison fixture wiring.
+- Promote useful Playwright CLI findings into committed e2e guards before
+  closing the slice.
+
 ## Interactive Controls Requirement
 
 Every component page must have a modeled interactive comparison control surface
