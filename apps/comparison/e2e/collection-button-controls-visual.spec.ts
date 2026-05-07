@@ -589,6 +589,19 @@ test.describe("comparison collection button controls visual parity", () => {
     });
     await expect(reactRoot.locator('[data-slot="illustration"]').first()).toBeVisible();
     await expect(solidRoot.locator('[data-slot="illustration"]').first()).toBeVisible();
+
+    const react = await selectBoxGeometry(reactRoot);
+    const solid = await selectBoxGeometry(solidRoot);
+    expectNear(solid.rootWidth, react.rootWidth, 1, "interactive SelectBoxGroup root width");
+    expect(solid.rootMargin).toBe("0px");
+    expect(solid.rootPadding).toBe("0px");
+    expect(solid.rootListStyleType).toBe("none");
+    expectNear(
+      solid.optionLeftInRoot,
+      react.optionLeftInRoot,
+      1,
+      "interactive SelectBox option root offset",
+    );
   });
 
   test("SelectBoxGroup keyboard selection matches React Spectrum", async ({ page }) => {

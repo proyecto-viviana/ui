@@ -47,6 +47,7 @@ records intent and recent evidence, not a substitute for `git status`.
   root. This is the guard that would have caught the `ul` UA-style regression.
 - Commit for this slice: `Fix SelectBoxGroup illustration layout parity`.
 - Follow-up commit for root alignment: `Fix SelectBoxGroup root list spacing`.
+- Follow-up test-only commit: `Guard SelectBoxGroup interactive root geometry`.
 
 ### Validation and evidence
 
@@ -73,6 +74,11 @@ records intent and recent evidence, not a substitute for `git status`.
   368px wide with `margin: 0px`, `padding: 0px`, Solid `list-style-type: none`,
   first option root offset `0px`, option size 368x84, illustration 48x48 at
   left 34px/top 18px, and label/description left 92px.
+- A direct browser re-check of both running comparison instances
+  (`http://127.0.0.1:4321/components/selectboxgroup/` dev and
+  `http://127.0.0.1:4322/components/selectboxgroup/` preview) showed the same
+  corrected root geometry and illustration geometry. The side-panel interaction
+  path was also checked after changing `selectionMode` to `multiple`.
 - Validated with:
 
   ```bash
@@ -83,6 +89,7 @@ records intent and recent evidence, not a substitute for `git status`.
   vp run --filter @proyecto-viviana/solid-spectrum build
   vp run --filter @proyecto-viviana/comparison build
   COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup" --reporter=line
+  COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/collection-button-controls-visual.spec.ts -g "SelectBoxGroup interactive prop controls" --reporter=line
   ```
 
 - The focused SelectBoxGroup suite result after snapshot refresh and threshold
