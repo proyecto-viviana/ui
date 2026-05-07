@@ -609,6 +609,6 @@ export {
 
 export { createTypeSelect, type TypeSelectOptions, type TypeSelectAria } from "./selection";
 
-export { mergeProps, filterDOMProps, type FilterDOMPropsOptions } from "./utils";
+export { mergeProps, filterDOMProps, focusSafely, type FilterDOMPropsOptions } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";
 export { createDescription, type DescriptionProps } from "./utils";

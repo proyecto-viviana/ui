@@ -361,6 +361,35 @@ test.describe("comparison Picker visual parity", () => {
     }
   });
 
+  test("first pointer open does not scroll the page to the portal", async ({ page }) => {
+    const fixtures = await pickerFixtures(page, "?size=XL");
+
+    await fixtures.solidButton.evaluate((element) => {
+      element.scrollIntoView({ block: "center", inline: "nearest" });
+    });
+    const beforeScrollY = await page.evaluate(() => window.scrollY);
+
+    await fixtures.solidButton.click();
+    await expect
+      .poll(() => openListMetrics(fixtures.solidRoot), "Solid Picker opens in place")
+      .toMatchObject({
+        activeRole: "option",
+        activeText: "Pro",
+        activeIsFocusedOption: true,
+        ariaExpanded: "true",
+      });
+
+    const scrollY = await page.evaluate(() => window.scrollY);
+    const bottomScrollY = await page.evaluate(
+      () => document.documentElement.scrollHeight - window.innerHeight,
+    );
+    expect(
+      Math.abs(scrollY - beforeScrollY),
+      "opening the portaled listbox should keep the page anchored",
+    ).toBeLessThan(20);
+    expect(scrollY, "opening should not jump to the document bottom").toBeLessThan(bottomScrollY);
+  });
+
   test("keyboard navigation moves focus before committing selection", async ({ page }) => {
     const fixtures = await pickerFixtures(page, "?size=XL");
 

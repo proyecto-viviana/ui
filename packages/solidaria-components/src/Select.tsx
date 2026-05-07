@@ -27,6 +27,7 @@ import {
   createHover,
   createInteractOutside,
   FocusScope,
+  focusSafely,
   mergeProps,
   type AriaSelectProps,
   type AriaListBoxProps,
@@ -953,7 +954,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
         listBoxRef?.querySelectorAll<HTMLElement>("[role='option']") ?? [],
       ).find((element) => element.id === String(focusedKey));
       if (option && document.activeElement !== option) {
-        option.focus();
+        focusSafely(option);
       }
     });
   });
