@@ -189,6 +189,15 @@ async function calendarPopup(page: Page) {
   throw new Error("Expected an open calendar popup");
 }
 
+async function calendarSurface(page: Page) {
+  const surface = page
+    .locator("[data-placement]")
+    .filter({ has: page.locator('[role="grid"]') })
+    .first();
+  await expect(surface).toBeVisible();
+  return surface;
+}
+
 async function expectNoCalendarPopup(page: Page) {
   await expect(page.locator('[role="grid"]')).toHaveCount(0);
 }
@@ -228,6 +237,46 @@ async function datePickerColors(page: Page, framework: "React Spectrum stack" | 
       fieldBorderColor: fieldStyle.borderColor,
       descriptionVisible: root.textContent?.includes("Choose the project due date.") ?? false,
       errorVisible: root.textContent?.includes("Select a due date.") ?? false,
+    };
+  }, framework);
+}
+
+async function datePickerDisabledComputed(
+  page: Page,
+  framework: "React Spectrum stack" | "Solidaria stack",
+) {
+  return page.evaluate((frameworkName) => {
+    const isSolid = frameworkName === "Solidaria stack";
+    const card = Array.from(document.querySelectorAll("article.s2-framework-panel")).find(
+      (element) => element.textContent?.includes(isSolid ? "solid-spectrum" : "React Spectrum S2"),
+    );
+    const root = card?.querySelector('[data-comparison-control-root="datepicker"]');
+    const fieldGroup = Array.from(root?.querySelectorAll("div") ?? []).find(
+      (element) =>
+        element.textContent === "mm/dd/yyyy" &&
+        getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)",
+    );
+    const button = root?.querySelector("button");
+    const segment = root?.querySelector('[role="spinbutton"]');
+    if (!fieldGroup || !button || !segment) {
+      throw new Error(`Could not find disabled ${frameworkName} DatePicker elements`);
+    }
+
+    const style = (element: Element) => {
+      const computed = getComputedStyle(element);
+      return {
+        color: computed.color,
+        background: computed.backgroundColor,
+        border: computed.borderColor,
+        opacity: computed.opacity,
+        cursor: computed.cursor,
+      };
+    };
+
+    return {
+      field: style(fieldGroup),
+      button: style(button),
+      segment: style(segment),
     };
   }, framework);
 }
@@ -301,6 +350,8 @@ async function datePickerIconGeometry(
 
     const buttonRect = button.getBoundingClientRect();
     const iconRect = icon.getBoundingClientRect();
+    const iconPath = icon.querySelector("path");
+    const iconPathRect = iconPath?.getBoundingClientRect();
     const field = Array.from(root?.querySelectorAll("div") ?? []).find(
       (element) =>
         element.textContent === "mm/dd/yyyy" &&
@@ -308,10 +359,13 @@ async function datePickerIconGeometry(
     );
     const fieldRect = field?.getBoundingClientRect();
     return {
+      fieldWidth: fieldRect?.width ?? null,
       buttonWidth: buttonRect.width,
       buttonHeight: buttonRect.height,
       iconWidth: iconRect.width,
       iconHeight: iconRect.height,
+      iconPathWidth: iconPathRect?.width ?? null,
+      iconPathHeight: iconPathRect?.height ?? null,
       ratio: iconRect.width / buttonRect.width,
       trailingGap: fieldRect ? fieldRect.right - buttonRect.right : null,
     };
@@ -329,13 +383,20 @@ async function solidCalendarAlignment(page: Page) {
 
     const grid = popover.querySelector<HTMLElement>('[role="grid"]');
     const headerCells = Array.from(popover.querySelectorAll<HTMLElement>("th"));
-    const cells = Array.from(popover.querySelectorAll<HTMLElement>('[role="gridcell"]')).slice(
-      0,
-      7,
-    );
+    const cells = Array.from(popover.querySelectorAll<HTMLElement>('[role="gridcell"]'))
+      .filter((element) => {
+        const box = element.getBoundingClientRect();
+        return box.width > 0 && box.height > 0;
+      })
+      .slice(0, 7);
     const cellButtons = Array.from(
       popover.querySelectorAll<HTMLElement>('[role="gridcell"] [role="button"]'),
-    ).slice(0, 7);
+    )
+      .filter((element) => {
+        const box = element.getBoundingClientRect();
+        return box.width > 0 && box.height > 0;
+      })
+      .slice(0, 7);
     const rect = (element: HTMLElement) => {
       const box = element.getBoundingClientRect();
       return { x: box.x, y: box.y, width: box.width, height: box.height };
@@ -348,6 +409,54 @@ async function solidCalendarAlignment(page: Page) {
       cellRects: cells.map(rect),
       cellButtonRects: cellButtons.map(rect),
     };
+  });
+}
+
+async function solidVisibleCalendarButtonTexts(page: Page) {
+  return page.evaluate(() => {
+    const popover = Array.from(document.querySelectorAll<HTMLElement>("[role='dialog']")).find(
+      (element) => element.querySelector('[role="grid"]'),
+    );
+    if (!popover) {
+      throw new Error("Could not find open Solid DatePicker calendar popover");
+    }
+
+    return Array.from(popover.querySelectorAll<HTMLElement>('[role="gridcell"] [role="button"]'))
+      .filter((element) => {
+        const box = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return box.width > 0 && box.height > 0 && style.display !== "none";
+      })
+      .map((element) => element.textContent?.trim() ?? "");
+  });
+}
+
+async function solidVisibleCalendarButtonMetrics(page: Page) {
+  return page.evaluate(() => {
+    const popover = Array.from(document.querySelectorAll<HTMLElement>("[role='dialog']")).find(
+      (element) => element.querySelector('[role="grid"]'),
+    );
+    const grid = popover?.querySelector<HTMLElement>('[role="grid"]');
+    if (!popover || !grid) {
+      throw new Error("Could not find open Solid DatePicker calendar grid");
+    }
+
+    const gridBox = grid.getBoundingClientRect();
+    return Array.from(popover.querySelectorAll<HTMLElement>('[role="gridcell"] [role="button"]'))
+      .filter((element) => {
+        const box = element.getBoundingClientRect();
+        return box.width > 0 && box.height > 0;
+      })
+      .map((element) => {
+        const box = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return {
+          text: element.textContent?.trim() ?? "",
+          columnOffset: Math.round(box.x - gridBox.x),
+          paddingLeft: style.paddingLeft,
+          paddingRight: style.paddingRight,
+        };
+      });
   });
 }
 
@@ -449,14 +558,15 @@ test.describe("comparison DatePicker visual parity", () => {
 
     await openCalendar(reactCard);
     const reactDialog = await calendarPopup(page);
+    const reactSurface = await calendarSurface(page);
     await expect(reactDialog.getByRole("grid")).toBeVisible();
-    const reactPopoverGeometry = await geometry(reactDialog);
+    const reactPopoverGeometry = await geometry(reactSurface);
     assertVisiblePopoverGeometry(reactPopoverGeometry);
     await page.mouse.move(4, 4);
-    await expect(reactDialog).toHaveScreenshot("datepicker-popover-react.png", {
+    await expect(reactSurface).toHaveScreenshot("datepicker-popover-react.png", {
       animations: "disabled",
     });
-    await reactDialog.screenshot({ animations: "disabled" });
+    const reactSurfacePng = await reactSurface.screenshot({ animations: "disabled" });
 
     await page.keyboard.press("Escape");
     await expectNoCalendarPopup(page);
@@ -464,20 +574,31 @@ test.describe("comparison DatePicker visual parity", () => {
 
     await openCalendar(solidCard);
     const solidDialog = await calendarPopup(page);
+    const solidSurface = await calendarSurface(page);
     await expect(solidDialog.getByRole("grid")).toBeVisible();
-    const solidPopoverGeometry = await geometry(solidDialog);
+    const solidPopoverGeometry = await geometry(solidSurface);
     assertVisiblePopoverGeometry(solidPopoverGeometry);
     expect(solidPopoverGeometry.position).not.toBe("static");
     await page.mouse.move(4, 4);
-    await expect(solidDialog).toHaveScreenshot("datepicker-popover-solid.png", {
+    await expect(solidSurface).toHaveScreenshot("datepicker-popover-solid.png", {
       animations: "disabled",
     });
+    const solidSurfacePng = await solidSurface.screenshot({ animations: "disabled" });
 
     expect(Math.abs(solidPopoverGeometry.width - reactPopoverGeometry.width)).toBeLessThanOrEqual(
-      96,
+      0.01,
     );
     expect(Math.abs(solidPopoverGeometry.height - reactPopoverGeometry.height)).toBeLessThanOrEqual(
-      140,
+      0.01,
+    );
+    await compareScreenshots(
+      page,
+      reactSurfacePng,
+      solidSurfacePng,
+      "DatePicker popup surface",
+      0.16,
+      0,
+      16,
     );
 
     await page.keyboard.press("Escape");
@@ -585,6 +706,45 @@ test.describe("comparison DatePicker visual parity", () => {
     await expect(navButtons.nth(1)).toBeVisible();
     await navButtons.nth(1).click();
     await expect(heading).not.toHaveText(initialTitle ?? "");
+    await expect(heading).toHaveText("June 2026");
+    expect(await solidVisibleCalendarButtonTexts(page)).toEqual([
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "20",
+      "21",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29",
+      "30",
+    ]);
+    const nextMonthButtonMetrics = await solidVisibleCalendarButtonMetrics(page);
+    expect(nextMonthButtonMetrics[0]).toMatchObject({
+      text: "1",
+      columnOffset: 32,
+      paddingLeft: "4px",
+    });
 
     const alignment = await solidCalendarAlignment(page);
     expect(alignment.headerText).toEqual(["S", "M", "T", "W", "T", "F", "S"]);
@@ -630,6 +790,18 @@ test.describe("comparison DatePicker visual parity", () => {
 
       expect(Math.abs(solidIcon.iconWidth - reactIcon.iconWidth), size).toBeLessThanOrEqual(1);
       expect(Math.abs(solidIcon.iconHeight - reactIcon.iconHeight), size).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs((solidIcon.iconPathWidth ?? 0) - (reactIcon.iconPathWidth ?? 0)),
+        size,
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs((solidIcon.iconPathHeight ?? 0) - (reactIcon.iconPathHeight ?? 0)),
+        size,
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs((solidIcon.fieldWidth ?? 0) - (reactIcon.fieldWidth ?? 0)),
+        size,
+      ).toBeLessThanOrEqual(1);
       expect(Math.abs(solidIcon.ratio - reactIcon.ratio), size).toBeLessThanOrEqual(0.06);
       expect(
         Math.abs((solidIcon.trailingGap ?? 0) - (reactIcon.trailingGap ?? 0)),
@@ -649,16 +821,22 @@ test.describe("comparison DatePicker visual parity", () => {
 
     const section = await styledSection(page);
     const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const reactCard = await frameworkPanel(section, "React Spectrum stack");
     const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
     const disabledSolidField = await datePickerColors(page, "Solidaria stack");
+    const disabledReactComputed = await datePickerDisabledComputed(page, "React Spectrum stack");
+    const disabledSolidComputed = await datePickerDisabledComputed(page, "Solidaria stack");
 
     await expect(solidRoot).toHaveAttribute("data-comparison-control-props", /"isDisabled":true/);
     await expect(
       solidRoot.getByRole("button", { name: /calendar|open calendar|choose date/i }),
     ).toBeDisabled();
     await expect(solidRoot.getByRole("spinbutton").first()).toBeDisabled();
+    await expect(
+      reactCard.getByRole("button", { name: /calendar|open calendar|choose date/i }),
+    ).toBeDisabled();
+    expect(disabledSolidComputed).toEqual(disabledReactComputed);
     expect(disabledSolidField.fieldColor).not.toBe(enabledSolidField.fieldColor);
-    expect(disabledSolidField.fieldBackground).not.toBe(enabledSolidField.fieldBackground);
   });
 
   test("DatePicker fields and portaled calendar respond to light and dark themes", async ({

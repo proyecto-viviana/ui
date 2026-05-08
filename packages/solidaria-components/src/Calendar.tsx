@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Accessor,
   createContext,
   createMemo,
   createSignal,
@@ -102,6 +103,14 @@ export interface CalendarCellRenderProps {
   isPressed: boolean;
   /** Whether the cell is hovered. */
   isHovered: boolean;
+  /** Whether the cell is the first day slot in its row. */
+  isFirstChild: boolean;
+  /** Whether the cell is the last day slot in its row. */
+  isLastChild: boolean;
+  /** Whether the cell is in the first rendered week row. */
+  isFirstWeek: boolean;
+  /** Whether the cell is in the last rendered week row. */
+  isLastWeek: boolean;
   /** The formatted date string. */
   formattedDate: string;
 }
@@ -143,7 +152,12 @@ export interface CalendarGridBodyProps extends SlotProps {
 }
 
 export const CalendarContext = createContext<CalendarState<DateValue> | null>(null);
-const CalendarGridMonthContext = createContext<CalendarDate | null>(null);
+const CalendarGridMonthContext = createContext<Accessor<CalendarDate> | null>(null);
+const CalendarGridCellPositionContext = createContext<Accessor<{
+  weekIndex: number;
+  dayIndex: number;
+  lastWeekIndex: number;
+}> | null>(null);
 
 export function useCalendarContext(): CalendarState<DateValue> {
   const context = useContext(CalendarContext);
@@ -436,7 +450,7 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
   });
 
   return (
-    <CalendarGridMonthContext.Provider value={startDate()}>
+    <CalendarGridMonthContext.Provider value={startDate}>
       <table
         ref={setGridRef}
         {...gridAria.gridProps}
@@ -456,12 +470,20 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
         </thead>
         <tbody>
           <Index each={allDates()}>
-            {(weekDates) => (
+            {(weekDates, weekIndex) => (
               <tr>
                 <Index each={weekDates()}>
-                  {(date) => (
+                  {(date, dayIndex) => (
                     <Show when={date()} fallback={<td />}>
-                      {props.children?.(date()!)}
+                      <CalendarGridCellPositionContext.Provider
+                        value={() => ({
+                          weekIndex,
+                          dayIndex,
+                          lastWeekIndex: allDates().length - 1,
+                        })}
+                      >
+                        {props.children?.(date()!)}
+                      </CalendarGridCellPositionContext.Provider>
                     </Show>
                   )}
                 </Index>
@@ -504,9 +526,18 @@ export function CalendarHeaderCell(props: CalendarHeaderCellProps): JSX.Element 
 export function CalendarCell(props: CalendarCellProps): JSX.Element {
   const state = useCalendarContext();
   const currentMonthStart = useContext(CalendarGridMonthContext);
+  const cellPosition = useContext(CalendarGridCellPositionContext);
   const [cellRef, setCellRef] = createSignal<HTMLDivElement | null>(null);
   const isOutsideMonth = createMemo(
-    () => currentMonthStart != null && !isSameMonth(currentMonthStart, props.date),
+    () => currentMonthStart != null && !isSameMonth(currentMonthStart(), props.date),
+  );
+  const position = createMemo(
+    () =>
+      cellPosition?.() ?? {
+        weekIndex: 0,
+        dayIndex: 0,
+        lastWeekIndex: 0,
+      },
   );
 
   const cellAria = createCalendarCell(
@@ -530,6 +561,10 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
     isToday: cellAria.isToday,
     isPressed: cellAria.isPressed,
     isHovered: isHovered(),
+    isFirstChild: position().dayIndex === 0,
+    isLastChild: position().dayIndex === 6,
+    isFirstWeek: position().weekIndex === 0,
+    isLastWeek: position().weekIndex === position().lastWeekIndex,
     formattedDate: cellAria.formattedDate,
   }));
 

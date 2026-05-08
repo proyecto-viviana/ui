@@ -691,7 +691,7 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
 
   const popoverAria = createPopover(
     {
-      triggerRef: context.triggerRef,
+      triggerRef: () => context.triggerRef()?.parentElement ?? context.triggerRef(),
       popoverRef: () => contentRef ?? null,
       placement: "bottom start",
       offset: 8,
@@ -769,7 +769,7 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
 
   const popoverAria = createPopover(
     {
-      triggerRef: context.triggerRef,
+      triggerRef: () => context.triggerRef()?.parentElement ?? context.triggerRef(),
       popoverRef: () => contentRef ?? null,
       placement: "bottom start",
       offset: 8,

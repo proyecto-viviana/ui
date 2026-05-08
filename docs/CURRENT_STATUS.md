@@ -4,7 +4,7 @@ Fresh-chat handoff for Proyecto Viviana S2 parity work. Read this before
 continuing component parity, then check the current git state because this file
 records intent and recent evidence, not a substitute for `git status`.
 
-## Latest Entry - 2026-05-07
+## Latest Entry - 2026-05-08
 
 ### Current state
 
@@ -54,6 +54,12 @@ records intent and recent evidence, not a substitute for `git status`.
   no 32px target to paint. The Solid popup now uses the S2 18px title treatment,
   fixed 32px cell/button boxes, headless calendar hover render props, and a
   200ms opacity/translate enter animation on the portaled DatePicker popover.
+- Follow-up icon review corrected the calendar trigger sizing contract again:
+  Solid now uses the same `fontRelative(14)` S2 icon style as React instead of
+  hardcoded pixel overrides. Browser measurement also found the Solid L/XL field
+  was 6px wider than React, which shifted the trigger and could make the icon
+  read wrong despite matching SVG dimensions; the L/XL field widths are now
+  pinned to React's 224px and 240px geometry.
 - The Solid Calendar popup now has S2-styled weekday header cells, table-cell
   wrappers, heading title layout, and visible vendored S2 chevron navigation
   buttons. Month paging is covered in the DatePicker browser spec by clicking
@@ -83,6 +89,17 @@ records intent and recent evidence, not a substitute for `git status`.
   trigger. `packages/solidaria-components/src/DatePicker.tsx` now restores
   focus to the trigger after Escape for both DatePicker and DateRangePicker
   content.
+- Latest disabled/popup review correction: the Solid disabled field group now
+  keeps React's white field background while matching disabled text, border,
+  button, segment, opacity, and cursor colors. The DatePicker popover now
+  anchors to the whole field group instead of the calendar button, so its
+  horizontal placement matches React; it may still flip above the field when the
+  lower Solid comparison panel has insufficient viewport space below. Calendar
+  month context is reactive after paging, so navigating to June 2026 keeps the
+  full visible in-month day set instead of hiding everything except the stale
+  previous-month slot. The popup surface, frame, grid, weekday headers, and
+  32px date targets now match React's measured 304x326 outer surface, 272x278
+  inner frame, and 224x222 grid geometry.
 
 ### Validation and evidence
 
@@ -117,6 +134,13 @@ records intent and recent evidence, not a substitute for `git status`.
   navigation controls, all `S/M/L/XL` calendar trigger icon geometry, L/XL
   trailing trigger inset, the popup calendar's narrow weekday/grid-column
   alignment, 32px day cell boxes, hover background, and popover enter animation.
+  The icon geometry guard now compares the field width plus both SVG and painted
+  path dimensions so a matching outer box cannot hide a wrong visible glyph or
+  shifted trigger.
+- Latest e2e guards compare React and Solid disabled computed styles exactly,
+  compare the whole portaled DatePicker popup surface screenshot with matching
+  dimensions, and assert the June 2026 navigation state exposes all 30 visible
+  in-month date buttons.
 - Validated with:
 
   ```bash
@@ -138,6 +162,10 @@ records intent and recent evidence, not a substitute for `git status`.
   8 passed.
 - Latest focused DatePicker spec result after screenshot/hover/animation
   correction: 8 passed.
+- Latest focused DatePicker spec result after icon/field geometry correction:
+  8 passed.
+- Latest focused DatePicker spec result after disabled/popup geometry
+  correction: 8 passed.
 - Focused DatePicker modeled-controls result: 1 passed.
 - Commit for this follow-up: `Style DatePicker with S2 tokens`.
 - Correction commit: `Fix DatePicker interactive states`.
@@ -147,6 +175,10 @@ records intent and recent evidence, not a substitute for `git status`.
   `Fix DatePicker icon sizing and calendar alignment`.
 - Pending correction commit for the screenshot/hover/animation report:
   `Fix DatePicker calendar hover and popup geometry`.
+- Pending correction commit for the icon/field geometry report:
+  `Match DatePicker trigger icon sizing contract`.
+- Pending correction commit for the disabled/popup geometry report:
+  `Match DatePicker disabled and popup parity`.
 
 ### Known traps
 
@@ -156,9 +188,9 @@ records intent and recent evidence, not a substitute for `git status`.
   before trusting screenshots or state matrix rows.
 - DatePicker now uses generated S2 styling, but strict pair parity is still not
   achieved. Do not mark DatePicker strict visual parity until DateField shared
-  segmented-input styling, Calendar header-cell styling, focus-visible
-  timelines, disabled/unavailable date states, and tighter geometry thresholds
-  have been checked against React S2.
+  segmented-input styling, focus-visible timelines, disabled/unavailable date
+  states, and tighter dark-mode popup screenshots have been checked against
+  React S2.
 - Solid headless DatePicker does not forward arbitrary `data-*` props from the
   styled wrapper into the rendered root. Put the comparison control marker on
   one stable fixture wrapper unless the headless component starts forwarding

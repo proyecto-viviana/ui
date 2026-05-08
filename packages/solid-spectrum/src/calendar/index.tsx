@@ -156,34 +156,51 @@ const calendarGrid = style({
   borderSpacing: 0,
   isolation: "isolate",
   tableLayout: "fixed",
-  width: "[calc(7 * var(--cell-responsive-size))]",
 });
 
 const calendarHeaderCell = style({
+  boxSizing: "border-box",
   font: "title-sm",
   cursor: "default",
   textAlign: "center",
   width: "--cell-responsive-size",
-  padding: 0,
+  paddingStart: {
+    default: 4,
+    ":first-child": 0,
+  },
+  paddingEnd: {
+    default: 4,
+    ":last-child": 0,
+  },
+  paddingTop: 0,
   paddingBottom: 12,
   color: baseColor("neutral"),
 });
 
-const calendarCellWrapper = style({
+const calendarCellWrapper = style<{
+  isOutsideMonth?: boolean;
+}>({
   outlineStyle: "none",
   boxSizing: "border-box",
   padding: 0,
   position: "relative",
-  visibility: {
-    default: "visible",
-    isOutsideMonth: "hidden",
-  },
   disableTapHighlight: true,
   width: "--cell-responsive-size",
   height: "--cell-responsive-size",
 });
 
-const calendarCell = style({
+const calendarCell = style<{
+  isSelected?: boolean;
+  isFocused?: boolean;
+  isDisabled?: boolean;
+  isOutsideMonth?: boolean;
+  isPressed?: boolean;
+  isHovered?: boolean;
+  isFirstChild?: boolean;
+  isLastChild?: boolean;
+  isFirstWeek?: boolean;
+  isLastWeek?: boolean;
+}>({
   ...focusRing(),
   transition: {
     default: "default",
@@ -191,12 +208,32 @@ const calendarCell = style({
   },
   outlineOffset: 2,
   position: "relative",
+  boxSizing: "border-box",
+  paddingStart: {
+    default: 4,
+    isFirstChild: 0,
+  },
+  paddingEnd: {
+    default: 4,
+    isLastChild: 0,
+  },
+  paddingTop: {
+    default: 2,
+    isFirstWeek: 0,
+  },
+  paddingBottom: {
+    default: 2,
+    isLastWeek: 0,
+  },
   font: "body-sm",
   cursor: "default",
   width: "full",
   height: "full",
   borderRadius: "full",
-  display: "flex",
+  display: {
+    default: "flex",
+    isOutsideMonth: "none",
+  },
   alignItems: "center",
   justifyContent: "center",
   forcedColorAdjust: "none",
@@ -310,19 +347,26 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
           "table-layout": "fixed",
         }}
         weekdayStyle="narrow"
-        headerCellClass={calendarHeaderCell}
+        headerCellClass={calendarHeaderCell({})}
       >
         {(date) => (
           <CalendarCell
             date={date}
-            cellClass={({ isOutsideMonth }) =>
-              calendarCellWrapper({
-                isOutsideMonth,
-              })
-            }
+            cellClass={calendarCellWrapper}
             cellStyle={() => cellBoxStyle(size())}
             style={() => cellBoxStyle(size())}
-            class={({ isSelected, isFocused, isDisabled, isOutsideMonth, isPressed, isHovered }) =>
+            class={({
+              isSelected,
+              isFocused,
+              isDisabled,
+              isOutsideMonth,
+              isPressed,
+              isHovered,
+              isFirstChild,
+              isLastChild,
+              isFirstWeek,
+              isLastWeek,
+            }) =>
               calendarCell({
                 isSelected,
                 isFocused,
@@ -330,6 +374,10 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
                 isOutsideMonth,
                 isPressed,
                 isHovered,
+                isFirstChild,
+                isLastChild,
+                isFirstWeek,
+                isLastWeek,
               })
             }
           >

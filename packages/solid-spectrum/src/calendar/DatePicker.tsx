@@ -96,25 +96,12 @@ function requiredIconStyle(size: NormalizedDatePickerSize): JSX.CSSProperties {
   };
 }
 
-function calendarIconStyle(size: NormalizedDatePickerSize): JSX.CSSProperties {
-  const pixelSize = {
-    S: 12,
-    M: 14,
-    L: 16,
-    XL: 18,
-  }[size];
-
-  return {
-    width: `${pixelSize}px`,
-    height: `${pixelSize}px`,
-  };
-}
-
 function datePickerFieldGroupStyle(size: NormalizedDatePickerSize): JSX.CSSProperties | undefined {
   if (size !== "L" && size !== "XL") return undefined;
 
   return {
     "padding-inline-end": "6px",
+    width: size === "L" ? "224px" : "240px",
   };
 }
 
@@ -189,7 +176,6 @@ const datePickerFieldGroup = style({
   },
   backgroundColor: {
     default: baseColor("gray-25"),
-    isDisabled: "disabled",
     forcedColors: "Field",
   },
   borderColor: {
@@ -286,6 +272,7 @@ const calendarIcon = style({
     type: "fill",
     value: "currentColor",
   },
+  size: fontRelative(14),
 });
 
 const noWrap = style({
@@ -546,7 +533,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         <DatePickerButton
           class={({ isDisabled, isOpen }) => calendarButton({ isDisabled, isOpen, size: size() })}
         >
-          <S2CalendarIcon styles={calendarIcon} style={calendarIconStyle(size())} />
+          <S2CalendarIcon styles={calendarIcon} />
         </DatePickerButton>
 
         <DatePickerPopup />
