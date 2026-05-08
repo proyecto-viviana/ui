@@ -8,8 +8,10 @@
 import {
   type JSX,
   createContext,
+  createEffect,
   createMemo,
   createSignal,
+  onCleanup,
   splitProps,
   useContext,
   For,
@@ -78,6 +80,8 @@ export interface DateInputProps extends SlotProps {
   class?: ClassNameOrFunction<DateInputRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<DateInputRenderProps>;
+  /** Handler called during the pointer down capture phase. */
+  onPointerDownCapture?: JSX.EventHandler<HTMLDivElement, PointerEvent>;
 }
 
 export interface DateSegmentRenderProps {
@@ -250,6 +254,7 @@ export function DateInput(props: DateInputProps): JSX.Element {
   const context = useDateFieldContext();
   const { state, aria } = context;
   const [isFocused, setIsFocused] = createSignal(false);
+  const [inputRef, setInputRef] = createSignal<HTMLDivElement | null>(null);
 
   const renderValues = createMemo<DateInputRenderProps>(() => ({
     isDisabled: state.isDisabled(),
@@ -265,8 +270,20 @@ export function DateInput(props: DateInputProps): JSX.Element {
     renderValues,
   );
 
+  createEffect(() => {
+    const element = inputRef();
+    const handler = props.onPointerDownCapture;
+    if (!element || !handler) return;
+
+    const listener = (event: PointerEvent) =>
+      (handler as unknown as (event: PointerEvent) => void)(event);
+    element.addEventListener("pointerdown", listener, { capture: true });
+    onCleanup(() => element.removeEventListener("pointerdown", listener, { capture: true }));
+  });
+
   return (
     <div
+      ref={setInputRef}
       {...aria.inputProps}
       class={renderProps.class()}
       style={renderProps.style()}

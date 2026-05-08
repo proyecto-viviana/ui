@@ -38,6 +38,16 @@ records intent and recent evidence, not a substitute for `git status`.
   calendar icon, renders the required asterisk indicator, visibly restyles the
   disabled field surface/text while preserving disabled semantics, and opens the
   portaled calendar without scrolling the comparison page to the bottom.
+- Latest browser-review correction: clicking the blank/right side of the Solid
+  DatePicker field now returns focus to the first editable segment (`month`)
+  instead of leaving the year segment active; direct segment and trigger-button
+  clicks keep their native behavior. The calendar trigger button also removes
+  inherited padding and uses a 16px S2 calendar SVG box so the L-size icon
+  matches React's relative geometry.
+- The Solid Calendar popup now has S2-styled weekday header cells, table-cell
+  wrappers, heading title layout, and visible vendored S2 chevron navigation
+  buttons. Month paging is covered in the DatePicker browser spec by clicking
+  the next-month button and asserting the heading changes.
 - The React DatePicker comparison fixture now passes the live comparison
   `colorScheme` into the S2 provider. The React side had been stuck on the
   helper default instead of reacting to the light/dark controls.
@@ -89,6 +99,8 @@ records intent and recent evidence, not a substitute for `git status`.
   page, if the Solid required/disabled branches stop rendering, or if the
   React/Solid fields and Solid portaled popover stop reacting to light/dark
   theme changes.
+- It also now guards the reported blank-field focus timeline, styled month
+  navigation controls, and L-size calendar trigger icon geometry.
 - Validated with:
 
   ```bash
@@ -104,9 +116,13 @@ records intent and recent evidence, not a substitute for `git status`.
 - Chromium Playwright still needs escalation outside the sandbox on this host
   due `sandbox_host_linux.cc:41 shutdown: Operation not permitted`.
 - Focused DatePicker spec result after follow-up correction: 5 passed.
+- Latest focused DatePicker spec result after popup/focus/icon correction:
+  8 passed.
 - Focused DatePicker modeled-controls result: 1 passed.
 - Commit for this follow-up: `Style DatePicker with S2 tokens`.
 - Correction commit: `Fix DatePicker interactive states`.
+- Correction commit for the latest browser report:
+  `Fix DatePicker popup and segment focus`.
 
 ### Known traps
 
@@ -124,8 +140,9 @@ records intent and recent evidence, not a substitute for `git status`.
   one stable fixture wrapper unless the headless component starts forwarding
   those props.
 - `size` is a layout/style contract for DatePicker. The current e2e guard
-  covers default `M` plus invalid/required `XL`; test `S`, `L`, and more
-  calendar layout states explicitly before tightening strict pair diffs.
+  covers default `M`, invalid/required `XL`, and calendar-icon geometry at `L`;
+  test `S`, more `L` field/popup states, and more calendar layout states
+  explicitly before tightening strict pair diffs.
 - Escape focus return is an interaction-timeline contract, not a final
   screenshot property. Keep the e2e focus-return assertion when moving the
   popup to a fuller S2 implementation.
@@ -133,10 +150,11 @@ records intent and recent evidence, not a substitute for `git status`.
 ### Next likely work
 
 - Continue DatePicker parity by extracting the segmented-input styling into
-  DateField/TimeField, adding Calendar header-cell styling support, and
-  validating more Calendar branches: disabled/unavailable dates, selected/today
-  combinations, hover/press/focus-visible, month paging, min/max, and
-  multi-month layout.
+  DateField/TimeField and validating more Calendar branches:
+  disabled/unavailable dates, selected/today combinations,
+  hover/press/focus-visible, min/max, and multi-month layout. Header-cell
+  styling and basic month paging are now in place, but deeper Calendar state
+  combinations still need parity work.
 - DateField and TimeField are natural follow-ups because DatePicker reuses the
   same segmented input contracts. DateRangePicker should reuse the DatePicker
   styling/width/theme work plus the Escape focus-return fix, then get its own

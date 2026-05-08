@@ -11,6 +11,8 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { CalendarStateProps } from "@proyecto-viviana/solid-stately";
 import { baseColor, focusRing, lightDark, setColorScheme, style } from "../s2-style";
+import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
+import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { useProviderProps } from "../provider";
 
 export type CalendarSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "xl";
@@ -98,11 +100,18 @@ const calendarHeader = style({
 });
 
 const calendarHeading = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  margin: 0,
+  flexGrow: 1,
+});
+
+const calendarTitle = style({
   font: "title-lg",
   textAlign: "center",
   flexGrow: 1,
   flexShrink: 0,
-  margin: 0,
   color: baseColor("neutral"),
 });
 
@@ -137,6 +146,53 @@ const calendarGrid = style({
   isolation: "isolate",
 });
 
+const calendarHeaderCell = style({
+  font: "title-sm",
+  cursor: "default",
+  textAlign: "center",
+  paddingStart: {
+    default: 4,
+    ":first-child": 0,
+  },
+  paddingEnd: {
+    default: 4,
+    ":last-child": 0,
+  },
+  paddingBottom: 12,
+  color: baseColor("neutral"),
+});
+
+const calendarCellWrapper = style({
+  outlineStyle: "none",
+  boxSizing: "content-box",
+  paddingStart: {
+    default: 4,
+    isFirstChild: 0,
+  },
+  paddingEnd: {
+    default: 4,
+    isLastChild: 0,
+  },
+  paddingTop: {
+    default: 2,
+    isFirstWeek: 0,
+  },
+  paddingBottom: {
+    default: 2,
+    isLastWeek: 0,
+  },
+  position: "relative",
+  display: {
+    default: "flex",
+    isOutsideMonth: "none",
+  },
+  alignItems: "center",
+  justifyContent: "center",
+  disableTapHighlight: true,
+  width: "--cell-responsive-size",
+  height: "--cell-responsive-size",
+});
+
 const calendarCell = style({
   ...focusRing(),
   transition: {
@@ -147,17 +203,13 @@ const calendarCell = style({
   position: "relative",
   font: "body-sm",
   cursor: "default",
-  width: "--cell-responsive-size",
-  height: "--cell-responsive-size",
+  width: "full",
+  height: "full",
   borderRadius: "full",
-  display: {
-    default: "flex",
-    isOutsideMonth: "none",
-  },
+  display: "flex",
   alignItems: "center",
   justifyContent: "center",
   forcedColorAdjust: "none",
-  boxSizing: "content-box",
   backgroundColor: {
     default: "transparent",
     isHovered: {
@@ -206,6 +258,13 @@ const calendarTodayDot = style<{ isToday?: boolean }>({
   },
 });
 
+const calendarNavIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
 /**
  * A calendar displays a grid of days and allows users to select a date.
  */
@@ -231,43 +290,30 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
           slot="previous"
           class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="w-4 h-4"
-          >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          <ChevronLeftIcon styles={calendarNavIcon} />
         </CalendarButton>
 
-        <CalendarHeading class={calendarHeading} />
+        <CalendarHeading class={calendarHeading}>
+          {({ title }) => <div class={calendarTitle}>{title}</div>}
+        </CalendarHeading>
 
         <CalendarButton
           slot="next"
           class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="w-4 h-4"
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
+          <ChevronRightIcon styles={calendarNavIcon} />
         </CalendarButton>
       </header>
 
-      <CalendarGrid class={calendarGrid}>
+      <CalendarGrid class={calendarGrid} headerCellClass={calendarHeaderCell}>
         {(date) => (
           <CalendarCell
             date={date}
+            cellClass={({ isOutsideMonth }) =>
+              calendarCellWrapper({
+                isOutsideMonth,
+              })
+            }
             class={({ isSelected, isFocused, isDisabled, isOutsideMonth, isPressed }) =>
               calendarCell({
                 isSelected,

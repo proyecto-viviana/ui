@@ -78,6 +78,8 @@ export interface CalendarGridProps
   class?: ClassNameOrFunction<CalendarGridRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<CalendarGridRenderProps>;
+  /** Class name for weekday header cells. */
+  headerCellClass?: string;
   /** Number of weeks to offset from the start. */
   offset?: { months?: number };
 }
@@ -110,6 +112,10 @@ export interface CalendarCellProps extends SlotProps {
   class?: ClassNameOrFunction<CalendarCellRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<CalendarCellRenderProps>;
+  /** Class name for the table cell wrapper. */
+  cellClass?: ClassNameOrFunction<CalendarCellRenderProps>;
+  /** Inline style for the table cell wrapper. */
+  cellStyle?: StyleOrFunction<CalendarCellRenderProps>;
 }
 
 export interface CalendarHeaderCellProps extends SlotProps {
@@ -304,6 +310,8 @@ function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<
 }
 
 export interface CalendarHeadingProps extends SlotProps {
+  /** The children of the component. */
+  children?: RenderChildren<{ title: string }>;
   /** The CSS className for the element. */
   class?: string;
   /** The inline style for the element. */
@@ -315,10 +323,22 @@ export interface CalendarHeadingProps extends SlotProps {
  */
 export function CalendarHeading(props: CalendarHeadingProps): JSX.Element {
   const state = useCalendarContext();
+  const renderValues = createMemo(() => ({
+    title: state.title(),
+  }));
+  const renderProps = useRenderProps(
+    {
+      children: props.children,
+      class: props.class,
+      style: props.style,
+      defaultClassName: "solidaria-CalendarHeading",
+    },
+    renderValues,
+  );
 
   return (
-    <h2 class={props.class ?? "solidaria-CalendarHeading"} style={props.style} aria-live="polite">
-      {state.title()}
+    <h2 class={renderProps.class()} style={renderProps.style()} aria-live="polite">
+      {typeof props.children === "function" ? renderProps.renderChildren() : state.title()}
     </h2>
   );
 }
@@ -424,7 +444,7 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
           <tr>
             <For each={gridAria.weekDays}>
               {(day) => (
-                <th scope="col" class="solidaria-CalendarHeaderCell">
+                <th scope="col" class={props.headerCellClass ?? "solidaria-CalendarHeaderCell"}>
                   {day}
                 </th>
               )}
@@ -515,6 +535,14 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
     },
     renderValues,
   );
+  const cellRenderProps = useRenderProps(
+    {
+      class: props.cellClass,
+      style: props.cellStyle,
+      defaultClassName: "solidaria-CalendarCellWrapper",
+    },
+    renderValues,
+  );
 
   // Determine children content - avoid Show for SSR hydration compatibility
   const getChildren = () => {
@@ -525,7 +553,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
   };
 
   return (
-    <td {...cellAria.cellProps}>
+    <td {...cellAria.cellProps} class={cellRenderProps.class()} style={cellRenderProps.style()}>
       <div
         ref={setCellRef}
         {...cellAria.buttonProps}

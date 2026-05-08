@@ -255,6 +255,62 @@ async function solidCalendarPopoverColors(page: Page) {
   });
 }
 
+async function clickSolidDatePickerBlankFieldArea(page: Page) {
+  const point = await page.evaluate(() => {
+    const solidCard = Array.from(document.querySelectorAll("article.s2-framework-panel")).find(
+      (element) => element.textContent?.includes("solid-spectrum"),
+    );
+    const root = solidCard?.querySelector('[data-comparison-control-root="datepicker"]');
+    const fieldGroup = Array.from(root?.querySelectorAll("div") ?? []).find(
+      (element) =>
+        element.textContent === "mm/dd/yyyy" &&
+        getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)",
+    );
+    const button = fieldGroup?.querySelector("button");
+    if (!fieldGroup || !button) {
+      throw new Error("Could not find Solid DatePicker field blank click target");
+    }
+
+    fieldGroup.scrollIntoView({ block: "center", inline: "nearest" });
+    const fieldRect = fieldGroup.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+    return {
+      x: Math.max(fieldRect.left + 8, buttonRect.left - 10),
+      y: fieldRect.top + fieldRect.height / 2,
+    };
+  });
+
+  await page.mouse.click(point.x, point.y);
+}
+
+async function datePickerIconGeometry(
+  page: Page,
+  framework: "React Spectrum stack" | "Solidaria stack",
+) {
+  return page.evaluate((frameworkName) => {
+    const isSolid = frameworkName === "Solidaria stack";
+    const card = Array.from(document.querySelectorAll("article.s2-framework-panel")).find(
+      (element) => element.textContent?.includes(isSolid ? "solid-spectrum" : "React Spectrum S2"),
+    );
+    const root = card?.querySelector('[data-comparison-control-root="datepicker"]');
+    const button = root?.querySelector("button");
+    const icon = button?.querySelector("svg");
+    if (!button || !icon) {
+      throw new Error(`Could not find ${frameworkName} DatePicker calendar icon`);
+    }
+
+    const buttonRect = button.getBoundingClientRect();
+    const iconRect = icon.getBoundingClientRect();
+    return {
+      buttonWidth: buttonRect.width,
+      buttonHeight: buttonRect.height,
+      iconWidth: iconRect.width,
+      iconHeight: iconRect.height,
+      ratio: iconRect.width / buttonRect.width,
+    };
+  }, framework);
+}
+
 test.describe("comparison DatePicker visual parity", () => {
   test("React and Solid DatePickers are visually comparable when closed and open", async ({
     page,
@@ -416,6 +472,49 @@ test.describe("comparison DatePicker visual parity", () => {
     const afterScrollY = await page.evaluate(() => window.scrollY);
 
     expect(Math.abs(afterScrollY - beforeScrollY)).toBeLessThanOrEqual(4);
+  });
+
+  test("blank field clicks focus the first editable Solid DatePicker segment", async ({ page }) => {
+    await page.goto("/components/datepicker/");
+    await page.waitForLoadState("networkidle");
+
+    await clickSolidDatePickerBlankFieldArea(page);
+
+    const section = await styledSection(page);
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    await expect(solidCard.getByRole("spinbutton", { name: /month/i })).toBeFocused();
+  });
+
+  test("Solid DatePicker calendar exposes styled month navigation", async ({ page }) => {
+    await page.goto("/components/datepicker/");
+    await page.waitForLoadState("networkidle");
+
+    const section = await styledSection(page);
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+
+    await openCalendar(solidCard);
+    const popover = await calendarPopup(page);
+    const heading = popover.getByRole("heading").first();
+    const initialTitle = await heading.textContent();
+    const navButtons = popover.locator("header").getByRole("button");
+
+    await expect(navButtons).toHaveCount(2);
+    await expect(navButtons.nth(0)).toBeVisible();
+    await expect(navButtons.nth(1)).toBeVisible();
+    await navButtons.nth(1).click();
+    await expect(heading).not.toHaveText(initialTitle ?? "");
+  });
+
+  test("calendar trigger icon scales with L DatePicker size", async ({ page }) => {
+    await page.goto("/components/datepicker/?size=L");
+    await page.waitForLoadState("networkidle");
+
+    const reactIcon = await datePickerIconGeometry(page, "React Spectrum stack");
+    const solidIcon = await datePickerIconGeometry(page, "Solidaria stack");
+
+    expect(Math.abs(solidIcon.iconWidth - reactIcon.iconWidth)).toBeLessThanOrEqual(3);
+    expect(Math.abs(solidIcon.iconHeight - reactIcon.iconHeight)).toBeLessThanOrEqual(3);
+    expect(Math.abs(solidIcon.ratio - reactIcon.ratio)).toBeLessThanOrEqual(0.15);
   });
 
   test("disabled query state disables and restyles the Solid DatePicker", async ({ page }) => {

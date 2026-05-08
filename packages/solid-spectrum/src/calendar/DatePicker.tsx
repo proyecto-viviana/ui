@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { type JSX, splitProps, Show } from "solid-js";
+import { type JSX, createEffect, createSignal, onCleanup, splitProps, Show } from "solid-js";
 import {
   DatePicker as HeadlessDatePicker,
   DatePickerLabel as HeadlessDatePickerLabel,
@@ -239,7 +239,6 @@ const calendarIcon = style({
     type: "fill",
     value: "currentColor",
   },
-  size: fontRelative(14),
 });
 
 const noWrap = style({
@@ -266,6 +265,7 @@ const calendarButton = style<{
   display: "flex",
   textAlign: "center",
   borderStyle: "none",
+  padding: 0,
   alignItems: "center",
   justifyContent: "center",
   width: {
@@ -382,6 +382,47 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   const size = () => normalizeDatePickerSize(local.size);
   const isInvalid = () => local.isInvalid === true;
   const isDisabled = () => rest.isDisabled === true;
+  const [fieldGroupRef, setFieldGroupRef] = createSignal<HTMLDivElement | null>(null);
+  const focusFirstEditableSegment = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
+    const target = event.target as HTMLElement | null;
+    if (
+      !target ||
+      target.closest('[role="spinbutton"], button, a, input, textarea, select') ||
+      isDisabled()
+    ) {
+      return;
+    }
+
+    const firstSegment = event.currentTarget.querySelector<HTMLElement>(
+      '[role="spinbutton"]:not([aria-disabled="true"])',
+    );
+    if (!firstSegment) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+    firstSegment.focus();
+    queueMicrotask(() => firstSegment.focus());
+    requestAnimationFrame(() => firstSegment.focus());
+    setTimeout(() => firstSegment.focus(), 0);
+    setTimeout(() => firstSegment.focus(), 50);
+  };
+
+  createEffect(() => {
+    const element = fieldGroupRef();
+    if (!element) return;
+
+    const listener = (event: PointerEvent | MouseEvent) =>
+      focusFirstEditableSegment(
+        event as (PointerEvent | MouseEvent) & { currentTarget: HTMLDivElement },
+      );
+    element.addEventListener("pointerdown", listener, { capture: true });
+    element.addEventListener("click", listener);
+    onCleanup(() => {
+      element.removeEventListener("pointerdown", listener, { capture: true });
+      element.removeEventListener("click", listener);
+    });
+  });
 
   return (
     <HeadlessDatePicker
@@ -426,13 +467,14 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       </Show>
 
       <div
+        ref={setFieldGroupRef}
         class={datePickerFieldGroup({
           size: size(),
           isInvalid: isInvalid(),
           isDisabled: isDisabled(),
         })}
       >
-        <DateInput class={dateInputContainer}>
+        <DateInput class={dateInputContainer} onPointerDownCapture={focusFirstEditableSegment}>
           {(segment) => (
             <DateSegment
               segment={segment}
@@ -456,7 +498,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         <DatePickerButton
           class={({ isDisabled, isOpen }) => calendarButton({ isDisabled, isOpen, size: size() })}
         >
-          <S2CalendarIcon styles={calendarIcon} />
+          <S2CalendarIcon styles={calendarIcon} style={{ width: "16px", height: "16px" }} />
         </DatePickerButton>
 
         <DatePickerPopup size={sizeStyles[size()].legacyCalendarSize} />
