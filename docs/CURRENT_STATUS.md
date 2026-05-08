@@ -48,14 +48,20 @@ records intent and recent evidence, not a substitute for `git status`.
   now scales by DatePicker size (`S/M/L/XL`) instead of staying fixed, and the
   L/XL field trailing inset now matches React so the gray trigger surface is not
   clipped against the right edge.
+- Follow-up screenshot review found the popup still diverged: the Solid month
+  title was inheriting the raw `h2` font because the title style function was
+  passed as a class value, and day cells collapsed to line height so hover had
+  no 32px target to paint. The Solid popup now uses the S2 18px title treatment,
+  fixed 32px cell/button boxes, headless calendar hover render props, and a
+  200ms opacity/translate enter animation on the portaled DatePicker popover.
 - The Solid Calendar popup now has S2-styled weekday header cells, table-cell
   wrappers, heading title layout, and visible vendored S2 chevron navigation
   buttons. Month paging is covered in the DatePicker browser spec by clicking
   the next-month button and asserting the heading changes.
 - Calendar popup alignment was tightened again: weekday headers render in S2
   narrow form, outside-month cells keep their table slots instead of collapsing
-  columns, and the day grid uses a fixed seven-column table width separate from
-  the wider header/nav row.
+  columns, and the day grid uses a fixed seven-column table width with 32px
+  visible date targets separate from the wider header/nav row.
 - The React DatePicker comparison fixture now passes the live comparison
   `colorScheme` into the S2 provider. The React side had been stuck on the
   helper default instead of reacting to the light/dark controls.
@@ -109,8 +115,8 @@ records intent and recent evidence, not a substitute for `git status`.
   theme changes.
 - It also now guards the reported blank-field focus timeline, styled month
   navigation controls, all `S/M/L/XL` calendar trigger icon geometry, L/XL
-  trailing trigger inset, and the popup calendar's narrow weekday/grid-column
-  alignment.
+  trailing trigger inset, the popup calendar's narrow weekday/grid-column
+  alignment, 32px day cell boxes, hover background, and popover enter animation.
 - Validated with:
 
   ```bash
@@ -130,6 +136,8 @@ records intent and recent evidence, not a substitute for `git status`.
   8 passed.
 - Latest focused DatePicker spec result after size/alignment correction:
   8 passed.
+- Latest focused DatePicker spec result after screenshot/hover/animation
+  correction: 8 passed.
 - Focused DatePicker modeled-controls result: 1 passed.
 - Commit for this follow-up: `Style DatePicker with S2 tokens`.
 - Correction commit: `Fix DatePicker interactive states`.
@@ -137,6 +145,8 @@ records intent and recent evidence, not a substitute for `git status`.
   `Fix DatePicker popup and segment focus`.
 - Correction commit for the size/alignment report:
   `Fix DatePicker icon sizing and calendar alignment`.
+- Pending correction commit for the screenshot/hover/animation report:
+  `Fix DatePicker calendar hover and popup geometry`.
 
 ### Known traps
 
@@ -155,8 +165,10 @@ records intent and recent evidence, not a substitute for `git status`.
   those props.
 - `size` is a layout/style contract for DatePicker. The current e2e guard
   covers default `M`, invalid/required `XL`, and calendar-icon geometry across
-  `S/M/L/XL`; test more popup states per size and more calendar layout states
-  explicitly before tightening strict pair diffs.
+  `S/M/L/XL`. React S2 DatePicker does not scale the Calendar popup with the
+  field size; keep the popup calendar on the default calendar sizing unless the
+  React source changes. Test more popup states per size and more calendar layout
+  states explicitly before tightening strict pair diffs.
 - Escape focus return is an interaction-timeline contract, not a final
   screenshot property. Keep the e2e focus-return assertion when moving the
   popup to a fuller S2 implementation.

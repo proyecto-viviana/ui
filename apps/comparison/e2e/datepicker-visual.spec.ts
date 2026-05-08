@@ -333,6 +333,9 @@ async function solidCalendarAlignment(page: Page) {
       0,
       7,
     );
+    const cellButtons = Array.from(
+      popover.querySelectorAll<HTMLElement>('[role="gridcell"] [role="button"]'),
+    ).slice(0, 7);
     const rect = (element: HTMLElement) => {
       const box = element.getBoundingClientRect();
       return { x: box.x, y: box.y, width: box.width, height: box.height };
@@ -343,8 +346,51 @@ async function solidCalendarAlignment(page: Page) {
       headerText: headerCells.map((element) => element.textContent ?? ""),
       headerRects: headerCells.map(rect),
       cellRects: cells.map(rect),
+      cellButtonRects: cellButtons.map(rect),
     };
   });
+}
+
+async function solidCalendarHoverState(page: Page) {
+  return page.evaluate(() => {
+    const hovered = document.querySelector<HTMLElement>('[role="dialog"] [data-hovered]');
+    if (!hovered) {
+      throw new Error("Expected hovered Solid calendar cell");
+    }
+
+    const box = hovered.getBoundingClientRect();
+    const style = getComputedStyle(hovered);
+    return {
+      width: box.width,
+      height: box.height,
+      background: style.backgroundColor,
+      transition: style.transition,
+    };
+  });
+}
+
+async function hoverSolidCalendarDate(page: Page) {
+  const point = await page.evaluate(() => {
+    const candidates = Array.from(
+      document.querySelectorAll<HTMLElement>('[role="dialog"] [role="gridcell"] [role="button"]'),
+    );
+    const target = candidates.find((element) => {
+      const box = element.getBoundingClientRect();
+      return !element.hasAttribute("data-outside-month") && box.width > 0 && box.height > 0;
+    });
+    if (!target) {
+      throw new Error("Expected a visible in-month Solid calendar date");
+    }
+
+    const box = target.getBoundingClientRect();
+    return {
+      x: box.left + box.width / 2,
+      y: box.top + box.height / 2,
+    };
+  });
+
+  await page.mouse.move(point.x, point.y);
+  await page.waitForTimeout(150);
 }
 
 test.describe("comparison DatePicker visual parity", () => {
@@ -549,6 +595,29 @@ test.describe("comparison DatePicker visual parity", () => {
     expect(alignment.cellRects.map((rect) => Math.round(rect.width))).toEqual([
       32, 32, 32, 32, 32, 32, 32,
     ]);
+    expect(alignment.cellRects.map((rect) => Math.round(rect.height))).toEqual([
+      32, 32, 32, 32, 32, 32, 32,
+    ]);
+    expect(alignment.cellButtonRects.map((rect) => Math.round(rect.height))).toEqual([
+      32, 32, 32, 32, 32, 32, 32,
+    ]);
+
+    const animation = await popover.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        animationName: style.animationName,
+        animationDuration: style.animationDuration,
+      };
+    });
+    expect(animation.animationName).toContain("vui-datepicker-popover-in");
+    expect(animation.animationDuration).toBe("0.2s");
+
+    await hoverSolidCalendarDate(page);
+    const hoverState = await solidCalendarHoverState(page);
+    expect(Math.round(hoverState.width)).toBe(32);
+    expect(Math.round(hoverState.height)).toBe(32);
+    expect(hoverState.background).not.toBe("rgba(0, 0, 0, 0)");
+    expect(hoverState.transition).toContain("background-color");
   });
 
   test("calendar trigger icon scales with DatePicker size", async ({ page }) => {

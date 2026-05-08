@@ -21,6 +21,7 @@ import {
   createCalendar,
   createCalendarGrid,
   createCalendarCell,
+  createHover,
   type AriaCalendarProps,
   type AriaCalendarGridProps,
 } from "@proyecto-viviana/solidaria";
@@ -99,6 +100,8 @@ export interface CalendarCellRenderProps {
   isToday: boolean;
   /** Whether the cell is pressed. */
   isPressed: boolean;
+  /** Whether the cell is hovered. */
+  isHovered: boolean;
   /** The formatted date string. */
   formattedDate: string;
 }
@@ -514,6 +517,9 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
     state,
     cellRef,
   );
+  const { hoverProps, isHovered } = createHover(() => ({
+    isDisabled: cellAria.isDisabled || cellAria.isUnavailable,
+  }));
 
   const renderValues = createMemo<CalendarCellRenderProps>(() => ({
     isSelected: cellAria.isSelected,
@@ -523,6 +529,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
     isOutsideMonth: cellAria.isOutsideMonth,
     isToday: cellAria.isToday,
     isPressed: cellAria.isPressed,
+    isHovered: isHovered(),
     formattedDate: cellAria.formattedDate,
   }));
 
@@ -557,6 +564,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
       <div
         ref={setCellRef}
         {...cellAria.buttonProps}
+        {...hoverProps}
         class={renderProps.class()}
         style={renderProps.style()}
         data-selected={dataAttr(cellAria.isSelected)}
@@ -566,6 +574,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
         data-outside-month={dataAttr(cellAria.isOutsideMonth)}
         data-today={dataAttr(cellAria.isToday)}
         data-pressed={dataAttr(cellAria.isPressed)}
+        data-hovered={dataAttr(isHovered())}
       >
         {getChildren()}
       </div>

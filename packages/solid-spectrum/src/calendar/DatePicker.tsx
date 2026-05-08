@@ -118,6 +118,31 @@ function datePickerFieldGroupStyle(size: NormalizedDatePickerSize): JSX.CSSPrope
   };
 }
 
+let datePickerPopoverKeyframesInjected = false;
+
+function ensureDatePickerPopoverKeyframes() {
+  if (datePickerPopoverKeyframesInjected || typeof document === "undefined") return;
+
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
+@keyframes vui-datepicker-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.vui-datepicker-popover-enter {
+  animation: vui-datepicker-popover-in 200ms cubic-bezier(0.45, 0, 0.4, 1);
+}
+`;
+  document.head.appendChild(styleElement);
+  datePickerPopoverKeyframesInjected = true;
+}
+
 const datePickerRoot = style(
   {
     ...field(),
@@ -524,7 +549,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           <S2CalendarIcon styles={calendarIcon} style={calendarIconStyle(size())} />
         </DatePickerButton>
 
-        <DatePickerPopup size={sizeStyles[size()].legacyCalendarSize} />
+        <DatePickerPopup />
       </div>
 
       <Show when={local.description && !isInvalid()}>
@@ -546,25 +571,16 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   );
 }
 
-function DatePickerPopup(props: { size: "sm" | "md" | "lg" | "xl" }): JSX.Element {
+function DatePickerPopup(): JSX.Element {
   const theme = useTheme();
-  const popoverWidth = () => {
-    switch (props.size) {
-      case "lg":
-        return 360;
-      case "xl":
-        return 388;
-      case "sm":
-      case "md":
-      default:
-        return 304;
-    }
-  };
+  ensureDatePickerPopoverKeyframes();
 
   return (
-    <DatePickerContent class={datePickerPopover({ colorScheme: theme.colorScheme })}>
-      <div class={datePickerPopoverFrame} style={{ width: `${popoverWidth()}px` }}>
-        <Calendar size={props.size} />
+    <DatePickerContent
+      class={`${datePickerPopover({ colorScheme: theme.colorScheme })} vui-datepicker-popover-enter`}
+    >
+      <div class={datePickerPopoverFrame} style={{ width: "304px" }}>
+        <Calendar size="md" />
       </div>
     </DatePickerContent>
   );

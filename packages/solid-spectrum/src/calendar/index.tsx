@@ -53,6 +53,14 @@ const sizeStyles: Record<NormalizedCalendarSize, { cellMaxWidth: number; buttonS
   },
 };
 
+function cellBoxStyle(size: NormalizedCalendarSize): JSX.CSSProperties {
+  const cellSize = `${sizeStyles[size].cellMaxWidth}px`;
+  return {
+    width: cellSize,
+    height: cellSize,
+  };
+}
+
 function normalizeCalendarSize(size: CalendarSize | undefined): NormalizedCalendarSize {
   switch (size) {
     case "S":
@@ -107,13 +115,16 @@ const calendarHeading = style({
   flexGrow: 1,
 });
 
-const calendarTitle = style({
-  font: "title-lg",
-  textAlign: "center",
-  flexGrow: 1,
-  flexShrink: 0,
-  color: baseColor("neutral"),
-});
+const calendarTitleStyle: JSX.CSSProperties = {
+  "font-family":
+    "adobe-clean-spectrum-vf, adobe-clean-variable, adobe-clean, ui-sans-serif, system-ui, sans-serif",
+  "font-size": "18px",
+  "font-weight": 700,
+  "line-height": "22px",
+  "text-align": "center",
+  "flex-grow": 1,
+  "flex-shrink": 0,
+};
 
 const calendarNavButton = style<{ buttonSize: number }>({
   ...focusRing(),
@@ -277,7 +288,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
         </CalendarButton>
 
         <CalendarHeading class={calendarHeading}>
-          {({ title }) => <div class={calendarTitle}>{title}</div>}
+          {({ title }) => <div style={calendarTitleStyle}>{title}</div>}
         </CalendarHeading>
 
         <CalendarButton
@@ -309,13 +320,16 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
                 isOutsideMonth,
               })
             }
-            class={({ isSelected, isFocused, isDisabled, isOutsideMonth, isPressed }) =>
+            cellStyle={() => cellBoxStyle(size())}
+            style={() => cellBoxStyle(size())}
+            class={({ isSelected, isFocused, isDisabled, isOutsideMonth, isPressed, isHovered }) =>
               calendarCell({
                 isSelected,
                 isFocused,
                 isDisabled,
                 isOutsideMonth,
                 isPressed,
+                isHovered,
               })
             }
           >
