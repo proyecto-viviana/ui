@@ -44,10 +44,18 @@ records intent and recent evidence, not a substitute for `git status`.
   clicks keep their native behavior. The calendar trigger button also removes
   inherited padding and uses a 16px S2 calendar SVG box so the L-size icon
   matches React's relative geometry.
+- Latest correction after size/alignment review: the Solid calendar trigger icon
+  now scales by DatePicker size (`S/M/L/XL`) instead of staying fixed, and the
+  L/XL field trailing inset now matches React so the gray trigger surface is not
+  clipped against the right edge.
 - The Solid Calendar popup now has S2-styled weekday header cells, table-cell
   wrappers, heading title layout, and visible vendored S2 chevron navigation
   buttons. Month paging is covered in the DatePicker browser spec by clicking
   the next-month button and asserting the heading changes.
+- Calendar popup alignment was tightened again: weekday headers render in S2
+  narrow form, outside-month cells keep their table slots instead of collapsing
+  columns, and the day grid uses a fixed seven-column table width separate from
+  the wider header/nav row.
 - The React DatePicker comparison fixture now passes the live comparison
   `colorScheme` into the S2 provider. The React side had been stuck on the
   helper default instead of reacting to the light/dark controls.
@@ -100,7 +108,9 @@ records intent and recent evidence, not a substitute for `git status`.
   React/Solid fields and Solid portaled popover stop reacting to light/dark
   theme changes.
 - It also now guards the reported blank-field focus timeline, styled month
-  navigation controls, and L-size calendar trigger icon geometry.
+  navigation controls, all `S/M/L/XL` calendar trigger icon geometry, L/XL
+  trailing trigger inset, and the popup calendar's narrow weekday/grid-column
+  alignment.
 - Validated with:
 
   ```bash
@@ -118,11 +128,15 @@ records intent and recent evidence, not a substitute for `git status`.
 - Focused DatePicker spec result after follow-up correction: 5 passed.
 - Latest focused DatePicker spec result after popup/focus/icon correction:
   8 passed.
+- Latest focused DatePicker spec result after size/alignment correction:
+  8 passed.
 - Focused DatePicker modeled-controls result: 1 passed.
 - Commit for this follow-up: `Style DatePicker with S2 tokens`.
 - Correction commit: `Fix DatePicker interactive states`.
 - Correction commit for the latest browser report:
   `Fix DatePicker popup and segment focus`.
+- Correction commit for the size/alignment report:
+  `Fix DatePicker icon sizing and calendar alignment`.
 
 ### Known traps
 
@@ -140,8 +154,8 @@ records intent and recent evidence, not a substitute for `git status`.
   one stable fixture wrapper unless the headless component starts forwarding
   those props.
 - `size` is a layout/style contract for DatePicker. The current e2e guard
-  covers default `M`, invalid/required `XL`, and calendar-icon geometry at `L`;
-  test `S`, more `L` field/popup states, and more calendar layout states
+  covers default `M`, invalid/required `XL`, and calendar-icon geometry across
+  `S/M/L/XL`; test more popup states per size and more calendar layout states
   explicitly before tightening strict pair diffs.
 - Escape focus return is an interaction-timeline contract, not a final
   screenshot property. Keep the e2e focus-return assertion when moving the

@@ -96,6 +96,28 @@ function requiredIconStyle(size: NormalizedDatePickerSize): JSX.CSSProperties {
   };
 }
 
+function calendarIconStyle(size: NormalizedDatePickerSize): JSX.CSSProperties {
+  const pixelSize = {
+    S: 12,
+    M: 14,
+    L: 16,
+    XL: 18,
+  }[size];
+
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function datePickerFieldGroupStyle(size: NormalizedDatePickerSize): JSX.CSSProperties | undefined {
+  if (size !== "L" && size !== "XL") return undefined;
+
+  return {
+    "padding-inline-end": "6px",
+  };
+}
+
 const datePickerRoot = style(
   {
     ...field(),
@@ -136,8 +158,8 @@ const datePickerFieldGroup = style({
     size: {
       S: 2,
       M: 4,
-      L: 8,
-      XL: 8,
+      L: "[6px]",
+      XL: "[6px]",
     },
   },
   backgroundColor: {
@@ -473,6 +495,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           isInvalid: isInvalid(),
           isDisabled: isDisabled(),
         })}
+        style={datePickerFieldGroupStyle(size())}
       >
         <DateInput class={dateInputContainer} onPointerDownCapture={focusFirstEditableSegment}>
           {(segment) => (
@@ -498,7 +521,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         <DatePickerButton
           class={({ isDisabled, isOpen }) => calendarButton({ isDisabled, isOpen, size: size() })}
         >
-          <S2CalendarIcon styles={calendarIcon} style={{ width: "16px", height: "16px" }} />
+          <S2CalendarIcon styles={calendarIcon} style={calendarIconStyle(size())} />
         </DatePickerButton>
 
         <DatePickerPopup size={sizeStyles[size()].legacyCalendarSize} />

@@ -445,7 +445,7 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
             <For each={gridAria.weekDays}>
               {(day) => (
                 <th scope="col" class={props.headerCellClass ?? "solidaria-CalendarHeaderCell"}>
-                  {day}
+                  {props.weekdayStyle === "narrow" ? day.slice(0, 1) : day}
                 </th>
               )}
             </For>

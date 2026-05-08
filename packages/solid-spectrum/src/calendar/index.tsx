@@ -144,50 +144,29 @@ const calendarGrid = style({
   borderCollapse: "collapse",
   borderSpacing: 0,
   isolation: "isolate",
+  tableLayout: "fixed",
+  width: "[calc(7 * var(--cell-responsive-size))]",
 });
 
 const calendarHeaderCell = style({
   font: "title-sm",
   cursor: "default",
   textAlign: "center",
-  paddingStart: {
-    default: 4,
-    ":first-child": 0,
-  },
-  paddingEnd: {
-    default: 4,
-    ":last-child": 0,
-  },
+  width: "--cell-responsive-size",
+  padding: 0,
   paddingBottom: 12,
   color: baseColor("neutral"),
 });
 
 const calendarCellWrapper = style({
   outlineStyle: "none",
-  boxSizing: "content-box",
-  paddingStart: {
-    default: 4,
-    isFirstChild: 0,
-  },
-  paddingEnd: {
-    default: 4,
-    isLastChild: 0,
-  },
-  paddingTop: {
-    default: 2,
-    isFirstWeek: 0,
-  },
-  paddingBottom: {
-    default: 2,
-    isLastWeek: 0,
-  },
+  boxSizing: "border-box",
+  padding: 0,
   position: "relative",
-  display: {
-    default: "flex",
-    isOutsideMonth: "none",
+  visibility: {
+    default: "visible",
+    isOutsideMonth: "hidden",
   },
-  alignItems: "center",
-  justifyContent: "center",
   disableTapHighlight: true,
   width: "--cell-responsive-size",
   height: "--cell-responsive-size",
@@ -289,6 +268,10 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
         <CalendarButton
           slot="previous"
           class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
+          style={{
+            width: `${sizeConfig().buttonSize}px`,
+            height: `${sizeConfig().buttonSize}px`,
+          }}
         >
           <ChevronLeftIcon styles={calendarNavIcon} />
         </CalendarButton>
@@ -300,12 +283,24 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
         <CalendarButton
           slot="next"
           class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
+          style={{
+            width: `${sizeConfig().buttonSize}px`,
+            height: `${sizeConfig().buttonSize}px`,
+          }}
         >
           <ChevronRightIcon styles={calendarNavIcon} />
         </CalendarButton>
       </header>
 
-      <CalendarGrid class={calendarGrid} headerCellClass={calendarHeaderCell}>
+      <CalendarGrid
+        class={calendarGrid}
+        style={{
+          width: `${sizeConfig().cellMaxWidth * 7}px`,
+          "table-layout": "fixed",
+        }}
+        weekdayStyle="narrow"
+        headerCellClass={calendarHeaderCell}
+      >
         {(date) => (
           <CalendarCell
             date={date}

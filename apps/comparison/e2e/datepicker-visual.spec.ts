@@ -301,14 +301,50 @@ async function datePickerIconGeometry(
 
     const buttonRect = button.getBoundingClientRect();
     const iconRect = icon.getBoundingClientRect();
+    const field = Array.from(root?.querySelectorAll("div") ?? []).find(
+      (element) =>
+        element.textContent === "mm/dd/yyyy" &&
+        getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)",
+    );
+    const fieldRect = field?.getBoundingClientRect();
     return {
       buttonWidth: buttonRect.width,
       buttonHeight: buttonRect.height,
       iconWidth: iconRect.width,
       iconHeight: iconRect.height,
       ratio: iconRect.width / buttonRect.width,
+      trailingGap: fieldRect ? fieldRect.right - buttonRect.right : null,
     };
   }, framework);
+}
+
+async function solidCalendarAlignment(page: Page) {
+  return page.evaluate(() => {
+    const popover = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"]')).find(
+      (element) => element.querySelector('[role="grid"]'),
+    );
+    if (!popover) {
+      throw new Error("Could not find open Solid DatePicker calendar popover");
+    }
+
+    const grid = popover.querySelector<HTMLElement>('[role="grid"]');
+    const headerCells = Array.from(popover.querySelectorAll<HTMLElement>("th"));
+    const cells = Array.from(popover.querySelectorAll<HTMLElement>('[role="gridcell"]')).slice(
+      0,
+      7,
+    );
+    const rect = (element: HTMLElement) => {
+      const box = element.getBoundingClientRect();
+      return { x: box.x, y: box.y, width: box.width, height: box.height };
+    };
+
+    return {
+      grid: grid ? rect(grid) : null,
+      headerText: headerCells.map((element) => element.textContent ?? ""),
+      headerRects: headerCells.map(rect),
+      cellRects: cells.map(rect),
+    };
+  });
 }
 
 test.describe("comparison DatePicker visual parity", () => {
@@ -503,18 +539,34 @@ test.describe("comparison DatePicker visual parity", () => {
     await expect(navButtons.nth(1)).toBeVisible();
     await navButtons.nth(1).click();
     await expect(heading).not.toHaveText(initialTitle ?? "");
+
+    const alignment = await solidCalendarAlignment(page);
+    expect(alignment.headerText).toEqual(["S", "M", "T", "W", "T", "F", "S"]);
+    expect(alignment.grid?.width).toBeLessThanOrEqual(230);
+    expect(alignment.headerRects.map((rect) => Math.round(rect.width))).toEqual([
+      32, 32, 32, 32, 32, 32, 32,
+    ]);
+    expect(alignment.cellRects.map((rect) => Math.round(rect.width))).toEqual([
+      32, 32, 32, 32, 32, 32, 32,
+    ]);
   });
 
-  test("calendar trigger icon scales with L DatePicker size", async ({ page }) => {
-    await page.goto("/components/datepicker/?size=L");
-    await page.waitForLoadState("networkidle");
+  test("calendar trigger icon scales with DatePicker size", async ({ page }) => {
+    for (const size of ["S", "M", "L", "XL"]) {
+      await page.goto(`/components/datepicker/?size=${size}`);
+      await page.waitForLoadState("networkidle");
 
-    const reactIcon = await datePickerIconGeometry(page, "React Spectrum stack");
-    const solidIcon = await datePickerIconGeometry(page, "Solidaria stack");
+      const reactIcon = await datePickerIconGeometry(page, "React Spectrum stack");
+      const solidIcon = await datePickerIconGeometry(page, "Solidaria stack");
 
-    expect(Math.abs(solidIcon.iconWidth - reactIcon.iconWidth)).toBeLessThanOrEqual(3);
-    expect(Math.abs(solidIcon.iconHeight - reactIcon.iconHeight)).toBeLessThanOrEqual(3);
-    expect(Math.abs(solidIcon.ratio - reactIcon.ratio)).toBeLessThanOrEqual(0.15);
+      expect(Math.abs(solidIcon.iconWidth - reactIcon.iconWidth), size).toBeLessThanOrEqual(1);
+      expect(Math.abs(solidIcon.iconHeight - reactIcon.iconHeight), size).toBeLessThanOrEqual(1);
+      expect(Math.abs(solidIcon.ratio - reactIcon.ratio), size).toBeLessThanOrEqual(0.06);
+      expect(
+        Math.abs((solidIcon.trailingGap ?? 0) - (reactIcon.trailingGap ?? 0)),
+        size,
+      ).toBeLessThanOrEqual(1);
+    }
   });
 
   test("disabled query state disables and restyles the Solid DatePicker", async ({ page }) => {
