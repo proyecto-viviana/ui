@@ -728,14 +728,14 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
   createEffect(() => {
     if (!context.overlayState.isOpen || !contentRef) return;
     if (document.activeElement !== contentRef) {
-      contentRef.focus();
+      contentRef.focus({ preventScroll: true });
     }
   });
 
   return (
     <Show when={context.overlayState.isOpen}>
       <Portal mount={portalContainer()}>
-        <FocusScope contain restoreFocus autoFocus>
+        <FocusScope contain restoreFocus>
           <div
             ref={contentRef}
             {...cleanPopoverProps()}
@@ -806,14 +806,14 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
   createEffect(() => {
     if (!context.overlayState.isOpen || !contentRef) return;
     if (document.activeElement !== contentRef) {
-      contentRef.focus();
+      contentRef.focus({ preventScroll: true });
     }
   });
 
   return (
     <Show when={context.overlayState.isOpen}>
       <Portal mount={portalContainer()}>
-        <FocusScope contain restoreFocus autoFocus>
+        <FocusScope contain restoreFocus>
           <div
             ref={contentRef}
             {...cleanPopoverProps()}

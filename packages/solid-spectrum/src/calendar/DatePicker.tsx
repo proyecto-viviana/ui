@@ -17,6 +17,8 @@ import { Calendar } from "./index";
 import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../s2-style";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
+import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps, useTheme } from "../provider";
 import {
   control,
@@ -27,26 +29,6 @@ import {
   fieldLabel,
   getAllowedOverrides,
 } from "../s2-internal/style-utils";
-
-function CalendarIcon(): JSX.Element {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="w-5 h-5"
-      aria-hidden="true"
-    >
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
 
 export type DatePickerSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type NormalizedDatePickerSize = "S" | "M" | "L" | "XL";
@@ -106,6 +88,14 @@ function normalizeDatePickerSize(size: DatePickerSize | undefined): NormalizedDa
   }
 }
 
+function requiredIconStyle(size: NormalizedDatePickerSize): JSX.CSSProperties {
+  const pixelSize = size === "L" || size === "XL" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
 const datePickerRoot = style(
   {
     ...field(),
@@ -152,6 +142,7 @@ const datePickerFieldGroup = style({
   },
   backgroundColor: {
     default: baseColor("gray-25"),
+    isDisabled: "disabled",
     forcedColors: "Field",
   },
   borderColor: {
@@ -207,8 +198,10 @@ const dateSegment = style<{ isFocused?: boolean; isPunctuation?: boolean }>({
   },
   color: {
     isFocused: "white",
+    isDisabled: "disabled",
     forcedColors: {
       isFocused: "HighlightText",
+      isDisabled: "GrayText",
     },
   },
   borderRadius: "[2px]",
@@ -232,6 +225,25 @@ const fieldErrorIcon = style({
       forcedColors: "Mark",
     },
   },
+});
+
+const requiredIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const calendarIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  size: fontRelative(14),
+});
+
+const noWrap = style({
+  whiteSpace: "nowrap",
 });
 
 const calendarButton = style<{
@@ -369,6 +381,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
 
   const size = () => normalizeDatePickerSize(local.size);
   const isInvalid = () => local.isInvalid === true;
+  const isDisabled = () => rest.isDisabled === true;
 
   return (
     <HeadlessDatePicker
@@ -393,8 +406,21 @@ export function DatePicker<T extends DateValue = CalendarDate>(
     >
       <Show when={local.label}>
         <div class={datePickerLabelWrapper({ size: size(), labelPosition: "top" })}>
-          <HeadlessDatePickerLabel class={datePickerLabel({ size: size() })}>
+          <HeadlessDatePickerLabel
+            class={datePickerLabel({ size: size(), isDisabled: isDisabled() })}
+          >
             {local.label}
+            <Show when={rest.isRequired}>
+              <span class={noWrap}>
+                &nbsp;
+                <AsteriskIcon
+                  size={size() === "S" ? "M" : size()}
+                  styles={requiredIcon}
+                  style={requiredIconStyle(size())}
+                  aria-hidden="true"
+                />
+              </span>
+            </Show>
           </HeadlessDatePickerLabel>
         </div>
       </Show>
@@ -403,15 +429,17 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         class={datePickerFieldGroup({
           size: size(),
           isInvalid: isInvalid(),
+          isDisabled: isDisabled(),
         })}
       >
         <DateInput class={dateInputContainer}>
           {(segment) => (
             <DateSegment
               segment={segment}
-              class={({ isFocused }) =>
+              class={({ isFocused, isDisabled }) =>
                 dateSegment({
                   isFocused,
+                  isDisabled,
                   isPunctuation: segment.type === "literal",
                 })
               }
@@ -428,20 +456,24 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         <DatePickerButton
           class={({ isDisabled, isOpen }) => calendarButton({ isDisabled, isOpen, size: size() })}
         >
-          <CalendarIcon />
+          <S2CalendarIcon styles={calendarIcon} />
         </DatePickerButton>
 
         <DatePickerPopup size={sizeStyles[size()].legacyCalendarSize} />
       </div>
 
       <Show when={local.description && !isInvalid()}>
-        <HeadlessDatePickerDescription class={helpText({ size: size(), isInvalid: false })}>
+        <HeadlessDatePickerDescription
+          class={helpText({ size: size(), isInvalid: false, isDisabled: isDisabled() })}
+        >
           {local.description}
         </HeadlessDatePickerDescription>
       </Show>
 
       <Show when={isInvalid() && local.errorMessage}>
-        <HeadlessDatePickerErrorMessage class={helpText({ size: size(), isInvalid: true })}>
+        <HeadlessDatePickerErrorMessage
+          class={helpText({ size: size(), isInvalid: true, isDisabled: isDisabled() })}
+        >
           {local.errorMessage}
         </HeadlessDatePickerErrorMessage>
       </Show>

@@ -193,18 +193,19 @@ async function expectNoCalendarPopup(page: Page) {
   await expect(page.locator('[role="grid"]')).toHaveCount(0);
 }
 
-async function solidDatePickerColors(page: Page) {
-  return page.evaluate(() => {
-    const solidCard = Array.from(document.querySelectorAll("article.s2-framework-panel")).find(
-      (element) => element.textContent?.includes("solid-spectrum"),
+async function datePickerColors(page: Page, framework: "React Spectrum stack" | "Solidaria stack") {
+  return page.evaluate((frameworkName) => {
+    const isSolid = frameworkName === "Solidaria stack";
+    const card = Array.from(document.querySelectorAll("article.s2-framework-panel")).find(
+      (element) => element.textContent?.includes(isSolid ? "solid-spectrum" : "React Spectrum S2"),
     );
-    if (!solidCard) {
-      throw new Error("Could not find Solid DatePicker comparison card");
+    if (!card) {
+      throw new Error(`Could not find ${frameworkName} DatePicker comparison card`);
     }
 
-    const root = solidCard.querySelector('[data-comparison-control-root="datepicker"]');
+    const root = card.querySelector('[data-comparison-control-root="datepicker"]');
     if (!root) {
-      throw new Error("Could not find Solid DatePicker root");
+      throw new Error(`Could not find ${frameworkName} DatePicker root`);
     }
 
     const fieldGroup = Array.from(root.querySelectorAll("div")).find(
@@ -213,7 +214,7 @@ async function solidDatePickerColors(page: Page) {
         getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)",
     );
     if (!fieldGroup) {
-      throw new Error("Could not find styled Solid DatePicker field group");
+      throw new Error(`Could not find styled ${frameworkName} DatePicker field group`);
     }
 
     const rootStyle = getComputedStyle(root);
@@ -222,12 +223,13 @@ async function solidDatePickerColors(page: Page) {
     return {
       colorScheme: rootStyle.colorScheme,
       rootColor: rootStyle.color,
+      fieldColor: fieldStyle.color,
       fieldBackground: fieldStyle.backgroundColor,
       fieldBorderColor: fieldStyle.borderColor,
       descriptionVisible: root.textContent?.includes("Choose the project due date.") ?? false,
       errorVisible: root.textContent?.includes("Select a due date.") ?? false,
     };
-  });
+  }, framework);
 }
 
 async function solidCalendarPopoverColors(page: Page) {
@@ -388,6 +390,8 @@ test.describe("comparison DatePicker visual parity", () => {
     await expect(solidRoot).toHaveAttribute("data-comparison-control-props", /"size":"XL"/);
     await expect(reactRoot).toHaveAttribute("data-comparison-control-props", /"isInvalid":true/);
     await expect(solidRoot).toHaveAttribute("data-comparison-control-props", /"isInvalid":true/);
+    await expect(reactRoot.locator("svg")).toHaveCount(3);
+    await expect(solidRoot.locator("svg")).toHaveCount(3);
     await expect(reactCard.getByText("Select a due date.")).toBeVisible();
     await expect(solidCard.getByText("Select a due date.")).toBeVisible();
 
@@ -398,7 +402,46 @@ test.describe("comparison DatePicker visual parity", () => {
     expect(solidGeometry.height).toBeGreaterThan(reactGeometry.height * 0.5);
   });
 
-  test("Solid DatePicker field and portaled calendar respond to light and dark themes", async ({
+  test("opening Solid DatePicker does not scroll the comparison page", async ({ page }) => {
+    await page.goto("/components/datepicker/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const section = await styledSection(page);
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const beforeScrollY = await page.evaluate(() => window.scrollY);
+
+    await openCalendar(solidCard);
+    await expect(await calendarPopup(page)).toBeVisible();
+    const afterScrollY = await page.evaluate(() => window.scrollY);
+
+    expect(Math.abs(afterScrollY - beforeScrollY)).toBeLessThanOrEqual(4);
+  });
+
+  test("disabled query state disables and restyles the Solid DatePicker", async ({ page }) => {
+    await page.goto("/components/datepicker/");
+    await page.waitForLoadState("networkidle");
+    const enabledSolidField = await datePickerColors(page, "Solidaria stack");
+
+    await page.goto("/components/datepicker/?isDisabled=true");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const section = await styledSection(page);
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+    const disabledSolidField = await datePickerColors(page, "Solidaria stack");
+
+    await expect(solidRoot).toHaveAttribute("data-comparison-control-props", /"isDisabled":true/);
+    await expect(
+      solidRoot.getByRole("button", { name: /calendar|open calendar|choose date/i }),
+    ).toBeDisabled();
+    await expect(solidRoot.getByRole("spinbutton").first()).toBeDisabled();
+    expect(disabledSolidField.fieldColor).not.toBe(enabledSolidField.fieldColor);
+    expect(disabledSolidField.fieldBackground).not.toBe(enabledSolidField.fieldBackground);
+  });
+
+  test("DatePicker fields and portaled calendar respond to light and dark themes", async ({
     page,
   }) => {
     await pinComparisonTheme(page, "light");
@@ -406,17 +449,26 @@ test.describe("comparison DatePicker visual parity", () => {
     await page.waitForLoadState("networkidle");
 
     const section = await styledSection(page);
+    const reactCard = await frameworkPanel(section, "React Spectrum stack");
     const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactCard.locator("[data-comparison-color-scheme]");
     const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
-    const lightField = await solidDatePickerColors(page);
+    const lightReactField = await datePickerColors(page, "React Spectrum stack");
+    const lightSolidField = await datePickerColors(page, "Solidaria stack");
 
+    await expect(reactRoot).toHaveAttribute("data-comparison-color-scheme", "light");
     await expect(solidRoot).toHaveAttribute("data-comparison-color-scheme", "light");
-    expect(lightField.colorScheme).toContain("light");
-    expect(lightField.descriptionVisible).toBe(true);
-    expect(lightField.errorVisible).toBe(false);
-    expect(lightField.fieldBackground).not.toBe("rgba(0, 0, 0, 0)");
+    expect(lightReactField.colorScheme).toContain("light");
+    expect(lightReactField.descriptionVisible).toBe(true);
+    expect(lightReactField.errorVisible).toBe(false);
+    expect(lightReactField.fieldBackground).not.toBe("rgba(0, 0, 0, 0)");
+    expect(lightSolidField.colorScheme).toContain("light");
+    expect(lightSolidField.descriptionVisible).toBe(true);
+    expect(lightSolidField.errorVisible).toBe(false);
+    expect(lightSolidField.fieldBackground).not.toBe("rgba(0, 0, 0, 0)");
 
-    await solidCard.getByRole("button", { name: /calendar|open calendar|choose date/i }).click();
+    await openCalendar(solidCard);
+    await calendarPopup(page);
     const lightPopover = await solidCalendarPopoverColors(page);
     expect(lightPopover.colorScheme).toContain("light");
     expect(lightPopover.background).not.toBe("rgba(0, 0, 0, 0)");
@@ -425,22 +477,36 @@ test.describe("comparison DatePicker visual parity", () => {
     await expectNoCalendarPopup(page);
 
     await page.getByRole("radio", { name: "dark" }).click();
+    await expect(reactRoot).toHaveAttribute("data-comparison-color-scheme", "dark");
     await expect(solidRoot).toHaveAttribute("data-comparison-color-scheme", "dark");
     await expect
-      .poll(async () => (await solidDatePickerColors(page)).fieldBackground, {
+      .poll(async () => (await datePickerColors(page, "React Spectrum stack")).fieldBackground, {
+        message: "React DatePicker field background should update after switching to dark theme",
+      })
+      .not.toBe(lightReactField.fieldBackground);
+    await expect
+      .poll(async () => (await datePickerColors(page, "Solidaria stack")).fieldBackground, {
         message: "Solid DatePicker field background should update after switching to dark theme",
       })
-      .not.toBe(lightField.fieldBackground);
-    const darkField = await solidDatePickerColors(page);
+      .not.toBe(lightSolidField.fieldBackground);
+    const darkReactField = await datePickerColors(page, "React Spectrum stack");
+    const darkSolidField = await datePickerColors(page, "Solidaria stack");
 
-    expect(darkField.colorScheme).toContain("dark");
-    expect(darkField.descriptionVisible).toBe(true);
-    expect(darkField.errorVisible).toBe(false);
-    expect(darkField.rootColor).not.toBe(lightField.rootColor);
-    expect(darkField.fieldBackground).not.toBe(lightField.fieldBackground);
-    expect(darkField.fieldBorderColor).not.toBe(lightField.fieldBorderColor);
+    expect(darkReactField.colorScheme).toContain("dark");
+    expect(darkReactField.descriptionVisible).toBe(true);
+    expect(darkReactField.errorVisible).toBe(false);
+    expect(darkReactField.rootColor).not.toBe(lightReactField.rootColor);
+    expect(darkReactField.fieldBackground).not.toBe(lightReactField.fieldBackground);
+    expect(darkReactField.fieldBorderColor).not.toBe(lightReactField.fieldBorderColor);
+    expect(darkSolidField.colorScheme).toContain("dark");
+    expect(darkSolidField.descriptionVisible).toBe(true);
+    expect(darkSolidField.errorVisible).toBe(false);
+    expect(darkSolidField.rootColor).not.toBe(lightSolidField.rootColor);
+    expect(darkSolidField.fieldBackground).not.toBe(lightSolidField.fieldBackground);
+    expect(darkSolidField.fieldBorderColor).not.toBe(lightSolidField.fieldBorderColor);
 
-    await solidCard.getByRole("button", { name: /calendar|open calendar|choose date/i }).click();
+    await openCalendar(solidCard);
+    await calendarPopup(page);
     const darkPopover = await solidCalendarPopoverColors(page);
 
     expect(darkPopover.colorScheme).toContain("dark");

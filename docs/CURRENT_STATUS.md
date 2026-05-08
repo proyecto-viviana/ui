@@ -34,6 +34,13 @@ records intent and recent evidence, not a substitute for `git status`.
   input, trigger button, invalid icon/help text, popover shell, calendar
   heading/nav buttons, and calendar cells now use S2 style-runtime classes and
   theme tokens.
+- Follow-up correction after browser review: Solid now uses the vendored S2
+  calendar icon, renders the required asterisk indicator, visibly restyles the
+  disabled field surface/text while preserving disabled semantics, and opens the
+  portaled calendar without scrolling the comparison page to the bottom.
+- The React DatePicker comparison fixture now passes the live comparison
+  `colorScheme` into the S2 provider. The React side had been stuck on the
+  helper default instead of reacting to the light/dark controls.
 - DatePicker no longer treats the mere presence of an `errorMessage` prop as
   invalid. Default route state now shows description text in both stacks; the
   invalid/error branch is only active when `isInvalid=true`.
@@ -78,8 +85,10 @@ records intent and recent evidence, not a substitute for `git status`.
   silently falls back to missing content, if DatePicker query props stop
   reaching either stack, if Escape stops returning focus to the trigger, if
   selection/dismissal stop closing the popover, if the Solid popover collapses
-  around an overflowing calendar table, or if the Solid field/portaled popover
-  stop reacting to light/dark theme changes.
+  around an overflowing calendar table, if opening the Solid popover scrolls the
+  page, if the Solid required/disabled branches stop rendering, or if the
+  React/Solid fields and Solid portaled popover stop reacting to light/dark
+  theme changes.
 - Validated with:
 
   ```bash
@@ -94,9 +103,10 @@ records intent and recent evidence, not a substitute for `git status`.
 
 - Chromium Playwright still needs escalation outside the sandbox on this host
   due `sandbox_host_linux.cc:41 shutdown: Operation not permitted`.
-- Focused DatePicker spec result: 3 passed.
+- Focused DatePicker spec result after follow-up correction: 5 passed.
 - Focused DatePicker modeled-controls result: 1 passed.
 - Commit for this follow-up: `Style DatePicker with S2 tokens`.
+- Correction commit: `Fix DatePicker interactive states`.
 
 ### Known traps
 

@@ -1377,6 +1377,7 @@ function ReactDatePickerDemo() {
   const [demoProps, setDemoProps] = useState(datePickerDemoPropsFromWindow);
   const [value, setValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const colorScheme = useComparisonResolvedTheme();
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "datepicker") {
@@ -1393,6 +1394,7 @@ function ReactDatePickerDemo() {
     jsx("div", {
       "data-comparison-value": value,
       "data-comparison-open": String(isOpen),
+      "data-comparison-color-scheme": colorScheme,
       children: jsx(SpectrumDatePicker, {
         "data-comparison-control-root": "datepicker",
         "data-comparison-control-props": serializeDatePickerDemoProps(demoProps),
@@ -1408,6 +1410,7 @@ function ReactDatePickerDemo() {
         UNSAFE_className: "comparison-datepicker-root",
       }),
     }),
+    colorScheme,
   );
 }
 
