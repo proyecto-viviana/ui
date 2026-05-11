@@ -178,6 +178,8 @@ export {
   type TimeSegment,
   type TimeSegmentType,
   type TimeValue,
+  createDatePickerState,
+  type DatePickerState,
   type CalendarDate,
   type CalendarDateTime,
   type ZonedDateTime,

@@ -1,4 +1,5 @@
-// @ts-nocheck
+// @ts-nocheck — style-system types need a dedicated pass; removing this would require
+// fixing ~20 style-definition type mismatches unrelated to component behavior.
 import { type JSX, createEffect, createSignal, onCleanup, splitProps, Show } from "solid-js";
 import {
   DatePicker as HeadlessDatePicker,
@@ -14,6 +15,7 @@ import {
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
 import { Calendar } from "./index";
+import { TimeField } from "../datepicker";
 import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../s2-style";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
@@ -105,30 +107,9 @@ function datePickerFieldGroupStyle(size: NormalizedDatePickerSize): JSX.CSSPrope
   };
 }
 
-let datePickerPopoverKeyframesInjected = false;
-
-function ensureDatePickerPopoverKeyframes() {
-  if (datePickerPopoverKeyframesInjected || typeof document === "undefined") return;
-
-  const styleElement = document.createElement("style");
-  styleElement.textContent = `
-@keyframes vui-datepicker-popover-in {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.vui-datepicker-popover-enter {
-  animation: vui-datepicker-popover-in 200ms cubic-bezier(0.45, 0, 0.4, 1);
-}
-`;
-  document.head.appendChild(styleElement);
-  datePickerPopoverKeyframesInjected = true;
-}
+const popoverEnterStyle: JSX.CSSProperties = {
+  animation: "s2-datepicker-popover-in 200ms cubic-bezier(0.45, 0, 0.4, 1)",
+};
 
 const datePickerRoot = style(
   {
@@ -392,7 +373,7 @@ const datePickerPopoverFrame = style({
   display: "flex",
   flexDirection: "column",
   gap: 16,
-  boxSizing: "border-box",
+  boxSizing: "content-box",
   width: "[max-content]",
 });
 
@@ -403,60 +384,33 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   props: DatePickerProps<T>,
 ): JSX.Element {
   const mergedProps = useProviderProps(props);
-  const [local, rest] = splitProps(mergedProps, [
-    "size",
-    "class",
-    "label",
-    "description",
-    "errorMessage",
-    "isInvalid",
-    "placeholder",
-  ]);
+  const [local, calendarProps, rest] = splitProps(
+    mergedProps,
+    ["size", "class", "label", "description", "errorMessage", "isInvalid", "placeholder"],
+    [
+      "minValue",
+      "maxValue",
+      "isDateUnavailable",
+      "firstDayOfWeek",
+      "pageBehavior",
+      "placeholderValue",
+    ],
+  );
 
   const size = () => normalizeDatePickerSize(local.size);
   const isInvalid = () => local.isInvalid === true;
   const isDisabled = () => rest.isDisabled === true;
   const [fieldGroupRef, setFieldGroupRef] = createSignal<HTMLDivElement | null>(null);
-  const focusFirstEditableSegment = (event: PointerEvent & { currentTarget: HTMLDivElement }) => {
-    const target = event.target as HTMLElement | null;
-    if (
-      !target ||
-      target.closest('[role="spinbutton"], button, a, input, textarea, select') ||
-      isDisabled()
-    ) {
-      return;
-    }
 
-    const firstSegment = event.currentTarget.querySelector<HTMLElement>(
-      '[role="spinbutton"]:not([aria-disabled="true"])',
-    );
-    if (!firstSegment) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation?.();
-    firstSegment.focus();
-    queueMicrotask(() => firstSegment.focus());
-    requestAnimationFrame(() => firstSegment.focus());
-    setTimeout(() => firstSegment.focus(), 0);
-    setTimeout(() => firstSegment.focus(), 50);
+  const hasTime = () => {
+    const granularity = (rest as { granularity?: string }).granularity;
+    if (granularity && granularity !== "day") return true;
+    const value = (rest as { value?: DateValue }).value;
+    if (value && "hour" in value) return true;
+    const defaultValue = (rest as { defaultValue?: DateValue }).defaultValue;
+    if (defaultValue && "hour" in defaultValue) return true;
+    return false;
   };
-
-  createEffect(() => {
-    const element = fieldGroupRef();
-    if (!element) return;
-
-    const listener = (event: PointerEvent | MouseEvent) =>
-      focusFirstEditableSegment(
-        event as (PointerEvent | MouseEvent) & { currentTarget: HTMLDivElement },
-      );
-    element.addEventListener("pointerdown", listener, { capture: true });
-    element.addEventListener("click", listener);
-    onCleanup(() => {
-      element.removeEventListener("pointerdown", listener, { capture: true });
-      element.removeEventListener("click", listener);
-    });
-  });
 
   return (
     <HeadlessDatePicker
@@ -508,8 +462,25 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           isDisabled: isDisabled(),
         })}
         style={datePickerFieldGroupStyle(size())}
+        onClick={(e) => {
+          const target = e.target as HTMLElement;
+          if (!target.closest('button, [role="spinbutton"]')) {
+            const segments = Array.from(
+              e.currentTarget.querySelectorAll<HTMLElement>(
+                '[role="spinbutton"]:not([aria-disabled="true"])',
+              ),
+            );
+            for (let i = segments.length - 1; i >= 0; i--) {
+              if (!segments[i].hasAttribute("data-placeholder")) {
+                segments[i].focus();
+                return;
+              }
+            }
+            segments[0]?.focus();
+          }
+        }}
       >
-        <DateInput class={dateInputContainer} onPointerDownCapture={focusFirstEditableSegment}>
+        <DateInput class={dateInputContainer}>
           {(segment) => (
             <DateSegment
               segment={segment}
@@ -536,7 +507,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           <S2CalendarIcon styles={calendarIcon} />
         </DatePickerButton>
 
-        <DatePickerPopup />
+        <DatePickerPopup size={size()} hasTime={hasTime()} calendarProps={calendarProps} />
       </div>
 
       <Show when={local.description && !isInvalid()}>
@@ -558,16 +529,24 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   );
 }
 
-function DatePickerPopup(): JSX.Element {
+function DatePickerPopup(props: {
+  size: NormalizedDatePickerSize;
+  hasTime?: boolean;
+  calendarProps?: Record<string, unknown>;
+}): JSX.Element {
   const theme = useTheme();
-  ensureDatePickerPopoverKeyframes();
+  const calendarSize = () => sizeStyles[props.size].legacyCalendarSize;
 
   return (
     <DatePickerContent
-      class={`${datePickerPopover({ colorScheme: theme.colorScheme })} vui-datepicker-popover-enter`}
+      class={datePickerPopover({ colorScheme: theme.colorScheme })}
+      style={popoverEnterStyle}
     >
-      <div class={datePickerPopoverFrame} style={{ width: "304px" }}>
-        <Calendar size="md" />
+      <div class={datePickerPopoverFrame} style={{ "min-width": "240px" }}>
+        <Calendar size={calendarSize()} {...(props.calendarProps ?? {})} />
+        <Show when={props.hasTime}>
+          <TimeField size={calendarSize()} label="Time" />
+        </Show>
       </div>
     </DatePickerContent>
   );

@@ -4,7 +4,36 @@ Fresh-chat handoff for Proyecto Viviana S2 parity work. Read this before
 continuing component parity, then check the current git state because this file
 records intent and recent evidence, not a substitute for `git status`.
 
-## Latest Entry - 2026-05-08
+## Latest Entry - 2026-05-08 (tooling/process)
+
+### Current state
+
+- No component code changed this session. Work was entirely tooling and process.
+- Installed Adobe's official React Aria and React Spectrum S2 MCP servers
+  globally for Claude Code (user scope, `~/.claude.json`), Codex
+  (`~/.codex/config.toml`), and OpenCode
+  (`~/.config/opencode/opencode.json`). Both servers use `npx -y @<pkg>@latest`
+  so they auto-resolve the newest published version each session without manual
+  updates.
+- Installed the matching agent skills (`react-aria`, `react-spectrum-s2`) into
+  `~/.claude/skills/`. These load reference docs and style-macro guidance into
+  context automatically when working on component parity.
+- Replaced `apps/comparison/COMPONENT_PLAYBOOK.md` with v2. The new playbook
+  adds Phase −1 (comparison app pre-flight), eight ordered audit phases with
+  explicit grep commands and Playwright assertions at each step, a concrete ARIA
+  attribute miss-table, a CSS class verification protocol, an animation
+  verification table, test coverage requirements (unit tests must use
+  `getByRole`; e2e tests must assert mounted DOM, not just prop markers), and a
+  sign-off checklist. The old playbook described what to check; v2 describes how
+  to verify each item so nothing is assumed.
+
+### What's next
+
+- DatePicker parity remains the active component slice (see previous entry
+  below). Resume with Phase −1 health-check on the DatePicker comparison page
+  under the new playbook, then continue the layer-by-layer audit.
+
+### Previous entry - 2026-05-08
 
 ### Current state
 

@@ -663,6 +663,7 @@ export {
   DateRangePickerButton,
   DatePickerContent,
   DateRangePickerContent,
+  HiddenDateInput,
   DatePickerContext,
   DateRangePickerContext,
   DatePickerStateContext,
@@ -686,6 +687,7 @@ export {
   type DateRangePickerErrorMessageProps,
   type DatePickerContextValue,
   type DateRangePickerContextValue,
+  type HiddenDateInputProps,
 } from "./DatePicker";
 
 export {

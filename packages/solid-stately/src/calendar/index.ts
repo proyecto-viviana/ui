@@ -30,6 +30,12 @@ export {
   type TimeValue,
 } from "./createTimeFieldState";
 
+export {
+  createDatePickerState,
+  type DatePickerStateOptions,
+  type DatePickerState,
+} from "./createDatePickerState";
+
 export type {
   CalendarDate,
   CalendarDateTime,

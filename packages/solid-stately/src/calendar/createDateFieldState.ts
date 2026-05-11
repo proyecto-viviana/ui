@@ -7,15 +7,15 @@
 
 import { createSignal, createMemo, type Accessor } from "solid-js";
 import {
-  type CalendarDate,
+  CalendarDate,
   type CalendarDateTime,
-  type ZonedDateTime,
   type DateValue,
   today,
   getLocalTimeZone,
   DateFormatter,
   toCalendarDate as intlToCalendarDate,
   toCalendarDateTime,
+  endOfMonth,
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
@@ -88,6 +88,8 @@ export interface DateFieldStateProps<T extends DateValue = DateValue> {
   allowsNonContiguousRanges?: boolean;
   /** Whether to create a date or datetime. */
   createCalendar?: (name: string) => unknown;
+  /** Whether a date is unavailable. */
+  isDateUnavailable?: (date: DateValue) => boolean;
 }
 
 export interface DateFieldState<T extends DateValue = DateValue> {
@@ -127,6 +129,8 @@ export interface DateFieldState<T extends DateValue = DateValue> {
   locale: string;
   /** The time zone. */
   timeZone: string;
+  /** The default value. */
+  defaultValue: T | null;
 }
 
 /**
@@ -140,7 +144,8 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
   const granularity = props.granularity ?? "day";
 
   // State signals
-  const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
+  const initialValue = props.defaultValue ?? null;
+  const [internalValue, setInternalValue] = createSignal<T | null>(initialValue);
 
   // Track partial values during editing
   const [placeholderDate, setPlaceholderDate] = createSignal<Partial<DateParts>>({});
@@ -202,6 +207,7 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
 
     if (minValue && v.compare(minValue) < 0) return true;
     if (maxValue && v.compare(maxValue) > 0) return true;
+    if (props.isDateUnavailable?.(v)) return true;
 
     return validationState() === "invalid";
   });
@@ -249,19 +255,18 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
         });
       } else if (type) {
         const segValue = getSegmentValue(v, type);
-        const placeholderValue = getSegmentValue(placeholder, type);
         const partValue = parts[type as keyof DateParts];
         const hasValue = v !== null || partValue !== undefined;
 
         segs.push({
           type,
-          text: hasValue ? part.value : getPlaceholderText(type),
+          text: hasValue ? part.value : getPlaceholderText(type, locale, granularity),
           value: segValue ?? partValue,
           minValue: getMinValue(type),
           maxValue: getMaxValue(type, v ?? placeholder),
           isEditable: !isDisabled() && !isReadOnly(),
           isPlaceholder: !hasValue,
-          placeholder: getPlaceholderText(type),
+          placeholder: getPlaceholderText(type, locale, granularity),
         });
       }
     }
@@ -334,11 +339,14 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
   // Clear a segment
   const clearSegment = (type: DateSegmentType) => {
     if (isDisabled() || isReadOnly()) return;
+    if (type === "literal") return;
 
     const v = value();
     if (v) {
-      // Clear entire value if any segment is cleared
-      setValue(null);
+      // Reset only the target segment to its minimum value instead of clearing the entire value
+      const min = getMinValue(type);
+      const updated = updateDatePart(v, type, min);
+      setValue(updated as T);
     } else {
       setPlaceholderDate((prev) => {
         const next = { ...prev };
@@ -368,7 +376,9 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
     if (Object.keys(parts).length > 0) {
       const dv = dateValue();
       if (dv) {
-        setValue(constrain(dv) as T);
+        const candidate = constrain(dv);
+        // Commit even if unavailable so isInvalid can flag it; don't leave field stuck
+        setValue(candidate as T);
       }
       return;
     }
@@ -376,6 +386,7 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
     const current = value();
     if (current) {
       const constrained = constrain(current);
+      // Apply min/max constraints even if unavailable; isInvalid will flag unavailable dates
       if (constrained.compare(current) !== 0) {
         setValue(constrained as T);
       }
@@ -407,6 +418,7 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
 
   return {
     value,
+    defaultValue: initialValue,
     dateValue,
     setValue,
     segments,
@@ -511,7 +523,7 @@ function getMaxValue(type: DateSegmentType, date: DateValue): number {
       return 12;
     case "day":
       // Get days in month
-      return date.calendar.getDaysInMonth?.(date) ?? 31;
+      return endOfMonth(date).day;
     case "hour":
       return 23;
     case "minute":
@@ -523,7 +535,45 @@ function getMaxValue(type: DateSegmentType, date: DateValue): number {
   }
 }
 
-function getPlaceholderText(type: DateSegmentType): string {
+function getPlaceholderText(
+  type: DateSegmentType,
+  locale: string,
+  granularity: "day" | "hour" | "minute" | "second",
+): string {
+  if (type === "literal") return "";
+  if (type === "dayPeriod") return "AM";
+
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  };
+
+  if (granularity !== "day") {
+    formatOptions.hour = "2-digit";
+    formatOptions.minute = "2-digit";
+    if (granularity === "second") {
+      formatOptions.second = "2-digit";
+    }
+  }
+
+  const formatter = new DateFormatter(locale, formatOptions);
+  // Use a reference date with recognizable digits
+  const refDate = new Date(2222, 10, 22, 22, 22, 22);
+  const parts = formatter.formatToParts(refDate);
+
+  for (const part of parts) {
+    const mappedType = mapPartType(part.type);
+    if (mappedType === type) {
+      return part.value.replace(/\d/g, (d) => {
+        if (type === "year") return "y";
+        if (type === "month") return "m";
+        if (type === "day") return "d";
+        return "–";
+      });
+    }
+  }
+
   switch (type) {
     case "year":
       return "yyyy";
@@ -537,27 +587,29 @@ function getPlaceholderText(type: DateSegmentType): string {
       return "––";
     case "second":
       return "––";
-    case "dayPeriod":
-      return "AM";
     default:
       return "";
   }
 }
 
 function updateDatePart(date: DateValue, type: DateSegmentType, value: number): DateValue {
+  if (typeof (date as { set?: unknown }).set !== "function") {
+    return date;
+  }
+
   switch (type) {
     case "year":
-      return (date as CalendarDate).set({ year: value });
+      return date.set({ year: value });
     case "month":
-      return (date as CalendarDate).set({ month: value });
+      return date.set({ month: value });
     case "day":
-      return (date as CalendarDate).set({ day: value });
+      return date.set({ day: value });
     case "hour":
-      return (date as CalendarDateTime).set({ hour: value });
+      return date.set({ hour: value });
     case "minute":
-      return (date as CalendarDateTime).set({ minute: value });
+      return date.set({ minute: value });
     case "second":
-      return (date as CalendarDateTime).set({ second: value });
+      return date.set({ second: value });
     default:
       return date;
   }

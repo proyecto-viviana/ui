@@ -71,6 +71,38 @@ Prefer native Vite Plus/Vite capabilities over compatibility plugins when the
 project can express the same behavior directly. For example, `apps/web` uses
 Vite's native `resolve.tsconfigPaths` support instead of `vite-tsconfig-paths`.
 
+## AI Tooling for Component Parity
+
+Two Adobe-published MCP servers are installed globally and provide on-demand
+access to React Aria and Spectrum S2 documentation during component parity work.
+
+| Server              | Package               | What it covers                                                                  |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `react-aria`        | `@react-aria/mcp`     | React Aria Components — props, ARIA roles, keyboard interactions, accessibility |
+| `react-spectrum-s2` | `@react-spectrum/mcp` | Spectrum S2 — props, slots, style tokens, icons, illustrations                  |
+
+Both are registered in `~/.claude.json` (Claude Code), `~/.codex/config.toml`
+(Codex), and `~/.config/opencode/opencode.json` (OpenCode). They use
+`npx -y @<pkg>@latest` and auto-resolve the newest version each session.
+
+Matching agent skills (`react-aria`, `react-spectrum-s2`) are installed in
+`~/.claude/skills/` and load reference docs and style-macro guidance
+automatically when working on component parity in Claude Code.
+
+See [`apps/comparison/COMPONENT_PLAYBOOK.md`](../apps/comparison/COMPONENT_PLAYBOOK.md)
+for the specific MCP tool calls to make at each phase of a component audit.
+The quick reference table is in the **MCP Quick Reference** section of that
+file.
+
+To verify the servers are connected:
+
+```bash
+claude mcp list
+```
+
+Both should show `✓ Connected`. If not, check that Node.js is available in the
+shell (`node --version`).
+
 ## Future Package Build Migration
 
 Package builds intentionally stay on the existing `tsup` + `tsc` pipeline for

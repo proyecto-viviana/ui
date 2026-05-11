@@ -26,6 +26,13 @@ export {
   type DatePickerState,
 } from "./createDatePicker";
 
+// Date Picker Group
+export {
+  createDatePickerGroup,
+  type AriaDatePickerGroupProps,
+  type DatePickerGroupAria,
+} from "./createDatePickerGroup";
+
 // Date Range Picker
 export {
   createDateRangePicker,

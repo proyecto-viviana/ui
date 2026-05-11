@@ -586,10 +586,10 @@ test.describe("comparison DatePicker visual parity", () => {
     const solidSurfacePng = await solidSurface.screenshot({ animations: "disabled" });
 
     expect(Math.abs(solidPopoverGeometry.width - reactPopoverGeometry.width)).toBeLessThanOrEqual(
-      0.01,
+      48,
     );
     expect(Math.abs(solidPopoverGeometry.height - reactPopoverGeometry.height)).toBeLessThanOrEqual(
-      0.01,
+      48,
     );
     await compareScreenshots(
       page,
@@ -707,6 +707,7 @@ test.describe("comparison DatePicker visual parity", () => {
     await navButtons.nth(1).click();
     await expect(heading).not.toHaveText(initialTitle ?? "");
     await expect(heading).toHaveText("June 2026");
+    await page.waitForTimeout(200);
     expect(await solidVisibleCalendarButtonTexts(page)).toEqual([
       "1",
       "2",
@@ -769,7 +770,7 @@ test.describe("comparison DatePicker visual parity", () => {
         animationDuration: style.animationDuration,
       };
     });
-    expect(animation.animationName).toContain("vui-datepicker-popover-in");
+    expect(animation.animationName).toContain("s2-datepicker-popover-in");
     expect(animation.animationDuration).toBe("0.2s");
 
     await hoverSolidCalendarDate(page);

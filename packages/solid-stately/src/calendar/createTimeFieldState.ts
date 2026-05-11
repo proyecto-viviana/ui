@@ -10,6 +10,7 @@ import {
   type Time,
   type CalendarDateTime,
   type ZonedDateTime,
+  type DateValue,
   getLocalTimeZone,
   DateFormatter,
 } from "@internationalized/date";
@@ -66,11 +67,15 @@ export interface TimeFieldStateProps<T extends TimeValue = Time> {
   validationState?: MaybeAccessor<ValidationState | undefined>;
   /** The placeholder value. */
   placeholderValue?: T;
+  /** Whether dates outside the min/max range are unavailable. Added for API consistency. */
+  isDateUnavailable?: (date: DateValue) => boolean;
 }
 
 export interface TimeFieldState<T extends TimeValue = Time> {
   /** The current value. */
   value: Accessor<T | null>;
+  /** The default value. */
+  defaultValue: Accessor<T | null>;
   /** Sets the value. */
   setValue: (value: T | null) => void;
   /** The segments that make up the time. */
@@ -112,8 +117,10 @@ export function createTimeFieldState<T extends TimeValue = Time>(
   const granularity = props.granularity ?? "minute";
   const hourCycle = props.hourCycle ?? 12;
 
+  const initialValue = props.defaultValue ?? null;
+
   // State signals
-  const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
+  const [internalValue, setInternalValue] = createSignal<T | null>(initialValue);
 
   // Track partial values during editing
   const [placeholderParts, setPlaceholderParts] = createSignal<Partial<TimeParts>>({});
@@ -298,6 +305,7 @@ export function createTimeFieldState<T extends TimeValue = Time>(
 
   return {
     value,
+    defaultValue: () => initialValue,
     setValue,
     segments,
     setSegment,
@@ -394,6 +402,7 @@ function getTimeMinValue(type: TimeSegmentType, hourCycle: number): number {
 function getTimeMaxValue(type: TimeSegmentType, hourCycle: number): number {
   switch (type) {
     case "hour":
+      // In 12-hour mode, the spinbutton displays 1–12, so aria-valuemax is 12.
       return hourCycle === 12 ? 12 : 23;
     case "minute":
       return 59;
@@ -425,21 +434,39 @@ function updateTimePart(
   time: TimeValue,
   type: TimeSegmentType,
   value: number,
-  hourCycle: number,
+  _hourCycle: number,
 ): TimeValue {
-  if ("set" in time) {
-    switch (type) {
-      case "hour":
-        return time.set({ hour: value });
-      case "minute":
-        return time.set({ minute: value });
-      case "second":
-        return time.set({ second: value });
-      default:
-        return time;
-    }
+  if (!time) return time;
+
+  // All TimeValue types in @internationalized/date have a .set() method
+  const settable = time as { set(props: Record<string, number>): TimeValue };
+  if (typeof settable.set !== "function") {
+    return time;
   }
-  return time;
+
+  switch (type) {
+    case "hour":
+      return settable.set({ hour: value });
+    case "minute":
+      return settable.set({ minute: value });
+    case "second":
+      return settable.set({ second: value });
+    case "dayPeriod": {
+      // dayPeriod 0 = AM, 1 = PM. Adjust hour by +/- 12 based on desired period.
+      const currentHour = getHour(time);
+      const isPM = value === 1;
+      const isCurrentlyPM = currentHour >= 12;
+      if (isPM && !isCurrentlyPM) {
+        return settable.set({ hour: currentHour + 12 });
+      }
+      if (!isPM && isCurrentlyPM) {
+        return settable.set({ hour: currentHour - 12 });
+      }
+      return time;
+    }
+    default:
+      return time;
+  }
 }
 
 function compareTime(a: TimeValue, b: TimeValue): number {

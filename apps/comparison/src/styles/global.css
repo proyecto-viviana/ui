@@ -1937,3 +1937,14 @@ body.comparison-app [class*="spectrum-Modal-wrapper"] {
     justify-content: flex-start;
   }
 }
+
+@keyframes s2-datepicker-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

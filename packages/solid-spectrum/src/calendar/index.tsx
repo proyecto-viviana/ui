@@ -89,16 +89,11 @@ const calendarRoot = style<{ cellMaxWidth: number }>({
     type: "paddingStart",
     value: 4,
   },
-  "--cell-max-width": {
-    type: "width",
-    value: "[var(--vui-calendar-cell-max-width)]",
-  },
   "--cell-responsive-size": {
     type: "width",
-    value: "[min(var(--cell-max-width), (100cqw - (var(--cell-gap) * 12)) / 7)]",
+    value: "[min(var(--s2-calendar-cell-max-width), (100cqw - (var(--cell-gap) * 12)) / 7)]",
   },
-  width: "[calc(7 * var(--cell-max-width) + var(--cell-gap) * 12)]",
-  maxWidth: "full",
+  width: "[calc(7 * var(--s2-calendar-cell-max-width) + var(--cell-gap) * 12)]",
 });
 
 const calendarHeader = style({
@@ -131,8 +126,8 @@ const calendarNavButton = style<{ buttonSize: number }>({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  width: "[var(--vui-calendar-button-size)]",
-  height: "[var(--vui-calendar-button-size)]",
+  width: "[var(--s2-calendar-button-size)]",
+  height: "[var(--s2-calendar-button-size)]",
   borderStyle: "none",
   borderRadius: "full",
   backgroundColor: {
@@ -177,9 +172,7 @@ const calendarHeaderCell = style({
   color: baseColor("neutral"),
 });
 
-const calendarCellWrapper = style<{
-  isOutsideMonth?: boolean;
-}>({
+const calendarCellWrapper = style({
   outlineStyle: "none",
   boxSizing: "border-box",
   padding: 0,
@@ -308,8 +301,8 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
       aria-label={local["aria-label"]}
       class={`${calendarRoot({ cellMaxWidth: sizeConfig().cellMaxWidth })} ${local.class ?? ""}`}
       style={{
-        "--vui-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-        "--vui-calendar-button-size": `${sizeConfig().buttonSize}px`,
+        "--s2-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
+        "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
       }}
     >
       <header class={calendarHeader}>

@@ -1,6 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { render, screen, waitFor } from "@solidjs/testing-library";
+import { describe, it, expect, afterEach } from "vitest";
+import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { DatePicker } from "../src/calendar/DatePicker";
+import {
+  CalendarDateClass as CalendarDate,
+  CalendarDateTimeClass as CalendarDateTime,
+} from "@proyecto-viviana/solid-stately";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 async function waitForHydration() {
   await waitFor(() => {
@@ -8,7 +13,13 @@ async function waitForHydration() {
   });
 }
 
+const user = setupUser();
+
 describe("DatePicker (solid-spectrum)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("links visible label to picker group semantics", async () => {
     render(() => <DatePicker label="Event date" description="Select an event day" />);
     await waitForHydration();
@@ -38,7 +49,8 @@ describe("DatePicker (solid-spectrum)", () => {
     render(() => <DatePicker label="Appointment" isRequired />);
     await waitForHydration();
 
-    expect(screen.getByText("*")).toBeInTheDocument();
+    const group = screen.getByRole("group", { name: "Appointment" });
+    expect(group).toHaveAttribute("aria-required", "true");
   });
 
   it("forwards custom button aria-label", async () => {
@@ -46,5 +58,78 @@ describe("DatePicker (solid-spectrum)", () => {
     await waitForHydration();
 
     expect(screen.getByRole("button", { name: "Choose date" })).toBeInTheDocument();
+  });
+
+  it("renders TimeField inside popover when granularity includes time", async () => {
+    render(() => <DatePicker label="Event" granularity="minute" />);
+    await waitForHydration();
+
+    const button = screen.getByRole("button");
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Time")).toBeInTheDocument();
+    });
+  });
+
+  it("renders TimeField inside popover when defaultValue is a CalendarDateTime", async () => {
+    render(() => (
+      <DatePicker label="Event" defaultValue={new CalendarDateTime(2024, 6, 15, 10, 30)} />
+    ));
+    await waitForHydration();
+
+    const button = screen.getByRole("button");
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Time")).toBeInTheDocument();
+    });
+  });
+
+  it("popover frame width tracks field group width via ResizeObserver", async () => {
+    render(() => <DatePicker label="Event" />);
+    await waitForHydration();
+
+    const button = screen.getByRole("button");
+    await user.click(button);
+
+    const dialog = await waitFor(() => screen.getByRole("dialog"));
+
+    // Trigger ResizeObserver with a mock width
+    const instances = (
+      globalThis as unknown as {
+        ResizeObserver: typeof ResizeObserver & {
+          getInstances(): Array<{
+            trigger(entries: Array<{ contentRect: { width: number } }>): void;
+          }>;
+        };
+      }
+    ).ResizeObserver.getInstances();
+    for (const inst of instances) {
+      inst.trigger([{ contentRect: { width: 350 } } as unknown as ResizeObserverEntry]);
+    }
+
+    const frame = dialog.firstElementChild as HTMLElement;
+    await waitFor(() => {
+      expect(frame.style.width).toBe("350px");
+    });
+  });
+
+  it("field group click focuses the last non-placeholder segment", async () => {
+    render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2024, 6, 15)} />);
+    await waitForHydration();
+
+    const root = screen.getByRole("group", { name: "Event" });
+    const fieldGroup = Array.from(root.children).find((child) =>
+      child.querySelector("button"),
+    ) as HTMLElement;
+
+    expect(fieldGroup).toBeTruthy();
+
+    await user.click(fieldGroup);
+
+    const segments = fieldGroup.querySelectorAll<HTMLElement>('[role="spinbutton"]');
+    const lastSegment = segments[segments.length - 1];
+    expect(document.activeElement).toBe(lastSegment);
   });
 });

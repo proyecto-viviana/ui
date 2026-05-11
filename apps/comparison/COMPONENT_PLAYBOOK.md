@@ -1,383 +1,1003 @@
-# Component Playbook
+# Component Playbook v2
 
-Read
-[`docs/adr/0001-s2-styling-source-of-truth.md`](../../docs/adr/0001-s2-styling-source-of-truth.md)
-first.
+Read [`docs/adr/0001-s2-styling-source-of-truth.md`](../../docs/adr/0001-s2-styling-source-of-truth.md)
+first. Every styled decision in this playbook follows that ADR.
 
-## Checklist
+---
 
-1. Start from the real React Spectrum S2 component as the source of truth.
-2. If the Solid side does not have that component yet, port it into
-   `@proyecto-viviana/solid-spectrum` across the full stack before comparing.
-3. If the Solid side already has the component, compare it against the React
-   reference and close the gap.
-4. Implement styling through the S2-compatible style system.
-5. Review the S2 source before implementing. Port real S2 wrapper structure,
-   slots, state logic, derived render-state, overlay behavior, and temporal
-   behavior when it exists; do not assume the component is only a headless
-   reskin. Trace helper hooks and delayed state transitions into the final style
-   call.
-6. Do not add or tune app-local Spectrum component CSS.
-7. If the Solid component is not migrated, mark it missing/gap.
-8. Match S2 props and TypeScript names in controls and fixtures.
-9. Add modeled interactive comparison controls for the component and verify the
-   controls drive both React and Solid. URL query states can seed fixtures, but
-   they do not replace the interactive control surface.
-10. Cover light and dark themes.
-11. Cover component-specific states before screenshots. For time-based states,
-    verify the delayed visible phase and any derived disabled-like styling the
-    source uses to normalize variants.
-12. Compare DOM slots, state attributes, computed styles, geometry, behavior, and
-    screenshots.
-13. Commit snapshots only after the React and Solid implementations are both the
-    intended references.
+## Why This Version Exists
 
-## Validation Plan First
+The previous playbook described WHAT to check. This one describes HOW to verify
+each item so nothing is assumed. Every missed ARIA attribute, every animation
+divergence, every focus bug has a structural cause: an audit step existed in
+prose but had no concrete verification procedure. This playbook closes that gap
+by producing a specific artifact — a grep result, a snapshot diff, a test
+assertion — at every step.
 
-Before touching component code, write the component-specific validation plan.
-This can live in the issue, PR notes, or the visual state matrix, but it must be
-specific enough that implementation assumptions are testable.
+Work one component at a time. Complete all phases in order. Do not skip ahead to
+screenshots.
 
-Include:
+---
 
-- React S2 component and source files reviewed.
-- Layer-by-layer parity notes against the React implementation. For each
-  component, inspect the public S2 wrapper, style declarations, slot/context
-  providers, state hooks, React Aria behavior hooks, shared interaction/focus
-  utilities, and comparison fixture wiring against the Solid counterpart. Record
-  any lifecycle, timing, focus, selection, disabled/read-only, generated-style,
-  or prop-normalization differences before deciding whether they are intentional
-  gaps or bugs to port.
-- Props, slots, wrapper structure, provider/context behavior, and generated style
-  declarations to port.
-- Static states to compare: default, variants, sizes, disabled/read-only,
-  validation, density, static color, and slot/content permutations.
-- Treat props that switch layout contracts as separate required states, not
-  optional permutations. For example, an `orientation` prop often changes grid
-  areas, rows, columns, slot visibility, and alignment. Test each orientation
-  with the same computed geometry depth instead of assuming one orientation
-  proves the other.
-- Interaction states to compare: hover, focus-visible, pressed, selected/open,
-  keyboard navigation, dismissal, and focus return.
-- For field-like components and any control with embedded buttons, compare the
-  full focus lifecycle, not only final focus. Pointer interactions such as clear,
-  increment/decrement, menu trigger, and picker buttons must not emit a transient
-  input blur/focusout if React S2 keeps focus stable. Record the React event
-  order first, then assert the Solid event order or absence of blur matches it.
-- Temporal states to compare: pending/loading delays, spinner visibility,
-  press-scale transforms, overlay animation frames, and delayed state
-  normalization.
-- Geometry checks to run before screenshots: root box, slot boxes, icon box,
-  text box, centerline delta, baseline-sensitive text/icon alignment, and
-  overlay placement.
-- For overlay and list-backed controls, validate the actual React S2 popup/list
-  structure before implementing: portal location, popover container styles,
-  list padding, option grid/classes, DOM focus target, keyboard preview vs
-  commit behavior, dismissal, and focus return. Also confirm the generated S2
-  CSS contains rules for every class used by the Solid port; a class in DOM with
-  no generated rule is a porting bug, not a visual-tuning issue.
-- For menu/list popovers, compare mouse-open and keyboard-open separately. The
-  focused option can legitimately differ by input modality, so assert the active
-  descendant, DOM focus target, `data-focus-visible`, rendered text color, and
-  outline for both paths before accepting the open state. Also hover a
-  non-selected row and assert that the hover-driven focused state, background,
-  and text color match the React Spectrum row.
-- Which checks are behavior assertions, computed-style assertions,
-  Playwright CLI inspection artifacts, and committed Playwright test snapshots.
+## Prerequisites
 
-Use this matrix shape before implementation. Expand rows until every risky prop,
-slot, state, or layout assumption has an explicit validation target:
+- Comparison app running: `cd apps/comparison && bun dev`
+- Playwright CLI available as `$PWCLI`
+- React S2 source at `apps/comparison/node_modules/@react-spectrum/s2/src/`
+- React Aria source at `apps/comparison/node_modules/react-aria-components/src/`
+- React Stately source at `apps/comparison/node_modules/@react-stately/`
+- React Aria hooks at `apps/comparison/node_modules/@react-aria/`
 
-| Assumption        | React S2 reference to inspect                       | Solid surface to inspect   | Browser check                             | Committed guard                                |
-| ----------------- | --------------------------------------------------- | -------------------------- | ----------------------------------------- | ---------------------------------------------- |
-| Default geometry  | root/slot/icon/text boxes                           | root/slot/icon/text boxes  | Playwright snapshot plus box measurements | visual or computed Playwright spec             |
-| Interaction state | selected/pressed/open/focused attributes and styles | same attributes and styles | click/keyboard/hover flow in browser      | behavior assertion and screenshot where visual |
-| Temporal state    | delayed pending/loading/animation frame             | same delayed phase         | video/trace or timed snapshot             | Playwright assertion after delay               |
+---
 
-Do not start coding from a generic component checklist alone. Name the actual
-React S2 source files, expected state attributes, target accessible roles, and
-the exact query/state URLs to open in Playwright. If a row cannot be tested yet,
-record why and mark it as a tracked gap in the visual state matrix.
+## Phase −1 — Comparison App Pre-flight
 
-Double-check the prop matrix before signoff. Representative states are not
-enough when different prop values route through different layout/style branches.
-For each layout-switching prop, open the exact URL in the comparison viewer and
-assert the branch-specific computed contract: grid-template areas/rows/columns,
-slot offsets, root/list defaults, and visible content geometry. This guard was
-added after SelectBoxGroup passed horizontal checks while
-`?orientation=vertical` still auto-placed its illustration and label
-incorrectly.
+Run this phase first, for every component — new and existing alike. It
+establishes that the comparison surface is complete before any audit begins.
+For existing components it is a health-check; for new ones it is a setup guide.
+A component that fails any item here cannot be audited by the later phases.
 
-If the component contains icons, the plan must include explicit React-vs-Solid
-icon alignment checks. Do not rely on visual memory. Inspect the React Spectrum
-reference and the Solid implementation in the browser, capture both sides, and
-record the box/centerline/baseline measurements before accepting the state. The
-minimum icon matrix is start, end, icon-only, pending-with-icon, and each
-supported size that changes button height.
+### −1.1 Manifest entry
 
-## End-of-Component Lifecycle
+```bash
+grep -n '"<slug>"' apps/comparison/src/data/comparison-manifest.ts
+```
 
-A component or batch is not complete until
-[`docs/CURRENT_STATUS.md`](../../docs/CURRENT_STATUS.md) has a fresh handoff
-entry. Record the current state, commits, validation that passed, known traps,
-next likely work, and any skipped checks with reasons. The handoff update is
-part of the done definition, not cleanup after the fact.
+If absent: add a `ComparisonEntry` to `comparison-manifest.ts` with the correct
+`slug`, `title`, `category`, `componentStatus`, and `layers` record. Every
+`LayerTrack` must have `react` and `solid` status fields set to `"live"` or
+`"missing"` — not left blank.
 
-Before declaring completion:
+### −1.2 Component group membership
 
-- Re-open the live React Spectrum S2 reference and the React S2 source. Confirm
-  the Solid behavior matches the actual wrapper structure, slots, state
-  derivation, overlay behavior, and interaction timing before trusting the
-  comparison screenshot.
-- Compare interaction timelines, not only final screenshots. First-open portal
-  behavior, page scroll stability, focus target, active descendant,
-  `data-focus-visible`, hover state, keyboard open behavior, selection commit,
-  dismissal, and focus return all need direct checks when the component can
-  expose them.
-- Validate comparison viewer controls as a product surface. Side-panel controls
-  must be clickable at the default viewport and must drive the mounted React and
-  Solid DOM, not only serialized marker props.
-- Keep viewer controls faithful to public React Spectrum S2 docs props. Do not
-  invent extra knobs for states React S2 does not expose; use dedicated query
-  routes and focused specs for source-only or fixture-only states.
-- For shared-layer bugs, inspect every involved layer before patching symptoms:
-  public S2 wrapper, Solid wrapper, headless hook, adapter identity/lifecycle,
-  focus utilities, generated S2 styles, and comparison fixture wiring.
-- Promote useful Playwright CLI findings into committed e2e guards before
-  closing the slice.
+```bash
+grep -n '"<slug>"' apps/comparison/src/data/component-groups.ts
+```
+
+If absent: add the slug to the correct group in `componentGroupDefinitions`.
+Run `e2e/sidebar-groups.spec.ts` after adding.
+
+### −1.3 Demo model
+
+```bash
+ls apps/comparison/src/data/<slug>-demo.ts
+```
+
+If absent: create `apps/comparison/src/data/<slug>-demo.ts` following the
+existing pattern (e.g. `datepicker-demo.ts`). It must export:
+
+- `<Component>DemoDefaults` — the initial prop state object
+- Option arrays for every prop that has a fixed set of values (`sizeOptions`,
+  `variantOptions`, etc.)
+
+Then import and register it in `apps/comparison/src/data/component-controls.ts`
+alongside the existing entries.
+
+### −1.4 React fixture
+
+```bash
+ls apps/comparison/src/components/react/fixtures/<slug>.tsx 2>/dev/null || \
+  grep -r '"<slug>"' apps/comparison/src/components/react/
+```
+
+The React fixture must:
+
+- Import the real `@react-spectrum/s2` component (not a stub)
+- Accept props from `comparison:controls-change` and re-render reactively
+- Expose `data-comparison-control-root` on the outermost fixture wrapper
+- Serialize the current props as `data-comparison-control-props`
+
+### −1.5 Solid fixture
+
+```bash
+ls apps/comparison/src/components/solid/fixtures/<slug>.tsx 2>/dev/null || \
+  grep -r '"<slug>"' apps/comparison/src/components/solid/
+```
+
+The Solid fixture must satisfy the same contract as the React fixture:
+
+- Import from `@proyecto-viviana/solid-spectrum`
+- Listen to `comparison:controls-change` and update reactively
+- Expose `data-comparison-control-root` (exactly one per fixture)
+- Serialize current props as `data-comparison-control-props`
+
+### −1.6 Side-panel controls wiring
+
+```bash
+grep -n '"<slug>"' apps/comparison/src/data/component-controls.ts
+```
+
+If absent or incomplete: add a `ComponentControlGroup` entry with
+`coverage: "modeled"`. Controls must use the real S2 prop names. Do not invent
+props that S2 does not expose publicly.
+
+### −1.7 Visual state matrix entry
+
+```bash
+grep -n '"<slug>"' apps/comparison/src/data/visual-state-matrix.ts
+```
+
+If absent: add a `VisualStateCoverage` entry with at minimum these
+`VisualStateTarget` rows (mark `pairDiff: "planned"` if not yet committed):
+
+| id                         | label         | kind          |
+| -------------------------- | ------------- | ------------- |
+| `default`                  | Default state | `static`      |
+| `disabled`                 | Disabled      | `static`      |
+| `invalid`                  | Invalid       | `static`      |
+| `size-s` through `size-xl` | Each size     | `static`      |
+| `keyboard-open`            | Keyboard open | `keyboard`    |
+| `focus-visible`            | Focus visible | `interaction` |
+
+Add overlay rows (`open`, `keyboard-navigate`, `dismiss`) for components with
+popups.
+
+### −1.8 E2E spec skeleton
+
+```bash
+ls apps/comparison/e2e/<slug>-visual.spec.ts
+```
+
+If absent: create the file with at minimum:
+
+- A `test` that opens the comparison route and takes a screenshot of both React
+  and Solid canvases
+- A `test.describe` block named after the component
+
+Even a skeleton with a single snapshot test is enough to unblock Phase 6.
+
+### −1.9 Comparison page loads
+
+```bash
+"$PWCLI" open http://127.0.0.1:4321/components/<slug>/ --headed
+"$PWCLI" snapshot
+```
+
+Assert:
+
+- Page renders without a JS error or blank canvas
+- Both React and Solid cards are visible
+- Side-panel controls are physically visible and clickable (not hidden behind
+  sticky nav)
+
+This is the gate. If the page does not load cleanly, stop and fix it before
+Phase 0.
+
+---
+
+## Phase 0 — Intelligence Gathering (run before any code)
+
+### 0.1 MCP doc pull
+
+Run these MCP calls at the start of every component session and record the
+output in the component's validation plan:
+
+```
+get_react_aria_page "<ComponentName>"
+get_react_aria_page "<ComponentName>" "Keyboard Interactions"
+get_react_aria_page "<ComponentName>" "Accessibility"
+get_s2_page "<ComponentName>"
+```
+
+If the component composes sub-components (e.g. DatePicker uses Calendar,
+DateField, DateSegment), pull each one separately. If a corresponding hook page
+exists (`useDatePicker`, `useCalendar`, etc.), pull that too.
+
+From the MCP output, extract and write down:
+
+1. **Props table** — every prop, its type, its default, its description.
+2. **ARIA role tree** — the exact JSX tree from the API section showing every
+   role and slot.
+3. **Keyboard interaction table** — every key and its effect.
+4. **Accessibility section** — every `aria-*` attribute and the condition that
+   triggers it.
+
+These four items are ground truth for Phases 2–6. If the MCP output conflicts
+with React source code, the source code wins — but record the discrepancy.
+
+### 0.2 Skill reference
+
+The `react-aria` and `react-spectrum-s2` skills load reference files locally.
+Use them for:
+
+- `references/testing/<ComponentName>/testing.md` — exact interaction simulation
+  patterns to mirror in Solid unit tests (use `list_react_aria_pages` if you are
+  not sure whether a testing guide exists for this component).
+- `references/internationalized/date/` — CalendarDate, ZonedDateTime, Time
+  types for any date/time component.
+- `references/guides/forms.md` — form integration contract for field components.
+- `references/guides/collections.md` — collection API contract for list/grid
+  components.
+
+The skills answer "how does React Aria expect consumers to integrate this?" The
+MCP tools answer "what is the exact API and ARIA contract?" Both are needed.
+
+---
+
+## Phase 1 — Source File Map
+
+Before any code comparison, locate every file in both stacks. Record all paths.
+A missing Solid file is a gap to port before anything else.
+
+```bash
+COMPONENT="DatePicker"   # change per component
+
+# React reference
+find apps/comparison/node_modules/@react-spectrum/s2/src -name "${COMPONENT}.tsx"
+find apps/comparison/node_modules/react-aria-components/src -name "${COMPONENT}.tsx" 2>/dev/null
+find apps/comparison/node_modules/@react-aria -name "use${COMPONENT}.ts" 2>/dev/null
+find apps/comparison/node_modules/@react-stately -name "use${COMPONENT}State.ts" 2>/dev/null
+
+# Solid counterparts
+# Layer 1 — state
+find packages/solid-stately/src -name "create${COMPONENT}State.ts"
+
+# Layer 2 — ARIA/behavior hooks
+find packages/solidaria/src -name "create${COMPONENT}.ts"
+
+# Layer 3 — headless components
+find packages/solidaria-components/src -name "${COMPONENT}.tsx"
+
+# Layer 4 — styled
+find packages/solid-spectrum/src -name "${COMPONENT}.tsx" -o \
+     -path "*/${COMPONENT,,}*" -name "index.tsx" 2>/dev/null
+```
+
+---
+
+## Phase 2 — Layer 1 Audit: State (`solid-stately` vs `react-stately`)
+
+### 2.1 State interface completeness
+
+Every property and method on the React state interface must have a Solid
+counterpart. Extract both interfaces and diff them:
+
+```bash
+# React state interface
+grep -n "^\s\+readonly \|^\s\+[a-zA-Z][a-zA-Z]*[?:]" \
+  apps/comparison/node_modules/@react-stately/<pkg>/src/use${COMPONENT}State.ts \
+  | head -50
+
+# Solid state interface
+grep -n "^\s\+readonly \|^\s\+[a-zA-Z][a-zA-Z]*[?:]" \
+  packages/solid-stately/src/<dir>/create${COMPONENT}State.ts \
+  | head -50
+```
+
+For each property: same name, same semantic meaning. Reactivity wrapping
+(`Accessor<T>` in Solid vs plain value in React) is expected and correct. A
+missing property is always a bug.
+
+### 2.2 Derived state computation
+
+Derived booleans (e.g. `isInvalid`, `isPending`, `isSelected`) are often
+computed from multiple inputs in React Stately. Verify each one:
+
+```bash
+# All isX derivations in React
+grep -n "const is\|let is" \
+  apps/comparison/node_modules/@react-stately/<pkg>/src/use${COMPONENT}State.ts
+
+# Same in Solid
+grep -n "const is\|let is\|createMemo.*is" \
+  packages/solid-stately/src/<dir>/create${COMPONENT}State.ts
+```
+
+Pay special attention to `isInvalid`: React Stately often derives it from both
+an explicit prop AND constraint violations (min/max, unavailable date, required
+but empty). The Solid version must match both branches.
+
+### 2.3 Callbacks
+
+```bash
+grep -n "onChange\|onFocus\|onBlur\|onOpen\|onClose\|onSelect" \
+  apps/comparison/node_modules/@react-stately/<pkg>/src/use${COMPONENT}State.ts
+
+grep -n "onChange\|onFocus\|onBlur\|onOpen\|onClose\|onSelect" \
+  packages/solid-stately/src/<dir>/create${COMPONENT}State.ts
+```
+
+Every callback that React Stately fires must fire in Solid with the same value
+type and under the same condition.
+
+---
+
+## Phase 3 — Layer 2 Audit: Behavior/ARIA Hooks (`solidaria` vs `react-aria`)
+
+This is the highest-risk layer. Every ARIA bug and every focus bug originates
+here. Do not treat this phase as a skim.
+
+### 3.1 ARIA attribute completeness
+
+From Phase 0.1, you have the complete ARIA attribute list from the MCP
+Accessibility section. Now verify every one in source:
+
+```bash
+# Every aria-* the React hook produces
+grep -n '"aria-' \
+  apps/comparison/node_modules/@react-aria/<pkg>/src/use${COMPONENT}.ts
+
+# Every aria-* the Solid hook produces
+grep -n '"aria-' \
+  packages/solidaria/src/<dir>/create${COMPONENT}.ts
+```
+
+For every attribute in the React output, the Solid hook must produce the same
+attribute under the same condition. The following are the most commonly missed:
+
+| Attribute               | Common miss                                                                |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `aria-haspopup`         | Wrong value (`"true"` instead of `"dialog"` or `"listbox"`) or absent      |
+| `aria-controls`         | Only set when open — absent on closed state is correct                     |
+| `aria-expanded`         | Must toggle on open/close                                                  |
+| `aria-activedescendant` | Must update during keyboard navigation in collections                      |
+| `aria-required`         | Must come from both explicit prop AND field group context                  |
+| `aria-invalid`          | Must come from both explicit prop AND constraint violation                 |
+| `aria-disabled`         | React Aria uses `aria-disabled`, not HTML `disabled`, on non-form elements |
+| `aria-describedby`      | Must chain: description ID + error ID + any external describedby           |
+| `aria-labelledby`       | Must include both label ID and trigger ID for composite widgets            |
+| `aria-label`            | Must be absent when a visible `aria-labelledby` chain covers the element   |
+| `aria-modal`            | Must be on dialog overlays                                                 |
+| `aria-multiselectable`  | Must be present for listboxes with multi-selection                         |
+
+### 3.2 ARIA role completeness
+
+Every role in the MCP ARIA tree must be present in the Solid hook output:
+
+```bash
+grep -n '"role"\|role:' \
+  apps/comparison/node_modules/@react-aria/<pkg>/src/use${COMPONENT}.ts
+
+grep -n '"role"\|role:' \
+  packages/solidaria/src/<dir>/create${COMPONENT}.ts
+```
+
+Roles are never optional. A wrong or missing role is a critical accessibility
+bug. Pay attention to role differences between similar-looking components:
+`listbox` vs `grid`, `group` vs `radiogroup`, `dialog` vs `alertdialog`.
+
+### 3.3 Focus management
+
+```bash
+# React Aria focus behavior
+grep -n "focus\|FocusScope\|autoFocus\|manageFocus\|tabIndex" \
+  apps/comparison/node_modules/@react-aria/<pkg>/src/use${COMPONENT}.ts | head -30
+
+# Solid focus behavior
+grep -n "focus\|FocusScope\|autoFocus\|tabIndex" \
+  packages/solidaria/src/<dir>/create${COMPONENT}.ts | head -30
+```
+
+Verify:
+
+- On open: focus moves to the correct initial target (first cell, first
+  segment, first option).
+- FocusScope `contain` is used for all modal overlays.
+- FocusScope `restoreFocus` is used so focus returns to the trigger on dismiss.
+- `data-focus-visible` is set when navigating by keyboard, absent after mouse
+  interaction.
+- Embedded interactive elements (clear button, stepper, trigger) do NOT cause a
+  transient `blur` on the surrounding field. Record the React event order from
+  the browser's Event Listeners panel and assert the Solid order matches.
+
+### 3.4 Keyboard handler completeness
+
+From the MCP Keyboard Interactions table, list every key. For each, verify the
+handler exists and produces the same effect:
+
+```bash
+# React key handlers
+grep -n '"Arrow\|"Enter\|"Escape\|"Tab\|"Home\|"End\|"Page\|"Space\|" "' \
+  apps/comparison/node_modules/@react-aria/<pkg>/src/use${COMPONENT}.ts
+
+# Solid key handlers
+grep -n '"Arrow\|"Enter\|"Escape\|"Tab\|"Home\|"End\|"Page\|"Space\|" "' \
+  packages/solidaria/src/<dir>/create${COMPONENT}.ts
+```
+
+A missing key handler is a silent failure: no error, just wrong behavior.
+
+---
+
+## Phase 4 — Layer 3 Audit: Headless Components (`solidaria-components` vs `react-aria-components`)
+
+### 4.1 Slot/JSX tree
+
+From the MCP API section you have the exact JSX tree. Verify the Solid
+component matches it:
+
+- Same root element type (div, span, input, etc.)
+- Same named slots and their element types
+- Same `slot=` prop values on child elements
+- Same render-prop signature if the component accepts function children
+
+```bash
+# React slot structure
+grep -n "slot=\|SlotContext\|SlottedContextValue\|<Provider" \
+  apps/comparison/node_modules/react-aria-components/src/${COMPONENT}.tsx | head -30
+
+# Solid slot structure
+grep -n "slot=\|Context\|createContext\|Provider" \
+  packages/solidaria-components/src/${COMPONENT}.tsx | head -30
+```
+
+### 4.2 Data attributes
+
+`data-*` state attributes drive every S2 CSS selector rule. A missing
+`data-hovered` means hover styles never fire in any theme.
+
+```bash
+# React data attributes
+grep -n '"data-' \
+  apps/comparison/node_modules/react-aria-components/src/${COMPONENT}.tsx
+
+# Solid data attributes
+grep -n '"data-\|dataAttr' \
+  packages/solidaria-components/src/${COMPONENT}.tsx
+```
+
+Every `data-*` attribute in the React source must exist in the Solid source.
+Required set: `data-hovered`, `data-pressed`, `data-focused`, `data-focus-visible`,
+`data-disabled`, `data-selected`, `data-invalid`, `data-readonly`, `data-open`,
+`data-placement`. Not every component uses all of them — match what React uses.
+
+### 4.3 Context propagation
+
+```bash
+grep -n "useContext\|Context\|createContext" \
+  apps/comparison/node_modules/react-aria-components/src/${COMPONENT}.tsx | head -20
+
+grep -n "useContext\|Context\|createContext" \
+  packages/solidaria-components/src/${COMPONENT}.tsx | head -20
+```
+
+Verify: every context the React component reads is also read in Solid; every
+context the React component provides is also provided in Solid. Context misses
+cause props to silently not propagate into children (e.g. `isDisabled` not
+reaching child items).
+
+### 4.4 Hidden form input
+
+For all form-connected components (DatePicker, Picker, Checkbox, RadioGroup,
+Slider, Switch, NumberField, TextField, SearchField, etc.):
+
+```bash
+grep -n "HiddenInput\|<input\|hidden.*input" \
+  apps/comparison/node_modules/react-aria-components/src/${COMPONENT}.tsx
+
+grep -n "HiddenInput\|<input\|hidden.*input" \
+  packages/solidaria-components/src/${COMPONENT}.tsx
+```
+
+React Aria Components inject a hidden `<input>` for form submission and native
+browser validation. If absent in Solid, `required` validation and form
+submission data are broken.
+
+### 4.5 Portal/overlay
+
+For components with overlays:
+
+```bash
+grep -n "Portal\|Overlay\|modal\|usePopover\|<PopoverContext" \
+  apps/comparison/node_modules/react-aria-components/src/${COMPONENT}.tsx
+
+grep -n "Portal\|createPopover\|modal" \
+  packages/solidaria-components/src/${COMPONENT}.tsx
+```
+
+Verify: same portal target, same `isModal` flag, scroll lock applied, backdrop
+click dismisses the overlay.
+
+---
+
+## Phase 5 — Layer 4 Audit: S2 Styled Component (`solid-spectrum` vs `@react-spectrum/s2`)
+
+Read the React S2 source in full before touching the Solid version. The source
+is at `apps/comparison/node_modules/@react-spectrum/s2/src/${COMPONENT}.tsx`.
+
+### 5.1 Style function inventory
+
+```bash
+# Every named style object/function in React S2
+grep -n "const .*= style(\|const .*Styles\|= css(" \
+  apps/comparison/node_modules/@react-spectrum/s2/src/${COMPONENT}.tsx
+
+# Same in Solid
+grep -n "const .*= style(\|const .*Styles\|= css(" \
+  packages/solid-spectrum/src/<dir>/${COMPONENT}.tsx
+```
+
+Every named style function must exist in the Solid port. Each one carries
+conditional token logic (hover, pressed, disabled, size variants) that the CSS
+system relies on.
+
+### 5.2 Render-state variables
+
+Derived booleans gate the CSS condition branches. Missing ones produce wrong
+styles silently.
+
+```bash
+# React render-state variables
+grep -n "const is[A-Z]\|let is[A-Z]\|const has[A-Z]" \
+  apps/comparison/node_modules/@react-spectrum/s2/src/${COMPONENT}.tsx
+
+# Solid render-state variables
+grep -n "const is[A-Z]\|let is[A-Z]\|const has[A-Z]" \
+  packages/solid-spectrum/src/<dir>/${COMPONENT}.tsx
+```
+
+Trace each derived bool back to where it is used in a style call and confirm
+the Solid version passes the same bool to the same style branch.
+
+### 5.3 Slot context providers
+
+```bash
+grep -n "SlotContext\|TextContext\|IconContext\|<Provider\|SlottedContextValue" \
+  apps/comparison/node_modules/@react-spectrum/s2/src/${COMPONENT}.tsx
+
+grep -n "Context\|Provider" \
+  packages/solid-spectrum/src/<dir>/${COMPONENT}.tsx
+```
+
+S2 uses slot contexts to pass size, variant, and emphasis into child components
+(icons, labels, descriptions). Missing providers means children ignore parent
+props.
+
+### 5.4 Animation inventory
+
+```bash
+# React S2 animations
+grep -n "pressScale\|transform\|scale\|transition\|entering\|exiting\|animation" \
+  apps/comparison/node_modules/@react-spectrum/s2/src/${COMPONENT}.tsx
+
+# Solid animations
+grep -n "pressScale\|transform\|scale\|transition\|entering\|exiting\|animation" \
+  packages/solid-spectrum/src/<dir>/${COMPONENT}.tsx
+```
+
+Animations to verify for each component type:
+
+| Animation type              | Where it lives                                              | How to verify                                                                                  |
+| --------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Press scale                 | JS inline transform driven by `isPressed` render prop       | Check computed `transform` on `mousedown`, assert `scale(0.97)` or matching value              |
+| Overlay enter/exit          | CSS transition on `data-entering`/`data-exiting` attributes | Inspect element during open animation; assert `opacity` and `transform` transition             |
+| Selection indicator sliding | CSS `transform: translateX()` or `left` transition          | Inspect indicator element; assert `transition` property present and value changes on selection |
+| Spinner/pending             | `@keyframes` rotation                                       | Assert `animation` property on spinner element                                                 |
+| Switch thumb slide          | CSS `transform: translateX()`                               | Assert `transition` on thumb; assert transform value changes on toggle                         |
+| Focus ring                  | CSS `outline` or `box-shadow` on `[data-focus-visible]`     | Assert outline appears after keyboard focus, absent after mouse focus                          |
+
+Every animation in React S2 must have an equivalent in Solid. Custom CSS
+approximations that are not token-driven are ADR violations.
+
+### 5.5 Generated CSS class verification
+
+After a Solid build, for every class the Solid component emits to the DOM:
+
+```bash
+# Get all classes from a rendered Solid component (via DOM inspection or test output)
+# Then for each class <cls>:
+grep -c "\.<cls>" packages/solid-spectrum/src/s2-generated.css
+```
+
+A count of 0 means the class was invented in the Solid port without a
+corresponding CSS rule — this is always a bug. Every class must trace back to a
+`style()` call that went through the S2 style compiler.
+
+To get the full class list of a live component quickly:
+
+```javascript
+// In Playwright or browser console
+[...document.querySelector('[data-framework="solid"] [your-selector]').querySelectorAll("*")]
+  .flatMap((el) => [...el.classList])
+  .filter((v, i, a) => a.indexOf(v) === i)
+  .sort();
+```
+
+---
+
+## Phase 6 — Runtime Verification
+
+These checks happen in the browser before any screenshot. Screenshots validate
+appearance; these checks validate the contract beneath it.
+
+### 6.1 Accessibility tree snapshot
+
+```bash
+"$PWCLI" open http://127.0.0.1:4321/components/<slug>/ --headed
+"$PWCLI" snapshot
+```
+
+From the snapshot, verify against the MCP ARIA role tree:
+
+- Root element has the correct role
+- Every interactive element has a computable accessible name (no role without a
+  name)
+- No interactive element has `role="none"` or `role="presentation"` unless
+  intentional
+- `aria-labelledby` references an existing element ID
+- `aria-describedby` chains all IDs (description + error + external)
+- `aria-haspopup` value matches the overlay type (`"dialog"`, `"listbox"`,
+  `"grid"`, `"tree"`)
+
+Do this for both the React canvas and the Solid canvas. Differences are bugs.
+
+### 6.2 DOM structure parity
+
+In Playwright, compare the DOM structure level-by-level:
+
+```javascript
+// Number of DOM levels between label and interactive target
+// Same element types for interactive targets (button not div, input not span)
+// Same slot elements present (icon, text, description, error-message)
+const reactDepth = await page
+  .locator('[data-framework="react"] [role="group"]')
+  .evaluate((el) => el.querySelectorAll("*").length);
+const solidDepth = await page
+  .locator('[data-framework="solid"] [role="group"]')
+  .evaluate((el) => el.querySelectorAll("*").length);
+// These need not be identical, but a large gap signals a structural difference.
+```
+
+Specifically check: same element types for the interactive target (a `<button>`
+in React must not be a `<div tabIndex=0>` in Solid unless React Aria itself uses
+that pattern), same slot elements present and in same order.
+
+### 6.3 Keyboard navigation sequence
+
+For every row in the MCP Keyboard Interactions table, execute the sequence with
+real keyboard events:
+
+```javascript
+const field = page.locator('[data-framework="solid"] [role="group"]');
+await field.focus();
+
+await page.keyboard.press("ArrowDown");
+// Assert: aria-activedescendant updated (for collection components)
+// Assert: focused item has data-focused="true"
+// Assert: focused item has data-focus-visible="true"
+
+await page.keyboard.press("Enter");
+// Assert: value committed or overlay opened
+// Assert: focus at correct target after commit
+
+await page.keyboard.press("Escape");
+// Assert: overlay closed
+// Assert: focus returned to trigger
+```
+
+Use `.press()` for all keyboard assertions — never `.click()` for keyboard
+tests. The sequence must prove both React and Solid behave identically.
+
+### 6.4 Focus lifecycle (for components with embedded buttons)
+
+```javascript
+// For DatePicker, NumberField, SearchField, ComboBox, Picker, etc.
+// Click the field area (not the trigger button)
+await page.click('[data-framework="solid"] .field-input-area');
+
+// Wait one frame
+await page.waitForTimeout(16);
+
+// Assert: focus is on the field input, not the trigger
+// Assert: no blur/focus events were fired during the click
+// Verify by checking document.activeElement in the browser
+const focused = await page.evaluate(() => document.activeElement?.getAttribute("role"));
+expect(focused).toBe("spinbutton"); // or 'textbox', 'combobox', etc.
+```
+
+Record the React event order using DevTools → Event Listeners. The Solid event
+order must match. A transient `blur` that React does not emit is a focus
+stability bug.
+
+### 6.5 Interaction state verification
+
+For each of: hover, focus-visible, pressed, selected/checked, open, disabled,
+invalid:
+
+```javascript
+async function getStateStyles(locator) {
+  return locator.evaluate((el) => {
+    const cs = window.getComputedStyle(el);
+    return {
+      color: cs.color,
+      backgroundColor: cs.backgroundColor,
+      borderColor: cs.borderColor,
+      outline: cs.outline,
+      transform: cs.transform,
+      opacity: cs.opacity,
+    };
+  });
+}
+
+// Before hover
+const before = await getStateStyles(target);
+// Hover
+await target.hover();
+const after = await getStateStyles(target);
+// Assert: backgroundColor changed (or borderColor, or whatever S2 changes on hover)
+expect(before.backgroundColor).not.toBe(after.backgroundColor);
+```
+
+Compare the same state between React and Solid — not just that the value
+changed, but that it changed to the same value.
+
+For `disabled`: hover and press the disabled component and assert that hover
+styles do NOT apply. React Aria suppresses hover/press on disabled elements.
+
+### 6.6 Geometry parity
+
+```javascript
+async function box(locator) {
+  return locator.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y, w: r.width, h: r.height };
+  });
+}
+
+const r = await box(page.locator('[data-framework="react"] [role="group"]'));
+const s = await box(page.locator('[data-framework="solid"] [role="group"]'));
+
+expect(Math.abs(r.w - s.w)).toBeLessThanOrEqual(2);
+expect(Math.abs(r.h - s.h)).toBeLessThanOrEqual(2);
+```
+
+Required geometry checks per component:
+
+- Root element dimensions
+- Icon bounding box (position and size relative to root)
+- Text baseline vs icon centerline (alignment delta ≤ 1px)
+- Trigger button position within field
+- Overlay placement (top, left, width, height after open)
+- Hit area for all interactive elements (minimum 32×32px)
+
+Run geometry checks at every size variant (S, M, L, XL). Size variants
+frequently diverge because they route through different style branches.
+
+### 6.7 Animation frame verification
+
+For animated states (press, overlay open/close, selection change):
+
+```javascript
+// Capture the transform immediately after mousedown (press scale)
+await page.mouse.down();
+const duringPress = await getStateStyles(button);
+expect(duringPress.transform).toMatch(/scale\(0\.9/);
+await page.mouse.up();
+const afterRelease = await getStateStyles(button);
+expect(afterRelease.transform).toBe("none");
+```
+
+For overlay animations, use `page.waitForTimeout(50)` after open and verify
+the transition is mid-flight (opacity between 0 and 1, or transform mid-value),
+not that it jumped instantly to final state.
+
+---
+
+## Phase 7 — Test Coverage Requirements
+
+### 7.1 Unit tests (`packages/solid-spectrum/test/<Name>.test.tsx`)
+
+Unit tests prove the ARIA contract in isolation, without a browser. Every
+component must have tests for all of the following. Use `getByRole` queries —
+never `querySelector` or `getByTestId` for ARIA-contract assertions.
+
+**ARIA semantics (required for every component)**
+
+```typescript
+// Correct root role
+getByRole("group", { name: "Label" }); // DatePicker, NumberField, etc.
+getByRole("button", { name: "Label" }); // ActionButton, etc.
+getByRole("textbox", { name: "Label" }); // TextField, etc.
+
+// aria-describedby includes description ID
+const group = getByRole("group", { name: "Label text" });
+const desc = getByText("Description text");
+expect(group.getAttribute("aria-describedby")).toContain(desc.id);
+
+// aria-describedby includes error ID when invalid
+const error = getByText("Error message");
+expect(group.getAttribute("aria-describedby")).toContain(error.id);
+
+// aria-required
+expect(group).toHaveAttribute("aria-required", "true");
+
+// aria-invalid
+expect(group).toHaveAttribute("aria-invalid", "true");
+
+// aria-disabled
+expect(group).toHaveAttribute("aria-disabled", "true");
+
+// Overlay trigger attributes (for components that open overlays)
+const trigger = getByRole("button", { name: /open/i });
+expect(trigger).toHaveAttribute("aria-haspopup", "dialog"); // or 'listbox'
+expect(trigger).toHaveAttribute("aria-expanded", "false");
+```
+
+**Controlled value**
+
+```typescript
+// defaultValue renders
+render(() => <Component defaultValue={someValue} />);
+// Assert: displayed value matches
+
+// onChange fires with correct type
+const onChange = vi.fn();
+render(() => <Component onChange={onChange} />);
+// Interact → Assert: onChange called with expected type
+```
+
+**State propagation**
+
+```typescript
+// isDisabled prevents interaction
+render(() => <Component isDisabled />);
+await userEvent.click(trigger);
+// Assert: overlay did not open
+
+// isReadOnly allows focus but prevents change
+render(() => <Component isReadOnly value={val} />);
+// Assert: input is focusable
+// Assert: typing does not change value
+```
+
+### 7.2 E2E tests (`apps/comparison/e2e/<name>-visual.spec.ts`)
+
+Required for every component:
+
+- [ ] Default state screenshot pair-diff (React vs Solid, zero tolerance)
+- [ ] Each size variant screenshot (S, M, L, XL) — pair-diff per size
+- [ ] Disabled state screenshot pair-diff
+- [ ] Invalid + description state screenshot pair-diff
+- [ ] Geometry assertion: root, icon, text (delta ≤ 2px)
+- [ ] Keyboard open → navigate → select → dismiss sequence
+- [ ] Focus returned to trigger after dismiss
+- [ ] Side-panel controls drive both React and Solid DOM (not just prop marker)
+- [ ] Light and dark theme screenshots
+- [ ] Hover state does NOT apply to disabled component (click + hover assertion)
+- [ ] At least one real browser typing or interaction test (not just click)
+
+The side-panel controls test must assert that the mounted DOM changed — not
+just that the serialized prop marker updated. For example: after toggling
+`isDisabled`, assert `aria-disabled` is present on the component root.
+
+---
+
+## Phase 8 — Sign-off Checklist
+
+Do not call a component done until every item below is explicitly verified.
+Record the result of each item (pass / gap / intentional deviation) in the
+CURRENT_STATUS.md handoff entry.
+
+### Layer 1 — solid-stately
+
+- [ ] Every property in the React state interface exists in Solid
+- [ ] `isInvalid` and other derived booleans trace the same inputs as React
+- [ ] Every callback fires with the same value type and conditions
+
+### Layer 2 — solidaria
+
+- [ ] Every `aria-*` from MCP Accessibility section is produced under the same condition
+- [ ] Every ARIA role from MCP role tree is emitted
+- [ ] Every keyboard handler from MCP Keyboard Interactions table is present
+- [ ] Focus scope (contain/restore/auto) matches React Aria
+- [ ] `aria-describedby` chains all IDs: description + error + external
+- [ ] Embedded interactive elements do not emit transient blur on the surrounding field
+
+### Layer 3 — solidaria-components
+
+- [ ] JSX slot tree matches react-aria-components (same slots, same slot names)
+- [ ] Every `data-*` state attribute matches react-aria-components output
+- [ ] Every context React provides is also provided in Solid
+- [ ] Hidden form input is present for form-connected components
+- [ ] Portal behavior matches: same target, same modal flag, scroll lock
+
+### Layer 4 — solid-spectrum
+
+- [ ] Every S2 style function exists in the Solid port
+- [ ] Every render-state bool gates the same style conditions
+- [ ] Every class emitted to DOM has a rule in s2-generated.css
+- [ ] Animations match: press scale, overlay enter/exit, selection indicator, pending spinner
+- [ ] Slot context providers match (TextContext, IconContext, etc.)
+- [ ] Icon sizing uses `fontRelative()` or S2 style system — no hardcoded px
+
+### Runtime
+
+- [ ] ARIA tree snapshot matches MCP role tree on both React and Solid canvases
+- [ ] Every key in MCP Keyboard Interactions table verified with real keyboard events
+- [ ] Focus lifecycle verified for all embedded interactive elements
+- [ ] Interaction state styles match React vs Solid (hover, focus, pressed, disabled, invalid)
+- [ ] Geometry within 2px tolerance at all size variants
+- [ ] Animation frames verified (not just final state screenshots)
+
+### Tests
+
+- [ ] Unit tests cover all ARIA semantics using `getByRole` queries
+- [ ] Unit tests cover controlled value, onChange, isDisabled, isReadOnly, isRequired
+- [ ] E2E screenshot pair-diffs committed and passing
+- [ ] E2E keyboard interaction test committed
+- [ ] E2E side-panel controls test asserts DOM state (not just prop marker)
+- [ ] E2E disabled component hover/press guard committed
+
+### Docs
+
+- [ ] `docs/CURRENT_STATUS.md` has a fresh handoff entry with: current state,
+      commits, validation that passed, known gaps, next work, skipped checks with
+      reasons
+
+---
+
+## Anti-patterns
+
+These are never acceptable:
+
+- Tuning CSS by eye (adjusting padding, radius, or color values by hand) — use
+  the S2 style system; if it looks wrong, trace the style declaration.
+- `querySelector` in unit test assertions for ARIA contracts — use `getByRole`.
+- Committing screenshots before the DOM contract (roles, attributes, focus,
+  keyboard) is verified.
+- Marking a component done because the screenshot matches — screenshots cannot
+  prove ARIA roles, keyboard behavior, or focus stability.
+- Adding a class to the DOM that does not exist in `s2-generated.css`.
+- Using `UNSAFE_style` or `UNSAFE_className` in S2 components.
+- Hardcoded pixel values for sizes that S2 derives from tokens or `fontRelative()`.
+- Checking "final focus" without verifying the full focus lifecycle.
+- Verifying only mouse-open behavior for overlays without also verifying
+  keyboard-open (the initially focused item can legitimately differ).
+
+---
+
+## MCP Quick Reference
+
+| When                             | Tool                                                   | Purpose                                |
+| -------------------------------- | ------------------------------------------------------ | -------------------------------------- |
+| Start of every component session | `get_react_aria_page "<Name>"`                         | Full props, API, role tree             |
+| Start of every component session | `get_react_aria_page "<Name>" "Keyboard Interactions"` | Complete keyboard table                |
+| Start of every component session | `get_react_aria_page "<Name>" "Accessibility"`         | Complete ARIA attribute list           |
+| Start of every component session | `get_s2_page "<Name>"`                                 | S2 props, slot structure, styling      |
+| Phase 3 ARIA audit               | `get_react_aria_page "use<Name>"`                      | Hook-level ARIA contract               |
+| Any sub-component                | `get_react_aria_page "<SubComponent>"`                 | e.g. Calendar, DateField, Popover      |
+| CSS token audit                  | `get_style_macro_property_values "<property>"`         | Valid token values for a property      |
+| Enumerating related pages        | `list_react_aria_pages`                                | Find all hook/component pages          |
+| Icon name                        | `search_s2_icons "<term>"`                             | Correct S2 icon name for visual parity |
+
+---
+
+## Batch Plans and Component Navigation
+
+See the following sections below for per-family batch plans and interactive
+control retrofit status. These sections are additive — this v2 protocol applies
+to every component in every batch.
+
+---
 
 ## Interactive Controls Requirement
 
 Every component page must have a modeled interactive comparison control surface
-before it is considered complete. The controls should mirror the public S2 docs
-props that can change visible behavior, semantics, or interaction state. A route
-query fixture is useful for focused snapshots, but it is only a seed state; the
-side-panel controls must also be able to update the mounted React and Solid
-examples without a reload.
+before it is considered complete. Requirements:
 
-For each component:
+- `ComponentControlGroup` entry with `coverage: "modeled"` and real S2 prop names.
+- Both React and Solid fixtures listen to `comparison:controls-change`.
+- Both expose `data-comparison-control-root` and `data-comparison-control-props`.
+- A Playwright test that changes side-panel controls and asserts mounted DOM
+  changed (not just serialized props).
+- Controls are physically clickable at the default Playwright viewport (sticky
+  nav must not cover the form).
 
-- Add a `ComponentControlGroup` entry with `coverage: "modeled"` and the S2
-  docs prop names.
-- Add component defaults to the comparison page control script.
-- Wire both React and Solid fixtures to `comparison:controls-change`.
-- Expose a stable `data-comparison-control-root` and serialized
-  `data-comparison-control-props` on both stacks.
-- Add a Playwright test that changes the side-panel controls and asserts both
-  stacks received the same props and rendered state.
-- Do not treat serialized props or comparison markers as sufficient proof that
-  controls work. The Playwright guard must assert the mounted component DOM and
-  behavior changed as well: selected item, disabled/read-only state, layout,
-  visible slot content, geometry, or another real rendered effect. This is the
-  main guard against reactive wiring bugs where the docs payload updates but the
-  Solid component stays visually stale.
-- Keep the viewer controls faithful to the real React Spectrum S2 docs surface.
-  Do not invent extra knobs just because the comparison harness or a snapshot
-  route can model them. Source-only or snapshot-only states such as
-  illustration slots, disabled collection items, or special fixture data belong
-  in dedicated query routes and focused specs, not in the docs side panel.
-- Keep `data-comparison-control-root` singular. Put it on one stable wrapper
-  element per stack, not on both the visible control and an internal hidden
-  input. The modeled-controls contract assumes one root, and duplicate markers
-  hide real harness wiring mistakes.
-- Keep the side-panel controls physically clickable at the default Playwright
-  viewport. Sticky navigation must not cover long control forms.
-- Run `e2e/modeled-controls-contract.spec.ts`; it is the shared guard that every
-  `coverage: "modeled"` component is live on both styled stacks, has a modeled
-  side-panel form, and exposes matching serialized props from React and Solid.
-- Add a visual-state-matrix entry for `styled.props.controls`.
-
-If a component cannot meet this yet, leave the controls as a tracked gap and
-record why in the visual state matrix. Do not mark the component complete while
-the interactive control surface is missing.
-
-## Component Navigation Groups
-
-Keep comparison navigation grouped by the same working batches used for porting
-and visual signoff. The shared source is
-`apps/comparison/src/data/component-groups.ts`; update it whenever a component
-is added, removed, or moved between batches. The sidebar must use collapsible
-groups on both the index page and component detail pages, and the active
-component's group should open by default.
-
-Run `e2e/sidebar-groups.spec.ts` after changing navigation groups. It asserts
-that groups can be collapsed and that detail pages open the active component's
-batch.
-
-## Button-Family Batch Plan
-
-Process button-family components in small batches, but sign off each component
-individually. Batch 1 covers single button-derived controls:
-`ActionButton`, `ToggleButton`, and `LinkButton`.
-
-| Assumption                                                                                                           | React S2 reference to inspect                                                                                                            | Solid surface to inspect                                                                                                                                      | Browser check                                                                                                                                                    | Committed guard                                                                                                      |
-| -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| ActionButton text, icon-leading, icon-only, size, quiet, staticColor, disabled, and pending states match S2 geometry | `@react-spectrum/s2/src/ActionButton.tsx`, especially `btnStyles`, `IconContext`, `TextContext`, `usePendingState`, and `ProgressCircle` | `packages/solid-spectrum/src/button/ActionButton.tsx`, `s2-action-button-styles.ts`, comparison route `/components/actionbutton/?iconPlacement=start&size=XL` | Compare React/Solid root, icon, text, gap, progress, and centerline boxes in Playwright; inspect delayed pending with icon content after spinner becomes visible | `e2e/actionbutton-visual.spec.ts` computed, screenshot, icon geometry, and pending-with-icon tests                   |
-| ToggleButton icon content and selected state use the same baseline and accessible pressed state                      | `@react-spectrum/s2/src/ToggleButton.tsx`, `btnStyles`, `ToggleButtonGroupContext`, `IconContext`, `TextContext`                         | `packages/solid-spectrum/src/button/ToggleButton.tsx`, route `/components/togglebutton/?iconPlacement=start&isSelected=true`                                  | Compare root/icon/text boxes, aria-pressed, and selected-state rendering for text+icon and icon-only                                                             | `e2e/single-button-controls-visual.spec.ts` screenshots, geometry assertions, and selected-state contract            |
-| LinkButton preserves link semantics while using Button visual/icon treatment                                         | `@react-spectrum/s2/src/Button.tsx` `LinkButton`, `button`, `IconContext`, `TextContext`                                                 | `packages/solid-spectrum/src/button/LinkButton.tsx`, route `/components/linkbutton/?iconPlacement=only`                                                       | Compare anchor role/name/href, root/icon/text boxes, icon-only accessible name, and primary fill colors without comparison-page anchor overrides                 | `e2e/single-button-controls-visual.spec.ts` screenshots, geometry assertions, href contract, and primary color guard |
-
-Batch 1 intentionally leaves group context and collection selection details to
-Batch 2 and Batch 3. Do not mix group fixes into single-control work unless a
-shared button primitive regression blocks the single-control matrix.
-
-For the button family, treat icon placement as an observed React S2 contract,
-not a generic API knob. The current S2 reference uses leading icons and
-icon-only states here; do not model an `end` placement unless React S2 itself
-ships it for that control.
-
-For `LinkButton` premium/genai variants, interactive gradient parity still needs
-an explicit manual Playwright pass with navigation suppressed before sign-off.
-Keep that check in the validation checklist even when the committed guard only
-covers geometry, href semantics, and comparison-page color resets.
-
-Batch 2 covers grouped button-derived controls with button-context propagation
-and layout behavior: `ActionButtonGroup`, `ButtonGroup`, and
-`ToggleButtonGroup`.
-
-| Assumption                                                                                                               | React S2 reference to inspect                                                                                                 | Solid surface to inspect                                                                                                                                                                                 | Browser check                                                                                                                                                                                  | Committed guard                                                                                                            |
-| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| ActionButtonGroup propagates size, density, quiet, disabled, justified, staticColor, orientation, and icon slot geometry | `@react-spectrum/s2/src/ActionButtonGroup.tsx`, `ActionButton.tsx`, `actionGroupStyle`, `ActionButtonGroupContext`, `Toolbar` | `packages/solid-spectrum/src/actionbuttongroup/index.tsx`, `button/group-context.ts`, comparison route `/components/actionbuttongroup/?density=compact&orientation=vertical&size=XL&iconPlacement=start` | Compare React/Solid toolbar role, vertical aria-orientation, data/style geometry, child button size/quiet/disabled state, icon/text boxes, gap, and centerline measurements before screenshots | `e2e/grouped-button-controls-visual.spec.ts` screenshot, role/orientation, group-prop, and icon geometry checks            |
-| ButtonGroup propagates size/disabled and flips to vertical when horizontal content overflows                             | `@react-spectrum/s2/src/ButtonGroup.tsx`, especially `ResizeObserver`, `checkForOverflow`, and `ButtonGroupContext`           | `packages/solid-spectrum/src/buttongroup/index.tsx`, comparison route `/components/buttongroup/?wrapWidth=96&size=XL&iconPlacement=start`                                                                | Compare React/Solid wrapper semantics, effective flex direction, wrapped width, child disabled/size state, and icon/text centerline geometry at the constrained width                          | `e2e/grouped-button-controls-visual.spec.ts` overflow-direction, screenshot, and icon geometry checks                      |
-| ToggleButtonGroup propagates group context while preserving radio selection semantics and selected icon geometry         | `@react-spectrum/s2/src/ToggleButtonGroup.tsx`, `ToggleButton.tsx`, `ToggleButtonGroupContext`, `actionGroupStyle`            | `packages/solid-spectrum/src/togglebuttongroup/index.tsx`, comparison route `/components/togglebuttongroup/?density=compact&orientation=vertical&isEmphasized=true&size=XL&iconPlacement=start`          | Compare React/Solid radiogroup role/orientation, selected radio state, group density/justification/disabled props, and selected text+icon centerline measurements before screenshots           | `e2e/grouped-button-controls-visual.spec.ts` screenshot, role/orientation, selection, group-prop, and icon geometry checks |
-
-Batch 2 intentionally leaves collection-specific selection visuals for Batch 3:
-`SegmentedControl` still needs the S2 selection indicator/press-scale matrix,
-and `SelectBoxGroup` still needs multi-select indicator, slot provider, and
-disabled item coverage.
-
-Batch 3 covers the collection-style controls that complete the current
-button-family surface: `SegmentedControl` and `SelectBoxGroup`.
-
-| Assumption                                                                                                                         | React S2 reference to inspect                                                                                                                    | Solid surface to inspect                                                                                                                                                      | Browser check                                                                                                                                                                                                      | Committed guard                                                                                                                                         |
-| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SegmentedControl uses the S2 sliding selection indicator, root background, justified layout, disabled state, and selected geometry | `@react-spectrum/s2/src/SegmentedControl.tsx`, especially `SelectionIndicator`, `ToggleGroupStateContext`, `control({icon: true})`, `pressScale` | `packages/solid-spectrum/src/segmentedcontrol/index.tsx`, comparison route `/components/segmentedcontrol/?selectedKey=grid&isJustified=true`                                  | Compare React/Solid radiogroup role, selected radio state, root background, root/item geometry, selection indicator box, justified item widths, prop controls, and pressed transform behavior before screenshots   | `e2e/collection-button-controls-visual.spec.ts` screenshot, selected indicator geometry, justified layout, prop controls, and behavior checks           |
-| SelectBoxGroup uses S2 grid sizing, label/description hover color, slots, horizontal layout, and multi-select checkbox indicator   | `@react-spectrum/s2/src/SelectBoxGroup.tsx`, `Checkbox.tsx` `box`/`iconStyles`, `TextContext`, `IllustrationContext`, `pressScale`               | `packages/solid-spectrum/src/selectboxgroup/index.tsx`, comparison route `/components/selectboxgroup/?selectionMode=multiple&selectedKeys=starter,pro&orientation=horizontal` | Compare React/Solid listbox role, multi-selected option state, checkbox indicator visibility, label/description slot boxes, hover text color, option grid dimensions, prop controls, and horizontal text alignment | `e2e/collection-button-controls-visual.spec.ts` screenshot, slot geometry, hover text color, multi-select indicator, prop controls, and behavior checks |
-
-Batch 3 does not make these controls complete. Remaining follow-up work after
-the first guard pass is strict pair-diff tightening and SegmentedControl
-icon-slot permutations.
-
-## Button-Family Interactive-Control Retrofit
-
-Some button-family components already have URL-driven fixtures, screenshots, and
-geometry contracts, but that is not the same as a modeled interactive comparison
-surface. Retrofit them before moving to the next component family.
-
-| Component         | Current state                                                                 | Required follow-up                                                                               |
-| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Button            | Modeled controls, React/Solid fixture wiring, and side-panel Playwright guard | Keep as the reference implementation pattern for the rest of the family                          |
-| ActionButton      | Modeled controls and fixture wiring exist                                     | Add the same explicit side-panel Playwright guard shape used by Button                           |
-| LinkButton        | URL-driven icon fixtures and semantic/geometry guards exist                   | Add modeled controls, React/Solid event wiring, root prop serialization, and side-panel guard    |
-| ToggleButton      | URL-driven icon/selected fixtures and semantic/geometry guards exist          | Add modeled controls, selected-state event wiring, root prop serialization, and side-panel guard |
-| ButtonGroup       | URL-driven group fixture and geometry/overflow guards exist                   | Add modeled controls, React/Solid event wiring, group prop serialization, and side-panel guard   |
-| ActionButtonGroup | URL-driven group fixture and geometry/role guards exist                       | Add modeled controls, React/Solid event wiring, group prop serialization, and side-panel guard   |
-| ToggleButtonGroup | URL-driven group fixture and geometry/selection guards exist                  | Add modeled controls, selection event wiring, group prop serialization, and side-panel guard     |
-| SegmentedControl  | Modeled controls, React/Solid fixture wiring, and side-panel guard exist      | Continue with remaining visual gaps only after the interactive-control baseline stays green      |
-| SelectBoxGroup    | Modeled controls, React/Solid fixture wiring, and side-panel guard exist      | Continue with remaining visual gaps only after the interactive-control baseline stays green      |
-
-Work in this order:
-
-1. Normalize `ActionButton` to the `Button` side-panel guard pattern.
-2. Retrofit `LinkButton` and `ToggleButton` as the single-control slice.
-3. Retrofit `ButtonGroup`, `ActionButtonGroup`, and `ToggleButtonGroup` as the
-   grouped-control slice.
-4. Run the focused Playwright suites after each slice and update the visual
-   state matrix before committing.
-
-## Form/Input Batch Plan
-
-Process form and input primitives in a small batch because they share field
-labeling, validation, help text, and controlled value semantics. Start with the
-smallest independent control, then reuse the validation shape for larger field
-components.
-
-| Component     | React S2 reference to inspect                                                                                                                         | Solid surface to inspect                                                                                                                                                                 | Browser check                                                                                                                                                                                                                       | Committed guard                                                                                                                                                  |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Checkbox      | `@react-spectrum/s2/src/Checkbox.tsx`, especially `wrapper`, `box`, `iconStyles`, `CenterBaseline`, and `pressScale`                                  | `packages/solid-spectrum/src/checkbox/index.tsx`, comparison route `/components/checkbox/?isSelected=true&isEmphasized=true&size=XL`                                                     | Compare React/Solid checked semantics, S2 box/icon size, emphasized selected color, disabled/read-only/invalid dynamic states, inactive-state hover suppression, pressed transform frame, label baseline, and click toggle behavior | `e2e/checkbox-visual.spec.ts` plus `e2e/modeled-controls-contract.spec.ts`                                                                                       |
-| CheckboxGroup | `@react-spectrum/s2/src/CheckboxGroup.tsx` and `Checkbox.tsx`, especially field layout, group orientation, CheckboxContext, and child `wrapper`/`box` | `packages/solid-spectrum/src/checkbox/index.tsx`, comparison route `/components/checkboxgroup/?selectedValues=email,sms&isEmphasized=true&isInvalid=true&orientation=horizontal&size=XL` | Compare React/Solid group semantics, selected checkbox values, S2 group field grid, orientation layout, child checkbox size/emphasis propagation, invalid/help text, and side-panel value/state updates                             | `e2e/checkboxgroup-visual.spec.ts` plus `e2e/modeled-controls-contract.spec.ts`                                                                                  |
-| RadioGroup    | `@react-spectrum/s2/src/RadioGroup.tsx`, especially `RadioGroup`, `Radio`, `wrapper`, `circle`, field layout, and `pressScale`                        | `packages/solid-spectrum/src/radio/index.tsx`, comparison route `/components/radiogroup/?selectedValue=pro&isEmphasized=true&isInvalid=true&orientation=horizontal&size=XL`              | Compare React/Solid radiogroup semantics, selected radio state, S2 circle size/border/color, emphasized/invalid treatment, orientation layout, help text, label baseline, and side-panel value/state updates                        | `e2e/radiogroup-visual.spec.ts` plus `e2e/modeled-controls-contract.spec.ts`                                                                                     |
-| NumberField   | `@react-spectrum/s2/src/NumberField.tsx`, especially `fieldGroupCss`, `inputButton`, stepper icon sizing, help text, and field validation             | `packages/solid-spectrum/src/numberfield/index.tsx`, comparison route `/components/numberfield/?value=8&isInvalid=true&isRequired=true&size=XL`                                          | Compare React/Solid spinbutton semantics, controlled numeric value, S2 field group geometry, stepper button/icon rects and computed sizes, invalid icon/help text, hide-stepper state, and side-panel value/state updates           | `e2e/numberfield-visual.spec.ts` plus `e2e/modeled-controls-contract.spec.ts`                                                                                    |
-| Picker        | `@react-spectrum/s2/src/Picker.tsx`, `Field.tsx`, and the underlying React Aria select/listbox behavior                                               | `packages/solid-spectrum/src/picker/index.tsx`, `packages/solidaria-components/src/Select.tsx`, comparison route `/components/picker/?isInvalid=true&isRequired=true&size=XL`            | Compare React/Solid select semantics, trigger/value/icon geometry, invalid/help text treatment, accessible trigger name, real-click open state, listbox selection, trigger DOM stability, focus return, and side-panel selected key | `e2e/picker-visual.spec.ts` plus `e2e/modeled-controls-contract.spec.ts`                                                                                         |
-| Slider        | `@react-spectrum/s2/src/Slider.tsx`, especially label/output layout, track, fill, thumb hit area, `trackStyle`, `thumbStyle`, and `isEmphasized`      | `packages/solid-spectrum/src/slider/index.tsx`, comparison route `/components/slider/?value=72&isEmphasized=true&size=XL&trackStyle=thick&thumbStyle=precise`                            | Compare React/Solid slider semantics, controlled numeric value/output text, S2 track/fill/thumb geometry, emphasized color, thick/precise styles, keyboard value updates, focus stability, and side-panel value/state updates       | `e2e/slider-visual.spec.ts` plus `e2e/modeled-controls-contract.spec.ts`                                                                                         |
-| TextField     | `@react-spectrum/s2/src/TextField.tsx` and `Field.tsx`                                                                                                | `packages/solid-spectrum/src/textfield/index.tsx`                                                                                                                                        | Compare label/input/help-text grid, size, invalid icon, disabled/read-only value behavior, focus ring, and controlled value updates                                                                                                 | `e2e/textfield-visual.spec.ts` covers invalid required XL geometry/screenshots and real browser typing                                                           |
-| TextArea      | `@react-spectrum/s2/src/TextField.tsx`, especially `TextArea`, `TextAreaInput`, `fieldGroupCss`, and auto-height                                      | `packages/solid-spectrum/src/textfield/TextArea.tsx`                                                                                                                                     | Compare label/textarea/help-text grid, auto-height, min height, invalid icon baseline, disabled/read-only value behavior, focus ring, and multiline value updates                                                                   | `e2e/textarea-visual.spec.ts` covers invalid required XL geometry/screenshots and real browser multiline input                                                   |
-| SearchField   | `@react-spectrum/s2/src/SearchField.tsx`, `TextField.tsx`, `Field.tsx`, and clear-button behavior                                                     | `packages/solid-spectrum/src/searchfield/index.tsx`                                                                                                                                      | Compare field wrapper geometry, search icon, clear button/icon rects and computed sizes, keyboard clearing, disabled/read-only states, value updates, and post-clear focus stability                                                | `e2e/searchfield-visual.spec.ts` covers invalid required XL geometry/screenshots, clear icon sizing, and real browser typing/clear focus                         |
-| Switch        | `@react-spectrum/s2/src/Switch.tsx`                                                                                                                   | `packages/solid-spectrum/src/switch/ToggleSwitch.tsx`                                                                                                                                    | Compare switch role semantics, selected thumb/track geometry, emphasized treatment, disabled/read-only state, label baseline, click toggle, and control-surface state updates                                                       | `e2e/switch-visual.spec.ts` covers selected emphasized XL geometry/screenshots, click toggle behavior, and side-panel selected/disabled/read-only DOM assertions |
-
-## Playwright CLI Inspection
-
-Use Playwright CLI for exploratory browser validation before accepting a visual
-fix. The test suite is the committed guard; CLI inspection is how we catch
-layout details before the user has to point them out.
-
-Required loop for visual fixes:
-
-1. Start the comparison app.
-2. Open the component route with the intended query state.
-3. Take an accessibility/DOM snapshot.
-4. Capture React and Solid screenshots into `output/playwright/`.
-5. For alignment-sensitive states, capture geometry from both sides and compare
-   root, icon, text, and slot rectangles.
-6. Use video or tracing when the state is temporal, such as pressed, pending, or
-   overlay animation.
-7. Promote the useful assertion into `apps/comparison/e2e` before calling the
-   component fixed.
-
-For stateful controls, test at least one state through the side-panel controls,
-not only URL params. URL fixtures catch initial rendering; side-panel controls
-catch whether Solid props remain reactive after mount. Disabled and read-only
-states should also be hovered/pressed in the browser to prove inactive controls
-do not keep hover or press affordances.
-
-For animated or transform-driven controls, verify that the mounted DOM node
-carrying the transition survives state changes. Matching screenshots are not
-enough if the Solid side remounts the thumb, handle, or track and skips the
-real motion.
-
-For render-prop or overlay controls, mark the concrete interactive DOM node
-before the interaction and assert the marker remains after focus/open/selection.
-Do this with a real pointer click, not only `element.click()`: Select-like
-triggers can otherwise appear correct while focus remounts cancel the native
-`pointerup`/`click` sequence or leave stale ARIA attributes.
-
-When validating against the comparison app, confirm whether the app aliases the
-local package to `src` or `dist`. If it aliases to `dist`, rebuild the affected
-workspace packages and restart the dev server before browser validation; Vite
-can cache a transient missing CSS/module state during a package rebuild.
-
-For styled links rendered inside the comparison viewer, explicitly verify
-computed colors on the real anchor. The docs app has its own anchor styling, and
-unlayered viewer CSS can accidentally override layered Spectrum component CSS in
-both the React and Solid canvases.
-
-For text-entry controls, include a real browser typing/fill assertion. Directly
-calling a handler or setting `input.value` is not enough: the guard must prove
-that the same input/textarea DOM node remains focused, delegated/native input
-events reach the component, controlled state updates, and the comparison value
-marker survives the browser event cycle. Clear buttons need an immediate
-post-click check that the value marker is empty and focus is already back on the
-same text-entry node, without waiting for a delayed refocus.
-
-For auto-sized or wrapping text fixtures, make the screenshot value
-deterministic. Use explicit line breaks or text that cannot cross a wrapping
-boundary under fallback fonts. Do not let committed screenshot dimensions depend
-on remote font timing; wait for font readiness where available, then assert the
-React and Solid text boxes have stayed settled and equal before taking the
-snapshot.
-
-Example artifacts:
-
-```bash
-export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
-export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"
-"$PWCLI" open http://127.0.0.1:4321/components/button/?iconPlacement=start --headed
-"$PWCLI" snapshot
-"$PWCLI" screenshot --output output/playwright/button-icon-start.png
-```
+---
 
 ## Screenshot Rule
 
 Screenshots validate implementation. They do not define implementation.
 
-If a screenshot fails, inspect the S2 style declaration and Solid style-system
-output before changing CSS.
+If a screenshot fails: inspect the S2 style declaration and Solid style-system
+output before changing CSS. If a screenshot passes: it does not mean the ARIA
+contract, keyboard behavior, or focus lifecycle is correct.
+
+---
+
+## End-of-Component Lifecycle
+
+A component is not done until `docs/CURRENT_STATUS.md` has a handoff entry.
+The entry must include: current state, commits, validation that passed, known
+traps, next likely work, and any skipped checks with reasons. The handoff entry
+is part of the done definition.

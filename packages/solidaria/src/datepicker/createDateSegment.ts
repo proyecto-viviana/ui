@@ -5,7 +5,7 @@
  * Based on @react-aria/datepicker useDateSegment
  */
 
-import { createSignal, createMemo } from "solid-js";
+import { createSignal, createMemo, onCleanup } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { DateFieldState, DateSegment, DateSegmentType } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
@@ -13,6 +13,10 @@ import { useLocale } from "../i18n";
 export interface AriaDateSegmentProps {
   /** The segment data. */
   segment: DateSegment;
+  /** The ID of the calendar dialog controlled by this segment (when inside a datepicker). */
+  "aria-controls"?: string;
+  /** The ID of an element that describes the segment. */
+  "aria-describedby"?: string;
 }
 
 export interface DateSegmentAria {
@@ -26,6 +30,10 @@ export interface DateSegmentAria {
   isPlaceholder: boolean;
   /** The text to display. */
   text: string;
+  /** Whether the segment is hovered. */
+  isHovered: boolean;
+  /** Whether the segment has keyboard focus visible. */
+  isFocusVisible: boolean;
 }
 
 /**
@@ -38,6 +46,8 @@ export function createDateSegment<T extends DateFieldState>(
 ): DateSegmentAria {
   const getProps = () => access(props);
   const [isFocused, setIsFocused] = createSignal(false);
+  const [isFocusVisible, setIsFocusVisible] = createSignal(false);
+  const [isHovered, setIsHovered] = createSignal(false);
   const [enteredKeys, setEnteredKeys] = createSignal("");
   const [isComposing, setIsComposing] = createSignal(false);
   const locale = useLocale();
@@ -49,6 +59,36 @@ export function createDateSegment<T extends DateFieldState>(
   const isEditable = createMemo(() => {
     const seg = segment();
     return seg.isEditable && !state.isDisabled() && !state.isReadOnly();
+  });
+
+  // Long press state for ArrowUp / ArrowDown
+  let longPressTimeout: ReturnType<typeof setTimeout> | null = null;
+  let longPressInterval: ReturnType<typeof setInterval> | null = null;
+  let hadPointerDown = false;
+
+  const clearLongPress = () => {
+    if (longPressTimeout) {
+      clearTimeout(longPressTimeout);
+      longPressTimeout = null;
+    }
+    if (longPressInterval) {
+      clearInterval(longPressInterval);
+      longPressInterval = null;
+    }
+  };
+
+  const startLongPress = (action: () => void) => {
+    clearLongPress();
+    longPressTimeout = setTimeout(() => {
+      action();
+      longPressInterval = setInterval(() => {
+        action();
+      }, 100);
+    }, 300);
+  };
+
+  onCleanup(() => {
+    clearLongPress();
   });
 
   const focusSegment = (target: "first" | "last" | "prev" | "next") => {
@@ -96,6 +136,9 @@ export function createDateSegment<T extends DateFieldState>(
 
     if (type === "literal") return;
 
+    // Keyboard interaction means focus is visible
+    setIsFocusVisible(true);
+
     switch (e.key) {
       case "ArrowRight":
         e.preventDefault();
@@ -108,10 +151,16 @@ export function createDateSegment<T extends DateFieldState>(
       case "ArrowUp":
         e.preventDefault();
         state.incrementSegment(type);
+        if (!e.repeat) {
+          startLongPress(() => state.incrementSegment(type));
+        }
         break;
       case "ArrowDown":
         e.preventDefault();
         state.decrementSegment(type);
+        if (!e.repeat) {
+          startLongPress(() => state.decrementSegment(type));
+        }
         break;
       case "Home":
         e.preventDefault();
@@ -143,6 +192,10 @@ export function createDateSegment<T extends DateFieldState>(
         }
         break;
     }
+  };
+
+  const handleKeyUp = () => {
+    clearLongPress();
   };
 
   // Handle numeric input
@@ -229,18 +282,46 @@ export function createDateSegment<T extends DateFieldState>(
   const handleFocus = () => {
     setIsFocused(true);
     setEnteredKeys("");
+
+    if (!hadPointerDown) {
+      setIsFocusVisible(true);
+    }
+    hadPointerDown = false;
+
+    // Select all text in the segment
+    const el = ref?.();
+    if (el && typeof window !== "undefined") {
+      const selection = window.getSelection();
+      if (selection) {
+        const range = new Range();
+        range.selectNodeContents(el);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
   };
 
   const handleBlur = () => {
     setIsFocused(false);
+    setIsFocusVisible(false);
     setEnteredKeys("");
+    clearLongPress();
     state.confirmPlaceholder();
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
   };
 
   // Segment props
   const segmentProps = createMemo(() => {
     const seg = segment();
     const type = seg.type;
+    const p = getProps();
 
     // Literal segments don't need interaction props
     if (type === "literal") {
@@ -256,25 +337,43 @@ export function createDateSegment<T extends DateFieldState>(
       "aria-valuenow": seg.value,
       "aria-valuemin": seg.minValue,
       "aria-valuemax": seg.maxValue,
-      "aria-valuetext": seg.isPlaceholder ? seg.placeholder : seg.text,
+      "aria-valuetext": seg.isPlaceholder ? "" : seg.text,
       "aria-readonly": state.isReadOnly() || undefined,
       "aria-disabled": state.isDisabled() || undefined,
       "aria-invalid": state.isInvalid() || undefined,
+      "aria-controls": p["aria-controls"] || undefined,
+      "aria-describedby": p["aria-describedby"] || undefined,
       contentEditable: isEditable(),
       suppressContentEditableWarning: true,
       inputMode: "numeric" as const,
       autoCorrect: "off",
       enterKeyHint: "next" as const,
       spellCheck: false,
+      "data-placeholder": seg.isPlaceholder ? "true" : undefined,
+      "data-readonly": state.isReadOnly() || undefined,
+      "data-disabled": state.isDisabled() || undefined,
+      "data-invalid": state.isInvalid() || undefined,
+      "data-type": seg.type,
+      "data-hovered": isHovered() || undefined,
+      "data-focused": isFocused() || undefined,
+      "data-focus-visible": isFocusVisible() || undefined,
       onKeyDown: handleKeyDown,
+      onKeyUp: handleKeyUp,
       onFocus: handleFocus,
       onBlur: handleBlur,
       onBeforeInput: handleBeforeInput,
       onCompositionStart: handleCompositionStart,
       onCompositionEnd: handleCompositionEnd,
-      onMouseDown: (e: MouseEvent) => {
+      onMouseEnter: handleMouseEnter,
+      onMouseLeave: handleMouseLeave,
+      onPointerDown: (e: PointerEvent) => {
         // Prevent cursor positioning in the middle of the segment
         e.preventDefault();
+        hadPointerDown = true;
+        setIsFocusVisible(false);
+      },
+      onPointerUp: () => {
+        clearLongPress();
       },
     };
   });
@@ -300,6 +399,12 @@ export function createDateSegment<T extends DateFieldState>(
     },
     get text() {
       return text();
+    },
+    get isHovered() {
+      return isHovered();
+    },
+    get isFocusVisible() {
+      return isFocusVisible();
     },
   };
 }
