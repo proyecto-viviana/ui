@@ -320,6 +320,34 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Computed style contracts compare group geometry, child Avatar sizing, over-background outline treatment, and overlap margins across representative S2 sizes.",
     },
   ],
+  image: [
+    visualDefaultState({
+      slug: "image",
+      pairDiff: "strict",
+      spec: "e2e/image-visual.spec.ts",
+      note: "Image default visual evidence is captured from the focused Image fixture and compared with zero pixel tolerance.",
+    }),
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/image-visual.spec.ts",
+      note: "The docs-style prop controls drive alt text, source mode, and object-fit treatment into both stacks.",
+    },
+    {
+      id: "styled.sources.error-coordinator",
+      label: "Sources, error, and coordinator behavior",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/image-visual.spec.ts",
+      note: "Browser assertions cover conditional source rendering, custom error content, and ImageCoordinator multi-image rendering.",
+    },
+  ],
   actionbuttongroup: [
     visualDefaultState({
       slug: "actionbuttongroup",

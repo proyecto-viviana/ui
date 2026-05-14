@@ -26,6 +26,7 @@ import {
 } from "./checkboxgroup-demo";
 import { comboBoxDemoDefaults, comboBoxKeyOptions, comboBoxSizeOptions } from "./combobox-demo";
 import { datePickerDemoDefaults, datePickerSizeOptions } from "./datepicker-demo";
+import { imageDemoDefaults, imageObjectFitOptions, imageSourceModeOptions } from "./image-demo";
 import {
   radioGroupDemoDefaults,
   radioGroupOrientationOptions,
@@ -513,6 +514,53 @@ const avatarGroupControls: ComponentControlGroup = {
     "aria-details",
   ],
   note: "Modeled from the S2 AvatarGroup docs and source. The viewer drives visible label text, group size, and child count while the route verifies AvatarContext overlap, label wiring, and child Avatar sizing.",
+};
+
+const imageControls: ComponentControlGroup = {
+  slug: "image",
+  title: "Image",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "alt",
+      label: "alt",
+      kind: "text",
+      defaultValue: imageDemoDefaults.alt,
+    },
+    {
+      name: "sourceMode",
+      label: "sourceMode",
+      kind: "radio",
+      defaultValue: imageDemoDefaults.sourceMode,
+      options: options(imageSourceModeOptions),
+    },
+    {
+      name: "objectFit",
+      label: "objectFit",
+      kind: "radio",
+      defaultValue: imageDemoDefaults.objectFit,
+      options: options(imageObjectFitOptions),
+    },
+  ],
+  apiProps: [
+    "alt",
+    "src",
+    "crossOrigin",
+    "decoding",
+    "fetchPriority",
+    "group",
+    "height",
+    "itemProp",
+    "loading",
+    "referrerPolicy",
+    "renderError",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "width",
+  ],
+  note: "Modeled from the S2 Image docs and source. The viewer drives accessible alt text, basic/conditional/error/coordinator source modes, and object-fit treatment into both stacks. Native fetch and intrinsic image attributes are covered in focused Solid unit tests.",
 };
 
 const radioGroupControls: ComponentControlGroup = {
@@ -2008,6 +2056,7 @@ export const componentControlGroups = {
   checkboxgroup: checkboxGroupControls,
   combobox: comboBoxControls,
   datepicker: datePickerControls,
+  image: imageControls,
   linkbutton: linkButtonControls,
   numberfield: numberFieldControls,
   picker: pickerControls,

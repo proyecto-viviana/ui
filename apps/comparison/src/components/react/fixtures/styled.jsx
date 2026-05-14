@@ -18,6 +18,8 @@ import {
   Dialog as SpectrumDialog,
   DialogTrigger as SpectrumDialogTrigger,
   Heading as SpectrumHeading,
+  Image as SpectrumImage,
+  ImageCoordinator as SpectrumImageCoordinator,
   LinkButton as SpectrumLinkButton,
   NumberField as SpectrumNumberField,
   Picker as SpectrumPicker,
@@ -112,6 +114,13 @@ import {
   normalizeDatePickerDemoProps,
   serializeDatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
+import {
+  imageDemoPropsFromWindow,
+  imageMissingSource,
+  imageDemoSources,
+  normalizeImageDemoProps,
+  serializeImageDemoProps,
+} from "@comparison/data/image-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -360,6 +369,7 @@ export const reactStyledFixtures = {
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   combobox: () => jsx(ReactComboBoxDemo, {}),
+  image: () => jsx(ReactImageDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
   picker: () => jsx(ReactPickerDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
@@ -516,6 +526,92 @@ function ReactAvatarGroupDemo() {
           ),
         ),
       }),
+    }),
+    colorScheme,
+  );
+}
+
+function imageFrameStyle(objectFit) {
+  return {
+    width: 160,
+    height: 96,
+    maxWidth: "100%",
+    borderRadius: 6,
+    objectFit,
+    objectPosition: "center",
+  };
+}
+
+function imageSourceForDemo(demoProps) {
+  if (demoProps.sourceMode === "conditional") {
+    return [
+      { colorScheme: "light", srcSet: imageDemoSources.light },
+      { colorScheme: "dark", srcSet: imageDemoSources.dark, media: "(min-width: 1px)" },
+    ];
+  }
+
+  if (demoProps.sourceMode === "error") {
+    return imageMissingSource;
+  }
+
+  return imageDemoSources.basic;
+}
+
+function ReactImageError() {
+  return jsx("div", {
+    className: "comparison-image-error",
+    children: "Error loading image",
+  });
+}
+
+function ReactImageDemo() {
+  const [demoProps, setDemoProps] = useState(imageDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "image") {
+        setDemoProps(normalizeImageDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const imageProps = {
+    alt: demoProps.alt,
+    src: imageSourceForDemo(demoProps),
+    UNSAFE_style: imageFrameStyle(demoProps.objectFit),
+    renderError: demoProps.sourceMode === "error" ? () => jsx(ReactImageError, {}) : undefined,
+  };
+
+  const content =
+    demoProps.sourceMode === "coordinator"
+      ? jsx(SpectrumImageCoordinator, {
+          children: jsxs("div", {
+            className: "comparison-image-coordinator-grid",
+            children: [
+              jsx(SpectrumImage, {
+                alt: `${demoProps.alt} one`,
+                src: imageDemoSources.first,
+                UNSAFE_style: imageFrameStyle(demoProps.objectFit),
+              }),
+              jsx(SpectrumImage, {
+                alt: `${demoProps.alt} two`,
+                src: imageDemoSources.second,
+                UNSAFE_style: imageFrameStyle(demoProps.objectFit),
+              }),
+            ],
+          }),
+        })
+      : jsx(SpectrumImage, imageProps);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-image-row",
+      "data-comparison-control-root": "image",
+      "data-comparison-control-props": serializeImageDemoProps(demoProps),
+      children: content,
     }),
     colorScheme,
   );

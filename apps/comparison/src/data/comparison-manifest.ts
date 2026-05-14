@@ -296,6 +296,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 AvatarGroup and Avatar directly; Solid uses @proyecto-viviana/solid-spectrum AvatarGroup and Avatar with S2-derived group and child context styling.",
   }),
 
+  image: styledLiveOfficialEntry({
+    slug: "image",
+    title: "Image",
+    category: "Components",
+    summary:
+      "Image wrapper mounted on both stacks with loading, error, conditional source, and coordinator coverage.",
+    styledSummary: "React Spectrum Image vs Solid Spectrum Image.",
+    styledNote:
+      "React uses @react-spectrum/s2 Image and ImageCoordinator directly; Solid uses @proyecto-viviana/solid-spectrum Image and ImageCoordinator with S2-derived wrapper, loading, error, and source behavior.",
+  }),
+
   buttongroup: styledLiveOfficialEntry({
     slug: "buttongroup",
     title: "ButtonGroup",
