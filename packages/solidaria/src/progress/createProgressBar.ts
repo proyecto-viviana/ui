@@ -14,6 +14,8 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 
 export interface AriaProgressBarProps {
+  /** The element id. */
+  id?: string;
   /** The current value (controlled). */
   value?: number;
   /** The smallest value allowed for the input. @default 0 */
@@ -66,6 +68,9 @@ export function createProgressBar(
 
   // Create label handling
   const { labelProps, fieldProps } = createLabel({
+    get id() {
+      return getProps().id;
+    },
     get label() {
       return getProps().label;
     },
