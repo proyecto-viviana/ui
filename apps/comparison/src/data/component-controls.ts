@@ -4,6 +4,11 @@ import {
   actionButtonSizeOptions,
   actionButtonStaticColorOptions,
 } from "./actionbutton-demo";
+import {
+  avatarGroupCountOptions,
+  avatarGroupDemoDefaults,
+  avatarGroupSizeOptions,
+} from "./avatar-group-demo";
 import { avatarDemoDefaults, avatarSizeOptions } from "./avatar-demo";
 import {
   buttonDemoDefaults,
@@ -465,6 +470,49 @@ const avatarControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Avatar docs and source. The viewer drives accessible alt text, image URL, numeric S2 size, and over-background outline treatment into both stacks.",
+};
+
+const avatarGroupControls: ComponentControlGroup = {
+  slug: "avatargroup",
+  title: "AvatarGroup",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: avatarGroupDemoDefaults.label,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: avatarGroupDemoDefaults.size,
+      options: options(avatarGroupSizeOptions),
+    },
+    {
+      name: "count",
+      label: "count",
+      kind: "radio",
+      defaultValue: avatarGroupDemoDefaults.count,
+      options: options(avatarGroupCountOptions),
+    },
+  ],
+  apiProps: [
+    "children",
+    "label",
+    "size",
+    "id",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-details",
+  ],
+  note: "Modeled from the S2 AvatarGroup docs and source. The viewer drives visible label text, group size, and child count while the route verifies AvatarContext overlap, label wiring, and child Avatar sizing.",
 };
 
 const radioGroupControls: ComponentControlGroup = {
@@ -1953,6 +2001,7 @@ export const componentControlGroups = {
   actionbutton: actionButtonControls,
   actionbuttongroup: actionButtonGroupControls,
   avatar: avatarControls,
+  avatargroup: avatarGroupControls,
   button: buttonControls,
   buttongroup: buttonGroupControls,
   checkbox: checkboxControls,

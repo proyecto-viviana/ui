@@ -4,6 +4,7 @@ import {
   ActionButton as SpectrumActionButton,
   ActionButtonGroup as SpectrumActionButtonGroup,
   Avatar as SpectrumAvatar,
+  AvatarGroup as SpectrumAvatarGroup,
   Button as SpectrumButton,
   ButtonGroup as SpectrumButtonGroup,
   Card as SpectrumCard,
@@ -56,6 +57,12 @@ import {
   normalizeAvatarDemoProps,
   serializeAvatarDemoProps,
 } from "@comparison/data/avatar-demo";
+import {
+  avatarGroupDemoPropsFromWindow,
+  avatarGroupItems,
+  normalizeAvatarGroupDemoProps,
+  serializeAvatarGroupDemoProps,
+} from "@comparison/data/avatar-group-demo";
 import {
   comparisonActionItems as actionItems,
   comparisonTabItems as tabItems,
@@ -342,6 +349,7 @@ export const reactStyledFixtures = {
   actionbutton: () => jsx(ReactActionButtonDemo, {}),
   actionbuttongroup: () => jsx(ReactActionButtonGroupDemo, {}),
   avatar: () => jsx(ReactAvatarDemo, {}),
+  avatargroup: () => jsx(ReactAvatarGroupDemo, {}),
   buttongroup: () => jsx(ReactButtonGroupDemo, {}),
   linkbutton: () => jsx(ReactLinkButtonDemo, {}),
   togglebutton: () => jsx(ReactToggleButtonDemo, {}),
@@ -469,6 +477,44 @@ function ReactAvatarDemo() {
         src: demoProps.src || undefined,
         size: Number(demoProps.size),
         isOverBackground: demoProps.isOverBackground,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactAvatarGroupDemo() {
+  const [demoProps, setDemoProps] = useState(avatarGroupDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "avatargroup") {
+        setDemoProps(normalizeAvatarGroupDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-avatar-group-row",
+      "data-comparison-control-root": "avatargroup",
+      "data-comparison-control-props": serializeAvatarGroupDemoProps(demoProps),
+      children: jsx(SpectrumAvatarGroup, {
+        label: demoProps.label || undefined,
+        "aria-label": demoProps.label ? undefined : "Project team",
+        size: Number(demoProps.size),
+        children: avatarGroupItems.slice(0, Number(demoProps.count)).map((item) =>
+          jsx(
+            SpectrumAvatar,
+            {
+              alt: item.alt,
+            },
+            item.id,
+          ),
+        ),
       }),
     }),
     colorScheme,

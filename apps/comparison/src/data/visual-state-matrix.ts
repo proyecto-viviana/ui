@@ -292,6 +292,34 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Computed style contracts compare root and image geometry across representative S2 sizes and over-background outline states.",
     },
   ],
+  avatargroup: [
+    visualDefaultState({
+      slug: "avatargroup",
+      pairDiff: "strict",
+      spec: "e2e/avatar-group-visual.spec.ts",
+      note: "AvatarGroup default visual evidence is captured from the focused AvatarGroup fixture and compared with zero pixel tolerance.",
+    }),
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/avatar-group-visual.spec.ts",
+      note: "The docs-style prop controls drive label text, group size, and child count into both stacks.",
+    },
+    {
+      id: "styled.context.children",
+      label: "Avatar child context and overlap",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/avatar-group-visual.spec.ts",
+      note: "Computed style contracts compare group geometry, child Avatar sizing, over-background outline treatment, and overlap margins across representative S2 sizes.",
+    },
+  ],
   actionbuttongroup: [
     visualDefaultState({
       slug: "actionbuttongroup",

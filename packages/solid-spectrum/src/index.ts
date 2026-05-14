@@ -83,8 +83,8 @@ export type {
 } from "./menu";
 
 // Avatar
-export { Avatar, AvatarContext, AvatarGroup } from "./avatar";
-export type { AvatarGroupProps, AvatarProps, AvatarSize } from "./avatar";
+export { Avatar, AvatarContext, AvatarGroup, AvatarGroupContext } from "./avatar";
+export type { AvatarGroupProps, AvatarGroupSize, AvatarProps, AvatarSize } from "./avatar";
 
 // Badge
 export { Badge } from "./badge";

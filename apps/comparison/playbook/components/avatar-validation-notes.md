@@ -31,13 +31,13 @@
 
 ## Interaction Dependency Map
 
-| Dependency             | Upstream source branch                                                | Solid validation                                                                                    | Status  |
-| ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------- |
-| `size`                 | `Avatar.tsx` computes root width/height as `size / 16rem`             | `e2e/avatar-visual.spec.ts` compares root and image geometry for `16`, `24`, `64`, and `112`.       | matched |
-| `isOverBackground`     | `Avatar.tsx` changes outline style and large outline width            | Computed contract compares outline style, width, and color with/without the comparison backdrop.    | matched |
-| `src` absent           | `Image` wrapper remains visible; nested `img` is unrevealed           | Default exact screenshot compares the blank gray avatar surface with zero pixel tolerance.          | matched |
-| `slot` / child context | Avatar defaults `slot="avatar"` and consumes `AvatarContext`          | Existing Button-family context test verifies nested ActionButton slot/context consumption.          | matched |
-| AvatarGroup            | Separate source component providing group label, overlap, and context | Deferred to the standalone AvatarGroup pass; do not claim AvatarGroup parity from this Avatar pass. | pending |
+| Dependency             | Upstream source branch                                                | Solid validation                                                                                      | Status  |
+| ---------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------- |
+| `size`                 | `Avatar.tsx` computes root width/height as `size / 16rem`             | `e2e/avatar-visual.spec.ts` compares root and image geometry for `16`, `24`, `64`, and `112`.         | matched |
+| `isOverBackground`     | `Avatar.tsx` changes outline style and large outline width            | Computed contract compares outline style, width, and color with/without the comparison backdrop.      | matched |
+| `src` absent           | `Image` wrapper remains visible; nested `img` is unrevealed           | Default exact screenshot compares the blank gray avatar surface with zero pixel tolerance.            | matched |
+| `slot` / child context | Avatar defaults `slot="avatar"` and consumes `AvatarContext`          | Existing Button-family context test verifies nested ActionButton slot/context consumption.            | matched |
+| AvatarGroup            | Separate source component providing group label, overlap, and context | Covered in `avatargroup-validation-notes.md`; do not treat standalone Avatar as AvatarGroup evidence. | linked  |
 
 ## Changes Made
 
@@ -78,7 +78,6 @@ Results:
 
 ## Remaining Work
 
-- AvatarGroup is still an official missing/gap component and needs its own pass.
 - Image remains a separate official missing/gap component. Avatar only matches
   the image-wrapper subset required by upstream Avatar.
 - Revisit legacy Avatar `fallback`/`online` compatibility once local custom
