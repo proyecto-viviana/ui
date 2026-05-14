@@ -22,7 +22,7 @@ const expectedPaths = [
   ...hookSlugs.map((slug) => `${docsBasePath}/hooks/${slug}`),
 ];
 
-const missingPaths = expectedPaths.filter((path) => !routeTree.includes(`'${path}'`));
+const missingPaths = expectedPaths.filter((path) => !routeTree.includes(path));
 
 if (missingPaths.length > 0) {
   console.error("Docs routeTree is missing discovered route files:");
