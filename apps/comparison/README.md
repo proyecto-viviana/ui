@@ -3,7 +3,7 @@
 Side-by-side parity harness for Adobe React Spectrum S2 and
 `@proyecto-viviana/solid-spectrum`.
 
-## Rule
+## Boundary
 
 The comparison app verifies S2 parity. It must not implement S2 component
 styling.
@@ -23,15 +23,23 @@ vp run comparison:test:default
 vp run comparison:test:button
 ```
 
-## Coverage
+## Component Passes
+
+Use [Component Playbook](./COMPONENT_PLAYBOOK.md) for component validation work.
+The task order lives there; detailed prompts and component notes live in
+[playbook/](./playbook/). Open only the current task checklist so the pass stays
+focused.
+
+## Current Coverage
 
 Routes are generated from the official React Spectrum S2 catalogue. Missing
 Solid implementations stay visible as gaps.
 
-Use the gap report as the roadmap:
+Use the reports as the current roadmap:
 
 ```bash
 vp run comparison:report:gaps
+vp run comparison:report:exports
 ```
 
 ## CSS Boundary
