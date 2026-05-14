@@ -1528,6 +1528,19 @@ a {
   max-inline-size: 100%;
 }
 
+.comparison-avatar-row {
+  display: flex;
+  align-items: center;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  padding: 24px;
+  border-radius: 6px;
+}
+
+.comparison-avatar-row[data-comparison-avatar-over-background="true"] {
+  background-image: linear-gradient(to right, rgb(15, 23, 42), rgb(51, 65, 85));
+}
+
 .comparison-static-color-backdrop {
   display: flex;
   flex-wrap: wrap;

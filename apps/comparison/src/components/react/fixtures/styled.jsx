@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   ActionButton as SpectrumActionButton,
   ActionButtonGroup as SpectrumActionButtonGroup,
+  Avatar as SpectrumAvatar,
   Button as SpectrumButton,
   ButtonGroup as SpectrumButtonGroup,
   Card as SpectrumCard,
@@ -50,6 +51,11 @@ import {
   comparisonControlsEvent as actionButtonControlsEvent,
   serializeActionButtonDemoProps,
 } from "@comparison/data/actionbutton-demo";
+import {
+  avatarDemoPropsFromWindow,
+  normalizeAvatarDemoProps,
+  serializeAvatarDemoProps,
+} from "@comparison/data/avatar-demo";
 import {
   comparisonActionItems as actionItems,
   comparisonTabItems as tabItems,
@@ -335,6 +341,7 @@ export const reactStyledFixtures = {
   button: () => jsx(ReactButtonDemo, {}),
   actionbutton: () => jsx(ReactActionButtonDemo, {}),
   actionbuttongroup: () => jsx(ReactActionButtonGroupDemo, {}),
+  avatar: () => jsx(ReactAvatarDemo, {}),
   buttongroup: () => jsx(ReactButtonGroupDemo, {}),
   linkbutton: () => jsx(ReactLinkButtonDemo, {}),
   togglebutton: () => jsx(ReactToggleButtonDemo, {}),
@@ -434,6 +441,37 @@ function ReactButtonDemo() {
     }),
     colorScheme,
     locale,
+  );
+}
+
+function ReactAvatarDemo() {
+  const [demoProps, setDemoProps] = useState(avatarDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "avatar") {
+        setDemoProps(normalizeAvatarDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-avatar-row",
+      "data-comparison-avatar-over-background": demoProps.isOverBackground ? "true" : "false",
+      "data-comparison-control-root": "avatar",
+      "data-comparison-control-props": serializeAvatarDemoProps(demoProps),
+      children: jsx(SpectrumAvatar, {
+        alt: demoProps.alt,
+        src: demoProps.src || undefined,
+        size: Number(demoProps.size),
+        isOverBackground: demoProps.isOverBackground,
+      }),
+    }),
+    colorScheme,
   );
 }
 

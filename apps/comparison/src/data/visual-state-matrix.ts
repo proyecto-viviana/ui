@@ -264,6 +264,34 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Pending ActionButtons remain focusable and suppress press actions on both React Spectrum and Solid.",
     },
   ],
+  avatar: [
+    visualDefaultState({
+      slug: "avatar",
+      pairDiff: "strict",
+      spec: "e2e/avatar-visual.spec.ts",
+      note: "Avatar default visual evidence is captured from the focused Avatar fixture and compared with zero pixel tolerance.",
+    }),
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/avatar-visual.spec.ts",
+      note: "The docs-style prop controls drive alt text, image URL, numeric size, and over-background outline props into both stacks.",
+    },
+    {
+      id: "styled.props.size-background",
+      label: "Size and over-background matrix",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/avatar-visual.spec.ts",
+      note: "Computed style contracts compare root and image geometry across representative S2 sizes and over-background outline states.",
+    },
+  ],
   actionbuttongroup: [
     visualDefaultState({
       slug: "actionbuttongroup",

@@ -1,5 +1,6 @@
-import { Show, createContext, mergeProps, splitProps, type JSX, useContext } from "solid-js";
-import type { StyleString } from "../s2-style";
+import { createContext, mergeProps, splitProps, type JSX, useContext } from "solid-js";
+import { style, type StyleString } from "../s2-style";
+import { getAllowedOverrides } from "../s2-internal/style-utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -8,15 +9,44 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { centerBaselineBefore } from "../icon/center-baseline";
 
-export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl" | number;
+export type AvatarSize =
+  | 16
+  | 20
+  | 24
+  | 28
+  | 32
+  | 36
+  | 40
+  | 44
+  | 48
+  | 56
+  | 64
+  | 80
+  | 96
+  | 112
+  | number
+  | "xs"
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl";
 
-export interface AvatarProps {
+export interface AvatarProps extends Omit<
+  JSX.HTMLAttributes<HTMLDivElement>,
+  "class" | "style" | "children" | "slot" | "ref"
+> {
   src?: string;
   alt?: string;
+  /** The size of the avatar. @default 24 */
   size?: AvatarSize;
-  fallback?: string;
+  /** Whether the avatar is over a color background. */
+  isOverBackground?: boolean;
+  /** @deprecated Not part of the S2 Avatar API. Kept as a no-op compatibility prop. */
   online?: boolean;
+  /** @deprecated Not part of the S2 Avatar API. Kept as a no-op compatibility prop. */
+  fallback?: string;
   class?: string;
   slot?: string | null;
   styles?: StyleString | (() => StyleString | undefined);
@@ -25,28 +55,67 @@ export interface AvatarProps {
   ref?: RefLike<HTMLDivElement>;
 }
 
-const namedSizeStyles: Record<
-  Exclude<AvatarSize, number>,
-  { container: string; text: string; indicator: string }
-> = {
-  xs: { container: "w-6 h-6", text: "text-xs", indicator: "w-1.5 h-1.5" },
-  sm: { container: "w-8 h-8", text: "text-sm", indicator: "w-2 h-2" },
-  md: { container: "w-10 h-10", text: "text-base", indicator: "w-2.5 h-2.5" },
-  lg: { container: "w-14 h-14", text: "text-lg", indicator: "w-3 h-3" },
-  xl: { container: "w-20 h-20", text: "text-xl", indicator: "w-4 h-4" },
-};
-
 export const AvatarContext = createContext<SpectrumContextValue<AvatarProps>>(null);
+
+const legacySizeMap = {
+  xs: 24,
+  sm: 32,
+  md: 40,
+  lg: 56,
+  xl: 80,
+} as const;
+
+const avatarRoot = style(
+  {
+    backgroundColor: "gray-100" as never,
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    borderRadius: "full",
+    size: 20,
+    flexShrink: 0,
+    flexGrow: 0,
+    disableTapHighlight: true,
+    outlineStyle: {
+      default: "none",
+      isOverBackground: "solid",
+    },
+    outlineColor: "--s2-container-bg",
+    outlineWidth: {
+      default: 1,
+      isLarge: 2,
+    },
+  },
+  getAllowedOverrides({ width: false }),
+);
+
+const avatarImage = style({
+  display: "block",
+  width: "full",
+  height: "full",
+  objectFit: "inherit",
+  objectPosition: "inherit",
+  opacity: {
+    default: 0,
+    isRevealed: 1,
+  },
+  transition: {
+    default: "none",
+    isTransitioning: "opacity",
+  },
+  transitionDuration: 500,
+});
 
 export function Avatar(props: AvatarProps) {
   const contextProps = getSlottedContextProps(useContext(AvatarContext), props.slot);
   const merged = mergeProps(contextProps ?? {}, props);
-  const [local] = splitProps(merged, [
+  const [local, domProps] = splitProps(merged, [
     "src",
     "alt",
     "size",
-    "fallback",
+    "isOverBackground",
     "online",
+    "fallback",
     "class",
     "slot",
     "styles",
@@ -55,70 +124,52 @@ export function Avatar(props: AvatarProps) {
     "ref",
   ]);
 
-  const size = () => local.size ?? "md";
-  const namedStyles = () =>
-    typeof size() === "number" ? null : namedSizeStyles[size() as Exclude<AvatarSize, number>];
-  const numericSize = () => (typeof size() === "number" ? `${size()}px` : undefined);
-  const textClass = () => namedStyles()?.text ?? "text-xs";
-  const indicatorClass = () => namedStyles()?.indicator ?? "w-2 h-2";
-  const slot = () => local.slot ?? contextProps?.slot ?? "avatar";
+  const size = () => {
+    const value = local.size ?? 24;
+    return typeof value === "string" ? legacySizeMap[value] : Number(value);
+  };
+  const remSize = () => `${size() / 16}rem`;
+  const slot = () =>
+    local.slot === null ? undefined : (local.slot ?? contextProps?.slot ?? "avatar");
   const mergedStyle = (): JSX.CSSProperties | undefined => {
     const unsafeStyle = mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
-    const sizeValue = numericSize();
-    return sizeValue
-      ? { ...(unsafeStyle ?? {}), width: sizeValue, height: sizeValue }
-      : unsafeStyle;
-  };
-
-  const initials = () => {
-    if (local.fallback) return local.fallback.slice(0, 2).toUpperCase();
-    if (local.alt) return local.alt.slice(0, 2).toUpperCase();
-    return "?";
+    return {
+      ...(unsafeStyle ?? {}),
+      width: remSize(),
+      height: remSize(),
+    };
   };
 
   return (
     <div
+      {...domProps}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,
       )}
       slot={slot() ?? undefined}
       class={[
-        "relative inline-block",
         contextProps?.UNSAFE_className,
         local.UNSAFE_className,
         local.class,
-        mergeContextStyles(contextProps?.styles, props.styles),
+        centerBaselineBefore,
+        avatarRoot(
+          {
+            isOverBackground: local.isOverBackground,
+            isLarge: size() >= 64,
+          },
+          mergeContextStyles(contextProps?.styles, props.styles),
+        ),
       ]
         .filter(Boolean)
         .join(" ")}
       style={mergedStyle()}
     >
-      <div
-        class={`${namedStyles()?.container ?? ""} rounded-full overflow-hidden bg-bg-200 flex items-center justify-center ring-2 ring-accent/50`}
-        style={
-          numericSize()
-            ? {
-                width: numericSize(),
-                height: numericSize(),
-              }
-            : undefined
-        }
-      >
-        <Show
-          when={local.src}
-          fallback={<span class={`${textClass()} font-medium text-primary-300`}>{initials()}</span>}
-        >
-          <img src={local.src} alt={local.alt ?? "Avatar"} class="w-full h-full object-cover" />
-        </Show>
-      </div>
-      <Show when={local.online !== undefined}>
-        <span
-          class={`absolute bottom-0 right-0 ${indicatorClass()} rounded-full ring-2 ring-bg-400 ${
-            local.online ? "bg-success-400" : "bg-bg-light"
-          }`}
-        />
-      </Show>
+      <img
+        src={local.src || undefined}
+        alt={local.alt ?? ""}
+        class={avatarImage({ isRevealed: !!local.src })}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   actionButtonSizeOptions,
   actionButtonStaticColorOptions,
 } from "./actionbutton-demo";
+import { avatarDemoDefaults, avatarSizeOptions } from "./avatar-demo";
 import {
   buttonDemoDefaults,
   buttonFillStyleOptions,
@@ -419,6 +420,51 @@ const switchControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Switch docs and source control surface. The viewer drives label text, S2 sizes, selected state, emphasized treatment, and disabled/read-only behavior into both stacks.",
+};
+
+const avatarControls: ComponentControlGroup = {
+  slug: "avatar",
+  title: "Avatar",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "alt",
+      label: "alt",
+      kind: "text",
+      defaultValue: avatarDemoDefaults.alt,
+    },
+    {
+      name: "src",
+      label: "src",
+      kind: "text",
+      defaultValue: avatarDemoDefaults.src,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: avatarDemoDefaults.size,
+      options: options(avatarSizeOptions),
+    },
+    {
+      name: "isOverBackground",
+      label: "isOverBackground",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "alt",
+    "src",
+    "size",
+    "isOverBackground",
+    "id",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Avatar docs and source. The viewer drives accessible alt text, image URL, numeric S2 size, and over-background outline treatment into both stacks.",
 };
 
 const radioGroupControls: ComponentControlGroup = {
@@ -1906,6 +1952,7 @@ const selectBoxGroupControls: ComponentControlGroup = {
 export const componentControlGroups = {
   actionbutton: actionButtonControls,
   actionbuttongroup: actionButtonGroupControls,
+  avatar: avatarControls,
   button: buttonControls,
   buttongroup: buttonGroupControls,
   checkbox: checkboxControls,

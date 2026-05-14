@@ -13,6 +13,7 @@ import { hc, renderProp } from "../solid-h";
 import {
   ActionButton as SolidSpectrumActionButton,
   ActionButtonGroup as SolidSpectrumActionButtonGroup,
+  Avatar as SolidSpectrumAvatar,
   Button as SolidSpectrumButton,
   ButtonGroup as SolidSpectrumButtonGroup,
   Card as SolidSpectrumCard,
@@ -54,6 +55,12 @@ import {
   serializeActionButtonDemoProps,
   type ActionButtonDemoProps,
 } from "@comparison/data/actionbutton-demo";
+import {
+  avatarDemoPropsFromWindow,
+  normalizeAvatarDemoProps,
+  serializeAvatarDemoProps,
+  type AvatarDemoProps,
+} from "@comparison/data/avatar-demo";
 import {
   buttonDemoLocaleFromWindow,
   buttonDemoPropsFromWindow,
@@ -441,6 +448,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   button: () => h(SolidSpectrumButtonDemo, {}),
   actionbutton: () => h(SolidSpectrumActionButtonDemo, {}),
   actionbuttongroup: () => h(SolidSpectrumActionButtonGroupDemo, {}),
+  avatar: () => h(SolidSpectrumAvatarDemo, {}),
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
@@ -478,6 +486,76 @@ function renderProviderDemo() {
         h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
       ),
     ),
+  );
+}
+
+function SolidSpectrumAvatarDemo() {
+  const [demoProps, setDemoProps] = createSignal<AvatarDemoProps>(avatarDemoPropsFromWindow());
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "avatar") {
+        setDemoProps(normalizeAvatarDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-avatar-row",
+          get "data-comparison-avatar-over-background"() {
+            return demoProps().isOverBackground ? "true" : "false";
+          },
+          "data-comparison-control-root": "avatar",
+          get "data-comparison-control-props"() {
+            return serializeAvatarDemoProps(demoProps());
+          },
+        },
+        [
+          () =>
+            h(SolidSpectrumAvatar, {
+              get alt() {
+                return demoProps().alt;
+              },
+              get src() {
+                return demoProps().src || undefined;
+              },
+              get size() {
+                return Number(demoProps().size);
+              },
+              get isOverBackground() {
+                return demoProps().isOverBackground;
+              },
+            }),
+        ],
+      ),
+    ],
   );
 }
 

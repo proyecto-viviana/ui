@@ -1004,17 +1004,28 @@ describe("Regression: RangeSlider", () => {
 });
 
 describe("Regression: Avatar", () => {
-  it("renders fallback initials when no src, and snapshot", () => {
-    const { container } = render(() => <Avatar alt="John Doe" size="md" />);
+  it("renders S2 image wrapper with default slot and no initials fallback", () => {
+    const { container } = render(() => <Avatar alt="John Doe" size={40} />);
 
-    expect(screen.getByText("JO")).toBeInTheDocument();
-    expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
+    const root = container.querySelector('[slot="avatar"]');
+    const img = root?.querySelector("img");
+
+    expect(root).toBeInTheDocument();
+    expect(root).toHaveStyle({ width: "2.5rem", height: "2.5rem" });
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute("alt", "John Doe");
+    expect(img).not.toHaveAttribute("src");
+    expect(screen.queryByText("JO")).not.toBeInTheDocument();
   });
 
   it("renders img when src is provided", () => {
-    const { container } = render(() => <Avatar src="/avatar.png" alt="Jane" size="lg" />);
+    const { container } = render(() => <Avatar src="/avatar.png" alt="Jane" size={56} />);
 
+    const root = container.querySelector('[slot="avatar"]');
     const img = container.querySelector("img");
+
+    expect(root).toBeInTheDocument();
+    expect(root).toHaveStyle({ width: "3.5rem", height: "3.5rem" });
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "/avatar.png");
     expect(img).toHaveAttribute("alt", "Jane");

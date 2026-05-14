@@ -4,6 +4,7 @@ import { addS2CssAsset, css } from "../s2-style/style-macro";
 import type { StyleString } from "../s2-style";
 
 const centerBaselineClass = css("display: flex; align-items: center;");
+export const centerBaselineBefore = centerBaselineClass as StyleString;
 
 addS2CssAsset(`@layer _.a {
   .${centerBaselineClass}::before {
