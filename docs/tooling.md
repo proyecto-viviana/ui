@@ -1,7 +1,7 @@
 # Tooling
 
 `vp` is the repo command layer. It uses the configured package manager from
-`packageManager` (`pnpm@10.33.0`) underneath, but repo documentation and scripts
+`packageManager` (`pnpm@10.33.2`) underneath, but repo documentation and scripts
 should prefer Vite Plus commands.
 
 ## Daily Commands
