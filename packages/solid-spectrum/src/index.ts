@@ -42,7 +42,16 @@ export { ActionButton } from "./button/ActionButton";
 export type { ActionButtonProps, ActionButtonSize } from "./button/ActionButton";
 export { ActionButtonGroup } from "./actionbuttongroup";
 export type { ActionButtonGroupProps } from "./actionbuttongroup";
-export { Button } from "./button";
+export {
+  ActionButtonContext,
+  ActionButtonGroupContext,
+  Button,
+  ButtonContext,
+  ButtonGroupContext,
+  LinkButtonContext,
+  ToggleButtonContext,
+  ToggleButtonGroupContext,
+} from "./button";
 export type {
   ButtonFillStyle,
   ButtonProps,
@@ -58,6 +67,7 @@ export { ToggleButton } from "./button/ToggleButton";
 export type { ToggleButtonProps, ToggleButtonSize } from "./button/ToggleButton";
 export { ToggleButtonGroup } from "./togglebuttongroup";
 export type { ToggleButtonGroupProps } from "./togglebuttongroup";
+export { pressScale } from "./pressScale";
 
 // ActionMenu / Menu
 export { ActionMenu } from "./menu/ActionMenu";
@@ -73,7 +83,7 @@ export type {
 } from "./menu";
 
 // Avatar
-export { Avatar, AvatarGroup } from "./avatar";
+export { Avatar, AvatarContext, AvatarGroup } from "./avatar";
 export type { AvatarGroupProps, AvatarProps, AvatarSize } from "./avatar";
 
 // Badge
@@ -205,7 +215,7 @@ export { IllustratedMessage } from "./illustratedmessage";
 export type { IllustratedMessageProps } from "./illustratedmessage";
 
 // Image
-export { Image } from "./image";
+export { Image, ImageContext } from "./image";
 export type { ImageProps } from "./image";
 
 // InlineAlert
@@ -248,6 +258,8 @@ export { Popover } from "./popover";
 export type { PopoverPlacement, PopoverProps, PopoverRenderProps, PopoverSize } from "./popover";
 
 // Progress
+export { NotificationBadge, NotificationBadgeContext } from "./notificationbadge";
+export type { NotificationBadgeProps, NotificationBadgeSize } from "./notificationbadge";
 export { ProgressBar } from "./progress-bar";
 export type { ProgressBarProps, ProgressBarSize, ProgressBarVariant } from "./progress-bar";
 export { ProgressCircle } from "./progress/ProgressCircle";
@@ -279,7 +291,7 @@ export { SelectBox, SelectBoxGroup } from "./selectboxgroup";
 export type { SelectBoxGroupProps, SelectBoxOrientation, SelectBoxProps } from "./selectboxgroup";
 
 // Skeleton
-export { Skeleton, SkeletonCollection } from "./skeleton";
+export { Skeleton, SkeletonCollection, useIsSkeleton } from "./skeleton";
 export type {
   SkeletonCollectionProps,
   SkeletonGap,
@@ -287,6 +299,10 @@ export type {
   SkeletonShape,
   SkeletonSize,
 } from "./skeleton";
+
+// Text content
+export { Heading, Keyboard, StyledKeyboard, Text, TextContext } from "./text";
+export type { HeadingLevel, HeadingProps, StyledKeyboardProps, TextProps } from "./text";
 
 // Slider
 export { RangeSlider, Slider } from "./slider";

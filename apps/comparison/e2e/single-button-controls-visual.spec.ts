@@ -1,6 +1,11 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
-import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import {
+  frameworkCanvas,
+  frameworkPanel,
+  styledSection,
+  waitForComparisonRouteReady,
+} from "./comparison-page";
+import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 type SingleControlCase = {
   slug: "linkbutton" | "togglebutton";
@@ -10,14 +15,17 @@ type SingleControlCase = {
   name: string;
   query: string;
   iconPlacement?: "start" | "only";
-  threshold: {
-    maxMismatchRatio: number;
-    maxDimensionDelta: number;
-    pixelThreshold: number;
-  };
 };
 
 const singleControlCases: SingleControlCase[] = [
+  {
+    slug: "linkbutton",
+    title: "LinkButton default",
+    id: "linkbutton-default",
+    role: "link",
+    name: "Open docs",
+    query: "",
+  },
   {
     slug: "linkbutton",
     title: "LinkButton icon start",
@@ -26,7 +34,6 @@ const singleControlCases: SingleControlCase[] = [
     name: "Open docs",
     query: "?iconPlacement=start",
     iconPlacement: "start",
-    threshold: { maxMismatchRatio: 0.08, maxDimensionDelta: 8, pixelThreshold: 64 },
   },
   {
     slug: "linkbutton",
@@ -36,7 +43,14 @@ const singleControlCases: SingleControlCase[] = [
     name: "Open docs",
     query: "?iconPlacement=only",
     iconPlacement: "only",
-    threshold: { maxMismatchRatio: 0.08, maxDimensionDelta: 8, pixelThreshold: 64 },
+  },
+  {
+    slug: "togglebutton",
+    title: "ToggleButton default",
+    id: "togglebutton-default",
+    role: "button",
+    name: "Pin",
+    query: "",
   },
   {
     slug: "togglebutton",
@@ -46,7 +60,6 @@ const singleControlCases: SingleControlCase[] = [
     name: "Pin",
     query: "?iconPlacement=start",
     iconPlacement: "start",
-    threshold: { maxMismatchRatio: 0.16, maxDimensionDelta: 8, pixelThreshold: 64 },
   },
   {
     slug: "togglebutton",
@@ -56,7 +69,6 @@ const singleControlCases: SingleControlCase[] = [
     name: "Pin",
     query: "?iconPlacement=start&isSelected=true",
     iconPlacement: "start",
-    threshold: { maxMismatchRatio: 0.16, maxDimensionDelta: 8, pixelThreshold: 64 },
   },
   {
     slug: "togglebutton",
@@ -66,15 +78,13 @@ const singleControlCases: SingleControlCase[] = [
     name: "Pin",
     query: "?iconPlacement=only",
     iconPlacement: "only",
-    threshold: { maxMismatchRatio: 0.16, maxDimensionDelta: 8, pixelThreshold: 64 },
   },
 ];
 
 async function singleControlFixtures(page: Page, item: SingleControlCase) {
   await pinComparisonTheme(page, "dark");
   await page.goto(`/components/${item.slug}/${item.query}`);
-  await page.waitForLoadState("networkidle");
-  await expect(page.locator("astro-island")).toHaveCount(0);
+  await waitForComparisonRouteReady(page);
 
   const section = await styledSection(page);
   const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -158,18 +168,11 @@ function expectNear(
 
 test.describe("comparison single button-derived visual parity", () => {
   for (const item of singleControlCases) {
-    test(`${item.title} has committed pair screenshots`, async ({ page }) => {
+    test(`${item.title} matches current React Spectrum`, async ({ page }) => {
       const fixtures = await singleControlFixtures(page, item);
 
       await clearPointer(page);
-      await expectScreenshotPair(
-        page,
-        fixtures.reactCanvas,
-        fixtures.solidCanvas,
-        item.title,
-        item.id,
-        item.threshold,
-      );
+      await expectExactScreenshotPair(page, fixtures.reactCanvas, fixtures.solidCanvas, item.title);
     });
 
     test(`${item.title} icon geometry matches React Spectrum`, async ({ page }) => {
@@ -178,6 +181,21 @@ test.describe("comparison single button-derived visual parity", () => {
       const solid = await iconAlignmentContract(fixtures.solidControl);
 
       expectNear(solid.rootHeight, react.rootHeight, 0.5, `${item.title} root height`);
+
+      if (!item.iconPlacement) {
+        expect(solid.hasLabel).toBe(true);
+        expect(react.hasLabel).toBe(true);
+        expect(solid.iconWidth).toBeNull();
+        expect(react.iconWidth).toBeNull();
+        expectNear(
+          solid.labelCenterDelta,
+          react.labelCenterDelta,
+          0.75,
+          `${item.title} text vertical centerline`,
+        );
+        return;
+      }
+
       expectNear(solid.iconWidth, react.iconWidth, 0.5, `${item.title} icon width`);
       expectNear(solid.iconHeight, react.iconHeight, 0.5, `${item.title} icon height`);
       expectNear(
@@ -225,8 +243,7 @@ test.describe("comparison single button-derived visual parity", () => {
     for (const theme of ["light", "dark"] as const) {
       await pinComparisonTheme(page, theme);
       await page.goto("/components/linkbutton/?variant=primary&fillStyle=fill");
-      await page.waitForLoadState("networkidle");
-      await expect(page.locator("astro-island")).toHaveCount(0);
+      await waitForComparisonRouteReady(page);
       await clearPointer(page);
 
       const section = await styledSection(page);
@@ -264,8 +281,7 @@ test.describe("comparison single button-derived visual parity", () => {
   test("LinkButton interactive prop controls drive both stacks", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto("/components/linkbutton/");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("astro-island")).toHaveCount(0);
+    await waitForComparisonRouteReady(page);
 
     const form = page.locator('[data-comparison-controls="linkbutton"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
@@ -311,8 +327,7 @@ test.describe("comparison single button-derived visual parity", () => {
   test("ToggleButton interactive prop controls drive both stacks", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto("/components/togglebutton/");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("astro-island")).toHaveCount(0);
+    await waitForComparisonRouteReady(page);
 
     const form = page.locator('[data-comparison-controls="togglebutton"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");

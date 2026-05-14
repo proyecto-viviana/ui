@@ -166,7 +166,7 @@ async function setSwitchControl(page: Page, name: string, checked: boolean) {
 }
 
 test.describe("comparison Switch visual parity", () => {
-  test("selected emphasized XL state has committed pair screenshots", async ({ page }) => {
+  test("selected emphasized XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await switchFixtures(page, "?isSelected=true&isEmphasized=true&size=XL");
 
     await clearPointer(page);
@@ -175,7 +175,6 @@ test.describe("comparison Switch visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "Switch selected emphasized XL state",
-      "switch-selected-emphasized-xl",
       { maxMismatchRatio: 0.16, maxDimensionDelta: 16, pixelThreshold: 64 },
     );
   });

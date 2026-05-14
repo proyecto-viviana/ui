@@ -39,98 +39,129 @@ function isDisabledValue(isDisabled: Accessor<boolean> | boolean | undefined): b
  */
 export function createButton(props: AriaButtonProps = {}): ButtonAria {
   const elementType = props.elementType ?? "button";
+  const isDisabled = () => isDisabledValue(props.isDisabled);
 
   const { pressProps, isPressed } = createPress({
-    isDisabled: props.isDisabled,
-    onPress: props.onPress,
-    onPressStart: props.onPressStart,
-    onPressEnd: props.onPressEnd,
-    onPressUp: props.onPressUp,
-    onPressChange: props.onPressChange,
-    onClick: props.onClick,
-    preventFocusOnPress: props.preventFocusOnPress,
+    isDisabled,
+    onPress: (event) => props.onPress?.(event),
+    onPressStart: (event) => props.onPressStart?.(event),
+    onPressEnd: (event) => props.onPressEnd?.(event),
+    onPressUp: (event) => props.onPressUp?.(event),
+    onPressChange: (pressed) => props.onPressChange?.(pressed),
+    onClick: (event) => props.onClick?.(event),
+    get preventFocusOnPress() {
+      return props.preventFocusOnPress;
+    },
   });
 
   const { focusableProps } = createFocusable({
-    isDisabled: props.isDisabled,
+    isDisabled,
     autoFocus: props.autoFocus,
     excludeFromTabOrder: props.excludeFromTabOrder,
   });
 
-  const isNativeButton = elementType === "button" || elementType === "input";
+  const isNativeButton = elementType === "button";
   const isLink = elementType === "a";
-  const disabled = isDisabledValue(props.isDisabled);
 
   // Handle allowFocusWhenDisabled - set tabIndex to -1 when disabled but focusable
   // This allows tooltips to be shown on disabled buttons
-  if (props.allowFocusWhenDisabled && disabled) {
-    (focusableProps as Record<string, unknown>).tabIndex = -1;
+  if (props.allowFocusWhenDisabled) {
+    Object.defineProperty(focusableProps, "tabIndex", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return isDisabled() ? -1 : props.excludeFromTabOrder ? -1 : 0;
+      },
+    });
   }
 
   let additionalProps: Record<string, unknown> = {};
 
   if (isNativeButton) {
     additionalProps = {
-      type: props.type ?? "button",
-      disabled: disabled,
-      // Form-related attributes
-      ...(props.form && { form: props.form }),
-      ...(props.formAction && { formAction: props.formAction }),
-      ...(props.formEncType && { formEncType: props.formEncType }),
-      ...(props.formMethod && { formMethod: props.formMethod }),
-      ...(props.formNoValidate && { formNoValidate: props.formNoValidate }),
-      ...(props.formTarget && { formTarget: props.formTarget }),
-      ...(props.name && { name: props.name }),
-      ...(props.value && { value: props.value }),
+      get type() {
+        return props.type ?? "button";
+      },
+      get disabled() {
+        return isDisabled();
+      },
+      get form() {
+        return props.form;
+      },
+      get formAction() {
+        return props.formAction;
+      },
+      get formEncType() {
+        return props.formEncType;
+      },
+      get formMethod() {
+        return props.formMethod;
+      },
+      get formNoValidate() {
+        return props.formNoValidate;
+      },
+      get formTarget() {
+        return props.formTarget;
+      },
+      get name() {
+        return props.name;
+      },
+      get value() {
+        return props.value;
+      },
     };
   } else {
-    // Non-native buttons need role and tabIndex
+    // Non-native buttons need role; focusableProps supplies tabIndex.
     additionalProps = {
       role: "button",
-      tabIndex: disabled ? undefined : 0,
-      "aria-disabled": disabled ? true : undefined,
+      get href() {
+        return isLink && !isDisabled() ? props.href : undefined;
+      },
+      get target() {
+        return isLink ? props.target : undefined;
+      },
+      get type() {
+        return elementType === "input" ? (props.type ?? "button") : undefined;
+      },
+      get disabled() {
+        return elementType === "input" ? isDisabled() : undefined;
+      },
+      get "aria-disabled"() {
+        return isDisabled() && elementType !== "input" ? true : undefined;
+      },
+      get rel() {
+        return isLink ? props.rel : undefined;
+      },
     };
-
-    if (isLink) {
-      additionalProps.href = disabled ? undefined : props.href;
-      additionalProps.target = props.target;
-      additionalProps.rel = props.rel;
-    }
   }
 
-  const ariaProps: Record<string, unknown> = {};
-
-  if (props["aria-pressed"] !== undefined) {
-    ariaProps["aria-pressed"] = props["aria-pressed"];
-  }
-  if (props["aria-haspopup"] !== undefined) {
-    ariaProps["aria-haspopup"] = props["aria-haspopup"];
-  }
-  if (props["aria-expanded"] !== undefined) {
-    ariaProps["aria-expanded"] = props["aria-expanded"];
-  }
-  if (props["aria-label"]) {
-    ariaProps["aria-label"] = props["aria-label"];
-  }
-  if (props["aria-labelledby"]) {
-    ariaProps["aria-labelledby"] = props["aria-labelledby"];
-  }
-  if (props["aria-describedby"]) {
-    ariaProps["aria-describedby"] = props["aria-describedby"];
-  }
-  if (props["aria-controls"]) {
-    ariaProps["aria-controls"] = props["aria-controls"];
-  }
-  if (props["aria-current"] !== undefined) {
-    ariaProps["aria-current"] = props["aria-current"];
-  }
+  const ariaProps: Record<string, unknown> = {
+    get "aria-haspopup"() {
+      return props["aria-haspopup"];
+    },
+    get "aria-expanded"() {
+      return props["aria-expanded"];
+    },
+    get "aria-controls"() {
+      return props["aria-controls"];
+    },
+    get "aria-pressed"() {
+      return props["aria-pressed"];
+    },
+    get "aria-current"() {
+      return props["aria-current"];
+    },
+    get "aria-disabled"() {
+      return props["aria-disabled"];
+    },
+  };
 
   const buttonProps = mergeProps(
-    filterDOMProps(props as Record<string, unknown>, { labelable: true }),
     additionalProps,
-    ariaProps,
     focusableProps as Record<string, unknown>,
     pressProps as Record<string, unknown>,
+    filterDOMProps(props as Record<string, unknown>, { labelable: true }),
+    ariaProps,
   );
 
   return {

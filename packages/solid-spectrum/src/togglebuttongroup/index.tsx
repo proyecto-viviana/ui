@@ -6,12 +6,20 @@ import {
 import type { StyleString } from "../s2-style";
 import { useProviderProps } from "../provider";
 import {
-  ActionButtonGroupContext,
   type ActionButtonDensity,
   type ActionButtonOrientation,
   type ActionButtonSize,
+  ToggleButtonGroupContext,
+  useToggleButtonGroupContext,
 } from "../button/group-context";
 import { s2ActionButtonGroup } from "../button/s2-action-button-styles";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+} from "../button/spectrum-context";
 import type { StaticColor } from "../button/types";
 
 export interface ToggleButtonGroupProps extends Omit<
@@ -49,12 +57,13 @@ export interface ToggleButtonGroupProps extends Omit<
  */
 export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useToggleButtonGroupContext(), props.slot);
   const defaultProps: Partial<ToggleButtonGroupProps> = {
     density: "regular",
     size: "M",
     orientation: "horizontal",
   };
-  const merged = mergeProps(defaultProps, providerProps, props);
+  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "size",
@@ -69,11 +78,19 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
+    "ref",
   ]);
 
   const size = (): ActionButtonSize => local.size ?? "M";
   const density = (): ActionButtonDensity => local.density ?? "regular";
   const orientation = (): ActionButtonOrientation => local.orientation ?? "horizontal";
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignGroupRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref as RefLike<HTMLDivElement>,
+  );
   const className = () =>
     [
       local.UNSAFE_className,
@@ -85,7 +102,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
           orientation: orientation(),
           isJustified: local.isJustified,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -123,16 +140,17 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
       {...headlessProps}
       orientation={orientation()}
       isDisabled={local.isDisabled}
+      ref={assignGroupRefs}
       class={className()}
-      style={local.UNSAFE_style}
+      style={mergedUnsafeStyle()}
       data-orientation={orientation()}
       data-density={density()}
       data-disabled={local.isDisabled || undefined}
     >
       {() => (
-        <ActionButtonGroupContext.Provider value={contextValue}>
+        <ToggleButtonGroupContext.Provider value={contextValue}>
           {local.children}
-        </ActionButtonGroupContext.Provider>
+        </ToggleButtonGroupContext.Provider>
       )}
     </HeadlessToggleButtonGroup>
   );

@@ -10,6 +10,8 @@ import type { StyleString } from "../s2-style";
 import { fontRelative, style } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { centerBaseline } from "../icon/center-baseline";
+import { SkeletonContext } from "../skeleton";
+import { TextContext } from "../text";
 import {
   s2ActionButton,
   s2ActionButtonStaticColor,
@@ -20,9 +22,18 @@ import {
   type ActionButtonDensity,
   type ActionButtonOrientation,
   type ActionButtonSize,
-  useActionButtonGroupContext,
+  useToggleButtonGroupContext,
 } from "./group-context";
 import { IconContext } from "../icon/spectrum-icon";
+import { pressScale } from "../pressScale";
+import { useToggleButtonContext } from "./context";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+} from "./spectrum-context";
 
 export type ToggleButtonSize = ActionButtonSize;
 
@@ -55,7 +66,8 @@ export interface ToggleButtonProps extends Omit<
  */
 export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   const providerProps = useProviderProps(props);
-  const groupContext = useActionButtonGroupContext();
+  const contextProps = getSlottedContextProps(useToggleButtonContext(), props.slot);
+  const groupContext = getSlottedContextProps(useToggleButtonGroupContext(), undefined);
   const defaultProps: Partial<ToggleButtonProps> = {
     size: "M",
   };
@@ -90,7 +102,13 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     },
   };
 
-  const mergedProps = mergeProps(defaultProps, providerProps, groupProps, props);
+  const mergedProps = mergeProps(
+    defaultProps,
+    providerProps,
+    contextProps ?? {},
+    props,
+    groupProps,
+  );
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "staticColor",
@@ -101,15 +119,23 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     "UNSAFE_style",
     "class",
     "children",
+    "ref",
     "density",
     "orientation",
     "isJustified",
   ]);
   let buttonElement: HTMLButtonElement | undefined;
+  const assignButtonRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
+    props.ref,
+  );
 
   const size = (): ToggleButtonSize => local.size ?? "M";
   const density = (): ActionButtonDensity => local.density ?? "regular";
   const orientation = (): ActionButtonOrientation => local.orientation ?? "horizontal";
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const getS2State = (renderProps: ToggleButtonRenderProps): S2ActionButtonRenderState => ({
     isHovered: renderProps.isHovered,
     isPressed: renderProps.isPressed,
@@ -150,27 +176,14 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
               isInGroup: !!groupContext,
             })
           : undefined,
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
       .join(" ");
 
-  const getPressScaleStyle = (renderProps: ToggleButtonRenderProps): JSX.CSSProperties => {
-    const style = { ...(local.UNSAFE_style ?? {}) } as JSX.CSSProperties;
-    const styleRecord = style as Record<string, string | number | undefined>;
-    const willChange = styleRecord["will-change"] ?? "";
-    styleRecord["will-change"] = `${willChange} transform`.trim();
-
-    if (renderProps.isPressed && buttonElement) {
-      const { width, height } = buttonElement.getBoundingClientRect();
-      const perspective = Math.max(height, width / 3, 24);
-      const transform = style.transform ?? "";
-      style.transform = `${transform} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();
-    }
-
-    return style;
-  };
+  const getPressScaleStyle = (renderProps: ToggleButtonRenderProps): JSX.CSSProperties =>
+    pressScale(() => buttonElement, mergedUnsafeStyle())(renderProps);
 
   function ToggleButtonContent() {
     const iconContextValue = {
@@ -181,6 +194,10 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
         marginStart: "--iconMargin",
         flexShrink: 0,
       }),
+    };
+    const textContextValue = {
+      styles: s2ToggleButtonText,
+      "data-rsp-slot": "text",
     };
 
     function ResolvedContent() {
@@ -197,9 +214,13 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     }
 
     return (
-      <IconContext.Provider value={iconContextValue}>
-        <ResolvedContent />
-      </IconContext.Provider>
+      <SkeletonContext.Provider value={null}>
+        <TextContext.Provider value={textContextValue}>
+          <IconContext.Provider value={iconContextValue}>
+            <ResolvedContent />
+          </IconContext.Provider>
+        </TextContext.Provider>
+      </SkeletonContext.Provider>
     );
   }
 
@@ -208,6 +229,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       {...headlessProps}
       ref={(element: HTMLButtonElement) => {
         buttonElement = element;
+        assignButtonRefs(element);
       }}
       class={getClassName}
       style={getPressScaleStyle}

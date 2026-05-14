@@ -55,6 +55,7 @@ import {
   type ActionButtonDemoProps,
 } from "@comparison/data/actionbutton-demo";
 import {
+  buttonDemoLocaleFromWindow,
   buttonDemoPropsFromWindow,
   comparisonControlsEvent,
   serializeButtonDemoProps,
@@ -256,6 +257,20 @@ const cardItems = [
 ];
 
 type SingleButtonIconPlacement = "none" | "start" | "end" | "only";
+
+function explicitStaticColor(staticColor: string | undefined | null) {
+  return staticColor === "black" || staticColor === "white" ? staticColor : undefined;
+}
+
+function staticColorBackdropClass(staticColor: string | undefined | null, className = "") {
+  return [className, explicitStaticColor(staticColor) ? "comparison-static-color-backdrop" : ""]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function staticColorBackdropValue(staticColor: string | undefined | null) {
+  return explicitStaticColor(staticColor);
+}
 
 function booleanParamFromWindow(name: string, fallback = false) {
   if (typeof window === "undefined") {
@@ -469,6 +484,7 @@ function renderProviderDemo() {
 function SolidSpectrumButtonDemo() {
   const [actionCount, setActionCount] = createSignal(0);
   const [demoProps, setDemoProps] = createSignal(buttonDemoPropsFromWindow());
+  const locale = buttonDemoLocaleFromWindow();
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -549,6 +565,7 @@ function SolidSpectrumButtonDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      locale,
       background: "base",
       style: providerShellStyle,
     },
@@ -570,7 +587,20 @@ function SolidSpectrumButtonDemo() {
             return serializeButtonDemoProps(demoProps());
           },
         },
-        [hc("div", { class: "comparison-button-row" }, [renderedButton])],
+        [
+          hc(
+            "div",
+            {
+              get class() {
+                return staticColorBackdropClass(demoProps().staticColor, "comparison-button-row");
+              },
+              get "data-comparison-static-color"() {
+                return staticColorBackdropValue(demoProps().staticColor);
+              },
+            },
+            [renderedButton],
+          ),
+        ],
       ),
     ],
   );
@@ -1995,7 +2025,12 @@ function SolidSpectrumActionButtonDemo() {
       hc(
         "div",
         {
-          class: "comparison-button-row",
+          get class() {
+            return staticColorBackdropClass(demoProps().staticColor, "comparison-button-row");
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
           get "data-comparison-color-scheme"() {
             return colorScheme();
           },
@@ -2086,6 +2121,12 @@ function SolidSpectrumActionButtonGroupDemo() {
       hc(
         "div",
         {
+          get class() {
+            return staticColorBackdropClass(groupProps().staticColor);
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(groupProps().staticColor);
+          },
           get "data-comparison-action-key"() {
             return actionKey();
           },
@@ -2237,7 +2278,12 @@ function SolidSpectrumLinkButtonDemo() {
       hc(
         "div",
         {
-          class: "comparison-button-row",
+          get class() {
+            return staticColorBackdropClass(demoProps().staticColor, "comparison-button-row");
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
           get "data-comparison-color-scheme"() {
             return colorScheme();
           },
@@ -2301,6 +2347,12 @@ function SolidSpectrumToggleButtonDemo() {
       hc(
         "div",
         {
+          get class() {
+            return staticColorBackdropClass(demoProps().staticColor);
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
           get "data-comparison-selected"() {
             return String(selected());
           },
@@ -2418,6 +2470,12 @@ function SolidSpectrumToggleButtonGroupDemo() {
       hc(
         "div",
         {
+          get class() {
+            return staticColorBackdropClass(groupProps().staticColor);
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(groupProps().staticColor);
+          },
           get "data-comparison-color-scheme"() {
             return colorScheme();
           },

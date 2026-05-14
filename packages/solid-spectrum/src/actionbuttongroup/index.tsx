@@ -1,12 +1,22 @@
-import { type JSX, splitProps } from "solid-js";
+import { type JSX, mergeProps, splitProps } from "solid-js";
+import { Toolbar as HeadlessToolbar } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../s2-style";
 import {
   ActionButtonGroupContext,
   type ActionButtonDensity,
   type ActionButtonOrientation,
   type ActionButtonSize,
+  useActionButtonGroupContext,
 } from "../button/group-context";
 import { s2ActionButtonGroup } from "../button/s2-action-button-styles";
+import { useProviderProps } from "../provider";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+} from "../button/spectrum-context";
 import type { StaticColor } from "../button/types";
 
 export interface ActionButtonGroupProps extends Omit<
@@ -43,7 +53,10 @@ export interface ActionButtonGroupProps extends Omit<
  * An ActionButtonGroup is a grouping of related ActionButtons.
  */
 export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
-  const [local, domProps] = splitProps(props, [
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useActionButtonGroupContext(), props.slot);
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const [local, domProps] = splitProps(merged, [
     "children",
     "size",
     "density",
@@ -56,10 +69,18 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
+    "ref",
   ]);
   const size = () => local.size ?? "M";
   const density = () => local.density ?? "regular";
   const orientation = () => local.orientation ?? "horizontal";
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignGroupRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref as RefLike<HTMLDivElement>,
+  );
   const className = () =>
     [
       local.UNSAFE_className,
@@ -71,7 +92,7 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
           orientation: orientation(),
           isJustified: local.isJustified,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -102,12 +123,12 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
   };
 
   return (
-    <div
+    <HeadlessToolbar
       {...domProps}
-      role={domProps.role ?? "toolbar"}
-      aria-orientation={orientation() === "vertical" ? "vertical" : undefined}
+      orientation={orientation()}
+      ref={assignGroupRefs}
       class={className()}
-      style={local.UNSAFE_style}
+      style={mergedUnsafeStyle()}
       data-orientation={orientation()}
       data-density={density()}
       data-disabled={local.isDisabled || undefined}
@@ -115,6 +136,6 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
       <ActionButtonGroupContext.Provider value={contextValue}>
         {local.children}
       </ActionButtonGroupContext.Provider>
-    </div>
+    </HeadlessToolbar>
   );
 }

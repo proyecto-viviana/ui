@@ -40,7 +40,7 @@ export function getComponentCoverage(
   const visualStates = getVisualStateTargets(entry);
   const styledLayer = entry.layers.styled;
   const implementedLayers = Object.values(entry.layers).filter((layer) => layer.solid === "live");
-  const snapshottedStates = visualStates.filter(
+  const visualEvidenceStates = visualStates.filter(
     (state) => state.react !== "missing" && state.solid !== "missing",
   );
   const strictPairDiffStates = visualStates.filter((state) => state.pairDiff === "strict");
@@ -60,7 +60,7 @@ export function getComponentCoverage(
       Object.keys(entry.layers).length,
     ),
     metric("behavior", "Behavior tests", entry.parity === "matched" ? 1 : 0, 1),
-    metric("visual", "Visual states", snapshottedStates.length, visualStates.length),
+    metric("visual", "Visual states", visualEvidenceStates.length, visualStates.length),
     metric("pair", "Strict pair diff", strictPairDiffStates.length, visualStates.length),
   ];
 

@@ -1,9 +1,18 @@
-import { children as resolveChildren, type JSX, mergeProps, splitProps } from "solid-js";
+import {
+  children as resolveChildren,
+  type JSX,
+  mergeProps,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   Button as HeadlessButton,
   type ButtonProps as HeadlessButtonProps,
   type ButtonRenderProps,
+  DialogTriggerContext,
+  PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { fontRelative, style } from "../s2-style";
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
@@ -13,13 +22,13 @@ import { mergeStyles } from "../s2-style/runtime";
 import {
   s2ActionButton,
   s2ActionButtonPendingIndicator,
-  s2ActionButtonProgressCircle,
   s2ActionButtonStaticColor,
   s2ActionButtonText,
   type S2ActionButtonRenderState,
 } from "./s2-action-button-styles";
-import { s2ProgressCircleIndeterminateAnimation } from "./s2-progress-circle-animation";
 import { createPendingState } from "./pending-state";
+import { S2PendingProgressCircle } from "./S2PendingProgressCircle";
+import { pressScale } from "../pressScale";
 import {
   type ActionButtonDensity,
   type ActionButtonOrientation,
@@ -27,8 +36,30 @@ import {
   useActionButtonGroupContext,
 } from "./group-context";
 import { IconContext } from "../icon/spectrum-icon";
+import { AvatarContext } from "../avatar";
+import { ImageContext } from "../image";
+import { NotificationBadgeContext } from "../notificationbadge";
+import { SkeletonContext } from "../skeleton";
+import { TextContext } from "../text";
+import { s2IntlStrings } from "../intl";
+import { useActionButtonContext } from "./context";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+} from "./spectrum-context";
 
 export type { ActionButtonSize } from "./group-context";
+
+const avatarSize: Record<ActionButtonSize, number> = {
+  XS: 14,
+  S: 16,
+  M: 20,
+  L: 22,
+  XL: 26,
+};
 
 export interface ActionButtonProps extends Omit<
   HeadlessButtonProps,
@@ -59,7 +90,8 @@ export interface ActionButtonProps extends Omit<
  */
 export function ActionButton(props: ActionButtonProps): JSX.Element {
   const providerProps = useProviderProps(props);
-  const groupContext = useActionButtonGroupContext();
+  const contextProps = getSlottedContextProps(useActionButtonContext(), props.slot);
+  const groupContext = getSlottedContextProps(useActionButtonGroupContext(), undefined);
   const defaultProps: Partial<ActionButtonProps> = {
     size: "M",
   };
@@ -91,7 +123,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     },
   };
 
-  const merged = mergeProps(defaultProps, providerProps, groupProps, props);
+  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props, groupProps);
   const [local, headlessProps] = splitProps(merged, [
     "size",
     "staticColor",
@@ -102,6 +134,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     "UNSAFE_style",
     "class",
     "children",
+    "ref",
     "onPress",
     "onPressChange",
     "onHoverChange",
@@ -111,13 +144,30 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   ] as const);
 
   const { isProgressVisible } = createPendingState(() => local.isPending);
+  const dialogTriggerContext = useContext(DialogTriggerContext);
+  const popoverTriggerContext = useContext(PopoverTriggerContext);
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   let buttonElement: HTMLButtonElement | undefined;
+  const assignButtonRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
+    props.ref,
+  );
 
   const size = (): ActionButtonSize => local.size ?? "M";
   const density = (): ActionButtonDensity => local.density ?? "regular";
   const orientation = (): ActionButtonOrientation => local.orientation ?? "horizontal";
+  const isOverlayTriggerOpen = () =>
+    !!buttonElement &&
+    ((dialogTriggerContext?.triggerRef() === buttonElement &&
+      dialogTriggerContext.state.isOpen()) ||
+      (popoverTriggerContext?.triggerRef() === buttonElement &&
+        popoverTriggerContext.state.isOpen()));
+  const pendingLabel = () => stringFormatter().format("button.pending");
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const getS2State = (renderProps: ButtonRenderProps): S2ActionButtonRenderState => ({
-    isHovered: renderProps.isHovered,
+    isHovered: renderProps.isHovered || isOverlayTriggerOpen(),
     isPressed: renderProps.isPressed,
     isFocused: renderProps.isFocused,
     isFocusVisible: renderProps.isFocusVisible,
@@ -154,27 +204,14 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
               isInGroup: !!groupContext,
             })
           : undefined,
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
       .join(" ");
 
-  const getPressScaleStyle = (renderProps: ButtonRenderProps): JSX.CSSProperties => {
-    const style = { ...(local.UNSAFE_style ?? {}) } as JSX.CSSProperties;
-    const styleRecord = style as Record<string, string | number | undefined>;
-    const willChange = styleRecord["will-change"] ?? "";
-    styleRecord["will-change"] = `${willChange} transform`.trim();
-
-    if (renderProps.isPressed && buttonElement) {
-      const { width, height } = buttonElement.getBoundingClientRect();
-      const perspective = Math.max(height, width / 3, 24);
-      const transform = style.transform ?? "";
-      style.transform = `${transform} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();
-    }
-
-    return style;
-  };
+  const getPressScaleStyle = (renderProps: ButtonRenderProps): JSX.CSSProperties =>
+    pressScale(() => buttonElement, mergedUnsafeStyle())(renderProps);
 
   const pendingAccessibleLabel = () => {
     const existingLabel = (headlessProps as Record<string, unknown>)["aria-label"];
@@ -206,6 +243,52 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
         flexShrink: 0,
       }),
     };
+    const textContextValue = {
+      styles: () => s2ActionButtonText({ isProgressVisible: isProgressVisible() }),
+    };
+    const avatarContextValue = {
+      get size() {
+        return avatarSize[size()];
+      },
+      get styles() {
+        return style({
+          marginStart: "--iconMargin",
+          gridArea: "icon",
+        });
+      },
+    };
+    const imageContextValue = {
+      styles: () =>
+        style({
+          visibility: {
+            isProgressVisible: "hidden",
+          },
+        })({ isProgressVisible: isProgressVisible() }),
+    };
+    const notificationBadgeContextValue = {
+      get staticColor() {
+        return local.staticColor;
+      },
+      get size() {
+        const currentSize = size();
+        return currentSize === "XS" ? undefined : currentSize;
+      },
+      get isDisabled() {
+        return !!headlessProps.isDisabled;
+      },
+      styles: () =>
+        style({
+          position: "absolute",
+          top: "--badgeTop",
+          marginTop: "calc((self(height) * -1)/2)",
+          marginStart: "calc(var(--iconMargin) * 2 + (self(height) * -1)/4)",
+          gridColumnStart: 1,
+          insetStart: "--badgePosition",
+          visibility: {
+            isProgressVisible: "hidden",
+          },
+        })({ isProgressVisible: isProgressVisible() }),
+    };
 
     function ResolvedContent() {
       const resolvedChildren = resolveChildren(() => local.children);
@@ -224,50 +307,32 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     }
 
     return (
-      <IconContext.Provider value={iconContextValue}>
-        <ResolvedContent />
-        {local.isPending ? (
-          <div
-            class={s2ActionButtonPendingIndicator({
-              isProgressVisible: isProgressVisible(),
-            })}
-          >
-            <div
-              class={s2ActionButtonProgressCircle({ size: size() })}
-              role="progressbar"
-              data-rac=""
-              aria-label="pending"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              <svg fill="none" width="100%" height="100%">
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="calc(50% - 0.0625rem)"
-                  class="  VRWHrbc13 VlUG8Hlc13 _V7m7Gv13"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="calc(50% - 0.0625rem)"
-                  class="  Vf13 Vla13 _V7m7Gv13 _Vlai5a013"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="calc(50% - 0.0625rem)"
-                  class="  Vh13 VlUG8Hlc13 _Sa13 _0d13 _V7m7Gv13"
-                  style={{ animation: s2ProgressCircleIndeterminateAnimation }}
-                  pathLength="100"
-                  stroke-dasharray="100 200"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </div>
-          </div>
-        ) : null}
-      </IconContext.Provider>
+      <SkeletonContext.Provider value={null}>
+        <TextContext.Provider value={textContextValue}>
+          <IconContext.Provider value={iconContextValue}>
+            <AvatarContext.Provider value={avatarContextValue}>
+              <ImageContext.Provider value={imageContextValue}>
+                <NotificationBadgeContext.Provider value={notificationBadgeContextValue}>
+                  <ResolvedContent />
+                  {local.isPending ? (
+                    <div
+                      class={s2ActionButtonPendingIndicator({
+                        isProgressVisible: isProgressVisible(),
+                      })}
+                    >
+                      <S2PendingProgressCircle
+                        aria-label={pendingLabel()}
+                        size={size()}
+                        staticColor={local.staticColor}
+                      />
+                    </div>
+                  ) : null}
+                </NotificationBadgeContext.Provider>
+              </ImageContext.Provider>
+            </AvatarContext.Provider>
+          </IconContext.Provider>
+        </TextContext.Provider>
+      </SkeletonContext.Provider>
     );
   }
 
@@ -279,6 +344,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       isPendingFocusable
       ref={(element: HTMLButtonElement) => {
         buttonElement = element;
+        assignButtonRefs(element);
       }}
       onHoverChange={(hovered) => {
         local.onHoverChange?.(hovered);

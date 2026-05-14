@@ -7,7 +7,7 @@ import {
 } from "./comparison-manifest";
 
 export type VisualStateKind = "static" | "overlay" | "interaction" | "keyboard";
-export type VisualStateSideStatus = "snapshotted" | "asserted" | "planned" | "missing" | "na";
+export type VisualStateSideStatus = "visual" | "asserted" | "planned" | "missing" | "na";
 export type PairDiffStatus = "strict" | "asserted" | "planned" | "blocked" | "na";
 
 export interface VisualStateTarget {
@@ -18,7 +18,6 @@ export interface VisualStateTarget {
   solid: VisualStateSideStatus;
   pairDiff: PairDiffStatus;
   spec?: string;
-  snapshots?: readonly string[];
   note: string;
 }
 
@@ -42,33 +41,34 @@ function plannedState(entry: ComparisonEntry): VisualStateTarget {
     pairDiff: reactLive && solidLive ? "planned" : "blocked",
     note:
       reactLive && solidLive
-        ? "Route is live, but committed screenshots and strict pair diff are still missing."
+        ? "Route is live, but current visual evidence and strict pair diff are still missing."
         : "Blocked until both the exact React Spectrum reference and Solid styled implementation are live.",
   };
 }
 
-function snapshottedDefaultState(input: {
+function visualDefaultState(input: {
   slug: string;
   label?: string;
   note?: string;
+  pairDiff?: PairDiffStatus;
+  spec?: string;
 }): VisualStateTarget {
   const label = input.label ?? "Styled default";
+  const pairDiff = input.pairDiff ?? "asserted";
 
   return {
     id: "styled.default",
     label,
     kind: "static",
-    react: "snapshotted",
-    solid: "snapshotted",
-    pairDiff: "asserted",
-    spec: "e2e/default-state-visual.spec.ts + e2e/default-state-pair-diff.spec.ts",
-    snapshots: [
-      `e2e/default-state-visual.spec.ts-snapshots/${input.slug}-default-react-chromium-linux.png`,
-      `e2e/default-state-visual.spec.ts-snapshots/${input.slug}-default-solid-chromium-linux.png`,
-    ],
+    react: "visual",
+    solid: "visual",
+    pairDiff,
+    spec: input.spec ?? "e2e/default-state-visual.spec.ts + e2e/default-state-pair-diff.spec.ts",
     note:
       input.note ??
-      "Committed default-state screenshots exist for both sides, and React-vs-Solid pair diff is guarded by an explicit asserted threshold.",
+      (pairDiff === "strict"
+        ? "Current default-state React/Solid captures are compared with zero pixel tolerance."
+        : "Current default-state React/Solid captures are compared with an explicit asserted pair-diff threshold."),
   };
 }
 
@@ -83,84 +83,66 @@ function assertedDefaultState(input: {
     id: "styled.default",
     label,
     kind: "static",
-    react: "snapshotted",
-    solid: "snapshotted",
+    react: "visual",
+    solid: "visual",
     pairDiff: "asserted",
     spec: "e2e/live-styled-visual.spec.ts",
-    snapshots: [
-      `e2e/live-styled-visual.spec.ts-snapshots/${input.slug}-default-react-chromium-linux.png`,
-      `e2e/live-styled-visual.spec.ts-snapshots/${input.slug}-default-solid-chromium-linux.png`,
-    ],
     note: input.note,
   };
 }
 
 const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   provider: [
-    snapshottedDefaultState({
+    visualDefaultState({
       slug: "provider",
-      note: "Provider nesting screenshots are committed for both sides, and React-vs-Solid pair diff is guarded by an explicit asserted threshold.",
+      note: "Provider nesting uses current React/Solid captures and an explicit asserted pair-diff threshold.",
     }),
   ],
   button: [
-    snapshottedDefaultState({
+    visualDefaultState({
       slug: "button",
-      note: "Button row screenshots are committed for both sides; default React-vs-Solid pair diff is guarded by an explicit asserted threshold while component-specific Button states remain strict.",
+      pairDiff: "strict",
+      spec: "e2e/button-visual.spec.ts",
+      note: "Button default control is captured from the focused Button fixture and compared with zero pixel tolerance.",
     }),
     {
       id: "styled.default.control",
       label: "Styled default control",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/button-visual.spec.ts",
-      snapshots: [
-        "e2e/button-visual.spec.ts-snapshots/button-default-control-react-chromium-linux.png",
-        "e2e/button-visual.spec.ts-snapshots/button-default-control-solid-chromium-linux.png",
-      ],
-      note: "Button-specific screenshots compare the controlled React Spectrum S2 fixture against the Solid S2 skin.",
+      note: "Button-specific captures compare the controlled React Spectrum S2 fixture against the Solid S2 skin.",
     },
     {
       id: "styled.hover",
       label: "Hover",
       kind: "interaction",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/button-visual.spec.ts",
-      snapshots: [
-        "e2e/button-visual.spec.ts-snapshots/button-hover-react-chromium-linux.png",
-        "e2e/button-visual.spec.ts-snapshots/button-hover-solid-chromium-linux.png",
-      ],
-      note: "Hover is snapshotted on both implementations and compared with zero pixel tolerance.",
+      note: "Hover is captured on both implementations and compared with zero pixel tolerance.",
     },
     {
       id: "styled.focus-visible",
       label: "Focus-visible",
       kind: "keyboard",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/button-visual.spec.ts",
-      snapshots: [
-        "e2e/button-visual.spec.ts-snapshots/button-focus-visible-react-chromium-linux.png",
-        "e2e/button-visual.spec.ts-snapshots/button-focus-visible-solid-chromium-linux.png",
-      ],
-      note: "Keyboard focus ring is snapshotted on the full canvas so the outside outline is not clipped.",
+      note: "Keyboard focus ring is captured on the full canvas so the outside outline is not clipped.",
     },
     {
       id: "styled.pressed",
       label: "Pressed",
       kind: "interaction",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/button-visual.spec.ts",
-      snapshots: [
-        "e2e/button-visual.spec.ts-snapshots/button-pressed-react-chromium-linux.png",
-        "e2e/button-visual.spec.ts-snapshots/button-pressed-solid-chromium-linux.png",
-      ],
       note: "Pressed state includes the S2 press-scale transform and is compared with zero pixel tolerance.",
     },
     {
@@ -187,8 +169,8 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.props.visual-matrix",
       label: "Documented visual prop matrix",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/button-visual.spec.ts",
       note: "Strict screenshots cover all documented Button variants in fill and outline, all sizes, staticColor white/black/auto in fill and outline, disabled, and the immediate pending state.",
@@ -197,15 +179,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.pending.spinner",
       label: "Delayed pending spinner",
       kind: "interaction",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/button-visual.spec.ts",
-      snapshots: [
-        "e2e/button-visual.spec.ts-snapshots/button-pending-spinner-react-chromium-linux.png",
-        "e2e/button-visual.spec.ts-snapshots/button-pending-spinner-solid-chromium-linux.png",
-      ],
-      note: "The delayed S2 pending spinner is waited for, snapshotted on both sides, and compared with zero pixel tolerance.",
+      note: "The delayed S2 pending spinner is waited for, captured on both sides, and compared with zero pixel tolerance.",
     },
     {
       id: "styled.pending.behavior",
@@ -219,19 +197,21 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
     },
   ],
   actionbutton: [
-    snapshottedDefaultState({
+    visualDefaultState({
       slug: "actionbutton",
-      note: "ActionButton default screenshots are committed for both sides; the broad default pair diff is asserted while exact computed S2 parity covers light/dark default, size, quiet, static-color, disabled, and pending states.",
+      pairDiff: "strict",
+      spec: "e2e/actionbutton-visual.spec.ts",
+      note: "ActionButton default visual evidence is captured from the focused ActionButton fixture and compared with zero pixel tolerance.",
     }),
     {
       id: "styled.props.screenshot-matrix",
-      label: "Committed screenshot prop matrix",
+      label: "Current visual prop matrix",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
-      pairDiff: "asserted",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
       spec: "e2e/actionbutton-visual.spec.ts",
-      note: "Committed React/Solid screenshots cover default, XS/S/M/L/XL sizes, quiet, staticColor black/white/auto, disabled, pending, icon-leading, icon-only, hover, focus-visible, and pressed states. The dedicated threshold remains until staticColor, pressed, and residual text/background raster differences become strict.",
+      note: "Current React/Solid captures cover default, XS/S/M/L/XL sizes, quiet, staticColor black/white/auto, disabled, pending, icon-leading, icon-only, hover, focus-visible, and pressed states with zero pixel tolerance.",
     },
     {
       id: "styled.icon.geometry",
@@ -283,20 +263,13 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/button-family-contract.spec.ts",
       note: "Pending ActionButtons remain focusable and suppress press actions on both React Spectrum and Solid.",
     },
-    {
-      id: "styled.test-plan",
-      label: "Component-specific test plan",
-      kind: "static",
-      react: "planned",
-      solid: "planned",
-      pairDiff: "planned",
-      note: "Remaining ActionButton plan covers icon/avatar/badge content, light-theme screenshot baselines, and strict pair-diff work for staticColor, pressed, and residual raster differences.",
-    },
   ],
   actionbuttongroup: [
-    snapshottedDefaultState({
+    visualDefaultState({
       slug: "actionbuttongroup",
-      note: "ActionButtonGroup default screenshots are committed for both sides and guarded by an asserted threshold; keyboard and stricter visual parity remain planned.",
+      pairDiff: "strict",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "ActionButtonGroup default visual evidence is captured from the focused group fixture and compared with zero pixel tolerance.",
     }),
     {
       id: "styled.selection.single-action",
@@ -312,15 +285,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.group.props-icon",
       label: "Group props and icon geometry",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
-      pairDiff: "asserted",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
       spec: "e2e/grouped-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/grouped-button-controls-visual.spec.ts-snapshots/actionbuttongroup-compact-vertical-icon-start-react-chromium-linux.png",
-        "e2e/grouped-button-controls-visual.spec.ts-snapshots/actionbuttongroup-compact-vertical-icon-start-solid-chromium-linux.png",
-      ],
-      note: "Compact vertical XL icon-leading ActionButtonGroup state is snapshotted, compares toolbar orientation and planned group props, and asserts child icon/text centerline geometry against React Spectrum.",
+      note: "Compact vertical XL icon-leading ActionButtonGroup state has zero-tolerance visual evidence, compares toolbar orientation and planned group props, and asserts child icon/text centerline geometry against React Spectrum.",
     },
     {
       id: "styled.props.controls",
@@ -334,9 +303,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
     },
   ],
   buttongroup: [
-    snapshottedDefaultState({
+    visualDefaultState({
       slug: "buttongroup",
-      note: "ButtonGroup default screenshots are committed for both sides and guarded by an asserted threshold; disabled state, stricter visual parity, and grouped interaction states remain planned.",
+      pairDiff: "strict",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "ButtonGroup default visual evidence is captured from the focused group fixture and compared with zero pixel tolerance.",
     }),
     {
       id: "styled.grouped-actions.press",
@@ -352,15 +323,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.overflow.icon",
       label: "Overflow layout and icon geometry",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
-      pairDiff: "asserted",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
       spec: "e2e/grouped-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/grouped-button-controls-visual.spec.ts-snapshots/buttongroup-overflow-icon-start-react-chromium-linux.png",
-        "e2e/grouped-button-controls-visual.spec.ts-snapshots/buttongroup-overflow-icon-start-solid-chromium-linux.png",
-      ],
-      note: "Constrained XL ButtonGroup state is snapshotted and asserts S2 overflow switching from horizontal to vertical, propagated size, wrapped width, and child icon/text centerline geometry.",
+      note: "Constrained XL ButtonGroup state has zero-tolerance visual evidence and asserts S2 overflow switching from horizontal to vertical, propagated size, wrapped width, and child icon/text centerline geometry.",
     },
     {
       id: "styled.props.controls",
@@ -374,27 +341,21 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
     },
   ],
   togglebutton: [
-    snapshottedDefaultState({
+    visualDefaultState({
       slug: "togglebutton",
-      note: "ToggleButton default unselected screenshots are committed for both sides and guarded by an asserted threshold; selected, hover, pressed, focus-visible, emphasized, disabled, keyboard, and stricter visual states remain planned.",
+      pairDiff: "strict",
+      spec: "e2e/single-button-controls-visual.spec.ts",
+      note: "ToggleButton default unselected visual evidence is captured from the focused single-control fixture and compared with zero pixel tolerance.",
     }),
     {
       id: "styled.icon.matrix",
       label: "Icon content",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
-      pairDiff: "asserted",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
       spec: "e2e/single-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/single-button-controls-visual.spec.ts-snapshots/togglebutton-icon-start-react-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/togglebutton-icon-start-solid-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/togglebutton-icon-start-selected-react-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/togglebutton-icon-start-selected-solid-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/togglebutton-icon-only-react-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/togglebutton-icon-only-solid-chromium-linux.png",
-      ],
-      note: "Icon-leading, selected icon-leading, and icon-only ToggleButton states are snapshotted and guarded by root/icon/text centerline geometry.",
+      note: "Icon-leading, selected icon-leading, and icon-only ToggleButton states have zero-tolerance visual evidence and are guarded by root/icon/text centerline geometry.",
     },
     {
       id: "styled.toggle.selected",
@@ -418,25 +379,21 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
     },
   ],
   linkbutton: [
-    assertedDefaultState({
+    visualDefaultState({
       slug: "linkbutton",
-      note: "LinkButton default screenshots are committed for both sides and compared with an asserted threshold while strict styling parity remains open.",
+      pairDiff: "strict",
+      spec: "e2e/single-button-controls-visual.spec.ts",
+      note: "LinkButton default visual evidence is captured from the focused single-control fixture and compared with zero pixel tolerance.",
     }),
     {
       id: "styled.icon.matrix",
       label: "Icon content and link semantics",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
-      pairDiff: "asserted",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
       spec: "e2e/single-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/single-button-controls-visual.spec.ts-snapshots/linkbutton-icon-start-react-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/linkbutton-icon-start-solid-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/linkbutton-icon-only-react-chromium-linux.png",
-        "e2e/single-button-controls-visual.spec.ts-snapshots/linkbutton-icon-only-solid-chromium-linux.png",
-      ],
-      note: "Icon-leading and icon-only LinkButton states are snapshotted, root/icon/text geometry is compared, and both stacks assert the same href link semantics.",
+      note: "Icon-leading and icon-only LinkButton states have zero-tolerance visual evidence, root/icon/text geometry is compared, and both stacks assert the same href link semantics.",
     },
     {
       id: "styled.props.controls",
@@ -460,9 +417,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
     },
   ],
   togglebuttongroup: [
-    assertedDefaultState({
+    visualDefaultState({
       slug: "togglebuttongroup",
-      note: "ToggleButtonGroup default screenshots are committed for both sides and compared with an asserted threshold; keyboard, disabled, and strict pair-diff coverage remain open.",
+      pairDiff: "strict",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "ToggleButtonGroup default visual evidence is captured from the focused group fixture and compared with zero pixel tolerance.",
     }),
     {
       id: "styled.selection.single",
@@ -478,15 +437,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.group.props-icon",
       label: "Group props, selection, and icon geometry",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
-      pairDiff: "asserted",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
       spec: "e2e/grouped-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/grouped-button-controls-visual.spec.ts-snapshots/togglebuttongroup-compact-vertical-selected-icon-start-react-chromium-linux.png",
-        "e2e/grouped-button-controls-visual.spec.ts-snapshots/togglebuttongroup-compact-vertical-selected-icon-start-solid-chromium-linux.png",
-      ],
-      note: "Compact vertical XL emphasized icon-leading ToggleButtonGroup state is snapshotted, compares radiogroup orientation and planned group props, asserts selected key, and checks selected child icon/text centerline geometry.",
+      note: "Compact vertical XL emphasized icon-leading ToggleButtonGroup state has zero-tolerance visual evidence, compares radiogroup orientation and planned group props, asserts selected key, and checks selected child icon/text centerline geometry.",
     },
     {
       id: "styled.props.controls",
@@ -502,7 +457,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   segmentedcontrol: [
     assertedDefaultState({
       slug: "segmentedcontrol",
-      note: "SegmentedControl default screenshots are committed for both sides and compared with an asserted threshold; icon slots and strict pair-diff coverage remain open.",
+      note: "SegmentedControl default visual evidence exists for both sides and compared with an asserted threshold; icon slots and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",
@@ -518,15 +473,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.selection-indicator.justified",
       label: "Justified selected indicator",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/collection-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/collection-button-controls-visual.spec.ts-snapshots/segmentedcontrol-justified-selected-react-chromium-linux.png",
-        "e2e/collection-button-controls-visual.spec.ts-snapshots/segmentedcontrol-justified-selected-solid-chromium-linux.png",
-      ],
-      note: "Justified Grid-selected SegmentedControl state is snapshotted and asserts radiogroup semantics, selected key, root background, equal item widths, and selection-indicator geometry against React Spectrum.",
+      note: "Justified Grid-selected SegmentedControl state has current visual evidence and asserts radiogroup semantics, selected key, root background, equal item widths, and selection-indicator geometry against React Spectrum.",
     },
     {
       id: "styled.props.controls",
@@ -552,7 +503,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   selectboxgroup: [
     assertedDefaultState({
       slug: "selectboxgroup",
-      note: "SelectBoxGroup default screenshots are committed for both sides and compared with an asserted threshold; strict pair-diff coverage remains open.",
+      note: "SelectBoxGroup default visual evidence exists for both sides and compared with an asserted threshold; strict pair-diff coverage remains open.",
     }),
     {
       id: "styled.selection.single",
@@ -568,15 +519,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.selection.multiple-slots",
       label: "Multiple selection and text slots",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/collection-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-horizontal-multiple-react-chromium-linux.png",
-        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-horizontal-multiple-solid-chromium-linux.png",
-      ],
-      note: "Horizontal multiple-selection SelectBoxGroup state is snapshotted and asserts listbox semantics, selected key set, checkbox indicator geometry, option dimensions, and label/description slot alignment.",
+      note: "Horizontal multiple-selection SelectBoxGroup state has current visual evidence and asserts listbox semantics, selected key set, checkbox indicator geometry, option dimensions, and label/description slot alignment.",
     },
     {
       id: "styled.hover.text-color",
@@ -612,15 +559,11 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.disabled-item.illustration",
       label: "Illustrated disabled item",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/collection-button-controls-visual.spec.ts",
-      snapshots: [
-        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-illustrated-disabled-react-chromium-linux.png",
-        "e2e/collection-button-controls-visual.spec.ts-snapshots/selectboxgroup-illustrated-disabled-solid-chromium-linux.png",
-      ],
-      note: "Horizontal multiple SelectBoxGroup with illustration slots and a disabled Pro option is snapshotted and asserts illustration geometry, disabled-item label color, and disabled option state against React Spectrum.",
+      note: "Horizontal multiple SelectBoxGroup with illustration slots and a disabled Pro option has current visual evidence and asserts illustration geometry, disabled-item label color, and disabled option state against React Spectrum.",
     },
     {
       id: "styled.disabled-item.behavior",
@@ -636,7 +579,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   cardview: [
     assertedDefaultState({
       slug: "cardview",
-      note: "CardView default screenshots are committed for both sides and compared with an asserted threshold; virtualization, selection styles, loading, keyboard, and strict pair-diff coverage remain open.",
+      note: "CardView default visual evidence exists for both sides and compared with an asserted threshold; virtualization, selection styles, loading, keyboard, and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",
@@ -657,21 +600,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "Checkbox is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the first visual tightening pass.",
+      note: "Checkbox is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the first visual tightening pass.",
     },
     {
       id: "styled.selected-emphasized-xl",
       label: "Selected emphasized XL",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/checkbox-visual.spec.ts",
-      snapshots: [
-        "e2e/checkbox-visual.spec.ts-snapshots/checkbox-selected-emphasized-xl-react-chromium-linux.png",
-        "e2e/checkbox-visual.spec.ts-snapshots/checkbox-selected-emphasized-xl-solid-chromium-linux.png",
-      ],
-      note: "Selected emphasized XL Checkbox state is snapshotted and asserts checked semantics, S2 box/icon sizing, box color, and icon centerline geometry against React Spectrum.",
+      note: "Selected emphasized XL Checkbox state has current visual evidence and asserts checked semantics, S2 box/icon sizing, box color, and icon centerline geometry against React Spectrum.",
     },
     {
       id: "styled.props.controls",
@@ -702,7 +641,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "CheckboxGroup is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "CheckboxGroup is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.selected-emphasized-invalid-xl",
@@ -733,7 +672,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "ComboBox is now wired on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "ComboBox is now wired on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.open-list.layout",
@@ -764,7 +703,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "RadioGroup is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "RadioGroup is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.selected-emphasized-invalid-xl",
@@ -805,21 +744,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "NumberField is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "NumberField is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.invalid-required-xl",
       label: "Invalid required XL",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/numberfield-visual.spec.ts",
-      snapshots: [
-        "e2e/numberfield-visual.spec.ts-snapshots/numberfield-invalid-required-xl-react-chromium-linux.png",
-        "e2e/numberfield-visual.spec.ts-snapshots/numberfield-invalid-required-xl-solid-chromium-linux.png",
-      ],
-      note: "Invalid required XL NumberField state is snapshotted and asserts controlled numeric value, label/input/help-text geometry, stepper button and icon sizing, invalid icon placement, border/background color, and aria state against React Spectrum.",
+      note: "Invalid required XL NumberField state has current visual evidence and asserts controlled numeric value, label/input/help-text geometry, stepper button and icon sizing, invalid icon placement, border/background color, and aria state against React Spectrum.",
     },
     {
       id: "styled.value.change",
@@ -850,21 +785,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "Picker is now wired on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the remaining form/input visual tightening pass.",
+      note: "Picker is now wired on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the remaining form/input visual tightening pass.",
     },
     {
       id: "styled.invalid-required-xl",
       label: "Invalid required XL",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/picker-visual.spec.ts",
-      snapshots: [
-        "e2e/picker-visual.spec.ts-snapshots/picker-invalid-required-xl-react-chromium-linux.png",
-        "e2e/picker-visual.spec.ts-snapshots/picker-invalid-required-xl-solid-chromium-linux.png",
-      ],
-      note: "Invalid required XL Picker state is snapshotted and asserts selected key, trigger/value/icon geometry, invalid icon treatment, help text color, and aria state against React Spectrum.",
+      note: "Invalid required XL Picker state has current visual evidence and asserts selected key, trigger/value/icon geometry, invalid icon treatment, help text color, and aria state against React Spectrum.",
     },
     {
       id: "styled.selection.change",
@@ -915,21 +846,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "Slider is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "Slider is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.emphasized-xl-thick-precise",
       label: "Emphasized XL thick precise",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/slider-visual.spec.ts",
-      snapshots: [
-        "e2e/slider-visual.spec.ts-snapshots/slider-emphasized-xl-thick-precise-react-chromium-linux.png",
-        "e2e/slider-visual.spec.ts-snapshots/slider-emphasized-xl-thick-precise-solid-chromium-linux.png",
-      ],
-      note: "Emphasized XL Slider state is snapshotted and asserts controlled value, label/output text, S2 track/fill/thumb geometry, color treatment, and aria state against React Spectrum.",
+      note: "Emphasized XL Slider state has current visual evidence and asserts controlled value, label/output text, S2 track/fill/thumb geometry, color treatment, and aria state against React Spectrum.",
     },
     {
       id: "styled.value.change",
@@ -960,21 +887,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "TextField is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "TextField is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.invalid-required-xl",
       label: "Invalid required XL",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/textfield-visual.spec.ts",
-      snapshots: [
-        "e2e/textfield-visual.spec.ts-snapshots/textfield-invalid-required-xl-react-chromium-linux.png",
-        "e2e/textfield-visual.spec.ts-snapshots/textfield-invalid-required-xl-solid-chromium-linux.png",
-      ],
-      note: "Invalid required XL TextField state is snapshotted and asserts controlled value, label/input/help-text geometry, invalid icon placement, border/background color, and aria state against React Spectrum.",
+      note: "Invalid required XL TextField state has current visual evidence and asserts controlled value, label/input/help-text geometry, invalid icon placement, border/background color, and aria state against React Spectrum.",
     },
     {
       id: "styled.value.change",
@@ -1005,21 +928,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "TextArea is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "TextArea is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.invalid-required-xl",
       label: "Invalid required XL",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/textarea-visual.spec.ts",
-      snapshots: [
-        "e2e/textarea-visual.spec.ts-snapshots/textarea-invalid-required-xl-react-chromium-linux.png",
-        "e2e/textarea-visual.spec.ts-snapshots/textarea-invalid-required-xl-solid-chromium-linux.png",
-      ],
-      note: "Invalid required XL TextArea state is snapshotted with deterministic short multiline content and asserts controlled value, settled auto-height, label/textarea/help-text geometry, invalid icon placement, border/background color, and aria state against React Spectrum.",
+      note: "Invalid required XL TextArea state has current visual evidence with deterministic short multiline content and asserts controlled value, settled auto-height, label/textarea/help-text geometry, invalid icon placement, border/background color, and aria state against React Spectrum.",
     },
     {
       id: "styled.value.change",
@@ -1050,21 +969,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "SearchField is live on both styled stacks, but committed default screenshots and pair-diff thresholds are still part of the form/input visual tightening pass.",
+      note: "SearchField is live on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the form/input visual tightening pass.",
     },
     {
       id: "styled.invalid-required-xl",
       label: "Invalid required XL",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/searchfield-visual.spec.ts",
-      snapshots: [
-        "e2e/searchfield-visual.spec.ts-snapshots/searchfield-invalid-required-xl-react-chromium-linux.png",
-        "e2e/searchfield-visual.spec.ts-snapshots/searchfield-invalid-required-xl-solid-chromium-linux.png",
-      ],
-      note: "Invalid required XL SearchField state is snapshotted and asserts controlled value, pill group geometry, search icon placement, clear-button visibility, border/background color, and aria state against React Spectrum.",
+      note: "Invalid required XL SearchField state has current visual evidence and asserts controlled value, pill group geometry, search icon placement, clear-button visibility, border/background color, and aria state against React Spectrum.",
     },
     {
       id: "styled.value.change",
@@ -1095,21 +1010,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "Switch is live on both styled stacks, but committed default screenshots and strict pair-diff thresholds are still part of the broader form/input tightening pass.",
+      note: "Switch is live on both styled stacks, but current default visual evidence and strict pair-diff thresholds still need to be added in the broader form/input tightening pass.",
     },
     {
       id: "styled.selected-emphasized-xl",
       label: "Selected emphasized XL",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/switch-visual.spec.ts",
-      snapshots: [
-        "e2e/switch-visual.spec.ts-snapshots/switch-selected-emphasized-xl-react-chromium-linux.png",
-        "e2e/switch-visual.spec.ts-snapshots/switch-selected-emphasized-xl-solid-chromium-linux.png",
-      ],
-      note: "Selected emphasized XL Switch state is snapshotted and asserts controlled selection, track/handle geometry, handle transform, and label color parity against React Spectrum.",
+      note: "Selected emphasized XL Switch state has current visual evidence and asserts controlled selection, track/handle geometry, handle transform, and label color parity against React Spectrum.",
     },
     {
       id: "styled.selection.change",
@@ -1137,29 +1048,21 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.trigger.default",
       label: "Trigger button",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/dialog-visual.spec.ts",
-      snapshots: [
-        "e2e/dialog-visual.spec.ts-snapshots/dialog-trigger-react-chromium-linux.png",
-        "e2e/dialog-visual.spec.ts-snapshots/dialog-trigger-solid-chromium-linux.png",
-      ],
-      note: "Committed screenshots exist for both triggers; React-vs-Solid pair diff is strict zero-tolerance.",
+      note: "Current trigger visual evidence exists for both sides; React-vs-Solid pair diff is strict zero-tolerance.",
     },
     {
       id: "styled.dialog.open",
       label: "Open modal surface",
       kind: "overlay",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "strict",
       spec: "e2e/dialog-visual.spec.ts",
-      snapshots: [
-        "e2e/dialog-visual.spec.ts-snapshots/dialog-surface-react-chromium-linux.png",
-        "e2e/dialog-visual.spec.ts-snapshots/dialog-surface-solid-chromium-linux.png",
-      ],
-      note: "Covers visible open state, viewport placement, occlusion, committed screenshots, and strict zero-tolerance pair diff.",
+      note: "Covers visible open state, viewport placement, occlusion, current visual evidence, and strict zero-tolerance pair diff.",
     },
     {
       id: "styled.dialog.dismiss.outside",
@@ -1187,29 +1090,21 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       id: "styled.field.default",
       label: "Closed field",
       kind: "static",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "planned",
       spec: "e2e/datepicker-visual.spec.ts",
-      snapshots: [
-        "e2e/datepicker-visual.spec.ts-snapshots/datepicker-field-react-chromium-linux.png",
-        "e2e/datepicker-visual.spec.ts-snapshots/datepicker-field-solid-chromium-linux.png",
-      ],
-      note: "Committed screenshots exist for the closed field and the live Solid fixture is guarded. Solid now uses generated S2 field/calendar styling with explicit light/dark theme coverage; strict React-vs-Solid visual parity remains planned.",
+      note: "Current closed-field visual evidence exists and the live Solid fixture is guarded. Solid now uses generated S2 field/calendar styling with explicit light/dark theme coverage; strict React-vs-Solid visual parity remains planned.",
     },
     {
       id: "styled.calendar.open",
       label: "Open calendar popover",
       kind: "overlay",
-      react: "snapshotted",
-      solid: "snapshotted",
+      react: "visual",
+      solid: "visual",
       pairDiff: "planned",
       spec: "e2e/datepicker-visual.spec.ts",
-      snapshots: [
-        "e2e/datepicker-visual.spec.ts-snapshots/datepicker-popover-react-chromium-linux.png",
-        "e2e/datepicker-visual.spec.ts-snapshots/datepicker-popover-solid-chromium-linux.png",
-      ],
-      note: "Covers open calendar geometry and committed screenshots for both sides. The Solid popover surface and calendar grid now use generated S2 styling and theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
+      note: "Covers open calendar geometry with current visual evidence for both sides. The Solid popover surface and calendar grid now use generated S2 styling and theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
     },
     {
       id: "styled.calendar.select-date",
@@ -1272,11 +1167,10 @@ export const officialVisualStateCoverage: readonly VisualStateCoverage[] =
 export const officialVisualStateSummary = {
   components: officialVisualStateCoverage.length,
   states: officialVisualStateCoverage.reduce((count, entry) => count + entry.states.length, 0),
-  snapshottedStates: officialVisualStateCoverage.reduce(
+  visualEvidenceStates: officialVisualStateCoverage.reduce(
     (count, entry) =>
       count +
-      entry.states.filter((state) => state.react === "snapshotted" && state.solid === "snapshotted")
-        .length,
+      entry.states.filter((state) => state.react === "visual" && state.solid === "visual").length,
     0,
   ),
   strictPairDiffStates: officialVisualStateCoverage.reduce(

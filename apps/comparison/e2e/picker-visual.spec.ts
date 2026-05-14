@@ -242,7 +242,7 @@ function expectNear(
 }
 
 test.describe("comparison Picker visual parity", () => {
-  test("invalid required XL state has committed pair screenshots", async ({ page }) => {
+  test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await pickerFixtures(page, "?isInvalid=true&isRequired=true&size=XL");
 
     await clearPointer(page);
@@ -251,7 +251,6 @@ test.describe("comparison Picker visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "Picker invalid required XL state",
-      "picker-invalid-required-xl",
       { maxMismatchRatio: 0.2, maxDimensionDelta: 24, pixelThreshold: 64 },
     );
   });

@@ -146,17 +146,16 @@ export function createFocusable(
     }
   });
 
-  // Always set a tabIndex so that Safari allows focusing native buttons and inputs.
-  let tabIndex: number | undefined = props.excludeFromTabOrder ? -1 : 0;
-  if (isDisabledValue(props.isDisabled)) {
-    tabIndex = undefined;
-  }
-
   // Build final focusable props
   const focusableProps = mergeProps(
     {
       ...interactions,
-      tabIndex,
+      get tabIndex() {
+        if (isDisabledValue(props.isDisabled)) {
+          return undefined;
+        }
+        return props.excludeFromTabOrder ? -1 : 0;
+      },
       ref: setRef,
     },
     interactionProps,

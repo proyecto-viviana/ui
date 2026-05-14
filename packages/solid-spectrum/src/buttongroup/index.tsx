@@ -1,8 +1,25 @@
-import { createEffect, createSignal, onCleanup, onMount, type JSX, splitProps } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  mergeProps,
+  onCleanup,
+  onMount,
+  type JSX,
+  splitProps,
+} from "solid-js";
 import type { StyleString } from "../s2-style";
 import { style } from "../s2-style";
-import { ButtonGroupContext } from "../button/group-context";
+import { ButtonContext, LinkButtonContext } from "../button/context";
+import { useButtonGroupContext } from "../button/group-context";
 import { s2ButtonGroup } from "../button/s2-action-button-styles";
+import { useProviderProps } from "../provider";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+} from "../button/spectrum-context";
 import type { ButtonSize } from "../button/types";
 
 export interface ButtonGroupProps extends Omit<
@@ -27,10 +44,15 @@ export interface ButtonGroupProps extends Omit<
   UNSAFE_style?: JSX.CSSProperties;
   /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
+  /** @internal Whether a parent context should suppress rendering the group. */
+  isHidden?: boolean;
 }
 
 export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
-  const [local, domProps] = splitProps(props, [
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useButtonGroupContext(), props.slot);
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const [local, domProps] = splitProps(merged, [
     "class",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -40,12 +62,21 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
     "align",
     "size",
     "isDisabled",
+    "isHidden",
+    "ref",
   ]);
   const size = () => local.size ?? "M";
   const orientation = () => local.orientation ?? "horizontal";
   const align = () => local.align ?? "start";
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const [hasOverflow, setHasOverflow] = createSignal(false);
   let groupElement: HTMLDivElement | undefined;
+  const assignGroupRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref as RefLike<HTMLDivElement>,
+  );
   let resizeObserver: ResizeObserver | undefined;
   let measurementFrame = 0;
 
@@ -61,7 +92,7 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
           orientation: effectiveOrientation(),
           align: align(),
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -139,21 +170,28 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
     },
   };
 
+  if (local.isHidden) {
+    return null;
+  }
+
   return (
     <div
       {...domProps}
       ref={(element) => {
         groupElement = element;
+        assignGroupRefs(element);
       }}
       class={className()}
-      style={local.UNSAFE_style}
+      style={mergedUnsafeStyle()}
       data-orientation={effectiveOrientation()}
       data-requested-orientation={orientation()}
       data-disabled={local.isDisabled || undefined}
     >
-      <ButtonGroupContext.Provider value={contextValue}>
-        {local.children}
-      </ButtonGroupContext.Provider>
+      <ButtonContext.Provider value={contextValue}>
+        <LinkButtonContext.Provider value={contextValue}>
+          {local.children}
+        </LinkButtonContext.Provider>
+      </ButtonContext.Provider>
     </div>
   );
 }

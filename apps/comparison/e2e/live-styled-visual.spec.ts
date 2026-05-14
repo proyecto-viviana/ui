@@ -43,7 +43,7 @@ const liveStyledVisualCases: LiveStyledVisualCase[] = [
 
 test.describe("comparison newly-live styled visual coverage", () => {
   for (const item of liveStyledVisualCases) {
-    test(`${item.title} default surface has committed screenshots`, async ({ page }) => {
+    test(`${item.title} default surface matches current React Spectrum`, async ({ page }) => {
       await pinComparisonTheme(page, "dark");
       await page.goto(`/components/${item.slug}/`);
       await page.waitForLoadState("networkidle");
@@ -59,7 +59,6 @@ test.describe("comparison newly-live styled visual coverage", () => {
         reactCanvas,
         solidCanvas,
         `${item.title} default surface`,
-        `${item.slug}-default`,
         item.threshold,
       );
     });

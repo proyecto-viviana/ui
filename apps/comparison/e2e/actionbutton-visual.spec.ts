@@ -1,13 +1,17 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
-import { pinComparisonTheme } from "./visual-diff";
-import { clearPointer, expectPreparedScreenshotPair, expectScreenshotPair } from "./visual-diff";
-
-const actionButtonPairDiff = {
-  maxMismatchRatio: 0.12,
-  maxDimensionDelta: 4,
-  pixelThreshold: 64,
-};
+import {
+  frameworkCanvas,
+  frameworkPanel,
+  styledSection,
+  waitForComparisonRouteReady,
+} from "./comparison-page";
+import {
+  expectExactPreparedInPlaceScreenshotPair,
+  clearPointer,
+  expectExactPreparedScreenshotPair,
+  expectExactScreenshotPair,
+  pinComparisonTheme,
+} from "./visual-diff";
 
 type ActionButtonCase = {
   id: string;
@@ -53,8 +57,7 @@ function actionButtonQuery(params: Record<string, string | boolean> = {}) {
 async function actionButtonFixtures(page: Page, params: Record<string, string | boolean> = {}) {
   await pinComparisonTheme(page, "dark");
   await page.goto(`/components/actionbutton/${actionButtonQuery(params)}`);
-  await page.waitForLoadState("networkidle");
-  await expect(page.locator("astro-island")).toHaveCount(0);
+  await waitForComparisonRouteReady(page);
 
   const section = await styledSection(page);
   const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -167,6 +170,29 @@ async function actionButtonPendingIconContract(button: Locator) {
   });
 }
 
+async function actionButtonPendingProgressCircleContract(button: Locator) {
+  return button.evaluate((element) => {
+    const progress = element.querySelector<HTMLElement>('[role="progressbar"]');
+    const progressStyles = progress ? window.getComputedStyle(progress) : null;
+    const circles = progress ? Array.from(progress.querySelectorAll("circle")) : [];
+    const circleStyles = circles.map((circle) => window.getComputedStyle(circle));
+
+    return {
+      containerBackground: progressStyles?.getPropertyValue("--s2-container-bg").trim() ?? null,
+      hcmStroke: circleStyles[0]?.stroke ?? null,
+      hcmStrokeWidth: circleStyles[0]?.strokeWidth ?? null,
+      trackStroke: circleStyles[1]?.stroke ?? null,
+      trackStrokeWidth: circleStyles[1]?.strokeWidth ?? null,
+      fillStroke: circleStyles[2]?.stroke ?? null,
+      fillStrokeWidth: circleStyles[2]?.strokeWidth ?? null,
+      fillRotate: circleStyles[2]?.rotate ?? null,
+      fillTransformOrigin: circleStyles[2]?.transformOrigin ?? null,
+      fillStrokeLinecap: circles[2]?.getAttribute("stroke-linecap") ?? null,
+      fillStrokeDasharray: circles[2]?.getAttribute("stroke-dasharray") ?? null,
+    };
+  });
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -214,6 +240,33 @@ test.describe("comparison ActionButton visual parity", () => {
       "true",
     );
     await expect(fixtures.reactButton).toHaveAttribute("data-pending", "true");
+  });
+
+  test("ActionButton pending ProgressCircle colors match React Spectrum across quiet and staticColor", async ({
+    page,
+  }) => {
+    const staticColors = [undefined, "white", "black", "auto"] as const;
+    const quietStates = [false, true] as const;
+
+    for (const staticColor of staticColors) {
+      for (const isQuiet of quietStates) {
+        const fixtures = await actionButtonFixtures(page, {
+          isPending: true,
+          ...(staticColor ? { staticColor } : {}),
+          ...(isQuiet ? { isQuiet } : {}),
+        });
+
+        await expect(
+          fixtures.reactButton.getByRole("progressbar", { name: "pending" }),
+        ).toBeVisible();
+        await expect(
+          fixtures.solidButton.getByRole("progressbar", { name: "pending" }),
+        ).toBeVisible();
+        await expect(
+          actionButtonPendingProgressCircleContract(fixtures.solidButton),
+        ).resolves.toEqual(await actionButtonPendingProgressCircleContract(fixtures.reactButton));
+      }
+    }
   });
 
   test("ActionButton icon geometry is aligned with React Spectrum", async ({ page }) => {
@@ -340,30 +393,36 @@ test.describe("comparison ActionButton visual parity", () => {
   });
 
   for (const item of actionButtonCases) {
-    test(`ActionButton ${item.id} has committed pair screenshots`, async ({ page }) => {
+    test(`ActionButton ${item.id} matches current React Spectrum`, async ({ page }) => {
       const fixtures = await actionButtonFixtures(page, item.params);
 
       await clearPointer(page);
-      await expectScreenshotPair(
+      if (item.params.isPending) {
+        await expect(
+          fixtures.reactCanvas.getByRole("progressbar", { name: "pending" }),
+        ).toBeVisible();
+        await expect(
+          fixtures.solidCanvas.getByRole("progressbar", { name: "pending" }),
+        ).toBeVisible();
+      }
+
+      await expectExactScreenshotPair(
         page,
         fixtures.reactCanvas,
         fixtures.solidCanvas,
         `ActionButton ${item.id}`,
-        `actionbutton-${item.id}`,
-        actionButtonPairDiff,
       );
     });
   }
 
-  test("ActionButton hover state has committed pair screenshots", async ({ page }) => {
+  test("ActionButton hover state matches current React Spectrum", async ({ page }) => {
     const fixtures = await actionButtonFixtures(page);
 
-    await expectPreparedScreenshotPair(
+    await expectExactPreparedInPlaceScreenshotPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "ActionButton hover",
-      "actionbutton-hover",
       async () => {
         await fixtures.reactButton.hover();
         await expect(fixtures.reactButton).toHaveAttribute("data-hovered", "true");
@@ -372,19 +431,17 @@ test.describe("comparison ActionButton visual parity", () => {
         await fixtures.solidButton.hover();
         await expect(fixtures.solidButton).toHaveAttribute("data-hovered", "true");
       },
-      actionButtonPairDiff,
     );
   });
 
-  test("ActionButton focus-visible state has committed pair screenshots", async ({ page }) => {
+  test("ActionButton focus-visible state matches current React Spectrum", async ({ page }) => {
     const fixtures = await actionButtonFixtures(page);
 
-    await expectPreparedScreenshotPair(
+    await expectExactPreparedScreenshotPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "ActionButton focus-visible",
-      "actionbutton-focus-visible",
       async () => {
         await fixtures.reactButton.focus();
         await expect(fixtures.reactButton).toHaveAttribute("data-focus-visible", "true");
@@ -393,19 +450,17 @@ test.describe("comparison ActionButton visual parity", () => {
         await fixtures.solidButton.focus();
         await expect(fixtures.solidButton).toHaveAttribute("data-focus-visible", "true");
       },
-      actionButtonPairDiff,
     );
   });
 
-  test("ActionButton pressed state has committed pair screenshots", async ({ page }) => {
+  test("ActionButton pressed state matches current React Spectrum", async ({ page }) => {
     const fixtures = await actionButtonFixtures(page);
 
-    await expectPreparedScreenshotPair(
+    await expectExactPreparedInPlaceScreenshotPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "ActionButton pressed",
-      "actionbutton-pressed",
       async () => {
         await fixtures.reactButton.hover();
         await page.mouse.down();
@@ -416,7 +471,6 @@ test.describe("comparison ActionButton visual parity", () => {
         await page.mouse.down();
         await expect(fixtures.solidButton).toHaveAttribute("data-pressed", "true");
       },
-      actionButtonPairDiff,
     );
   });
 });

@@ -180,7 +180,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     wasPressed = true,
   ): boolean => {
     if (!pressState.didFirePressStart) {
-      return true;
+      return false;
     }
 
     pressState.didFirePressStart = false;
@@ -203,6 +203,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       if (props.onPress) {
         const event = createPressEvent("press", pointerType, originalEvent, pressState.target!);
         props.onPress(event);
+        shouldStopPropagation = shouldStopPropagation && event.shouldStopPropagation;
       }
     }
 
@@ -213,7 +214,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
   const triggerPressUp = (originalEvent: PressEventSource, pointerType: PointerType): boolean => {
     if (isDisabledValue(props.isDisabled)) {
-      return true;
+      return false;
     }
 
     if (props.onPressUp) {
@@ -537,9 +538,17 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
     if (isOverTarget) {
       triggerPressUp(createTouchEvent(target, e), "touch");
+      triggerPressEnd(
+        createTouchEvent(target, e),
+        "touch",
+        isOverTarget && pressState.isOverTarget,
+      );
+      if (target instanceof HTMLElement) {
+        triggerSyntheticClick(e, target);
+      }
+    } else {
+      triggerPressEnd(createTouchEvent(target, e), "touch", false);
     }
-
-    triggerPressEnd(createTouchEvent(target, e), "touch", isOverTarget && pressState.isOverTarget);
 
     pressState.isPressed = false;
     pressState.isOverTarget = false;
@@ -719,8 +728,10 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     }
 
     const target = pressState.target!;
-    const shouldStopPropagation = triggerPressUp(e, "keyboard");
-    const shouldStopPropagationEnd = triggerPressEnd(e, "keyboard", pressState.isOverTarget);
+    const eventTarget = getEventTarget(e) as Element;
+    const wasPressed = nodeContains(target, eventTarget);
+    const shouldStopPropagation = wasPressed ? triggerPressUp(e, "keyboard") : true;
+    const shouldStopPropagationEnd = triggerPressEnd(e, "keyboard", wasPressed);
 
     pressState.isPressed = false;
     pressState.pointerType = null;
@@ -733,20 +744,18 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       e.preventDefault();
     }
 
-    const shouldSynthesizeClick =
-      pressState.isOverTarget &&
-      pressState.target instanceof HTMLElement &&
-      shouldPreventDefaultKeyboard(pressState.target, e.key);
-
-    // Fire synthetic click for keyboard activation when the target does not
-    // have native keyboard click behavior.
-    if (shouldSynthesizeClick) {
-      triggerSyntheticClick(e, pressState.target as HTMLElement);
+    if (wasPressed && target instanceof HTMLElement) {
+      triggerSyntheticClick(e, target);
     }
 
-    // Handle link activation with non-Enter keys (Space)
-    // Native links only respond to Enter, but we want Space to work too
-    if (e.key === " " && isHTMLAnchorLink(target) && !linkClickedSet.has(target as HTMLElement)) {
+    // Handle link activation with non-Enter keys. Native links only respond to
+    // Enter, but role-overridden links should also work with Space.
+    if (
+      e.key !== "Enter" &&
+      isHTMLAnchorLink(target) &&
+      wasPressed &&
+      !linkClickedSet.has(target as HTMLElement)
+    ) {
       linkClickedSet.add(target as HTMLElement);
       openLink(target as HTMLAnchorElement, e);
       // Clean up the marker
@@ -757,8 +766,10 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
     // For Space key on non-native targets, the click fires after keyup.
     // Set flag to ignore it when we already synthesized the click.
-    if (e.key === " " && shouldSynthesizeClick) {
+    if (e.key === " " && wasPressed && shouldPreventDefaultKeyboard(target, e.key)) {
       pressState.ignoreClickAfterPress = true;
+    } else if (e.key === "Enter") {
+      pressState.ignoreClickAfterPress = false;
     }
 
     if (shouldStopPropagation && shouldStopPropagationEnd) {
@@ -786,10 +797,6 @@ export function createPress(props: CreatePressProps = {}): PressResult {
         return;
       }
 
-      // Call user's onClick handler if provided
-      // This matches React-Aria's behavior for third-party library compatibility
-      props.onClick?.(e);
-
       // If triggered from a screen reader or by using element.click(),
       // trigger as if it were a keyboard/virtual click.
       let shouldStopPropagation = true;
@@ -800,18 +807,22 @@ export function createPress(props: CreatePressProps = {}): PressResult {
         (pressState.pointerType === "virtual" || isVirtualClick(e))
       ) {
         pressState.target = e.currentTarget;
-        shouldStopPropagation = triggerPressStart(e, "virtual");
-        shouldStopPropagation = triggerPressUp(e, "virtual") && shouldStopPropagation;
-        shouldStopPropagation = triggerPressEnd(e, "virtual", true) && shouldStopPropagation;
+        const stopPressStart = triggerPressStart(e, "virtual");
+        const stopPressUp = triggerPressUp(e, "virtual");
+        const stopPressEnd = triggerPressEnd(e, "virtual", true);
+        props.onClick?.(e);
+        shouldStopPropagation = stopPressStart && stopPressUp && stopPressEnd;
       } else if (pressState.isPressed && pressState.pointerType !== "keyboard") {
         // Complete the press sequence for pointer/touch/mouse events
         const pointerType =
           pressState.pointerType ||
           ((e as unknown as PointerEvent).pointerType as PointerType) ||
           "virtual";
-        shouldStopPropagation = triggerPressUp(e, pointerType);
-        shouldStopPropagation = triggerPressEnd(e, pointerType, true) && shouldStopPropagation;
+        const stopPressUp = triggerPressUp(e, pointerType);
+        const stopPressEnd = triggerPressEnd(e, pointerType, true);
+        shouldStopPropagation = stopPressUp && stopPressEnd;
         pressState.isOverTarget = false;
+        props.onClick?.(e);
         cancel(e);
       }
 

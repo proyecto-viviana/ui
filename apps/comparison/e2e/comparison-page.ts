@@ -2,6 +2,30 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export type FrameworkName = "React Spectrum stack" | "Solidaria stack";
 
+export async function waitForComparisonRouteReady(page: Page) {
+  await expect(page.locator("astro-island")).toHaveCount(0);
+
+  const section = page.locator("#example").filter({
+    has: page.getByRole("heading", { name: "Example" }),
+  });
+  await expect(section).toHaveCount(1);
+  await expect(
+    section.locator('.s2-framework-panel[data-framework="react"] .comparison-reference-canvas'),
+  ).toBeVisible();
+  await expect(
+    section.locator('.s2-framework-panel[data-framework="solid"] .comparison-reference-canvas'),
+  ).toBeVisible();
+
+  await page.evaluate(async () => {
+    if ("fonts" in document) {
+      await document.fonts.ready;
+    }
+
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
+}
+
 export async function styledSection(page: Page) {
   const section = page.locator("#example").filter({
     has: page.getByRole("heading", { name: "Example" }),

@@ -14,7 +14,7 @@ import "@comparison/styles/global.css";
 const liveCount = comparisonEntries.filter((entry) => entry.priority === "live").length;
 const officialCount = officialComparisonEntries.length;
 const missingOfficialCount = missingOfficialComparisonEntries.length;
-const snapshottedStateCount = officialVisualStateSummary.snapshottedStates;
+const visualEvidenceStateCount = officialVisualStateSummary.visualEvidenceStates;
 const strictStateCount = officialVisualStateSummary.strictPairDiffStates;
 
 const entriesWithCoverage = comparisonEntries.map((entry) => ({
@@ -102,7 +102,7 @@ const overallCoverage = Math.round(
               <div><span>Official S2</span><strong>{officialCount}</strong></div>
               <div><span>Live routes</span><strong>{liveCount}</strong></div>
               <div><span>Gaps</span><strong>{missingOfficialCount}</strong></div>
-              <div><span>State screenshots</span><strong>{snapshottedStateCount}</strong></div>
+              <div><span>Visual evidence</span><strong>{visualEvidenceStateCount}</strong></div>
               <div><span>Strict pairs</span><strong>{strictStateCount}</strong></div>
             </div>
           </div>

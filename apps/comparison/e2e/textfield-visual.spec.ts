@@ -122,7 +122,7 @@ function expectNear(
 }
 
 test.describe("comparison TextField visual parity", () => {
-  test("invalid required XL state has committed pair screenshots", async ({ page }) => {
+  test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await textFieldFixtures(page, "?isInvalid=true&isRequired=true&size=XL");
 
     await clearPointer(page);
@@ -131,7 +131,6 @@ test.describe("comparison TextField visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "TextField invalid required XL state",
-      "textfield-invalid-required-xl",
       { maxMismatchRatio: 0.16, maxDimensionDelta: 24, pixelThreshold: 64 },
     );
   });

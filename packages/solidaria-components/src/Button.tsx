@@ -5,11 +5,20 @@
  * Port of react-aria-components/src/Button.tsx
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
 import {
+  type JSX,
+  createContext,
+  createEffect,
+  createMemo,
+  splitProps,
+  useContext,
+} from "solid-js";
+import {
+  announce,
   createButton,
   createFocusRing,
   createHover,
+  createId,
   mergeProps,
   type AriaButtonProps,
   type HoverEvent,
@@ -24,6 +33,7 @@ import {
   filterDOMProps,
 } from "./utils";
 import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
+import { ProgressBarContext } from "./ProgressBar";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -34,6 +44,56 @@ function assignRef<T>(ref: RefLike<T>, el: T): void {
   } else {
     ref.current = el;
   }
+}
+
+function createLiveButtonRenderProps(values: () => ButtonRenderProps): ButtonRenderProps {
+  return {
+    get isHovered() {
+      return values().isHovered;
+    },
+    get isPressed() {
+      return values().isPressed;
+    },
+    get isFocused() {
+      return values().isFocused;
+    },
+    get isFocusVisible() {
+      return values().isFocusVisible;
+    },
+    get isDisabled() {
+      return values().isDisabled;
+    },
+    get isPending() {
+      return values().isPending;
+    },
+  };
+}
+
+function createLiveCustomRootProps(
+  getProps: () => JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  getChildren: () => JSX.Element,
+  ref: (el: HTMLButtonElement) => void,
+): JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+  const props = {} as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+  const keys = new Set([...Object.keys(getProps()), "children", "ref"]);
+
+  for (const key of keys) {
+    Object.defineProperty(props, key, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        if (key === "children") {
+          return getChildren();
+        }
+        if (key === "ref") {
+          return ref;
+        }
+        return (getProps() as Record<string, unknown>)[key];
+      },
+    });
+  }
+
+  return props;
 }
 
 export interface ButtonRenderProps {
@@ -144,8 +204,11 @@ export function Button(props: ButtonProps): JSX.Element {
   };
 
   const resolvePending = (): boolean => !!local.isPending;
+  const isPendingFocusable = () => local.isPendingFocusable !== false;
 
   let buttonEl: HTMLButtonElement | undefined;
+  const buttonId = createId((ariaProps as Record<string, unknown>).id as string | undefined);
+  const progressId = createId();
 
   // Explicit trigger ownership: a button toggles overlays only when it is the
   // registered trigger element for the surrounding trigger context.
@@ -216,7 +279,9 @@ export function Button(props: ButtonProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       // Use merged children so ButtonContext can supply slot/default content.
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Button",
@@ -255,6 +320,22 @@ export function Button(props: ButtonProps): JSX.Element {
     const { ref: _ref3, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
+  const ariaLabelledBy = createMemo(() => {
+    const labelledBy = cleanButtonProps()["aria-labelledby"] as string | undefined;
+    if (!resolvePending()) {
+      return labelledBy;
+    }
+
+    if (labelledBy) {
+      return `${labelledBy} ${progressId}`;
+    }
+
+    if (cleanButtonProps()["aria-label"]) {
+      return `${buttonId} ${progressId}`;
+    }
+
+    return labelledBy;
+  });
 
   const handleRef = (el: HTMLButtonElement) => {
     buttonEl = el;
@@ -283,24 +364,57 @@ export function Button(props: ButtonProps): JSX.Element {
           | "submit"
           | "reset"
           | undefined);
+  const disablePendingInteractions = (props: Record<string, unknown>) => {
+    if (!resolvePending()) {
+      return props;
+    }
+
+    const next = { ...props };
+    for (const key of Object.keys(next)) {
+      if (key.startsWith("on") && !key.includes("Focus") && !key.includes("Blur")) {
+        next[key] = undefined;
+      }
+    }
+    next.href = undefined;
+    next.target = undefined;
+    return next;
+  };
   const dataState = (value: boolean) => (value ? "true" : undefined);
   const buttonChildren = () => renderProps.renderChildren();
+  const buttonContent = () => (
+    <ProgressBarContext.Provider value={{ id: progressId }}>
+      {buttonChildren()}
+    </ProgressBarContext.Provider>
+  );
+  let wasPending = resolvePending();
+  createEffect(() => {
+    const pending = resolvePending();
+    const message = { "aria-labelledby": ariaLabelledBy() || buttonId };
+
+    if (!wasPending && isFocused() && pending) {
+      announce(message, "assertive");
+    } else if (wasPending && isFocused() && !pending) {
+      announce(message, "assertive");
+    }
+
+    wasPending = pending;
+  });
   const rootProps = () =>
     ({
       ...domProps(),
-      ...cleanButtonProps(),
+      ...disablePendingInteractions(cleanButtonProps()),
       ...cleanFocusProps(),
       ...cleanHoverProps(),
       type: buttonType(),
+      id: buttonId,
       class: renderProps.class(),
       style: renderProps.style(),
       slot: local.slot,
-      disabled:
-        resolvePending() && local.isPendingFocusable ? undefined : cleanButtonProps().disabled,
-      "aria-disabled":
-        resolvePending() && local.isPendingFocusable
-          ? true
-          : (cleanButtonProps()["aria-disabled"] ?? ariaProps["aria-disabled"]),
+      disabled: resolvePending() && isPendingFocusable() ? undefined : cleanButtonProps().disabled,
+      "aria-labelledby": ariaLabelledBy(),
+      "aria-disabled": resolvePending()
+        ? "true"
+        : (cleanButtonProps()["aria-disabled"] ?? ariaProps["aria-disabled"]),
       "data-pressed": dataState(buttonAria.isPressed() && !resolvePending()),
       "data-hovered": dataState(isHovered()),
       "data-focused": dataState(isFocused()),
@@ -308,16 +422,11 @@ export function Button(props: ButtonProps): JSX.Element {
       "data-disabled": dataState(resolveDisabled()),
       "data-pending": dataState(resolvePending()),
     }) as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
-  const customRootProps = () =>
-    ({
-      ...rootProps(),
-      ref: handleRef,
-      children: buttonChildren(),
-    }) as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
-  const customRendered = createMemo(() => local.render?.(customRootProps(), renderValues()));
+  const customRootProps = createLiveCustomRootProps(rootProps, buttonContent, handleRef);
+  const customRenderValues = createLiveButtonRenderProps(renderValues);
 
   return local.render ? (
-    customRendered()
+    local.render(customRootProps, customRenderValues)
   ) : (
     <button
       ref={handleRef}
@@ -333,7 +442,7 @@ export function Button(props: ButtonProps): JSX.Element {
       attr:data-disabled={(rootProps() as Record<string, unknown>)["data-disabled"] as string}
       attr:data-pending={(rootProps() as Record<string, unknown>)["data-pending"] as string}
     >
-      {buttonChildren()}
+      {buttonContent()}
     </button>
   );
 }

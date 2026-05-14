@@ -536,12 +536,6 @@ test.describe("comparison DatePicker visual parity", () => {
     assertVisibleFieldGeometry(solidFieldGeometry);
     expect(Math.abs(solidFieldGeometry.width - reactFieldGeometry.width)).toBeLessThanOrEqual(96);
 
-    await expect(reactField).toHaveScreenshot("datepicker-field-react.png", {
-      animations: "disabled",
-    });
-    await expect(solidField).toHaveScreenshot("datepicker-field-solid.png", {
-      animations: "disabled",
-    });
     const [reactFieldPng, solidFieldPng] = await Promise.all([
       reactField.screenshot({ animations: "disabled" }),
       solidField.screenshot({ animations: "disabled" }),
@@ -563,9 +557,6 @@ test.describe("comparison DatePicker visual parity", () => {
     const reactPopoverGeometry = await geometry(reactSurface);
     assertVisiblePopoverGeometry(reactPopoverGeometry);
     await page.mouse.move(4, 4);
-    await expect(reactSurface).toHaveScreenshot("datepicker-popover-react.png", {
-      animations: "disabled",
-    });
     const reactSurfacePng = await reactSurface.screenshot({ animations: "disabled" });
 
     await page.keyboard.press("Escape");
@@ -580,9 +571,6 @@ test.describe("comparison DatePicker visual parity", () => {
     assertVisiblePopoverGeometry(solidPopoverGeometry);
     expect(solidPopoverGeometry.position).not.toBe("static");
     await page.mouse.move(4, 4);
-    await expect(solidSurface).toHaveScreenshot("datepicker-popover-solid.png", {
-      animations: "disabled",
-    });
     const solidSurfacePng = await solidSurface.screenshot({ animations: "disabled" });
 
     expect(Math.abs(solidPopoverGeometry.width - reactPopoverGeometry.width)).toBeLessThanOrEqual(

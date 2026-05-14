@@ -701,6 +701,7 @@ describe("createPress", () => {
           onPressChange={(pressed) => addEvent({ type: "presschange", pressed })}
           onPress={addEvent}
           onPressUp={addEvent}
+          onClick={() => addEvent({ type: "click" })}
         />
       ));
 
@@ -724,6 +725,7 @@ describe("createPress", () => {
       expect(events).toContainEqual(
         expect.objectContaining({ type: "press", pointerType: "touch" }),
       );
+      expect(events[events.length - 1]).toEqual({ type: "click" });
     });
 
     it("should fire press change events when moving touch outside target", () => {

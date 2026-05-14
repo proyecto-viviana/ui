@@ -10,8 +10,10 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { destroyAnnouncer, SSRProvider } from "@proyecto-viviana/solidaria";
 import { createSignal } from "solid-js";
 import { Button, ButtonContext, type ButtonRenderProps } from "../src/Button";
+import { ProgressBar } from "../src/ProgressBar";
 import { ToggleButton } from "../src/ToggleButton";
 import {
   setupUser,
@@ -32,6 +34,7 @@ describe("Button", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    destroyAnnouncer();
   });
 
   describe("rendering", () => {
@@ -62,6 +65,60 @@ describe("Button", () => {
       expect(button).toHaveAttribute("data-custom", "bar");
     });
 
+    it("should pass live root props and render state to custom render", () => {
+      render(() => (
+        <Button
+          class={({ isPressed }) => (isPressed ? "pressed" : "idle")}
+          render={(props, renderProps) => (
+            <button {...props} data-render-pressed={renderProps.isPressed ? "true" : undefined} />
+          )}
+        >
+          Test
+        </Button>
+      ));
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveClass("idle");
+      expect(button).not.toHaveAttribute("data-pressed");
+      expect(button).not.toHaveAttribute("data-render-pressed");
+
+      firePointerDown(button);
+      expect(button).toHaveClass("pressed");
+      expect(button).toHaveAttribute("data-pressed");
+      expect(button).toHaveAttribute("data-render-pressed", "true");
+
+      firePointerUp(button);
+      fireEvent.click(button, { detail: 1 });
+      expect(button).toHaveClass("idle");
+      expect(button).not.toHaveAttribute("data-pressed");
+      expect(button).not.toHaveAttribute("data-render-pressed");
+    });
+
+    it("should support custom render with a non-native anchor root", async () => {
+      const onPress = vi.fn();
+      render(() => (
+        <Button
+          elementType="a"
+          href="https://example.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          onPress={onPress}
+          render={(props) => <a {...props}>Open</a>}
+        />
+      ));
+
+      const button = screen.getByRole("button");
+      expect(button.tagName).toBe("A");
+      expect(button).toHaveAttribute("href", "https://example.com");
+      expect(button).toHaveAttribute("target", "_blank");
+      expect(button).toHaveAttribute("rel", "noopener noreferrer");
+      expect(button).toHaveAttribute("tabindex", "0");
+      expect(button).not.toHaveAttribute("type");
+
+      await user.click(button);
+      expect(onPress).toHaveBeenCalledTimes(1);
+    });
+
     it("should render children", () => {
       render(() => <Button>Click Me</Button>);
       expect(screen.getByText("Click Me")).toBeInTheDocument();
@@ -70,14 +127,29 @@ describe("Button", () => {
     it("should support form props", () => {
       render(() => (
         <form id="foo">
-          <Button form="foo" formMethod="post">
+          <Button
+            form="foo"
+            formAction="/save"
+            formEncType="multipart/form-data"
+            formMethod="post"
+            formNoValidate
+            formTarget="_blank"
+            name="intent"
+            value="save"
+          >
             Test
           </Button>
         </form>
       ));
       const button = screen.getByRole("button");
       expect(button).toHaveAttribute("form", "foo");
+      expect(button).toHaveAttribute("formaction", "/save");
+      expect(button).toHaveAttribute("formenctype", "multipart/form-data");
       expect(button).toHaveAttribute("formmethod", "post");
+      expect(button).toHaveAttribute("formnovalidate");
+      expect(button).toHaveAttribute("formtarget", "_blank");
+      expect(button).toHaveAttribute("name", "intent");
+      expect(button).toHaveAttribute("value", "save");
     });
 
     it("should support accessibility props", () => {
@@ -378,6 +450,34 @@ describe("Button", () => {
       expect(onPressChange).toHaveBeenNthCalledWith(2, false);
     });
 
+    it("should call press lifecycle handlers before onClick like React Aria", async () => {
+      const calls: string[] = [];
+      render(() => (
+        <Button
+          onPressStart={(e) => calls.push(e.type)}
+          onPressChange={(isPressed) => calls.push(`presschange:${isPressed}`)}
+          onPressUp={(e) => calls.push(e.type)}
+          onPressEnd={(e) => calls.push(e.type)}
+          onPress={(e) => calls.push(e.type)}
+          onClick={() => calls.push("click")}
+        >
+          Test
+        </Button>
+      ));
+
+      await user.click(screen.getByRole("button"));
+
+      expect(calls).toEqual([
+        "pressstart",
+        "presschange:true",
+        "pressup",
+        "pressend",
+        "presschange:false",
+        "press",
+        "click",
+      ]);
+    });
+
     it("should not call press events when disabled", async () => {
       const onPress = vi.fn();
       render(() => (
@@ -408,6 +508,39 @@ describe("Button", () => {
       await user.tab();
       await user.keyboard("{ }");
       expect(onPress).toHaveBeenCalledTimes(1);
+    });
+
+    it("should call onClick once after each keyboard activation", async () => {
+      const calls: string[] = [];
+      render(() => (
+        <Button onPress={(e) => calls.push(e.type)} onClick={() => calls.push("click")}>
+          Test
+        </Button>
+      ));
+
+      await user.tab();
+      await user.keyboard("{Enter}");
+      await user.keyboard("{ }");
+
+      expect(calls).toEqual(["press", "click", "press", "click"]);
+    });
+
+    it("should keep focus on the previously focused element when preventFocusOnPress is true", () => {
+      render(() => (
+        <>
+          <input aria-label="Previous" />
+          <Button preventFocusOnPress>Test</Button>
+        </>
+      ));
+
+      const input = screen.getByLabelText("Previous");
+      const button = screen.getByRole("button");
+      input.focus();
+
+      fireEvent.mouseDown(button, { button: 0 });
+      button.focus();
+
+      expect(document.activeElement).toBe(input);
     });
   });
 
@@ -462,7 +595,7 @@ describe("Button", () => {
       expect(button).toHaveClass("pending");
     });
 
-    it("should disable press interaction while pending", async () => {
+    it("keeps pending buttons focusable with aria-disabled and suppresses press", async () => {
       const onPress = vi.fn();
       render(() => (
         <Button isPending onPress={onPress}>
@@ -473,7 +606,50 @@ describe("Button", () => {
       const button = screen.getByRole("button");
       await user.click(button);
       expect(onPress).not.toHaveBeenCalled();
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute("aria-disabled", "true");
+      button.focus();
+      expect(button).toHaveFocus();
+    });
+
+    it("suppresses press lifecycle events when pending changes after mount", async () => {
+      const onPress = vi.fn();
+      const onPressStart = vi.fn();
+      const onPressEnd = vi.fn();
+      const onPressUp = vi.fn();
+      const onPressChange = vi.fn();
+      let setPending!: (value: boolean) => void;
+
+      function Example() {
+        const [isPending, nextPending] = createSignal(false);
+        setPending = nextPending;
+        return (
+          <Button
+            isPending={isPending()}
+            onPress={onPress}
+            onPressStart={onPressStart}
+            onPressEnd={onPressEnd}
+            onPressUp={onPressUp}
+            onPressChange={onPressChange}
+          >
+            Test
+          </Button>
+        );
+      }
+
+      render(() => <Example />);
+      const button = screen.getByRole("button");
+
+      setPending(true);
+      await user.click(button);
+
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute("aria-disabled", "true");
+      expect(onPress).not.toHaveBeenCalled();
+      expect(onPressStart).not.toHaveBeenCalled();
+      expect(onPressEnd).not.toHaveBeenCalled();
+      expect(onPressUp).not.toHaveBeenCalled();
+      expect(onPressChange).not.toHaveBeenCalled();
     });
 
     it("displays a spinner when isPending prop is true", async () => {
@@ -594,6 +770,54 @@ describe("Button", () => {
       await user.click(screen.getByRole("button"));
       expect(onPress).not.toHaveBeenCalled();
       expect(screen.getByRole("button")).toHaveAttribute("data-pending");
+    });
+
+    it("provides pending progressbar id and labels aria-label buttons like RAC", () => {
+      render(() => (
+        <Button isPending aria-label="Save">
+          {() => <ProgressBar isIndeterminate aria-label="loading" />}
+        </Button>
+      ));
+
+      const button = screen.getByRole("button");
+      const progress = screen.getByRole("progressbar", { name: "loading" });
+
+      expect(button).toHaveAttribute("id");
+      expect(progress).toHaveAttribute("id");
+      expect(button).toHaveAttribute("aria-labelledby", `${button.id} ${progress.id}`);
+    });
+
+    it("provides pending ProgressBarContext to static JSX children like RAC", () => {
+      render(() => (
+        <Button isPending aria-label="Save">
+          <ProgressBar isIndeterminate aria-label="loading" />
+        </Button>
+      ));
+
+      const button = screen.getByRole("button");
+      const progress = screen.getByRole("progressbar", { name: "loading" });
+
+      expect(button).toHaveAttribute("id");
+      expect(progress).toHaveAttribute("id");
+      expect(button).toHaveAttribute("aria-labelledby", `${button.id} ${progress.id}`);
+    });
+
+    it("keeps pending generated ids stable and scoped under SSRProvider", () => {
+      render(() => (
+        <SSRProvider prefix="button">
+          <Button id="save-button" isPending aria-label="Save">
+            {() => <ProgressBar isIndeterminate aria-label="loading" />}
+          </Button>
+        </SSRProvider>
+      ));
+
+      const button = screen.getByRole("button");
+      const progress = screen.getByRole("progressbar", { name: "loading" });
+
+      expect(button).toHaveAttribute("id", "save-button");
+      expect(progress.id).toMatch(/^solidaria-button-/);
+      expect(button).toHaveAttribute("aria-labelledby", `save-button ${progress.id}`);
+      assertAriaIdIntegrity(document.body);
     });
   });
 

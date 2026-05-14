@@ -228,7 +228,7 @@ function expectNear(
 }
 
 test.describe("comparison collection button controls visual parity", () => {
-  test("SegmentedControl justified selected state has committed pair screenshots", async ({
+  test("SegmentedControl justified selected state matches current React Spectrum", async ({
     page,
   }) => {
     const fixtures = await collectionFixtures(
@@ -243,7 +243,6 @@ test.describe("comparison collection button controls visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "SegmentedControl justified selected state",
-      "segmentedcontrol-justified-selected",
       { maxMismatchRatio: 0.24, maxDimensionDelta: 32, pixelThreshold: 64 },
     );
   });
@@ -304,7 +303,7 @@ test.describe("comparison collection button controls visual parity", () => {
     expect(Math.max(...solid.itemWidths) - Math.min(...solid.itemWidths)).toBeLessThanOrEqual(1);
   });
 
-  test("SelectBoxGroup horizontal multiple state has committed pair screenshots", async ({
+  test("SelectBoxGroup horizontal multiple state matches current React Spectrum", async ({
     page,
   }) => {
     const fixtures = await collectionFixtures(
@@ -319,7 +318,6 @@ test.describe("comparison collection button controls visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "SelectBoxGroup horizontal multiple state",
-      "selectboxgroup-horizontal-multiple",
       { maxMismatchRatio: 0.18, maxDimensionDelta: 48, pixelThreshold: 64 },
     );
   });
@@ -439,7 +437,7 @@ test.describe("comparison collection button controls visual parity", () => {
     expect(solid.after).toBe(react.after);
   });
 
-  test("SelectBoxGroup illustrated disabled option state has committed pair screenshots", async ({
+  test("SelectBoxGroup illustrated disabled option state matches current React Spectrum", async ({
     page,
   }) => {
     const fixtures = await collectionFixtures(
@@ -454,7 +452,6 @@ test.describe("comparison collection button controls visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "SelectBoxGroup illustrated disabled option state",
-      "selectboxgroup-illustrated-disabled",
       { maxMismatchRatio: 0.12, maxDimensionDelta: 48, pixelThreshold: 64 },
     );
   });

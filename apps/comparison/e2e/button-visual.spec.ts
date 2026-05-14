@@ -1,10 +1,10 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, styledSection } from "./comparison-page";
+import { frameworkCanvas, styledSection, waitForComparisonRouteReady } from "./comparison-page";
 import {
   clearPointer,
-  currentButtonPairDiff,
-  expectPreparedScreenshotPair,
-  expectScreenshotPair,
+  expectExactPreparedFixedScreenshotPair,
+  expectExactPreparedScreenshotPair,
+  expectExactScreenshotPair,
   pinComparisonTheme,
 } from "./visual-diff";
 
@@ -130,6 +130,30 @@ const buttonMatrixCases: ButtonMatrixCase[] = [
   },
 ];
 
+const buttonForcedColorCases: ButtonMatrixCase[] = [
+  { id: "default", label: "Button default forced colors", params: {} },
+  {
+    id: "outline",
+    label: "Button outline forced colors",
+    params: { fillStyle: "outline" },
+  },
+  {
+    id: "disabled",
+    label: "Button disabled forced colors",
+    params: { isDisabled: true },
+  },
+  {
+    id: "pending",
+    label: "Button pending forced colors",
+    params: { isPending: true },
+  },
+  {
+    id: "premium",
+    label: "Button premium forced colors",
+    params: { variant: "premium" },
+  },
+];
+
 async function frameworkCard(
   section: Locator,
   framework: "React Spectrum stack" | "Solidaria stack",
@@ -155,8 +179,8 @@ function buttonQuery(params: Record<string, string | boolean> = {}) {
 async function buttonFixtures(page: Page, params: Record<string, string | boolean> = {}) {
   await pinComparisonTheme(page, "dark");
   await page.goto(`/components/button/${buttonQuery(params)}`);
-  await page.waitForLoadState("networkidle");
-  await expect(page.locator("astro-island")).toHaveCount(0);
+  await waitForComparisonRouteReady(page);
+  await clearPointer(page);
 
   const section = await styledSection(page);
   const reactCard = await frameworkCard(section, "React Spectrum stack");
@@ -200,6 +224,7 @@ async function buttonComputedContract(button: Locator) {
       height: styles.height,
       padding: styles.padding,
       lineHeight: styles.lineHeight,
+      direction: styles.direction,
       transform: styles.transform,
       willChange: styles.willChange,
       textCenterDelta: centerDelta,
@@ -347,6 +372,13 @@ async function buttonIconAlignmentContract(button: Locator) {
   });
 }
 
+async function buttonDirectionContract(button: Locator) {
+  return button.evaluate((element) => ({
+    providerDir: element.closest("[dir]")?.getAttribute("dir") ?? null,
+    direction: window.getComputedStyle(element).direction,
+  }));
+}
+
 async function buttonPendingAlignmentContract(button: Locator) {
   return button.evaluate((element) => {
     const numberOrNull = (value: number | undefined | null) =>
@@ -374,6 +406,29 @@ async function buttonPendingAlignmentContract(button: Locator) {
   });
 }
 
+async function buttonPendingProgressCircleContract(button: Locator) {
+  return button.evaluate((element) => {
+    const progress = element.querySelector<HTMLElement>('[role="progressbar"]');
+    const progressStyles = progress ? window.getComputedStyle(progress) : null;
+    const circles = progress ? Array.from(progress.querySelectorAll("circle")) : [];
+    const circleStyles = circles.map((circle) => window.getComputedStyle(circle));
+
+    return {
+      containerBackground: progressStyles?.getPropertyValue("--s2-container-bg").trim() ?? null,
+      hcmStroke: circleStyles[0]?.stroke ?? null,
+      hcmStrokeWidth: circleStyles[0]?.strokeWidth ?? null,
+      trackStroke: circleStyles[1]?.stroke ?? null,
+      trackStrokeWidth: circleStyles[1]?.strokeWidth ?? null,
+      fillStroke: circleStyles[2]?.stroke ?? null,
+      fillStrokeWidth: circleStyles[2]?.strokeWidth ?? null,
+      fillRotate: circleStyles[2]?.rotate ?? null,
+      fillTransformOrigin: circleStyles[2]?.transformOrigin ?? null,
+      fillStrokeLinecap: circles[2]?.getAttribute("stroke-linecap") ?? null,
+      fillStrokeDasharray: circles[2]?.getAttribute("stroke-dasharray") ?? null,
+    };
+  });
+}
+
 async function expectButtonParitySettled(reactButton: Locator, solidButton: Locator) {
   await expect
     .poll(() => buttonParityContract(reactButton, solidButton), {
@@ -392,30 +447,72 @@ async function expectComputedButtonParity(reactButton: Locator, solidButton: Loc
   );
 }
 
+async function expectExactButtonPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+) {
+  await expectExactScreenshotPair(page, reactTarget, solidTarget, label);
+}
+
+async function expectExactPreparedButtonPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+) {
+  await expectExactPreparedScreenshotPair(
+    page,
+    reactTarget,
+    solidTarget,
+    label,
+    prepareReact,
+    prepareSolid,
+  );
+}
+
+async function expectExactPreparedFixedButtonPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+) {
+  await expectExactPreparedFixedScreenshotPair(
+    page,
+    reactTarget,
+    solidTarget,
+    label,
+    prepareReact,
+    prepareSolid,
+  );
+}
+
 test.describe("comparison Button visual parity", () => {
   test("Button default control is pixel-identical", async ({ page }) => {
     const fixtures = await buttonFixtures(page);
 
     await clearPointer(page);
-    await expectScreenshotPair(
+    await expectExactButtonPair(
       page,
       fixtures.reactRow,
       fixtures.solidRow,
       "Button default control",
-      "button-default-control",
-      currentButtonPairDiff,
     );
   });
 
   test("Button hover state is pixel-identical", async ({ page }) => {
     const fixtures = await buttonFixtures(page);
 
-    await expectPreparedScreenshotPair(
+    await expectExactPreparedFixedButtonPair(
       page,
-      fixtures.reactButton,
-      fixtures.solidButton,
+      fixtures.reactRow,
+      fixtures.solidRow,
       "Button hover",
-      "button-hover",
       async () => {
         await fixtures.reactButton.hover();
         await expect(fixtures.reactButton).toHaveAttribute("data-hovered", "true");
@@ -424,19 +521,17 @@ test.describe("comparison Button visual parity", () => {
         await fixtures.solidButton.hover();
         await expect(fixtures.solidButton).toHaveAttribute("data-hovered", "true");
       },
-      currentButtonPairDiff,
     );
   });
 
   test("Button focus-visible state is pixel-identical", async ({ page }) => {
     const fixtures = await buttonFixtures(page);
 
-    await expectPreparedScreenshotPair(
+    await expectExactPreparedButtonPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "Button focus-visible",
-      "button-focus-visible",
       async () => {
         await fixtures.reactButton.focus();
         await expect(fixtures.reactButton).toHaveAttribute("data-focus-visible", "true");
@@ -445,19 +540,17 @@ test.describe("comparison Button visual parity", () => {
         await fixtures.solidButton.focus();
         await expect(fixtures.solidButton).toHaveAttribute("data-focus-visible", "true");
       },
-      currentButtonPairDiff,
     );
   });
 
   test("Button pressed state is pixel-identical", async ({ page }) => {
     const fixtures = await buttonFixtures(page);
 
-    await expectPreparedScreenshotPair(
+    await expectExactPreparedFixedButtonPair(
       page,
-      fixtures.reactButton,
-      fixtures.solidButton,
+      fixtures.reactRow,
+      fixtures.solidRow,
       "Button pressed",
-      "button-pressed",
       async () => {
         await fixtures.reactButton.hover();
         await page.mouse.down();
@@ -468,7 +561,6 @@ test.describe("comparison Button visual parity", () => {
         await page.mouse.down();
         await expect(fixtures.solidButton).toHaveAttribute("data-pressed", "true");
       },
-      currentButtonPairDiff,
     );
   });
 
@@ -477,13 +569,11 @@ test.describe("comparison Button visual parity", () => {
 
     await expect(fixtures.reactRow.getByRole("progressbar", { name: "pending" })).toBeVisible();
     await expect(fixtures.solidRow.getByRole("progressbar", { name: "pending" })).toBeVisible();
-    await expectScreenshotPair(
+    await expectExactButtonPair(
       page,
       fixtures.reactRow,
       fixtures.solidRow,
       "Button delayed pending spinner",
-      "button-pending-spinner",
-      currentButtonPairDiff,
     );
   });
 
@@ -725,6 +815,40 @@ test.describe("comparison Button visual parity", () => {
     }
   });
 
+  test("Button pending ProgressCircle colors match React Spectrum across variants and staticColor", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const variants = ["primary", "secondary", "accent", "negative", "premium", "genai"] as const;
+    const fillStyles = ["fill", "outline"] as const;
+    const staticColors = [undefined, "white", "black", "auto"] as const;
+
+    for (const staticColor of staticColors) {
+      for (const fillStyle of fillStyles) {
+        for (const variant of variants) {
+          const fixtures = await buttonFixtures(page, {
+            variant,
+            fillStyle,
+            isPending: true,
+            ...(staticColor ? { staticColor } : {}),
+          });
+
+          await expect(
+            fixtures.reactRow.getByRole("progressbar", { name: "pending" }),
+          ).toBeVisible();
+          await expect(
+            fixtures.solidRow.getByRole("progressbar", { name: "pending" }),
+          ).toBeVisible();
+          await expect(
+            buttonPendingProgressCircleContract(fixtures.solidButtonElement),
+          ).resolves.toEqual(
+            await buttonPendingProgressCircleContract(fixtures.reactButtonElement),
+          );
+        }
+      }
+    }
+  });
+
   test("Button icon geometry is aligned with React Spectrum across placements and sizes", async ({
     page,
   }) => {
@@ -766,6 +890,35 @@ test.describe("comparison Button visual parity", () => {
     }
   });
 
+  test("Button RTL icon geometry matches React Spectrum", async ({ page }) => {
+    const fixtures = await buttonFixtures(page, {
+      locale: "ar-SA",
+      iconPlacement: "start",
+      size: "M",
+    });
+
+    await expectComputedButtonParity(fixtures.reactButton, fixtures.solidButton);
+    const reactDirection = await buttonDirectionContract(fixtures.reactButtonElement);
+    const solidDirection = await buttonDirectionContract(fixtures.solidButtonElement);
+
+    expect(reactDirection).toEqual({
+      providerDir: "rtl",
+      direction: "rtl",
+    });
+    expect(solidDirection).toEqual(reactDirection);
+
+    const react = await buttonIconAlignmentContract(fixtures.reactButtonElement);
+    const solid = await buttonIconAlignmentContract(fixtures.solidButtonElement);
+
+    expect(solid.order).toBe(react.order);
+    expectNear(solid.rootHeight, react.rootHeight, 0.5, "RTL button root height");
+    expectNear(solid.iconWidth, react.iconWidth, 0.5, "RTL icon width");
+    expectNear(solid.iconHeight, react.iconHeight, 0.5, "RTL icon height");
+    expectNear(solid.iconCenterDelta, react.iconCenterDelta, 0.75, "RTL icon centerline");
+    expectNear(solid.labelCenterDelta, react.labelCenterDelta, 0.75, "RTL label centerline");
+    expectNear(solid.gap, react.gap, 1, "RTL icon text gap");
+  });
+
   test("Button pending indicator remains centered when icon content is present", async ({
     page,
   }) => {
@@ -801,6 +954,31 @@ test.describe("comparison Button visual parity", () => {
     }
   });
 
+  test("Button forced-colors computed styles match React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+
+    for (const item of buttonForcedColorCases) {
+      await test.step(item.label, async () => {
+        const fixtures = await buttonFixtures(page, item.params);
+
+        if (item.params.isPending === true) {
+          await expect(
+            fixtures.reactRow.getByRole("progressbar", { name: "pending" }),
+          ).toBeVisible();
+          await expect(
+            fixtures.solidRow.getByRole("progressbar", { name: "pending" }),
+          ).toBeVisible();
+          await page.waitForTimeout(250);
+        }
+
+        await expectButtonParitySettled(fixtures.reactButtonElement, fixtures.solidButtonElement);
+        expect(await buttonFullContract(fixtures.solidButtonElement)).toEqual(
+          await buttonFullContract(fixtures.reactButtonElement),
+        );
+      });
+    }
+  });
+
   for (const item of buttonMatrixCases) {
     test(`${item.label} is pixel-identical`, async ({ page }) => {
       const fixtures = await buttonFixtures(page, item.params);
@@ -811,14 +989,7 @@ test.describe("comparison Button visual parity", () => {
       }
 
       await clearPointer(page);
-      await expectScreenshotPair(
-        page,
-        fixtures.reactRow,
-        fixtures.solidRow,
-        item.label,
-        `button-${item.id}`,
-        currentButtonPairDiff,
-      );
+      await expectExactButtonPair(page, fixtures.reactRow, fixtures.solidRow, item.label);
     });
   }
 });

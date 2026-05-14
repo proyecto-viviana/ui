@@ -32,6 +32,8 @@ export interface ToolbarProps extends AriaToolbarProps, ParentProps, SlotProps {
   style?: JSX.CSSProperties | ((renderProps: ToolbarRenderProps) => JSX.CSSProperties);
   /** Additional data-* attributes. */
   [key: `data-${string}`]: string | undefined;
+  /** Ref for the toolbar element. */
+  ref?: ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null };
 }
 
 export interface ToolbarContextValue {
@@ -69,7 +71,7 @@ export const ToolbarContext = createContext<ToolbarContextValue | null>(null);
 export function Toolbar(props: ToolbarProps): JSX.Element {
   const [local, ariaProps, domProps] = splitProps(
     props,
-    ["class", "style", "slot", "children"],
+    ["class", "style", "slot", "children", "ref"],
     ["orientation", "aria-label", "aria-labelledby"],
   );
 
@@ -134,6 +136,14 @@ export function Toolbar(props: ToolbarProps): JSX.Element {
       style={resolvedStyle()}
       slot={local.slot}
       data-orientation={orientation()}
+      ref={(el) => {
+        if (!local.ref) return;
+        if (typeof local.ref === "function") {
+          local.ref(el);
+        } else {
+          local.ref.current = el;
+        }
+      }}
     >
       {resolvedChildren()}
     </div>

@@ -4,15 +4,20 @@ import {
   createSignal,
   mergeProps,
   splitProps,
+  useContext,
 } from "solid-js";
 import {
   Button as HeadlessButton,
   type ButtonRenderProps,
+  DialogTriggerContext,
+  PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { ButtonFillStyle, ButtonProps, ButtonSize, ButtonVariant } from "./types";
 import { fontRelative, style } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
+import { pressScale } from "../pressScale";
 import {
   s2Button,
   s2ButtonGradient,
@@ -20,30 +25,31 @@ import {
   s2ButtonText,
   type S2ButtonRenderState,
 } from "./s2-button-styles";
-import { s2ProgressCircleIndeterminateAnimation } from "./s2-progress-circle-animation";
-import { useButtonGroupContext } from "./group-context";
 import { createPendingState } from "./pending-state";
+import { S2PendingProgressCircle } from "./S2PendingProgressCircle";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
+import { SkeletonContext } from "../skeleton";
+import { TextContext } from "../text";
+import { useButtonContext } from "./context";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+} from "./spectrum-context";
 
 export function Button(props: ButtonProps): JSX.Element {
   const providerProps = useProviderProps(props);
-  const groupContext = useButtonGroupContext();
+  const contextProps = getSlottedContextProps(useButtonContext(), props.slot);
   const defaultProps: Partial<ButtonProps> = {
     variant: "primary",
     size: "M",
     fillStyle: "fill",
   };
-  const groupProps: Partial<ButtonProps> = {
-    get size() {
-      return groupContext?.size;
-    },
-    get isDisabled() {
-      return groupContext?.isDisabled;
-    },
-  };
 
-  const merged = mergeProps(defaultProps, providerProps, groupProps, props);
+  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
 
   const [local, headlessProps] = splitProps(merged, [
     "variant",
@@ -54,6 +60,7 @@ export function Button(props: ButtonProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "children",
+    "ref",
     "isPending",
     "onPress",
     "onPressChange",
@@ -63,27 +70,36 @@ export function Button(props: ButtonProps): JSX.Element {
   const { isProgressVisible } = createPendingState(() => local.isPending);
   const [isHovered, setIsHovered] = createSignal(false);
   const [isPressed, setIsPressed] = createSignal(false);
-  const mergedStyles = () => mergeStyles(groupContext?.styles, local.styles);
+  const dialogTriggerContext = useContext(DialogTriggerContext);
+  const popoverTriggerContext = useContext(PopoverTriggerContext);
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   let buttonElement: HTMLButtonElement | undefined;
+  const assignButtonRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
+    props.ref,
+  );
 
   const variant = (): ButtonVariant => local.variant ?? "primary";
   const fillStyle = (): ButtonFillStyle => local.fillStyle ?? "fill";
   const size = (): ButtonSize => local.size ?? "M";
   const isStaticColor = () => !!local.staticColor;
-  const pendingCircleClass = () =>
-    ({
-      S: "  Zk13 Fl13 fa13",
-      M: "  Zl13 Fm13 fa13",
-      L: "  Zm13 Fn13 fa13",
-      XL: "  Zo13 Fp13 fa13",
-    })[size()];
+  const isOverlayTriggerOpen = () =>
+    !!buttonElement &&
+    ((dialogTriggerContext?.triggerRef() === buttonElement &&
+      dialogTriggerContext.state.isOpen()) ||
+      (popoverTriggerContext?.triggerRef() === buttonElement &&
+        popoverTriggerContext.state.isOpen()));
+  const pendingLabel = () => stringFormatter().format("button.pending");
   const isDisabled = () => {
     const disabled = headlessProps.isDisabled;
     return typeof disabled === "function" ? disabled() : !!disabled;
   };
 
   const getS2State = (renderProps: ButtonRenderProps): S2ButtonRenderState => ({
-    isHovered: renderProps.isHovered,
+    isHovered: renderProps.isHovered || isOverlayTriggerOpen(),
     isPressed: renderProps.isPressed,
     isFocused: renderProps.isFocused,
     isFocusVisible: renderProps.isFocusVisible,
@@ -110,26 +126,14 @@ export function Button(props: ButtonProps): JSX.Element {
       .join(" ");
 
   const getGradientState = (): S2ButtonRenderState => ({
-    isHovered: isHovered(),
+    isHovered: isHovered() || isOverlayTriggerOpen(),
     isPressed: isPressed(),
     isDisabled: isDisabled() || isProgressVisible(),
     isPending: local.isPending,
   });
 
   const getPressScaleStyle = (renderProps: ButtonRenderProps): JSX.CSSProperties => {
-    const style = { ...(local.UNSAFE_style ?? {}) } as JSX.CSSProperties;
-    const styleRecord = style as Record<string, string | number | undefined>;
-    const willChange = styleRecord["will-change"] ?? "";
-    styleRecord["will-change"] = `${willChange} transform`.trim();
-
-    if (renderProps.isPressed && buttonElement) {
-      const { width, height } = buttonElement.getBoundingClientRect();
-      const perspective = Math.max(height, width / 3, 24);
-      const transform = style.transform ?? "";
-      style.transform = `${transform} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();
-    }
-
-    return style;
+    return pressScale(() => buttonElement, mergedUnsafeStyle())(renderProps);
   };
 
   function ButtonContent() {
@@ -151,6 +155,10 @@ export function Button(props: ButtonProps): JSX.Element {
           marginStart: "--iconMargin",
           flexShrink: 0,
         }),
+    };
+    const textContextValue = {
+      styles: () => s2ButtonText({ isProgressVisible: isProgressVisible() }),
+      "data-rsp-slot": "text",
     };
 
     function ResolvedContent() {
@@ -179,51 +187,27 @@ export function Button(props: ButtonProps): JSX.Element {
             })}
           />
         ) : null}
-        <IconContext.Provider value={iconContextValue}>
-          <ResolvedContent />
-          {local.isPending ? (
-            <div
-              class={s2ButtonPendingIndicator({
-                isPending: local.isPending,
-                isProgressVisible: isProgressVisible(),
-              })}
-            >
-              <div
-                class={pendingCircleClass()}
-                role="progressbar"
-                data-rac=""
-                aria-label="pending"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              >
-                <svg fill="none" width="100%" height="100%">
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="calc(50% - 0.0625rem)"
-                    class="  VRWHrbc13 VlUG8Hlc13 _V7m7Gv13"
+        <SkeletonContext.Provider value={null}>
+          <TextContext.Provider value={textContextValue}>
+            <IconContext.Provider value={iconContextValue}>
+              <ResolvedContent />
+              {local.isPending ? (
+                <div
+                  class={s2ButtonPendingIndicator({
+                    isPending: local.isPending,
+                    isProgressVisible: isProgressVisible(),
+                  })}
+                >
+                  <S2PendingProgressCircle
+                    aria-label={pendingLabel()}
+                    size={size()}
+                    staticColor={local.staticColor}
                   />
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="calc(50% - 0.0625rem)"
-                    class="  Vf13 Vla13 _V7m7Gv13 _Vlai5a013"
-                  />
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="calc(50% - 0.0625rem)"
-                    class="  Vh13 VlUG8Hlc13 _Sa13 _0d13 _V7m7Gv13"
-                    style={{ animation: s2ProgressCircleIndeterminateAnimation }}
-                    pathLength="100"
-                    stroke-dasharray="100 200"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </div>
-            </div>
-          ) : null}
-        </IconContext.Provider>
+                </div>
+              ) : null}
+            </IconContext.Provider>
+          </TextContext.Provider>
+        </SkeletonContext.Provider>
       </>
     );
   }
@@ -235,6 +219,7 @@ export function Button(props: ButtonProps): JSX.Element {
       isPendingFocusable
       ref={(element: HTMLButtonElement) => {
         buttonElement = element;
+        assignButtonRefs(element);
       }}
       onHoverChange={(hovered) => {
         setIsHovered(hovered);

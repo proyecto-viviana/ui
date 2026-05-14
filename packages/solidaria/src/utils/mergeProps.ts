@@ -16,7 +16,10 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
 
   for (const props of args) {
     for (const key in props) {
-      const value = props[key];
+      const descriptor = Object.getOwnPropertyDescriptor(props, key);
+      const hasGetter = typeof descriptor?.get === "function";
+      const getValue = () => (hasGetter ? descriptor.get!.call(props) : props[key]);
+      const value = getValue();
       const existingValue = result[key];
 
       if (
@@ -34,6 +37,12 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
         typeof value === "object"
       ) {
         result[key] = { ...(existingValue as object), ...(value as object) };
+      } else if (hasGetter && (value !== undefined || !(key in result))) {
+        Object.defineProperty(result, key, {
+          enumerable: true,
+          configurable: true,
+          get: getValue,
+        });
       } else if (value !== undefined) {
         result[key] = value;
       }

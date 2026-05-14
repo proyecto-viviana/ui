@@ -266,7 +266,7 @@ function expectRgbNear(
 }
 
 test.describe("comparison NumberField visual parity", () => {
-  test("invalid required XL state has committed pair screenshots", async ({ page }) => {
+  test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await numberFieldFixtures(
       page,
       "?value=8&isInvalid=true&isRequired=true&size=XL",
@@ -278,7 +278,6 @@ test.describe("comparison NumberField visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "NumberField invalid required XL state",
-      "numberfield-invalid-required-xl",
       { maxMismatchRatio: 0.24, maxDimensionDelta: 24, pixelThreshold: 64 },
     );
   });

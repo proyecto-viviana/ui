@@ -189,7 +189,7 @@ function matrixTranslateZ(transform: string | null) {
 }
 
 test.describe("comparison Checkbox visual parity", () => {
-  test("selected emphasized XL state has committed pair screenshots", async ({ page }) => {
+  test("selected emphasized XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await checkboxFixtures(page, "?isSelected=true&isEmphasized=true&size=XL");
 
     await clearPointer(page);
@@ -198,7 +198,6 @@ test.describe("comparison Checkbox visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "Checkbox selected emphasized XL state",
-      "checkbox-selected-emphasized-xl",
       { maxMismatchRatio: 0.16, maxDimensionDelta: 16, pixelThreshold: 64 },
     );
   });

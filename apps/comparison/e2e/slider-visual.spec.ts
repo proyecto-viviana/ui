@@ -161,7 +161,7 @@ function expectNear(
 }
 
 test.describe("comparison Slider visual parity", () => {
-  test("emphasized XL thick precise state has committed pair screenshots", async ({ page }) => {
+  test("emphasized XL thick precise state matches current React Spectrum", async ({ page }) => {
     const fixtures = await sliderFixtures(
       page,
       "?value=72&isEmphasized=true&size=XL&trackStyle=thick&thumbStyle=precise",
@@ -173,7 +173,6 @@ test.describe("comparison Slider visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "Slider emphasized XL thick precise state",
-      "slider-emphasized-xl-thick-precise",
       { maxMismatchRatio: 0.22, maxDimensionDelta: 24, pixelThreshold: 64 },
     );
   });

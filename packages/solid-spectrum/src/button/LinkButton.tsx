@@ -3,20 +3,32 @@ import {
   createSignal,
   mergeProps,
   splitProps,
+  useContext,
   type JSX,
 } from "solid-js";
 import {
+  DialogTriggerContext,
   Link as HeadlessLink,
+  PopoverTriggerContext,
   type LinkProps as HeadlessLinkProps,
   type LinkRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { fontRelative, style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
+import { SkeletonContext } from "../skeleton";
+import { TextContext } from "../text";
 import { useProviderProps } from "../provider";
-import { useButtonGroupContext } from "./group-context";
+import { pressScale } from "../pressScale";
+import { useLinkButtonContext } from "./context";
 import { s2Button, s2ButtonGradient, s2ButtonText } from "./s2-button-styles";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+} from "./spectrum-context";
 import type { ButtonFillStyle, ButtonSize, ButtonVariant, StaticColor } from "./types";
 
 export interface LinkButtonProps extends Omit<HeadlessLinkProps, "class" | "style" | "children"> {
@@ -43,21 +55,13 @@ export interface LinkButtonProps extends Omit<HeadlessLinkProps, "class" | "styl
  */
 export function LinkButton(props: LinkButtonProps): JSX.Element {
   const providerProps = useProviderProps(props);
-  const groupContext = useButtonGroupContext();
+  const contextProps = getSlottedContextProps(useLinkButtonContext(), props.slot);
   const defaultProps: Partial<LinkButtonProps> = {
     variant: "primary",
     size: "M",
     fillStyle: "fill",
   };
-  const groupProps: Partial<LinkButtonProps> = {
-    get size() {
-      return groupContext?.size;
-    },
-    get isDisabled() {
-      return groupContext?.isDisabled;
-    },
-  };
-  const merged = mergeProps(defaultProps, providerProps, groupProps, props);
+  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "variant",
     "fillStyle",
@@ -67,18 +71,33 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "children",
+    "ref",
   ]);
 
   const variant = (): ButtonVariant => local.variant ?? "primary";
   const fillStyle = (): ButtonFillStyle => local.fillStyle ?? "fill";
   const size = (): ButtonSize => local.size ?? "M";
-  const mergedStyles = () => mergeStyles(groupContext?.styles, local.styles);
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const [isHovered, setIsHovered] = createSignal(false);
   const [isPressed, setIsPressed] = createSignal(false);
+  const dialogTriggerContext = useContext(DialogTriggerContext);
+  const popoverTriggerContext = useContext(PopoverTriggerContext);
+  let linkElement: HTMLAnchorElement | undefined;
+  const assignLinkRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLElement> } | null)?.ref,
+    props.ref,
+  );
+  const isOverlayTriggerOpen = () =>
+    !!linkElement &&
+    ((dialogTriggerContext?.triggerRef() === linkElement && dialogTriggerContext.state.isOpen()) ||
+      (popoverTriggerContext?.triggerRef() === linkElement &&
+        popoverTriggerContext.state.isOpen()));
 
   const gradientClass = () =>
     s2ButtonGradient({
-      isHovered: isHovered(),
+      isHovered: isHovered() || isOverlayTriggerOpen(),
       isPressed: isPressed(),
       isDisabled: !!headlessProps.isDisabled,
       isPending: false,
@@ -90,7 +109,7 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       local.UNSAFE_className,
       s2Button(
         {
-          isHovered: renderProps.isHovered,
+          isHovered: renderProps.isHovered || isOverlayTriggerOpen(),
           isPressed: renderProps.isPressed,
           isFocused: renderProps.isFocused,
           isFocusVisible: renderProps.isFocusVisible,
@@ -108,13 +127,8 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
-  const getStyle = (): JSX.CSSProperties => {
-    const styles = { ...(local.UNSAFE_style ?? {}) } as JSX.CSSProperties;
-    const styleRecord = styles as Record<string, string | number | undefined>;
-    const willChange = styleRecord["will-change"] ?? "";
-    styleRecord["will-change"] = `${willChange} transform`.trim();
-    return styles;
-  };
+  const getStyle = (renderProps: LinkRenderProps): JSX.CSSProperties =>
+    pressScale(() => linkElement, mergedUnsafeStyle())(renderProps);
 
   function LinkButtonContent() {
     const iconContextValue = {
@@ -125,6 +139,10 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
         marginStart: "--iconMargin",
         flexShrink: 0,
       }),
+    };
+    const textContextValue = {
+      styles: () => s2ButtonText({ isProgressVisible: false }),
+      "data-rsp-slot": "text",
     };
 
     function ResolvedContent() {
@@ -143,9 +161,13 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
     return (
       <>
         {variant() === "genai" || variant() === "premium" ? <span class={gradientClass()} /> : null}
-        <IconContext.Provider value={iconContextValue}>
-          <ResolvedContent />
-        </IconContext.Provider>
+        <SkeletonContext.Provider value={null}>
+          <TextContext.Provider value={textContextValue}>
+            <IconContext.Provider value={iconContextValue}>
+              <ResolvedContent />
+            </IconContext.Provider>
+          </TextContext.Provider>
+        </SkeletonContext.Provider>
       </>
     );
   }
@@ -155,6 +177,10 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       {...headlessProps}
       class={getClassName}
       style={getStyle}
+      ref={(element: HTMLElement) => {
+        linkElement = element as HTMLAnchorElement;
+        assignLinkRefs(element);
+      }}
       onHoverChange={(hovered) => {
         setIsHovered(hovered);
         headlessProps.onHoverChange?.(hovered);

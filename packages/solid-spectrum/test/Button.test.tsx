@@ -1,10 +1,48 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
-import { Button } from "../src/button";
+import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { Button, ButtonContext } from "../src/button";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import CrossIcon from "../src/icon/ui-icons/Cross";
+import { pressScale } from "../src/pressScale";
 
 // setupUser is consolidated in solid-spectrum-test-utils.
+
+function measuredElement(width = 120, height = 48) {
+  const element = document.createElement("button");
+  vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
+    x: 0,
+    y: 0,
+    top: 0,
+    left: 0,
+    right: width,
+    bottom: height,
+    width,
+    height,
+    toJSON: () => ({}),
+  } as DOMRect);
+
+  return element;
+}
+
+function mockReducedMotion(matches: boolean) {
+  const spy = vi.spyOn(window, "matchMedia").mockImplementation(
+    (query: string) =>
+      ({
+        matches: query === "(prefers-reduced-motion: reduce)" ? matches : false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }) as MediaQueryList,
+  );
+
+  return () => {
+    spy.mockRestore();
+  };
+}
 
 describe("Button", () => {
   let onPressSpy = vi.fn();
@@ -149,6 +187,96 @@ describe("Button", () => {
     expect(button).toHaveAttribute("data-foo", "bar");
   });
 
+  describe("pressScale", () => {
+    it("adds will-change while idle like React Spectrum S2", () => {
+      const style = pressScale(() => measuredElement())({ isPressed: false });
+
+      expect(style.transform).toBeUndefined();
+      expect((style as Record<string, string | undefined>)["will-change"]).toBe("transform");
+    });
+
+    it("adds the upstream press transform while pressed", () => {
+      const style = pressScale(() => measuredElement(96, 36))({ isPressed: true });
+
+      expect((style as Record<string, string | undefined>)["will-change"]).toBe("transform");
+      expect(style.transform).toBe("perspective(36px) translate3d(0, 0, -2px)");
+    });
+
+    it("composes caller transform and will-change styles", () => {
+      const style = pressScale(() => measuredElement(), {
+        transform: "scale(1)",
+        "will-change": "opacity",
+      })({ isPressed: true });
+
+      expect((style as Record<string, string | undefined>)["will-change"]).toBe(
+        "opacity transform",
+      );
+      expect(style.transform).toBe("scale(1) perspective(48px) translate3d(0, 0, -2px)");
+    });
+
+    it("matches upstream press motion under reduced-motion media", () => {
+      const restore = mockReducedMotion(true);
+
+      try {
+        expect(window.matchMedia("(prefers-reduced-motion: reduce)").matches).toBe(true);
+
+        const style = pressScale(() => measuredElement(96, 36))({ isPressed: true });
+
+        expect((style as Record<string, string | undefined>)["will-change"]).toBe("transform");
+        expect(style.transform).toBe("perspective(36px) translate3d(0, 0, -2px)");
+      } finally {
+        restore();
+      }
+    });
+  });
+
+  it("supports native form props", () => {
+    render(() => (
+      <form id="foo">
+        <Button
+          form="foo"
+          formAction="/save"
+          formEncType="multipart/form-data"
+          formMethod="post"
+          formNoValidate
+          formTarget="_blank"
+          name="intent"
+          value="save"
+        >
+          Save
+        </Button>
+      </form>
+    ));
+
+    const button = screen.getByRole("button");
+    expect(button).toHaveAttribute("form", "foo");
+    expect(button).toHaveAttribute("formaction", "/save");
+    expect(button).toHaveAttribute("formenctype", "multipart/form-data");
+    expect(button).toHaveAttribute("formmethod", "post");
+    expect(button).toHaveAttribute("formnovalidate");
+    expect(button).toHaveAttribute("formtarget", "_blank");
+    expect(button).toHaveAttribute("name", "intent");
+    expect(button).toHaveAttribute("value", "save");
+  });
+
+  it("keeps focus on the previously focused element when preventFocusOnPress is true", () => {
+    render(() => (
+      <>
+        <input aria-label="Previous" />
+        <Button preventFocusOnPress>Click Me</Button>
+      </>
+    ));
+
+    const input = screen.getByLabelText("Previous");
+    const button = screen.getByRole("button");
+    input.focus();
+
+    fireEvent.mouseDown(button, { button: 0 });
+    button.focus();
+
+    expect(document.activeElement).toBe(input);
+  });
+
   it("supports aria-label", () => {
     render(() => <Button aria-label="Test" />);
 
@@ -253,6 +381,18 @@ describe("Button", () => {
         expect(button).toBeInTheDocument();
         unmount();
       }
+    });
+
+    it("inherits ButtonContext props like React Spectrum S2", () => {
+      render(() => (
+        <ButtonContext.Provider value={{ size: "XL", isDisabled: true }}>
+          <Button>Click Me</Button>
+        </ButtonContext.Provider>
+      ));
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("data-size", "XL");
+      expect(button).toBeDisabled();
     });
   });
 

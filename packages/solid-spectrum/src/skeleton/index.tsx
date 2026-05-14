@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js";
-import { Show, For } from "solid-js";
+import { Show, For, createContext, useContext } from "solid-js";
 
 export type SkeletonShape = "text" | "circle" | "rectangle";
 export type SkeletonSize = "sm" | "md" | "lg";
@@ -31,6 +31,12 @@ export interface SkeletonCollectionProps {
   gap?: SkeletonGap;
   /** Additional CSS classes */
   class?: string;
+}
+
+export const SkeletonContext = createContext<boolean | null>(null);
+
+export function useIsSkeleton(): boolean {
+  return useContext(SkeletonContext) || false;
 }
 
 const sizeHeight: Record<SkeletonSize, string> = {

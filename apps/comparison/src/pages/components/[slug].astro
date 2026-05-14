@@ -334,7 +334,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
         actionbutton: {
           children: "Inspect",
           size: "M",
-          staticColor: "none",
+          staticColor: "",
           iconPlacement: "none",
           isQuiet: false,
           isDisabled: false,
@@ -344,7 +344,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
           size: "M",
           density: "regular",
           orientation: "horizontal",
-          staticColor: "none",
+          staticColor: "",
           iconPlacement: "none",
           isQuiet: false,
           isJustified: false,
@@ -355,7 +355,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
           variant: "primary",
           fillStyle: "fill",
           size: "M",
-          staticColor: "none",
+          staticColor: "",
           iconPlacement: "none",
           isDisabled: false,
           isPending: false,
@@ -479,7 +479,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
           variant: "primary",
           fillStyle: "fill",
           size: "M",
-          staticColor: "none",
+          staticColor: "",
           iconPlacement: "none",
           isDisabled: false,
         },
@@ -534,7 +534,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
         togglebutton: {
           children: "Pin",
           size: "M",
-          staticColor: "none",
+          staticColor: "",
           iconPlacement: "none",
           isQuiet: false,
           isEmphasized: false,
@@ -547,7 +547,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
           size: "M",
           density: "regular",
           orientation: "horizontal",
-          staticColor: "none",
+          staticColor: "",
           iconPlacement: "none",
           isQuiet: false,
           isEmphasized: false,
@@ -601,7 +601,9 @@ const layerTitles: Record<ComparisonLayerId, string> = {
       function toProps(values) {
         const props = {};
         for (const [key, value] of Object.entries(values)) {
-          props[key] = key === "staticColor" && value === "none" ? undefined : value;
+          props[key] = key === "staticColor" && (value === "none" || value === "")
+            ? undefined
+            : value;
         }
         return props;
       }

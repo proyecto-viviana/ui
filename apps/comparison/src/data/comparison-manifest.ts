@@ -120,7 +120,7 @@ function styledLiveOfficialEntry(input: {
     priority: "live",
     gapSummary: [
       "Styled React Spectrum and Solid comparison islands are mounted.",
-      "Default screenshots and strict zero-tolerance pair-diff tests are committed.",
+      "Current visual evidence and strict zero-tolerance pair-diff tests are tracked per component.",
       "The entry remains a tracked gap until those pair-diff tests pass pixel-perfectly and exhaustive state coverage is complete.",
     ],
     layers: {
@@ -150,7 +150,7 @@ function styledLiveOfficialEntry(input: {
         "Component-specific state coverage.",
         "tracked",
         "tracked",
-        "State screenshots and assertions should be added per component rather than using a generic matrix blindly.",
+        "State visual evidence and assertions should be added per component rather than using a generic matrix blindly.",
       ),
     },
   };

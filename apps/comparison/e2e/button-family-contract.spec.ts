@@ -1,6 +1,21 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { waitForComparisonRouteReady } from "./comparison-page";
 
 type Framework = "React Spectrum stack" | "Solidaria stack";
+
+const staticColorViewerBackdrops = {
+  black: ["rgb(221, 214, 254)", "rgb(251, 207, 232)"],
+  white: ["rgb(15, 23, 42)", "rgb(51, 65, 85)"],
+} as const;
+
+const staticColorComponents = [
+  "button",
+  "actionbutton",
+  "linkbutton",
+  "togglebutton",
+  "actionbuttongroup",
+  "togglebuttongroup",
+] as const;
 
 async function styledSection(page: Page) {
   const section = page.locator("#example").filter({
@@ -53,14 +68,65 @@ async function buttonFamilyCards(page: Page, slug: string, query = "") {
     window.localStorage.setItem("solid-spectrum-theme", "dark");
   });
   await page.goto(`/components/${slug}/${query}`);
-  await page.waitForLoadState("networkidle");
-  await expect(page.locator("astro-island")).toHaveCount(0);
+  await waitForComparisonRouteReady(page);
 
   const section = await styledSection(page);
   return {
     react: await frameworkCard(section, "React Spectrum stack"),
     solid: await frameworkCard(section, "Solidaria stack"),
   };
+}
+
+async function staticColorBackdrop(card: Locator) {
+  const backdrop = card.locator("[data-comparison-static-color]").first();
+  await expect(backdrop).toBeVisible();
+  return backdrop.evaluate((element) => {
+    const styles = window.getComputedStyle(element);
+    return {
+      backgroundImage: styles.backgroundImage,
+      padding: styles.padding,
+    };
+  });
+}
+
+function staticColorControl(card: Locator, slug: (typeof staticColorComponents)[number]) {
+  switch (slug) {
+    case "button":
+      return card.getByRole("button", { name: "Save" }).first();
+    case "actionbutton":
+      return card.getByRole("button", { name: "Inspect" }).first();
+    case "linkbutton":
+      return card.getByRole("link", { name: "Open docs" }).first();
+    case "togglebutton":
+      return card.getByRole("button", { name: "Pin" }).first();
+    case "actionbuttongroup":
+      return card.getByRole("button", { name: "Bold" }).first();
+    case "togglebuttongroup":
+      return card.getByRole("radio", { name: "Left" }).first();
+  }
+}
+
+async function staticColorControlStyles(control: Locator) {
+  await expect(control).toBeVisible();
+  return control.evaluate((element) => {
+    const styles = window.getComputedStyle(element);
+    return {
+      backgroundColor: styles.backgroundColor,
+      borderColor: styles.borderColor,
+      borderWidth: styles.borderWidth,
+      color: styles.color,
+      outlineColor: styles.outlineColor,
+    };
+  });
+}
+
+async function serializedControlProps(card: Locator) {
+  const value = await card
+    .locator("[data-comparison-control-props]")
+    .first()
+    .getAttribute("data-comparison-control-props");
+  expect(value).toBeTruthy();
+  return JSON.parse(value as string) as Record<string, unknown>;
 }
 
 test.describe("comparison button-family behavior contracts", () => {
@@ -122,6 +188,7 @@ test.describe("comparison button-family behavior contracts", () => {
           children: "Inspect item",
           size: "XL",
           staticColor: "white",
+          iconPlacement: "none",
           isQuiet: true,
           isDisabled: false,
           isPending: false,
@@ -192,6 +259,51 @@ test.describe("comparison button-family behavior contracts", () => {
       await card.getByRole("radio", { name: "Center" }).click();
       await expect(root).toHaveAttribute("data-comparison-selected-keys", "center");
       await expect(card.getByRole("radio", { name: "Center" })).toBeChecked();
+    }
+  });
+
+  test("staticColor controls expose official S2 options only", async ({ page }) => {
+    for (const slug of staticColorComponents) {
+      const cards = await buttonFamilyCards(page, slug);
+      const form = page.locator(`[data-comparison-controls="${slug}"]`).first();
+      const values = await form
+        .locator('input[name="staticColor"]')
+        .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value));
+
+      expect(values).toEqual(["white", "black", "auto"]);
+      await expect(form.locator('input[name="staticColor"]:checked')).toHaveCount(0);
+      await expect(form.locator('input[name="staticColor"][value="none"]')).toHaveCount(0);
+      expect(await serializedControlProps(cards.react)).not.toHaveProperty("staticColor");
+      expect(await serializedControlProps(cards.solid)).not.toHaveProperty("staticColor");
+    }
+  });
+
+  test("staticColor black and white use the S2 viewer backdrop on both stacks", async ({
+    page,
+  }) => {
+    for (const slug of staticColorComponents) {
+      for (const [staticColor, colorStops] of Object.entries(staticColorViewerBackdrops)) {
+        const cards = await buttonFamilyCards(page, slug, `?staticColor=${staticColor}`);
+        const reactControl = await staticColorControlStyles(staticColorControl(cards.react, slug));
+        const solidControl = await staticColorControlStyles(staticColorControl(cards.solid, slug));
+
+        expect(solidControl.backgroundColor).toBe(reactControl.backgroundColor);
+        expect(solidControl.borderWidth).toBe(reactControl.borderWidth);
+        expect(solidControl.color).toBe(reactControl.color);
+        expect(solidControl.outlineColor).toBe(reactControl.outlineColor);
+        if (reactControl.borderWidth !== "0px" || solidControl.borderWidth !== "0px") {
+          expect(solidControl.borderColor).toBe(reactControl.borderColor);
+        }
+
+        for (const card of [cards.react, cards.solid]) {
+          const backdrop = await staticColorBackdrop(card);
+          expect(backdrop.backgroundImage).toContain("linear-gradient");
+          for (const colorStop of colorStops) {
+            expect(backdrop.backgroundImage).toContain(colorStop);
+          }
+          expect(backdrop.padding).toBe("24px");
+        }
+      }
     }
   });
 

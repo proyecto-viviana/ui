@@ -1413,7 +1413,7 @@ a {
   color: var(--cmp-text-secondary);
 }
 
-.state-pill--snapshotted,
+.state-pill--visual,
 .state-pill--asserted,
 .state-pill--strict {
   color: var(--cmp-success);
@@ -1526,6 +1526,24 @@ a {
   gap: 12px;
   inline-size: max-content;
   max-inline-size: 100%;
+}
+
+.comparison-static-color-backdrop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  padding: 24px;
+  border-radius: 6px;
+}
+
+.comparison-static-color-backdrop[data-comparison-static-color="black"] {
+  background-image: linear-gradient(to right, rgb(221, 214, 254), rgb(251, 207, 232));
+}
+
+.comparison-static-color-backdrop[data-comparison-static-color="white"] {
+  background-image: linear-gradient(to right, rgb(15, 23, 42), rgb(51, 65, 85));
 }
 
 .comparison-provider-caption {

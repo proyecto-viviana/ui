@@ -14,13 +14,11 @@ import {
 const officialLive = officialComparisonEntries.filter(
   (entry) => entry.layers.styled.react === "live" && entry.layers.styled.solid === "live",
 );
-const nonStrictSnapshottedOfficialStates = officialVisualStateCoverage.flatMap((entry) =>
+const nonStrictVisualOfficialStates = officialVisualStateCoverage.flatMap((entry) =>
   entry.states
     .filter(
       (state) =>
-        state.react === "snapshotted" &&
-        state.solid === "snapshotted" &&
-        state.pairDiff !== "strict",
+        state.react === "visual" && state.solid === "visual" && state.pairDiff !== "strict",
     )
     .map((state) => `${entry.title}: ${state.label} (${state.pairDiff})`),
 );
@@ -36,7 +34,7 @@ console.log(`Official styled entries live on both sides: ${officialLive.length}`
 console.log(`Official entries still missing/gap: ${missingOfficialComparisonEntries.length}`);
 console.log(`Official visual states tracked: ${officialVisualStateSummary.states}`);
 console.log(
-  `Official visual states with committed React/Solid screenshots: ${officialVisualStateSummary.snapshottedStates}`,
+  `Official visual states with current React/Solid visual evidence: ${officialVisualStateSummary.visualEvidenceStates}`,
 );
 console.log(
   `Official visual states with strict pair-diff tests: ${officialVisualStateSummary.strictPairDiffStates}`,
@@ -54,15 +52,15 @@ if (missingOfficialComparisonEntries.length > 0) {
   }
 }
 
-if (nonStrictSnapshottedOfficialStates.length > 0) {
-  console.log("\nOfficial states with committed screenshots but non-strict pair diff:");
-  for (const state of nonStrictSnapshottedOfficialStates) {
+if (nonStrictVisualOfficialStates.length > 0) {
+  console.log("\nOfficial states with current visual evidence but non-strict pair diff:");
+  for (const state of nonStrictVisualOfficialStates) {
     console.log(`- ${state}`);
   }
 }
 
 if (plannedOfficialStates.length > 0) {
-  console.log("\nOfficial states without complete screenshot/pair-diff coverage:");
+  console.log("\nOfficial states without complete visual/pair-diff coverage:");
   for (const state of plannedOfficialStates) {
     console.log(`- ${state}`);
   }

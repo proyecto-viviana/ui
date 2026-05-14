@@ -3,7 +3,7 @@ import { comparisonControlsEvent } from "./button-demo";
 export { comparisonControlsEvent };
 
 export const actionButtonSizeOptions = ["XS", "S", "M", "L", "XL"] as const;
-export const actionButtonStaticColorOptions = ["auto", "white", "black"] as const;
+export const actionButtonStaticColorOptions = ["white", "black", "auto"] as const;
 export const actionButtonIconPlacementOptions = ["none", "start", "only"] as const;
 
 export type ActionButtonDemoSize = (typeof actionButtonSizeOptions)[number];
@@ -72,7 +72,7 @@ export function serializeActionButtonDemoProps(props: ActionButtonDemoProps) {
   return JSON.stringify({
     children: props.children,
     size: props.size,
-    staticColor: props.staticColor ?? "none",
+    staticColor: props.staticColor,
     iconPlacement: props.iconPlacement,
     isQuiet: props.isQuiet,
     isDisabled: props.isDisabled,

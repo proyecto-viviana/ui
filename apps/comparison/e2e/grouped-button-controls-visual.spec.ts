@@ -1,6 +1,11 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
-import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import {
+  frameworkCanvas,
+  frameworkPanel,
+  styledSection,
+  waitForComparisonRouteReady,
+} from "./comparison-page";
+import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 type GroupedControlCase = {
   slug: "actionbuttongroup" | "buttongroup" | "togglebuttongroup";
@@ -11,17 +16,33 @@ type GroupedControlCase = {
   controlName: string;
   expectedProps: Record<string, string | boolean | number>;
   expectedRole?: string;
-  expectedAriaOrientation?: "vertical";
+  expectedAriaOrientation?: "horizontal" | "vertical";
   expectedFlexDirection: "row" | "column";
   expectedSelected?: string;
-  threshold: {
-    maxMismatchRatio: number;
-    maxDimensionDelta: number;
-    pixelThreshold: number;
-  };
 };
 
 const groupedControlCases: GroupedControlCase[] = [
+  {
+    slug: "actionbuttongroup",
+    title: "ActionButtonGroup default",
+    id: "actionbuttongroup-default",
+    query: "",
+    controlRole: "button",
+    controlName: "Bold",
+    expectedProps: {
+      size: "M",
+      density: "regular",
+      orientation: "horizontal",
+      isQuiet: false,
+      isJustified: false,
+      isDisabled: false,
+      iconPlacement: "none",
+    },
+    expectedRole: "toolbar",
+    expectedAriaOrientation: "horizontal",
+    expectedFlexDirection: "row",
+    expectedSelected: "bold",
+  },
   {
     slug: "actionbuttongroup",
     title: "ActionButtonGroup compact vertical icon start",
@@ -43,7 +64,22 @@ const groupedControlCases: GroupedControlCase[] = [
     expectedAriaOrientation: "vertical",
     expectedFlexDirection: "column",
     expectedSelected: "italic",
-    threshold: { maxMismatchRatio: 0.22, maxDimensionDelta: 24, pixelThreshold: 64 },
+  },
+  {
+    slug: "buttongroup",
+    title: "ButtonGroup default",
+    id: "buttongroup-default",
+    query: "",
+    controlRole: "button",
+    controlName: "Save",
+    expectedProps: {
+      orientation: "horizontal",
+      align: "start",
+      size: "M",
+      isDisabled: false,
+      iconPlacement: "none",
+    },
+    expectedFlexDirection: "row",
   },
   {
     slug: "buttongroup",
@@ -61,7 +97,30 @@ const groupedControlCases: GroupedControlCase[] = [
       iconPlacement: "start",
     },
     expectedFlexDirection: "column",
-    threshold: { maxMismatchRatio: 0.2, maxDimensionDelta: 24, pixelThreshold: 64 },
+  },
+  {
+    slug: "togglebuttongroup",
+    title: "ToggleButtonGroup default",
+    id: "togglebuttongroup-default",
+    query: "",
+    controlRole: "radio",
+    controlName: "Left",
+    expectedProps: {
+      selectionMode: "single",
+      selectedKeys: "left",
+      size: "M",
+      density: "regular",
+      orientation: "horizontal",
+      isQuiet: false,
+      isEmphasized: false,
+      isJustified: false,
+      isDisabled: false,
+      iconPlacement: "none",
+    },
+    expectedRole: "radiogroup",
+    expectedAriaOrientation: "horizontal",
+    expectedFlexDirection: "row",
+    expectedSelected: "left",
   },
   {
     slug: "togglebuttongroup",
@@ -85,15 +144,13 @@ const groupedControlCases: GroupedControlCase[] = [
     expectedAriaOrientation: "vertical",
     expectedFlexDirection: "column",
     expectedSelected: "center",
-    threshold: { maxMismatchRatio: 0.22, maxDimensionDelta: 24, pixelThreshold: 64 },
   },
 ];
 
 async function groupedFixtures(page: Page, item: GroupedControlCase) {
   await pinComparisonTheme(page, "dark");
   await page.goto(`/components/${item.slug}/${item.query}`);
-  await page.waitForLoadState("networkidle");
-  await expect(page.locator("astro-island")).toHaveCount(0);
+  await waitForComparisonRouteReady(page);
   await page.waitForTimeout(100);
 
   const section = await styledSection(page);
@@ -189,18 +246,11 @@ function expectNear(
 
 test.describe("comparison grouped button controls visual parity", () => {
   for (const item of groupedControlCases) {
-    test(`${item.title} has committed pair screenshots`, async ({ page }) => {
+    test(`${item.title} matches current React Spectrum`, async ({ page }) => {
       const fixtures = await groupedFixtures(page, item);
 
       await clearPointer(page);
-      await expectScreenshotPair(
-        page,
-        fixtures.reactCanvas,
-        fixtures.solidCanvas,
-        item.title,
-        item.id,
-        item.threshold,
-      );
+      await expectExactScreenshotPair(page, fixtures.reactCanvas, fixtures.solidCanvas, item.title);
     });
 
     test(`${item.title} applies planned group props and semantics`, async ({ page }) => {
@@ -224,8 +274,12 @@ test.describe("comparison grouped button controls visual parity", () => {
       expectNear(solid.gap, react.gap, 1, `${item.title} group gap`);
 
       if (item.slug === "buttongroup") {
-        expect(solid.dataOrientation).toBe("vertical");
-        expectNear(solid.width, react.width, 1, `${item.title} wrapped group width`);
+        expect(solid.dataOrientation).toBe(
+          item.expectedFlexDirection === "column" ? "vertical" : "horizontal",
+        );
+        if (item.expectedFlexDirection === "column") {
+          expectNear(solid.width, react.width, 1, `${item.title} wrapped group width`);
+        }
       }
 
       if (item.expectedSelected) {
@@ -244,6 +298,21 @@ test.describe("comparison grouped button controls visual parity", () => {
       const solid = await iconAlignmentContract(fixtures.solidControl);
 
       expectNear(solid.rootHeight, react.rootHeight, 0.5, `${item.title} root height`);
+
+      if (item.expectedProps.iconPlacement === "none") {
+        expect(solid.hasLabel).toBe(true);
+        expect(react.hasLabel).toBe(true);
+        expect(solid.iconWidth).toBeNull();
+        expect(react.iconWidth).toBeNull();
+        expectNear(
+          solid.labelCenterDelta,
+          react.labelCenterDelta,
+          0.75,
+          `${item.title} text vertical centerline`,
+        );
+        return;
+      }
+
       expectNear(solid.iconWidth, react.iconWidth, 0.5, `${item.title} icon width`);
       expectNear(solid.iconHeight, react.iconHeight, 0.5, `${item.title} icon height`);
       expectNear(
@@ -276,8 +345,7 @@ test.describe("comparison grouped button controls visual parity", () => {
   test("ActionButtonGroup interactive prop controls drive both stacks", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto("/components/actionbuttongroup/");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("astro-island")).toHaveCount(0);
+    await waitForComparisonRouteReady(page);
 
     const form = page.locator('[data-comparison-controls="actionbuttongroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
@@ -315,8 +383,7 @@ test.describe("comparison grouped button controls visual parity", () => {
   test("ButtonGroup interactive prop controls drive both stacks", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto("/components/buttongroup/");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("astro-island")).toHaveCount(0);
+    await waitForComparisonRouteReady(page);
 
     const form = page.locator('[data-comparison-controls="buttongroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
@@ -347,8 +414,7 @@ test.describe("comparison grouped button controls visual parity", () => {
   test("ToggleButtonGroup interactive prop controls drive both stacks", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto("/components/togglebuttongroup/");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("astro-island")).toHaveCount(0);
+    await waitForComparisonRouteReady(page);
 
     const form = page.locator('[data-comparison-controls="togglebuttongroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");

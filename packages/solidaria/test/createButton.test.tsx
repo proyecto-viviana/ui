@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { createButton, createToggleButton } from "../src/button";
 import { setupUser, firePointerDown, firePointerUp } from "@proyecto-viviana/solidaria-test-utils";
@@ -44,6 +44,46 @@ describe("createButton", () => {
       expect(buttonProps.formAction).toBe("/submit");
       expect(buttonProps.name).toBe("submit-btn");
       expect(buttonProps.value).toBe("submit");
+    });
+
+    it("preserves empty form values", () => {
+      const { buttonProps } = createButton({
+        form: "",
+        formAction: "",
+        formEncType: "",
+        formMethod: "",
+        formTarget: "",
+        name: "",
+        value: "",
+        formNoValidate: false,
+      });
+
+      expect(buttonProps.form).toBe("");
+      expect(buttonProps.formAction).toBe("");
+      expect(buttonProps.formEncType).toBe("");
+      expect(buttonProps.formMethod).toBe("");
+      expect(buttonProps.formTarget).toBe("");
+      expect(buttonProps.name).toBe("");
+      expect(buttonProps.value).toBe("");
+      expect(buttonProps.formNoValidate).toBe(false);
+    });
+
+    it("updates disabled attribute when accessor changes", () => {
+      let setDisabled!: (value: boolean) => void;
+
+      function Example() {
+        const [isDisabled, nextDisabled] = createSignal(false);
+        setDisabled = nextDisabled;
+        const { buttonProps } = createButton({ isDisabled });
+        return <button {...buttonProps}>Dynamic</button>;
+      }
+
+      render(() => <Example />);
+      const button = screen.getByRole("button");
+
+      expect(button).not.toBeDisabled();
+      setDisabled(true);
+      expect(button).toBeDisabled();
     });
   });
 
@@ -90,6 +130,30 @@ describe("createButton", () => {
       expect(buttonProps.href).toBe("https://example.com");
       expect(buttonProps.target).toBe("_blank");
       expect(buttonProps.rel).toBe("noopener noreferrer");
+    });
+
+    it("updates href and disabled semantics when an anchor disabled accessor changes", () => {
+      let setDisabled!: (value: boolean) => void;
+
+      function Example() {
+        const [isDisabled, nextDisabled] = createSignal(false);
+        setDisabled = nextDisabled;
+        const { buttonProps } = createButton({
+          elementType: "a",
+          href: "https://example.com",
+          isDisabled,
+        });
+        return <a {...buttonProps}>Open</a>;
+      }
+
+      render(() => <Example />);
+      const button = screen.getByRole("button");
+
+      expect(button).toHaveAttribute("href", "https://example.com");
+      expect(button).not.toHaveAttribute("aria-disabled");
+      setDisabled(true);
+      expect(button).not.toHaveAttribute("href");
+      expect(button).toHaveAttribute("aria-disabled", "true");
     });
 
     it("removes href when anchor button is disabled", () => {
@@ -257,13 +321,104 @@ describe("createButton", () => {
 
       expect(onPress).toHaveBeenCalledTimes(1);
     });
+
+    it("calls onClick once after each keyboard activation", async () => {
+      const user = setupUser();
+      const calls: string[] = [];
+      const { buttonProps } = createButton({
+        onPress: (e) => calls.push(e.type),
+        onClick: () => calls.push("click"),
+      });
+
+      render(() => <button {...buttonProps}>Press me</button>);
+      const button = screen.getByText("Press me");
+      button.focus();
+
+      await user.keyboard("{Enter}");
+      await user.keyboard("{ }");
+
+      expect(calls).toEqual(["press", "click", "press", "click"]);
+    });
+
+    it("fires pointer activation callbacks in React Aria order", async () => {
+      const user = setupUser();
+      const calls: string[] = [];
+      const { buttonProps } = createButton({
+        onPressStart: (e) => calls.push(e.type),
+        onPressChange: (isPressed) => calls.push(`presschange:${isPressed}`),
+        onPressUp: (e) => calls.push(e.type),
+        onPressEnd: (e) => calls.push(e.type),
+        onPress: (e) => calls.push(e.type),
+        onClick: () => calls.push("click"),
+      });
+
+      render(() => <button {...buttonProps}>Press me</button>);
+      await user.click(screen.getByText("Press me"));
+
+      expect(calls).toEqual([
+        "pressstart",
+        "presschange:true",
+        "pressup",
+        "pressend",
+        "presschange:false",
+        "press",
+        "click",
+      ]);
+    });
+
+    it("fires virtual click callbacks in React Aria order", () => {
+      const calls: string[] = [];
+      const { buttonProps } = createButton({
+        onPressStart: (e) => calls.push(`${e.type}:${e.pointerType}`),
+        onPressChange: (isPressed) => calls.push(`presschange:${isPressed}`),
+        onPressUp: (e) => calls.push(`${e.type}:${e.pointerType}`),
+        onPressEnd: (e) => calls.push(`${e.type}:${e.pointerType}`),
+        onPress: (e) => calls.push(`${e.type}:${e.pointerType}`),
+        onClick: () => calls.push("click"),
+      });
+
+      render(() => <button {...buttonProps}>Press me</button>);
+      fireEvent.click(screen.getByText("Press me"));
+
+      expect(calls).toEqual([
+        "pressstart:virtual",
+        "presschange:true",
+        "pressup:virtual",
+        "pressend:virtual",
+        "presschange:false",
+        "press:virtual",
+        "click",
+      ]);
+    });
+
+    it("keeps focus on the previously focused element when preventFocusOnPress is true", () => {
+      const { buttonProps } = createButton({ preventFocusOnPress: true });
+
+      render(() => (
+        <>
+          <input aria-label="Previous" />
+          <button {...buttonProps}>Press me</button>
+        </>
+      ));
+
+      const input = screen.getByLabelText("Previous");
+      const button = screen.getByText("Press me");
+      input.focus();
+
+      fireEvent.mouseDown(button, { button: 0 });
+      button.focus();
+
+      expect(document.activeElement).toBe(input);
+    });
   });
 
   describe("input element", () => {
-    it("sets type and disabled for input elements", () => {
+    it("uses React Aria's non-button branch for input elements", () => {
       const { buttonProps } = createButton({ elementType: "input", isDisabled: true });
+      expect(buttonProps.role).toBe("button");
       expect(buttonProps.type).toBe("button");
       expect(buttonProps.disabled).toBe(true);
+      expect(buttonProps["aria-disabled"]).toBeUndefined();
     });
   });
 
@@ -506,6 +661,16 @@ describe("createButton", () => {
       expect(buttonProps.tabIndex).toBe(-1);
       expect(buttonProps["aria-disabled"]).toBe(true);
     });
+  });
+
+  it("lets explicit aria-disabled override computed non-native disabled state", () => {
+    const { buttonProps } = createButton({
+      elementType: "div",
+      isDisabled: true,
+      "aria-disabled": "false",
+    });
+
+    expect(buttonProps["aria-disabled"]).toBe("false");
   });
 });
 

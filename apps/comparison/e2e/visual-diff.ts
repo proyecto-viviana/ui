@@ -24,6 +24,15 @@ export type ScreenshotDiffThreshold = {
   pixelThreshold?: number;
 };
 
+export type ScreenshotPairCapture = {
+  reactPng: Buffer;
+  solidPng: Buffer;
+};
+
+export type ScreenshotPairResult = ScreenshotPairCapture & {
+  diff: ScreenshotDiffResult;
+};
+
 export const exactPairDiff: ScreenshotDiffThreshold = {
   maxMismatchRatio: 0,
   maxDimensionDelta: 0,
@@ -47,7 +56,20 @@ export async function clearPointer(page: Page) {
   await page.waitForTimeout(50);
 }
 
+async function waitForScreenshotFrame(target: Locator) {
+  await target.evaluate(async () => {
+    if ("fonts" in document) {
+      await document.fonts.ready;
+    }
+
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
+}
+
 export async function normalizedElementScreenshot(target: Locator) {
+  await waitForScreenshotFrame(target);
+
   const previousState = await target.evaluate((element) => {
     const htmlElement = element as HTMLElement;
     const state = {
@@ -68,7 +90,7 @@ export async function normalizedElementScreenshot(target: Locator) {
   });
 
   try {
-    await target.evaluate(() => new Promise(requestAnimationFrame));
+    await waitForScreenshotFrame(target);
     await target.evaluate((element, state) => {
       const htmlElement = element as HTMLElement;
 
@@ -108,7 +130,7 @@ export async function normalizedElementScreenshot(target: Locator) {
       htmlElement.append(freezeStyle);
     }, previousState);
 
-    await target.evaluate(() => new Promise(requestAnimationFrame));
+    await waitForScreenshotFrame(target);
     return await target.screenshot({ animations: "disabled" });
   } finally {
     await target.evaluate((element, state) => {
@@ -146,34 +168,69 @@ export async function normalizedElementScreenshot(target: Locator) {
   }
 }
 
-export async function expectScreenshotPair(
-  page: Page,
-  reactTarget: Locator,
-  solidTarget: Locator,
-  label: string,
-  snapshotName: string,
-  threshold: ScreenshotDiffThreshold = exactPairDiff,
-) {
-  const [reactPng, solidPng] = await Promise.all([
-    normalizedElementScreenshot(reactTarget),
-    normalizedElementScreenshot(solidTarget),
-  ]);
-
-  await compareScreenshots(page, reactPng, solidPng, label, threshold);
-  expect(reactPng).toMatchSnapshot(`${snapshotName}-react.png`);
-  expect(solidPng).toMatchSnapshot(`${snapshotName}-solid.png`);
+async function inPlaceElementScreenshot(target: Locator) {
+  await waitForScreenshotFrame(target);
+  return target.screenshot({ animations: "disabled" });
 }
 
-export async function expectPreparedScreenshotPair(
+async function withFixedScreenshotTarget<T>(target: Locator, action: () => Promise<T>) {
+  const previousStyle = await target.evaluate((element) => {
+    const htmlElement = element as HTMLElement;
+    const style = htmlElement.getAttribute("style");
+
+    htmlElement.style.position = "fixed";
+    htmlElement.style.insetBlockStart = "64px";
+    htmlElement.style.insetInlineStart = "64px";
+    htmlElement.style.margin = "0";
+    htmlElement.style.zIndex = "2147483647";
+
+    return style;
+  });
+
+  try {
+    await waitForScreenshotFrame(target);
+    return await action();
+  } finally {
+    await target.evaluate((element, style) => {
+      const htmlElement = element as HTMLElement;
+      if (style === null) {
+        htmlElement.removeAttribute("style");
+      } else {
+        htmlElement.setAttribute("style", style);
+      }
+    }, previousStyle);
+  }
+}
+
+export async function captureScreenshotPair(
+  reactTarget: Locator,
+  solidTarget: Locator,
+): Promise<ScreenshotPairCapture> {
+  return {
+    reactPng: await normalizedElementScreenshot(reactTarget),
+    solidPng: await normalizedElementScreenshot(solidTarget),
+  };
+}
+
+export async function expectExactScreenshotPair(
   page: Page,
   reactTarget: Locator,
   solidTarget: Locator,
   label: string,
-  snapshotName: string,
+): Promise<ScreenshotPairResult> {
+  const pair = await captureScreenshotPair(reactTarget, solidTarget);
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
+
+  return { ...pair, diff };
+}
+
+export async function capturePreparedScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
   prepareReact: () => Promise<void>,
   prepareSolid: () => Promise<void>,
-  threshold: ScreenshotDiffThreshold = exactPairDiff,
-) {
+): Promise<ScreenshotPairCapture> {
   await clearPointer(page);
   await prepareReact();
   await page.waitForTimeout(220);
@@ -186,9 +243,149 @@ export async function expectPreparedScreenshotPair(
   const solidPng = await normalizedElementScreenshot(solidTarget);
 
   await page.mouse.up();
-  await compareScreenshots(page, reactPng, solidPng, label, threshold);
-  expect(reactPng).toMatchSnapshot(`${snapshotName}-react.png`);
-  expect(solidPng).toMatchSnapshot(`${snapshotName}-solid.png`);
+  return { reactPng, solidPng };
+}
+
+export async function capturePreparedFixedScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+): Promise<ScreenshotPairCapture> {
+  await clearPointer(page);
+  const reactPng = await withFixedScreenshotTarget(reactTarget, async () => {
+    await prepareReact();
+    await page.waitForTimeout(220);
+    return inPlaceElementScreenshot(reactTarget);
+  });
+
+  await page.mouse.up();
+  await clearPointer(page);
+  const solidPng = await withFixedScreenshotTarget(solidTarget, async () => {
+    await prepareSolid();
+    await page.waitForTimeout(220);
+    return inPlaceElementScreenshot(solidTarget);
+  });
+
+  await page.mouse.up();
+  return { reactPng, solidPng };
+}
+
+export async function capturePreparedInPlaceScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+): Promise<ScreenshotPairCapture> {
+  await clearPointer(page);
+  await prepareReact();
+  await page.waitForTimeout(220);
+  const reactPng = await inPlaceElementScreenshot(reactTarget);
+
+  await page.mouse.up();
+  await clearPointer(page);
+  await prepareSolid();
+  await page.waitForTimeout(220);
+  const solidPng = await inPlaceElementScreenshot(solidTarget);
+
+  await page.mouse.up();
+  return { reactPng, solidPng };
+}
+
+export async function expectExactPreparedScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+): Promise<ScreenshotPairResult> {
+  const pair = await capturePreparedScreenshotPair(
+    page,
+    reactTarget,
+    solidTarget,
+    prepareReact,
+    prepareSolid,
+  );
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
+
+  return { ...pair, diff };
+}
+
+export async function expectExactPreparedFixedScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+): Promise<ScreenshotPairResult> {
+  const pair = await capturePreparedFixedScreenshotPair(
+    page,
+    reactTarget,
+    solidTarget,
+    prepareReact,
+    prepareSolid,
+  );
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
+
+  return { ...pair, diff };
+}
+
+export async function expectExactPreparedInPlaceScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+): Promise<ScreenshotPairResult> {
+  const pair = await capturePreparedInPlaceScreenshotPair(
+    page,
+    reactTarget,
+    solidTarget,
+    prepareReact,
+    prepareSolid,
+  );
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
+
+  return { ...pair, diff };
+}
+
+export async function expectScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  threshold: ScreenshotDiffThreshold = exactPairDiff,
+): Promise<ScreenshotPairResult> {
+  const pair = await captureScreenshotPair(reactTarget, solidTarget);
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, threshold);
+
+  return { ...pair, diff };
+}
+
+export async function expectPreparedScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+  threshold: ScreenshotDiffThreshold = exactPairDiff,
+): Promise<ScreenshotPairResult> {
+  const pair = await capturePreparedScreenshotPair(
+    page,
+    reactTarget,
+    solidTarget,
+    prepareReact,
+    prepareSolid,
+  );
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, threshold);
+
+  return { ...pair, diff };
 }
 
 export async function diffScreenshots(
@@ -328,10 +525,8 @@ export async function diffLocatorScreenshots(
   solidElement: Locator,
   pixelThreshold: number = 0,
 ) {
-  const [reactPng, solidPng] = await Promise.all([
-    reactElement.screenshot({ animations: "disabled" }),
-    solidElement.screenshot({ animations: "disabled" }),
-  ]);
+  const reactPng = await reactElement.screenshot({ animations: "disabled" });
+  const solidPng = await solidElement.screenshot({ animations: "disabled" });
 
   return diffScreenshots(page, reactPng, solidPng, pixelThreshold);
 }

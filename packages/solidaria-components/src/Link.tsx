@@ -24,6 +24,17 @@ import {
 } from "./utils";
 import { handleLinkClick, useRouter } from "./RouterProvider";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface LinkRenderProps {
   /** Whether the link is the current item within a list. */
   isCurrent: boolean;
@@ -46,6 +57,8 @@ export interface LinkProps extends Omit<AriaLinkProps, "elementType">, HoverEven
   class?: ClassNameOrFunction<LinkRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<LinkRenderProps>;
+  /** Ref for the underlying link element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 export const LinkContext = createContext<LinkProps | null>(null);
@@ -73,6 +86,7 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
     "children",
     "class",
     "style",
+    "ref",
     "slot",
     "onHoverStart",
     "onHoverEnd",
@@ -225,6 +239,9 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
       {...cleanLinkProps()}
       {...cleanHoverProps()}
       {...cleanFocusProps()}
+      ref={(element: HTMLElement) => {
+        assignRef(local.ref, element);
+      }}
       onClick={onLinkClick}
       class={renderProps.class()}
       style={renderProps.style()}

@@ -201,7 +201,7 @@ function expectNear(
 }
 
 test.describe("comparison TextArea visual parity", () => {
-  test("invalid required XL state has committed pair screenshots", async ({ page }) => {
+  test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await textAreaFixtures(page, invalidRequiredXLQuery);
 
     await clearPointer(page);
@@ -210,7 +210,6 @@ test.describe("comparison TextArea visual parity", () => {
       fixtures.reactCanvas,
       fixtures.solidCanvas,
       "TextArea invalid required XL state",
-      "textarea-invalid-required-xl",
       { maxMismatchRatio: 0.22, maxDimensionDelta: 32, pixelThreshold: 64 },
     );
   });

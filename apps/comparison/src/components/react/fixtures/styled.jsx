@@ -55,6 +55,7 @@ import {
   comparisonTabItems as tabItems,
 } from "@comparison/data/comparison-contract";
 import {
+  buttonDemoLocaleFromWindow,
   buttonDemoPropsFromWindow,
   comparisonControlsEvent,
   serializeButtonDemoProps,
@@ -165,6 +166,22 @@ const ReactButtonIcon = createIcon((props) =>
     ],
   }),
 );
+
+function explicitStaticColor(staticColor) {
+  return staticColor === "black" || staticColor === "white" ? staticColor : undefined;
+}
+
+function staticColorBackdropProps(staticColor, className = "") {
+  const staticBackdrop = explicitStaticColor(staticColor);
+  const classes = [className, staticBackdrop ? "comparison-static-color-backdrop" : undefined]
+    .filter(Boolean)
+    .join(" ");
+
+  return {
+    className: classes || undefined,
+    "data-comparison-static-color": staticBackdrop,
+  };
+}
 
 const ReactPlanIllustration = createIllustration((props) =>
   jsxs("svg", {
@@ -379,9 +396,10 @@ function renderProviderDemo() {
   });
 }
 
-function renderReactSpectrumReference(children, colorScheme = "dark") {
+function renderReactSpectrumReference(children, colorScheme = "dark", locale = void 0) {
   return jsx(SpectrumProvider, {
     colorScheme,
+    locale,
     background: "base",
     UNSAFE_style: providerShellStyle,
     children,
@@ -392,6 +410,7 @@ function ReactButtonDemo() {
   const [actionCount, setActionCount] = useState(0);
   const demoProps = useButtonDemoControls();
   const colorScheme = useComparisonResolvedTheme();
+  const locale = buttonDemoLocaleFromWindow();
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-action-count": String(actionCount),
@@ -399,7 +418,7 @@ function ReactButtonDemo() {
       "data-comparison-control-props": serializeButtonDemoProps(demoProps),
       "data-comparison-button-props": serializeButtonDemoProps(demoProps),
       children: jsx("div", {
-        className: "comparison-button-row",
+        ...staticColorBackdropProps(demoProps.staticColor, "comparison-button-row"),
         children: jsx(SpectrumButton, {
           variant: demoProps.variant,
           fillStyle: demoProps.fillStyle,
@@ -414,6 +433,7 @@ function ReactButtonDemo() {
       }),
     }),
     colorScheme,
+    locale,
   );
 }
 
@@ -479,7 +499,7 @@ function ReactActionButtonDemo() {
   const colorScheme = useComparisonResolvedTheme();
   return renderReactSpectrumReference(
     jsx("div", {
-      className: "comparison-button-row",
+      ...staticColorBackdropProps(demoProps.staticColor, "comparison-button-row"),
       "data-comparison-action-count": String(actionCount),
       "data-comparison-control-root": "actionbutton",
       "data-comparison-control-props": serializeActionButtonDemoProps(demoProps),
@@ -535,6 +555,7 @@ function ReactActionButtonGroupDemo() {
 
   return renderReactSpectrumReference(
     jsx("div", {
+      ...staticColorBackdropProps(groupProps.staticColor),
       "data-comparison-action-key": actionKey,
       "data-comparison-selected-keys": selectedKeyText,
       children: jsx(SpectrumActionButtonGroup, {
@@ -628,7 +649,7 @@ function ReactLinkButtonDemo() {
 
   return renderReactSpectrumReference(
     jsx("div", {
-      className: "comparison-button-row",
+      ...staticColorBackdropProps(demoProps.staticColor, "comparison-button-row"),
       children: jsx(SpectrumLinkButton, {
         "data-comparison-control-root": "linkbutton",
         "data-comparison-control-props": serializeLinkButtonDemoProps(demoProps),
@@ -663,6 +684,7 @@ function ReactToggleButtonDemo() {
 
   return renderReactSpectrumReference(
     jsx("div", {
+      ...staticColorBackdropProps(demoProps.staticColor),
       "data-comparison-selected": String(selected),
       children: jsx(SpectrumToggleButton, {
         "data-comparison-control-root": "togglebutton",
@@ -706,6 +728,7 @@ function ReactToggleButtonGroupDemo() {
 
   return renderReactSpectrumReference(
     jsx("div", {
+      ...staticColorBackdropProps(groupProps.staticColor),
       "data-comparison-selected-keys": Array.from(selectedKeys).join(","),
       children: jsxs(SpectrumToggleButtonGroup, {
         "aria-label": "Text alignment",

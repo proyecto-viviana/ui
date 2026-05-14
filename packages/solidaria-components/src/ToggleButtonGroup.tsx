@@ -60,6 +60,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
     "children",
     "class",
     "style",
+    "ref",
     "slot",
     "aria-label",
     "aria-labelledby",
@@ -119,6 +120,12 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
       slot={local.slot}
       data-orientation={local.orientation ?? "horizontal"}
       data-disabled={local.isDisabled || undefined}
+      ref={(el) => {
+        if (!local.ref) return;
+        if (typeof local.ref === "function") {
+          local.ref(el);
+        }
+      }}
     >
       <ToggleButtonGroupContext.Provider value={props}>
         <ToggleButtonGroupStateContext.Provider value={state}>
