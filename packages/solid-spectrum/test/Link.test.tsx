@@ -190,6 +190,29 @@ describe("Link (solid-spectrum)", () => {
     expect(link).toHaveAttribute("data-current", "true");
   });
 
+  it("passes native anchor attributes through to href links", () => {
+    render(() => (
+      <Link
+        href="/download"
+        target="_blank"
+        rel="noopener"
+        download="report.csv"
+        hrefLang="en"
+        referrerPolicy="no-referrer"
+      >
+        Download report
+      </Link>
+    ));
+
+    const link = screen.getByRole("link", { name: "Download report" });
+    expect(link).toHaveAttribute("href", "/download");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener");
+    expect(link).toHaveAttribute("download", "report.csv");
+    expect(link).toHaveAttribute("hreflang", "en");
+    expect(link).toHaveAttribute("referrerpolicy", "no-referrer");
+  });
+
   it("should support context props", () => {
     render(() => (
       <LinkContext.Provider

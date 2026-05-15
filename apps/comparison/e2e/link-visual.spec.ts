@@ -6,6 +6,7 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import { linkStaticColorOptions, linkVariantOptions } from "../src/data/link-demo";
 
 function linkQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -63,6 +64,20 @@ async function linkContract(root: Locator) {
   });
 }
 
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
+}
+
 test.describe("comparison Link visual parity", () => {
   test("Link default state is pixel-identical", async ({ page }) => {
     const fixtures = await linkFixtures(page);
@@ -76,6 +91,21 @@ test.describe("comparison Link visual parity", () => {
   });
 
   test("Link prop controls drive both implementations", async ({ page }) => {
+    await linkFixtures(page);
+
+    await expect(page.locator('input[name="children"]')).toHaveValue("View project");
+    await expect(page.locator('input[name="href"]')).toHaveValue("https://example.com/project");
+    await expectRadioValues(page, "variant", linkVariantOptions, "primary");
+    await expectRadioValues(page, "staticColor", linkStaticColorOptions, "");
+    await expect(page.locator('input[name="staticColor"] + span')).toHaveText([
+      "default",
+      "black",
+      "white",
+      "auto",
+    ]);
+    await expect(page.locator('input[name="isStandalone"]')).not.toBeChecked();
+    await expect(page.locator('input[name="isQuiet"]')).not.toBeChecked();
+
     const fixtures = await linkFixtures(page, {
       children: "Open billing",
       href: "https://example.com/billing",
@@ -107,16 +137,20 @@ test.describe("comparison Link visual parity", () => {
         isQuiet: true,
       }),
     );
+    await expect(page.locator('input[name="children"]')).toHaveValue("Open billing");
+    await expect(page.locator('input[name="href"]')).toHaveValue("https://example.com/billing");
+    await expectRadioValues(page, "variant", linkVariantOptions, "secondary");
+    await expectRadioValues(page, "staticColor", linkStaticColorOptions, "white");
+    await expect(page.locator('input[name="isStandalone"]')).toBeChecked();
+    await expect(page.locator('input[name="isQuiet"]')).toBeChecked();
   });
 
   test("Link computed styles match React Spectrum across variants and static colors", async ({
     page,
   }) => {
     for (const params of [
-      { variant: "primary" },
-      { variant: "secondary" },
-      { staticColor: "black" },
-      { staticColor: "white" },
+      ...linkVariantOptions.map((variant) => ({ variant })),
+      ...linkStaticColorOptions.map((staticColor) => ({ staticColor })),
       { isStandalone: true, isQuiet: true },
     ] as const) {
       const fixtures = await linkFixtures(page, params);
@@ -125,5 +159,32 @@ test.describe("comparison Link visual parity", () => {
         await linkContract(fixtures.reactRoot),
       );
     }
+  });
+
+  test("Link quiet standalone hover branch matches React Spectrum", async ({ page }) => {
+    const fixtures = await linkFixtures(page, { isStandalone: true, isQuiet: true });
+
+    await fixtures.reactRoot.hover();
+    const reactHoverContract = await linkContract(fixtures.reactRoot);
+    await fixtures.solidRoot.hover();
+
+    await expect(linkContract(fixtures.solidRoot)).resolves.toEqual(reactHoverContract);
+    await expect(linkContract(fixtures.solidRoot)).resolves.toMatchObject({
+      textDecorationLine: "underline",
+    });
+  });
+
+  test("Link forced-colors branch matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await linkFixtures(page, {
+      variant: "secondary",
+      staticColor: "white",
+      isStandalone: true,
+      isQuiet: true,
+    });
+
+    await expect(linkContract(fixtures.solidRoot)).resolves.toEqual(
+      await linkContract(fixtures.reactRoot),
+    );
   });
 });

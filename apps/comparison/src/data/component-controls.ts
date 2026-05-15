@@ -645,7 +645,12 @@ const linkControls: ComponentControlGroup = {
       label: "staticColor",
       kind: "radio",
       defaultValue: linkDemoDefaults.staticColor ?? "",
-      options: options(linkStaticColorOptions),
+      options: [
+        { value: linkStaticColorOptions[0], label: "default" },
+        { value: linkStaticColorOptions[1], label: linkStaticColorOptions[1] },
+        { value: linkStaticColorOptions[2], label: linkStaticColorOptions[2] },
+        { value: linkStaticColorOptions[3], label: linkStaticColorOptions[3] },
+      ],
     },
     {
       name: "isStandalone",
