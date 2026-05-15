@@ -17,6 +17,8 @@ export const avatarSizeOptions = [
 
 export type AvatarDemoSize = (typeof avatarSizeOptions)[number];
 
+export const avatarDocsExampleSrc = "/fixtures/avatar/docs-avatar.png";
+
 export interface AvatarDemoProps {
   alt: string;
   src: string;
@@ -25,8 +27,8 @@ export interface AvatarDemoProps {
 }
 
 export const avatarDemoDefaults: AvatarDemoProps = {
-  alt: "Alana",
-  src: "",
+  alt: "Avatar",
+  src: avatarDocsExampleSrc,
   size: "24",
   isOverBackground: false,
 };

@@ -5,7 +5,7 @@ import {
   type ComponentControlGroup,
 } from "../src/data/component-controls";
 import { comparisonEntries } from "../src/data/comparison-manifest";
-import { frameworkPanel, styledSection } from "./comparison-page";
+import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
 
 const modeledControlGroups = Object.values(componentControlGroups)
   .filter((group) => group.coverage === "modeled")
@@ -30,6 +30,12 @@ const sliderTextControlValues: Record<string, string> = {
   minValue: "0",
   maxValue: "100",
   step: "5",
+};
+
+const meterTextControlValues: Record<string, string> = {
+  value: "45",
+  minValue: "0",
+  maxValue: "120",
 };
 
 function liveStyledEntry(group: ComponentControlGroup) {
@@ -61,6 +67,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (group.slug === "slider" && control.name in sliderTextControlValues) {
       return sliderTextControlValues[control.name];
     }
+    if (group.slug === "meter" && control.name in meterTextControlValues) {
+      return meterTextControlValues[control.name];
+    }
     if (control.name === "selectedKeys" && group.slug === "selectboxgroup") {
       return "starter,pro";
     }
@@ -90,7 +99,53 @@ function expectedSerializedValue(
   if (group.slug === "slider" && control.name in sliderTextControlValues) {
     return Number(value);
   }
+  if (group.slug === "meter" && control.name in meterTextControlValues) {
+    return Number(value);
+  }
   return value;
+}
+
+function defaultValuesForGroup(group: ComponentControlGroup) {
+  return Object.fromEntries(group.controls.map((control) => [control.name, control.defaultValue]));
+}
+
+async function controlDefaultsFromForm(form: Locator) {
+  return form.evaluate((element) =>
+    JSON.parse((element as HTMLFormElement).dataset.controlDefaults ?? "{}"),
+  ) as Promise<Record<string, unknown>>;
+}
+
+async function expectControlDefault(form: Locator, control: ComponentControl) {
+  if (control.kind === "switch") {
+    await expect(form.locator(`input[type="checkbox"][name="${control.name}"]`)).toBeChecked({
+      checked: Boolean(control.defaultValue),
+    });
+    return;
+  }
+
+  if (control.kind === "text") {
+    const expectedValue = String(control.defaultValue).replace(/\r?\n/g, "");
+    await expect(form.locator(`input[name="${control.name}"]`)).toHaveValue(expectedValue);
+    return;
+  }
+
+  if (control.kind === "select") {
+    await expect(form.locator(`select[name="${control.name}"]`)).toHaveValue(
+      String(control.defaultValue),
+    );
+    return;
+  }
+
+  const expectedValue = String(control.defaultValue);
+  if (control.options?.some((option) => option.value === expectedValue)) {
+    await expect(form.locator(`input[type="radio"][name="${control.name}"]:checked`)).toHaveValue(
+      expectedValue,
+    );
+  } else {
+    await expect(form.locator(`input[type="radio"][name="${control.name}"]:checked`)).toHaveCount(
+      0,
+    );
+  }
 }
 
 async function setControlValue(form: Locator, control: ComponentControl, value: string | boolean) {
@@ -133,6 +188,15 @@ async function expectSerializedProps(root: Locator, expectedProps: Record<string
   await expect.poll(async () => serializedControlProps(root)).toMatchObject(expectedProps);
 }
 
+async function expectFormPreviewProps(panel: Locator, expectedProps: Record<string, unknown>) {
+  await expect(
+    panel.getByRole("textbox", { name: String(expectedProps.label) }).first(),
+  ).toHaveValue(String(expectedProps.value));
+  await expect(
+    panel.getByRole("button", { name: String(expectedProps.actionLabel) }).first(),
+  ).toBeDisabled({ disabled: Boolean(expectedProps.isDisabled) });
+}
+
 test.describe("modeled comparison controls contract", () => {
   for (const group of modeledControlGroups) {
     test(`${group.title} side-panel controls drive both stacks`, async ({ page }) => {
@@ -140,12 +204,15 @@ test.describe("modeled comparison controls contract", () => {
       expect(entry, `${group.slug} should be live on both styled stacks`).toBeTruthy();
 
       await page.goto(`/components/${group.slug}/`);
-      await page.waitForLoadState("networkidle");
-      await expect(page.locator("astro-island")).toHaveCount(0);
+      await waitForComparisonRouteReady(page);
 
       const form = page.locator(`[data-comparison-controls="${group.slug}"]`);
       await expect(form).toHaveCount(1);
       await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+      await expect.poll(() => controlDefaultsFromForm(form)).toEqual(defaultValuesForGroup(group));
+      for (const control of group.controls) {
+        await expectControlDefault(form, control);
+      }
 
       const expectedProps: Record<string, unknown> = {};
       for (const control of group.controls) {
@@ -164,8 +231,13 @@ test.describe("modeled comparison controls contract", () => {
       await expect(solidRoot).toHaveCount(1);
       await expect(reactRoot).toBeVisible();
       await expect(solidRoot).toBeVisible();
-      await expectSerializedProps(reactRoot, expectedProps);
-      await expectSerializedProps(solidRoot, expectedProps);
+      if (group.slug === "form") {
+        await expectFormPreviewProps(reactPanel, expectedProps);
+        await expectFormPreviewProps(solidPanel, expectedProps);
+      } else {
+        await expectSerializedProps(reactRoot, expectedProps);
+        await expectSerializedProps(solidRoot, expectedProps);
+      }
     });
   }
 });

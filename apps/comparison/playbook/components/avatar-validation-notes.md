@@ -17,7 +17,7 @@
 | ---------------------- | ------ | ------------------------------------------------------------------------------------------------------- | ---------------------- |
 | 0 Research             | done   | S2 Avatar docs, Avatar source, AvatarGroup source, and ActionButton AvatarContext source                | None                   |
 | 1 Baseline             | done   | `comparison:report:gaps`, `comparison:report:exports`, RAC guards                                       | None                   |
-| 2 Route harness        | done   | Avatar controls, route defaults, React/Solid fixtures, visible control assertions                       | None                   |
+| 2 Route harness        | done   | Avatar controls, docs-example route defaults, React/Solid fixtures, visible control assertions          | None                   |
 | 3 Source map/API       | done   | Source map and public contract below                                                                    | None                   |
 | 4 Cross-layer audit    | done   | Branch ledger covers root styles, image state, default slot, context, DOM filtering, and legacy aliases | None                   |
 | 5 Transitions          | done   | Static component; image reveal, size, over-background, forced-colors, and context obligations recorded  | None                   |
@@ -32,29 +32,30 @@
 
 ## Source Packet
 
-| Source                   | Files or docs                                                                                  | Finding                                                                                                                                |
-| ------------------------ | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| S2 docs MCP              | `Avatar` page                                                                                  | Public API is `alt`, `id`, `isOverBackground`, numeric `size`, `slot`, `src`, `styles`, unsafe class/style.                            |
-| React Spectrum S2 source | `@react-spectrum/s2/src/Avatar.tsx`                                                            | Avatar renders the S2 `Image` wrapper, defaults `alt=""`, `size=24`, `slot="avatar"`, filters DOM props, and has no initials UI.       |
-| React Spectrum S2 source | `@react-spectrum/s2/src/AvatarGroup.tsx`                                                       | AvatarGroup is separate and provides `AvatarContext` with size, styles, and `isOverBackground`.                                        |
-| React Spectrum S2 source | `@react-spectrum/s2/src/ActionButton.tsx`                                                      | ActionButton provides `AvatarContext` with numeric avatar sizes and icon-grid placement styles.                                        |
-| Solid source before pass | `packages/solid-spectrum/src/avatar/index.tsx`                                                 | Solid matched the S2 root/image structure from the support sweep, but root DOM prop filtering and full route evidence were incomplete. |
-| Solid source after pass  | `packages/solid-spectrum/src/avatar/index.tsx`                                                 | Solid matches S2 root/image geometry, image reveal state, default slot, context merge, DOM filtering, and compatibility aliases.       |
-| Comparison harness       | `comparison-manifest`, styled fixtures, component controls, visual matrix, `avatar-visual` e2e | Avatar is live on both stacks with strict default visual evidence, route-control checks, full size matrix, and forced-colors evidence. |
+| Source                   | Files or docs                                                                                  | Finding                                                                                                                                             |
+| ------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S2 docs MCP              | `Avatar` page                                                                                  | Public API is `alt`, `id`, `isOverBackground`, numeric `size`, `slot`, `src`, `styles`, unsafe class/style; MCP example content was stale/stripped. |
+| Live S2 docs             | <https://react-spectrum.adobe.com/Avatar>                                                      | Current example uses an image source and `alt="Avatar"`; route defaults were corrected to match this shape with a project-local fixture path.       |
+| React Spectrum S2 source | `@react-spectrum/s2/src/Avatar.tsx`                                                            | Avatar renders the S2 `Image` wrapper, defaults `alt=""`, `size=24`, `slot="avatar"`, filters DOM props, and has no initials UI.                    |
+| React Spectrum S2 source | `@react-spectrum/s2/src/AvatarGroup.tsx`                                                       | AvatarGroup is separate and provides `AvatarContext` with size, styles, and `isOverBackground`.                                                     |
+| React Spectrum S2 source | `@react-spectrum/s2/src/ActionButton.tsx`                                                      | ActionButton provides `AvatarContext` with numeric avatar sizes and icon-grid placement styles.                                                     |
+| Solid source before pass | `packages/solid-spectrum/src/avatar/index.tsx`                                                 | Solid matched the S2 root/image structure from the support sweep, but root DOM prop filtering and full route evidence were incomplete.              |
+| Solid source after pass  | `packages/solid-spectrum/src/avatar/index.tsx`                                                 | Solid matches S2 root/image geometry, image reveal state, default slot, context merge, DOM filtering, and compatibility aliases.                    |
+| Comparison harness       | `comparison-manifest`, styled fixtures, component controls, visual matrix, `avatar-visual` e2e | Avatar is live on both stacks with strict default visual evidence, route-control checks, full size matrix, and forced-colors evidence.              |
 
 ## Official Docs And Viewer Parity
 
-| Docs item          | Official setting/example                 | Route/control                     | Status  | Evidence                                |
-| ------------------ | ---------------------------------------- | --------------------------------- | ------- | --------------------------------------- |
-| `alt`              | native image alternate text              | text input, default `Alana`       | matched | unit and e2e tests                      |
-| `src`              | optional image URL                       | text input, default empty         | matched | unit and e2e tests                      |
-| `size`             | numeric size, default `24`               | radio options in documented order | matched | e2e asserts option labels/order/default |
-| `isOverBackground` | over-background outline treatment        | switch, default off               | matched | e2e asserts default and changed value   |
-| `slot`             | default `avatar`, supports `null`        | component API and context merge   | matched | unit tests                              |
-| `styles`           | S2 style macro without width override    | component API                     | matched | source audit                            |
-| unsafe props       | `UNSAFE_className`, `UNSAFE_style`       | component API                     | matched | unit tests                              |
-| DOM props          | S2 `filterDOMProps` behavior             | component API                     | matched | unit test                               |
-| legacy local props | `fallback`, `online`, named size aliases | compatibility only                | matched | unit tests                              |
+| Docs item          | Official setting/example                 | Route/control                                          | Status                     | Evidence                                                    |
+| ------------------ | ---------------------------------------- | ------------------------------------------------------ | -------------------------- | ----------------------------------------------------------- |
+| `alt`              | live example `alt="Avatar"`              | text input, default `Avatar`                           | matched                    | unit and e2e tests                                          |
+| `src`              | live example image source                | text input, default `/fixtures/avatar/docs-avatar.png` | matched with local fixture | e2e tests mock the fixture path; real asset path documented |
+| `size`             | numeric size, default `24`               | radio options in documented order                      | matched                    | e2e asserts option labels/order/default                     |
+| `isOverBackground` | over-background outline treatment        | switch, default off                                    | matched                    | e2e asserts default and changed value                       |
+| `slot`             | default `avatar`, supports `null`        | component API and context merge                        | matched                    | unit tests                                                  |
+| `styles`           | S2 style macro without width override    | component API                                          | matched                    | source audit                                                |
+| unsafe props       | `UNSAFE_className`, `UNSAFE_style`       | component API                                          | matched                    | unit tests                                                  |
+| DOM props          | S2 `filterDOMProps` behavior             | component API                                          | matched                    | unit test                                                   |
+| legacy local props | `fallback`, `online`, named size aliases | compatibility only                                     | matched                    | unit tests                                                  |
 
 ## Baseline
 
@@ -77,7 +78,7 @@
 - Current reports list Avatar live and strict:
   - live entries: `33`;
   - missing/gap entries: `36`;
-  - visual states tracked: `177`;
+  - visual states tracked: `181`;
   - visual evidence states: `49`;
   - strict pair-diff states: `32`;
   - blocked visual states: `35`;
@@ -117,6 +118,15 @@
     `xs -> 24`, `sm -> 32`, `md -> 40`, `lg -> 56`, and `xl -> 80`.
   - Legacy `fallback` and `online` remain no-op compatibility props and do not
     render initials or status UI.
+- Comparison route defaults:
+  - The route mirrors the current live docs example with `alt="Avatar"` and
+    `src="/fixtures/avatar/docs-avatar.png"`.
+  - Save the fixture at
+    `apps/comparison/public/fixtures/avatar/docs-avatar.png`; use a square PNG
+    at 256x256 or larger.
+  - The live prop changer reads defaults from the same modeled controls data as
+    the rendered form, so the page script no longer has a separate authoritative
+    Avatar default.
 
 ## Source Branch Coverage
 
@@ -139,7 +149,7 @@
 ## Transition Plan
 
 - Static states:
-  - default blank gray avatar surface;
+  - docs-example image surface;
   - all documented sizes;
   - small and large over-background outlines;
   - empty `src` image-unrevealed state;
@@ -189,8 +199,9 @@
 ```bash
 vp test run packages/solid-spectrum/test/Avatar.test.tsx packages/solid-spectrum/test/AvatarGroup.test.tsx
 vp run --filter @proyecto-viviana/solid-spectrum build
-vp run --filter @proyecto-viviana/comparison build
+vp exec --filter @proyecto-viviana/comparison astro build
 vp exec --filter @proyecto-viviana/comparison playwright test e2e/avatar-visual.spec.ts --reporter=line
+vp exec --filter @proyecto-viviana/comparison playwright test e2e/avatar-visual.spec.ts e2e/modeled-controls-contract.spec.ts --reporter=line
 vp test run packages/solid-spectrum/test/regression.test.tsx -t "Regression: Avatar" -u
 vp run comparison:report:gaps
 vp run comparison:report:exports
@@ -205,9 +216,10 @@ Results:
 - Solid Spectrum build: passed.
 - Comparison build: passed and generated `/components/avatar/`.
 - Avatar Playwright suite: `4 passed`.
+- Avatar plus modeled-controls browser contract: `35 passed`.
 - Avatar regression snapshot slice: `2 passed`.
 - Current gap report lists official styled entries live on both sides at `33`,
-  missing/gap entries at `36`, visual states tracked at `177`, visual evidence
+  missing/gap entries at `36`, visual states tracked at `181`, visual evidence
   states at `49`, strict pair-diff states at `32`, and blocked visual states at
   `35`.
 - Current export report lists missing React S2 value exports at `80` of `208`
@@ -218,8 +230,7 @@ Results:
 ## Handoff
 
 - Avatar is playbook-accepted for owned behavior.
-- No in-scope Avatar gates remain open.
-- AvatarGroup remains a separate component and still needs its own acceptance
-  hardening.
-- Remaining comparison-live support components still need the same hardening:
-  AvatarGroup, Image, Skeleton, and Form.
+- The route now uses a project-local docs image fixture path; the real PNG still
+  needs to be saved at `apps/comparison/public/fixtures/avatar/docs-avatar.png`.
+- Accepted components still need the broader official live-docs/viewer audit
+  before moving to a new component.

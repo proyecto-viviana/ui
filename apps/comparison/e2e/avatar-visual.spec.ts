@@ -6,7 +6,18 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
-import { avatarSizeOptions } from "../src/data/avatar-demo";
+import { avatarDemoDefaults, avatarSizeOptions } from "../src/data/avatar-demo";
+
+const avatarDocsImageMock = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#2f6f62"/>
+  <circle cx="32" cy="24" r="13" fill="#f4d1b4"/>
+  <path d="M13 64c3-18 35-18 38 0" fill="#f4d1b4"/>
+</svg>
+`;
+const avatarDocsImageRoutePattern = `**${avatarDemoDefaults.src}`;
+const avatarChangedSrc =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%234f46e5'/%3E%3Ccircle cx='32' cy='25' r='13' fill='%23f8fafc'/%3E%3Cpath d='M12 64c4-18 36-18 40 0' fill='%23f8fafc'/%3E%3C/svg%3E";
 
 function avatarQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -20,7 +31,39 @@ function avatarQuery(params: Record<string, string | boolean> = {}) {
   return query ? `?${query}` : "";
 }
 
+async function mockDocsAvatarImage(page: Page) {
+  await page.unroute(avatarDocsImageRoutePattern).catch(() => undefined);
+  await page.route(avatarDocsImageRoutePattern, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "image/svg+xml",
+      body: avatarDocsImageMock,
+    }),
+  );
+}
+
+async function waitForAvatarImage(root: Locator) {
+  const image = root.locator("img").first();
+
+  await expect
+    .poll(
+      async () =>
+        image.evaluate((element) => {
+          const img = element as HTMLImageElement;
+          return img.complete && img.naturalWidth > 0;
+        }),
+      { timeout: 5_000 },
+    )
+    .toBe(true);
+  await expect
+    .poll(() => image.evaluate((element) => window.getComputedStyle(element).opacity), {
+      timeout: 3_000,
+    })
+    .toBe("1");
+}
+
 async function avatarFixtures(page: Page, params: Record<string, string | boolean> = {}) {
+  await mockDocsAvatarImage(page);
   await pinComparisonTheme(page, "dark");
   await page.goto(`/components/avatar/${avatarQuery(params)}`);
   await waitForComparisonRouteReady(page);
@@ -36,6 +79,12 @@ async function avatarFixtures(page: Page, params: Record<string, string | boolea
 
   await expect(reactRoot).toBeVisible();
   await expect(solidRoot).toBeVisible();
+
+  const expectedSrc = typeof params.src === "string" ? params.src : avatarDemoDefaults.src;
+  if (expectedSrc) {
+    await waitForAvatarImage(reactRoot);
+    await waitForAvatarImage(solidRoot);
+  }
 
   return { reactCanvas, solidCanvas, reactPanel, solidPanel, reactRoot, solidRoot };
 }
@@ -101,14 +150,14 @@ test.describe("comparison Avatar visual parity", () => {
   test("Avatar prop controls drive both implementations", async ({ page }) => {
     await avatarFixtures(page);
 
-    await expect(page.locator('input[name="alt"]')).toHaveValue("Alana");
-    await expect(page.locator('input[name="src"]')).toHaveValue("");
+    await expect(page.locator('input[name="alt"]')).toHaveValue(avatarDemoDefaults.alt);
+    await expect(page.locator('input[name="src"]')).toHaveValue(avatarDemoDefaults.src);
     await expectRadioValues(page, "size", avatarSizeOptions, "24");
     await expect(page.locator('input[name="isOverBackground"]')).not.toBeChecked();
 
     const fixtures = await avatarFixtures(page, {
       alt: "Kai",
-      src: "/avatar.png",
+      src: avatarChangedSrc,
       size: "64",
       isOverBackground: true,
     });
@@ -117,16 +166,16 @@ test.describe("comparison Avatar visual parity", () => {
       fixtures.reactPanel.locator('[data-comparison-control-root="avatar"]'),
     ).toHaveAttribute(
       "data-comparison-control-props",
-      JSON.stringify({ alt: "Kai", src: "/avatar.png", size: "64", isOverBackground: true }),
+      JSON.stringify({ alt: "Kai", src: avatarChangedSrc, size: "64", isOverBackground: true }),
     );
     await expect(
       fixtures.solidPanel.locator('[data-comparison-control-root="avatar"]'),
     ).toHaveAttribute(
       "data-comparison-control-props",
-      JSON.stringify({ alt: "Kai", src: "/avatar.png", size: "64", isOverBackground: true }),
+      JSON.stringify({ alt: "Kai", src: avatarChangedSrc, size: "64", isOverBackground: true }),
     );
     await expect(page.locator('input[name="alt"]')).toHaveValue("Kai");
-    await expect(page.locator('input[name="src"]')).toHaveValue("/avatar.png");
+    await expect(page.locator('input[name="src"]')).toHaveValue(avatarChangedSrc);
     await expectRadioValues(page, "size", avatarSizeOptions, "64");
     await expect(page.locator('input[name="isOverBackground"]')).toBeChecked();
   });
