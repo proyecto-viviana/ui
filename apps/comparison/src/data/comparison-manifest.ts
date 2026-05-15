@@ -307,6 +307,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Image and ImageCoordinator directly; Solid uses @proyecto-viviana/solid-spectrum Image and ImageCoordinator with S2-derived wrapper, loading, error, and source behavior.",
   }),
 
+  skeleton: styledLiveOfficialEntry({
+    slug: "skeleton",
+    title: "Skeleton",
+    category: "Components",
+    summary:
+      "Skeleton wrapper mounted on both stacks with real Image, Text, and Icon children so loading context is visible.",
+    styledSummary: "React Spectrum Skeleton vs Solid Spectrum Skeleton.",
+    styledNote:
+      "React uses @react-spectrum/s2 Skeleton directly; Solid uses @proyecto-viviana/solid-spectrum Skeleton with S2-derived loading styles, synchronized animation, and child context consumers.",
+  }),
+
   buttongroup: styledLiveOfficialEntry({
     slug: "buttongroup",
     title: "ButtonGroup",

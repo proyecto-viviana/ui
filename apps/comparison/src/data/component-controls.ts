@@ -41,6 +41,7 @@ import {
   sliderThumbStyleOptions,
   sliderTrackStyleOptions,
 } from "./slider-demo";
+import { skeletonDemoDefaults } from "./skeleton-demo";
 import { switchDemoDefaults, switchSizeOptions } from "./switch-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
@@ -561,6 +562,22 @@ const imageControls: ComponentControlGroup = {
     "width",
   ],
   note: "Modeled from the S2 Image docs and source. The viewer drives accessible alt text, basic/conditional/error/coordinator source modes, and object-fit treatment into both stacks. Native fetch and intrinsic image attributes are covered in focused Solid unit tests.",
+};
+
+const skeletonControls: ComponentControlGroup = {
+  slug: "skeleton",
+  title: "Skeleton",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "isLoading",
+      label: "isLoading",
+      kind: "switch",
+      defaultValue: skeletonDemoDefaults.isLoading,
+    },
+  ],
+  apiProps: ["children", "isLoading"],
+  note: "Modeled from the S2 Skeleton docs and source. The viewer uses real Image, Text, and Icon children so the wrapper context and child skeleton rendering are validated instead of a standalone placeholder block.",
 };
 
 const radioGroupControls: ComponentControlGroup = {
@@ -2064,6 +2081,7 @@ export const componentControlGroups = {
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,
+  skeleton: skeletonControls,
   slider: sliderControls,
   switch: switchControls,
   textarea: textAreaControls,

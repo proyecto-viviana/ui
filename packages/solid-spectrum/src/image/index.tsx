@@ -13,8 +13,6 @@ import {
   useContext,
 } from "solid-js";
 import { style, type StyleString } from "../s2-style";
-import { css } from "../s2-style/style-macro";
-import { color } from "../s2-style/spectrum-theme";
 import { mergeStyles } from "../s2-style/runtime";
 import {
   getSlottedContextProps,
@@ -25,7 +23,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { useTheme } from "../provider";
-import { useIsSkeleton } from "../skeleton";
+import { createIsSkeleton, loadingStyle, useLoadingAnimation } from "../skeleton";
 
 export interface ImageSource {
   /** A comma-separated list of image URLs and descriptors. */
@@ -134,19 +132,6 @@ const pictureStyles = style({
   objectFit: "inherit",
   objectPosition: "inherit",
 });
-
-const imageLoadingStyle = css(
-  `
-  background-image: linear-gradient(to right, ${color("gray-100" as never)} 33%, light-dark(${color(
-    "gray-25" as never,
-  )}, ${color("gray-300" as never)}), ${color("gray-100" as never)} 66%);
-  background-size: 300%;
-  * {
-    visibility: hidden;
-  }
-`,
-  "L",
-);
 
 function isAllLoaded(loaded: Map<string, boolean>) {
   for (const isLoaded of loaded.values()) {
@@ -282,10 +267,8 @@ export function Image(props: ImageProps): JSX.Element {
   const [lastCacheKey, setLastCacheKey] = createSignal(sourceCacheKey(local.src));
   const [startTime, setStartTime] = createSignal(Date.now());
   const [loadTime, setLoadTime] = createSignal(0);
-  const isSkeletonValue = useIsSkeleton();
-  let wrapperElement: HTMLDivElement | undefined;
+  const isSkeleton = createIsSkeleton();
   let imageElement: HTMLImageElement | undefined;
-  let loadingAnimation: Animation | undefined;
 
   const nodeEnv = (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } })
     .process?.env?.NODE_ENV;
@@ -298,10 +281,10 @@ export function Image(props: ImageProps): JSX.Element {
   const hidden = () => local.hidden === true;
   const srcProp = () => local.src ?? "";
   const cacheKey = createMemo(() => sourceCacheKey(local.src));
-  const isSkeleton = () => isSkeletonValue;
   const revealed = () => state() === "revealed" && !isSkeleton();
   const transitioning = () => revealed() && loadTime() > 200;
   const animating = () => isSkeleton() || state() === "loading" || state() === "loaded";
+  const loadingAnimationRef = useLoadingAnimation(animating);
 
   createEffect(() => {
     const nextKey = cacheKey();
@@ -347,35 +330,6 @@ export function Image(props: ImageProps): JSX.Element {
     }
   });
 
-  createEffect(() => {
-    const element = wrapperElement;
-    if (!element || typeof element.animate !== "function") {
-      return;
-    }
-
-    if (animating() && !loadingAnimation) {
-      loadingAnimation = element.animate(
-        [{ backgroundPosition: "100%" }, { backgroundPosition: "0%" }],
-        {
-          duration: 2000,
-          iterations: Infinity,
-          easing: "ease-in-out",
-        },
-      );
-      loadingAnimation.startTime = 0;
-    } else if (!animating() && loadingAnimation) {
-      loadingAnimation.cancel();
-      loadingAnimation = undefined;
-    }
-
-    onCleanup(() => {
-      if (!animating() && loadingAnimation) {
-        loadingAnimation.cancel();
-        loadingAnimation = undefined;
-      }
-    });
-  });
-
   const handleLoad = () => {
     imageGroup.load(cacheKey());
     setState("loaded");
@@ -396,7 +350,7 @@ export function Image(props: ImageProps): JSX.Element {
         imageWrapperStyles as unknown as StyleString,
         mergeContextStyles(contextProps?.styles, props.styles),
       ),
-      animating() ? imageLoadingStyle : undefined,
+      animating() ? loadingStyle : undefined,
     ]
       .filter(Boolean)
       .join(" ");
@@ -489,7 +443,7 @@ export function Image(props: ImageProps): JSX.Element {
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,
         (element) => {
-          wrapperElement = element;
+          loadingAnimationRef(element);
         },
       )}
       slot={slot() ?? undefined}

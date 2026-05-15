@@ -1,146 +1,224 @@
-import type { JSX } from "solid-js";
-import { Show, For, createContext, useContext } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  type Accessor,
+  type JSX,
+  useContext,
+} from "solid-js";
+import { createLeafComponent } from "@proyecto-viviana/solidaria-components";
+import { css } from "../s2-style/style-macro";
+import { style, type StyleString } from "../s2-style";
+import { color } from "../s2-style/spectrum-theme";
+import { mergeStyles } from "../s2-style/runtime";
 
-export type SkeletonShape = "text" | "circle" | "rectangle";
-export type SkeletonSize = "sm" | "md" | "lg";
-export type SkeletonGap = "sm" | "md" | "lg";
+export type SkeletonContextValue = boolean | null | Accessor<boolean | null | undefined>;
 
 export interface SkeletonProps {
-  /** Shape variant */
-  shape?: SkeletonShape;
-  /** Size variant */
-  size?: SkeletonSize;
-  /** Custom width */
-  width?: string | number;
-  /** Custom height */
-  height?: string | number;
-  /** Whether the skeleton is in loading state (default: true) */
-  isLoading?: boolean;
-  /** Children to show when not loading */
-  children?: JSX.Element;
-  /** Additional CSS classes */
-  class?: string;
+  children: JSX.Element;
+  isLoading: boolean;
 }
 
 export interface SkeletonCollectionProps {
-  /** Number of skeleton items to render */
-  count?: number;
-  /** Skeleton props applied to each item */
-  itemProps?: Omit<SkeletonProps, "children" | "isLoading">;
-  /** Gap between items */
-  gap?: SkeletonGap;
-  /** Additional CSS classes */
-  class?: string;
+  children: () => JSX.Element;
 }
 
-export const SkeletonContext = createContext<boolean | null>(null);
+export const SkeletonContext = createContext<SkeletonContextValue>(null);
 
-export function useIsSkeleton(): boolean {
-  return useContext(SkeletonContext) || false;
+function readSkeletonContext(value: SkeletonContextValue): boolean | null | undefined {
+  return typeof value === "function" ? value() : value;
 }
 
-const sizeHeight: Record<SkeletonSize, string> = {
-  sm: "h-4",
-  md: "h-6",
-  lg: "h-8",
-};
-
-const shapeClasses: Record<SkeletonShape, string> = {
-  text: "rounded-md",
-  circle: "rounded-full",
-  rectangle: "rounded-none",
-};
-
-const gapClasses: Record<SkeletonGap, string> = {
-  sm: "gap-2",
-  md: "gap-3",
-  lg: "gap-4",
-};
-
-/**
- * Inline style for the shimmer gradient + animation.
- * Uses CSS custom properties so theme colors can be adjusted.
- * `prefers-reduced-motion: reduce` is handled via the
- * `motion-reduce:animate-none` Tailwind utility.
- */
-const shimmerStyle: JSX.CSSProperties = {
-  "background-image":
-    "linear-gradient(to right, var(--skeleton-base, oklch(0.85 0 0 / 0.15)) 33%, var(--skeleton-shimmer, oklch(0.92 0 0 / 0.25)) 50%, var(--skeleton-base, oklch(0.85 0 0 / 0.15)) 66%)",
-  "background-size": "300% 100%",
-  animation: "skeleton-shimmer 2s ease-in-out infinite",
-};
-
-/**
- * Global keyframes injected once. We use a <style> tag so the
- * animation works without requiring any external CSS file.
- */
-let keyframesInjected = false;
-
-function injectKeyframes() {
-  if (keyframesInjected) return;
-  if (typeof document === "undefined") return;
-  keyframesInjected = true;
-  const style = document.createElement("style");
-  style.textContent = `
-@keyframes skeleton-shimmer {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-shimmer { animation: none !important; }
-}
-`;
-  document.head.appendChild(style);
+export function createIsSkeleton(): Accessor<boolean> {
+  const context = useContext(SkeletonContext);
+  return () => readSkeletonContext(context) || false;
 }
 
-function toPx(value: string | number): string {
-  return typeof value === "number" ? `${value}px` : value;
+export function useIsSkeleton(): Accessor<boolean> {
+  return createIsSkeleton();
 }
 
-export function Skeleton(props: SkeletonProps) {
-  const isLoading = () => props.isLoading ?? true;
-  const shape = () => props.shape ?? "text";
-  const size = () => props.size ?? "md";
+export const loadingStyle = css(
+  `
+  background-image: linear-gradient(to right, ${color("gray-100" as never)} 33%, light-dark(${color(
+    "gray-25" as never,
+  )}, ${color("gray-300" as never)}), ${color("gray-100" as never)} 66%);
+  background-size: 300%;
+  * {
+    visibility: hidden;
+  }
+`,
+  "L",
+);
 
-  injectKeyframes();
+const skeletonTextStyles = style({
+  color: "transparent",
+  boxDecorationBreak: "clone",
+  borderRadius: "sm",
+});
 
-  const dimensionStyle = (): JSX.CSSProperties => {
-    const s: JSX.CSSProperties = {};
-    if (props.width != null) s.width = toPx(props.width);
-    if (props.height != null) s.height = toPx(props.height);
-    // For circle, make width match height when only size is provided
-    if (shape() === "circle" && props.width == null && props.height == null) {
-      const px = size() === "sm" ? "1rem" : size() === "md" ? "1.5rem" : "2rem";
-      s.width = px;
-      s.height = px;
+const skeletonIconStyles = style({
+  borderRadius: "sm",
+});
+
+type MaybeAccessor<T> = T | Accessor<T>;
+
+function access<T>(value: MaybeAccessor<T>): T {
+  return typeof value === "function" ? (value as Accessor<T>)() : value;
+}
+
+function createPrefersReducedMotion(): Accessor<boolean> {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return () => false;
+  }
+
+  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const [matches, setMatches] = createSignal(mediaQuery.matches);
+  const handleChange = (event: MediaQueryListEvent) => setMatches(event.matches);
+
+  mediaQuery.addEventListener?.("change", handleChange);
+  onCleanup(() => mediaQuery.removeEventListener?.("change", handleChange));
+
+  return matches;
+}
+
+export function useLoadingAnimation(
+  isAnimating: MaybeAccessor<boolean>,
+): (element: Element | null) => void {
+  const reduceMotion = createPrefersReducedMotion();
+  const [element, setElement] = createSignal<Element | null>(null);
+  let animation: Animation | undefined;
+
+  createEffect(() => {
+    const target = element();
+    const shouldAnimate = access(isAnimating) && !reduceMotion();
+
+    if (target && shouldAnimate && !animation && typeof target.animate === "function") {
+      animation = target.animate([{ backgroundPosition: "100%" }, { backgroundPosition: "0%" }], {
+        duration: 2000,
+        iterations: Infinity,
+        easing: "ease-in-out",
+      });
+      animation.startTime = 0;
+    } else if ((!target || !shouldAnimate) && animation) {
+      animation.cancel();
+      animation = undefined;
     }
-    return s;
-  };
+  });
+
+  onCleanup(() => {
+    animation?.cancel();
+    animation = undefined;
+  });
+
+  return setElement;
+}
+
+export function useInertAttribute(
+  isInert: MaybeAccessor<boolean>,
+): (element: Element | null) => void {
+  const [element, setElement] = createSignal<Element | null>(null);
+
+  createEffect(() => {
+    const target = element();
+    if (!target) {
+      return;
+    }
+
+    if (access(isInert)) {
+      target.setAttribute("inert", "true");
+    } else {
+      target.removeAttribute("inert");
+    }
+  });
+
+  return setElement;
+}
+
+export function Skeleton(props: SkeletonProps): JSX.Element {
+  const isLoading = createMemo(() => props.isLoading);
+
+  return <SkeletonContext.Provider value={isLoading}>{props.children}</SkeletonContext.Provider>;
+}
+
+export function SkeletonText(props: { children: JSX.Element }): JSX.Element {
+  const loadingAnimationRef = useLoadingAnimation(true);
+  const inertRef = useInertAttribute(true);
 
   return (
-    <Show when={isLoading()} fallback={props.children}>
-      <div
-        role="status"
-        aria-busy="true"
-        aria-hidden="true"
-        class={`skeleton-shimmer bg-bg-300 ${shapeClasses[shape()]} ${
-          shape() !== "circle" ? `${sizeHeight[size()]} w-full` : ""
-        } motion-reduce:animate-none ${props.class ?? ""}`}
-        style={{ ...shimmerStyle, ...dimensionStyle() }}
-      />
-    </Show>
+    <span
+      ref={(element) => {
+        loadingAnimationRef(element);
+        inertRef(element);
+      }}
+      class={`${loadingStyle} ${skeletonTextStyles}`}
+    >
+      {props.children}
+    </span>
   );
 }
 
-export function SkeletonCollection(props: SkeletonCollectionProps) {
-  const count = () => props.count ?? 3;
-  const gap = () => props.gap ?? "md";
+export function useSkeletonText(
+  children: Accessor<JSX.Element>,
+  unsafeStyle: Accessor<JSX.CSSProperties | undefined>,
+): [Accessor<JSX.Element>, Accessor<JSX.CSSProperties | undefined>] {
+  const isSkeleton = createIsSkeleton();
 
-  const items = () => Array.from({ length: count() }, (_, i) => i);
+  return [
+    () => (isSkeleton() ? <SkeletonText>{children()}</SkeletonText> : children()),
+    () =>
+      isSkeleton()
+        ? {
+            ...unsafeStyle(),
+            "-webkit-text-fill-color": "transparent",
+          }
+        : unsafeStyle(),
+  ];
+}
+
+export function useSkeletonIcon(styles: MaybeAccessor<StyleString | undefined>): Accessor<string> {
+  const isSkeleton = createIsSkeleton();
+  return () =>
+    mergeStyles(isSkeleton() ? skeletonIconStyles : undefined, access(styles) ?? undefined);
+}
+
+export function SkeletonWrapper(props: { children: JSX.Element }): JSX.Element {
+  const context = useContext(SkeletonContext);
+  const isLoading = () => readSkeletonContext(context);
+  const animationRef = useLoadingAnimation(() => isLoading() || false);
+  const inertRef = useInertAttribute(() => isLoading() || false);
+
+  if (isLoading() == null) {
+    return props.children;
+  }
 
   return (
-    <div class={`flex flex-col ${gapClasses[gap()]} ${props.class ?? ""}`}>
-      <For each={items()}>{() => <Skeleton isLoading {...(props.itemProps ?? {})} />}</For>
-    </div>
+    <SkeletonContext.Provider value={null}>
+      <span
+        ref={(element) => {
+          animationRef(element);
+          inertRef(element);
+        }}
+        class={isLoading() ? loadingStyle : undefined}
+      >
+        {props.children}
+      </span>
+    </SkeletonContext.Provider>
   );
 }
+
+const skeletonCollectionCache = new WeakMap<object, JSX.Element>();
+
+export const SkeletonCollection = createLeafComponent<SkeletonCollectionProps>((props, node) => {
+  const cacheKey = node ?? props;
+  let cached = skeletonCollectionCache.get(cacheKey as object);
+
+  if (!cached) {
+    cached = <Skeleton isLoading>{props.children()}</Skeleton>;
+    skeletonCollectionCache.set(cacheKey as object, cached);
+  }
+
+  return cached;
+});

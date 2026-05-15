@@ -1,6 +1,8 @@
 import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
 import type { TextProps as HeadlessTextProps } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../s2-style";
+import { createIsSkeleton, useInertAttribute, useSkeletonText } from "../skeleton";
+import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import {
   getSlottedContextProps,
   mergeContextStyles,
@@ -53,6 +55,9 @@ export function Text(props: TextProps): JSX.Element {
   ]);
   const variant = () => local.variant ?? "default";
   const size = () => local.size ?? "md";
+  const isSkeleton = createIsSkeleton();
+  const inertRef = useInertAttribute(isSkeleton);
+  const skeletonRef = (element: HTMLSpanElement) => inertRef(element);
 
   const className = () =>
     [
@@ -66,6 +71,10 @@ export function Text(props: TextProps): JSX.Element {
       .join(" ");
 
   const unsafeStyle = () => mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const [children, skeletonStyle] = useSkeletonText(
+    () => local.children,
+    () => unsafeStyle() ?? (typeof spanProps.style === "object" ? spanProps.style : undefined),
+  );
 
   if (local.isHidden) {
     return null as unknown as JSX.Element;
@@ -74,11 +83,12 @@ export function Text(props: TextProps): JSX.Element {
   return (
     <span
       {...spanProps}
+      ref={mergeContextRefs((spanProps as { ref?: RefLike<HTMLSpanElement> }).ref, skeletonRef)}
       class={className()}
-      style={unsafeStyle() ?? spanProps.style}
+      style={skeletonStyle() ?? spanProps.style}
       data-rsp-slot={local["data-rsp-slot"] ?? "text"}
     >
-      {local.children}
+      {children()}
     </span>
   );
 }

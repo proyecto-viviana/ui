@@ -1573,6 +1573,33 @@ a {
   gap: 8px;
 }
 
+.comparison-skeleton-row {
+  inline-size: 360px;
+  max-inline-size: 100%;
+  padding: 24px;
+  background: var(--s2-bg);
+}
+
+.comparison-skeleton-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  inline-size: 100%;
+}
+
+.comparison-skeleton-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-inline-size: 0;
+}
+
+.comparison-skeleton-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .comparison-static-color-backdrop {
   display: flex;
   flex-wrap: wrap;

@@ -1,6 +1,14 @@
 import { type Component, type JSX, createContext, splitProps, useContext } from "solid-js";
 import { iconStyle, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
+import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
+import {
+  createIsSkeleton,
+  loadingStyle,
+  useInertAttribute,
+  useLoadingAnimation,
+  useSkeletonIcon,
+} from "../skeleton";
 
 export interface IconContextValue {
   slot?: string;
@@ -47,9 +55,19 @@ export function createIcon(
     ]);
     const slot = () => local.slot ?? ctx.slot ?? "icon";
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
+    const isSkeleton = createIsSkeleton();
+    const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
+    const inertRef = useInertAttribute(isSkeleton);
+    const skeletonStyles = useSkeletonIcon(() =>
+      mergeStyles(iconStyle({ size: "M" }), contextStyles(), local.styles),
+    );
+    const skeletonRef = (element: SVGSVGElement) => {
+      skeletonAnimationRef(element);
+      inertRef(element);
+    };
 
     const mergedClass = () =>
-      [local.class, mergeStyles(iconStyle({ size: "M" }), contextStyles(), local.styles)]
+      [local.class, skeletonStyles(), isSkeleton() ? loadingStyle : undefined]
         .filter(Boolean)
         .join(" ");
 
@@ -64,6 +82,7 @@ export function createIcon(
     const svg = (
       <Component
         {...rest}
+        ref={mergeContextRefs((rest as { ref?: RefLike<SVGSVGElement> }).ref, skeletonRef)}
         role="img"
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
@@ -92,9 +111,19 @@ export function createIllustration(Component: Component<JSX.SvgSVGAttributes<SVG
     const slot = () => local.slot ?? ctx.slot ?? "icon";
     const size = () => local.size ?? ctx.size ?? "M";
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
+    const isSkeleton = createIsSkeleton();
+    const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
+    const inertRef = useInertAttribute(isSkeleton);
+    const skeletonStyles = useSkeletonIcon(() =>
+      mergeStyles(iconStyle({ size: "M" }), contextStyles(), local.styles),
+    );
+    const skeletonRef = (element: SVGSVGElement) => {
+      skeletonAnimationRef(element);
+      inertRef(element);
+    };
 
     const mergedClass = () =>
-      [local.class, mergeStyles(iconStyle({ size: "M" }), contextStyles(), local.styles)]
+      [local.class, skeletonStyles(), isSkeleton() ? loadingStyle : undefined]
         .filter(Boolean)
         .join(" ");
 
@@ -109,6 +138,7 @@ export function createIllustration(Component: Component<JSX.SvgSVGAttributes<SVG
     const svg = (
       <Component
         {...rest}
+        ref={mergeContextRefs((rest as { ref?: RefLike<SVGSVGElement> }).ref, skeletonRef)}
         role="img"
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}

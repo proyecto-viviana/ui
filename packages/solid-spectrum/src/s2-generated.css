@@ -2909,6 +2909,73 @@
   }
 }
 
+@layer _, L;
+@layer L {
+  .bNU3Fb {
+    background-image: linear-gradient(
+      to right,
+      light-dark(rgb(233, 233, 233), rgb(44, 44, 44)) 33%,
+      light-dark(
+        light-dark(rgb(255, 255, 255), rgb(17, 17, 17)),
+        light-dark(rgb(218, 218, 218), rgb(57, 57, 57))
+      ),
+      light-dark(rgb(233, 233, 233), rgb(44, 44, 44)) 66%
+    );
+    background-size: 300%;
+    * {
+      visibility: hidden;
+    }
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  .pw13 {
+    color: transparent;
+  }
+
+  ._ma13 {
+    box-decoration-break: clone;
+  }
+
+  .oa13 {
+    border-start-start-radius: 0.25rem;
+  }
+
+  .na13 {
+    border-start-end-radius: 0.25rem;
+  }
+
+  .ka13 {
+    border-end-start-radius: 0.25rem;
+  }
+
+  .ja13 {
+    border-end-end-radius: 0.25rem;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  .oa13 {
+    border-start-start-radius: 0.25rem;
+  }
+
+  .na13 {
+    border-start-end-radius: 0.25rem;
+  }
+
+  .ka13 {
+    border-end-start-radius: 0.25rem;
+  }
+
+  .ja13 {
+    border-end-end-radius: 0.25rem;
+  }
+}
+
 @layer _.a, _.b;
 
 @layer _.a {

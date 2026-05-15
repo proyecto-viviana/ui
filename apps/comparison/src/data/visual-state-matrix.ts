@@ -348,6 +348,34 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Browser assertions cover conditional source rendering, custom error content, and ImageCoordinator multi-image rendering.",
     },
   ],
+  skeleton: [
+    visualDefaultState({
+      slug: "skeleton",
+      pairDiff: "strict",
+      spec: "e2e/skeleton-visual.spec.ts",
+      note: "Skeleton default loading visual evidence is captured from the focused wrapper fixture and compared with zero pixel tolerance under reduced motion.",
+    }),
+    {
+      id: "styled.loaded-toggle",
+      label: "Loaded state toggle",
+      kind: "interaction",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
+      spec: "e2e/skeleton-visual.spec.ts",
+      note: "The isLoading control removes skeleton inert/loading treatment from the same Image, Text, and Icon children in both stacks.",
+    },
+    {
+      id: "styled.child-context",
+      label: "Child skeleton context",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/skeleton-visual.spec.ts",
+      note: "Assertions compare that Skeleton is a context wrapper rather than a standalone status block, and that affected child elements receive inert/loading treatment.",
+    },
+  ],
   actionbuttongroup: [
     visualDefaultState({
       slug: "actionbuttongroup",

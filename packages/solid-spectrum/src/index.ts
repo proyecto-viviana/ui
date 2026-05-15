@@ -298,13 +298,7 @@ export type { SelectBoxGroupProps, SelectBoxOrientation, SelectBoxProps } from "
 
 // Skeleton
 export { Skeleton, SkeletonCollection, useIsSkeleton } from "./skeleton";
-export type {
-  SkeletonCollectionProps,
-  SkeletonGap,
-  SkeletonProps,
-  SkeletonShape,
-  SkeletonSize,
-} from "./skeleton";
+export type { SkeletonCollectionProps, SkeletonProps } from "./skeleton";
 
 // Text content
 export { Heading, Keyboard, StyledKeyboard, Text, TextContext } from "./text";
