@@ -47,9 +47,9 @@ checklists are prompts. Do not open every checklist up front.
 | Audit      | Always        | [Upstream Source Map](./upstream-source-map.md), [Public API](./public-api.md), [Cross-Layer Source Audit](./cross-layer-source-audit.md), [Source Branch Coverage](./source-branch-coverage.md), [Solid Idioms And Reactivity](./solid-idioms.md) |
 | Layer      | Conditional   | [State](./state.md), [ARIA](./aria.md), [Slots And Context](./slots-context.md), [Styling](./styling.md), [Solid Idioms And Reactivity](./solid-idioms.md)                                                                                         |
 | Layer      | Source-driven | [Keyboard](./keyboard.md), [Focus](./focus.md), [Overlay](./overlay.md), [Forms And Validation](./forms-validation.md)                                                                                                                             |
-| Layer      | Source-driven | [Collections, Async, And Virtualization](./collections-async-virtualization.md), [Accessibility And I18n](./accessibility-i18n.md)                                                                                                                 |
-| Runtime    | Always        | [State Transitions And Timelines](./state-transitions.md), [Runtime Semantics And Lifecycle](./runtime-semantics-lifecycle.md)                                                                                                                     |
-| Runtime    | Conditional   | [Interactions And Motion](./interactions-motion.md), [Geometry](./geometry.md), [Accessibility And I18n](./accessibility-i18n.md)                                                                                                                  |
+| Layer      | Source-driven | [Collections, Async, And Virtualization](./collections-async-virtualization.md)                                                                                                                                                                    |
+| Runtime    | Always        | [State Transitions And Timelines](./state-transitions.md), [Runtime Semantics And Lifecycle](./runtime-semantics-lifecycle.md), [Accessibility And I18n](./accessibility-i18n.md)                                                                  |
+| Runtime    | Conditional   | [Interactions And Motion](./interactions-motion.md), [Geometry](./geometry.md)                                                                                                                                                                     |
 | Evidence   | Always        | [Harness And Evidence Integrity](./harness-evidence-integrity.md), [Visual Regression](./visual-regression.md)                                                                                                                                     |
 | Acceptance | Always        | [Tests And Sign-Off](./tests-signoff.md)                                                                                                                                                                                                           |
 
@@ -78,8 +78,10 @@ Solid's reactive props, lazy children, context owner tree, refs, and cleanup
 semantics.
 
 `Accessibility And I18n`, `Behavior State Machine`, and
-`Style Source-To-Computed Parity` are required proof lanes. They are not
-subsections that can be satisfied by a source-summary paragraph or a screenshot.
+`Style Source-To-Computed Parity` are required proof lanes. Keep their sections
+present in every component note and mark individual rows `not applicable` when
+the source proves they do not apply. They are not subsections that can be
+satisfied by a source-summary paragraph or a screenshot.
 
 The comparison harness is the final parity surface, not the only parity surface.
 React-vs-Solid parity in our route is accepted only after the route itself

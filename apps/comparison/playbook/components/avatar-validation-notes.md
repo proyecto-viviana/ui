@@ -229,8 +229,10 @@ Results:
 
 ## Handoff
 
-- Avatar is playbook-accepted for owned behavior.
+- Legacy status: Avatar was accepted for owned behavior under the prior
+  playbook; current-gate normalization is pending.
 - The route now uses a project-local docs image fixture path; the real PNG still
   needs to be saved at `apps/comparison/public/fixtures/avatar/docs-avatar.png`.
-- Accepted components still need the broader official live-docs/viewer audit
-  before moving to a new component.
+- Current-gate normalization must add the expanded acceptance checklist,
+  behavior, accessibility/i18n, style source-to-computed, and agent workflow
+  sections before Avatar can be treated as accepted under the current model.

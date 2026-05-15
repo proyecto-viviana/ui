@@ -146,7 +146,8 @@ Results:
 
 ## Handoff
 
-- Skeleton is playbook-accepted for owned behavior.
+- Legacy status: Skeleton was accepted for owned behavior under the prior
+  playbook; current-gate normalization is pending.
 - SkeletonCollection current observable behavior and Image/Text/Icon skeleton
   consumers are covered by focused evidence.
 - Form skeleton interactions were validated in the Form component pass.

@@ -266,7 +266,8 @@ their standalone routes are validated in their own passes.
 
 Current acceptance boundary:
 
-- Button-family-owned behavior is playbook-accepted.
+- Legacy status: Button-family-owned behavior was accepted under the prior
+  playbook; current-gate normalization is pending.
 - Standalone support components are not accepted by family composition
   evidence. Use each component note as the authority for Avatar, AvatarGroup,
   Image, Skeleton, Text, NotificationBadge, Link, Badge, StatusLight, Meter,

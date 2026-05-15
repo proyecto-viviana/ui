@@ -179,7 +179,8 @@ Results:
 
 ## Handoff
 
-- Form is playbook-accepted for owned behavior.
+- Legacy status: Form was accepted for owned behavior under the prior playbook;
+  current-gate normalization is pending.
 - Current Form evidence owns the TextField and Button inherited-state fixture.
   Remaining form-aware components should still validate their own FormContext
   consumption during their component passes.

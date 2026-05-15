@@ -441,8 +441,9 @@ code changes, tests, and remaining acceptance blockers.
 
 Current acceptance boundary:
 
-- Button-owned behavior is playbook-accepted through the Button and
-  Button-family notes together.
+- Legacy status: Button-owned behavior was accepted under the prior playbook
+  through the Button and Button-family notes together; current-gate
+  normalization is pending.
 - Support children discovered during Button work remain owned by their
   standalone component notes; their status must not be inferred from Button
   acceptance.

@@ -62,9 +62,9 @@ For example, `button.pressed` is not just a pressed screenshot. It is
 
 ## Screenshot Rules
 
-- Use current React-vs-Solid pair diffs as the visual evidence gate after the
-  official docs/viewer, upstream source, and Solid idiom gates have established
-  what the route is supposed to prove.
+- Use current React-vs-Solid pair diffs as visual evidence only after the full
+  [Acceptance Gates](./acceptance-gates.md) checklist has established what the
+  route is supposed to prove.
 - Remove per-side committed screenshot assertions from focused acceptance
   suites. Do not gate on current React vs old React PNGs or current Solid vs old
   Solid PNGs.

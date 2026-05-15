@@ -202,6 +202,8 @@ Results:
 
 ## Handoff
 
-- Divider is playbook-accepted for owned behavior.
-- No in-scope Divider gates remain open.
+- Legacy status: Divider was accepted for owned behavior under the prior
+  playbook; current-gate normalization is pending.
+- No prior-playbook in-scope Divider gates remained open at the time of this
+  pass.
 - The next styled pass should be selected from `vp run comparison:report:gaps`.

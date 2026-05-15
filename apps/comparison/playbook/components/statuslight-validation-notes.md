@@ -78,7 +78,7 @@
   - blocked visual states: `35`;
   - missing S2 value exports: `80`.
 - Improvement target: close StatusLight retro-audit gaps without changing its
-  accepted public behavior.
+  legacy public behavior.
 
 ## Source Map And Public Contract
 
@@ -213,7 +213,8 @@ Results:
 
 ## Handoff
 
-- StatusLight is playbook-accepted for owned behavior.
-- No in-scope StatusLight gates remain open.
-- Remaining comparison-live support components still need the same hardening:
-  Link, Meter, Avatar, AvatarGroup, Image, Skeleton, and Form.
+- Legacy status: StatusLight was accepted for owned behavior under the prior
+  playbook; current-gate normalization is pending.
+- No prior-playbook in-scope StatusLight gates remained open at the time of this
+  pass.
+- Use `components/README.md` for the current-gate normalization queue.

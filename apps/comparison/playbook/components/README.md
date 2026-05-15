@@ -10,18 +10,28 @@ when another component exposes a real cross-component contract. Keep those notes
 under `Incoming Cross-Component Findings` so the later owner validates the
 contract instead of rediscovering it.
 
-## Retro-Audit Status
+## Current-Gate Normalization Status
 
-All existing implemented/pass notes now state their acceptance boundary:
+The acceptance gates were expanded after the first retro-audit sweep. Existing
+implemented/pass notes keep their historical evidence, but they should be
+treated as legacy accepted under the prior playbook until each note is
+normalized to the current gate checklist.
 
-- Playbook-accepted for owned behavior: Avatar, AvatarGroup, Badge, Button,
+- Legacy accepted under prior playbook: Avatar, AvatarGroup, Badge, Button,
   Button family, Divider, Form, Image, Link, Meter, Skeleton, and StatusLight.
+- Current-gate normalized: none.
 - Comparison-live with explicit release-hardening backfill gaps: none.
 - Pre-pass only: Text and NotificationBadge.
 
-Future component passes should not need a retro-audit section. Run the playbook
-in order, close in-scope gates before moving on, and mark a component partial if
-any gate remains unresolved.
+Current-gate normalization means the note contains the current
+`Acceptance Gate Checklist`, `Agent Workflow`, `Behavior State Machine`,
+`Accessibility And I18n`, and `Style Source-To-Computed` sections. Until then,
+do not use a legacy accepted note as proof that the component passed the current
+gate model.
+
+Future component passes should not need a legacy-normalization section. Run the
+playbook in order, close in-scope gates before moving on, and mark a component
+partial if any gate remains unresolved.
 
 ## Files
 

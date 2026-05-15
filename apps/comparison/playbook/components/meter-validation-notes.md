@@ -237,9 +237,9 @@ Results:
 
 ## Handoff
 
-- Meter is playbook-accepted for owned behavior over documented valid ranges.
+- Legacy status: Meter was accepted for owned behavior over documented valid
+  ranges under the prior playbook; current-gate normalization is pending.
 - The invalid equal-range behavior remains a documented defensive Solid
   improvement rather than React-bug parity.
-- No in-scope Meter gates remain open.
-- Remaining comparison-live support components still need the same hardening:
-  Avatar, AvatarGroup, Image, Skeleton, and Form.
+- No prior-playbook in-scope Meter gates remained open at the time of this pass.
+- Use `components/README.md` for the current-gate normalization queue.

@@ -213,7 +213,7 @@ Results:
 
 ## Handoff
 
-- Link is playbook-accepted for owned behavior.
-- No in-scope Link gates remain open.
-- Remaining comparison-live support components still need the same hardening:
-  Meter, Avatar, AvatarGroup, Image, Skeleton, and Form.
+- Legacy status: Link was accepted for owned behavior under the prior playbook;
+  current-gate normalization is pending.
+- No prior-playbook in-scope Link gates remained open at the time of this pass.
+- Use `components/README.md` for the current-gate normalization queue.

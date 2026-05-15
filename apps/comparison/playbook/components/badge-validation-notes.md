@@ -78,8 +78,8 @@
   - visual evidence states: `49`;
   - strict pair-diff states: `32`;
   - missing S2 value exports: `80`.
-- Improvement target: close Badge retro-audit gaps without changing its
-  accepted public behavior.
+- Improvement target: close Badge retro-audit gaps without changing its legacy
+  public behavior.
 
 ## Source Map And Public Contract
 
@@ -213,7 +213,7 @@ Results:
 
 ## Handoff
 
-- Badge is playbook-accepted for owned behavior.
-- No in-scope Badge gates remain open.
-- The next retro-audit hardening candidate should be StatusLight, then Link or
-  Meter.
+- Legacy status: Badge was accepted for owned behavior under the prior playbook;
+  current-gate normalization is pending.
+- No prior-playbook in-scope Badge gates remained open at the time of this pass.
+- Use `components/README.md` for the current-gate normalization queue.

@@ -195,7 +195,8 @@ Results:
 
 ## Handoff
 
-- AvatarGroup is playbook-accepted for owned behavior.
+- Legacy status: AvatarGroup was accepted for owned behavior under the prior
+  playbook; current-gate normalization is pending.
 - Standalone Avatar evidence remains in `avatar-validation-notes.md`.
 - Image, Skeleton, and Form remain separate comparison-live passes with their
   own acceptance boundaries.

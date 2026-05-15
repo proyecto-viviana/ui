@@ -4,8 +4,10 @@ Source branch coverage is the line-by-line proof that a component pass did not
 miss behavior hidden inside upstream files. It is required for Task 4 and is
 kept in the component validation notes.
 
-This is the upstream React source parity gate. It does not replace official
-docs/viewer parity, Solid idiom checks, or React-vs-Solid harness parity.
+This is the upstream React source parity gate. It does not replace the full
+[Acceptance Gates](./acceptance-gates.md) checklist: docs/viewer parity,
+external authority, Solid idiom checks, accessibility/i18n, behavior, style,
+React-vs-Solid harness parity, or evidence/handoff.
 
 ## Rule
 

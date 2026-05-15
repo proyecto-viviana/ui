@@ -176,8 +176,9 @@ Results:
 
 ## Handoff
 
-- Image is playbook-accepted for owned behavior.
-- Skeleton placeholder interaction remains accepted in
+- Legacy status: Image was accepted for owned behavior under the prior playbook;
+  current-gate normalization is pending.
+- Skeleton placeholder interaction remains covered in
   `skeleton-validation-notes.md`; Image owns only the image-side consumer
   behavior.
-- Form remains the final comparison-live support pass to accept in this sweep.
+- Use `components/README.md` for the current-gate normalization queue.
