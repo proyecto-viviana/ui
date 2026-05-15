@@ -373,7 +373,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/statuslight-visual.spec.ts",
-      note: "Computed style contracts compare root typography/layout, SVG light sizing/fill, text slot behavior, and optional status role across representative route states.",
+      note: "Computed style contracts compare root typography/layout, every documented SVG light fill, S2 light sizes, text slot behavior, and optional status role across route states.",
+    },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors branch",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/statuslight-visual.spec.ts",
+      note: "Forced-colors media emulation compares the live-status negative XL route against React Spectrum's computed contract.",
     },
   ],
   divider: [

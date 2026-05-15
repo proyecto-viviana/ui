@@ -164,6 +164,10 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
     "UNSAFE_style",
     "class",
     "indicatorClass",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-details",
     "slot",
     "ref",
   ]);
@@ -183,6 +187,10 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
           props.ref,
         )}
         role={local.role}
+        aria-label={local.role ? local["aria-label"] : undefined}
+        aria-labelledby={local.role ? local["aria-labelledby"] : undefined}
+        aria-describedby={local.role ? local["aria-describedby"] : undefined}
+        aria-details={local.role ? local["aria-details"] : undefined}
         class={[
           contextProps?.UNSAFE_className,
           local.UNSAFE_className,

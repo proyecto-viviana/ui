@@ -14,9 +14,10 @@ contract instead of rediscovering it.
 
 All existing implemented/pass notes now state their acceptance boundary:
 
-- Playbook-accepted for owned behavior: Badge, Button, Button family, and Divider.
+- Playbook-accepted for owned behavior: Badge, Button, Button family, Divider,
+  and StatusLight.
 - Comparison-live with explicit release-hardening backfill gaps: Avatar,
-  AvatarGroup, Image, Skeleton, Link, StatusLight, Meter, and Form.
+  AvatarGroup, Image, Skeleton, Link, Meter, and Form.
 - Pre-pass only: Text and NotificationBadge.
 
 Future component passes should not need a retro-audit section. Run the playbook

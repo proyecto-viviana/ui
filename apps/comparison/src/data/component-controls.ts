@@ -793,7 +793,10 @@ const statusLightControls: ComponentControlGroup = {
       label: "role",
       kind: "radio",
       defaultValue: statusLightDemoDefaults.role,
-      options: options(statusLightRoleOptions),
+      options: [
+        { value: statusLightRoleOptions[0], label: "default" },
+        { value: statusLightRoleOptions[1], label: statusLightRoleOptions[1] },
+      ],
     },
   ],
   apiProps: [

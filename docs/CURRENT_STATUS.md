@@ -12,7 +12,7 @@ Last refreshed: 2026-05-15.
 | React Aria Components exports | `vp run guard:rac-export-gap`: `0` missing named exports, `165` extra Solid exports                             | The public headless component barrel is no longer blocked on missing names. Behavior still needs component-by-component tests. |
 | Required RAC tracker          | `vp run guard:rac-parity`: no missing tracked symbols                                                           | The narrow required-symbol guard is green. It warns that `TreeHeader` and `TreeSection` are not in the upstream RAC index.     |
 | Spectrum S2 catalogue         | `vp run comparison:report:gaps`: `69` official entries tracked, `33` live on both sides, `36` missing/gap       | Styled parity is the main unfinished surface.                                                                                  |
-| Visual state coverage         | `172` official states tracked, `49` with current React/Solid visual evidence, `32` with strict pair-diff tests  | The visual harness exists, but most states are not strict parity yet.                                                          |
+| Visual state coverage         | `173` official states tracked, `49` with current React/Solid visual evidence, `32` with strict pair-diff tests  | The visual harness exists, but most states are not strict parity yet.                                                          |
 | S2 export surface             | `vp run comparison:report:exports`: `80` of `208` React S2 value exports missing; `3` extra Solid value exports | Root catalogue component exports are present; support exports such as contexts, slots, hooks, and helpers are still missing.   |
 
 ## Main Gaps
@@ -42,9 +42,9 @@ as local additions when they are public API.
    pass with hidden retro-audit debt; mark it partial until in-scope gates are
    closed.
 3. Continue with the next styled S2 gap from the report. The support-component
-   sweep exposed by the Skeleton, Image, Link, StatusLight, Meter, and Form
-   passes is comparison-live through Form, while Badge and Divider are playbook
-   accepted for owned behavior. Form inheritance beyond the TextField/Button
+   sweep exposed by the Skeleton, Image, Link, Meter, and Form passes is
+   comparison-live through Form, while Badge, Divider, and StatusLight are
+   playbook accepted for owned behavior. Form inheritance beyond the TextField/Button
    fixture must still be validated during each remaining form-aware component
    pass.
 4. For date/time work, continue the cluster rather than treating each widget as

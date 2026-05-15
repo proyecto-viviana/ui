@@ -6,6 +6,11 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import {
+  statusLightRoleOptions,
+  statusLightSizeOptions,
+  statusLightVariantOptions,
+} from "../src/data/statuslight-demo";
 
 function statusLightQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -74,6 +79,20 @@ async function statusLightContract(root: Locator) {
   });
 }
 
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
+}
+
 test.describe("comparison StatusLight visual parity", () => {
   test("StatusLight default state is pixel-identical", async ({ page }) => {
     const fixtures = await statusLightFixtures(page);
@@ -87,6 +106,18 @@ test.describe("comparison StatusLight visual parity", () => {
   });
 
   test("StatusLight prop controls drive both implementations", async ({ page }) => {
+    await statusLightFixtures(page);
+
+    await expect(page.locator('input[name="children"]')).toHaveValue("Sync complete");
+    await expect(page.locator('select[name="variant"] option')).toHaveText([
+      ...statusLightVariantOptions,
+    ]);
+    await expect(page.locator('select[name="variant"]')).toHaveValue("neutral");
+    await expect(page.locator('select[name="variant"] option', { hasText: /^$/ })).toHaveCount(0);
+    await expectRadioValues(page, "size", statusLightSizeOptions, "M");
+    await expectRadioValues(page, "role", statusLightRoleOptions, "");
+    await expect(page.locator('input[name="role"] + span')).toHaveText(["default", "status"]);
+
     const fixtures = await statusLightFixtures(page, {
       children: "Investigating",
       variant: "notice",
@@ -109,17 +140,18 @@ test.describe("comparison StatusLight visual parity", () => {
       "data-comparison-control-props",
       expectedProps,
     );
+    await expect(page.locator('input[name="children"]')).toHaveValue("Investigating");
+    await expect(page.locator('select[name="variant"]')).toHaveValue("notice");
+    await expectRadioValues(page, "size", statusLightSizeOptions, "XL");
+    await expectRadioValues(page, "role", statusLightRoleOptions, "status");
   });
 
   test("StatusLight computed styles match React Spectrum across variants and sizes", async ({
     page,
   }) => {
     for (const params of [
-      { variant: "neutral", size: "M" },
-      { variant: "positive", size: "S" },
-      { variant: "notice", size: "L" },
-      { variant: "negative", size: "XL" },
-      { variant: "cyan", size: "M" },
+      ...statusLightVariantOptions.map((variant) => ({ variant, size: "M" })),
+      ...statusLightSizeOptions.map((size) => ({ variant: "positive", size })),
       { children: "Live region update", role: "status", variant: "informative", size: "XL" },
     ] as const) {
       const fixtures = await statusLightFixtures(page, params);
@@ -128,5 +160,18 @@ test.describe("comparison StatusLight visual parity", () => {
         await statusLightContract(fixtures.reactRoot),
       );
     }
+  });
+
+  test("StatusLight forced-colors branch matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await statusLightFixtures(page, {
+      variant: "negative",
+      size: "XL",
+      role: "status",
+    });
+
+    await expect(statusLightContract(fixtures.solidRoot)).resolves.toEqual(
+      await statusLightContract(fixtures.reactRoot),
+    );
   });
 });

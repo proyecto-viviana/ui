@@ -82,6 +82,24 @@ describe("StatusLight (solid-spectrum)", () => {
     expect(container.querySelector("svg")).toHaveClass("legacy-indicator");
   });
 
+  it("filters labelable aria attributes unless role is status", () => {
+    render(() => (
+      <>
+        <StatusLight aria-label="No role">No role</StatusLight>
+        <StatusLight role="status" aria-label="With role">
+          With role
+        </StatusLight>
+      </>
+    ));
+
+    const unlabelledRoot = screen.getByText("No role").closest("div");
+    expect(unlabelledRoot).not.toHaveAttribute("aria-label");
+    expect(screen.getByRole("status", { name: "With role" })).toHaveAttribute(
+      "aria-label",
+      "With role",
+    );
+  });
+
   it("uses the shared skeleton consumers for text and light color", () => {
     const { container } = render(() => (
       <Skeleton isLoading>
