@@ -6,6 +6,12 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import {
+  meterLabelPositionOptions,
+  meterSizeOptions,
+  meterStaticColorOptions,
+  meterVariantOptions,
+} from "../src/data/meter-demo";
 
 function meterQuery(params: Record<string, string | number | boolean> = {}) {
   const search = new URLSearchParams();
@@ -80,12 +86,29 @@ async function meterContract(root: Locator) {
       trackBackgroundColor: trackStyles?.backgroundColor ?? null,
       trackBorderRadius: trackStyles?.borderRadius ?? null,
       trackOverflow: trackStyles?.overflow ?? null,
+      trackOutlineWidth: trackStyles?.outlineWidth ?? null,
+      trackOutlineStyle: trackStyles?.outlineStyle ?? null,
+      trackOutlineColor: trackStyles?.outlineColor ?? null,
       fillWidth: fillStyles?.width ?? null,
       fillHeight: fillStyles?.height ?? null,
       fillBackgroundColor: fillStyles?.backgroundColor ?? null,
       fillBorderRadius: fillStyles?.borderRadius ?? null,
     };
   });
+}
+
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
 }
 
 test.describe("comparison Meter visual parity", () => {
@@ -101,6 +124,24 @@ test.describe("comparison Meter visual parity", () => {
   });
 
   test("Meter prop controls drive both implementations", async ({ page }) => {
+    await meterFixtures(page);
+
+    await expect(page.locator('input[name="label"]')).toHaveValue("Storage");
+    await expect(page.locator('input[name="value"]')).toHaveValue("72");
+    await expect(page.locator('input[name="minValue"]')).toHaveValue("0");
+    await expect(page.locator('input[name="maxValue"]')).toHaveValue("100");
+    await expect(page.locator('input[name="valueLabel"]')).toHaveValue("");
+    await expectRadioValues(page, "variant", meterVariantOptions, "informative");
+    await expectRadioValues(page, "size", meterSizeOptions, "M");
+    await expectRadioValues(page, "staticColor", meterStaticColorOptions, "");
+    await expect(page.locator('input[name="staticColor"] + span')).toHaveText([
+      "default",
+      "white",
+      "black",
+      "auto",
+    ]);
+    await expectRadioValues(page, "labelPosition", meterLabelPositionOptions, "top");
+
     const fixtures = await meterFixtures(page, {
       label: "Quota",
       value: 45,
@@ -133,18 +174,27 @@ test.describe("comparison Meter visual parity", () => {
       "data-comparison-control-props",
       expectedProps,
     );
+    await expect(page.locator('input[name="label"]')).toHaveValue("Quota");
+    await expect(page.locator('input[name="value"]')).toHaveValue("45");
+    await expect(page.locator('input[name="minValue"]')).toHaveValue("0");
+    await expect(page.locator('input[name="maxValue"]')).toHaveValue("120");
+    await expect(page.locator('input[name="valueLabel"]')).toHaveValue("45 of 120 GB");
+    await expectRadioValues(page, "variant", meterVariantOptions, "notice");
+    await expectRadioValues(page, "size", meterSizeOptions, "XL");
+    await expectRadioValues(page, "staticColor", meterStaticColorOptions, "white");
+    await expectRadioValues(page, "labelPosition", meterLabelPositionOptions, "side");
   });
 
   test("Meter computed styles match React Spectrum across range, variant, and static color states", async ({
     page,
   }) => {
     for (const params of [
-      { variant: "informative", size: "M", value: 72 },
-      { variant: "positive", size: "S", value: 35, valueLabel: "35%" },
-      { variant: "notice", size: "L", value: 65, labelPosition: "side" },
-      { variant: "negative", size: "XL", value: 85, maxValue: 200 },
-      { variant: "informative", size: "M", value: 50, staticColor: "white" },
-      { variant: "positive", size: "XL", value: 50, staticColor: "black" },
+      ...meterVariantOptions.map((variant) => ({ variant, value: 65 })),
+      ...meterSizeOptions.map((size) => ({ size, value: 65 })),
+      ...meterStaticColorOptions.map((staticColor) => ({ staticColor, value: 50 })),
+      ...meterLabelPositionOptions.map((labelPosition) => ({ labelPosition, value: 65 })),
+      { value: 35, valueLabel: "35%" },
+      { value: 85, minValue: 0, maxValue: 200 },
     ] as const) {
       const fixtures = await meterFixtures(page, params);
 
@@ -152,5 +202,20 @@ test.describe("comparison Meter visual parity", () => {
         await meterContract(fixtures.reactRoot),
       );
     }
+  });
+
+  test("Meter forced-colors branch matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await meterFixtures(page, {
+      variant: "negative",
+      size: "XL",
+      staticColor: "white",
+      labelPosition: "side",
+      value: 85,
+    });
+
+    await expect(meterContract(fixtures.solidRoot)).resolves.toEqual(
+      await meterContract(fixtures.reactRoot),
+    );
   });
 });

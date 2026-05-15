@@ -24,6 +24,34 @@ describe("Meter (solid-spectrum)", () => {
     expect(meter.getAttribute("aria-valuetext")).not.toContain("NaN");
   });
 
+  it("clamps the visual fill percentage to the value range", () => {
+    const { container } = render(() => (
+      <>
+        <Meter value={150} minValue={0} maxValue={100} aria-label="Over range" />
+        <Meter value={-20} minValue={0} maxValue={100} aria-label="Under range" />
+      </>
+    ));
+
+    expect(container.querySelector('[style*="width: 100%"]')).toBeInTheDocument();
+    expect(container.querySelector('[style*="width: 0%"]')).toBeInTheDocument();
+  });
+
+  it("uses formatOptions for generated value text", () => {
+    render(() => (
+      <Meter
+        label="Completion"
+        value={0.5}
+        minValue={0}
+        maxValue={1}
+        formatOptions={{ style: "percent" }}
+      />
+    ));
+
+    const meter = screen.getByRole("meter", { name: "Completion" });
+    expect(meter).toHaveAttribute("aria-valuetext", "50%");
+    expect(screen.getByText("50%")).toHaveAttribute("data-rsp-slot", "text");
+  });
+
   it("renders S2 label and value text when a label is provided", () => {
     render(() => (
       <Meter label="Storage" value={75} minValue={0} maxValue={100} valueLabel="75 GB" />

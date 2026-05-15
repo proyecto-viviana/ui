@@ -449,7 +449,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/meter-visual.spec.ts",
-      note: "Computed style contracts compare root grid layout, label/value typography, track/fill geometry, fill percentage, variants, static color, and side labels across representative route states.",
+      note: "Computed style contracts compare root grid layout, label/value typography, track/fill geometry, all variants, all sizes, all static colors, label positions, custom ranges, and fill percentage.",
+    },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors branch",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/meter-visual.spec.ts",
+      note: "Forced-colors media emulation compares the negative static white XL side-label route against React Spectrum's computed contract.",
     },
   ],
   form: [

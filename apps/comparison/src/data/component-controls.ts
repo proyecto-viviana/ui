@@ -923,7 +923,12 @@ const meterControls: ComponentControlGroup = {
       label: "staticColor",
       kind: "radio",
       defaultValue: meterDemoDefaults.staticColor,
-      options: options(meterStaticColorOptions),
+      options: [
+        { value: meterStaticColorOptions[0], label: "default" },
+        { value: meterStaticColorOptions[1], label: meterStaticColorOptions[1] },
+        { value: meterStaticColorOptions[2], label: meterStaticColorOptions[2] },
+        { value: meterStaticColorOptions[3], label: meterStaticColorOptions[3] },
+      ],
     },
     {
       name: "labelPosition",
