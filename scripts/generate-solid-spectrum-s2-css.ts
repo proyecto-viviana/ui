@@ -9,7 +9,12 @@ process.env.NODE_ENV = "production";
 clearS2CssAssets();
 generatePageStyles();
 await import("../packages/solid-spectrum/src/provider");
+await import("../packages/solid-spectrum/src/badge");
+await import("../packages/solid-spectrum/src/divider");
 await import("../packages/solid-spectrum/src/icon/center-baseline");
+await import("../packages/solid-spectrum/src/statuslight");
+await import("../packages/solid-spectrum/src/meter");
+await import("../packages/solid-spectrum/src/form");
 await import("../packages/solid-spectrum/src/button/s2-progress-circle-animation");
 await import("../packages/solid-spectrum/src/button/s2-button-styles");
 await import("../packages/solid-spectrum/src/button/s2-action-button-styles");
@@ -17,6 +22,7 @@ await import("../packages/solid-spectrum/src/searchfield/s2-searchfield-styles")
 await import("../packages/solid-spectrum/src/textfield/s2-textarea-styles");
 await import("../packages/solid-spectrum/src/picker");
 await import("../packages/solid-spectrum/src/combobox");
+await import("../packages/solid-spectrum/src/link");
 
 const css = [
   "/* Generated from vendored Adobe Spectrum 2 style declarations. Do not edit by hand. */",

@@ -22,14 +22,7 @@ import { ToggleSwitch } from "../src/switch";
 import { RadioGroup, Radio } from "../src/radio";
 
 // ── Selection & Collections ─────────────────────────────────────
-import {
-  ComboBox,
-  ComboBoxInputGroup,
-  ComboBoxInput,
-  ComboBoxButton,
-  ComboBoxListBox,
-  ComboBoxOption,
-} from "../src/combobox";
+import { ComboBox, ComboBoxOption } from "../src/combobox";
 import { Select, SelectTrigger, SelectValue, SelectListBox, SelectOption } from "../src/select";
 import { ListBox, ListBoxOption } from "../src/listbox";
 import { MenuTrigger, MenuButton, Menu, MenuItem, ActionMenu } from "../src/menu";
@@ -291,13 +284,7 @@ describe("Regression: ComboBox", () => {
         getKey={(item) => item.id}
         getTextValue={(item) => item.name}
       >
-        <ComboBoxInputGroup>
-          <ComboBoxInput />
-          <ComboBoxButton />
-        </ComboBoxInputGroup>
-        <ComboBoxListBox>
-          {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
-        </ComboBoxListBox>
+        {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
       </ComboBox>
     ));
 
@@ -327,7 +314,10 @@ describe("Regression: Select", () => {
     ));
 
     expect(screen.getByText("Size")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Size" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Size" })).toHaveAttribute(
+      "aria-haspopup",
+      "listbox",
+    );
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });
@@ -884,7 +874,7 @@ describe("Regression: Badge", () => {
     const { container } = render(() => <Badge count={42} variant="accent" />);
 
     expect(screen.getByText("42")).toBeInTheDocument();
-    expect(container.firstElementChild!.className).toContain("bg-accent");
+    expect(container.querySelector('[role="presentation"]')!.className).not.toBe("");
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });
@@ -909,10 +899,9 @@ describe("Regression: StatusLight", () => {
     const { container } = render(() => <StatusLight variant="positive">Online</StatusLight>);
 
     expect(screen.getByText("Online")).toBeInTheDocument();
-    // Indicator dot present (aria-hidden span)
-    const dot = container.querySelector('[aria-hidden="true"]');
+    const dot = container.querySelector('svg[aria-hidden="true"] circle');
     expect(dot).toBeInTheDocument();
-    expect(dot!.className).toContain("bg-green");
+    expect(screen.getByText("Online").closest("div")!.className).not.toBe("");
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });

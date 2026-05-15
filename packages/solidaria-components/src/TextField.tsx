@@ -28,6 +28,7 @@ import {
   VALID_VALIDITY_STATE,
   type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
+import { FormContext, type FormProps } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
   type RenderChildren,
@@ -85,6 +86,56 @@ export const LabelContext = TextFieldContext;
 export const InputContext = TextFieldContext;
 export const TextAreaContext = TextFieldContext;
 export const FieldInputContext = TextFieldContext;
+
+function withFormValidationBehavior(
+  props: TextFieldProps,
+  formContext: FormProps | null,
+): TextFieldProps {
+  if (!formContext?.validationBehavior) {
+    return props;
+  }
+
+  return new Proxy(props, {
+    get(target, property, receiver) {
+      const localValue = Reflect.get(target, property, receiver);
+      if (property === "validationBehavior" && localValue === undefined) {
+        return formContext.validationBehavior;
+      }
+
+      return localValue;
+    },
+    has(target, property) {
+      return (
+        Reflect.has(target, property) ||
+        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
+      );
+    },
+    ownKeys(target) {
+      const keys = new Set(Reflect.ownKeys(target));
+      if (formContext.validationBehavior !== undefined) {
+        keys.add("validationBehavior");
+      }
+
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+      if (descriptor) {
+        return descriptor;
+      }
+
+      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => formContext.validationBehavior,
+        };
+      }
+
+      return undefined;
+    },
+  });
+}
 
 export interface LabelProps extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
   children?: JSX.Element;
@@ -338,6 +389,7 @@ export function TextArea(props: TextAreaProps): JSX.Element {
  */
 export function TextField(props: TextFieldProps): JSX.Element {
   const [inputId, setInputId] = createSignal<string | undefined>();
+  const formContext = useContext(FormContext);
   const contextProps = useContext(TextFieldContext);
   const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
   const contextBaseProps = createMemo<TextFieldProps>(() => {
@@ -353,9 +405,10 @@ export function TextField(props: TextFieldProps): JSX.Element {
     } = contextProps;
     return rest as TextFieldProps;
   });
-  const mergedProps = (
+  const baseProps = (
     contextProps ? mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) : props
   ) as TextFieldProps;
+  const mergedProps = withFormValidationBehavior(baseProps, formContext);
 
   const [local, ariaProps] = splitProps(mergedProps, [
     "children",

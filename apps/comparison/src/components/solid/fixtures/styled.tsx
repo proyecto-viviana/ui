@@ -15,6 +15,7 @@ import {
   ActionButtonGroup as SolidSpectrumActionButtonGroup,
   Avatar as SolidSpectrumAvatar,
   AvatarGroup as SolidSpectrumAvatarGroup,
+  Badge as SolidSpectrumBadge,
   Button as SolidSpectrumButton,
   ButtonGroup as SolidSpectrumButtonGroup,
   Card as SolidSpectrumCard,
@@ -24,9 +25,13 @@ import {
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
   DatePicker as SolidSpectrumDatePicker,
+  Divider as SolidSpectrumDivider,
+  Form as SolidSpectrumForm,
   Image as SolidSpectrumImage,
   ImageCoordinator as SolidSpectrumImageCoordinator,
+  Link as SolidSpectrumLink,
   LinkButton as SolidSpectrumLinkButton,
+  Meter as SolidSpectrumMeter,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
   Provider as SolidSpectrumProvider,
@@ -35,6 +40,7 @@ import {
   SearchField as SolidSpectrumSearchField,
   Skeleton as SolidSpectrumSkeleton,
   Slider as SolidSpectrumSlider,
+  StatusLight as SolidSpectrumStatusLight,
   Switch as SolidSpectrumSwitch,
   SegmentedControl as SolidSpectrumSegmentedControl,
   SegmentedControlItem as SolidSpectrumSegmentedControlItem,
@@ -73,6 +79,12 @@ import {
   serializeAvatarGroupDemoProps,
   type AvatarGroupDemoProps,
 } from "@comparison/data/avatar-group-demo";
+import {
+  badgeDemoPropsFromWindow,
+  normalizeBadgeDemoProps,
+  serializeBadgeDemoProps,
+  type BadgeDemoProps,
+} from "@comparison/data/badge-demo";
 import {
   buttonDemoLocaleFromWindow,
   buttonDemoPropsFromWindow,
@@ -127,6 +139,12 @@ import {
   type DatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
 import {
+  dividerDemoPropsFromWindow,
+  normalizeDividerDemoProps,
+  serializeDividerDemoProps,
+  type DividerDemoProps,
+} from "@comparison/data/divider-demo";
+import {
   imageDemoPropsFromWindow,
   imageMissingSource,
   imageDemoSources,
@@ -134,6 +152,24 @@ import {
   serializeImageDemoProps,
   type ImageDemoProps,
 } from "@comparison/data/image-demo";
+import {
+  formDemoPropsFromWindow,
+  normalizeFormDemoProps,
+  serializeFormDemoProps,
+  type FormDemoProps,
+} from "@comparison/data/form-demo";
+import {
+  linkDemoPropsFromWindow,
+  normalizeLinkDemoProps,
+  serializeLinkDemoProps,
+  type LinkDemoProps,
+} from "@comparison/data/link-demo";
+import {
+  meterDemoPropsFromWindow,
+  normalizeMeterDemoProps,
+  serializeMeterDemoProps,
+  type MeterDemoProps,
+} from "@comparison/data/meter-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -164,6 +200,12 @@ import {
   skeletonDemoPropsFromWindow,
   type SkeletonDemoProps,
 } from "@comparison/data/skeleton-demo";
+import {
+  normalizeStatusLightDemoProps,
+  serializeStatusLightDemoProps,
+  statusLightDemoPropsFromWindow,
+  type StatusLightDemoProps,
+} from "@comparison/data/statuslight-demo";
 import {
   normalizeSwitchDemoProps,
   serializeSwitchDemoProps,
@@ -476,12 +518,17 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   actionbuttongroup: () => h(SolidSpectrumActionButtonGroupDemo, {}),
   avatar: () => h(SolidSpectrumAvatarDemo, {}),
   avatargroup: () => h(SolidSpectrumAvatarGroupDemo, {}),
+  badge: () => h(SolidSpectrumBadgeDemo, {}),
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   datepicker: () => h(SolidSpectrumDatePickerDemo, {}),
+  divider: () => h(SolidSpectrumDividerDemo, {}),
+  form: () => h(SolidSpectrumFormDemo, {}),
   image: () => h(SolidSpectrumImageDemo, {}),
+  link: () => h(SolidSpectrumLinkDemo, {}),
+  meter: () => h(SolidSpectrumMeterDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
   picker: () => h(SolidSpectrumPickerDemo, {}),
   radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
@@ -492,6 +539,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   searchfield: () => h(SolidSpectrumSearchFieldDemo, {}),
   skeleton: () => h(SolidSpectrumSkeletonDemo, {}),
   slider: () => h(SolidSpectrumSliderDemo, {}),
+  statuslight: () => h(SolidSpectrumStatusLightDemo, {}),
   switch: () => h(SolidSpectrumSwitchDemo, {}),
   textarea: () => h(SolidSpectrumTextAreaDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
@@ -655,6 +703,294 @@ function SolidSpectrumAvatarGroupDemo() {
                 .map((item) => h(SolidSpectrumAvatar, { alt: item.alt })),
             ),
         ],
+      ),
+    ],
+  );
+}
+
+function solidBadgeChildren(props: BadgeDemoProps) {
+  if (props.iconPlacement === "start") {
+    return [
+      () => [h(SolidNewIcon, { "aria-hidden": "true" }), h(SolidSpectrumText, {}, props.children)],
+    ];
+  }
+
+  return [props.children];
+}
+
+function SolidSpectrumBadgeDemo() {
+  const [demoProps, setDemoProps] = createSignal<BadgeDemoProps>(badgeDemoPropsFromWindow());
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "badge") {
+        setDemoProps(normalizeBadgeDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedBadge = createMemo(() => {
+    const props = demoProps();
+
+    return hc(
+      SolidSpectrumBadge,
+      {
+        "data-comparison-control-root": "badge",
+        "data-comparison-control-props": serializeBadgeDemoProps(props),
+        variant: props.variant,
+        fillStyle: props.fillStyle,
+        size: props.size,
+        overflowMode: props.overflowMode,
+      },
+      solidBadgeChildren(props),
+    );
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-badge-row",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [renderedBadge],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumStatusLightDemo() {
+  const [demoProps, setDemoProps] = createSignal<StatusLightDemoProps>(
+    statusLightDemoPropsFromWindow(),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "statuslight") {
+        setDemoProps(normalizeStatusLightDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedStatusLight = createMemo(() => {
+    const props = demoProps();
+
+    return hc(
+      SolidSpectrumStatusLight,
+      {
+        "data-comparison-control-root": "statuslight",
+        "data-comparison-control-props": serializeStatusLightDemoProps(props),
+        variant: props.variant,
+        size: props.size,
+        role: props.role || undefined,
+      },
+      [props.children],
+    );
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-status-light-row",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [renderedStatusLight],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumDividerDemo() {
+  const [demoProps, setDemoProps] = createSignal<DividerDemoProps>(dividerDemoPropsFromWindow());
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "divider") {
+        setDemoProps(normalizeDividerDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedDivider = createMemo(() => {
+    const props = demoProps();
+
+    return h(SolidSpectrumDivider, {
+      "data-comparison-control-root": "divider",
+      "data-comparison-control-props": serializeDividerDemoProps(props),
+      orientation: props.orientation,
+      size: props.size,
+      staticColor: props.staticColor,
+    });
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get class() {
+            return staticColorBackdropClass(demoProps().staticColor, "comparison-divider-row");
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
+          get "data-comparison-orientation"() {
+            return demoProps().orientation;
+          },
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [renderedDivider],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumMeterDemo() {
+  const [demoProps, setDemoProps] = createSignal<MeterDemoProps>(meterDemoPropsFromWindow());
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "meter") {
+        setDemoProps(normalizeMeterDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedMeter = createMemo(() => {
+    const props = demoProps();
+
+    return h(SolidSpectrumMeter, {
+      "data-comparison-control-root": "meter",
+      "data-comparison-control-props": serializeMeterDemoProps(props),
+      label: props.label,
+      value: props.value,
+      minValue: props.minValue,
+      maxValue: props.maxValue,
+      valueLabel: props.valueLabel || undefined,
+      variant: props.variant,
+      size: props.size,
+      staticColor: props.staticColor || undefined,
+      labelPosition: props.labelPosition,
+    });
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get class() {
+            return staticColorBackdropClass(demoProps().staticColor, "comparison-meter-row");
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [renderedMeter],
       ),
     ],
   );
@@ -1642,6 +1978,150 @@ function SolidSpectrumTextFieldDemo() {
               }));
             },
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumFormDemo() {
+  const [demoProps, setDemoProps] = createSignal<FormDemoProps>(formDemoPropsFromWindow());
+  const [value, setValue] = createSignal(demoProps().value);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "form") {
+        const nextProps = normalizeFormDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeFormDemoProps({
+      ...demoProps(),
+      value: value(),
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-form-row",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [
+          hc(
+            SolidSpectrumForm,
+            {
+              "data-comparison-control-root": "form",
+              get "data-comparison-control-props"() {
+                return serializedProps();
+              },
+              get "data-comparison-value"() {
+                return value();
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get labelPosition() {
+                return demoProps().labelPosition;
+              },
+              get labelAlign() {
+                return demoProps().labelAlign;
+              },
+              get necessityIndicator() {
+                return demoProps().necessityIndicator;
+              },
+              get validationBehavior() {
+                return demoProps().validationBehavior;
+              },
+              get isRequired() {
+                return demoProps().isRequired;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              get isEmphasized() {
+                return demoProps().isEmphasized;
+              },
+              onSubmit: (event: SubmitEvent) => event.preventDefault(),
+            },
+            [
+              hc(SolidSpectrumTextField, {
+                "data-comparison-form-field": "name",
+                get label() {
+                  return demoProps().label;
+                },
+                name: "name",
+                get value() {
+                  return value();
+                },
+                description: "Inherited from the parent form.",
+                onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => {
+                  const nextValue = event.currentTarget.value;
+                  setValue(nextValue);
+                  setDemoProps((current: FormDemoProps) => ({
+                    ...current,
+                    value: nextValue,
+                  }));
+                },
+                onChange: (nextValue: string) => {
+                  setValue(nextValue);
+                  setDemoProps((current: FormDemoProps) => ({
+                    ...current,
+                    value: nextValue,
+                  }));
+                },
+              }),
+              hc(
+                SolidSpectrumButton,
+                {
+                  "data-comparison-form-submit": "true",
+                  type: "submit",
+                },
+                [
+                  () =>
+                    h(
+                      "span",
+                      {
+                        class: s2ButtonText({ isProgressVisible: false }),
+                        "data-rsp-slot": "text",
+                      },
+                      demoProps().actionLabel,
+                    ),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
     ],
@@ -2695,6 +3175,78 @@ function SolidSpectrumLinkButtonDemo() {
           },
         },
         [renderedLinkButton],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumLinkDemo() {
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  const [demoProps, setDemoProps] = createSignal<LinkDemoProps>(linkDemoPropsFromWindow());
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "link") {
+        setDemoProps(normalizeLinkDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedLink = createMemo(() => {
+    const props = demoProps();
+    return hc(
+      SolidSpectrumLink,
+      {
+        "data-comparison-control-root": "link",
+        "data-comparison-control-props": serializeLinkDemoProps(props),
+        href: props.href,
+        variant: props.variant,
+        staticColor: props.staticColor,
+        isStandalone: props.isStandalone,
+        isQuiet: props.isQuiet,
+      },
+      [props.children],
+    );
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "p",
+        {
+          get class() {
+            return staticColorBackdropClass(demoProps().staticColor, "comparison-link-row");
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [renderedLink],
       ),
     ],
   );

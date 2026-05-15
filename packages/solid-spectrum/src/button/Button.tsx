@@ -31,6 +31,7 @@ import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";
 import { TextContext } from "../text";
+import { useFormProps } from "../form";
 import { useButtonContext } from "./context";
 import {
   getSlottedContextProps,
@@ -41,7 +42,7 @@ import {
 } from "./spectrum-context";
 
 export function Button(props: ButtonProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(useFormProps(props));
   const contextProps = getSlottedContextProps(useButtonContext(), props.slot);
   const defaultProps: Partial<ButtonProps> = {
     variant: "primary",

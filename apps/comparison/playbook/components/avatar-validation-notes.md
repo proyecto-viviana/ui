@@ -76,8 +76,33 @@ Results:
   and missing/gap entries from `46` to `45`; strict pair-diff states moved from
   `21` to `22`.
 
+## Retro-Audit Against Playbook
+
+| Gate                             | Status  | Finding                                                                                                                                                   |
+| -------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tasks 0-1 research/baseline      | partial | Sources and API were captured, and gap movement was recorded; official viewer option/default/reset inventory and export guard baselines were not.         |
+| Task 2 route harness             | partial | Route controls and prop propagation are covered; visible control labels/order/defaults and internal sentinel absence are not explicitly asserted.         |
+| Tasks 3-4 source branch coverage | partial | The dependency map covers the main branches, but it is not a complete branch ledger for Avatar, Image-wrapper state, AvatarContext, and ActionButton use. |
+| Task 5 transition plan           | partial | Avatar is mostly static, but src load/reveal and over-background visual obligations were not written as a formal transition/visual-state plan.            |
+| Task 9 styled branches           | partial | Size, image geometry, slot, and over-background branches are covered; forced-colors/high-contrast styling was not browser-tested.                         |
+| Tasks 11-13 evidence/sign-off    | partial | Exact default and computed contracts passed; failure taxonomy, full `vp run check`, export report, and guard refresh were not recorded for this pass.     |
+
+Retro-audit gaps to backfill before release hardening:
+
+- Add a branch ledger for Avatar root styles, nested Image wrapper behavior,
+  default slot, AvatarContext consumption, ActionButton-provided context, and
+  legacy compatibility aliases.
+- Add route-control UI assertions for visible option labels/order/defaults and
+  sentinel absence.
+- Refresh evidence with current `comparison:report:gaps`,
+  `comparison:report:exports`, and guard lines.
+- Add forced-colors coverage or document why generated S2 token output is the
+  accepted boundary for Avatar.
+
 ## Remaining Work
 
+- Avatar is comparison-live with focused evidence; it is not yet fully
+  playbook-complete.
 - Image remains a separate official missing/gap component. Avatar only matches
   the image-wrapper subset required by upstream Avatar.
 - Revisit legacy Avatar `fallback`/`online` compatibility once local custom

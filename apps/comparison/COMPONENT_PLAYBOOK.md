@@ -52,6 +52,10 @@ before changing styled component code.
 - Each task ends with evidence or a recorded blocker.
 - Do not start the next task while the current task has unresolved gaps that
   affect it.
+- Do not accept a component with a promise to retro-audit it later. If any
+  in-scope playbook gate is partial, keep the component partial, record the
+  blocker in the validation note, and close it before moving to the next
+  component sweep.
 
 ## Task 0 - Gather Component Research
 
@@ -497,6 +501,10 @@ The official docs/viewer parity table must have no in-scope `route-gap` or
 `port-gap` rows unless the handoff explicitly keeps the component unaccepted for
 that surface. `docs-drift` rows must name whether installed source or current
 React behavior was used as authority.
+
+The component validation note must state whether the pass is fully accepted,
+partial, or pre-pass only. Do not use `comparison-live` as a substitute for
+full playbook acceptance.
 
 Stop: status matches evidence and remaining gaps are not bundled into the
 current task.

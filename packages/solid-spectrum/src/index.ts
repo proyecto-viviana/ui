@@ -87,8 +87,14 @@ export { Avatar, AvatarContext, AvatarGroup, AvatarGroupContext } from "./avatar
 export type { AvatarGroupProps, AvatarGroupSize, AvatarProps, AvatarSize } from "./avatar";
 
 // Badge
-export { Badge } from "./badge";
-export type { BadgeProps, BadgeSize, BadgeVariant } from "./badge";
+export { Badge, BadgeContext } from "./badge";
+export type {
+  BadgeFillStyle,
+  BadgeOverflowMode,
+  BadgeProps,
+  BadgeSize,
+  BadgeVariant,
+} from "./badge";
 
 // Breadcrumbs
 export { BreadcrumbItem as Breadcrumb, Breadcrumbs } from "./breadcrumbs";
@@ -191,8 +197,14 @@ export type {
 } from "./disclosure";
 
 // Divider
-export { Divider } from "./divider";
-export type { DividerProps, DividerSize, DividerVariant } from "./divider";
+export { Divider, DividerContext } from "./divider";
+export type {
+  DividerOrientation,
+  DividerProps,
+  DividerSize,
+  DividerStaticColor,
+  DividerVariant,
+} from "./divider";
 
 // DropZone
 export { DropZone } from "./dropzone";
@@ -204,7 +216,14 @@ export type { FileTriggerProps } from "./filetrigger";
 
 // Form
 export { Form } from "./form";
-export type { FormProps } from "./form";
+export type {
+  FormLabelAlign,
+  FormLabelPosition,
+  FormNecessityIndicator,
+  FormProps,
+  FormSize,
+  FormStyleProps,
+} from "./form";
 
 // Icons and illustrations
 export { createIcon, createIllustration, IconContext, IllustrationContext } from "./icon";
@@ -229,8 +248,8 @@ export { InlineAlert } from "./inlinealert";
 export type { InlineAlertProps, InlineAlertVariant } from "./inlinealert";
 
 // Link
-export { Link } from "./link";
-export type { LinkProps, LinkVariant } from "./link";
+export { Link, LinkContext } from "./link";
+export type { LinkProps, LinkStaticColor, LinkVariant } from "./link";
 
 // ListView
 export { ListView, ListViewItem } from "./list";
@@ -243,8 +262,14 @@ export type {
 } from "./list";
 
 // Meter
-export { Meter } from "./meter";
-export type { MeterProps, MeterSize, MeterVariant } from "./meter";
+export { Meter, MeterContext } from "./meter";
+export type {
+  MeterLabelPosition,
+  MeterProps,
+  MeterSize,
+  MeterStaticColor,
+  MeterVariant,
+} from "./meter";
 
 // NumberField
 export { NumberField } from "./numberfield";
@@ -317,7 +342,7 @@ export type {
 } from "./slider";
 
 // StatusLight
-export { StatusLight } from "./statuslight";
+export { StatusLight, StatusLightContext } from "./statuslight";
 export type { StatusLightProps, StatusLightSize, StatusLightVariant } from "./statuslight";
 
 // Switch

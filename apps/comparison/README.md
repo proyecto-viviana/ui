@@ -35,6 +35,11 @@ focused.
 Routes are generated from the official React Spectrum S2 catalogue. Missing
 Solid implementations stay visible as gaps.
 
+Current local report snapshot (2026-05-15): `69` official entries tracked,
+`33` live on both stacks, `36` still missing or blocked, `172` visual states
+tracked, `49` with current visual evidence, and `32` with strict pair-diff
+tests.
+
 Use the reports as the current roadmap:
 
 ```bash

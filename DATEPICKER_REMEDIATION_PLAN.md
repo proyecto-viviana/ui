@@ -3,7 +3,7 @@
 This file is intentionally short. Older DatePicker inventories were useful
 during repair work, but current source and tests are now the authority.
 
-Last refreshed: 2026-05-12.
+Last refreshed: 2026-05-15.
 
 ## Current State
 

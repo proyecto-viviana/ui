@@ -13,6 +13,21 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
   ...args: T[]
 ): R {
   const result: Props = {};
+  const setResultValue = (key: string, value: unknown) => {
+    const resultDescriptor = Object.getOwnPropertyDescriptor(result, key);
+
+    if (resultDescriptor?.get || resultDescriptor?.set) {
+      Object.defineProperty(result, key, {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value,
+      });
+      return;
+    }
+
+    result[key] = value;
+  };
 
   for (const props of args) {
     for (const key in props) {
@@ -28,15 +43,15 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
         key.startsWith("on") &&
         key[2] === key[2]?.toUpperCase()
       ) {
-        result[key] = chainHandlers(existingValue as Function, value as Function);
+        setResultValue(key, chainHandlers(existingValue as Function, value as Function));
       } else if (key === "class" || key === "className") {
-        result[key] = mergeClassNames(existingValue, value);
+        setResultValue(key, mergeClassNames(existingValue, value));
       } else if (
         key === "style" &&
         typeof existingValue === "object" &&
         typeof value === "object"
       ) {
-        result[key] = { ...(existingValue as object), ...(value as object) };
+        setResultValue(key, { ...(existingValue as object), ...(value as object) });
       } else if (hasGetter && (value !== undefined || !(key in result))) {
         Object.defineProperty(result, key, {
           enumerable: true,
@@ -44,7 +59,7 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
           get: getValue,
         });
       } else if (value !== undefined) {
-        result[key] = value;
+        setResultValue(key, value);
       }
     }
   }

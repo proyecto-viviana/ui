@@ -52,7 +52,8 @@ export function createSeparator(props: MaybeAccessor<AriaSeparatorProps> = {}): 
       ariaOrientation = "vertical";
     }
 
-    // hr elements implicitly have role = separator and a horizontal orientation
+    // React Aria Components emits an explicit separator role even for hr.
+    // Keep horizontal aria-orientation implicit, but do not rely on the native role alone.
     if (p.elementType !== "hr") {
       return {
         ...domProps,
@@ -61,7 +62,10 @@ export function createSeparator(props: MaybeAccessor<AriaSeparatorProps> = {}): 
       };
     }
 
-    return domProps;
+    return {
+      ...domProps,
+      role: "separator",
+    };
   };
 
   return {

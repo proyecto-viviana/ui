@@ -14,14 +14,14 @@ the release policy says otherwise.
 
 ## Current Shape
 
-Last refreshed from local reports on 2026-05-12:
+Last refreshed from local reports on 2026-05-15:
 
 - React Aria Components named exports: `0` missing from
   `solidaria-components`.
-- Spectrum S2 catalogue: `69` official entries tracked, `23` live on both
-  React and Solid sides, `46` still missing or blocked.
-- Visual parity coverage: `152` official states tracked, `38` with committed
-  React/Solid screenshots, `8` with strict pair-diff tests.
+- Spectrum S2 catalogue: `69` official entries tracked, `33` live on both
+  React and Solid sides, `36` still missing or blocked.
+- Visual parity coverage: `172` official states tracked, `49` with current
+  React/Solid visual evidence, `32` with strict pair-diff tests.
 - `solid-spectrum` root catalogue exports are present, but many support exports
   are still missing: contexts, slots, hooks, and helpers.
 

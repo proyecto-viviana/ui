@@ -33,12 +33,12 @@ values. The controlling decision is
 
 ## Current Parity Evidence
 
-As of the 2026-05-12 local reports:
+As of the 2026-05-15 local reports:
 
 - `69` official S2 catalogue entries are tracked in the comparison app.
-- `23` entries are live on both React and Solid sides.
-- `46` entries are still missing or blocked.
-- root catalogue exports are present, but `104` non-root/support S2 value
+- `33` entries are live on both React and Solid sides.
+- `36` entries are still missing or blocked.
+- root catalogue exports are present, but `80` non-root/support S2 value
   exports are still missing, mostly contexts, slots, hooks, and helpers.
 
 Use the comparison app as the roadmap:

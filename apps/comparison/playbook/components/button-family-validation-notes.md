@@ -254,11 +254,31 @@ their standalone routes are validated in their own passes.
     it. Pointer-state captures now prepare the target in its final capture
     position and are exact.
 
+## Retro-Audit Against Current Playbook
+
+| Gate                             | Status  | Finding                                                                                                                                                 |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tasks 0-1 research/baseline      | matched | Docs, source, official viewer behavior, gap/export reports, and RAC export guard evidence are recorded.                                                 |
+| Task 2 route harness             | matched | Family route controls, visible staticColor options/order/defaults, sentinel absence, and viewer backdrop behavior are asserted.                         |
+| Tasks 3-4 source branch coverage | matched | The source branch ledger covers Button-family-owned API, context, support-child providers, route controls, and cross-component deferrals.               |
+| Tasks 5-10 runtime/lifecycle     | matched | Hover, press, focus-visible, pending, selected, overflow, toolbar keyboard, staticColor, reduced-motion, and support-child context paths have evidence. |
+| Tasks 11-13 evidence/sign-off    | matched | Full checks, builds, focused tests, report refreshes, failure taxonomy, and exact current React/Solid pair-diff evidence are recorded.                  |
+
+Current acceptance boundary:
+
+- Button-family-owned behavior is playbook-accepted.
+- Standalone support components are not accepted by family composition
+  evidence. Use each component note as the authority for Avatar, AvatarGroup,
+  Image, Skeleton, Text, NotificationBadge, Link, Badge, StatusLight, Meter,
+  and Form.
+
 ## Remaining Gaps
 
-- Avatar, Image, NotificationBadge, Text, and Skeleton were touched only enough
-  to satisfy Button-family composition. Their standalone S2 component routes and
-  visual/API parity remain separate component passes.
+- Avatar, AvatarGroup, Image, and Skeleton now have standalone focused passes,
+  but their notes record release-hardening backfill gaps separately from
+  comparison-live evidence.
+- Text and NotificationBadge remain pre-pass only and must still receive full
+  standalone S2 validation.
 - S2 ToggleButton docs mention `Avatar` composition, but installed upstream S2
   source does not provide ToggleButton `AvatarContext`. This is tracked as docs
   drift rather than a Solid port gap.

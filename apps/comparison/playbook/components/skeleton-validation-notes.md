@@ -36,7 +36,7 @@
 | React Aria MCP              | page index                                                                                                            | No direct Skeleton page or hook exists; accessibility semantics remain owned by the real child components.                                           |
 | React Spectrum S2 source    | `@react-spectrum/s2/src/Skeleton.tsx`                                                                                 | Provides `SkeletonContext`, `loadingStyle`, `useIsSkeleton`, text/icon helpers, inert wrapper behavior, and reduced-motion-aware Web Animations API. |
 | React Spectrum S2 source    | `@react-spectrum/s2/src/SkeletonCollection.tsx`                                                                       | Collection leaf wraps item render output in loading Skeleton and caches by node.                                                                     |
-| React Spectrum S2 consumers | `Image`, `Button`, `ActionButton`, `ToggleButton`, `Link`, `Content`, `Icon`, `StatusLight`, `Badge`, `Meter`, `Form` | Skeleton behavior is mostly distributed across child consumers through context.                                                                      |
+| React Spectrum S2 consumers | `Image`, `Button`, `ActionButton`, `ToggleButton`, `Link`, `Content`, `Icon`, `StatusLight`, `Badge`, `Meter`, `Form` | Skeleton behavior is mostly distributed across child consumers through context; Form is now covered by its own pass.                                 |
 | Solid source before pass    | `packages/solid-spectrum/src/skeleton/index.tsx`                                                                      | Implemented standalone status/shimmer blocks with `shape`, `size`, `gap`, and `count`, which is not S2 API parity.                                   |
 
 ## Official Docs And Viewer Parity
@@ -74,12 +74,12 @@
 
 ## Cross-Layer Audit
 
-| Layer               | Matched                                                             | Ported differently                          | Not applicable            | Gaps                                                                            |
-| ------------------- | ------------------------------------------------------------------- | ------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------- |
-| State               |                                                                     |                                             | no separate state package | none                                                                            |
-| ARIA hooks          |                                                                     |                                             | no direct ARIA hook/page  | none                                                                            |
-| Headless components | native child semantics                                              |                                             |                           | none                                                                            |
-| Styled S2           | context, text/icon/image consumers, loading style, inert, animation | Solid accessors replace React context reads |                           | Link, StatusLight, Badge, Meter, and Form still need their own component passes |
+| Layer               | Matched                                                             | Ported differently                          | Not applicable            | Gaps                                   |
+| ------------------- | ------------------------------------------------------------------- | ------------------------------------------- | ------------------------- | -------------------------------------- |
+| State               |                                                                     |                                             | no separate state package | none                                   |
+| ARIA hooks          |                                                                     |                                             | no direct ARIA hook/page  | none                                   |
+| Headless components | native child semantics                                              |                                             |                           | none                                   |
+| Styled S2           | context, text/icon/image consumers, loading style, inert, animation | Solid accessors replace React context reads |                           | Form covered in its own component pass |
 
 Solid idioms checked:
 
@@ -131,12 +131,34 @@ Results:
   missing/gap entries moved to `42`; current visual evidence states moved to
   `43`; strict pair-diff states moved to `26`.
 
+## Retro-Audit Against Playbook
+
+| Gate                             | Status  | Finding                                                                                                                                                      |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tasks 0-1 research/baseline      | partial | Research and gap baseline were recorded; export report and guard baselines were not part of the note.                                                        |
+| Task 2 route harness             | matched | Route controls cover `isLoading`, default loading, and loaded state with control propagation evidence.                                                       |
+| Tasks 3-4 source branch coverage | partial | Source map and dependency map are strong, but not a full branch ledger for `Skeleton.tsx`, `SkeletonCollection.tsx`, all consumers, and animation lifecycle. |
+| Task 5 transition plan           | matched | Loading and loaded states are represented with e2e evidence; broader consumer-specific skeleton rows are delegated to the owning component passes.           |
+| Task 9 styled branches           | partial | Text/Image/Icon consumer branches and reduced motion are covered; forced-colors/high-contrast styling was not browser-tested.                                |
+| Tasks 11-13 evidence/sign-off    | partial | Harness notes and failure taxonomy are present; full `vp run check`, export report, and guard refresh were not recorded for this component.                  |
+
+Retro-audit gaps to backfill before release hardening:
+
+- Add a branch ledger for root context, loading style, text/icon/image helpers,
+  inert synchronization, animation setup/cleanup, SkeletonCollection caching,
+  and each accepted consumer branch.
+- Refresh evidence with current `comparison:report:gaps`,
+  `comparison:report:exports`, and guard lines.
+- Add forced-colors coverage or document why generated S2 token output is the
+  accepted boundary for Skeleton placeholders.
+- Keep future consumer-specific skeleton visual rows with the component that
+  owns the consumer rendering.
+
 ## Handoff
 
 - Status after this pass: Skeleton, SkeletonCollection current observable
-  behavior, and Image/Text/Icon skeleton consumers are accepted for this pass.
-- Remaining gaps: Link, StatusLight, Badge, Meter, and Form skeleton
-  interactions should be validated in their own component passes when those
-  owners are reached.
+  behavior, and Image/Text/Icon skeleton consumers are comparison-live with
+  focused evidence; the note still has release-hardening backfill gaps above.
+- Form skeleton interactions were validated in the Form component pass.
 - Next ordered task: continue the component sweep with the next Button-family
   dependent support component only after its pre-pass note is current.

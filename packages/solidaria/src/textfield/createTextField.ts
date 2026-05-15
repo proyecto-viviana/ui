@@ -25,6 +25,8 @@ export interface AriaTextFieldProps extends AriaFieldProps, FocusableProps {
   isReadOnly?: boolean;
   /** Whether the input is required. */
   isRequired?: boolean;
+  /** Whether to use native HTML form validation or ARIA validation semantics. */
+  validationBehavior?: "aria" | "native";
   /** The type of input to render. */
   type?: "text" | "search" | "url" | "tel" | "email" | "password" | string;
   /** The input mode hint for virtual keyboards. */
@@ -137,14 +139,15 @@ export function createTextField<
     const p = getProps();
     const isInvalid = p.isInvalid ?? false;
     const isTextarea = p.inputElementType === "textarea";
+    const validationBehavior = p.validationBehavior ?? "aria";
 
     return mergeProps(
       getDomProps(),
       {
         disabled: p.isDisabled,
         readOnly: p.isReadOnly,
-        required: p.isRequired,
-        "aria-required": p.isRequired || undefined,
+        required: validationBehavior === "native" && p.isRequired,
+        "aria-required": (validationBehavior === "aria" && p.isRequired) || undefined,
         "aria-invalid": isInvalid || undefined,
         value: p.value ?? p.defaultValue ?? "",
         onChange: (e: Event) => {

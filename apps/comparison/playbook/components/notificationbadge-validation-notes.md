@@ -33,3 +33,10 @@ before that pass.
 - Nested ActionButton composition and indicator-only Spanish labeling are covered
   by `packages/solid-spectrum/test/ButtonFamilyContext.test.tsx`.
 - Standalone NotificationBadge acceptance is not covered by that test.
+
+## Acceptance Status
+
+- NotificationBadge is pre-pass only. It must not be counted as comparison-live
+  or playbook-complete.
+- The later NotificationBadge pass must run the full playbook instead of
+  inheriting acceptance from Button-family composition evidence.

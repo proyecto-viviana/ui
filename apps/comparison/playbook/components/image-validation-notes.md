@@ -88,8 +88,35 @@ Results:
   reveal/complete effects hundreds of thousands of times; after the fix, the
   Image route renders both stacks with normal millisecond DOM evaluation.
 
+## Retro-Audit Against Playbook
+
+| Gate                             | Status  | Finding                                                                                                                                                       |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tasks 0-1 research/baseline      | partial | Sources and API were captured, and gap movement was recorded; official viewer option/default/reset inventory, export report, and guard baselines were not.    |
+| Task 2 route harness             | partial | Route controls and prop propagation are covered; visible control labels/order/defaults and internal sentinel absence are not explicitly asserted.             |
+| Tasks 3-4 source branch coverage | partial | The dependency map covers the main branches, but it is not a complete branch ledger for Image, ImageCoordinator, context, error, loading, and source paths.   |
+| Task 5 transition plan           | partial | Loading/error/coordinator behavior is tested, but before/trigger/transient/settled/cleanup points were not written as a formal transition plan.               |
+| Task 9 styled branches           | partial | Wrapper, source, object-fit, error, and coordinator branches are covered; forced-colors/high-contrast styling was not browser-tested.                         |
+| Tasks 11-13 evidence/sign-off    | partial | Exact default and computed contracts passed; failure taxonomy exists for the stability bug, but full `vp run check`, export report, and guard refresh do not. |
+
+Retro-audit gaps to backfill before release hardening:
+
+- Add a branch ledger for string `src`, conditional sources, missing alt dev
+  warning, loading/reveal state, error fallback, ImageContext, native
+  attributes, and ImageCoordinator registration/unregistration/timeout.
+- Add route-control UI assertions for visible option labels/order/defaults and
+  sentinel absence.
+- Refresh evidence with current `comparison:report:gaps`,
+  `comparison:report:exports`, and guard lines.
+- Add forced-colors coverage or document why the Image wrapper has no
+  additional high-contrast branch beyond generated S2 styles.
+- Expand the transition plan if ImageCoordinator becomes release-critical for
+  grouped async reveal behavior.
+
 ## Remaining Work
 
+- Image is comparison-live with focused evidence; it is not yet fully
+  playbook-complete.
 - Skeleton remains a separate official component. Image only covers the
   loading-surface behavior that upstream Image owns directly.
 - Native image loading is browser-dependent, so the comparison suite uses data

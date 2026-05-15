@@ -3,17 +3,20 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
-import { Link } from "../src/link";
+import { Link, LinkContext } from "../src/link";
 import { LinkButton } from "../src/button/LinkButton";
+import { Skeleton } from "../src/skeleton";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 describe("Link (solid-spectrum)", () => {
-  it("should render a link with default styling", () => {
+  it("renders the S2-styled link element by default", () => {
     render(() => <Link>Test</Link>);
     const link = screen.getByRole("link");
+
     expect(link).toBeInTheDocument();
-    expect(link).toHaveClass("text-accent");
-    expect(link).toHaveClass("underline");
+    expect(link.tagName).toBe("SPAN");
+    expect(link.className).not.toBe("");
+    expect(link).not.toHaveClass("solidaria-Link");
   });
 
   it("should render an anchor when href is provided", () => {
@@ -23,16 +26,43 @@ describe("Link (solid-spectrum)", () => {
     expect(link).toHaveAttribute("href", "https://example.com");
   });
 
-  it("should support secondary variant", () => {
-    render(() => <Link variant="secondary">Test</Link>);
-    const link = screen.getByRole("link");
-    expect(link).toHaveClass("text-primary-300");
+  it("changes the generated S2 class for secondary variant", () => {
+    render(() => (
+      <>
+        <Link>Primary</Link>
+        <Link variant="secondary">Secondary</Link>
+      </>
+    ));
+
+    const primary = screen.getByRole("link", { name: "Primary" });
+    const secondary = screen.getByRole("link", { name: "Secondary" });
+    expect(secondary.className).not.toBe(primary.className);
+  });
+
+  it("maps the legacy subtle variant to the S2 secondary style", () => {
+    render(() => (
+      <>
+        <Link variant="secondary">Secondary</Link>
+        <Link variant="subtle">Subtle</Link>
+      </>
+    ));
+
+    expect(screen.getByRole("link", { name: "Subtle" }).className).toBe(
+      screen.getByRole("link", { name: "Secondary" }).className,
+    );
   });
 
   it("should support standalone style", () => {
-    render(() => <Link isStandalone>Test</Link>);
-    const link = screen.getByRole("link");
-    expect(link).toHaveClass("font-medium");
+    render(() => (
+      <>
+        <Link>Inline</Link>
+        <Link isStandalone>Standalone</Link>
+      </>
+    ));
+
+    expect(screen.getByRole("link", { name: "Standalone" }).className).not.toBe(
+      screen.getByRole("link", { name: "Inline" }).className,
+    );
   });
 
   it("should support quiet style with standalone", async () => {
@@ -43,27 +73,49 @@ describe("Link (solid-spectrum)", () => {
       </Link>
     ));
     const link = screen.getByRole("link");
+    const initialClassName = link.className;
 
-    // Initially no underline
-    expect(link).toHaveClass("no-underline");
-
-    // Underline on hover
     await user.hover(link);
-    expect(link).toHaveClass("underline");
+    expect(link).toHaveAttribute("data-hovered", "true");
+    expect(link.className).not.toBe(initialClassName);
+  });
+
+  it("should support static color styles", () => {
+    render(() => (
+      <>
+        <Link>Default</Link>
+        <Link staticColor="white">White</Link>
+        <Link staticColor="black">Black</Link>
+      </>
+    ));
+
+    const defaultClassName = screen.getByRole("link", { name: "Default" }).className;
+    expect(screen.getByRole("link", { name: "White" }).className).not.toBe(defaultClassName);
+    expect(screen.getByRole("link", { name: "Black" }).className).not.toBe(defaultClassName);
   });
 
   it("should support custom class", () => {
-    render(() => <Link class="custom-class">Test</Link>);
+    render(() => (
+      <Link class="custom-class" UNSAFE_className="unsafe-class">
+        Test
+      </Link>
+    ));
     const link = screen.getByRole("link");
     expect(link).toHaveClass("custom-class");
+    expect(link).toHaveClass("unsafe-class");
+  });
+
+  it("should support UNSAFE_style", () => {
+    render(() => <Link UNSAFE_style={{ color: "blue" }}>Test</Link>);
+    const link = screen.getByRole("link") as HTMLElement;
+    expect(link.style.color).toBe("blue");
   });
 
   it("should support disabled state", () => {
     render(() => <Link isDisabled>Test</Link>);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("aria-disabled", "true");
-    expect(link).toHaveClass("opacity-50");
-    expect(link).toHaveClass("cursor-not-allowed");
+    expect(link).toHaveAttribute("data-disabled", "true");
   });
 
   it("should call onPress when clicked", async () => {
@@ -90,6 +142,18 @@ describe("Link (solid-spectrum)", () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
+  it("should render as a span when disabled with href", () => {
+    render(() => (
+      <Link href="https://example.com" isDisabled>
+        Test
+      </Link>
+    ));
+
+    const link = screen.getByRole("link");
+    expect(link.tagName).toBe("SPAN");
+    expect(link).not.toHaveAttribute("href");
+  });
+
   it("should support focus visible styling", async () => {
     const user = setupUser();
     render(() => <Link>Test</Link>);
@@ -97,8 +161,7 @@ describe("Link (solid-spectrum)", () => {
 
     await user.tab();
     expect(document.activeElement).toBe(link);
-    expect(link).toHaveClass("ring-2");
-    expect(link).toHaveClass("ring-accent-300");
+    expect(link).toHaveAttribute("data-focus-visible", "true");
   });
 
   it("should support hover events", async () => {
@@ -124,6 +187,36 @@ describe("Link (solid-spectrum)", () => {
     render(() => <Link aria-current="page">Test</Link>);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("aria-current", "page");
+    expect(link).toHaveAttribute("data-current", "true");
+  });
+
+  it("should support context props", () => {
+    render(() => (
+      <LinkContext.Provider
+        value={{
+          variant: "secondary",
+          isStandalone: true,
+          UNSAFE_className: "context-link",
+        }}
+      >
+        <Link>Context</Link>
+      </LinkContext.Provider>
+    ));
+
+    const link = screen.getByRole("link");
+    expect(link).toHaveClass("context-link");
+  });
+
+  it("should apply skeleton text and inert state", () => {
+    render(() => (
+      <Skeleton isLoading>
+        <Link>Loading link</Link>
+      </Skeleton>
+    ));
+
+    const link = screen.getByRole("link");
+    expect(link).toHaveAttribute("inert", "true");
+    expect(link.querySelector("span[inert]")).toBeInTheDocument();
   });
 });
 

@@ -1,31 +1,99 @@
-import { type JSX, splitProps } from "solid-js";
+import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
 import {
   Link as HeadlessLink,
   type LinkProps as HeadlessLinkProps,
   type LinkRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import { baseColor, focusRing, style, type StyleString } from "../s2-style";
+import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
+import {
+  getSlottedContextProps,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
+import { getAllowedOverrides, staticColor as staticColorStyle } from "../s2-internal/style-utils";
 import { useProviderProps } from "../provider";
+import { createIsSkeleton, useInertAttribute, useSkeletonText } from "../skeleton";
 
 export type LinkVariant = "primary" | "secondary" | "subtle";
+export type LinkStaticColor = "white" | "black" | "auto";
 
-export interface LinkProps extends Omit<HeadlessLinkProps, "class" | "style" | "children"> {
+export interface LinkProps extends Omit<HeadlessLinkProps, "class" | "style" | "children" | "ref"> {
   /** The visual style of the link. @default 'primary' */
   variant?: LinkVariant;
+  /** The static color style to apply when the link appears over a color background. */
+  staticColor?: LinkStaticColor;
   /** Whether the link is on its own vs inside a longer string of text. */
   isStandalone?: boolean;
-  /** Whether the link should be displayed with a quiet style (no underline by default). */
+  /** Whether the link should be displayed with a quiet style. */
   isQuiet?: boolean;
-  /** Additional CSS class name. */
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
   /** The content of the link. */
   children?: JSX.Element;
+  /** Ref for the underlying link element. */
+  ref?: RefLike<HTMLElement>;
 }
 
-const variantStyles = {
-  primary: "text-accent hover:text-accent-300",
-  secondary: "text-primary-300 hover:text-primary-200",
-  subtle: "text-primary-400 hover:text-primary-300",
-};
+export const LinkContext = createContext<SpectrumContextValue<LinkProps>>(null);
+
+type S2LinkVariant = "primary" | "secondary";
+
+const linkStyles = style<
+  LinkRenderProps & {
+    variant: S2LinkVariant;
+    staticColor?: LinkStaticColor;
+    isStaticColor: boolean;
+    isQuiet?: boolean;
+    isStandalone?: boolean;
+    isSkeleton: boolean;
+  }
+>(
+  {
+    ...focusRing(),
+    ...staticColorStyle(),
+    borderRadius: "sm",
+    font: {
+      isStandalone: "ui",
+    },
+    color: {
+      variant: {
+        primary: baseColor("accent"),
+        secondary: baseColor("neutral"),
+      },
+      isStaticColor: "transparent-overlay-1000",
+      forcedColors: "LinkText",
+    },
+    transition: "default",
+    fontWeight: {
+      isStandalone: "medium",
+    },
+    textDecoration: {
+      default: "underline",
+      isStandalone: {
+        isQuiet: {
+          default: "none",
+          isHovered: "underline",
+          isFocusVisible: "underline",
+        },
+      },
+    },
+    outlineColor: {
+      default: "focus-ring",
+      isStaticColor: "transparent-overlay-1000",
+      forcedColors: "Highlight",
+    },
+    disableTapHighlight: true,
+  },
+  getAllowedOverrides(),
+);
 
 /**
  * Links allow users to navigate to a different location.
@@ -44,59 +112,73 @@ const variantStyles = {
  * ```
  */
 export function Link(props: LinkProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(LinkContext), props.slot);
+  const mergedProps = mergeProps(
+    { variant: "primary" as const },
+    providerProps,
+    contextProps ?? {},
+    props,
+  );
   const [local, headlessProps] = splitProps(mergedProps, [
     "variant",
+    "staticColor",
     "isStandalone",
     "isQuiet",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
+    "ref",
+    "children",
   ]);
 
-  const variant = local.variant ?? "primary";
-  const customClass = local.class ?? "";
+  const variant = (): S2LinkVariant =>
+    local.variant === "subtle" ? "secondary" : (local.variant ?? "primary");
+  const isSkeleton = createIsSkeleton();
+  const inertRef = useInertAttribute(isSkeleton);
+  const assignRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLElement> } | null)?.ref,
+    props.ref,
+    inertRef,
+  );
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const [children, skeletonStyle] = useSkeletonText(
+    () => local.children,
+    () => mergedUnsafeStyle(),
+  );
 
-  const getClassName = (renderProps: LinkRenderProps): string => {
-    const base = "transition-colors duration-200 cursor-pointer rounded-sm outline-none";
-
-    const variantClass = variantStyles[variant];
-
-    let underlineClass: string;
-    if (local.isStandalone && local.isQuiet) {
-      // Quiet standalone: no underline by default, underline on hover/focus
-      underlineClass =
-        renderProps.isHovered || renderProps.isFocusVisible ? "underline" : "no-underline";
-    } else {
-      // Inline links always have underline for accessibility
-      underlineClass = "underline";
-    }
-
-    const weightClass = local.isStandalone ? "font-medium" : "";
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-
-    const disabledClass = renderProps.isDisabled ? "opacity-50 cursor-not-allowed" : "";
-
-    const pressedClass = renderProps.isPressed ? "opacity-80" : "";
-
-    return [
-      base,
-      variantClass,
-      underlineClass,
-      weightClass,
-      focusClass,
-      disabledClass,
-      pressedClass,
-      customClass,
+  const getClassName = (renderProps: LinkRenderProps): string =>
+    [
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
+      linkStyles(
+        {
+          ...renderProps,
+          variant: variant(),
+          staticColor: local.staticColor,
+          isStaticColor: !!local.staticColor,
+          isQuiet: !!local.isQuiet,
+          isStandalone: !!local.isStandalone,
+          isSkeleton: isSkeleton(),
+        },
+        mergedStyles(),
+      ),
     ]
       .filter(Boolean)
       .join(" ");
-  };
 
   return (
-    <HeadlessLink {...headlessProps} class={getClassName}>
-      {props.children}
+    <HeadlessLink
+      {...headlessProps}
+      ref={(element: HTMLElement) => assignRefs(element)}
+      class={getClassName}
+      style={() => skeletonStyle() ?? {}}
+    >
+      {children()}
     </HeadlessLink>
   );
 }

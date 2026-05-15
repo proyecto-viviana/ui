@@ -33,3 +33,10 @@ pass.
 - Nested Button-family text composition is covered by
   `packages/solid-spectrum/test/ButtonFamilyContext.test.tsx`.
 - Standalone Text/support-component acceptance is not covered by that test.
+
+## Acceptance Status
+
+- Text is pre-pass only. It must not be counted as comparison-live or
+  playbook-complete.
+- The later Text pass must run the full playbook instead of inheriting
+  acceptance from Button-family composition evidence.

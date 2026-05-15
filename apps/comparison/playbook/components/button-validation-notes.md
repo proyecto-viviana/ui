@@ -428,3 +428,21 @@ code changes, tests, and remaining acceptance blockers.
 - Next ordered task:
   - Move to the next component pass or one of the standalone support-component
     passes documented from the Button-family sweep.
+
+## Retro-Audit Against Current Playbook
+
+| Gate                          | Status  | Finding                                                                                                                                        |
+| ----------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tasks 0-1 research/baseline   | matched | Docs, source, APG, before/after gap/export reports, and RAC export guard evidence are recorded.                                                |
+| Task 2 route harness          | matched | Route controls, current pair evidence, staticColor viewer behavior, and route contracts are covered directly or by the Button-family backfill. |
+| Tasks 3-4 source coverage     | matched | Button-owned source map and branch coverage are recorded here, with the current family-wide branch ledger in `button-family-validation-notes`. |
+| Tasks 5-10 runtime/lifecycle  | matched | Press, hover, focus, pending, form props, custom render, reduced motion, forced-colors, RTL, and cleanup paths have focused evidence.          |
+| Tasks 11-13 evidence/sign-off | matched | Full checks, builds, focused tests, reports, visual failure taxonomy, and current pair-diff evidence are recorded.                             |
+
+Current acceptance boundary:
+
+- Button-owned behavior is playbook-accepted through the Button and
+  Button-family notes together.
+- Support children discovered during Button work remain owned by their
+  standalone component notes; their status must not be inferred from Button
+  acceptance.

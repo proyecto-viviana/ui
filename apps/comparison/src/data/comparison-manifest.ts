@@ -296,6 +296,61 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 AvatarGroup and Avatar directly; Solid uses @proyecto-viviana/solid-spectrum AvatarGroup and Avatar with S2-derived group and child context styling.",
   }),
 
+  badge: styledLiveOfficialEntry({
+    slug: "badge",
+    title: "Badge",
+    category: "Components",
+    summary:
+      "Color-categorized metadata badge mounted on both stacks with S2 variant, fill, size, overflow, icon, and skeleton wrapper coverage.",
+    styledSummary: "React Spectrum Badge vs Solid Spectrum Badge.",
+    styledNote:
+      "React uses @react-spectrum/s2 Badge directly; Solid uses @proyecto-viviana/solid-spectrum Badge with S2-derived control, text, icon, and skeleton wrapper handling.",
+  }),
+
+  statuslight: styledLiveOfficialEntry({
+    slug: "statuslight",
+    title: "StatusLight",
+    category: "Components",
+    summary:
+      "Color-coded status label mounted on both stacks with S2 semantic and categorical variants, size, role, text, and skeleton consumer coverage.",
+    styledSummary: "React Spectrum StatusLight vs Solid Spectrum StatusLight.",
+    styledNote:
+      "React uses @react-spectrum/s2 StatusLight directly; Solid uses @proyecto-viviana/solid-spectrum StatusLight with S2-derived wrapper, SVG light, text, role, and skeleton handling.",
+  }),
+
+  meter: styledLiveOfficialEntry({
+    slug: "meter",
+    title: "Meter",
+    category: "Components",
+    summary:
+      "Progress meter mounted on both stacks with S2 value range, label/value placement, semantic variants, static color, size, and skeleton wrapper coverage.",
+    styledSummary: "React Spectrum Meter vs Solid Spectrum Meter.",
+    styledNote:
+      "React uses @react-spectrum/s2 Meter directly; Solid uses @proyecto-viviana/solid-spectrum Meter with S2-derived wrapper, label/value, track/fill, static color, and skeleton handling.",
+  }),
+
+  form: styledLiveOfficialEntry({
+    slug: "form",
+    title: "Form",
+    category: "Components",
+    summary:
+      "Form layout and inherited field props mounted on both stacks with S2 grid, label placement, size, disabled, required, validation, and submit control coverage.",
+    styledSummary: "React Spectrum Form vs Solid Spectrum Form.",
+    styledNote:
+      "React uses @react-spectrum/s2 Form directly; Solid uses @proyecto-viviana/solid-spectrum Form with S2-derived grid styling and FormContext inheritance into TextField and Button.",
+  }),
+
+  divider: styledLiveOfficialEntry({
+    slug: "divider",
+    title: "Divider",
+    category: "Components",
+    summary:
+      "Visual separator mounted on both stacks with S2 orientation, thickness, static color, and separator semantics.",
+    styledSummary: "React Spectrum Divider vs Solid Spectrum Divider.",
+    styledNote:
+      "React uses @react-spectrum/s2 Divider directly; Solid uses @proyecto-viviana/solid-spectrum Divider with S2-derived separator styling and solidaria-components semantics.",
+  }),
+
   image: styledLiveOfficialEntry({
     slug: "image",
     title: "Image",
@@ -305,6 +360,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     styledSummary: "React Spectrum Image vs Solid Spectrum Image.",
     styledNote:
       "React uses @react-spectrum/s2 Image and ImageCoordinator directly; Solid uses @proyecto-viviana/solid-spectrum Image and ImageCoordinator with S2-derived wrapper, loading, error, and source behavior.",
+  }),
+
+  link: styledLiveOfficialEntry({
+    slug: "link",
+    title: "Link",
+    category: "Components",
+    summary:
+      "Inline and standalone navigation link mounted on both stacks with S2 variant, static color, quiet, and skeleton text coverage.",
+    styledSummary: "React Spectrum Link vs Solid Spectrum Link.",
+    styledNote:
+      "React uses @react-spectrum/s2 Link directly; Solid uses @proyecto-viviana/solid-spectrum Link with S2-derived text, focus, static color, and skeleton handling.",
   }),
 
   skeleton: styledLiveOfficialEntry({

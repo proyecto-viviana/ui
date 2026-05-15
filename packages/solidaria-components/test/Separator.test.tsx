@@ -14,6 +14,7 @@ describe("Separator", () => {
     render(() => <Separator />);
     const separator = screen.getByRole("separator");
     expect(separator.tagName).toBe("HR");
+    expect(separator).toHaveAttribute("role", "separator");
     expect(separator).toHaveClass("solidaria-Separator");
   });
 

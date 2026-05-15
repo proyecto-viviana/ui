@@ -22,6 +22,7 @@ import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
+import { useFormProps, useIsInForm } from "../form";
 
 export type TextFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2TextFieldSize = "S" | "M" | "L" | "XL";
@@ -294,7 +295,8 @@ function requiredIconStyle(size: S2TextFieldSize): JSX.CSSProperties {
 }
 
 export function TextField(props: TextFieldProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const isInForm = useIsInForm();
+  const mergedProps = useProviderProps(useFormProps(props));
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",
@@ -324,7 +326,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
           ...renderProps,
           size: size(),
           labelPosition: labelPosition(),
-          isInForm: false,
+          isInForm,
         },
         local.styles,
       ),

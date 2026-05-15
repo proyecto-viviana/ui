@@ -1,10 +1,11 @@
 import { jsx, jsxs } from "react/jsx-runtime";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   ActionButton as SpectrumActionButton,
   ActionButtonGroup as SpectrumActionButtonGroup,
   Avatar as SpectrumAvatar,
   AvatarGroup as SpectrumAvatarGroup,
+  Badge as SpectrumBadge,
   Button as SpectrumButton,
   ButtonGroup as SpectrumButtonGroup,
   Card as SpectrumCard,
@@ -17,10 +18,14 @@ import {
   DatePicker as SpectrumDatePicker,
   Dialog as SpectrumDialog,
   DialogTrigger as SpectrumDialogTrigger,
+  Divider as SpectrumDivider,
+  Form as SpectrumForm,
   Heading as SpectrumHeading,
   Image as SpectrumImage,
   ImageCoordinator as SpectrumImageCoordinator,
+  Link as SpectrumLink,
   LinkButton as SpectrumLinkButton,
+  Meter as SpectrumMeter,
   NumberField as SpectrumNumberField,
   Picker as SpectrumPicker,
   PickerItem as SpectrumPickerItem,
@@ -30,6 +35,7 @@ import {
   SearchField as SpectrumSearchField,
   Skeleton as SpectrumSkeleton,
   Slider as SpectrumSlider,
+  StatusLight as SpectrumStatusLight,
   Switch as SpectrumSwitch,
   SegmentedControl as SpectrumSegmentedControl,
   SegmentedControlItem as SpectrumSegmentedControlItem,
@@ -66,6 +72,11 @@ import {
   normalizeAvatarGroupDemoProps,
   serializeAvatarGroupDemoProps,
 } from "@comparison/data/avatar-group-demo";
+import {
+  badgeDemoPropsFromWindow,
+  normalizeBadgeDemoProps,
+  serializeBadgeDemoProps,
+} from "@comparison/data/badge-demo";
 import {
   comparisonActionItems as actionItems,
   comparisonTabItems as tabItems,
@@ -116,12 +127,32 @@ import {
   serializeDatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
 import {
+  dividerDemoPropsFromWindow,
+  normalizeDividerDemoProps,
+  serializeDividerDemoProps,
+} from "@comparison/data/divider-demo";
+import {
   imageDemoPropsFromWindow,
   imageMissingSource,
   imageDemoSources,
   normalizeImageDemoProps,
   serializeImageDemoProps,
 } from "@comparison/data/image-demo";
+import {
+  formDemoPropsFromWindow,
+  normalizeFormDemoProps,
+  serializeFormDemoProps,
+} from "@comparison/data/form-demo";
+import {
+  linkDemoPropsFromWindow,
+  normalizeLinkDemoProps,
+  serializeLinkDemoProps,
+} from "@comparison/data/link-demo";
+import {
+  meterDemoPropsFromWindow,
+  normalizeMeterDemoProps,
+  serializeMeterDemoProps,
+} from "@comparison/data/meter-demo";
 import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
@@ -147,6 +178,11 @@ import {
   serializeSkeletonDemoProps,
   skeletonDemoPropsFromWindow,
 } from "@comparison/data/skeleton-demo";
+import {
+  normalizeStatusLightDemoProps,
+  serializeStatusLightDemoProps,
+  statusLightDemoPropsFromWindow,
+} from "@comparison/data/statuslight-demo";
 import {
   normalizeSwitchDemoProps,
   serializeSwitchDemoProps,
@@ -365,6 +401,7 @@ export const reactStyledFixtures = {
   actionbuttongroup: () => jsx(ReactActionButtonGroupDemo, {}),
   avatar: () => jsx(ReactAvatarDemo, {}),
   avatargroup: () => jsx(ReactAvatarGroupDemo, {}),
+  badge: () => jsx(ReactBadgeDemo, {}),
   buttongroup: () => jsx(ReactButtonGroupDemo, {}),
   linkbutton: () => jsx(ReactLinkButtonDemo, {}),
   togglebutton: () => jsx(ReactToggleButtonDemo, {}),
@@ -375,7 +412,11 @@ export const reactStyledFixtures = {
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   combobox: () => jsx(ReactComboBoxDemo, {}),
+  divider: () => jsx(ReactDividerDemo, {}),
   image: () => jsx(ReactImageDemo, {}),
+  form: () => jsx(ReactFormDemo, {}),
+  link: () => jsx(ReactLinkDemo, {}),
+  meter: () => jsx(ReactMeterDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
   picker: () => jsx(ReactPickerDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
@@ -384,6 +425,7 @@ export const reactStyledFixtures = {
   searchfield: () => jsx(ReactSearchFieldDemo, {}),
   skeleton: () => jsx(ReactSkeletonDemo, {}),
   switch: () => jsx(ReactSwitchDemo, {}),
+  statuslight: () => jsx(ReactStatusLightDemo, {}),
   cardview: () => jsx(ReactCardViewDemo, {}),
   segmentedcontrol: () => jsx(ReactSegmentedControlDemo, {}),
   selectboxgroup: () => jsx(ReactSelectBoxGroupDemo, {}),
@@ -917,6 +959,141 @@ function ReactButtonGroupDemo() {
   );
 }
 
+function renderBadgeChildren(demoProps) {
+  if (demoProps.iconPlacement === "start") {
+    return jsxs(Fragment, {
+      children: [
+        jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+        jsx(SpectrumText, { children: demoProps.children }),
+      ],
+    });
+  }
+
+  return demoProps.children;
+}
+
+function ReactBadgeDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(badgeDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "badge") {
+        setDemoProps(normalizeBadgeDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-badge-row",
+      children: jsx(SpectrumBadge, {
+        "data-comparison-control-root": "badge",
+        "data-comparison-control-props": serializeBadgeDemoProps(demoProps),
+        variant: demoProps.variant,
+        fillStyle: demoProps.fillStyle,
+        size: demoProps.size,
+        overflowMode: demoProps.overflowMode,
+        children: renderBadgeChildren(demoProps),
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactStatusLightDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(statusLightDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "statuslight") {
+        setDemoProps(normalizeStatusLightDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-status-light-row",
+      children: jsx(SpectrumStatusLight, {
+        "data-comparison-control-root": "statuslight",
+        "data-comparison-control-props": serializeStatusLightDemoProps(demoProps),
+        variant: demoProps.variant,
+        size: demoProps.size,
+        role: demoProps.role || undefined,
+        children: demoProps.children,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactDividerDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(dividerDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "divider") {
+        setDemoProps(normalizeDividerDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      ...staticColorBackdropProps(demoProps.staticColor, "comparison-divider-row"),
+      "data-comparison-orientation": demoProps.orientation,
+      children: jsx(SpectrumDivider, {
+        "data-comparison-control-root": "divider",
+        "data-comparison-control-props": serializeDividerDemoProps(demoProps),
+        orientation: demoProps.orientation,
+        size: demoProps.size,
+        staticColor: demoProps.staticColor,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactMeterDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(meterDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "meter") {
+        setDemoProps(normalizeMeterDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      ...staticColorBackdropProps(demoProps.staticColor, "comparison-meter-row"),
+      children: jsx(SpectrumMeter, {
+        "data-comparison-control-root": "meter",
+        "data-comparison-control-props": serializeMeterDemoProps(demoProps),
+        label: demoProps.label,
+        value: demoProps.value,
+        minValue: demoProps.minValue,
+        maxValue: demoProps.maxValue,
+        valueLabel: demoProps.valueLabel || undefined,
+        variant: demoProps.variant,
+        size: demoProps.size,
+        staticColor: demoProps.staticColor || undefined,
+        labelPosition: demoProps.labelPosition,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
 function ReactLinkButtonDemo() {
   const colorScheme = useComparisonResolvedTheme();
   const [demoProps, setDemoProps] = useState(linkButtonDemoPropsFromWindow);
@@ -944,6 +1121,37 @@ function ReactLinkButtonDemo() {
         isDisabled: demoProps.isDisabled,
         "aria-label": demoProps.iconPlacement === "only" ? demoProps.children : void 0,
         children: renderSingleButtonFamilyChildren(demoProps.children, demoProps.iconPlacement),
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactLinkDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(linkDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "link") {
+        setDemoProps(normalizeLinkDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("p", {
+      ...staticColorBackdropProps(demoProps.staticColor, "comparison-link-row"),
+      children: jsx(SpectrumLink, {
+        "data-comparison-control-root": "link",
+        "data-comparison-control-props": serializeLinkDemoProps(demoProps),
+        href: demoProps.href,
+        variant: demoProps.variant,
+        staticColor: demoProps.staticColor,
+        isStandalone: demoProps.isStandalone,
+        isQuiet: demoProps.isQuiet,
+        children: demoProps.children,
       }),
     }),
     colorScheme,
@@ -1245,6 +1453,66 @@ function ReactTextFieldDemo() {
           setValue(nextValue);
           setDemoProps((current) => ({ ...current, value: nextValue }));
         },
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactFormDemo() {
+  const [demoProps, setDemoProps] = useState(formDemoPropsFromWindow);
+  const [value, setValue] = useState(() => demoProps.value);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "form") {
+        const nextProps = normalizeFormDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(nextProps.value);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-form-row",
+      children: jsxs(SpectrumForm, {
+        "data-comparison-control-root": "form",
+        "data-comparison-control-props": serializeFormDemoProps({
+          ...demoProps,
+          value,
+        }),
+        "data-comparison-value": value,
+        size: demoProps.size,
+        labelPosition: demoProps.labelPosition,
+        labelAlign: demoProps.labelAlign,
+        necessityIndicator: demoProps.necessityIndicator,
+        validationBehavior: demoProps.validationBehavior,
+        isRequired: demoProps.isRequired,
+        isDisabled: demoProps.isDisabled,
+        isEmphasized: demoProps.isEmphasized,
+        onSubmit: (event) => event.preventDefault(),
+        children: [
+          jsx(SpectrumTextField, {
+            "data-comparison-form-field": "name",
+            label: demoProps.label,
+            name: "name",
+            value,
+            description: "Inherited from the parent form.",
+            onChange: (nextValue) => {
+              setValue(nextValue);
+              setDemoProps((current) => ({ ...current, value: nextValue }));
+            },
+          }),
+          jsx(SpectrumButton, {
+            "data-comparison-form-submit": "true",
+            type: "submit",
+            children: demoProps.actionLabel,
+          }),
+        ],
       }),
     }),
     colorScheme,
