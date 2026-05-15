@@ -6,6 +6,13 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import {
+  badgeFillStyleOptions,
+  badgeIconPlacementOptions,
+  badgeOverflowModeOptions,
+  badgeSizeOptions,
+  badgeVariantOptions,
+} from "../src/data/badge-demo";
 
 function badgeQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -76,6 +83,20 @@ async function badgeContract(root: Locator) {
   });
 }
 
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
+}
+
 test.describe("comparison Badge visual parity", () => {
   test("Badge default state is pixel-identical", async ({ page }) => {
     const fixtures = await badgeFixtures(page);
@@ -89,6 +110,19 @@ test.describe("comparison Badge visual parity", () => {
   });
 
   test("Badge prop controls drive both implementations", async ({ page }) => {
+    await badgeFixtures(page);
+
+    await expect(page.locator('input[name="children"]')).toHaveValue("Published");
+    await expect(page.locator('select[name="variant"] option')).toHaveText([
+      ...badgeVariantOptions,
+    ]);
+    await expect(page.locator('select[name="variant"]')).toHaveValue("neutral");
+    await expect(page.locator('select[name="variant"] option', { hasText: /^$/ })).toHaveCount(0);
+    await expectRadioValues(page, "fillStyle", badgeFillStyleOptions, "bold");
+    await expectRadioValues(page, "size", badgeSizeOptions, "S");
+    await expectRadioValues(page, "overflowMode", badgeOverflowModeOptions, "wrap");
+    await expectRadioValues(page, "iconPlacement", badgeIconPlacementOptions, "none");
+
     const fixtures = await badgeFixtures(page, {
       children: "Ready",
       variant: "positive",
@@ -115,6 +149,12 @@ test.describe("comparison Badge visual parity", () => {
       "data-comparison-control-props",
       expectedProps,
     );
+    await expect(page.locator('input[name="children"]')).toHaveValue("Ready");
+    await expect(page.locator('select[name="variant"]')).toHaveValue("positive");
+    await expectRadioValues(page, "fillStyle", badgeFillStyleOptions, "subtle");
+    await expectRadioValues(page, "size", badgeSizeOptions, "L");
+    await expectRadioValues(page, "overflowMode", badgeOverflowModeOptions, "truncate");
+    await expectRadioValues(page, "iconPlacement", badgeIconPlacementOptions, "start");
   });
 
   test("Badge computed styles match React Spectrum across variant, fill, and icon states", async ({
@@ -124,7 +164,10 @@ test.describe("comparison Badge visual parity", () => {
       { variant: "neutral", fillStyle: "bold", size: "S" },
       { variant: "positive", fillStyle: "subtle", size: "M" },
       { variant: "negative", fillStyle: "outline", size: "XL" },
+      { variant: "accent", fillStyle: "outline", size: "L" },
+      { variant: "informative", fillStyle: "outline", size: "L" },
       { variant: "notice", fillStyle: "bold", size: "L" },
+      { variant: "cyan", fillStyle: "outline", size: "M" },
       { iconPlacement: "start", size: "L" },
       {
         children: "Long publication state",
@@ -139,5 +182,19 @@ test.describe("comparison Badge visual parity", () => {
         await badgeContract(fixtures.reactRoot),
       );
     }
+  });
+
+  test("Badge forced-colors branch matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await badgeFixtures(page, {
+      variant: "negative",
+      fillStyle: "outline",
+      size: "XL",
+      iconPlacement: "start",
+    });
+
+    await expect(badgeContract(fixtures.solidRoot)).resolves.toEqual(
+      await badgeContract(fixtures.reactRoot),
+    );
   });
 });

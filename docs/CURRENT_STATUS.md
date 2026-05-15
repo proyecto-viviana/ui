@@ -42,8 +42,8 @@ as local additions when they are public API.
    pass with hidden retro-audit debt; mark it partial until in-scope gates are
    closed.
 3. Continue with the next styled S2 gap from the report. The support-component
-   sweep exposed by the Skeleton, Image, Link, Badge, StatusLight, Meter, and
-   Form passes is comparison-live through Form, while Divider is playbook
+   sweep exposed by the Skeleton, Image, Link, StatusLight, Meter, and Form
+   passes is comparison-live through Form, while Badge and Divider are playbook
    accepted for owned behavior. Form inheritance beyond the TextField/Button
    fixture must still be validated during each remaining form-aware component
    pass.
