@@ -9,16 +9,18 @@ can validate against sources instead of memory or file names.
 Use [Source Index](./source-index.md) to pick sources, and use only sources for
 the target component and directly related patterns.
 
-| Need                                       | Source                                                                  |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| React Aria component behavior and props    | `get_react_aria_page "<Component>"`                                     |
-| React Aria examples and testing guidance   | `list_react_aria_pages`, then matching example or testing pages         |
-| React Aria blog or release context         | `list_react_aria_pages`, then matching blog/release pages               |
-| Spectrum S2 page sections                  | `get_s2_page_info "<Component>"`                                        |
-| Spectrum S2 props, slots, examples, viewer | `get_s2_page "<Component>"`                                             |
-| APG pattern requirements                   | <https://www.w3.org/WAI/ARIA/apg/patterns/>                             |
-| APG role/property/example cross-reference  | <https://www.w3.org/WAI/ARIA/apg/example-index/>                        |
-| Browser or platform behavior               | MDN or specs only when React Aria/APG depends on native element details |
+| Need                                       | Source                                                                        |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
+| React Aria component behavior and props    | `get_react_aria_page "<Component>"`                                           |
+| React Aria examples and testing guidance   | `list_react_aria_pages`, then matching example or testing pages               |
+| React Aria blog or release context         | `list_react_aria_pages`, then matching blog/release pages                     |
+| Spectrum S2 page sections                  | `get_s2_page_info "<Component>"`                                              |
+| Spectrum S2 props, slots, examples, viewer | `get_s2_page "<Component>"`                                                   |
+| APG pattern requirements                   | <https://www.w3.org/WAI/ARIA/apg/patterns/>                                   |
+| APG role/property/example cross-reference  | <https://www.w3.org/WAI/ARIA/apg/example-index/>                              |
+| WCAG/ARIA-AT/evaluation guidance           | Source Index links when accessibility risk depends on support or criteria     |
+| Browser or platform behavior               | Specs first; Chrome/web.dev/MDN when React Aria/APG depends on native details |
+| Independent articles or famous blog posts  | Risk discovery only; map claims back to source/spec/current React behavior    |
 
 Not every component has a React Aria blog post or APG example. Record `none
 found` instead of widening the search until it becomes generic.
@@ -32,10 +34,13 @@ Use the source hierarchy in [Source Index](./source-index.md). In short:
 3. W3C and WHATWG technical specifications.
 4. APG patterns and examples.
 5. ARIA-AT, WCAG, evaluation guidance, and testing-tool docs.
+6. Chrome, web.dev, MDN, browser-vendor docs, and platform explainers.
+7. Independent or famous blog posts and articles.
 
 APG explains accessibility patterns; it is not automatically the implementation
-contract for this port. Record any place where upstream intentionally differs
-from APG.
+contract for this port. Platform explainers and articles are not acceptance
+authority by themselves. Record any place where upstream intentionally differs
+from APG, specs, docs, or common guidance.
 
 ## Research Notes
 
@@ -47,6 +52,9 @@ Create short validation notes for the component with:
 - S2 docs page names used;
 - S2 docs section inventory and interactive viewer controls;
 - APG pattern and example URLs used;
+- W3C/WHATWG/WCAG/ARIA-AT/evaluation sources used;
+- Chrome/web.dev/MDN/platform explainer URLs used;
+- independent article/blog claims and their source-backed follow-up;
 - one-sentence purpose of the component;
 - primary native element, role, or composite pattern;
 - required subpatterns, such as `button`, `dialog`, `grid`, `listbox`,
@@ -70,6 +78,8 @@ Extract obligations into the later playbook categories:
   notes;
 - roles, names, descriptions, ARIA states, and DOM relationships;
 - keyboard interaction and focus movement;
+- focus-visible, focus return, focus-not-obscured, target size, and multiple
+  instance obligations;
 - pointer, touch, virtual-click, and screen-reader interaction notes;
 - event handler ordering, cancellation, `mergeProps` behavior, and user refs;
 - controlled/uncontrolled state, commit timing, reset behavior, and callback
@@ -80,6 +90,8 @@ Extract obligations into the later playbook categories:
 - internationalization, RTL, locale, calendar, number, or color behavior;
 - high contrast, forced colors, reduced motion, geometry, and overlay
   positioning requirements;
+- style source-to-computed obligations for tokens, classes, CSS variables,
+  icons, images, avatars, slots, portals, and viewer canvas conditions;
 - documented limitations, caveats, or places where React Aria intentionally
   differs from APG examples.
 
@@ -94,4 +106,6 @@ Extract obligations into the later playbook categories:
   source branch ledger, or an explicit gap.
 - Every missing React Aria blog/example/testing page is recorded as `none
 found`, not silently skipped.
+- Every external source that adds an obligation maps to a route item, source
+  branch row, behavior row, accessibility row, style row, or explicit gap.
 - No implementation code changes in this task.

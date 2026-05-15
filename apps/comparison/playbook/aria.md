@@ -26,6 +26,9 @@ DOM. Do not infer ARIA from screenshots.
   with ARIA roles unless upstream does.
 - Validate the computed accessible name and description, not only the presence
   of `aria-label`, `aria-labelledby`, or `aria-describedby`.
+- Validate the computed role and value, especially for meters, progress,
+  sliders, switches, tabs, listboxes, trees, grids, menu items, and composite
+  widgets.
 - Assert every ID reference exists in the relevant state and is removed when
   upstream removes it.
 - Check that multiple component instances do not collide generated IDs.
@@ -49,3 +52,16 @@ Use `getByRole`, `getByLabelText`, and accessibility snapshots. Avoid tests that
 only assert internal `data-*` markers. Prefer browser-level accessible-name
 assertions for composite widgets, overlays, and controls with description or
 error text.
+
+## Blockers
+
+Mark the component `partial` with `a11y-blocker` when any of these remain
+unproven:
+
+- role/name/description/value computation;
+- keyboard model or focus-visible/focus-return behavior;
+- ID reference lifetime or multiple-instance collision behavior;
+- disabled, read-only, required, invalid, hidden, or inert semantics;
+- live-region announcement content, timing, or cleanup;
+- form label/help/error/reset/submit behavior;
+- forced-colors, reduced-motion, or screen-reader-only affordance behavior.

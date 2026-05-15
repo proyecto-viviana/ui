@@ -5,9 +5,9 @@ comparison reports reflect the improved state.
 
 Acceptance also requires the component's
 [Acceptance Gates](./acceptance-gates.md) checklist. The gates are additive:
-official docs/viewer parity, upstream React source parity, Solid idiomatic
-implementation, and React-vs-Solid harness parity must all be complete for the
-component to be marked accepted.
+documentation/viewer parity, external authority, upstream source, Solid idioms,
+accessibility/i18n, behavior, style, React-vs-Solid harness parity, and
+evidence/handoff must all be complete for the component to be marked accepted.
 
 ## Layer Sign-Off
 
@@ -26,8 +26,21 @@ component to be marked accepted.
   viewer setting is covered by route controls, examples, source branch rows, and
   evidence, or recorded as `docs-drift`, `not-applicable`, `route-gap`, or
   `port-gap`.
+- External authority: relevant React Aria/S2 docs, testing docs, release notes,
+  specs, APG/WCAG/ARIA-AT/evaluation guidance, platform explainers, and
+  articles are checked or recorded as `none found`; disagreements name the
+  chosen authority.
 - Solid idiom gate: dynamic props, lazy children, context, render props, refs,
   and cleanup risks are checked independently from upstream source parity.
+- Accessibility/i18n gate: role/name/description/value, ARIA references,
+  keyboard, focus, forms, announcements, forced colors, reduced motion, locale,
+  RTL, and multiple-instance behavior are proven or marked not applicable.
+- Behavior state-machine gate: state/input, trigger, expected React, expected
+  Solid, and evidence rows cover interactions, callbacks, controlled modes,
+  async states, overlays, and cleanup where applicable.
+- Style source-to-computed gate: upstream S2 style branches map to Solid owner
+  code and browser-observable computed style, class, geometry, attribute, or
+  CSS-variable evidence.
 - React-vs-Solid harness parity: route evidence proves both stacks match only
   after the route has been validated against the official docs/viewer.
 - `solid-stately`: controlled/uncontrolled state, callbacks, validation,
@@ -76,3 +89,4 @@ Record:
   `docs-drift`, with authority and next owner.
 - unchecked acceptance-gate items, grouped by gate. If any in-scope item is
   unchecked, set the component status to `partial`, not `accepted`.
+- blocker labels from `acceptance-gates.md` for every remaining blocker.

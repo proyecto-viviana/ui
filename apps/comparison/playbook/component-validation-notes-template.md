@@ -51,7 +51,20 @@ in-scope item is checked. Leave unchecked items visible for partial passes.
       semantics:
 - [ ] Route tests assert visible defaults/options and mounted DOM changes:
 
-### 2. Upstream React Source Parity
+### 2. External Authority And Standards
+
+- [ ] React Aria/S2 docs, testing docs, blog/release/example pages checked or
+      recorded as `none found`:
+- [ ] W3C/WHATWG/APG/WCAG/ARIA-AT/evaluation sources checked where relevant:
+- [ ] Chrome/web.dev/MDN/platform explainers used only for browser behavior,
+      test strategy, or risk discovery:
+- [ ] Independent/famous blog posts used only as risk discovery unless tied to
+      normative source, installed source, or reproducible behavior:
+- [ ] Source disagreements recorded with chosen authority:
+- [ ] External obligations mapped to route/source/behavior/a11y/style rows or
+      explicit gaps:
+
+### 3. Upstream React Source Parity
 
 - [ ] Upstream files identified for every relevant layer:
 - [ ] Solid owner files identified or gaps recorded:
@@ -63,7 +76,7 @@ in-scope item is checked. Leave unchecked items visible for partial passes.
 - [ ] Remaining `gap` or `deferred-gap` rows have owners and are not counted as
       accepted:
 
-### 3. Solid Idiomatic Implementation
+### 4. Solid Idiomatic Implementation
 
 - [ ] Dynamic props, context values, and derived values remain reactive:
 - [ ] No prop destructuring/spread snapshots live Solid accessors:
@@ -74,7 +87,51 @@ in-scope item is checked. Leave unchecked items visible for partial passes.
 - [ ] Solid-specific deviations preserve documented public behavior:
 - [ ] Tests cover relevant reactive update risks:
 
-### 4. React-Vs-Solid Comparison Harness Parity
+### 5. Accessibility And I18n
+
+- [ ] Native element, role, computed accessible name, description, and value:
+- [ ] ARIA references, generated IDs, ordering, removal timing, and
+      multiple-instance collision checks:
+- [ ] Keyboard model, focus order, focus-visible, focus return, and
+      focus-not-obscured behavior:
+- [ ] Disabled/read-only/required/invalid/inert/hidden semantics:
+- [ ] Form labels/help/error/validation/hidden-input/reset/submit behavior:
+- [ ] Live regions, loading/selection/drag-drop announcements, and cleanup
+      timing:
+- [ ] Forced colors, reduced motion, contrast-sensitive states, target size,
+      and screen-reader-only affordances:
+- [ ] Locale, direction, formatting, calendar/hour-cycle, and messages:
+- [ ] Axe or similar smoke result, plus manual semantic assertions:
+
+### 6. Behavior State Machine
+
+- [ ] State/input -> trigger -> expected React -> expected Solid -> evidence
+      rows completed:
+- [ ] Pointer, keyboard, touch, virtual click, blur, Escape, cancellation,
+      outside press, disabled/read-only suppression:
+- [ ] Controlled/uncontrolled, defaults, reset, submit, async/loading/empty,
+      collection navigation:
+- [ ] Event ordering, callback payloads/counts/suppression, propagation, and
+      cancellation:
+- [ ] Overlay/portal/scroll-lock/hiding/focus/timer/observer/listener cleanup:
+- [ ] Before/trigger/immediate/transient/settled/cleanup transition evidence:
+
+### 7. Style Source-To-Computed Parity
+
+- [ ] Upstream S2 style declarations and owner branches identified:
+- [ ] Solid style/token path uses S2-compatible generated classes:
+- [ ] Comparison app CSS does not patch component behavior/style/geometry:
+- [ ] Size/density/variant/staticColor/orientation/placement/field-state and
+      provider/form style axes mapped:
+- [ ] Computed-style/class/attribute/geometry/CSS-variable assertions cover
+      rendering-affecting branches:
+- [ ] Forced-colors/reduced-motion/focus-ring/icon/image/avatar/slot/portal
+      geometry branches covered:
+- [ ] Official viewer canvas/background/scale/width/direction/theme conditions
+      represented or recorded as gaps:
+- [ ] Visual deviations classified:
+
+### 8. React-Vs-Solid Comparison Harness Parity
 
 - [ ] React fixture imports current upstream component and official composition:
 - [ ] Solid fixture imports package public API:
@@ -84,7 +141,7 @@ in-scope item is checked. Leave unchecked items visible for partial passes.
       rendering-affecting branches:
 - [ ] Harness stability is proven:
 
-### 5. Evidence And Handoff
+### 9. Evidence And Handoff
 
 - [ ] Focused package tests:
 - [ ] Focused Playwright/runtime tests:
@@ -92,6 +149,7 @@ in-scope item is checked. Leave unchecked items visible for partial passes.
 - [ ] `vp run check`:
 - [ ] Final status is `accepted`, `partial`, or `pre-pass`:
 - [ ] Remaining gaps listed by gate and owner:
+- [ ] Blocker labels used where applicable:
 
 ## Research
 
@@ -99,6 +157,9 @@ in-scope item is checked. Leave unchecked items visible for partial passes.
 - React Aria blog/release/example/testing pages:
 - S2 docs:
 - APG patterns/examples:
+- W3C/WHATWG/WCAG/ARIA-AT/evaluation sources:
+- Chrome/web.dev/MDN platform explainers:
+- Independent blog posts or articles:
 - Other standards from Source Index:
 - Source disagreements and chosen authority:
 - Missing related docs recorded as `none found`:
@@ -190,6 +251,40 @@ context, slot, and ref branches need direct evidence before they can be marked
 - Cleanup assertions:
 - Visual-state rows changed:
 
+## Behavior State Machine
+
+Use one row per source-backed behavior, not one row per prop combination. The
+row is complete only when React and Solid are both observed.
+
+| State/input | Trigger | Expected React | Expected Solid | Status | Evidence |
+| ----------- | ------- | -------------- | -------------- | ------ | -------- |
+|             |         |                |                |        |          |
+
+## Accessibility And I18n
+
+Record harsh semantic proof. Automated scans are only smoke tests.
+
+| Surface                                             | Upstream/current React | Solid | Status | Evidence |
+| --------------------------------------------------- | ---------------------- | ----- | ------ | -------- |
+| Role/name/description/value                         |                        |       |        |          |
+| ARIA references and generated IDs                   |                        |       |        |          |
+| Keyboard and focus                                  |                        |       |        |          |
+| Disabled/readonly/required/invalid/hidden semantics |                        |       |        |          |
+| Form labels/help/error/reset/submit                 |                        |       |        |          |
+| Live announcements and cleanup                      |                        |       |        |          |
+| Forced colors/reduced motion/contrast/target size   |                        |       |        |          |
+| Locale/direction/formatting/messages                |                        |       |        |          |
+| Multiple instances                                  |                        |       |        |          |
+
+## Style Source-To-Computed
+
+Trace each visual claim from upstream S2 source to Solid owner code and
+browser-observable output.
+
+| Style branch | Upstream declaration | Solid owner | Observable proof | Status |
+| ------------ | -------------------- | ----------- | ---------------- | ------ |
+|              |                      |             |                  |        |
+
 ## Runtime Semantics
 
 - Native element/role decision:
@@ -217,6 +312,14 @@ context, slot, and ref branches need direct evidence before they can be marked
 - Playwright/runtime tests:
 - Screenshots and pair diffs:
 - Builds/checks:
+
+## Blockers
+
+Use the blocker labels from `acceptance-gates.md`.
+
+| Label | Gate | Blocker | Owner/next action |
+| ----- | ---- | ------- | ----------------- |
+|       |      |         |                   |
 
 ## Handoff
 

@@ -3,6 +3,24 @@
 State transitions are first-class parity targets. Do not accept a component
 because its settled default screenshot looks close.
 
+Behavior parity is a state machine. Model what the user or prop input does,
+what React does, what Solid does, and what evidence proves the two are
+equivalent. This is stricter than collecting static states.
+
+## Behavior State Machine
+
+Use this table for every source-backed behavior:
+
+| State/input | Trigger | Expected React | Expected Solid | Evidence |
+| ----------- | ------- | -------------- | -------------- | -------- |
+|             |         |                |                |          |
+
+Rows should cover pointer, keyboard, touch, screen-reader virtual click, blur,
+Escape, cancellation, outside press, disabled/read-only suppression,
+controlled/uncontrolled updates, form reset/submit, async/loading/empty states,
+overlay lifecycle, collection navigation, and callback ordering where upstream
+supports those paths.
+
 ## Model
 
 For each state change, write the timeline:

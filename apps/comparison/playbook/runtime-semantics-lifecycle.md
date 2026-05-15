@@ -16,10 +16,14 @@ authority. In short:
 3. W3C and WHATWG technical specifications.
 4. APG patterns and examples for the relevant role or property.
 5. ARIA-AT, WCAG, evaluation guidance, and testing-tool docs.
+6. Chrome, web.dev, MDN, browser-vendor docs, and platform explainers.
+7. Independent or famous blog posts and articles as risk discovery only.
 
 Record each discrepancy. Do not replace upstream behavior with APG behavior
 unless the upstream source is clearly incomplete or the deviation is explicitly
-chosen and documented.
+chosen and documented. Do not treat a blog post or platform explainer as a
+standalone acceptance source; use it to identify the source/spec/current-React
+behavior that must be proven.
 
 ## Native Semantics
 
@@ -37,6 +41,8 @@ chosen and documented.
 ## Accessible Computation
 
 - Accessible name and description are computed, not inferred from attributes.
+- Accessible role and value are computed where the component exposes a widget,
+  range, option, item, or composite pattern.
 - `aria-labelledby` and `aria-describedby` reference existing IDs in the same
   open/closed state as upstream.
 - ID order in description chains matches upstream where order affects
@@ -61,6 +67,9 @@ Validate each relevant input path separately:
 | Screen-reader virtual click | Activation path matches upstream without requiring pointer or keyboard state   |
 | Reduced motion              | Animation branches respect upstream reduced-motion behavior                    |
 | Forced colors               | Semantic colors, outlines, icons, and hidden text remain perceivable           |
+
+Also prove focus is not obscured by sticky headers, overlays, scroll containers,
+or portals when the component programmatically moves focus.
 
 If a modality is not applicable, record why.
 

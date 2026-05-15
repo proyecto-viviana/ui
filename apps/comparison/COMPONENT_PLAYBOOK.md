@@ -14,9 +14,10 @@ before changing styled component code.
 - Upstream source wins when docs, APG examples, or assumptions disagree.
 - Evidence authority is layered: source and semantic behavior first,
   interaction timelines next, computed styles and current pair diffs after that.
-- Acceptance gates are additive. Official docs/viewer parity, upstream React
-  source parity, Solid idiomatic implementation, and React-vs-Solid comparison
-  parity must all be checked. Do not use one as a substitute for another.
+- Acceptance gates are additive. Documentation/viewer parity, external
+  authority, upstream source, Solid idioms, accessibility/i18n, behavior, style,
+  React-vs-Solid comparison parity, and evidence/handoff must all be checked.
+  Do not use one as a substitute for another.
 - Do not use per-side committed screenshot assertions as component acceptance
   gates. Remove `toHaveScreenshot`, `toMatchSnapshot`, and helper wrappers that
   compare current React to old React PNGs or current Solid to old Solid PNGs.
@@ -72,7 +73,7 @@ Open:
 - [Component Research](./playbook/component-research.md)
 - [Official Docs And Viewer Parity](./playbook/official-docs-viewer-parity.md)
 - [Source Index](./playbook/source-index.md)
-- target React Aria, S2, and APG pages only
+- target React Aria, S2, APG, standards, and platform pages only when relevant
 
 Output:
 
@@ -85,12 +86,16 @@ Output:
   defaults, reset behavior, omitted-prop defaults, and explicit option values;
 - viewer environment inventory for settings that change the surrounding canvas,
   container, theme, direction, or background;
-- validation obligations for API, behavior, styling, runtime, and caveats.
+- validation obligations for API, behavior, styling, runtime, accessibility,
+  i18n, and caveats;
+- external authority obligations from React Aria/S2 docs, specs, APG/WCAG,
+  ARIA-AT, Chrome/web.dev/MDN, or independent articles mapped to source,
+  route, behavior, accessibility, style, or gap rows.
 
 Validate:
 
-- all four gate categories are present in the validation notes before research
-  continues;
+- every acceptance gate category is present in the validation notes before
+  research continues;
 - every source disagreement names the authority used for this pass;
 - every validation category is sourced, explicitly not applicable, or assigned
   to source audit;
@@ -221,6 +226,8 @@ Validate:
   composition, or dynamic props have an equivalent Solid idiom identified;
 - Solid idiom risks from the acceptance gate are checked as their own evidence
   category, not folded into source parity prose;
+- accessibility, behavior, and style risks are recorded as their own gate rows,
+  not folded into a general source-audit summary;
 - every source-discovered dependency names the affected subpart, upstream input,
   observable output, and planned proof;
 - cross-component contracts discovered for future components are recorded in
@@ -249,6 +256,8 @@ Output:
 - transition inventory from upstream source and Task 0 research;
 - dependency-driven test plan: baseline plus pairwise/delta checks for each
   prop/state/subpart coupling found in Task 4;
+- behavior state-machine rows for every source-backed input, trigger, expected
+  React result, expected Solid result, and evidence requirement;
 - visual-state rows with `planned`, `blocked`, `asserted`, or `strict` status;
 - list of transitions requiring Playwright replay.
 
@@ -401,6 +410,9 @@ Validate:
 
 - names/descriptions are computed correctly;
 - ID references exist, stay stable, and do not collide;
+- accessibility/i18n gate rows are covered for role/value, keyboard/focus,
+  ARIA references, forms, live announcements, forced colors, reduced motion,
+  locale, RTL, and multiple instances where applicable;
 - consumer handlers, refs, cancellation, propagation, and disabled suppression
   match upstream;
 - modality, forced-colors, and reduced-motion paths are tested or not

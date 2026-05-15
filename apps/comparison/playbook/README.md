@@ -10,9 +10,10 @@ as the working artifact for a component pass. Component notes live in
 [`components/`](./components/).
 
 Every pass also uses [Acceptance Gates](./acceptance-gates.md). The gates are
-blocking and additive: official docs/viewer parity, upstream React source
-parity, Solid idiomatic implementation, and React-vs-Solid harness parity must
-all be proven. Passing one gate never substitutes for another.
+blocking and additive. Documentation/viewer parity, external authority,
+upstream source, Solid idioms, accessibility/i18n, behavior, style,
+React-vs-Solid harness parity, and evidence/handoff must all be proven.
+Passing one gate never substitutes for another.
 
 ## Reading Order
 
@@ -44,7 +45,7 @@ checklists are prompts. Do not open every checklist up front.
 | Layer      | Source-driven | [Keyboard](./keyboard.md), [Focus](./focus.md), [Overlay](./overlay.md), [Forms And Validation](./forms-validation.md)                                                                                                                             |
 | Layer      | Source-driven | [Collections, Async, And Virtualization](./collections-async-virtualization.md), [Accessibility And I18n](./accessibility-i18n.md)                                                                                                                 |
 | Runtime    | Always        | [State Transitions And Timelines](./state-transitions.md), [Runtime Semantics And Lifecycle](./runtime-semantics-lifecycle.md)                                                                                                                     |
-| Runtime    | Conditional   | [Interactions And Motion](./interactions-motion.md), [Geometry](./geometry.md)                                                                                                                                                                     |
+| Runtime    | Conditional   | [Interactions And Motion](./interactions-motion.md), [Geometry](./geometry.md), [Accessibility And I18n](./accessibility-i18n.md)                                                                                                                  |
 | Evidence   | Always        | [Harness And Evidence Integrity](./harness-evidence-integrity.md), [Visual Regression](./visual-regression.md)                                                                                                                                     |
 | Acceptance | Always        | [Tests And Sign-Off](./tests-signoff.md)                                                                                                                                                                                                           |
 
@@ -62,10 +63,19 @@ moving between files.
 and interactive viewer must be inventoried so route controls, examples, and
 documentation claims are checked against the public surface users see.
 
+`External Authority And Standards` is required when docs, specs, accessibility
+guidance, platform explainers, or articles can change the validation
+obligations. These sources discover and constrain risk; installed source and
+formal specs resolve authority.
+
 `Solid Idioms And Reactivity` is a required gate, not a style preference. A
 Solid implementation can match upstream behavior only when the port preserves
 Solid's reactive props, lazy children, context owner tree, refs, and cleanup
 semantics.
+
+`Accessibility And I18n`, `Behavior State Machine`, and
+`Style Source-To-Computed Parity` are required proof lanes. They are not
+subsections that can be satisfied by a source-summary paragraph or a screenshot.
 
 The comparison harness is the final parity surface, not the only parity surface.
 React-vs-Solid parity in our route is accepted only after the route itself

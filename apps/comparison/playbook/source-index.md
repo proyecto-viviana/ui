@@ -13,10 +13,25 @@ When sources disagree, use this order:
 3. W3C and WHATWG technical specifications.
 4. APG patterns and examples.
 5. ARIA-AT, WCAG, evaluation guidance, and testing-tool docs.
+6. Chrome, web.dev, MDN, browser-vendor docs, and platform explainers.
+7. Independent or famous blog posts and articles.
 
 Record the disagreement and chosen authority in the research notes or runtime
-evidence. APG and ARIA-AT can identify risks, but they do not override installed
-upstream behavior unless we explicitly choose and document a deviation.
+evidence. APG, ARIA-AT, WCAG, platform explainers, and blog posts can identify
+risks, test obligations, and browser behavior to verify. They do not override
+installed upstream behavior or formal specifications unless we explicitly
+choose and document a deviation.
+
+Documentation validation is required, but documentation authority is layered:
+
+- official Adobe docs define the public examples, viewer controls, caveats, and
+  testing expectations users see;
+- installed upstream source defines the exact behavior we are porting when docs
+  and source disagree;
+- formal specs define the platform and accessibility floor;
+- APG, ARIA-AT, WCAG, Chrome/web.dev, MDN, and respected articles help discover
+  risk, but each discovered obligation must map back to source, specs, current
+  React behavior, or a reproducible browser assertion before it blocks parity.
 
 ## Installed Source
 
@@ -83,6 +98,19 @@ technology expectations:
 | WCAG success criteria context | <https://www.w3.org/TR/WCAG22/>                  |
 | WAI evaluation guidance       | <https://www.w3.org/WAI/test-evaluate/>          |
 
+## Platform Guidance And Risk Discovery
+
+Use these sources to understand browser behavior, explain test failures, and
+find risks. They are not parity authority by themselves.
+
+| Need                                      | Source                                                                |
+| ----------------------------------------- | --------------------------------------------------------------------- |
+| Practical accessibility behavior          | <https://web.dev/learn/accessibility/>                                |
+| ARIA and HTML authoring cautions          | <https://web.dev/learn/accessibility/aria-html>                       |
+| Chrome platform accessibility/devtools    | <https://developer.chrome.com/docs/devtools/accessibility/reference/> |
+| Browser API and CSS reference             | <https://developer.mozilla.org/>                                      |
+| Independent articles and famous blogposts | Record title, URL, claim, and the normative/source-backed follow-up.  |
+
 ## Testing References
 
 Use testing references to choose validation technique. They do not define the
@@ -102,5 +130,9 @@ component contract by themselves.
 - Prefer installed source over remembered behavior.
 - Record `none found` when no related blog, release note, testing page, APG
   example, or ARIA-AT report exists.
+- Use independent blog posts as prompts for source/spec/browser checks, not as
+  standalone acceptance criteria.
+- Use Chrome/web.dev/MDN to choose assertions and understand browser behavior;
+  resolve conflicts against installed source, specs, or current React behavior.
 - Do not block a component on manual assistive-technology testing unless the
   pass explicitly calls for it; record it as a risk or follow-up.

@@ -40,6 +40,11 @@ The preferred shape is a delta check:
 - toggle the source input that upstream wires into the subpart;
 - compare the React delta to the Solid delta.
 
+The source-to-computed path must be recorded when a visual branch matters:
+upstream S2 declaration, Solid owner code, route/viewer condition, and
+observable computed proof. Comparison-app CSS may frame the route, but it must
+not patch component behavior, state, token output, or geometry.
+
 ## Transition Matrix
 
 Every visual state that changes over time should also identify its transition:
