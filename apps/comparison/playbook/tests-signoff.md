@@ -90,3 +90,5 @@ Record:
 - unchecked acceptance-gate items, grouped by gate. If any in-scope item is
   unchecked, set the component status to `partial`, not `accepted`.
 - blocker labels from `acceptance-gates.md` for every remaining blocker.
+- agent handoffs copied into the validation note when AI agents were used, with
+  role, files read/changed, evidence, commands, blockers, and next owner.

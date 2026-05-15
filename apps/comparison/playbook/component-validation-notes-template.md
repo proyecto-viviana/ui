@@ -33,6 +33,19 @@ Suggested location for component files:
 | 12 Comparison evidence | pending |          |                        |
 | 13 Acceptance          | pending |          |                        |
 
+## Agent Workflow
+
+Use `agent-workflow.md` when assigning AI agents. Keep each row narrow enough
+that the agent can finish with concrete evidence or a blocker.
+
+| Task | Agent role | Context pack | Docs/skills/tools | Allowed writes | Required output | Status |
+| ---- | ---------- | ------------ | ----------------- | -------------- | --------------- | ------ |
+|      |            |              |                   |                |                 |        |
+
+| Agent role | Files read | Files changed | Evidence added | Commands run | Blockers | Next owner |
+| ---------- | ---------- | ------------- | -------------- | ------------ | -------- | ---------- |
+|            |            |               |                |              |          |            |
+
 ## Acceptance Gate Checklist
 
 These gates are additive. Do not mark the component accepted unless every

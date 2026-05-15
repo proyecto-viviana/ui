@@ -62,6 +62,10 @@ before changing styled component code.
   component sweep.
 - The component validation note must contain the acceptance-gates checklist.
   Task 13 cannot be marked accepted while any in-scope checkbox is unchecked.
+- When using AI agents, use
+  [Agent Workflow](./playbook/agent-workflow.md). Each agent gets a narrow
+  context pack, allowed files, required output, and exit condition. Agents
+  produce evidence or patches; the coordinator owns acceptance.
 
 ## Task 0 - Gather Component Research
 
@@ -70,6 +74,7 @@ Goal: define the target and its source-backed validation obligations.
 Open:
 
 - [Acceptance Gates](./playbook/acceptance-gates.md)
+- [Agent Workflow](./playbook/agent-workflow.md)
 - [Component Research](./playbook/component-research.md)
 - [Official Docs And Viewer Parity](./playbook/official-docs-viewer-parity.md)
 - [Source Index](./playbook/source-index.md)
@@ -78,6 +83,7 @@ Open:
 Output:
 
 - acceptance gate checklist copied into the component validation notes;
+- agent workflow log started with coordinator and step-agent assignments;
 - component target and related subcomponents;
 - research notes with docs, APG patterns, source conflicts, and `none found`
   entries;
@@ -96,6 +102,8 @@ Validate:
 
 - every acceptance gate category is present in the validation notes before
   research continues;
+- every assigned agent has a recorded context pack, allowed files, required
+  output, and exit condition;
 - every source disagreement names the authority used for this pass;
 - every validation category is sourced, explicitly not applicable, or assigned
   to source audit;

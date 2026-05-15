@@ -15,6 +15,10 @@ upstream source, Solid idioms, accessibility/i18n, behavior, style,
 React-vs-Solid harness parity, and evidence/handoff must all be proven.
 Passing one gate never substitutes for another.
 
+When a pass uses AI agents or parallel AI review, use
+[Agent Workflow](./agent-workflow.md). Agents get narrow context packs and
+produce structured evidence; the coordinator owns final status.
+
 ## Reading Order
 
 Keep the process narrow:
@@ -37,7 +41,7 @@ checklists are prompts. Do not open every checklist up front.
 
 | Phase      | Scope         | Checklists                                                                                                                                                                                                                                         |
 | ---------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Starting   | Reference     | [Source Index](./source-index.md)                                                                                                                                                                                                                  |
+| Starting   | Reference     | [Source Index](./source-index.md), [Agent Workflow](./agent-workflow.md)                                                                                                                                                                           |
 | Starting   | Always        | [Component Research](./component-research.md), [Official Docs And Viewer Parity](./official-docs-viewer-parity.md), [Acceptance Gates](./acceptance-gates.md), [Component Validation Notes Template](./component-validation-notes-template.md)     |
 | Baseline   | Always        | [Route Harness](./route-harness.md)                                                                                                                                                                                                                |
 | Audit      | Always        | [Upstream Source Map](./upstream-source-map.md), [Public API](./public-api.md), [Cross-Layer Source Audit](./cross-layer-source-audit.md), [Source Branch Coverage](./source-branch-coverage.md), [Solid Idioms And Reactivity](./solid-idioms.md) |
@@ -81,6 +85,11 @@ The comparison harness is the final parity surface, not the only parity surface.
 React-vs-Solid parity in our route is accepted only after the route itself
 matches the live official docs/viewer and the Solid code has source and idiom
 evidence.
+
+`Agent Workflow` is the required coordination model for multi-agent passes.
+Do not let an agent's general confidence replace validation-note rows. Agent
+handoffs must be copied into the notes as evidence, blockers, or changed file
+paths.
 
 `Interaction Dependency Map` is required when source shows that a prop, state,
 context, environment value, or child composition affects a nested subpart. It is
