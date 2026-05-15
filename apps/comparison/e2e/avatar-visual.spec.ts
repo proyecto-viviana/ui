@@ -6,8 +6,7 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
-
-const avatarSizes = ["16", "24", "64", "112"] as const;
+import { avatarSizeOptions } from "../src/data/avatar-demo";
 
 function avatarQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -73,6 +72,20 @@ async function avatarContract(root: Locator) {
   });
 }
 
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
+}
+
 test.describe("comparison Avatar visual parity", () => {
   test("Avatar default state is pixel-identical", async ({ page }) => {
     const fixtures = await avatarFixtures(page);
@@ -86,8 +99,16 @@ test.describe("comparison Avatar visual parity", () => {
   });
 
   test("Avatar prop controls drive both implementations", async ({ page }) => {
+    await avatarFixtures(page);
+
+    await expect(page.locator('input[name="alt"]')).toHaveValue("Alana");
+    await expect(page.locator('input[name="src"]')).toHaveValue("");
+    await expectRadioValues(page, "size", avatarSizeOptions, "24");
+    await expect(page.locator('input[name="isOverBackground"]')).not.toBeChecked();
+
     const fixtures = await avatarFixtures(page, {
       alt: "Kai",
+      src: "/avatar.png",
       size: "64",
       isOverBackground: true,
     });
@@ -96,30 +117,45 @@ test.describe("comparison Avatar visual parity", () => {
       fixtures.reactPanel.locator('[data-comparison-control-root="avatar"]'),
     ).toHaveAttribute(
       "data-comparison-control-props",
-      JSON.stringify({ alt: "Kai", src: "", size: "64", isOverBackground: true }),
+      JSON.stringify({ alt: "Kai", src: "/avatar.png", size: "64", isOverBackground: true }),
     );
     await expect(
       fixtures.solidPanel.locator('[data-comparison-control-root="avatar"]'),
     ).toHaveAttribute(
       "data-comparison-control-props",
-      JSON.stringify({ alt: "Kai", src: "", size: "64", isOverBackground: true }),
+      JSON.stringify({ alt: "Kai", src: "/avatar.png", size: "64", isOverBackground: true }),
     );
+    await expect(page.locator('input[name="alt"]')).toHaveValue("Kai");
+    await expect(page.locator('input[name="src"]')).toHaveValue("/avatar.png");
+    await expectRadioValues(page, "size", avatarSizeOptions, "64");
+    await expect(page.locator('input[name="isOverBackground"]')).toBeChecked();
   });
 
   test("Avatar computed styles match React Spectrum across sizes and background states", async ({
     page,
   }) => {
-    for (const size of avatarSizes) {
-      for (const isOverBackground of [false, true]) {
-        const fixtures = await avatarFixtures(page, {
-          size,
-          isOverBackground,
-        });
+    for (const params of [
+      ...avatarSizeOptions.map((size) => ({ size })),
+      { size: "24", isOverBackground: true },
+      { size: "64", isOverBackground: true },
+    ] as const) {
+      const fixtures = await avatarFixtures(page, params);
 
-        await expect(avatarContract(fixtures.solidRoot)).resolves.toEqual(
-          await avatarContract(fixtures.reactRoot),
-        );
-      }
+      await expect(avatarContract(fixtures.solidRoot)).resolves.toEqual(
+        await avatarContract(fixtures.reactRoot),
+      );
     }
+  });
+
+  test("Avatar forced-colors environment matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await avatarFixtures(page, {
+      size: "64",
+      isOverBackground: true,
+    });
+
+    await expect(avatarContract(fixtures.solidRoot)).resolves.toEqual(
+      await avatarContract(fixtures.reactRoot),
+    );
   });
 });

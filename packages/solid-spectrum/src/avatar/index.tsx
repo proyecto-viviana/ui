@@ -177,7 +177,7 @@ export function Avatar(props: AvatarProps) {
 
   return (
     <div
-      {...domProps}
+      {...filterDOMProps(domProps)}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,

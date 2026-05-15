@@ -289,7 +289,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/avatar-visual.spec.ts",
-      note: "Computed style contracts compare root and image geometry across representative S2 sizes and over-background outline states.",
+      note: "Computed style contracts compare root and image geometry across every documented S2 size plus small and large over-background outline states.",
+    },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors environment",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/avatar-visual.spec.ts",
+      note: "Forced-colors media emulation compares the large over-background route against React Spectrum's computed contract.",
     },
   ],
   avatargroup: [
