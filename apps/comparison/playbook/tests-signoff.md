@@ -3,6 +3,12 @@
 A component is accepted when every changed layer has focused tests and the
 comparison reports reflect the improved state.
 
+Acceptance also requires the component's
+[Acceptance Gates](./acceptance-gates.md) checklist. The gates are additive:
+official docs/viewer parity, upstream React source parity, Solid idiomatic
+implementation, and React-vs-Solid harness parity must all be complete for the
+component to be marked accepted.
+
 ## Layer Sign-Off
 
 - Cross-layer source audit: each relevant upstream file has a Solid
@@ -20,6 +26,10 @@ comparison reports reflect the improved state.
   viewer setting is covered by route controls, examples, source branch rows, and
   evidence, or recorded as `docs-drift`, `not-applicable`, `route-gap`, or
   `port-gap`.
+- Solid idiom gate: dynamic props, lazy children, context, render props, refs,
+  and cleanup risks are checked independently from upstream source parity.
+- React-vs-Solid harness parity: route evidence proves both stacks match only
+  after the route has been validated against the official docs/viewer.
 - `solid-stately`: controlled/uncontrolled state, callbacks, validation,
   disabled/readonly, collection/date edge cases.
 - `solidaria`: ARIA attributes, labels, descriptions, keyboard handlers, focus,
@@ -64,3 +74,5 @@ Record:
 - interaction dependency rows still unproven, with the next test or owner.
 - official docs/viewer items still marked `route-gap`, `port-gap`, or
   `docs-drift`, with authority and next owner.
+- unchecked acceptance-gate items, grouped by gate. If any in-scope item is
+  unchecked, set the component status to `partial`, not `accepted`.

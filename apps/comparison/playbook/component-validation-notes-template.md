@@ -33,6 +33,66 @@ Suggested location for component files:
 | 12 Comparison evidence | pending |          |                        |
 | 13 Acceptance          | pending |          |                        |
 
+## Acceptance Gate Checklist
+
+These gates are additive. Do not mark the component accepted unless every
+in-scope item is checked. Leave unchecked items visible for partial passes.
+
+### 1. Official Docs And Viewer Parity
+
+- [ ] Live official S2 page opened and dated:
+- [ ] Primary docs example recorded:
+- [ ] Docs examples, slots, children, icons, images, collections, portals, and
+      viewer canvas conditions inventoried:
+- [ ] Interactive viewer controls inventoried with labels, values, order,
+      defaults, reset behavior, and omitted-prop behavior:
+- [ ] Comparison route default matches official example or deviation recorded:
+- [ ] Side-panel controls match official viewer controls and selection
+      semantics:
+- [ ] Route tests assert visible defaults/options and mounted DOM changes:
+
+### 2. Upstream React Source Parity
+
+- [ ] Upstream files identified for every relevant layer:
+- [ ] Solid owner files identified or gaps recorded:
+- [ ] Public props/defaults/slots/contexts/refs/exports mapped:
+- [ ] DOM, ARIA, state, event, effect, cleanup, style, geometry, and
+      cross-component branches mapped:
+- [ ] Source branch ledger covers every user-observable upstream branch:
+- [ ] Every `matched` or `ported-differently` row has direct evidence:
+- [ ] Remaining `gap` or `deferred-gap` rows have owners and are not counted as
+      accepted:
+
+### 3. Solid Idiomatic Implementation
+
+- [ ] Dynamic props, context values, and derived values remain reactive:
+- [ ] No prop destructuring/spread snapshots live Solid accessors:
+- [ ] Children remain lazy across provider/context boundaries:
+- [ ] Render props/custom roots receive live state where applicable:
+- [ ] Refs use Solid semantics:
+- [ ] Effects, observers, timers, listeners, and subscriptions have cleanup:
+- [ ] Solid-specific deviations preserve documented public behavior:
+- [ ] Tests cover relevant reactive update risks:
+
+### 4. React-Vs-Solid Comparison Harness Parity
+
+- [ ] React fixture imports current upstream component and official composition:
+- [ ] Solid fixture imports package public API:
+- [ ] Both fixtures receive the same props and environment settings:
+- [ ] Focused route tests prove controls update mounted React and Solid DOM:
+- [ ] Computed style, a11y, geometry, runtime, or pair-diff evidence covers
+      rendering-affecting branches:
+- [ ] Harness stability is proven:
+
+### 5. Evidence And Handoff
+
+- [ ] Focused package tests:
+- [ ] Focused Playwright/runtime tests:
+- [ ] Comparison reports refreshed when status/evidence changed:
+- [ ] `vp run check`:
+- [ ] Final status is `accepted`, `partial`, or `pre-pass`:
+- [ ] Remaining gaps listed by gate and owner:
+
 ## Research
 
 - React Aria docs:

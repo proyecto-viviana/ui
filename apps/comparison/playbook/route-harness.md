@@ -3,6 +3,11 @@
 The comparison route is the first gate. Do not audit styling or screenshots
 until both stacks are mounted and driven by the same controls.
 
+The route is trustworthy only when it is modeled from the live official S2
+docs/viewer. React and Solid matching each other in a route with the wrong
+example, defaults, controls, assets, or canvas environment is a harness gap, not
+component acceptance.
+
 ## Files
 
 ```bash

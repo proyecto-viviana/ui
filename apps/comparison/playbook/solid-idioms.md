@@ -5,6 +5,10 @@ goal is not to make the Solid code look like React; it is to preserve the
 upstream behavior using Solid's lazy children, fine-grained reactivity, context
 owner tree, and cleanup rules.
 
+This is a required acceptance gate. Passing upstream source parity is not enough
+if the Solid code snapshots accessors, evaluates children under the wrong owner,
+copies React ref timing by assumption, or leaves lifecycle cleanup unproven.
+
 ## Source Authority
 
 - Solid context docs: <https://docs.solidjs.com/concepts/context>
@@ -15,6 +19,9 @@ owner tree, and cleanup rules.
 
 ## Checks
 
+- Dynamic props, context values, and derived values remain reactive after the
+  initial render. Tests should update at least one relevant prop or state when
+  the component has reactive behavior.
 - Context-sensitive children stay lazy until they are under the provider that is
   supposed to affect them.
   - Do not pass `children: local.children` or `children: props.children` into a
@@ -45,6 +52,8 @@ owner tree, and cleanup rules.
   - Compose callback refs and element variables deliberately.
   - Do not assume React `RefObject` timing or `.current` ownership unless the
     Solid API explicitly accepts that shape.
+- Solid-specific deviations from upstream structure are documented with the
+  public behavior they preserve.
 
 ## Evidence
 

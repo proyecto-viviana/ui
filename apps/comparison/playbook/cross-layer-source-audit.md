@@ -3,6 +3,10 @@
 File existence is not parity. A component pass must validate the relevant code
 across all four layers before implementation is accepted.
 
+This gate proves upstream React source parity. It must be paired with the
+official docs/viewer gate, the Solid idiom gate, and the React-vs-Solid harness
+gate before acceptance.
+
 ## Layers
 
 | Layer               | Upstream source             | Solid source                        | What to prove                                                                                                 |

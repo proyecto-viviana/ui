@@ -4,11 +4,18 @@ Source branch coverage is the line-by-line proof that a component pass did not
 miss behavior hidden inside upstream files. It is required for Task 4 and is
 kept in the component validation notes.
 
+This is the upstream React source parity gate. It does not replace official
+docs/viewer parity, Solid idiom checks, or React-vs-Solid harness parity.
+
 ## Rule
 
 Every relevant upstream file from the source map needs a branch ledger before a
 component can be accepted. A same-named Solid file, matching export, passing
 visual row, or route render is not enough.
+
+Every branch row must identify the upstream owner and Solid owner. If a branch
+is proven only through the comparison route, the route must first be confirmed
+to represent the official docs/viewer setting for that branch.
 
 ## What Counts As A Branch
 
