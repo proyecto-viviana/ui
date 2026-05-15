@@ -37,8 +37,12 @@ async function waitForLoadedImage(row: Locator) {
     .toBe("1");
 }
 
-async function skeletonFixtures(page: Page, params: Record<string, string> = {}) {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+async function skeletonFixtures(
+  page: Page,
+  params: Record<string, string> = {},
+  media: Parameters<Page["emulateMedia"]>[0] = {},
+) {
+  await page.emulateMedia({ ...media, reducedMotion: "reduce" });
   await pinComparisonTheme(page, "light");
   await page.goto(`/components/skeleton/${skeletonQuery(params)}`);
   await waitForComparisonRouteReady(page);
@@ -111,6 +115,10 @@ test.describe("comparison Skeleton visual parity", () => {
   });
 
   test("Skeleton controls drive both implementations", async ({ page }) => {
+    await skeletonFixtures(page);
+
+    await expect(page.locator('input[name="isLoading"]')).toBeChecked();
+
     const fixtures = await skeletonFixtures(page, { isLoading: "false" });
 
     await expect(fixtures.reactRow).toHaveAttribute(
@@ -121,6 +129,7 @@ test.describe("comparison Skeleton visual parity", () => {
       "data-comparison-control-props",
       JSON.stringify({ isLoading: false }),
     );
+    await expect(page.locator('input[name="isLoading"]')).not.toBeChecked();
   });
 
   test("Skeleton child context matches React Spectrum", async ({ page }) => {
@@ -150,5 +159,13 @@ test.describe("comparison Skeleton visual parity", () => {
       iconInert: false,
       loadingTargetCount: 0,
     });
+  });
+
+  test("Skeleton forced-colors environment matches React Spectrum", async ({ page }) => {
+    const fixtures = await skeletonFixtures(page, {}, { forcedColors: "active" });
+
+    await expect(skeletonContract(fixtures.solidRow)).resolves.toEqual(
+      await skeletonContract(fixtures.reactRow),
+    );
   });
 });

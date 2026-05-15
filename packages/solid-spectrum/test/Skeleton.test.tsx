@@ -2,10 +2,17 @@
  * @vitest-environment jsdom
  */
 import { createSignal } from "solid-js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
+import { CollectionBuilder } from "@proyecto-viviana/solidaria-components";
 import { createIcon } from "../src/icon";
-import { Skeleton, SkeletonCollection, useIsSkeleton } from "../src/skeleton";
+import {
+  Skeleton,
+  SkeletonCollection,
+  type SkeletonCollectionProps,
+  useIsSkeleton,
+  useLoadingAnimation,
+} from "../src/skeleton";
 import { Text } from "../src/text";
 
 const TestIcon = createIcon((props) => (
@@ -98,19 +105,88 @@ describe("Skeleton (solid-spectrum)", () => {
     expect(iconRef).toBe(container.querySelector("svg"));
     expect(iconRef).toHaveAttribute("inert");
   });
+
+  it("starts, stops, and cleans up loading animations", () => {
+    const previousAnimate = Element.prototype.animate;
+    const cancel = vi.fn();
+    const animation = { cancel, startTime: null as number | null };
+    const animate = vi.fn(() => animation as unknown as Animation);
+    let setIsAnimating: (value: boolean) => void = () => {};
+
+    Element.prototype.animate = animate;
+
+    try {
+      const { unmount } = render(() => {
+        const [isAnimating, setAnimating] = createSignal(true);
+        setIsAnimating = setAnimating;
+        const animationRef = useLoadingAnimation(isAnimating);
+
+        return <span ref={animationRef} data-testid="animated" />;
+      });
+
+      expect(screen.getByTestId("animated")).toBeInTheDocument();
+      expect(animate).toHaveBeenCalledTimes(1);
+      expect(animation.startTime).toBe(0);
+
+      setIsAnimating(false);
+      expect(cancel).toHaveBeenCalledTimes(1);
+
+      setIsAnimating(true);
+      expect(animate).toHaveBeenCalledTimes(2);
+
+      unmount();
+      expect(cancel).toHaveBeenCalledTimes(2);
+    } finally {
+      Element.prototype.animate = previousAnimate;
+    }
+  });
+
+  it("does not animate when reduced motion is requested", () => {
+    const previousMatchMedia = window.matchMedia;
+    const previousAnimate = Element.prototype.animate;
+    const animate = vi.fn();
+
+    window.matchMedia = vi.fn(
+      () =>
+        ({
+          matches: true,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList,
+    );
+    Element.prototype.animate = animate;
+
+    try {
+      render(() => {
+        const animationRef = useLoadingAnimation(true);
+        return <span ref={animationRef} data-testid="animated" />;
+      });
+
+      expect(screen.getByTestId("animated")).toBeInTheDocument();
+      expect(animate).not.toHaveBeenCalled();
+    } finally {
+      window.matchMedia = previousMatchMedia;
+      Element.prototype.animate = previousAnimate;
+    }
+  });
 });
 
 describe("SkeletonCollection (solid-spectrum)", () => {
   it("renders cached children inside a loading Skeleton", () => {
     let renderCount = 0;
-    const { container } = render(() => (
-      <SkeletonCollection>
-        {() => {
-          renderCount += 1;
-          return <Text>Placeholder row</Text>;
-        }}
-      </SkeletonCollection>
-    ));
+    const collection = CollectionBuilder({
+      items: [{ id: "row" }],
+      addIdAndValue: true,
+      children: () =>
+        ({
+          children: () => {
+            renderCount += 1;
+            return <Text>Placeholder row</Text>;
+          },
+        }) satisfies SkeletonCollectionProps,
+    }) as Array<SkeletonCollectionProps>;
+
+    const { container } = render(() => <>{collection.map((item) => SkeletonCollection(item))}</>);
 
     expect(renderCount).toBe(1);
     expect(container.querySelector('[data-rsp-slot="text"]')).toHaveAttribute("inert");

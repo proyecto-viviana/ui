@@ -7,26 +7,26 @@
 - Family or direct subcomponents: SkeletonCollection
 - Pass goal: standalone Skeleton context wrapper parity, child consumer parity,
   route controls, loading/loaded state evidence, and exact visual comparison
-- Date: 2026-05-14
+- Date: 2026-05-15
 
 ## Task Status
 
-| Task                   | Status | Evidence                          | Blocker or next action |
-| ---------------------- | ------ | --------------------------------- | ---------------------- |
-| 0 Research             | done   | S2 docs/source, React Aria index  | none                   |
-| 1 Baseline             | done   | `comparison:report:gaps`          | none                   |
-| 2 Route harness        | done   | `/components/skeleton/`           | none                   |
-| 3 Source map/API       | done   | source map below                  | none                   |
-| 4 Cross-layer audit    | done   | audit table below                 | none                   |
-| 5 Transitions          | done   | `isLoading=true/false` e2e        | none                   |
-| 6 State                | n/a    | no separate state package owner   |                        |
-| 7 ARIA hooks           | n/a    | no React Aria Skeleton page/hook  |                        |
-| 8 Headless             | n/a    | native child semantics            |                        |
-| 9 Styled S2            | done   | `e2e/skeleton-visual.spec.ts`     | none                   |
-| 10 Runtime lifecycle   | done   | animation/cleanup tests and build | none                   |
-| 11 Harness integrity   | done   | reduced motion, opaque fixture    | none                   |
-| 12 Comparison evidence | done   | exact loading and loaded shots    | none                   |
-| 13 Acceptance          | done   | commands in Evidence              | none                   |
+| Task                   | Status | Evidence                                         | Blocker or next action |
+| ---------------------- | ------ | ------------------------------------------------ | ---------------------- |
+| 0 Research             | done   | S2 docs/source, React Aria index                 | none                   |
+| 1 Baseline             | done   | Reports and RAC guards                           | none                   |
+| 2 Route harness        | done   | `/components/skeleton/`                          | none                   |
+| 3 Source map/API       | done   | source map below                                 | none                   |
+| 4 Cross-layer audit    | done   | audit table below                                | none                   |
+| 5 Transitions          | done   | `isLoading=true/false` e2e                       | none                   |
+| 6 State                | n/a    | no separate state package owner                  |                        |
+| 7 ARIA hooks           | n/a    | no React Aria Skeleton page/hook                 |                        |
+| 8 Headless             | n/a    | native child semantics                           |                        |
+| 9 Styled S2            | done   | `e2e/skeleton-visual.spec.ts`                    | none                   |
+| 10 Runtime lifecycle   | done   | animation/cleanup/reduced-motion tests and build | none                   |
+| 11 Harness integrity   | done   | reduced motion, opaque fixture                   | none                   |
+| 12 Comparison evidence | done   | exact loading and loaded shots                   | none                   |
+| 13 Acceptance          | done   | commands in Evidence                             | none                   |
 
 ## Research
 
@@ -100,15 +100,19 @@ Solid idioms checked:
 | Icon           | `SkeletonContext=true` | icon gradient, rounded corners, inert                       | DOM contract + exact screenshot    | matched | `e2e/skeleton-visual.spec.ts` |
 | Loading state  | `isLoading=false`      | same children render normally and no loading targets remain | loaded state screenshot + contract | matched | `e2e/skeleton-visual.spec.ts` |
 | Reduced motion | media query reduce     | no running background animation required for capture        | e2e media emulation                | matched | `e2e/skeleton-visual.spec.ts` |
+| Animation      | `useLoadingAnimation`  | Web Animation starts, stops, respects reduced motion        | unit lifecycle tests               | matched | `Skeleton.test.tsx`           |
+| Collection     | collection node input  | cached placeholder render under collection metadata         | unit test                          | matched | `Skeleton.test.tsx`           |
+| Forced colors  | forced-colors active   | loading context contract remains React-equivalent           | e2e media emulation                | matched | `e2e/skeleton-visual.spec.ts` |
 
 ## Harness Integrity
 
-- Pre-change focused-suite status: no Skeleton route, no controls, and no
+- Initial pre-pass focused-suite status: no Skeleton route, no controls, and no
   standalone Skeleton acceptance tests.
 - Evidence authority: installed React Spectrum S2 source and docs page are the
   source of truth; React Aria has no dedicated Skeleton primitive.
 - Font/theme/viewport/animation stabilization: e2e pins light theme, waits for
-  fonts, emulates reduced motion, and captures exact React/Solid canvases.
+  fonts, emulates reduced motion, covers forced-colors media, and captures exact
+  React/Solid canvases.
 - Failure taxonomy: initial screenshot mismatch was fixture transparency in the
   screenshot target, not component drift; the row is now opaque so exact pair
   diffs compare component pixels only.
@@ -118,47 +122,33 @@ Solid idioms checked:
 ```bash
 vp test run packages/solid-spectrum/test/Skeleton.test.tsx packages/solid-spectrum/test/Image.test.tsx packages/solid-spectrum/test/ButtonFamilyContext.test.tsx
 vp run --filter @proyecto-viviana/comparison build
-vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/skeleton-visual.spec.ts --reporter=line
+vp exec --filter @proyecto-viviana/comparison playwright test e2e/skeleton-visual.spec.ts --reporter=line
 vp run comparison:report:gaps
+vp run comparison:report:exports
+vp run guard:rac-parity
+vp run guard:rac-export-gap
+vp run check
 ```
 
 Results:
 
-- Focused Solid tests: `23 passed`.
+- Focused Solid tests: `25 passed`.
 - Comparison build: passed.
-- Skeleton visual suite: `4 passed`.
-- Gap report: official styled entries live on both sides moved to `27`;
-  missing/gap entries moved to `42`; current visual evidence states moved to
-  `43`; strict pair-diff states moved to `26`.
-
-## Retro-Audit Against Playbook
-
-| Gate                             | Status  | Finding                                                                                                                                                      |
-| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Tasks 0-1 research/baseline      | partial | Research and gap baseline were recorded; export report and guard baselines were not part of the note.                                                        |
-| Task 2 route harness             | matched | Route controls cover `isLoading`, default loading, and loaded state with control propagation evidence.                                                       |
-| Tasks 3-4 source branch coverage | partial | Source map and dependency map are strong, but not a full branch ledger for `Skeleton.tsx`, `SkeletonCollection.tsx`, all consumers, and animation lifecycle. |
-| Task 5 transition plan           | matched | Loading and loaded states are represented with e2e evidence; broader consumer-specific skeleton rows are delegated to the owning component passes.           |
-| Task 9 styled branches           | partial | Text/Image/Icon consumer branches and reduced motion are covered; forced-colors/high-contrast styling was not browser-tested.                                |
-| Tasks 11-13 evidence/sign-off    | partial | Harness notes and failure taxonomy are present; full `vp run check`, export report, and guard refresh were not recorded for this component.                  |
-
-Retro-audit gaps to backfill before release hardening:
-
-- Add a branch ledger for root context, loading style, text/icon/image helpers,
-  inert synchronization, animation setup/cleanup, SkeletonCollection caching,
-  and each accepted consumer branch.
-- Refresh evidence with current `comparison:report:gaps`,
-  `comparison:report:exports`, and guard lines.
-- Add forced-colors coverage or document why generated S2 token output is the
-  accepted boundary for Skeleton placeholders.
-- Keep future consumer-specific skeleton visual rows with the component that
-  owns the consumer rendering.
+- Skeleton visual suite: `5 passed`.
+- Current gap report lists official styled entries live on both sides at `33`,
+  missing/gap entries at `36`, visual states tracked at `179`, visual evidence
+  states at `49`, strict pair-diff states at `32`, and blocked visual states at
+  `35`.
+- Current export report lists missing React S2 value exports at `80` of `208`
+  and extra Solid value exports at `3`.
+- RAC export and tracked-symbol guards report no missing Solid names.
+- Full repo check: passed.
 
 ## Handoff
 
-- Status after this pass: Skeleton, SkeletonCollection current observable
-  behavior, and Image/Text/Icon skeleton consumers are comparison-live with
-  focused evidence; the note still has release-hardening backfill gaps above.
+- Skeleton is playbook-accepted for owned behavior.
+- SkeletonCollection current observable behavior and Image/Text/Icon skeleton
+  consumers are covered by focused evidence.
 - Form skeleton interactions were validated in the Form component pass.
-- Next ordered task: continue the component sweep with the next Button-family
-  dependent support component only after its pre-pass note is current.
+- Future consumer-specific skeleton visual rows should stay with the component
+  that owns the consumer rendering.

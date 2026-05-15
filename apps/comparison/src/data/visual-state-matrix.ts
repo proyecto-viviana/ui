@@ -613,6 +613,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/skeleton-visual.spec.ts",
       note: "Assertions compare that Skeleton is a context wrapper rather than a standalone status block, and that affected child elements receive inert/loading treatment.",
     },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors environment",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/skeleton-visual.spec.ts",
+      note: "Forced-colors media emulation compares the loading context contract against React Spectrum under reduced motion.",
+    },
   ],
   actionbuttongroup: [
     visualDefaultState({
