@@ -6,8 +6,7 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
-
-const avatarGroupSizes = ["16", "24", "40"] as const;
+import { avatarGroupCountOptions, avatarGroupSizeOptions } from "../src/data/avatar-group-demo";
 
 function avatarGroupQuery(params: Record<string, string> = {}) {
   const search = new URLSearchParams();
@@ -75,6 +74,20 @@ async function avatarGroupContract(group: Locator) {
   });
 }
 
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
+}
+
 test.describe("comparison AvatarGroup visual parity", () => {
   test("AvatarGroup default state is pixel-identical", async ({ page }) => {
     const fixtures = await avatarGroupFixtures(page);
@@ -88,37 +101,57 @@ test.describe("comparison AvatarGroup visual parity", () => {
   });
 
   test("AvatarGroup prop controls drive both implementations", async ({ page }) => {
+    await avatarGroupFixtures(page);
+
+    await expect(page.locator('input[name="label"]')).toHaveValue("Project team");
+    await expectRadioValues(page, "size", avatarGroupSizeOptions, "24");
+    await expectRadioValues(page, "count", avatarGroupCountOptions, "4");
+
     const fixtures = await avatarGroupFixtures(page, {
       label: "Reviewers",
       size: "32",
       count: "3",
     });
 
+    const expectedProps = JSON.stringify({ label: "Reviewers", size: "32", count: "3" });
+
     await expect(
       fixtures.reactPanel.locator('[data-comparison-control-root="avatargroup"]'),
-    ).toHaveAttribute(
-      "data-comparison-control-props",
-      JSON.stringify({ label: "Reviewers", size: "32", count: "3" }),
-    );
+    ).toHaveAttribute("data-comparison-control-props", expectedProps);
     await expect(
       fixtures.solidPanel.locator('[data-comparison-control-root="avatargroup"]'),
-    ).toHaveAttribute(
-      "data-comparison-control-props",
-      JSON.stringify({ label: "Reviewers", size: "32", count: "3" }),
-    );
+    ).toHaveAttribute("data-comparison-control-props", expectedProps);
+    await expect(page.locator('input[name="label"]')).toHaveValue("Reviewers");
+    await expectRadioValues(page, "size", avatarGroupSizeOptions, "32");
+    await expectRadioValues(page, "count", avatarGroupCountOptions, "3");
     await expect(fixtures.reactGroup).toHaveAccessibleName("Reviewers");
     await expect(fixtures.solidGroup).toHaveAccessibleName("Reviewers");
     await expect(fixtures.reactGroup.locator('[slot="avatar"]')).toHaveCount(3);
     await expect(fixtures.solidGroup.locator('[slot="avatar"]')).toHaveCount(3);
   });
 
-  test("AvatarGroup computed styles match React Spectrum across sizes", async ({ page }) => {
-    for (const size of avatarGroupSizes) {
-      const fixtures = await avatarGroupFixtures(page, { size });
+  test("AvatarGroup computed styles match React Spectrum across sizes and child counts", async ({
+    page,
+  }) => {
+    for (const params of [
+      ...avatarGroupSizeOptions.map((size) => ({ size })),
+      ...avatarGroupCountOptions.map((count) => ({ count })),
+      { label: "Reviewers", size: "32", count: "3" },
+    ] as const) {
+      const fixtures = await avatarGroupFixtures(page, params);
 
       await expect(avatarGroupContract(fixtures.solidGroup)).resolves.toEqual(
         await avatarGroupContract(fixtures.reactGroup),
       );
     }
+  });
+
+  test("AvatarGroup forced-colors environment matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await avatarGroupFixtures(page, { size: "40", count: "4" });
+
+    await expect(avatarGroupContract(fixtures.solidGroup)).resolves.toEqual(
+      await avatarGroupContract(fixtures.reactGroup),
+    );
   });
 });

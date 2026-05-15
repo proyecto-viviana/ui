@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { Avatar, AvatarGroup, AvatarGroupContext } from "../src";
 
@@ -31,10 +31,17 @@ describe("AvatarGroup", () => {
     expect(screen.getByRole("group", { name: "Reviewers" })).toBeInTheDocument();
   });
 
-  it("applies AvatarGroupContext to the group", () => {
+  it("applies AvatarGroupContext to the group with local overrides and unsafe escape hatches", () => {
     const { container } = render(() => (
-      <AvatarGroupContext.Provider value={{ size: 40, label: "Context team" }}>
-        <AvatarGroup>
+      <AvatarGroupContext.Provider
+        value={{
+          size: 40,
+          label: "Context team",
+          UNSAFE_className: "context-group",
+          UNSAFE_style: { margin: "2px" },
+        }}
+      >
+        <AvatarGroup class="local-group">
           <Avatar alt="Alana" />
         </AvatarGroup>
       </AvatarGroupContext.Provider>
@@ -43,7 +50,36 @@ describe("AvatarGroup", () => {
     const group = screen.getByRole("group", { name: "Context team" });
     const avatar = container.querySelector('[slot="avatar"]');
 
-    expect(group).toHaveStyle({ "--size": "2.5rem" });
+    expect(group).toHaveStyle({ "--size": "2.5rem", margin: "2px" });
+    expect(group).toHaveClass("context-group");
+    expect(group).toHaveClass("local-group");
     expect(avatar).toHaveStyle({ width: "2.5rem", height: "2.5rem" });
+  });
+
+  it("matches S2 DOM prop filtering on the root", () => {
+    const onClick = vi.fn();
+
+    render(() => (
+      <AvatarGroup
+        aria-label="Reviewers"
+        aria-describedby="details"
+        id="reviewers"
+        data-testid="group"
+        hidden
+        onClick={onClick}
+      >
+        <Avatar alt="Alana" />
+      </AvatarGroup>
+    ));
+
+    const group = screen.getByRole("group", { name: "Reviewers" });
+    group.click();
+
+    expect(group).toHaveAttribute("id", "reviewers");
+    expect(group).toHaveAttribute("data-testid", "group");
+    expect(group).toHaveAttribute("aria-label", "Reviewers");
+    expect(group).not.toHaveAttribute("aria-describedby");
+    expect(group).not.toHaveAttribute("hidden");
+    expect(onClick).not.toHaveBeenCalled();
   });
 });

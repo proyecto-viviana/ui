@@ -275,7 +275,7 @@ export function AvatarGroup(props: AvatarGroupProps) {
   return (
     <AvatarContext.Provider value={avatarContextValue}>
       <div
-        {...filterDOMProps(domProps, { labelable: true, global: true, events: true })}
+        {...filterDOMProps(domProps)}
         ref={mergeContextRefs(
           (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
           props.ref,

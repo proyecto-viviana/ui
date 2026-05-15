@@ -327,7 +327,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/avatar-group-visual.spec.ts",
-      note: "Computed style contracts compare group geometry, child Avatar sizing, over-background outline treatment, and overlap margins across representative S2 sizes.",
+      note: "Computed style contracts compare group geometry, child Avatar sizing, over-background outline treatment, and overlap margins across every documented S2 size and child-count branch.",
+    },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors environment",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/avatar-group-visual.spec.ts",
+      note: "Forced-colors media emulation compares the largest child-count route against React Spectrum's computed contract.",
     },
   ],
   badge: [
