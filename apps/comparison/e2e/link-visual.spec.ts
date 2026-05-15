@@ -165,8 +165,10 @@ test.describe("comparison Link visual parity", () => {
     const fixtures = await linkFixtures(page, { isStandalone: true, isQuiet: true });
 
     await fixtures.reactRoot.hover();
+    await page.waitForTimeout(220);
     const reactHoverContract = await linkContract(fixtures.reactRoot);
     await fixtures.solidRoot.hover();
+    await page.waitForTimeout(220);
 
     await expect(linkContract(fixtures.solidRoot)).resolves.toEqual(reactHoverContract);
     await expect(linkContract(fixtures.solidRoot)).resolves.toMatchObject({
