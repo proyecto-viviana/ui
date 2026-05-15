@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { Image, ImageContext, ImageCoordinator, Provider } from "../src";
 
@@ -28,6 +28,45 @@ describe("Image", () => {
 
     fireEvent.load(img);
     await waitFor(() => expect(img.className).not.toBe(""));
+  });
+
+  it("matches S2 wrapper prop boundaries and unsafe escape hatches", () => {
+    const onClick = vi.fn();
+    render(() => (
+      <Image
+        src="/preview.png"
+        alt="Preview"
+        id="image-id"
+        data-testid="image"
+        aria-label="Ignored"
+        onClick={onClick}
+        class="local-image"
+        UNSAFE_className="unsafe-image"
+        UNSAFE_style={{ margin: "2px" }}
+      />
+    ));
+
+    const wrapper = screen.getByRole("img", { name: "Preview" }).parentElement as HTMLElement;
+    wrapper.click();
+
+    expect(wrapper).not.toHaveAttribute("id");
+    expect(wrapper).not.toHaveAttribute("data-testid");
+    expect(wrapper).not.toHaveAttribute("aria-label");
+    expect(onClick).not.toHaveBeenCalled();
+    expect(wrapper).toHaveClass("local-image");
+    expect(wrapper).toHaveClass("unsafe-image");
+    expect(wrapper).toHaveStyle({ margin: "2px" });
+  });
+
+  it("warns when alt text is omitted in development", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      render(() => <Image src="/preview.png" />);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("alt"));
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it("renders custom error content when the image fails", async () => {

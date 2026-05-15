@@ -240,7 +240,7 @@ function sourceMedia(source: ImageSource, colorScheme: "light" | "dark") {
 export function Image(props: ImageProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(ImageContext), props.slot);
   const merged = mergeProps(contextProps ?? {}, props);
-  const [local, domProps] = splitProps(merged, [
+  const [local] = splitProps(merged, [
     "src",
     "alt",
     "crossOrigin",
@@ -438,7 +438,6 @@ export function Image(props: ImageProps): JSX.Element {
 
   return (
     <div
-      {...domProps}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,

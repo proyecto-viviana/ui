@@ -6,6 +6,7 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import { imageObjectFitOptions, imageSourceModeOptions } from "../src/data/image-demo";
 
 function imageQuery(params: Record<string, string> = {}) {
   const search = new URLSearchParams();
@@ -105,6 +106,20 @@ async function imageContract(row: Locator) {
   });
 }
 
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
+}
+
 test.describe("comparison Image visual parity", () => {
   test("Image default state is pixel-identical", async ({ page }) => {
     const fixtures = await imageFixtures(page);
@@ -118,6 +133,12 @@ test.describe("comparison Image visual parity", () => {
   });
 
   test("Image prop controls drive both implementations", async ({ page }) => {
+    await imageFixtures(page);
+
+    await expect(page.locator('input[name="alt"]')).toHaveValue("Gradient landscape");
+    await expectRadioValues(page, "sourceMode", imageSourceModeOptions, "basic");
+    await expectRadioValues(page, "objectFit", imageObjectFitOptions, "cover");
+
     const fixtures = await imageFixtures(page, {
       alt: "Conditional asset",
       sourceMode: "conditional",
@@ -140,6 +161,9 @@ test.describe("comparison Image visual parity", () => {
         objectFit: "contain",
       }),
     );
+    await expect(page.locator('input[name="alt"]')).toHaveValue("Conditional asset");
+    await expectRadioValues(page, "sourceMode", imageSourceModeOptions, "conditional");
+    await expectRadioValues(page, "objectFit", imageObjectFitOptions, "contain");
   });
 
   test("Image computed styles and conditional sources match React Spectrum", async ({ page }) => {
@@ -165,6 +189,15 @@ test.describe("comparison Image visual parity", () => {
     await expect(coordinatorFixtures.solidRow.locator("img")).toHaveCount(2);
     await expect(imageContract(coordinatorFixtures.solidRow)).resolves.toEqual(
       await imageContract(coordinatorFixtures.reactRow),
+    );
+  });
+
+  test("Image forced-colors environment matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await imageFixtures(page);
+
+    await expect(imageContract(fixtures.solidRow)).resolves.toEqual(
+      await imageContract(fixtures.reactRow),
     );
   });
 });

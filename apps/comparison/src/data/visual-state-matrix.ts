@@ -537,6 +537,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/image-visual.spec.ts",
       note: "Browser assertions cover conditional source rendering, custom error content, and ImageCoordinator multi-image rendering.",
     },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors environment",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/image-visual.spec.ts",
+      note: "Forced-colors media emulation compares wrapper, image, and source computed contracts against React Spectrum.",
+    },
   ],
   link: [
     visualDefaultState({
