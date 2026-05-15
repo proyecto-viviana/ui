@@ -1,8 +1,8 @@
 /**
  * Tests for solidaria-components Form
  */
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { describe, it, expect, vi } from "vitest";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { useContext } from "solid-js";
 import { FormValidationContext, type ValidationErrors } from "@proyecto-viviana/solid-stately";
 import { Form } from "../src/Form";
@@ -27,6 +27,44 @@ describe("Form", () => {
     render(() => <Form validationBehavior="aria" />);
     const form = document.querySelector("form") as HTMLFormElement;
     expect(form).toHaveAttribute("novalidate");
+  });
+
+  it("forwards native form props and form events", () => {
+    const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+    const onReset = vi.fn();
+
+    render(() => (
+      <Form
+        aria-label="Project form"
+        action="/projects"
+        method="post"
+        target="_blank"
+        autoComplete="off"
+        encType="multipart/form-data"
+        name="projectForm"
+        rel="noopener"
+        onSubmit={onSubmit}
+        onReset={onReset}
+      >
+        <button type="submit">Save</button>
+        <button type="reset">Reset</button>
+      </Form>
+    ));
+
+    const form = screen.getByRole("form") as HTMLFormElement;
+    expect(form).toHaveAttribute("action", "/projects");
+    expect(form).toHaveAttribute("method", "post");
+    expect(form).toHaveAttribute("target", "_blank");
+    expect(form).toHaveAttribute("autocomplete", "off");
+    expect(form).toHaveAttribute("enctype", "multipart/form-data");
+    expect(form).toHaveAttribute("name", "projectForm");
+    expect(form).toHaveAttribute("rel", "noopener");
+
+    fireEvent.submit(form);
+    fireEvent.reset(form);
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onReset).toHaveBeenCalledTimes(1);
   });
 
   it("provides validation errors through FormValidationContext", () => {

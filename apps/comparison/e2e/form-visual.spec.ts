@@ -6,6 +6,13 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import {
+  formLabelAlignOptions,
+  formLabelPositionOptions,
+  formNecessityIndicatorOptions,
+  formSizeOptions,
+  formValidationBehaviorOptions,
+} from "../src/data/form-demo";
 
 function formQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -81,6 +88,20 @@ async function formContract(root: Locator) {
   });
 }
 
+async function expectRadioValues(
+  page: Page,
+  name: string,
+  values: readonly string[],
+  checked: string,
+) {
+  await expect(
+    page
+      .locator(`input[name="${name}"]`)
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+  ).resolves.toEqual([...values]);
+  await expect(page.locator(`input[name="${name}"]:checked`)).toHaveValue(checked);
+}
+
 test.describe("comparison Form visual parity", () => {
   test("Form default state is pixel-identical", async ({ page }) => {
     const fixtures = await formFixtures(page);
@@ -94,6 +115,20 @@ test.describe("comparison Form visual parity", () => {
   });
 
   test("Form prop controls drive both implementations", async ({ page }) => {
+    await formFixtures(page);
+
+    await expect(page.locator('input[name="label"]')).toHaveValue("Project name");
+    await expect(page.locator('input[name="value"]')).toHaveValue("Quarterly report");
+    await expect(page.locator('input[name="actionLabel"]')).toHaveValue("Submit");
+    await expectRadioValues(page, "size", formSizeOptions, "M");
+    await expectRadioValues(page, "labelPosition", formLabelPositionOptions, "top");
+    await expectRadioValues(page, "labelAlign", formLabelAlignOptions, "start");
+    await expectRadioValues(page, "necessityIndicator", formNecessityIndicatorOptions, "icon");
+    await expectRadioValues(page, "validationBehavior", formValidationBehaviorOptions, "native");
+    await expect(page.locator('input[name="isRequired"]')).not.toBeChecked();
+    await expect(page.locator('input[name="isDisabled"]')).not.toBeChecked();
+    await expect(page.locator('input[name="isEmphasized"]')).not.toBeChecked();
+
     const fixtures = await formFixtures(page, {
       label: "Workspace",
       value: "Design systems",
@@ -130,21 +165,45 @@ test.describe("comparison Form visual parity", () => {
       "data-comparison-control-props",
       expectedProps,
     );
+    await expect(page.locator('input[name="label"]')).toHaveValue("Workspace");
+    await expect(page.locator('input[name="value"]')).toHaveValue("Design systems");
+    await expect(page.locator('input[name="actionLabel"]')).toHaveValue("Create");
+    await expectRadioValues(page, "size", formSizeOptions, "XL");
+    await expectRadioValues(page, "labelPosition", formLabelPositionOptions, "side");
+    await expectRadioValues(page, "labelAlign", formLabelAlignOptions, "end");
+    await expectRadioValues(page, "necessityIndicator", formNecessityIndicatorOptions, "label");
+    await expectRadioValues(page, "validationBehavior", formValidationBehaviorOptions, "aria");
+    await expect(page.locator('input[name="isRequired"]')).toBeChecked();
+    await expect(page.locator('input[name="isDisabled"]')).toBeChecked();
+    await expect(page.locator('input[name="isEmphasized"]')).toBeChecked();
   });
 
   test("Form computed styles match React Spectrum across layout and inherited states", async ({
     page,
   }) => {
     for (const params of [
-      { size: "M", labelPosition: "top" },
-      { size: "S", labelPosition: "side", labelAlign: "start" },
-      { size: "XL", labelPosition: "side", labelAlign: "end", isRequired: true },
+      ...formSizeOptions.map((size) => ({ size })),
+      ...formLabelPositionOptions.map((labelPosition) => ({ labelPosition })),
+      ...formLabelAlignOptions.map((labelAlign) => ({ labelPosition: "side", labelAlign })),
+      ...formNecessityIndicatorOptions.map((necessityIndicator) => ({
+        isRequired: true,
+        necessityIndicator,
+      })),
+      ...formValidationBehaviorOptions.map((validationBehavior) => ({
+        isRequired: true,
+        validationBehavior,
+      })),
+      { isDisabled: true },
+      { isEmphasized: true },
       {
-        size: "L",
-        validationBehavior: "aria",
+        size: "XL",
+        labelPosition: "side",
+        labelAlign: "end",
         isRequired: true,
         isDisabled: true,
+        isEmphasized: true,
         necessityIndicator: "label",
+        validationBehavior: "aria",
       },
     ] as const) {
       const fixtures = await formFixtures(page, params);
@@ -153,5 +212,23 @@ test.describe("comparison Form visual parity", () => {
         await formContract(fixtures.reactRoot),
       );
     }
+  });
+
+  test("Form forced-colors environment matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    const fixtures = await formFixtures(page, {
+      size: "XL",
+      labelPosition: "side",
+      labelAlign: "end",
+      isRequired: true,
+      isDisabled: true,
+      isEmphasized: true,
+      necessityIndicator: "label",
+      validationBehavior: "aria",
+    });
+
+    await expect(formContract(fixtures.solidRoot)).resolves.toEqual(
+      await formContract(fixtures.reactRoot),
+    );
   });
 });

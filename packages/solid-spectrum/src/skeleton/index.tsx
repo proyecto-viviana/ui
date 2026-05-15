@@ -75,6 +75,10 @@ function createPrefersReducedMotion(): Accessor<boolean> {
   }
 
   const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (!mediaQuery) {
+    return () => false;
+  }
+
   const [matches, setMatches] = createSignal(mediaQuery.matches);
   const handleChange = (event: MediaQueryListEvent) => setMatches(event.matches);
 

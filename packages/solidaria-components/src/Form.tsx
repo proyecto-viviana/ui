@@ -30,6 +30,14 @@ export interface FormProps
   validationErrors?: ValidationErrors;
   /** Validation behavior mode. */
   validationBehavior?: ValidationBehavior;
+  /** Character encodings accepted by the server. React-style alias for Solid's `accept-charset`. */
+  acceptCharset?: string;
+  /** Browser auto-capitalization hint. React-style alias for Solid's `autocapitalize`. */
+  autoCapitalize?: JSX.HTMLAttributes<HTMLFormElement>["autoCapitalize"];
+  /** Browser autocomplete behavior. React-style alias for Solid's `autocomplete`. */
+  autoComplete?: JSX.FormHTMLAttributes<HTMLFormElement>["autocomplete"];
+  /** Form encoding type. React-style alias for Solid's `enctype`. */
+  encType?: JSX.FormHTMLAttributes<HTMLFormElement>["enctype"];
   /** The children of the component. */
   children?: RenderChildren<FormRenderProps>;
   /** The CSS className for the element. */
@@ -39,6 +47,35 @@ export interface FormProps
 }
 
 export const FormContext = createContext<FormProps | null>(null);
+
+const formDOMPropNames = new Set([
+  "accept-charset",
+  "acceptCharset",
+  "action",
+  "autocapitalize",
+  "autoCapitalize",
+  "autocomplete",
+  "autoComplete",
+  "encoding",
+  "enctype",
+  "encType",
+  "method",
+  "name",
+  "rel",
+  "target",
+]);
+
+function filterFormDOMProps(props: object): Record<string, unknown> {
+  const filtered = filterDOMProps<Record<string, unknown>>(props, { global: true });
+
+  for (const key in props) {
+    if (Object.prototype.hasOwnProperty.call(props, key) && formDOMPropNames.has(key)) {
+      filtered[key] = (props as Record<string, unknown>)[key];
+    }
+  }
+
+  return filtered;
+}
 
 export function Form(props: FormProps): JSX.Element {
   const [local, domProps] = splitProps(props, [
@@ -64,7 +101,7 @@ export function Form(props: FormProps): JSX.Element {
     }),
   );
 
-  const filteredDomProps = filterDOMProps(domProps, { global: true });
+  const filteredDomProps = filterFormDOMProps(domProps);
 
   return (
     <form

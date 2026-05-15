@@ -507,7 +507,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/form-visual.spec.ts",
-      note: "Computed style contracts compare Form grid layout plus inherited TextField and Button size, disabled, required, and side-label state across representative route states.",
+      note: "Computed style contracts compare Form grid layout plus inherited TextField and Button size, disabled, required, emphasized, necessity indicator, validation behavior, and label placement across every documented route option.",
+    },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors branch",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/form-visual.spec.ts",
+      note: "Forced-colors media emulation compares the XL side-label required/disabled/emphasized ARIA route against React Spectrum's computed contract.",
     },
   ],
   image: [

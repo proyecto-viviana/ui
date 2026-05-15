@@ -82,6 +82,10 @@ export function useFormProps<T extends object>(props: T): T {
 
   return new Proxy(props, {
     get(target, property, receiver) {
+      if (property === "isDisabled" && isSkeleton()) {
+        return true;
+      }
+
       const localValue = Reflect.get(target, property, receiver);
       if (localValue !== undefined) {
         return localValue;
@@ -104,6 +108,14 @@ export function useFormProps<T extends object>(props: T): T {
       return Array.from(keys);
     },
     getOwnPropertyDescriptor(target, property) {
+      if (property === "isDisabled" && isSkeleton()) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => true,
+        };
+      }
+
       const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
       if (descriptor) {
         return descriptor;

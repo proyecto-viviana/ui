@@ -50,7 +50,7 @@ export function Button(props: ButtonProps): JSX.Element {
     fillStyle: "fill",
   };
 
-  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const merged = useFormProps(mergeProps(defaultProps, providerProps, contextProps ?? {}, props));
 
   const [local, headlessProps] = splitProps(merged, [
     "variant",
