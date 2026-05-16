@@ -22,6 +22,15 @@ describe("ActionBar (headless)", () => {
       expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
     });
 
+    it("hides when selectedItemCount is omitted", () => {
+      render(() => (
+        <ActionBar>
+          <span>actions</span>
+        </ActionBar>
+      ));
+      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+    });
+
     it("shows when selectedItemCount > 0", () => {
       render(() => (
         <ActionBar selectedItemCount={3} onClearSelection={() => {}}>
@@ -100,6 +109,27 @@ describe("ActionBar (headless)", () => {
       expect(toolbar).toHaveAttribute("aria-labelledby", "bulk-actions-label");
       expect(toolbar).not.toHaveAttribute("aria-label");
     });
+
+    it("forwards refs and DOM data attributes", () => {
+      let actionBarElement: HTMLDivElement | undefined;
+      render(() => (
+        <ActionBar
+          selectedItemCount={1}
+          onClearSelection={() => {}}
+          ref={(element) => {
+            actionBarElement = element;
+          }}
+          data-testid="bulk-action-bar"
+          data-state="selected"
+        >
+          <span>actions</span>
+        </ActionBar>
+      ));
+
+      const toolbar = screen.getByTestId("bulk-action-bar");
+      expect(actionBarElement).toBe(toolbar);
+      expect(toolbar).toHaveAttribute("data-state", "selected");
+    });
   });
 
   describe("keyboard", () => {
@@ -167,6 +197,20 @@ describe("ActionBar (headless)", () => {
       fireEvent.keyDown(toolbar, { key: "Escape" });
       expect(onKeyDown).toHaveBeenCalledOnce();
       expect(onClear).not.toHaveBeenCalled();
+    });
+
+    it("does not require an onClearSelection handler", () => {
+      render(() => (
+        <ActionBar selectedItemCount={5}>
+          <ActionBarClearButton />
+        </ActionBar>
+      ));
+
+      const toolbar = screen.getByRole("toolbar");
+      expect(() => fireEvent.keyDown(toolbar, { key: "Escape" })).not.toThrow();
+      expect(() =>
+        fireEvent.click(screen.getByRole("button", { name: "Clear selection" })),
+      ).not.toThrow();
     });
   });
 

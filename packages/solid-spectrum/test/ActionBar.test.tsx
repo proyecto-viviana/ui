@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { ActionBar, ActionBarContainer } from "../src/actionbar";
+import { ActionBar, ActionBarContainer, ActionBarContext } from "../src/actionbar";
 
 describe("ActionBar (solid-spectrum)", () => {
   describe("basic rendering", () => {
@@ -41,6 +41,41 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBar>
       ));
       expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+    });
+
+    it("hides when selectedItemCount is omitted", () => {
+      render(() => (
+        <ActionBar>
+          <button>Edit</button>
+        </ActionBar>
+      ));
+      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+    });
+
+    it("applies emphasized, unsafe, style, and ref props", () => {
+      let actionBarElement: HTMLDivElement | undefined;
+      const { container } = render(() => (
+        <ActionBar
+          selectedItemCount={1}
+          onClearSelection={() => {}}
+          isEmphasized
+          UNSAFE_className="unsafe-action-bar"
+          UNSAFE_style={{ margin: "4px" }}
+          styles={"generated-action-bar" as never}
+          ref={(element) => {
+            actionBarElement = element;
+          }}
+        >
+          <button>Edit</button>
+        </ActionBar>
+      ));
+
+      const toolbar = screen.getByRole("toolbar");
+      expect(actionBarElement).toBe(toolbar);
+      expect(container.querySelector(".vui-action-bar--emphasized")).toBeInTheDocument();
+      expect(container.querySelector(".unsafe-action-bar")).toBeInTheDocument();
+      expect(container.querySelector(".generated-action-bar")).toBeInTheDocument();
+      expect(toolbar).toHaveStyle({ margin: "4px" });
     });
   });
 
@@ -83,6 +118,59 @@ describe("ActionBar (solid-spectrum)", () => {
       ));
       fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
       expect(onClear).toHaveBeenCalledOnce();
+    });
+
+    it("does not require an onClearSelection handler", () => {
+      render(() => (
+        <ActionBar selectedItemCount={2}>
+          <button>Edit</button>
+        </ActionBar>
+      ));
+
+      expect(() =>
+        fireEvent.click(screen.getByRole("button", { name: "Clear selection" })),
+      ).not.toThrow();
+    });
+  });
+
+  describe("context", () => {
+    it("merges ActionBarContext props and refs", () => {
+      let actionBarElement: HTMLDivElement | undefined;
+      render(() => (
+        <ActionBarContext.Provider
+          value={{
+            selectedItemCount: 2,
+            onClearSelection: () => {},
+            UNSAFE_className: "context-action-bar",
+            UNSAFE_style: { margin: "6px" },
+            ref: (element) => {
+              actionBarElement = element;
+            },
+          }}
+        >
+          <ActionBar>
+            <button>Edit</button>
+          </ActionBar>
+        </ActionBarContext.Provider>
+      ));
+
+      const toolbar = screen.getByRole("toolbar");
+      expect(actionBarElement).toBe(toolbar);
+      expect(toolbar).toHaveClass("context-action-bar");
+      expect(toolbar).toHaveStyle({ margin: "6px" });
+      expect(screen.getByText("2 selected")).toBeInTheDocument();
+    });
+
+    it("lets local props override ActionBarContext selected count", () => {
+      render(() => (
+        <ActionBarContext.Provider value={{ selectedItemCount: 2, onClearSelection: () => {} }}>
+          <ActionBar selectedItemCount={0}>
+            <button>Edit</button>
+          </ActionBar>
+        </ActionBarContext.Provider>
+      ));
+
+      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
     });
   });
 

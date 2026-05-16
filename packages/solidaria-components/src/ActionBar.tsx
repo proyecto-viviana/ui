@@ -28,6 +28,17 @@ import {
   filterDOMProps,
 } from "./utils";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface ActionBarRenderProps {
   /** Whether the action bar is visible. */
   isOpen: boolean;
@@ -35,11 +46,14 @@ export interface ActionBarRenderProps {
   selectedItemCount: number | "all";
 }
 
-export interface ActionBarProps extends SlotProps {
-  /** The number of selected items. ActionBar is hidden when 0. */
-  selectedItemCount: number | "all";
+export interface ActionBarProps
+  extends
+    Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children" | "ref" | "slot">,
+    SlotProps {
+  /** The number of selected items. ActionBar is hidden when 0. @default 0 */
+  selectedItemCount?: number | "all";
   /** Callback when the clear button is pressed. */
-  onClearSelection: () => void;
+  onClearSelection?: () => void;
   /** Callback when an action is triggered. */
   onAction?: (key: Key) => void;
   /** The action buttons to display. */
@@ -54,11 +68,13 @@ export interface ActionBarProps extends SlotProps {
   "aria-labelledby"?: string;
   /** Optional keydown handler on the action bar element. */
   onKeyDown?: JSX.EventHandlerUnion<HTMLDivElement, KeyboardEvent>;
+  /** Ref for the underlying action bar element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface ActionBarContextValue {
   selectedItemCount: () => number | "all";
-  onClearSelection: () => void;
+  onClearSelection?: () => void;
   onAction?: (key: Key) => void;
 }
 
@@ -80,9 +96,11 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     "aria-label",
     "aria-labelledby",
     "onKeyDown",
+    "ref",
   ]);
 
-  const isOpen = () => local.selectedItemCount !== 0;
+  const selectedItemCount = () => local.selectedItemCount ?? 0;
+  const isOpen = () => selectedItemCount() !== 0;
 
   const { toolbarProps } = createToolbar({
     orientation: "horizontal",
@@ -115,7 +133,7 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     if (e.key === "Escape" && isOpen()) {
       e.preventDefault();
       e.stopPropagation();
-      local.onClearSelection();
+      local.onClearSelection?.();
     }
   };
 
@@ -128,7 +146,7 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     },
     () => ({
       isOpen: isOpen(),
-      selectedItemCount: local.selectedItemCount,
+      selectedItemCount: selectedItemCount(),
     }),
   );
 
@@ -137,7 +155,7 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   );
 
   const contextValue = createMemo<ActionBarContextValue>(() => ({
-    selectedItemCount: () => local.selectedItemCount,
+    selectedItemCount,
     onClearSelection: local.onClearSelection,
     onAction: local.onAction,
   }));
@@ -153,6 +171,7 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
           slot={local.slot}
           data-open={isOpen() || undefined}
           onKeyDown={handleKeyDown}
+          ref={(el) => assignRef(local.ref, el)}
         >
           {local.children}
         </div>
@@ -218,7 +237,7 @@ export function ActionBarClearButton(props: ActionBarClearButtonProps): JSX.Elem
       type="button"
       aria-label={props["aria-label"] ?? "Clear selection"}
       class={props.class}
-      onClick={() => ctx?.onClearSelection()}
+      onClick={() => ctx?.onClearSelection?.()}
     >
       {props.children ?? "\u2715"}
     </button>

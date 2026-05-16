@@ -35,7 +35,7 @@ export type {
 } from "./accordion";
 
 // ActionBar
-export { ActionBar } from "./actionbar";
+export { ActionBar, ActionBarContext } from "./actionbar";
 export type { ActionBarProps } from "./actionbar";
 
 // ActionButton / Button family
