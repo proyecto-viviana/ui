@@ -640,6 +640,7 @@ function SolidSpectrumActionBarDemo() {
         get scrollRef() {
           return demoProps().useScrollRef ? scrollRef : undefined;
         },
+        "data-comparison-actionbar-root": "true",
         onClearSelection: () => {
           setClearCount((count) => count + 1);
           setIsCleared(true);
@@ -692,6 +693,7 @@ function SolidSpectrumActionBarDemo() {
             get isEmphasized() {
               return demoProps().isEmphasized;
             },
+            "data-comparison-actionbar-root": "true",
             scrollRef,
             onClearSelection: () => setCollectionSelectedKeys(new Set<string>()),
           },

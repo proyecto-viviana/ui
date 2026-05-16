@@ -6356,6 +6356,18 @@
   }
 }
 
+@layer _.a;
+
+@layer _.a {
+  .Zj13 {
+    width: calc(0.75rem * var(--s2-scale));
+  }
+
+  .Fk13 {
+    height: calc(0.75rem * var(--s2-scale));
+  }
+}
+
 @layer _.a, _.b;
 
 @layer _.a {

@@ -558,6 +558,7 @@ function ReactActionBarDemo() {
     selectedItemCount,
     isEmphasized: demoProps.isEmphasized,
     scrollRef: demoProps.useScrollRef ? scrollRef : undefined,
+    "data-comparison-actionbar-root": "true",
     onClearSelection: () => {
       setClearCount((count) => count + 1);
       setIsCleared(true);
@@ -575,6 +576,7 @@ function ReactActionBarDemo() {
     renderActionBar: () =>
       jsx(SpectrumActionBar, {
         isEmphasized: demoProps.isEmphasized,
+        "data-comparison-actionbar-root": "true",
         children: actionBarChildren(),
       }),
     UNSAFE_className: "comparison-actionbar-collection-list",

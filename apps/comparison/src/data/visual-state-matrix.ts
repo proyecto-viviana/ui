@@ -92,6 +92,58 @@ function assertedDefaultState(input: {
 }
 
 const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
+  actionbar: [
+    {
+      id: "styled.route-controls",
+      label: "Styled route controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionbar-contract.spec.ts",
+      note: "ActionBar route controls assert direct selected counts, all-selected state, zero state, emphasis, clear behavior, child actions, Escape clearing, and toolbar keyboard navigation across React Spectrum and Solid.",
+    },
+    {
+      id: "styled.strict-pair-diff",
+      label: "Styled strict pair diff",
+      kind: "visual",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
+      spec: "e2e/actionbar-visual.spec.ts",
+      note: "Exact in-place root screenshots compare default, single-selection, all-selected, and emphasized ActionBar states with zero pixel tolerance.",
+    },
+    {
+      id: "styled.computed-axes",
+      label: "Styled computed axes",
+      kind: "visual",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionbar-visual.spec.ts",
+      note: "Computed style and geometry contract compares root layout, S2 ActionBar container, selection text, clear button, ActionButtonGroup, and child ActionButton/icon styling across direct, count, all-selected, and emphasized states; collection mode compares the stable child and surface styles while route contracts cover collection overlay geometry.",
+    },
+    {
+      id: "styled.scrollref-lifecycle",
+      label: "Styled scrollRef lifecycle",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionbar-contract.spec.ts",
+      note: "Browser contract asserts scrollRef absolute positioning, scrollbar compensation, resize stability, and reduced-motion exit completion on both stacks.",
+    },
+    {
+      id: "styled.forced-colors",
+      label: "Styled forced colors",
+      kind: "visual",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionbar-visual.spec.ts",
+      note: "Forced-colors media emulation compares the computed ActionBar contract for default and emphasized states across React Spectrum and Solid.",
+    },
+  ],
   accordion: [
     {
       id: "styled.route-controls",

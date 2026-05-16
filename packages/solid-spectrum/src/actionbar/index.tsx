@@ -24,7 +24,6 @@ import type { Key } from "@proyecto-viviana/solid-stately";
 import { baseColor, focusRing, lightDark, style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { controlSize, staticColor } from "../s2-internal/style-utils";
-import CrossIcon from "../icon/ui-icons/Cross";
 import { ActionButtonGroup } from "../actionbuttongroup";
 import { s2IntlStrings } from "../intl";
 import {
@@ -166,6 +165,28 @@ const closeButtonStyles = style<ActionBarCloseButtonState>({
   disableTapHighlight: true,
 });
 
+const closeIconStyles = style({
+  size: 12,
+});
+
+function ActionBarCloseIcon(): JSX.Element {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      aria-hidden="true"
+      class={closeIconStyles}
+    >
+      <path
+        fill="var(--iconPrimary, #222)"
+        d="m7.342 6 3.396-3.396a.95.95 0 1 0-1.342-1.342L6 4.658 2.604 1.262a.95.95 0 1 0-1.343 1.342L4.659 6 1.262 9.396a.95.95 0 1 0 1.343 1.342L6 7.342l3.396 3.396a.946.946 0 0 0 1.342.001.95.95 0 0 0 0-1.343z"
+      />
+    </svg>
+  );
+}
+
 export interface ActionBarProps extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
   "class" | "style" | "children" | "ref" | "slot"
@@ -286,7 +307,7 @@ function ActionBarCloseButton(props: {
         })
       }
     >
-      <CrossIcon size="XL" />
+      <ActionBarCloseIcon />
     </HeadlessButton>
   );
 }
