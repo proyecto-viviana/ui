@@ -2,6 +2,7 @@ import {
   type JSX,
   createContext,
   createEffect,
+  createMemo,
   createSignal,
   mergeProps,
   onCleanup,
@@ -12,12 +13,19 @@ import {
 import {
   ActionBar as HeadlessActionBar,
   ActionBarContainer as HeadlessActionBarContainer,
-  ActionBarSelectionCount as HeadlessSelectionCount,
-  ActionBarClearButton as HeadlessClearButton,
+  Button as HeadlessButton,
   type ActionBarRenderProps,
+  type ButtonRenderProps,
+  useActionBarContext,
 } from "@proyecto-viviana/solidaria-components";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import type { StyleString } from "../s2-style";
+import { baseColor, focusRing, lightDark, style, type StyleString } from "../s2-style";
+import { mergeStyles } from "../s2-style/runtime";
+import { controlSize, staticColor } from "../s2-internal/style-utils";
+import CrossIcon from "../icon/ui-icons/Cross";
+import { ActionButtonGroup } from "../actionbuttongroup";
+import { s2IntlStrings } from "../intl";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -26,8 +34,136 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import type { StaticColor } from "../button/types";
 
 type ScrollRef = { current?: HTMLElement | null } | HTMLElement | undefined;
+type SelectedItemCount = number | "all";
+type ActionBarAnimationState = {
+  isEmphasized?: boolean;
+  isInContainer?: boolean;
+  isEntering?: boolean;
+  isExiting?: boolean;
+};
+type ActionBarCloseButtonState = ButtonRenderProps & {
+  staticColor?: StaticColor;
+  isStaticColor: boolean;
+};
+
+const ACTION_BAR_EXIT_DURATION = 200;
+
+const actionBarStyles = style<ActionBarAnimationState>({
+  borderRadius: "lg",
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: {
+      default: "elevated",
+      isEmphasized: "neutral",
+    },
+  },
+  backgroundColor: "--s2-container-bg",
+  boxShadow: "elevated",
+  boxSizing: "border-box",
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: lightDark("transparent-white-25" as never, "gray-200" as never),
+    isEmphasized: "transparent",
+    forcedColors: "ButtonBorder",
+  },
+  paddingX: 8,
+  paddingY: 12,
+  display: "flex",
+  gap: 16,
+  alignItems: "center",
+  position: {
+    isInContainer: "absolute",
+  },
+  bottom: 0,
+  insetStart: 8,
+  "--insetEnd": {
+    type: "insetEnd",
+    value: 8,
+  },
+  width: {
+    default: "full",
+    isInContainer: "auto",
+  },
+  marginX: "auto",
+  maxWidth: 960,
+  transition: "transform",
+  transitionDuration: 200,
+  translateY: {
+    default: -8,
+    isEntering: "full",
+    isExiting: "full",
+  },
+});
+
+const actionsWrapperStyles = style({
+  order: 1,
+  marginStart: "auto",
+});
+
+const selectionWrapperStyles = style({
+  order: 0,
+  display: "flex",
+  alignItems: "center",
+  gap: 4,
+});
+
+const selectionCountStyles = style<{ isEmphasized?: boolean }>({
+  font: "ui",
+  color: {
+    default: "neutral",
+    isEmphasized: "gray-25" as never,
+  },
+});
+
+const closeButtonHoverBackground = {
+  default: "gray-200" as never,
+  isStaticColor: "transparent-overlay-200" as never,
+} as const;
+
+const closeButtonStyles = style<ActionBarCloseButtonState>({
+  ...focusRing(),
+  ...staticColor(),
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  size: controlSize(),
+  flexShrink: 0,
+  borderRadius: "full",
+  padding: 0,
+  borderStyle: "none",
+  transition: "default",
+  backgroundColor: {
+    default: "transparent",
+    isHovered: closeButtonHoverBackground,
+    isFocusVisible: closeButtonHoverBackground,
+    isPressed: closeButtonHoverBackground,
+  },
+  "--iconPrimary": {
+    type: "color",
+    value: {
+      default: baseColor("neutral"),
+      isDisabled: "disabled",
+      isStaticColor: {
+        default: baseColor("transparent-overlay-800"),
+        isDisabled: "transparent-overlay-400",
+      },
+      forcedColors: {
+        default: "ButtonText",
+        isDisabled: "GrayText",
+      },
+    },
+  },
+  outlineColor: {
+    default: "focus-ring",
+    isStaticColor: "transparent-overlay-1000",
+    forcedColors: "Highlight",
+  },
+  disableTapHighlight: true,
+});
 
 export interface ActionBarProps extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
@@ -84,22 +220,74 @@ function getScrollElement(scrollRef: ScrollRef): HTMLElement | null {
 
 function getBarClassName(
   renderProps: ActionBarRenderProps,
-  unsafeClassName?: string,
-  extraClass?: string,
+  contextUnsafeClassName?: string,
+  propUnsafeClassName?: string,
+  contextClassName?: string,
+  propClassName?: string,
   isEmphasized?: boolean,
   isInContainer?: boolean,
+  isEntering?: boolean,
+  isExiting?: boolean,
   styles?: StyleString,
 ): string {
   return [
-    "vui-action-bar flex items-center gap-2 rounded-lg border border-primary-600 bg-bg-300 p-2",
+    "vui-action-bar",
     isEmphasized ? "vui-action-bar--emphasized" : "",
-    isInContainer ? "absolute bottom-0 inset-x-2 mx-auto max-w-[960px]" : "",
-    unsafeClassName ?? "",
-    extraClass ?? "",
-    styles ?? "",
+    isInContainer ? "vui-action-bar--in-container" : "",
+    isEntering ? "vui-action-bar--entering" : "",
+    isExiting ? "vui-action-bar--exiting" : "",
+    contextUnsafeClassName ?? "",
+    propUnsafeClassName ?? "",
+    contextClassName ?? "",
+    propClassName ?? "",
+    mergeStyles(
+      actionBarStyles({
+        isEmphasized,
+        isInContainer,
+        isEntering,
+        isExiting,
+      }),
+      styles,
+    ),
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+function countMessage(
+  formatter: ReturnType<ReturnType<typeof createStringFormatter>>,
+  count: SelectedItemCount,
+): string {
+  if (count === "all") {
+    return formatter.format("actionbar.selectedAll");
+  }
+
+  const message = formatter.format("actionbar.selected", { count });
+  return message.includes("{count}") ? message.replace("{count}", String(count)) : message;
+}
+
+function ActionBarCloseButton(props: {
+  isEmphasized?: boolean;
+  "aria-label": string;
+}): JSX.Element {
+  const ctx = useActionBarContext();
+  const staticColorValue = () => (props.isEmphasized ? "auto" : undefined);
+
+  return (
+    <HeadlessButton
+      aria-label={props["aria-label"]}
+      onPress={() => ctx?.onClearSelection?.()}
+      class={(renderProps: ButtonRenderProps) =>
+        closeButtonStyles({
+          ...renderProps,
+          staticColor: staticColorValue(),
+          isStaticColor: !!staticColorValue(),
+        })
+      }
+    >
+      <CrossIcon size="XL" />
+    </HeadlessButton>
+  );
 }
 
 export function ActionBar(props: ActionBarProps): JSX.Element {
@@ -117,7 +305,21 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     "scrollRef",
   ]);
   const [scrollbarWidth, setScrollbarWidth] = createSignal(0);
+  const [isRendered, setIsRendered] = createSignal((headlessProps.selectedItemCount ?? 0) !== 0);
+  const [isEntering, setIsEntering] = createSignal(false);
+  const [isExiting, setIsExiting] = createSignal(false);
+  const [lastCount, setLastCount] = createSignal<SelectedItemCount>(
+    headlessProps.selectedItemCount ?? 0,
+  );
+  let exitTimeout: ReturnType<typeof setTimeout> | undefined;
+  let enterFrame: number | undefined;
+
   const scrollElement = () => getScrollElement(local.scrollRef);
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+  const selectedItemCount = () => headlessProps.selectedItemCount ?? 0;
+  const isOpen = () => selectedItemCount() !== 0;
+  const renderedCount = () => (isOpen() ? selectedItemCount() : lastCount());
+  const selectedItemCountForHeadless = () => (isRendered() ? renderedCount() : 0);
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
@@ -125,15 +327,13 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-  const rootStyle = () => {
+  const rootStyle = (): JSX.CSSProperties => {
     const unsafeStyle = mergedUnsafeStyle();
-    const containerStyle = local.scrollRef
-      ? ({
-          "inset-inline-end": `calc(var(--insetEnd, 8px) + ${scrollbarWidth()}px)`,
-        } satisfies JSX.CSSProperties)
-      : undefined;
+    const containerStyle = {
+      "inset-inline-end": `calc(var(--insetEnd, 8px) + ${scrollbarWidth()}px)`,
+    } satisfies JSX.CSSProperties;
 
-    return containerStyle || unsafeStyle ? { ...containerStyle, ...unsafeStyle } : undefined;
+    return { ...containerStyle, ...unsafeStyle };
   };
   const updateScrollbarWidth = () => {
     const element = scrollElement();
@@ -141,6 +341,61 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   };
 
   createEffect(updateScrollbarWidth);
+  createEffect(() => {
+    const count = selectedItemCount();
+    const open = count !== 0;
+
+    if (count === "all" || count > 0) {
+      setLastCount(count);
+    }
+
+    if (exitTimeout) {
+      clearTimeout(exitTimeout);
+      exitTimeout = undefined;
+    }
+
+    if (open) {
+      setIsRendered(true);
+      setIsExiting(false);
+
+      if (local.scrollRef) {
+        setIsEntering(true);
+        if (typeof requestAnimationFrame !== "undefined") {
+          if (enterFrame != null) {
+            cancelAnimationFrame(enterFrame);
+          }
+          enterFrame = requestAnimationFrame(() => {
+            enterFrame = undefined;
+            setIsEntering(false);
+          });
+        } else {
+          setTimeout(() => setIsEntering(false), 0);
+        }
+      } else {
+        setIsEntering(false);
+      }
+      return;
+    }
+
+    setIsEntering(false);
+    if (!isRendered()) {
+      setIsExiting(false);
+      return;
+    }
+
+    if (!local.scrollRef) {
+      setIsRendered(false);
+      setIsExiting(false);
+      return;
+    }
+
+    setIsExiting(true);
+    exitTimeout = setTimeout(() => {
+      exitTimeout = undefined;
+      setIsRendered(false);
+      setIsExiting(false);
+    }, ACTION_BAR_EXIT_DURATION);
+  });
   onMount(() => {
     updateScrollbarWidth();
     const element = scrollElement();
@@ -152,30 +407,62 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     observer.observe(element);
     onCleanup(() => observer.disconnect());
   });
+  onCleanup(() => {
+    if (exitTimeout) {
+      clearTimeout(exitTimeout);
+    }
+    if (enterFrame != null && typeof cancelAnimationFrame !== "undefined") {
+      cancelAnimationFrame(enterFrame);
+    }
+  });
+
+  const actionGroupLabel = createMemo(() => stringFormatter().format("actionbar.actions"));
+  const clearSelectionLabel = createMemo(() =>
+    stringFormatter().format("actionbar.clearSelection"),
+  );
+  const selectionLabel = createMemo(() => countMessage(stringFormatter(), renderedCount()));
 
   return (
     <HeadlessActionBar
       {...headlessProps}
-      selectedItemCount={headlessProps.selectedItemCount ?? 0}
+      selectedItemCount={selectedItemCountForHeadless()}
       onClearSelection={headlessProps.onClearSelection}
       ref={actionBarRef}
       slot={local.slot ?? undefined}
       class={(rp: ActionBarRenderProps) =>
         getBarClassName(
           rp,
-          local.UNSAFE_className,
-          local.class,
+          contextProps?.UNSAFE_className,
+          props.UNSAFE_className,
+          contextProps?.class,
+          props.class,
           local.isEmphasized,
           !!local.scrollRef,
+          isEntering(),
+          isExiting(),
           mergedStyles(),
         )
       }
-      style={rootStyle()}
+      style={() => rootStyle()}
     >
-      <HeadlessClearButton class="inline-flex items-center justify-center rounded p-1 text-primary-200 hover:bg-bg-400 transition-colors" />
-      <HeadlessSelectionCount class="text-sm text-primary-200 whitespace-nowrap" />
-      <div class="flex-1" />
-      <div class="flex items-center gap-1">{local.children}</div>
+      <div class={selectionWrapperStyles}>
+        <ActionBarCloseButton
+          isEmphasized={local.isEmphasized}
+          aria-label={clearSelectionLabel()}
+        />
+        <span class={selectionCountStyles({ isEmphasized: local.isEmphasized })}>
+          {selectionLabel()}
+        </span>
+      </div>
+      <div class={actionsWrapperStyles}>
+        <ActionButtonGroup
+          staticColor={local.isEmphasized ? "auto" : undefined}
+          isQuiet
+          aria-label={actionGroupLabel()}
+        >
+          {local.children}
+        </ActionButtonGroup>
+      </div>
     </HeadlessActionBar>
   );
 }

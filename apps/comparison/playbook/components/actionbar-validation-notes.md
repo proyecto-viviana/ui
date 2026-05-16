@@ -14,22 +14,22 @@
 
 ## Task Status
 
-| Task                   | Status      | Evidence                                                                                                        | Blocker or next action                                                                      |
-| ---------------------- | ----------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| 0 Research             | done        | S2 docs MCP, installed `@react-spectrum/s2@1.3.0` source, local Solid source/tests, current comparison reports  | None                                                                                        |
-| 1 Baseline             | done        | `comparison:report:gaps`, `comparison:report:exports`, focused ActionBar package tests                          | None                                                                                        |
-| 2 Route harness        | done        | `actionbar-demo.ts`, React/Solid styled fixtures, component controls, manifest entry, `actionbar-contract.spec` | None                                                                                        |
-| 3 Source map/API       | done        | Optional count/clear handler, `ActionBarContext`, `scrollRef`, `styles`, unsafe props, and root refs covered    | None                                                                                        |
-| 4 Cross-layer audit    | in progress | Upstream/solid source branch table below                                                                        | Fill as implementation branches land                                                        |
-| 5 Transitions          | not started | S2 source uses enter/exit animation when `scrollRef` is present and keeps last selected count during exit       | Add browser transition tests with reduced-motion handling                                   |
-| 6 State                | not started | S2 `useActionBarContainer` owns selected-key derivation for collections                                         | Decide whether Solid needs a companion container hook or route-level collection adapter     |
-| 7 ARIA hooks           | partial     | Solidaria ActionBar uses toolbar semantics and Escape clearing                                                  | Add focus restore, localized labels, action group labeling, and axe coverage                |
-| 8 Headless             | partial     | Solidaria tests cover visibility, Escape, navigation, count text, optional clear, refs, and DOM pass-through    | Add render-prop liveness and a11y smoke                                                     |
-| 9 Styled S2            | not started | Solid Spectrum ActionBar currently uses bespoke `vui-action-bar` utility classes rather than S2 source geometry | Port S2 structure/styles and child contexts                                                 |
-| 10 Runtime lifecycle   | not started | Upstream measures scrollbar width, observes `scrollRef`, announces actions, restores focus, and animates exit   | Add cleanup/observer/lifecycle proofs                                                       |
-| 11 Harness integrity   | in progress | Current reports list ActionBar as live on both sides with planned visual coverage                               | Add strict pair-diff rows only after S2 styling/API parity lands                            |
-| 12 Comparison evidence | partial     | `actionbar-contract.spec` covers route mount, controls, zero state, clear, and child actions                    | Add Escape, keyboard navigation, visual, forced-colors, scrollRef, and reduced-motion specs |
-| 13 Acceptance          | not started | Not accepted                                                                                                    | Complete parity checklist and commit each slice                                             |
+| Task                   | Status      | Evidence                                                                                                                         | Blocker or next action                                                                      |
+| ---------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 0 Research             | done        | S2 docs MCP, installed `@react-spectrum/s2@1.3.0` source, local Solid source/tests, current comparison reports                   | None                                                                                        |
+| 1 Baseline             | done        | `comparison:report:gaps`, `comparison:report:exports`, focused ActionBar package tests                                           | None                                                                                        |
+| 2 Route harness        | done        | `actionbar-demo.ts`, React/Solid styled fixtures, component controls, manifest entry, `actionbar-contract.spec`                  | None                                                                                        |
+| 3 Source map/API       | done        | Optional count/clear handler, `ActionBarContext`, `scrollRef`, `styles`, unsafe props, and root refs covered                     | None                                                                                        |
+| 4 Cross-layer audit    | in progress | Upstream/solid source branch table below                                                                                         | Fill as implementation branches land                                                        |
+| 5 Transitions          | partial     | Solid styled layer now keeps last selected count during `scrollRef` exit and holds the bar for the S2 200ms window               | Add browser transition tests with reduced-motion handling                                   |
+| 6 State                | not started | S2 `useActionBarContainer` owns selected-key derivation for collections                                                          | Decide whether Solid needs a companion container hook or route-level collection adapter     |
+| 7 ARIA hooks           | partial     | Solidaria ActionBar uses toolbar semantics and Escape clearing; styled layer now localizes count, clear, and action group labels | Add focus restore, localized live announcement, and axe coverage                            |
+| 8 Headless             | partial     | Solidaria tests cover visibility, Escape, navigation, count text, optional clear, refs, and DOM pass-through                     | Add render-prop liveness and a11y smoke                                                     |
+| 9 Styled S2            | partial     | S2 macro root geometry, wrapper order, close button, ActionButtonGroup, staticColor propagation, and generated CSS are wired     | Add visual, forced-colors, and strict pair-diff proof                                       |
+| 10 Runtime lifecycle   | partial     | Styled layer measures scrollbar width, observes `scrollRef`, and cleans up enter/exit timers                                     | Add focus restore, live announcement, and browser lifecycle proofs                          |
+| 11 Harness integrity   | in progress | Current reports list ActionBar as live on both sides with planned visual coverage                                                | Add strict pair-diff rows only after S2 styling/API parity lands                            |
+| 12 Comparison evidence | partial     | `actionbar-contract.spec` covers route mount, controls, zero state, clear, and child actions                                     | Add Escape, keyboard navigation, visual, forced-colors, scrollRef, and reduced-motion specs |
+| 13 Acceptance          | not started | Not accepted                                                                                                                     | Complete parity checklist and commit each slice                                             |
 
 ## Source Packet
 
@@ -43,18 +43,18 @@
 
 ## Official Docs And Viewer Parity
 
-| Docs item           | Official setting/example                                        | Current Solid/route status                                        | Required proof                                    |
-| ------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------- |
-| `children`          | `ActionButton` children inside the bar                          | Solid renders arbitrary children inside a wrapper                 | ActionButtonGroup child semantics and visual diff |
-| `selectedItemCount` | number, `"all"`, hidden at `0`; optional API default            | optional in Solid; hides at `0`; package tests cover default      | last-count exit behavior                          |
-| `onClearSelection`  | optional clear handler                                          | optional in Solid; click/Escape no-op safely when omitted         | lifecycle/interaction browser coverage            |
-| `isEmphasized`      | emphasized neutral container and staticColor auto children      | route control and Solid class flag added; S2 visuals missing      | computed style, visual, forced-colors matrix      |
-| `scrollRef`         | absolute container positioning and scrollbar-width compensation | prop accepted; basic container class and inset compensation added | browser geometry and resize assertion             |
-| `slot`              | named or null slot via Spectrum context                         | styled context and local override covered                         | broader slot matrix                               |
-| `styles`            | S2 style macro overrides                                        | merged into root class; package test covers pass-through          | allowed override matrix                           |
-| unsafe props        | `UNSAFE_className`, `UNSAFE_style`                              | merged into root; package test covers class/style                 | visual/forced-colors proof                        |
-| `ref`               | DOMRef to root                                                  | headless and styled root refs covered                             | lifecycle/focus restore proof                     |
-| Collection examples | TableView/ListView/TreeView `renderActionBar`                   | no comparison route integration                                   | route fixture with selected keys and clear action |
+| Docs item           | Official setting/example                                        | Current Solid/route status                                                                             | Required proof                                    |
+| ------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `children`          | `ActionButton` children inside the bar                          | Solid wraps children in a quiet `ActionButtonGroup`; package tests cover label and child quiet mode    | visual diff                                       |
+| `selectedItemCount` | number, `"all"`, hidden at `0`; optional API default            | optional in Solid; hides at `0`; package tests cover default and scrollRef last-count exit             | browser transition proof                          |
+| `onClearSelection`  | optional clear handler                                          | optional in Solid; click/Escape no-op safely when omitted                                              | lifecycle/interaction browser coverage            |
+| `isEmphasized`      | emphasized neutral container and staticColor auto children      | root S2 emphasized styles and child `staticColor="auto"` are wired                                     | computed style, visual, forced-colors matrix      |
+| `scrollRef`         | absolute container positioning and scrollbar-width compensation | prop accepted; S2 absolute positioning, inset compensation, and exit hold are covered in package tests | browser geometry and resize assertion             |
+| `slot`              | named or null slot via Spectrum context                         | styled context and local override covered                                                              | broader slot matrix                               |
+| `styles`            | S2 style macro overrides                                        | merged into root class; package test covers pass-through                                               | allowed override matrix                           |
+| unsafe props        | `UNSAFE_className`, `UNSAFE_style`                              | merged into root; package test covers class/style                                                      | visual/forced-colors proof                        |
+| `ref`               | DOMRef to root                                                  | headless and styled root refs covered                                                                  | lifecycle/focus restore proof                     |
+| Collection examples | TableView/ListView/TreeView `renderActionBar`                   | no comparison route integration                                                                        | route fixture with selected keys and clear action |
 
 ## Baseline
 
@@ -117,6 +117,33 @@
   - `COMPARISON_PORT=4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/actionbar-contract.spec.ts --reporter=line`
   - `4` browser tests passed.
 
+## Current After S2 Structure Slice
+
+- Styled S2 implementation moved from bespoke utility classes to generated S2
+  macro classes for the root container, wrapper order, selection text, close
+  button, and ActionButtonGroup composition.
+- The CSS generator now imports `packages/solid-spectrum/src/actionbar` so
+  ActionBar's `style()` macro output is included in `s2-generated.css`.
+- Package proof:
+  - `vp test run packages/solidaria-components/test/ActionBar.test.tsx packages/solid-spectrum/test/ActionBar.test.tsx`
+  - `2` files, `43` tests passed.
+- Repo/build proof:
+  - `vp run check`
+  - `vp run comparison:build`
+  - comparison build produced `70` static pages including
+    `/components/actionbar/index.html`.
+- Route proof remains green after S2 styling:
+  - `COMPARISON_PORT=4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/actionbar-contract.spec.ts --reporter=line`
+  - `4` browser tests passed.
+- Current reports:
+  - Official styled entries live on both sides: `35`.
+  - Official entries still missing/gap: `34`.
+  - Official visual states with strict pair-diff tests: `35`.
+  - Official visual states blocked by missing implementations: `33`.
+  - solid-spectrum public value exports: `138`.
+  - missing React S2 value exports: `75`.
+  - missing non-root/support S2 exports: `75`.
+
 ## Source Map And Public Contract
 
 | Layer               | Upstream files/owner                                             | Solid files/owner                                 | Current status |
@@ -124,30 +151,30 @@
 | State               | S2 `useActionBarContainer` plus collection selected-key state    | no Solid equivalent yet                           | gap            |
 | ARIA hooks          | `useKeyboard`, `FocusScope`, live announcer                      | Solidaria `createToolbar`, `announce`             | partial        |
 | Headless components | no RAC ActionBar primitive; S2 component owns composition        | `packages/solidaria-components/src/ActionBar.tsx` | partial        |
-| Styled S2           | `ActionBar.tsx`, `ActionButtonGroup`, `CloseButton`, style macro | `packages/solid-spectrum/src/actionbar/index.tsx` | gap            |
+| Styled S2           | `ActionBar.tsx`, `ActionButtonGroup`, `CloseButton`, style macro | `packages/solid-spectrum/src/actionbar/index.tsx` | partial        |
 | Public package API  | `ActionBar`, `ActionBarContext`, subpath `ActionButton`, `Text`  | root `ActionBar` and `ActionBarContext` exported  | partial        |
 | Comparison route    | docs examples and React S2 fixture                               | direct ActionBar route fixture with controls      | partial        |
 
 ## Source Branch Coverage
 
-| Layer    | Upstream branch                        | Solid owner       | Observable                                            | Status  | Evidence      |
-| -------- | -------------------------------------- | ----------------- | ----------------------------------------------------- | ------- | ------------- |
-| Headless | hidden when `selectedItemCount === 0`  | Solidaria         | no toolbar in DOM                                     | covered | package tests |
-| Headless | count text for number and `"all"`      | Solidaria         | selected count label                                  | covered | package tests |
-| Headless | Escape clears selection                | Solidaria         | `onClearSelection` called                             | covered | package tests |
-| Headless | toolbar arrow/Home/End navigation      | Solidaria toolbar | focus movement across action buttons                  | covered | package tests |
-| Headless | optional clear handler                 | Solidaria         | no throw when omitted                                 | covered | package tests |
-| Headless | refs and DOM pass-through              | Solidaria         | consumer root ref and safe DOM attrs                  | covered | package tests |
-| Styled   | context consumption and root ref merge | Solid Spectrum    | context-provided props/ref apply                      | covered | package tests |
-| Styled   | emphasized root                        | Solid Spectrum    | class flag applies; neutral/staticColor missing       | partial | package tests |
-| Styled   | CloseButton child                      | Solid Spectrum    | S2 close button geometry and localized label          | gap     | none          |
-| Styled   | ActionButtonGroup child wrapper        | Solid Spectrum    | quiet group, action label, staticColor propagation    | gap     | none          |
-| Styled   | scroll container mode                  | Solid Spectrum    | prop accepted with basic positioning/inset style      | partial | type/build    |
-| Styled   | enter/exit animation                   | Solid Spectrum    | translateY transition and last-count retained on exit | gap     | none          |
-| Harness  | direct route controls                  | comparison app    | selected count, `"all"`, zero state, emphasized prop  | covered | browser spec  |
-| Harness  | clear and child action behavior        | comparison app    | clear hides the bar; child ActionButton increments    | covered | browser spec  |
-| Harness  | docs-style collection integration      | comparison app    | selected rows drive ActionBar and clear selection     | gap     | none          |
-| Harness  | strict visual states                   | comparison app    | zero-tolerance React/Solid ActionBar screenshots      | gap     | none          |
+| Layer    | Upstream branch                        | Solid owner       | Observable                                             | Status  | Evidence      |
+| -------- | -------------------------------------- | ----------------- | ------------------------------------------------------ | ------- | ------------- |
+| Headless | hidden when `selectedItemCount === 0`  | Solidaria         | no toolbar in DOM                                      | covered | package tests |
+| Headless | count text for number and `"all"`      | Solidaria         | selected count label                                   | covered | package tests |
+| Headless | Escape clears selection                | Solidaria         | `onClearSelection` called                              | covered | package tests |
+| Headless | toolbar arrow/Home/End navigation      | Solidaria toolbar | focus movement across action buttons                   | covered | package tests |
+| Headless | optional clear handler                 | Solidaria         | no throw when omitted                                  | covered | package tests |
+| Headless | refs and DOM pass-through              | Solidaria         | consumer root ref and safe DOM attrs                   | covered | package tests |
+| Styled   | context consumption and root ref merge | Solid Spectrum    | context-provided props/ref apply                       | covered | package tests |
+| Styled   | emphasized root                        | Solid Spectrum    | S2 emphasized root classes and child staticColor apply | partial | package tests |
+| Styled   | CloseButton child                      | Solid Spectrum    | S2 close button geometry and localized label           | partial | package tests |
+| Styled   | ActionButtonGroup child wrapper        | Solid Spectrum    | quiet group, action label, staticColor propagation     | covered | package tests |
+| Styled   | scroll container mode                  | Solid Spectrum    | S2 positioning and scrollbar inset compensation        | partial | package tests |
+| Styled   | enter/exit animation                   | Solid Spectrum    | translateY classes and last-count retained on exit     | partial | package tests |
+| Harness  | direct route controls                  | comparison app    | selected count, `"all"`, zero state, emphasized prop   | covered | browser spec  |
+| Harness  | clear and child action behavior        | comparison app    | clear hides the bar; child ActionButton increments     | covered | browser spec  |
+| Harness  | docs-style collection integration      | comparison app    | selected rows drive ActionBar and clear selection      | gap     | none          |
+| Harness  | strict visual states                   | comparison app    | zero-tolerance React/Solid ActionBar screenshots       | gap     | none          |
 
 ## Transition Plan
 
@@ -179,9 +206,9 @@
 
 1. Done: add route data/fixtures/controls for `actionbar` with direct S2 props
    and a deterministic selected-count example.
-2. In progress: public API/context/ref/style pass is done; remaining work is S2
-   structure, CloseButton, ActionButtonGroup composition, animation, and visual
-   parity.
+2. Done: public API/context/ref/style pass and the first S2 structure slice are
+   landed; remaining styled work is browser visual parity, forced-colors, and
+   reduced-motion transition proof.
 3. Fill remaining headless gaps: render-prop liveness, axe smoke, and lifecycle
    tests.
 4. Add comparison e2e specs for route controls, clear/Escape behavior, toolbar

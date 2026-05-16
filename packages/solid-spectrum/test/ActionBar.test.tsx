@@ -1,9 +1,15 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { ActionBar, ActionBarContainer, ActionBarContext } from "../src/actionbar";
+import { ActionButton } from "../src/button/ActionButton";
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("ActionBar (solid-spectrum)", () => {
   describe("basic rendering", () => {
@@ -130,6 +136,67 @@ describe("ActionBar (solid-spectrum)", () => {
       expect(() =>
         fireEvent.click(screen.getByRole("button", { name: "Clear selection" })),
       ).not.toThrow();
+    });
+  });
+
+  describe("S2 structure", () => {
+    it("wraps actions in a quiet ActionButtonGroup", () => {
+      const { container } = render(() => (
+        <ActionBar selectedItemCount={2} onClearSelection={() => {}}>
+          <ActionButton>Edit</ActionButton>
+        </ActionBar>
+      ));
+
+      const group = container.querySelector("[data-density='regular']");
+      expect(group).toHaveAttribute("aria-label", "Actions");
+      expect(group).toHaveAttribute("data-orientation", "horizontal");
+      expect(screen.getByRole("button", { name: "Edit" })).toHaveAttribute("data-quiet", "true");
+    });
+
+    it("propagates staticColor auto to child action buttons when emphasized", () => {
+      render(() => (
+        <ActionBar selectedItemCount={2} onClearSelection={() => {}} isEmphasized>
+          <ActionButton>Edit</ActionButton>
+        </ActionBar>
+      ));
+
+      expect(screen.getByRole("button", { name: "Edit" })).toHaveAttribute(
+        "data-static-color",
+        "auto",
+      );
+    });
+
+    it("keeps the last selected count during scrollRef exit", async () => {
+      const [count, setCount] = createSignal<number | "all">(3);
+      const scrollElement = { offsetWidth: 120, clientWidth: 105 } as HTMLElement;
+
+      render(() => (
+        <ActionBar
+          selectedItemCount={count()}
+          scrollRef={{ current: scrollElement }}
+          onClearSelection={() => setCount(0)}
+        >
+          <button>Edit</button>
+        </ActionBar>
+      ));
+
+      const toolbar = screen.getByRole("toolbar");
+      await waitFor(() =>
+        expect(toolbar).toHaveStyle({
+          "inset-inline-end": "calc(var(--insetEnd, 8px) + 15px)",
+        }),
+      );
+      expect(screen.getByText("3 selected")).toBeInTheDocument();
+
+      vi.useFakeTimers();
+      setCount(0);
+      expect(screen.getByRole("toolbar")).toBeInTheDocument();
+      expect(screen.getByText("3 selected")).toBeInTheDocument();
+
+      vi.advanceTimersByTime(201);
+      await Promise.resolve();
+      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+      vi.useRealTimers();
     });
   });
 
