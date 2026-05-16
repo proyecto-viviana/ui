@@ -103,6 +103,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/accordion-contract.spec.ts",
       note: "Accordion route mounts both stacks and asserts the S2 viewer controls, title/header/panel semantics, disabled state, and multiple-expansion behavior. Pixel pair-diff remains planned until computed style parity is proven.",
     },
+    {
+      id: "styled.computed-axes",
+      label: "Styled computed axes",
+      kind: "visual",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "planned",
+      spec: "e2e/accordion-visual.spec.ts",
+      note: "Computed style and geometry contract compares the S2 root, item borders, title button typography/spacing, chevron asset geometry, panel padding, disabled styling, quiet styling, and header ActionButton sizing across React Spectrum and Solid.",
+    },
   ],
   provider: [
     visualDefaultState({

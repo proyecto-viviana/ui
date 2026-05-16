@@ -77,9 +77,12 @@ describe("Disclosure (solid-spectrum)", () => {
     expect(trigger).toHaveAttribute("data-size", "XL");
     expect(trigger).toHaveAttribute("data-density", "spacious");
     expect(trigger).toHaveAttribute("data-quiet", "true");
-    expect(trigger.querySelector('[data-rsp-slot="disclosure-chevron"]')).toHaveAttribute(
-      "aria-hidden",
-      "true",
+    const chevron = trigger.querySelector('[data-rsp-slot="disclosure-chevron"]');
+    expect(chevron).toHaveAttribute("aria-hidden", "true");
+    expect(chevron).toHaveAttribute("viewBox", "0 0 14 14");
+    expect(chevron?.querySelector("path")).toHaveAttribute(
+      "d",
+      "M10.361 6.328 5.03.996a.954.954 0 0 0-1.343 0 .95.95 0 0 0 0 1.344L8.346 7l-4.66 4.66a.95.95 0 0 0 1.344 1.344l5.331-5.332a.95.95 0 0 0 0-1.344",
     );
     expect(panel).toHaveAttribute("data-rsp-slot", "disclosure-panel");
     expect(panel).toHaveAttribute("aria-hidden", "true");

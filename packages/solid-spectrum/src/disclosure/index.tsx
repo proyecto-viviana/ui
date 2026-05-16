@@ -168,7 +168,7 @@ const disclosureRootStyles = style<DisclosureRootStyleProps>({
   borderStartWidth: 0,
   borderEndWidth: 0,
   borderStyle: "solid",
-  borderColor: "[rgb(214, 214, 214)]",
+  borderColor: "gray-200" as never,
   minWidth: 200,
 });
 
@@ -271,13 +271,36 @@ const chevronStyles = style<ChevronStyleProps>({
   flexShrink: 0,
   size: {
     size: {
-      S: 16,
-      M: 20,
-      L: 22,
-      XL: 26,
+      S: 10,
+      M: 10,
+      L: 12,
+      XL: 14,
     },
   },
 });
+
+const chevronIcons: Record<DisclosureSize, { size: number; viewBox: string; path: string }> = {
+  S: {
+    size: 10,
+    viewBox: "0 0 10 10",
+    path: "M7.483 4.406 3.86.783a.84.84 0 1 0-1.188 1.188L5.702 5l-3.03 3.03A.84.84 0 1 0 3.86 9.216l3.623-3.623a.84.84 0 0 0 0-1.188",
+  },
+  M: {
+    size: 10,
+    viewBox: "0 0 10 10",
+    path: "M7.965 5.178C7.978 5.118 8 5.061 8 5s-.021-.118-.034-.178c-.01-.05-.01-.102-.03-.15-.023-.058-.068-.107-.104-.16-.03-.042-.047-.09-.084-.127l-.004-.003-.003-.004L3.615.303a.875.875 0 1 0-1.23 1.244L5.88 5 2.385 8.453a.875.875 0 1 0 1.23 1.244L7.74 5.622l.003-.004.004-.003c.037-.038.055-.085.084-.127.036-.053.08-.102.104-.16.02-.048.02-.1.03-.15",
+  },
+  L: {
+    size: 12,
+    viewBox: "0 0 12 12",
+    path: "M9.301 6c0-.049-.02-.095-.028-.143-.01-.068-.013-.136-.039-.2a.9.9 0 0 0-.2-.302L4.343.663a.912.912 0 0 0-1.29 1.29L7.102 6l-4.047 4.048a.912.912 0 0 0 1.289 1.289l4.691-4.692a.9.9 0 0 0 .2-.302c.026-.064.028-.132.04-.2C9.28 6.095 9.3 6.05 9.3 6",
+  },
+  XL: {
+    size: 14,
+    viewBox: "0 0 14 14",
+    path: "M10.361 6.328 5.03.996a.954.954 0 0 0-1.343 0 .95.95 0 0 0 0 1.344L8.346 7l-4.66 4.66a.95.95 0 0 0 1.344 1.344l5.331-5.332a.95.95 0 0 0 0-1.344",
+  },
+};
 
 const panelStyles = style({
   font: "body",
@@ -570,6 +593,7 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
   const isDisabled = () => headlessDisclosureContext?.isDisabled() ?? false;
   const isExpanded = () => headlessState?.isExpanded() ?? false;
   const headingTag = () => `h${level()}` as keyof JSX.IntrinsicElements;
+  const chevronIcon = () => chevronIcons[size()];
 
   return (
     <Dynamic
@@ -604,16 +628,13 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
               isExpanded: isExpanded(),
               isRTL: locale().direction === "rtl",
             })}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            width={chevronIcon().size}
+            height={chevronIcon().size}
+            viewBox={chevronIcon().viewBox}
             aria-hidden="true"
             data-rsp-slot="disclosure-chevron"
           >
-            <polyline points="6 9 12 15 18 9" />
+            <path fill="var(--iconPrimary, #222)" d={chevronIcon().path} />
           </svg>
         </Show>
         {local.children}
