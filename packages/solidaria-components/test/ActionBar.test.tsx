@@ -5,6 +5,10 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import {
+  assertAriaIdIntegrity,
+  assertNoA11yViolations,
+} from "@proyecto-viviana/solidaria-test-utils";
+import {
   ActionBar,
   ActionBarContainer,
   ActionBarSelectionCount,
@@ -129,6 +133,37 @@ describe("ActionBar (headless)", () => {
       const toolbar = screen.getByTestId("bulk-action-bar");
       expect(actionBarElement).toBe(toolbar);
       expect(toolbar).toHaveAttribute("data-state", "selected");
+    });
+  });
+
+  describe("render props", () => {
+    it("updates class and style render props when selectedItemCount changes", () => {
+      const [count, setCount] = createSignal<number | "all">(2);
+
+      render(() => (
+        <ActionBar
+          selectedItemCount={count()}
+          onClearSelection={() => {}}
+          class={({ isOpen, selectedItemCount }) =>
+            `bulk-${isOpen ? "open" : "closed"} selected-${selectedItemCount}`
+          }
+          style={({ selectedItemCount }) => ({
+            opacity: selectedItemCount === "all" ? 0.75 : 1,
+          })}
+        >
+          <span>actions</span>
+        </ActionBar>
+      ));
+
+      const toolbar = screen.getByRole("toolbar");
+      expect(toolbar).toHaveClass("bulk-open");
+      expect(toolbar).toHaveClass("selected-2");
+      expect(toolbar).toHaveStyle({ opacity: "1" });
+
+      setCount("all");
+      expect(toolbar).toHaveClass("bulk-open");
+      expect(toolbar).toHaveClass("selected-all");
+      expect(toolbar).toHaveStyle({ opacity: "0.75" });
     });
   });
 
@@ -297,6 +332,38 @@ describe("ActionBar (headless)", () => {
       expect(screen.getByTestId("collection")).toBeInTheDocument();
       expect(screen.getByRole("toolbar")).toBeInTheDocument();
       expect(container.firstElementChild).toHaveStyle({ position: "relative" });
+    });
+  });
+
+  describe("a11y validation", () => {
+    it("axe: selected toolbar with count, clear button, and actions", async () => {
+      const { container } = render(() => (
+        <ActionBar selectedItemCount={2} onClearSelection={() => {}}>
+          <ActionBarSelectionCount />
+          <ActionBarClearButton />
+          <button>Delete</button>
+        </ActionBar>
+      ));
+
+      await assertNoA11yViolations(container);
+    });
+
+    it("ARIA ID: labelled toolbar has no dangling refs", () => {
+      render(() => (
+        <>
+          <span id="bulk-actions-label">Bulk actions</span>
+          <ActionBar
+            selectedItemCount={2}
+            onClearSelection={() => {}}
+            aria-labelledby="bulk-actions-label"
+          >
+            <ActionBarSelectionCount />
+            <button>Delete</button>
+          </ActionBar>
+        </>
+      ));
+
+      assertAriaIdIntegrity(document.body);
     });
   });
 });
