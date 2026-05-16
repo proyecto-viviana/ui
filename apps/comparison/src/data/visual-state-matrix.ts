@@ -92,6 +92,27 @@ function assertedDefaultState(input: {
 }
 
 const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
+  actionmenu: [
+    {
+      id: "styled.route-controls",
+      label: "Styled route controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionmenu-contract.spec.ts",
+      note: "ActionMenu route mounts both stacks and asserts the official S2 viewer controls, disabled trigger state, and item action callback keys. Solid still uses the current data-driven ActionMenu API until the S2 compositional port lands.",
+    },
+    {
+      id: "styled.default",
+      label: "Styled default",
+      kind: "static",
+      react: "planned",
+      solid: "planned",
+      pairDiff: "planned",
+      note: "Route is live, but current visual evidence and strict pair diff are still missing while the Solid S2 ActionMenu implementation is ported.",
+    },
+  ],
   actionbar: [
     {
       id: "styled.route-controls",

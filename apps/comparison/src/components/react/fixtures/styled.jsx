@@ -9,6 +9,7 @@ import {
   ActionBar as SpectrumActionBar,
   ActionButton as SpectrumActionButton,
   ActionButtonGroup as SpectrumActionButtonGroup,
+  ActionMenu as SpectrumActionMenu,
   Avatar as SpectrumAvatar,
   AvatarGroup as SpectrumAvatarGroup,
   Badge as SpectrumBadge,
@@ -29,11 +30,13 @@ import {
   Heading as SpectrumHeading,
   Image as SpectrumImage,
   ImageCoordinator as SpectrumImageCoordinator,
+  Keyboard as SpectrumKeyboard,
   Link as SpectrumLink,
   LinkButton as SpectrumLinkButton,
   ListView as SpectrumListView,
   ListViewItem as SpectrumListViewItem,
   Meter as SpectrumMeter,
+  MenuItem as SpectrumMenuItem,
   NumberField as SpectrumNumberField,
   Picker as SpectrumPicker,
   PickerItem as SpectrumPickerItem,
@@ -79,6 +82,12 @@ import {
   serializeActionBarDemoProps,
   serializeActionBarSelectedKeys,
 } from "@comparison/data/actionbar-demo";
+import {
+  actionMenuDemoPropsFromWindow,
+  actionMenuItems,
+  normalizeActionMenuDemoProps,
+  serializeActionMenuDemoProps,
+} from "@comparison/data/actionmenu-demo";
 import {
   actionButtonDemoPropsFromWindow,
   comparisonControlsEvent as actionButtonControlsEvent,
@@ -427,6 +436,7 @@ export const reactStyledFixtures = {
   provider: renderProviderDemo,
   accordion: () => jsx(ReactAccordionDemo, {}),
   actionbar: () => jsx(ReactActionBarDemo, {}),
+  actionmenu: () => jsx(ReactActionMenuDemo, {}),
   button: () => jsx(ReactButtonDemo, {}),
   actionbutton: () => jsx(ReactActionButtonDemo, {}),
   actionbuttongroup: () => jsx(ReactActionButtonGroupDemo, {}),
@@ -632,6 +642,75 @@ function ReactActionBarDemo() {
             })
           : actionBar,
     }),
+  );
+}
+
+function ReactActionMenuDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(actionMenuDemoPropsFromWindow);
+  const [actionCount, setActionCount] = useState(0);
+  const [lastAction, setLastAction] = useState("");
+  const [openChangeCount, setOpenChangeCount] = useState(0);
+  const [lastOpenState, setLastOpenState] = useState("false");
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actionmenu") {
+        setDemoProps(normalizeActionMenuDemoProps(event.detail.props ?? {}));
+        setActionCount(0);
+        setLastAction("");
+        setOpenChangeCount(0);
+        setLastOpenState("false");
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-actionmenu-row",
+      "data-comparison-control-root": "actionmenu",
+      "data-comparison-control-props": serializeActionMenuDemoProps(demoProps),
+      "data-comparison-actionmenu-props": serializeActionMenuDemoProps(demoProps),
+      "data-comparison-action-count": String(actionCount),
+      "data-comparison-last-action": lastAction,
+      "data-comparison-open-change-count": String(openChangeCount),
+      "data-comparison-last-open-state": lastOpenState,
+      children: jsx(SpectrumActionMenu, {
+        size: demoProps.size,
+        menuSize: demoProps.menuSize,
+        align: demoProps.align,
+        direction: demoProps.direction,
+        isQuiet: demoProps.isQuiet,
+        isDisabled: demoProps.isDisabled,
+        onAction: (key) => {
+          setActionCount((count) => count + 1);
+          setLastAction(String(key));
+        },
+        onOpenChange: (isOpen) => {
+          setOpenChangeCount((count) => count + 1);
+          setLastOpenState(String(isOpen));
+        },
+        children: actionMenuItems.map((item) =>
+          jsxs(
+            SpectrumMenuItem,
+            {
+              id: item.id,
+              textValue: item.label,
+              children: [
+                jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+                jsx(SpectrumText, { slot: "label", children: item.label }),
+                jsx(SpectrumText, { slot: "description", children: item.description }),
+                jsx(SpectrumKeyboard, { children: item.shortcut }),
+              ],
+            },
+            item.id,
+          ),
+        ),
+      }),
+    }),
+    colorScheme,
   );
 }
 

@@ -1578,6 +1578,16 @@ a {
   border-radius: 6px;
 }
 
+.comparison-actionmenu-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  inline-size: 280px;
+  max-inline-size: 100%;
+  min-block-size: 180px;
+  padding: 24px;
+}
+
 .comparison-accordion-row {
   display: grid;
   gap: 16px;

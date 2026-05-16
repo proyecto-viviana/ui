@@ -10,6 +10,13 @@ import {
   actionButtonSizeOptions,
   actionButtonStaticColorOptions,
 } from "./actionbutton-demo";
+import {
+  actionMenuAlignOptions,
+  actionMenuDemoDefaults,
+  actionMenuDirectionOptions,
+  actionMenuMenuSizeOptions,
+  actionMenuSizeOptions,
+} from "./actionmenu-demo";
 import { avatarGroupDemoDefaults, avatarGroupSizeOptions } from "./avatar-group-demo";
 import { avatarDemoDefaults, avatarSizeOptions } from "./avatar-demo";
 import {
@@ -325,6 +332,80 @@ const actionBarControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 ActionBar API with deterministic selected-item count, emphasis, scrollRef, and collection renderActionBar controls for the comparison route.",
+};
+
+const actionMenuControls: ComponentControlGroup = {
+  slug: "actionmenu",
+  title: "ActionMenu",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: actionMenuDemoDefaults.size,
+      options: options(actionMenuSizeOptions),
+    },
+    {
+      name: "align",
+      label: "align",
+      kind: "radio",
+      defaultValue: actionMenuDemoDefaults.align,
+      options: options(actionMenuAlignOptions),
+    },
+    {
+      name: "direction",
+      label: "direction",
+      kind: "select",
+      defaultValue: actionMenuDemoDefaults.direction,
+      options: options(actionMenuDirectionOptions),
+    },
+    {
+      name: "menuSize",
+      label: "menuSize",
+      kind: "radio",
+      defaultValue: actionMenuDemoDefaults.menuSize,
+      options: options(actionMenuMenuSizeOptions),
+    },
+    {
+      name: "isQuiet",
+      label: "isQuiet",
+      kind: "switch",
+      defaultValue: actionMenuDemoDefaults.isQuiet,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: actionMenuDemoDefaults.isDisabled,
+    },
+  ],
+  apiProps: [
+    "children",
+    "items",
+    "disabledKeys",
+    "onAction",
+    "shouldCloseOnSelect",
+    "isOpen",
+    "defaultOpen",
+    "onOpenChange",
+    "align",
+    "direction",
+    "shouldFlip",
+    "isDisabled",
+    "isQuiet",
+    "autoFocus",
+    "size",
+    "menuSize",
+    "id",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 ActionMenu docs and viewer controls. The initial route drives the documented viewer axes into React and records Solid's current data-driven ActionMenu gaps until the S2 public API port lands.",
 };
 
 const checkboxControls: ComponentControlGroup = {
@@ -2654,6 +2735,7 @@ const selectBoxGroupControls: ComponentControlGroup = {
 export const componentControlGroups = {
   accordion: accordionControls,
   actionbar: actionBarControls,
+  actionmenu: actionMenuControls,
   actionbutton: actionButtonControls,
   actionbuttongroup: actionButtonGroupControls,
   avatar: avatarControls,

@@ -20,8 +20,9 @@ normalized to the current gate checklist.
 - Legacy accepted under prior playbook: AvatarGroup, Badge, Button, Button
   family, Divider, Form, Image, Link, Meter, Skeleton, and StatusLight.
 - Current-gate normalized: ActionBar and Avatar.
+- Active current-gate pass: ActionMenu.
 - Comparison-live with explicit release-hardening backfill gaps: none.
-- Pre-pass only: Accordion, ActionMenu, Text, and NotificationBadge.
+- Pre-pass only: Accordion, Text, and NotificationBadge.
 
 Current-gate normalization means the note contains the current
 `Acceptance Gate Checklist`, `Agent Workflow`, `Behavior State Machine`,

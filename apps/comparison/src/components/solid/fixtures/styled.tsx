@@ -19,6 +19,7 @@ import {
   ActionBar as SolidSpectrumActionBar,
   ActionButton as SolidSpectrumActionButton,
   ActionButtonGroup as SolidSpectrumActionButtonGroup,
+  ActionMenu as SolidSpectrumActionMenu,
   Avatar as SolidSpectrumAvatar,
   AvatarGroup as SolidSpectrumAvatarGroup,
   Badge as SolidSpectrumBadge,
@@ -86,6 +87,13 @@ import {
   serializeActionBarSelectedKeys,
   type ActionBarDemoProps,
 } from "@comparison/data/actionbar-demo";
+import {
+  actionMenuDemoPropsFromWindow,
+  actionMenuItems,
+  normalizeActionMenuDemoProps,
+  serializeActionMenuDemoProps,
+  type ActionMenuDemoProps,
+} from "@comparison/data/actionmenu-demo";
 import {
   actionButtonDemoPropsFromWindow,
   serializeActionButtonDemoProps,
@@ -546,6 +554,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   provider: renderProviderDemo,
   accordion: () => h(SolidSpectrumAccordionDemo, {}),
   actionbar: () => h(SolidSpectrumActionBarDemo, {}),
+  actionmenu: () => h(SolidSpectrumActionMenuDemo, {}),
   button: () => h(SolidSpectrumButtonDemo, {}),
   actionbutton: () => h(SolidSpectrumActionButtonDemo, {}),
   actionbuttongroup: () => h(SolidSpectrumActionButtonGroupDemo, {}),
@@ -791,6 +800,105 @@ function SolidSpectrumActionBarDemo() {
                     ],
                   )
                 : actionBar(),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumActionMenuDemo() {
+  const [demoProps, setDemoProps] = createSignal<ActionMenuDemoProps>(
+    actionMenuDemoPropsFromWindow(),
+  );
+  const [actionCount, setActionCount] = createSignal(0);
+  const [lastAction, setLastAction] = createSignal("");
+  const [openChangeCount, setOpenChangeCount] = createSignal(0);
+  const [lastOpenState, setLastOpenState] = createSignal("false");
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actionmenu") {
+        setDemoProps(normalizeActionMenuDemoProps(event.detail.props ?? {}));
+        setActionCount(0);
+        setLastAction("");
+        setOpenChangeCount(0);
+        setLastOpenState("false");
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-actionmenu-row",
+          "data-comparison-control-root": "actionmenu",
+          get "data-comparison-control-props"() {
+            return serializeActionMenuDemoProps(demoProps());
+          },
+          get "data-comparison-actionmenu-props"() {
+            return serializeActionMenuDemoProps(demoProps());
+          },
+          get "data-comparison-action-count"() {
+            return String(actionCount());
+          },
+          get "data-comparison-last-action"() {
+            return lastAction();
+          },
+          get "data-comparison-open-change-count"() {
+            return String(openChangeCount());
+          },
+          get "data-comparison-last-open-state"() {
+            return lastOpenState();
+          },
+        },
+        [
+          hc(SolidSpectrumActionMenu, {
+            items: actionMenuItems,
+            getKey: (item: (typeof actionMenuItems)[number]) => item.id,
+            label: "More actions",
+            get isQuiet() {
+              return demoProps().isQuiet;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get align() {
+              return demoProps().align;
+            },
+            onAction: (key: unknown) => {
+              setActionCount((count) => count + 1);
+              setLastAction(String(key));
+            },
+            onOpenChange: (isOpen: boolean) => {
+              setOpenChangeCount((count) => count + 1);
+              setLastOpenState(String(isOpen));
+            },
+          }),
         ],
       ),
     ],
