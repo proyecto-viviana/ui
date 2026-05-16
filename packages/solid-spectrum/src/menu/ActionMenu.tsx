@@ -301,6 +301,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
       <HeadlessMenu
         {...menuProps}
         items={items()}
+        aria-label={triggerLabel()}
         class={(_renderProps) => {
           const base =
             "absolute z-50 mt-1 min-w-[12rem] rounded-lg border-2 border-primary-600 bg-bg-400 shadow-lg overflow-hidden";

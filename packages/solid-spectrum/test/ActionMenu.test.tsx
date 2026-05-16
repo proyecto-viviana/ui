@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal } from "solid-js";
 import { ActionMenu, ActionMenuContext, MenuItem } from "../src/menu";
@@ -49,6 +49,81 @@ describe("ActionMenu (solid-spectrum)", () => {
     await user.click(screen.getByRole("button", { name: "More actions" }));
     await user.click(screen.getByRole("menuitem", { name: "Copy" }));
 
+    expect(onAction).toHaveBeenCalledWith("copy");
+  });
+
+  it("forwards explicit labelable props and tracks menu-button ARIA state", async () => {
+    const user = setupUser();
+    render(() => (
+      <>
+        <span id="actionmenu-label">Document actions</span>
+        <span id="actionmenu-description">Available commands</span>
+        <ActionMenu
+          id="document-action-menu"
+          aria-labelledby="actionmenu-label"
+          aria-describedby="actionmenu-description"
+          items={items}
+          getKey={(item) => item.id}
+        />
+      </>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "Document actions" });
+    expect(trigger).toHaveAttribute("id", "document-action-menu");
+    expect(trigger).toHaveAttribute("aria-label", "More actions");
+    expect(trigger).toHaveAttribute("aria-describedby", "actionmenu-description");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).not.toHaveAttribute("aria-controls");
+
+    await user.click(trigger);
+
+    const menu = screen.getByRole("menu");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(trigger).toHaveAttribute("aria-controls", menu.id);
+  });
+
+  it("opens from keyboard, moves focus into the menu, closes with Escape, and restores focus", async () => {
+    const user = setupUser();
+    render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    trigger.focus();
+
+    await user.keyboard("{Enter}");
+
+    const menu = screen.getByRole("menu");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(menu.contains(document.activeElement)).toBe(true);
+
+    await user.keyboard("{Escape}");
+
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it("marks disabled keys and suppresses their actions", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    render(() => (
+      <ActionMenu
+        defaultOpen
+        disabledKeys={["cut"]}
+        items={items}
+        getKey={(item) => item.id}
+        onAction={onAction}
+      />
+    ));
+
+    const menu = screen.getByRole("menu");
+    const cutItem = within(menu).getByRole("menuitem", { name: "Cut" });
+    expect(cutItem).toHaveAttribute("aria-disabled", "true");
+    expect(cutItem).toHaveAttribute("data-disabled");
+
+    await user.click(cutItem);
+    expect(onAction).not.toHaveBeenCalled();
+
+    await user.click(within(menu).getByRole("menuitem", { name: "Copy" }));
     expect(onAction).toHaveBeenCalledWith("copy");
   });
 

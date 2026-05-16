@@ -267,7 +267,7 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
     },
   });
 
-  const { menuTriggerProps, menuProps } = createMenuTrigger(
+  const menuTrigger = createMenuTrigger(
     {
       get isDisabled() {
         return stateProps.isDisabled;
@@ -281,8 +281,12 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
       <MenuTriggerContext.Provider
         value={{
           state,
-          triggerProps: menuTriggerProps,
-          menuProps,
+          get triggerProps() {
+            return menuTrigger.menuTriggerProps;
+          },
+          get menuProps() {
+            return menuTrigger.menuProps;
+          },
         }}
       >
         {props.children}
@@ -421,7 +425,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
   if (!context) {
     throw new Error("MenuButton must be used within a MenuTrigger");
   }
-  const { state, triggerProps } = context;
+  const { state } = context;
 
   const buttonAria = createButton({
     get isDisabled() {
@@ -459,8 +463,16 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     renderValues,
   );
 
+  const resolvedTriggerProps = () => context.triggerProps as Record<string, unknown>;
   const cleanTriggerProps = () => {
-    const { ref: _ref1, ...rest } = triggerProps as Record<string, unknown>;
+    const {
+      ref: _ref1,
+      "aria-haspopup": _ariaHasPopup,
+      "aria-expanded": _ariaExpanded,
+      "aria-controls": _ariaControls,
+      "aria-disabled": _ariaDisabled,
+      ...rest
+    } = resolvedTriggerProps();
     return rest;
   };
   const cleanButtonProps = () => {
@@ -486,6 +498,10 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
       type="button"
       class={renderProps.class()}
       style={renderProps.style()}
+      aria-haspopup={resolvedTriggerProps()["aria-haspopup"] as "menu" | "listbox" | undefined}
+      aria-expanded={resolvedTriggerProps()["aria-expanded"] as boolean | undefined}
+      aria-controls={resolvedTriggerProps()["aria-controls"] as string | undefined}
+      aria-disabled={resolvedTriggerProps()["aria-disabled"] as boolean | undefined}
       data-open={state.isOpen() || undefined}
       data-focused={isFocused() || undefined}
       data-focus-visible={isFocusVisible() || undefined}

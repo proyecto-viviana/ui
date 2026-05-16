@@ -38,6 +38,45 @@ async function actionMenuFixtures(page: Page, params: Record<string, string | bo
   return { reactPanel, solidPanel, reactRoot, solidRoot };
 }
 
+async function expectKeyboardMenuButtonContract(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+
+  await trigger.focus();
+  await expect(trigger).toBeFocused();
+  await expect.poll(() => trigger.getAttribute("aria-haspopup")).toMatch(/^(menu|true)$/);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).not.toHaveAttribute("aria-controls");
+
+  await page.keyboard.press("Enter");
+
+  const menu = page.getByRole("menu").first();
+  await expect(menu).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  const menuId = await trigger.getAttribute("aria-controls");
+  expect(menuId).toBeTruthy();
+  await expect(menu).toHaveAttribute("id", menuId!);
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "true");
+  await expect
+    .poll(async () => {
+      return menu.evaluate((element) => {
+        return element.contains(document.activeElement);
+      });
+    })
+    .toBe(true);
+
+  await page.keyboard.press("Escape");
+
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).not.toHaveAttribute("aria-controls");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
+  await expect(trigger).toBeFocused();
+}
+
 test.describe("comparison ActionMenu route contract", () => {
   test("ActionMenu route mounts the React and Solid styled references", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
@@ -125,5 +164,12 @@ test.describe("comparison ActionMenu route contract", () => {
     await page.getByRole("menuitem", { name: /Copy/ }).click();
     await expect(solidRoot).toHaveAttribute("data-comparison-action-count", "1");
     await expect(solidRoot).toHaveAttribute("data-comparison-last-action", "copy");
+  });
+
+  test("ActionMenu keyboard state follows the APG menu-button contract", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
+
+    await expectKeyboardMenuButtonContract(page, reactPanel, reactRoot);
+    await expectKeyboardMenuButtonContract(page, solidPanel, solidRoot);
   });
 });
