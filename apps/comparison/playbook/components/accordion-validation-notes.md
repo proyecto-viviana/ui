@@ -14,22 +14,22 @@
 
 ## Task Status
 
-| Task                   | Status  | Evidence                                                                                                  | Blocker or next action |
-| ---------------------- | ------- | --------------------------------------------------------------------------------------------------------- | ---------------------- |
-| 0 Research             | done    | Live S2 Accordion page, S2 MCP page, React Aria Disclosure docs, APG Accordion pattern, sources           | None                   |
-| 1 Baseline             | done    | Current comparison/export/RAC reports captured below                                                      | None                   |
-| 2 Route harness        | done    | Comparison route mounts React and Solid Accordion fixtures with focused route-control spec                | None                   |
-| 3 Source map/API       | done    | S2 Accordion/Disclosure, RAC Disclosure, ARIA hook, Stately, Solidaria, and Solid Spectrum mapped         | None                   |
-| 4 Cross-layer audit    | partial | Branch ledger now separates covered shared, package-level S2 wrapper, and route harness work              | style-blocker          |
-| 5 Transitions          | partial | Shared hook now covers panel CSS vars, animation settle, hidden delay, and `beforematch`                  | style-blocker          |
-| 6 State                | done    | Solid Stately item/group/over-expanded branches covered by focused tests                                  | None                   |
-| 7 ARIA hooks           | done    | Shared hook now matches panel role, hidden, `aria-hidden`, `beforematch`, and press timing                | None                   |
-| 8 Headless             | partial | Default panel role, labelable panel props, and group root ARIA drift fixed; trigger/focus proof left      | source-blocker         |
-| 9 Styled S2            | partial | Package wrapper, route fixture, tokenized border, Adobe chevron geometry, and exact pixels match S2       | style-blocker          |
-| 10 Runtime lifecycle   | partial | Shared panel lifecycle plus route interaction semantics are covered; reduced-motion browser proof remains | style-blocker          |
-| 11 Harness integrity   | done    | `e2e/accordion-contract.spec.ts` proves live route controls and interaction semantics                     | None                   |
-| 12 Comparison evidence | done    | Visual-state matrix now marks route-control, computed visual, and strict pair-diff contracts asserted     | None                   |
-| 13 Acceptance          | partial | Route, computed-style, and strict visual parity are proven; special-environment proof remains             | style-blocker          |
+| Task                   | Status  | Evidence                                                                                               | Blocker or next action |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------------ | ---------------------- |
+| 0 Research             | done    | Live S2 Accordion page, S2 MCP page, React Aria Disclosure docs, APG Accordion pattern, sources        | None                   |
+| 1 Baseline             | done    | Current comparison/export/RAC reports captured below                                                   | None                   |
+| 2 Route harness        | done    | Comparison route mounts React and Solid Accordion fixtures with focused route-control spec             | None                   |
+| 3 Source map/API       | done    | S2 Accordion/Disclosure, RAC Disclosure, ARIA hook, Stately, Solidaria, and Solid Spectrum mapped      | None                   |
+| 4 Cross-layer audit    | partial | Branch ledger now separates covered shared, package-level S2 wrapper, and route harness work           | style-blocker          |
+| 5 Transitions          | partial | Shared hook now covers panel CSS vars, animation settle, hidden delay, and `beforematch`               | style-blocker          |
+| 6 State                | done    | Solid Stately item/group/over-expanded branches covered by focused tests                               | None                   |
+| 7 ARIA hooks           | done    | Shared hook now matches panel role, hidden, `aria-hidden`, `beforematch`, and press timing             | None                   |
+| 8 Headless             | partial | Default panel role, labelable panel props, and group root ARIA drift fixed; trigger/focus proof left   | source-blocker         |
+| 9 Styled S2            | partial | Package wrapper, route fixture, tokenized border, Adobe chevron geometry, and exact pixels match S2    | style-blocker          |
+| 10 Runtime lifecycle   | done    | Shared panel lifecycle, route interaction semantics, and reduced-motion browser proof are covered      | None                   |
+| 11 Harness integrity   | done    | `e2e/accordion-contract.spec.ts` proves live route controls and interaction semantics                  | None                   |
+| 12 Comparison evidence | done    | Visual-state matrix now marks route-control, computed visual, and strict pair-diff contracts asserted  | None                   |
+| 13 Acceptance          | partial | Route, computed-style, strict visual, reduced-motion, and RTL parity are proven; focus/SSR gaps remain | source-blocker         |
 
 ## Agent Workflow
 
@@ -47,8 +47,8 @@ source audit.
 
 ## Acceptance Gate Checklist
 
-These gates remain partial until remaining special-environment rows have
-focused evidence.
+These gates remain partial until remaining focus, SSR/ID, and route callback
+rows have focused evidence.
 
 ## Gate Outcome Summary
 
@@ -58,9 +58,9 @@ focused evidence.
 | External Authority And Standards         | partial | React Aria Disclosure docs and APG Accordion pattern checked                  | a11y-blocker   |
 | Upstream React Source Parity             | partial | Shared layers, package S2 wrapper source, and route control proof are covered | style-blocker  |
 | Solid Idiomatic Implementation           | partial | Lazy children mostly preserved; public API/style/ARIA drift                   | idiom-blocker  |
-| Accessibility And I18n                   | partial | Shared RAC/ARIA deltas ported; S2 title/i18n assertions left                  | a11y-blocker   |
+| Accessibility And I18n                   | partial | Shared RAC/ARIA deltas and RTL chevron route proof are covered                | a11y-blocker   |
 | Behavior State Machine                   | partial | Shared state and transition branches have focused tests                       | route-blocker  |
-| Style Source-To-Computed Parity          | partial | Computed route contract and exact pair-diff pass for source style axes        | style-blocker  |
+| Style Source-To-Computed Parity          | partial | Computed, reduced-motion, RTL, and exact pair-diff contracts pass             | style-blocker  |
 | React-Vs-Solid Comparison Harness Parity | done    | Route, computed visual, and exact pair-diff contracts pass for live fixtures  | None           |
 | Evidence And Handoff                     | done    | Baseline, refreshed reports, package, check, build, and route specs captured  | None           |
 
@@ -140,13 +140,13 @@ focused evidence.
 - [ ] Refs use Solid semantics: pending.
 - [x] Effects, observers, timers, listeners, and subscriptions have cleanup:
       shared Disclosure tests cover animation RAF cleanup, `beforematch`, and
-      animation-finish branches; reduced-motion browser proof remains separate.
+      animation-finish branches, with route reduced-motion proof.
 - [x] Solid-specific deviations preserve documented public behavior: documented
       S2 public subcomponent names and props are exported; legacy aliases remain
       compatibility-only.
 - [x] Tests cover relevant reactive update risks: state, route controls, S2
       wrapper reactivity, and transition lifecycle branches are covered;
-      reduced-motion browser proof remains separate.
+      reduced-motion browser proof is covered at route level.
 
 ### 5. Accessibility And I18n
 
@@ -166,11 +166,11 @@ focused evidence.
 - [ ] Live regions, loading/selection/drag-drop announcements, and cleanup
       timing: likely not applicable; source audit must confirm.
 - [ ] Forced colors, reduced motion, contrast-sensitive states, target size,
-      and screen-reader-only affordances: reduced-motion panel transition and
-      forced-colors style proof pending.
-- [ ] Locale, direction, formatting, calendar/hour-cycle, and messages: S2 title
-      chevron LTR geometry and paths are covered; RTL rotation still needs
-      route-level proof.
+      and screen-reader-only affordances: reduced-motion panel transition is
+      covered; forced-colors and focus-ring style proof remain pending.
+- [x] Locale, direction, formatting, calendar/hour-cycle, and messages: S2 title
+      chevron LTR/RTL geometry, direction, rotation, and exact route pixels are
+      covered.
 - [ ] Axe or similar smoke result, plus manual semantic assertions: pending.
 
 ### 6. Behavior State Machine
@@ -212,13 +212,13 @@ focused evidence.
       geometry/path, panel padding, disabled styling, quiet styling, and header
       ActionButton geometry across the viewer axes.
 - [ ] Forced-colors/reduced-motion/focus-ring/icon/image/avatar/slot/portal
-      geometry branches covered: reduced-motion and focus-ring branches mapped;
-      proof pending.
+      geometry branches covered: reduced-motion and RTL branches are covered;
+      forced-colors and focus-ring proof remain pending.
 - [x] Official viewer canvas/background/scale/width/direction/theme conditions
       represented or recorded as gaps: route fixes the example width at `220`
       and runs under pinned comparison theme; exact pair-diff uses in-place
-      root captures to avoid transparent-background harness noise. RTL remains
-      a separate visual evidence gap.
+      root captures to avoid transparent-background harness noise. RTL is
+      covered through provider locale routing and exact route pixels.
 - [x] Visual deviations classified: computed proof found and fixed Solid's
       hard-coded light border and non-S2 stroked chevron; strict pair-diff now
       passes for the default, compact, quiet, disabled, and multiple-expanded
@@ -321,12 +321,12 @@ focused evidence.
   - move Accordion from tracked gap to live route evidence only after the
     package exports, S2-compatible structure/styles, behavior semantics, and
     route controls are implemented and proven.
-- Current refresh after strict visual pass:
+- Current refresh after special-environment visual pass:
   - official styled entries live on both sides: `34`;
   - missing/gap entries: `35`;
-  - official visual states tracked: `183`;
+  - official visual states tracked: `184`;
   - current visual evidence states: `50`;
-  - strict pair-diff states: `33`;
+  - strict pair-diff states: `34`;
   - blocked visual states: `34`;
   - Accordion no longer appears in the missing/gap official entries.
   - export report now has `0` missing catalogue root exports and `76` missing
@@ -381,12 +381,12 @@ focused evidence.
 
 ## Cross-Layer Audit
 
-| Layer               | Matched                                                                                                          | Ported differently                                       | Not applicable | Gaps                                                  |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | -------------- | ----------------------------------------------------- |
-| State               | controlled/uncontrolled item and group tests, over-expanded trim                                                 | Solid uses `queueMicrotask` for over-expanded trim       |                | route-level callback pair evidence pending            |
-| ARIA hooks          | ids, `aria-expanded`, `aria-controls`, disabled, hidden lifecycle                                                |                                                          |                | SSR hidden prop and route-level pair evidence pending |
-| Headless components | lazy children, primitives, data attrs, panel role, labelable props                                               | native Solid context/accessor implementation             |                | trigger slot/focus assertions pending                 |
-| Styled S2           | S2 size/density/quiet/header/title/panel source, route semantics, computed visual contract, and strict pair-diff | Solid uses generated S2 style classes and local wrappers |                | reduced-motion and RTL route proof pending            |
+| Layer               | Matched                                                                                                                               | Ported differently                                       | Not applicable | Gaps                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | -------------- | ----------------------------------------------------- |
+| State               | controlled/uncontrolled item and group tests, over-expanded trim                                                                      | Solid uses `queueMicrotask` for over-expanded trim       |                | route-level callback pair evidence pending            |
+| ARIA hooks          | ids, `aria-expanded`, `aria-controls`, disabled, hidden lifecycle                                                                     |                                                          |                | SSR hidden prop and route-level pair evidence pending |
+| Headless components | lazy children, primitives, data attrs, panel role, labelable props                                                                    | native Solid context/accessor implementation             |                | trigger slot/focus assertions pending                 |
+| Styled S2           | S2 size/density/quiet/header/title/panel source, route semantics, computed visual contract, reduced-motion, RTL, and strict pair-diff | Solid uses generated S2 style classes and local wrappers |                | focus-ring and forced-colors route proof pending      |
 
 - Solid idioms checked:
   - child/provider laziness: Solidaria Disclosure keeps children lazy through
@@ -414,7 +414,7 @@ focused evidence.
 | Panel role     | omitted `role`, `role="region"`, labeling props                   | default role `group`, optional `region`, labelable ARIA props    | semantic assertions at package and route level                                      | route-covered   | Components tests; route semantics spec                    |
 | Panel hidden   | expanded/collapsed, SSR, browser find-in-page `beforematch`       | `aria-hidden`, `hidden="until-found"`, CSS size vars             | lifecycle test for collapsed, expanding, expanded, collapsing, beforematch, cleanup | package-covered | Solidaria tests                                           |
 | Motion         | reduced motion media, animation completion                        | transition disabled under reduced motion; CSS vars settle `auto` | browser/runtime test with reduced motion and animation-finish behavior              | partial         | Solidaria tests; route visual spec; S2 panel style source |
-| Direction      | RTL locale                                                        | chevron base rotation and expanded rotation                      | route test under RTL provider or equivalent computed transform                      | planned         | S2 Disclosure source; LTR chevron path covered            |
+| Direction      | RTL locale                                                        | chevron base rotation and expanded rotation                      | route test under RTL provider with computed transform and exact pixels              | route-covered   | route visual spec; S2 Disclosure source                   |
 
 ## Source Branch Coverage
 
@@ -427,7 +427,7 @@ focused evidence.
 | Styled   | Disclosure quiet/group border branches                             | `solid-spectrum/src/disclosure`                            | visual/layout  | top/bottom borders, last-child behavior, quiet border removal           | computed-covered | route visual spec; source                                      |
 | Styled   | Title `size` plus `density` min-height/font/padding matrix         | `solid-spectrum/src/disclosure`                            | visual/layout  | trigger height, spacing, font size, hover/pressed/focus backgrounds     | computed-covered | route visual spec; package axis tests                          |
 | Styled   | Header ActionButton context size shifts                            | `solid-spectrum/src/disclosure`                            | visual/context | nested ActionButton size is shifted by title size/density               | computed-covered | route visual spec; `Accordion.test.tsx`; `Disclosure.test.tsx` |
-| Styled   | Panel transition and inner padding                                 | `solid-spectrum/src/disclosure`                            | visual/runtime | `--disclosure-panel-height`, overflow clip, reduced-motion transition   | partial          | route visual spec; route reduced-motion proof pending          |
+| Styled   | Panel transition and inner padding                                 | `solid-spectrum/src/disclosure`                            | visual/runtime | `--disclosure-panel-height`, overflow clip, reduced-motion transition   | computed-covered | route visual spec; reduced-motion route proof                  |
 | State    | item `isExpanded`/`defaultExpanded` controlled state               | `solid-stately/src/disclosure`                             | state          | item expanded state, callbacks, controlled/uncontrolled updates         | covered          | Stately tests                                                  |
 | State    | group `allowsMultipleExpanded=false` single-key behavior           | `solid-stately/src/disclosure`                             | state          | toggling one key collapses previous key                                 | covered          | Stately tests                                                  |
 | State    | over-expanded controlled/default set cleanup                       | `solid-stately/src/disclosure`                             | state          | multiple keys are trimmed to first key with React-equivalent timing     | covered          | Stately tests                                                  |
@@ -439,7 +439,7 @@ focused evidence.
 | Behavior | React Aria panel lifecycle                                         | `solidaria/src/disclosure`                                 | runtime        | width/height CSS vars, animation settle, RAF cleanup                    | covered          | Solidaria tests                                                |
 | Behavior | `beforematch` find-in-page expansion                               | `solidaria/src/disclosure`                                 | runtime        | collapsed panel can be revealed by browser find-in-page                 | covered          | Solidaria tests                                                |
 | Behavior | keyboard vs pointer press timing                                   | `solidaria/src/disclosure`                                 | event order    | Space/Enter and pointer callback ordering match React Aria              | covered          | Solidaria tests                                                |
-| I18n     | RTL chevron rotation                                               | `solid-spectrum/src/disclosure`                            | visual/i18n    | chevron base rotation flips in RTL and expands to 90 degrees            | partial          | LTR chevron path covered; RTL route proof pending              |
+| I18n     | RTL chevron rotation                                               | `solid-spectrum/src/disclosure`                            | visual/i18n    | chevron base rotation flips in RTL and expands to 90 degrees            | route-covered    | route visual spec; exact RTL pair-diff                         |
 
 ## Transition Plan
 
@@ -516,9 +516,9 @@ COMPARISON_PORT=4324 vp exec --filter @proyecto-viviana/comparison playwright te
 Results:
 
 - Gap report refresh: official styled entries live on both sides is now `34`;
-  missing/gap entries is `35`; official visual states tracked is `183`;
+  missing/gap entries is `35`; official visual states tracked is `184`;
   current React/Solid visual evidence states is `50`; strict pair-diff states
-  is `33`; blocked visual states is `34`; Accordion no longer appears in the
+  is `34`; blocked visual states is `34`; Accordion no longer appears in the
   missing/gap list.
 - Export report refresh: package source now exports `AccordionContext`,
   `AccordionItem`, `AccordionItemHeader`, `AccordionItemTitle`, and
@@ -543,25 +543,28 @@ Results:
   `e2e/accordion-contract.spec.ts` passes 4 focused Playwright tests for live
   React/Solid route mounts, official viewer controls, controlled expanded key
   updates, disabled triggers, and header ActionButton behavior.
-- Computed and strict visual coverage: `e2e/accordion-visual.spec.ts` passes 4
+- Computed and strict visual coverage: `e2e/accordion-visual.spec.ts` passes 5
   focused Playwright tests across default, compact small, quiet spacious large,
   disabled, multiple expansion, panel geometry, chevron asset geometry/path,
-  header ActionButton geometry, and exact in-place root screenshot pairs with
-  zero pixel tolerance. The source fix replaced the Solid hard-coded light
+  header ActionButton geometry, reduced-motion transition removal, RTL
+  provider direction/chevron rotation, and exact in-place root screenshot pairs
+  with zero pixel tolerance. The source fix replaced the Solid hard-coded light
   disclosure border with the S2 `gray-200` token and replaced the generic
   stroked chevron with S2 size-specific filled chevron paths.
 
 ## Handoff
 
-- Status: strict-visual partial. Package behavior, route behavior, computed
-  visual parity, strict pair-diff, and refreshed report evidence are covered;
-  reduced-motion and RTL proof remain.
-- Next task: add reduced-motion and RTL route proof.
+- Status: special-environment partial. Package behavior, route behavior,
+  computed visual parity, strict pair-diff, reduced-motion, RTL, and refreshed
+  report evidence are covered; focus/SSR/ID and route callback proof remain.
+- Next task: add trigger/focus-visible and SSR/ID route proof, then route
+  callback payload coverage.
 - Primary blockers:
   - `style-blocker`: package S2 style source, route semantics, computed visual
-    parity, and strict pair-diff are covered; reduced-motion/focus/RTL visual
-    branches remain.
+    parity, strict pair-diff, reduced-motion, and RTL are covered; focus-ring
+    and forced-colors visual branches remain.
   - `a11y-blocker`: shared and route semantics are covered; S2 title/header
-    i18n and RTL chevron transform remain unproven at comparison level.
+    focus-visible, SSR/ID, and multi-instance semantics remain unproven at
+    comparison level.
   - `behavior-blocker`: shared state, package callbacks, and transition
-    behavior are covered; reduced-motion/browser transition proof remains.
+    behavior are covered; route callback payload proof remains.

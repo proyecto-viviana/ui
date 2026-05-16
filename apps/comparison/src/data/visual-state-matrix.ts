@@ -123,6 +123,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/accordion-visual.spec.ts",
       note: "Exact in-place root screenshots compare default, compact small, quiet spacious large, disabled, and multiple-expanded Accordion states with zero pixel tolerance.",
     },
+    {
+      id: "styled.special-environments",
+      label: "Styled special environments",
+      kind: "visual",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "strict",
+      spec: "e2e/accordion-visual.spec.ts",
+      note: "Reduced-motion computed contracts verify transition removal, while RTL computed contracts and exact screenshots verify provider direction, chevron rotation, and pixels.",
+    },
   ],
   provider: [
     visualDefaultState({

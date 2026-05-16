@@ -62,6 +62,7 @@ import {
 } from "@react-spectrum/s2";
 import "@react-spectrum/s2/page.css";
 import {
+  accordionDemoLocaleFromWindow,
   accordionDemoPropsFromWindow,
   normalizeAccordionDemoProps,
   serializeAccordionDemoProps,
@@ -493,6 +494,7 @@ function renderReactSpectrumReference(children, colorScheme = "dark", locale = v
 
 function ReactAccordionDemo() {
   const colorScheme = useComparisonResolvedTheme();
+  const locale = accordionDemoLocaleFromWindow();
   const [demoProps, setDemoProps] = useState(accordionDemoPropsFromWindow);
   const [expandedKeys, setExpandedKeys] = useState(() => new Set(["personal"]));
 
@@ -574,6 +576,7 @@ function ReactAccordionDemo() {
       }),
     }),
     colorScheme,
+    locale,
   );
 }
 

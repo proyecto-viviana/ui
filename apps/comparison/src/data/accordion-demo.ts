@@ -1,8 +1,10 @@
 export const accordionSizeOptions = ["S", "M", "L", "XL"] as const;
 export const accordionDensityOptions = ["compact", "regular", "spacious"] as const;
+export const accordionDemoLocaleOptions = ["en-US", "ar-SA"] as const;
 
 export type AccordionDemoSize = (typeof accordionSizeOptions)[number];
 export type AccordionDemoDensity = (typeof accordionDensityOptions)[number];
+export type AccordionDemoLocale = (typeof accordionDemoLocaleOptions)[number];
 
 export interface AccordionDemoProps {
   size: AccordionDemoSize;
@@ -59,12 +61,25 @@ export function accordionDemoPropsFromSearch(search: string): AccordionDemoProps
   });
 }
 
+export function accordionDemoLocaleFromSearch(search: string): AccordionDemoLocale | undefined {
+  const locale = new URLSearchParams(search).get("locale");
+  return isOneOf(locale, accordionDemoLocaleOptions) ? locale : undefined;
+}
+
 export function accordionDemoPropsFromWindow(): AccordionDemoProps {
   if (typeof window === "undefined") {
     return accordionDemoDefaults;
   }
 
   return accordionDemoPropsFromSearch(window.location.search);
+}
+
+export function accordionDemoLocaleFromWindow(): AccordionDemoLocale | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return accordionDemoLocaleFromSearch(window.location.search);
 }
 
 export function serializeAccordionDemoProps(props: AccordionDemoProps): string {

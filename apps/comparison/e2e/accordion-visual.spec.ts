@@ -196,8 +196,9 @@ async function accordionStyleContract(root: Locator) {
     return {
       root: {
         tag: accordion?.tagName ?? null,
+        providerDir: accordion?.closest("[dir]")?.getAttribute("dir") ?? null,
         childCount: accordion?.children.length ?? null,
-        style: styleMap(accordion, ["display", "flex-direction", "width"]),
+        style: styleMap(accordion, ["display", "flex-direction", "width", "direction"]),
         rect: rect(accordion),
       },
       personal: disclosurePart("Personal Information"),
@@ -253,6 +254,36 @@ test.describe("comparison Accordion visual parity", () => {
       fixtures.reactRoot,
       fixtures.solidRoot,
       "Accordion multiple expanded",
+    );
+  });
+
+  test("Accordion reduced-motion and RTL environment styles match React Spectrum", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const reducedMotionFixtures = await accordionFixtures(page);
+    const reducedMotionReact = await accordionStyleContract(reducedMotionFixtures.reactRoot);
+
+    await expect(accordionStyleContract(reducedMotionFixtures.solidRoot)).resolves.toEqual(
+      reducedMotionReact,
+    );
+    expect(reducedMotionReact.personal.panel.style).toMatchObject({
+      "transition-property": "none",
+    });
+
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    const rtlFixtures = await accordionFixtures(page, { locale: "ar-SA" });
+    const rtlReact = await accordionStyleContract(rtlFixtures.reactRoot);
+
+    await expect(accordionStyleContract(rtlFixtures.solidRoot)).resolves.toEqual(rtlReact);
+    expect(rtlReact.root.providerDir).toBe("rtl");
+    expect(rtlReact.root.style).toMatchObject({ direction: "rtl" });
+    expect(rtlReact.billing.chevron.style).toMatchObject({ rotate: "180deg" });
+    await expectExactAccordionPair(
+      page,
+      rtlFixtures.reactRoot,
+      rtlFixtures.solidRoot,
+      "Accordion RTL",
     );
   });
 

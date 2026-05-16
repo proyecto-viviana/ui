@@ -67,6 +67,7 @@ import {
 import type { ComparisonSlug } from "@comparison/data/comparison-manifest";
 import { comparisonActionItems as actionItems } from "@comparison/data/comparison-contract";
 import {
+  accordionDemoLocaleFromWindow,
   accordionDemoPropsFromWindow,
   normalizeAccordionDemoProps,
   serializeAccordionDemoProps,
@@ -582,6 +583,7 @@ function SolidSpectrumAccordionDemo() {
   const [demoProps, setDemoProps] = createSignal<AccordionDemoProps>(
     accordionDemoPropsFromWindow(),
   );
+  const locale = accordionDemoLocaleFromWindow();
   const [expandedKeys, setExpandedKeys] = createSignal<Set<string>>(new Set(["personal"]));
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
@@ -618,6 +620,7 @@ function SolidSpectrumAccordionDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      locale,
       background: "base",
       style: providerShellStyle,
     },
