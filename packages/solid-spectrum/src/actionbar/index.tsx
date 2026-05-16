@@ -226,7 +226,32 @@ export interface ActionBarContainerProps {
   class?: string;
 }
 
+export type ActionBarSelectedKeys = "all" | Set<Key>;
+
+export interface ActionBarContainerStateProps {
+  selectedKeys?: "all" | Iterable<Key>;
+  defaultSelectedKeys?: "all" | Iterable<Key>;
+  onSelectionChange?: (keys: ActionBarSelectedKeys) => void;
+  renderActionBar?: (selectedKeys: ActionBarSelectedKeys) => JSX.Element;
+  scrollRef?: ScrollRef;
+}
+
+export interface ActionBarContainerState {
+  selectedKeys: () => ActionBarSelectedKeys;
+  onSelectionChange: (keys: "all" | Iterable<Key>) => void;
+  actionBar: () => JSX.Element;
+  actionBarHeight: () => number;
+}
+
 export const ActionBarContext = createContext<SpectrumContextValue<ActionBarProps>>(null);
+
+function normalizeSelectedKeys(keys: "all" | Iterable<Key> | undefined): ActionBarSelectedKeys {
+  return keys === "all" ? "all" : new Set(keys ?? []);
+}
+
+function copySelectedKeys(keys: ActionBarSelectedKeys): ActionBarSelectedKeys {
+  return keys === "all" ? "all" : new Set(keys);
+}
 
 function getScrollElement(scrollRef: ScrollRef): HTMLElement | null {
   if (!scrollRef) {
@@ -238,6 +263,57 @@ function getScrollElement(scrollRef: ScrollRef): HTMLElement | null {
   }
 
   return "current" in scrollRef ? (scrollRef.current ?? null) : null;
+}
+
+export function createActionBarContainer(
+  props: ActionBarContainerStateProps,
+): ActionBarContainerState {
+  const [uncontrolledSelectedKeys, setUncontrolledSelectedKeys] =
+    createSignal<ActionBarSelectedKeys>(normalizeSelectedKeys(props.defaultSelectedKeys));
+  const [actionBarHeight, setActionBarHeight] = createSignal(0);
+
+  const selectedKeys = createMemo<ActionBarSelectedKeys>(() =>
+    props.selectedKeys !== undefined
+      ? normalizeSelectedKeys(props.selectedKeys)
+      : uncontrolledSelectedKeys(),
+  );
+  const selectedItemCount = createMemo<SelectedItemCount>(() => {
+    const keys = selectedKeys();
+    return keys === "all" ? "all" : keys.size;
+  });
+  const setSelectedKeys = (keys: "all" | Iterable<Key>) => {
+    const normalized = normalizeSelectedKeys(keys);
+
+    if (props.selectedKeys === undefined) {
+      setUncontrolledSelectedKeys(normalized);
+    }
+
+    props.onSelectionChange?.(copySelectedKeys(normalized));
+  };
+  const actionBarRef = (element: HTMLDivElement) => {
+    setActionBarHeight(element ? element.offsetHeight + 8 : 0);
+  };
+  const actionBarContext: SpectrumContextValue<ActionBarProps> = {
+    ref: actionBarRef,
+    get scrollRef() {
+      return props.scrollRef;
+    },
+    get selectedItemCount() {
+      return selectedItemCount();
+    },
+    onClearSelection: () => setSelectedKeys(new Set()),
+  };
+
+  return {
+    selectedKeys,
+    onSelectionChange: setSelectedKeys,
+    actionBar: () => (
+      <ActionBarContext.Provider value={actionBarContext}>
+        {props.renderActionBar?.(selectedKeys())}
+      </ActionBarContext.Provider>
+    ),
+    actionBarHeight,
+  };
 }
 
 function getBarClassName(

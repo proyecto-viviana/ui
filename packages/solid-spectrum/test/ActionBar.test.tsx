@@ -5,7 +5,14 @@ import { afterEach, describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { destroyAnnouncer } from "@proyecto-viviana/solidaria";
-import { ActionBar, ActionBarContainer, ActionBarContext } from "../src/actionbar";
+import {
+  ActionBar,
+  ActionBarContainer,
+  ActionBarContext,
+  createActionBarContainer,
+  type ActionBarContainerState,
+  type ActionBarSelectedKeys,
+} from "../src/actionbar";
 import { ActionButton } from "../src/button/ActionButton";
 import { Provider } from "../src/provider";
 
@@ -349,6 +356,87 @@ describe("ActionBar (solid-spectrum)", () => {
       expect(container.querySelector(".vui-action-bar-container")).toBeInTheDocument();
       expect(screen.getByTestId("table")).toBeInTheDocument();
       expect(screen.getByRole("toolbar")).toBeInTheDocument();
+    });
+  });
+
+  describe("collection state helper", () => {
+    it("provides controlled selected keys through ActionBar context", async () => {
+      const selectedKeys = new Set(["reports", "roadmap"]);
+      const onSelectionChange = vi.fn();
+      const scrollElement = { offsetWidth: 140, clientWidth: 132 } as HTMLElement;
+      let state!: ActionBarContainerState;
+
+      render(() => {
+        state = createActionBarContainer({
+          selectedKeys,
+          onSelectionChange,
+          renderActionBar: (keys) => (
+            <ActionBar
+              data-selected-keys={keys === "all" ? "all" : Array.from(keys, String).join(",")}
+            >
+              <ActionButton>Edit</ActionButton>
+            </ActionBar>
+          ),
+          scrollRef: { current: scrollElement },
+        });
+
+        return <>{state.actionBar()}</>;
+      });
+
+      expect(screen.getByRole("toolbar")).toHaveAttribute("data-selected-keys", "reports,roadmap");
+      expect(screen.getByText("2 selected")).toBeInTheDocument();
+      await waitFor(() => expect(state.actionBarHeight()).toBe(8));
+
+      fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+
+      expect(onSelectionChange).toHaveBeenCalledOnce();
+      const clearedKeys = onSelectionChange.mock.calls[0][0] as ActionBarSelectedKeys;
+      expect(clearedKeys).toBeInstanceOf(Set);
+      expect(clearedKeys).toHaveProperty("size", 0);
+    });
+
+    it("updates uncontrolled selected keys and hides after clear", async () => {
+      let state!: ActionBarContainerState;
+
+      render(() => {
+        state = createActionBarContainer({
+          defaultSelectedKeys: new Set(["reports", "roadmap", "research"]),
+          renderActionBar: () => (
+            <ActionBar>
+              <ActionButton>Edit</ActionButton>
+            </ActionBar>
+          ),
+        });
+
+        return <>{state.actionBar()}</>;
+      });
+
+      expect(screen.getByText("3 selected")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+
+      await waitFor(() => expect(screen.queryByRole("toolbar")).not.toBeInTheDocument());
+      const nextSelectedKeys = state.selectedKeys();
+      expect(nextSelectedKeys).toBeInstanceOf(Set);
+      expect(nextSelectedKeys).toHaveProperty("size", 0);
+    });
+
+    it("supports select-all collection state", () => {
+      render(() => {
+        const state = createActionBarContainer({
+          defaultSelectedKeys: "all",
+          renderActionBar: (keys) => (
+            <ActionBar data-selected-keys={keys === "all" ? "all" : "partial"}>
+              <ActionButton>Edit</ActionButton>
+            </ActionBar>
+          ),
+        });
+
+        return <>{state.actionBar()}</>;
+      });
+
+      expect(screen.getByRole("toolbar")).toHaveAttribute("data-selected-keys", "all");
+      expect(screen.getByText("All selected")).toBeInTheDocument();
     });
   });
 });
