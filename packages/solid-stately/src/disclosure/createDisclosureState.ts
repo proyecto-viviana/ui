@@ -123,8 +123,7 @@ export function createDisclosureGroupState(
     p.onExpandedChange?.(keys);
   };
 
-  // Ensure only one item is expanded if allowsMultipleExpanded is false
-  // Note: We use untrack to prevent infinite loops when calling setExpandedKeys
+  // Ensure only one item is expanded if allowsMultipleExpanded is false.
   createEffect(() => {
     const p = propsAccessor();
     const allowsMultiple = p.allowsMultipleExpanded ?? false;

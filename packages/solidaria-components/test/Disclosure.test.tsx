@@ -43,8 +43,9 @@ describe("Disclosure", () => {
       const trigger = screen.getByRole("button", { name: "Show more" });
       expect(trigger).toHaveAttribute("aria-expanded", "false");
 
-      const panel = screen.getByRole("region", { hidden: true });
-      expect(panel).toHaveAttribute("hidden");
+      const panel = screen.getByRole("group", { hidden: true });
+      expect(panel).toHaveAttribute("hidden", "until-found");
+      expect(panel).toHaveAttribute("aria-hidden", "true");
     });
 
     it("should expand on trigger click", async () => {
@@ -59,8 +60,9 @@ describe("Disclosure", () => {
       firePointerClick(trigger);
 
       expect(trigger).toHaveAttribute("aria-expanded", "true");
-      const panel = screen.getByRole("region");
+      const panel = screen.getByRole("group");
       expect(panel).not.toHaveAttribute("hidden");
+      expect(panel).toHaveAttribute("aria-hidden", "false");
     });
 
     it("should collapse on trigger click when expanded", async () => {
@@ -90,7 +92,7 @@ describe("Disclosure", () => {
       const trigger = screen.getByRole("button", { name: "Show more" });
       expect(trigger).toHaveAttribute("aria-expanded", "true");
 
-      const panel = screen.getByRole("region");
+      const panel = screen.getByRole("group");
       expect(panel).not.toHaveAttribute("hidden");
     });
 
@@ -222,12 +224,12 @@ describe("Disclosure", () => {
       ));
 
       const trigger = screen.getByRole("button", { name: "Show more" });
-      const panel = screen.getByRole("region", { hidden: true });
+      const panel = screen.getByRole("group", { hidden: true });
 
       expect(trigger).toHaveAttribute("aria-controls", panel.id);
     });
 
-    it("should default the panel role to region", () => {
+    it("should default the panel role to group", () => {
       render(() => (
         <Disclosure defaultExpanded>
           <DisclosureTrigger>Show more</DisclosureTrigger>
@@ -235,7 +237,7 @@ describe("Disclosure", () => {
         </Disclosure>
       ));
 
-      const panel = screen.getByRole("region");
+      const panel = screen.getByRole("group");
       expect(panel).toBeInTheDocument();
     });
 
@@ -248,7 +250,7 @@ describe("Disclosure", () => {
       ));
 
       const trigger = screen.getByRole("button", { name: "Show more" });
-      const panel = screen.getByRole("region");
+      const panel = screen.getByRole("group");
 
       expect(panel).toHaveAttribute("aria-labelledby", trigger.id);
     });
@@ -262,6 +264,18 @@ describe("Disclosure", () => {
       ));
 
       expect(screen.getByRole("region")).toBeInTheDocument();
+    });
+
+    it("should pass labelable ARIA props to the panel", () => {
+      render(() => (
+        <Disclosure defaultExpanded>
+          <DisclosureTrigger>Show more</DisclosureTrigger>
+          <DisclosurePanel aria-label="Details panel">Hidden content</DisclosurePanel>
+        </Disclosure>
+      ));
+
+      const panel = screen.getByRole("group");
+      expect(panel).toHaveAttribute("aria-label", "Details panel");
     });
   });
 

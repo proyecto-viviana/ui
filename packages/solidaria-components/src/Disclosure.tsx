@@ -85,7 +85,10 @@ export interface DisclosureTriggerProps {
   style?: JSX.CSSProperties;
 }
 
-export interface DisclosurePanelProps {
+export interface DisclosurePanelProps extends Omit<
+  JSX.HTMLAttributes<HTMLElement>,
+  "children" | "class" | "style" | "role"
+> {
   /** The children of the panel. */
   children?: RenderChildren<DisclosureRenderProps>;
   /** The CSS className for the element. */
@@ -429,7 +432,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
       )}
       {...getPanelProps()}
       ref={(el) => panelRefSetter?.(el)}
-      role={local.role ?? "region"}
+      role={local.role ?? "group"}
       class={renderProps.class()}
       style={renderProps.style()}
       data-expanded={dataAttr(isExpanded())}

@@ -281,6 +281,48 @@ describe("createDisclosureGroupState", () => {
         dispose();
       });
     });
+
+    it("should trim over-expanded default keys to the first key", async () => {
+      let dispose!: () => void;
+      const onExpandedChange = vi.fn();
+      const state = createRoot((d) => {
+        dispose = d;
+        return createDisclosureGroupState({
+          defaultExpandedKeys: ["key1", "key2", "key3"],
+          onExpandedChange,
+        });
+      });
+
+      expect([...state.expandedKeys()]).toEqual(["key1", "key2", "key3"]);
+
+      await Promise.resolve();
+
+      expect([...state.expandedKeys()]).toEqual(["key1"]);
+      expect(onExpandedChange).toHaveBeenCalledWith(new Set(["key1"]));
+
+      dispose();
+    });
+
+    it("should request controlled over-expanded keys be trimmed without mutating controlled state", async () => {
+      let dispose!: () => void;
+      const onExpandedChange = vi.fn();
+      const state = createRoot((d) => {
+        dispose = d;
+        return createDisclosureGroupState({
+          expandedKeys: ["key1", "key2"],
+          onExpandedChange,
+        });
+      });
+
+      expect([...state.expandedKeys()]).toEqual(["key1", "key2"]);
+
+      await Promise.resolve();
+
+      expect([...state.expandedKeys()]).toEqual(["key1", "key2"]);
+      expect(onExpandedChange).toHaveBeenCalledWith(new Set(["key1"]));
+
+      dispose();
+    });
   });
 
   describe("multiple selection mode", () => {

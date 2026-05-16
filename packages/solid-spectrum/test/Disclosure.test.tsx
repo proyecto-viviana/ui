@@ -60,7 +60,7 @@ describe("Disclosure (solid-spectrum)", () => {
     ));
 
     const trigger = screen.getByRole("button", { name: "Styled Trigger" });
-    const panel = screen.getByRole("region", { hidden: true });
+    const panel = screen.getByRole("group", { hidden: true });
 
     expect(trigger).toHaveClass("px-3");
     expect(trigger).toHaveClass("py-2");
