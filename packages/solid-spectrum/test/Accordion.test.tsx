@@ -81,6 +81,41 @@ describe("Accordion (solid-spectrum)", () => {
     expect(changes).toEqual([["one"], ["one", "two"]]);
   });
 
+  it("keeps trigger and panel ids unique across multiple accordion instances", () => {
+    render(() => (
+      <>
+        <Accordion defaultExpandedKeys={["shared"]}>
+          <AccordionItem id="shared">
+            <AccordionItemTitle>Shared item</AccordionItemTitle>
+            <AccordionItemPanel>First shared content</AccordionItemPanel>
+          </AccordionItem>
+        </Accordion>
+        <Accordion defaultExpandedKeys={["shared"]}>
+          <AccordionItem id="shared">
+            <AccordionItemTitle>Shared item</AccordionItemTitle>
+            <AccordionItemPanel>Second shared content</AccordionItemPanel>
+          </AccordionItem>
+        </Accordion>
+      </>
+    ));
+
+    const triggers = screen.getAllByRole("button", { name: "Shared item" });
+    const panels = [
+      screen.getByText("First shared content").closest('[role="group"]'),
+      screen.getByText("Second shared content").closest('[role="group"]'),
+    ];
+    const ids = [...triggers.map((trigger) => trigger.id), ...panels.map((panel) => panel?.id)];
+
+    expect(ids.every(Boolean)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+
+    for (const [index, trigger] of triggers.entries()) {
+      const panel = panels[index];
+      expect(trigger).toHaveAttribute("aria-controls", panel?.id);
+      expect(panel).toHaveAttribute("aria-labelledby", trigger.id);
+    }
+  });
+
   it("keeps AccordionItemHeader actions adjacent to, not inside, the title trigger", async () => {
     const user = setupUser();
 

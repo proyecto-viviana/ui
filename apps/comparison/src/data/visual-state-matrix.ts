@@ -163,6 +163,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "packages/solidaria/test/createDisclosure.ssr.test.tsx",
       note: "Shared ARIA hook contract mirrors React Aria useDisclosure: collapsed server panels get boolean hidden, expanded server panels omit hidden, and hydrated browser panels leave hidden to the runtime lifecycle.",
     },
+    {
+      id: "styled.multi-instance-ids",
+      label: "Styled multi-instance IDs",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "packages/solid-spectrum/test/Accordion.test.tsx",
+      note: "Package contract verifies multiple Accordion instances with colliding item keys still generate unique trigger/panel IDs and preserve aria-controls and aria-labelledby linkage.",
+    },
   ],
   provider: [
     visualDefaultState({
