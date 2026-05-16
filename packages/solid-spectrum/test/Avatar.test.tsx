@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { Avatar, AvatarContext } from "../src/avatar";
 
 describe("Avatar (solid-spectrum)", () => {
@@ -34,6 +34,17 @@ describe("Avatar (solid-spectrum)", () => {
     expect(image?.className).not.toBe("");
   });
 
+  it("uses the S2 Image load/reveal lifecycle", async () => {
+    const { container } = render(() => <Avatar src="/avatar.png" alt="Alana" />);
+
+    const root = container.querySelector('[slot="avatar"]') as HTMLElement;
+    const image = screen.getByRole("img", { name: "Alana" });
+    const initialClass = root.className;
+
+    fireEvent.load(image);
+    await waitFor(() => expect(root.className).not.toBe(initialClass));
+  });
+
   it("maps legacy size aliases and ignores legacy fallback content", () => {
     const { container } = render(() => <Avatar alt="John Doe" size="md" fallback="JD" online />);
 
@@ -62,14 +73,14 @@ describe("Avatar (solid-spectrum)", () => {
     expect(root).toHaveClass("local-avatar");
   });
 
-  it("matches S2 DOM prop filtering on the root", () => {
+  it("matches the S2 Image root prop boundary", () => {
     const { container } = render(() => (
       <Avatar id="avatar-id" data-testid="avatar" aria-label="Ignored label" hidden />
     ));
 
     const root = container.querySelector('[slot="avatar"]') as HTMLElement;
-    expect(root).toHaveAttribute("id", "avatar-id");
-    expect(root).toHaveAttribute("data-testid", "avatar");
+    expect(root).not.toHaveAttribute("id");
+    expect(root).not.toHaveAttribute("data-testid");
     expect(root).not.toHaveAttribute("aria-label");
     expect(root).not.toHaveAttribute("hidden");
   });

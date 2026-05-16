@@ -11,6 +11,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { centerBaselineBefore } from "../icon/center-baseline";
+import { Image } from "../image";
 
 export type AvatarSize =
   | 16
@@ -93,23 +94,6 @@ const avatarRoot = style(
   getAllowedOverrides({ width: false }),
 );
 
-const avatarImage = style({
-  display: "block",
-  width: "full",
-  height: "full",
-  objectFit: "inherit",
-  objectPosition: "inherit",
-  opacity: {
-    default: 0,
-    isRevealed: 1,
-  },
-  transition: {
-    default: "none",
-    isTransitioning: "opacity",
-  },
-  transitionDuration: 500,
-});
-
 const avatarGroupAvatar = style({
   marginStart: {
     default: "calc(var(--size) / -4)",
@@ -144,7 +128,7 @@ const avatarGroupContainer = style(
 export function Avatar(props: AvatarProps) {
   const contextProps = getSlottedContextProps(useContext(AvatarContext), props.slot);
   const merged = mergeProps(contextProps ?? {}, props);
-  const [local, domProps] = splitProps(merged, [
+  const [local] = splitProps(merged, [
     "src",
     "alt",
     "size",
@@ -174,38 +158,30 @@ export function Avatar(props: AvatarProps) {
       height: remSize(),
     };
   };
+  const rootClass = () =>
+    [contextProps?.UNSAFE_className, local.UNSAFE_className, local.class, centerBaselineBefore]
+      .filter(Boolean)
+      .join(" ");
 
   return (
-    <div
-      {...filterDOMProps(domProps)}
+    <Image
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,
       )}
       slot={slot() ?? undefined}
-      class={[
-        contextProps?.UNSAFE_className,
-        local.UNSAFE_className,
-        local.class,
-        centerBaselineBefore,
-        avatarRoot(
-          {
-            isOverBackground: local.isOverBackground,
-            isLarge: size() >= 64,
-          },
-          mergeContextStyles(contextProps?.styles, props.styles),
-        ),
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      style={mergedStyle()}
-    >
-      <img
-        src={local.src || undefined}
-        alt={local.alt ?? ""}
-        class={avatarImage({ isRevealed: !!local.src })}
-      />
-    </div>
+      alt={local.alt ?? ""}
+      src={local.src || undefined}
+      UNSAFE_className={rootClass()}
+      UNSAFE_style={mergedStyle()}
+      styles={avatarRoot(
+        {
+          isOverBackground: local.isOverBackground,
+          isLarge: size() >= 64,
+        },
+        mergeContextStyles(contextProps?.styles, props.styles),
+      )}
+    />
   );
 }
 

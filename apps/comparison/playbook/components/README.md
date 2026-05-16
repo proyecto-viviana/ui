@@ -17,9 +17,9 @@ implemented/pass notes keep their historical evidence, but they should be
 treated as legacy accepted under the prior playbook until each note is
 normalized to the current gate checklist.
 
-- Legacy accepted under prior playbook: Avatar, AvatarGroup, Badge, Button,
-  Button family, Divider, Form, Image, Link, Meter, Skeleton, and StatusLight.
-- Current-gate normalized: none.
+- Legacy accepted under prior playbook: AvatarGroup, Badge, Button, Button
+  family, Divider, Form, Image, Link, Meter, Skeleton, and StatusLight.
+- Current-gate normalized: Avatar.
 - Comparison-live with explicit release-hardening backfill gaps: none.
 - Pre-pass only: Text and NotificationBadge.
 
