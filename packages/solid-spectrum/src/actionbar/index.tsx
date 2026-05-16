@@ -1,5 +1,6 @@
 import {
   type JSX,
+  Show,
   createContext,
   createEffect,
   createMemo,
@@ -18,7 +19,7 @@ import {
   type ButtonRenderProps,
   useActionBarContext,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { FocusScope, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { baseColor, focusRing, lightDark, style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
@@ -417,53 +418,61 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   });
 
   const actionGroupLabel = createMemo(() => stringFormatter().format("actionbar.actions"));
+  const actionsAvailableLabel = createMemo(() =>
+    stringFormatter().format("actionbar.actionsAvailable"),
+  );
   const clearSelectionLabel = createMemo(() =>
     stringFormatter().format("actionbar.clearSelection"),
   );
   const selectionLabel = createMemo(() => countMessage(stringFormatter(), renderedCount()));
 
   return (
-    <HeadlessActionBar
-      {...headlessProps}
-      selectedItemCount={selectedItemCountForHeadless()}
-      onClearSelection={headlessProps.onClearSelection}
-      ref={actionBarRef}
-      slot={local.slot ?? undefined}
-      class={(rp: ActionBarRenderProps) =>
-        getBarClassName(
-          rp,
-          contextProps?.UNSAFE_className,
-          props.UNSAFE_className,
-          contextProps?.class,
-          props.class,
-          local.isEmphasized,
-          !!local.scrollRef,
-          isEntering(),
-          isExiting(),
-          mergedStyles(),
-        )
-      }
-      style={() => rootStyle()}
-    >
-      <div class={selectionWrapperStyles}>
-        <ActionBarCloseButton
-          isEmphasized={local.isEmphasized}
-          aria-label={clearSelectionLabel()}
-        />
-        <span class={selectionCountStyles({ isEmphasized: local.isEmphasized })}>
-          {selectionLabel()}
-        </span>
-      </div>
-      <div class={actionsWrapperStyles}>
-        <ActionButtonGroup
-          staticColor={local.isEmphasized ? "auto" : undefined}
-          isQuiet
-          aria-label={actionGroupLabel()}
+    <Show when={isRendered()}>
+      <FocusScope restoreFocus>
+        <HeadlessActionBar
+          {...headlessProps}
+          selectedItemCount={selectedItemCountForHeadless()}
+          onClearSelection={headlessProps.onClearSelection}
+          actionsAvailableMessage={actionsAvailableLabel()}
+          ref={actionBarRef}
+          slot={local.slot ?? undefined}
+          class={(rp: ActionBarRenderProps) =>
+            getBarClassName(
+              rp,
+              contextProps?.UNSAFE_className,
+              props.UNSAFE_className,
+              contextProps?.class,
+              props.class,
+              local.isEmphasized,
+              !!local.scrollRef,
+              isEntering(),
+              isExiting(),
+              mergedStyles(),
+            )
+          }
+          style={() => rootStyle()}
         >
-          {local.children}
-        </ActionButtonGroup>
-      </div>
-    </HeadlessActionBar>
+          <div class={selectionWrapperStyles}>
+            <ActionBarCloseButton
+              isEmphasized={local.isEmphasized}
+              aria-label={clearSelectionLabel()}
+            />
+            <span class={selectionCountStyles({ isEmphasized: local.isEmphasized })}>
+              {selectionLabel()}
+            </span>
+          </div>
+          <div class={actionsWrapperStyles}>
+            <ActionButtonGroup
+              staticColor={local.isEmphasized ? "auto" : undefined}
+              isQuiet
+              aria-label={actionGroupLabel()}
+            >
+              {local.children}
+            </ActionButtonGroup>
+          </div>
+        </HeadlessActionBar>
+      </FocusScope>
+    </Show>
   );
 }
 

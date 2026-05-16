@@ -4,10 +4,13 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
+import { destroyAnnouncer } from "@proyecto-viviana/solidaria";
 import { ActionBar, ActionBarContainer, ActionBarContext } from "../src/actionbar";
 import { ActionButton } from "../src/button/ActionButton";
+import { Provider } from "../src/provider";
 
 afterEach(() => {
+  destroyAnnouncer();
   vi.useRealTimers();
 });
 
@@ -197,6 +200,47 @@ describe("ActionBar (solid-spectrum)", () => {
       await Promise.resolve();
       expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
       vi.useRealTimers();
+    });
+  });
+
+  describe("ARIA lifecycle", () => {
+    it("announces actions available using the provider locale", () => {
+      render(() => (
+        <Provider locale="es-ES">
+          <ActionBar selectedItemCount={1} onClearSelection={() => {}}>
+            <ActionButton>Editar</ActionButton>
+          </ActionBar>
+        </Provider>
+      ));
+
+      expect(screen.getByText("Acciones disponibles.")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Borrar selección" })).toBeInTheDocument();
+      expect(screen.getByText("1 seleccionados")).toBeInTheDocument();
+    });
+
+    it("restores focus to the trigger when the action bar closes", async () => {
+      const [count, setCount] = createSignal(0);
+
+      render(() => (
+        <>
+          <button data-testid="collection-row">Quarterly report</button>
+          <ActionBar selectedItemCount={count()} onClearSelection={() => setCount(0)}>
+            <ActionButton>Edit</ActionButton>
+          </ActionBar>
+        </>
+      ));
+
+      const row = screen.getByTestId("collection-row");
+      row.focus();
+      setCount(1);
+
+      await waitFor(() => expect(screen.getByRole("toolbar")).toBeInTheDocument());
+
+      screen.getByRole("button", { name: "Edit" }).focus();
+      fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      expect(row).toHaveFocus();
     });
   });
 

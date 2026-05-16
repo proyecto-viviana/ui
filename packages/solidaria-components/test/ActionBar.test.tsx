@@ -1,9 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
+import { destroyAnnouncer } from "@proyecto-viviana/solidaria";
 import {
   assertAriaIdIntegrity,
   assertNoA11yViolations,
@@ -14,6 +15,10 @@ import {
   ActionBarSelectionCount,
   ActionBarClearButton,
 } from "../src/ActionBar";
+
+afterEach(() => {
+  destroyAnnouncer();
+});
 
 describe("ActionBar (headless)", () => {
   describe("visibility", () => {
@@ -246,6 +251,26 @@ describe("ActionBar (headless)", () => {
       expect(() =>
         fireEvent.click(screen.getByRole("button", { name: "Clear selection" })),
       ).not.toThrow();
+    });
+  });
+
+  describe("announcements", () => {
+    it("announces a custom actions-available message when opened", () => {
+      const [count, setCount] = createSignal(0);
+
+      render(() => (
+        <ActionBar
+          selectedItemCount={count()}
+          onClearSelection={() => {}}
+          actionsAvailableMessage="Acciones disponibles."
+        >
+          <button>Edit</button>
+        </ActionBar>
+      ));
+
+      setCount(1);
+
+      expect(screen.getByText("Acciones disponibles.")).toBeInTheDocument();
     });
   });
 

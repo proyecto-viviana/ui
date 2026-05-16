@@ -23,10 +23,10 @@
 | 4 Cross-layer audit    | in progress | Upstream/solid source branch table below                                                                                                    | Fill as implementation branches land                                               |
 | 5 Transitions          | partial     | Solid styled layer keeps last selected count during `scrollRef` exit; browser spec covers reduced-motion exit completion                    | Add visual timeline proof for animated enter/exit                                  |
 | 6 State                | partial     | Route-level collection adapter covers selected keys, selected count, and clear-selection wiring for React and Solid                         | Decide later whether Solid package needs a reusable `useActionBarContainer` helper |
-| 7 ARIA hooks           | partial     | Solidaria ActionBar uses toolbar semantics, Escape clearing, axe smoke, and ARIA ID checks; styled layer localizes labels                   | Add focus restore and localized live announcement proof                            |
+| 7 ARIA hooks           | done        | Solidaria ActionBar uses toolbar semantics, Escape clearing, axe smoke, ARIA ID checks, localized live announcements, and S2 focus restore  | None                                                                               |
 | 8 Headless             | done        | Solidaria tests cover visibility, Escape, navigation, count text, optional clear, refs, DOM pass-through, render props, and axe             | None                                                                               |
 | 9 Styled S2            | partial     | S2 macro root geometry, wrapper order, close button, ActionButtonGroup, staticColor propagation, and generated CSS are wired                | Add visual, forced-colors, and strict pair-diff proof                              |
-| 10 Runtime lifecycle   | partial     | Browser spec covers `scrollRef` geometry, resize stability, and reduced-motion exit; styled layer cleans up timers                          | Add focus restore and live announcement proof                                      |
+| 10 Runtime lifecycle   | done        | Browser spec covers `scrollRef` geometry, resize stability, and reduced-motion exit; package tests cover focus restore and live announce    | None                                                                               |
 | 11 Harness integrity   | in progress | Current reports list ActionBar as live on both sides with planned visual coverage                                                           | Add strict pair-diff rows only after S2 styling/API parity lands                   |
 | 12 Comparison evidence | partial     | `actionbar-contract.spec` covers route mount, controls, zero state, clear, actions, Escape, arrows, scrollRef, motion, and collection state | Add visual, forced-colors, and strict pair-diff specs                              |
 | 13 Acceptance          | not started | Not accepted                                                                                                                                | Complete parity checklist and commit each slice                                    |
@@ -180,12 +180,27 @@
   - `COMPARISON_BASE_URL=http://127.0.0.1:4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/actionbar-contract.spec.ts --reporter=line`
   - `8` browser tests passed.
 
+## Current After ARIA Lifecycle Slice
+
+- Headless ActionBar now accepts an `actionsAvailableMessage` override so the
+  styled S2 layer can use localized strings instead of a hard-coded English
+  announcement.
+- Solid Spectrum ActionBar wraps the rendered/exiting bar in
+  `FocusScope restoreFocus`, matching S2 lifecycle behavior without leaving
+  focus markers mounted while hidden.
+- Package proof:
+  - `vp test run packages/solidaria-components/test/ActionBar.test.tsx packages/solid-spectrum/test/ActionBar.test.tsx`
+  - `2` files, `49` tests passed.
+- Repo proof:
+  - `vp run check`
+  - formatting, lint, and typecheck passed.
+
 ## Source Map And Public Contract
 
 | Layer               | Upstream files/owner                                             | Solid files/owner                                 | Current status |
 | ------------------- | ---------------------------------------------------------------- | ------------------------------------------------- | -------------- |
 | State               | S2 `useActionBarContainer` plus collection selected-key state    | route-level Solid ListView adapter                | partial        |
-| ARIA hooks          | `useKeyboard`, `FocusScope`, live announcer                      | Solidaria `createToolbar`, `announce`             | partial        |
+| ARIA hooks          | `useKeyboard`, `FocusScope`, live announcer                      | Solidaria `createToolbar`, `announce`, FocusScope | covered        |
 | Headless components | no RAC ActionBar primitive; S2 component owns composition        | `packages/solidaria-components/src/ActionBar.tsx` | partial        |
 | Styled S2           | `ActionBar.tsx`, `ActionButtonGroup`, `CloseButton`, style macro | `packages/solid-spectrum/src/actionbar/index.tsx` | partial        |
 | Public package API  | `ActionBar`, `ActionBarContext`, subpath `ActionButton`, `Text`  | root `ActionBar` and `ActionBarContext` exported  | partial        |
@@ -203,10 +218,13 @@
 | Headless | refs and DOM pass-through              | Solidaria         | consumer root ref and safe DOM attrs                   | covered | package tests |
 | Headless | render-prop liveness                   | Solidaria         | class/style update as selected count changes           | covered | package tests |
 | Headless | a11y smoke and ARIA ID integrity       | Solidaria         | no axe violations or dangling ARIA references          | covered | package tests |
+| Headless | localized live announcement hook       | Solidaria         | custom actions-available message is announced          | covered | package tests |
 | Styled   | context consumption and root ref merge | Solid Spectrum    | context-provided props/ref apply                       | covered | package tests |
 | Styled   | emphasized root                        | Solid Spectrum    | S2 emphasized root classes and child staticColor apply | partial | package tests |
 | Styled   | CloseButton child                      | Solid Spectrum    | S2 close button geometry and localized label           | partial | package tests |
 | Styled   | ActionButtonGroup child wrapper        | Solid Spectrum    | quiet group, action label, staticColor propagation     | covered | package tests |
+| Styled   | localized live announcement            | Solid Spectrum    | Provider locale drives live text and visible labels    | covered | package tests |
+| Styled   | focus restore lifecycle                | Solid Spectrum    | focus returns to trigger after ActionBar closes        | covered | package tests |
 | Styled   | scroll container mode                  | Solid Spectrum    | S2 positioning and scrollbar inset compensation        | partial | package tests |
 | Styled   | enter/exit animation                   | Solid Spectrum    | translateY classes and last-count retained on exit     | partial | package tests |
 | Harness  | direct route controls                  | comparison app    | selected count, `"all"`, zero state, emphasized prop   | covered | browser spec  |
@@ -252,11 +270,13 @@
    reduced-motion transition proof.
 3. Done: filled remaining headless gaps for render-prop liveness, axe smoke,
    and ARIA reference integrity.
-4. In progress: comparison browser specs now cover route controls,
+4. Done: ARIA lifecycle package proof covers localized actions-available
+   announcements and focus restoration when the bar closes.
+5. In progress: comparison browser specs now cover route controls,
    clear/Escape behavior, toolbar arrow behavior, scrollRef geometry, resize,
    reduced motion, and docs-style collection state. Remaining comparison
    evidence is visual, forced-colors, and strict pair-diff.
-5. Refresh reports and close the ActionBar checklist only when package tests,
+6. Refresh reports and close the ActionBar checklist only when package tests,
    browser evidence, report counts, export report, and full check are green.
 
 ## Evidence

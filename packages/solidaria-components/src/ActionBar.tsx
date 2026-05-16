@@ -68,6 +68,8 @@ export interface ActionBarProps
   "aria-labelledby"?: string;
   /** Optional keydown handler on the action bar element. */
   onKeyDown?: JSX.EventHandlerUnion<HTMLDivElement, KeyboardEvent>;
+  /** Screen reader announcement when the action bar becomes available. */
+  actionsAvailableMessage?: string;
   /** Ref for the underlying action bar element. */
   ref?: RefLike<HTMLDivElement>;
 }
@@ -96,6 +98,7 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     "aria-label",
     "aria-labelledby",
     "onKeyDown",
+    "actionsAvailableMessage",
     "ref",
   ]);
 
@@ -116,7 +119,10 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   createEffect(() => {
     const open = isOpen();
     if (open && !wasOpen) {
-      announce("Actions available.");
+      const message = local.actionsAvailableMessage ?? "Actions available.";
+      if (message) {
+        announce(message);
+      }
     }
     wasOpen = open;
   });
