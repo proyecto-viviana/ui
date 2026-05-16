@@ -187,7 +187,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "More-actions menu route mounted on both stacks with S2 viewer controls for trigger size, menu size, alignment, direction, quiet state, and disabled state.",
     styledSummary: "React Spectrum ActionMenu vs Solid Spectrum ActionMenu.",
     styledNote:
-      "React uses @react-spectrum/s2 ActionMenu with the official compositional MenuItem example; Solid uses the current @proyecto-viviana/solid-spectrum ActionMenu data API until the S2 compositional API and styling port lands.",
+      "React uses @react-spectrum/s2 ActionMenu with the official compositional MenuItem example; Solid uses @proyecto-viviana/solid-spectrum ActionMenu with the public trigger-facing API, localized default label, generated S2 More icon, and strict default trigger visual evidence. Static JSX child composition, open menu surface styling, and overlay geometry remain tracked gaps.",
   }),
 
   provider: {

@@ -28,7 +28,11 @@ describe("ActionMenu (solid-spectrum)", () => {
     const circles = Array.from(trigger.querySelectorAll("circle")).map((circle) =>
       circle.getAttribute("cx"),
     );
-    expect(circles).toEqual(["4", "10", "16"]);
+    expect(circles).toEqual(["10", "4", "4", "16", "16"]);
+    expect(trigger.querySelector("path")).toHaveAttribute(
+      "d",
+      "m10,8.5c-.82843,0-1.5.67157-1.5,1.5s.67157,1.5,1.5,1.5,1.5-.67157,1.5-1.5-.67157-1.5-1.5-1.5Z",
+    );
   });
 
   it("uses the provider locale for the default trigger label", () => {

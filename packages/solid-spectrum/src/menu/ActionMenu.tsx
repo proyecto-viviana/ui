@@ -12,7 +12,8 @@ import {
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { centerBaseline } from "../icon/center-baseline";
-import { createIcon, IconContext } from "../icon/spectrum-icon";
+import MoreIcon from "../icon/s2wf-icons/MoreIcon";
+import { IconContext } from "../icon/spectrum-icon";
 import { fontRelative, style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { s2IntlStrings } from "../intl";
@@ -106,39 +107,6 @@ const menuSizeClasses: Record<ActionMenuMenuSize, { menu: string; item: string }
     item: "text-xl py-3 px-6 gap-3",
   },
 };
-
-const MoreIcon = createIcon((props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
-  const { class: className, ...rest } = props;
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      {...rest}
-      class={className}
-    >
-      <circle
-        cx="4"
-        cy="10"
-        r="1.5"
-        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
-      />
-      <circle
-        cx="10"
-        cy="10"
-        r="1.5"
-        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
-      />
-      <circle
-        cx="16"
-        cy="10"
-        r="1.5"
-        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
-      />
-    </svg>
-  );
-});
 
 function fallbackItemLabel(item: unknown): string {
   const menuItem = item as { id?: string | number; label?: string; textValue?: string };
