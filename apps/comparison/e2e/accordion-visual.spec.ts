@@ -287,6 +287,44 @@ test.describe("comparison Accordion visual parity", () => {
     );
   });
 
+  test("Accordion forced-colors environment styles match React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await expect(page.evaluate(() => matchMedia("(forced-colors: active)").matches)).resolves.toBe(
+      true,
+    );
+
+    const defaultFixtures = await accordionFixtures(page);
+    const defaultReact = await accordionStyleContract(defaultFixtures.reactRoot);
+
+    await expect(accordionStyleContract(defaultFixtures.solidRoot)).resolves.toEqual(defaultReact);
+    await expectExactAccordionPair(
+      page,
+      defaultFixtures.reactRoot,
+      defaultFixtures.solidRoot,
+      "Accordion forced colors default",
+    );
+
+    const disabledFixtures = await accordionFixtures(page, { isDisabled: true });
+    const disabledReact = await accordionStyleContract(disabledFixtures.reactRoot);
+
+    await expect(accordionStyleContract(disabledFixtures.solidRoot)).resolves.toEqual(
+      disabledReact,
+    );
+    expect(disabledReact.personal.buttonAttributes.disabled).toBe(true);
+    expect(disabledReact.personal.buttonStyle?.color).not.toBe(
+      defaultReact.personal.buttonStyle?.color,
+    );
+    expect(disabledReact.billing.buttonStyle?.color).toBe(
+      disabledReact.personal.buttonStyle?.color,
+    );
+    await expectExactAccordionPair(
+      page,
+      disabledFixtures.reactRoot,
+      disabledFixtures.solidRoot,
+      "Accordion forced colors disabled",
+    );
+  });
+
   test("Accordion computed styles match React Spectrum across size, density, quiet, and disabled axes", async ({
     page,
   }) => {

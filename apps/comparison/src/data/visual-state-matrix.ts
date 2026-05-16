@@ -134,6 +134,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Reduced-motion computed contracts verify transition removal, while RTL computed contracts and exact screenshots verify provider direction, chevron rotation, and pixels.",
     },
     {
+      id: "styled.forced-colors",
+      label: "Styled forced colors",
+      kind: "visual",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
+      spec: "e2e/accordion-visual.spec.ts",
+      note: "Forced-colors media emulation compares React Spectrum and Solid computed contracts for default and disabled states, verifies disabled ButtonText/GrayText separation, and captures strict pair-diff screenshots.",
+    },
+    {
       id: "styled.focus-visible-ids",
       label: "Styled focus-visible and IDs",
       kind: "keyboard",
