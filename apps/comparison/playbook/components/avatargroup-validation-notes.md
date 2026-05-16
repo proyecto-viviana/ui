@@ -8,7 +8,7 @@
 - Pass goal: AvatarGroup styled parity, child Avatar context parity, DOM prop
   filtering parity, route-control integrity, full documented size/count matrix,
   forced-colors coverage, and strict default visual evidence
-- Date: 2026-05-15
+- Date: 2026-05-16
 
 ## Task Status
 
@@ -16,7 +16,7 @@
 | ---------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | 0 Research             | done   | S2 AvatarGroup docs, AvatarGroup source, Avatar source, React Aria `useLabel` and `filterDOMProps` source        | None                   |
 | 1 Baseline             | done   | `comparison:report:gaps`, `comparison:report:exports`, RAC guards                                                | None                   |
-| 2 Route harness        | done   | AvatarGroup controls, route defaults, React/Solid fixtures, visible control assertions                           | None                   |
+| 2 Route harness        | done   | AvatarGroup controls, route defaults, React/Solid fixtures, visible controls, and query-only count assertions    | None                   |
 | 3 Source map/API       | done   | Source map and public contract below                                                                             | None                   |
 | 4 Cross-layer audit    | done   | Branch ledger covers label wiring, root role, DOM filtering, size variable, child context, overlap, and outlines | None                   |
 | 5 Transitions          | done   | Static component; label, size, count, overlap, over-background, and forced-colors obligations recorded           | None                   |
@@ -25,34 +25,34 @@
 | 8 Headless             | done   | Native labelled `role="group"` root plus S2 DOM prop filtering                                                   | None                   |
 | 9 Styled S2            | done   | `AvatarGroup`, child `AvatarContext`, S2 overlap branch, unit tests, computed browser matrix                     | None                   |
 | 10 Runtime lifecycle   | done   | Static markup plus child Avatar rendering; no timers, overlays, portals, or global listeners                     | None                   |
-| 11 Harness integrity   | done   | Exact default pair diff, route-control UI assertions, full size/count matrix, forced-colors environment check    | None                   |
+| 11 Harness integrity   | done   | Exact default pair diff, route-control UI assertions, query-only count matrix, forced-colors environment check   | None                   |
 | 12 Comparison evidence | done   | AvatarGroup Playwright suite `4 passed`; current reports and guards refreshed                                    | None                   |
 | 13 Acceptance          | done   | Focused tests, builds, browser evidence, report/guard refresh, full check                                        | None                   |
 
 ## Source Packet
 
-| Source                   | Files or docs                                                                                        | Finding                                                                                                                        |
-| ------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| S2 docs MCP              | `AvatarGroup` page                                                                                   | Public API is `children`, `label`, size `16/20/24/28/32/36/40`, `id`, `slot`, label ARIA props, styles, unsafe class/style.    |
-| React Spectrum S2 source | `@react-spectrum/s2/src/AvatarGroup.tsx`                                                             | Root is a labelled `role="group"` flex container with `--size`; it provides `AvatarContext` for size, overlap, and background. |
-| React Spectrum S2 source | `@react-spectrum/s2/src/Avatar.tsx`                                                                  | Child Avatar consumes context `styles`, `size`, and `isOverBackground`; group parity depends on this context path.             |
-| React Aria source        | `useLabel`, `useLabels`, `filterDOMProps`                                                            | `fieldProps` provide `id`, `aria-label`, and `aria-labelledby`; default DOM filtering preserves only `id` and `data-*`.        |
-| Solid source after pass  | `packages/solid-spectrum/src/avatar/index.tsx`                                                       | Solid matches S2 label wiring, root filtering, context propagation, size variable, overlap styles, and visible label sizing.   |
-| Comparison harness       | `comparison-manifest`, styled fixtures, component controls, visual matrix, `avatar-group-visual` e2e | AvatarGroup is live on both stacks with strict default evidence, route-control checks, size/count matrix, and forced-colors.   |
+| Source                   | Files or docs                                                                                        | Finding                                                                                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| S2 docs MCP              | `AvatarGroup` page                                                                                   | Public API is `children`, `label`, size `16/20/24/28/32/36/40`, `id`, `slot`, label ARIA props, styles, unsafe class/style.                |
+| React Spectrum S2 source | `@react-spectrum/s2/src/AvatarGroup.tsx`                                                             | Root is a labelled `role="group"` flex container with `--size`; it provides `AvatarContext` for size, overlap, and background.             |
+| React Spectrum S2 source | `@react-spectrum/s2/src/Avatar.tsx`                                                                  | Child Avatar consumes context `styles`, `size`, and `isOverBackground`; group parity depends on this context path.                         |
+| React Aria source        | `useLabel`, `useLabels`, `filterDOMProps`                                                            | `fieldProps` provide `id`, `aria-label`, and `aria-labelledby`; default DOM filtering preserves only `id` and `data-*`.                    |
+| Solid source after pass  | `packages/solid-spectrum/src/avatar/index.tsx`                                                       | Solid matches S2 label wiring, root filtering, context propagation, size variable, overlap styles, and visible label sizing.               |
+| Comparison harness       | `comparison-manifest`, styled fixtures, component controls, visual matrix, `avatar-group-visual` e2e | AvatarGroup is live on both stacks with strict default evidence, visible route-control checks, query-only count matrix, and forced-colors. |
 
 ## Official Docs And Viewer Parity
 
-| Docs item     | Official setting/example                | Route/control                      | Status  | Evidence                                |
-| ------------- | --------------------------------------- | ---------------------------------- | ------- | --------------------------------------- |
-| `children`    | Avatar children                         | child count radio, default `4`     | matched | e2e asserts option order/default/count  |
-| `label`       | visible group label                     | text input, default `Project team` | matched | unit and e2e tests                      |
-| `size`        | `16/20/24/28/32/36/40`, default `24`    | radio options in documented order  | matched | e2e asserts option order/default/matrix |
-| `aria-label`  | non-visible group label fallback        | component API                      | matched | unit test                               |
-| `id`/`data-*` | S2 root DOM props                       | component API                      | matched | unit test                               |
-| `slot`        | context slot prop                       | component API                      | matched | source audit                            |
-| `styles`      | S2 style macro without width override   | component API                      | matched | source audit                            |
-| unsafe props  | `UNSAFE_className`, `UNSAFE_style`      | component API                      | matched | unit test                               |
-| DOM filtering | S2 default `filterDOMProps(otherProps)` | component API                      | matched | unit test                               |
+| Docs item     | Official setting/example                | Route/control                                            | Status  | Evidence                                                    |
+| ------------- | --------------------------------------- | -------------------------------------------------------- | ------- | ----------------------------------------------------------- |
+| `children`    | Avatar children                         | fixed four-avatar default; query-only counts `2`/`3`/`4` | matched | e2e asserts no visible count control and query count matrix |
+| `label`       | visible group label                     | text input, default `123 members`                        | matched | unit and e2e tests                                          |
+| `size`        | `16/20/24/28/32/36/40`, default `24`    | radio options in documented order                        | matched | e2e asserts option order/default/matrix                     |
+| `aria-label`  | group ARIA label and fallback           | route default `Collaborators`, component API             | matched | unit and e2e tests                                          |
+| `id`/`data-*` | S2 root DOM props                       | component API                                            | matched | unit test                                                   |
+| `slot`        | context slot prop                       | component API                                            | matched | source audit                                                |
+| `styles`      | S2 style macro without width override   | component API                                            | matched | source audit                                                |
+| unsafe props  | `UNSAFE_className`, `UNSAFE_style`      | component API                                            | matched | unit test                                                   |
+| DOM filtering | S2 default `filterDOMProps(otherProps)` | component API                                            | matched | unit test                                                   |
 
 ## Baseline
 
@@ -65,7 +65,7 @@
   - official entries in comparison app: `69`;
   - live entries: `33`;
   - missing/gap entries: `36`;
-  - visual states tracked: `178`;
+  - visual states tracked: `181`;
   - visual evidence states: `49`;
   - strict pair-diff states: `32`;
   - blocked visual states: `35`;
@@ -84,8 +84,11 @@
 
 - Public props/defaults:
   - `children`: Avatar children are rendered before the optional visible label.
-  - `label`: optional visible label; when present, it labels the group through
-    `aria-labelledby`.
+  - `label`: optional visible label; when present, it contributes to the group
+    name through `aria-labelledby`.
+  - route default label composition: visible `123 members` plus
+    `aria-label="Collaborators"` yields the documented group name
+    `Collaborators 123 members`.
   - `size`: default `24`, limited to S2 AvatarGroup sizes
     `16/20/24/28/32/36/40`.
   - `aria-label`: supported for non-visible labelling.
@@ -105,27 +108,28 @@
 
 ## Source Branch Coverage
 
-| Layer    | Upstream branch               | Solid owner                | Class         | Observable                                              | Status  | Evidence                      |
-| -------- | ----------------------------- | -------------------------- | ------------- | ------------------------------------------------------- | ------- | ----------------------------- |
-| ARIA     | visible `label`               | `createLabel`              | semantics     | group has accessible name from visible label            | matched | unit and e2e tests            |
-| ARIA     | `aria-label` fallback         | `createLabel`              | semantics     | group is named when no visible label is supplied        | matched | unit test                     |
-| Headless | DOM prop filtering            | Solidaria `filterDOMProps` | semantics/API | `id`/`data-*` pass; events/global/extra ARIA props drop | matched | unit test                     |
-| Styled   | group root                    | S2 AvatarGroup style macro | visual/layout | flex display and center alignment                       | matched | e2e computed contract         |
-| Styled   | root size variable            | inline `--size`            | visual/layout | `--size` is `size / 16rem`                              | matched | unit and e2e tests            |
-| Styled   | child Avatar size context     | child `AvatarContext`      | composition   | children inherit width/height from AvatarGroup size     | matched | unit and e2e full size matrix |
-| Styled   | child overlap                 | `avatarGroupAvatar` styles | visual/layout | first Avatar margin is zero, later avatars overlap      | matched | e2e computed contract         |
-| Styled   | over-background child outline | child `AvatarContext`      | visual        | child outline style/width/color match React             | matched | e2e computed contract         |
-| Styled   | visible label typography      | `avatarGroupText` styles   | visual        | label margin and size token map match each group size   | matched | e2e computed contract         |
-| Styled   | forced-colors environment     | generated S2 CSS           | visual/a11y   | computed contract matches React under forced colors     | matched | e2e forced-colors test        |
-| Harness  | route control surface         | comparison route           | route         | visible labels/order/defaults and changed props/counts  | matched | e2e route-control test        |
+| Layer    | Upstream branch                   | Solid owner                | Class         | Observable                                                      | Status  | Evidence                      |
+| -------- | --------------------------------- | -------------------------- | ------------- | --------------------------------------------------------------- | ------- | ----------------------------- |
+| ARIA     | visible `label` plus `aria-label` | `createLabel`              | semantics     | group name composes `Collaborators 123 members`                 | matched | unit and e2e tests            |
+| ARIA     | `aria-label` fallback             | `createLabel`              | semantics     | group is named when no visible label is supplied                | matched | unit test                     |
+| Headless | DOM prop filtering                | Solidaria `filterDOMProps` | semantics/API | `id`/`data-*` pass; events/global/extra ARIA props drop         | matched | unit test                     |
+| Styled   | group root                        | S2 AvatarGroup style macro | visual/layout | flex display and center alignment                               | matched | e2e computed contract         |
+| Styled   | root size variable                | inline `--size`            | visual/layout | `--size` is `size / 16rem`                                      | matched | unit and e2e tests            |
+| Styled   | child Avatar size context         | child `AvatarContext`      | composition   | children inherit width/height from AvatarGroup size             | matched | unit and e2e full size matrix |
+| Styled   | child overlap                     | `avatarGroupAvatar` styles | visual/layout | first Avatar margin is zero, later avatars overlap              | matched | e2e computed contract         |
+| Styled   | over-background child outline     | child `AvatarContext`      | visual        | child outline style/width/color match React                     | matched | e2e computed contract         |
+| Styled   | visible label typography          | `avatarGroupText` styles   | visual        | label margin and size token map match each group size           | matched | e2e computed contract         |
+| Styled   | forced-colors environment         | generated S2 CSS           | visual/a11y   | computed contract matches React under forced colors             | matched | e2e forced-colors test        |
+| Harness  | route control surface             | comparison route           | route         | visible label/size controls, no count control, and query counts | matched | e2e route-control test        |
 
 ## Transition Plan
 
 - Static states:
-  - default route with four children and visible label;
+  - default route with four image children, visible `123 members`, and
+    `aria-label="Collaborators"`;
   - every documented group size;
   - child counts `2`, `3`, and `4`;
-  - visible label and `aria-label` fallback;
+  - visible label plus `aria-label` composition and `aria-label` fallback;
   - child Avatar overlap and over-background outline treatment;
   - forced-colors active.
 - Interaction timelines:
@@ -141,9 +145,10 @@
 ## Runtime Semantics
 
 - Native element/role decision:
-  - renders a `div role="group"` labelled by visible label text or `aria-label`.
+  - renders a `div role="group"` labelled by visible label text, `aria-label`,
+    or the S2-supported composition of both.
 - Accessible name/description assertions:
-  - visible `label` and `aria-label` paths are covered.
+  - visible `label`, `aria-label`, and their combined route default are covered.
   - `aria-describedby` and `aria-details` are intentionally filtered because
     current S2 source does not pass them through `fieldProps`.
 - ID stability and collision checks:
@@ -180,12 +185,12 @@ vp run check
 
 Results:
 
-- Focused Solid AvatarGroup/Avatar tests: `10 passed`.
+- Focused Solid AvatarGroup/Avatar tests: `12 passed`.
 - Solid Spectrum build: passed.
 - Comparison build: passed and generated `/components/avatargroup/`.
 - AvatarGroup Playwright suite: `4 passed`.
 - Current gap report lists official styled entries live on both sides at `33`,
-  missing/gap entries at `36`, visual states tracked at `178`, visual evidence
+  missing/gap entries at `36`, visual states tracked at `181`, visual evidence
   states at `49`, strict pair-diff states at `32`, and blocked visual states at
   `35`.
 - Current export report lists missing React S2 value exports at `80` of `208`

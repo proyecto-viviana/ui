@@ -6,8 +6,8 @@ describe("AvatarGroup", () => {
   it("labels the group and sizes child Avatars through context", () => {
     const { container } = render(() => (
       <AvatarGroup label="Project team" size={32}>
-        <Avatar alt="Alana" />
-        <Avatar alt="Kai" />
+        <Avatar alt="Alana" src="/alana.png" />
+        <Avatar alt="Kai" src="/kai.png" />
       </AvatarGroup>
     ));
 
@@ -19,6 +19,27 @@ describe("AvatarGroup", () => {
     expect(avatars[0]).toHaveStyle({ width: "2rem", height: "2rem" });
     expect(avatars[1]).toHaveStyle({ width: "2rem", height: "2rem" });
     expect(screen.getByText("Project team")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Alana" })).toHaveAttribute("src", "/alana.png");
+    expect(screen.getByRole("img", { name: "Kai" })).toHaveAttribute("src", "/kai.png");
+  });
+
+  it("matches the documented visible label plus aria-label composition", () => {
+    render(() => (
+      <AvatarGroup aria-label="Collaborators" label="123 members">
+        <Avatar alt="Abraham Baker" src="/abraham-baker.png" />
+        <Avatar alt="Adriana Sullivan" src="/adriana-sullivan.png" />
+        <Avatar alt="Jonathan Kelly" src="/jonathan-kelly.png" />
+        <Avatar alt="Zara Bush" src="/zara-bush.png" />
+      </AvatarGroup>
+    ));
+
+    const group = screen.getByRole("group", { name: "Collaborators 123 members" });
+    expect(group).toHaveAttribute("aria-label", "Collaborators");
+    expect(group).toHaveAttribute("aria-labelledby");
+    expect(screen.getByRole("img", { name: "Abraham Baker" })).toHaveAttribute(
+      "src",
+      "/abraham-baker.png",
+    );
   });
 
   it("supports aria-label when no visible label is supplied", () => {

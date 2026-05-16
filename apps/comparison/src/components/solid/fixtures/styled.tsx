@@ -692,7 +692,7 @@ function SolidSpectrumAvatarGroupDemo() {
                   return demoProps().label || undefined;
                 },
                 get "aria-label"() {
-                  return demoProps().label ? undefined : "Project team";
+                  return demoProps().ariaLabel;
                 },
                 get size() {
                   return Number(demoProps().size) as 16 | 20 | 24 | 28 | 32 | 36 | 40;
@@ -700,7 +700,7 @@ function SolidSpectrumAvatarGroupDemo() {
               },
               avatarGroupItems
                 .slice(0, Number(demoProps().count))
-                .map((item) => h(SolidSpectrumAvatar, { alt: item.alt })),
+                .map((item) => h(SolidSpectrumAvatar, { alt: item.alt, src: item.src })),
             ),
         ],
       ),

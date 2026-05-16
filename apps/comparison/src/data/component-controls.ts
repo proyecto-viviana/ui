@@ -4,11 +4,7 @@ import {
   actionButtonSizeOptions,
   actionButtonStaticColorOptions,
 } from "./actionbutton-demo";
-import {
-  avatarGroupCountOptions,
-  avatarGroupDemoDefaults,
-  avatarGroupSizeOptions,
-} from "./avatar-group-demo";
+import { avatarGroupDemoDefaults, avatarGroupSizeOptions } from "./avatar-group-demo";
 import { avatarDemoDefaults, avatarSizeOptions } from "./avatar-demo";
 import {
   badgeDemoDefaults,
@@ -528,13 +524,6 @@ const avatarGroupControls: ComponentControlGroup = {
       defaultValue: avatarGroupDemoDefaults.size,
       options: options(avatarGroupSizeOptions),
     },
-    {
-      name: "count",
-      label: "count",
-      kind: "radio",
-      defaultValue: avatarGroupDemoDefaults.count,
-      options: options(avatarGroupCountOptions),
-    },
   ],
   apiProps: [
     "children",
@@ -550,7 +539,7 @@ const avatarGroupControls: ComponentControlGroup = {
     "aria-describedby",
     "aria-details",
   ],
-  note: "Modeled from the S2 AvatarGroup docs and source. The viewer drives visible label text, group size, and child count while the route verifies AvatarContext overlap, label wiring, and child Avatar sizing.",
+  note: "Modeled from the S2 AvatarGroup docs and source. The viewer drives visible label text and group size while the route fixes the documented aria-label and four-avatar child composition; child-count coverage remains query-only test evidence.",
 };
 
 const imageControls: ComponentControlGroup = {

@@ -563,13 +563,14 @@ function ReactAvatarGroupDemo() {
       "data-comparison-control-props": serializeAvatarGroupDemoProps(demoProps),
       children: jsx(SpectrumAvatarGroup, {
         label: demoProps.label || undefined,
-        "aria-label": demoProps.label ? undefined : "Project team",
+        "aria-label": demoProps.ariaLabel,
         size: Number(demoProps.size),
         children: avatarGroupItems.slice(0, Number(demoProps.count)).map((item) =>
           jsx(
             SpectrumAvatar,
             {
               alt: item.alt,
+              src: item.src,
             },
             item.id,
           ),

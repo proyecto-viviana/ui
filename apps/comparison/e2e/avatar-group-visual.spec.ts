@@ -6,7 +6,12 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
-import { avatarGroupCountOptions, avatarGroupSizeOptions } from "../src/data/avatar-group-demo";
+import {
+  avatarGroupCountOptions,
+  avatarGroupDemoDefaults,
+  avatarGroupSizeOptions,
+  serializeAvatarGroupDemoProps,
+} from "../src/data/avatar-group-demo";
 
 function avatarGroupQuery(params: Record<string, string> = {}) {
   const search = new URLSearchParams();
@@ -36,8 +41,35 @@ async function avatarGroupFixtures(page: Page, params: Record<string, string> = 
 
   await expect(reactGroup).toBeVisible();
   await expect(solidGroup).toBeVisible();
+  const expectedCount = Number(params.count ?? avatarGroupDemoDefaults.count);
+  await waitForAvatarGroupImages(reactGroup, expectedCount);
+  await waitForAvatarGroupImages(solidGroup, expectedCount);
 
   return { reactCanvas, solidCanvas, reactPanel, solidPanel, reactGroup, solidGroup };
+}
+
+async function waitForAvatarGroupImages(group: Locator, expectedCount: number) {
+  const images = group.locator('[slot="avatar"] img');
+  await expect(images).toHaveCount(expectedCount);
+
+  for (let index = 0; index < expectedCount; index += 1) {
+    const image = images.nth(index);
+    await expect
+      .poll(
+        () =>
+          image.evaluate((element) => {
+            const img = element as HTMLImageElement;
+            return img.complete && img.naturalWidth > 0;
+          }),
+        { timeout: 5_000 },
+      )
+      .toBe(true);
+    await expect
+      .poll(() => image.evaluate((element) => window.getComputedStyle(element).opacity), {
+        timeout: 3_000,
+      })
+      .toBe("1");
+  }
 }
 
 async function avatarGroupContract(group: Locator) {
@@ -55,6 +87,7 @@ async function avatarGroupContract(group: Locator) {
         outlineWidth: avatarStyles.outlineWidth,
         outlineColor: avatarStyles.outlineColor,
         imgAlt: avatar.querySelector("img")?.getAttribute("alt") ?? null,
+        imgSrc: avatar.querySelector("img")?.getAttribute("src") ?? null,
       };
     });
 
@@ -103,9 +136,9 @@ test.describe("comparison AvatarGroup visual parity", () => {
   test("AvatarGroup prop controls drive both implementations", async ({ page }) => {
     await avatarGroupFixtures(page);
 
-    await expect(page.locator('input[name="label"]')).toHaveValue("Project team");
+    await expect(page.locator('input[name="label"]')).toHaveValue(avatarGroupDemoDefaults.label);
     await expectRadioValues(page, "size", avatarGroupSizeOptions, "24");
-    await expectRadioValues(page, "count", avatarGroupCountOptions, "4");
+    await expect(page.locator('input[name="count"]')).toHaveCount(0);
 
     const fixtures = await avatarGroupFixtures(page, {
       label: "Reviewers",
@@ -113,7 +146,12 @@ test.describe("comparison AvatarGroup visual parity", () => {
       count: "3",
     });
 
-    const expectedProps = JSON.stringify({ label: "Reviewers", size: "32", count: "3" });
+    const expectedProps = serializeAvatarGroupDemoProps({
+      label: "Reviewers",
+      ariaLabel: avatarGroupDemoDefaults.ariaLabel,
+      size: "32",
+      count: "3",
+    });
 
     await expect(
       fixtures.reactPanel.locator('[data-comparison-control-root="avatargroup"]'),
@@ -123,9 +161,9 @@ test.describe("comparison AvatarGroup visual parity", () => {
     ).toHaveAttribute("data-comparison-control-props", expectedProps);
     await expect(page.locator('input[name="label"]')).toHaveValue("Reviewers");
     await expectRadioValues(page, "size", avatarGroupSizeOptions, "32");
-    await expectRadioValues(page, "count", avatarGroupCountOptions, "3");
-    await expect(fixtures.reactGroup).toHaveAccessibleName("Reviewers");
-    await expect(fixtures.solidGroup).toHaveAccessibleName("Reviewers");
+    await expect(page.locator('input[name="count"]')).toHaveCount(0);
+    await expect(fixtures.reactGroup).toHaveAccessibleName("Collaborators Reviewers");
+    await expect(fixtures.solidGroup).toHaveAccessibleName("Collaborators Reviewers");
     await expect(fixtures.reactGroup.locator('[slot="avatar"]')).toHaveCount(3);
     await expect(fixtures.solidGroup.locator('[slot="avatar"]')).toHaveCount(3);
   });
