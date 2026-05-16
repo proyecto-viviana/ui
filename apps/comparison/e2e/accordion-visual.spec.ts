@@ -1,6 +1,10 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
-import { clearPointer, pinComparisonTheme } from "./visual-diff";
+import {
+  clearPointer,
+  expectExactPreparedInPlaceScreenshotPair,
+  pinComparisonTheme,
+} from "./visual-diff";
 
 function accordionQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -30,6 +34,22 @@ async function accordionFixtures(page: Page, params: Record<string, string | boo
   await expect(solidRoot).toBeVisible();
 
   return { reactPanel, solidPanel, reactRoot, solidRoot };
+}
+
+async function expectExactAccordionPair(
+  page: Page,
+  reactRoot: Locator,
+  solidRoot: Locator,
+  label: string,
+) {
+  await expectExactPreparedInPlaceScreenshotPair(
+    page,
+    reactRoot,
+    solidRoot,
+    label,
+    async () => undefined,
+    async () => undefined,
+  );
 }
 
 async function accordionStyleContract(root: Locator) {
@@ -205,6 +225,37 @@ async function accordionStyleContract(root: Locator) {
 }
 
 test.describe("comparison Accordion visual parity", () => {
+  test("Accordion key route states are pixel-identical", async ({ page }) => {
+    for (const state of [
+      { label: "Accordion default", params: {} },
+      { label: "Accordion compact small", params: { size: "S", density: "compact" } },
+      {
+        label: "Accordion quiet spacious large",
+        params: { size: "L", density: "spacious", isQuiet: true },
+      },
+      { label: "Accordion disabled", params: { size: "M", density: "regular", isDisabled: true } },
+    ] as const) {
+      const fixtures = await accordionFixtures(page, state.params);
+
+      await expectExactAccordionPair(page, fixtures.reactRoot, fixtures.solidRoot, state.label);
+    }
+  });
+
+  test("Accordion multiple expanded state is pixel-identical", async ({ page }) => {
+    const fixtures = await accordionFixtures(page, { allowsMultipleExpanded: true });
+
+    await fixtures.reactRoot.getByRole("button", { name: "Billing Address" }).click();
+    await fixtures.solidRoot.getByRole("button", { name: "Billing Address" }).click();
+    await page.waitForTimeout(250);
+
+    await expectExactAccordionPair(
+      page,
+      fixtures.reactRoot,
+      fixtures.solidRoot,
+      "Accordion multiple expanded",
+    );
+  });
+
   test("Accordion computed styles match React Spectrum across size, density, quiet, and disabled axes", async ({
     page,
   }) => {
