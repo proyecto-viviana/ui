@@ -92,6 +92,18 @@ function assertedDefaultState(input: {
 }
 
 const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
+  accordion: [
+    {
+      id: "styled.route-controls",
+      label: "Styled route controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "planned",
+      spec: "e2e/accordion-contract.spec.ts",
+      note: "Accordion route mounts both stacks and asserts the S2 viewer controls, title/header/panel semantics, disabled state, and multiple-expansion behavior. Pixel pair-diff remains planned until computed style parity is proven.",
+    },
+  ],
   provider: [
     visualDefaultState({
       slug: "provider",

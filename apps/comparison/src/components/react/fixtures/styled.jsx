@@ -1,6 +1,11 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 import { Fragment, useEffect, useState } from "react";
 import {
+  Accordion as SpectrumAccordion,
+  AccordionItem as SpectrumAccordionItem,
+  AccordionItemHeader as SpectrumAccordionItemHeader,
+  AccordionItemPanel as SpectrumAccordionItemPanel,
+  AccordionItemTitle as SpectrumAccordionItemTitle,
   ActionButton as SpectrumActionButton,
   ActionButtonGroup as SpectrumActionButtonGroup,
   Avatar as SpectrumAvatar,
@@ -56,6 +61,11 @@ import {
   createIllustration,
 } from "@react-spectrum/s2";
 import "@react-spectrum/s2/page.css";
+import {
+  accordionDemoPropsFromWindow,
+  normalizeAccordionDemoProps,
+  serializeAccordionDemoProps,
+} from "@comparison/data/accordion-demo";
 import {
   actionButtonDemoPropsFromWindow,
   comparisonControlsEvent as actionButtonControlsEvent,
@@ -396,6 +406,7 @@ function normalizeSelectBoxGroupDemoProps(props) {
 
 export const reactStyledFixtures = {
   provider: renderProviderDemo,
+  accordion: () => jsx(ReactAccordionDemo, {}),
   button: () => jsx(ReactButtonDemo, {}),
   actionbutton: () => jsx(ReactActionButtonDemo, {}),
   actionbuttongroup: () => jsx(ReactActionButtonGroupDemo, {}),
@@ -478,6 +489,92 @@ function renderReactSpectrumReference(children, colorScheme = "dark", locale = v
     UNSAFE_style: providerShellStyle,
     children,
   });
+}
+
+function ReactAccordionDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(accordionDemoPropsFromWindow);
+  const [expandedKeys, setExpandedKeys] = useState(() => new Set(["personal"]));
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "accordion") {
+        setDemoProps(normalizeAccordionDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const controlledExpandedKeys = demoProps.allowsMultipleExpanded
+    ? expandedKeys
+    : new Set(Array.from(expandedKeys).slice(0, 1));
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-accordion-row",
+      "data-comparison-control-root": "accordion",
+      "data-comparison-control-props": serializeAccordionDemoProps(demoProps),
+      "data-comparison-expanded-keys": Array.from(controlledExpandedKeys).join(","),
+      children: jsxs(SpectrumAccordion, {
+        UNSAFE_style: { width: 220 },
+        size: demoProps.size,
+        density: demoProps.density,
+        isQuiet: demoProps.isQuiet,
+        isDisabled: demoProps.isDisabled,
+        allowsMultipleExpanded: demoProps.allowsMultipleExpanded,
+        expandedKeys: controlledExpandedKeys,
+        onExpandedChange: setExpandedKeys,
+        children: [
+          jsxs(SpectrumAccordionItem, {
+            id: "personal",
+            children: [
+              jsx(SpectrumAccordionItemTitle, {
+                children: "Personal Information",
+              }),
+              jsx(SpectrumAccordionItemPanel, {
+                children: jsxs("div", {
+                  className: "comparison-accordion-panel-copy",
+                  children: [
+                    jsx("span", { children: "Name" }),
+                    jsx("span", { children: "Phone number" }),
+                    jsx("span", { children: "Email address" }),
+                  ],
+                }),
+              }),
+            ],
+          }),
+          jsxs(SpectrumAccordionItem, {
+            id: "billing",
+            children: [
+              jsxs(SpectrumAccordionItemHeader, {
+                children: [
+                  jsx(SpectrumAccordionItemTitle, {
+                    children: "Billing Address",
+                  }),
+                  jsx(SpectrumActionButton, {
+                    "aria-label": "More billing actions",
+                    children: jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+                  }),
+                ],
+              }),
+              jsx(SpectrumAccordionItemPanel, {
+                children: jsxs("div", {
+                  className: "comparison-accordion-panel-copy",
+                  children: [
+                    jsx("span", { children: "Street address" }),
+                    jsx("span", { children: "City" }),
+                    jsx("span", { children: "Postal code" }),
+                  ],
+                }),
+              }),
+            ],
+          }),
+        ],
+      }),
+    }),
+    colorScheme,
+  );
 }
 
 function ReactButtonDemo() {

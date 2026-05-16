@@ -11,6 +11,11 @@ import {
 import { createComponent } from "solid-js/web";
 import { hc, renderProp } from "../solid-h";
 import {
+  Accordion as SolidSpectrumAccordion,
+  AccordionItem as SolidSpectrumAccordionItem,
+  AccordionItemHeader as SolidSpectrumAccordionItemHeader,
+  AccordionItemPanel as SolidSpectrumAccordionItemPanel,
+  AccordionItemTitle as SolidSpectrumAccordionItemTitle,
   ActionButton as SolidSpectrumActionButton,
   ActionButtonGroup as SolidSpectrumActionButtonGroup,
   Avatar as SolidSpectrumAvatar,
@@ -61,6 +66,12 @@ import {
 } from "../../../../../../packages/solid-spectrum/src/button/s2-action-button-styles";
 import type { ComparisonSlug } from "@comparison/data/comparison-manifest";
 import { comparisonActionItems as actionItems } from "@comparison/data/comparison-contract";
+import {
+  accordionDemoPropsFromWindow,
+  normalizeAccordionDemoProps,
+  serializeAccordionDemoProps,
+  type AccordionDemoProps,
+} from "@comparison/data/accordion-demo";
 import {
   actionButtonDemoPropsFromWindow,
   serializeActionButtonDemoProps,
@@ -513,6 +524,7 @@ function solidSingleButtonFamilyChildren(
 
 export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixture>> = {
   provider: renderProviderDemo,
+  accordion: () => h(SolidSpectrumAccordionDemo, {}),
   button: () => h(SolidSpectrumButtonDemo, {}),
   actionbutton: () => h(SolidSpectrumActionButtonDemo, {}),
   actionbuttongroup: () => h(SolidSpectrumActionButtonGroupDemo, {}),
@@ -563,6 +575,123 @@ function renderProviderDemo() {
         h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
       ),
     ),
+  );
+}
+
+function SolidSpectrumAccordionDemo() {
+  const [demoProps, setDemoProps] = createSignal<AccordionDemoProps>(
+    accordionDemoPropsFromWindow(),
+  );
+  const [expandedKeys, setExpandedKeys] = createSignal<Set<string>>(new Set(["personal"]));
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "accordion") {
+        setDemoProps(normalizeAccordionDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const controlledExpandedKeys = createMemo(() => {
+    const keys = Array.from(expandedKeys());
+    return new Set(demoProps().allowsMultipleExpanded ? keys : keys.slice(0, 1));
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-accordion-row",
+          "data-comparison-control-root": "accordion",
+          get "data-comparison-control-props"() {
+            return serializeAccordionDemoProps(demoProps());
+          },
+          get "data-comparison-expanded-keys"() {
+            return Array.from(controlledExpandedKeys()).join(",");
+          },
+        },
+        [
+          hc(
+            SolidSpectrumAccordion,
+            {
+              UNSAFE_style: { width: "220px" },
+              get size() {
+                return demoProps().size;
+              },
+              get density() {
+                return demoProps().density;
+              },
+              get isQuiet() {
+                return demoProps().isQuiet;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              get allowsMultipleExpanded() {
+                return demoProps().allowsMultipleExpanded;
+              },
+              get expandedKeys() {
+                return controlledExpandedKeys();
+              },
+              onExpandedChange(keys: Set<string>) {
+                setExpandedKeys(new Set(Array.from(keys).map(String)));
+              },
+            },
+            [
+              hc(SolidSpectrumAccordionItem, { id: "personal" }, [
+                hc(SolidSpectrumAccordionItemTitle, {}, ["Personal Information"]),
+                hc(SolidSpectrumAccordionItemPanel, {}, [
+                  hc("div", { class: "comparison-accordion-panel-copy" }, [
+                    h("span", {}, "Name"),
+                    h("span", {}, "Phone number"),
+                    h("span", {}, "Email address"),
+                  ]),
+                ]),
+              ]),
+              hc(SolidSpectrumAccordionItem, { id: "billing" }, [
+                hc(SolidSpectrumAccordionItemHeader, {}, [
+                  hc(SolidSpectrumAccordionItemTitle, {}, ["Billing Address"]),
+                  hc(SolidSpectrumActionButton, { "aria-label": "More billing actions" }, [
+                    h(SolidNewIcon, { "aria-hidden": "true" }),
+                  ]),
+                ]),
+                hc(SolidSpectrumAccordionItemPanel, {}, [
+                  hc("div", { class: "comparison-accordion-panel-copy" }, [
+                    h("span", {}, "Street address"),
+                    h("span", {}, "City"),
+                    h("span", {}, "Postal code"),
+                  ]),
+                ]),
+              ]),
+            ],
+          ),
+        ],
+      ),
+    ],
   );
 }
 

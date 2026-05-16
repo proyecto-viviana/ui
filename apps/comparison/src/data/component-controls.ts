@@ -1,4 +1,9 @@
 import {
+  accordionDemoDefaults,
+  accordionDensityOptions,
+  accordionSizeOptions,
+} from "./accordion-demo";
+import {
   actionButtonDemoDefaults,
   actionButtonIconPlacementOptions,
   actionButtonSizeOptions,
@@ -216,6 +221,63 @@ const buttonControls: ComponentControlGroup = {
     "preventFocusOnPress",
   ],
   note: "Modeled from the S2 Button docs control surface. Icon placement is exposed as a visual control so the comparison docs can show text, icon-leading, icon-trailing, and icon-only states. Callback, form, and accessibility props are tracked as API coverage rather than visual controls.",
+};
+
+const accordionControls: ComponentControlGroup = {
+  slug: "accordion",
+  title: "Accordion",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: accordionDemoDefaults.size,
+      options: options(accordionSizeOptions),
+    },
+    {
+      name: "density",
+      label: "density",
+      kind: "radio",
+      defaultValue: accordionDemoDefaults.density,
+      options: options(accordionDensityOptions),
+    },
+    {
+      name: "isQuiet",
+      label: "isQuiet",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "allowsMultipleExpanded",
+      label: "allowsMultipleExpanded",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "children",
+    "styles",
+    "size",
+    "density",
+    "isQuiet",
+    "allowsMultipleExpanded",
+    "isDisabled",
+    "expandedKeys",
+    "defaultExpandedKeys",
+    "onExpandedChange",
+    "id",
+    "slot",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Accordion docs and viewer. The route drives size, density, quiet, disabled, and multiple-expansion props into both stacks; controlled expandedKeys and callbacks are asserted in route and package tests rather than exposed as viewer controls.",
 };
 
 const checkboxControls: ComponentControlGroup = {
@@ -2543,6 +2605,7 @@ const selectBoxGroupControls: ComponentControlGroup = {
 };
 
 export const componentControlGroups = {
+  accordion: accordionControls,
   actionbutton: actionButtonControls,
   actionbuttongroup: actionButtonGroupControls,
   avatar: avatarControls,

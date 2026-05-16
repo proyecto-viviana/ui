@@ -14,22 +14,22 @@
 
 ## Task Status
 
-| Task                   | Status  | Evidence                                                                                             | Blocker or next action |
-| ---------------------- | ------- | ---------------------------------------------------------------------------------------------------- | ---------------------- |
-| 0 Research             | done    | Live S2 Accordion page, S2 MCP page, React Aria Disclosure docs, APG Accordion pattern, sources      | None                   |
-| 1 Baseline             | done    | Current comparison/export/RAC reports captured below                                                 | None                   |
-| 2 Route harness        | pending | Accordion remains `react=tracked solid=missing`; no focused route-control spec exists                | route-blocker          |
-| 3 Source map/API       | done    | S2 Accordion/Disclosure, RAC Disclosure, ARIA hook, Stately, Solidaria, and Solid Spectrum mapped    | None                   |
-| 4 Cross-layer audit    | partial | Branch ledger now separates covered shared layers from package-level S2 wrapper work                 | route-blocker          |
-| 5 Transitions          | partial | Shared hook now covers panel CSS vars, animation settle, hidden delay, and `beforematch`             | style-blocker          |
-| 6 State                | done    | Solid Stately item/group/over-expanded branches covered by focused tests                             | None                   |
-| 7 ARIA hooks           | done    | Shared hook now matches panel role, hidden, `aria-hidden`, `beforematch`, and press timing           | None                   |
-| 8 Headless             | partial | Default panel role, labelable panel props, and group root ARIA drift fixed; trigger/focus proof left | source-blocker         |
-| 9 Styled S2            | partial | Package wrapper ports S2 size/density/quiet context, title/header/panel structure, and tests         | route-blocker          |
-| 10 Runtime lifecycle   | partial | Shared panel lifecycle and S2 reduced-motion panel style are ported; browser route proof remains     | route-blocker          |
-| 11 Harness integrity   | pending | No focused Accordion visual/runtime harness yet                                                      | route-blocker          |
-| 12 Comparison evidence | pending | Styled default is blocked in visual-state report                                                     | evidence-blocker       |
-| 13 Acceptance          | pending | Current status is pre-pass only                                                                      | evidence-blocker       |
+| Task                   | Status  | Evidence                                                                                                  | Blocker or next action |
+| ---------------------- | ------- | --------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 0 Research             | done    | Live S2 Accordion page, S2 MCP page, React Aria Disclosure docs, APG Accordion pattern, sources           | None                   |
+| 1 Baseline             | done    | Current comparison/export/RAC reports captured below                                                      | None                   |
+| 2 Route harness        | done    | Comparison route mounts React and Solid Accordion fixtures with focused route-control spec                | None                   |
+| 3 Source map/API       | done    | S2 Accordion/Disclosure, RAC Disclosure, ARIA hook, Stately, Solidaria, and Solid Spectrum mapped         | None                   |
+| 4 Cross-layer audit    | partial | Branch ledger now separates covered shared, package-level S2 wrapper, and route harness work              | style-blocker          |
+| 5 Transitions          | partial | Shared hook now covers panel CSS vars, animation settle, hidden delay, and `beforematch`                  | style-blocker          |
+| 6 State                | done    | Solid Stately item/group/over-expanded branches covered by focused tests                                  | None                   |
+| 7 ARIA hooks           | done    | Shared hook now matches panel role, hidden, `aria-hidden`, `beforematch`, and press timing                | None                   |
+| 8 Headless             | partial | Default panel role, labelable panel props, and group root ARIA drift fixed; trigger/focus proof left      | source-blocker         |
+| 9 Styled S2            | partial | Package wrapper and route fixture port S2 size/density/quiet context, title/header/panel structure        | style-blocker          |
+| 10 Runtime lifecycle   | partial | Shared panel lifecycle plus route interaction semantics are covered; reduced-motion browser proof remains | style-blocker          |
+| 11 Harness integrity   | done    | `e2e/accordion-contract.spec.ts` proves live route controls and interaction semantics                     | None                   |
+| 12 Comparison evidence | partial | Visual-state matrix now marks route-control semantics asserted; strict pair-diff remains planned          | evidence-blocker       |
+| 13 Acceptance          | partial | Route-level parity is proven; computed-style/pair-diff evidence remains                                   | evidence-blocker       |
 
 ## Agent Workflow
 
@@ -52,17 +52,17 @@ gate has complete rows and focused evidence.
 
 ## Gate Outcome Summary
 
-| Gate                                     | Outcome | Evidence                                                                          | Blockers/owner   |
-| ---------------------------------------- | ------- | --------------------------------------------------------------------------------- | ---------------- |
-| Official Docs And Viewer Parity          | partial | Official page and viewer controls inventoried                                     | route-blocker    |
-| External Authority And Standards         | partial | React Aria Disclosure docs and APG Accordion pattern checked                      | a11y-blocker     |
-| Upstream React Source Parity             | partial | Shared layers and package S2 wrapper source are ported; route proof still missing | route-blocker    |
-| Solid Idiomatic Implementation           | partial | Lazy children mostly preserved; public API/style/ARIA drift                       | idiom-blocker    |
-| Accessibility And I18n                   | partial | Shared RAC/ARIA deltas ported; S2 title/i18n assertions left                      | a11y-blocker     |
-| Behavior State Machine                   | partial | Shared state and transition branches have focused tests                           | route-blocker    |
-| Style Source-To-Computed Parity          | partial | S2 style source path ported at package level; computed route proof missing        | route-blocker    |
-| React-Vs-Solid Comparison Harness Parity | partial | Report shows Accordion blocked/missing                                            | route-blocker    |
-| Evidence And Handoff                     | partial | Baseline reports captured                                                         | evidence-blocker |
+| Gate                                     | Outcome | Evidence                                                                      | Blockers/owner    |
+| ---------------------------------------- | ------- | ----------------------------------------------------------------------------- | ----------------- |
+| Official Docs And Viewer Parity          | partial | Official page, viewer controls, and route fixture semantics covered           | style-blocker     |
+| External Authority And Standards         | partial | React Aria Disclosure docs and APG Accordion pattern checked                  | a11y-blocker      |
+| Upstream React Source Parity             | partial | Shared layers, package S2 wrapper source, and route control proof are covered | style-blocker     |
+| Solid Idiomatic Implementation           | partial | Lazy children mostly preserved; public API/style/ARIA drift                   | idiom-blocker     |
+| Accessibility And I18n                   | partial | Shared RAC/ARIA deltas ported; S2 title/i18n assertions left                  | a11y-blocker      |
+| Behavior State Machine                   | partial | Shared state and transition branches have focused tests                       | route-blocker     |
+| Style Source-To-Computed Parity          | partial | S2 style source path ported at package level; computed route proof missing    | route-blocker     |
+| React-Vs-Solid Comparison Harness Parity | partial | Focused route contract passes for live React and Solid Accordion fixtures     | pair-diff-blocker |
+| Evidence And Handoff                     | partial | Baseline, package, check, build, and route spec evidence captured             | evidence-blocker  |
 
 ### 1. Official Docs And Viewer Parity
 
@@ -78,12 +78,15 @@ gate has complete rows and focused evidence.
       default `M`; `density` options `compact/regular/spacious` default
       `regular`; booleans `isQuiet`, `isDisabled`, and
       `allowsMultipleExpanded` unchecked by default.
-- [ ] Comparison route default matches official example or deviation recorded:
-      route is missing.
-- [ ] Side-panel controls match official viewer controls and selection
-      semantics: route is missing.
-- [ ] Route tests assert visible defaults/options and mounted DOM changes:
-      no focused Accordion route test exists.
+- [x] Comparison route default matches official example or deviation recorded:
+      route uses the official two-item example, width `220`, default first
+      expanded item, and the documented header-content ActionButton example.
+- [x] Side-panel controls match official viewer controls and selection
+      semantics: `size`, `density`, `isQuiet`, `isDisabled`, and
+      `allowsMultipleExpanded` are wired to both stacks.
+- [x] Route tests assert visible defaults/options and mounted DOM changes:
+      `e2e/accordion-contract.spec.ts` covers defaults, viewer controls,
+      multiple expansion, disabled triggers, and header ActionButton behavior.
 
 ### 2. External Authority And Standards
 
@@ -205,31 +208,38 @@ gate has complete rows and focused evidence.
 - [ ] Forced-colors/reduced-motion/focus-ring/icon/image/avatar/slot/portal
       geometry branches covered: reduced-motion and focus-ring branches mapped;
       proof pending.
-- [ ] Official viewer canvas/background/scale/width/direction/theme conditions
-      represented or recorded as gaps: route missing.
+- [x] Official viewer canvas/background/scale/width/direction/theme conditions
+      represented or recorded as gaps: route fixes the example width at `220`
+      and runs under pinned comparison theme; RTL and strict pair-diff remain
+      separate visual evidence gaps.
 - [ ] Visual deviations classified: pending.
 
 ### 8. React-Vs-Solid Comparison Harness Parity
 
-- [ ] React fixture imports current upstream component and official composition:
-      route missing.
-- [ ] Solid fixture imports package public API: route missing.
-- [ ] Both fixtures receive the same props and environment settings: route
-      missing.
-- [ ] Focused route tests prove controls update mounted React and Solid DOM:
-      missing.
+- [x] React fixture imports current upstream component and official
+      composition: `@react-spectrum/s2` Accordion subcomponents are mounted in
+      the styled reference fixture.
+- [x] Solid fixture imports package public API: `@proyecto-viviana/solid-spectrum`
+      Accordion subcomponents are mounted in the styled reference fixture.
+- [x] Both fixtures receive the same props and environment settings:
+      `accordion-demo.ts` normalizes and serializes the shared route props.
+- [x] Focused route tests prove controls update mounted React and Solid DOM:
+      `e2e/accordion-contract.spec.ts` passes for defaults, controls,
+      multiple expansion, disabled state, and header action behavior.
 - [ ] Computed style, a11y, geometry, runtime, or pair-diff evidence covers
       rendering-affecting branches: missing.
-- [ ] Harness stability is proven: missing.
+- [x] Harness stability is proven: fresh build plus Playwright route contract
+      passes on a dedicated comparison preview port.
 
 ### 9. Evidence And Handoff
 
 - [ ] Focused package tests: existing regression snapshot only; not sufficient.
-- [ ] Focused Playwright/runtime tests: none.
+- [x] Focused Playwright/runtime tests:
+      `e2e/accordion-contract.spec.ts` covers live route semantics.
 - [x] Comparison reports refreshed when status/evidence changed: baseline
       captured.
 - [x] `vp run check`: passed after formatting the pre-pass note.
-- [x] Final status is `accepted`, `partial`, or `pre-pass`: pre-pass.
+- [x] Final status is `accepted`, `partial`, or `pre-pass`: partial.
 - [x] Remaining gaps listed by gate and owner: see blockers above.
 - [x] Blocker labels used where applicable.
 
@@ -253,16 +263,16 @@ gate has complete rows and focused evidence.
 
 ## Official Docs And Viewer Parity
 
-| Docs item         | Official setting/example                                                                | Route/control   | Status    | Evidence                       |
-| ----------------- | --------------------------------------------------------------------------------------- | --------------- | --------- | ------------------------------ |
-| Primary example   | Two AccordionItems; width `220`; titles "Personal Information" and "Billing Address"    | missing         | route-gap | S2 docs and live page          |
-| Viewer `size`     | `S`, `M`, `L`, `XL`; default `M`                                                        | missing         | route-gap | Live page viewer               |
-| Viewer `density`  | `compact`, `regular`, `spacious`; default `regular`                                     | missing         | route-gap | Live page viewer               |
-| Viewer booleans   | `isQuiet`, `isDisabled`, `allowsMultipleExpanded`; unchecked by default                 | missing         | route-gap | Live page viewer               |
-| Expanding example | Controlled `expandedKeys` initialized to `settings`; `onExpandedChange` updates the set | missing         | route-gap | S2 docs                        |
-| Content example   | `AccordionItemHeader` with `AccordionItemTitle` plus nested `ActionButton`              | missing         | route-gap | S2 docs                        |
-| API subcomponents | `AccordionItem`, `AccordionItemHeader`, `AccordionItemTitle`, `AccordionItemPanel`      | package exports | covered   | `Accordion.test.tsx`           |
-| Panel role        | `AccordionItemPanel` role default `group`, supports `region` and ARIA labeling props    | package exports | covered   | Components and Accordion tests |
+| Docs item         | Official setting/example                                                               | Route/control   | Status  | Evidence                       |
+| ----------------- | -------------------------------------------------------------------------------------- | --------------- | ------- | ------------------------------ |
+| Primary example   | Two AccordionItems; width `220`; titles "Personal Information" and "Billing Address"   | route fixture   | covered | `accordion-contract.spec.ts`   |
+| Viewer `size`     | `S`, `M`, `L`, `XL`; default `M`                                                       | route controls  | covered | `accordion-contract.spec.ts`   |
+| Viewer `density`  | `compact`, `regular`, `spacious`; default `regular`                                    | route controls  | covered | `accordion-contract.spec.ts`   |
+| Viewer booleans   | `isQuiet`, `isDisabled`, `allowsMultipleExpanded`; unchecked by default                | route controls  | covered | `accordion-contract.spec.ts`   |
+| Expanding example | Controlled `expandedKeys` initialized by the fixture; `onExpandedChange` updates state | route fixture   | partial | `accordion-contract.spec.ts`   |
+| Content example   | `AccordionItemHeader` with `AccordionItemTitle` plus nested `ActionButton`             | route fixture   | covered | `accordion-contract.spec.ts`   |
+| API subcomponents | `AccordionItem`, `AccordionItemHeader`, `AccordionItemTitle`, `AccordionItemPanel`     | package exports | covered | `Accordion.test.tsx`           |
+| Panel role        | `AccordionItemPanel` role default `group`, supports `region` and ARIA labeling props   | package exports | covered | Components and Accordion tests |
 
 ## Incoming Cross-Component Findings
 
@@ -298,6 +308,10 @@ gate has complete rows and focused evidence.
   - move Accordion from tracked gap to live route evidence only after the
     package exports, S2-compatible structure/styles, behavior semantics, and
     route controls are implemented and proven.
+- Route update:
+  - Accordion now has live React and Solid styled fixtures plus modeled route
+    controls. Refresh the catalogue reports in the next evidence pass so the
+    baseline counts reflect the route registration.
 
 ## Source Map And Public Contract
 
@@ -346,38 +360,40 @@ gate has complete rows and focused evidence.
 
 ## Cross-Layer Audit
 
-| Layer               | Matched                                                            | Ported differently                                 | Not applicable | Gaps                                                        |
-| ------------------- | ------------------------------------------------------------------ | -------------------------------------------------- | -------------- | ----------------------------------------------------------- |
-| State               | controlled/uncontrolled item and group tests, over-expanded trim   | Solid uses `queueMicrotask` for over-expanded trim |                | route-level callback pair evidence pending                  |
-| ARIA hooks          | ids, `aria-expanded`, `aria-controls`, disabled, hidden lifecycle  |                                                    |                | SSR hidden prop and route-level pair evidence pending       |
-| Headless components | lazy children, primitives, data attrs, panel role, labelable props | native Solid context/accessor implementation       |                | trigger slot/focus assertions pending                       |
-| Styled S2           |                                                                    |                                                    |                | S2 size/density/quiet/header/title/panel style path missing |
+| Layer               | Matched                                                             | Ported differently                                       | Not applicable | Gaps                                                  |
+| ------------------- | ------------------------------------------------------------------- | -------------------------------------------------------- | -------------- | ----------------------------------------------------- |
+| State               | controlled/uncontrolled item and group tests, over-expanded trim    | Solid uses `queueMicrotask` for over-expanded trim       |                | route-level callback pair evidence pending            |
+| ARIA hooks          | ids, `aria-expanded`, `aria-controls`, disabled, hidden lifecycle   |                                                          |                | SSR hidden prop and route-level pair evidence pending |
+| Headless components | lazy children, primitives, data attrs, panel role, labelable props  | native Solid context/accessor implementation             |                | trigger slot/focus assertions pending                 |
+| Styled S2           | S2 size/density/quiet/header/title/panel source and route semantics | Solid uses generated S2 style classes and local wrappers |                | computed style and strict pair-diff evidence pending  |
 
 - Solid idioms checked:
   - child/provider laziness: Solidaria Disclosure keeps children lazy through
-    providers; S2 wrapper proof still pending.
+    providers; route and package wrappers now exercise the public S2 structure.
   - dynamic prop/context getters: Solidaria and Solid Stately mostly use
-    accessors; S2 styled context is not implemented.
-  - render-prop/custom root liveness: Solidaria `useRenderProps` exists, but
-    Accordion route and S2 wrapper evidence are missing.
+    accessors; route controls now prove S2 styled prop reactivity for the
+    viewer axes.
+  - render-prop/custom root liveness: Solidaria `useRenderProps` exists; route
+    evidence covers mounted wrapper updates, while custom-root liveness remains
+    package-level source coverage.
   - refs and cleanup ownership: refs exist in Solidaria; shared Disclosure now
     cleans up RAF state and handles animation/`beforematch` lifecycle.
 
 ## Interaction Dependency Map
 
-| Subpart        | Upstream input                                                    | Observable output                                                | Parity proof                                                                        | Status          | Evidence                                    |
-| -------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------- | ------------------------------------------- |
-| Root group     | `styles`, `UNSAFE_style`, `UNSAFE_className`, ref                 | flex column root, style override support, DOM ref                | package test plus computed route style/class assertion                              | partial         | `Accordion.test.tsx`; route TODO            |
-| Root context   | `size`, `density`, `isQuiet`                                      | Disclosure title/header/panel style changes                      | pair route control test for all viewer values and source-level style assertions     | package-covered | `Accordion.test.tsx`                        |
-| Group state    | `allowsMultipleExpanded`, `expandedKeys`, `defaultExpandedKeys`   | one vs multiple expanded items, controlled key set callbacks     | state tests plus route interaction comparing React/Solid callback payloads          | package-covered | Stately tests                               |
-| Item state     | `id`, `isExpanded`, `defaultExpanded`, `onExpandedChange`         | `data-expanded`, trigger `aria-expanded`, panel visibility       | behavior state-machine tests for controlled/uncontrolled item and group-owned item  | package-covered | `Accordion.test.tsx`; Stately tests         |
-| Disabled       | group `isDisabled`, item `isDisabled`                             | disabled data attrs, disabled trigger, suppressed toggles        | pointer and keyboard tests proving callback suppression                             | planned         | RAC/ARIA/Stately source                     |
-| Trigger        | pointer vs keyboard activation                                    | pointer toggles on press, keyboard toggles on press-start branch | event-order tests for Space/Enter/click and disabled suppression                    | package-covered | Solidaria tests                             |
-| Header content | `AccordionItemHeader` with `AccordionItemTitle` plus ActionButton | action is adjacent to title trigger, not inside trigger          | route DOM and interaction assertion                                                 | package-covered | `Accordion.test.tsx`; `Disclosure.test.tsx` |
-| Panel role     | omitted `role`, `role="region"`, labeling props                   | default role `group`, optional `region`, labelable ARIA props    | semantic assertions at package and route level                                      | package-covered | Solidaria Components tests                  |
-| Panel hidden   | expanded/collapsed, SSR, browser find-in-page `beforematch`       | `aria-hidden`, `hidden="until-found"`, CSS size vars             | lifecycle test for collapsed, expanding, expanded, collapsing, beforematch, cleanup | package-covered | Solidaria tests                             |
-| Motion         | reduced motion media, animation completion                        | transition disabled under reduced motion; CSS vars settle `auto` | browser/runtime test with reduced motion and animation-finish behavior              | partial         | Solidaria tests; S2 panel style source      |
-| Direction      | RTL locale                                                        | chevron base rotation and expanded rotation                      | route test under RTL provider or equivalent computed transform                      | planned         | S2 Disclosure source                        |
+| Subpart        | Upstream input                                                    | Observable output                                                | Parity proof                                                                        | Status          | Evidence                                      |
+| -------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------- | --------------------------------------------- |
+| Root group     | `styles`, `UNSAFE_style`, `UNSAFE_className`, ref                 | flex column root, style override support, DOM ref                | package test plus computed route style/class assertion                              | partial         | `Accordion.test.tsx`; route semantics spec    |
+| Root context   | `size`, `density`, `isQuiet`                                      | Disclosure title/header/panel style changes                      | pair route control test for all viewer values and source-level style assertions     | route-covered   | `Accordion.test.tsx`; route semantics spec    |
+| Group state    | `allowsMultipleExpanded`, `expandedKeys`, `defaultExpandedKeys`   | one vs multiple expanded items, controlled key set callbacks     | state tests plus route interaction comparing React/Solid callback payloads          | package-covered | Stately tests                                 |
+| Item state     | `id`, `isExpanded`, `defaultExpanded`, `onExpandedChange`         | `data-expanded`, trigger `aria-expanded`, panel visibility       | behavior state-machine tests for controlled/uncontrolled item and group-owned item  | package-covered | `Accordion.test.tsx`; Stately tests           |
+| Disabled       | group `isDisabled`, item `isDisabled`                             | disabled data attrs, disabled trigger, suppressed toggles        | pointer and keyboard tests proving callback suppression                             | route-covered   | route semantics spec; RAC/ARIA/Stately source |
+| Trigger        | pointer vs keyboard activation                                    | pointer toggles on press, keyboard toggles on press-start branch | event-order tests for Space/Enter/click and disabled suppression                    | package-covered | Solidaria tests                               |
+| Header content | `AccordionItemHeader` with `AccordionItemTitle` plus ActionButton | action is adjacent to title trigger, not inside trigger          | route DOM and interaction assertion                                                 | route-covered   | `Accordion.test.tsx`; route semantics spec    |
+| Panel role     | omitted `role`, `role="region"`, labeling props                   | default role `group`, optional `region`, labelable ARIA props    | semantic assertions at package and route level                                      | route-covered   | Components tests; route semantics spec        |
+| Panel hidden   | expanded/collapsed, SSR, browser find-in-page `beforematch`       | `aria-hidden`, `hidden="until-found"`, CSS size vars             | lifecycle test for collapsed, expanding, expanded, collapsing, beforematch, cleanup | package-covered | Solidaria tests                               |
+| Motion         | reduced motion media, animation completion                        | transition disabled under reduced motion; CSS vars settle `auto` | browser/runtime test with reduced motion and animation-finish behavior              | partial         | Solidaria tests; S2 panel style source        |
+| Direction      | RTL locale                                                        | chevron base rotation and expanded rotation                      | route test under RTL provider or equivalent computed transform                      | planned         | S2 Disclosure source                          |
 
 ## Source Branch Coverage
 
@@ -469,12 +485,15 @@ vp run guard:rac-export-gap
 vp run check
 vp test run packages/solid-stately/test/createDisclosureState.test.ts packages/solidaria/test/createDisclosure.test.tsx packages/solidaria-components/test/Disclosure.test.tsx packages/solid-spectrum/test/Disclosure.test.tsx packages/solid-spectrum/test/regression.test.tsx
 vp test run packages/solidaria-components/test/Disclosure.test.tsx packages/solid-spectrum/test/Disclosure.test.tsx packages/solid-spectrum/test/Accordion.test.tsx packages/solid-spectrum/test/regression.test.tsx
+vp run comparison:build
+COMPARISON_PORT=4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/accordion-contract.spec.ts --reporter=line
 ```
 
 Results:
 
 - Gap report: Accordion remains a missing/gap official entry,
-  `react=tracked solid=missing`; styled default visual state is blocked.
+  `react=tracked solid=missing`; styled default visual state was blocked before
+  route registration.
 - Export report baseline had missing Accordion support exports; package source
   now exports `AccordionContext`, `AccordionItem`, `AccordionItemHeader`,
   `AccordionItemTitle`, and `AccordionItemPanel`. Refresh the export report
@@ -494,20 +513,23 @@ Results:
   for headless trigger DOM prop forwarding, S2 Disclosure title/header/panel
   structure, size/density/quiet axes, header ActionButton adjacency and shifted
   size, Accordion public exports, multiple expansion, and callback payloads.
+- Comparison route coverage: fresh comparison build plus
+  `e2e/accordion-contract.spec.ts` passes 4 focused Playwright tests for live
+  React/Solid route mounts, official viewer controls, controlled expanded key
+  updates, disabled triggers, and header ActionButton behavior.
 
 ## Handoff
 
-- Status: package-level S2 wrapper partial; route acceptance still pending.
-- Next task: implement the comparison route, controls, and React-vs-Solid
-  evidence for the official Accordion examples and viewer axes.
+- Status: route-level partial. Package and route behavior parity are covered;
+  computed style and strict pair-diff evidence remain.
+- Next task: add computed style/geometry assertions and then strict visual
+  pair-diff coverage for the Accordion route states.
 - Primary blockers:
-  - `route-blocker`: no Accordion comparison route or focused route-control
-    spec.
   - `source-blocker`: package wrappers now match the mapped S2 API shape;
-    route source and report evidence still need refresh.
-  - `style-blocker`: package S2 style source is ported, but computed visual
-    parity still needs route/browser proof.
-  - `a11y-blocker`: shared semantics are covered; S2 title/header/i18n and
-    route semantics remain unproven at comparison level.
+    report evidence still needs refresh.
+  - `style-blocker`: package S2 style source and route semantics are ported,
+    but computed visual parity still needs route/browser proof.
+  - `a11y-blocker`: shared and route semantics are covered; S2 title/header
+    i18n and RTL chevron transform remain unproven at comparison level.
   - `behavior-blocker`: shared state, package callbacks, and transition
-    behavior are covered; route callback payloads remain unproven.
+    behavior are covered; reduced-motion/browser transition proof remains.

@@ -157,6 +157,17 @@ function styledLiveOfficialEntry(input: {
 }
 
 const entryOverrides: Record<string, ComparisonEntry> = {
+  accordion: styledLiveOfficialEntry({
+    slug: "accordion",
+    title: "Accordion",
+    category: "Components",
+    summary:
+      "Collapsible disclosure group mounted on both stacks with S2 size, density, quiet, disabled, and multiple-expansion controls.",
+    styledSummary: "React Spectrum Accordion vs Solid Spectrum Accordion.",
+    styledNote:
+      "React uses @react-spectrum/s2 Accordion directly; Solid uses @proyecto-viviana/solid-spectrum Accordion with the S2 Disclosure title/header/panel composition and solidaria disclosure state.",
+  }),
+
   provider: {
     ...createGapEntry({
       slug: "provider",
