@@ -13,7 +13,7 @@ import {
   type DisclosureGroupRenderProps,
   useDisclosureContext as useHeadlessDisclosureContext,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createFocusRing, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { baseColor, centerPadding, focusRing, space, style, type StyleString } from "../s2-style";
@@ -131,6 +131,7 @@ type DisclosureButtonStyleProps = {
   density: DisclosureDensity;
   isQuiet?: boolean;
   isDisabled?: boolean;
+  isFocusVisible?: boolean;
 };
 
 type ChevronStyleProps = {
@@ -594,6 +595,8 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
   const isExpanded = () => headlessState?.isExpanded() ?? false;
   const headingTag = () => `h${level()}` as keyof JSX.IntrinsicElements;
   const chevronIcon = () => chevronIcons[size()];
+  const { isFocusVisible, focusProps } = createFocusRing();
+  const triggerFocusProps = focusProps as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
 
   return (
     <Dynamic
@@ -610,11 +613,14 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
       data-level={level()}
     >
       <HeadlessDisclosureTrigger
+        onFocus={triggerFocusProps.onFocus}
+        onBlur={triggerFocusProps.onBlur}
         class={buttonStyles({
           size: size(),
           density: density(),
           isQuiet: isQuiet(),
           isDisabled: isDisabled(),
+          isFocusVisible: isFocusVisible(),
         })}
         data-rsp-slot="disclosure-trigger"
         data-size={size()}

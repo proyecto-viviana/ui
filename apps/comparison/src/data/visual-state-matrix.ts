@@ -133,6 +133,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/accordion-visual.spec.ts",
       note: "Reduced-motion computed contracts verify transition removal, while RTL computed contracts and exact screenshots verify provider direction, chevron rotation, and pixels.",
     },
+    {
+      id: "styled.focus-visible-ids",
+      label: "Styled focus-visible and IDs",
+      kind: "keyboard",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/accordion-contract.spec.ts",
+      note: "Route contract verifies trigger focus-visible data attributes, computed focus ring styles, generated trigger/panel ID uniqueness, aria-controls, aria-labelledby, and collapsed hidden linkage against React Spectrum.",
+    },
   ],
   provider: [
     visualDefaultState({

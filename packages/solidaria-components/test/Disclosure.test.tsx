@@ -345,6 +345,25 @@ describe("Disclosure", () => {
       expect(disclosure).toHaveAttribute("data-expanded");
     });
 
+    it("should set trigger focus-visible data attributes on keyboard focus", async () => {
+      render(() => (
+        <Disclosure>
+          <DisclosureTrigger>Show more</DisclosureTrigger>
+          <DisclosurePanel>Hidden content</DisclosurePanel>
+        </Disclosure>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Show more" });
+
+      expect(trigger).not.toHaveAttribute("data-focused");
+      expect(trigger).not.toHaveAttribute("data-focus-visible");
+
+      await user.tab();
+      expect(document.activeElement).toBe(trigger);
+      expect(trigger).toHaveAttribute("data-focused");
+      expect(trigger).toHaveAttribute("data-focus-visible");
+    });
+
     it("should have default class on components", () => {
       render(() => (
         <Disclosure>

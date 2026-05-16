@@ -50,6 +50,80 @@ async function expectAccordionSemantics(root: Locator) {
   await expect(root.getByText("Street address")).toBeHidden();
 }
 
+async function accordionA11yContract(root: Locator) {
+  return root.evaluate((element) => {
+    function buttonByName(name: string) {
+      return Array.from(element.querySelectorAll("button")).find((button) => {
+        const label = button.getAttribute("aria-label") ?? button.textContent ?? "";
+        return label.trim() === name;
+      });
+    }
+
+    function disclosureRecord(name: string) {
+      const button = buttonByName(name);
+      const panelId = button?.getAttribute("aria-controls") ?? "";
+      const panel = panelId ? element.ownerDocument.getElementById(panelId) : null;
+
+      return {
+        name,
+        buttonTag: button?.tagName ?? null,
+        panelTag: panel?.tagName ?? null,
+        buttonHasId: Boolean(button?.id),
+        panelHasId: Boolean(panel?.id),
+        buttonType: button?.getAttribute("type") ?? null,
+        ariaExpanded: button?.getAttribute("aria-expanded") ?? null,
+        controlsResolvesToPanel: Boolean(panel && panel.id === panelId),
+        panelRole: panel?.getAttribute("role") ?? null,
+        panelLabelledByButton: panel?.getAttribute("aria-labelledby") === button?.id,
+        panelHidden: panel?.getAttribute("hidden") ?? null,
+        panelAriaHidden: panel?.getAttribute("aria-hidden") ?? null,
+        panelSizeVars:
+          panel instanceof HTMLElement
+            ? {
+                width: panel.style.getPropertyValue("--disclosure-panel-width"),
+                height: panel.style.getPropertyValue("--disclosure-panel-height"),
+              }
+            : null,
+      };
+    }
+
+    const records = ["Personal Information", "Billing Address"].map(disclosureRecord);
+    const ids = records.flatMap((record) => {
+      const button = buttonByName(record.name);
+      const panelId = button?.getAttribute("aria-controls") ?? "";
+      return [button?.id, panelId].filter(Boolean);
+    });
+
+    return {
+      records,
+      generatedIdsAreUnique: ids.length === new Set(ids).size,
+      generatedIdsArePresent: ids.length === records.length * 2,
+    };
+  });
+}
+
+async function focusVisibleContract(button: Locator) {
+  await expect(button).toHaveAttribute("data-focused", /^(true)?$/);
+  await expect(button).toHaveAttribute("data-focus-visible", /^(true)?$/);
+
+  return button.evaluate((element) => {
+    const styles = window.getComputedStyle(element);
+
+    return {
+      active: element.ownerDocument.activeElement === element,
+      matchesFocusVisible: element.matches(":focus-visible"),
+      hasDataFocused: element.hasAttribute("data-focused"),
+      hasDataFocusVisible: element.hasAttribute("data-focus-visible"),
+      style: {
+        outlineStyle: styles.outlineStyle,
+        outlineWidth: styles.outlineWidth,
+        outlineColor: styles.outlineColor,
+        outlineOffset: styles.outlineOffset,
+      },
+    };
+  });
+}
+
 test.describe("comparison Accordion route contract", () => {
   test("Accordion route mounts the React and Solid styled references", async ({ page }) => {
     const { reactRoot, solidRoot } = await accordionFixtures(page);
@@ -142,5 +216,23 @@ test.describe("comparison Accordion route contract", () => {
       await expect(root.getByRole("button", { name: "Billing Address" })).toBeDisabled();
       await expect(root.getByRole("button", { name: "More billing actions" })).toBeVisible();
     }
+  });
+
+  test("Accordion trigger focus-visible and generated ID linkage match", async ({ page }) => {
+    const { reactRoot, solidRoot } = await accordionFixtures(page);
+
+    await expect(accordionA11yContract(solidRoot)).resolves.toEqual(
+      await accordionA11yContract(reactRoot),
+    );
+
+    const reactBilling = reactRoot.getByRole("button", { name: "Billing Address" });
+    const solidBilling = solidRoot.getByRole("button", { name: "Billing Address" });
+
+    await page.keyboard.press("Tab");
+    await reactBilling.focus();
+    const reactFocusVisible = await focusVisibleContract(reactBilling);
+
+    await solidBilling.focus();
+    await expect(focusVisibleContract(solidBilling)).resolves.toEqual(reactFocusVisible);
   });
 });

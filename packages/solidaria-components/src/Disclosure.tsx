@@ -364,20 +364,26 @@ export function DisclosureTrigger(props: DisclosureTriggerProps): JSX.Element {
     const { ref: _ref, ...rest } = disclosureAria.buttonProps as Record<string, unknown>;
     return rest;
   };
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
   const [local, rest] = splitProps(props, ["children", "class", "style"]);
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
+  const cleanFocusProps = () => {
+    const { ref: _ref, ...rest } = focusProps as Record<string, unknown>;
+    return rest;
+  };
 
   return (
     <button
-      {...domProps()}
-      {...getButtonProps()}
+      {...mergeProps(domProps() as Record<string, unknown>, getButtonProps(), cleanFocusProps())}
       type="button"
       class={local.class}
       style={local.style}
       data-expanded={dataAttr(isExpanded())}
       data-disabled={dataAttr(isDisabled())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
     >
       {local.children}
     </button>
