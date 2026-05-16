@@ -21,7 +21,7 @@
 | 2 Route harness        | done        | `actionbar-demo.ts`, React/Solid styled fixtures, component controls, manifest entry, `actionbar-contract.spec`                                                     | None                                                                               |
 | 3 Source map/API       | done        | Optional count/clear handler, `ActionBarContext`, `scrollRef`, `styles`, unsafe props, and root refs covered                                                        | None                                                                               |
 | 4 Cross-layer audit    | in progress | Upstream/solid source branch table below                                                                                                                            | Fill as implementation branches land                                               |
-| 5 Transitions          | partial     | Solid styled layer keeps last selected count during `scrollRef` exit; browser spec covers reduced-motion exit completion                                            | Add visual timeline proof for animated enter/exit                                  |
+| 5 Transitions          | done        | Solid styled layer keeps last selected count during `scrollRef` exit; browser spec covers animated enter, animated exit, and reduced-motion exit completion         | None                                                                               |
 | 6 State                | partial     | Route-level collection adapter covers selected keys, selected count, and clear-selection wiring for React and Solid                                                 | Decide later whether Solid package needs a reusable `useActionBarContainer` helper |
 | 7 ARIA hooks           | done        | Solidaria ActionBar uses toolbar semantics, Escape clearing, axe smoke, ARIA ID checks, localized live announcements, and S2 focus restore                          | None                                                                               |
 | 8 Headless             | done        | Solidaria tests cover visibility, Escape, navigation, count text, optional clear, refs, DOM pass-through, render props, and axe                                     | None                                                                               |
@@ -212,7 +212,7 @@
   - `3` browser tests passed.
 - Combined browser proof:
   - `COMPARISON_BASE_URL=http://127.0.0.1:4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/actionbar-contract.spec.ts e2e/actionbar-visual.spec.ts --reporter=line`
-  - `11` browser tests passed.
+  - `12` browser tests passed.
 - Current reports:
   - Official styled entries live on both sides: `35`.
   - Official entries still missing/gap: `34`.
@@ -223,6 +223,16 @@
 - Repo proof:
   - `vp run check`
   - formatting, lint, and typecheck passed.
+
+## Current After Transition Lifecycle Slice
+
+- Browser contract coverage now starts ActionBar hidden in `scrollRef` mode,
+  drives the route controls to enter, verifies animation-enabled transition
+  styles on both stacks, clears selection, verifies the last selection label is
+  preserved during the animated exit, and waits for the toolbar to unmount.
+- Route proof:
+  - `COMPARISON_BASE_URL=http://127.0.0.1:4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/actionbar-contract.spec.ts --reporter=line`
+  - `9` browser tests passed.
 
 ## Source Map And Public Contract
 
@@ -255,7 +265,7 @@
 | Styled   | localized live announcement            | Solid Spectrum    | Provider locale drives live text and visible labels    | covered | package tests |
 | Styled   | focus restore lifecycle                | Solid Spectrum    | focus returns to trigger after ActionBar closes        | covered | package tests |
 | Styled   | scroll container mode                  | Solid Spectrum    | S2 positioning and scrollbar inset compensation        | covered | browser spec  |
-| Styled   | enter/exit animation                   | Solid Spectrum    | translateY classes and last-count retained on exit     | partial | package tests |
+| Styled   | enter/exit animation                   | Solid Spectrum    | translateY classes and last-count retained on exit     | covered | browser spec  |
 | Harness  | direct route controls                  | comparison app    | selected count, `"all"`, zero state, emphasized prop   | covered | browser spec  |
 | Harness  | clear and child action behavior        | comparison app    | clear hides the bar; child ActionButton increments     | covered | browser spec  |
 | Harness  | Escape and toolbar arrow navigation    | comparison app    | Escape clears selection; arrows move among actions     | covered | browser spec  |

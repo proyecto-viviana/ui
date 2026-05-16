@@ -131,7 +131,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/actionbar-contract.spec.ts",
-      note: "Browser contract asserts scrollRef absolute positioning, scrollbar compensation, resize stability, and reduced-motion exit completion on both stacks.",
+      note: "Browser contract asserts scrollRef absolute positioning, scrollbar compensation, resize stability, animated enter/exit lifecycle, and reduced-motion exit completion on both stacks.",
     },
     {
       id: "styled.forced-colors",

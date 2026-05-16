@@ -87,6 +87,40 @@ function expectScrollGeometryMatchesS2(
   ).toBeLessThanOrEqual(1);
 }
 
+function maxTransitionDurationMs(duration: string) {
+  return Math.max(
+    ...duration.split(",").map((part) => {
+      const value = Number.parseFloat(part);
+      if (!Number.isFinite(value)) {
+        return 0;
+      }
+
+      return part.trim().endsWith("ms") ? value : value * 1000;
+    }),
+  );
+}
+
+async function actionBarTransitionSnapshot(root: Locator) {
+  return root
+    .locator('[data-comparison-actionbar-root="true"]')
+    .first()
+    .evaluate((element) => {
+      const styles = window.getComputedStyle(element);
+      const selection =
+        Array.from(element.querySelectorAll("span")).find((node) =>
+          /\bselected\b/i.test(node.textContent ?? ""),
+        ) ?? null;
+
+      return {
+        selectionText: selection?.textContent ?? null,
+        transform: styles.transform,
+        transitionDuration: styles.transitionDuration,
+        transitionProperty: styles.transitionProperty,
+        translate: styles.translate,
+      };
+    });
+}
+
 test.describe("comparison ActionBar route contract", () => {
   test("ActionBar route mounts React and Solid styled references", async ({ page }) => {
     const { reactRoot, solidRoot } = await actionBarFixtures(page);
@@ -235,6 +269,40 @@ test.describe("comparison ActionBar route contract", () => {
       await expect(root).toHaveAttribute("data-comparison-clear-count", "1");
       await expect(root).toHaveAttribute("data-comparison-selected-count", "0");
       await expect(root.getByRole("toolbar")).toHaveCount(0);
+    }
+  });
+
+  test("ActionBar scrollRef enter and exit use the animated lifecycle", async ({ page }) => {
+    const { reactRoot, solidRoot } = await actionBarFixtures(page, {
+      selectedItemCount: "0",
+      useScrollRef: true,
+    });
+
+    for (const root of [reactRoot, solidRoot]) {
+      await expect(root).toHaveAttribute("data-comparison-selected-count", "0");
+      await expect(root.getByRole("toolbar")).toHaveCount(0);
+    }
+
+    await page.locator('input[name="selectedItemCount"][value="3"]').check();
+
+    for (const root of [reactRoot, solidRoot]) {
+      await expectActionBarVisible(root, "3");
+      const entered = await actionBarTransitionSnapshot(root);
+      expect(entered.selectionText).toBe("3 selected");
+      expect(entered.transitionProperty).toMatch(/all|transform|translate/);
+      expect(maxTransitionDurationMs(entered.transitionDuration)).toBeGreaterThanOrEqual(190);
+
+      await root.getByRole("button", { name: "Clear selection" }).click();
+      await expect(root).toHaveAttribute("data-comparison-selected-count", "0");
+      await expect(root.getByRole("toolbar")).toBeVisible();
+
+      const exiting = await actionBarTransitionSnapshot(root);
+      expect(exiting.selectionText).toBe("3 selected");
+      expect(exiting.transitionProperty).toMatch(/all|transform|translate/);
+      expect(maxTransitionDurationMs(exiting.transitionDuration)).toBeGreaterThanOrEqual(190);
+      expect(exiting.translate).not.toBe(entered.translate);
+
+      await expect(root.getByRole("toolbar")).toHaveCount(0, { timeout: 700 });
     }
   });
 
