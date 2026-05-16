@@ -62,6 +62,9 @@ before changing styled component code.
   component sweep.
 - The component validation note must contain the acceptance-gates checklist.
   Task 13 cannot be marked accepted while any in-scope checkbox is unchecked.
+- The component validation note must contain a gate outcome summary. Each gate
+  outcome is independent: a `complete` outcome in one gate cannot cover a
+  `partial` or `not-started` outcome in another.
 - When using AI agents, use
   [Agent Workflow](./playbook/agent-workflow.md). Each agent gets a narrow
   context pack, allowed files, required output, and exit condition. Agents
@@ -83,6 +86,7 @@ Open:
 Output:
 
 - acceptance gate checklist copied into the component validation notes;
+- gate outcome summary copied into the component validation notes;
 - agent workflow log started with coordinator and step-agent assignments;
 - component target and related subcomponents;
 - research notes with docs, APG patterns, source conflicts, and `none found`
@@ -102,6 +106,7 @@ Validate:
 
 - every acceptance gate category is present in the validation notes before
   research continues;
+- every gate outcome starts as `not-started` or a source-backed current status;
 - every assigned agent has a recorded context pack, allowed files, required
   output, and exit condition;
 - every source disagreement names the authority used for this pass;
@@ -509,6 +514,7 @@ Output:
 
 - final checks;
 - report/doc updates only for proven facts;
+- gate outcome summary updated for every gate;
 - handoff with remaining blockers assigned to future ordered tasks.
 
 Validate:
@@ -538,6 +544,10 @@ React behavior was used as authority.
 The acceptance-gates checklist must show all in-scope items complete. If one
 gate remains incomplete, mark the component `partial` and list the blocker
 under that gate.
+
+The gate outcome summary must show `complete` for every gate before the
+component can be marked `accepted`. If any gate is `partial` or `not-started`,
+the component status is `partial` or `pre-pass`.
 
 The component validation note must state whether the pass is fully accepted,
 partial, or pre-pass only. Do not use `comparison-live` as a substitute for

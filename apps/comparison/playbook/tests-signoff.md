@@ -89,6 +89,9 @@ Record:
   `docs-drift`, with authority and next owner.
 - unchecked acceptance-gate items, grouped by gate. If any in-scope item is
   unchecked, set the component status to `partial`, not `accepted`.
+- gate outcome summary, with every gate marked `complete` before accepted
+  status is used. A `partial` or `not-started` gate keeps the component
+  `partial` or `pre-pass`.
 - blocker labels from `acceptance-gates.md` for every remaining blocker.
 - agent handoffs copied into the validation note when AI agents were used, with
   role, files read/changed, evidence, commands, blockers, and next owner.

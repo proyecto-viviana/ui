@@ -20,6 +20,38 @@ place when a pass is partial.
 | React-Vs-Solid Comparison Harness Parity | The route, controls, fixtures, or pair evidence cannot prove the same public state in React and Solid.                                |
 | Evidence And Handoff                     | Tests, reports, status, blockers, or ownership are missing.                                                                           |
 
+## Gate Outcome Summary
+
+Every component validation note must include a gate outcome table before the
+detailed checklist. The outcome table is the reviewer-facing status; the
+detailed checklist is the evidence behind it.
+
+Use only these gate outcomes:
+
+- `complete`: every in-scope row in the gate is checked, and every
+  not-applicable row has a reason.
+- `partial`: at least one in-scope row is unchecked, unproven, blocked, or has
+  an unresolved owner.
+- `not-started`: the gate has not been evaluated in this pass.
+
+Do not use a gate-level `not-applicable` outcome unless this file explicitly
+allows it for that gate. In normal component passes, `not applicable` belongs
+to individual rows inside a gate, not to the whole gate.
+
+```md
+| Gate                                     | Outcome     | Evidence | Blockers/owner |
+| ---------------------------------------- | ----------- | -------- | -------------- |
+| Official Docs And Viewer Parity          | not-started |          |                |
+| External Authority And Standards         | not-started |          |                |
+| Upstream React Source Parity             | not-started |          |                |
+| Solid Idiomatic Implementation           | not-started |          |                |
+| Accessibility And I18n                   | not-started |          |                |
+| Behavior State Machine                   | not-started |          |                |
+| Style Source-To-Computed Parity          | not-started |          |                |
+| React-Vs-Solid Comparison Harness Parity | not-started |          |                |
+| Evidence And Handoff                     | not-started |          |                |
+```
+
 ## 1. Official Docs And Viewer Parity
 
 - [ ] Live official S2 page opened and dated.
@@ -169,6 +201,10 @@ place when a pass is partial.
 Do not mark Task 13 accepted while any in-scope checklist item is unchecked.
 If one gate is incomplete, the component status is `partial` even when the other
 gates are green.
+
+The component validation note must show a `complete` outcome for every gate
+before the component can be marked `accepted`. If any gate outcome is `partial`
+or `not-started`, the component status is `partial` or `pre-pass`.
 
 Use these blocker labels in component notes and handoffs:
 

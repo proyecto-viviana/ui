@@ -51,6 +51,24 @@ that the agent can finish with concrete evidence or a blocker.
 These gates are additive. Do not mark the component accepted unless every
 in-scope item is checked. Leave unchecked items visible for partial passes.
 
+## Gate Outcome Summary
+
+Every gate gets an explicit outcome. Do not merge gates together. Use
+`not applicable` on individual rows only when the source proves that row is out
+of scope.
+
+| Gate                                     | Outcome     | Evidence | Blockers/owner |
+| ---------------------------------------- | ----------- | -------- | -------------- |
+| Official Docs And Viewer Parity          | not-started |          |                |
+| External Authority And Standards         | not-started |          |                |
+| Upstream React Source Parity             | not-started |          |                |
+| Solid Idiomatic Implementation           | not-started |          |                |
+| Accessibility And I18n                   | not-started |          |                |
+| Behavior State Machine                   | not-started |          |                |
+| Style Source-To-Computed Parity          | not-started |          |                |
+| React-Vs-Solid Comparison Harness Parity | not-started |          |                |
+| Evidence And Handoff                     | not-started |          |                |
+
 ### 1. Official Docs And Viewer Parity
 
 - [ ] Live official S2 page opened and dated:

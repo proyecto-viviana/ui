@@ -14,6 +14,8 @@ blocking and additive. Documentation/viewer parity, external authority,
 upstream source, Solid idioms, accessibility/i18n, behavior, style,
 React-vs-Solid harness parity, and evidence/handoff must all be proven.
 Passing one gate never substitutes for another.
+Each gate must also have an explicit outcome summary in the component notes, so
+the final status is visible without inferring it from scattered checklist rows.
 
 When a pass uses AI agents or parallel AI review, use
 [Agent Workflow](./agent-workflow.md). Agents get narrow context packs and
