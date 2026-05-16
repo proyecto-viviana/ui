@@ -29,7 +29,7 @@
 | 10 Runtime lifecycle   | done    | Shared panel lifecycle, route interaction semantics, and reduced-motion browser proof are covered     | None                   |
 | 11 Harness integrity   | done    | `e2e/accordion-contract.spec.ts` proves live route controls and interaction semantics                 | None                   |
 | 12 Comparison evidence | done    | Visual-state matrix now marks route-control, computed visual, and strict pair-diff contracts asserted | None                   |
-| 13 Acceptance          | partial | Route, computed-style, strict visual, reduced-motion, RTL, focus, IDs, and callbacks are proven       | style-blocker          |
+| 13 Acceptance          | partial | Route, computed-style, strict visual, reduced-motion, RTL, focus, IDs, callbacks, and SSR are proven  | style-blocker          |
 
 ## Agent Workflow
 
@@ -47,8 +47,8 @@ source audit.
 
 ## Acceptance Gate Checklist
 
-These gates remain partial until remaining forced-colors and true
-server-rendered hidden markup rows have focused evidence.
+These gates remain partial until remaining forced-colors and multiple-instance
+ID collision rows have focused evidence.
 
 ## Gate Outcome Summary
 
@@ -58,7 +58,7 @@ server-rendered hidden markup rows have focused evidence.
 | External Authority And Standards         | partial | React Aria Disclosure docs and APG Accordion pattern checked                  | a11y-blocker   |
 | Upstream React Source Parity             | partial | Shared layers, package S2 wrapper source, and route control proof are covered | style-blocker  |
 | Solid Idiomatic Implementation           | partial | Lazy children mostly preserved; public API/style/ARIA drift                   | idiom-blocker  |
-| Accessibility And I18n                   | partial | Shared RAC/ARIA deltas, focus-visible, generated IDs, and RTL proof covered   | a11y-blocker   |
+| Accessibility And I18n                   | partial | Shared RAC/ARIA deltas, SSR hidden props, focus-visible, IDs, and RTL covered | a11y-blocker   |
 | Behavior State Machine                   | done    | Shared state, transitions, route callback payloads, and suppression covered   | None           |
 | Style Source-To-Computed Parity          | partial | Computed, focus-ring, reduced-motion, RTL, and exact pair-diff contracts pass | style-blocker  |
 | React-Vs-Solid Comparison Harness Parity | done    | Route, computed visual, and exact pair-diff contracts pass for live fixtures  | None           |
@@ -160,8 +160,12 @@ server-rendered hidden markup rows have focused evidence.
 - [x] Keyboard model, focus order, focus-visible, focus return, and
       focus-not-obscured behavior: route contract proves keyboard focus-visible
       trigger data attrs and computed S2 focus-ring styles against React.
-- [ ] True server-rendered hidden markup and multiple-instance ID collision
-      checks: route proves hydrated generated-ID and hidden linkage only.
+- [x] True server-rendered hidden props: shared ARIA hook proof matches React
+      Aria's SSR branch, where collapsed server panels get boolean `hidden`,
+      expanded server panels omit `hidden`, and hydrated browser panels leave
+      `hidden` to the runtime lifecycle.
+- [ ] Multiple-instance ID collision checks: route proves generated-ID and
+      hidden linkage for the documented item set only.
 - [x] Disabled/read-only/required/invalid/inert/hidden semantics: shared
       Disclosure tests cover disabled suppression, `aria-hidden`,
       `hidden="until-found"`, and panel CSS variable visibility states.
@@ -327,10 +331,10 @@ server-rendered hidden markup rows have focused evidence.
   - move Accordion from tracked gap to live route evidence only after the
     package exports, S2-compatible structure/styles, behavior semantics, and
     route controls are implemented and proven.
-- Current refresh after route callback payload proof:
+- Current refresh after SSR hidden prop proof:
   - official styled entries live on both sides: `34`;
   - missing/gap entries: `35`;
-  - official visual states tracked: `186`;
+  - official visual states tracked: `187`;
   - current visual evidence states: `50`;
   - strict pair-diff states: `34`;
   - blocked visual states: `34`;
@@ -387,12 +391,12 @@ server-rendered hidden markup rows have focused evidence.
 
 ## Cross-Layer Audit
 
-| Layer               | Matched                                                                                                                                           | Ported differently                                       | Not applicable | Gaps                                  |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | -------------- | ------------------------------------- |
-| State               | controlled/uncontrolled item and group tests, over-expanded trim, route callback payloads and suppression                                         | Solid uses `queueMicrotask` for over-expanded trim       |                | None                                  |
-| ARIA hooks          | ids, `aria-expanded`, `aria-controls`, disabled, hidden lifecycle, hydrated route linkage                                                         |                                                          |                | true SSR hidden prop evidence pending |
-| Headless components | lazy children, primitives, data attrs, panel role, labelable props, trigger focus-visible attrs                                                   | native Solid context/accessor implementation             |                | custom-root/ref proof pending         |
-| Styled S2           | S2 size/density/quiet/header/title/panel source, route semantics, focus-ring, computed visual contract, reduced-motion, RTL, and strict pair-diff | Solid uses generated S2 style classes and local wrappers |                | forced-colors route proof pending     |
+| Layer               | Matched                                                                                                                                           | Ported differently                                       | Not applicable | Gaps                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | -------------- | -------------------------------------------- |
+| State               | controlled/uncontrolled item and group tests, over-expanded trim, route callback payloads and suppression                                         | Solid uses `queueMicrotask` for over-expanded trim       |                | None                                         |
+| ARIA hooks          | ids, `aria-expanded`, `aria-controls`, disabled, hidden lifecycle, SSR hidden prop, hydrated route linkage                                        |                                                          |                | multiple-instance ID collision proof pending |
+| Headless components | lazy children, primitives, data attrs, panel role, labelable props, trigger focus-visible attrs                                                   | native Solid context/accessor implementation             |                | custom-root/ref proof pending                |
+| Styled S2           | S2 size/density/quiet/header/title/panel source, route semantics, focus-ring, computed visual contract, reduced-motion, RTL, and strict pair-diff | Solid uses generated S2 style classes and local wrappers |                | forced-colors route proof pending            |
 
 - Solid idioms checked:
   - child/provider laziness: Solidaria Disclosure keeps children lazy through
@@ -408,21 +412,21 @@ server-rendered hidden markup rows have focused evidence.
 
 ## Interaction Dependency Map
 
-| Subpart        | Upstream input                                                    | Observable output                                                | Parity proof                                                                        | Status          | Evidence                                                  |
-| -------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------- |
-| Root group     | `styles`, `UNSAFE_style`, `UNSAFE_className`, ref                 | flex column root, style override support, DOM ref                | package test plus computed route style/class assertion                              | partial         | `Accordion.test.tsx`; route semantics/visual specs        |
-| Root context   | `size`, `density`, `isQuiet`                                      | Disclosure title/header/panel style changes                      | pair route control test for all viewer values and source-level style assertions     | route-covered   | `Accordion.test.tsx`; route semantics spec                |
-| Group state    | `allowsMultipleExpanded`, `expandedKeys`, `defaultExpandedKeys`   | one vs multiple expanded items, controlled key set callbacks     | state tests plus route interaction comparing React/Solid callback payloads          | route-covered   | Stately tests; route contract spec                        |
-| Item state     | `id`, `isExpanded`, `defaultExpanded`, `onExpandedChange`         | `data-expanded`, trigger `aria-expanded`, panel visibility       | behavior state-machine tests for controlled/uncontrolled item and group-owned item  | package-covered | `Accordion.test.tsx`; Stately tests                       |
-| Disabled       | group `isDisabled`, item `isDisabled`                             | disabled data attrs, disabled trigger, suppressed toggles        | pointer and keyboard tests proving callback suppression                             | route-covered   | route semantics spec; RAC/ARIA/Stately source             |
-| Trigger        | pointer vs keyboard activation                                    | pointer toggles on press, keyboard toggles on press-start branch | event-order tests for Space/Enter/click and disabled suppression                    | package-covered | Solidaria tests                                           |
-| Header content | `AccordionItemHeader` with `AccordionItemTitle` plus ActionButton | action is adjacent to title trigger, not inside trigger          | route DOM and interaction assertion                                                 | route-covered   | `Accordion.test.tsx`; route semantics spec                |
-| Panel role     | omitted `role`, `role="region"`, labeling props                   | default role `group`, optional `region`, labelable ARIA props    | semantic assertions at package and route level                                      | route-covered   | Components tests; route semantics spec                    |
-| Panel hidden   | expanded/collapsed, SSR, browser find-in-page `beforematch`       | `aria-hidden`, `hidden="until-found"`, CSS size vars             | lifecycle test for collapsed, expanding, expanded, collapsing, beforematch, cleanup | package-covered | Solidaria tests                                           |
-| Motion         | reduced motion media, animation completion                        | transition disabled under reduced motion; CSS vars settle `auto` | browser/runtime test with reduced motion and animation-finish behavior              | route-covered   | Solidaria tests; route visual spec; S2 panel style source |
-| Direction      | RTL locale                                                        | chevron base rotation and expanded rotation                      | route test under RTL provider with computed transform and exact pixels              | route-covered   | route visual spec; S2 Disclosure source                   |
-| Focus          | keyboard focus-visible modality                                   | trigger `data-focused`, `data-focus-visible`, and S2 outline     | route test comparing data attrs and computed focus-ring styles                      | route-covered   | route contract spec; Solidaria test; S2 Disclosure source |
-| IDs            | generated trigger/panel IDs                                       | unique IDs, `aria-controls`, `aria-labelledby`, collapsed hidden | route test comparing hydrated ID/linkage contract without depending on ID strings   | route-covered   | route contract spec                                       |
+| Subpart        | Upstream input                                                    | Observable output                                                             | Parity proof                                                                             | Status          | Evidence                                                  |
+| -------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------- |
+| Root group     | `styles`, `UNSAFE_style`, `UNSAFE_className`, ref                 | flex column root, style override support, DOM ref                             | package test plus computed route style/class assertion                                   | partial         | `Accordion.test.tsx`; route semantics/visual specs        |
+| Root context   | `size`, `density`, `isQuiet`                                      | Disclosure title/header/panel style changes                                   | pair route control test for all viewer values and source-level style assertions          | route-covered   | `Accordion.test.tsx`; route semantics spec                |
+| Group state    | `allowsMultipleExpanded`, `expandedKeys`, `defaultExpandedKeys`   | one vs multiple expanded items, controlled key set callbacks                  | state tests plus route interaction comparing React/Solid callback payloads               | route-covered   | Stately tests; route contract spec                        |
+| Item state     | `id`, `isExpanded`, `defaultExpanded`, `onExpandedChange`         | `data-expanded`, trigger `aria-expanded`, panel visibility                    | behavior state-machine tests for controlled/uncontrolled item and group-owned item       | package-covered | `Accordion.test.tsx`; Stately tests                       |
+| Disabled       | group `isDisabled`, item `isDisabled`                             | disabled data attrs, disabled trigger, suppressed toggles                     | pointer and keyboard tests proving callback suppression                                  | route-covered   | route semantics spec; RAC/ARIA/Stately source             |
+| Trigger        | pointer vs keyboard activation                                    | pointer toggles on press, keyboard toggles on press-start branch              | event-order tests for Space/Enter/click and disabled suppression                         | package-covered | Solidaria tests                                           |
+| Header content | `AccordionItemHeader` with `AccordionItemTitle` plus ActionButton | action is adjacent to title trigger, not inside trigger                       | route DOM and interaction assertion                                                      | route-covered   | `Accordion.test.tsx`; route semantics spec                |
+| Panel role     | omitted `role`, `role="region"`, labeling props                   | default role `group`, optional `region`, labelable ARIA props                 | semantic assertions at package and route level                                           | route-covered   | Components tests; route semantics spec                    |
+| Panel hidden   | expanded/collapsed, SSR, browser find-in-page `beforematch`       | `aria-hidden`, server boolean `hidden`, hydrated `until-found`, CSS size vars | lifecycle test for SSR, collapsed, expanding, expanded, collapsing, beforematch, cleanup | package-covered | Solidaria tests                                           |
+| Motion         | reduced motion media, animation completion                        | transition disabled under reduced motion; CSS vars settle `auto`              | browser/runtime test with reduced motion and animation-finish behavior                   | route-covered   | Solidaria tests; route visual spec; S2 panel style source |
+| Direction      | RTL locale                                                        | chevron base rotation and expanded rotation                                   | route test under RTL provider with computed transform and exact pixels                   | route-covered   | route visual spec; S2 Disclosure source                   |
+| Focus          | keyboard focus-visible modality                                   | trigger `data-focused`, `data-focus-visible`, and S2 outline                  | route test comparing data attrs and computed focus-ring styles                           | route-covered   | route contract spec; Solidaria test; S2 Disclosure source |
+| IDs            | generated trigger/panel IDs                                       | unique IDs, `aria-controls`, `aria-labelledby`, collapsed hidden              | route test comparing hydrated ID/linkage contract without depending on ID strings        | route-covered   | route contract spec                                       |
 
 ## Source Branch Coverage
 
@@ -444,6 +448,7 @@ server-rendered hidden markup rows have focused evidence.
 | A11y     | title heading wraps trigger                                        | `solid-spectrum/src/disclosure`                            | semantics      | heading level default `3`, button name from title, title auto-wrap                    | covered          | `Disclosure.test.tsx`                                          |
 | A11y     | panel default role and labelable props                             | `solidaria-components/src/Disclosure`                      | semantics      | default role `group`, optional `region`, `aria-label*` passed through                 | covered          | Components tests                                               |
 | A11y     | panel hidden props                                                 | `solidaria/src/disclosure`                                 | semantics      | `aria-hidden` and `hidden` semantics match React Aria                                 | covered          | Solidaria tests                                                |
+| A11y     | panel SSR hidden branch                                            | `solidaria/src/disclosure`                                 | semantics      | collapsed server panels get boolean `hidden`; expanded panels omit `hidden`           | covered          | Solidaria SSR tests; React Aria source                         |
 | Behavior | React Aria panel lifecycle                                         | `solidaria/src/disclosure`                                 | runtime        | width/height CSS vars, animation settle, RAF cleanup                                  | covered          | Solidaria tests                                                |
 | Behavior | `beforematch` find-in-page expansion                               | `solidaria/src/disclosure`                                 | runtime        | collapsed panel can be revealed by browser find-in-page                               | covered          | Solidaria tests                                                |
 | Behavior | keyboard vs pointer press timing                                   | `solidaria/src/disclosure`                                 | event order    | Space/Enter and pointer callback ordering match React Aria                            | covered          | Solidaria tests                                                |
@@ -485,8 +490,8 @@ server-rendered hidden markup rows have focused evidence.
 - ID stability and collision checks:
   - button/panel `aria-controls` and `aria-labelledby` IDs exist in Solidaria;
     route proof now verifies generated trigger/panel IDs are present, unique,
-    and linked after hydration. True SSR hidden markup and multiple-instance
-    collision proof remain pending.
+    and linked after hydration. Multiple-instance collision proof remains
+    pending.
 - Modality rows:
   - pointer and keyboard toggles must follow installed React Aria source:
     pointer toggles on press, keyboard toggles on press start; optional
@@ -508,8 +513,10 @@ server-rendered hidden markup rows have focused evidence.
     listener cleanup are the relevant lifecycle branches.
 - SSR/hydration note:
   - Route proof now covers hydrated generated-ID stability and collapsed hidden
-    linkage against React. React Aria also sets SSR `hidden` based on expansion;
-    Solid still needs a true server-rendered hidden-markup proof.
+    linkage against React. Shared ARIA proof now covers React Aria's SSR hidden
+    branch: collapsed server panels receive boolean `hidden`, expanded server
+    panels omit `hidden`, and hydrated browser panels leave `hidden` to the
+    runtime lifecycle.
 
 ## Evidence
 
@@ -525,12 +532,13 @@ COMPARISON_PORT=4324 vp exec --filter @proyecto-viviana/comparison playwright te
 vp test run packages/solid-spectrum/test/Disclosure.test.tsx packages/solid-spectrum/test/Accordion.test.tsx
 COMPARISON_PORT=4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/accordion-visual.spec.ts --reporter=line
 COMPARISON_PORT=4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/accordion-contract.spec.ts e2e/accordion-visual.spec.ts --reporter=line
+vp test run packages/solidaria/test/createDisclosure.ssr.test.tsx
 ```
 
 Results:
 
 - Gap report refresh: official styled entries live on both sides is now `34`;
-  missing/gap entries is `35`; official visual states tracked is `186`;
+  missing/gap entries is `35`; official visual states tracked is `187`;
   current React/Solid visual evidence states is `50`; strict pair-diff states
   is `34`; blocked visual states is `34`; Accordion no longer appears in the
   missing/gap list.
@@ -544,11 +552,11 @@ Results:
   Disclosure wrapper, exposes the documented subcomponents/context, and ports
   size/density/quiet context, title/header/panel structure, ActionButton header
   size shifting, and panel transition/inner padding styles.
-- Shared parity implementation: 124 focused Stately/Solidaria/Components/Solid
+- Shared parity implementation: 127 focused Stately/Solidaria/Components/Solid
   Spectrum tests pass for item/group state, over-expanded cleanup, group root
   semantics, panel default role, labelable props, `aria-hidden`,
-  `hidden="until-found"`, CSS panel size variables, animation settle,
-  `beforematch`, and keyboard/pointer press timing.
+  server boolean `hidden`, `hidden="until-found"`, CSS panel size variables,
+  animation settle, `beforematch`, and keyboard/pointer press timing.
 - Package-level S2 wrapper coverage: 86 focused Components/Spectrum tests pass
   for headless trigger DOM prop forwarding, S2 Disclosure title/header/panel
   structure, size/density/quiet axes, header ActionButton adjacency and shifted
@@ -572,19 +580,20 @@ Results:
 
 ## Handoff
 
-- Status: callback partial. Package behavior, route behavior, route callback
+- Status: SSR-hidden partial. Package behavior, route behavior, route callback
   payloads/suppression, computed visual parity, strict pair-diff,
   reduced-motion, RTL, focus-visible, generated-ID linkage, hydrated hidden
-  linkage, and refreshed report evidence are covered; forced-colors and true
-  SSR hidden proof remain.
-- Next task: add true SSR hidden render proof, then forced-colors visual proof.
+  linkage, SSR hidden props, and refreshed report evidence are covered;
+  forced-colors and multiple-instance ID collision proof remain.
+- Next task: add multiple-instance ID collision proof, then forced-colors visual
+  proof.
 - Primary blockers:
   - `style-blocker`: package S2 style source, route semantics, computed visual
     parity, strict pair-diff, reduced-motion, and RTL are covered; focus-ring
     is covered; forced-colors visual branch remains.
   - `a11y-blocker`: shared and route semantics are covered; S2 title/header
-    focus-visible and hydrated ID linkage are covered; true SSR hidden render
-    and multi-instance semantics remain unproven at comparison level.
+    focus-visible, SSR hidden props, and hydrated ID linkage are covered;
+    multi-instance semantics remain unproven at comparison level.
   - `behavior-blocker`: resolved for Accordion; shared state, package
     callbacks, route callback payloads, suppression, and transition behavior
     are covered.

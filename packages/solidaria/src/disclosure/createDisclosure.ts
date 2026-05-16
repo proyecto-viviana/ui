@@ -24,6 +24,13 @@ export interface DisclosureAria {
   panelProps: JSX.HTMLAttributes<HTMLElement>;
 }
 
+export function getDisclosurePanelHiddenAttribute(
+  isExpanded: boolean,
+  hasDOM = canUseDOM,
+): true | undefined {
+  return hasDOM ? undefined : !isExpanded || undefined;
+}
+
 /**
  * Provides the behavior and accessibility implementation for a disclosure component.
  *
@@ -219,7 +226,7 @@ export function createDisclosure(
         role: "group",
         "aria-labelledby": triggerId,
         "aria-hidden": !state.isExpanded(),
-        hidden: canUseDOM ? undefined : !state.isExpanded() || undefined,
+        hidden: getDisclosurePanelHiddenAttribute(state.isExpanded()),
       };
     },
   };

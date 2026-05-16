@@ -153,6 +153,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/accordion-contract.spec.ts",
       note: "Route contract verifies onExpandedChange callback counts, serialized key payloads, single and multiple expansion updates, header action suppression, and disabled trigger suppression against React Spectrum.",
     },
+    {
+      id: "styled.ssr-hidden",
+      label: "Styled SSR hidden props",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "packages/solidaria/test/createDisclosure.ssr.test.tsx",
+      note: "Shared ARIA hook contract mirrors React Aria useDisclosure: collapsed server panels get boolean hidden, expanded server panels omit hidden, and hydrated browser panels leave hidden to the runtime lifecycle.",
+    },
   ],
   provider: [
     visualDefaultState({
