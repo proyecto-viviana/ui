@@ -76,7 +76,10 @@ export interface DisclosureGroupProps extends DisclosureGroupStateProps {
   style?: StyleOrFunction<DisclosureGroupRenderProps>;
 }
 
-export interface DisclosureTriggerProps {
+export interface DisclosureTriggerProps extends Omit<
+  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+  "children" | "class" | "style" | "type"
+> {
   /** The children of the trigger. */
   children?: JSX.Element;
   /** The CSS className for the element. */
@@ -361,17 +364,22 @@ export function DisclosureTrigger(props: DisclosureTriggerProps): JSX.Element {
     const { ref: _ref, ...rest } = disclosureAria.buttonProps as Record<string, unknown>;
     return rest;
   };
+  const [local, rest] = splitProps(props, ["children", "class", "style"]);
+  const domProps = createMemo(() =>
+    filterDOMProps(rest as Record<string, unknown>, { global: true }),
+  );
 
   return (
     <button
+      {...domProps()}
       {...getButtonProps()}
       type="button"
-      class={props.class}
-      style={props.style}
+      class={local.class}
+      style={local.style}
       data-expanded={dataAttr(isExpanded())}
       data-disabled={dataAttr(isDisabled())}
     >
-      {props.children}
+      {local.children}
     </button>
   );
 }

@@ -18,19 +18,20 @@ export type {
 // Accordion
 export {
   Accordion,
-  AccordionHeader as AccordionItemHeader,
+  AccordionContext,
   AccordionItem,
-  AccordionPanel as AccordionItemPanel,
-  DisclosureTitle as AccordionItemTitle,
+  AccordionItemHeader,
+  AccordionItemPanel,
+  AccordionItemTitle,
 } from "./accordion";
 export type {
-  AccordionHeaderProps as AccordionItemHeaderProps,
+  AccordionDensity,
+  AccordionItemHeaderProps,
   AccordionItemProps,
-  AccordionPanelProps as AccordionItemPanelProps,
+  AccordionItemPanelProps,
+  AccordionItemTitleProps,
   AccordionProps,
   AccordionSize,
-  AccordionVariant,
-  DisclosureTitleProps as AccordionItemTitleProps,
 } from "./accordion";
 
 // ActionBar
@@ -188,12 +189,24 @@ export { Dialog, DialogTrigger } from "./dialog";
 export type { DialogProps, DialogSize, DialogTriggerProps } from "./dialog";
 
 // Disclosure
-export { Disclosure, DisclosurePanel } from "./disclosure";
+export {
+  Disclosure,
+  DisclosureContext,
+  DisclosureGroup,
+  DisclosureHeader,
+  DisclosurePanel,
+  DisclosureTitle,
+  DisclosureTrigger,
+} from "./disclosure";
 export type {
+  DisclosureDensity,
+  DisclosureGroupProps,
+  DisclosureHeaderProps,
   DisclosurePanelProps,
   DisclosureProps,
   DisclosureSize,
-  DisclosureVariant,
+  DisclosureTitleProps,
+  DisclosureTriggerProps,
 } from "./disclosure";
 
 // Divider
