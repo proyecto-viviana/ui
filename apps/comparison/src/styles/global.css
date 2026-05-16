@@ -1535,6 +1535,32 @@ a {
   border-radius: 6px;
 }
 
+.comparison-actionbar-row[data-comparison-actionbar-scroll-ref="true"] {
+  inline-size: min(520px, 100%);
+  padding: 0;
+}
+
+.comparison-actionbar-scroll-shell {
+  position: relative;
+  display: block;
+  inline-size: min(380px, 100%);
+  block-size: 180px;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  padding: 16px;
+  border: 1px solid var(--cmp-border);
+  border-radius: 6px;
+}
+
+.comparison-actionbar-scroll-content {
+  display: grid;
+  gap: 8px;
+  min-block-size: 360px;
+  padding-block-end: 96px;
+  color: var(--cmp-text-secondary);
+  font-size: 13px;
+}
+
 .comparison-accordion-row {
   display: grid;
   gap: 16px;

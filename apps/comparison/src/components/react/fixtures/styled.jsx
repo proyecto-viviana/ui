@@ -1,5 +1,5 @@
 import { jsx, jsxs } from "react/jsx-runtime";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   Accordion as SpectrumAccordion,
   AccordionItem as SpectrumAccordionItem,
@@ -511,6 +511,7 @@ function ReactActionBarDemo() {
   const [isCleared, setIsCleared] = useState(false);
   const [clearCount, setClearCount] = useState(0);
   const [actionCount, setActionCount] = useState(0);
+  const scrollRef = useRef(null);
   const selectedItemCount = isCleared ? 0 : demoProps.selectedItemCount;
 
   useEffect(() => {
@@ -524,6 +525,29 @@ function ReactActionBarDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
+  const actionBar = jsx(SpectrumActionBar, {
+    selectedItemCount,
+    isEmphasized: demoProps.isEmphasized,
+    scrollRef: demoProps.useScrollRef ? scrollRef : undefined,
+    onClearSelection: () => {
+      setClearCount((count) => count + 1);
+      setIsCleared(true);
+    },
+    children: actionBarItems.map((item) =>
+      jsxs(
+        SpectrumActionButton,
+        {
+          onPress: () => setActionCount((count) => count + 1),
+          children: [
+            jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+            jsx(SpectrumText, { children: item.label }),
+          ],
+        },
+        item.id,
+      ),
+    ),
+  });
+
   return renderReactSpectrumReference(
     jsx("div", {
       className: "comparison-actionbar-row",
@@ -533,27 +557,23 @@ function ReactActionBarDemo() {
       "data-comparison-selected-count": String(selectedItemCount),
       "data-comparison-clear-count": String(clearCount),
       "data-comparison-action-count": String(actionCount),
-      children: jsx(SpectrumActionBar, {
-        selectedItemCount,
-        isEmphasized: demoProps.isEmphasized,
-        onClearSelection: () => {
-          setClearCount((count) => count + 1);
-          setIsCleared(true);
-        },
-        children: actionBarItems.map((item) =>
-          jsxs(
-            SpectrumActionButton,
-            {
-              onPress: () => setActionCount((count) => count + 1),
-              children: [
-                jsx(ReactButtonIcon, { "aria-hidden": "true" }),
-                jsx(SpectrumText, { children: item.label }),
-              ],
-            },
-            item.id,
-          ),
-        ),
-      }),
+      "data-comparison-actionbar-scroll-ref": String(demoProps.useScrollRef),
+      children: demoProps.useScrollRef
+        ? jsxs("div", {
+            ref: scrollRef,
+            className: "comparison-actionbar-scroll-shell",
+            "data-comparison-actionbar-scroll-shell": "true",
+            children: [
+              jsx("div", {
+                className: "comparison-actionbar-scroll-content",
+                children: actionBarItems.map((item) =>
+                  jsx("span", { children: item.label }, `scroll-${item.id}`),
+                ),
+              }),
+              actionBar,
+            ],
+          })
+        : actionBar,
     }),
   );
 }

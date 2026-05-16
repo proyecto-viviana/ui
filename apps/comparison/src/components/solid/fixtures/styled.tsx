@@ -601,10 +601,44 @@ function SolidSpectrumActionBarDemo() {
   const [isCleared, setIsCleared] = createSignal(false);
   const [clearCount, setClearCount] = createSignal(0);
   const [actionCount, setActionCount] = createSignal(0);
+  const scrollRef: { current: HTMLElement | null } = { current: null };
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
   const selectedItemCount = () => (isCleared() ? 0 : demoProps().selectedItemCount);
+  const actionBar = () =>
+    hc(
+      SolidSpectrumActionBar,
+      {
+        get selectedItemCount() {
+          return selectedItemCount();
+        },
+        get isEmphasized() {
+          return demoProps().isEmphasized;
+        },
+        get scrollRef() {
+          return demoProps().useScrollRef ? scrollRef : undefined;
+        },
+        onClearSelection: () => {
+          setClearCount((count) => count + 1);
+          setIsCleared(true);
+        },
+      },
+      actionBarItems.map((item) =>
+        hc(
+          SolidSpectrumActionButton,
+          {
+            onPress: () => setActionCount((count) => count + 1),
+          },
+          [
+            () => [
+              h(SolidNewIcon, { "aria-hidden": "true" }),
+              h(SolidSpectrumText, {}, item.label),
+            ],
+          ],
+        ),
+      ),
+    );
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
@@ -657,37 +691,32 @@ function SolidSpectrumActionBarDemo() {
           get "data-comparison-action-count"() {
             return String(actionCount());
           },
+          get "data-comparison-actionbar-scroll-ref"() {
+            return String(demoProps().useScrollRef);
+          },
         },
         [
-          hc(
-            SolidSpectrumActionBar,
-            {
-              get selectedItemCount() {
-                return selectedItemCount();
-              },
-              get isEmphasized() {
-                return demoProps().isEmphasized;
-              },
-              onClearSelection: () => {
-                setClearCount((count) => count + 1);
-                setIsCleared(true);
-              },
-            },
-            actionBarItems.map((item) =>
-              hc(
-                SolidSpectrumActionButton,
-                {
-                  onPress: () => setActionCount((count) => count + 1),
-                },
-                [
-                  () => [
-                    h(SolidNewIcon, { "aria-hidden": "true" }),
-                    h(SolidSpectrumText, {}, item.label),
+          () =>
+            demoProps().useScrollRef
+              ? hc(
+                  "div",
+                  {
+                    class: "comparison-actionbar-scroll-shell",
+                    "data-comparison-actionbar-scroll-shell": "true",
+                    ref: (element: HTMLElement) => {
+                      scrollRef.current = element;
+                    },
+                  },
+                  [
+                    h(
+                      "div",
+                      { class: "comparison-actionbar-scroll-content" },
+                      actionBarItems.map((item) => h("span", {}, item.label)),
+                    ),
+                    actionBar(),
                   ],
-                ],
-              ),
-            ),
-          ),
+                )
+              : actionBar(),
         ],
       ),
     ],

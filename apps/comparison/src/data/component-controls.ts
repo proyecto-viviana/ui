@@ -299,6 +299,12 @@ const actionBarControls: ComponentControlGroup = {
       kind: "switch",
       defaultValue: actionBarDemoDefaults.isEmphasized,
     },
+    {
+      name: "useScrollRef",
+      label: "useScrollRef",
+      kind: "switch",
+      defaultValue: actionBarDemoDefaults.useScrollRef,
+    },
   ],
   apiProps: [
     "children",
@@ -312,7 +318,7 @@ const actionBarControls: ComponentControlGroup = {
     "UNSAFE_className",
     "UNSAFE_style",
   ],
-  note: "Modeled from the S2 ActionBar API with a deterministic selected-item count control for the comparison route. Collection renderActionBar integration and scrollRef geometry remain tracked by the component checklist.",
+  note: "Modeled from the S2 ActionBar API with deterministic selected-item count, emphasis, and scrollRef controls for the comparison route. Collection renderActionBar integration remains tracked by the component checklist.",
 };
 
 const checkboxControls: ComponentControlGroup = {

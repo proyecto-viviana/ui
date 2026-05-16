@@ -10,11 +10,13 @@ export type ActionBarSelectedItemCount = number | "all";
 export interface ActionBarDemoProps {
   selectedItemCount: ActionBarSelectedItemCount;
   isEmphasized: boolean;
+  useScrollRef: boolean;
 }
 
 export const actionBarDemoDefaults: ActionBarDemoProps = {
   selectedItemCount: 3,
   isEmphasized: false,
+  useScrollRef: false,
 };
 
 function normalizeSelectedItemCount(value: unknown): ActionBarSelectedItemCount {
@@ -36,6 +38,7 @@ export function normalizeActionBarDemoProps(
   return {
     selectedItemCount: normalizeSelectedItemCount(props.selectedItemCount),
     isEmphasized: props.isEmphasized === true,
+    useScrollRef: props.useScrollRef === true,
   };
 }
 
@@ -44,6 +47,7 @@ export function actionBarDemoPropsFromSearch(search: string): ActionBarDemoProps
   return normalizeActionBarDemoProps({
     selectedItemCount: params.get("selectedItemCount") ?? actionBarDemoDefaults.selectedItemCount,
     isEmphasized: params.get("isEmphasized") === "true",
+    useScrollRef: params.get("useScrollRef") === "true",
   });
 }
 
@@ -59,5 +63,6 @@ export function serializeActionBarDemoProps(props: ActionBarDemoProps) {
   return JSON.stringify({
     selectedItemCount: props.selectedItemCount,
     isEmphasized: props.isEmphasized,
+    useScrollRef: props.useScrollRef,
   });
 }
