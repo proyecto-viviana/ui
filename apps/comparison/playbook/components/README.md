@@ -21,7 +21,7 @@ normalized to the current gate checklist.
   family, Divider, Form, Image, Link, Meter, Skeleton, and StatusLight.
 - Current-gate normalized: Avatar.
 - Comparison-live with explicit release-hardening backfill gaps: none.
-- Pre-pass only: Text and NotificationBadge.
+- Pre-pass only: Accordion, Text, and NotificationBadge.
 
 Current-gate normalization means the note contains the current
 `Acceptance Gate Checklist`, `Agent Workflow`, `Behavior State Machine`,
@@ -35,6 +35,7 @@ partial if any gate remains unresolved.
 
 ## Files
 
+- [Accordion](./accordion-validation-notes.md)
 - [Avatar](./avatar-validation-notes.md)
 - [AvatarGroup](./avatargroup-validation-notes.md)
 - [Badge](./badge-validation-notes.md)
