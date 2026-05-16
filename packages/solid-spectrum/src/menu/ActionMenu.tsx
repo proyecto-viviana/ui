@@ -1,13 +1,24 @@
-import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createSignal,
+  mergeProps,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
   Menu as HeadlessMenu,
   MenuItem as HeadlessMenuItem,
+  Popover as HeadlessPopover,
+  MenuTriggerContext,
   type MenuProps as HeadlessMenuProps,
   type MenuTriggerRenderProps,
   type MenuItemRenderProps,
   type MenuTriggerProps as HeadlessMenuTriggerProps,
+  type MenuRenderProps,
+  type PopoverRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
@@ -17,6 +28,8 @@ import { IconContext } from "../icon/spectrum-icon";
 import { fontRelative, style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { s2IntlStrings } from "../intl";
+import { Text } from "../text";
+import { useTheme } from "../provider";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -27,6 +40,14 @@ import {
 } from "../button/spectrum-context";
 import { s2ActionButton, type S2ActionButtonRenderState } from "../button/s2-action-button-styles";
 import type { ActionButtonSize } from "../button/group-context";
+import {
+  menu as s2Menu,
+  menuFrame,
+  menuItem as s2MenuItem,
+  menuItemLabel,
+  menuPopover,
+  type S2MenuItemStyleProps,
+} from "./s2-menu-styles";
 
 export type ActionMenuMenuSize = "S" | "M" | "L" | "XL";
 export type ActionMenuAlign = "start" | "end";
@@ -89,28 +110,29 @@ export interface ActionMenuProps<T> extends Omit<
 
 export const ActionMenuContext = createContext<SpectrumContextValue<ActionMenuProps<any>>>(null);
 
-const menuSizeClasses: Record<ActionMenuMenuSize, { menu: string; item: string }> = {
-  S: {
-    menu: "py-1",
-    item: "text-sm py-1.5 px-3 gap-2",
-  },
-  M: {
-    menu: "py-1.5",
-    item: "text-base py-2 px-4 gap-3",
-  },
-  L: {
-    menu: "py-2",
-    item: "text-lg py-2.5 px-5 gap-3",
-  },
-  XL: {
-    menu: "py-2.5",
-    item: "text-xl py-3 px-6 gap-3",
-  },
-};
-
 function fallbackItemLabel(item: unknown): string {
   const menuItem = item as { id?: string | number; label?: string; textValue?: string };
   return menuItem.label ?? menuItem.textValue ?? String(menuItem.id ?? "");
+}
+
+function actionMenuPlacement(
+  direction: ActionMenuDirection | undefined,
+  align: ActionMenuAlign | undefined,
+): string {
+  const resolvedDirection = direction ?? "bottom";
+  const resolvedAlign = align ?? "start";
+
+  switch (resolvedDirection) {
+    case "left":
+    case "right":
+    case "start":
+    case "end":
+      return `${resolvedDirection} ${resolvedAlign === "end" ? "bottom" : "top"}`;
+    case "bottom":
+    case "top":
+    default:
+      return `${resolvedDirection} ${resolvedAlign}`;
+  }
 }
 
 /**
@@ -152,6 +174,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
   const size = (): ActionButtonSize => local.size ?? "M";
   const menuSize = (): ActionMenuMenuSize => local.menuSize ?? "M";
   const items = () => (local.items ?? []) as T[];
+  const [triggerElement, setTriggerElement] = createSignal<HTMLButtonElement | null>(null);
   const iconContextValue = {
     slot: "icon",
     render: centerBaseline({
@@ -201,29 +224,22 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
 
     const label = fallbackItemLabel(item);
     const itemKey = (item as { id?: Key }).id ?? label;
+    const itemStyleProps = (renderProps: MenuItemRenderProps): S2MenuItemStyleProps => ({
+      ...renderProps,
+      isFocused: (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused,
+      size: menuSize(),
+      isLink: false,
+    });
 
     return (
       <HeadlessMenuItem
         id={itemKey}
         textValue={label}
-        class={(renderProps: MenuItemRenderProps) => {
-          const base =
-            "flex items-center cursor-pointer transition-colors duration-150 outline-none";
-          const sizeClass = menuSizeClasses[menuSize()].item;
-          let colorClass: string;
-          if (renderProps.isDisabled) {
-            colorClass = "text-primary-500 cursor-not-allowed";
-          } else if (renderProps.isFocused || renderProps.isHovered) {
-            colorClass = "bg-bg-300 text-primary-100";
-          } else {
-            colorClass = "text-primary-200";
-          }
-          const pressedClass = renderProps.isPressed ? "bg-bg-200" : "";
-          const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-          return [base, sizeClass, colorClass, pressedClass, focusClass].filter(Boolean).join(" ");
-        }}
+        class={(renderProps: MenuItemRenderProps) => s2MenuItem(itemStyleProps(renderProps))}
       >
-        {label}
+        <Text slot="label" styles={() => menuItemLabel({ size: menuSize() })} data-rsp-slot="text">
+          {label}
+        </Text>
       </HeadlessMenuItem>
     );
   };
@@ -253,7 +269,10 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         aria-details={local["aria-details"]}
         autofocus={local.autoFocus}
         isDisabled={local.isDisabled}
-        ref={mergeContextRefs(contextProps?.ref, props.ref)}
+        ref={(element) => {
+          setTriggerElement(element);
+          mergeContextRefs(contextProps?.ref, props.ref)(element);
+        }}
         class={getButtonClassName}
         style={getButtonStyle}
         data-size={size()}
@@ -266,19 +285,74 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
           <MoreIcon />
         </IconContext.Provider>
       </HeadlessMenuButton>
-      <HeadlessMenu
-        {...menuProps}
-        items={items()}
-        aria-label={triggerLabel()}
-        class={(_renderProps) => {
-          const base =
-            "absolute z-50 mt-1 min-w-[12rem] rounded-lg border-2 border-primary-600 bg-bg-400 shadow-lg overflow-hidden";
-          const customClass = local.class ?? "";
-          return [base, menuSizeClasses[menuSize()].menu, customClass].filter(Boolean).join(" ");
-        }}
-      >
-        {renderMenuItem}
-      </HeadlessMenu>
+      <ActionMenuPopover
+        menuProps={menuProps}
+        items={items}
+        renderMenuItem={renderMenuItem}
+        menuSize={menuSize}
+        triggerLabel={triggerLabel}
+        triggerRef={triggerElement}
+        class={local.class}
+        align={() => local.align}
+        direction={() => local.direction}
+        shouldFlip={() => local.shouldFlip}
+      />
     </HeadlessMenuTrigger>
+  );
+}
+
+interface ActionMenuPopoverProps<T extends object> {
+  menuProps: Omit<HeadlessMenuProps<T>, "children" | "items">;
+  items: () => T[];
+  renderMenuItem: (item: T) => JSX.Element;
+  menuSize: () => ActionMenuMenuSize;
+  triggerLabel: () => string;
+  triggerRef: () => HTMLButtonElement | null;
+  class?: string;
+  align: () => ActionMenuAlign | undefined;
+  direction: () => ActionMenuDirection | undefined;
+  shouldFlip: () => boolean | undefined;
+}
+
+function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): JSX.Element {
+  const theme = useTheme();
+  const triggerContext = useContext(MenuTriggerContext);
+  const isOpen = () => triggerContext?.state.isOpen() ?? false;
+  const close = () => triggerContext?.state.close();
+  const open = () => triggerContext?.state.open();
+  const menuClass = (renderProps: MenuRenderProps) =>
+    [s2Menu({ ...renderProps, size: props.menuSize() }), props.class].filter(Boolean).join(" ");
+
+  return (
+    <HeadlessPopover
+      trigger="MenuTrigger"
+      triggerRef={props.triggerRef}
+      isOpen={isOpen()}
+      onOpenChange={(openState) => {
+        if (openState) {
+          open();
+        } else {
+          close();
+        }
+      }}
+      placement={actionMenuPlacement(props.direction(), props.align()) as never}
+      offset={8}
+      shouldFlip={props.shouldFlip()}
+      autoFocus={false}
+      class={(renderProps: PopoverRenderProps) =>
+        menuPopover({ ...renderProps, colorScheme: theme.colorScheme })
+      }
+    >
+      <div class={menuFrame}>
+        <HeadlessMenu
+          {...props.menuProps}
+          items={props.items()}
+          aria-label={props.triggerLabel()}
+          class={menuClass}
+        >
+          {props.renderMenuItem}
+        </HeadlessMenu>
+      </div>
+    </HeadlessPopover>
   );
 }

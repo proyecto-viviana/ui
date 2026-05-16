@@ -16,10 +16,25 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
+import { centerBaseline } from "../icon/center-baseline";
+import { IconContext } from "../icon/spectrum-icon";
+import { KeyboardContext, StyledKeyboard, Text, TextContext } from "../text";
+import {
+  menu as s2Menu,
+  menuItem as s2MenuItem,
+  menuItemDescription,
+  menuItemIcon,
+  menuItemIconCenterWrapper,
+  menuItemKeyboard,
+  menuItemLabel,
+  menuItemValue,
+  type S2MenuItemStyleProps,
+  type S2MenuSize,
+} from "./s2-menu-styles";
 
-export type MenuSize = "sm" | "md" | "lg";
+export type MenuSize = S2MenuSize | "sm" | "md" | "lg";
 
-const MenuSizeContext = createContext<MenuSize>("md");
+const MenuSizeContext = createContext<S2MenuSize>("M");
 
 export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class" | "style"> {
   /** The size of the menu. */
@@ -59,24 +74,28 @@ export interface MenuSectionProps extends Omit<HeadlessMenuSectionProps, "class"
   class?: string;
 }
 
-const sizeStyles = {
-  sm: {
+const buttonSizeStyles: Record<
+  S2MenuSize,
+  {
+    button: string;
+    icon: string;
+  }
+> = {
+  S: {
     button: "h-8 text-sm px-3 gap-2",
-    menu: "py-1",
-    item: "text-sm py-1.5 px-3 gap-2",
     icon: "h-4 w-4",
   },
-  md: {
+  M: {
     button: "h-10 text-base px-4 gap-2",
-    menu: "py-1.5",
-    item: "text-base py-2 px-4 gap-3",
     icon: "h-5 w-5",
   },
-  lg: {
+  L: {
     button: "h-12 text-lg px-5 gap-3",
-    menu: "py-2",
-    item: "text-lg py-2.5 px-5 gap-3",
     icon: "h-6 w-6",
+  },
+  XL: {
+    button: "h-14 text-xl px-6 gap-3",
+    icon: "h-7 w-7",
   },
 };
 
@@ -87,16 +106,37 @@ const buttonVariants = {
   quiet: "bg-transparent text-primary-200 border-transparent hover:bg-bg-300",
 };
 
+function normalizeMenuSize(size?: MenuSize): S2MenuSize {
+  switch (size) {
+    case "sm":
+    case "S":
+      return "S";
+    case "lg":
+    case "L":
+      return "L";
+    case "XL":
+      return "XL";
+    case "md":
+    case "M":
+    default:
+      return "M";
+  }
+}
+
+function isTextOnlyChildren(children: unknown): children is string | number {
+  return typeof children === "string" || typeof children === "number";
+}
+
 /**
  * A menu trigger wraps a button and menu, handling the open/close state.
  */
 export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, ["size", "class"]);
-  const size = local.size ?? "md";
+  const size = () => normalizeMenuSize(local.size);
 
   return (
-    <MenuSizeContext.Provider value={size}>
+    <MenuSizeContext.Provider value={size()}>
       <div class={`relative inline-block ${local.class ?? ""}`}>
         <HeadlessMenuTrigger {...headlessProps}>{props.children}</HeadlessMenuTrigger>
       </div>
@@ -112,7 +152,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, ["class", "variant"]);
   const size = useContext(MenuSizeContext);
-  const sizeStyle = sizeStyles[size];
+  const sizeStyle = buttonSizeStyles[size];
   const variant = local.variant ?? "secondary";
   const customClass = local.class ?? "";
 
@@ -158,14 +198,10 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, ["class"]);
   const size = useContext(MenuSizeContext);
-  const styles = () => sizeStyles[size];
   const customClass = local.class ?? "";
 
-  const getClassName = (_renderProps: MenuRenderProps): string => {
-    const base =
-      "absolute z-50 mt-1 min-w-[12rem] rounded-lg border-2 border-primary-600 bg-bg-400 shadow-lg overflow-hidden";
-    const sizeClass = styles().menu;
-    return [base, sizeClass, customClass].filter(Boolean).join(" ");
+  const getClassName = (renderProps: MenuRenderProps): string => {
+    return [s2Menu({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
   };
 
   return <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />;
@@ -176,46 +212,88 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
  * SSR-compatible - renders icon, content, and shortcut directly without render props.
  */
 export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class", "icon", "shortcut", "isDestructive"]);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "class",
+    "icon",
+    "shortcut",
+    "isDestructive",
+  ]);
   const size = useContext(MenuSizeContext);
-  const sizeStyle = sizeStyles[size];
   const customClass = local.class ?? "";
 
   const getClassName = (renderProps: MenuItemRenderProps): string => {
-    const base = "flex items-center cursor-pointer transition-colors duration-150 outline-none";
-    const sizeClass = sizeStyle.item;
-
-    let colorClass: string;
-    if (renderProps.isDisabled) {
-      colorClass = "text-primary-500 cursor-not-allowed";
-    } else if (local.isDestructive) {
-      if (renderProps.isFocused || renderProps.isHovered) {
-        colorClass = "bg-danger-400/20 text-danger-400";
-      } else {
-        colorClass = "text-danger-400";
-      }
-    } else if (renderProps.isFocused || renderProps.isHovered) {
-      colorClass = "bg-bg-300 text-primary-100";
-    } else {
-      colorClass = "text-primary-200";
-    }
-
-    const pressedClass = renderProps.isPressed ? "bg-bg-200" : "";
-
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    return [base, sizeClass, colorClass, pressedClass, focusClass, customClass]
+    const isFocused = (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused;
+    return [
+      s2MenuItem({
+        ...renderProps,
+        isFocused,
+        size,
+        isLink: headlessProps.href != null,
+      }),
+      local.isDestructive ? "text-danger-400" : "",
+      customClass,
+    ]
       .filter(Boolean)
       .join(" ");
   };
+  const itemStyleProps = (renderProps: MenuItemRenderProps): S2MenuItemStyleProps => ({
+    ...renderProps,
+    isFocused: (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused,
+    size,
+    isLink: headlessProps.href != null,
+  });
+  const iconContextValue = {
+    slot: "icon",
+    render: centerBaseline({
+      slot: "icon",
+      styles: menuItemIconCenterWrapper,
+    }),
+    styles: menuItemIcon,
+  };
+  const textContextValue = (renderProps: MenuItemRenderProps) => ({
+    slots: {
+      default: {
+        styles: () => menuItemLabel({ size }),
+        "data-rsp-slot": "text",
+      },
+      label: {
+        styles: () => menuItemLabel({ size }),
+        "data-rsp-slot": "text",
+      },
+      description: {
+        styles: () => menuItemDescription(itemStyleProps(renderProps)),
+        "data-rsp-slot": "text",
+      },
+      value: {
+        styles: menuItemValue,
+        "data-rsp-slot": "value",
+      },
+    },
+  });
+  const keyboardContextValue = (renderProps: MenuItemRenderProps) => ({
+    styles: () => menuItemKeyboard(itemStyleProps(renderProps)),
+  });
+  const renderChildren = (renderProps: MenuItemRenderProps) => {
+    const children =
+      typeof local.children === "function"
+        ? (local.children as (props: MenuItemRenderProps) => JSX.Element)(renderProps)
+        : local.children;
 
-  return (
-    <HeadlessMenuItem {...headlessProps} class={getClassName}>
-      {local.icon && <span class={`shrink-0 ${sizeStyle.icon}`}>{local.icon()}</span>}
-      <span class="flex-1">{props.children as JSX.Element}</span>
-      {local.shortcut && <span class="text-primary-500 text-sm ml-auto">{local.shortcut}</span>}
-    </HeadlessMenuItem>
-  );
+    return (
+      <IconContext.Provider value={iconContextValue}>
+        <TextContext.Provider value={textContextValue(renderProps)}>
+          <KeyboardContext.Provider value={keyboardContextValue(renderProps)}>
+            {local.icon?.()}
+            {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
+            {local.shortcut ? <StyledKeyboard>{local.shortcut}</StyledKeyboard> : null}
+          </KeyboardContext.Provider>
+        </TextContext.Provider>
+      </IconContext.Provider>
+    );
+  };
+
+  return <HeadlessMenuItem {...headlessProps} class={getClassName} children={renderChildren} />;
 }
 
 export function MenuSection(props: MenuSectionProps): JSX.Element {

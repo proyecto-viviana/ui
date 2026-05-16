@@ -113,6 +113,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/actionmenu-visual.spec.ts",
       note: "Default closed ActionMenu trigger has strict zero-tolerance pair-diff evidence and computed trigger styles matching React Spectrum across default, XS, XL, quiet, and disabled viewer axes.",
     },
+    {
+      id: "styled.open-menu",
+      label: "Styled open menu",
+      kind: "overlay",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
+      spec: "e2e/actionmenu-visual.spec.ts",
+      note: "Open ActionMenu menu surface has strict zero-tolerance pair-diff evidence and computed style/geometry parity for the menu, first item, icon, label, description, and keyboard shortcut slots.",
+    },
   ],
   actionbar: [
     {

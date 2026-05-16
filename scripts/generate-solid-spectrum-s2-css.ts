@@ -21,6 +21,7 @@ await import("../packages/solid-spectrum/src/button/s2-action-button-styles");
 await import("../packages/solid-spectrum/src/searchfield/s2-searchfield-styles");
 await import("../packages/solid-spectrum/src/textfield/s2-textarea-styles");
 await import("../packages/solid-spectrum/src/actionbar");
+await import("../packages/solid-spectrum/src/menu/s2-menu-styles");
 await import("../packages/solid-spectrum/src/picker");
 await import("../packages/solid-spectrum/src/combobox");
 await import("../packages/solid-spectrum/src/link");

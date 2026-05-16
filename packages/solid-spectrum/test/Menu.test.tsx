@@ -175,8 +175,8 @@ describe("Menu (solid-spectrum)", () => {
       expect(menu.tagName).toBe("UL");
     });
 
-    it("applies size-based padding class", () => {
-      render(() => (
+    it("applies generated S2 menu styles for size variants", () => {
+      const { unmount } = render(() => (
         <MenuTrigger defaultOpen size="sm">
           <MenuButton>Actions</MenuButton>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
@@ -186,8 +186,22 @@ describe("Menu (solid-spectrum)", () => {
       ));
 
       const menu = screen.getByRole("menu");
-      // sm menu: 'py-1'
-      expect(menu.className).toContain("py-1");
+      const smallClassName = menu.className;
+      expect(smallClassName).toContain("-macro-dynamic");
+
+      unmount();
+
+      render(() => (
+        <MenuTrigger defaultOpen size="lg">
+          <MenuButton>Actions</MenuButton>
+          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
+            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      expect(screen.getByRole("menu").className).toContain("-macro-dynamic");
+      expect(screen.getByRole("menu").className).not.toBe(smallClassName);
     });
 
     it("supports visible label wiring via aria-labelledby", () => {
@@ -348,7 +362,7 @@ describe("Menu (solid-spectrum)", () => {
       expect(deleteItem?.className).toContain("text-danger-400");
     });
 
-    it("applies disabled styling", () => {
+    it("applies disabled state attributes and generated styling", () => {
       render(() => (
         <MenuTrigger defaultOpen>
           <MenuButton>Actions</MenuButton>
@@ -368,8 +382,9 @@ describe("Menu (solid-spectrum)", () => {
 
       const menuItems = screen.getAllByRole("menuitem");
       const disabledItem = menuItems.find((el) => el.textContent?.includes("Locked"));
-      expect(disabledItem?.className).toContain("text-primary-500");
-      expect(disabledItem?.className).toContain("cursor-not-allowed");
+      expect(disabledItem).toHaveAttribute("aria-disabled", "true");
+      expect(disabledItem).toHaveAttribute("data-disabled", "true");
+      expect(disabledItem?.className).toContain("-macro-dynamic");
     });
   });
 
@@ -385,7 +400,24 @@ describe("Menu (solid-spectrum)", () => {
   });
 
   describe("size context propagation", () => {
-    it("propagates lg size from MenuTrigger to MenuItem", () => {
+    it("propagates size from MenuTrigger to generated MenuItem styles", () => {
+      const { unmount } = render(() => (
+        <MenuTrigger defaultOpen size="sm">
+          <MenuButton>Actions</MenuButton>
+          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
+            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const smallItem = screen.getByText("Edit").closest('[role="menuitem"]');
+      const smallLabel = screen.getByText("Edit");
+      expect(smallItem?.className).toContain("-macro-dynamic");
+      expect(smallLabel).toHaveAttribute("data-rsp-slot", "text");
+      const smallItemClassName = smallItem?.className;
+
+      unmount();
+
       render(() => (
         <MenuTrigger defaultOpen size="lg">
           <MenuButton>Actions</MenuButton>
@@ -395,10 +427,9 @@ describe("Menu (solid-spectrum)", () => {
         </MenuTrigger>
       ));
 
-      const menuItems = screen.getAllByRole("menuitem");
-      // lg item: 'text-lg py-2.5 px-5 gap-3'
-      expect(menuItems[0].className).toContain("text-lg");
-      expect(menuItems[0].className).toContain("px-5");
+      const largeItem = screen.getByText("Edit").closest('[role="menuitem"]');
+      expect(largeItem?.className).toContain("-macro-dynamic");
+      expect(largeItem?.className).not.toBe(smallItemClassName);
     });
   });
 });

@@ -339,7 +339,7 @@ export { Skeleton, SkeletonCollection, useIsSkeleton } from "./skeleton";
 export type { SkeletonCollectionProps, SkeletonProps } from "./skeleton";
 
 // Text content
-export { Heading, Keyboard, StyledKeyboard, Text, TextContext } from "./text";
+export { Heading, Keyboard, KeyboardContext, StyledKeyboard, Text, TextContext } from "./text";
 export type { HeadingLevel, HeadingProps, StyledKeyboardProps, TextProps } from "./text";
 
 // Slider

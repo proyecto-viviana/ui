@@ -36,10 +36,12 @@ import {
   Form as SolidSpectrumForm,
   Image as SolidSpectrumImage,
   ImageCoordinator as SolidSpectrumImageCoordinator,
+  Keyboard as SolidSpectrumKeyboard,
   Link as SolidSpectrumLink,
   LinkButton as SolidSpectrumLinkButton,
   ListView as SolidSpectrumListView,
   ListViewItem as SolidSpectrumListViewItem,
+  MenuItem as SolidSpectrumMenuItem,
   Meter as SolidSpectrumMeter,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
@@ -877,36 +879,56 @@ function SolidSpectrumActionMenuDemo() {
           },
         },
         [
-          hc(SolidSpectrumActionMenu, {
-            items: actionMenuItems,
-            getKey: (item: (typeof actionMenuItems)[number]) => item.id,
-            get size() {
-              return demoProps().size;
+          hc(
+            SolidSpectrumActionMenu,
+            {
+              items: actionMenuItems,
+              getKey: (item: (typeof actionMenuItems)[number]) => item.id,
+              get size() {
+                return demoProps().size;
+              },
+              get menuSize() {
+                return demoProps().menuSize;
+              },
+              get align() {
+                return demoProps().align;
+              },
+              get direction() {
+                return demoProps().direction;
+              },
+              get isQuiet() {
+                return demoProps().isQuiet;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              onAction: (key: unknown) => {
+                setActionCount((count) => count + 1);
+                setLastAction(String(key));
+              },
+              onOpenChange: (isOpen: boolean) => {
+                setOpenChangeCount((count) => count + 1);
+                setLastOpenState(String(isOpen));
+              },
             },
-            get menuSize() {
-              return demoProps().menuSize;
-            },
-            get align() {
-              return demoProps().align;
-            },
-            get direction() {
-              return demoProps().direction;
-            },
-            get isQuiet() {
-              return demoProps().isQuiet;
-            },
-            get isDisabled() {
-              return demoProps().isDisabled;
-            },
-            onAction: (key: unknown) => {
-              setActionCount((count) => count + 1);
-              setLastAction(String(key));
-            },
-            onOpenChange: (isOpen: boolean) => {
-              setOpenChangeCount((count) => count + 1);
-              setLastOpenState(String(isOpen));
-            },
-          }),
+            renderProp((item: (typeof actionMenuItems)[number]) =>
+              hc(
+                SolidSpectrumMenuItem,
+                {
+                  id: item.id,
+                  textValue: item.label,
+                },
+                [
+                  () => [
+                    h(SolidNewIcon, { "aria-hidden": "true" }),
+                    h(SolidSpectrumText, { slot: "label" }, item.label),
+                    h(SolidSpectrumText, { slot: "description" }, item.description),
+                    h(SolidSpectrumKeyboard, {}, item.shortcut),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     ],
