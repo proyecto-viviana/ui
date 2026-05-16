@@ -880,15 +880,23 @@ function SolidSpectrumActionMenuDemo() {
           hc(SolidSpectrumActionMenu, {
             items: actionMenuItems,
             getKey: (item: (typeof actionMenuItems)[number]) => item.id,
-            label: "More actions",
+            get size() {
+              return demoProps().size;
+            },
+            get menuSize() {
+              return demoProps().menuSize;
+            },
+            get align() {
+              return demoProps().align;
+            },
+            get direction() {
+              return demoProps().direction;
+            },
             get isQuiet() {
               return demoProps().isQuiet;
             },
             get isDisabled() {
               return demoProps().isDisabled;
-            },
-            get align() {
-              return demoProps().align;
             },
             onAction: (key: unknown) => {
               setActionCount((count) => count + 1);

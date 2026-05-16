@@ -1,0 +1,134 @@
+/**
+ * @vitest-environment jsdom
+ */
+import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@solidjs/testing-library";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { createSignal } from "solid-js";
+import { ActionMenu, ActionMenuContext, MenuItem } from "../src/menu";
+import { Keyboard, Text } from "../src/text";
+import { Provider } from "../src/provider";
+
+const items = [
+  { id: "copy", label: "Copy", shortcut: "Cmd+C" },
+  { id: "cut", label: "Cut", shortcut: "Cmd+X" },
+  { id: "paste", label: "Paste", shortcut: "Cmd+V" },
+];
+
+describe("ActionMenu (solid-spectrum)", () => {
+  it("renders an S2 action button trigger with the localized default label", () => {
+    render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+    expect(trigger).toHaveAttribute("data-size", "M");
+    expect(trigger).not.toHaveAttribute("data-quiet");
+    expect(trigger.className).not.toContain("rounded-md transition-colors");
+
+    const circles = Array.from(trigger.querySelectorAll("circle")).map((circle) =>
+      circle.getAttribute("cx"),
+    );
+    expect(circles).toEqual(["4", "10", "16"]);
+  });
+
+  it("uses the provider locale for the default trigger label", () => {
+    render(() => (
+      <Provider locale="es-ES">
+        <ActionMenu items={items} getKey={(item) => item.id} />
+      </Provider>
+    ));
+
+    expect(screen.getByRole("button", { name: "Más acciones" })).toBeInTheDocument();
+  });
+
+  it("opens with fallback data-driven menu items and fires action keys", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    render(() => <ActionMenu items={items} getKey={(item) => item.id} onAction={onAction} />);
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    await user.click(screen.getByRole("menuitem", { name: "Copy" }));
+
+    expect(onAction).toHaveBeenCalledWith("copy");
+  });
+
+  it("supports render-function children for compositional menu item content", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    render(() => (
+      <ActionMenu
+        defaultOpen
+        shouldCloseOnSelect={false}
+        items={items}
+        getKey={(item) => item.id}
+        onAction={onAction}
+      >
+        {(item) => (
+          <MenuItem id={item.id} textValue={item.label}>
+            <Text slot="label">{item.label}</Text>
+            <Keyboard>{item.shortcut}</Keyboard>
+          </MenuItem>
+        )}
+      </ActionMenu>
+    ));
+
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(screen.getByText("Cmd+C")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("menuitem", { name: "Copy" }));
+
+    expect(onAction).toHaveBeenCalledWith("copy");
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
+  it("supports controlled open state callbacks", async () => {
+    const user = setupUser();
+    const onOpenChange = vi.fn();
+    const [isOpen, setIsOpen] = createSignal(false);
+    render(() => (
+      <ActionMenu
+        isOpen={isOpen()}
+        onOpenChange={(open) => {
+          onOpenChange(open);
+          setIsOpen(open);
+        }}
+        items={items}
+        getKey={(item) => item.id}
+      />
+    ));
+
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
+  it("merges ActionMenuContext props, styles, unsafe style, and refs into the trigger", () => {
+    let triggerElement: HTMLButtonElement | undefined;
+    render(() => (
+      <ActionMenuContext.Provider
+        value={{
+          size: "XL",
+          isQuiet: true,
+          styles: "generated-action-menu" as never,
+          UNSAFE_className: "unsafe-action-menu",
+          UNSAFE_style: { margin: "4px" },
+          ref: (element) => {
+            triggerElement = element;
+          },
+        }}
+      >
+        <ActionMenu items={items} getKey={(item) => item.id} />
+      </ActionMenuContext.Provider>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    expect(triggerElement).toBe(trigger);
+    expect(trigger).toHaveAttribute("data-size", "XL");
+    expect(trigger).toHaveAttribute("data-quiet", "true");
+    expect(trigger.className).toContain("unsafe-action-menu");
+    expect(trigger.className).toContain("generated-action-menu");
+    expect(trigger).toHaveStyle({ margin: "4px" });
+  });
+});

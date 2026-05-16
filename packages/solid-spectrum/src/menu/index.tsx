@@ -261,7 +261,7 @@ export const Section = MenuSection;
 
 export type { Key };
 
-export { ActionMenu } from "./ActionMenu";
+export { ActionMenu, ActionMenuContext } from "./ActionMenu";
 export type { ActionMenuProps } from "./ActionMenu";
 export { SubmenuTrigger } from "./SubmenuTrigger";
 export type { SubmenuTriggerProps } from "./SubmenuTrigger";

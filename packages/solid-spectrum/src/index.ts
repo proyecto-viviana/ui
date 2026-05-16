@@ -71,7 +71,7 @@ export type { ToggleButtonGroupProps } from "./togglebuttongroup";
 export { pressScale } from "./pressScale";
 
 // ActionMenu / Menu
-export { ActionMenu } from "./menu/ActionMenu";
+export { ActionMenu, ActionMenuContext } from "./menu/ActionMenu";
 export type { ActionMenuProps } from "./menu/ActionMenu";
 export { Menu, MenuItem, MenuSection, MenuTrigger, SubmenuTrigger } from "./menu";
 export type {

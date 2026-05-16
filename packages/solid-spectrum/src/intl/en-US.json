@@ -5,6 +5,7 @@
   "actionbar.selected": "{count} selected",
   "actionbar.selectedAll": "All selected",
   "button.pending": "pending",
+  "menu.moreActions": "More actions",
   "notificationbadge.indicatorOnly": "New activity",
   "notificationbadge.plus": "{notifications}+"
 }
