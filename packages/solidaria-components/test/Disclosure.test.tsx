@@ -13,7 +13,11 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Disclosure, DisclosureTrigger, DisclosurePanel, DisclosureGroup } from "../src/Disclosure";
-import { firePointerClick, setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import {
+  assertNoA11yViolations,
+  firePointerClick,
+  setupUser,
+} from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
 let user: ReturnType<typeof setupUser>;
@@ -320,6 +324,76 @@ describe("Disclosure", () => {
 
       const disclosure = document.querySelector(".solidaria-Disclosure");
       expect(disclosure).toHaveAttribute("data-disabled");
+    });
+  });
+
+  describe("render props, refs, and a11y", () => {
+    it("updates root and panel render props from disclosure state", async () => {
+      render(() => (
+        <Disclosure
+          class={(values) => (values.isExpanded ? "root-expanded" : "root-collapsed")}
+          style={(values) => ({ opacity: values.isExpanded ? 1 : 0.5 })}
+        >
+          <DisclosureTrigger>Details</DisclosureTrigger>
+          <DisclosurePanel
+            class={(values) => (values.isExpanded ? "panel-expanded" : "panel-collapsed")}
+          >
+            {(values) => (values.isExpanded ? "Expanded content" : "Collapsed content")}
+          </DisclosurePanel>
+        </Disclosure>
+      ));
+
+      const disclosure = document.querySelector(".root-collapsed");
+      const panel = screen.getByRole("group", { hidden: true });
+
+      expect(disclosure).toHaveStyle({ opacity: "0.5" });
+      expect(panel).toHaveClass("panel-collapsed");
+      expect(panel).toHaveTextContent("Collapsed content");
+
+      await user.click(screen.getByRole("button", { name: "Details" }));
+
+      expect(disclosure).toHaveClass("root-expanded");
+      expect(disclosure).toHaveStyle({ opacity: "1" });
+      expect(panel).toHaveClass("panel-expanded");
+      expect(panel).toHaveTextContent("Expanded content");
+    });
+
+    it("forwards refs to group, disclosure, trigger, and panel elements", () => {
+      let groupRef: HTMLDivElement | undefined;
+      let disclosureRef: HTMLDivElement | undefined;
+      let triggerRef: HTMLButtonElement | undefined;
+      let panelRef: HTMLDivElement | undefined;
+
+      render(() => (
+        <DisclosureGroup ref={(el) => (groupRef = el)}>
+          <Disclosure id="item" ref={(el) => (disclosureRef = el)}>
+            <DisclosureTrigger ref={(el) => (triggerRef = el)}>Item</DisclosureTrigger>
+            <DisclosurePanel ref={(el) => (panelRef = el)}>Content</DisclosurePanel>
+          </Disclosure>
+        </DisclosureGroup>
+      ));
+
+      expect(groupRef).toBe(document.querySelector(".solidaria-DisclosureGroup"));
+      expect(disclosureRef).toBe(document.querySelector(".solidaria-Disclosure"));
+      expect(triggerRef).toBe(screen.getByRole("button", { name: "Item" }));
+      expect(panelRef).toBe(screen.getByRole("group", { hidden: true }));
+    });
+
+    it("axe: default accordion disclosure group", async () => {
+      const { container } = render(() => (
+        <DisclosureGroup defaultExpandedKeys={["personal"]}>
+          <Disclosure id="personal">
+            <DisclosureTrigger>Personal Information</DisclosureTrigger>
+            <DisclosurePanel>Name fields</DisclosurePanel>
+          </Disclosure>
+          <Disclosure id="billing">
+            <DisclosureTrigger>Billing Address</DisclosureTrigger>
+            <DisclosurePanel>Billing fields</DisclosurePanel>
+          </Disclosure>
+        </DisclosureGroup>
+      ));
+
+      await assertNoA11yViolations(container);
     });
   });
 

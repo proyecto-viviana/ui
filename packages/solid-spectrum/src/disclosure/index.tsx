@@ -73,6 +73,7 @@ export interface DisclosureGroupProps
   isQuiet?: boolean;
   /** Legacy visual variant. Prefer isQuiet for S2 parity. */
   variant?: DisclosureVariant;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface DisclosureProps
@@ -89,6 +90,7 @@ export interface DisclosureProps
   variant?: DisclosureVariant;
   /** An id for the disclosure item, matching the id used in expandedKeys. */
   id?: Key;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface DisclosureHeaderProps
@@ -115,10 +117,11 @@ export interface DisclosureTitleProps
 
 export interface DisclosurePanelProps
   extends
-    Omit<HeadlessDisclosurePanelProps, "class" | "style" | "children" | "slot">,
+    Omit<HeadlessDisclosurePanelProps, "class" | "style" | "children" | "slot" | "ref">,
     SpectrumStyleProps {
   /** The contents of the disclosure panel. */
   children?: JSX.Element;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 type DisclosureRootStyleProps = {
@@ -394,6 +397,7 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
     "class",
     "style",
     "slot",
+    "ref",
   ] as const);
 
   const size = () => normalizeSize(local.size);
@@ -429,6 +433,10 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
     <DisclosureContext.Provider value={disclosureContext}>
       <HeadlessDisclosureGroup
         {...(headlessProps as HeadlessDisclosureGroupProps)}
+        ref={mergeContextRefs(
+          (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+          props.ref,
+        )}
         {...{
           "data-rsp-component": "DisclosureGroup",
           "data-size": size(),
@@ -464,6 +472,7 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
     "class",
     "style",
     "slot",
+    "ref",
   ] as const);
 
   const size = () => normalizeSize(local.size);
@@ -503,6 +512,10 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
     <DisclosureContext.Provider value={disclosureContext}>
       <HeadlessDisclosure
         {...(headlessProps as HeadlessDisclosureProps)}
+        ref={mergeContextRefs(
+          (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+          props.ref,
+        )}
         {...{
           "data-rsp-component": "Disclosure",
           "data-size": size(),
@@ -686,6 +699,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
     "class",
     "style",
     "slot",
+    "ref",
   ] as const);
   const context = getDisclosureContext();
   const size = () => normalizeSize(context.size);
@@ -695,6 +709,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
   return (
     <HeadlessDisclosurePanel
       {...(headlessProps as HeadlessDisclosurePanelProps)}
+      ref={mergeContextRefs(local.ref)}
       {...{
         "data-rsp-slot": "disclosure-panel",
         "data-size": size(),

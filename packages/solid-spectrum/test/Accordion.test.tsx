@@ -4,6 +4,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { assertNoA11yViolations } from "@proyecto-viviana/solidaria-test-utils";
 import {
   Accordion,
   AccordionContext,
@@ -114,6 +115,56 @@ describe("Accordion (solid-spectrum)", () => {
       expect(trigger).toHaveAttribute("aria-controls", panel?.id);
       expect(panel).toHaveAttribute("aria-labelledby", trigger.id);
     }
+  });
+
+  it("forwards refs through the public S2 Accordion wrappers", () => {
+    let accordionRef: HTMLDivElement | undefined;
+    let itemRef: HTMLDivElement | undefined;
+    let headerRef: HTMLDivElement | undefined;
+    let titleRef: HTMLHeadingElement | undefined;
+    let panelRef: HTMLDivElement | undefined;
+
+    render(() => (
+      <Accordion defaultExpandedKeys={["profile"]} ref={(el) => (accordionRef = el)}>
+        <AccordionItem id="profile" ref={(el) => (itemRef = el)}>
+          <AccordionItemHeader ref={(el) => (headerRef = el)}>
+            <AccordionItemTitle ref={(el) => (titleRef = el)}>Profile</AccordionItemTitle>
+          </AccordionItemHeader>
+          <AccordionItemPanel ref={(el) => (panelRef = el)}>Profile content</AccordionItemPanel>
+        </AccordionItem>
+      </Accordion>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "Profile" });
+    const panel = screen.getByRole("group");
+
+    expect(accordionRef).toHaveAttribute("data-rsp-component", "DisclosureGroup");
+    expect(itemRef).toHaveAttribute("data-rsp-component", "Disclosure");
+    expect(headerRef).toHaveAttribute("data-rsp-slot", "disclosure-header");
+    expect(titleRef).toHaveAttribute("data-rsp-slot", "disclosure-title");
+    expect(titleRef).toContainElement(trigger);
+    expect(panelRef).toBe(panel);
+    expect(panelRef).toHaveAttribute("data-rsp-slot", "disclosure-panel");
+  });
+
+  it("axe: documented S2 Accordion structure", async () => {
+    const { container } = render(() => (
+      <Accordion defaultExpandedKeys={["personal"]}>
+        <AccordionItem id="personal">
+          <AccordionItemTitle>Personal Information</AccordionItemTitle>
+          <AccordionItemPanel>Name fields</AccordionItemPanel>
+        </AccordionItem>
+        <AccordionItem id="billing">
+          <AccordionItemHeader>
+            <AccordionItemTitle>Billing Address</AccordionItemTitle>
+            <ActionButton aria-label="More billing actions">More</ActionButton>
+          </AccordionItemHeader>
+          <AccordionItemPanel>Billing fields</AccordionItemPanel>
+        </AccordionItem>
+      </Accordion>
+    ));
+
+    await assertNoA11yViolations(container);
   });
 
   it("keeps AccordionItemHeader actions adjacent to, not inside, the title trigger", async () => {

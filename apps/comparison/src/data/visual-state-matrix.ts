@@ -183,6 +183,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "packages/solid-spectrum/test/Accordion.test.tsx",
       note: "Package contract verifies multiple Accordion instances with colliding item keys still generate unique trigger/panel IDs and preserve aria-controls and aria-labelledby linkage.",
     },
+    {
+      id: "styled.refs-render-props-a11y",
+      label: "Styled refs, render props, and a11y smoke",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "packages/solidaria-components/test/Disclosure.test.tsx; packages/solid-spectrum/test/Accordion.test.tsx",
+      note: "Headless Disclosure proof covers live render props, group/root/trigger/panel refs, and axe smoke; S2 Accordion proof covers public wrapper refs and documented-structure axe smoke.",
+    },
   ],
   provider: [
     visualDefaultState({

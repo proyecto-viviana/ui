@@ -38,6 +38,20 @@ import {
   dataAttr,
 } from "./utils";
 
+type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) {
+    return;
+  }
+
+  if (typeof ref === "function") {
+    (ref as (el: T) => void)(el);
+  } else if (typeof ref === "object" && "current" in ref) {
+    ref.current = el;
+  }
+}
+
 export interface DisclosureRenderProps {
   /** Whether the disclosure is expanded. */
   isExpanded: boolean;
@@ -65,6 +79,8 @@ export interface DisclosureProps extends DisclosureStateProps {
   isDisabled?: boolean;
   /** A unique identifier for the disclosure (used in groups). */
   id?: string;
+  /** A ref for the disclosure root element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface DisclosureGroupProps extends DisclosureGroupStateProps {
@@ -74,11 +90,13 @@ export interface DisclosureGroupProps extends DisclosureGroupStateProps {
   class?: ClassNameOrFunction<DisclosureGroupRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<DisclosureGroupRenderProps>;
+  /** A ref for the disclosure group root element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface DisclosureTriggerProps extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
-  "children" | "class" | "style" | "type"
+  "children" | "class" | "style" | "type" | "ref"
 > {
   /** The children of the trigger. */
   children?: JSX.Element;
@@ -86,11 +104,13 @@ export interface DisclosureTriggerProps extends Omit<
   class?: string;
   /** The inline style for the element. */
   style?: JSX.CSSProperties;
+  /** A ref for the trigger button element. */
+  ref?: RefLike<HTMLButtonElement>;
 }
 
 export interface DisclosurePanelProps extends Omit<
   JSX.HTMLAttributes<HTMLElement>,
-  "children" | "class" | "style" | "role"
+  "children" | "class" | "style" | "role" | "ref"
 > {
   /** The children of the panel. */
   children?: RenderChildren<DisclosureRenderProps>;
@@ -100,6 +120,8 @@ export interface DisclosurePanelProps extends Omit<
   style?: StyleOrFunction<DisclosureRenderProps>;
   /** The accessibility role for the disclosure panel. */
   role?: "group" | "region";
+  /** A ref for the panel element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 interface DisclosureContextValue {
@@ -161,6 +183,7 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
     "expandedKeys",
     "defaultExpandedKeys",
     "onExpandedChange",
+    "ref",
   ]);
 
   // Create group state
@@ -202,6 +225,7 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
     <DisclosureGroupStateContext.Provider value={state}>
       <DisclosureGroupContext.Provider value={contextValue}>
         <div
+          ref={(el) => assignRef(local.ref, el)}
           {...domProps()}
           {...cleanGroupProps}
           class={renderProps.class()}
@@ -239,6 +263,7 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
     "defaultExpanded",
     "onExpandedChange",
     "id",
+    "ref",
   ]);
 
   // Check if we're inside a DisclosureGroup
@@ -321,6 +346,7 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
       <DisclosureContext.Provider value={contextValue}>
         <DisclosurePanelRefContext.Provider value={setPanelRef}>
           <div
+            ref={(el) => assignRef(local.ref, el)}
             {...mergeProps(
               domProps() as Record<string, unknown>,
               focusWithinProps as Record<string, unknown>,
@@ -365,7 +391,7 @@ export function DisclosureTrigger(props: DisclosureTriggerProps): JSX.Element {
     return rest;
   };
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
-  const [local, rest] = splitProps(props, ["children", "class", "style"]);
+  const [local, rest] = splitProps(props, ["children", "class", "style", "ref"]);
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
@@ -377,6 +403,7 @@ export function DisclosureTrigger(props: DisclosureTriggerProps): JSX.Element {
   return (
     <button
       {...mergeProps(domProps() as Record<string, unknown>, getButtonProps(), cleanFocusProps())}
+      ref={(el) => assignRef(local.ref, el)}
       type="button"
       class={local.class}
       style={local.style}
@@ -401,7 +428,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
   }
   const panelRefSetter = useContext(DisclosurePanelRefContext);
 
-  const [local, rest] = splitProps(props, ["class", "style", "role"]);
+  const [local, rest] = splitProps(props, ["class", "style", "role", "ref"]);
   const { isFocusVisible: isFocusVisibleWithin, focusProps: focusWithinProps } = createFocusRing({
     within: true,
   });
@@ -445,7 +472,10 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
         focusWithinProps as Record<string, unknown>,
       )}
       {...getPanelProps()}
-      ref={(el) => panelRefSetter?.(el)}
+      ref={(el) => {
+        panelRefSetter?.(el);
+        assignRef(local.ref, el);
+      }}
       role={local.role ?? "group"}
       class={renderProps.class()}
       style={renderProps.style()}
