@@ -85,3 +85,9 @@ export function accordionDemoLocaleFromWindow(): AccordionDemoLocale | undefined
 export function serializeAccordionDemoProps(props: AccordionDemoProps): string {
   return JSON.stringify(normalizeAccordionDemoProps(props));
 }
+
+export function serializeAccordionKeys(keys: Iterable<unknown> | undefined): string {
+  return Array.from(keys ?? [])
+    .map(String)
+    .join(",");
+}

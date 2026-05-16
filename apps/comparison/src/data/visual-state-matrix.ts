@@ -143,6 +143,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/accordion-contract.spec.ts",
       note: "Route contract verifies trigger focus-visible data attributes, computed focus ring styles, generated trigger/panel ID uniqueness, aria-controls, aria-labelledby, and collapsed hidden linkage against React Spectrum.",
     },
+    {
+      id: "styled.callback-payloads",
+      label: "Styled callback payloads",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/accordion-contract.spec.ts",
+      note: "Route contract verifies onExpandedChange callback counts, serialized key payloads, single and multiple expansion updates, header action suppression, and disabled trigger suppression against React Spectrum.",
+    },
   ],
   provider: [
     visualDefaultState({

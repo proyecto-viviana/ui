@@ -70,6 +70,7 @@ import {
   accordionDemoLocaleFromWindow,
   accordionDemoPropsFromWindow,
   normalizeAccordionDemoProps,
+  serializeAccordionKeys,
   serializeAccordionDemoProps,
   type AccordionDemoProps,
 } from "@comparison/data/accordion-demo";
@@ -585,6 +586,8 @@ function SolidSpectrumAccordionDemo() {
   );
   const locale = accordionDemoLocaleFromWindow();
   const [expandedKeys, setExpandedKeys] = createSignal<Set<string>>(new Set(["personal"]));
+  const [expandedChangeCount, setExpandedChangeCount] = createSignal(0);
+  const [lastExpandedChangeKeys, setLastExpandedChangeKeys] = createSignal("");
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -634,7 +637,13 @@ function SolidSpectrumAccordionDemo() {
             return serializeAccordionDemoProps(demoProps());
           },
           get "data-comparison-expanded-keys"() {
-            return Array.from(controlledExpandedKeys()).join(",");
+            return serializeAccordionKeys(controlledExpandedKeys());
+          },
+          get "data-comparison-expanded-change-count"() {
+            return String(expandedChangeCount());
+          },
+          get "data-comparison-expanded-change-keys"() {
+            return lastExpandedChangeKeys();
           },
         },
         [
@@ -661,7 +670,10 @@ function SolidSpectrumAccordionDemo() {
                 return controlledExpandedKeys();
               },
               onExpandedChange(keys: Set<string>) {
-                setExpandedKeys(new Set(Array.from(keys).map(String)));
+                const nextKeys = new Set(Array.from(keys).map(String));
+                setExpandedKeys(nextKeys);
+                setExpandedChangeCount((count) => count + 1);
+                setLastExpandedChangeKeys(serializeAccordionKeys(nextKeys));
               },
             },
             [

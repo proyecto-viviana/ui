@@ -65,6 +65,7 @@ import {
   accordionDemoLocaleFromWindow,
   accordionDemoPropsFromWindow,
   normalizeAccordionDemoProps,
+  serializeAccordionKeys,
   serializeAccordionDemoProps,
 } from "@comparison/data/accordion-demo";
 import {
@@ -497,6 +498,8 @@ function ReactAccordionDemo() {
   const locale = accordionDemoLocaleFromWindow();
   const [demoProps, setDemoProps] = useState(accordionDemoPropsFromWindow);
   const [expandedKeys, setExpandedKeys] = useState(() => new Set(["personal"]));
+  const [expandedChangeCount, setExpandedChangeCount] = useState(0);
+  const [lastExpandedChangeKeys, setLastExpandedChangeKeys] = useState("");
 
   useEffect(() => {
     const handleControlsChange = (event) => {
@@ -511,13 +514,21 @@ function ReactAccordionDemo() {
   const controlledExpandedKeys = demoProps.allowsMultipleExpanded
     ? expandedKeys
     : new Set(Array.from(expandedKeys).slice(0, 1));
+  const handleExpandedChange = (keys) => {
+    const nextKeys = new Set(Array.from(keys).map(String));
+    setExpandedKeys(nextKeys);
+    setExpandedChangeCount((count) => count + 1);
+    setLastExpandedChangeKeys(serializeAccordionKeys(nextKeys));
+  };
 
   return renderReactSpectrumReference(
     jsx("div", {
       className: "comparison-accordion-row",
       "data-comparison-control-root": "accordion",
       "data-comparison-control-props": serializeAccordionDemoProps(demoProps),
-      "data-comparison-expanded-keys": Array.from(controlledExpandedKeys).join(","),
+      "data-comparison-expanded-keys": serializeAccordionKeys(controlledExpandedKeys),
+      "data-comparison-expanded-change-count": String(expandedChangeCount),
+      "data-comparison-expanded-change-keys": lastExpandedChangeKeys,
       children: jsxs(SpectrumAccordion, {
         UNSAFE_style: { width: 220 },
         size: demoProps.size,
@@ -526,7 +537,7 @@ function ReactAccordionDemo() {
         isDisabled: demoProps.isDisabled,
         allowsMultipleExpanded: demoProps.allowsMultipleExpanded,
         expandedKeys: controlledExpandedKeys,
-        onExpandedChange: setExpandedKeys,
+        onExpandedChange: handleExpandedChange,
         children: [
           jsxs(SpectrumAccordionItem, {
             id: "personal",

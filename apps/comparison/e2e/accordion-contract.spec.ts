@@ -124,6 +124,38 @@ async function focusVisibleContract(button: Locator) {
   });
 }
 
+async function expectAccordionCallbackState(
+  root: Locator,
+  expected: {
+    expandedKeys: string;
+    changeCount: number;
+    lastChangeKeys: string;
+  },
+) {
+  await expect(root).toHaveAttribute("data-comparison-expanded-keys", expected.expandedKeys);
+  await expect(root).toHaveAttribute(
+    "data-comparison-expanded-change-count",
+    String(expected.changeCount),
+  );
+  await expect(root).toHaveAttribute(
+    "data-comparison-expanded-change-keys",
+    expected.lastChangeKeys,
+  );
+}
+
+async function expectAccordionCallbackPair(
+  roots: readonly Locator[],
+  expected: {
+    expandedKeys: string;
+    changeCount: number;
+    lastChangeKeys: string;
+  },
+) {
+  for (const root of roots) {
+    await expectAccordionCallbackState(root, expected);
+  }
+}
+
 test.describe("comparison Accordion route contract", () => {
   test("Accordion route mounts the React and Solid styled references", async ({ page }) => {
     const { reactRoot, solidRoot } = await accordionFixtures(page);
@@ -215,6 +247,12 @@ test.describe("comparison Accordion route contract", () => {
       await expect(root.getByRole("button", { name: "Personal Information" })).toBeDisabled();
       await expect(root.getByRole("button", { name: "Billing Address" })).toBeDisabled();
       await expect(root.getByRole("button", { name: "More billing actions" })).toBeVisible();
+      await root.getByRole("button", { name: "Billing Address" }).click({ force: true });
+      await expectAccordionCallbackState(root, {
+        expandedKeys: "personal",
+        changeCount: 0,
+        lastChangeKeys: "",
+      });
     }
   });
 
@@ -234,5 +272,64 @@ test.describe("comparison Accordion route contract", () => {
 
     await solidBilling.focus();
     await expect(focusVisibleContract(solidBilling)).resolves.toEqual(reactFocusVisible);
+  });
+
+  test("Accordion expanded-change callback payloads and suppression match", async ({ page }) => {
+    const defaultFixtures = await accordionFixtures(page);
+    const defaultRoots = [defaultFixtures.reactRoot, defaultFixtures.solidRoot] as const;
+
+    await expectAccordionCallbackPair(defaultRoots, {
+      expandedKeys: "personal",
+      changeCount: 0,
+      lastChangeKeys: "",
+    });
+
+    for (const root of defaultRoots) {
+      await root.getByRole("button", { name: "Billing Address" }).click();
+    }
+    await expectAccordionCallbackPair(defaultRoots, {
+      expandedKeys: "billing",
+      changeCount: 1,
+      lastChangeKeys: "billing",
+    });
+
+    for (const root of defaultRoots) {
+      await root.getByRole("button", { name: "Billing Address" }).click();
+    }
+    await expectAccordionCallbackPair(defaultRoots, {
+      expandedKeys: "",
+      changeCount: 2,
+      lastChangeKeys: "",
+    });
+
+    const multipleFixtures = await accordionFixtures(page, { allowsMultipleExpanded: true });
+    const multipleRoots = [multipleFixtures.reactRoot, multipleFixtures.solidRoot] as const;
+
+    for (const root of multipleRoots) {
+      await root.getByRole("button", { name: "More billing actions" }).click();
+    }
+    await expectAccordionCallbackPair(multipleRoots, {
+      expandedKeys: "personal",
+      changeCount: 0,
+      lastChangeKeys: "",
+    });
+
+    for (const root of multipleRoots) {
+      await root.getByRole("button", { name: "Billing Address" }).click();
+    }
+    await expectAccordionCallbackPair(multipleRoots, {
+      expandedKeys: "personal,billing",
+      changeCount: 1,
+      lastChangeKeys: "personal,billing",
+    });
+
+    for (const root of multipleRoots) {
+      await root.getByRole("button", { name: "Personal Information" }).click();
+    }
+    await expectAccordionCallbackPair(multipleRoots, {
+      expandedKeys: "billing",
+      changeCount: 2,
+      lastChangeKeys: "billing",
+    });
   });
 });
