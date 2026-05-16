@@ -94,6 +94,7 @@ test.describe("comparison ActionBar route contract", () => {
       selectedItemCount: 3,
       isEmphasized: false,
       useScrollRef: false,
+      useCollection: false,
     });
 
     for (const root of [reactRoot, solidRoot]) {
@@ -121,11 +122,13 @@ test.describe("comparison ActionBar route contract", () => {
     await expect(page.locator('input[name="selectedItemCount"]:checked')).toHaveValue("all");
     await expect(page.locator('input[name="isEmphasized"]')).toBeChecked();
     await expect(page.locator('input[name="useScrollRef"]')).toBeChecked();
+    await expect(page.locator('input[name="useCollection"]')).not.toBeChecked();
 
     const expectedProps = JSON.stringify({
       selectedItemCount: "all",
       isEmphasized: true,
       useScrollRef: true,
+      useCollection: false,
     });
 
     for (const root of [reactRoot, solidRoot]) {
@@ -231,6 +234,28 @@ test.describe("comparison ActionBar route contract", () => {
       await root.getByRole("button", { name: "Clear selection" }).click();
       await expect(root).toHaveAttribute("data-comparison-clear-count", "1");
       await expect(root).toHaveAttribute("data-comparison-selected-count", "0");
+      await expect(root.getByRole("toolbar")).toHaveCount(0);
+    }
+  });
+
+  test("ActionBar collection selection drives count and clear in both stacks", async ({ page }) => {
+    const { reactRoot, solidRoot } = await actionBarFixtures(page, {
+      useCollection: true,
+    });
+
+    for (const root of [reactRoot, solidRoot]) {
+      await expect(root).toHaveAttribute("data-comparison-actionbar-collection", "true");
+      await expect(root).toHaveAttribute("data-comparison-selected-count", "3");
+      await expect(root).toHaveAttribute(
+        "data-comparison-selected-keys",
+        "reports,roadmap,research",
+      );
+      await expectActionBarVisible(root, "3");
+
+      await root.getByRole("button", { name: "Clear selection" }).focus();
+      await page.keyboard.press("Enter");
+      await expect(root).toHaveAttribute("data-comparison-selected-count", "0");
+      await expect(root).toHaveAttribute("data-comparison-selected-keys", "");
       await expect(root.getByRole("toolbar")).toHaveCount(0);
     }
   });

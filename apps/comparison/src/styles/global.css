@@ -1561,6 +1561,21 @@ a {
   font-size: 13px;
 }
 
+.comparison-actionbar-collection-list,
+.comparison-actionbar-collection-shell {
+  inline-size: min(420px, 100%);
+}
+
+.comparison-actionbar-collection-shell {
+  position: relative;
+  block-size: 220px;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  padding: 8px;
+  border: 1px solid var(--cmp-border);
+  border-radius: 6px;
+}
+
 .comparison-accordion-row {
   display: grid;
   gap: 16px;

@@ -11,13 +11,33 @@ export interface ActionBarDemoProps {
   selectedItemCount: ActionBarSelectedItemCount;
   isEmphasized: boolean;
   useScrollRef: boolean;
+  useCollection: boolean;
 }
 
 export const actionBarDemoDefaults: ActionBarDemoProps = {
   selectedItemCount: 3,
   isEmphasized: false,
   useScrollRef: false,
+  useCollection: false,
 };
+
+export const actionBarCollectionItems = [
+  { id: "reports", label: "Q4 reports", description: "Financial and planning exports" },
+  { id: "roadmap", label: "Roadmap", description: "Prioritized product milestones" },
+  { id: "research", label: "Research notes", description: "Interview synthesis and sources" },
+] as const;
+
+export function actionBarSelectedKeysFromCount(count: ActionBarSelectedItemCount): Set<string> {
+  if (count === "all") {
+    return new Set(actionBarCollectionItems.map((item) => item.id));
+  }
+
+  return new Set(actionBarCollectionItems.slice(0, count).map((item) => item.id));
+}
+
+export function serializeActionBarSelectedKeys(keys: Iterable<unknown>): string {
+  return Array.from(keys, String).join(",");
+}
 
 function normalizeSelectedItemCount(value: unknown): ActionBarSelectedItemCount {
   if (value === "all") {
@@ -39,6 +59,7 @@ export function normalizeActionBarDemoProps(
     selectedItemCount: normalizeSelectedItemCount(props.selectedItemCount),
     isEmphasized: props.isEmphasized === true,
     useScrollRef: props.useScrollRef === true,
+    useCollection: props.useCollection === true,
   };
 }
 
@@ -48,6 +69,7 @@ export function actionBarDemoPropsFromSearch(search: string): ActionBarDemoProps
     selectedItemCount: params.get("selectedItemCount") ?? actionBarDemoDefaults.selectedItemCount,
     isEmphasized: params.get("isEmphasized") === "true",
     useScrollRef: params.get("useScrollRef") === "true",
+    useCollection: params.get("useCollection") === "true",
   });
 }
 
@@ -64,5 +86,6 @@ export function serializeActionBarDemoProps(props: ActionBarDemoProps) {
     selectedItemCount: props.selectedItemCount,
     isEmphasized: props.isEmphasized,
     useScrollRef: props.useScrollRef,
+    useCollection: props.useCollection,
   });
 }

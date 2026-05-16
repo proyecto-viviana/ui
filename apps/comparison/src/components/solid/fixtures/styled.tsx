@@ -37,6 +37,8 @@ import {
   ImageCoordinator as SolidSpectrumImageCoordinator,
   Link as SolidSpectrumLink,
   LinkButton as SolidSpectrumLinkButton,
+  ListView as SolidSpectrumListView,
+  ListViewItem as SolidSpectrumListViewItem,
   Meter as SolidSpectrumMeter,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
@@ -76,9 +78,12 @@ import {
   type AccordionDemoProps,
 } from "@comparison/data/accordion-demo";
 import {
+  actionBarCollectionItems,
   actionBarDemoPropsFromWindow,
+  actionBarSelectedKeysFromCount,
   normalizeActionBarDemoProps,
   serializeActionBarDemoProps,
+  serializeActionBarSelectedKeys,
   type ActionBarDemoProps,
 } from "@comparison/data/actionbar-demo";
 import {
@@ -598,6 +603,9 @@ function SolidSpectrumActionBarDemo() {
   const [demoProps, setDemoProps] = createSignal<ActionBarDemoProps>(
     actionBarDemoPropsFromWindow(),
   );
+  const [collectionSelectedKeys, setCollectionSelectedKeys] = createSignal<Set<string>>(
+    actionBarSelectedKeysFromCount(actionBarDemoPropsFromWindow().selectedItemCount),
+  );
   const [isCleared, setIsCleared] = createSignal(false);
   const [clearCount, setClearCount] = createSignal(0);
   const [actionCount, setActionCount] = createSignal(0);
@@ -605,7 +613,20 @@ function SolidSpectrumActionBarDemo() {
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
-  const selectedItemCount = () => (isCleared() ? 0 : demoProps().selectedItemCount);
+  const directSelectedItemCount = () => (isCleared() ? 0 : demoProps().selectedItemCount);
+  const collectionSelectedCount = () => collectionSelectedKeys().size;
+  const selectedItemCount = () =>
+    demoProps().useCollection ? collectionSelectedCount() : directSelectedItemCount();
+  const actionBarChildren = () =>
+    actionBarItems.map((item) =>
+      hc(
+        SolidSpectrumActionButton,
+        {
+          onPress: () => setActionCount((count) => count + 1),
+        },
+        [() => [h(SolidNewIcon, { "aria-hidden": "true" }), h(SolidSpectrumText, {}, item.label)]],
+      ),
+    );
   const actionBar = () =>
     hc(
       SolidSpectrumActionBar,
@@ -624,26 +645,67 @@ function SolidSpectrumActionBarDemo() {
           setIsCleared(true);
         },
       },
-      actionBarItems.map((item) =>
+      actionBarChildren(),
+    );
+  const collection = () =>
+    hc(
+      "div",
+      {
+        class: "comparison-actionbar-collection-shell",
+        "data-comparison-actionbar-collection-shell": "true",
+        ref: (element: HTMLElement) => {
+          scrollRef.current = element;
+        },
+      },
+      [
         hc(
-          SolidSpectrumActionButton,
+          SolidSpectrumListView,
           {
-            onPress: () => setActionCount((count) => count + 1),
+            "aria-label": "Documents",
+            selectionMode: "multiple",
+            class: "comparison-actionbar-collection-list",
+            items: actionBarCollectionItems,
+            getKey: (item: (typeof actionBarCollectionItems)[number]) => item.id,
+            getTextValue: (item: (typeof actionBarCollectionItems)[number]) => item.label,
+            get selectedKeys() {
+              return collectionSelectedKeys();
+            },
+            onSelectionChange: (keys: "all" | Set<string | number>) =>
+              setCollectionSelectedKeys(
+                keys === "all"
+                  ? actionBarSelectedKeysFromCount("all")
+                  : new Set<string>(Array.from(keys, String)),
+              ),
           },
-          [
-            () => [
-              h(SolidNewIcon, { "aria-hidden": "true" }),
-              h(SolidSpectrumText, {}, item.label),
-            ],
-          ],
+          renderProp((item: (typeof actionBarCollectionItems)[number]) =>
+            hc(SolidSpectrumListViewItem, { id: item.id, description: item.description }, [
+              item.label,
+            ]),
+          ),
         ),
-      ),
+        hc(
+          SolidSpectrumActionBar,
+          {
+            get selectedItemCount() {
+              return collectionSelectedCount();
+            },
+            get isEmphasized() {
+              return demoProps().isEmphasized;
+            },
+            scrollRef,
+            onClearSelection: () => setCollectionSelectedKeys(new Set<string>()),
+          },
+          actionBarChildren(),
+        ),
+      ],
     );
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "actionbar") {
-        setDemoProps(normalizeActionBarDemoProps(event.detail.props ?? {}));
+        const nextProps = normalizeActionBarDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setCollectionSelectedKeys(actionBarSelectedKeysFromCount(nextProps.selectedItemCount));
         setIsCleared(false);
       }
     };
@@ -694,29 +756,39 @@ function SolidSpectrumActionBarDemo() {
           get "data-comparison-actionbar-scroll-ref"() {
             return String(demoProps().useScrollRef);
           },
+          get "data-comparison-actionbar-collection"() {
+            return String(demoProps().useCollection);
+          },
+          get "data-comparison-selected-keys"() {
+            return demoProps().useCollection
+              ? serializeActionBarSelectedKeys(collectionSelectedKeys())
+              : "";
+          },
         },
         [
           () =>
-            demoProps().useScrollRef
-              ? hc(
-                  "div",
-                  {
-                    class: "comparison-actionbar-scroll-shell",
-                    "data-comparison-actionbar-scroll-shell": "true",
-                    ref: (element: HTMLElement) => {
-                      scrollRef.current = element;
+            demoProps().useCollection
+              ? collection()
+              : demoProps().useScrollRef
+                ? hc(
+                    "div",
+                    {
+                      class: "comparison-actionbar-scroll-shell",
+                      "data-comparison-actionbar-scroll-shell": "true",
+                      ref: (element: HTMLElement) => {
+                        scrollRef.current = element;
+                      },
                     },
-                  },
-                  [
-                    h(
-                      "div",
-                      { class: "comparison-actionbar-scroll-content" },
-                      actionBarItems.map((item) => h("span", {}, item.label)),
-                    ),
-                    actionBar(),
-                  ],
-                )
-              : actionBar(),
+                    [
+                      h(
+                        "div",
+                        { class: "comparison-actionbar-scroll-content" },
+                        actionBarItems.map((item) => h("span", {}, item.label)),
+                      ),
+                      actionBar(),
+                    ],
+                  )
+                : actionBar(),
         ],
       ),
     ],

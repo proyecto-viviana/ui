@@ -31,6 +31,8 @@ import {
   ImageCoordinator as SpectrumImageCoordinator,
   Link as SpectrumLink,
   LinkButton as SpectrumLinkButton,
+  ListView as SpectrumListView,
+  ListViewItem as SpectrumListViewItem,
   Meter as SpectrumMeter,
   NumberField as SpectrumNumberField,
   Picker as SpectrumPicker,
@@ -70,9 +72,12 @@ import {
   serializeAccordionDemoProps,
 } from "@comparison/data/accordion-demo";
 import {
+  actionBarCollectionItems,
   actionBarDemoPropsFromWindow,
+  actionBarSelectedKeysFromCount,
   normalizeActionBarDemoProps,
   serializeActionBarDemoProps,
+  serializeActionBarSelectedKeys,
 } from "@comparison/data/actionbar-demo";
 import {
   actionButtonDemoPropsFromWindow,
@@ -508,22 +513,46 @@ function renderReactSpectrumReference(children, colorScheme = "dark", locale = v
 
 function ReactActionBarDemo() {
   const [demoProps, setDemoProps] = useState(actionBarDemoPropsFromWindow);
+  const [collectionSelectedKeys, setCollectionSelectedKeys] = useState(() =>
+    actionBarSelectedKeysFromCount(actionBarDemoPropsFromWindow().selectedItemCount),
+  );
   const [isCleared, setIsCleared] = useState(false);
   const [clearCount, setClearCount] = useState(0);
   const [actionCount, setActionCount] = useState(0);
   const scrollRef = useRef(null);
-  const selectedItemCount = isCleared ? 0 : demoProps.selectedItemCount;
+  const directSelectedItemCount = isCleared ? 0 : demoProps.selectedItemCount;
+  const collectionSelectedCount = collectionSelectedKeys.size;
+  const selectedItemCount = demoProps.useCollection
+    ? collectionSelectedCount
+    : directSelectedItemCount;
 
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "actionbar") {
-        setDemoProps(normalizeActionBarDemoProps(event.detail.props ?? {}));
+        const nextProps = normalizeActionBarDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setCollectionSelectedKeys(actionBarSelectedKeysFromCount(nextProps.selectedItemCount));
         setIsCleared(false);
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
+
+  const actionBarChildren = () =>
+    actionBarItems.map((item) =>
+      jsxs(
+        SpectrumActionButton,
+        {
+          onPress: () => setActionCount((count) => count + 1),
+          children: [
+            jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+            jsx(SpectrumText, { children: item.label }),
+          ],
+        },
+        item.id,
+      ),
+    );
 
   const actionBar = jsx(SpectrumActionBar, {
     selectedItemCount,
@@ -533,15 +562,35 @@ function ReactActionBarDemo() {
       setClearCount((count) => count + 1);
       setIsCleared(true);
     },
-    children: actionBarItems.map((item) =>
-      jsxs(
-        SpectrumActionButton,
+    children: actionBarChildren(),
+  });
+  const collection = jsx(SpectrumListView, {
+    "aria-label": "Documents",
+    selectionMode: "multiple",
+    selectedKeys: collectionSelectedKeys,
+    onSelectionChange: (keys) =>
+      setCollectionSelectedKeys(
+        keys === "all" ? actionBarSelectedKeysFromCount("all") : new Set(keys),
+      ),
+    renderActionBar: () =>
+      jsx(SpectrumActionBar, {
+        isEmphasized: demoProps.isEmphasized,
+        children: actionBarChildren(),
+      }),
+    UNSAFE_className: "comparison-actionbar-collection-list",
+    UNSAFE_style: { height: 220 },
+    children: actionBarCollectionItems.map((item) =>
+      jsx(
+        SpectrumListViewItem,
         {
-          onPress: () => setActionCount((count) => count + 1),
-          children: [
-            jsx(ReactButtonIcon, { "aria-hidden": "true" }),
-            jsx(SpectrumText, { children: item.label }),
-          ],
+          id: item.id,
+          textValue: item.label,
+          children: jsxs(Fragment, {
+            children: [
+              jsx(SpectrumText, { children: item.label }),
+              jsx(SpectrumText, { slot: "description", children: item.description }),
+            ],
+          }),
         },
         item.id,
       ),
@@ -558,22 +607,28 @@ function ReactActionBarDemo() {
       "data-comparison-clear-count": String(clearCount),
       "data-comparison-action-count": String(actionCount),
       "data-comparison-actionbar-scroll-ref": String(demoProps.useScrollRef),
-      children: demoProps.useScrollRef
-        ? jsxs("div", {
-            ref: scrollRef,
-            className: "comparison-actionbar-scroll-shell",
-            "data-comparison-actionbar-scroll-shell": "true",
-            children: [
-              jsx("div", {
-                className: "comparison-actionbar-scroll-content",
-                children: actionBarItems.map((item) =>
-                  jsx("span", { children: item.label }, `scroll-${item.id}`),
-                ),
-              }),
-              actionBar,
-            ],
-          })
-        : actionBar,
+      "data-comparison-actionbar-collection": String(demoProps.useCollection),
+      "data-comparison-selected-keys": demoProps.useCollection
+        ? serializeActionBarSelectedKeys(collectionSelectedKeys)
+        : "",
+      children: demoProps.useCollection
+        ? collection
+        : demoProps.useScrollRef
+          ? jsxs("div", {
+              ref: scrollRef,
+              className: "comparison-actionbar-scroll-shell",
+              "data-comparison-actionbar-scroll-shell": "true",
+              children: [
+                jsx("div", {
+                  className: "comparison-actionbar-scroll-content",
+                  children: actionBarItems.map((item) =>
+                    jsx("span", { children: item.label }, `scroll-${item.id}`),
+                  ),
+                }),
+                actionBar,
+              ],
+            })
+          : actionBar,
     }),
   );
 }
