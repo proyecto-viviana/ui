@@ -1528,6 +1528,13 @@ a {
   max-inline-size: 100%;
 }
 
+.comparison-actionbar-row {
+  display: block;
+  inline-size: min(480px, 100%);
+  padding: 24px;
+  border-radius: 6px;
+}
+
 .comparison-accordion-row {
   display: grid;
   gap: 16px;

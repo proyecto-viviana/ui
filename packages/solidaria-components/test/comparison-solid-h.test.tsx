@@ -52,6 +52,28 @@ describe("comparison Solid h helper", () => {
     );
   });
 
+  it("preserves zero-argument callback props when components read them", () => {
+    function Probe(props: { onDone: () => void }) {
+      const onDone = props.onDone;
+      return <button onClick={() => onDone()}>Done</button>;
+    }
+
+    let doneCount = 0;
+    render(() =>
+      hc(Probe, {
+        onDone: () => {
+          doneCount += 1;
+        },
+      })(),
+    );
+
+    expect(doneCount).toBe(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(doneCount).toBe(1);
+  });
+
   it("composes Button press handlers through hc child arrays", async () => {
     function Demo() {
       const [pressCount, setPressCount] = createSignal(0);
@@ -151,13 +173,13 @@ describe("comparison Solid h helper", () => {
     const user = userEventSetup();
     render(() => hc(Demo, {})());
 
-    expect(screen.getByRole("combobox")).toHaveTextContent("Bravo");
+    expect(screen.getByRole("button", { name: "Channel" })).toHaveTextContent("Bravo");
 
-    await user.click(screen.getByRole("combobox"));
+    await user.click(screen.getByRole("button", { name: "Channel" }));
     await user.click(screen.getByRole("option", { name: "Alpha" }));
 
     expect(document.body.dataset.lastComparisonSelection).toBe("alpha");
-    expect(screen.getByRole("combobox")).toHaveTextContent("Alpha");
+    expect(screen.getByRole("button", { name: "Channel" })).toHaveTextContent("Alpha");
   });
 
   it("keeps Checkbox state reactive through hc composition", async () => {

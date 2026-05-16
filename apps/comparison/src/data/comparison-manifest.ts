@@ -168,6 +168,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Accordion directly; Solid uses @proyecto-viviana/solid-spectrum Accordion with the S2 Disclosure title/header/panel composition and solidaria disclosure state.",
   }),
 
+  actionbar: styledLiveOfficialEntry({
+    slug: "actionbar",
+    title: "ActionBar",
+    category: "Components",
+    summary:
+      "Bulk-selection ActionBar route mounted on both stacks with selected-count controls, clear-selection behavior, and ActionButton children.",
+    styledSummary: "React Spectrum ActionBar vs Solid Spectrum ActionBar.",
+    styledNote:
+      "React uses @react-spectrum/s2 ActionBar directly; Solid uses @proyecto-viviana/solid-spectrum ActionBar with Solidaria ActionBar behavior while S2 visual parity work continues.",
+  }),
+
   provider: {
     ...createGapEntry({
       slug: "provider",

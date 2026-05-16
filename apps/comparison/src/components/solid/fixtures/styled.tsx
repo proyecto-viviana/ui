@@ -16,6 +16,7 @@ import {
   AccordionItemHeader as SolidSpectrumAccordionItemHeader,
   AccordionItemPanel as SolidSpectrumAccordionItemPanel,
   AccordionItemTitle as SolidSpectrumAccordionItemTitle,
+  ActionBar as SolidSpectrumActionBar,
   ActionButton as SolidSpectrumActionButton,
   ActionButtonGroup as SolidSpectrumActionButtonGroup,
   Avatar as SolidSpectrumAvatar,
@@ -74,6 +75,12 @@ import {
   serializeAccordionDemoProps,
   type AccordionDemoProps,
 } from "@comparison/data/accordion-demo";
+import {
+  actionBarDemoPropsFromWindow,
+  normalizeActionBarDemoProps,
+  serializeActionBarDemoProps,
+  type ActionBarDemoProps,
+} from "@comparison/data/actionbar-demo";
 import {
   actionButtonDemoPropsFromWindow,
   serializeActionButtonDemoProps,
@@ -344,6 +351,12 @@ const cardItems = [
   { id: "zephyr", title: "Zephyr", status: "Queued" },
 ];
 
+const actionBarItems = [
+  { id: "edit", label: "Edit" },
+  { id: "copy", label: "Copy" },
+  { id: "delete", label: "Delete" },
+];
+
 type SingleButtonIconPlacement = "none" | "start" | "end" | "only";
 
 function explicitStaticColor(staticColor: string | undefined | null) {
@@ -527,6 +540,7 @@ function solidSingleButtonFamilyChildren(
 export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixture>> = {
   provider: renderProviderDemo,
   accordion: () => h(SolidSpectrumAccordionDemo, {}),
+  actionbar: () => h(SolidSpectrumActionBarDemo, {}),
   button: () => h(SolidSpectrumButtonDemo, {}),
   actionbutton: () => h(SolidSpectrumActionButtonDemo, {}),
   actionbuttongroup: () => h(SolidSpectrumActionButtonGroupDemo, {}),
@@ -577,6 +591,106 @@ function renderProviderDemo() {
         h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
       ),
     ),
+  );
+}
+
+function SolidSpectrumActionBarDemo() {
+  const [demoProps, setDemoProps] = createSignal<ActionBarDemoProps>(
+    actionBarDemoPropsFromWindow(),
+  );
+  const [isCleared, setIsCleared] = createSignal(false);
+  const [clearCount, setClearCount] = createSignal(0);
+  const [actionCount, setActionCount] = createSignal(0);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  const selectedItemCount = () => (isCleared() ? 0 : demoProps().selectedItemCount);
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actionbar") {
+        setDemoProps(normalizeActionBarDemoProps(event.detail.props ?? {}));
+        setIsCleared(false);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-actionbar-row",
+          "data-comparison-control-root": "actionbar",
+          get "data-comparison-control-props"() {
+            return serializeActionBarDemoProps(demoProps());
+          },
+          get "data-comparison-actionbar-props"() {
+            return serializeActionBarDemoProps(demoProps());
+          },
+          get "data-comparison-selected-count"() {
+            return String(selectedItemCount());
+          },
+          get "data-comparison-clear-count"() {
+            return String(clearCount());
+          },
+          get "data-comparison-action-count"() {
+            return String(actionCount());
+          },
+        },
+        [
+          hc(
+            SolidSpectrumActionBar,
+            {
+              get selectedItemCount() {
+                return selectedItemCount();
+              },
+              get isEmphasized() {
+                return demoProps().isEmphasized;
+              },
+              onClearSelection: () => {
+                setClearCount((count) => count + 1);
+                setIsCleared(true);
+              },
+            },
+            actionBarItems.map((item) =>
+              hc(
+                SolidSpectrumActionButton,
+                {
+                  onPress: () => setActionCount((count) => count + 1),
+                },
+                [
+                  () => [
+                    h(SolidNewIcon, { "aria-hidden": "true" }),
+                    h(SolidSpectrumText, {}, item.label),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
   );
 }
 

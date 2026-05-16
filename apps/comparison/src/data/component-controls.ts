@@ -3,6 +3,7 @@ import {
   accordionDensityOptions,
   accordionSizeOptions,
 } from "./accordion-demo";
+import { actionBarDemoDefaults, actionBarSelectedItemCountOptions } from "./actionbar-demo";
 import {
   actionButtonDemoDefaults,
   actionButtonIconPlacementOptions,
@@ -278,6 +279,40 @@ const accordionControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Accordion docs and viewer. The route drives size, density, quiet, disabled, and multiple-expansion props into both stacks; controlled expandedKeys and callbacks are asserted in route and package tests rather than exposed as viewer controls.",
+};
+
+const actionBarControls: ComponentControlGroup = {
+  slug: "actionbar",
+  title: "ActionBar",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "selectedItemCount",
+      label: "selectedItemCount",
+      kind: "radio",
+      defaultValue: String(actionBarDemoDefaults.selectedItemCount),
+      options: options(actionBarSelectedItemCountOptions),
+    },
+    {
+      name: "isEmphasized",
+      label: "isEmphasized",
+      kind: "switch",
+      defaultValue: actionBarDemoDefaults.isEmphasized,
+    },
+  ],
+  apiProps: [
+    "children",
+    "isEmphasized",
+    "selectedItemCount",
+    "onClearSelection",
+    "scrollRef",
+    "id",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 ActionBar API with a deterministic selected-item count control for the comparison route. Collection renderActionBar integration and scrollRef geometry remain tracked by the component checklist.",
 };
 
 const checkboxControls: ComponentControlGroup = {
@@ -2606,6 +2641,7 @@ const selectBoxGroupControls: ComponentControlGroup = {
 
 export const componentControlGroups = {
   accordion: accordionControls,
+  actionbar: actionBarControls,
   actionbutton: actionButtonControls,
   actionbuttongroup: actionButtonGroupControls,
   avatar: avatarControls,

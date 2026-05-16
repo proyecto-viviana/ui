@@ -21,17 +21,19 @@ export function hc(
   props?: Props | null,
   children?: Children | MarkedRenderProp<any>,
 ) {
+  const normalizedProps = normalizeCallbackProps(component, props);
+
   if (typeof children === "function") {
     if (children[RENDER_PROP_MARKER] === true) {
-      return h(component as never, props ?? {}, children);
+      return h(component as never, normalizedProps ?? {}, children);
     }
 
     throw new TypeError("Use child arrays, or renderProp(fn) for intentional render props.");
   }
 
   return children === undefined
-    ? h(component as never, props ?? {})
-    : h(component as never, props ?? {}, [...children]);
+    ? h(component as never, normalizedProps ?? {})
+    : h(component as never, normalizedProps ?? {}, [...children]);
 }
 
 export function renderProp<T>(fn: (item: T) => unknown) {
@@ -40,4 +42,31 @@ export function renderProp<T>(fn: (item: T) => unknown) {
     enumerable: false,
   });
   return fn as MarkedRenderProp<T>;
+}
+
+function normalizeCallbackProps(component: ComponentLike, props?: Props | null) {
+  if (!props || typeof component === "string") {
+    return props;
+  }
+
+  // `solid-js/h` treats zero-argument function props on components as dynamic
+  // accessors. Preserve `on*` props as callbacks so reading them does not fire.
+  let normalized: Props | undefined;
+  const descriptors = Object.getOwnPropertyDescriptors(props);
+
+  for (const [key, descriptor] of Object.entries(descriptors)) {
+    if (!key.startsWith("on") || typeof descriptor.value !== "function") {
+      continue;
+    }
+
+    normalized ??= Object.defineProperties({}, descriptors) as Props;
+    const callback = descriptor.value;
+    Object.defineProperty(normalized, key, {
+      configurable: descriptor.configurable,
+      enumerable: descriptor.enumerable,
+      get: () => callback,
+    });
+  }
+
+  return normalized ?? props;
 }

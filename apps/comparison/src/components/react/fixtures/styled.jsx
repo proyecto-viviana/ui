@@ -6,6 +6,7 @@ import {
   AccordionItemHeader as SpectrumAccordionItemHeader,
   AccordionItemPanel as SpectrumAccordionItemPanel,
   AccordionItemTitle as SpectrumAccordionItemTitle,
+  ActionBar as SpectrumActionBar,
   ActionButton as SpectrumActionButton,
   ActionButtonGroup as SpectrumActionButtonGroup,
   Avatar as SpectrumAvatar,
@@ -68,6 +69,11 @@ import {
   serializeAccordionKeys,
   serializeAccordionDemoProps,
 } from "@comparison/data/accordion-demo";
+import {
+  actionBarDemoPropsFromWindow,
+  normalizeActionBarDemoProps,
+  serializeActionBarDemoProps,
+} from "@comparison/data/actionbar-demo";
 import {
   actionButtonDemoPropsFromWindow,
   comparisonControlsEvent as actionButtonControlsEvent,
@@ -318,6 +324,12 @@ const cardItems = [
   { id: "zephyr", title: "Zephyr", status: "Queued" },
 ];
 
+const actionBarItems = [
+  { id: "edit", label: "Edit" },
+  { id: "copy", label: "Copy" },
+  { id: "delete", label: "Delete" },
+];
+
 function booleanParamFromWindow(name, fallback = false) {
   if (typeof window === "undefined") {
     return fallback;
@@ -409,6 +421,7 @@ function normalizeSelectBoxGroupDemoProps(props) {
 export const reactStyledFixtures = {
   provider: renderProviderDemo,
   accordion: () => jsx(ReactAccordionDemo, {}),
+  actionbar: () => jsx(ReactActionBarDemo, {}),
   button: () => jsx(ReactButtonDemo, {}),
   actionbutton: () => jsx(ReactActionButtonDemo, {}),
   actionbuttongroup: () => jsx(ReactActionButtonGroupDemo, {}),
@@ -491,6 +504,58 @@ function renderReactSpectrumReference(children, colorScheme = "dark", locale = v
     UNSAFE_style: providerShellStyle,
     children,
   });
+}
+
+function ReactActionBarDemo() {
+  const [demoProps, setDemoProps] = useState(actionBarDemoPropsFromWindow);
+  const [isCleared, setIsCleared] = useState(false);
+  const [clearCount, setClearCount] = useState(0);
+  const [actionCount, setActionCount] = useState(0);
+  const selectedItemCount = isCleared ? 0 : demoProps.selectedItemCount;
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actionbar") {
+        setDemoProps(normalizeActionBarDemoProps(event.detail.props ?? {}));
+        setIsCleared(false);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-actionbar-row",
+      "data-comparison-control-root": "actionbar",
+      "data-comparison-control-props": serializeActionBarDemoProps(demoProps),
+      "data-comparison-actionbar-props": serializeActionBarDemoProps(demoProps),
+      "data-comparison-selected-count": String(selectedItemCount),
+      "data-comparison-clear-count": String(clearCount),
+      "data-comparison-action-count": String(actionCount),
+      children: jsx(SpectrumActionBar, {
+        selectedItemCount,
+        isEmphasized: demoProps.isEmphasized,
+        onClearSelection: () => {
+          setClearCount((count) => count + 1);
+          setIsCleared(true);
+        },
+        children: actionBarItems.map((item) =>
+          jsxs(
+            SpectrumActionButton,
+            {
+              onPress: () => setActionCount((count) => count + 1),
+              children: [
+                jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+                jsx(SpectrumText, { children: item.label }),
+              ],
+            },
+            item.id,
+          ),
+        ),
+      }),
+    }),
+  );
 }
 
 function ReactAccordionDemo() {
