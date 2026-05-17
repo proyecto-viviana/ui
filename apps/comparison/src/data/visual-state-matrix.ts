@@ -124,6 +124,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Browser contracts assert DOM virtual click activation, touch tap activation, menu item action dispatch, close-on-select cleanup, ARIA state reset, and disabled trigger touch suppression on both stacks.",
     },
     {
+      id: "styled.target-contrast",
+      label: "Styled target size and contrast",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionmenu-contract.spec.ts",
+      note: "Scoped color-contrast axe scans cover closed and open states on both stacks; target-size checks compare all trigger sizes against React Spectrum and record the upstream XS 20px target while enforcing the 24px floor for non-XS sizes.",
+    },
+    {
       id: "styled.default",
       label: "Styled default",
       kind: "static",

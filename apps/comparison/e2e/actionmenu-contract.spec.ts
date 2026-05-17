@@ -67,14 +67,19 @@ async function markA11yScope(target: Locator, scope: string) {
   }, scope);
 }
 
-async function expectNoAxeViolations(page: Page, targets: Locator[], label: string) {
+async function expectNoAxeViolations(
+  page: Page,
+  targets: Locator[],
+  label: string,
+  options: { includeColorContrast?: boolean } = {},
+) {
   await ensureAxe(page);
   const selectors = await Promise.all(
     targets.map((target, index) => markA11yScope(target, `${label}-${index}`)),
   );
 
   const violations = await page.evaluate(
-    async ({ selector, tags }) => {
+    async ({ selector, tags, rules }) => {
       const axeRunner = (
         window as unknown as {
           axe: {
@@ -98,9 +103,7 @@ async function expectNoAxeViolations(page: Page, targets: Locator[], label: stri
 
       const results = await axeRunner.run(selector, {
         runOnly: { type: "tag", values: tags },
-        rules: {
-          "color-contrast": { enabled: false },
-        },
+        rules,
       });
 
       return results.violations.map((violation) => ({
@@ -114,7 +117,11 @@ async function expectNoAxeViolations(page: Page, targets: Locator[], label: stri
         })),
       }));
     },
-    { selector: selectors.join(", "), tags: [...actionMenuAxeTags] },
+    {
+      selector: selectors.join(", "),
+      tags: [...actionMenuAxeTags],
+      rules: options.includeColorContrast ? {} : { "color-contrast": { enabled: false } },
+    },
   );
 
   expect(violations, `${label} axe violations`).toEqual([]);
@@ -340,6 +347,55 @@ async function expectDisabledTouchSuppressed(
   await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
 }
 
+async function actionMenuTriggerTargetSize(trigger: Locator, label: string) {
+  const box = await trigger.boundingBox();
+  if (!box) {
+    throw new Error(`${label} target-size check requires a visible trigger.`);
+  }
+
+  return {
+    width: Number(box.width.toFixed(3)),
+    height: Number(box.height.toFixed(3)),
+  };
+}
+
+function expectTargetSizeParity(
+  solid: Awaited<ReturnType<typeof actionMenuTriggerTargetSize>>,
+  react: Awaited<ReturnType<typeof actionMenuTriggerTargetSize>>,
+  label: string,
+) {
+  expect(Math.abs(solid.width - react.width), `${label} target width parity`).toBeLessThanOrEqual(
+    1,
+  );
+  expect(
+    Math.abs(solid.height - react.height),
+    `${label} target height parity`,
+  ).toBeLessThanOrEqual(1);
+}
+
+async function expectColorContrastAxe(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+  label: string,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+
+  await expectNoAxeViolations(page, [root], `${label} closed color contrast`, {
+    includeColorContrast: true,
+  });
+
+  await trigger.click();
+  const menu = await actionMenuOpenMenu(page, trigger);
+
+  await expectNoAxeViolations(page, [root, menu], `${label} open color contrast`, {
+    includeColorContrast: true,
+  });
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+}
+
 test.describe("comparison ActionMenu route contract", () => {
   test("ActionMenu route mounts the React and Solid styled references", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
@@ -459,6 +515,40 @@ test.describe("comparison ActionMenu route contract", () => {
 
     await expectVirtualClickLifecycle(page, reactPanel, reactRoot, /Cut/, "cut");
     await expectVirtualClickLifecycle(page, solidPanel, solidRoot, /Cut/, "cut");
+  });
+
+  test("ActionMenu trigger target sizes match React Spectrum on both stacks", async ({ page }) => {
+    for (const size of actionMenuSizeOptions) {
+      const { reactPanel, solidPanel } = await actionMenuFixtures(page, { size });
+      const reactSize = await actionMenuTriggerTargetSize(
+        reactPanel.getByRole("button", { name: "More actions" }),
+        `React ActionMenu ${size}`,
+      );
+      const solidSize = await actionMenuTriggerTargetSize(
+        solidPanel.getByRole("button", { name: "More actions" }),
+        `Solid ActionMenu ${size}`,
+      );
+
+      expectTargetSizeParity(solidSize, reactSize, `ActionMenu ${size}`);
+      if (size === "XS") {
+        expect(reactSize.width, "React ActionMenu XS upstream target width").toBe(20);
+        expect(reactSize.height, "React ActionMenu XS upstream target height").toBe(20);
+      } else {
+        expect(reactSize.width, `React ActionMenu ${size} target width`).toBeGreaterThanOrEqual(24);
+        expect(reactSize.height, `React ActionMenu ${size} target height`).toBeGreaterThanOrEqual(
+          24,
+        );
+      }
+    }
+  });
+
+  test("ActionMenu color contrast has no scoped axe violations on both stacks", async ({
+    page,
+  }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
+
+    await expectColorContrastAxe(page, reactPanel, reactRoot, "React ActionMenu");
+    await expectColorContrastAxe(page, solidPanel, solidRoot, "Solid ActionMenu");
   });
 });
 
