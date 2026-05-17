@@ -106,6 +106,29 @@ describe("ActionMenu (solid-spectrum)", () => {
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
+  it("closes when pressing outside the menu", async () => {
+    const user = setupUser();
+    const onOpenChange = vi.fn();
+    render(() => (
+      <>
+        <button type="button">Outside target</button>
+        <ActionMenu items={items} getKey={(item) => item.id} onOpenChange={onOpenChange} />
+      </>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    await user.click(trigger);
+
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    await user.click(screen.getByText("Outside target"));
+
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
   it("marks disabled keys and suppresses their actions", async () => {
     const user = setupUser();
     const onAction = vi.fn();

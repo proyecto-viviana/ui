@@ -77,6 +77,29 @@ async function expectKeyboardMenuButtonContract(
   await expect(trigger).toBeFocused();
 }
 
+async function expectOutsidePointerClosesMenu(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+
+  await trigger.click();
+
+  const menu = page.getByRole("menu").first();
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: /Copy/ })).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "true");
+
+  await page.mouse.click(8, 8);
+
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).not.toHaveAttribute("aria-controls");
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
+}
+
 test.describe("comparison ActionMenu route contract", () => {
   test("ActionMenu route mounts the React and Solid styled references", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
@@ -175,5 +198,12 @@ test.describe("comparison ActionMenu route contract", () => {
 
     await expectKeyboardMenuButtonContract(page, reactPanel, reactRoot);
     await expectKeyboardMenuButtonContract(page, solidPanel, solidRoot);
+  });
+
+  test("ActionMenu outside pointer press closes the open menu", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
+
+    await expectOutsidePointerClosesMenu(page, reactPanel, reactRoot);
+    await expectOutsidePointerClosesMenu(page, solidPanel, solidRoot);
   });
 });

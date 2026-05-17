@@ -101,7 +101,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/actionmenu-contract.spec.ts",
-      note: "ActionMenu route mounts both stacks with static JSX MenuItem composition and asserts the official S2 viewer controls plus the shouldFlip API axis, disabled trigger state, item action callback keys, keyboard menu-button ARIA state, Escape cleanup, and focus restore.",
+      note: "ActionMenu route mounts both stacks with static JSX MenuItem composition and asserts the official S2 viewer controls plus the shouldFlip API axis, disabled trigger state, item action callback keys, keyboard menu-button ARIA state, Escape cleanup, focus restore, and outside pointer dismissal.",
     },
     {
       id: "styled.default",
