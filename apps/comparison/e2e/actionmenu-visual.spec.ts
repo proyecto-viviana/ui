@@ -514,6 +514,113 @@ test.describe("comparison ActionMenu visual parity", () => {
     await expect(actionMenuOpenMenuContract(solidMenu)).resolves.toEqual(reactContract);
   });
 
+  test("ActionMenu forced-colors trigger is pixel-identical", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await expect(page.evaluate(() => matchMedia("(forced-colors: active)").matches)).resolves.toBe(
+      true,
+    );
+
+    const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
+
+    await expectExactScreenshotPair(
+      page,
+      reactTrigger,
+      solidTrigger,
+      "ActionMenu forced-colors trigger",
+    );
+  });
+
+  test("ActionMenu forced-colors open menu is pixel-identical", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await expect(page.evaluate(() => matchMedia("(forced-colors: active)").matches)).resolves.toBe(
+      true,
+    );
+
+    const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
+    const { reactMenu, solidMenu } = await actionMenuOpenMenus(page, reactTrigger, solidTrigger);
+
+    await expectExactPreparedScreenshotPair(
+      page,
+      reactMenu,
+      solidMenu,
+      "ActionMenu forced-colors open menu",
+      async () => {
+        await openActionMenu(reactTrigger, reactMenu);
+      },
+      async () => {
+        await page.keyboard.press("Escape");
+        await openActionMenu(solidTrigger, solidMenu);
+      },
+    );
+  });
+
+  test("ActionMenu accessibility media environments match React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await expect(page.evaluate(() => matchMedia("(forced-colors: active)").matches)).resolves.toBe(
+      true,
+    );
+
+    for (const params of [{}, { isQuiet: true }, { isDisabled: true }] as const) {
+      const { reactTrigger, solidTrigger } = await actionMenuFixtures(page, params);
+
+      await expect(actionMenuTriggerContract(solidTrigger)).resolves.toEqual(
+        await actionMenuTriggerContract(reactTrigger),
+      );
+    }
+
+    const forcedColorFixtures = await actionMenuFixtures(page);
+    const forcedColorMenus = await actionMenuOpenMenus(
+      page,
+      forcedColorFixtures.reactTrigger,
+      forcedColorFixtures.solidTrigger,
+    );
+
+    await openActionMenu(forcedColorFixtures.reactTrigger, forcedColorMenus.reactMenu);
+    const forcedColorReactMenu = await actionMenuOpenMenuContract(forcedColorMenus.reactMenu);
+
+    await page.keyboard.press("Escape");
+    await openActionMenu(forcedColorFixtures.solidTrigger, forcedColorMenus.solidMenu);
+
+    await expect(actionMenuOpenMenuContract(forcedColorMenus.solidMenu)).resolves.toEqual(
+      forcedColorReactMenu,
+    );
+
+    await page.keyboard.press("Escape");
+    await page.emulateMedia({ forcedColors: "none", reducedMotion: "reduce" });
+    await expect(
+      page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches),
+    ).resolves.toBe(true);
+
+    const reducedMotionFixtures = await actionMenuFixtures(page);
+    await expect(actionMenuTriggerContract(reducedMotionFixtures.solidTrigger)).resolves.toEqual(
+      await actionMenuTriggerContract(reducedMotionFixtures.reactTrigger),
+    );
+
+    const reducedMotionMenus = await actionMenuOpenMenus(
+      page,
+      reducedMotionFixtures.reactTrigger,
+      reducedMotionFixtures.solidTrigger,
+    );
+
+    await openActionMenuSettled(
+      page,
+      reducedMotionFixtures.reactTrigger,
+      reducedMotionMenus.reactMenu,
+    );
+    const reducedMotionReactMenu = await actionMenuOpenMenuContract(reducedMotionMenus.reactMenu);
+
+    await page.keyboard.press("Escape");
+    await openActionMenuSettled(
+      page,
+      reducedMotionFixtures.solidTrigger,
+      reducedMotionMenus.solidMenu,
+    );
+
+    await expect(actionMenuOpenMenuContract(reducedMotionMenus.solidMenu)).resolves.toEqual(
+      reducedMotionReactMenu,
+    );
+  });
+
   test("ActionMenu placement axes match React Spectrum", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1800 });
 

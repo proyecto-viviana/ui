@@ -143,6 +143,26 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/actionmenu-visual.spec.ts",
       note: "Settled overlay geometry matches React Spectrum for align start/end, direction top/bottom/left/right/start/end, and shouldFlip=false bottom placement.",
     },
+    {
+      id: "styled.forced-colors",
+      label: "Styled forced colors",
+      kind: "overlay",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "strict",
+      spec: "e2e/actionmenu-visual.spec.ts",
+      note: "Forced-colors media emulation verifies the browser environment, compares trigger computed contracts for default, quiet, and disabled states, and adds strict pair-diff evidence for both the closed trigger and open menu.",
+    },
+    {
+      id: "styled.reduced-motion",
+      label: "Styled reduced motion",
+      kind: "overlay",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionmenu-visual.spec.ts",
+      note: "Reduced-motion media emulation verifies the browser environment and compares settled trigger and open-menu computed contracts across React Spectrum and Solid.",
+    },
   ],
   actionbar: [
     {
