@@ -96,6 +96,67 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(trigger).toHaveAttribute("aria-controls", menu.id);
   });
 
+  it("forwards reactive data attributes to the trigger instead of the menu", async () => {
+    const [owner, setOwner] = createSignal("documents");
+    render(() => (
+      <ActionMenu
+        defaultOpen
+        data-testid="document-actions-trigger"
+        data-owner={owner()}
+        items={items}
+        getKey={(item) => item.id}
+      />
+    ));
+
+    const trigger = screen.getByTestId("document-actions-trigger");
+    expect(trigger).toHaveAttribute("data-owner", "documents");
+    expect(screen.getByRole("menu")).not.toHaveAttribute("data-owner");
+
+    setOwner("archives");
+
+    await waitFor(() => expect(trigger).toHaveAttribute("data-owner", "archives"));
+  });
+
+  it("resolves slotted ActionMenuContext props and lets local props override context", () => {
+    render(() => (
+      <ActionMenuContext.Provider
+        value={{
+          slots: {
+            primary: {
+              label: "Context actions",
+              size: "XL",
+              isQuiet: true,
+              "data-context-slot": "primary",
+            },
+            secondary: {
+              label: "Secondary actions",
+              isDisabled: true,
+            },
+          },
+        }}
+      >
+        <ActionMenu
+          slot="primary"
+          size="S"
+          data-local-slot="primary"
+          items={items}
+          getKey={(item) => item.id}
+        />
+        <ActionMenu slot={null} label="Local actions" items={items} getKey={(item) => item.id} />
+      </ActionMenuContext.Provider>
+    ));
+
+    const slottedTrigger = screen.getByRole("button", { name: "Context actions" });
+    expect(slottedTrigger).toHaveAttribute("data-size", "S");
+    expect(slottedTrigger).toHaveAttribute("data-quiet", "true");
+    expect(slottedTrigger).toHaveAttribute("data-context-slot", "primary");
+    expect(slottedTrigger).toHaveAttribute("data-local-slot", "primary");
+
+    const localTrigger = screen.getByRole("button", { name: "Local actions" });
+    expect(localTrigger).toHaveAttribute("data-size", "M");
+    expect(localTrigger).not.toHaveAttribute("data-quiet");
+  });
+
   it("opens from keyboard, moves focus into the menu, closes with Escape, and restores focus", async () => {
     const user = setupUser();
     render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
@@ -248,6 +309,26 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 
+  it("updates data-driven render-function children while the menu is open", async () => {
+    const [currentItems, setCurrentItems] = createSignal(items.slice(0, 1));
+    render(() => (
+      <ActionMenu defaultOpen items={currentItems()} getKey={(item) => item.id}>
+        {(item) => (
+          <MenuItem id={item.id} textValue={item.label}>
+            <Text slot="label">{item.label}</Text>
+          </MenuItem>
+        )}
+      </ActionMenu>
+    ));
+
+    expect(screen.getByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Cut" })).not.toBeInTheDocument();
+
+    setCurrentItems(items.slice(0, 2));
+
+    await waitFor(() => expect(screen.getByRole("menuitem", { name: "Cut" })).toBeInTheDocument());
+  });
+
   it("supports static JSX children for compositional menu item content", async () => {
     const user = setupUser();
     const onAction = vi.fn();
@@ -275,6 +356,33 @@ describe("ActionMenu (solid-spectrum)", () => {
     await user.click(screen.getByRole("menuitem", { name: "Copy" }));
 
     expect(onAction).toHaveBeenCalledWith("copy");
+  });
+
+  it("keeps static JSX menu children lazy until the ActionMenu opens", async () => {
+    const user = setupUser();
+    let staticItemRenderCount = 0;
+    function LazyMenuItem() {
+      staticItemRenderCount += 1;
+      return (
+        <MenuItem id="lazy" textValue="Lazy item">
+          <Text slot="label">Lazy item</Text>
+        </MenuItem>
+      );
+    }
+
+    render(() => (
+      <ActionMenu>
+        <LazyMenuItem />
+      </ActionMenu>
+    ));
+
+    expect(staticItemRenderCount).toBe(0);
+    expect(screen.queryByRole("menuitem", { name: "Lazy item" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+
+    expect(await screen.findByRole("menuitem", { name: "Lazy item" })).toBeInTheDocument();
+    expect(staticItemRenderCount).toBeGreaterThan(0);
   });
 
   it("supports controlled open state callbacks", async () => {

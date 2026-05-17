@@ -150,6 +150,38 @@ function actionMenuPlacementAxis(
   return direction ?? "bottom";
 }
 
+function getDataAttributes(
+  ...sources: Array<Record<string, unknown> | null | undefined>
+): JSX.HTMLAttributes<HTMLButtonElement> {
+  const attributes: Record<string, unknown> = {};
+
+  for (const source of sources) {
+    if (!source) {
+      continue;
+    }
+
+    for (const key in source) {
+      if (key.startsWith("data-")) {
+        attributes[key] = source[key];
+      }
+    }
+  }
+
+  return attributes as JSX.HTMLAttributes<HTMLButtonElement>;
+}
+
+function omitDataAttributes<T extends Record<string, unknown>>(source: T): T {
+  const result: Record<string, unknown> = {};
+
+  for (const key in source) {
+    if (!key.startsWith("data-")) {
+      result[key] = source[key];
+    }
+  }
+
+  return result as T;
+}
+
 /**
  * ActionMenu combines an ActionButton with a Menu for simple "more actions" use cases.
  */
@@ -189,6 +221,16 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
   const size = (): ActionButtonSize => local.size ?? "M";
   const menuSize = (): ActionMenuMenuSize => local.menuSize ?? "M";
   const items = () => local.items as HeadlessMenuProps<T>["items"] | undefined;
+  const triggerDataAttributes = () =>
+    getDataAttributes(
+      contextProps as Record<string, unknown> | null,
+      props as Record<string, unknown>,
+    );
+  const menuOnlyProps = () =>
+    omitDataAttributes(menuProps as Record<string, unknown>) as Omit<
+      HeadlessMenuProps<T>,
+      "children" | "items"
+    >;
   const [triggerElement, setTriggerElement] = createSignal<HTMLButtonElement | null>(null);
   const iconContextValue = {
     slot: "icon",
@@ -279,6 +321,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
   return (
     <HeadlessMenuTrigger {...triggerProps}>
       <HeadlessMenuButton
+        {...triggerDataAttributes()}
         id={local.id}
         aria-label={triggerLabel()}
         aria-labelledby={local["aria-labelledby"]}
@@ -303,7 +346,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         </IconContext.Provider>
       </HeadlessMenuButton>
       <ActionMenuPopover
-        menuProps={menuProps}
+        menuProps={menuOnlyProps}
         items={items}
         staticChildren={() => local.children as JSX.Element | undefined}
         renderMenuItem={renderMenuItem}
@@ -320,7 +363,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
 }
 
 interface ActionMenuPopoverProps<T extends object> {
-  menuProps: Omit<HeadlessMenuProps<T>, "children" | "items">;
+  menuProps: () => Omit<HeadlessMenuProps<T>, "children" | "items">;
   items: () => HeadlessMenuProps<T>["items"] | undefined;
   staticChildren: () => JSX.Element | undefined;
   renderMenuItem: (item: T) => JSX.Element;
@@ -475,7 +518,7 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
     >
       <div class={menuFrame}>
         <HeadlessMenu
-          {...props.menuProps}
+          {...props.menuProps()}
           items={props.items()}
           staticChildren={usesStaticChildren() ? props.staticChildren : undefined}
           aria-label={props.triggerLabel()}
