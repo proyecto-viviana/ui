@@ -30,6 +30,7 @@ import { mergeStyles } from "../s2-style/runtime";
 import { s2IntlStrings } from "../intl";
 import { Text } from "../text";
 import { useTheme } from "../provider";
+import { pressScale } from "../pressScale";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -215,8 +216,10 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
     ]
       .filter(Boolean)
       .join(" ");
-  const getButtonStyle = () =>
-    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style) ?? {};
+  const getButtonStyle = (renderProps: MenuTriggerRenderProps) =>
+    pressScale(triggerElement, () => {
+      return mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style) ?? {};
+    })(renderProps);
   const renderMenuItem = (item: T): JSX.Element => {
     if (typeof local.children === "function") {
       return local.children(item);

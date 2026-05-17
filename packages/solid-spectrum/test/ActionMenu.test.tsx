@@ -3,7 +3,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
-import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal } from "solid-js";
 import { ActionMenu, ActionMenuContext, MenuItem } from "../src/menu";
 import { Keyboard, Text } from "../src/text";
@@ -127,6 +127,36 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("applies the upstream press scale transform while pressed", () => {
+    render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    const rect = {
+      width: 96,
+      height: 36,
+      top: 0,
+      right: 96,
+      bottom: 36,
+      left: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect;
+    const rectSpy = vi.spyOn(trigger, "getBoundingClientRect").mockReturnValue(rect);
+
+    try {
+      firePointerDown(trigger);
+
+      expect(trigger).toHaveAttribute("data-pressed", "true");
+      expect(trigger).toHaveStyle({
+        transform: "perspective(36px) translate3d(0, 0, -2px)",
+        "will-change": "transform",
+      });
+    } finally {
+      rectSpy.mockRestore();
+    }
   });
 
   it("marks disabled keys and suppresses their actions", async () => {

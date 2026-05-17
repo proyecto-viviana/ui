@@ -124,6 +124,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Open ActionMenu menu surface has strict zero-tolerance pair-diff evidence and computed style/geometry parity for the static JSX menu, first item, icon, label, description, and keyboard shortcut slots.",
     },
     {
+      id: "styled.trigger-interaction-states",
+      label: "Styled trigger interaction states",
+      kind: "interaction",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "asserted",
+      spec: "e2e/actionmenu-visual.spec.ts",
+      note: "ActionMenu trigger hover and focus-visible states have strict padded pair-diff evidence, and pressed state matches React Spectrum's pressScale transform with a bounded transform antialias threshold plus package regression coverage.",
+    },
+    {
       id: "styled.placement-axes",
       label: "Styled placement axes",
       kind: "overlay",

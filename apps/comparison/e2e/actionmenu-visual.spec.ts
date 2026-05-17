@@ -2,10 +2,17 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
 import {
   clearPointer,
+  compareScreenshots,
+  exactPairDiff,
   expectExactPreparedScreenshotPair,
   expectExactScreenshotPair,
   pinComparisonTheme,
 } from "./visual-diff";
+
+const transformedTriggerPairDiff = {
+  ...exactPairDiff,
+  pixelThreshold: 4,
+};
 
 function actionMenuQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -122,6 +129,94 @@ async function openActionMenuSettled(page: Page, trigger: Locator, menu: Locator
   await openActionMenu(trigger, menu);
   // React S2 popovers have a 200ms entrance transform; compare settled geometry.
   await page.waitForTimeout(300);
+}
+
+async function waitForActionMenuTriggerTransition(page: Page) {
+  await page.waitForTimeout(300);
+}
+
+async function waitForScreenshotFrame(target: Locator) {
+  await target.evaluate(async () => {
+    if ("fonts" in document) {
+      await document.fonts.ready;
+    }
+
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
+}
+
+async function fixedPaddedElementScreenshot(
+  target: Locator,
+  prepare: () => Promise<void>,
+  padding = 4,
+) {
+  const previousStyle = await target.evaluate((element) => {
+    const htmlElement = element as HTMLElement;
+    const style = htmlElement.getAttribute("style");
+
+    htmlElement.style.position = "fixed";
+    htmlElement.style.insetBlockStart = "64px";
+    htmlElement.style.insetInlineStart = "64px";
+    htmlElement.style.margin = "0";
+    htmlElement.style.zIndex = "2147483647";
+
+    return style;
+  });
+
+  try {
+    await waitForScreenshotFrame(target);
+    await prepare();
+    await waitForActionMenuTriggerTransition(target.page());
+    await waitForScreenshotFrame(target);
+
+    const box = await target.boundingBox();
+    if (!box) {
+      throw new Error("ActionMenu trigger screenshot requires a mounted element.");
+    }
+
+    return target.page().screenshot({
+      animations: "disabled",
+      clip: {
+        x: Math.floor(Math.max(0, box.x - padding)),
+        y: Math.floor(Math.max(0, box.y - padding)),
+        width: Math.ceil(box.width + padding * 2),
+        height: Math.ceil(box.height + padding * 2),
+      },
+    });
+  } finally {
+    await target.evaluate((element, style) => {
+      const htmlElement = element as HTMLElement;
+      if (style === null) {
+        htmlElement.removeAttribute("style");
+      } else {
+        htmlElement.setAttribute("style", style);
+      }
+    }, previousStyle);
+  }
+}
+
+async function expectPreparedPaddedTriggerPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+  threshold = exactPairDiff,
+) {
+  await clearPointer(page);
+  const reactPng = await fixedPaddedElementScreenshot(reactTarget, prepareReact);
+
+  await page.mouse.up();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await clearPointer(page);
+  const solidPng = await fixedPaddedElementScreenshot(solidTarget, prepareSolid);
+
+  await page.mouse.up();
+  const diff = await compareScreenshots(page, reactPng, solidPng, label, threshold);
+  return { reactPng, solidPng, diff };
 }
 
 async function actionMenuOpenMenuContract(menu: Locator) {
@@ -307,6 +402,66 @@ test.describe("comparison ActionMenu visual parity", () => {
     const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
 
     await expectExactScreenshotPair(page, reactTrigger, solidTrigger, "ActionMenu default trigger");
+  });
+
+  test("ActionMenu trigger hover state is pixel-identical", async ({ page }) => {
+    const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
+
+    await expectPreparedPaddedTriggerPair(
+      page,
+      reactTrigger,
+      solidTrigger,
+      "ActionMenu trigger hover",
+      async () => {
+        await reactTrigger.hover();
+        await expect(reactTrigger).toHaveAttribute("data-hovered", "true");
+      },
+      async () => {
+        await solidTrigger.hover();
+        await expect(solidTrigger).toHaveAttribute("data-hovered", "true");
+      },
+    );
+  });
+
+  test("ActionMenu trigger focus-visible state is pixel-identical", async ({ page }) => {
+    const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
+
+    await expectPreparedPaddedTriggerPair(
+      page,
+      reactTrigger,
+      solidTrigger,
+      "ActionMenu trigger focus-visible",
+      async () => {
+        await reactTrigger.focus();
+        await expect(reactTrigger).toHaveAttribute("data-focus-visible", "true");
+      },
+      async () => {
+        await solidTrigger.focus();
+        await expect(solidTrigger).toHaveAttribute("data-focus-visible", "true");
+      },
+    );
+  });
+
+  test("ActionMenu trigger pressed state matches current React Spectrum", async ({ page }) => {
+    const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
+
+    await expectPreparedPaddedTriggerPair(
+      page,
+      reactTrigger,
+      solidTrigger,
+      "ActionMenu trigger pressed",
+      async () => {
+        await reactTrigger.hover();
+        await page.mouse.down();
+        await expect(reactTrigger).toHaveAttribute("data-pressed", "true");
+      },
+      async () => {
+        await solidTrigger.hover();
+        await page.mouse.down();
+        await expect(solidTrigger).toHaveAttribute("data-pressed", "true");
+      },
+      transformedTriggerPairDiff,
+    );
   });
 
   test("ActionMenu trigger computed styles match React Spectrum across viewer axes", async ({
