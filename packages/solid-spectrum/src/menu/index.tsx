@@ -19,6 +19,7 @@ import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
+import LinkOutIcon from "../icon/ui-icons/LinkOut";
 import InfoCircleIcon from "../icon/s2wf-icons/InfoCircleIcon";
 import { IconContext } from "../icon/spectrum-icon";
 import { s2IntlStrings } from "../intl";
@@ -34,14 +35,21 @@ import {
   menuItemKeyboard,
   menuItemLabel,
   menuItemValue,
+  menuSection,
   type S2MenuItemStyleProps,
   type S2MenuSize,
 } from "./s2-menu-styles";
+import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
 
 export type MenuSize = S2MenuSize | "sm" | "md" | "lg";
 
-const MenuSizeContext = createContext<S2MenuSize>("M");
 const UnavailableMenuItemContext = createContext(false);
+const linkOutIconSize: Record<S2MenuSize, "M" | "L" | "XL"> = {
+  S: "M",
+  M: "L",
+  L: "XL",
+  XL: "XL",
+};
 
 export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class" | "style"> {
   /** The size of the menu. */
@@ -60,6 +68,8 @@ export interface MenuButtonProps extends Omit<HeadlessMenuButtonProps, "class" |
 export interface MenuProps<T> extends Omit<HeadlessMenuProps<T>, "class" | "style"> {
   /** Additional CSS class name. */
   class?: string;
+  /** Hides the default link out icons on menu items that open links in a new tab. */
+  hideLinkOutIcon?: boolean;
 }
 
 export interface MenuItemProps<T> extends Omit<HeadlessMenuItemProps<T>, "class" | "style"> {
@@ -210,7 +220,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
  */
 export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["class"]);
+  const [local, headlessProps] = splitProps(mergedProps, ["class", "hideLinkOutIcon"]);
   const size = useContext(MenuSizeContext);
   const customClass = local.class ?? "";
 
@@ -218,7 +228,11 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     return [s2Menu({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
   };
 
-  return <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />;
+  return (
+    <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
+      <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />
+    </MenuLinkOutIconContext.Provider>
+  );
 }
 
 /**
@@ -234,10 +248,12 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     "isDestructive",
   ]);
   const size = useContext(MenuSizeContext);
+  const hideLinkOutIcon = useContext(MenuLinkOutIconContext);
   const isUnavailable = useContext(UnavailableMenuItemContext);
   const customClass = local.class ?? "";
   const unavailableDescriptionId = createUniqueId();
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+  const isLinkOut = () => headlessProps.href != null && headlessProps.target === "_blank";
 
   const getClassName = (renderProps: MenuItemRenderProps): string => {
     const isFocused = (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused;
@@ -304,6 +320,14 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
             {local.icon?.()}
             {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
             {local.shortcut ? <StyledKeyboard>{local.shortcut}</StyledKeyboard> : null}
+            <Show when={isLinkOut() && !hideLinkOutIcon}>
+              <span slot="descriptor" class={menuItemDescriptor} data-rsp-slot="descriptor">
+                <LinkOutIcon
+                  size={linkOutIconSize[size]}
+                  class={menuItemDescriptorIcon({ size })}
+                />
+              </span>
+            </Show>
             <Show when={isUnavailable}>
               <span
                 id={unavailableDescriptionId}
@@ -356,11 +380,12 @@ export function UnavailableMenuItemTrigger(props: UnavailableMenuItemTriggerProp
 
 export function MenuSection(props: MenuSectionProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
+  const size = useContext(MenuSizeContext);
 
   return (
     <HeadlessMenuSection
       {...headlessProps}
-      class={["px-1 py-1", local.class ?? ""].filter(Boolean).join(" ")}
+      class={[menuSection({ size }), local.class ?? ""].filter(Boolean).join(" ")}
     >
       {props.children}
     </HeadlessMenuSection>

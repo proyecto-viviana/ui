@@ -15,7 +15,7 @@ import {
   Text as SubpathText,
   UnavailableMenuItemTrigger,
 } from "../src/ActionMenu";
-import { ActionMenu, ActionMenuContext, MenuItem } from "../src/menu";
+import { ActionMenu, ActionMenuContext, MenuItem, MenuSection } from "../src/menu";
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
 
@@ -383,6 +383,102 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     expect(await screen.findByRole("menuitem", { name: "Lazy item" })).toBeInTheDocument();
     expect(staticItemRenderCount).toBeGreaterThan(0);
+  });
+
+  it("supports MenuSection composition inside ActionMenu", () => {
+    render(() => (
+      <ActionMenu defaultOpen>
+        <MenuSection aria-label="Document actions" data-testid="document-actions-section">
+          <MenuItem id="copy" textValue="Copy">
+            <Text slot="label">Copy</Text>
+          </MenuItem>
+          <MenuItem id="archive" textValue="Archive">
+            <Text slot="label">Archive</Text>
+          </MenuItem>
+        </MenuSection>
+      </ActionMenu>
+    ));
+
+    const section = screen.getByTestId("document-actions-section");
+    expect(section).toHaveAttribute("data-section");
+    expect(within(section).getByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
+    expect(within(section).getByRole("menuitem", { name: "Archive" })).toBeInTheDocument();
+  });
+
+  it("renders link-style MenuItems with S2 link-out descriptors inside ActionMenu", () => {
+    const visibleDescriptor = render(() => (
+      <ActionMenu defaultOpen menuSize="XL" label="Document links">
+        <MenuItem
+          id="docs"
+          textValue="Open docs"
+          href="https://example.com/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Text slot="label">Open docs</Text>
+        </MenuItem>
+      </ActionMenu>
+    ));
+
+    const linkItem = screen.getByRole("menuitem", { name: "Open docs" });
+    expect(linkItem.tagName).toBe("A");
+    expect(linkItem).toHaveAttribute("href", "https://example.com/docs");
+    expect(linkItem).toHaveAttribute("target", "_blank");
+    expect(linkItem).toHaveAttribute("rel", "noopener noreferrer");
+
+    const descriptor = linkItem.querySelector('[slot="descriptor"]');
+    expect(descriptor).toBeInTheDocument();
+    expect(descriptor?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(descriptor?.querySelector("svg")).toHaveAttribute("width", "14");
+
+    visibleDescriptor.unmount();
+
+    render(() => (
+      <ActionMenu defaultOpen label="Hidden link descriptor" hideLinkOutIcon>
+        <MenuItem
+          id="hidden-docs"
+          textValue="Hidden docs"
+          href="https://example.com/hidden"
+          target="_blank"
+        >
+          <Text slot="label">Hidden docs</Text>
+        </MenuItem>
+      </ActionMenu>
+    ));
+
+    const hiddenLinkItem = screen.getByRole("menuitem", { name: "Hidden docs" });
+    expect(hiddenLinkItem.querySelector('[slot="descriptor"]')).toBeNull();
+  });
+
+  it("passes ActionMenu render state through custom MenuItem roots", () => {
+    render(() => (
+      <ActionMenu defaultOpen>
+        <MenuItem
+          id="custom"
+          textValue="Custom root"
+          isDisabled
+          render={(rootProps, renderProps) => {
+            const { children, ...rest } = rootProps;
+            return (
+              <li
+                {...rest}
+                data-custom-root="true"
+                data-render-disabled={renderProps.isDisabled ? "true" : "false"}
+              >
+                {children}
+              </li>
+            );
+          }}
+        >
+          <Text slot="label">Custom root</Text>
+        </MenuItem>
+      </ActionMenu>
+    ));
+
+    const customRoot = screen.getByRole("menuitem", { name: "Custom root" });
+    expect(customRoot).toHaveAttribute("data-custom-root", "true");
+    expect(customRoot).toHaveAttribute("aria-disabled", "true");
+    expect(customRoot).toHaveAttribute("data-render-disabled", "true");
   });
 
   it("supports controlled open state callbacks", async () => {

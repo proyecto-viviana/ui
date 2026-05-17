@@ -51,6 +51,7 @@ import {
   menuPopover,
   type S2MenuItemStyleProps,
 } from "./s2-menu-styles";
+import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
 
 export type ActionMenuMenuSize = "S" | "M" | "L" | "XL";
 export type ActionMenuAlign = "start" | "end";
@@ -76,6 +77,8 @@ export interface ActionMenuProps<T> extends Omit<
   size?: ActionButtonSize;
   /** The size of the Menu. @default 'M' */
   menuSize?: ActionMenuMenuSize;
+  /** Hides the default link out icons on menu items that open links in a new tab. */
+  hideLinkOutIcon?: boolean;
   /** Alignment of the menu relative to the trigger. @default 'start' */
   align?: ActionMenuAlign;
   /** Where the Menu opens relative to its trigger. @default 'bottom' */
@@ -198,6 +201,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
     "class",
     "size",
     "menuSize",
+    "hideLinkOutIcon",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -351,6 +355,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         staticChildren={() => local.children as JSX.Element | undefined}
         renderMenuItem={renderMenuItem}
         menuSize={menuSize}
+        hideLinkOutIcon={() => local.hideLinkOutIcon ?? false}
         triggerLabel={triggerLabel}
         triggerRef={triggerElement}
         class={local.class}
@@ -368,6 +373,7 @@ interface ActionMenuPopoverProps<T extends object> {
   staticChildren: () => JSX.Element | undefined;
   renderMenuItem: (item: T) => JSX.Element;
   menuSize: () => ActionMenuMenuSize;
+  hideLinkOutIcon: () => boolean;
   triggerLabel: () => string;
   triggerRef: () => HTMLButtonElement | null;
   class?: string;
@@ -517,15 +523,19 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
       }
     >
       <div class={menuFrame}>
-        <HeadlessMenu
-          {...props.menuProps()}
-          items={props.items()}
-          staticChildren={usesStaticChildren() ? props.staticChildren : undefined}
-          aria-label={props.triggerLabel()}
-          class={menuClass}
-        >
-          {usesStaticChildren() ? undefined : props.renderMenuItem}
-        </HeadlessMenu>
+        <MenuSizeContext.Provider value={props.menuSize()}>
+          <MenuLinkOutIconContext.Provider value={props.hideLinkOutIcon()}>
+            <HeadlessMenu
+              {...props.menuProps()}
+              items={props.items()}
+              staticChildren={usesStaticChildren() ? props.staticChildren : undefined}
+              aria-label={props.triggerLabel()}
+              class={menuClass}
+            >
+              {usesStaticChildren() ? undefined : props.renderMenuItem}
+            </HeadlessMenu>
+          </MenuLinkOutIconContext.Provider>
+        </MenuSizeContext.Provider>
       </div>
     </HeadlessPopover>
   );
