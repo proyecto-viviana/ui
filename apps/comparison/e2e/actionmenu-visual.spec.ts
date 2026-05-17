@@ -14,6 +14,12 @@ const transformedTriggerPairDiff = {
   pixelThreshold: 4,
 };
 
+const forcedColorOpenMenuPairDiff = {
+  ...exactPairDiff,
+  maxMismatchRatio: 0.004,
+  pixelThreshold: 192,
+};
+
 function actionMenuQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -113,8 +119,14 @@ async function actionMenuOpenMenus(page: Page, reactTrigger: Locator, solidTrigg
   const reactTriggerId = await reactTrigger.evaluate((element) => element.id);
   const reactMenu = page.locator(`[role="menu"][aria-labelledby="${reactTriggerId}"]`);
   const solidMenu = page.locator('[role="menu"][aria-label="More actions"]');
+  const reactPopover = page.locator(
+    `[data-placement]:has([role="menu"][aria-labelledby="${reactTriggerId}"])`,
+  );
+  const solidPopover = page.locator(
+    '[data-placement]:has([role="menu"][aria-label="More actions"])',
+  );
 
-  return { reactMenu, solidMenu };
+  return { reactMenu, solidMenu, reactPopover, solidPopover };
 }
 
 async function openActionMenu(trigger: Locator, menu: Locator) {
@@ -194,6 +206,82 @@ async function fixedPaddedElementScreenshot(
       }
     }, previousStyle);
   }
+}
+
+async function backedPopoverScreenshot(target: Locator) {
+  await waitForScreenshotFrame(target);
+
+  const previousState = await target.evaluate((element) => {
+    const htmlElement = element as HTMLElement;
+    const style = htmlElement.getAttribute("style");
+    const rect = htmlElement.getBoundingClientRect();
+    const background = getComputedStyle(htmlElement).backgroundColor;
+    const isTransparent = (value: string) =>
+      value === "transparent" || /^rgba\(.+,\s*0\)$/.test(value);
+    const backdrop = document.createElement("div");
+    const backdropId = `actionmenu-screenshot-backdrop-${Date.now()}-${Math.random()}`;
+
+    backdrop.id = backdropId;
+    backdrop.style.position = "fixed";
+    backdrop.style.insetBlockStart = "64px";
+    backdrop.style.insetInlineStart = "64px";
+    backdrop.style.width = `${rect.width}px`;
+    backdrop.style.height = `${rect.height}px`;
+    backdrop.style.backgroundColor = isTransparent(background) ? "Canvas" : background;
+    backdrop.style.zIndex = "2147483646";
+    backdrop.style.pointerEvents = "none";
+    document.body.append(backdrop);
+
+    htmlElement.style.position = "fixed";
+    htmlElement.style.insetBlockStart = "64px";
+    htmlElement.style.insetInlineStart = "64px";
+    htmlElement.style.margin = "0";
+    htmlElement.style.zIndex = "2147483647";
+    htmlElement.style.width = `${rect.width}px`;
+    htmlElement.style.height = `${rect.height}px`;
+
+    return { style, backdropId };
+  });
+
+  try {
+    await waitForScreenshotFrame(target);
+    return target.screenshot({ animations: "disabled" });
+  } finally {
+    await target.evaluate((element, state) => {
+      const htmlElement = element as HTMLElement;
+      document.getElementById(state.backdropId)?.remove();
+      if (state.style === null) {
+        htmlElement.removeAttribute("style");
+      } else {
+        htmlElement.setAttribute("style", state.style);
+      }
+    }, previousState);
+  }
+}
+
+async function expectPreparedBackedPopoverPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+  threshold = exactPairDiff,
+) {
+  await clearPointer(page);
+  await prepareReact();
+  await page.waitForTimeout(220);
+  const reactPng = await backedPopoverScreenshot(reactTarget);
+
+  await page.mouse.up();
+  await clearPointer(page);
+  await prepareSolid();
+  await page.waitForTimeout(220);
+  const solidPng = await backedPopoverScreenshot(solidTarget);
+
+  await page.mouse.up();
+  const diff = await compareScreenshots(page, reactPng, solidPng, label, threshold);
+  return { reactPng, solidPng, diff };
 }
 
 async function expectPreparedPaddedTriggerPair(
@@ -377,6 +465,146 @@ async function actionMenuPlacementContract(trigger: Locator, menu: Locator) {
 
 type ActionMenuPlacementContract = Awaited<ReturnType<typeof actionMenuPlacementContract>>;
 
+type ActionMenuPopoverTransitionContract = {
+  exists: boolean;
+  hasEntering: boolean;
+  hasExiting: boolean;
+  placement: string | null;
+  style: Record<string, string> | null;
+};
+
+async function actionMenuEnteringTransitionContract(
+  trigger: Locator,
+  menu: Locator,
+): Promise<ActionMenuPopoverTransitionContract> {
+  const contract = await trigger.evaluate(async (element) => {
+    const transitionContractForMenu = (menu: Element | null) => {
+      const popover = menu?.closest("[data-placement]") ?? null;
+      const styles = popover ? window.getComputedStyle(popover) : null;
+
+      return {
+        exists: !!popover,
+        hasEntering: popover?.hasAttribute("data-entering") ?? false,
+        hasExiting: popover?.hasAttribute("data-exiting") ?? false,
+        placement: popover?.getAttribute("data-placement") ?? null,
+        style: styles
+          ? {
+              opacity: styles.opacity,
+              translate: styles.translate,
+              transitionProperty: styles.transitionProperty,
+              transitionDuration: styles.transitionDuration,
+              transitionTimingFunction: styles.transitionTimingFunction,
+              pointerEvents: styles.pointerEvents,
+            }
+          : null,
+      };
+    };
+    const originalRequestAnimationFrame = window.requestAnimationFrame;
+    const originalCancelAnimationFrame = window.cancelAnimationFrame;
+    const callbacks: Array<[number, FrameRequestCallback]> = [];
+    const canceled = new Set<number>();
+    let nextFrame = 1;
+
+    window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      const handle = nextFrame++;
+      callbacks.push([handle, callback]);
+      return handle;
+    };
+    window.cancelAnimationFrame = (handle: number) => {
+      canceled.add(handle);
+    };
+
+    try {
+      (element as HTMLButtonElement).click();
+      let contract = transitionContractForMenu(document.querySelector('[role="menu"]'));
+      for (let index = 0; index < 5 && contract.style?.opacity !== "0"; index += 1) {
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        contract = transitionContractForMenu(document.querySelector('[role="menu"]'));
+      }
+      return contract;
+    } finally {
+      window.requestAnimationFrame = originalRequestAnimationFrame;
+      window.cancelAnimationFrame = originalCancelAnimationFrame;
+      for (const [handle, callback] of callbacks) {
+        if (!canceled.has(handle)) {
+          originalRequestAnimationFrame(callback);
+        }
+      }
+    }
+  });
+
+  await expect(menu).toBeVisible();
+  await trigger.page().waitForTimeout(50);
+  return contract;
+}
+
+async function actionMenuExitingTransitionContract(
+  page: Page,
+  menu: Locator,
+): Promise<ActionMenuPopoverTransitionContract> {
+  const menuHandle = await menu.elementHandle();
+  if (!menuHandle) {
+    throw new Error("ActionMenu exit transition requires a mounted menu.");
+  }
+  const popoverHandle = await menu.evaluateHandle((element) => element.closest("[data-placement]"));
+
+  const contract = await page.evaluate(
+    async ([menu, popover]) => {
+      menu.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Escape",
+          code: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      await Promise.resolve();
+
+      const element = popover instanceof Element && popover.isConnected ? popover : null;
+      const styles = element ? window.getComputedStyle(element) : null;
+      const transitionStyle = styles
+        ? {
+            transitionProperty: styles.transitionProperty,
+            transitionDuration: styles.transitionDuration,
+            transitionTimingFunction: styles.transitionTimingFunction,
+          }
+        : null;
+      let finalStyles: CSSStyleDeclaration | null = null;
+      let previousTransition: string | null = null;
+      if (element instanceof HTMLElement) {
+        previousTransition = element.style.transition;
+        element.style.transition = "none";
+        finalStyles = window.getComputedStyle(element);
+        element.style.transition = previousTransition;
+      }
+
+      return {
+        exists: !!element,
+        hasEntering: element?.hasAttribute("data-entering") ?? false,
+        hasExiting: element?.hasAttribute("data-exiting") ?? false,
+        placement: element?.getAttribute("data-placement") ?? null,
+        style:
+          styles && finalStyles && transitionStyle
+            ? {
+                opacity: finalStyles.opacity,
+                translate: finalStyles.translate,
+                transitionProperty: transitionStyle.transitionProperty,
+                transitionDuration: transitionStyle.transitionDuration,
+                transitionTimingFunction: transitionStyle.transitionTimingFunction,
+                pointerEvents: finalStyles.pointerEvents,
+              }
+            : null,
+      };
+    },
+    [menuHandle, popoverHandle],
+  );
+
+  await menuHandle.dispose();
+  await popoverHandle.dispose();
+  return contract;
+}
+
 function expectPlacementContractToMatch(
   actual: ActionMenuPlacementContract,
   expected: ActionMenuPlacementContract,
@@ -395,6 +623,39 @@ function expectPlacementContractToMatch(
       ).toBeLessThanOrEqual(1);
     }
   }
+}
+
+function translateY(translate: string | undefined) {
+  if (!translate) {
+    return Number.NaN;
+  }
+
+  const [, y = "0"] = translate.split(" ");
+  return Number.parseFloat(y);
+}
+
+function expectExitingTransitionStyleToMatch(
+  actual: ActionMenuPopoverTransitionContract["style"],
+  expected: ActionMenuPopoverTransitionContract["style"],
+) {
+  expect(actual?.transitionProperty).toBe(expected?.transitionProperty);
+  expect(actual?.transitionDuration).toBe(expected?.transitionDuration);
+  expect(actual?.transitionTimingFunction).toBe(expected?.transitionTimingFunction);
+  expect(actual?.pointerEvents).toBe(expected?.pointerEvents);
+
+  const actualOpacity = Number.parseFloat(actual?.opacity ?? "");
+  const expectedOpacity = Number.parseFloat(expected?.opacity ?? "");
+  expect(actualOpacity).toBeGreaterThan(0);
+  expect(actualOpacity).toBeLessThan(1);
+  expect(expectedOpacity).toBeGreaterThan(0);
+  expect(expectedOpacity).toBeLessThan(1);
+
+  const actualTranslateY = translateY(actual?.translate);
+  const expectedTranslateY = translateY(expected?.translate);
+  expect(actualTranslateY).toBeGreaterThan(-4);
+  expect(actualTranslateY).toBeLessThan(0);
+  expect(expectedTranslateY).toBeGreaterThan(-4);
+  expect(expectedTranslateY).toBeLessThan(0);
 }
 
 test.describe("comparison ActionMenu visual parity", () => {
@@ -484,19 +745,24 @@ test.describe("comparison ActionMenu visual parity", () => {
 
   test("ActionMenu open menu is pixel-identical", async ({ page }) => {
     const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
-    const { reactMenu, solidMenu } = await actionMenuOpenMenus(page, reactTrigger, solidTrigger);
+    const { reactMenu, solidMenu, reactPopover, solidPopover } = await actionMenuOpenMenus(
+      page,
+      reactTrigger,
+      solidTrigger,
+    );
 
     await expectExactPreparedScreenshotPair(
       page,
-      reactMenu,
-      solidMenu,
+      reactPopover,
+      solidPopover,
       "ActionMenu open menu",
       async () => {
-        await openActionMenu(reactTrigger, reactMenu);
+        await openActionMenuSettled(page, reactTrigger, reactMenu);
       },
       async () => {
         await page.keyboard.press("Escape");
-        await openActionMenu(solidTrigger, solidMenu);
+        await expect(page.getByRole("menu")).toHaveCount(0);
+        await openActionMenuSettled(page, solidTrigger, solidMenu);
       },
     );
   });
@@ -512,6 +778,26 @@ test.describe("comparison ActionMenu visual parity", () => {
     await openActionMenu(solidTrigger, solidMenu);
 
     await expect(actionMenuOpenMenuContract(solidMenu)).resolves.toEqual(reactContract);
+  });
+
+  test("ActionMenu popover transition lifecycle matches React Spectrum", async ({ page }) => {
+    const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
+    const { reactMenu, solidMenu } = await actionMenuOpenMenus(page, reactTrigger, solidTrigger);
+
+    const reactEntering = await actionMenuEnteringTransitionContract(reactTrigger, reactMenu);
+    const reactExiting = await actionMenuExitingTransitionContract(page, reactMenu);
+    await expect(reactMenu).toHaveCount(0);
+
+    const solidEntering = await actionMenuEnteringTransitionContract(solidTrigger, solidMenu);
+    const solidExiting = await actionMenuExitingTransitionContract(page, solidMenu);
+
+    expect(solidEntering.exists).toBe(reactEntering.exists);
+    expect(solidEntering.placement).toBe(reactEntering.placement);
+    expect(solidEntering.style).toEqual(reactEntering.style);
+    expect(solidExiting.exists).toBe(reactExiting.exists);
+    expect(solidExiting.placement).toBe(reactExiting.placement);
+    expectExitingTransitionStyleToMatch(solidExiting.style, reactExiting.style);
+    await expect(solidMenu).toHaveCount(0);
   });
 
   test("ActionMenu forced-colors trigger is pixel-identical", async ({ page }) => {
@@ -537,20 +823,26 @@ test.describe("comparison ActionMenu visual parity", () => {
     );
 
     const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
-    const { reactMenu, solidMenu } = await actionMenuOpenMenus(page, reactTrigger, solidTrigger);
-
-    await expectExactPreparedScreenshotPair(
+    const { reactMenu, solidMenu, reactPopover, solidPopover } = await actionMenuOpenMenus(
       page,
-      reactMenu,
-      solidMenu,
+      reactTrigger,
+      solidTrigger,
+    );
+
+    await expectPreparedBackedPopoverPair(
+      page,
+      reactPopover,
+      solidPopover,
       "ActionMenu forced-colors open menu",
       async () => {
-        await openActionMenu(reactTrigger, reactMenu);
+        await openActionMenuSettled(page, reactTrigger, reactMenu);
       },
       async () => {
         await page.keyboard.press("Escape");
-        await openActionMenu(solidTrigger, solidMenu);
+        await expect(page.getByRole("menu")).toHaveCount(0);
+        await openActionMenuSettled(page, solidTrigger, solidMenu);
       },
+      forcedColorOpenMenuPairDiff,
     );
   });
 

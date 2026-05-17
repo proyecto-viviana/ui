@@ -52,6 +52,46 @@ export const menuPopover = style<
   boxShadow: "elevated",
   borderRadius: "lg",
   display: "flex",
+  opacity: {
+    default: 1,
+    isEntering: 0,
+    isExiting: 0,
+  },
+  translateY: {
+    default: 0,
+    placement: {
+      top: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      bottom: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  translateX: {
+    default: 0,
+    placement: {
+      left: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      right: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  transition: "[opacity, translate]",
+  transitionDuration: 200,
+  transitionTimingFunction: {
+    isExiting: "in",
+  },
+  pointerEvents: {
+    default: "auto",
+    isExiting: "none",
+  },
   padding: 0,
   minHeight: 0,
   overflow: "visible",

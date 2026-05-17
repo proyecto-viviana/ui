@@ -107,12 +107,12 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     const menu = screen.getByRole("menu");
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(menu.contains(document.activeElement)).toBe(true);
+    await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
 
     await user.keyboard("{Escape}");
 
     expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
@@ -134,9 +134,34 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     await user.click(screen.getByText("Outside target"));
 
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("marks the popover entering and exiting transition lifecycle", async () => {
+    const user = setupUser();
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation(() => 999);
+
+    try {
+      render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
+
+      await user.click(screen.getByRole("button", { name: "More actions" }));
+
+      const popover = screen.getByRole("dialog");
+      expect(popover).toHaveAttribute("data-entering");
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+    }
+
+    await user.keyboard("{Escape}");
+
+    const exitingPopover = screen.getByRole("dialog");
+    expect(exitingPopover).not.toHaveAttribute("data-entering");
+    expect(exitingPopover).toHaveAttribute("data-exiting");
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
   });
 
   it("applies the upstream press scale transform while pressed", () => {

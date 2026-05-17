@@ -53,6 +53,13 @@ async function actionMenuOpenMenu(page: Page, trigger: Locator) {
   return menu;
 }
 
+async function actionMenuOpenMenuSettled(page: Page, trigger: Locator) {
+  const menu = await actionMenuOpenMenu(page, trigger);
+  // React S2 popovers have a 200ms entrance transform; scan settled colors.
+  await page.waitForTimeout(300);
+  return menu;
+}
+
 async function ensureAxe(page: Page) {
   await page.addScriptTag({ content: axe.source });
   await expect(
@@ -423,7 +430,7 @@ async function expectColorContrastAxe(
   });
 
   await trigger.click();
-  const menu = await actionMenuOpenMenu(page, trigger);
+  const menu = await actionMenuOpenMenuSettled(page, trigger);
 
   await expectNoAxeViolations(page, [root, menu], `${label} open color contrast`, {
     includeColorContrast: true,

@@ -154,6 +154,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Open ActionMenu menu surface has strict zero-tolerance pair-diff evidence and computed style/geometry parity for the static JSX menu, first item, icon, label, description, and keyboard shortcut slots.",
     },
     {
+      id: "styled.popover-transition-lifecycle",
+      label: "Styled popover transition lifecycle",
+      kind: "overlay",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionmenu-visual.spec.ts",
+      note: "Browser computed contracts compare ActionMenu popover entering and exiting opacity, translate, transition property/duration/timing, placement, pointer-events, and delayed cleanup against React Spectrum.",
+    },
+    {
       id: "styled.trigger-interaction-states",
       label: "Styled trigger interaction states",
       kind: "interaction",
@@ -179,9 +189,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "overlay",
       react: "visual",
       solid: "visual",
-      pairDiff: "strict",
+      pairDiff: "asserted",
       spec: "e2e/actionmenu-visual.spec.ts",
-      note: "Forced-colors media emulation verifies the browser environment, compares trigger computed contracts for default, quiet, and disabled states, and adds strict pair-diff evidence for both the closed trigger and open menu.",
+      note: "Forced-colors media emulation verifies the browser environment, compares trigger computed contracts for default, quiet, and disabled states, adds strict pair-diff evidence for the closed trigger, and adds backed open-menu visual evidence with a bounded threshold for Chromium forced-colors text subpixel rasterization.",
     },
     {
       id: "styled.reduced-motion",
