@@ -275,6 +275,58 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 
+  it("reactively restores omitted trigger defaults", async () => {
+    const [label, setLabel] = createSignal<string | undefined>("Document actions");
+    const [size, setSize] = createSignal<"XL" | undefined>("XL");
+    const [isQuiet, setIsQuiet] = createSignal<boolean | undefined>(true);
+    const [isDisabled, setIsDisabled] = createSignal<boolean | undefined>(true);
+
+    render(() => (
+      <ActionMenu
+        label={label()}
+        size={size()}
+        isQuiet={isQuiet()}
+        isDisabled={isDisabled()}
+        items={items}
+        getKey={(item) => item.id}
+      />
+    ));
+
+    const customTrigger = screen.getByRole("button", { name: "Document actions" });
+    expect(customTrigger).toHaveAttribute("data-size", "XL");
+    expect(customTrigger).toHaveAttribute("data-quiet", "true");
+    expect(customTrigger).toBeDisabled();
+
+    setLabel(undefined);
+    setSize(undefined);
+    setIsQuiet(undefined);
+    setIsDisabled(undefined);
+
+    await waitFor(() => {
+      const defaultTrigger = screen.getByRole("button", { name: "More actions" });
+      expect(defaultTrigger).toHaveAttribute("data-size", "M");
+      expect(defaultTrigger).not.toHaveAttribute("data-quiet");
+      expect(defaultTrigger).not.toBeDisabled();
+    });
+  });
+
+  it("cleans up portal menu content and ARIA references on unmount", () => {
+    const { container, unmount } = render(() => (
+      <ActionMenu defaultOpen items={items} getKey={(item) => item.id} />
+    ));
+
+    const trigger = container.querySelector('button[aria-label="More actions"]');
+    const menu = screen.getByRole("menu");
+    expect(trigger).toBeInstanceOf(HTMLButtonElement);
+    expect(menu.id).toBeTruthy();
+    expect(trigger).toHaveAttribute("aria-controls", menu.id);
+
+    unmount();
+
+    expect(document.getElementById(menu.id)).toBeNull();
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
   it("merges ActionMenuContext props, styles, unsafe style, and refs into the trigger", () => {
     let triggerElement: HTMLButtonElement | undefined;
     render(() => (

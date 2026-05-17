@@ -473,6 +473,53 @@ test.describe("comparison ActionMenu route contract", () => {
     await expect(solidPanel.getByRole("button", { name: "More actions" })).toBeDisabled();
   });
 
+  test("ActionMenu omitted viewer props reset to default branch values", async ({ page }) => {
+    const custom = await actionMenuFixtures(page, {
+      size: "XL",
+      menuSize: "L",
+      align: "end",
+      direction: "top",
+      shouldFlip: false,
+      isQuiet: true,
+      isDisabled: true,
+    });
+    const customProps = JSON.stringify({
+      size: "XL",
+      menuSize: "L",
+      align: "end",
+      direction: "top",
+      shouldFlip: false,
+      isQuiet: true,
+      isDisabled: true,
+    });
+
+    await expect(custom.reactRoot).toHaveAttribute("data-comparison-control-props", customProps);
+    await expect(custom.solidRoot).toHaveAttribute("data-comparison-control-props", customProps);
+
+    const defaults = await actionMenuFixtures(page);
+    const defaultProps = JSON.stringify({
+      size: "M",
+      menuSize: "M",
+      align: "start",
+      direction: "bottom",
+      shouldFlip: true,
+      isQuiet: false,
+      isDisabled: false,
+    });
+
+    await expect(defaults.reactRoot).toHaveAttribute("data-comparison-control-props", defaultProps);
+    await expect(defaults.solidRoot).toHaveAttribute("data-comparison-control-props", defaultProps);
+    await expect(page.locator('input[name="size"]:checked')).toHaveValue("M");
+    await expect(page.locator('input[name="menuSize"]:checked')).toHaveValue("M");
+    await expect(page.locator('input[name="align"]:checked')).toHaveValue("start");
+    await expect(page.locator('select[name="direction"]')).toHaveValue("bottom");
+    await expect(page.locator('input[name="shouldFlip"]')).toBeChecked();
+    await expect(page.locator('input[name="isQuiet"]')).not.toBeChecked();
+    await expect(page.locator('input[name="isDisabled"]')).not.toBeChecked();
+    await expect(defaults.reactPanel.getByRole("button", { name: "More actions" })).toBeEnabled();
+    await expect(defaults.solidPanel.getByRole("button", { name: "More actions" })).toBeEnabled();
+  });
+
   test("ActionMenu item actions fire with matching keys", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
 
