@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import axe from "axe-core";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
 import { clearPointer, pinComparisonTheme } from "./visual-diff";
 import {
@@ -7,6 +8,8 @@ import {
   actionMenuMenuSizeOptions,
   actionMenuSizeOptions,
 } from "../src/data/actionmenu-demo";
+
+const actionMenuAxeTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] as const;
 
 function actionMenuQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -36,6 +39,145 @@ async function actionMenuFixtures(page: Page, params: Record<string, string | bo
   await expect(solidRoot).toBeVisible();
 
   return { reactPanel, solidPanel, reactRoot, solidRoot };
+}
+
+async function actionMenuOpenMenu(page: Page, trigger: Locator) {
+  const menuId = await trigger.getAttribute("aria-controls");
+  expect(menuId).toBeTruthy();
+
+  const menu = page.locator(`[id="${menuId}"]`);
+  await expect(menu).toBeVisible();
+  await expect(menu).toHaveAttribute("role", "menu");
+
+  return menu;
+}
+
+async function ensureAxe(page: Page) {
+  await page.addScriptTag({ content: axe.source });
+  await expect(
+    page.evaluate(() => typeof (window as unknown as { axe?: { run?: unknown } }).axe?.run),
+  ).resolves.toBe("function");
+}
+
+async function markA11yScope(target: Locator, scope: string) {
+  return target.evaluate((element, value) => {
+    element.setAttribute("data-actionmenu-a11y-scope", value);
+    return `[data-actionmenu-a11y-scope="${value}"]`;
+  }, scope);
+}
+
+async function expectNoAxeViolations(page: Page, targets: Locator[], label: string) {
+  await ensureAxe(page);
+  const selectors = await Promise.all(
+    targets.map((target, index) => markA11yScope(target, `${label}-${index}`)),
+  );
+
+  const violations = await page.evaluate(
+    async ({ selector, tags }) => {
+      const axeRunner = (
+        window as unknown as {
+          axe: {
+            run: (
+              context: string,
+              options: {
+                runOnly: { type: "tag"; values: string[] };
+                rules: Record<string, { enabled: boolean }>;
+              },
+            ) => Promise<{
+              violations: Array<{
+                id: string;
+                help: string;
+                impact: string | null;
+                nodes: Array<{ target: string[]; html: string; failureSummary?: string }>;
+              }>;
+            }>;
+          };
+        }
+      ).axe;
+
+      const results = await axeRunner.run(selector, {
+        runOnly: { type: "tag", values: tags },
+        rules: {
+          "color-contrast": { enabled: false },
+        },
+      });
+
+      return results.violations.map((violation) => ({
+        id: violation.id,
+        help: violation.help,
+        impact: violation.impact,
+        nodes: violation.nodes.map((node) => ({
+          target: node.target,
+          html: node.html,
+          failureSummary: node.failureSummary,
+        })),
+      }));
+    },
+    { selector: selectors.join(", "), tags: [...actionMenuAxeTags] },
+  );
+
+  expect(violations, `${label} axe violations`).toEqual([]);
+}
+
+async function expectNoDanglingAriaReferences(
+  page: Page,
+  targets: Locator[],
+  label: string,
+  options: { minRefs?: number } = {},
+) {
+  const handles = await Promise.all(targets.map((target) => target.elementHandle()));
+  if (handles.some((handle) => handle == null)) {
+    throw new Error(`${label} ARIA ID integrity requires mounted target elements.`);
+  }
+
+  const result = await page.evaluate((elements) => {
+    const attrs = [
+      "aria-labelledby",
+      "aria-controls",
+      "aria-describedby",
+      "aria-owns",
+      "aria-activedescendant",
+      "aria-errormessage",
+      "for",
+    ] as const;
+    const danglingRefs: Array<{ attribute: string; missingId: string; element: string }> = [];
+    let totalRefsChecked = 0;
+
+    for (const root of elements) {
+      const nodes = [root, ...Array.from(root.querySelectorAll("*"))];
+      for (const element of nodes) {
+        for (const attribute of attrs) {
+          const value = element.getAttribute(attribute);
+          if (!value) {
+            continue;
+          }
+
+          const ids =
+            attribute === "aria-activedescendant" ? [value] : value.split(/\s+/).filter(Boolean);
+
+          for (const id of ids) {
+            totalRefsChecked += 1;
+            if (!document.getElementById(id)) {
+              danglingRefs.push({
+                attribute,
+                missingId: id,
+                element: `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ""}`,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return { danglingRefs, totalRefsChecked };
+  }, handles as Element[]);
+
+  expect(result.danglingRefs, `${label} dangling ARIA references`).toEqual([]);
+  if (options.minRefs != null) {
+    expect(result.totalRefsChecked, `${label} ARIA references checked`).toBeGreaterThanOrEqual(
+      options.minRefs,
+    );
+  }
 }
 
 async function expectKeyboardMenuButtonContract(
@@ -98,6 +240,38 @@ async function expectOutsidePointerClosesMenu(
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await expect(trigger).not.toHaveAttribute("aria-controls");
   await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
+}
+
+async function expectA11ySemanticContract(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+  label: string,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+
+  await expect(trigger).toBeVisible();
+  await expect.poll(() => trigger.getAttribute("aria-haspopup")).toMatch(/^(menu|true)$/);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).not.toHaveAttribute("aria-controls");
+  await expectNoDanglingAriaReferences(page, [root], `${label} closed trigger`);
+  await expectNoAxeViolations(page, [root], `${label} closed trigger`);
+
+  await trigger.click();
+  const menu = await actionMenuOpenMenu(page, trigger);
+
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("menu", { name: "More actions" })).toBeVisible();
+  await expect(menu.getByRole("menuitem")).toHaveCount(3);
+  await expect(menu.getByRole("menuitem", { name: /Copy/ })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: /Cut/ })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: /Paste/ })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: /Copy/ })).not.toHaveAttribute("aria-disabled");
+  await expectNoDanglingAriaReferences(page, [root, menu], `${label} open menu`, { minRefs: 1 });
+  await expectNoAxeViolations(page, [root, menu], `${label} open menu`);
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
 }
 
 test.describe("comparison ActionMenu route contract", () => {
@@ -205,5 +379,12 @@ test.describe("comparison ActionMenu route contract", () => {
 
     await expectOutsidePointerClosesMenu(page, reactPanel, reactRoot);
     await expectOutsidePointerClosesMenu(page, solidPanel, solidRoot);
+  });
+
+  test("ActionMenu semantic accessibility contracts pass on both stacks", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
+
+    await expectA11ySemanticContract(page, reactPanel, reactRoot, "React ActionMenu");
+    await expectA11ySemanticContract(page, solidPanel, solidRoot, "Solid ActionMenu");
   });
 });

@@ -104,6 +104,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "ActionMenu route mounts both stacks with static JSX MenuItem composition and asserts the official S2 viewer controls plus the shouldFlip API axis, disabled trigger state, item action callback keys, keyboard menu-button ARIA state, Escape cleanup, focus restore, and outside pointer dismissal.",
     },
     {
+      id: "styled.a11y-semantics",
+      label: "Styled accessibility semantics",
+      kind: "keyboard",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionmenu-contract.spec.ts",
+      note: "Scoped browser axe scans and manual semantic assertions cover closed trigger and open menu states on both stacks, including menu-button ARIA, menu/menuitem roles, accessible names, portal labeling, and ARIA ID integrity.",
+    },
+    {
       id: "styled.default",
       label: "Styled default",
       kind: "static",
