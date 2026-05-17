@@ -114,6 +114,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Scoped browser axe scans and manual semantic assertions cover closed trigger and open menu states on both stacks, including menu-button ARIA, menu/menuitem roles, accessible names, portal labeling, and ARIA ID integrity.",
     },
     {
+      id: "styled.touch-virtual-lifecycle",
+      label: "Styled touch and virtual lifecycle",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionmenu-contract.spec.ts",
+      note: "Browser contracts assert DOM virtual click activation, touch tap activation, menu item action dispatch, close-on-select cleanup, ARIA state reset, and disabled trigger touch suppression on both stacks.",
+    },
+    {
       id: "styled.default",
       label: "Styled default",
       kind: "static",

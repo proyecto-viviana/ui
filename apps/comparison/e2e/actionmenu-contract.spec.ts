@@ -42,6 +42,7 @@ async function actionMenuFixtures(page: Page, params: Record<string, string | bo
 }
 
 async function actionMenuOpenMenu(page: Page, trigger: Locator) {
+  await expect.poll(() => trigger.getAttribute("aria-controls")).toBeTruthy();
   const menuId = await trigger.getAttribute("aria-controls");
   expect(menuId).toBeTruthy();
 
@@ -274,6 +275,71 @@ async function expectA11ySemanticContract(
   await expect(page.getByRole("menu")).toHaveCount(0);
 }
 
+async function expectVirtualClickLifecycle(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+  actionName: RegExp,
+  expectedAction: string,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+
+  await trigger.evaluate((element) => (element as HTMLButtonElement).click());
+  const menu = await actionMenuOpenMenu(page, trigger);
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "true");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+  await menu.getByRole("menuitem", { name: actionName }).evaluate((element) => {
+    (element as HTMLElement).click();
+  });
+
+  await expect(root).toHaveAttribute("data-comparison-action-count", "1");
+  await expect(root).toHaveAttribute("data-comparison-last-action", expectedAction);
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+}
+
+async function expectTouchLifecycle(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+  actionName: RegExp,
+  expectedAction: string,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+
+  await trigger.tap();
+  const menu = await actionMenuOpenMenu(page, trigger);
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "true");
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+  await menu.getByRole("menuitem", { name: actionName }).tap();
+
+  await expect(root).toHaveAttribute("data-comparison-action-count", "1");
+  await expect(root).toHaveAttribute("data-comparison-last-action", expectedAction);
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+}
+
+async function expectDisabledTouchSuppressed(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+  await expect(trigger).toBeDisabled();
+
+  const box = await trigger.boundingBox();
+  if (!box) {
+    throw new Error("Disabled ActionMenu touch suppression requires a visible trigger.");
+  }
+
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(root).toHaveAttribute("data-comparison-action-count", "0");
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
+}
+
 test.describe("comparison ActionMenu route contract", () => {
   test("ActionMenu route mounts the React and Solid styled references", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
@@ -386,5 +452,38 @@ test.describe("comparison ActionMenu route contract", () => {
 
     await expectA11ySemanticContract(page, reactPanel, reactRoot, "React ActionMenu");
     await expectA11ySemanticContract(page, solidPanel, solidRoot, "Solid ActionMenu");
+  });
+
+  test("ActionMenu virtual click lifecycle matches on both stacks", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
+
+    await expectVirtualClickLifecycle(page, reactPanel, reactRoot, /Cut/, "cut");
+    await expectVirtualClickLifecycle(page, solidPanel, solidRoot, /Cut/, "cut");
+  });
+});
+
+test.describe("comparison ActionMenu touch lifecycle", () => {
+  test.use({ hasTouch: true });
+
+  test("ActionMenu touch activation and disabled suppression match on both stacks", async ({
+    page,
+  }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
+
+    await expectTouchLifecycle(page, reactPanel, reactRoot, /Paste/, "paste");
+    await expectTouchLifecycle(page, solidPanel, solidRoot, /Paste/, "paste");
+
+    const disabledFixtures = await actionMenuFixtures(page, { isDisabled: true });
+
+    await expectDisabledTouchSuppressed(
+      page,
+      disabledFixtures.reactPanel,
+      disabledFixtures.reactRoot,
+    );
+    await expectDisabledTouchSuppressed(
+      page,
+      disabledFixtures.solidPanel,
+      disabledFixtures.solidRoot,
+    );
   });
 });
