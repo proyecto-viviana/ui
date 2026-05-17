@@ -103,6 +103,26 @@
   `@proyecto-viviana/solid-spectrum`, plus `vp run check:fix`,
   `vp run check`, and `git diff --check`.
 
+## Latest MenuSection Selection Source Slice Summary
+
+- Added static `MenuSection` selection parity to the shared Menu stack so each
+  section can own independent `selectionMode`, controlled/uncontrolled selected
+  keys, change callbacks, disabled keys, and close-on-select behavior while
+  action-only menus keep the default `selectionMode="none"` path.
+- Wired static `MenuItem` rows to the active section selection context for
+  `menuitemradio`/`menuitemcheckbox` roles, `aria-checked`, `data-selected`,
+  disabled semantics, keyboard activation, and section-aware S2 selection
+  indicators inside direct `Menu` and static `ActionMenu` composition.
+- Added parity coverage for independent multiple/single section selection,
+  controlled section selection, keyboard activation, disabled key suppression
+  and navigation skipping, ActionMenu section selection indicators, and
+  `shouldCloseOnSelect={false}` inside a selected section.
+- Verification for this slice:
+  `vp test packages/solidaria-components/test/Menu.test.tsx packages/solid-spectrum/test/Menu.test.tsx packages/solid-spectrum/test/ActionMenu.test.tsx`
+  (`148` passed), `vp run --filter @proyecto-viviana/solidaria-components build`,
+  `vp run --filter @proyecto-viviana/solid-spectrum build`,
+  `vp run check:fix`, `vp run check`, and `git diff --check`.
+
 ## Agent Workflow
 
 No subagents are assigned for the initial ActionMenu slice. Keep work local

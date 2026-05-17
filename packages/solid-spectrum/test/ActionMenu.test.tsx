@@ -414,6 +414,45 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(within(section).getByRole("menuitem", { name: "Archive" })).toBeInTheDocument();
   });
 
+  it("supports section-level selection inside ActionMenu static composition", async () => {
+    const user = setupUser();
+    render(() => (
+      <ActionMenu defaultOpen label="Format">
+        <MenuSection
+          selectionMode="multiple"
+          defaultSelectedKeys={["bold"]}
+          disabledKeys={["italic"]}
+          shouldCloseOnSelect={false}
+        >
+          <MenuItem id="bold" textValue="Bold">
+            <Text slot="label">Bold</Text>
+          </MenuItem>
+          <MenuItem id="italic" textValue="Italic">
+            <Text slot="label">Italic</Text>
+          </MenuItem>
+        </MenuSection>
+      </ActionMenu>
+    ));
+
+    const bold = screen.getByRole("menuitemcheckbox", { name: "Bold" });
+    const italic = screen.getByRole("menuitemcheckbox", { name: "Italic" });
+
+    expect(bold).toHaveAttribute("aria-checked", "true");
+    expect(bold).toHaveAttribute("data-selected", "true");
+    expect(bold.querySelector('[data-rsp-slot="selection-indicator"] svg')).toBeInTheDocument();
+    expect(italic).toHaveAttribute("aria-checked", "false");
+    expect(italic).toHaveAttribute("aria-disabled", "true");
+    expect(italic).toHaveAttribute("data-disabled");
+    expect(
+      italic.querySelector('[data-rsp-slot="selection-indicator"] svg'),
+    ).not.toBeInTheDocument();
+
+    await user.click(bold);
+
+    expect(bold).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
   it("styles section header and heading slots inside ActionMenu menus", () => {
     render(() => (
       <ActionMenu defaultOpen menuSize="L" label="Document actions">

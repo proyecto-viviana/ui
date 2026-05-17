@@ -33,6 +33,7 @@ import {
   type AriaMenuTriggerProps,
 } from "@proyecto-viviana/solidaria";
 import {
+  createSelectionState,
   createMenuState,
   createMenuTriggerState,
   type MenuState,
@@ -41,6 +42,7 @@ import {
   type Key,
   type DropTarget,
   type SelectionMode,
+  type SelectionStateProps,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -241,6 +243,8 @@ interface MenuContextValue<T> {
   dropState?: unknown;
 }
 
+type MenuSelectionEvent = { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean };
+
 interface MenuTriggerContextValue {
   state: OverlayTriggerState;
   triggerProps: JSX.HTMLAttributes<HTMLElement>;
@@ -265,12 +269,29 @@ interface StaticMenuCollectionContextValue {
   unregisterItem(id: Key): void;
 }
 
+interface MenuSectionSelectionContextValue {
+  selectionMode: () => SelectionMode;
+  isSelected(key: Key): boolean;
+  isDisabled(key: Key): boolean;
+  select(key: Key, event?: MenuSelectionEvent): void;
+  shouldCloseOnSelect(): boolean | undefined;
+}
+
+interface MenuSectionSelectionRegistryContextValue {
+  registerItem(key: Key, selection: MenuSectionSelectionContextValue): void;
+  unregisterItem(key: Key, selection: MenuSectionSelectionContextValue): void;
+  selectItem(key: Key, event?: MenuSelectionEvent): boolean;
+}
+
 export const MenuContext = createContext<MenuContextValue<unknown> | null>(null);
 export const MenuStateContext = createContext<MenuState<unknown> | null>(null);
 export const MenuTriggerContext = createContext<MenuTriggerContextValue | null>(null);
 export const RootMenuTriggerStateContext = createContext<OverlayTriggerState | null>(null);
 const MenuItemContext = createContext<MenuItemContextValue | null>(null);
 const StaticMenuCollectionContext = createContext<StaticMenuCollectionContextValue | null>(null);
+const MenuSectionSelectionContext = createContext<MenuSectionSelectionContextValue | null>(null);
+const MenuSectionSelectionRegistryContext =
+  createContext<MenuSectionSelectionRegistryContextValue | null>(null);
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -459,7 +480,24 @@ export interface MenuButtonProps
   isDisabled?: boolean;
 }
 
-export interface MenuSectionProps extends SectionProps {}
+export interface MenuSectionProps
+  extends
+    SectionProps,
+    Pick<
+      SelectionStateProps,
+      | "selectionMode"
+      | "selectionBehavior"
+      | "disallowEmptySelection"
+      | "selectedKeys"
+      | "defaultSelectedKeys"
+      | "onSelectionChange"
+      | "disabledKeys"
+      | "disabledBehavior"
+      | "allowDuplicateSelectionEvents"
+    > {
+  /** Whether menu items in this section should close the menu when selected. */
+  shouldCloseOnSelect?: boolean;
+}
 
 export function MenuButton(props: MenuButtonProps): JSX.Element {
   const [local, domProps] = splitProps(props, ["class", "style", "slot", "isDisabled", "children"]);
@@ -598,6 +636,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const [menuRef, setMenuRef] = createSignal<HTMLUListElement | null>(null);
   const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
   const staticItemMap = new Map<Key, StaticMenuCollectionItem>();
+  const sectionSelectionMap = new Map<Key, MenuSectionSelectionContextValue>();
   const usesStaticChildren = () => local.staticChildren != null || stateProps.items == null;
 
   const syncStaticItems = () => {
@@ -623,6 +662,29 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
         syncStaticItems();
       }
     },
+  };
+  const sectionSelectionRegistry: MenuSectionSelectionRegistryContextValue = {
+    registerItem(key, selection) {
+      sectionSelectionMap.set(key, selection);
+    },
+    unregisterItem(key, selection) {
+      if (sectionSelectionMap.get(key) === selection) {
+        sectionSelectionMap.delete(key);
+      }
+    },
+    selectItem(key, event) {
+      const selection = sectionSelectionMap.get(key);
+      if (!selection || selection.selectionMode() === "none") {
+        return false;
+      }
+
+      selection.select(key, event);
+      return true;
+    },
+  };
+  const handleAction = (key: Key) => {
+    sectionSelectionRegistry.selectItem(key);
+    stateProps.onAction?.(key);
   };
 
   const flatItems = createMemo<T[]>(() => {
@@ -679,7 +741,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       return stateProps.allowDuplicateSelectionEvents;
     },
     get onAction() {
-      return stateProps.onAction;
+      return handleAction;
     },
     get onClose() {
       return stateProps.onClose ?? (() => triggerContext?.state.close());
@@ -703,7 +765,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
         return ariaProps.label;
       },
       get onAction() {
-        return stateProps.onAction;
+        return handleAction;
       },
       get onClose() {
         return stateProps.onClose ?? (() => triggerContext?.state.close());
@@ -1090,44 +1152,46 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       }
     >
       <MenuStateContext.Provider value={state}>
-        <StaticMenuCollectionContext.Provider
-          value={usesStaticChildren() ? staticCollectionContext : null}
-        >
-          <MenuItemContext.Provider value={{ closeOnSelect: local.shouldCloseOnSelect }}>
-            <CollectionRendererContext.Provider value={collectionRenderer()}>
-              <>
-                <Show when={ariaProps.label}>
-                  <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
-                </Show>
-                {local.render ? (
-                  local.render(menuListProps(), renderValues())
-                ) : (
-                  <ul
-                    ref={setResolvedMenuRef}
-                    {...mergeProps(
-                      domProps(),
-                      cleanMenuProps(),
-                      cleanTriggerMenuProps(),
-                      cleanFocusProps(),
-                      (droppableCollection()?.collectionProps as
-                        | Record<string, unknown>
-                        | undefined) ?? {},
-                    )}
-                    class={renderProps.class()}
-                    style={renderProps.style()}
-                    slot={local.slot}
-                    data-focused={state.isFocused() || undefined}
-                    data-disabled={resolveDisabled() || undefined}
-                    data-empty={state.collection().size === 0 || undefined}
-                    data-drop-target={isRootDropTarget() || undefined}
-                  >
-                    {menuListChildren()}
-                  </ul>
-                )}
-              </>
-            </CollectionRendererContext.Provider>
-          </MenuItemContext.Provider>
-        </StaticMenuCollectionContext.Provider>
+        <MenuSectionSelectionRegistryContext.Provider value={sectionSelectionRegistry}>
+          <StaticMenuCollectionContext.Provider
+            value={usesStaticChildren() ? staticCollectionContext : null}
+          >
+            <MenuItemContext.Provider value={{ closeOnSelect: local.shouldCloseOnSelect }}>
+              <CollectionRendererContext.Provider value={collectionRenderer()}>
+                <>
+                  <Show when={ariaProps.label}>
+                    <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
+                  </Show>
+                  {local.render ? (
+                    local.render(menuListProps(), renderValues())
+                  ) : (
+                    <ul
+                      ref={setResolvedMenuRef}
+                      {...mergeProps(
+                        domProps(),
+                        cleanMenuProps(),
+                        cleanTriggerMenuProps(),
+                        cleanFocusProps(),
+                        (droppableCollection()?.collectionProps as
+                          | Record<string, unknown>
+                          | undefined) ?? {},
+                      )}
+                      class={renderProps.class()}
+                      style={renderProps.style()}
+                      slot={local.slot}
+                      data-focused={state.isFocused() || undefined}
+                      data-disabled={resolveDisabled() || undefined}
+                      data-empty={state.collection().size === 0 || undefined}
+                      data-drop-target={isRootDropTarget() || undefined}
+                    >
+                      {menuListChildren()}
+                    </ul>
+                  )}
+                </>
+              </CollectionRendererContext.Provider>
+            </MenuItemContext.Provider>
+          </StaticMenuCollectionContext.Provider>
+        </MenuSectionSelectionRegistryContext.Provider>
       </MenuStateContext.Provider>
     </MenuContext.Provider>
   );
@@ -1174,13 +1238,30 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const menuContext = useContext(MenuContext) as MenuContextValue<T> | null;
   const itemContext = useContext(MenuItemContext);
   const staticCollection = useContext(StaticMenuCollectionContext);
+  const sectionSelection = useContext(MenuSectionSelectionContext);
+  const sectionSelectionRegistry = useContext(MenuSectionSelectionRegistryContext);
   const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
   const contextProps = () => itemContext?.props?.() ?? {};
   const combinedOnAction = () => {
     local.onAction?.();
     itemContext?.onAction?.();
   };
+  const activeSectionSelection = () =>
+    sectionSelection && sectionSelection.selectionMode() !== "none" ? sectionSelection : null;
   let registeredStaticKey: Key | null = null;
+  let registeredSectionSelectionKey: Key | null = null;
+  let registeredSectionSelection: MenuSectionSelectionContextValue | null = null;
+
+  const unregisterSectionSelection = () => {
+    if (registeredSectionSelectionKey != null && registeredSectionSelection) {
+      sectionSelectionRegistry?.unregisterItem(
+        registeredSectionSelectionKey,
+        registeredSectionSelection,
+      );
+      registeredSectionSelectionKey = null;
+      registeredSectionSelection = null;
+    }
+  };
 
   createEffect(() => {
     if (!staticCollection) return;
@@ -1193,7 +1274,8 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     staticCollection.registerItem({
       id: local.id,
       textValue: local.textValue ?? ariaProps["aria-label"],
-      isDisabled: resolveBoolean(ariaProps.isDisabled),
+      isDisabled:
+        resolveBoolean(ariaProps.isDisabled) || (sectionSelection?.isDisabled(local.id) ?? false),
     });
   });
 
@@ -1203,11 +1285,34 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     }
   });
 
+  createEffect(() => {
+    const selection = activeSectionSelection();
+    if (!sectionSelectionRegistry || !selection) {
+      unregisterSectionSelection();
+      return;
+    }
+
+    if (registeredSectionSelectionKey === local.id && registeredSectionSelection === selection) {
+      return;
+    }
+
+    unregisterSectionSelection();
+    registeredSectionSelectionKey = local.id;
+    registeredSectionSelection = selection;
+    sectionSelectionRegistry.registerItem(local.id, selection);
+  });
+
+  onCleanup(unregisterSectionSelection);
+
   const itemAria = createMenuItem<T>(
     {
       key: local.id,
       get isDisabled() {
-        return Boolean(ariaProps.isDisabled || menuContext?.isDisabled());
+        return Boolean(
+          ariaProps.isDisabled ||
+          sectionSelection?.isDisabled(local.id) ||
+          menuContext?.isDisabled(),
+        );
       },
       get "aria-label"() {
         return ariaProps["aria-label"] ?? local.textValue;
@@ -1216,7 +1321,11 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         return combinedOnAction;
       },
       get closeOnSelect() {
-        return ariaProps.closeOnSelect ?? itemContext?.closeOnSelect;
+        return (
+          ariaProps.closeOnSelect ??
+          sectionSelection?.shouldCloseOnSelect() ??
+          itemContext?.closeOnSelect
+        );
       },
       get href() {
         return local.href;
@@ -1243,17 +1352,20 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     onHoverChange: local.onHoverChange,
   });
 
-  const renderValues = createMemo<MenuItemRenderProps>(() => ({
-    isSelected: itemAria.isSelected(),
-    selectionMode: itemAria.selectionMode(),
-    isFocused: itemAria.isFocused(),
-    isFocusVisible: itemAria.isFocusVisible(),
-    isPressed: itemAria.isPressed(),
-    isHovered: isHovered(),
-    isDisabled: itemAria.isDisabled(),
-    hasSubmenu: Boolean(contextProps()["aria-haspopup"]),
-    isOpen: contextProps()["aria-expanded"] === true,
-  }));
+  const renderValues = createMemo<MenuItemRenderProps>(() => {
+    const selection = activeSectionSelection();
+    return {
+      isSelected: selection?.isSelected(local.id) ?? itemAria.isSelected(),
+      selectionMode: selection?.selectionMode() ?? itemAria.selectionMode(),
+      isFocused: itemAria.isFocused(),
+      isFocusVisible: itemAria.isFocusVisible(),
+      isPressed: itemAria.isPressed(),
+      isHovered: isHovered(),
+      isDisabled: itemAria.isDisabled(),
+      hasSubmenu: Boolean(contextProps()["aria-haspopup"]),
+      isOpen: contextProps()["aria-expanded"] === true,
+    };
+  });
 
   const renderProps = useRenderProps(
     {
@@ -1276,6 +1388,22 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     } = itemAria.menuItemProps as Record<string, unknown>;
     if (!hasPrimitiveLabel() && rest["aria-label"] == null) {
       delete rest["aria-labelledby"];
+    }
+    const selection = activeSectionSelection();
+    const selectionMode = selection?.selectionMode();
+    if (selectionMode) {
+      rest.role =
+        selectionMode === "single"
+          ? "menuitemradio"
+          : selectionMode === "multiple"
+            ? "menuitemcheckbox"
+            : "menuitem";
+      if (selectionMode !== "none") {
+        rest["aria-checked"] = selection?.isSelected(local.id) ?? false;
+      } else {
+        delete rest["aria-checked"];
+      }
+      rest["data-selected"] = selection?.isSelected(local.id) || undefined;
     }
     return rest;
   };
@@ -1326,18 +1454,21 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     return result;
   };
 
-  const dataAttrs = () => ({
-    "data-focused": itemAria.isFocused() || undefined,
-    "data-focus-visible": itemAria.isFocusVisible() || undefined,
-    "data-pressed": itemAria.isPressed() || undefined,
-    "data-hovered": isHovered() || undefined,
-    "data-disabled": itemAria.isDisabled() || undefined,
-    "data-selected": itemAria.isSelected() || undefined,
-    "data-has-submenu": Boolean(contextProps()["aria-haspopup"]) || undefined,
-    "data-open": contextProps()["aria-expanded"] === true || undefined,
-    "data-dragging": draggableItem()?.isDragging || undefined,
-    "data-drop-target": droppableItem()?.isDropTarget || undefined,
-  });
+  const dataAttrs = () => {
+    const selection = activeSectionSelection();
+    return {
+      "data-focused": itemAria.isFocused() || undefined,
+      "data-focus-visible": itemAria.isFocusVisible() || undefined,
+      "data-pressed": itemAria.isPressed() || undefined,
+      "data-hovered": isHovered() || undefined,
+      "data-disabled": itemAria.isDisabled() || undefined,
+      "data-selected": (selection?.isSelected(local.id) ?? itemAria.isSelected()) || undefined,
+      "data-has-submenu": Boolean(contextProps()["aria-haspopup"]) || undefined,
+      "data-open": contextProps()["aria-expanded"] === true || undefined,
+      "data-dragging": draggableItem()?.isDragging || undefined,
+      "data-drop-target": droppableItem()?.isDropTarget || undefined,
+    };
+  };
 
   const childContent = () =>
     hasPrimitiveLabel() ? (
@@ -1450,7 +1581,66 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
  * Section primitive alias for Menu composition parity.
  */
 export function MenuSection(props: MenuSectionProps): JSX.Element {
-  return <Section {...props} />;
+  const [selectionProps, sectionProps] = splitProps(props, [
+    "selectionMode",
+    "selectionBehavior",
+    "disallowEmptySelection",
+    "selectedKeys",
+    "defaultSelectedKeys",
+    "onSelectionChange",
+    "disabledKeys",
+    "disabledBehavior",
+    "allowDuplicateSelectionEvents",
+    "shouldCloseOnSelect",
+  ]);
+
+  const selectionState = createSelectionState({
+    get selectionMode() {
+      return selectionProps.selectionMode ?? "none";
+    },
+    get selectionBehavior() {
+      return selectionProps.selectionBehavior;
+    },
+    get disallowEmptySelection() {
+      return selectionProps.disallowEmptySelection;
+    },
+    get selectedKeys() {
+      return selectionProps.selectionMode ? selectionProps.selectedKeys : undefined;
+    },
+    get defaultSelectedKeys() {
+      return selectionProps.selectionMode ? selectionProps.defaultSelectedKeys : undefined;
+    },
+    get onSelectionChange() {
+      return selectionProps.selectionMode ? selectionProps.onSelectionChange : undefined;
+    },
+    get disabledKeys() {
+      return selectionProps.disabledKeys;
+    },
+    get disabledBehavior() {
+      return selectionProps.disabledBehavior;
+    },
+    get allowDuplicateSelectionEvents() {
+      return selectionProps.allowDuplicateSelectionEvents;
+    },
+  });
+
+  const sectionSelection: MenuSectionSelectionContextValue = {
+    selectionMode: selectionState.selectionMode,
+    isSelected: selectionState.isSelected,
+    isDisabled: selectionState.isDisabled,
+    select(key, event) {
+      selectionState.select(key, event);
+    },
+    shouldCloseOnSelect() {
+      return selectionProps.shouldCloseOnSelect;
+    },
+  };
+
+  return (
+    <MenuSectionSelectionContext.Provider value={sectionSelection}>
+      <Section {...sectionProps} />
+    </MenuSectionSelectionContext.Provider>
+  );
 }
 
 Menu.Item = MenuItem;

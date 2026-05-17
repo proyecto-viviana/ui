@@ -12,10 +12,11 @@
 
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { Menu, MenuItem, MenuSection, MenuTrigger, MenuButton } from "../src/Menu";
 import { Separator } from "../src/Separator";
 import { useDragAndDrop } from "../src/useDragAndDrop";
-import type { Key } from "@proyecto-viviana/solid-stately";
+import type { Key, Selection } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser, assertAriaIdIntegrity } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -824,6 +825,176 @@ describe("Menu", () => {
       expect(cat).toHaveAttribute("aria-checked", "false");
       expect(dog).toHaveAttribute("aria-checked", "true");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["dog"]));
+    });
+
+    it("supports independent static MenuSection selection state", async () => {
+      const onStyleSelectionChange = vi.fn();
+      const onAlignmentSelectionChange = vi.fn();
+      render(() => (
+        <Menu aria-label="Format">
+          <MenuSection
+            selectionMode="multiple"
+            defaultSelectedKeys={["bold"]}
+            onSelectionChange={onStyleSelectionChange}
+          >
+            <MenuItem id="bold" textValue="Bold">
+              Bold
+            </MenuItem>
+            <MenuItem id="italic" textValue="Italic">
+              Italic
+            </MenuItem>
+          </MenuSection>
+          <MenuSection
+            selectionMode="single"
+            defaultSelectedKeys={["left"]}
+            onSelectionChange={onAlignmentSelectionChange}
+          >
+            <MenuItem id="left" textValue="Left">
+              Left
+            </MenuItem>
+            <MenuItem id="right" textValue="Right">
+              Right
+            </MenuItem>
+          </MenuSection>
+        </Menu>
+      ));
+
+      const bold = screen.getByRole("menuitemcheckbox", { name: "Bold" });
+      const italic = screen.getByRole("menuitemcheckbox", { name: "Italic" });
+      const left = screen.getByRole("menuitemradio", { name: "Left" });
+      const right = screen.getByRole("menuitemradio", { name: "Right" });
+
+      expect(bold).toHaveAttribute("aria-checked", "true");
+      expect(italic).toHaveAttribute("aria-checked", "false");
+      expect(left).toHaveAttribute("aria-checked", "true");
+      expect(right).toHaveAttribute("aria-checked", "false");
+
+      await user.click(italic);
+      await user.click(right);
+
+      expect(bold).toHaveAttribute("aria-checked", "true");
+      expect(italic).toHaveAttribute("aria-checked", "true");
+      expect(left).toHaveAttribute("aria-checked", "false");
+      expect(right).toHaveAttribute("aria-checked", "true");
+      expect(onStyleSelectionChange).toHaveBeenLastCalledWith(new Set(["bold", "italic"]));
+      expect(onAlignmentSelectionChange).toHaveBeenLastCalledWith(new Set(["right"]));
+    });
+
+    it("supports controlled static MenuSection selection state", async () => {
+      const onSelectionChange = vi.fn();
+      function ControlledMenu() {
+        const [selectedKeys, setSelectedKeys] = createSignal<Set<Key>>(new Set(["bold"]));
+        const handleSelectionChange = (keys: Selection) => {
+          onSelectionChange(keys);
+          if (keys !== "all") {
+            setSelectedKeys(new Set(keys));
+          }
+        };
+
+        return (
+          <Menu aria-label="Format">
+            <MenuSection
+              selectionMode="single"
+              selectedKeys={selectedKeys()}
+              onSelectionChange={handleSelectionChange}
+            >
+              <MenuItem id="bold" textValue="Bold">
+                Bold
+              </MenuItem>
+              <MenuItem id="italic" textValue="Italic">
+                Italic
+              </MenuItem>
+            </MenuSection>
+          </Menu>
+        );
+      }
+
+      render(() => <ControlledMenu />);
+
+      const bold = screen.getByRole("menuitemradio", { name: "Bold" });
+      const italic = screen.getByRole("menuitemradio", { name: "Italic" });
+      expect(bold).toHaveAttribute("aria-checked", "true");
+      expect(italic).toHaveAttribute("aria-checked", "false");
+
+      await user.click(italic);
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["italic"]));
+      expect(bold).toHaveAttribute("aria-checked", "false");
+      expect(italic).toHaveAttribute("aria-checked", "true");
+    });
+
+    it("updates static MenuSection selection from keyboard activation", () => {
+      render(() => (
+        <Menu aria-label="Format">
+          <MenuSection selectionMode="single" defaultSelectedKeys={["bold"]}>
+            <MenuItem id="bold" textValue="Bold">
+              Bold
+            </MenuItem>
+            <MenuItem id="italic" textValue="Italic">
+              Italic
+            </MenuItem>
+          </MenuSection>
+        </Menu>
+      ));
+
+      const menu = screen.getByRole("menu");
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      fireEvent.keyDown(menu, { key: "Enter" });
+
+      expect(screen.getByRole("menuitemradio", { name: "Bold" })).toHaveAttribute(
+        "aria-checked",
+        "false",
+      );
+      expect(screen.getByRole("menuitemradio", { name: "Italic" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
+    });
+
+    it("applies static MenuSection disabled keys and close behavior", async () => {
+      const onAction = vi.fn();
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Format</MenuButton>
+          <Menu aria-label="Format" onAction={onAction}>
+            <MenuSection shouldCloseOnSelect={false}>
+              <MenuItem id="bold" textValue="Bold">
+                Bold
+              </MenuItem>
+            </MenuSection>
+            <MenuSection disabledKeys={["archive"]}>
+              <MenuItem id="archive" textValue="Archive">
+                Archive
+              </MenuItem>
+              <MenuItem id="delete" textValue="Delete">
+                Delete
+              </MenuItem>
+            </MenuSection>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const menu = screen.getByRole("menu");
+      const bold = screen.getByRole("menuitem", { name: "Bold" });
+      const archive = screen.getByRole("menuitem", { name: "Archive" });
+      const deleteItem = screen.getByRole("menuitem", { name: "Delete" });
+
+      expect(archive).toHaveAttribute("aria-disabled", "true");
+      expect(archive).toHaveAttribute("data-disabled");
+
+      await user.click(archive);
+      expect(onAction).not.toHaveBeenCalledWith("archive");
+
+      menu.focus();
+      await user.keyboard("{ArrowDown}");
+      expect(bold).toHaveAttribute("data-focused");
+      await user.keyboard("{ArrowDown}");
+      expect(deleteItem).toHaveAttribute("data-focused");
+
+      await user.click(bold);
+      expect(onAction).toHaveBeenCalledWith("bold");
+      expect(screen.getByRole("menu")).toBeInTheDocument();
     });
   });
 

@@ -491,6 +491,55 @@ describe("Menu (solid-spectrum)", () => {
       expect(idleIndicator).toBeInTheDocument();
       expect(idleIndicator?.querySelector("svg")).not.toBeInTheDocument();
     });
+
+    it("renders S2 selection indicators for section-level selection", () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Format</MenuButton>
+          <Menu aria-label="Format">
+            <MenuSection
+              selectionMode="multiple"
+              defaultSelectedKeys={["bold"]}
+              disabledKeys={["italic"]}
+            >
+              <MenuItem id="bold" textValue="Bold">
+                Bold
+              </MenuItem>
+              <MenuItem id="italic" textValue="Italic">
+                Italic
+              </MenuItem>
+            </MenuSection>
+            <MenuSection selectionMode="single" defaultSelectedKeys={["left"]}>
+              <MenuItem id="left" textValue="Left">
+                Left
+              </MenuItem>
+              <MenuItem id="right" textValue="Right">
+                Right
+              </MenuItem>
+            </MenuSection>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const bold = screen.getByRole("menuitemcheckbox", { name: "Bold" });
+      const italic = screen.getByRole("menuitemcheckbox", { name: "Italic" });
+      const left = screen.getByRole("menuitemradio", { name: "Left" });
+      const right = screen.getByRole("menuitemradio", { name: "Right" });
+
+      expect(bold).toHaveAttribute("aria-checked", "true");
+      expect(bold.querySelector('[data-rsp-slot="selection-indicator"] svg')).toBeInTheDocument();
+      expect(italic).toHaveAttribute("aria-checked", "false");
+      expect(italic).toHaveAttribute("aria-disabled", "true");
+      expect(italic).toHaveAttribute("data-disabled");
+      expect(
+        italic.querySelector('[data-rsp-slot="selection-indicator"] svg'),
+      ).not.toBeInTheDocument();
+
+      expect(left).toHaveAttribute("aria-checked", "true");
+      expect(left.querySelector('[data-rsp-slot="selection-indicator"]')).toBeInTheDocument();
+      expect(right).toHaveAttribute("aria-checked", "false");
+      expect(right.querySelector('[data-rsp-slot="selection-indicator"]')).toBeInTheDocument();
+    });
   });
 
   describe("MenuSeparator", () => {
