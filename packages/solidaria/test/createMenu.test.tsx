@@ -92,6 +92,39 @@ describe("createMenu", () => {
     });
   });
 
+  it("updates selection when Enter is pressed in selection mode", () => {
+    createRoot((dispose) => {
+      const onSelectionChange = vi.fn();
+      const items = [
+        { key: "copy", label: "Copy" },
+        { key: "paste", label: "Paste" },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "single",
+        defaultSelectedKeys: ["paste"],
+        onSelectionChange,
+      });
+
+      state.setFocusedKey("copy");
+
+      const { menuProps } = createMenu({ "aria-label": "Actions" }, state);
+
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      onKeyDown({
+        key: "Enter",
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent);
+
+      expect(state.isSelected("copy")).toBe(true);
+      expect(state.isSelected("paste")).toBe(false);
+      expect(onSelectionChange).toHaveBeenCalledWith(new Set(["copy"]));
+      dispose();
+    });
+  });
+
   it("calls onClose when Escape is pressed", () => {
     createRoot((dispose) => {
       const onClose = vi.fn();
@@ -234,6 +267,66 @@ describe("createMenuItem", () => {
 
       expect(menuItemProps["aria-disabled"]).toBe(true);
       expect(isDisabled()).toBe(true);
+      dispose();
+    });
+  });
+
+  it("exposes radio semantics for single selection mode", () => {
+    createRoot((dispose) => {
+      const items = [
+        { key: "copy", label: "Copy" },
+        { key: "paste", label: "Paste" },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "single",
+        defaultSelectedKeys: ["copy"],
+      });
+
+      const copy = createMenuItem({ key: "copy" }, state);
+      const paste = createMenuItem({ key: "paste" }, state);
+
+      expect(copy.menuItemProps.role).toBe("menuitemradio");
+      expect(copy.menuItemProps["aria-checked"]).toBe(true);
+      expect(copy.menuItemProps["data-selected"]).toBe(true);
+      expect(copy.isSelected()).toBe(true);
+      expect(copy.selectionMode()).toBe("single");
+
+      expect(paste.menuItemProps.role).toBe("menuitemradio");
+      expect(paste.menuItemProps["aria-checked"]).toBe(false);
+      expect(paste.menuItemProps["data-selected"]).toBeUndefined();
+      expect(paste.isSelected()).toBe(false);
+      dispose();
+    });
+  });
+
+  it("exposes checkbox semantics for multiple selection mode", () => {
+    createRoot((dispose) => {
+      const items = [
+        { key: "copy", label: "Copy" },
+        { key: "paste", label: "Paste" },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["copy"],
+      });
+
+      const copy = createMenuItem({ key: "copy" }, state);
+      const paste = createMenuItem({ key: "paste" }, state);
+
+      expect(copy.menuItemProps.role).toBe("menuitemcheckbox");
+      expect(copy.menuItemProps["aria-checked"]).toBe(true);
+      expect(copy.isSelected()).toBe(true);
+      expect(copy.selectionMode()).toBe("multiple");
+
+      expect(paste.menuItemProps.role).toBe("menuitemcheckbox");
+      expect(paste.menuItemProps["aria-checked"]).toBe(false);
+      expect(paste.isSelected()).toBe(false);
       dispose();
     });
   });

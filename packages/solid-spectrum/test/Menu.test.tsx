@@ -424,6 +424,73 @@ describe("Menu (solid-spectrum)", () => {
       expect(disabledItem).toHaveAttribute("data-disabled", "true");
       expect(disabledItem?.className).toContain("-macro-dynamic");
     });
+
+    it("renders S2 checkmark indicators for single selection menus", () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>View</MenuButton>
+          <Menu
+            selectionMode="single"
+            defaultSelectedKeys={["edit"]}
+            items={items}
+            getKey={(i) => i.id}
+            aria-label="View"
+          >
+            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const selectedItem = screen.getByRole("menuitemradio", { name: "Edit" });
+      const idleItem = screen.getByRole("menuitemradio", { name: "Duplicate" });
+      const selectedIndicator = selectedItem.querySelector('[data-rsp-slot="selection-indicator"]');
+      const idleIndicator = idleItem.querySelector('[data-rsp-slot="selection-indicator"]');
+
+      expect(selectedItem).toHaveAttribute("aria-checked", "true");
+      expect(selectedItem).toHaveAttribute("data-selected", "true");
+      expect(selectedIndicator).toBeInTheDocument();
+      expect(selectedIndicator?.tagName.toLowerCase()).toBe("svg");
+      expect(selectedIndicator).toHaveAttribute("aria-hidden", "true");
+      expect(selectedIndicator?.getAttribute("class")).toContain("-macro-dynamic");
+
+      expect(idleItem).toHaveAttribute("aria-checked", "false");
+      expect(idleIndicator).toBeInTheDocument();
+      expect(idleIndicator?.tagName.toLowerCase()).toBe("svg");
+    });
+
+    it("renders S2 checkbox indicators for multiple selection menus", () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>View</MenuButton>
+          <Menu
+            selectionMode="multiple"
+            defaultSelectedKeys={["edit"]}
+            items={items}
+            getKey={(i) => i.id}
+            aria-label="View"
+          >
+            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const selectedItem = screen.getByRole("menuitemcheckbox", { name: "Edit" });
+      const idleItem = screen.getByRole("menuitemcheckbox", { name: "Duplicate" });
+      const selectedIndicator = selectedItem.querySelector('[data-rsp-slot="selection-indicator"]');
+      const idleIndicator = idleItem.querySelector('[data-rsp-slot="selection-indicator"]');
+
+      expect(selectedItem).toHaveAttribute("aria-checked", "true");
+      expect(selectedItem).toHaveAttribute("data-selected", "true");
+      expect(selectedIndicator).toBeInTheDocument();
+      expect(selectedIndicator?.tagName.toLowerCase()).toBe("span");
+      expect(selectedIndicator).toHaveAttribute("aria-hidden", "true");
+      expect(selectedIndicator?.getAttribute("class")).toContain("-macro-dynamic");
+      expect(selectedIndicator?.querySelector("svg")).toBeInTheDocument();
+
+      expect(idleItem).toHaveAttribute("aria-checked", "false");
+      expect(idleIndicator).toBeInTheDocument();
+      expect(idleIndicator?.querySelector("svg")).not.toBeInTheDocument();
+    });
   });
 
   describe("MenuSeparator", () => {

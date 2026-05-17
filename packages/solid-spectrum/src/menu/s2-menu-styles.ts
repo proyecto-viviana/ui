@@ -13,7 +13,7 @@ import {
   space,
   style,
 } from "../s2-style";
-import { control, controlFont, controlSize } from "../s2-internal/style-utils";
+import { control, controlBorderRadius, controlFont, controlSize } from "../s2-internal/style-utils";
 import { edgeToText } from "../s2-style/spectrum-theme";
 
 export type S2MenuSize = "S" | "M" | "L" | "XL";
@@ -192,6 +192,79 @@ export const menuItemIcon = style({
 export const menuItemIconCenterWrapper = style({
   display: "flex",
   gridArea: "icon",
+});
+
+export const menuItemCheckmark = style<Pick<S2MenuItemStyleProps, "isSelected" | "isDisabled">>({
+  gridArea: "checkmark",
+  display: "block",
+  alignSelf: "center",
+  justifySelf: "center",
+  size: fontRelative(12),
+  marginEnd: "text-to-control",
+  visibility: {
+    default: "hidden",
+    isSelected: "visible",
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: baseColor("accent"),
+      isDisabled: "gray-400",
+      forcedColors: "Highlight",
+    },
+  },
+});
+
+export const menuItemCheckbox = style<
+  Pick<S2MenuItemStyleProps, "isSelected" | "isFocused" | "isDisabled">
+>({
+  ...controlBorderRadius("sm"),
+  gridArea: "checkmark",
+  alignSelf: "center",
+  justifySelf: "center",
+  size: controlSize("sm"),
+  marginEnd: "text-to-control",
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: space(2),
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  transition: "default",
+  forcedColorAdjust: "none",
+  backgroundColor: {
+    default: "gray-25",
+    forcedColors: "Background",
+    isSelected: {
+      default: baseColor("accent-900"),
+      forcedColors: "Highlight",
+      isDisabled: {
+        default: "gray-400",
+        forcedColors: "GrayText",
+      },
+    },
+  },
+  borderColor: {
+    default: baseColor("gray-800"),
+    forcedColors: "ButtonBorder",
+    isDisabled: {
+      default: "gray-400",
+      forcedColors: "GrayText",
+    },
+    isSelected: "transparent",
+  },
+});
+
+export const menuItemCheckboxIcon = style({
+  pointerEvents: "none",
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "gray-25",
+      forcedColors: "HighlightText",
+    },
+  },
 });
 
 export const menuItemLabel = style<S2MenuStyleProps>({

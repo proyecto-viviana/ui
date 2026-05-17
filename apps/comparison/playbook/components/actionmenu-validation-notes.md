@@ -77,6 +77,32 @@
   `vp run --filter @proyecto-viviana/solid-spectrum build`,
   `vp run check:fix`, `vp run check`, and `git diff --check`.
 
+## Latest Selection Indicator Source Slice Summary
+
+- Confirmed the S2 Menu selection docs path: `selectionMode` enables single
+  and multiple selection on shared `Menu` primitives. Upstream `ActionMenu`
+  itself does not expose `selectionMode`, so this source branch is owned by the
+  shared Menu stack that ActionMenu composes.
+- Enabled opt-in Menu selection through Solid state, aria hooks, and headless
+  render props while keeping default action-only menus at `selectionMode="none"`.
+  Single-select items now expose `menuitemradio`; multiple-select items expose
+  `menuitemcheckbox`; selected state is reflected through `aria-checked`,
+  `data-selected`, and render props only when selection mode is enabled.
+- Added S2 selection indicators for direct `MenuItem`: single selection renders
+  the hidden/visible checkmark column, and multiple selection renders the
+  checkbox box with selected checkmark. Generated S2 CSS was regenerated and
+  normalized for these new style helpers.
+- Added parity coverage at every touched layer:
+  `createMenuState`, `createMenu`, `createMenuItem`, headless `Menu`, direct S2
+  `Menu`, and ActionMenu regression coverage.
+- Verification for this slice:
+  `vp test packages/solid-stately/test/collections.test.ts packages/solidaria/test/createMenu.test.tsx packages/solidaria-components/test/Menu.test.tsx packages/solid-spectrum/test/Menu.test.tsx packages/solid-spectrum/test/ActionMenu.test.tsx`
+  (`207` passed), dependency-order builds for
+  `@proyecto-viviana/solid-stately`, `@proyecto-viviana/solidaria`,
+  `@proyecto-viviana/solidaria-components`, and
+  `@proyecto-viviana/solid-spectrum`, plus `vp run check:fix`,
+  `vp run check`, and `git diff --check`.
+
 ## Agent Workflow
 
 No subagents are assigned for the initial ActionMenu slice. Keep work local

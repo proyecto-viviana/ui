@@ -341,6 +341,43 @@ describe("createMenuState", () => {
     });
   });
 
+  it("defaults to action-only selection mode", () => {
+    createRoot((dispose) => {
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        defaultSelectedKeys: ["copy"],
+      });
+
+      expect(state.selectionMode()).toBe("none");
+      state.select("paste");
+      expect(state.isSelected("copy")).toBe(false);
+      expect(state.isSelected("paste")).toBe(false);
+      dispose();
+    });
+  });
+
+  it("supports opt-in menu selection", () => {
+    createRoot((dispose) => {
+      const onSelectionChange = vi.fn();
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["copy"],
+        onSelectionChange,
+      });
+
+      state.select("paste");
+
+      expect(state.selectionMode()).toBe("multiple");
+      expect(state.isSelected("copy")).toBe(true);
+      expect(state.isSelected("paste")).toBe(true);
+      expect(onSelectionChange).toHaveBeenCalledWith(new Set(["copy", "paste"]));
+      dispose();
+    });
+  });
+
   it("calls onClose when close is called", () => {
     createRoot((dispose) => {
       const onClose = vi.fn();

@@ -36,9 +36,11 @@ import {
   createMenuState,
   createMenuTriggerState,
   type MenuState,
+  type MenuStateProps,
   type OverlayTriggerState,
   type Key,
   type DropTarget,
+  type SelectionMode,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -80,7 +82,20 @@ export interface MenuRenderProps {
   isEmpty: boolean;
 }
 
-export interface MenuProps<T> extends Omit<AriaMenuProps, "children">, SlotProps {
+export interface MenuProps<T>
+  extends
+    Omit<AriaMenuProps, "children">,
+    SlotProps,
+    Pick<
+      MenuStateProps<T>,
+      | "selectionMode"
+      | "selectionBehavior"
+      | "disallowEmptySelection"
+      | "selectedKeys"
+      | "defaultSelectedKeys"
+      | "onSelectionChange"
+      | "allowDuplicateSelectionEvents"
+    > {
   /** The items to render in the menu. */
   items?: CollectionEntry<T>[];
   /** Function to get the key from an item. */
@@ -121,6 +136,8 @@ export interface MenuProps<T> extends Omit<AriaMenuProps, "children">, SlotProps
 export interface MenuItemRenderProps {
   /** Whether the item is selected. */
   isSelected: boolean;
+  /** The parent menu selection mode. */
+  selectionMode: SelectionMode;
   /** Whether the item is focused. */
   isFocused: boolean;
   /** Whether the item has keyboard focus. */
@@ -563,6 +580,13 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       "getTextValue",
       "getDisabled",
       "disabledKeys",
+      "selectionMode",
+      "selectionBehavior",
+      "disallowEmptySelection",
+      "selectedKeys",
+      "defaultSelectedKeys",
+      "onSelectionChange",
+      "allowDuplicateSelectionEvents",
       "onAction",
       "onClose",
       "dragAndDropHooks",
@@ -632,6 +656,27 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     },
     get disabledKeys() {
       return stateProps.disabledKeys;
+    },
+    get selectionMode() {
+      return stateProps.selectionMode;
+    },
+    get selectionBehavior() {
+      return stateProps.selectionBehavior;
+    },
+    get disallowEmptySelection() {
+      return stateProps.disallowEmptySelection;
+    },
+    get selectedKeys() {
+      return stateProps.selectedKeys;
+    },
+    get defaultSelectedKeys() {
+      return stateProps.defaultSelectedKeys;
+    },
+    get onSelectionChange() {
+      return stateProps.onSelectionChange;
+    },
+    get allowDuplicateSelectionEvents() {
+      return stateProps.allowDuplicateSelectionEvents;
     },
     get onAction() {
       return stateProps.onAction;
@@ -1199,7 +1244,8 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   });
 
   const renderValues = createMemo<MenuItemRenderProps>(() => ({
-    isSelected: false, // Menu items don't have selection state
+    isSelected: itemAria.isSelected(),
+    selectionMode: itemAria.selectionMode(),
     isFocused: itemAria.isFocused(),
     isFocusVisible: itemAria.isFocusVisible(),
     isPressed: itemAria.isPressed(),
@@ -1286,6 +1332,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     "data-pressed": itemAria.isPressed() || undefined,
     "data-hovered": isHovered() || undefined,
     "data-disabled": itemAria.isDisabled() || undefined,
+    "data-selected": itemAria.isSelected() || undefined,
     "data-has-submenu": Boolean(contextProps()["aria-haspopup"]) || undefined,
     "data-open": contextProps()["aria-expanded"] === true || undefined,
     "data-dragging": draggableItem()?.isDragging || undefined,

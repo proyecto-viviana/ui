@@ -7,10 +7,7 @@ import { access, type MaybeAccessor } from "../utils";
 import { createListState, type ListState, type ListStateProps } from "./createListState";
 import type { Key } from "./types";
 
-export interface MenuStateProps<T = unknown> extends Omit<
-  ListStateProps<T>,
-  "selectionMode" | "disallowEmptySelection"
-> {
+export interface MenuStateProps<T = unknown> extends ListStateProps<T> {
   /** Handler called when an item is activated (pressed). */
   onAction?: (key: Key) => void;
   /** Handler called when the menu should close. */
@@ -31,7 +28,7 @@ export function createMenuState<T = unknown>(
 ): MenuState<T> {
   const getProps = () => access(props);
 
-  // Create list state with single selection
+  // Menus default to action-only items, but can opt into single or multiple selection.
   const listState = createListState<T>({
     get items() {
       return getProps().items;
@@ -51,15 +48,22 @@ export function createMenuState<T = unknown>(
     get disabledBehavior() {
       return getProps().disabledBehavior;
     },
-    selectionMode: "none", // Menus typically use onAction, not selection
-    disallowEmptySelection: true,
+    get selectionMode() {
+      return getProps().selectionMode ?? "none";
+    },
+    get disallowEmptySelection() {
+      return getProps().disallowEmptySelection;
+    },
     get selectedKeys() {
+      if ((getProps().selectionMode ?? "none") === "none") return undefined;
       return getProps().selectedKeys;
     },
     get defaultSelectedKeys() {
+      if ((getProps().selectionMode ?? "none") === "none") return undefined;
       return getProps().defaultSelectedKeys;
     },
     get onSelectionChange() {
+      if ((getProps().selectionMode ?? "none") === "none") return undefined;
       return getProps().onSelectionChange;
     },
     get selectionBehavior() {

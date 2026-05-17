@@ -10,7 +10,7 @@ import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { getMenuData } from "./createMenu";
-import type { MenuState, Key } from "@proyecto-viviana/solid-stately";
+import type { MenuState, Key, SelectionMode } from "@proyecto-viviana/solid-stately";
 
 export interface AriaMenuItemProps {
   /** The unique key for the menu item. */
@@ -50,6 +50,10 @@ export interface MenuItemAria {
   isPressed: Accessor<boolean>;
   /** Whether the menu item is disabled. */
   isDisabled: Accessor<boolean>;
+  /** Whether the menu item is selected. */
+  isSelected: Accessor<boolean>;
+  /** The parent menu selection mode. */
+  selectionMode: Accessor<SelectionMode>;
 }
 
 /**
@@ -76,6 +80,14 @@ export function createMenuItem<T>(
     return state.focusedKey() === getProps().key;
   };
 
+  const isSelected: Accessor<boolean> = () => {
+    return selectionMode() !== "none" && state.isSelected(getProps().key);
+  };
+
+  const selectionMode: Accessor<SelectionMode> = () => {
+    return state.selectionMode();
+  };
+
   // Whether this is a link item
   const isLink = () => !!getProps().href;
 
@@ -88,6 +100,8 @@ export function createMenuItem<T>(
       const p = getProps();
       const key = p.key;
       const data = getData();
+
+      state.select(key, undefined, state.collection());
 
       // Call item-specific onAction
       p.onAction?.();
@@ -126,15 +140,24 @@ export function createMenuItem<T>(
       const p = getProps();
       const key = p.key;
       const ariaLabel = p["aria-label"];
+      const mode = selectionMode();
+      const selected = isSelected();
 
       const baseProps: Record<string, unknown> = {
-        role: "menuitem",
+        role:
+          mode === "single"
+            ? "menuitemradio"
+            : mode === "multiple"
+              ? "menuitemcheckbox"
+              : "menuitem",
         id: String(key),
         "aria-disabled": isDisabled() || undefined,
+        "aria-checked": mode !== "none" ? selected : undefined,
         "aria-label": ariaLabel,
         "aria-labelledby": !ariaLabel ? labelId : undefined,
         "aria-describedby": descriptionId,
         tabIndex: isFocused() ? 0 : -1,
+        "data-selected": selected || undefined,
         "data-focused": isFocused() || undefined,
         "data-focus-visible": isFocusVisible() || undefined,
         "data-pressed": isPressed() || undefined,
@@ -172,5 +195,7 @@ export function createMenuItem<T>(
     isFocusVisible: () => isFocused() && isFocusVisible(),
     isPressed,
     isDisabled,
+    isSelected,
+    selectionMode,
   };
 }

@@ -255,6 +255,7 @@ export function createMenu<T>(
         const focusedKey = state.focusedKey();
         // Don't activate disabled items
         if (focusedKey != null && !isDisabled(focusedKey)) {
+          state.select(focusedKey, e, collection);
           p.onAction?.(focusedKey);
           p.onClose?.();
         }

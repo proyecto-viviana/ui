@@ -22,6 +22,7 @@ import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps, useTheme } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
+import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import S2ChevronIcon from "../icon/ui-icons/Chevron";
 import LinkOutIcon from "../icon/ui-icons/LinkOut";
 import InfoCircleIcon from "../icon/s2wf-icons/InfoCircleIcon";
@@ -41,6 +42,9 @@ import {
   menuItemDescriptor,
   menuItemDescriptorIcon,
   menuItem as s2MenuItem,
+  menuItemCheckbox,
+  menuItemCheckboxIcon,
+  menuItemCheckmark,
   menuItemDescription,
   menuItemIcon,
   menuItemIconCenterWrapper,
@@ -64,6 +68,12 @@ const linkOutIconSize: Record<S2MenuSize, "M" | "L" | "XL"> = {
   M: "L",
   L: "XL",
   XL: "XL",
+};
+const selectionIconSize: Record<S2MenuSize, "XS" | "S" | "M" | "L"> = {
+  S: "XS",
+  M: "S",
+  L: "M",
+  XL: "L",
 };
 
 export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class" | "style"> {
@@ -389,6 +399,28 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       <IconContext.Provider value={iconContextValue}>
         <TextContext.Provider value={textContextValue(renderProps)}>
           <KeyboardContext.Provider value={keyboardContextValue(renderProps)}>
+            <Show when={renderProps.selectionMode === "single" && !renderProps.hasSubmenu}>
+              <CheckmarkIcon
+                aria-hidden="true"
+                data-rsp-slot="selection-indicator"
+                size={selectionIconSize[size]}
+                class={menuItemCheckmark(itemStyleProps(renderProps))}
+              />
+            </Show>
+            <Show when={renderProps.selectionMode === "multiple" && !renderProps.hasSubmenu}>
+              <span
+                aria-hidden="true"
+                data-rsp-slot="selection-indicator"
+                class={menuItemCheckbox(itemStyleProps(renderProps))}
+              >
+                <Show when={renderProps.isSelected}>
+                  <CheckmarkIcon
+                    size={selectionIconSize[size]}
+                    class={menuItemCheckboxIcon as unknown as string}
+                  />
+                </Show>
+              </span>
+            </Show>
             {local.icon?.()}
             {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
             {local.shortcut ? <StyledKeyboard>{local.shortcut}</StyledKeyboard> : null}

@@ -746,6 +746,88 @@ describe("Menu", () => {
   });
 
   // ============================================
+  // SELECTION
+  // ============================================
+
+  describe("selection", () => {
+    it("supports single selection semantics and render props", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <Menu<TestItem>
+          aria-label="Test"
+          items={testItems}
+          getKey={(item) => item.id}
+          selectionMode="single"
+          defaultSelectedKeys={["cat"]}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <MenuItem id={item.id}>
+              {(renderProps) => (
+                <span data-testid={`state-${item.id}`}>
+                  {`${item.name}:${renderProps.selectionMode}:${
+                    renderProps.isSelected ? "selected" : "idle"
+                  }`}
+                </span>
+              )}
+            </MenuItem>
+          )}
+        </Menu>
+      ));
+
+      const cat = screen.getByRole("menuitemradio", { name: /Cat/ });
+      const dog = screen.getByRole("menuitemradio", { name: /Dog/ });
+
+      expect(cat).toHaveAttribute("aria-checked", "true");
+      expect(cat).toHaveAttribute("data-selected", "true");
+      expect(cat).toHaveTextContent("Cat:single:selected");
+      expect(dog).toHaveAttribute("aria-checked", "false");
+      expect(dog).toHaveTextContent("Dog:single:idle");
+
+      await user.click(dog);
+
+      expect(cat).toHaveAttribute("aria-checked", "false");
+      expect(dog).toHaveAttribute("aria-checked", "true");
+      expect(dog).toHaveAttribute("data-selected", "true");
+      expect(onSelectionChange).toHaveBeenCalledWith(new Set(["dog"]));
+    });
+
+    it("supports multiple selection semantics and toggling", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <Menu<TestItem>
+          aria-label="Test"
+          items={testItems}
+          getKey={(item) => item.id}
+          selectionMode="multiple"
+          defaultSelectedKeys={["cat"]}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+        </Menu>
+      ));
+
+      const cat = screen.getByRole("menuitemcheckbox", { name: "Cat" });
+      const dog = screen.getByRole("menuitemcheckbox", { name: "Dog" });
+
+      expect(cat).toHaveAttribute("aria-checked", "true");
+      expect(dog).toHaveAttribute("aria-checked", "false");
+
+      await user.click(dog);
+
+      expect(cat).toHaveAttribute("aria-checked", "true");
+      expect(dog).toHaveAttribute("aria-checked", "true");
+      expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["cat", "dog"]));
+
+      await user.click(cat);
+
+      expect(cat).toHaveAttribute("aria-checked", "false");
+      expect(dog).toHaveAttribute("aria-checked", "true");
+      expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["dog"]));
+    });
+  });
+
+  // ============================================
   // DISABLED STATES
   // ============================================
 
