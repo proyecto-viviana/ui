@@ -394,6 +394,14 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
       "aria-haspopup": "menu",
       "aria-expanded": state.isOpen() || undefined,
       "aria-controls": state.isOpen() ? menuId : undefined,
+      onPointerEnter: (event: PointerEvent) => {
+        if (event.pointerType === "touch") return;
+        scheduleOpen();
+      },
+      onPointerOver: (event: PointerEvent) => {
+        if (event.pointerType === "touch") return;
+        scheduleOpen();
+      },
       onMouseEnter: () => scheduleOpen(),
       onKeyDown: (event: KeyboardEvent) => {
         if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") {

@@ -15,7 +15,14 @@ import {
   Text as SubpathText,
   UnavailableMenuItemTrigger,
 } from "../src/ActionMenu";
-import { ActionMenu, ActionMenuContext, MenuItem, MenuSection } from "../src/menu";
+import {
+  ActionMenu,
+  ActionMenuContext,
+  Menu,
+  MenuItem,
+  MenuSection,
+  SubmenuTrigger,
+} from "../src/menu";
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
 
@@ -479,6 +486,52 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(customRoot).toHaveAttribute("data-custom-root", "true");
     expect(customRoot).toHaveAttribute("aria-disabled", "true");
     expect(customRoot).toHaveAttribute("data-render-disabled", "true");
+  });
+
+  it("supports normal submenu composition inside ActionMenu", async () => {
+    const user = setupUser();
+    const onSubmenuOpenChange = vi.fn();
+    render(() => (
+      <ActionMenu defaultOpen menuSize="L" label="Document actions">
+        <SubmenuTrigger onOpenChange={onSubmenuOpenChange}>
+          <MenuItem id="more" textValue="More options">
+            <Text slot="label">More options</Text>
+          </MenuItem>
+          <Menu aria-label="More options submenu">
+            <MenuItem id="rename" textValue="Rename">
+              <Text slot="label">Rename</Text>
+            </MenuItem>
+          </Menu>
+        </SubmenuTrigger>
+      </ActionMenu>
+    ));
+
+    const submenuTrigger = screen.getByRole("menuitem", { name: "More options" });
+    expect(submenuTrigger).toHaveAttribute("aria-haspopup", "menu");
+    expect(submenuTrigger).not.toHaveAttribute("aria-expanded");
+
+    const descriptor = submenuTrigger.querySelector('[slot="descriptor"]');
+    expect(descriptor).toBeInTheDocument();
+    expect(descriptor?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(descriptor?.querySelector("svg")).toHaveAttribute("width", "12");
+
+    await user.hover(submenuTrigger);
+
+    await waitFor(() => expect(submenuTrigger).toHaveAttribute("aria-expanded", "true"));
+    expect(onSubmenuOpenChange.mock.calls).toContainEqual([true]);
+    const submenuId = submenuTrigger.getAttribute("aria-controls");
+    expect(submenuId).toBeTruthy();
+    const submenu = document.getElementById(submenuId!);
+    expect(submenu).toHaveAttribute("role", "menu");
+    expect(submenu).toHaveAccessibleName("More options");
+    expect(
+      within(submenu as HTMLElement).getByRole("menuitem", { name: "Rename" }),
+    ).toBeInTheDocument();
+
+    const submenuPopover = screen
+      .getAllByRole("dialog")
+      .find((dialog) => dialog.getAttribute("data-trigger") === "SubmenuTrigger");
+    expect(submenuPopover).toBeInTheDocument();
   });
 
   it("supports controlled open state callbacks", async () => {

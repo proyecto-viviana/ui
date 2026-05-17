@@ -27,11 +27,31 @@
 | 6 State                | partial | Package tests cover fallback actions, render-function/static JSX items, render-function item liveness while open, `shouldCloseOnSelect={false}`, controlled open, reactive omitted defaults, disabled keys, keyboard open/close, outside close, focus-out close, focus return after delayed exit, placement axes, portal unmount cleanup, touch/virtual activation, and disabled touch suppression | Full source branch ledger                    |
 | 7 ARIA hooks           | partial | Tests cover role/name, `aria-haspopup`, reactive `aria-expanded`, `aria-controls`, menu labels, disabled item semantics, keyboard focus, Escape, forced colors, reduced motion, scoped axe, manual semantic assertions, target size, and contrast-sensitive states                                                                                                                                 | Source branch ledger follow-up               |
 | 8 Headless             | partial | Focused Solid package coverage proves static JSX child laziness, render-function item liveness, custom MenuItem root ownership, slotted context resolution, trigger DOM data prop ownership, ActionMenu MenuSection composition, link MenuItems, and Menu/Button/Popover headless integration in `packages/solid-spectrum/test/ActionMenu.test.tsx`                                                | Lower-layer fixes only if later gaps require |
-| 9 Styled S2            | partial | Trigger now uses S2 ActionButton styling, generated More icon, and pressScale motion; open menu uses generated S2 menu/item/section styling, link-out descriptors for `_blank` items, trigger/open-menu/interaction/forced-colors visual evidence plus placement and reduced-motion parity                                                                                                         | Remaining source branch ledger               |
+| 9 Styled S2            | partial | Trigger now uses S2 ActionButton styling, generated More icon, and pressScale motion; open menu uses generated S2 menu/item/section styling, submenu chevron descriptors/popovers, link-out descriptors for `_blank` items, trigger/open-menu/interaction/forced-colors visual evidence plus placement and reduced-motion parity                                                                   | Remaining source branch ledger               |
 | 10 Runtime lifecycle   | partial | `actionmenu-contract.spec.ts` covers mount, controls, default reset, actions, keyboard menu-button state, Escape/outside/focus-out cleanup, and focus restore; package tests cover portal cleanup on unmount and popover entering/exiting attributes; `actionmenu-visual.spec.ts` covers closed trigger, trigger interactions, open menu, transition lifecycle, and placement axes                 | Full source branch ledger                    |
 | 11 Harness integrity   | done    | Current reports list ActionMenu live on both sides; default visual state moved from `blocked` to `planned`                                                                                                                                                                                                                                                                                         | None                                         |
 | 12 Comparison evidence | partial | Browser route contract covers mount, controls, disabled trigger, action callback keys, keyboard/outside/focus-out/touch/virtual ARIA behavior, scoped axe/manual semantics, target size/contrast, plus default trigger, trigger interaction, open-menu, transition lifecycle, placement, forced-colors, and reduced-motion visual/computed parity                                                  | Complete source branch ledger evidence       |
 | 13 Acceptance          | partial | Focused package tests, route contract, visual spec, reports, comparison build, and repo check pass for the current ActionMenu slices                                                                                                                                                                                                                                                               | Source ledger gaps remain                    |
+
+## Current After ActionMenu Submenu Source Slice
+
+- Added S2 submenu composition support for static `ActionMenu` children:
+  submenu items now render S2 chevron descriptors and submenu menus are wrapped
+  in S2 popovers with submenu placement offsets.
+- Fixed the shared submenu open lifecycle so mouse/pointer hover opens the
+  submenu and the submenu popover is not closed only because focus remains on
+  the parent menu item.
+- Added ActionMenu package coverage for composed `SubmenuTrigger` + `Menu`
+  children, including ARIA relationship, descriptor icon, submenu item content,
+  and submenu popover trigger metadata.
+- Verification for this slice:
+  `vp test packages/solid-spectrum/test/ActionMenu.test.tsx` (`25` passed),
+  `vp test packages/solidaria-components/test/Menu.test.tsx` (`89` passed),
+  `vp test packages/solidaria-components/test/Popover.test.tsx` (`24` passed),
+  `vp test packages/solid-spectrum/test/Menu.test.tsx` (`22` passed),
+  `vp test packages/solidaria/test/overlays.test.tsx` (`25` passed),
+  combined affected run (`185` passed), and
+  `vp run --filter @proyecto-viviana/solid-spectrum build`.
 
 ## Agent Workflow
 
@@ -219,7 +239,7 @@ below is checked with direct evidence.
 
 - [x] Focused package tests:
       `vp test run packages/solidaria-components/test/Popover.test.tsx packages/solidaria/test/overlays.test.tsx packages/solid-spectrum/test/ActionMenu.test.tsx packages/solid-spectrum/test/Menu.test.tsx packages/solidaria-components/test/Menu.test.tsx`,
-      `181` tests passed
+      `185` tests passed
 - [x] Focused Playwright/runtime tests:
       `e2e/actionmenu-contract.spec.ts`, `12` tests passed
 - [x] Focused Playwright/visual tests:

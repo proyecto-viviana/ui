@@ -6,6 +6,7 @@ import {
   SubmenuTrigger as HeadlessSubmenuTrigger,
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
+  Popover as HeadlessPopover,
   type MenuProps as HeadlessMenuProps,
   type MenuItemProps as HeadlessMenuItemProps,
   type MenuSectionProps as HeadlessMenuSectionProps,
@@ -14,11 +15,14 @@ import {
   type MenuRenderProps,
   type MenuItemRenderProps,
   type MenuTriggerRenderProps,
+  type PopoverRenderProps,
+  usePopoverTrigger,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import { useProviderProps } from "../provider";
+import { useProviderProps, useTheme } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
+import S2ChevronIcon from "../icon/ui-icons/Chevron";
 import LinkOutIcon from "../icon/ui-icons/LinkOut";
 import InfoCircleIcon from "../icon/s2wf-icons/InfoCircleIcon";
 import { IconContext } from "../icon/spectrum-icon";
@@ -26,6 +30,7 @@ import { s2IntlStrings } from "../intl";
 import { KeyboardContext, StyledKeyboard, Text, TextContext } from "../text";
 import {
   menu as s2Menu,
+  menuFrame,
   menuItemDescriptor,
   menuItemDescriptorIcon,
   menuItem as s2MenuItem,
@@ -35,6 +40,7 @@ import {
   menuItemKeyboard,
   menuItemLabel,
   menuItemValue,
+  menuPopover,
   menuSection,
   type S2MenuItemStyleProps,
   type S2MenuSize,
@@ -222,15 +228,41 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, ["class", "hideLinkOutIcon"]);
   const size = useContext(MenuSizeContext);
+  const theme = useTheme();
+  const popoverTrigger = usePopoverTrigger();
   const customClass = local.class ?? "";
+  const isSubmenu = () => popoverTrigger?.trigger === "SubmenuTrigger";
 
   const getClassName = (renderProps: MenuRenderProps): string => {
     return [s2Menu({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
   };
+  const menuContent = () => (
+    <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />
+  );
+
+  if (isSubmenu()) {
+    return (
+      <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
+        <HeadlessPopover
+          trigger="SubmenuTrigger"
+          placement="end top"
+          offset={-2}
+          crossOffset={-8}
+          isNonModal
+          autoFocus={false}
+          class={(renderProps: PopoverRenderProps) =>
+            menuPopover({ ...renderProps, colorScheme: theme.colorScheme })
+          }
+        >
+          <div class={menuFrame}>{menuContent()}</div>
+        </HeadlessPopover>
+      </MenuLinkOutIconContext.Provider>
+    );
+  }
 
   return (
     <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
-      <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />
+      {menuContent()}
     </MenuLinkOutIconContext.Provider>
   );
 }
@@ -250,10 +282,13 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const size = useContext(MenuSizeContext);
   const hideLinkOutIcon = useContext(MenuLinkOutIconContext);
   const isUnavailable = useContext(UnavailableMenuItemContext);
+  const locale = useLocale();
   const customClass = local.class ?? "";
   const unavailableDescriptionId = createUniqueId();
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const isLinkOut = () => headlessProps.href != null && headlessProps.target === "_blank";
+  const chevronStyle = () =>
+    locale().direction === "rtl" ? ({ transform: "scaleX(-1)" } as JSX.CSSProperties) : undefined;
 
   const getClassName = (renderProps: MenuItemRenderProps): string => {
     const isFocused = (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused;
@@ -325,6 +360,15 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
                 <LinkOutIcon
                   size={linkOutIconSize[size]}
                   class={menuItemDescriptorIcon({ size })}
+                />
+              </span>
+            </Show>
+            <Show when={renderProps.hasSubmenu && !isUnavailable}>
+              <span slot="descriptor" class={menuItemDescriptor} data-rsp-slot="descriptor">
+                <S2ChevronIcon
+                  size={size}
+                  class={menuItemDescriptorIcon({ size })}
+                  style={chevronStyle()}
                 />
               </span>
             </Show>

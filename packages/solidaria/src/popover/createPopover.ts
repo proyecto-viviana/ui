@@ -112,7 +112,9 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
         return state.isOpen();
       },
       onClose: state.close,
-      shouldCloseOnBlur: true,
+      get shouldCloseOnBlur() {
+        return !isSubmenu();
+      },
       get isDismissable() {
         return !isNonModal() || isSubmenu();
       },
