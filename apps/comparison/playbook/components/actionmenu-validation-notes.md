@@ -27,7 +27,7 @@
 | 6 State                | partial | Package tests cover fallback actions, render-function/static JSX items, render-function item liveness while open, `shouldCloseOnSelect={false}`, controlled open, reactive omitted defaults, disabled keys, keyboard open/close, outside close, focus-out close, focus return after delayed exit, placement axes, portal unmount cleanup, touch/virtual activation, and disabled touch suppression | Full source branch ledger                    |
 | 7 ARIA hooks           | partial | Tests cover role/name, `aria-haspopup`, reactive `aria-expanded`, `aria-controls`, menu labels, disabled item semantics, keyboard focus, Escape, forced colors, reduced motion, scoped axe, manual semantic assertions, target size, and contrast-sensitive states                                                                                                                                 | Source branch ledger follow-up               |
 | 8 Headless             | partial | Focused Solid package coverage proves static JSX child laziness, render-function item liveness, custom MenuItem root ownership, slotted context resolution, trigger DOM data prop ownership, ActionMenu MenuSection composition, link MenuItems, and Menu/Button/Popover headless integration in `packages/solid-spectrum/test/ActionMenu.test.tsx`                                                | Lower-layer fixes only if later gaps require |
-| 9 Styled S2            | partial | Trigger now uses S2 ActionButton styling, generated More icon, and pressScale motion; open menu uses generated S2 menu/item/section styling, submenu chevron descriptors/popovers, link-out descriptors for `_blank` items, trigger/open-menu/interaction/forced-colors visual evidence plus placement and reduced-motion parity                                                                   | Remaining source branch ledger               |
+| 9 Styled S2            | partial | Trigger now uses S2 ActionButton styling, generated More icon, and pressScale motion; open menu uses generated S2 menu/item/section/header/heading styling, submenu chevron descriptors/popovers, link-out descriptors for `_blank` items, trigger/open-menu/interaction/forced-colors visual evidence plus placement and reduced-motion parity                                                    | Remaining source branch ledger               |
 | 10 Runtime lifecycle   | partial | `actionmenu-contract.spec.ts` covers mount, controls, default reset, actions, keyboard menu-button state, Escape/outside/focus-out cleanup, and focus restore; package tests cover portal cleanup on unmount and popover entering/exiting attributes; `actionmenu-visual.spec.ts` covers closed trigger, trigger interactions, open menu, transition lifecycle, and placement axes                 | Full source branch ledger                    |
 | 11 Harness integrity   | done    | Current reports list ActionMenu live on both sides; default visual state moved from `blocked` to `planned`                                                                                                                                                                                                                                                                                         | None                                         |
 | 12 Comparison evidence | partial | Browser route contract covers mount, controls, disabled trigger, action callback keys, keyboard/outside/focus-out/touch/virtual ARIA behavior, scoped axe/manual semantics, target size/contrast, plus default trigger, trigger interaction, open-menu, transition lifecycle, placement, forced-colors, and reduced-motion visual/computed parity                                                  | Complete source branch ledger evidence       |
@@ -52,6 +52,30 @@
   `vp test packages/solidaria/test/overlays.test.tsx` (`25` passed),
   combined affected run (`185` passed), and
   `vp run --filter @proyecto-viviana/solid-spectrum build`.
+
+## Latest Section Header Source Slice Summary
+
+- Added the upstream Menu section slot context path for Solid Spectrum:
+  `Menu` and the lower-level `ActionMenu` menu renderer now provide S2
+  `Header`, `Heading`, and description text slot contexts, including
+  `role="presentation"` on section headings.
+- Added `HeadingContext` to the shared text primitive so menu section headings
+  can receive generated S2 styles without falling back to standalone heading
+  classes.
+- Added package coverage for direct `Menu` and static `ActionMenu`
+  composition with `MenuSection`, `Header`, and `Heading`; both tests assert
+  generated section/header/heading classes and suppression of the standalone
+  heading typography path.
+- Verification for this slice:
+  `vp test packages/solid-spectrum/test/Menu.test.tsx packages/solid-spectrum/test/ActionMenu.test.tsx`
+  (`49` passed), affected package run
+  (`packages/solid-spectrum/test/ActionMenu.test.tsx`,
+  `packages/solid-spectrum/test/Menu.test.tsx`,
+  `packages/solidaria-components/test/Menu.test.tsx`,
+  `packages/solidaria-components/test/Popover.test.tsx`,
+  `packages/solidaria/test/overlays.test.tsx`, `187` passed),
+  `vp run --filter @proyecto-viviana/solid-spectrum build`,
+  `vp run check:fix`, `vp run check`, and `git diff --check`.
 
 ## Agent Workflow
 
@@ -716,6 +740,37 @@ below is checked with direct evidence.
   - Full source branch ledger remains open, especially normal submenu behavior,
     section header/heading slot styling parity, selection indicators, and any
     remaining Menu/Popover branches not yet mapped to evidence.
+
+## Current After Section Header Source Slice
+
+- Source-ledger coverage added:
+  - `packages/solid-spectrum/src/text/Heading.tsx` now supports
+    `HeadingContext`, generated `styles`, unsafe style/class merging, hidden
+    state, context refs, and context-provided DOM props such as
+    `role="presentation"`.
+  - `packages/solid-spectrum/src/menu/index.tsx` now mirrors React S2 `Menu`
+    provider wiring for section `Header`, section `Heading`, and menu text
+    slots. Solid also supplies `default`/`label` text slots at this level so
+    static JSX children created before item render-prop providers still receive
+    valid S2 text slot context.
+  - `packages/solid-spectrum/src/menu/ActionMenu.tsx` applies the same provider
+    wiring around its lower-level `HeadlessMenu` path, which is separate from
+    the public `Menu` component.
+  - `packages/solid-spectrum/test/Menu.test.tsx` and
+    `packages/solid-spectrum/test/ActionMenu.test.tsx` prove section header and
+    heading styling in both direct Menu and ActionMenu static composition.
+- Verification:
+  - `vp test packages/solid-spectrum/test/Menu.test.tsx packages/solid-spectrum/test/ActionMenu.test.tsx`
+    passed `49` tests.
+  - `vp test packages/solid-spectrum/test/ActionMenu.test.tsx packages/solid-spectrum/test/Menu.test.tsx packages/solidaria-components/test/Menu.test.tsx packages/solidaria-components/test/Popover.test.tsx packages/solidaria/test/overlays.test.tsx`
+    passed `187` tests.
+  - `vp run --filter @proyecto-viviana/solid-spectrum build` passed.
+  - `vp run check:fix` passed.
+  - `vp run check` passed.
+  - `git diff --check` passed.
+- Remaining gaps:
+  - Full source branch ledger remains open, especially selection indicators and
+    any remaining Menu/Popover branches not yet mapped to evidence.
 
 ## Source Packet
 

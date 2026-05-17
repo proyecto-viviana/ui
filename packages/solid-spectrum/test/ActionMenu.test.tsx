@@ -18,6 +18,8 @@ import {
 import {
   ActionMenu,
   ActionMenuContext,
+  Header,
+  Heading,
   Menu,
   MenuItem,
   MenuSection,
@@ -410,6 +412,32 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(section).toHaveAttribute("data-section");
     expect(within(section).getByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
     expect(within(section).getByRole("menuitem", { name: "Archive" })).toBeInTheDocument();
+  });
+
+  it("styles section header and heading slots inside ActionMenu menus", () => {
+    render(() => (
+      <ActionMenu defaultOpen menuSize="L" label="Document actions">
+        <MenuSection data-testid="document-actions-section">
+          <Header data-testid="document-actions-header">
+            <Heading level={3}>Document actions</Heading>
+          </Header>
+          <MenuItem id="copy" textValue="Copy">
+            <Text slot="label">Copy</Text>
+          </MenuItem>
+        </MenuSection>
+      </ActionMenu>
+    ));
+
+    const section = screen.getByTestId("document-actions-section");
+    const header = screen.getByTestId("document-actions-header");
+    const heading = screen.getByRole("presentation");
+
+    expect(section.className).toContain("-macro-dynamic");
+    expect(header.className).toContain("-macro-dynamic");
+    expect(heading).toHaveTextContent("Document actions");
+    expect(heading.className).toContain("-macro-static");
+    expect(heading.className).not.toContain("text-2xl");
+    expect(heading.className).not.toContain("text-primary-100");
   });
 
   it("renders link-style MenuItems with S2 link-out descriptors inside ActionMenu", () => {

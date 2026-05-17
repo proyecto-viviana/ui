@@ -4,7 +4,16 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { MenuTrigger, MenuButton, Menu, MenuItem, MenuSeparator } from "../src/menu";
+import {
+  Header,
+  Heading,
+  MenuTrigger,
+  MenuButton,
+  Menu,
+  MenuItem,
+  MenuSection,
+  MenuSeparator,
+} from "../src/menu";
 
 /** Minimal menu items for testing. */
 const items = [
@@ -256,6 +265,35 @@ describe("Menu (solid-spectrum)", () => {
 
       await user.click(screen.getByText("Edit"));
       expect(onAction).not.toHaveBeenCalled();
+    });
+
+    it("provides S2 section header and heading slot contexts", () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Actions</MenuButton>
+          <Menu aria-label="Actions">
+            <MenuSection data-testid="document-actions-section">
+              <Header data-testid="document-actions-header">
+                <Heading level={3}>Document actions</Heading>
+              </Header>
+              <MenuItem id="edit" textValue="Edit">
+                Edit
+              </MenuItem>
+            </MenuSection>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const section = screen.getByTestId("document-actions-section");
+      const header = screen.getByTestId("document-actions-header");
+      const heading = screen.getByRole("presentation");
+
+      expect(section.className).toContain("-macro-dynamic");
+      expect(header.className).toContain("-macro-dynamic");
+      expect(heading).toHaveTextContent("Document actions");
+      expect(heading.className).toContain("-macro-static");
+      expect(heading.className).not.toContain("text-2xl");
+      expect(heading.className).not.toContain("text-primary-100");
     });
   });
 

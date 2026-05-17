@@ -27,7 +27,14 @@ import LinkOutIcon from "../icon/ui-icons/LinkOut";
 import InfoCircleIcon from "../icon/s2wf-icons/InfoCircleIcon";
 import { IconContext } from "../icon/spectrum-icon";
 import { s2IntlStrings } from "../intl";
-import { KeyboardContext, StyledKeyboard, Text, TextContext } from "../text";
+import {
+  HeaderContext,
+  HeadingContext,
+  KeyboardContext,
+  StyledKeyboard,
+  Text,
+  TextContext,
+} from "../text";
 import {
   menu as s2Menu,
   menuFrame,
@@ -42,6 +49,8 @@ import {
   menuItemValue,
   menuPopover,
   menuSection,
+  menuSectionHeader,
+  menuSectionHeading,
   type S2MenuItemStyleProps,
   type S2MenuSize,
 } from "./s2-menu-styles";
@@ -237,7 +246,35 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     return [s2Menu({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
   };
   const menuContent = () => (
-    <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />
+    <HeaderContext.Provider value={{ styles: () => menuSectionHeader({ size }) }}>
+      <HeadingContext.Provider
+        value={{
+          role: "presentation",
+          styles: menuSectionHeading,
+        }}
+      >
+        <TextContext.Provider
+          value={{
+            slots: {
+              default: {
+                styles: () => menuItemLabel({ size }),
+                "data-rsp-slot": "text",
+              },
+              label: {
+                styles: () => menuItemLabel({ size }),
+                "data-rsp-slot": "text",
+              },
+              description: {
+                styles: () => menuItemDescription({ size, isFocused: false, isDisabled: false }),
+                "data-rsp-slot": "text",
+              },
+            },
+          }}
+        >
+          <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />
+        </TextContext.Provider>
+      </HeadingContext.Provider>
+    </HeaderContext.Provider>
   );
 
   if (isSubmenu()) {

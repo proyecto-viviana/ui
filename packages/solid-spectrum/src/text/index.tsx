@@ -148,7 +148,7 @@ export function Header(props: HeaderProps): JSX.Element {
   );
 }
 
-export { Heading } from "./Heading";
+export { Heading, HeadingContext } from "./Heading";
 export type { HeadingProps, HeadingLevel } from "./Heading";
 export { KeyboardContext, StyledKeyboard } from "./Keyboard";
 export { StyledKeyboard as Keyboard } from "./Keyboard";

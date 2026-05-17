@@ -352,6 +352,7 @@ export {
   Header,
   HeaderContext,
   Heading,
+  HeadingContext,
   Keyboard,
   KeyboardContext,
   StyledKeyboard,

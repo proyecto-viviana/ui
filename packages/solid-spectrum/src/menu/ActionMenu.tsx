@@ -30,7 +30,7 @@ import { IconContext } from "../icon/spectrum-icon";
 import { fontRelative, style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { s2IntlStrings } from "../intl";
-import { Text } from "../text";
+import { HeaderContext, HeadingContext, Text, TextContext } from "../text";
 import { useTheme } from "../provider";
 import { pressScale } from "../pressScale";
 import {
@@ -47,8 +47,11 @@ import {
   menu as s2Menu,
   menuFrame,
   menuItem as s2MenuItem,
+  menuItemDescription,
   menuItemLabel,
   menuPopover,
+  menuSectionHeader,
+  menuSectionHeading,
   type S2MenuItemStyleProps,
 } from "./s2-menu-styles";
 import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
@@ -525,15 +528,50 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
       <div class={menuFrame}>
         <MenuSizeContext.Provider value={props.menuSize()}>
           <MenuLinkOutIconContext.Provider value={props.hideLinkOutIcon()}>
-            <HeadlessMenu
-              {...props.menuProps()}
-              items={props.items()}
-              staticChildren={usesStaticChildren() ? props.staticChildren : undefined}
-              aria-label={props.triggerLabel()}
-              class={menuClass}
+            <HeaderContext.Provider
+              value={{ styles: () => menuSectionHeader({ size: props.menuSize() }) }}
             >
-              {usesStaticChildren() ? undefined : props.renderMenuItem}
-            </HeadlessMenu>
+              <HeadingContext.Provider
+                value={{
+                  role: "presentation",
+                  styles: menuSectionHeading,
+                }}
+              >
+                <TextContext.Provider
+                  value={{
+                    slots: {
+                      default: {
+                        styles: () => menuItemLabel({ size: props.menuSize() }),
+                        "data-rsp-slot": "text",
+                      },
+                      label: {
+                        styles: () => menuItemLabel({ size: props.menuSize() }),
+                        "data-rsp-slot": "text",
+                      },
+                      description: {
+                        styles: () =>
+                          menuItemDescription({
+                            size: props.menuSize(),
+                            isFocused: false,
+                            isDisabled: false,
+                          }),
+                        "data-rsp-slot": "text",
+                      },
+                    },
+                  }}
+                >
+                  <HeadlessMenu
+                    {...props.menuProps()}
+                    items={props.items()}
+                    staticChildren={usesStaticChildren() ? props.staticChildren : undefined}
+                    aria-label={props.triggerLabel()}
+                    class={menuClass}
+                  >
+                    {usesStaticChildren() ? undefined : props.renderMenuItem}
+                  </HeadlessMenu>
+                </TextContext.Provider>
+              </HeadingContext.Provider>
+            </HeaderContext.Provider>
           </MenuLinkOutIconContext.Provider>
         </MenuSizeContext.Provider>
       </div>
