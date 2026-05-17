@@ -82,7 +82,7 @@ export interface MenuRenderProps {
 
 export interface MenuProps<T> extends Omit<AriaMenuProps, "children">, SlotProps {
   /** The items to render in the menu. */
-  items: CollectionEntry<T>[];
+  items?: CollectionEntry<T>[];
   /** Function to get the key from an item. */
   getKey?: (item: T) => Key;
   /** Function to get the text value from an item. */
@@ -96,7 +96,9 @@ export interface MenuProps<T> extends Omit<AriaMenuProps, "children">, SlotProps
   /** Handler called when the menu should close. */
   onClose?: () => void;
   /** The children of the component. A function may be provided to render each item. */
-  children: (item: T) => JSX.Element;
+  children?: JSX.Element | ((item: T) => JSX.Element);
+  /** Internal lazy static children accessor used when collection children need menu context. */
+  staticChildren?: () => JSX.Element | undefined;
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<MenuRenderProps>;
   /** The inline style for the element. */
@@ -235,11 +237,23 @@ interface MenuItemContextValue {
   setItemRef?: (el: HTMLLIElement | null) => void;
 }
 
+interface StaticMenuCollectionItem {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+}
+
+interface StaticMenuCollectionContextValue {
+  registerItem(item: StaticMenuCollectionItem): void;
+  unregisterItem(id: Key): void;
+}
+
 export const MenuContext = createContext<MenuContextValue<unknown> | null>(null);
 export const MenuStateContext = createContext<MenuState<unknown> | null>(null);
 export const MenuTriggerContext = createContext<MenuTriggerContextValue | null>(null);
 export const RootMenuTriggerStateContext = createContext<OverlayTriggerState | null>(null);
 const MenuItemContext = createContext<MenuItemContextValue | null>(null);
+const StaticMenuCollectionContext = createContext<StaticMenuCollectionContextValue | null>(null);
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -247,6 +261,10 @@ function assignRef<T>(ref: RefLike<T>, el: T): void {
   if (!ref) return;
   if (typeof ref === "function") ref(el);
   else ref.current = el;
+}
+
+function resolveBoolean(value: unknown): boolean {
+  return typeof value === "function" ? Boolean((value as () => unknown)()) : Boolean(value);
 }
 
 /**
@@ -529,6 +547,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       "renderEmptyState",
       "shouldCloseOnSelect",
       "ref",
+      "staticChildren",
     ],
     [
       "items",
@@ -545,25 +564,63 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const triggerContext = useContext(MenuTriggerContext);
 
   const [menuRef, setMenuRef] = createSignal<HTMLUListElement | null>(null);
+  const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
+  const staticItemMap = new Map<Key, StaticMenuCollectionItem>();
+  const usesStaticChildren = () => local.staticChildren != null || stateProps.items == null;
+
+  const syncStaticItems = () => {
+    setStaticItems(Array.from(staticItemMap.values()));
+  };
+
+  const staticCollectionContext: StaticMenuCollectionContextValue = {
+    registerItem(item) {
+      const previous = staticItemMap.get(item.id);
+      if (
+        previous &&
+        previous.textValue === item.textValue &&
+        previous.isDisabled === item.isDisabled
+      ) {
+        return;
+      }
+
+      staticItemMap.set(item.id, item);
+      syncStaticItems();
+    },
+    unregisterItem(id) {
+      if (staticItemMap.delete(id)) {
+        syncStaticItems();
+      }
+    },
+  };
 
   const flatItems = createMemo<T[]>(() => {
-    return flattenCollectionEntries(stateProps.items);
+    return flattenCollectionEntries(stateProps.items ?? []);
   });
 
-  const hasSections = createMemo(() => stateProps.items.some((item) => isCollectionSection(item)));
+  const hasSections = createMemo(() =>
+    (stateProps.items ?? []).some((item) => isCollectionSection(item)),
+  );
 
   const state = createMenuState<T>({
     get items() {
-      return flatItems();
+      return usesStaticChildren() ? (staticItems() as T[]) : flatItems();
     },
     get getKey() {
-      return stateProps.getKey;
+      return usesStaticChildren()
+        ? (item: T) => (item as StaticMenuCollectionItem).id
+        : stateProps.getKey;
     },
     get getTextValue() {
-      return stateProps.getTextValue;
+      return usesStaticChildren()
+        ? (item: T) =>
+            (item as StaticMenuCollectionItem).textValue ??
+            String((item as StaticMenuCollectionItem).id)
+        : stateProps.getTextValue;
     },
     get getDisabled() {
-      return stateProps.getDisabled;
+      return usesStaticChildren()
+        ? (item: T) => Boolean((item as StaticMenuCollectionItem).isDisabled)
+        : stateProps.getDisabled;
     },
     get disabledKeys() {
       return stateProps.disabledKeys;
@@ -713,7 +770,8 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
   const virtualRange = createMemo(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized || hasSections()) return null;
-    const baseRange = virtualizer.getVisibleRange(stateProps.items.length);
+    const dynamicItems = stateProps.items ?? [];
+    const baseRange = virtualizer.getVisibleRange(dynamicItems.length);
     const itemNodes = getItemNodes();
     const persistedIndexes = Array.from(persistedKeys())
       .map((key) => itemNodes.findIndex((node) => node.key === key))
@@ -733,7 +791,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     return mergePersistedKeysIntoVirtualRange(
       baseRange,
       persistedIndexes,
-      stateProps.items.length,
+      dynamicItems.length,
       virtualizer,
       80,
       {
@@ -744,8 +802,9 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   });
   const visibleItems = createMemo(() => {
     const range = virtualRange();
-    if (!range) return stateProps.items;
-    return stateProps.items.slice(range.start, range.end);
+    const items = stateProps.items ?? [];
+    if (!range) return items;
+    return items.slice(range.start, range.end);
   });
   createEffect(() => {
     if (!hasDraggableDnd()) return;
@@ -811,7 +870,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   };
   const sectionedRenderEntries = createMemo(() => {
     let globalIndex = 0;
-    return stateProps.items.map((entry) => {
+    return (stateProps.items ?? []).map((entry) => {
       if (isCollectionSection(entry)) {
         const sectionItems = entry.items.map((item) => ({
           item,
@@ -833,21 +892,37 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       };
     });
   });
+  const renderDynamicItem = (item: T) =>
+    typeof local.children === "function" ? local.children(item) : undefined;
+  const resolveStaticChild = (child: unknown): JSX.Element | undefined => {
+    return typeof child === "function"
+      ? (child as () => JSX.Element | undefined)()
+      : (child as JSX.Element | undefined);
+  };
+  const renderStaticChildren = () => {
+    const staticChildren = (local.staticChildren?.() ?? local.children) as unknown;
+    if (Array.isArray(staticChildren)) {
+      return staticChildren.map(resolveStaticChild);
+    }
+    return resolveStaticChild(staticChildren);
+  };
   const collectionRenderer = createMemo<CollectionRendererContextValue<unknown>>(() => ({
     ...parentCollectionRenderer,
-    renderItem: (item) => props.children(item as T),
+    renderItem: (item) => renderDynamicItem(item as T),
     renderDropIndicator: (index, position) =>
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
   const menuListChildren = () => (
     <SharedElementTransition>
-      {state.collection().size === 0 && local.renderEmptyState ? (
+      {state.collection().size === 0 && !usesStaticChildren() && local.renderEmptyState ? (
         <li role="presentation" data-empty-state>
           <div role="menuitem" style={{ display: "contents" }}>
             {local.renderEmptyState()}
           </div>
         </li>
+      ) : usesStaticChildren() ? (
+        renderStaticChildren()
       ) : hasSections() ? (
         <For each={sectionedRenderEntries()}>
           {(entry) =>
@@ -867,7 +942,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                               "before",
                             )}
                             {collectionRenderer().renderDropIndicator?.(indexedItem.index, "on")}
-                            {props.children?.(indexedItem.item)}
+                            {renderDynamicItem(indexedItem.item)}
                             {collectionRenderer().renderDropIndicator?.(indexedItem.index, "after")}
                           </>
                         )}
@@ -880,7 +955,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
               <>
                 {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
                 {collectionRenderer().renderDropIndicator?.(entry.item.index, "on")}
-                {props.children?.(entry.item.item)}
+                {renderDynamicItem(entry.item.item)}
                 {collectionRenderer().renderDropIndicator?.(entry.item.index, "after")}
               </>
             )
@@ -909,7 +984,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                 <>
                   {beforeIndicator()}
                   {onIndicator()}
-                  {props.children?.(item as T)}
+                  {renderDynamicItem(item as T)}
                   {afterIndicator()}
                 </>
               );
@@ -962,40 +1037,44 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       }
     >
       <MenuStateContext.Provider value={state}>
-        <MenuItemContext.Provider value={{ closeOnSelect: local.shouldCloseOnSelect }}>
-          <CollectionRendererContext.Provider value={collectionRenderer()}>
-            <>
-              <Show when={ariaProps.label}>
-                <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
-              </Show>
-              {local.render ? (
-                local.render(menuListProps(), renderValues())
-              ) : (
-                <ul
-                  ref={setResolvedMenuRef}
-                  {...mergeProps(
-                    domProps(),
-                    cleanMenuProps(),
-                    cleanTriggerMenuProps(),
-                    cleanFocusProps(),
-                    (droppableCollection()?.collectionProps as
-                      | Record<string, unknown>
-                      | undefined) ?? {},
-                  )}
-                  class={renderProps.class()}
-                  style={renderProps.style()}
-                  slot={local.slot}
-                  data-focused={state.isFocused() || undefined}
-                  data-disabled={resolveDisabled() || undefined}
-                  data-empty={state.collection().size === 0 || undefined}
-                  data-drop-target={isRootDropTarget() || undefined}
-                >
-                  {menuListChildren()}
-                </ul>
-              )}
-            </>
-          </CollectionRendererContext.Provider>
-        </MenuItemContext.Provider>
+        <StaticMenuCollectionContext.Provider
+          value={usesStaticChildren() ? staticCollectionContext : null}
+        >
+          <MenuItemContext.Provider value={{ closeOnSelect: local.shouldCloseOnSelect }}>
+            <CollectionRendererContext.Provider value={collectionRenderer()}>
+              <>
+                <Show when={ariaProps.label}>
+                  <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
+                </Show>
+                {local.render ? (
+                  local.render(menuListProps(), renderValues())
+                ) : (
+                  <ul
+                    ref={setResolvedMenuRef}
+                    {...mergeProps(
+                      domProps(),
+                      cleanMenuProps(),
+                      cleanTriggerMenuProps(),
+                      cleanFocusProps(),
+                      (droppableCollection()?.collectionProps as
+                        | Record<string, unknown>
+                        | undefined) ?? {},
+                    )}
+                    class={renderProps.class()}
+                    style={renderProps.style()}
+                    slot={local.slot}
+                    data-focused={state.isFocused() || undefined}
+                    data-disabled={resolveDisabled() || undefined}
+                    data-empty={state.collection().size === 0 || undefined}
+                    data-drop-target={isRootDropTarget() || undefined}
+                  >
+                    {menuListChildren()}
+                  </ul>
+                )}
+              </>
+            </CollectionRendererContext.Provider>
+          </MenuItemContext.Provider>
+        </StaticMenuCollectionContext.Provider>
       </MenuStateContext.Provider>
     </MenuContext.Provider>
   );
@@ -1041,12 +1120,35 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const state = context as MenuState<T>;
   const menuContext = useContext(MenuContext) as MenuContextValue<T> | null;
   const itemContext = useContext(MenuItemContext);
+  const staticCollection = useContext(StaticMenuCollectionContext);
   const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
   const contextProps = () => itemContext?.props?.() ?? {};
   const combinedOnAction = () => {
     local.onAction?.();
     itemContext?.onAction?.();
   };
+  let registeredStaticKey: Key | null = null;
+
+  createEffect(() => {
+    if (!staticCollection) return;
+
+    if (registeredStaticKey != null && registeredStaticKey !== local.id) {
+      staticCollection.unregisterItem(registeredStaticKey);
+    }
+
+    registeredStaticKey = local.id;
+    staticCollection.registerItem({
+      id: local.id,
+      textValue: local.textValue ?? ariaProps["aria-label"],
+      isDisabled: resolveBoolean(ariaProps.isDisabled),
+    });
+  });
+
+  onCleanup(() => {
+    if (registeredStaticKey != null) {
+      staticCollection?.unregisterItem(registeredStaticKey);
+    }
+  });
 
   const itemAria = createMenuItem<T>(
     {

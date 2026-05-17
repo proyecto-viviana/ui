@@ -411,7 +411,7 @@ const actionMenuControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 ActionMenu docs, viewer controls, and placement API. The route drives the documented viewer axes plus shouldFlip into React and Solid; Solid now exposes the public trigger-facing API with strict closed-trigger, open-menu, and placement-axis visual evidence, while static JSX children remain a tracked gap.",
+  note: "Modeled from the S2 ActionMenu docs, viewer controls, and placement API. The route drives the documented viewer axes plus shouldFlip into React and Solid; Solid now exposes the public trigger-facing API and static JSX child composition with strict closed-trigger, open-menu, and placement-axis visual evidence.",
 };
 
 const checkboxControls: ComponentControlGroup = {

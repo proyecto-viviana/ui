@@ -173,7 +173,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
     local["aria-label"] ?? local.label ?? stringFormatter().format("menu.moreActions");
   const size = (): ActionButtonSize => local.size ?? "M";
   const menuSize = (): ActionMenuMenuSize => local.menuSize ?? "M";
-  const items = () => (local.items ?? []) as T[];
+  const items = () => local.items as HeadlessMenuProps<T>["items"] | undefined;
   const [triggerElement, setTriggerElement] = createSignal<HTMLButtonElement | null>(null);
   const iconContextValue = {
     slot: "icon",
@@ -288,6 +288,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
       <ActionMenuPopover
         menuProps={menuProps}
         items={items}
+        staticChildren={() => local.children as JSX.Element | undefined}
         renderMenuItem={renderMenuItem}
         menuSize={menuSize}
         triggerLabel={triggerLabel}
@@ -303,7 +304,8 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
 
 interface ActionMenuPopoverProps<T extends object> {
   menuProps: Omit<HeadlessMenuProps<T>, "children" | "items">;
-  items: () => T[];
+  items: () => HeadlessMenuProps<T>["items"] | undefined;
+  staticChildren: () => JSX.Element | undefined;
   renderMenuItem: (item: T) => JSX.Element;
   menuSize: () => ActionMenuMenuSize;
   triggerLabel: () => string;
@@ -320,6 +322,7 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
   const isOpen = () => triggerContext?.state.isOpen() ?? false;
   const close = () => triggerContext?.state.close();
   const open = () => triggerContext?.state.open();
+  const usesStaticChildren = () => props.items() == null;
   const menuClass = (renderProps: MenuRenderProps) =>
     [s2Menu({ ...renderProps, size: props.menuSize() }), props.class].filter(Boolean).join(" ");
 
@@ -347,10 +350,11 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
         <HeadlessMenu
           {...props.menuProps}
           items={props.items()}
+          staticChildren={usesStaticChildren() ? props.staticChildren : undefined}
           aria-label={props.triggerLabel()}
           class={menuClass}
         >
-          {props.renderMenuItem}
+          {usesStaticChildren() ? undefined : props.renderMenuItem}
         </HeadlessMenu>
       </div>
     </HeadlessPopover>

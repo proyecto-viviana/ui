@@ -882,8 +882,6 @@ function SolidSpectrumActionMenuDemo() {
           hc(
             SolidSpectrumActionMenu,
             {
-              items: actionMenuItems,
-              getKey: (item: (typeof actionMenuItems)[number]) => item.id,
               get size() {
                 return demoProps().size;
               },
@@ -914,23 +912,26 @@ function SolidSpectrumActionMenuDemo() {
                 setLastOpenState(String(isOpen));
               },
             },
-            renderProp((item: (typeof actionMenuItems)[number]) =>
-              hc(
-                SolidSpectrumMenuItem,
-                {
-                  id: item.id,
-                  textValue: item.label,
-                },
-                [
-                  () => [
-                    h(SolidNewIcon, { "aria-hidden": "true" }),
-                    h(SolidSpectrumText, { slot: "label" }, item.label),
-                    h(SolidSpectrumText, { slot: "description" }, item.description),
-                    h(SolidSpectrumKeyboard, {}, item.shortcut),
-                  ],
-                ],
-              ),
-            ),
+            [
+              () =>
+                actionMenuItems.map((item) =>
+                  hc(
+                    SolidSpectrumMenuItem,
+                    {
+                      id: item.id,
+                      textValue: item.label,
+                    },
+                    [
+                      () => [
+                        h(SolidNewIcon, { "aria-hidden": "true" }),
+                        h(SolidSpectrumText, { slot: "label" }, item.label),
+                        h(SolidSpectrumText, { slot: "description" }, item.description),
+                        h(SolidSpectrumKeyboard, {}, item.shortcut),
+                      ],
+                    ],
+                  ),
+                ),
+            ],
           ),
         ],
       ),

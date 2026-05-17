@@ -160,6 +160,35 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 
+  it("supports static JSX children for compositional menu item content", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    render(() => (
+      <ActionMenu onAction={onAction}>
+        <MenuItem id="copy" textValue="Copy">
+          <Text slot="label">Copy</Text>
+          <Keyboard>Cmd+C</Keyboard>
+        </MenuItem>
+        <MenuItem id="paste" textValue="Paste" isDisabled>
+          <Text slot="label">Paste</Text>
+        </MenuItem>
+      </ActionMenu>
+    ));
+
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+
+    expect(screen.getByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
+    expect(screen.getByText("Cmd+C")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Paste" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+
+    await user.click(screen.getByRole("menuitem", { name: "Copy" }));
+
+    expect(onAction).toHaveBeenCalledWith("copy");
+  });
+
   it("supports controlled open state callbacks", async () => {
     const user = setupUser();
     const onOpenChange = vi.fn();

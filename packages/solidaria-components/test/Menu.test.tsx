@@ -99,6 +99,31 @@ describe("Menu", () => {
       expect(items).toHaveLength(3);
     });
 
+    it("should render static JSX children into the menu collection", async () => {
+      const onAction = vi.fn();
+      render(() => (
+        <Menu aria-label="Static menu" onAction={onAction}>
+          <MenuItem id="copy" textValue="Copy">
+            Copy
+          </MenuItem>
+          <MenuItem id="paste" textValue="Paste" isDisabled>
+            Paste
+          </MenuItem>
+        </Menu>
+      ));
+
+      const menu = screen.getByRole("menu", { name: "Static menu" });
+      expect(within(menu).getAllByRole("menuitem")).toHaveLength(2);
+      expect(within(menu).getByRole("menuitem", { name: "Paste" })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+
+      await user.click(within(menu).getByRole("menuitem", { name: "Copy" }));
+
+      expect(onAction).toHaveBeenCalledWith("copy");
+    });
+
     it("should render with default class", () => {
       render(() => <TestMenu />);
 
@@ -433,7 +458,7 @@ describe("Menu", () => {
       expect(menuRef).toBeInstanceOf(HTMLElement);
       expect(sectionRef).toBeInstanceOf(HTMLElement);
       expect(itemRef).toBeInstanceOf(HTMLElement);
-      expect(sectionRef).toHaveAttribute("aria-label", "Felines");
+      expect(sectionRef?.getAttribute("aria-label")).toBe("Felines");
     });
 
     it("should support onScroll", () => {

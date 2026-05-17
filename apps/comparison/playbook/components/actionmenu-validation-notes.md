@@ -16,22 +16,22 @@
 
 ## Task Status
 
-| Task                   | Status  | Evidence                                                                                                                                                                                                        | Blocker or next action                                              |
-| ---------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| 0 Research             | done    | Live official docs page checked on 2026-05-16, S2 docs MCP, installed `@react-spectrum/s2@1.3.0` source, existing Solid ActionMenu/Menu source, current comparison reports                                      | Continue with Menu source branch ledger                             |
-| 1 Baseline             | done    | `vp run comparison:report:gaps`, `vp run comparison:report:exports`, `vp run guard:rac-export-gap`                                                                                                              | None                                                                |
-| 2 Route harness        | done    | `actionmenu-demo.ts`, component controls, manifest entry, React/Solid styled fixtures, visual matrix route-control entry, `actionmenu-contract.spec.ts`                                                         | None                                                                |
-| 3 Source map/API       | partial | Root/menu barrel `ActionMenuContext` export added; trigger props/default label/ref/context/style pass-through covered by package tests                                                                          | Complete upstream branch ledger and subpaths                        |
-| 4 Cross-layer audit    | partial | ActionMenu tests exposed and fixed lower-layer MenuTrigger ARIA prop reactivity; menu surface labelling added                                                                                                   | Complete visual/style and placement audit                           |
-| 5 Transitions          | partial | Browser contract covers open, Escape close, menu removal, open-change state, and focus restore                                                                                                                  | Add visual transition evidence if needed                            |
-| 6 State                | partial | Package tests cover fallback actions, render-function items with `shouldCloseOnSelect={false}`, controlled open, disabled keys, keyboard open/close, focus return, and browser placement-axis parity            | Pointer/outside press                                               |
-| 7 ARIA hooks           | partial | Tests cover role/name, `aria-haspopup`, reactive `aria-expanded`, `aria-controls`, menu labels, disabled item semantics, keyboard focus, and Escape                                                             | Axe/forced-colors pass                                              |
-| 8 Headless             | partial | Focused Solid package coverage added in `packages/solid-spectrum/test/ActionMenu.test.tsx`                                                                                                                      | Lower-layer fixes only if later gaps require                        |
-| 9 Styled S2            | partial | Trigger now uses S2 ActionButton styling and generated More icon; open menu uses generated S2 menu/item styling with strict trigger and open-menu pair diff plus computed parity evidence across placement axes | Focus, forced-colors, and reduced-motion visual states              |
-| 10 Runtime lifecycle   | partial | `actionmenu-contract.spec.ts` covers mount, controls, actions, keyboard menu-button state, Escape cleanup, and focus restore; `actionmenu-visual.spec.ts` covers closed trigger, open menu, and placement axes  | Add transient visual/runtime coverage                               |
-| 11 Harness integrity   | done    | Current reports list ActionMenu live on both sides; default visual state moved from `blocked` to `planned`                                                                                                      | None                                                                |
-| 12 Comparison evidence | partial | Browser route contract covers mount, controls, disabled trigger, action callback keys, keyboard ARIA/focus behavior, plus strict default trigger, open-menu, and placement visual/computed parity               | Add focus and accessibility visual evidence                         |
-| 13 Acceptance          | partial | Focused package tests, route contract, visual spec, reports, comparison build, and repo check pass for the current ActionMenu slices                                                                            | Static JSX composition and visual accessibility remain tracked gaps |
+| Task                   | Status  | Evidence                                                                                                                                                                                                        | Blocker or next action                                 |
+| ---------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| 0 Research             | done    | Live official docs page checked on 2026-05-16, S2 docs MCP, installed `@react-spectrum/s2@1.3.0` source, existing Solid ActionMenu/Menu source, current comparison reports                                      | Continue with Menu source branch ledger                |
+| 1 Baseline             | done    | `vp run comparison:report:gaps`, `vp run comparison:report:exports`, `vp run guard:rac-export-gap`                                                                                                              | None                                                   |
+| 2 Route harness        | done    | `actionmenu-demo.ts`, component controls, manifest entry, React/Solid styled fixtures, visual matrix route-control entry, `actionmenu-contract.spec.ts`                                                         | None                                                   |
+| 3 Source map/API       | partial | Root/menu barrel `ActionMenuContext` export added; trigger props/default label/ref/context/style pass-through covered by package tests                                                                          | Complete upstream branch ledger and subpaths           |
+| 4 Cross-layer audit    | partial | ActionMenu tests exposed and fixed lower-layer MenuTrigger ARIA prop reactivity; menu surface labelling added                                                                                                   | Complete visual/style and placement audit              |
+| 5 Transitions          | partial | Browser contract covers open, Escape close, menu removal, open-change state, and focus restore                                                                                                                  | Add visual transition evidence if needed               |
+| 6 State                | partial | Package tests cover fallback actions, render-function and static JSX items, `shouldCloseOnSelect={false}`, controlled open, disabled keys, keyboard open/close, focus return, and browser placement-axis parity | Pointer/outside press                                  |
+| 7 ARIA hooks           | partial | Tests cover role/name, `aria-haspopup`, reactive `aria-expanded`, `aria-controls`, menu labels, disabled item semantics, keyboard focus, and Escape                                                             | Axe/forced-colors pass                                 |
+| 8 Headless             | partial | Focused Solid package coverage added in `packages/solid-spectrum/test/ActionMenu.test.tsx`                                                                                                                      | Lower-layer fixes only if later gaps require           |
+| 9 Styled S2            | partial | Trigger now uses S2 ActionButton styling and generated More icon; open menu uses generated S2 menu/item styling with strict trigger and open-menu pair diff plus computed parity evidence across placement axes | Focus, forced-colors, and reduced-motion visual states |
+| 10 Runtime lifecycle   | partial | `actionmenu-contract.spec.ts` covers mount, controls, actions, keyboard menu-button state, Escape cleanup, and focus restore; `actionmenu-visual.spec.ts` covers closed trigger, open menu, and placement axes  | Add transient visual/runtime coverage                  |
+| 11 Harness integrity   | done    | Current reports list ActionMenu live on both sides; default visual state moved from `blocked` to `planned`                                                                                                      | None                                                   |
+| 12 Comparison evidence | partial | Browser route contract covers mount, controls, disabled trigger, action callback keys, keyboard ARIA/focus behavior, plus strict default trigger, open-menu, and placement visual/computed parity               | Add focus and accessibility visual evidence            |
+| 13 Acceptance          | partial | Focused package tests, route contract, visual spec, reports, comparison build, and repo check pass for the current ActionMenu slices                                                                            | Visual accessibility remains a tracked gap             |
 
 ## Agent Workflow
 
@@ -190,8 +190,8 @@ below is checked with direct evidence.
 ### 9. Evidence And Handoff
 
 - [x] Focused package tests:
-      `vp test run packages/solid-spectrum/test/ActionMenu.test.tsx packages/solid-spectrum/test/Menu.test.tsx`,
-      `31` tests passed
+      `vp test run packages/solid-spectrum/test/ActionMenu.test.tsx packages/solid-spectrum/test/Menu.test.tsx packages/solidaria-components/test/Menu.test.tsx`,
+      `121` tests passed
 - [x] Focused Playwright/runtime tests:
       `e2e/actionmenu-contract.spec.ts`, `4` tests passed
 - [x] Focused Playwright/visual tests:
@@ -203,11 +203,10 @@ below is checked with direct evidence.
 - [x] `vp run check`:
       pass
 - [x] Final status is `partial` for ActionMenu:
-      static JSX child composition and visual accessibility remain open
+      visual accessibility remains open
 - [x] Remaining gaps listed by gate and owner:
-      local Codex continues with static JSX composition, focus/hover/pressed,
-      forced-colors, reduced-motion, axe/manual semantics, and pointer/outside
-      press evidence
+      local Codex continues with focus/hover/pressed, forced-colors,
+      reduced-motion, axe/manual semantics, and pointer/outside press evidence
 
 ## Research
 
@@ -239,21 +238,21 @@ below is checked with direct evidence.
 
 ## Official Docs And Viewer Parity
 
-| Docs item       | Official setting/example                                                                                                | Current Solid/route status                                                                                                    | Required proof                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Primary example | `ActionMenu` composed with `MenuItem`, icons, `Text` label/description slots, and `Keyboard` shortcuts                  | Solid supports render-function item composition with `MenuItem`, `Text`, and `Keyboard`; static JSX children remain follow-up | Route fixture and package tests                      |
-| `size`          | ActionButton size options `XS`, `S`, `M`, `L`, `XL`; default `M`                                                        | Solid accepts `size`, defaults to `M`, and applies S2 ActionButton trigger styles/attributes                                  | API tests, computed geometry, visual states          |
-| `menuSize`      | Menu size options `S`, `M`, `L`, `XL`; default `M`                                                                      | Solid accepts `menuSize` and maps it to generated S2 menu/item classes; default open menu has strict visual/computed parity   | API tests, computed item/menu geometry               |
-| `align`         | `start` or `end`; default `start`                                                                                       | Solid accepts `align` and exposes it to the comparison DOM; overlay geometry parity remains planned                           | Browser placement contract                           |
-| `direction`     | `bottom`, `top`, `left`, `right`, `start`, `end`; default `bottom`                                                      | Solid accepts `direction` and exposes it to the comparison DOM; overlay geometry parity remains planned                       | Browser placement contract                           |
-| `isQuiet`       | Quiet ActionButton styling                                                                                              | Solid passes `isQuiet` through the S2 ActionButton trigger style helper                                                       | S2 class/computed/visual parity                      |
-| `isDisabled`    | Disabled trigger suppresses open/action                                                                                 | Current Solid passes to the headless menu button                                                                              | Package and browser interaction tests                |
-| Open state      | `defaultOpen`, controlled `isOpen`, and `onOpenChange`                                                                  | Solid exposes these props through the headless MenuTrigger path                                                               | Controlled/uncontrolled package tests                |
-| Collection      | Static children or dynamic `items`; `disabledKeys`; `onAction`; `shouldCloseOnSelect`                                   | Solid supports data-driven items and render-function `items`; static JSX children remain follow-up                            | Package and route tests                              |
-| Styling         | `styles`, `UNSAFE_className`, `UNSAFE_style` target the trigger ActionButton                                            | Solid forwards context/local trigger styles and unsafe class/style                                                            | S2 generated CSS, style passthrough, computed parity |
-| Labeling/i18n   | Labelable DOM props; missing `aria-label` defaults to localized more-actions message                                    | Solid uses localized default label and supports explicit label/ARIA props                                                     | Locale/default-label and explicit-label tests        |
-| Ref/context     | `ActionMenuContext`, focusable ref to trigger button                                                                    | Solid exports `ActionMenuContext` from root and menu barrel; ref targets trigger button                                       | Export tests, ref tests, context override tests      |
-| Subpath exports | `ActionMenu`, `ActionMenuContext`, Menu subcomponents, `Collection`, `ContextualHelpPopover`, content primitives, `Key` | Current Solid root exports exist for some values, but S2 ActionMenu subpath parity is not implemented                         | Export report and TypeScript/API tests               |
+| Docs item       | Official setting/example                                                                                                | Current Solid/route status                                                                                                  | Required proof                                       |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Primary example | `ActionMenu` composed with `MenuItem`, icons, `Text` label/description slots, and `Keyboard` shortcuts                  | Solid supports static JSX and render-function item composition with `MenuItem`, `Text`, and `Keyboard`                      | Route fixture and package tests                      |
+| `size`          | ActionButton size options `XS`, `S`, `M`, `L`, `XL`; default `M`                                                        | Solid accepts `size`, defaults to `M`, and applies S2 ActionButton trigger styles/attributes                                | API tests, computed geometry, visual states          |
+| `menuSize`      | Menu size options `S`, `M`, `L`, `XL`; default `M`                                                                      | Solid accepts `menuSize` and maps it to generated S2 menu/item classes; default open menu has strict visual/computed parity | API tests, computed item/menu geometry               |
+| `align`         | `start` or `end`; default `start`                                                                                       | Solid accepts `align` and exposes it to the comparison DOM; overlay geometry parity remains planned                         | Browser placement contract                           |
+| `direction`     | `bottom`, `top`, `left`, `right`, `start`, `end`; default `bottom`                                                      | Solid accepts `direction` and exposes it to the comparison DOM; overlay geometry parity remains planned                     | Browser placement contract                           |
+| `isQuiet`       | Quiet ActionButton styling                                                                                              | Solid passes `isQuiet` through the S2 ActionButton trigger style helper                                                     | S2 class/computed/visual parity                      |
+| `isDisabled`    | Disabled trigger suppresses open/action                                                                                 | Current Solid passes to the headless menu button                                                                            | Package and browser interaction tests                |
+| Open state      | `defaultOpen`, controlled `isOpen`, and `onOpenChange`                                                                  | Solid exposes these props through the headless MenuTrigger path                                                             | Controlled/uncontrolled package tests                |
+| Collection      | Static children or dynamic `items`; `disabledKeys`; `onAction`; `shouldCloseOnSelect`                                   | Solid supports static JSX children, data-driven items, and render-function `items`                                          | Package and route tests                              |
+| Styling         | `styles`, `UNSAFE_className`, `UNSAFE_style` target the trigger ActionButton                                            | Solid forwards context/local trigger styles and unsafe class/style                                                          | S2 generated CSS, style passthrough, computed parity |
+| Labeling/i18n   | Labelable DOM props; missing `aria-label` defaults to localized more-actions message                                    | Solid uses localized default label and supports explicit label/ARIA props                                                   | Locale/default-label and explicit-label tests        |
+| Ref/context     | `ActionMenuContext`, focusable ref to trigger button                                                                    | Solid exports `ActionMenuContext` from root and menu barrel; ref targets trigger button                                     | Export tests, ref tests, context override tests      |
+| Subpath exports | `ActionMenu`, `ActionMenuContext`, Menu subcomponents, `Collection`, `ContextualHelpPopover`, content primitives, `Key` | Current Solid root exports exist for some values, but S2 ActionMenu subpath parity is not implemented                       | Export report and TypeScript/API tests               |
 
 ## Baseline
 
@@ -325,9 +324,8 @@ below is checked with direct evidence.
   - The trigger uses the S2 ActionButton style helper, generated styles,
     default horizontal More icon, context style merging, and a localized
     default more-actions label.
-  - Data-driven items and render-function `items` composition are covered.
-    Static JSX children remain a follow-up because the current Solid Menu
-    collection layer is item-data driven.
+  - Data-driven items, render-function `items` composition, and static JSX
+    child composition are covered.
 - `comparison:report:exports`:
   - React Spectrum S2 value exports: `208`
   - solid-spectrum public value exports: `139`
@@ -420,8 +418,6 @@ below is checked with direct evidence.
     `/components/actionmenu/index.html`.
   - `vp fmt packages/solid-spectrum/src/s2-generated.css --write` passed.
 - Remaining gaps:
-  - Static JSX child composition is still not supported by the current
-    item-data-driven Solid Menu collection layer.
   - `align`, `direction`, and `shouldFlip` now have overlay placement parity
     evidence in `e2e/actionmenu-visual.spec.ts`.
   - Focus/hover/pressed, forced-colors, reduced-motion, open menu screenshots,
@@ -465,8 +461,6 @@ below is checked with direct evidence.
   - `COMPARISON_BASE_URL=http://127.0.0.1:4322 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/actionmenu-visual.spec.ts --reporter=line`
     passed `4` tests.
 - Remaining gaps:
-  - Static JSX child composition is still not supported by the current
-    item-data-driven Solid Menu collection layer.
   - `align`, `direction`, and `shouldFlip` now have overlay placement parity
     evidence across placement axes.
   - Focus/hover/pressed, forced-colors, reduced-motion, and visual
@@ -474,15 +468,15 @@ below is checked with direct evidence.
 
 ## Source Packet
 
-| Source                   | Files or docs                                                                                                                                                 | Finding                                                                                                                                                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live official S2 docs    | `https://react-spectrum.adobe.com/ActionMenu`                                                                                                                 | Viewer exposes `size`, `align`, `direction`, `menuSize`, `isQuiet`, and `isDisabled`; example uses compositional menu items with icons, labels, descriptions, and keyboard slots.                        |
-| S2 docs MCP              | `ActionMenu` page                                                                                                                                             | API includes trigger, menu, collection, overlay, events, accessibility, and advanced props.                                                                                                              |
-| W3C APG                  | Menu button and menu/menubar patterns                                                                                                                         | Menu buttons require open-state ARIA, keyboard opening, menu roles, Escape close, focus return, and disabled-item semantics.                                                                             |
-| React Spectrum S2 source | `src/ActionMenu.tsx`, `exports/ActionMenu.ts`                                                                                                                 | Uses `ActionMenuContext`, `useSpectrumContextProps`, localized default label, `filterDOMProps`, `ActionButton`, `MenuTrigger`, and `Menu`.                                                               |
-| Solid styled source      | `packages/solid-spectrum/src/menu/ActionMenu.tsx`, `packages/solid-spectrum/src/menu/index.tsx`, `packages/solid-spectrum/src/menu/s2-menu-styles.ts`         | ActionMenu now wraps the headless trigger with S2 ActionButton trigger styling, generated S2 menu/item slot styling, and placement-axis parity evidence; static JSX child composition remains follow-up. |
-| Solid headless/source    | `packages/solidaria-components/src/Menu.tsx`, `packages/solidaria/src/menu/createMenuTrigger.ts`, `packages/solid-stately/src/collections/createMenuState.ts` | Headless menu trigger/state behavior exists and should be reused instead of reimplementing overlay mechanics.                                                                                            |
-| Comparison harness       | `comparison-manifest.ts`, `component-controls.ts`, React/Solid styled fixtures, visual matrix, reports                                                        | Route now mounts both stacks with modeled controls, browser route contract coverage, and strict closed trigger plus open-menu visual/computed evidence.                                                  |
+| Source                   | Files or docs                                                                                                                                                 | Finding                                                                                                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live official S2 docs    | `https://react-spectrum.adobe.com/ActionMenu`                                                                                                                 | Viewer exposes `size`, `align`, `direction`, `menuSize`, `isQuiet`, and `isDisabled`; example uses compositional menu items with icons, labels, descriptions, and keyboard slots.      |
+| S2 docs MCP              | `ActionMenu` page                                                                                                                                             | API includes trigger, menu, collection, overlay, events, accessibility, and advanced props.                                                                                            |
+| W3C APG                  | Menu button and menu/menubar patterns                                                                                                                         | Menu buttons require open-state ARIA, keyboard opening, menu roles, Escape close, focus return, and disabled-item semantics.                                                           |
+| React Spectrum S2 source | `src/ActionMenu.tsx`, `exports/ActionMenu.ts`                                                                                                                 | Uses `ActionMenuContext`, `useSpectrumContextProps`, localized default label, `filterDOMProps`, `ActionButton`, `MenuTrigger`, and `Menu`.                                             |
+| Solid styled source      | `packages/solid-spectrum/src/menu/ActionMenu.tsx`, `packages/solid-spectrum/src/menu/index.tsx`, `packages/solid-spectrum/src/menu/s2-menu-styles.ts`         | ActionMenu now wraps the headless trigger with S2 ActionButton trigger styling, generated S2 menu/item slot styling, static JSX child composition, and placement-axis parity evidence. |
+| Solid headless/source    | `packages/solidaria-components/src/Menu.tsx`, `packages/solidaria/src/menu/createMenuTrigger.ts`, `packages/solid-stately/src/collections/createMenuState.ts` | Headless menu trigger/state behavior exists and should be reused instead of reimplementing overlay mechanics.                                                                          |
+| Comparison harness       | `comparison-manifest.ts`, `component-controls.ts`, React/Solid styled fixtures, visual matrix, reports                                                        | Route now mounts both stacks with modeled controls, browser route contract coverage, and strict closed trigger plus open-menu visual/computed evidence.                                |
 
 ## Source Map And Public Contract
 
@@ -516,7 +510,7 @@ below is checked with direct evidence.
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | -------------- | ---------------------------------------------------------------------- |
 | State               | Basic menu trigger state, controlled open, default open, action, disabled keys, close-on-select, and placement axes        | Solid owns state through solid-stately            |                | Outside press and pointer lifecycle                                    |
 | ARIA hooks          | Roles, labels, reactive expanded/controls, focus return, disabled item semantics                                           | Solidaria hook stack differs from React Aria      |                | Axe, forced-colors, and outside press validation                       |
-| Headless components | Menu/MenuItem primitives and reactive MenuButton ARIA attributes                                                           | Solid children/data APIs differ                   |                | Static JSX children and full official compositional ActionMenu API     |
+| Headless components | Menu/MenuItem primitives, static JSX collection registration, and reactive MenuButton ARIA attributes                      | Solid collection registration is local to Menu    |                | Full official compositional ActionMenu API                             |
 | Styled S2           | S2 ActionButton trigger helper and S2 menu/item slot helpers with strict closed trigger, open-menu, and placement evidence | Menu and overlay internals remain Solidaria-owned |                | Focus/hover/pressed, forced-colors, and reduced-motion visual evidence |
 | Exports             | Root `ActionMenu` and `ActionMenuContext` exports                                                                          | Current path is `./menu/ActionMenu`               |                | S2 subpath support exports and related ActionMenu support values       |
 
