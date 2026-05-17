@@ -368,6 +368,12 @@ const actionMenuControls: ComponentControlGroup = {
       options: options(actionMenuMenuSizeOptions),
     },
     {
+      name: "shouldFlip",
+      label: "shouldFlip",
+      kind: "switch",
+      defaultValue: actionMenuDemoDefaults.shouldFlip,
+    },
+    {
       name: "isQuiet",
       label: "isQuiet",
       kind: "switch",
@@ -405,7 +411,7 @@ const actionMenuControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 ActionMenu docs and viewer controls. The route drives the documented viewer axes into React and Solid; Solid now exposes the public trigger-facing API with strict closed-trigger and open-menu visual evidence, while static JSX children and placement-axis parity remain tracked gaps.",
+  note: "Modeled from the S2 ActionMenu docs, viewer controls, and placement API. The route drives the documented viewer axes plus shouldFlip into React and Solid; Solid now exposes the public trigger-facing API with strict closed-trigger, open-menu, and placement-axis visual evidence, while static JSX children remain a tracked gap.",
 };
 
 const checkboxControls: ComponentControlGroup = {

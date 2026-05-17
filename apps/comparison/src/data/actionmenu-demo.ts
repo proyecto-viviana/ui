@@ -24,6 +24,7 @@ export interface ActionMenuDemoProps {
   menuSize: ActionMenuDemoMenuSize;
   align: ActionMenuDemoAlign;
   direction: ActionMenuDemoDirection;
+  shouldFlip: boolean;
   isQuiet: boolean;
   isDisabled: boolean;
 }
@@ -33,6 +34,7 @@ export const actionMenuDemoDefaults: ActionMenuDemoProps = {
   menuSize: "M",
   align: "start",
   direction: "bottom",
+  shouldFlip: true,
   isQuiet: false,
   isDisabled: false,
 };
@@ -86,6 +88,8 @@ export function normalizeActionMenuDemoProps(
     direction: isOneOf(direction, actionMenuDirectionOptions)
       ? direction
       : actionMenuDemoDefaults.direction,
+    shouldFlip:
+      props.shouldFlip == null ? actionMenuDemoDefaults.shouldFlip : booleanParam(props.shouldFlip),
     isQuiet: booleanParam(props.isQuiet),
     isDisabled: booleanParam(props.isDisabled),
   };
@@ -99,6 +103,7 @@ export function actionMenuDemoPropsFromSearch(search: string): ActionMenuDemoPro
     menuSize: params.get("menuSize") ?? actionMenuDemoDefaults.menuSize,
     align: params.get("align") ?? actionMenuDemoDefaults.align,
     direction: params.get("direction") ?? actionMenuDemoDefaults.direction,
+    shouldFlip: params.get("shouldFlip") ?? actionMenuDemoDefaults.shouldFlip,
     isQuiet: params.get("isQuiet") === "true",
     isDisabled: params.get("isDisabled") === "true",
   });
@@ -118,6 +123,7 @@ export function serializeActionMenuDemoProps(props: ActionMenuDemoProps) {
     menuSize: props.menuSize,
     align: props.align,
     direction: props.direction,
+    shouldFlip: props.shouldFlip,
     isQuiet: props.isQuiet,
     isDisabled: props.isDisabled,
   });

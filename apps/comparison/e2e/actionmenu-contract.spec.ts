@@ -11,7 +11,7 @@ import {
 function actionMenuQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value !== "" && value !== false) {
+    if (value !== "") {
       search.set(key, String(value));
     }
   }
@@ -86,6 +86,7 @@ test.describe("comparison ActionMenu route contract", () => {
       menuSize: "M",
       align: "start",
       direction: "bottom",
+      shouldFlip: true,
       isQuiet: false,
       isDisabled: false,
     });
@@ -104,6 +105,7 @@ test.describe("comparison ActionMenu route contract", () => {
       menuSize: "L",
       align: "end",
       direction: "top",
+      shouldFlip: false,
       isQuiet: true,
       isDisabled: true,
     });
@@ -132,6 +134,7 @@ test.describe("comparison ActionMenu route contract", () => {
         .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
     ).resolves.toEqual([...actionMenuMenuSizeOptions]);
     await expect(page.locator('input[name="menuSize"]:checked')).toHaveValue("L");
+    await expect(page.locator('input[name="shouldFlip"]')).not.toBeChecked();
     await expect(page.locator('input[name="isQuiet"]')).toBeChecked();
     await expect(page.locator('input[name="isDisabled"]')).toBeChecked();
 
@@ -140,6 +143,7 @@ test.describe("comparison ActionMenu route contract", () => {
       menuSize: "L",
       align: "end",
       direction: "top",
+      shouldFlip: false,
       isQuiet: true,
       isDisabled: true,
     });

@@ -396,7 +396,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
         if (updateUrl) {
           const url = new URL(window.location.href);
           for (const [key, value] of Object.entries(values)) {
-            if (value === defaults[key] || value === "" || value === false) {
+            if (value === defaults[key] || value === "") {
               url.searchParams.delete(key);
             } else {
               url.searchParams.set(key, String(value));

@@ -101,7 +101,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/actionmenu-contract.spec.ts",
-      note: "ActionMenu route mounts both stacks and asserts the official S2 viewer controls, disabled trigger state, item action callback keys, keyboard menu-button ARIA state, Escape cleanup, and focus restore.",
+      note: "ActionMenu route mounts both stacks and asserts the official S2 viewer controls plus the shouldFlip API axis, disabled trigger state, item action callback keys, keyboard menu-button ARIA state, Escape cleanup, and focus restore.",
     },
     {
       id: "styled.default",
@@ -122,6 +122,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "strict",
       spec: "e2e/actionmenu-visual.spec.ts",
       note: "Open ActionMenu menu surface has strict zero-tolerance pair-diff evidence and computed style/geometry parity for the menu, first item, icon, label, description, and keyboard shortcut slots.",
+    },
+    {
+      id: "styled.placement-axes",
+      label: "Styled placement axes",
+      kind: "overlay",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionmenu-visual.spec.ts",
+      note: "Settled overlay geometry matches React Spectrum for align start/end, direction top/bottom/left/right/start/end, and shouldFlip=false bottom placement.",
     },
   ],
   actionbar: [

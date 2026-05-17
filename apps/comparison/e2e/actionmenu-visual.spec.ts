@@ -10,7 +10,7 @@ import {
 function actionMenuQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value !== "" && value !== false) {
+    if (value !== "") {
       search.set(key, String(value));
     }
   }
@@ -116,6 +116,12 @@ async function openActionMenu(trigger: Locator, menu: Locator) {
   await expect(menu.getByRole("menuitem", { name: "Copy" })).toBeVisible();
   await expect(menu).toContainText("Copy the selected text");
   await expect(menu).toContainText("Cmd+C");
+}
+
+async function openActionMenuSettled(page: Page, trigger: Locator, menu: Locator) {
+  await openActionMenu(trigger, menu);
+  // React S2 popovers have a 200ms entrance transform; compare settled geometry.
+  await page.waitForTimeout(300);
 }
 
 async function actionMenuOpenMenuContract(menu: Locator) {
@@ -228,6 +234,74 @@ async function actionMenuOpenMenuContract(menu: Locator) {
   });
 }
 
+async function actionMenuPlacementContract(trigger: Locator, menu: Locator) {
+  const triggerElement = await trigger.elementHandle();
+  const menuElement = await menu.elementHandle();
+
+  if (!triggerElement || !menuElement) {
+    throw new Error("ActionMenu placement contract requires mounted trigger and menu elements.");
+  }
+
+  return trigger.page().evaluate(
+    ([triggerNode, menuNode]) => {
+      function round(value: number) {
+        return Number(value.toFixed(3));
+      }
+
+      const triggerRect = triggerNode.getBoundingClientRect();
+      const menuRect = menuNode.getBoundingClientRect();
+      const popover = menuNode.closest("[data-placement]");
+
+      return {
+        placement: popover?.getAttribute("data-placement") ?? null,
+        trigger: {
+          width: round(triggerRect.width),
+          height: round(triggerRect.height),
+        },
+        menu: {
+          width: round(menuRect.width),
+          height: round(menuRect.height),
+        },
+        gaps: {
+          bottom: round(menuRect.top - triggerRect.bottom),
+          top: round(triggerRect.top - menuRect.bottom),
+          left: round(triggerRect.left - menuRect.right),
+          right: round(menuRect.left - triggerRect.right),
+        },
+        align: {
+          left: round(menuRect.left - triggerRect.left),
+          right: round(menuRect.right - triggerRect.right),
+          top: round(menuRect.top - triggerRect.top),
+          bottom: round(menuRect.bottom - triggerRect.bottom),
+        },
+      };
+    },
+    [triggerElement, menuElement],
+  );
+}
+
+type ActionMenuPlacementContract = Awaited<ReturnType<typeof actionMenuPlacementContract>>;
+
+function expectPlacementContractToMatch(
+  actual: ActionMenuPlacementContract,
+  expected: ActionMenuPlacementContract,
+) {
+  expect(actual.placement).toBe(expected.placement);
+  expect(actual.trigger).toEqual(expected.trigger);
+  expect(actual.menu).toEqual(expected.menu);
+
+  for (const group of ["gaps", "align"] as const) {
+    for (const key of Object.keys(expected[group]) as Array<
+      keyof ActionMenuPlacementContract[typeof group]
+    >) {
+      expect(
+        Math.abs(actual[group][key] - expected[group][key]),
+        `${group}.${String(key)} should stay within subpixel layout rounding`,
+      ).toBeLessThanOrEqual(1);
+    }
+  }
+}
+
 test.describe("comparison ActionMenu visual parity", () => {
   test("ActionMenu default trigger is pixel-identical", async ({ page }) => {
     const { reactTrigger, solidTrigger } = await actionMenuFixtures(page);
@@ -283,5 +357,58 @@ test.describe("comparison ActionMenu visual parity", () => {
     await openActionMenu(solidTrigger, solidMenu);
 
     await expect(actionMenuOpenMenuContract(solidMenu)).resolves.toEqual(reactContract);
+  });
+
+  test("ActionMenu placement axes match React Spectrum", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1800 });
+
+    for (const params of [
+      {},
+      { align: "end" },
+      { direction: "top" },
+      { direction: "top", align: "end" },
+      { direction: "left" },
+      { direction: "left", align: "end" },
+      { direction: "right" },
+      { direction: "right", align: "end" },
+      { direction: "start" },
+      { direction: "end" },
+    ] as const) {
+      const { reactTrigger, solidTrigger } = await actionMenuFixtures(page, params);
+      const { reactMenu, solidMenu } = await actionMenuOpenMenus(page, reactTrigger, solidTrigger);
+
+      await openActionMenuSettled(page, reactTrigger, reactMenu);
+      const reactContract = await actionMenuPlacementContract(reactTrigger, reactMenu);
+
+      await page.keyboard.press("Escape");
+      await openActionMenuSettled(page, solidTrigger, solidMenu);
+
+      expectPlacementContractToMatch(
+        await actionMenuPlacementContract(solidTrigger, solidMenu),
+        reactContract,
+      );
+      await page.keyboard.press("Escape");
+    }
+  });
+
+  test("ActionMenu shouldFlip=false keeps the requested placement", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    const { reactTrigger, solidTrigger } = await actionMenuFixtures(page, {
+      direction: "bottom",
+      shouldFlip: false,
+    });
+    const { reactMenu, solidMenu } = await actionMenuOpenMenus(page, reactTrigger, solidTrigger);
+
+    await openActionMenuSettled(page, reactTrigger, reactMenu);
+    const reactContract = await actionMenuPlacementContract(reactTrigger, reactMenu);
+    expect(reactContract.placement).toBe("bottom");
+
+    await page.keyboard.press("Escape");
+    await openActionMenuSettled(page, solidTrigger, solidMenu);
+    const solidContract = await actionMenuPlacementContract(solidTrigger, solidMenu);
+
+    expect(solidContract.placement).toBe("bottom");
+    expectPlacementContractToMatch(solidContract, reactContract);
   });
 });

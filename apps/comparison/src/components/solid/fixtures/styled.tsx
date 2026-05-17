@@ -896,6 +896,9 @@ function SolidSpectrumActionMenuDemo() {
               get direction() {
                 return demoProps().direction;
               },
+              get shouldFlip() {
+                return demoProps().shouldFlip;
+              },
               get isQuiet() {
                 return demoProps().isQuiet;
               },

@@ -682,6 +682,7 @@ function ReactActionMenuDemo() {
         menuSize: demoProps.menuSize,
         align: demoProps.align,
         direction: demoProps.direction,
+        shouldFlip: demoProps.shouldFlip,
         isQuiet: demoProps.isQuiet,
         isDisabled: demoProps.isDisabled,
         onAction: (key) => {
