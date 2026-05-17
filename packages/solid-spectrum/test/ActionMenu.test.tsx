@@ -5,6 +5,16 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal } from "solid-js";
+import packageJson from "../package.json";
+import * as actionMenuSubpath from "../src/ActionMenu";
+import {
+  ActionMenu as SubpathActionMenu,
+  ContextualHelpPopover,
+  Heading as SubpathHeading,
+  MenuItem as SubpathMenuItem,
+  Text as SubpathText,
+  UnavailableMenuItemTrigger,
+} from "../src/ActionMenu";
 import { ActionMenu, ActionMenuContext, MenuItem } from "../src/menu";
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
@@ -291,5 +301,65 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(trigger.className).toContain("unsafe-action-menu");
     expect(trigger.className).toContain("generated-action-menu");
     expect(trigger).toHaveStyle({ margin: "4px" });
+  });
+
+  it("exports the S2 ActionMenu subpath surface", () => {
+    const exportsByName = actionMenuSubpath as Record<string, unknown>;
+
+    for (const name of [
+      "ActionMenu",
+      "ActionMenuContext",
+      "MenuItem",
+      "MenuTrigger",
+      "MenuSection",
+      "SubmenuTrigger",
+      "UnavailableMenuItemTrigger",
+      "Collection",
+      "ContextualHelpPopover",
+      "Text",
+      "Keyboard",
+      "Header",
+      "Heading",
+    ]) {
+      expect(exportsByName[name]).toBeDefined();
+    }
+
+    const packageExports = packageJson.exports as Record<
+      string,
+      Record<string, string | undefined>
+    >;
+    expect(packageExports["./ActionMenu"]).toMatchObject({
+      types: "./dist/ActionMenu.d.ts",
+      solid: "./src/ActionMenu.ts",
+      import: "./dist/ActionMenu.js",
+      default: "./dist/ActionMenu.js",
+    });
+  });
+
+  it("supports unavailable menu item composition from the ActionMenu subpath", () => {
+    render(() => (
+      <SubpathActionMenu defaultOpen>
+        <UnavailableMenuItemTrigger isUnavailable>
+          <SubpathMenuItem id="locked" textValue="Locked action">
+            <SubpathText slot="label">Locked action</SubpathText>
+          </SubpathMenuItem>
+          <ContextualHelpPopover>
+            <>
+              <SubpathHeading level={2}>Locked action</SubpathHeading>
+              <SubpathText>Ask an admin to enable this command.</SubpathText>
+            </>
+          </ContextualHelpPopover>
+        </UnavailableMenuItemTrigger>
+      </SubpathActionMenu>
+    ));
+
+    const menuItem = screen.getByRole("menuitem", { name: /Locked action/ });
+    expect(menuItem).toHaveAttribute("aria-haspopup", "menu");
+
+    const descriptorId = menuItem.getAttribute("aria-describedby");
+    expect(descriptorId).toBeTruthy();
+    const descriptor = document.getElementById(descriptorId!);
+    expect(descriptor).toBeInTheDocument();
+    expect(within(descriptor!).getByRole("img", { name: "Unavailable" })).toBeInTheDocument();
   });
 });

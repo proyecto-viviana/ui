@@ -8430,6 +8430,90 @@
 @layer _.a;
 
 @layer _.a {
+  .z0cdLvd13 {
+    grid-column-start: descriptor;
+  }
+
+  .y0cdLvd13 {
+    grid-column-end: descriptor;
+  }
+
+  .B0cdLvd13 {
+    grid-row-start: descriptor;
+  }
+
+  .A0cdLvd13 {
+    grid-row-end: descriptor;
+  }
+
+  ._dd13 {
+    align-self: end;
+  }
+
+  .__Ac13 {
+    justify-self: end;
+  }
+
+  .Iv13 {
+    margin-inline-start: 0.5rem;
+  }
+
+  .Gy3v5sb13 {
+    margin-bottom: -0.07142857142857142em;
+  }
+
+  .-_8sjo0b-t5ZbAob13 {
+    --iconPrimary: currentColor;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  .Hy13 {
+    margin-inline-end: 0rem;
+  }
+
+  .sb13 {
+    display: block;
+  }
+
+  .Zu13 {
+    width: calc(1rem * var(--s2-scale));
+  }
+
+  .Zm13 {
+    width: calc(1.25rem * var(--s2-scale));
+  }
+
+  .Zo13 {
+    width: calc(1.5rem * var(--s2-scale));
+  }
+
+  .Zp13 {
+    width: calc(1.625rem * var(--s2-scale));
+  }
+
+  .Ft13 {
+    height: calc(1rem * var(--s2-scale));
+  }
+
+  .Fn13 {
+    height: calc(1.25rem * var(--s2-scale));
+  }
+
+  .Fp13 {
+    height: calc(1.5rem * var(--s2-scale));
+  }
+
+  .Fq13 {
+    height: calc(1.625rem * var(--s2-scale));
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
   .z2mU13 {
     grid-column-start: 1;
   }

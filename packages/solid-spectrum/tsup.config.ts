@@ -26,7 +26,12 @@ function copyCssFiles() {
 export default defineConfig([
   // DOM build
   {
-    entry: ["src/index.ts", "src/s2-style/index.ts", "src/s2-style/runtime.ts"],
+    entry: [
+      "src/index.ts",
+      "src/ActionMenu.ts",
+      "src/s2-style/index.ts",
+      "src/s2-style/runtime.ts",
+    ],
     format: ["esm"],
     dts: false, // Use tsc separately for better tsx support
     target: "esnext",
@@ -49,6 +54,7 @@ export default defineConfig([
   {
     entry: {
       "index.ssr": "src/index.ts",
+      "ActionMenu.ssr": "src/ActionMenu.ts",
       "s2-style/index.ssr": "src/s2-style/index.ts",
       "s2-style/runtime.ssr": "src/s2-style/runtime.ts",
     },

@@ -73,7 +73,15 @@ export { pressScale } from "./pressScale";
 // ActionMenu / Menu
 export { ActionMenu, ActionMenuContext } from "./menu/ActionMenu";
 export type { ActionMenuProps } from "./menu/ActionMenu";
-export { Menu, MenuItem, MenuSection, MenuTrigger, SubmenuTrigger } from "./menu";
+export {
+  Collection,
+  Menu,
+  MenuItem,
+  MenuSection,
+  MenuTrigger,
+  SubmenuTrigger,
+  UnavailableMenuItemTrigger,
+} from "./menu";
 export type {
   MenuItemProps,
   MenuProps,
@@ -81,6 +89,7 @@ export type {
   MenuSize,
   SubmenuTriggerProps,
   MenuTriggerProps,
+  UnavailableMenuItemTriggerProps,
 } from "./menu";
 
 // Avatar
@@ -181,8 +190,8 @@ export type {
 } from "./combobox";
 
 // ContextualHelp
-export { ContextualHelp } from "./contextualhelp";
-export type { ContextualHelpProps } from "./contextualhelp";
+export { ContextualHelp, ContextualHelpPopover } from "./contextualhelp";
+export type { ContextualHelpPopoverProps, ContextualHelpProps } from "./contextualhelp";
 
 // Dialog
 export { Dialog, DialogTrigger } from "./dialog";
@@ -339,8 +348,23 @@ export { Skeleton, SkeletonCollection, useIsSkeleton } from "./skeleton";
 export type { SkeletonCollectionProps, SkeletonProps } from "./skeleton";
 
 // Text content
-export { Heading, Keyboard, KeyboardContext, StyledKeyboard, Text, TextContext } from "./text";
-export type { HeadingLevel, HeadingProps, StyledKeyboardProps, TextProps } from "./text";
+export {
+  Header,
+  HeaderContext,
+  Heading,
+  Keyboard,
+  KeyboardContext,
+  StyledKeyboard,
+  Text,
+  TextContext,
+} from "./text";
+export type {
+  HeaderProps,
+  HeadingLevel,
+  HeadingProps,
+  StyledKeyboardProps,
+  TextProps,
+} from "./text";
 
 // Slider
 export { RangeSlider, Slider } from "./slider";

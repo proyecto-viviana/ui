@@ -26,6 +26,21 @@ export interface TextProps extends Omit<HeadlessTextProps, "class"> {
 
 export const TextContext = createContext<SpectrumContextValue<TextProps>>(null);
 
+export interface HeaderProps extends Omit<
+  JSX.HTMLAttributes<HTMLElement>,
+  "children" | "class" | "style" | "ref"
+> {
+  children?: JSX.Element;
+  class?: string;
+  styles?: StyleString | (() => StyleString | undefined);
+  UNSAFE_className?: string;
+  UNSAFE_style?: JSX.CSSProperties;
+  isHidden?: boolean;
+  ref?: RefLike<HTMLElement>;
+}
+
+export const HeaderContext = createContext<SpectrumContextValue<HeaderProps>>(null);
+
 const variantStyles: Record<TextVariant, string> = {
   default: "text-primary-100",
   muted: "text-primary-400",
@@ -90,6 +105,46 @@ export function Text(props: TextProps): JSX.Element {
     >
       {children()}
     </span>
+  );
+}
+
+export function Header(props: HeaderProps): JSX.Element {
+  const contextProps = getSlottedContextProps(useContext(HeaderContext), props.slot);
+  const merged = mergeProps(contextProps ?? {}, props);
+  const [local, headerProps] = splitProps(merged, [
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "isHidden",
+    "children",
+    "ref",
+  ]);
+
+  if (local.isHidden) {
+    return null as unknown as JSX.Element;
+  }
+
+  const className = () =>
+    [
+      contextProps?.UNSAFE_className,
+      local.UNSAFE_className,
+      local.class,
+      mergeContextStyles(contextProps?.styles, props.styles),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const unsafeStyle = () => mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+
+  return (
+    <header
+      {...headerProps}
+      ref={mergeContextRefs(contextProps?.ref, props.ref)}
+      class={className()}
+      style={unsafeStyle()}
+    >
+      {local.children}
+    </header>
   );
 }
 

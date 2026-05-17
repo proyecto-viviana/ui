@@ -208,6 +208,30 @@ export const menuItemKeyboard = style<
   unicodeBidi: "plaintext",
 });
 
+export const menuItemDescriptor = style({
+  gridArea: "descriptor",
+  placeSelf: "end",
+  marginStart: 8,
+  marginBottom: fontRelative(-1),
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+export const menuItemDescriptorIcon = style<S2MenuStyleProps>({
+  marginEnd: 0,
+  display: "block",
+  size: {
+    size: {
+      S: 16,
+      M: 20,
+      L: 24,
+      XL: 26,
+    },
+  },
+});
+
 export const menuSection = style<S2MenuStyleProps>({
   gridColumnStart: 1,
   gridColumnEnd: -1,

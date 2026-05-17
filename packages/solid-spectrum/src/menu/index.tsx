@@ -1,8 +1,9 @@
-import { type JSX, splitProps, createContext, useContext } from "solid-js";
+import { type JSX, Show, createContext, createUniqueId, splitProps, useContext } from "solid-js";
 import {
   Menu as HeadlessMenu,
   MenuItem as HeadlessMenuItem,
   MenuSection as HeadlessMenuSection,
+  SubmenuTrigger as HeadlessSubmenuTrigger,
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
   type MenuProps as HeadlessMenuProps,
@@ -14,13 +15,18 @@ import {
   type MenuItemRenderProps,
   type MenuTriggerRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
+import InfoCircleIcon from "../icon/s2wf-icons/InfoCircleIcon";
 import { IconContext } from "../icon/spectrum-icon";
+import { s2IntlStrings } from "../intl";
 import { KeyboardContext, StyledKeyboard, Text, TextContext } from "../text";
 import {
   menu as s2Menu,
+  menuItemDescriptor,
+  menuItemDescriptorIcon,
   menuItem as s2MenuItem,
   menuItemDescription,
   menuItemIcon,
@@ -35,6 +41,7 @@ import {
 export type MenuSize = S2MenuSize | "sm" | "md" | "lg";
 
 const MenuSizeContext = createContext<S2MenuSize>("M");
+const UnavailableMenuItemContext = createContext(false);
 
 export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class" | "style"> {
   /** The size of the menu. */
@@ -72,6 +79,13 @@ export interface MenuItemProps<T> extends Omit<HeadlessMenuItemProps<T>, "class"
 export interface MenuSectionProps extends Omit<HeadlessMenuSectionProps, "class" | "style"> {
   /** Additional CSS class name. */
   class?: string;
+}
+
+export interface UnavailableMenuItemTriggerProps {
+  /** The menu item followed by contextual help popover content. */
+  children: JSX.Element | JSX.Element[];
+  /** Whether the menu item should expose unavailable contextual help. */
+  isUnavailable?: boolean;
 }
 
 const buttonSizeStyles: Record<
@@ -220,7 +234,10 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     "isDestructive",
   ]);
   const size = useContext(MenuSizeContext);
+  const isUnavailable = useContext(UnavailableMenuItemContext);
   const customClass = local.class ?? "";
+  const unavailableDescriptionId = createUniqueId();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
 
   const getClassName = (renderProps: MenuItemRenderProps): string => {
     const isFocused = (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused;
@@ -287,13 +304,54 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
             {local.icon?.()}
             {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
             {local.shortcut ? <StyledKeyboard>{local.shortcut}</StyledKeyboard> : null}
+            <Show when={isUnavailable}>
+              <span
+                id={unavailableDescriptionId}
+                slot="descriptor"
+                class={menuItemDescriptor}
+                data-rsp-slot="descriptor"
+              >
+                <InfoCircleIcon
+                  aria-label={stringFormatter().format("menu.unavailable")}
+                  class={menuItemDescriptorIcon({ size })}
+                />
+              </span>
+            </Show>
           </KeyboardContext.Provider>
         </TextContext.Provider>
       </IconContext.Provider>
     );
   };
 
-  return <HeadlessMenuItem {...headlessProps} class={getClassName} children={renderChildren} />;
+  const ariaDescribedBy = () =>
+    [
+      (headlessProps as { "aria-describedby"?: string })["aria-describedby"],
+      isUnavailable ? unavailableDescriptionId : undefined,
+    ]
+      .filter(Boolean)
+      .join(" ") || undefined;
+
+  return (
+    <HeadlessMenuItem
+      {...headlessProps}
+      aria-describedby={ariaDescribedBy()}
+      class={getClassName}
+      children={renderChildren}
+    />
+  );
+}
+
+export function UnavailableMenuItemTrigger(props: UnavailableMenuItemTriggerProps): JSX.Element {
+  const children = () =>
+    (Array.isArray(props.children) ? props.children : [props.children]) as JSX.Element[];
+
+  return (
+    <Show when={props.isUnavailable} fallback={children()[0]}>
+      <UnavailableMenuItemContext.Provider value>
+        <HeadlessSubmenuTrigger>{children()}</HeadlessSubmenuTrigger>
+      </UnavailableMenuItemContext.Provider>
+    </Show>
+  );
 }
 
 export function MenuSection(props: MenuSectionProps): JSX.Element {
@@ -345,3 +403,7 @@ export { SubmenuTrigger } from "./SubmenuTrigger";
 export type { SubmenuTriggerProps } from "./SubmenuTrigger";
 export { ContextualHelpTrigger } from "./ContextualHelpTrigger";
 export type { ContextualHelpTriggerProps } from "./ContextualHelpTrigger";
+export { Collection } from "@proyecto-viviana/solidaria-components";
+export { ContextualHelpPopover } from "../contextualhelp";
+export type { ContextualHelpPopoverProps } from "../contextualhelp";
+export { Header, Heading, Keyboard, Text } from "../text";
