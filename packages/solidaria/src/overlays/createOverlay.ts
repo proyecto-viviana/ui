@@ -6,6 +6,7 @@
 import { createEffect, onCleanup, type JSX } from "solid-js";
 import { createInteractOutside } from "./createInteractOutside";
 import { createFocusWithin } from "../interactions/createFocusWithin";
+import { getOwnerDocument, nodeContains } from "../utils";
 
 export interface AriaOverlayProps {
   /** Whether the overlay is currently open. */
@@ -111,6 +112,38 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
       onInteractOutsideStart,
       isDisabled: false,
     });
+  });
+
+  createEffect(() => {
+    if (!isOpen() || !shouldCloseOnBlur()) {
+      return;
+    }
+
+    const overlay = ref();
+    if (!overlay) {
+      return;
+    }
+
+    const ownerDocument = getOwnerDocument(overlay);
+    const onFocusIn = (event: FocusEvent) => {
+      if (!isOpen()) {
+        return;
+      }
+
+      const currentOverlay = ref();
+      const target = event.target as Element | null;
+      if (!currentOverlay || !target || nodeContains(currentOverlay, target)) {
+        return;
+      }
+
+      const shouldClose = shouldCloseOnInteractOutside();
+      if (!shouldClose || shouldClose(target)) {
+        onHide();
+      }
+    };
+
+    ownerDocument.addEventListener("focusin", onFocusIn, true);
+    onCleanup(() => ownerDocument.removeEventListener("focusin", onFocusIn, true));
   });
 
   // Handle focus within for blur detection

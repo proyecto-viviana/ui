@@ -453,6 +453,35 @@ describe("Popover", () => {
         expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument();
       });
     });
+
+    it("should close modal popovers when focus moves outside", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <div>
+          <button data-testid="outside-focus">Outside focus target</button>
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <button data-testid="inside-focus">Inside focus target</button>
+            </Popover>
+          </PopoverTrigger>
+        </div>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Open" });
+      await user.click(trigger);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("inside-focus")).toBeInTheDocument();
+      });
+
+      screen.getByTestId("outside-focus").focus();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId("inside-focus")).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe("Animation states", () => {

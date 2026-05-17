@@ -250,6 +250,43 @@ async function expectOutsidePointerClosesMenu(
   await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
 }
 
+async function expectFocusOutsideClosesMenu(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Awaited<ReturnType<typeof frameworkPanel>>,
+) {
+  const trigger = panel.getByRole("button", { name: "More actions" });
+
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+
+  const menu = await actionMenuOpenMenu(page, trigger);
+  await expect(menu.getByRole("menuitem", { name: /Copy/ })).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "true");
+
+  await page.evaluate(() => {
+    const existing = document.getElementById("actionmenu-external-focus-target");
+    existing?.remove();
+
+    const button = document.createElement("button");
+    button.id = "actionmenu-external-focus-target";
+    button.type = "button";
+    button.textContent = "External focus target";
+    document.body.appendChild(button);
+    button.focus();
+  });
+
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).not.toHaveAttribute("aria-controls");
+  await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
+
+  await page.evaluate(() => {
+    document.getElementById("actionmenu-external-focus-target")?.remove();
+  });
+}
+
 async function expectA11ySemanticContract(
   page: Page,
   panel: Awaited<ReturnType<typeof frameworkPanel>>,
@@ -548,6 +585,13 @@ test.describe("comparison ActionMenu route contract", () => {
 
     await expectOutsidePointerClosesMenu(page, reactPanel, reactRoot);
     await expectOutsidePointerClosesMenu(page, solidPanel, solidRoot);
+  });
+
+  test("ActionMenu focus leaving the overlay closes the open menu", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await actionMenuFixtures(page);
+
+    await expectFocusOutsideClosesMenu(page, reactPanel, reactRoot);
+    await expectFocusOutsideClosesMenu(page, solidPanel, solidRoot);
   });
 
   test("ActionMenu semantic accessibility contracts pass on both stacks", async ({ page }) => {
