@@ -719,15 +719,24 @@ const entryOverrides: Record<string, ComparisonEntry> = {
           docsUrl: `${reactSpectrumCatalogueSource.docsBase}/${title}`,
         }),
         componentStatus: "parity",
-        summary: `${title} has an initial live comparison island. Exhaustive states remain open.`,
+        summary:
+          title === "DateRangePicker"
+            ? "DateRangePicker has a live comparison island with routed range value, calendar constraints, form names, and open popover evidence. Segment, time, and locale states remain open."
+            : `${title} has an initial live comparison island. Exhaustive states remain open.`,
         parity: "partial",
         priority: "live",
         gapSummary: [
           title === "Toast"
             ? "React Spectrum Toast reference remains tracked."
             : "React styled island remains mounted from @react-spectrum/s2.",
-          "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
-          "Detailed state matrices and strict visual assertions remain incomplete.",
+          title === "DateRangePicker"
+            ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum and reuses the S2 RangeCalendar popover with routed picker state."
+            : title === "DatePicker"
+              ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum and guarded by focused DatePicker specs."
+              : "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
+          title === "DateRangePicker"
+            ? "Closed-field pair diff, segment editing, time, and locale/calendar-system states remain incomplete."
+            : "Detailed state matrices and strict visual assertions remain incomplete.",
         ],
         layers: {
           styled: layerTrack(

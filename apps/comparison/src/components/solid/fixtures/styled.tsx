@@ -203,9 +203,14 @@ import {
   type DatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
 import {
+  dateRangePickerMaxValue,
+  dateRangePickerMinValue,
   dateRangePickerDemoPropsFromWindow,
+  dateRangePickerValueFromDemo,
+  isDateRangePickerDateUnavailable,
   normalizeDateRangePickerDemoProps,
   serializeDateRangePickerDemoProps,
+  serializeDateRangePickerValue,
   type DateRangePickerDemoProps,
 } from "@comparison/data/daterangepicker-demo";
 import {
@@ -2806,10 +2811,9 @@ function SolidSpectrumDatePickerDemo() {
 }
 
 function SolidSpectrumDateRangePickerDemo() {
-  const [demoProps, setDemoProps] = createSignal<DateRangePickerDemoProps>(
-    dateRangePickerDemoPropsFromWindow(),
-  );
-  const [value, setValue] = createSignal("");
+  const initialDemoProps = dateRangePickerDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = createSignal<DateRangePickerDemoProps>(initialDemoProps);
+  const [value, setValue] = createSignal(dateRangePickerValueFromDemo(initialDemoProps));
   const [isOpen, setIsOpen] = createSignal(false);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
@@ -2818,9 +2822,12 @@ function SolidSpectrumDateRangePickerDemo() {
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "daterangepicker") {
-        const nextProps = normalizeDateRangePickerDemoProps(event.detail.props ?? {});
+        const nextProps = normalizeDateRangePickerDemoProps({
+          ...demoProps(),
+          ...(event.detail.props ?? {}),
+        });
         setDemoProps(nextProps);
-        setValue("");
+        setValue(() => dateRangePickerValueFromDemo(nextProps));
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -2856,7 +2863,7 @@ function SolidSpectrumDateRangePickerDemo() {
             return colorScheme();
           },
           get "data-comparison-value"() {
-            return value();
+            return serializeDateRangePickerValue(value());
           },
           get "data-comparison-open"() {
             return String(isOpen());
@@ -2875,8 +2882,35 @@ function SolidSpectrumDateRangePickerDemo() {
             get size() {
               return demoProps().size;
             },
+            get value() {
+              return value() ?? undefined;
+            },
             get maxVisibleMonths() {
               return Number(demoProps().maxVisibleMonths);
+            },
+            get minValue() {
+              return demoProps().constrainRange ? dateRangePickerMinValue : undefined;
+            },
+            get maxValue() {
+              return demoProps().constrainRange ? dateRangePickerMaxValue : undefined;
+            },
+            get isDateUnavailable() {
+              return demoProps().unavailableDates ? isDateRangePickerDateUnavailable : undefined;
+            },
+            get allowsNonContiguousRanges() {
+              return demoProps().allowsNonContiguousRanges;
+            },
+            get firstDayOfWeek() {
+              return demoProps().firstDayOfWeek || undefined;
+            },
+            get pageBehavior() {
+              return demoProps().pageBehavior || undefined;
+            },
+            get startName() {
+              return demoProps().startName || undefined;
+            },
+            get endName() {
+              return demoProps().endName || undefined;
             },
             get description() {
               return demoProps().description;
@@ -2887,14 +2921,17 @@ function SolidSpectrumDateRangePickerDemo() {
             get isDisabled() {
               return demoProps().isDisabled;
             },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
             get isRequired() {
               return demoProps().isRequired;
             },
             get isInvalid() {
               return demoProps().isInvalid;
             },
-            onChange: (nextValue: unknown) => {
-              setValue(nextValue == null ? "" : JSON.stringify(nextValue));
+            onChange: (nextValue: ReturnType<typeof value>) => {
+              setValue(() => nextValue ?? null);
             },
             onOpenChange: setIsOpen,
           }),

@@ -9,6 +9,7 @@ import { type DateValue, toCalendarDateTime } from "@proyecto-viviana/solid-stat
 
 export interface HiddenDateInputProps {
   name?: string;
+  form?: string;
   value?: DateValue | null;
   autoComplete?: string;
   isDisabled?: boolean;
@@ -72,6 +73,7 @@ export function HiddenDateInput(props: HiddenDateInputProps): JSX.Element {
       }}
       type={inputType()}
       name={props.name}
+      form={props.form}
       value={formattedValue()}
       autocomplete={props.autoComplete}
       disabled={props.isDisabled}

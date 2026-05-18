@@ -2028,9 +2028,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "overlay",
       react: "visual",
       solid: "visual",
-      pairDiff: "planned",
+      pairDiff: "asserted",
       spec: "e2e/daterangepicker-visual.spec.ts",
-      note: "Open-state evidence exists for both stacks, including one/two visible-month routing. RangeCalendar S2 styling is now in place; strict overlay pair-diff remains planned.",
+      note: "Open popover asserts two S2-styled month grids with seven-column rows, 224px grid widths, controlled range value, firstDayOfWeek/pageBehavior routing, unavailable-date disabled semantics, invalid error text, and React/Solid grid screenshots with zero dimension delta and zero mismatches above a one-channel raster tolerance.",
     },
     {
       id: "styled.props.controls",
@@ -2040,7 +2040,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "Side-panel controls dispatch label, size, validation, disabled, required, help text, and maxVisibleMonths props into both mounted styled stacks.",
+      note: "Side-panel controls dispatch label, size, controlled start/end values, maxVisibleMonths, firstDayOfWeek, pageBehavior, min/max constraints, unavailable dates, non-contiguous range policy, startName/endName form names, read-only/disabled state, required/invalid state, and help/error text props into both mounted styled stacks.",
     },
   ],
 };

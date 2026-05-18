@@ -55,6 +55,8 @@ import {
 import { comboBoxDemoDefaults, comboBoxKeyOptions, comboBoxSizeOptions } from "./combobox-demo";
 import {
   dateRangePickerDemoDefaults,
+  dateRangePickerFirstDayOfWeekOptions,
+  dateRangePickerPageBehaviorOptions,
   dateRangePickerSizeOptions,
   dateRangePickerVisibleMonthsOptions,
 } from "./daterangepicker-demo";
@@ -2350,11 +2352,49 @@ const dateRangePickerControls: ComponentControlGroup = {
       options: options(dateRangePickerSizeOptions),
     },
     {
+      name: "startValue",
+      label: "startValue",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.startValue,
+    },
+    {
+      name: "endValue",
+      label: "endValue",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.endValue,
+    },
+    {
       name: "maxVisibleMonths",
       label: "maxVisibleMonths",
       kind: "select",
       defaultValue: dateRangePickerDemoDefaults.maxVisibleMonths,
       options: options(dateRangePickerVisibleMonthsOptions),
+    },
+    {
+      name: "pageBehavior",
+      label: "pageBehavior",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.pageBehavior,
+      options: defaultableOptions(dateRangePickerPageBehaviorOptions),
+    },
+    {
+      name: "firstDayOfWeek",
+      label: "firstDayOfWeek",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.firstDayOfWeek,
+      options: defaultableOptions(dateRangePickerFirstDayOfWeekOptions),
+    },
+    {
+      name: "startName",
+      label: "startName",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.startName,
+    },
+    {
+      name: "endName",
+      label: "endName",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.endName,
     },
     {
       name: "description",
@@ -2369,10 +2409,34 @@ const dateRangePickerControls: ComponentControlGroup = {
       defaultValue: dateRangePickerDemoDefaults.errorMessage,
     },
     {
+      name: "constrainRange",
+      label: "constrainRange",
+      kind: "switch",
+      defaultValue: dateRangePickerDemoDefaults.constrainRange,
+    },
+    {
+      name: "unavailableDates",
+      label: "unavailableDates",
+      kind: "switch",
+      defaultValue: dateRangePickerDemoDefaults.unavailableDates,
+    },
+    {
+      name: "allowsNonContiguousRanges",
+      label: "allowsNonContiguousRanges",
+      kind: "switch",
+      defaultValue: dateRangePickerDemoDefaults.allowsNonContiguousRanges,
+    },
+    {
       name: "isDisabled",
       label: "isDisabled",
       kind: "switch",
       defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: dateRangePickerDemoDefaults.isReadOnly,
     },
     {
       name: "isRequired",
@@ -2421,7 +2485,7 @@ const dateRangePickerControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 DateRangePicker docs control surface for label, size, validation, disabled, required, help text, and one/two-month popover routing. Date availability, range form submission, time granularity, and calendar-system states remain dedicated route states.",
+  note: "Modeled from the S2 DateRangePicker docs control surface for label, size, controlled range value, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, non-contiguous range policy, firstDayOfWeek, pageBehavior, and startName/endName form props. Time granularity/hour cycle and calendar-system states remain dedicated route states.",
 };
 
 const rangeCalendarControls: ComponentControlGroup = {

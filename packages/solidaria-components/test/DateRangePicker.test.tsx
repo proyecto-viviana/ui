@@ -227,6 +227,35 @@ describe("DateRangePicker", () => {
     expect(picker).toBeInTheDocument();
   });
 
+  it("renders startName and endName hidden inputs for form submission", async () => {
+    const defaultValue = {
+      start: new CalendarDate(2024, 6, 1),
+      end: new CalendarDate(2024, 6, 7),
+    };
+
+    render(() => (
+      <TestDateRangePicker
+        pickerProps={{
+          defaultValue,
+          startName: "startDate",
+          endName: "endDate",
+          form: "booking",
+        }}
+      />
+    ));
+    await waitForHydration();
+
+    const startInput = document.querySelector('input[name="startDate"]') as HTMLInputElement;
+    const endInput = document.querySelector('input[name="endDate"]') as HTMLInputElement;
+
+    expect(startInput).toBeInTheDocument();
+    expect(startInput).toHaveAttribute("form", "booking");
+    expect(startInput).toHaveValue("2024-06-01");
+    expect(endInput).toBeInTheDocument();
+    expect(endInput).toHaveAttribute("form", "booking");
+    expect(endInput).toHaveValue("2024-06-07");
+  });
+
   // ===== Validation =====
 
   it("supports minValue and maxValue constraints", async () => {

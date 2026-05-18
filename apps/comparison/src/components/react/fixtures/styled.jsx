@@ -185,9 +185,14 @@ import {
   serializeDatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
 import {
+  dateRangePickerMaxValue,
+  dateRangePickerMinValue,
   dateRangePickerDemoPropsFromWindow,
+  dateRangePickerValueFromDemo,
+  isDateRangePickerDateUnavailable,
   normalizeDateRangePickerDemoProps,
   serializeDateRangePickerDemoProps,
+  serializeDateRangePickerValue,
 } from "@comparison/data/daterangepicker-demo";
 import {
   comparisonControlsEvent as rangeCalendarControlsEvent,
@@ -2718,42 +2723,58 @@ function ReactDatePickerDemo() {
 }
 
 function ReactDateRangePickerDemo() {
-  const [demoProps, setDemoProps] = useState(dateRangePickerDemoPropsFromWindow);
-  const [value, setValue] = useState("");
+  const initialDemoProps = dateRangePickerDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = useState(() => initialDemoProps);
+  const [value, setValue] = useState(() => dateRangePickerValueFromDemo(initialDemoProps));
   const [isOpen, setIsOpen] = useState(false);
   const colorScheme = useComparisonResolvedTheme();
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "daterangepicker") {
-        const nextProps = normalizeDateRangePickerDemoProps(event.detail.props ?? {});
+        const nextProps = normalizeDateRangePickerDemoProps({
+          ...demoProps,
+          ...(event.detail.props ?? {}),
+        });
         setDemoProps(nextProps);
-        setValue("");
+        setValue(dateRangePickerValueFromDemo(nextProps));
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
-  }, []);
+  }, [demoProps]);
+
+  const dateRangePickerProps = {
+    "data-comparison-control-root": "daterangepicker",
+    "data-comparison-control-props": serializeDateRangePickerDemoProps(demoProps),
+    label: demoProps.label,
+    size: demoProps.size,
+    value: value ?? undefined,
+    maxVisibleMonths: Number(demoProps.maxVisibleMonths),
+    minValue: demoProps.constrainRange ? dateRangePickerMinValue : undefined,
+    maxValue: demoProps.constrainRange ? dateRangePickerMaxValue : undefined,
+    isDateUnavailable: demoProps.unavailableDates ? isDateRangePickerDateUnavailable : undefined,
+    allowsNonContiguousRanges: demoProps.allowsNonContiguousRanges,
+    firstDayOfWeek: demoProps.firstDayOfWeek || undefined,
+    pageBehavior: demoProps.pageBehavior || undefined,
+    startName: demoProps.startName || undefined,
+    endName: demoProps.endName || undefined,
+    description: demoProps.description,
+    errorMessage: demoProps.errorMessage,
+    isDisabled: demoProps.isDisabled,
+    isReadOnly: demoProps.isReadOnly,
+    isRequired: demoProps.isRequired,
+    isInvalid: demoProps.isInvalid,
+    onChange: (nextValue) => setValue(nextValue),
+    onOpenChange: setIsOpen,
+    UNSAFE_className: "comparison-daterangepicker-root",
+  };
 
   return renderReactSpectrumReference(
     jsx("div", {
-      "data-comparison-value": value,
+      "data-comparison-value": serializeDateRangePickerValue(value),
       "data-comparison-open": String(isOpen),
       "data-comparison-color-scheme": colorScheme,
-      children: jsx(SpectrumDateRangePicker, {
-        "data-comparison-control-root": "daterangepicker",
-        "data-comparison-control-props": serializeDateRangePickerDemoProps(demoProps),
-        label: demoProps.label,
-        size: demoProps.size,
-        maxVisibleMonths: Number(demoProps.maxVisibleMonths),
-        description: demoProps.description,
-        errorMessage: demoProps.errorMessage,
-        isDisabled: demoProps.isDisabled,
-        isRequired: demoProps.isRequired,
-        isInvalid: demoProps.isInvalid,
-        onChange: (nextValue) => setValue(nextValue == null ? "" : JSON.stringify(nextValue)),
-        onOpenChange: setIsOpen,
-        UNSAFE_className: "comparison-daterangepicker-root",
-      }),
+      children: jsx(SpectrumDateRangePicker, dateRangePickerProps),
     }),
     colorScheme,
   );

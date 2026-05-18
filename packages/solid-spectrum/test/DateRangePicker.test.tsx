@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@solidjs/testing-library";
+import { parseDate } from "@proyecto-viviana/solid-stately";
 import { DateRangePicker } from "../src/calendar/DateRangePicker";
 
 async function waitForHydration() {
@@ -127,6 +128,66 @@ describe("DateRangePicker (solid-spectrum)", () => {
       await waitFor(() => {
         expect(screen.getByRole("dialog", { name: "Range calendar" })).toBeInTheDocument();
       });
+    });
+
+    it("routes range calendar props into the popup calendar", async () => {
+      render(() => (
+        <DateRangePicker
+          aria-label="Date range"
+          defaultOpen
+          value={{
+            start: parseDate("2025-02-03"),
+            end: parseDate("2025-02-14"),
+          }}
+          maxVisibleMonths={2}
+          firstDayOfWeek="mon"
+          pageBehavior="single"
+          minValue={parseDate("2025-02-03")}
+          maxValue={parseDate("2025-02-20")}
+          isDateUnavailable={(date) => date.day === 10}
+          isInvalid
+          errorMessage="Select a valid date range."
+        />
+      ));
+
+      const dialog = await screen.findByRole("dialog", { name: "Range calendar" });
+      await waitFor(() => {
+        expect(dialog.querySelectorAll('[role="grid"]')).toHaveLength(2);
+      });
+      expect(Array.from(dialog.querySelectorAll("th")).map((cell) => cell.textContent)).toEqual([
+        "M",
+        "T",
+        "W",
+        "T",
+        "F",
+        "S",
+        "S",
+        "M",
+        "T",
+        "W",
+        "T",
+        "F",
+        "S",
+        "S",
+      ]);
+      expect(
+        Array.from(dialog.querySelectorAll("*")).some(
+          (node) => node.textContent?.trim() === "Select a valid date range.",
+        ),
+      ).toBe(true);
+
+      const beforeMin = Array.from(dialog.querySelectorAll('[role="button"]')).find((button) =>
+        button.getAttribute("aria-label")?.includes("February 2, 2025"),
+      );
+      expect(beforeMin).toHaveAttribute("aria-disabled", "true");
+      const afterMax = Array.from(dialog.querySelectorAll('[role="button"]')).find((button) =>
+        button.getAttribute("aria-label")?.includes("February 21, 2025"),
+      );
+      expect(afterMax).toHaveAttribute("aria-disabled", "true");
+      const unavailable = Array.from(dialog.querySelectorAll('[role="button"]')).find((button) =>
+        button.getAttribute("aria-label")?.includes("February 10, 2025"),
+      );
+      expect(unavailable).toHaveAttribute("aria-disabled", "true");
     });
   });
 

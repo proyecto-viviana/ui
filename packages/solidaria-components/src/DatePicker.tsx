@@ -148,6 +148,12 @@ export interface DateRangePickerProps<T extends DateValue = DateValue>
   isOpen?: boolean;
   /** Callback when the overlay open state changes. */
   onOpenChange?: (isOpen: boolean) => void;
+  /** The name for the start date input used in HTML form submission. */
+  startName?: string;
+  /** The name for the end date input used in HTML form submission. */
+  endName?: string;
+  /** The associated form id for the hidden start/end date inputs. */
+  form?: string;
 }
 
 export interface DatePickerButtonRenderProps {
@@ -463,6 +469,8 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
       "validationState",
       "allowsNonContiguousRanges",
       "firstDayOfWeek",
+      "pageBehavior",
+      "selectionAlignment",
     ],
   );
 
@@ -559,6 +567,26 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
           >
             {props.children}
           </div>
+          <Show when={(rest as Record<string, unknown>).startName}>
+            <HiddenDateInput
+              name={(rest as Record<string, unknown>).startName as string | undefined}
+              form={(rest as Record<string, unknown>).form as string | undefined}
+              value={calendarState.value()?.start ?? null}
+              isDisabled={access(stateProps.isDisabled) ?? false}
+              minValue={access(stateProps.minValue) as DateValue | undefined}
+              maxValue={access(stateProps.maxValue) as DateValue | undefined}
+            />
+          </Show>
+          <Show when={(rest as Record<string, unknown>).endName}>
+            <HiddenDateInput
+              name={(rest as Record<string, unknown>).endName as string | undefined}
+              form={(rest as Record<string, unknown>).form as string | undefined}
+              value={calendarState.value()?.end ?? null}
+              isDisabled={access(stateProps.isDisabled) ?? false}
+              minValue={access(stateProps.minValue) as DateValue | undefined}
+              maxValue={access(stateProps.maxValue) as DateValue | undefined}
+            />
+          </Show>
         </RangeCalendarContext.Provider>
       </DateRangePickerContext.Provider>
     </DateRangePickerStateContext.Provider>

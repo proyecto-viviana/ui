@@ -38,6 +38,13 @@ const meterTextControlValues: Record<string, string> = {
   maxValue: "120",
 };
 
+const dateRangePickerTextControlValues: Record<string, string> = {
+  startValue: "2025-02-03",
+  endValue: "2025-02-14",
+  startName: "startDate",
+  endName: "endDate",
+};
+
 function liveStyledEntry(group: ComponentControlGroup) {
   return comparisonEntries.find(
     (entry) =>
@@ -69,6 +76,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "meter" && control.name in meterTextControlValues) {
       return meterTextControlValues[control.name];
+    }
+    if (group.slug === "daterangepicker" && control.name in dateRangePickerTextControlValues) {
+      return dateRangePickerTextControlValues[control.name];
     }
     if (control.name === "selectedKeys" && group.slug === "selectboxgroup") {
       return "starter,pro";

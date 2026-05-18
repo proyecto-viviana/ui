@@ -32,10 +32,11 @@ import {
 
 export type DateRangePickerSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type NormalizedDateRangePickerSize = "S" | "M" | "L" | "XL";
+type DateRangePickerFirstDayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 
 export interface DateRangePickerProps<T extends DateValue = DateValue> extends Omit<
   HeadlessDateRangePickerProps<T>,
-  "class" | "style" | "children"
+  "class" | "style" | "children" | "firstDayOfWeek"
 > {
   /** The size of the picker. @default 'M' */
   size?: DateRangePickerSize;
@@ -49,6 +50,8 @@ export interface DateRangePickerProps<T extends DateValue = DateValue> extends O
   errorMessage?: string;
   /** The maximum number of months to display in the range calendar popover. */
   maxVisibleMonths?: number;
+  /** The day that starts the week. */
+  firstDayOfWeek?: DateRangePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 function normalizeDateRangePickerSize(
@@ -76,6 +79,29 @@ function requiredIconStyle(size: NormalizedDateRangePickerSize): JSX.CSSProperti
     width: `${pixelSize}px`,
     height: `${pixelSize}px`,
   };
+}
+
+function normalizeFirstDayOfWeek(
+  firstDayOfWeek: DateRangePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined,
+): 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined {
+  switch (firstDayOfWeek) {
+    case "sun":
+      return 0;
+    case "mon":
+      return 1;
+    case "tue":
+      return 2;
+    case "wed":
+      return 3;
+    case "thu":
+      return 4;
+    case "fri":
+      return 5;
+    case "sat":
+      return 6;
+    default:
+      return firstDayOfWeek;
+  }
 }
 
 const popoverEnterStyle: JSX.CSSProperties = {
@@ -353,6 +379,12 @@ function DateRangeDisplay(props: {
   errorMessage?: string;
   isRequired?: boolean;
   maxVisibleMonths?: number;
+  minValue?: DateValue;
+  maxValue?: DateValue;
+  isDateUnavailable?: (date: DateValue) => boolean;
+  allowsNonContiguousRanges?: boolean;
+  firstDayOfWeek?: DateRangePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  pageBehavior?: "single" | "visible";
 }): JSX.Element {
   const context = useDateRangePickerContext();
   const theme = useTheme();
@@ -437,7 +469,20 @@ function DateRangeDisplay(props: {
           style={popoverEnterStyle}
         >
           <div class={dateRangePickerPopoverFrame} style={{ "min-width": "240px" }}>
-            <RangeCalendar size="md" visibleMonths={props.maxVisibleMonths ?? 1} />
+            <RangeCalendar
+              size="md"
+              value={state.value?.() ?? undefined}
+              onChange={(value) => state.setValue(value)}
+              minValue={props.minValue}
+              maxValue={props.maxValue}
+              isDateUnavailable={props.isDateUnavailable}
+              allowsNonContiguousRanges={props.allowsNonContiguousRanges}
+              firstDayOfWeek={props.firstDayOfWeek}
+              pageBehavior={props.pageBehavior}
+              isInvalid={props.isInvalid}
+              errorMessage={props.isInvalid ? props.errorMessage : undefined}
+              visibleMonths={props.maxVisibleMonths ?? 1}
+            />
           </div>
         </DateRangePickerContent>
       </div>
@@ -476,6 +521,7 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
       "maxValue",
       "isDateUnavailable",
       "firstDayOfWeek",
+      "pageBehavior",
       "allowsNonContiguousRanges",
       "placeholderValue",
     ],
@@ -483,11 +529,14 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
 
   const size = () => normalizeDateRangePickerSize(local.size);
   const isInvalid = () => local.isInvalid === true;
+  const maxVisibleMonths = () => Math.max(1, Number(local.maxVisibleMonths ?? 1));
 
   return (
     <HeadlessDateRangePicker
       {...calendarProps}
       {...rest}
+      firstDayOfWeek={normalizeFirstDayOfWeek(calendarProps.firstDayOfWeek)}
+      visibleMonths={maxVisibleMonths()}
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}
@@ -513,7 +562,13 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
         description={local.description}
         errorMessage={local.errorMessage}
         isRequired={rest.isRequired}
-        maxVisibleMonths={local.maxVisibleMonths}
+        maxVisibleMonths={maxVisibleMonths()}
+        minValue={calendarProps.minValue}
+        maxValue={calendarProps.maxValue}
+        isDateUnavailable={calendarProps.isDateUnavailable}
+        allowsNonContiguousRanges={calendarProps.allowsNonContiguousRanges}
+        firstDayOfWeek={calendarProps.firstDayOfWeek}
+        pageBehavior={calendarProps.pageBehavior}
       />
     </HeadlessDateRangePicker>
   );
