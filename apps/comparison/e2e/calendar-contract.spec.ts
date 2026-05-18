@@ -52,10 +52,30 @@ async function clickNext(panel: Locator) {
     .click();
 }
 
+async function focusDate(panel: Locator, day: number) {
+  await panel
+    .getByRole("button", { name: new RegExp(`February ${day}, 2025`, "i") })
+    .first()
+    .focus();
+}
+
 async function expectMonths(panel: Locator, months: string[]) {
   for (const month of months) {
     await expect(panel.getByText(month, { exact: true }).first()).toBeVisible();
   }
+}
+
+async function dispatchCalendarControls(page: Page, props: Record<string, string | boolean>) {
+  await page.evaluate((nextProps) => {
+    window.dispatchEvent(
+      new CustomEvent("comparison:controls-change", {
+        detail: {
+          component: "calendar",
+          props: nextProps,
+        },
+      }),
+    );
+  }, props);
 }
 
 test.describe("comparison Calendar route contract", () => {
@@ -123,6 +143,76 @@ test.describe("comparison Calendar route contract", () => {
     );
     await expect(reactPanel.getByRole("grid")).toHaveCount(2);
     await expect(solidPanel.getByRole("grid")).toHaveCount(2);
+  });
+
+  test("Calendar focusedValue and selectionAlignment control the visible range", async ({
+    page,
+  }) => {
+    const cases = [
+      {
+        selectionAlignment: "start",
+        months: ["February 2025", "March 2025", "April 2025"],
+      },
+      {
+        selectionAlignment: "center",
+        months: ["January 2025", "February 2025", "March 2025"],
+      },
+      {
+        selectionAlignment: "end",
+        months: ["December 2024", "January 2025", "February 2025"],
+      },
+    ] as const;
+
+    for (const { selectionAlignment, months } of cases) {
+      const { reactPanel, solidPanel, reactRoot, solidRoot } = await calendarFixtures(page, {
+        focusedValue: "2025-02-15",
+        visibleMonths: "3",
+        selectionAlignment,
+      });
+
+      await expectMonths(reactPanel, months);
+      await expectMonths(solidPanel, months);
+      await expect(reactRoot).toHaveAttribute("data-comparison-focused-value", "2025-02-15");
+      await expect(solidRoot).toHaveAttribute("data-comparison-focused-value", "2025-02-15");
+    }
+  });
+
+  test("Calendar controlled focusedValue responds to route updates", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await calendarFixtures(page, {
+      focusedValue: "2025-02-15",
+      visibleMonths: "2",
+      selectionAlignment: "end",
+    });
+
+    await expectMonths(reactPanel, ["January 2025", "February 2025"]);
+    await expectMonths(solidPanel, ["January 2025", "February 2025"]);
+
+    await dispatchCalendarControls(page, { focusedValue: "2025-05-15" });
+
+    await expectMonths(reactPanel, ["May 2025", "June 2025"]);
+    await expectMonths(solidPanel, ["May 2025", "June 2025"]);
+    await expect(reactRoot).toHaveAttribute("data-comparison-focused-value", "2025-05-15");
+    await expect(solidRoot).toHaveAttribute("data-comparison-focused-value", "2025-05-15");
+  });
+
+  test("Calendar keyboard focus movement reports onFocusChange and selects focused date", async ({
+    page,
+  }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await calendarFixtures(page, {
+      value: "2025-02-03",
+    });
+
+    await focusDate(reactPanel, 3);
+    await page.keyboard.press("ArrowRight");
+    await expect(reactRoot).toHaveAttribute("data-comparison-focused-value", "2025-02-04");
+    await page.keyboard.press("Enter");
+    await expect(reactRoot).toHaveAttribute("data-comparison-value", "2025-02-04");
+
+    await focusDate(solidPanel, 3);
+    await page.keyboard.press("ArrowRight");
+    await expect(solidRoot).toHaveAttribute("data-comparison-focused-value", "2025-02-04");
+    await page.keyboard.press("Enter");
+    await expect(solidRoot).toHaveAttribute("data-comparison-value", "2025-02-04");
   });
 
   test("Calendar pageBehavior controls visible range paging", async ({ page }) => {

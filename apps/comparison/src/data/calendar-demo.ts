@@ -15,16 +15,20 @@ export const calendarFirstDayOfWeekOptions = [
 ] as const;
 export const calendarVisibleMonthsOptions = ["", "1", "2", "3"] as const;
 export const calendarPageBehaviorOptions = ["", "single", "visible"] as const;
+export const calendarSelectionAlignmentOptions = ["", "start", "center", "end"] as const;
 
 export type CalendarDemoFirstDayOfWeek = (typeof calendarFirstDayOfWeekOptions)[number];
 export type CalendarDemoVisibleMonths = (typeof calendarVisibleMonthsOptions)[number];
 export type CalendarDemoPageBehavior = (typeof calendarPageBehaviorOptions)[number];
+export type CalendarDemoSelectionAlignment = (typeof calendarSelectionAlignmentOptions)[number];
 
 export interface CalendarDemoProps {
   value: string;
+  focusedValue: string;
   firstDayOfWeek: CalendarDemoFirstDayOfWeek;
   visibleMonths: CalendarDemoVisibleMonths;
   pageBehavior: CalendarDemoPageBehavior;
+  selectionAlignment: CalendarDemoSelectionAlignment;
   constrainRange: boolean;
   unavailableDates: boolean;
   isDisabled: boolean;
@@ -35,9 +39,11 @@ export interface CalendarDemoProps {
 
 export const calendarDemoDefaults: CalendarDemoProps = {
   value: "",
+  focusedValue: "",
   firstDayOfWeek: "",
   visibleMonths: "",
   pageBehavior: "",
+  selectionAlignment: "",
   constrainRange: false,
   unavailableDates: false,
   isDisabled: false,
@@ -86,6 +92,10 @@ export function normalizeCalendarDemoProps(props: Partial<CalendarDemoProps>): C
   return {
     value:
       typeof props.value === "string" && props.value ? props.value : calendarDemoDefaults.value,
+    focusedValue:
+      typeof props.focusedValue === "string" && props.focusedValue
+        ? props.focusedValue
+        : calendarDemoDefaults.focusedValue,
     firstDayOfWeek: isOneOf(props.firstDayOfWeek, calendarFirstDayOfWeekOptions)
       ? props.firstDayOfWeek
       : calendarDemoDefaults.firstDayOfWeek,
@@ -95,6 +105,9 @@ export function normalizeCalendarDemoProps(props: Partial<CalendarDemoProps>): C
     pageBehavior: isOneOf(props.pageBehavior, calendarPageBehaviorOptions)
       ? props.pageBehavior
       : calendarDemoDefaults.pageBehavior,
+    selectionAlignment: isOneOf(props.selectionAlignment, calendarSelectionAlignmentOptions)
+      ? props.selectionAlignment
+      : calendarDemoDefaults.selectionAlignment,
     constrainRange: props.constrainRange === true,
     unavailableDates: props.unavailableDates === true,
     isDisabled: props.isDisabled === true,
@@ -112,9 +125,11 @@ export function calendarDemoPropsFromSearch(search: string): CalendarDemoProps {
   const firstDayOfWeek = params.get("firstDayOfWeek");
   const visibleMonths = params.get("visibleMonths");
   const pageBehavior = params.get("pageBehavior");
+  const selectionAlignment = params.get("selectionAlignment");
 
   return normalizeCalendarDemoProps({
     value: params.get("value") || calendarDemoDefaults.value,
+    focusedValue: params.get("focusedValue") || calendarDemoDefaults.focusedValue,
     firstDayOfWeek: isOneOf(firstDayOfWeek, calendarFirstDayOfWeekOptions)
       ? firstDayOfWeek
       : calendarDemoDefaults.firstDayOfWeek,
@@ -124,6 +139,9 @@ export function calendarDemoPropsFromSearch(search: string): CalendarDemoProps {
     pageBehavior: isOneOf(pageBehavior, calendarPageBehaviorOptions)
       ? pageBehavior
       : calendarDemoDefaults.pageBehavior,
+    selectionAlignment: isOneOf(selectionAlignment, calendarSelectionAlignmentOptions)
+      ? selectionAlignment
+      : calendarDemoDefaults.selectionAlignment,
     constrainRange: booleanParam(params.get("constrainRange")),
     unavailableDates: booleanParam(params.get("unavailableDates")),
     isDisabled: booleanParam(params.get("isDisabled")),
@@ -144,9 +162,11 @@ export function calendarDemoPropsFromWindow(): CalendarDemoProps {
 export function serializeCalendarDemoProps(props: CalendarDemoProps) {
   return JSON.stringify({
     value: props.value,
+    focusedValue: props.focusedValue,
     firstDayOfWeek: props.firstDayOfWeek,
     visibleMonths: props.visibleMonths,
     pageBehavior: props.pageBehavior,
+    selectionAlignment: props.selectionAlignment,
     constrainRange: props.constrainRange,
     unavailableDates: props.unavailableDates,
     isDisabled: props.isDisabled,

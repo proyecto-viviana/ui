@@ -5,7 +5,7 @@
  * Based on @react-stately/calendar useCalendarState
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
 import {
   type CalendarDate,
   type DateValue,
@@ -249,6 +249,26 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     const end = visibleRangeEnd(start);
 
     return { start, end };
+  });
+
+  createEffect(() => {
+    const controlledFocused = access(props.focusedValue);
+    if (!controlledFocused) {
+      return;
+    }
+
+    const nextFocusedDate = constrainDate(toCalendarDate(controlledFocused));
+    const range = visibleRange();
+
+    if (!isSameDay(nextFocusedDate, focusedDate())) {
+      setFocusedDateInternal(nextFocusedDate);
+    }
+
+    if (nextFocusedDate.compare(range.start) < 0) {
+      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: visibleMonths - 1 })));
+    } else if (nextFocusedDate.compare(range.end) > 0) {
+      setVisibleRangeStart(startOfMonth(nextFocusedDate));
+    }
   });
 
   // Format week days for headers

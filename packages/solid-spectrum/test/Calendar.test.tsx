@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { Calendar, CalendarContext } from "../src/Calendar";
 import { CalendarDateClass as CalendarDate } from "@proyecto-viviana/solid-stately";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -128,5 +129,33 @@ describe("Calendar (solid-spectrum)", () => {
 
     await user.click(screen.getByRole("button", { name: /February 12, 2025/i }));
     expect(String(selected)).toBe("2025-02-12");
+  });
+
+  it("syncs controlled focusedValue changes to the visible range", async () => {
+    const [focusedValue, setFocusedValue] = createSignal(new CalendarDate(2025, 2, 15));
+
+    render(() => (
+      <>
+        <button type="button" onClick={() => setFocusedValue(new CalendarDate(2025, 5, 15))}>
+          Focus May
+        </button>
+        <Calendar
+          aria-label="Appointment date"
+          focusedValue={focusedValue()}
+          onFocusChange={setFocusedValue}
+          visibleMonths={2}
+          selectionAlignment="end"
+        />
+      </>
+    ));
+    await waitForCalendar();
+
+    expect(screen.getByText("January 2025")).toBeInTheDocument();
+    expect(screen.getByText("February 2025")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Focus May" }));
+
+    expect(screen.getByText("May 2025")).toBeInTheDocument();
+    expect(screen.getByText("June 2025")).toBeInTheDocument();
   });
 });

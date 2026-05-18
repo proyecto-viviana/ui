@@ -2430,6 +2430,11 @@ function SolidSpectrumCalendarDemo() {
   const [value, setValue] = createSignal(
     calendarDateFromString(calendarDemoPropsFromWindow().value),
   );
+  const [focusedValue, setFocusedValue] = createSignal(
+    calendarDateFromString(
+      calendarDemoPropsFromWindow().focusedValue || calendarDemoPropsFromWindow().value,
+    ),
+  );
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -2443,6 +2448,7 @@ function SolidSpectrumCalendarDemo() {
         });
         setDemoProps(nextProps);
         setValue(() => calendarDateFromString(nextProps.value));
+        setFocusedValue(() => calendarDateFromString(nextProps.focusedValue || nextProps.value));
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -2479,6 +2485,9 @@ function SolidSpectrumCalendarDemo() {
           },
           get "data-comparison-value"() {
             return value() ? String(value()) : "";
+          },
+          get "data-comparison-focused-value"() {
+            return focusedValue() ? String(focusedValue()) : "";
           },
           "data-comparison-control-root": "calendar",
           get "data-comparison-control-props"() {
@@ -2524,6 +2533,15 @@ function SolidSpectrumCalendarDemo() {
             },
             get pageBehavior() {
               return demoProps().pageBehavior || undefined;
+            },
+            get selectionAlignment() {
+              return demoProps().selectionAlignment || undefined;
+            },
+            get focusedValue() {
+              return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
+            },
+            onFocusChange: (nextFocusedValue) => {
+              setFocusedValue(() => nextFocusedValue);
             },
           }),
         ],

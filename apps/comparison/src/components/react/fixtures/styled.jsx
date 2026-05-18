@@ -2509,6 +2509,11 @@ function ReactCalendarDemo() {
   const [value, setValue] = useState(() =>
     calendarDateFromString(calendarDemoPropsFromWindow().value),
   );
+  const [focusedValue, setFocusedValue] = useState(() =>
+    calendarDateFromString(
+      calendarDemoPropsFromWindow().focusedValue || calendarDemoPropsFromWindow().value,
+    ),
+  );
   const colorScheme = useComparisonResolvedTheme();
 
   useEffect(() => {
@@ -2520,6 +2525,7 @@ function ReactCalendarDemo() {
             ...(event.detail.props ?? {}),
           });
           setValue(calendarDateFromString(nextProps.value));
+          setFocusedValue(calendarDateFromString(nextProps.focusedValue || nextProps.value));
           return nextProps;
         });
       }
@@ -2545,6 +2551,9 @@ function ReactCalendarDemo() {
     firstDayOfWeek: demoProps.firstDayOfWeek || undefined,
     visibleMonths,
     pageBehavior: demoProps.pageBehavior || undefined,
+    selectionAlignment: demoProps.selectionAlignment || undefined,
+    focusedValue: demoProps.focusedValue ? (focusedValue ?? undefined) : undefined,
+    onFocusChange: (nextFocusedValue) => setFocusedValue(nextFocusedValue),
     UNSAFE_className: "comparison-calendar-root",
     UNSAFE_style: {
       "--cell-responsive-size": "32px",
@@ -2562,6 +2571,7 @@ function ReactCalendarDemo() {
       "data-comparison-control-root": "calendar",
       "data-comparison-control-props": serializeCalendarDemoProps(demoProps),
       "data-comparison-value": selectedValue ? String(selectedValue) : "",
+      "data-comparison-focused-value": focusedValue ? String(focusedValue) : "",
       "data-comparison-color-scheme": colorScheme,
       children: jsx(SpectrumCalendar, calendarProps),
     }),
