@@ -239,6 +239,14 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
       "children" | "items"
     >;
   const [triggerElement, setTriggerElement] = createSignal<HTMLButtonElement | null>(null);
+  let didAutoFocus = false;
+  createEffect(() => {
+    const trigger = triggerElement();
+    if (!didAutoFocus && local.autoFocus && trigger) {
+      didAutoFocus = true;
+      trigger.focus();
+    }
+  });
   const iconContextValue = {
     slot: "icon",
     render: centerBaseline({

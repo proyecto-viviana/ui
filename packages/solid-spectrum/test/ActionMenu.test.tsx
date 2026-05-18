@@ -105,6 +105,36 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(trigger).toHaveAttribute("aria-controls", menu.id);
   });
 
+  it("forwards local trigger ref, styles, aria details, and autoFocus", async () => {
+    let triggerElement: HTMLButtonElement | undefined;
+    render(() => (
+      <>
+        <span id="actionmenu-details">Runs on the selected document</span>
+        <ActionMenu
+          autoFocus
+          aria-details="actionmenu-details"
+          styles="generated-local-action-menu"
+          UNSAFE_className="unsafe-local-action-menu"
+          UNSAFE_style={{ margin: "6px" }}
+          ref={(element) => {
+            triggerElement = element;
+          }}
+          items={items}
+          getKey={(item) => item.id}
+        />
+      </>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    await waitFor(() => expect(trigger).toHaveFocus());
+
+    expect(triggerElement).toBe(trigger);
+    expect(trigger).toHaveAttribute("aria-details", "actionmenu-details");
+    expect(trigger.className).toContain("generated-local-action-menu");
+    expect(trigger.className).toContain("unsafe-local-action-menu");
+    expect(trigger).toHaveStyle({ margin: "6px" });
+  });
+
   it("forwards reactive data attributes to the trigger instead of the menu", async () => {
     const [owner, setOwner] = createSignal("documents");
     render(() => (
