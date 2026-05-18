@@ -3,6 +3,9 @@ export {
   type CalendarStateProps,
   type CalendarState,
   type ValidationState,
+  type CalendarPageBehavior,
+  type CalendarSelectionAlignment,
+  type CalendarDayOfWeek,
 } from "./createCalendarState";
 export {
   createRangeCalendarState,
@@ -32,8 +35,13 @@ export type {
   ZonedDateTime,
   DateValue,
   Time,
+  Calendar,
+  CalendarIdentifier,
+  AnyCalendarDate,
 } from "@internationalized/date";
 export {
+  createCalendar,
+  GregorianCalendar,
   today,
   now,
   getLocalTimeZone,
@@ -65,6 +73,7 @@ export {
   endOfYear,
   getWeeksInMonth,
   getDayOfWeek,
+  toCalendar,
   minDate,
   maxDate,
 } from "@internationalized/date";

@@ -68,6 +68,15 @@ async function focusSelectedDate(root: Locator) {
     .focus();
 }
 
+async function selectedDateLabel(root: Locator) {
+  return root
+    .locator(
+      '[data-selected][role="button"], [data-selected] [role="button"], [aria-selected="true"] [role="button"]',
+    )
+    .first()
+    .getAttribute("aria-label");
+}
+
 async function weekHeaderText(panel: Locator) {
   return panel
     .getByRole("grid")
@@ -84,6 +93,13 @@ async function expectMonths(panel: Locator, months: string[]) {
   for (const month of months) {
     await expect(panel.getByText(month, { exact: true }).first()).toBeVisible();
   }
+}
+
+async function calendarHeadingText(panel: Locator) {
+  return ((await panel.getByRole("heading").first().textContent()) ?? "").replace(
+    /^Event date,\s*/,
+    "",
+  );
 }
 
 async function dispatchCalendarControls(page: Page, props: Record<string, string | boolean>) {
@@ -216,6 +232,46 @@ test.describe("comparison Calendar route contract", () => {
     await focusSelectedDate(solidRoot);
     await page.keyboard.press("ArrowRight");
     await expect(solidRoot).toHaveAttribute("data-comparison-focused-value", "2025-02-02");
+  });
+
+  test("Calendar supports Unicode calendar-system locale display", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await calendarFixtures(page, {
+      locale: "hi-IN-u-ca-indian",
+      value: "2025-02-15",
+    });
+
+    const reactTitle = await calendarHeadingText(reactPanel);
+    const solidTitle = await calendarHeadingText(solidPanel);
+    expect(reactTitle).toBe(solidTitle);
+    expect(reactTitle).toContain("1946");
+
+    const reactLabel = await selectedDateLabel(reactRoot);
+    const solidLabel = await selectedDateLabel(solidRoot);
+    expect(reactLabel).toBe(solidLabel);
+    expect(reactLabel ?? "").toContain("1946");
+
+    await focusSelectedDate(reactRoot);
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Enter");
+    await expect(reactRoot).toHaveAttribute("data-comparison-value", "2025-02-16");
+
+    await focusSelectedDate(solidRoot);
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Enter");
+    await expect(solidRoot).toHaveAttribute("data-comparison-value", "2025-02-16");
+  });
+
+  test("Calendar routes custom createCalendar display through both stacks", async ({ page }) => {
+    const { reactPanel, solidPanel } = await calendarFixtures(page, {
+      calendarSystem: "custom454",
+      focusedValue: "2025-03-01",
+    });
+
+    const reactTitle = await calendarHeadingText(reactPanel);
+    const solidTitle = await calendarHeadingText(solidPanel);
+
+    expect(reactTitle).toBe(solidTitle);
+    expect(reactTitle).toBe("February 2025");
   });
 
   test("Calendar focusedValue and selectionAlignment control the visible range", async ({

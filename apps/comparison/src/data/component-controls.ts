@@ -2378,7 +2378,7 @@ const calendarControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the live S2 Calendar docs viewer controls: visibleMonths, pageBehavior, firstDayOfWeek, and isDisabled. Validation, unavailable-date, read-only, and controlled-value states remain route-testable docs/API examples rather than official side-panel controls.",
+  note: "Modeled from the live S2 Calendar docs viewer controls: visibleMonths, pageBehavior, firstDayOfWeek, and isDisabled. Validation, unavailable-date, read-only, controlled-value, Unicode calendar-system, and custom createCalendar states remain route-testable docs/API examples rather than official side-panel controls.",
 };
 
 const actionButtonControls: ComponentControlGroup = {

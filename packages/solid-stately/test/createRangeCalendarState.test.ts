@@ -10,7 +10,12 @@ import {
   createRangeCalendarState,
   type RangeValue,
 } from "../src/calendar/createRangeCalendarState";
-import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
+import {
+  CalendarDate,
+  today,
+  getLocalTimeZone,
+  createCalendar as createIntlCalendar,
+} from "@internationalized/date";
 
 describe("createRangeCalendarState", () => {
   const timeZone = getLocalTimeZone();
@@ -851,6 +856,52 @@ describe("createRangeCalendarState", () => {
 
         state.focusNextPage();
         expect(state.title()).toBe("July 2024");
+
+        dispose();
+      });
+    });
+
+    it("should display ranges in the locale calendar system and emit original calendars", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createRangeCalendarState({
+          defaultValue: {
+            start: new CalendarDate(2025, 2, 3),
+            end: new CalendarDate(2025, 2, 5),
+          },
+          locale: "hi-IN-u-ca-indian",
+          onChange,
+        });
+
+        expect(state.focusedDate().calendar.identifier).toBe("indian");
+        expect(state.focusedDate().year).toBe(1946);
+        expect(state.value()?.start.calendar.identifier).toBe("indian");
+        expect(state.highlightedRange()?.end.calendar.identifier).toBe("indian");
+        expect(state.title()).toContain("1946");
+        expect(state.title()).not.toContain("2025");
+
+        state.selectDate(state.focusedDate().add({ days: 3 }));
+        state.selectDate(state.focusedDate().add({ days: 5 }));
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.calls[0][0].start.calendar.identifier).toBe("gregory");
+        expect(onChange.mock.calls[0][0].end.calendar.identifier).toBe("gregory");
+
+        dispose();
+      });
+    });
+
+    it("should create the range display calendar through createCalendar", () => {
+      createRoot((dispose) => {
+        const createCalendar = vi.fn((identifier) => createIntlCalendar(identifier));
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2025, 2, 3),
+          locale: "hi-IN-u-ca-indian",
+          createCalendar,
+        });
+
+        expect(createCalendar).toHaveBeenCalledWith("indian");
+        expect(state.focusedDate().calendar.identifier).toBe("indian");
 
         dispose();
       });

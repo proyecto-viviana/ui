@@ -7,7 +7,12 @@
 import { describe, it, expect, vi } from "vitest";
 import { createRoot, createSignal } from "solid-js";
 import { createCalendarState } from "../src/calendar/createCalendarState";
-import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
+import {
+  CalendarDate,
+  today,
+  getLocalTimeZone,
+  createCalendar as createIntlCalendar,
+} from "@internationalized/date";
 
 describe("createCalendarState", () => {
   const timeZone = getLocalTimeZone();
@@ -648,6 +653,51 @@ describe("createCalendarState", () => {
         const title = state.title();
         expect(title).toContain("June");
         expect(title).toContain("2024");
+
+        dispose();
+      });
+    });
+
+    it("should display dates in the locale calendar system", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createCalendarState({
+          defaultValue: new CalendarDate(2025, 2, 3),
+          locale: "hi-IN-u-ca-indian",
+          onChange,
+        });
+
+        expect(state.focusedDate().calendar.identifier).toBe("indian");
+        expect(state.focusedDate().era).toBe("saka");
+        expect(state.focusedDate().year).toBe(1946);
+        expect(state.focusedDate().month).toBe(11);
+        expect(state.focusedDate().day).toBe(14);
+        expect(state.value()?.calendar.identifier).toBe("indian");
+        expect(state.title()).toContain("1946");
+        expect(state.title()).not.toContain("2025");
+
+        state.selectDate(state.focusedDate().add({ days: 1 }));
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.calls[0][0].calendar.identifier).toBe("gregory");
+        expect(String(onChange.mock.calls[0][0])).toBe("2025-02-04");
+        expect(state.value()?.calendar.identifier).toBe("indian");
+
+        dispose();
+      });
+    });
+
+    it("should create the display calendar through createCalendar", () => {
+      createRoot((dispose) => {
+        const createCalendar = vi.fn((identifier) => createIntlCalendar(identifier));
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2025, 2, 3),
+          locale: "hi-IN-u-ca-indian",
+          createCalendar,
+        });
+
+        expect(createCalendar).toHaveBeenCalledWith("indian");
+        expect(state.focusedDate().calendar.identifier).toBe("indian");
 
         dispose();
       });

@@ -1844,7 +1844,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/calendar-contract.spec.ts",
-      note: "Calendar route now asserts Provider locale inheritance for French month titles, narrow weekday headers, localized cell labels, serialized control props, and Arabic RTL direction with horizontal day-key movement.",
+      note: "Calendar route now asserts Provider locale inheritance for French month titles, narrow weekday headers, localized cell labels, serialized control props, Arabic RTL direction with horizontal day-key movement, and Indian calendar-system display/emitted-value parity.",
+    },
+    {
+      id: "styled.calendar.custom-calendar",
+      label: "Custom createCalendar",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/calendar-contract.spec.ts",
+      note: "Route fixture passes a docs-style 4-5-4 createCalendar factory through both stacks and asserts matching fiscal month display.",
     },
     {
       id: "styled.calendar.focused-value",

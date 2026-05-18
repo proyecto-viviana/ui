@@ -122,6 +122,7 @@ import {
   serializeBreadcrumbsDemoProps,
 } from "@comparison/data/breadcrumbs-demo";
 import {
+  calendarCreateCalendarForDemo,
   calendarDateFromString,
   calendarDemoPropsFromWindow,
   calendarMaxValue,
@@ -2552,6 +2553,7 @@ function ReactCalendarDemo() {
     visibleMonths,
     pageBehavior: demoProps.pageBehavior || undefined,
     selectionAlignment: demoProps.selectionAlignment || undefined,
+    createCalendar: calendarCreateCalendarForDemo(demoProps.calendarSystem),
     focusedValue: demoProps.focusedValue ? (focusedValue ?? undefined) : undefined,
     onFocusChange: (nextFocusedValue) => setFocusedValue(nextFocusedValue),
     UNSAFE_className: "comparison-calendar-root",

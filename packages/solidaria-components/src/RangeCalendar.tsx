@@ -189,6 +189,7 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
       "defaultFocusedValue",
       "onFocusChange",
       "locale",
+      "createCalendar",
       "isDateUnavailable",
       "visibleMonths",
       "isDateDisabled",

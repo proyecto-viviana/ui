@@ -152,11 +152,15 @@ export function createCalendarCell<T extends CalendarState>(
       day: "numeric",
       calendar: d.calendar.identifier,
     } as Intl.DateTimeFormatOptions);
+    let label = formatter.format(d.toDate(timeZone));
+    if (isSelected()) {
+      label += " selected";
+    }
 
     return {
       role: "button",
       tabIndex: isFocused() ? 0 : -1,
-      "aria-label": formatter.format(d.toDate(timeZone)),
+      "aria-label": label,
       "aria-disabled": isDisabled() || isUnavailable() || undefined,
       "aria-pressed": isPressed() || undefined,
       disabled: isDisabled() || isUnavailable(),

@@ -516,6 +516,14 @@ describe("Calendar", () => {
       expect(calendar).toHaveAttribute("aria-label", "Test Calendar");
     });
 
+    it("should include selected state in selected cell labels", async () => {
+      render(() => <TestCalendar calendarProps={{ value: new CalendarDate(2024, 6, 15) }} />);
+      await waitForCalendarHydration();
+
+      const selectedDate = document.querySelector("[data-selected]");
+      expect(selectedDate).toHaveAttribute("aria-label", expect.stringContaining("selected"));
+    });
+
     it("should have gridcell role on cells", async () => {
       render(() => <TestCalendar />);
       await waitForCalendarHydration();

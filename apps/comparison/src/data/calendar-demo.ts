@@ -1,4 +1,13 @@
-import { parseDate, type DateValue } from "@proyecto-viviana/solid-stately";
+import {
+  CalendarDateClass as CalendarDate,
+  GregorianCalendar,
+  parseDate,
+  startOfWeek,
+  type AnyCalendarDate,
+  type Calendar,
+  type CalendarDate as CalendarDateValue,
+  type DateValue,
+} from "@proyecto-viviana/solid-stately";
 import { comparisonControlsEvent } from "./button-demo";
 
 export { comparisonControlsEvent };
@@ -16,13 +25,15 @@ export const calendarFirstDayOfWeekOptions = [
 export const calendarVisibleMonthsOptions = ["", "1", "2", "3"] as const;
 export const calendarPageBehaviorOptions = ["", "single", "visible"] as const;
 export const calendarSelectionAlignmentOptions = ["", "start", "center", "end"] as const;
-export const calendarLocaleOptions = ["", "fr-FR", "ar-AE"] as const;
+export const calendarLocaleOptions = ["", "fr-FR", "ar-AE", "hi-IN-u-ca-indian"] as const;
+export const calendarSystemOptions = ["", "custom454"] as const;
 
 export type CalendarDemoFirstDayOfWeek = (typeof calendarFirstDayOfWeekOptions)[number];
 export type CalendarDemoVisibleMonths = (typeof calendarVisibleMonthsOptions)[number];
 export type CalendarDemoPageBehavior = (typeof calendarPageBehaviorOptions)[number];
 export type CalendarDemoSelectionAlignment = (typeof calendarSelectionAlignmentOptions)[number];
 export type CalendarDemoLocale = (typeof calendarLocaleOptions)[number];
+export type CalendarDemoCalendarSystem = (typeof calendarSystemOptions)[number];
 
 export interface CalendarDemoProps {
   value: string;
@@ -32,6 +43,7 @@ export interface CalendarDemoProps {
   visibleMonths: CalendarDemoVisibleMonths;
   pageBehavior: CalendarDemoPageBehavior;
   selectionAlignment: CalendarDemoSelectionAlignment;
+  calendarSystem: CalendarDemoCalendarSystem;
   constrainRange: boolean;
   unavailableDates: boolean;
   isDisabled: boolean;
@@ -48,6 +60,7 @@ export const calendarDemoDefaults: CalendarDemoProps = {
   visibleMonths: "",
   pageBehavior: "",
   selectionAlignment: "",
+  calendarSystem: "",
   constrainRange: false,
   unavailableDates: false,
   isDisabled: false,
@@ -92,6 +105,78 @@ export function isCalendarDateUnavailable(date: DateValue): boolean {
   return date.day === 10 || date.day === 11;
 }
 
+export class CalendarDemoCustom454 extends GregorianCalendar {
+  anchorDate = new CalendarDate(2001, 2, 4);
+
+  private getYear(year: number): [CalendarDateValue, number[]] {
+    let anchor = this.anchorDate.set({ year });
+    let startOfYear = startOfWeek(anchor, "en", "sun");
+    let isBigYear = !startOfYear.add({ weeks: 53 }).compare(anchor.add({ years: 1 }));
+    let weekPattern = [4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 5, isBigYear ? 5 : 4];
+    return [startOfYear, weekPattern];
+  }
+
+  getDaysInMonth(date: AnyCalendarDate): number {
+    let [, weekPattern] = this.getYear(date.year);
+    return weekPattern[date.month - 1] * 7;
+  }
+
+  fromJulianDay(jd: number): CalendarDateValue {
+    let gregorian = super.fromJulianDay(jd);
+    let year = gregorian.year;
+
+    let [monthStart, weekPattern] = this.getYear(year);
+    if (gregorian.compare(monthStart) < 0) {
+      year--;
+      [monthStart, weekPattern] = this.getYear(year);
+    }
+
+    for (let month = 1; month <= 12; month++) {
+      let weeks = weekPattern[month - 1];
+      let nextMonth = monthStart.add({ weeks });
+      if (nextMonth.compare(gregorian) > 0) {
+        let days = gregorian.compare(monthStart);
+        return new CalendarDate(this, year, month, days + 1);
+      }
+      monthStart = nextMonth;
+    }
+
+    throw new Error("date not found");
+  }
+
+  toJulianDay(date: AnyCalendarDate): number {
+    let [monthStart, weekPattern] = this.getYear(date.year);
+    for (let month = 1; month < date.month; month++) {
+      monthStart = monthStart.add({ weeks: weekPattern[month - 1] });
+    }
+
+    let gregorian = monthStart.add({ days: date.day - 1 });
+    return super.toJulianDay(gregorian);
+  }
+
+  getFormattableMonth(date: AnyCalendarDate): CalendarDateValue {
+    let anchorMonth = this.anchorDate.month - 1;
+    let dateMonth = date.month - 1;
+    let month = ((anchorMonth + dateMonth) % 12) + 1;
+    let year = anchorMonth + dateMonth >= 12 ? date.year + 1 : date.year;
+    return new CalendarDate(year, month, 1);
+  }
+
+  isEqual(other: Calendar): boolean {
+    return (
+      other instanceof CalendarDemoCustom454 && other.anchorDate.compare(this.anchorDate) === 0
+    );
+  }
+}
+
+export function calendarCreateCalendarForDemo(calendarSystem: CalendarDemoCalendarSystem) {
+  if (calendarSystem === "custom454") {
+    return () => new CalendarDemoCustom454();
+  }
+
+  return undefined;
+}
+
 export function normalizeCalendarDemoProps(props: Partial<CalendarDemoProps>): CalendarDemoProps {
   return {
     value:
@@ -115,6 +200,9 @@ export function normalizeCalendarDemoProps(props: Partial<CalendarDemoProps>): C
     selectionAlignment: isOneOf(props.selectionAlignment, calendarSelectionAlignmentOptions)
       ? props.selectionAlignment
       : calendarDemoDefaults.selectionAlignment,
+    calendarSystem: isOneOf(props.calendarSystem, calendarSystemOptions)
+      ? props.calendarSystem
+      : calendarDemoDefaults.calendarSystem,
     constrainRange: props.constrainRange === true,
     unavailableDates: props.unavailableDates === true,
     isDisabled: props.isDisabled === true,
@@ -134,6 +222,7 @@ export function calendarDemoPropsFromSearch(search: string): CalendarDemoProps {
   const pageBehavior = params.get("pageBehavior");
   const selectionAlignment = params.get("selectionAlignment");
   const locale = params.get("locale");
+  const calendarSystem = params.get("calendarSystem");
 
   return normalizeCalendarDemoProps({
     value: params.get("value") || calendarDemoDefaults.value,
@@ -151,6 +240,9 @@ export function calendarDemoPropsFromSearch(search: string): CalendarDemoProps {
     selectionAlignment: isOneOf(selectionAlignment, calendarSelectionAlignmentOptions)
       ? selectionAlignment
       : calendarDemoDefaults.selectionAlignment,
+    calendarSystem: isOneOf(calendarSystem, calendarSystemOptions)
+      ? calendarSystem
+      : calendarDemoDefaults.calendarSystem,
     constrainRange: booleanParam(params.get("constrainRange")),
     unavailableDates: booleanParam(params.get("unavailableDates")),
     isDisabled: booleanParam(params.get("isDisabled")),
@@ -177,6 +269,7 @@ export function serializeCalendarDemoProps(props: CalendarDemoProps) {
     visibleMonths: props.visibleMonths,
     pageBehavior: props.pageBehavior,
     selectionAlignment: props.selectionAlignment,
+    calendarSystem: props.calendarSystem,
     constrainRange: props.constrainRange,
     unavailableDates: props.unavailableDates,
     isDisabled: props.isDisabled,

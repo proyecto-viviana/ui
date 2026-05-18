@@ -5,9 +5,17 @@
  * Based on @react-stately/calendar useCalendarState
  */
 import { type Accessor } from "solid-js";
-import { type CalendarDate, type DateValue } from "@internationalized/date";
+import {
+  type Calendar as InternationalizedCalendar,
+  type CalendarDate,
+  type CalendarIdentifier,
+  type DateValue,
+} from "@internationalized/date";
 import { type MaybeAccessor } from "../utils";
 export type ValidationState = "valid" | "invalid";
+export type CalendarPageBehavior = "single" | "visible";
+export type CalendarSelectionAlignment = "start" | "center" | "end";
+export type CalendarDayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** The current value (controlled). */
   value?: MaybeAccessor<T | null>;
@@ -32,11 +40,17 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** Handler called when the focused date changes. */
   onFocusChange?: (date: CalendarDate) => void;
   /** The locale to use for formatting. */
-  locale?: string;
+  locale?: MaybeAccessor<string | undefined>;
+  /** Creates a calendar object for a locale calendar identifier. */
+  createCalendar?: (identifier: CalendarIdentifier) => InternationalizedCalendar;
   /** Callback that is called for each date in the calendar to determine if it is unavailable. */
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
   visibleMonths?: number;
+  /** Controls whether paging advances by one month or by the visible month range. */
+  pageBehavior?: CalendarPageBehavior;
+  /** Determines how the visible months align around the initial focused date. */
+  selectionAlignment?: CalendarSelectionAlignment;
   /** Whether to automatically focus the calendar when it is mounted. */
   autoFocusOnMount?: boolean;
   /** Controls which days are disabled. */
@@ -68,6 +82,10 @@ export interface CalendarState<T extends DateValue = DateValue> {
   }>;
   /** The timezone used for date calculations. */
   timeZone: string;
+  /** The locale used for formatting and locale-specific week starts. */
+  locale: Accessor<string>;
+  /** The explicitly requested first weekday, or undefined for the locale default. */
+  firstDayOfWeek: Accessor<CalendarDayOfWeek | undefined>;
   /** The validation state. */
   validationState: Accessor<ValidationState | undefined>;
   /** Whether a date is selected. */

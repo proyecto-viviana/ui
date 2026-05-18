@@ -5,12 +5,16 @@
  * Based on @react-stately/calendar useRangeCalendarState
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
 import {
+  type Calendar as InternationalizedCalendar,
   type CalendarDate,
+  type CalendarIdentifier,
   type DateValue,
+  GregorianCalendar,
   today,
   getLocalTimeZone,
+  isEqualCalendar,
   isSameDay,
   isSameMonth,
   startOfMonth,
@@ -18,6 +22,8 @@ import {
   startOfWeek,
   getWeeksInMonth,
   DateFormatter,
+  createCalendar as intlCreateCalendar,
+  toCalendar as intlToCalendar,
   toCalendarDate as intlToCalendarDate,
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
@@ -58,6 +64,8 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   onFocusChange?: (date: CalendarDate) => void;
   /** The locale to use for formatting. */
   locale?: MaybeAccessor<string | undefined>;
+  /** Creates a calendar object for a locale calendar identifier. */
+  createCalendar?: (identifier: CalendarIdentifier) => InternationalizedCalendar;
   /** Callback to determine if a date is unavailable. */
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
@@ -169,27 +177,50 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 ): RangeCalendarState<T> {
   const timeZone = getLocalTimeZone();
   const locale = createMemo(() => access(props.locale) ?? "en-US");
+  const resolvedOptions = createMemo(() => new DateFormatter(locale()).resolvedOptions());
+  const calendar = createMemo(() =>
+    (props.createCalendar ?? intlCreateCalendar)(resolvedOptions().calendar as CalendarIdentifier),
+  );
   const visibleMonths = props.visibleMonths ?? 1;
   const firstDayOfWeekName = (): CalendarDayOfWeek | undefined =>
     props.firstDayOfWeek == null ? undefined : dayOfWeekNames[props.firstDayOfWeek];
+
+  const toDisplayCalendarDate = (date: DateValue): CalendarDate =>
+    intlToCalendar(toCalendarDate(date), calendar());
+
+  const constrainDate = (date: CalendarDate): CalendarDate => {
+    const minValue = access(props.minValue);
+    const maxValue = access(props.maxValue);
+
+    let constrained = date;
+
+    if (minValue && constrained.compare(toDisplayCalendarDate(minValue)) < 0) {
+      constrained = toDisplayCalendarDate(minValue);
+    }
+    if (maxValue && constrained.compare(toDisplayCalendarDate(maxValue)) > 0) {
+      constrained = toDisplayCalendarDate(maxValue);
+    }
+
+    return constrained;
+  };
 
   // Determine the initially focused date
   const getInitialFocusedDate = (): CalendarDate => {
     const controlledFocused = access(props.focusedValue);
     if (controlledFocused) {
-      return toCalendarDate(controlledFocused);
+      return toDisplayCalendarDate(controlledFocused);
     }
     if (props.defaultFocusedValue) {
-      return toCalendarDate(props.defaultFocusedValue);
+      return toDisplayCalendarDate(props.defaultFocusedValue);
     }
     const controlledValue = access(props.value);
     if (controlledValue?.start) {
-      return toCalendarDate(controlledValue.start);
+      return toDisplayCalendarDate(controlledValue.start);
     }
     if (props.defaultValue?.start) {
-      return toCalendarDate(props.defaultValue.start);
+      return toDisplayCalendarDate(props.defaultValue.start);
     }
-    return today(timeZone);
+    return intlToCalendar(today(timeZone), calendar());
   };
 
   // State signals
@@ -202,9 +233,20 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const [isDragging, setDragging] = createSignal(false);
 
   // Controlled vs uncontrolled value
-  const value = createMemo<RangeValue<T> | null>(() => {
+  const sourceValue = createMemo<RangeValue<T> | null>(() => {
     const controlled = access(props.value);
     return controlled !== undefined ? controlled : internalValue();
+  });
+  const value = createMemo<RangeValue<T> | null>(() => {
+    const currentValue = sourceValue();
+    if (!currentValue) {
+      return null;
+    }
+
+    return {
+      start: toDisplayCalendarDate(currentValue.start) as unknown as T,
+      end: toDisplayCalendarDate(currentValue.end) as unknown as T,
+    };
   });
 
   // Derived states
@@ -219,8 +261,8 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       const v = value();
       if (v) {
         return {
-          start: toCalendarDate(v.start),
-          end: toCalendarDate(v.end),
+          start: toDisplayCalendarDate(v.start),
+          end: toDisplayCalendarDate(v.end),
         };
       }
       return null;
@@ -246,6 +288,17 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return { start, end };
   });
 
+  createEffect(() => {
+    const currentFocusedDate = focusedDate();
+    const nextFocusedDate = toDisplayCalendarDate(currentFocusedDate);
+
+    if (isEqualCalendar(currentFocusedDate.calendar, nextFocusedDate.calendar)) {
+      return;
+    }
+
+    setFocusedDateInternal(nextFocusedDate);
+  });
+
   // Format week days for headers
   const weekDays = createMemo(() => {
     const formatter = new DateFormatter(locale(), { weekday: "narrow" });
@@ -265,37 +318,41 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     const formatter = new DateFormatter(locale(), {
       month: "long",
       year: "numeric",
+      calendar: focusedDate().calendar.identifier,
     });
-    return formatter.format(focusedDate().toDate(timeZone));
+    const date = focusedDate();
+    const formattableMonth = date.calendar.getFormattableMonth?.(date) ?? date;
+    return formatter.format(formattableMonth.toDate(timeZone));
   });
 
   // Set value with onChange callback
   const setValue = (newValue: RangeValue<T> | null) => {
     if (isDisabled() || isReadOnly()) return;
 
+    const oldValue = sourceValue();
+    const nextValue = newValue
+      ? {
+          start: convertValue(
+            constrainDate(toDisplayCalendarDate(newValue.start)),
+            oldValue?.start,
+          ) as T,
+          end: convertValue(constrainDate(toDisplayCalendarDate(newValue.end)), oldValue?.end) as T,
+        }
+      : null;
+
     const controlled = access(props.value);
     if (controlled === undefined) {
-      setInternalValue(() => newValue);
+      setInternalValue(() => nextValue);
     }
 
-    if (newValue && props.onChange) {
-      props.onChange(newValue);
+    if (nextValue && props.onChange) {
+      props.onChange(nextValue);
     }
   };
 
   // Set focused date with constraints
   const setFocusedDate = (date: CalendarDate) => {
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
-
-    let constrained = date;
-
-    if (minValue && date.compare(toCalendarDate(minValue)) < 0) {
-      constrained = toCalendarDate(minValue);
-    }
-    if (maxValue && date.compare(toCalendarDate(maxValue)) > 0) {
-      constrained = toCalendarDate(maxValue);
-    }
+    const constrained = constrainDate(date);
 
     setFocusedDateInternal(constrained);
     props.onFocusChange?.(constrained);
@@ -306,7 +363,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     const range = highlightedRange();
     if (!range) return false;
 
-    const calDate = toCalendarDate(date);
+    const calDate = toDisplayCalendarDate(date);
     return calDate.compare(range.start) >= 0 && calDate.compare(range.end) <= 0;
   };
 
@@ -314,19 +371,19 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const isSelectionStart = (date: DateValue): boolean => {
     const range = highlightedRange();
     if (!range) return false;
-    return isSameDay(toCalendarDate(date), range.start);
+    return isSameDay(toDisplayCalendarDate(date), range.start);
   };
 
   // Check if a date is the end of the selection
   const isSelectionEnd = (date: DateValue): boolean => {
     const range = highlightedRange();
     if (!range) return false;
-    return isSameDay(toCalendarDate(date), range.end);
+    return isSameDay(toDisplayCalendarDate(date), range.end);
   };
 
   // Check if a date is focused
   const isCellFocused = (date: DateValue): boolean => {
-    return isSameDay(toCalendarDate(date), focusedDate());
+    return isSameDay(toDisplayCalendarDate(date), focusedDate());
   };
 
   // Check if a date is unavailable
@@ -341,10 +398,10 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
     const minValue = access(props.minValue);
     const maxValue = access(props.maxValue);
-    const calDate = toCalendarDate(date);
+    const calDate = toDisplayCalendarDate(date);
 
-    if (minValue && calDate.compare(toCalendarDate(minValue)) < 0) return true;
-    if (maxValue && calDate.compare(toCalendarDate(maxValue)) > 0) return true;
+    if (minValue && calDate.compare(toDisplayCalendarDate(minValue)) < 0) return true;
+    if (maxValue && calDate.compare(toDisplayCalendarDate(maxValue)) > 0) return true;
 
     return false;
   };
@@ -352,7 +409,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   // Check if a date is outside the visible range
   const isOutsideVisibleRange = (date: DateValue): boolean => {
     const range = visibleRange();
-    const calDate = toCalendarDate(date);
+    const calDate = toDisplayCalendarDate(date);
     return !isSameMonth(calDate, range.start) && !isSameMonth(calDate, range.end);
   };
 
@@ -521,4 +578,14 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
  */
 function toCalendarDate(date: DateValue): CalendarDate {
   return intlToCalendarDate(date);
+}
+
+function convertValue(newValue: CalendarDate, oldValue?: DateValue | null): DateValue {
+  const localValue = intlToCalendar(newValue, oldValue?.calendar ?? new GregorianCalendar());
+
+  if (oldValue && "hour" in oldValue) {
+    return oldValue.set(localValue);
+  }
+
+  return localValue;
 }

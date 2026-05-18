@@ -19,7 +19,7 @@ import {
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
 import { useLocale } from "@proyecto-viviana/solidaria";
-import type { CalendarStateProps } from "@proyecto-viviana/solid-stately";
+import { DateFormatter, type CalendarStateProps } from "@proyecto-viviana/solid-stately";
 import {
   baseColor,
   focusRing,
@@ -147,10 +147,12 @@ function normalizeFirstDayOfWeek(
 }
 
 function monthTitle(date: CalendarDate, locale: string | undefined, timeZone: string): string {
-  return new Intl.DateTimeFormat(locale ?? "en-US", {
+  const formattableMonth = date.calendar.getFormattableMonth?.(date) ?? date;
+  return new DateFormatter(locale ?? "en-US", {
     month: "long",
     year: "numeric",
-  }).format(date.toDate(timeZone));
+    calendar: date.calendar.identifier,
+  }).format(formattableMonth.toDate(timeZone));
 }
 
 const calendarRoot = style<{ isMultiMonth?: boolean }>({

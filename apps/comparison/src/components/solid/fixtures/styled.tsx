@@ -135,6 +135,7 @@ import {
   type BreadcrumbsItem,
 } from "@comparison/data/breadcrumbs-demo";
 import {
+  calendarCreateCalendarForDemo,
   calendarDateFromString,
   calendarDemoPropsFromWindow,
   calendarMaxValue,
@@ -2539,6 +2540,9 @@ function SolidSpectrumCalendarDemo() {
             },
             get selectionAlignment() {
               return demoProps().selectionAlignment || undefined;
+            },
+            get createCalendar() {
+              return calendarCreateCalendarForDemo(demoProps().calendarSystem);
             },
             get focusedValue() {
               return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
