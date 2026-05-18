@@ -19,6 +19,7 @@ import {
 
 describe("createRangeCalendarState", () => {
   const timeZone = getLocalTimeZone();
+  const flushEffects = () => Promise.resolve();
 
   describe("basic state management", () => {
     it("should return null by default", () => {
@@ -129,6 +130,23 @@ describe("createRangeCalendarState", () => {
         });
 
         expect(state.focusedDate()).toEqual(range.start);
+
+        dispose();
+      });
+    });
+
+    it("should constrain the initial focused date without firing onFocusChange", () => {
+      createRoot((dispose) => {
+        const onFocusChange = vi.fn();
+        const minValue = new CalendarDate(2024, 6, 10);
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 5),
+          minValue,
+          onFocusChange,
+        });
+
+        expect(state.focusedDate()).toEqual(minValue);
+        expect(onFocusChange).not.toHaveBeenCalled();
 
         dispose();
       });
@@ -739,6 +757,53 @@ describe("createRangeCalendarState", () => {
         dispose();
       });
     });
+
+    it("should not call onFocusChange when setting the same focused date object", () => {
+      createRoot((dispose) => {
+        const onFocusChange = vi.fn();
+        const focusedDate = new CalendarDate(2024, 6, 15);
+        const state = createRangeCalendarState({
+          defaultFocusedValue: focusedDate,
+          onFocusChange,
+        });
+
+        state.setFocusedDate(state.focusedDate());
+
+        expect(onFocusChange).not.toHaveBeenCalled();
+
+        dispose();
+      });
+    });
+
+    it("should constrain focused date when minValue changes and then call onFocusChange", async () => {
+      let dispose!: () => void;
+      const [minValue, setMinValue] = createSignal<CalendarDate | undefined>();
+      let state!: ReturnType<typeof createRangeCalendarState>;
+      const snapshots: Array<{ date: CalendarDate; focusedDate: CalendarDate }> = [];
+
+      state = createRoot((disposeRoot) => {
+        dispose = disposeRoot;
+        return createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          get minValue() {
+            return minValue();
+          },
+          onFocusChange: (date) => {
+            snapshots.push({ date, focusedDate: state.focusedDate() });
+          },
+        });
+      });
+
+      setMinValue(new CalendarDate(2024, 6, 20));
+      await flushEffects();
+
+      expect(state.focusedDate()).toEqual(new CalendarDate(2024, 6, 20));
+      expect(snapshots).toHaveLength(1);
+      expect(snapshots[0].date).toEqual(new CalendarDate(2024, 6, 20));
+      expect(snapshots[0].focusedDate).toEqual(new CalendarDate(2024, 6, 20));
+
+      dispose();
+    });
   });
 
   describe("controlled vs uncontrolled modes", () => {
@@ -797,6 +862,53 @@ describe("createRangeCalendarState", () => {
 
         dispose();
       });
+    });
+
+    it("should call onChange with null when clearing an uncontrolled value", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createRangeCalendarState({
+          defaultValue: {
+            start: new CalendarDate(2024, 6, 10),
+            end: new CalendarDate(2024, 6, 20),
+          },
+          onChange,
+        });
+
+        state.setValue(null);
+
+        expect(state.value()).toBe(null);
+        expect(onChange).toHaveBeenCalledWith(null);
+
+        dispose();
+      });
+    });
+
+    it("should sync controlled focusedValue changes without calling onFocusChange", async () => {
+      let dispose!: () => void;
+      const [focusedValue, setFocusedValue] = createSignal<CalendarDate | null>(
+        new CalendarDate(2024, 2, 15),
+      );
+      const onFocusChange = vi.fn();
+      const state = createRoot((disposeRoot) => {
+        dispose = disposeRoot;
+        return createRangeCalendarState({
+          get focusedValue() {
+            return focusedValue();
+          },
+          onFocusChange,
+        });
+      });
+
+      expect(state.focusedDate()).toEqual(new CalendarDate(2024, 2, 15));
+
+      setFocusedValue(new CalendarDate(2024, 5, 15));
+      await flushEffects();
+
+      expect(state.focusedDate()).toEqual(new CalendarDate(2024, 5, 15));
+      expect(onFocusChange).not.toHaveBeenCalled();
+
+      dispose();
     });
 
     it("should update in uncontrolled mode", () => {

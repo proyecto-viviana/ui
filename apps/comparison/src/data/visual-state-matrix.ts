@@ -1863,8 +1863,8 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts",
-      note: "focusedValue and selectionAlignment route states assert start, center, and end initial visible ranges plus controlled post-mount focusedValue updates.",
+      spec: "e2e/calendar-contract.spec.ts; packages/solid-stately/test/createCalendarState.test.ts",
+      note: "focusedValue and selectionAlignment route states assert start, center, and end initial visible ranges plus controlled post-mount focusedValue updates. State tests also assert controlled focusedValue sync without callback emission, min/max focus clamping, callback ordering, and null value reset.",
     },
     {
       id: "styled.calendar.keyboard-focus",

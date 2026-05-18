@@ -22,7 +22,7 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** The default value (uncontrolled). */
   defaultValue?: T | null;
   /** Handler called when the value changes. */
-  onChange?: (value: T) => void;
+  onChange?: (value: T | null) => void;
   /** The minimum allowed date. */
   minValue?: MaybeAccessor<DateValue | undefined>;
   /** The maximum allowed date. */
@@ -34,7 +34,7 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** Whether dates outside the visible range are automatically focused. */
   autoFocus?: boolean;
   /** The date that is focused when the calendar first mounts. */
-  focusedValue?: MaybeAccessor<DateValue | undefined>;
+  focusedValue?: MaybeAccessor<DateValue | null | undefined>;
   /** The default focused date (uncontrolled). */
   defaultFocusedValue?: DateValue;
   /** Handler called when the focused date changes. */

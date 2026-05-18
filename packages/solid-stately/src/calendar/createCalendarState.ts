@@ -41,7 +41,7 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** The default value (uncontrolled). */
   defaultValue?: T | null;
   /** Handler called when the value changes. */
-  onChange?: (value: T) => void;
+  onChange?: (value: T | null) => void;
   /** The minimum allowed date. */
   minValue?: MaybeAccessor<DateValue | undefined>;
   /** The maximum allowed date. */
@@ -53,7 +53,7 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** Whether dates outside the visible range are automatically focused. */
   autoFocus?: boolean;
   /** The date that is focused when the calendar first mounts. */
-  focusedValue?: MaybeAccessor<DateValue | undefined>;
+  focusedValue?: MaybeAccessor<DateValue | null | undefined>;
   /** The default focused date (uncontrolled). */
   defaultFocusedValue?: DateValue;
   /** Handler called when the focused date changes. */
@@ -248,7 +248,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   };
 
   // State signals
-  const initialFocusedDate = getInitialFocusedDate();
+  const initialFocusedDate = constrainDate(getInitialFocusedDate());
   const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
   const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(initialFocusedDate);
   const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
@@ -281,6 +281,16 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     return { start, end };
   });
 
+  const syncVisibleRangeForFocusedDate = (nextFocusedDate: CalendarDate) => {
+    const range = visibleRange();
+
+    if (nextFocusedDate.compare(range.start) < 0) {
+      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: visibleMonths - 1 })));
+    } else if (nextFocusedDate.compare(range.end) > 0) {
+      setVisibleRangeStart(startOfMonth(nextFocusedDate));
+    }
+  };
+
   createEffect(() => {
     const controlledFocused = access(props.focusedValue);
     if (!controlledFocused) {
@@ -288,17 +298,37 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     }
 
     const nextFocusedDate = constrainDate(toDisplayCalendarDate(controlledFocused));
-    const range = visibleRange();
 
-    if (!isSameDay(nextFocusedDate, focusedDate())) {
+    const currentFocusedDate = focusedDate();
+    if (
+      nextFocusedDate.compare(currentFocusedDate) !== 0 ||
+      !isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+    ) {
       setFocusedDateInternal(nextFocusedDate);
     }
 
-    if (nextFocusedDate.compare(range.start) < 0) {
-      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: visibleMonths - 1 })));
-    } else if (nextFocusedDate.compare(range.end) > 0) {
-      setVisibleRangeStart(startOfMonth(nextFocusedDate));
+    syncVisibleRangeForFocusedDate(nextFocusedDate);
+  });
+
+  createEffect(() => {
+    const controlledFocused = access(props.focusedValue);
+    if (controlledFocused) {
+      return;
     }
+
+    const currentFocusedDate = focusedDate();
+    const nextFocusedDate = constrainDate(currentFocusedDate);
+
+    if (
+      nextFocusedDate.compare(currentFocusedDate) === 0 &&
+      isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+    ) {
+      return;
+    }
+
+    syncVisibleRangeForFocusedDate(nextFocusedDate);
+    setFocusedDateInternal(nextFocusedDate);
+    props.onFocusChange?.(nextFocusedDate);
   });
 
   createEffect(() => {
@@ -353,7 +383,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
       setInternalValue(() => nextValue);
     }
 
-    if (nextValue && props.onChange) {
+    if (!Object.is(oldValue, nextValue) && props.onChange) {
       props.onChange(nextValue);
     }
   };
@@ -361,14 +391,12 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   // Set focused date with constraints
   const setFocusedDate = (date: CalendarDate) => {
     const constrained = constrainDate(date);
-    const range = visibleRange();
 
-    if (constrained.compare(range.start) < 0) {
-      setVisibleRangeStart(startOfMonth(constrained.subtract({ months: visibleMonths - 1 })));
-    } else if (constrained.compare(range.end) > 0) {
-      setVisibleRangeStart(startOfMonth(constrained));
+    if (Object.is(constrained, focusedDate())) {
+      return;
     }
 
+    syncVisibleRangeForFocusedDate(constrained);
     setFocusedDateInternal(constrained);
     props.onFocusChange?.(constrained);
   };

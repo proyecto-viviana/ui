@@ -47,7 +47,7 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   /** The default value (uncontrolled). */
   defaultValue?: RangeValue<T> | null;
   /** Handler called when the value changes. */
-  onChange?: (value: RangeValue<T>) => void;
+  onChange?: (value: RangeValue<T> | null) => void;
   /** The minimum allowed date. */
   minValue?: MaybeAccessor<DateValue | undefined>;
   /** The maximum allowed date. */
@@ -57,7 +57,7 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   /** Whether the calendar is read-only. */
   isReadOnly?: MaybeAccessor<boolean>;
   /** The date that is focused when the calendar first mounts. */
-  focusedValue?: MaybeAccessor<DateValue | undefined>;
+  focusedValue?: MaybeAccessor<DateValue | null | undefined>;
   /** The default focused date (uncontrolled). */
   defaultFocusedValue?: DateValue;
   /** Handler called when the focused date changes. */
@@ -229,7 +229,9 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const [internalValue, setInternalValue] = createSignal<RangeValue<T> | null>(
     props.defaultValue ?? null,
   );
-  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(getInitialFocusedDate());
+  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(
+    constrainDate(getInitialFocusedDate()),
+  );
   const [anchorDate, setAnchorDate] = createSignal<CalendarDate | null>(null);
   const [isFocused, setFocused] = createSignal(false);
   const [isDragging, setDragging] = createSignal(false);
@@ -292,6 +294,43 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   });
 
   createEffect(() => {
+    const controlledFocused = access(props.focusedValue);
+    if (!controlledFocused) {
+      return;
+    }
+
+    const nextFocusedDate = constrainDate(toDisplayCalendarDate(controlledFocused));
+    const currentFocusedDate = focusedDate();
+
+    if (
+      nextFocusedDate.compare(currentFocusedDate) !== 0 ||
+      !isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+    ) {
+      setFocusedDateInternal(nextFocusedDate);
+    }
+  });
+
+  createEffect(() => {
+    const controlledFocused = access(props.focusedValue);
+    if (controlledFocused) {
+      return;
+    }
+
+    const currentFocusedDate = focusedDate();
+    const nextFocusedDate = constrainDate(currentFocusedDate);
+
+    if (
+      nextFocusedDate.compare(currentFocusedDate) === 0 &&
+      isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+    ) {
+      return;
+    }
+
+    setFocusedDateInternal(nextFocusedDate);
+    props.onFocusChange?.(nextFocusedDate);
+  });
+
+  createEffect(() => {
     const currentFocusedDate = focusedDate();
     const nextFocusedDate = toDisplayCalendarDate(currentFocusedDate);
 
@@ -348,7 +387,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       setInternalValue(() => nextValue);
     }
 
-    if (nextValue && props.onChange) {
+    if (!Object.is(oldValue, nextValue) && props.onChange) {
       props.onChange(nextValue);
     }
   };
@@ -356,6 +395,10 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   // Set focused date with constraints
   const setFocusedDate = (date: CalendarDate) => {
     const constrained = constrainDate(date);
+
+    if (Object.is(constrained, focusedDate())) {
+      return;
+    }
 
     setFocusedDateInternal(constrained);
     props.onFocusChange?.(constrained);

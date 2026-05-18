@@ -27,7 +27,7 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   /** The default value (uncontrolled). */
   defaultValue?: RangeValue<T> | null;
   /** Handler called when the value changes. */
-  onChange?: (value: RangeValue<T>) => void;
+  onChange?: (value: RangeValue<T> | null) => void;
   /** The minimum allowed date. */
   minValue?: MaybeAccessor<DateValue | undefined>;
   /** The maximum allowed date. */
@@ -37,7 +37,7 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   /** Whether the calendar is read-only. */
   isReadOnly?: MaybeAccessor<boolean>;
   /** The date that is focused when the calendar first mounts. */
-  focusedValue?: MaybeAccessor<DateValue | undefined>;
+  focusedValue?: MaybeAccessor<DateValue | null | undefined>;
   /** The default focused date (uncontrolled). */
   defaultFocusedValue?: DateValue;
   /** Handler called when the focused date changes. */

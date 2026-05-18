@@ -299,6 +299,9 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   const calendarState = createCalendarState<T>({
     value: () => datePickerState.value(),
     onChange: (value) => {
+      if (!value) {
+        return;
+      }
       datePickerState.setDateValue(value);
     },
     minValue: stateProps.minValue,
