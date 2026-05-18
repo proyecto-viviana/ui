@@ -10,6 +10,7 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import type { RangeCalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
+import { getCalendarHookData } from "./utils";
 
 export interface AriaRangeCalendarCellProps {
   /** The date represented by the cell. */
@@ -37,6 +38,8 @@ export interface RangeCalendarCellAria {
   isDisabled: boolean;
   /** Whether the cell is unavailable (e.g., booked date). */
   isUnavailable: boolean;
+  /** Whether the cell is part of an invalid selection. */
+  isInvalid: boolean;
   /** Whether the cell is outside the visible month. */
   isOutsideMonth: boolean;
   /** Whether the cell represents today. */
@@ -67,6 +70,17 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   const isSelectionStart = createMemo(() => state.isSelectionStart(date()));
   const isSelectionEnd = createMemo(() => state.isSelectionEnd(date()));
   const isFocused = createMemo(() => state.isCellFocused(date()));
+  const isInvalid = createMemo(() => {
+    const range = state.highlightedRange();
+    const d = date();
+    return (
+      state.isValueInvalid() &&
+      !state.anchorDate() &&
+      !!range &&
+      d.compare(range.start) >= 0 &&
+      d.compare(range.end) <= 0
+    );
+  });
   const isDisabled = createMemo(() => {
     return getProps().isDisabled || state.isCellDisabled(date());
   });
@@ -125,23 +139,28 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     role: "gridcell",
     "aria-disabled": isDisabled() || isUnavailable() || undefined,
     "aria-selected": isSelected() || undefined,
+    "aria-invalid": isInvalid() || undefined,
   }));
 
   // Button props (for the interactive element inside)
   const buttonProps = createMemo(() => {
     const d = date();
-    const formatter = new DateFormatter("en-US", {
+    const formatter = new DateFormatter(state.locale(), {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
+      calendar: d.calendar.identifier,
     });
+    const errorMessageId = getCalendarHookData(state)?.errorMessageId;
 
     return {
       role: "button",
       tabIndex: isFocused() ? 0 : -1,
       "aria-label": formatter.format(d.toDate(timeZone)),
       "aria-disabled": isDisabled() || isUnavailable() || undefined,
+      "aria-invalid": isInvalid() || undefined,
+      "aria-describedby": isInvalid() ? errorMessageId : undefined,
       "aria-pressed": isPressed() || undefined,
       disabled: isDisabled() || isUnavailable(),
       onClick: handleClick,
@@ -182,6 +201,9 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     },
     get isUnavailable() {
       return isUnavailable();
+    },
+    get isInvalid() {
+      return isInvalid();
     },
     get isOutsideMonth() {
       return isOutsideMonth();

@@ -91,6 +91,8 @@ export interface RangeCalendarState<T extends DateValue = DateValue> {
   firstDayOfWeek: Accessor<CalendarDayOfWeek | undefined>;
   /** The validation state. */
   validationState: Accessor<ValidationState | undefined>;
+  /** Whether the current value is invalid according to validation state. */
+  isValueInvalid: Accessor<boolean>;
   /** Whether a date is within the selected range. */
   isSelected: (date: DateValue) => boolean;
   /** Whether a date is the start of the selection. */

@@ -388,11 +388,15 @@ describe("RangeCalendar", () => {
 
   describe("aria attributes", () => {
     it("should have aria-label", async () => {
-      render(() => <TestRangeCalendar />);
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
       await waitForRangeCalendarHydration();
 
       const calendar = document.querySelector(".solidaria-RangeCalendar");
-      expect(calendar).toHaveAttribute("aria-label", "Test Range Calendar");
+      expect(calendar).toHaveAttribute("role", "application");
+      expect(calendar).toHaveAttribute("aria-label", "Test Range Calendar, June 2024");
+      expect(calendar?.firstElementChild).toHaveTextContent("Test Range Calendar, June 2024");
     });
 
     it("should have grid role", async () => {

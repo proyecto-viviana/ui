@@ -480,21 +480,14 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
     "max-width": "100%",
   });
   const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
-  const describedBy = () => {
-    if (!isInvalid() || !local.errorMessage) {
-      return rest["aria-describedby"];
-    }
-
-    const existing = rest["aria-describedby"];
-    return existing ? `${existing} ${errorMessageId}` : errorMessageId;
-  };
-
   return (
     <HeadlessCalendar
       {...rest}
       ref={(element: HTMLDivElement) => assignRef(element)}
       aria-label={local["aria-label"]}
-      aria-describedby={describedBy()}
+      aria-describedby={rest["aria-describedby"]}
+      errorMessage={local.errorMessage}
+      errorMessageId={errorMessageId}
       firstDayOfWeek={normalizeFirstDayOfWeek(local.firstDayOfWeek)}
       validationState={isInvalid() ? "invalid" : validationState()}
       visibleMonths={visibleMonths()}

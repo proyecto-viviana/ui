@@ -44,12 +44,15 @@ import {
   dataAttr,
   useIsHydrated,
 } from "./utils";
+import { VisuallyHidden } from "./VisuallyHidden";
 
 export interface CalendarRenderProps {
   /** Whether the calendar is disabled. */
   isDisabled: boolean;
   /** Whether the calendar is read-only. */
   isReadOnly: boolean;
+  /** Whether the current selection is invalid. */
+  isInvalid: boolean;
 }
 
 export interface CalendarProps<T extends DateValue = DateValue>
@@ -95,6 +98,8 @@ export interface CalendarCellRenderProps {
   isDisabled: boolean;
   /** Whether the cell is unavailable. */
   isUnavailable: boolean;
+  /** Whether the cell is part of an invalid selection. */
+  isInvalid: boolean;
   /** Whether the cell is outside the visible month. */
   isOutsideMonth: boolean;
   /** Whether the cell represents today. */
@@ -207,7 +212,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
 function CalendarWithState<T extends DateValue = CalendarDate>(
   props: CalendarProps<T> & { state: CalendarState<DateValue> },
 ): JSX.Element {
-  const [local, _stateProps, rest] = splitProps(
+  const [local, stateProps, rest] = splitProps(
     props,
     ["children", "class", "style", "slot", "state"],
     [
@@ -236,11 +241,18 @@ function CalendarWithState<T extends DateValue = CalendarDate>(
   );
 
   const state = () => props.state;
-  const calendarAria = createCalendar(rest, state());
+  const calendarAria = createCalendar(
+    () => ({
+      ...rest,
+      errorMessage: stateProps.errorMessage,
+    }),
+    state(),
+  );
 
   const renderValues = createMemo<CalendarRenderProps>(() => ({
     isDisabled: state().isDisabled(),
     isReadOnly: state().isReadOnly(),
+    isInvalid: state().isValueInvalid(),
   }));
 
   const renderProps = useRenderProps(
@@ -259,7 +271,11 @@ function CalendarWithState<T extends DateValue = CalendarDate>(
       style={renderProps.style()}
       data-disabled={dataAttr(state().isDisabled())}
       data-readonly={dataAttr(state().isReadOnly())}
+      data-invalid={dataAttr(state().isValueInvalid())}
     >
+      <VisuallyHidden>
+        <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
+      </VisuallyHidden>
       {props.children}
     </div>
   );
@@ -301,11 +317,18 @@ function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<
   const state = createCalendarState(stateProps);
 
   // Create calendar ARIA props
-  const calendarAria = createCalendar(rest, state as unknown as CalendarState<DateValue>);
+  const calendarAria = createCalendar(
+    () => ({
+      ...rest,
+      errorMessage: stateProps.errorMessage,
+    }),
+    state as unknown as CalendarState<DateValue>,
+  );
 
   const renderValues = createMemo<CalendarRenderProps>(() => ({
     isDisabled: state.isDisabled(),
     isReadOnly: state.isReadOnly(),
+    isInvalid: state.isValueInvalid(),
   }));
 
   const renderProps = useRenderProps(
@@ -325,7 +348,11 @@ function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<
         style={renderProps.style()}
         data-disabled={dataAttr(state.isDisabled())}
         data-readonly={dataAttr(state.isReadOnly())}
+        data-invalid={dataAttr(state.isValueInvalid())}
       >
+        <VisuallyHidden>
+          <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
+        </VisuallyHidden>
         {props.children}
       </div>
     </CalendarContext.Provider>
@@ -563,6 +590,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
     isFocused: cellAria.isFocused,
     isDisabled: cellAria.isDisabled,
     isUnavailable: cellAria.isUnavailable,
+    isInvalid: cellAria.isInvalid,
     isOutsideMonth: cellAria.isOutsideMonth,
     isToday: cellAria.isToday,
     isPressed: cellAria.isPressed,
@@ -612,6 +640,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
         data-focused={dataAttr(cellAria.isFocused)}
         data-disabled={dataAttr(cellAria.isDisabled)}
         data-unavailable={dataAttr(cellAria.isUnavailable)}
+        data-invalid={dataAttr(cellAria.isInvalid)}
         data-outside-month={dataAttr(cellAria.isOutsideMonth)}
         data-today={dataAttr(cellAria.isToday)}
         data-pressed={dataAttr(cellAria.isPressed)}

@@ -109,6 +109,8 @@ export interface RangeCalendarState<T extends DateValue = DateValue> {
   firstDayOfWeek: Accessor<CalendarDayOfWeek | undefined>;
   /** The validation state. */
   validationState: Accessor<ValidationState | undefined>;
+  /** Whether the current value is invalid according to validation state. */
+  isValueInvalid: Accessor<boolean>;
   /** Whether a date is within the selected range. */
   isSelected: (date: DateValue) => boolean;
   /** Whether a date is the start of the selection. */
@@ -253,6 +255,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
+  const isValueInvalid = createMemo(() => validationState() === "invalid");
 
   // Highlighted range during selection
   const highlightedRange = createMemo<RangeValue<CalendarDate> | null>(() => {
@@ -541,6 +544,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     locale,
     firstDayOfWeek: firstDayOfWeekName,
     validationState,
+    isValueInvalid,
     isSelected,
     isSelectionStart,
     isSelectionEnd,

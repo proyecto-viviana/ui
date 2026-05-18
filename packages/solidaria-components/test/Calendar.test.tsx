@@ -509,11 +509,15 @@ describe("Calendar", () => {
     });
 
     it("should have aria-label", async () => {
-      render(() => <TestCalendar />);
+      render(() => (
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
       await waitForCalendarHydration();
 
       const calendar = document.querySelector(".solidaria-Calendar");
-      expect(calendar).toHaveAttribute("aria-label", "Test Calendar");
+      expect(calendar).toHaveAttribute("role", "application");
+      expect(calendar).toHaveAttribute("aria-label", "Test Calendar, June 2024");
+      expect(calendar?.firstElementChild).toHaveTextContent("Test Calendar, June 2024");
     });
 
     it("should include selected state in selected cell labels", async () => {
@@ -522,6 +526,26 @@ describe("Calendar", () => {
 
       const selectedDate = document.querySelector("[data-selected]");
       expect(selectedDate).toHaveAttribute("aria-label", expect.stringContaining("selected"));
+    });
+
+    it("should mark invalid selected cells and link them to the error message id", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Test Calendar"
+          value={new CalendarDate(2024, 6, 15)}
+          validationState="invalid"
+          errorMessageId="calendar-error"
+        >
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <p id="calendar-error">Choose an available date.</p>
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      const selectedDate = document.querySelector("[data-selected]");
+      expect(selectedDate).toHaveAttribute("aria-invalid", "true");
+      expect(selectedDate).toHaveAttribute("aria-describedby", "calendar-error");
+      expect(selectedDate?.closest("td")).toHaveAttribute("aria-invalid", "true");
     });
 
     it("should have gridcell role on cells", async () => {

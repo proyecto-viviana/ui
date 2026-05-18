@@ -1887,6 +1887,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Selection updates the controlled value on both implementations, while read-only, disabled, and unavailable dates keep value immutable.",
     },
     {
+      id: "styled.calendar.validation-a11y",
+      label: "Validation accessibility",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/calendar-contract.spec.ts",
+      note: "Calendar validation route now asserts visible error text and selected-cell aria-invalid/aria-describedby linkage on both stacks. Browser rerun for this added assertion is deferred until browser focus is allowed.",
+    },
+    {
       id: "styled.calendar.selected-value",
       label: "Controlled selected date",
       kind: "static",

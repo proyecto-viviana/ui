@@ -105,6 +105,8 @@ export interface CalendarState<T extends DateValue = DateValue> {
   firstDayOfWeek: Accessor<CalendarDayOfWeek | undefined>;
   /** The validation state. */
   validationState: Accessor<ValidationState | undefined>;
+  /** Whether the current value is invalid according to validation state. */
+  isValueInvalid: Accessor<boolean>;
   /** Whether a date is selected. */
   isSelected: (date: DateValue) => boolean;
   /** Whether a date is focused. */
@@ -269,6 +271,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
+  const isValueInvalid = createMemo(() => validationState() === "invalid");
 
   // Visible range based on the paged range start.
   const visibleRange = createMemo(() => {
@@ -528,6 +531,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     locale,
     firstDayOfWeek: firstDayOfWeekName,
     validationState,
+    isValueInvalid,
     isSelected,
     isCellFocused,
     isCellUnavailable,

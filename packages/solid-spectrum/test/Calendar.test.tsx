@@ -23,7 +23,9 @@ describe("Calendar (solid-spectrum)", () => {
     render(() => <Calendar aria-label="Appointment date" value={new CalendarDate(2025, 2, 3)} />);
     await waitForCalendar();
 
-    expect(screen.getByRole("group", { name: "Appointment date" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("application", { name: "Appointment date, February 2025" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /February 3, 2025/i })).toHaveAttribute(
       "data-selected",
     );
@@ -75,7 +77,14 @@ describe("Calendar (solid-spectrum)", () => {
     expect(screen.getAllByRole("grid")).toHaveLength(2);
     expect(screen.getByText("February 2025")).toBeInTheDocument();
     expect(screen.getByText("March 2025")).toBeInTheDocument();
-    expect(screen.getByText("Choose an available date.")).toBeInTheDocument();
+    const error = screen.getByText("Choose an available date.");
+    expect(error).toBeInTheDocument();
+    const selectedDate = screen.getByRole("button", { name: /February 3, 2025/i });
+    expect(selectedDate).toHaveAttribute("aria-invalid", "true");
+    expect(selectedDate.getAttribute("aria-describedby")).toBe(error.id);
+    expect(screen.getByRole("application").getAttribute("aria-describedby") ?? "").not.toContain(
+      error.id,
+    );
   });
 
   it("pages by visible months by default and by one month when pageBehavior is single", async () => {

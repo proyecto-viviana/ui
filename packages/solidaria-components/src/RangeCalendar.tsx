@@ -42,12 +42,15 @@ import {
   dataAttr,
   useIsHydrated,
 } from "./utils";
+import { VisuallyHidden } from "./VisuallyHidden";
 
 export interface RangeCalendarRenderProps {
   /** Whether the calendar is disabled. */
   isDisabled: boolean;
   /** Whether the calendar is read-only. */
   isReadOnly: boolean;
+  /** Whether the current selection is invalid. */
+  isInvalid: boolean;
   /** Whether the user is currently selecting a range. */
   isDragging: boolean;
 }
@@ -97,6 +100,8 @@ export interface RangeCalendarCellRenderProps {
   isDisabled: boolean;
   /** Whether the cell is unavailable. */
   isUnavailable: boolean;
+  /** Whether the cell is part of an invalid selection. */
+  isInvalid: boolean;
   /** Whether the cell is outside the visible month. */
   isOutsideMonth: boolean;
   /** Whether the cell represents today. */
@@ -206,6 +211,7 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
   const renderValues = createMemo<RangeCalendarRenderProps>(() => ({
     isDisabled: state.isDisabled(),
     isReadOnly: state.isReadOnly(),
+    isInvalid: state.isValueInvalid(),
     isDragging: state.isDragging(),
   }));
 
@@ -227,8 +233,12 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
           style={renderProps.style()}
           data-disabled={dataAttr(state.isDisabled())}
           data-readonly={dataAttr(state.isReadOnly())}
+          data-invalid={dataAttr(state.isValueInvalid())}
           data-dragging={dataAttr(state.isDragging())}
         >
+          <VisuallyHidden>
+            <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
+          </VisuallyHidden>
           {props.children}
         </div>
       </RangeCalendarContext.Provider>
@@ -413,6 +423,7 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
     isFocused: cellAria.isFocused,
     isDisabled: cellAria.isDisabled,
     isUnavailable: cellAria.isUnavailable,
+    isInvalid: cellAria.isInvalid,
     isOutsideMonth: cellAria.isOutsideMonth,
     isToday: cellAria.isToday,
     isPressed: cellAria.isPressed,
@@ -450,6 +461,7 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
         data-focused={dataAttr(cellAria.isFocused)}
         data-disabled={dataAttr(cellAria.isDisabled)}
         data-unavailable={dataAttr(cellAria.isUnavailable)}
+        data-invalid={dataAttr(cellAria.isInvalid)}
         data-outside-month={dataAttr(cellAria.isOutsideMonth)}
         data-today={dataAttr(cellAria.isToday)}
         data-pressed={dataAttr(cellAria.isPressed)}

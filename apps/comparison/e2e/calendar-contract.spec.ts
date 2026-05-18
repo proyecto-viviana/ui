@@ -126,7 +126,7 @@ test.describe("comparison Calendar route contract", () => {
     await expect(reactRoot).toHaveAttribute("data-comparison-value", "");
     await expect(solidRoot).toHaveAttribute("data-comparison-value", "");
     await expect(reactPanel.getByRole("application", { name: /Event date/i })).toBeVisible();
-    await expect(solidPanel.getByRole("group", { name: /Event date/i })).toBeVisible();
+    await expect(solidPanel.getByRole("application", { name: /Event date/i })).toBeVisible();
     await expect(reactPanel.getByRole("grid")).toBeVisible();
     await expect(solidPanel.getByRole("grid")).toBeVisible();
     await expect(reactRoot.locator('[data-selected], [aria-selected="true"]')).toHaveCount(0);
@@ -382,8 +382,17 @@ test.describe("comparison Calendar route contract", () => {
 
     await expect(reactPanel.getByRole("grid")).toHaveCount(2);
     await expect(solidPanel.getByRole("grid")).toHaveCount(2);
-    await expect(reactPanel.getByText("Date is unavailable.")).toBeVisible();
-    await expect(solidPanel.getByText("Date is unavailable.")).toBeVisible();
+    const reactError = reactPanel.getByText("Date is unavailable.");
+    const solidError = solidPanel.getByText("Date is unavailable.");
+    await expect(reactError).toBeVisible();
+    await expect(solidError).toBeVisible();
+
+    for (const panel of [reactPanel, solidPanel]) {
+      const selected = panel.getByRole("button", { name: /February 3, 2025/i }).first();
+      const errorId = await panel.getByText("Date is unavailable.").getAttribute("id");
+      await expect(selected).toHaveAttribute("aria-invalid", "true");
+      await expect(selected).toHaveAttribute("aria-describedby", errorId ?? "");
+    }
   });
 
   test("Calendar selection updates value and unavailable/read-only dates do not", async ({

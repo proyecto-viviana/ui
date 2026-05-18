@@ -11,6 +11,7 @@ import { focusSafely } from "../utils/focus";
 import { useLocale } from "../i18n";
 import type { CalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
+import { getCalendarHookData } from "./utils";
 
 export interface AriaCalendarCellProps {
   /** The date represented by the cell. */
@@ -34,6 +35,8 @@ export interface CalendarCellAria {
   isDisabled: boolean;
   /** Whether the cell is unavailable (e.g., booked date). */
   isUnavailable: boolean;
+  /** Whether the cell is part of an invalid selection. */
+  isInvalid: boolean;
   /** Whether the cell is outside the visible month. */
   isOutsideMonth: boolean;
   /** Whether the cell represents today. */
@@ -66,6 +69,7 @@ export function createCalendarCell<T extends CalendarState>(
   // Check states
   const isSelected = createMemo(() => state.isSelected(date()));
   const isFocused = createMemo(() => state.isCellFocused(date()));
+  const isInvalid = createMemo(() => state.isValueInvalid() && isSelected());
   const isDisabled = createMemo(() => {
     return getProps().isDisabled || state.isCellDisabled(date());
   });
@@ -140,6 +144,7 @@ export function createCalendarCell<T extends CalendarState>(
     role: "gridcell",
     "aria-disabled": isDisabled() || isUnavailable() || undefined,
     "aria-selected": isSelected() || undefined,
+    "aria-invalid": isInvalid() || undefined,
   }));
 
   // Button props (for the interactive element inside)
@@ -156,12 +161,15 @@ export function createCalendarCell<T extends CalendarState>(
     if (isSelected()) {
       label += " selected";
     }
+    const errorMessageId = getCalendarHookData(state)?.errorMessageId;
 
     return {
       role: "button",
       tabIndex: isFocused() ? 0 : -1,
       "aria-label": label,
       "aria-disabled": isDisabled() || isUnavailable() || undefined,
+      "aria-invalid": isInvalid() || undefined,
+      "aria-describedby": isInvalid() ? errorMessageId : undefined,
       "aria-pressed": isPressed() || undefined,
       disabled: isDisabled() || isUnavailable(),
       onClick: handleClick,
@@ -197,6 +205,9 @@ export function createCalendarCell<T extends CalendarState>(
     },
     get isUnavailable() {
       return isUnavailable();
+    },
+    get isInvalid() {
+      return isInvalid();
     },
     get isOutsideMonth() {
       return isOutsideMonth();

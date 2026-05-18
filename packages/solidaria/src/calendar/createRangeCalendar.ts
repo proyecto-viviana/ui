@@ -10,6 +10,7 @@ import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import type { RangeCalendarState } from "@proyecto-viviana/solid-stately";
+import { formatVisibleRangeDescription, setCalendarHookData } from "./utils";
 
 export interface AriaRangeCalendarProps {
   /** An ID for the calendar. */
@@ -24,6 +25,14 @@ export interface AriaRangeCalendarProps {
   "aria-labelledby"?: string;
   /** The ID of an element that describes the calendar. */
   "aria-describedby"?: string;
+  /** The ID of an element that provides additional details about the calendar. */
+  "aria-details"?: string;
+  /** Whether the current selection is invalid. */
+  isInvalid?: boolean;
+  /** Error message rendered for invalid selections. */
+  errorMessage?: string;
+  /** ID of the rendered error message element. */
+  errorMessageId?: string;
 }
 
 export interface RangeCalendarAria {
@@ -35,6 +44,8 @@ export interface RangeCalendarAria {
   nextButtonProps: Record<string, unknown>;
   /** Props for the title/heading element. */
   titleProps: Record<string, unknown>;
+  /** Props for the error message element, if any. */
+  errorMessageProps: Record<string, unknown>;
   /** An accessible label for the title. */
   title: string;
 }
@@ -49,9 +60,34 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   const getProps = () => access(props);
   const id = createId(getProps().id);
   const titleId = createId();
+  const errorMessageId = createId(getProps().errorMessageId);
 
   // Title (e.g., "December 2024")
   const title = createMemo(() => state.title());
+  const visibleRangeDescription = createMemo(() => {
+    const range = state.visibleRange();
+    return formatVisibleRangeDescription(range.start, range.end, state.timeZone, state.locale());
+  });
+  const calendarLabel = createMemo(() => {
+    const p = getProps();
+    return [p["aria-label"], visibleRangeDescription()].filter(Boolean).join(", ");
+  });
+
+  const initialProps = getProps();
+  if (
+    initialProps.id ||
+    initialProps["aria-label"] ||
+    initialProps["aria-labelledby"] ||
+    initialProps["aria-describedby"] ||
+    initialProps["aria-details"] ||
+    initialProps.errorMessage ||
+    initialProps.errorMessageId
+  ) {
+    setCalendarHookData(state, {
+      errorMessageId:
+        initialProps.errorMessage || initialProps.errorMessageId ? errorMessageId : undefined,
+    });
+  }
 
   // Previous button props
   const prevButtonProps = createMemo(() => {
@@ -92,6 +128,9 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     id: titleId,
     "aria-live": "polite" as const,
   }));
+  const errorMessageProps = createMemo(() => ({
+    id: errorMessageId,
+  }));
 
   // Calendar container props
   const calendarProps = createMemo(() => {
@@ -99,10 +138,11 @@ export function createRangeCalendar<T extends RangeCalendarState>(
 
     return mergeProps({
       id,
-      role: "group",
-      "aria-labelledby": p["aria-labelledby"] ?? titleId,
-      "aria-label": p["aria-label"],
+      role: "application",
+      "aria-labelledby": p["aria-labelledby"],
+      "aria-label": calendarLabel(),
       "aria-describedby": p["aria-describedby"],
+      "aria-details": p["aria-details"],
     });
   });
 
@@ -118,6 +158,9 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     },
     get titleProps() {
       return titleProps();
+    },
+    get errorMessageProps() {
+      return errorMessageProps();
     },
     get title() {
       return title();
