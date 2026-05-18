@@ -121,8 +121,14 @@ export type {
 } from "./breadcrumbs/index";
 
 // Calendar and date/time fields
-export { Calendar } from "./calendar";
-export type { CalendarDate, CalendarProps, CalendarSize, DateValue } from "./calendar";
+export { Calendar, CalendarContext } from "./calendar/index";
+export type {
+  CalendarDate,
+  CalendarFirstDayOfWeek,
+  CalendarProps,
+  CalendarSize,
+  DateValue,
+} from "./calendar/index";
 export { DateField } from "./calendar/DateField";
 export type { DateFieldProps, DateFieldSize } from "./calendar/DateField";
 export { DatePicker } from "./calendar/DatePicker";

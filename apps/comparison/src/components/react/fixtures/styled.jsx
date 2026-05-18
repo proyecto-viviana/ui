@@ -17,6 +17,7 @@ import {
   Breadcrumbs as SpectrumBreadcrumbs,
   Button as SpectrumButton,
   ButtonGroup as SpectrumButtonGroup,
+  Calendar as SpectrumCalendar,
   Card as SpectrumCard,
   CardView as SpectrumCardView,
   Checkbox as SpectrumCheckbox,
@@ -120,6 +121,16 @@ import {
   serializeBreadcrumbPath,
   serializeBreadcrumbsDemoProps,
 } from "@comparison/data/breadcrumbs-demo";
+import {
+  calendarDateFromString,
+  calendarDemoPropsFromWindow,
+  calendarMaxValue,
+  calendarMinValue,
+  comparisonControlsEvent as calendarControlsEvent,
+  isCalendarDateUnavailable,
+  normalizeCalendarDemoProps,
+  serializeCalendarDemoProps,
+} from "@comparison/data/calendar-demo";
 import {
   comparisonActionItems as actionItems,
   comparisonTabItems as tabItems,
@@ -464,6 +475,7 @@ export const reactStyledFixtures = {
   badge: () => jsx(ReactBadgeDemo, {}),
   breadcrumbs: () => jsx(ReactBreadcrumbsDemo, {}),
   buttongroup: () => jsx(ReactButtonGroupDemo, {}),
+  calendar: () => jsx(ReactCalendarDemo, {}),
   linkbutton: () => jsx(ReactLinkButtonDemo, {}),
   togglebutton: () => jsx(ReactToggleButtonDemo, {}),
   togglebuttongroup: () => jsx(ReactToggleButtonGroupDemo, {}),
@@ -2485,6 +2497,53 @@ function ReactRadioGroupDemo() {
         children: radioGroupItems.map((item) =>
           jsx(SpectrumRadio, { value: item.value, children: item.label }, item.value),
         ),
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactCalendarDemo() {
+  const [demoProps, setDemoProps] = useState(calendarDemoPropsFromWindow);
+  const [value, setValue] = useState(() =>
+    calendarDateFromString(calendarDemoPropsFromWindow().value),
+  );
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "calendar") {
+        const nextProps = normalizeCalendarDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(calendarDateFromString(nextProps.value));
+      }
+    };
+    window.addEventListener(calendarControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(calendarControlsEvent, handleControlsChange);
+  }, []);
+
+  const selectedValue = value ?? calendarDateFromString(demoProps.value);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "calendar",
+      "data-comparison-control-props": serializeCalendarDemoProps(demoProps),
+      "data-comparison-value": String(selectedValue),
+      "data-comparison-color-scheme": colorScheme,
+      children: jsx(SpectrumCalendar, {
+        "aria-label": "Appointment date",
+        value: selectedValue,
+        onChange: (nextValue) => setValue(nextValue),
+        minValue: demoProps.constrainRange ? calendarMinValue : undefined,
+        maxValue: demoProps.constrainRange ? calendarMaxValue : undefined,
+        isDateUnavailable: demoProps.unavailableDates ? isCalendarDateUnavailable : undefined,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isInvalid: demoProps.isInvalid,
+        errorMessage: demoProps.errorMessage,
+        firstDayOfWeek: demoProps.firstDayOfWeek,
+        visibleMonths: Number(demoProps.visibleMonths),
+        UNSAFE_className: "comparison-calendar-root",
       }),
     }),
     colorScheme,

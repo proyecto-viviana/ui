@@ -1805,6 +1805,38 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Focus containment, Escape dismissal, and Solid focus return are asserted.",
     },
   ],
+  calendar: [
+    {
+      id: "styled.calendar.default",
+      label: "Default selected date",
+      kind: "static",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "planned",
+      spec: "e2e/calendar-visual.spec.ts",
+      note: "Standalone Calendar route renders React Spectrum and Solid Spectrum controlled single-date grids with current visual evidence; strict React-vs-Solid pair diff remains planned.",
+    },
+    {
+      id: "styled.calendar.controls",
+      label: "Validation and display controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/calendar-contract.spec.ts",
+      note: "Modeled controls dispatch value, firstDayOfWeek, visibleMonths, min/max, unavailable, disabled, read-only, invalid, and error-message props into both stacks.",
+    },
+    {
+      id: "styled.calendar.select-date",
+      label: "Select date",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/calendar-contract.spec.ts",
+      note: "Selection updates the controlled value on both implementations, while read-only, disabled, and unavailable dates keep value immutable.",
+    },
+  ],
   datepicker: [
     {
       id: "styled.field.default",

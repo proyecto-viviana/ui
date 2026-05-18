@@ -117,7 +117,7 @@ export function createCalendarCell<T extends CalendarState>(
   // Cell props (for the td element)
   const cellProps = createMemo(() => ({
     role: "gridcell",
-    "aria-disabled": isDisabled() || undefined,
+    "aria-disabled": isDisabled() || isUnavailable() || undefined,
     "aria-selected": isSelected() || undefined,
   }));
 
@@ -135,9 +135,9 @@ export function createCalendarCell<T extends CalendarState>(
       role: "button",
       tabIndex: isFocused() ? 0 : -1,
       "aria-label": formatter.format(d.toDate(timeZone)),
-      "aria-disabled": isDisabled() || undefined,
+      "aria-disabled": isDisabled() || isUnavailable() || undefined,
       "aria-pressed": isPressed() || undefined,
-      disabled: isDisabled(),
+      disabled: isDisabled() || isUnavailable(),
       onClick: handleClick,
       onPointerDown: handlePointerDown,
       onPointerUp: handlePointerUp,

@@ -33,6 +33,11 @@ import {
   breadcrumbsSizeOptions,
 } from "./breadcrumbs-demo";
 import {
+  calendarDemoDefaults,
+  calendarFirstDayOfWeekOptions,
+  calendarVisibleMonthsOptions,
+} from "./calendar-demo";
+import {
   buttonDemoDefaults,
   buttonFillStyleOptions,
   buttonIconPlacementOptions,
@@ -2307,6 +2312,98 @@ const datePickerControls: ComponentControlGroup = {
   note: "Modeled from the S2 DatePicker docs control surface for label, size, validation, disabled, required, and help text. Calendar paging, date availability, time granularity, and multi-month popover states remain dedicated visual/behavior route states.",
 };
 
+const calendarControls: ComponentControlGroup = {
+  slug: "calendar",
+  title: "Calendar",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: calendarDemoDefaults.value,
+    },
+    {
+      name: "firstDayOfWeek",
+      label: "firstDayOfWeek",
+      kind: "select",
+      defaultValue: calendarDemoDefaults.firstDayOfWeek,
+      options: options(calendarFirstDayOfWeekOptions),
+    },
+    {
+      name: "visibleMonths",
+      label: "visibleMonths",
+      kind: "radio",
+      defaultValue: calendarDemoDefaults.visibleMonths,
+      options: options(calendarVisibleMonthsOptions),
+    },
+    {
+      name: "constrainRange",
+      label: "minValue/maxValue",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "unavailableDates",
+      label: "isDateUnavailable",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: calendarDemoDefaults.errorMessage,
+    },
+  ],
+  apiProps: [
+    "value",
+    "defaultValue",
+    "onChange",
+    "focusedValue",
+    "defaultFocusedValue",
+    "onFocusChange",
+    "minValue",
+    "maxValue",
+    "isDateUnavailable",
+    "isDisabled",
+    "isReadOnly",
+    "isInvalid",
+    "errorMessage",
+    "firstDayOfWeek",
+    "visibleMonths",
+    "pageBehavior",
+    "selectionAlignment",
+    "createCalendar",
+    "autoFocus",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 Calendar docs for controlled value, focusable grid selection, min/max and unavailable validation, disabled/read-only/invalid states, first day of week, and one- or two-month rendering. Custom calendar creation, page behavior, and selection alignment remain source-level follow-ups.",
+};
+
 const actionButtonControls: ComponentControlGroup = {
   slug: "actionbutton",
   title: "ActionButton",
@@ -2897,6 +2994,7 @@ export const componentControlGroups = {
   breadcrumbs: breadcrumbsControls,
   button: buttonControls,
   buttongroup: buttonGroupControls,
+  calendar: calendarControls,
   checkbox: checkboxControls,
   checkboxgroup: checkboxGroupControls,
   combobox: comboBoxControls,

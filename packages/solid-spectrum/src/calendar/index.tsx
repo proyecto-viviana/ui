@@ -1,38 +1,82 @@
 // @ts-nocheck
-import { type JSX, splitProps } from "solid-js";
+import {
+  type JSX,
+  For,
+  Show,
+  createContext,
+  createUniqueId,
+  mergeProps,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   Calendar as HeadlessCalendar,
-  CalendarHeading,
   CalendarButton,
   CalendarGrid,
   CalendarCell,
+  useCalendarContext,
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
 import type { CalendarStateProps } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, lightDark, setColorScheme, style } from "../s2-style";
+import {
+  baseColor,
+  focusRing,
+  lightDark,
+  setColorScheme,
+  style,
+  type StyleString,
+} from "../s2-style";
 import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
 import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { useProviderProps } from "../provider";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type CalendarSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "xl";
 type NormalizedCalendarSize = "sm" | "md" | "lg" | "xl";
+export type CalendarFirstDayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 
 export interface CalendarProps<T extends DateValue = DateValue> extends Omit<
   CalendarStateProps<T>,
-  "locale"
+  "locale" | "firstDayOfWeek" | "validationState"
 > {
   /** The size of the calendar. @default 'md' */
   size?: CalendarSize;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString | (() => StyleString | undefined);
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
   /** Additional CSS class name. */
   class?: string;
   /** Whether to show week numbers. */
   showWeekNumbers?: boolean;
   /** The locale to use for formatting. */
   locale?: string;
+  /** The day that starts the week. */
+  firstDayOfWeek?: CalendarFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Whether the current selection is invalid according to application logic. */
+  isInvalid?: boolean;
+  /** Validation state for backward-compatible Solid Stately callers. */
+  validationState?: CalendarStateProps<T>["validationState"];
+  /** The error message to display when the calendar is invalid. */
+  errorMessage?: JSX.Element;
   /** Custom aria label. */
   "aria-label"?: string;
+  slot?: string | null;
+  ref?: RefLike<HTMLDivElement>;
 }
+
+export const CalendarContext = createContext<SpectrumContextValue<CalendarProps<any>>>(null);
 
 const sizeStyles: Record<NormalizedCalendarSize, { cellMaxWidth: number; buttonSize: number }> = {
   sm: {
@@ -78,10 +122,43 @@ function normalizeCalendarSize(size: CalendarSize | undefined): NormalizedCalend
   }
 }
 
-const calendarRoot = style<{ cellMaxWidth: number }>({
+function normalizeFirstDayOfWeek(
+  firstDayOfWeek: CalendarFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined,
+): 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined {
+  switch (firstDayOfWeek) {
+    case "sun":
+      return 0;
+    case "mon":
+      return 1;
+    case "tue":
+      return 2;
+    case "wed":
+      return 3;
+    case "thu":
+      return 4;
+    case "fri":
+      return 5;
+    case "sat":
+      return 6;
+    default:
+      return firstDayOfWeek;
+  }
+}
+
+function monthTitle(date: CalendarDate, locale: string | undefined, timeZone: string): string {
+  return new Intl.DateTimeFormat(locale ?? "en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(date.toDate(timeZone));
+}
+
+const calendarRoot = style<{ isMultiMonth?: boolean }>({
   ...setColorScheme(),
   display: "flex",
-  containerType: "inline-size",
+  containerType: {
+    default: "inline-size",
+    isMultiMonth: "normal",
+  },
   flexDirection: "column",
   gap: 24,
   disableTapHighlight: true,
@@ -93,7 +170,10 @@ const calendarRoot = style<{ cellMaxWidth: number }>({
     type: "width",
     value: "[min(var(--s2-calendar-cell-max-width), (100cqw - (var(--cell-gap) * 12)) / 7)]",
   },
-  width: "[calc(7 * var(--s2-calendar-cell-max-width) + var(--cell-gap) * 12)]",
+  width: {
+    default: "[calc(7 * var(--s2-calendar-cell-max-width) + var(--cell-gap) * 12)]",
+    isMultiMonth: "[max-content]",
+  },
 });
 
 const calendarHeader = style({
@@ -102,12 +182,24 @@ const calendarHeader = style({
   justifyContent: "space-between",
 });
 
-const calendarHeading = style({
+const calendarHeading = style<{ isMultiMonth?: boolean }>({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   margin: 0,
   flexGrow: 1,
+  minWidth: 0,
+});
+
+const calendarTitleRow = style<{ isMultiMonth?: boolean }>({
+  display: "grid",
+  gridTemplateColumns: {
+    default: "1fr",
+    isMultiMonth: "[repeat(var(--s2-calendar-visible-months), minmax(0, 1fr))]",
+  },
+  gap: 24,
+  flexGrow: 1,
+  flexShrink: 0,
 });
 
 const calendarTitleStyle: JSX.CSSProperties = {
@@ -120,6 +212,17 @@ const calendarTitleStyle: JSX.CSSProperties = {
   "flex-grow": 1,
   "flex-shrink": 0,
 };
+
+const calendarMonths = style<{ isMultiMonth?: boolean }>({
+  display: "flex",
+  flexDirection: "row",
+  gap: {
+    default: 0,
+    isMultiMonth: 24,
+  },
+  alignItems: "start",
+  width: "[max-content]",
+});
 
 const calendarNavButton = style<{ buttonSize: number }>({
   ...focusRing(),
@@ -189,6 +292,7 @@ const calendarCell = style<{
   isOutsideMonth?: boolean;
   isPressed?: boolean;
   isHovered?: boolean;
+  isUnavailable?: boolean;
   isFirstChild?: boolean;
   isLastChild?: boolean;
   isFirstWeek?: boolean;
@@ -255,6 +359,7 @@ const calendarCell = style<{
     default: baseColor("neutral"),
     isSelected: "white",
     isDisabled: "disabled",
+    isUnavailable: "disabled",
     forcedColors: {
       default: "ButtonText",
       isSelected: "HighlightText",
@@ -285,25 +390,129 @@ const calendarNavIcon = style({
   },
 });
 
+const calendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
+  display: "flex",
+  margin: 0,
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: "body-sm",
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+});
+
+function CalendarHeading(props: { visibleMonths: number; locale?: string }): JSX.Element {
+  const state = useCalendarContext();
+  const months = () =>
+    Array.from({ length: props.visibleMonths }, (_, index) =>
+      monthTitle(state.visibleRange().start.add({ months: index }), props.locale, state.timeZone),
+    );
+
+  return (
+    <h2 aria-live="polite" class={calendarHeading}>
+      <div
+        class={calendarTitleRow({ isMultiMonth: props.visibleMonths > 1 })}
+        style={{ "--s2-calendar-visible-months": props.visibleMonths }}
+      >
+        <For each={months()}>{(title) => <div style={calendarTitleStyle}>{title}</div>}</For>
+      </div>
+    </h2>
+  );
+}
+
 /**
  * A calendar displays a grid of days and allows users to select a date.
  */
 export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, rest] = splitProps(mergedProps, ["size", "class", "showWeekNumbers", "aria-label"]);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(CalendarContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const [local, rest] = splitProps(mergedProps, [
+    "size",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "showWeekNumbers",
+    "aria-label",
+    "firstDayOfWeek",
+    "isInvalid",
+    "validationState",
+    "errorMessage",
+    "visibleMonths",
+    "locale",
+    "slot",
+    "ref",
+  ]);
 
   const size = () => normalizeCalendarSize(local.size);
   const sizeConfig = () => sizeStyles[size()];
+  const visibleMonths = () => Math.max(1, Number(local.visibleMonths ?? 1));
+  const validationState = () =>
+    typeof local.validationState === "function" ? local.validationState() : local.validationState;
+  const isInvalid = () => local.isInvalid || validationState() === "invalid";
+  const errorMessageId = createUniqueId();
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
+  const rootStyle = () => ({
+    ...(mergedUnsafeStyle() ?? {}),
+    "--cell-gap": "4px",
+    "--cell-max-width": `${sizeConfig().cellMaxWidth}px`,
+    "--cell-responsive-size":
+      visibleMonths() > 1
+        ? "var(--cell-max-width)"
+        : "min(var(--cell-max-width), (100cqw - (var(--cell-gap) * 12)) / 7)",
+    "--s2-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
+    "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
+    "--s2-calendar-visible-months": visibleMonths(),
+    width:
+      visibleMonths() > 1
+        ? "max-content"
+        : "calc(7 * var(--cell-max-width) + var(--cell-gap) * 12)",
+    "max-width": visibleMonths() > 1 ? "unset" : "100%",
+  });
+  const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
+  const describedBy = () => {
+    if (!isInvalid() || !local.errorMessage) {
+      return rest["aria-describedby"];
+    }
+
+    const existing = rest["aria-describedby"];
+    return existing ? `${existing} ${errorMessageId}` : errorMessageId;
+  };
 
   return (
     <HeadlessCalendar
       {...rest}
+      ref={(element: HTMLDivElement) => assignRef(element)}
       aria-label={local["aria-label"]}
-      class={`${calendarRoot({ cellMaxWidth: sizeConfig().cellMaxWidth })} ${local.class ?? ""}`}
-      style={{
-        "--s2-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-        "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
-      }}
+      aria-describedby={describedBy()}
+      firstDayOfWeek={normalizeFirstDayOfWeek(local.firstDayOfWeek)}
+      validationState={isInvalid() ? "invalid" : validationState()}
+      visibleMonths={visibleMonths()}
+      locale={local.locale}
+      class={[
+        contextProps?.UNSAFE_className,
+        local.UNSAFE_className,
+        local.class,
+        calendarRoot({ isMultiMonth: visibleMonths() > 1 }, mergedStyles()),
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={rootStyle()}
     >
       <header class={calendarHeader}>
         <CalendarButton
@@ -317,9 +526,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
           <ChevronLeftIcon styles={calendarNavIcon} />
         </CalendarButton>
 
-        <CalendarHeading class={calendarHeading}>
-          {({ title }) => <div style={calendarTitleStyle}>{title}</div>}
-        </CalendarHeading>
+        <CalendarHeading visibleMonths={visibleMonths()} locale={local.locale} />
 
         <CalendarButton
           slot="next"
@@ -333,56 +540,74 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
         </CalendarButton>
       </header>
 
-      <CalendarGrid
-        class={calendarGrid}
-        style={{
-          width: `${sizeConfig().cellMaxWidth * 7}px`,
-          "table-layout": "fixed",
-        }}
-        weekdayStyle="narrow"
-        headerCellClass={calendarHeaderCell({})}
-      >
-        {(date) => (
-          <CalendarCell
-            date={date}
-            cellClass={calendarCellWrapper}
-            cellStyle={() => cellBoxStyle(size())}
-            style={() => cellBoxStyle(size())}
-            class={({
-              isSelected,
-              isFocused,
-              isDisabled,
-              isOutsideMonth,
-              isPressed,
-              isHovered,
-              isFirstChild,
-              isLastChild,
-              isFirstWeek,
-              isLastWeek,
-            }) =>
-              calendarCell({
-                isSelected,
-                isFocused,
-                isDisabled,
-                isOutsideMonth,
-                isPressed,
-                isHovered,
-                isFirstChild,
-                isLastChild,
-                isFirstWeek,
-                isLastWeek,
-              })
-            }
-          >
-            {({ formattedDate, isToday }) => (
-              <>
-                <div class={calendarTodayDot({ isToday })} role="presentation" />
-                <span>{formattedDate}</span>
-              </>
-            )}
-          </CalendarCell>
-        )}
-      </CalendarGrid>
+      <div class={calendarMonths({ isMultiMonth: visibleMonths() > 1 })}>
+        <For each={monthOffsets()}>
+          {(offset) => (
+            <CalendarGrid
+              class={calendarGrid}
+              style={{
+                width: `${sizeConfig().cellMaxWidth * 7}px`,
+                "table-layout": "fixed",
+              }}
+              weekdayStyle="narrow"
+              headerCellClass={calendarHeaderCell({})}
+              offset={offset === 0 ? undefined : { months: offset }}
+            >
+              {(date) => (
+                <CalendarCell
+                  date={date}
+                  cellClass={calendarCellWrapper}
+                  cellStyle={() => cellBoxStyle(size())}
+                  style={() => cellBoxStyle(size())}
+                  class={({
+                    isSelected,
+                    isFocused,
+                    isDisabled,
+                    isUnavailable,
+                    isOutsideMonth,
+                    isPressed,
+                    isHovered,
+                    isFirstChild,
+                    isLastChild,
+                    isFirstWeek,
+                    isLastWeek,
+                  }) =>
+                    calendarCell({
+                      isSelected,
+                      isFocused,
+                      isDisabled,
+                      isUnavailable,
+                      isOutsideMonth,
+                      isPressed,
+                      isHovered,
+                      isFirstChild,
+                      isLastChild,
+                      isFirstWeek,
+                      isLastWeek,
+                    })
+                  }
+                >
+                  {({ formattedDate, isToday }) => (
+                    <>
+                      <div class={calendarTodayDot({ isToday })} role="presentation" />
+                      <span>{formattedDate}</span>
+                    </>
+                  )}
+                </CalendarCell>
+              )}
+            </CalendarGrid>
+          )}
+        </For>
+      </div>
+
+      <Show when={isInvalid() && local.errorMessage}>
+        <p
+          id={errorMessageId}
+          class={calendarHelpText({ isInvalid: true, isDisabled: Boolean(rest.isDisabled) })}
+        >
+          {local.errorMessage}
+        </p>
+      </Show>
     </HeadlessCalendar>
   );
 }

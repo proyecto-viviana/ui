@@ -46,6 +46,12 @@
       "import": "./dist/Breadcrumbs.js",
       "default": "./dist/Breadcrumbs.js"
     },
+    "./Calendar": {
+      "types": "./dist/Calendar.d.ts",
+      "solid": "./src/Calendar.ts",
+      "import": "./dist/Calendar.js",
+      "default": "./dist/Calendar.js"
+    },
     "./Menu": {
       "types": "./dist/Menu.d.ts",
       "solid": "./src/Menu.ts",

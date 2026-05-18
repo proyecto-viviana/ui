@@ -27,6 +27,7 @@ import {
   Breadcrumbs as SolidSpectrumBreadcrumbs,
   Button as SolidSpectrumButton,
   ButtonGroup as SolidSpectrumButtonGroup,
+  Calendar as SolidSpectrumCalendar,
   Card as SolidSpectrumCard,
   CardView as SolidSpectrumCardView,
   Checkbox as SolidSpectrumCheckbox,
@@ -133,6 +134,17 @@ import {
   type BreadcrumbsDemoProps,
   type BreadcrumbsItem,
 } from "@comparison/data/breadcrumbs-demo";
+import {
+  calendarDateFromString,
+  calendarDemoPropsFromWindow,
+  calendarMaxValue,
+  calendarMinValue,
+  comparisonControlsEvent as calendarControlsEvent,
+  isCalendarDateUnavailable,
+  normalizeCalendarDemoProps,
+  serializeCalendarDemoProps,
+  type CalendarDemoProps,
+} from "@comparison/data/calendar-demo";
 import {
   buttonDemoLocaleFromWindow,
   buttonDemoPropsFromWindow,
@@ -587,6 +599,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   badge: () => h(SolidSpectrumBadgeDemo, {}),
   breadcrumbs: () => h(SolidSpectrumBreadcrumbsDemo, {}),
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
+  calendar: () => h(SolidSpectrumCalendarDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
@@ -2405,6 +2418,107 @@ function SolidSpectrumCheckboxGroupDemo() {
               hc(SolidSpectrumCheckbox, { value: item.value }, [item.label]),
             ),
           ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumCalendarDemo() {
+  const [demoProps, setDemoProps] = createSignal<CalendarDemoProps>(calendarDemoPropsFromWindow());
+  const [value, setValue] = createSignal(
+    calendarDateFromString(calendarDemoPropsFromWindow().value),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "calendar") {
+        const nextProps = normalizeCalendarDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(() => calendarDateFromString(nextProps.value));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(calendarControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(calendarControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeCalendarDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-value"() {
+            return String(value());
+          },
+          "data-comparison-control-root": "calendar",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(SolidSpectrumCalendar, {
+            class: "comparison-calendar-root",
+            "aria-label": "Appointment date",
+            get value() {
+              return value();
+            },
+            onChange: (nextValue) => {
+              setValue(() => nextValue);
+            },
+            get minValue() {
+              return demoProps().constrainRange ? calendarMinValue : undefined;
+            },
+            get maxValue() {
+              return demoProps().constrainRange ? calendarMaxValue : undefined;
+            },
+            get isDateUnavailable() {
+              return demoProps().unavailableDates ? isCalendarDateUnavailable : undefined;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get firstDayOfWeek() {
+              return demoProps().firstDayOfWeek;
+            },
+            get visibleMonths() {
+              return Number(demoProps().visibleMonths);
+            },
+          }),
         ],
       ),
     ],
