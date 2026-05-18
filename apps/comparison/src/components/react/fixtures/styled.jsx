@@ -126,6 +126,7 @@ import {
   calendarDemoPropsFromWindow,
   calendarMaxValue,
   calendarMinValue,
+  calendarVisibleMonthsFromString,
   comparisonControlsEvent as calendarControlsEvent,
   isCalendarDateUnavailable,
   normalizeCalendarDemoProps,
@@ -2513,38 +2514,49 @@ function ReactCalendarDemo() {
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "calendar") {
-        const nextProps = normalizeCalendarDemoProps(event.detail.props ?? {});
-        setDemoProps(nextProps);
-        setValue(calendarDateFromString(nextProps.value));
+        setDemoProps((currentProps) => {
+          const nextProps = normalizeCalendarDemoProps({
+            ...currentProps,
+            ...(event.detail.props ?? {}),
+          });
+          setValue(calendarDateFromString(nextProps.value));
+          return nextProps;
+        });
       }
     };
     window.addEventListener(calendarControlsEvent, handleControlsChange);
     return () => window.removeEventListener(calendarControlsEvent, handleControlsChange);
   }, []);
 
-  const selectedValue = value ?? calendarDateFromString(demoProps.value);
+  const selectedValue = value;
+  const visibleMonths = calendarVisibleMonthsFromString(demoProps.visibleMonths);
+  const calendarProps = {
+    "aria-label": "Event date",
+    onChange: (nextValue) => setValue(nextValue),
+    minValue: demoProps.constrainRange ? calendarMinValue : undefined,
+    maxValue: demoProps.constrainRange ? calendarMaxValue : undefined,
+    isDateUnavailable: demoProps.unavailableDates ? isCalendarDateUnavailable : undefined,
+    isDisabled: demoProps.isDisabled,
+    isReadOnly: demoProps.isReadOnly,
+    isInvalid: demoProps.isInvalid,
+    errorMessage: demoProps.errorMessage,
+    firstDayOfWeek: demoProps.firstDayOfWeek || undefined,
+    visibleMonths,
+    pageBehavior: demoProps.pageBehavior || undefined,
+    UNSAFE_className: "comparison-calendar-root",
+  };
+
+  if (selectedValue) {
+    calendarProps.value = selectedValue;
+  }
 
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-control-root": "calendar",
       "data-comparison-control-props": serializeCalendarDemoProps(demoProps),
-      "data-comparison-value": String(selectedValue),
+      "data-comparison-value": selectedValue ? String(selectedValue) : "",
       "data-comparison-color-scheme": colorScheme,
-      children: jsx(SpectrumCalendar, {
-        "aria-label": "Appointment date",
-        value: selectedValue,
-        onChange: (nextValue) => setValue(nextValue),
-        minValue: demoProps.constrainRange ? calendarMinValue : undefined,
-        maxValue: demoProps.constrainRange ? calendarMaxValue : undefined,
-        isDateUnavailable: demoProps.unavailableDates ? isCalendarDateUnavailable : undefined,
-        isDisabled: demoProps.isDisabled,
-        isReadOnly: demoProps.isReadOnly,
-        isInvalid: demoProps.isInvalid,
-        errorMessage: demoProps.errorMessage,
-        firstDayOfWeek: demoProps.firstDayOfWeek,
-        visibleMonths: Number(demoProps.visibleMonths),
-        UNSAFE_className: "comparison-calendar-root",
-      }),
+      children: jsx(SpectrumCalendar, calendarProps),
     }),
     colorScheme,
   );

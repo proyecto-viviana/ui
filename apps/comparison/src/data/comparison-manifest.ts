@@ -217,10 +217,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "Calendar",
     category: "Components",
     summary:
-      "Single-date Calendar route mounted on both stacks with controlled value, min/max and unavailable-date validation, disabled/read-only/invalid states, first-day-of-week control, and one- or two-month rendering.",
+      "Single-date Calendar route mounted on both stacks with the official viewer controls plus route-testable value, validation, unavailable-date, and immutable states.",
     styledSummary: "React Spectrum Calendar vs Solid Spectrum Calendar.",
     styledNote:
-      "React uses @react-spectrum/s2 Calendar directly; Solid uses @proyecto-viviana/solid-spectrum with the public Calendar subpath, CalendarContext export, S2 firstDayOfWeek string normalization, invalid error text, and multi-month grid composition. Custom calendar creation, page behavior, and selection alignment remain tracked source-level follow-ups.",
+      "React uses @react-spectrum/s2 Calendar directly; Solid uses @proyecto-viviana/solid-spectrum with the public Calendar subpath, CalendarContext export, S2 firstDayOfWeek string normalization, invalid error text, multi-month grid composition, and pageBehavior/selectionAlignment state support. Custom createCalendar and strict pair diff remain tracked gaps.",
   }),
 
   provider: {

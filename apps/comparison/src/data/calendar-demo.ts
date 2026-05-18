@@ -3,16 +3,28 @@ import { comparisonControlsEvent } from "./button-demo";
 
 export { comparisonControlsEvent };
 
-export const calendarFirstDayOfWeekOptions = ["sun", "mon", "sat"] as const;
-export const calendarVisibleMonthsOptions = ["1", "2"] as const;
+export const calendarFirstDayOfWeekOptions = [
+  "",
+  "sun",
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+] as const;
+export const calendarVisibleMonthsOptions = ["", "1", "2", "3"] as const;
+export const calendarPageBehaviorOptions = ["", "single", "visible"] as const;
 
 export type CalendarDemoFirstDayOfWeek = (typeof calendarFirstDayOfWeekOptions)[number];
 export type CalendarDemoVisibleMonths = (typeof calendarVisibleMonthsOptions)[number];
+export type CalendarDemoPageBehavior = (typeof calendarPageBehaviorOptions)[number];
 
 export interface CalendarDemoProps {
   value: string;
   firstDayOfWeek: CalendarDemoFirstDayOfWeek;
   visibleMonths: CalendarDemoVisibleMonths;
+  pageBehavior: CalendarDemoPageBehavior;
   constrainRange: boolean;
   unavailableDates: boolean;
   isDisabled: boolean;
@@ -22,9 +34,10 @@ export interface CalendarDemoProps {
 }
 
 export const calendarDemoDefaults: CalendarDemoProps = {
-  value: "2025-02-03",
-  firstDayOfWeek: "sun",
-  visibleMonths: "1",
+  value: "",
+  firstDayOfWeek: "",
+  visibleMonths: "",
+  pageBehavior: "",
   constrainRange: false,
   unavailableDates: false,
   isDisabled: false,
@@ -44,12 +57,22 @@ function booleanParam(value: string | null | undefined) {
   return value === "true" || value === "on" || value === "1";
 }
 
-export function calendarDateFromString(value: string): DateValue {
+export function calendarDateFromString(value: string): DateValue | null {
+  if (!value) {
+    return null;
+  }
+
   try {
     return parseDate(value);
   } catch {
-    return parseDate(calendarDemoDefaults.value);
+    return null;
   }
+}
+
+export function calendarVisibleMonthsFromString(
+  value: CalendarDemoVisibleMonths,
+): number | undefined {
+  return value ? Number(value) : undefined;
 }
 
 export const calendarMinValue = parseDate("2025-02-03");
@@ -69,6 +92,9 @@ export function normalizeCalendarDemoProps(props: Partial<CalendarDemoProps>): C
     visibleMonths: isOneOf(props.visibleMonths, calendarVisibleMonthsOptions)
       ? props.visibleMonths
       : calendarDemoDefaults.visibleMonths,
+    pageBehavior: isOneOf(props.pageBehavior, calendarPageBehaviorOptions)
+      ? props.pageBehavior
+      : calendarDemoDefaults.pageBehavior,
     constrainRange: props.constrainRange === true,
     unavailableDates: props.unavailableDates === true,
     isDisabled: props.isDisabled === true,
@@ -85,6 +111,7 @@ export function calendarDemoPropsFromSearch(search: string): CalendarDemoProps {
   const params = new URLSearchParams(search);
   const firstDayOfWeek = params.get("firstDayOfWeek");
   const visibleMonths = params.get("visibleMonths");
+  const pageBehavior = params.get("pageBehavior");
 
   return normalizeCalendarDemoProps({
     value: params.get("value") || calendarDemoDefaults.value,
@@ -94,6 +121,9 @@ export function calendarDemoPropsFromSearch(search: string): CalendarDemoProps {
     visibleMonths: isOneOf(visibleMonths, calendarVisibleMonthsOptions)
       ? visibleMonths
       : calendarDemoDefaults.visibleMonths,
+    pageBehavior: isOneOf(pageBehavior, calendarPageBehaviorOptions)
+      ? pageBehavior
+      : calendarDemoDefaults.pageBehavior,
     constrainRange: booleanParam(params.get("constrainRange")),
     unavailableDates: booleanParam(params.get("unavailableDates")),
     isDisabled: booleanParam(params.get("isDisabled")),
@@ -116,6 +146,7 @@ export function serializeCalendarDemoProps(props: CalendarDemoProps) {
     value: props.value,
     firstDayOfWeek: props.firstDayOfWeek,
     visibleMonths: props.visibleMonths,
+    pageBehavior: props.pageBehavior,
     constrainRange: props.constrainRange,
     unavailableDates: props.unavailableDates,
     isDisabled: props.isDisabled,

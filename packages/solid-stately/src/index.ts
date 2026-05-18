@@ -162,6 +162,8 @@ export {
   type CalendarStateProps,
   type CalendarState,
   type ValidationState,
+  type CalendarPageBehavior,
+  type CalendarSelectionAlignment,
   createRangeCalendarState,
   type RangeCalendarStateProps,
   type RangeCalendarState,

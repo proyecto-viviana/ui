@@ -3,6 +3,8 @@ export {
   type CalendarStateProps,
   type CalendarState,
   type ValidationState,
+  type CalendarPageBehavior,
+  type CalendarSelectionAlignment,
 } from "./createCalendarState";
 
 export {

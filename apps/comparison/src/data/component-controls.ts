@@ -35,6 +35,7 @@ import {
 import {
   calendarDemoDefaults,
   calendarFirstDayOfWeekOptions,
+  calendarPageBehaviorOptions,
   calendarVisibleMonthsOptions,
 } from "./calendar-demo";
 import {
@@ -147,6 +148,10 @@ export interface ComponentControlGroup {
 
 function options(values: readonly string[]): ComponentControlOption[] {
   return values.map((value) => ({ value, label: value }));
+}
+
+function defaultableOptions(values: readonly string[]): ComponentControlOption[] {
+  return values.map((value) => ({ value, label: value || "Default" }));
 }
 
 const buttonControls: ComponentControlGroup = {
@@ -2318,60 +2323,31 @@ const calendarControls: ComponentControlGroup = {
   coverage: "modeled",
   controls: [
     {
-      name: "value",
-      label: "value",
-      kind: "text",
-      defaultValue: calendarDemoDefaults.value,
+      name: "visibleMonths",
+      label: "visibleMonths",
+      kind: "select",
+      defaultValue: calendarDemoDefaults.visibleMonths,
+      options: defaultableOptions(calendarVisibleMonthsOptions),
+    },
+    {
+      name: "pageBehavior",
+      label: "pageBehavior",
+      kind: "select",
+      defaultValue: calendarDemoDefaults.pageBehavior,
+      options: defaultableOptions(calendarPageBehaviorOptions),
     },
     {
       name: "firstDayOfWeek",
       label: "firstDayOfWeek",
       kind: "select",
       defaultValue: calendarDemoDefaults.firstDayOfWeek,
-      options: options(calendarFirstDayOfWeekOptions),
-    },
-    {
-      name: "visibleMonths",
-      label: "visibleMonths",
-      kind: "radio",
-      defaultValue: calendarDemoDefaults.visibleMonths,
-      options: options(calendarVisibleMonthsOptions),
-    },
-    {
-      name: "constrainRange",
-      label: "minValue/maxValue",
-      kind: "switch",
-      defaultValue: false,
-    },
-    {
-      name: "unavailableDates",
-      label: "isDateUnavailable",
-      kind: "switch",
-      defaultValue: false,
+      options: defaultableOptions(calendarFirstDayOfWeekOptions),
     },
     {
       name: "isDisabled",
       label: "isDisabled",
       kind: "switch",
-      defaultValue: false,
-    },
-    {
-      name: "isReadOnly",
-      label: "isReadOnly",
-      kind: "switch",
-      defaultValue: false,
-    },
-    {
-      name: "isInvalid",
-      label: "isInvalid",
-      kind: "switch",
-      defaultValue: false,
-    },
-    {
-      name: "errorMessage",
-      label: "errorMessage",
-      kind: "text",
-      defaultValue: calendarDemoDefaults.errorMessage,
+      defaultValue: calendarDemoDefaults.isDisabled,
     },
   ],
   apiProps: [
@@ -2401,7 +2377,7 @@ const calendarControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 Calendar docs for controlled value, focusable grid selection, min/max and unavailable validation, disabled/read-only/invalid states, first day of week, and one- or two-month rendering. Custom calendar creation, page behavior, and selection alignment remain source-level follow-ups.",
+  note: "Modeled from the live S2 Calendar docs viewer controls: visibleMonths, pageBehavior, firstDayOfWeek, and isDisabled. Validation, unavailable-date, read-only, and controlled-value states remain route-testable docs/API examples rather than official side-panel controls.",
 };
 
 const actionButtonControls: ComponentControlGroup = {

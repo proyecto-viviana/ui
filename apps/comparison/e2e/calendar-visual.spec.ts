@@ -2,9 +2,25 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
 import { clearPointer, pinComparisonTheme, type ComparisonColorScheme } from "./visual-diff";
 
-async function calendarFixtures(page: Page, theme: ComparisonColorScheme = "dark") {
+function calendarQuery(params: Record<string, string> = {}) {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value) {
+      search.set(key, value);
+    }
+  }
+
+  const query = search.toString();
+  return query ? `?${query}` : "";
+}
+
+async function calendarFixtures(
+  page: Page,
+  theme: ComparisonColorScheme = "dark",
+  params: Record<string, string> = {},
+) {
   await pinComparisonTheme(page, theme);
-  await page.goto("/components/calendar/");
+  await page.goto(`/components/calendar/${calendarQuery(params)}`);
   await waitForComparisonRouteReady(page);
   await clearPointer(page);
 
@@ -63,7 +79,7 @@ async function calendarVisualContract(root: Locator) {
 }
 
 test.describe("comparison Calendar visual coverage", () => {
-  test("Calendar default surface renders a selected S2 grid in light and dark themes", async ({
+  test("Calendar official default renders an unselected S2 grid in light and dark themes", async ({
     page,
   }) => {
     for (const theme of ["light", "dark"] as const) {
@@ -72,16 +88,32 @@ test.describe("comparison Calendar visual coverage", () => {
       const react = await calendarVisualContract(reactRoot);
       const solid = await calendarVisualContract(solidRoot);
 
-      expect(react.headingText).toContain("February 2025");
-      expect(solid.headingText).toContain("February 2025");
       expect(react.gridColumnCount).toBe(7);
       expect(solid.gridColumnCount).toBe(7);
-      expect(react.selectedText).toBe("3");
-      expect(solid.selectedText).toBe("3");
+      expect(react.selectedText).toBeNull();
+      expect(solid.selectedText).toBeNull();
       expect(react.gridWidth).toBeGreaterThan(180);
       expect(solid.gridWidth).toBeGreaterThan(180);
       expect(react.gridHeight).toBeGreaterThan(150);
       expect(solid.gridHeight).toBeGreaterThan(150);
+    }
+  });
+
+  test("Calendar controlled selected state paints the selected date in light and dark themes", async ({
+    page,
+  }) => {
+    for (const theme of ["light", "dark"] as const) {
+      const { reactRoot, solidRoot } = await calendarFixtures(page, theme, {
+        value: "2025-02-03",
+      });
+
+      const react = await calendarVisualContract(reactRoot);
+      const solid = await calendarVisualContract(solidRoot);
+
+      expect(react.headingText).toContain("February 2025");
+      expect(solid.headingText).toContain("February 2025");
+      expect(react.selectedText).toBe("3");
+      expect(solid.selectedText).toBe("3");
       expect(react.selectedBackground).not.toBe("rgba(0, 0, 0, 0)");
       expect(solid.selectedBackground).not.toBe("rgba(0, 0, 0, 0)");
       expect(react.selectedColor).not.toBe(react.selectedBackground);

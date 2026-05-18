@@ -139,6 +139,7 @@ import {
   calendarDemoPropsFromWindow,
   calendarMaxValue,
   calendarMinValue,
+  calendarVisibleMonthsFromString,
   comparisonControlsEvent as calendarControlsEvent,
   isCalendarDateUnavailable,
   normalizeCalendarDemoProps,
@@ -2436,7 +2437,10 @@ function SolidSpectrumCalendarDemo() {
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "calendar") {
-        const nextProps = normalizeCalendarDemoProps(event.detail.props ?? {});
+        const nextProps = normalizeCalendarDemoProps({
+          ...demoProps(),
+          ...(event.detail.props ?? {}),
+        });
         setDemoProps(nextProps);
         setValue(() => calendarDateFromString(nextProps.value));
       }
@@ -2474,7 +2478,7 @@ function SolidSpectrumCalendarDemo() {
             return colorScheme();
           },
           get "data-comparison-value"() {
-            return String(value());
+            return value() ? String(value()) : "";
           },
           "data-comparison-control-root": "calendar",
           get "data-comparison-control-props"() {
@@ -2484,9 +2488,9 @@ function SolidSpectrumCalendarDemo() {
         [
           hc(SolidSpectrumCalendar, {
             class: "comparison-calendar-root",
-            "aria-label": "Appointment date",
+            "aria-label": "Event date",
             get value() {
-              return value();
+              return value() ?? undefined;
             },
             onChange: (nextValue) => {
               setValue(() => nextValue);
@@ -2513,10 +2517,13 @@ function SolidSpectrumCalendarDemo() {
               return demoProps().errorMessage;
             },
             get firstDayOfWeek() {
-              return demoProps().firstDayOfWeek;
+              return demoProps().firstDayOfWeek || undefined;
             },
             get visibleMonths() {
-              return Number(demoProps().visibleMonths);
+              return calendarVisibleMonthsFromString(demoProps().visibleMonths);
+            },
+            get pageBehavior() {
+              return demoProps().pageBehavior || undefined;
             },
           }),
         ],

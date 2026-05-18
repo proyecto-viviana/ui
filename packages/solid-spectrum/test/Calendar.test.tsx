@@ -59,6 +59,39 @@ describe("Calendar (solid-spectrum)", () => {
     expect(screen.getByText("Choose an available date.")).toBeInTheDocument();
   });
 
+  it("pages by visible months by default and by one month when pageBehavior is single", async () => {
+    render(() => (
+      <Calendar
+        aria-label="Appointment date"
+        defaultFocusedValue={new CalendarDate(2025, 2, 3)}
+        visibleMonths={2}
+      />
+    ));
+    await waitForCalendar();
+
+    expect(screen.getByText("February 2025")).toBeInTheDocument();
+    expect(screen.getByText("March 2025")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Next month" }));
+    expect(screen.getByText("April 2025")).toBeInTheDocument();
+    expect(screen.getByText("May 2025")).toBeInTheDocument();
+
+    cleanup();
+
+    render(() => (
+      <Calendar
+        aria-label="Appointment date"
+        defaultFocusedValue={new CalendarDate(2025, 2, 3)}
+        visibleMonths={2}
+        pageBehavior="single"
+      />
+    ));
+    await waitForCalendar();
+
+    await user.click(screen.getByRole("button", { name: "Next month" }));
+    expect(screen.getByText("March 2025")).toBeInTheDocument();
+    expect(screen.getByText("April 2025")).toBeInTheDocument();
+  });
+
   it("merges CalendarContext props", async () => {
     render(() => (
       <CalendarContext.Provider value={{ isDisabled: true, firstDayOfWeek: "mon" }}>

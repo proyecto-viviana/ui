@@ -4,6 +4,7 @@ import { clearPointer, pinComparisonTheme } from "./visual-diff";
 import {
   calendarDemoDefaults,
   calendarFirstDayOfWeekOptions,
+  calendarPageBehaviorOptions,
   calendarVisibleMonthsOptions,
 } from "../src/data/calendar-demo";
 
@@ -44,30 +45,42 @@ async function clickDate(panel: Locator, day: number, options: { force?: boolean
     .click(options);
 }
 
+async function clickNext(panel: Locator) {
+  await panel
+    .getByRole("button", { name: /^Next( month)?$/ })
+    .first()
+    .click();
+}
+
+async function expectMonths(panel: Locator, months: string[]) {
+  for (const month of months) {
+    await expect(panel.getByText(month, { exact: true }).first()).toBeVisible();
+  }
+}
+
 test.describe("comparison Calendar route contract", () => {
-  test("Calendar route mounts React and Solid styled references", async ({ page }) => {
+  test("Calendar route mounts the official default example on both stacks", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await calendarFixtures(page);
 
     const expectedProps = JSON.stringify(calendarDemoDefaults);
 
     await expect(reactRoot).toHaveAttribute("data-comparison-control-props", expectedProps);
     await expect(solidRoot).toHaveAttribute("data-comparison-control-props", expectedProps);
-    await expect(reactRoot).toHaveAttribute("data-comparison-value", "2025-02-03");
-    await expect(solidRoot).toHaveAttribute("data-comparison-value", "2025-02-03");
+    await expect(reactRoot).toHaveAttribute("data-comparison-value", "");
+    await expect(solidRoot).toHaveAttribute("data-comparison-value", "");
+    await expect(reactPanel.getByRole("application", { name: /Event date/i })).toBeVisible();
+    await expect(solidPanel.getByRole("group", { name: /Event date/i })).toBeVisible();
     await expect(reactPanel.getByRole("grid")).toBeVisible();
     await expect(solidPanel.getByRole("grid")).toBeVisible();
+    await expect(reactRoot.locator('[data-selected], [aria-selected="true"]')).toHaveCount(0);
+    await expect(solidRoot.locator('[data-selected], [aria-selected="true"]')).toHaveCount(0);
   });
 
-  test("Calendar controls cover first day, month count, validation, and immutable states", async ({
-    page,
-  }) => {
+  test("Calendar side panel matches the official viewer control surface", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await calendarFixtures(page, {
       firstDayOfWeek: "mon",
       visibleMonths: "2",
-      constrainRange: true,
-      unavailableDates: true,
-      isInvalid: true,
-      errorMessage: "Date is unavailable.",
+      pageBehavior: "single",
     });
 
     await expect(
@@ -78,13 +91,17 @@ test.describe("comparison Calendar route contract", () => {
     await expect(page.locator('select[name="firstDayOfWeek"]')).toHaveValue("mon");
     await expect(
       page
-        .locator('input[name="visibleMonths"]')
-        .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value)),
+        .locator('select[name="visibleMonths"] option')
+        .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value)),
     ).resolves.toEqual([...calendarVisibleMonthsOptions]);
-    await expect(page.locator('input[name="visibleMonths"]:checked')).toHaveValue("2");
-    await expect(page.locator('input[name="constrainRange"]')).toBeChecked();
-    await expect(page.locator('input[name="unavailableDates"]')).toBeChecked();
-    await expect(page.locator('input[name="isInvalid"]')).toBeChecked();
+    await expect(page.locator('select[name="visibleMonths"]')).toHaveValue("2");
+    await expect(
+      page
+        .locator('select[name="pageBehavior"] option')
+        .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value)),
+    ).resolves.toEqual([...calendarPageBehaviorOptions]);
+    await expect(page.locator('select[name="pageBehavior"]')).toHaveValue("single");
+    await expect(page.locator('input[name="isDisabled"]')).not.toBeChecked();
 
     await expect(reactRoot).toHaveAttribute(
       "data-comparison-control-props",
@@ -92,10 +109,7 @@ test.describe("comparison Calendar route contract", () => {
         ...calendarDemoDefaults,
         firstDayOfWeek: "mon",
         visibleMonths: "2",
-        constrainRange: true,
-        unavailableDates: true,
-        isInvalid: true,
-        errorMessage: "Date is unavailable.",
+        pageBehavior: "single",
       }),
     );
     await expect(solidRoot).toHaveAttribute(
@@ -104,12 +118,49 @@ test.describe("comparison Calendar route contract", () => {
         ...calendarDemoDefaults,
         firstDayOfWeek: "mon",
         visibleMonths: "2",
-        constrainRange: true,
-        unavailableDates: true,
-        isInvalid: true,
-        errorMessage: "Date is unavailable.",
+        pageBehavior: "single",
       }),
     );
+    await expect(reactPanel.getByRole("grid")).toHaveCount(2);
+    await expect(solidPanel.getByRole("grid")).toHaveCount(2);
+  });
+
+  test("Calendar pageBehavior controls visible range paging", async ({ page }) => {
+    const visible = await calendarFixtures(page, {
+      value: "2025-02-03",
+      visibleMonths: "2",
+      pageBehavior: "visible",
+    });
+
+    await expectMonths(visible.reactPanel, ["February 2025", "March 2025"]);
+    await expectMonths(visible.solidPanel, ["February 2025", "March 2025"]);
+    await clickNext(visible.reactPanel);
+    await clickNext(visible.solidPanel);
+    await expectMonths(visible.reactPanel, ["April 2025", "May 2025"]);
+    await expectMonths(visible.solidPanel, ["April 2025", "May 2025"]);
+
+    const single = await calendarFixtures(page, {
+      value: "2025-02-03",
+      visibleMonths: "2",
+      pageBehavior: "single",
+    });
+
+    await clickNext(single.reactPanel);
+    await clickNext(single.solidPanel);
+    await expectMonths(single.reactPanel, ["March 2025", "April 2025"]);
+    await expectMonths(single.solidPanel, ["March 2025", "April 2025"]);
+  });
+
+  test("Calendar validation docs/API states are still route-testable", async ({ page }) => {
+    const { reactPanel, solidPanel } = await calendarFixtures(page, {
+      value: "2025-02-03",
+      visibleMonths: "2",
+      constrainRange: true,
+      unavailableDates: true,
+      isInvalid: true,
+      errorMessage: "Date is unavailable.",
+    });
+
     await expect(reactPanel.getByRole("grid")).toHaveCount(2);
     await expect(solidPanel.getByRole("grid")).toHaveCount(2);
     await expect(reactPanel.getByText("Date is unavailable.")).toBeVisible();
@@ -119,14 +170,17 @@ test.describe("comparison Calendar route contract", () => {
   test("Calendar selection updates value and unavailable/read-only dates do not", async ({
     page,
   }) => {
-    const fixtures = await calendarFixtures(page);
+    const fixtures = await calendarFixtures(page, { value: "2025-02-03" });
 
     await clickDate(fixtures.reactPanel, 12);
     await clickDate(fixtures.solidPanel, 12);
     await expect(fixtures.reactRoot).toHaveAttribute("data-comparison-value", "2025-02-12");
     await expect(fixtures.solidRoot).toHaveAttribute("data-comparison-value", "2025-02-12");
 
-    const unavailable = await calendarFixtures(page, { unavailableDates: true });
+    const unavailable = await calendarFixtures(page, {
+      value: "2025-02-03",
+      unavailableDates: true,
+    });
     await expect(
       unavailable.reactPanel.getByRole("button", { name: /February 10, 2025/i }).first(),
     ).toBeDisabled();
@@ -136,7 +190,7 @@ test.describe("comparison Calendar route contract", () => {
     await expect(unavailable.reactRoot).toHaveAttribute("data-comparison-value", "2025-02-03");
     await expect(unavailable.solidRoot).toHaveAttribute("data-comparison-value", "2025-02-03");
 
-    const readOnly = await calendarFixtures(page, { isReadOnly: true });
+    const readOnly = await calendarFixtures(page, { value: "2025-02-03", isReadOnly: true });
     await clickDate(readOnly.reactPanel, 12, { force: true });
     await clickDate(readOnly.solidPanel, 12, { force: true });
     await expect(readOnly.reactRoot).toHaveAttribute("data-comparison-value", "2025-02-03");

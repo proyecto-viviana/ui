@@ -34,6 +34,7 @@ import {
   createDatePickerState,
   access,
   type DateFieldState,
+  type CalendarStateProps,
   type CalendarState,
   type RangeCalendarState,
   type DateFieldStateProps,
@@ -119,6 +120,10 @@ export type DatePickerProps<T extends DateValue = DateValue> = Omit<
     onOpenChange?: (isOpen: boolean) => void;
     /** The number of months to display in the calendar popover. */
     visibleMonths?: number;
+    /** Controls whether calendar paging advances by one month or by the visible month range. */
+    pageBehavior?: CalendarStateProps<T>["pageBehavior"];
+    /** Determines how visible months align around the initial focused date. */
+    selectionAlignment?: CalendarStateProps<T>["selectionAlignment"];
     /** A function that determines whether a date is disabled. */
     isDateDisabled?: (date: DateValue) => boolean;
   };
@@ -252,6 +257,8 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       "isDateUnavailable",
       "firstDayOfWeek",
       "visibleMonths",
+      "pageBehavior",
+      "selectionAlignment",
       "isDateDisabled",
     ],
   );
@@ -302,6 +309,8 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     isDateUnavailable: stateProps.isDateUnavailable,
     firstDayOfWeek: stateProps.firstDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined,
     visibleMonths: stateProps.visibleMonths,
+    pageBehavior: stateProps.pageBehavior,
+    selectionAlignment: stateProps.selectionAlignment,
     isDateDisabled: stateProps.isDateDisabled,
   });
 

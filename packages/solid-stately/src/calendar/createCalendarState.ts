@@ -24,6 +24,8 @@ import {
 import { access, type MaybeAccessor } from "../utils";
 
 export type ValidationState = "valid" | "invalid";
+export type CalendarPageBehavior = "single" | "visible";
+export type CalendarSelectionAlignment = "start" | "center" | "end";
 
 export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** The current value (controlled). */
@@ -54,6 +56,10 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
   visibleMonths?: number;
+  /** Controls whether paging advances by one month or by the visible month range. */
+  pageBehavior?: CalendarPageBehavior;
+  /** Determines how the visible months align around the initial focused date. */
+  selectionAlignment?: CalendarSelectionAlignment;
   /** Whether to automatically focus the calendar when it is mounted. */
   autoFocusOnMount?: boolean;
   /** Controls which days are disabled. */
@@ -149,6 +155,54 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   const locale = props.locale ?? "en-US";
   const visibleMonths = props.visibleMonths ?? 1;
 
+  const selectionAlignmentOffset = (): number => {
+    switch (props.selectionAlignment) {
+      case "end":
+        return Math.max(visibleMonths - 1, 0);
+      case "center": {
+        let halfDuration = Math.floor(visibleMonths / 2);
+        if (halfDuration > 0 && visibleMonths % 2 === 0) {
+          halfDuration--;
+        }
+        return halfDuration;
+      }
+      case "start":
+      default:
+        return 0;
+    }
+  };
+
+  const alignVisibleRangeStart = (date: CalendarDate): CalendarDate => {
+    const offset = selectionAlignmentOffset();
+    return startOfMonth(offset > 0 ? date.subtract({ months: offset }) : date);
+  };
+
+  const visibleRangeEnd = (start: CalendarDate): CalendarDate => {
+    let end = endOfMonth(start);
+
+    for (let i = 1; i < visibleMonths; i++) {
+      end = endOfMonth(end.add({ months: 1 }));
+    }
+
+    return end;
+  };
+
+  const constrainDate = (date: CalendarDate): CalendarDate => {
+    const minValue = access(props.minValue);
+    const maxValue = access(props.maxValue);
+
+    let constrained = date;
+
+    if (minValue && date.compare(toCalendarDate(minValue)) < 0) {
+      constrained = toCalendarDate(minValue);
+    }
+    if (maxValue && date.compare(toCalendarDate(maxValue)) > 0) {
+      constrained = toCalendarDate(maxValue);
+    }
+
+    return constrained;
+  };
+
   // Determine the initially focused date
   const getInitialFocusedDate = (): CalendarDate => {
     const controlledFocused = access(props.focusedValue);
@@ -169,8 +223,12 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   };
 
   // State signals
+  const initialFocusedDate = getInitialFocusedDate();
   const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
-  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(getInitialFocusedDate());
+  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(initialFocusedDate);
+  const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
+    alignVisibleRangeStart(initialFocusedDate),
+  );
   const [isFocused, setFocused] = createSignal(false);
   const [isPaginating, setIsPaginating] = createSignal(false);
 
@@ -185,16 +243,10 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
 
-  // Visible range based on focused date
+  // Visible range based on the paged range start.
   const visibleRange = createMemo(() => {
-    const focused = focusedDate();
-    const start = startOfMonth(focused);
-    let end = endOfMonth(focused);
-
-    // Extend for multiple visible months
-    for (let i = 1; i < visibleMonths; i++) {
-      end = endOfMonth(end.add({ months: 1 }));
-    }
+    const start = visibleRangeStart();
+    const end = visibleRangeEnd(start);
 
     return { start, end };
   });
@@ -243,16 +295,13 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
 
   // Set focused date with constraints
   const setFocusedDate = (date: CalendarDate) => {
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
+    const constrained = constrainDate(date);
+    const range = visibleRange();
 
-    let constrained = date;
-
-    if (minValue && date.compare(toCalendarDate(minValue)) < 0) {
-      constrained = toCalendarDate(minValue);
-    }
-    if (maxValue && date.compare(toCalendarDate(maxValue)) > 0) {
-      constrained = toCalendarDate(maxValue);
+    if (constrained.compare(range.start) < 0) {
+      setVisibleRangeStart(startOfMonth(constrained.subtract({ months: visibleMonths - 1 })));
+    } else if (constrained.compare(range.end) > 0) {
+      setVisibleRangeStart(startOfMonth(constrained));
     }
 
     setFocusedDateInternal(constrained);
@@ -306,13 +355,21 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   // Navigation methods
   const focusPreviousPage = () => {
     setIsPaginating(true);
-    setFocusedDate(focusedDate().subtract({ months: 1 }));
+    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    const nextFocusedDate = constrainDate(focusedDate().subtract({ months: pageMonths }));
+    setFocusedDateInternal(nextFocusedDate);
+    setVisibleRangeStart(startOfMonth(visibleRangeStart().subtract({ months: pageMonths })));
+    props.onFocusChange?.(nextFocusedDate);
     setIsPaginating(false);
   };
 
   const focusNextPage = () => {
     setIsPaginating(true);
-    setFocusedDate(focusedDate().add({ months: 1 }));
+    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    const nextFocusedDate = constrainDate(focusedDate().add({ months: pageMonths }));
+    setFocusedDateInternal(nextFocusedDate);
+    setVisibleRangeStart(startOfMonth(visibleRangeStart().add({ months: pageMonths })));
+    props.onFocusChange?.(nextFocusedDate);
     setIsPaginating(false);
   };
 
