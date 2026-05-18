@@ -1,6 +1,16 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
-import { clearPointer, pinComparisonTheme, type ComparisonColorScheme } from "./visual-diff";
+import {
+  frameworkCanvas,
+  frameworkPanel,
+  styledSection,
+  waitForComparisonRouteReady,
+} from "./comparison-page";
+import {
+  clearPointer,
+  expectExactScreenshotPair,
+  pinComparisonTheme,
+  type ComparisonColorScheme,
+} from "./visual-diff";
 
 function calendarQuery(params: Record<string, string> = {}) {
   const search = new URLSearchParams();
@@ -27,13 +37,15 @@ async function calendarFixtures(
   const section = await styledSection(page);
   const reactPanel = await frameworkPanel(section, "React Spectrum stack");
   const solidPanel = await frameworkPanel(section, "Solidaria stack");
+  const reactCanvas = await frameworkCanvas(section, "React Spectrum stack");
+  const solidCanvas = await frameworkCanvas(section, "Solidaria stack");
   const reactRoot = reactPanel.locator('[data-comparison-control-root="calendar"]').first();
   const solidRoot = solidPanel.locator('[data-comparison-control-root="calendar"]').first();
 
   await expect(reactRoot).toBeVisible();
   await expect(solidRoot).toBeVisible();
 
-  return { reactRoot, solidRoot };
+  return { reactCanvas, reactRoot, solidCanvas, solidRoot };
 }
 
 async function calendarVisualContract(root: Locator) {
@@ -167,6 +179,14 @@ async function calendarForcedColorsContract(root: Locator) {
 }
 
 test.describe("comparison Calendar visual coverage", () => {
+  test("Calendar unselected grid is pixel-identical", async ({ page }) => {
+    const { reactCanvas, solidCanvas } = await calendarFixtures(page, "dark", {
+      focusedValue: "2025-02-15",
+    });
+
+    await expectExactScreenshotPair(page, reactCanvas, solidCanvas, "Calendar unselected grid");
+  });
+
   test("Calendar official default renders an unselected S2 grid in light and dark themes", async ({
     page,
   }) => {

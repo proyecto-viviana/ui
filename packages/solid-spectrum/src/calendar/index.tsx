@@ -217,6 +217,8 @@ const calendarMonths = style<{ isMultiMonth?: boolean }>({
 
 const calendarNavButton = style<{ buttonSize: number }>({
   ...focusRing(),
+  font: "ui",
+  fontWeight: "medium",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -263,7 +265,6 @@ const calendarHeaderCell = style({
   },
   paddingTop: 0,
   paddingBottom: 12,
-  color: baseColor("neutral"),
 });
 
 const calendarCellWrapper = style({
@@ -347,7 +348,7 @@ const calendarCell = style<{
     },
   },
   color: {
-    default: baseColor("neutral"),
+    default: "neutral",
     isSelected: "white",
     isDisabled: "disabled",
     isUnavailable: "disabled",
@@ -379,6 +380,8 @@ const calendarNavIcon = style({
     type: "fill",
     value: "currentColor",
   },
+  width: "[1.4285714285714286em]",
+  height: "[1.4285714285714286em]",
 });
 
 const calendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
@@ -538,7 +541,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
                 "table-layout": "fixed",
               }}
               weekdayStyle="narrow"
-              headerCellClass={calendarHeaderCell({})}
+              headerCellClass={calendarHeaderCell}
               offset={offset === 0 ? undefined : { months: offset }}
             >
               {(date) => (
