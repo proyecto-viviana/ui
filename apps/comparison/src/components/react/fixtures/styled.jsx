@@ -49,6 +49,7 @@ import {
   Provider as SpectrumProvider,
   Radio as SpectrumRadio,
   RadioGroup as SpectrumRadioGroup,
+  RangeCalendar as SpectrumRangeCalendar,
   SearchField as SpectrumSearchField,
   Skeleton as SpectrumSkeleton,
   Slider as SpectrumSlider,
@@ -188,6 +189,19 @@ import {
   normalizeDateRangePickerDemoProps,
   serializeDateRangePickerDemoProps,
 } from "@comparison/data/daterangepicker-demo";
+import {
+  comparisonControlsEvent as rangeCalendarControlsEvent,
+  isRangeCalendarDateUnavailable,
+  normalizeRangeCalendarDemoProps,
+  rangeCalendarDateFromString,
+  rangeCalendarDemoPropsFromWindow,
+  rangeCalendarMaxValue,
+  rangeCalendarMinValue,
+  rangeCalendarValueFromDemo,
+  rangeCalendarVisibleMonthsFromString,
+  serializeRangeCalendarDemoProps,
+  serializeRangeCalendarValue,
+} from "@comparison/data/rangecalendar-demo";
 import {
   dividerDemoPropsFromWindow,
   normalizeDividerDemoProps,
@@ -505,6 +519,7 @@ export const reactStyledFixtures = {
   dialog: () => jsx(ReactDialogDemo, {}),
   daterangepicker: () => jsx(ReactDateRangePickerDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
+  rangecalendar: () => jsx(ReactRangeCalendarDemo, {}),
   searchfield: () => jsx(ReactSearchFieldDemo, {}),
   skeleton: () => jsx(ReactSkeletonDemo, {}),
   switch: () => jsx(ReactSwitchDemo, {}),
@@ -2586,6 +2601,78 @@ function ReactCalendarDemo() {
     }),
     colorScheme,
     demoProps.locale || undefined,
+  );
+}
+
+function ReactRangeCalendarDemo() {
+  const initialDemoProps = rangeCalendarDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = useState(() => initialDemoProps);
+  const [value, setValue] = useState(() => rangeCalendarValueFromDemo(initialDemoProps));
+  const [focusedValue, setFocusedValue] = useState(() =>
+    rangeCalendarDateFromString(initialDemoProps.focusedValue || initialDemoProps.startValue),
+  );
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "rangecalendar") {
+        setDemoProps((currentProps) => {
+          const nextProps = normalizeRangeCalendarDemoProps({
+            ...currentProps,
+            ...(event.detail.props ?? {}),
+          });
+          setValue(rangeCalendarValueFromDemo(nextProps));
+          setFocusedValue(
+            rangeCalendarDateFromString(nextProps.focusedValue || nextProps.startValue),
+          );
+          return nextProps;
+        });
+      }
+    };
+    window.addEventListener(rangeCalendarControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(rangeCalendarControlsEvent, handleControlsChange);
+  }, []);
+
+  const selectedValue = value;
+  const visibleMonths = rangeCalendarVisibleMonthsFromString(demoProps.visibleMonths);
+  const resolvedVisibleMonths = visibleMonths ?? 1;
+  const calendarReferenceWidth = `${resolvedVisibleMonths * 224 + (resolvedVisibleMonths - 1) * 24}px`;
+  const rangeCalendarProps = {
+    "aria-label": "Trip dates",
+    value: selectedValue ?? undefined,
+    onChange: (nextValue) => setValue(nextValue),
+    minValue: demoProps.constrainRange ? rangeCalendarMinValue : undefined,
+    maxValue: demoProps.constrainRange ? rangeCalendarMaxValue : undefined,
+    isDateUnavailable: demoProps.unavailableDates ? isRangeCalendarDateUnavailable : undefined,
+    allowsNonContiguousRanges: demoProps.allowsNonContiguousRanges,
+    isDisabled: demoProps.isDisabled,
+    isReadOnly: demoProps.isReadOnly,
+    isInvalid: demoProps.isInvalid,
+    errorMessage: demoProps.errorMessage,
+    firstDayOfWeek: demoProps.firstDayOfWeek || undefined,
+    visibleMonths,
+    pageBehavior: demoProps.pageBehavior || undefined,
+    selectionAlignment: demoProps.selectionAlignment || undefined,
+    focusedValue: demoProps.focusedValue ? (focusedValue ?? undefined) : undefined,
+    onFocusChange: (nextFocusedValue) => setFocusedValue(nextFocusedValue),
+    UNSAFE_className: "comparison-rangecalendar-root",
+    UNSAFE_style: {
+      "--cell-responsive-size": "32px",
+      width: calendarReferenceWidth,
+      maxWidth: "100%",
+    },
+  };
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "rangecalendar",
+      "data-comparison-control-props": serializeRangeCalendarDemoProps(demoProps),
+      "data-comparison-value": serializeRangeCalendarValue(selectedValue),
+      "data-comparison-focused-value": focusedValue ? String(focusedValue) : "",
+      "data-comparison-color-scheme": colorScheme,
+      children: jsx(SpectrumRangeCalendar, rangeCalendarProps),
+    }),
+    colorScheme,
   );
 }
 

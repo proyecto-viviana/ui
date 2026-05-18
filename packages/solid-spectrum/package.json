@@ -52,6 +52,12 @@
       "import": "./dist/Calendar.js",
       "default": "./dist/Calendar.js"
     },
+    "./RangeCalendar": {
+      "types": "./dist/RangeCalendar.d.ts",
+      "solid": "./src/RangeCalendar.ts",
+      "import": "./dist/RangeCalendar.js",
+      "default": "./dist/RangeCalendar.js"
+    },
     "./Menu": {
       "types": "./dist/Menu.d.ts",
       "solid": "./src/Menu.ts",

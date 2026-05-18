@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Accessor,
   createContext,
   createMemo,
   createSignal,
@@ -20,6 +21,7 @@ import {
   createRangeCalendar,
   createCalendarGrid,
   createRangeCalendarCell,
+  createHover,
   type AriaRangeCalendarProps,
   type AriaCalendarGridProps,
 } from "@proyecto-viviana/solidaria";
@@ -83,6 +85,10 @@ export interface RangeCalendarGridProps
   class?: ClassNameOrFunction<RangeCalendarGridRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<RangeCalendarGridRenderProps>;
+  /** Class name for weekday header cells. */
+  headerCellClass?: string;
+  /** Inline style for weekday header cells. */
+  headerCellStyle?: JSX.CSSProperties;
   /** Number of months to offset from the start. */
   offset?: { months?: number };
 }
@@ -108,6 +114,16 @@ export interface RangeCalendarCellRenderProps {
   isToday: boolean;
   /** Whether the cell is pressed. */
   isPressed: boolean;
+  /** Whether the cell is hovered. */
+  isHovered: boolean;
+  /** Whether the cell is the first day slot in its row. */
+  isFirstChild: boolean;
+  /** Whether the cell is the last day slot in its row. */
+  isLastChild: boolean;
+  /** Whether the cell is in the first rendered week row. */
+  isFirstWeek: boolean;
+  /** Whether the cell is in the last rendered week row. */
+  isLastWeek: boolean;
   /** The formatted date string. */
   formattedDate: string;
 }
@@ -121,11 +137,20 @@ export interface RangeCalendarCellProps extends SlotProps {
   class?: ClassNameOrFunction<RangeCalendarCellRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<RangeCalendarCellRenderProps>;
+  /** Class name for the table cell wrapper. */
+  cellClass?: ClassNameOrFunction<RangeCalendarCellRenderProps>;
+  /** Inline style for the table cell wrapper. */
+  cellStyle?: StyleOrFunction<RangeCalendarCellRenderProps>;
 }
 
 export const RangeCalendarContext = createContext<RangeCalendarState<DateValue> | null>(null);
 export const RangeCalendarStateContext = createContext<RangeCalendarState<DateValue> | null>(null);
-const RangeCalendarGridMonthContext = createContext<CalendarDate | null>(null);
+const RangeCalendarGridMonthContext = createContext<Accessor<CalendarDate> | null>(null);
+const RangeCalendarGridCellPositionContext = createContext<Accessor<{
+  weekIndex: number;
+  dayIndex: number;
+  lastWeekIndex: number;
+}> | null>(null);
 
 export function useRangeCalendarContext(): RangeCalendarState<DateValue> {
   const context = useContext(RangeCalendarContext);
@@ -358,7 +383,7 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
   });
 
   return (
-    <RangeCalendarGridMonthContext.Provider value={startDate()}>
+    <RangeCalendarGridMonthContext.Provider value={startDate}>
       <table
         ref={setGridRef}
         {...gridAria.gridProps}
@@ -369,7 +394,11 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
           <tr>
             <For each={gridAria.weekDays}>
               {(day) => (
-                <th scope="col" class="solidaria-RangeCalendarHeaderCell">
+                <th
+                  scope="col"
+                  class={props.headerCellClass ?? "solidaria-RangeCalendarHeaderCell"}
+                  style={props.headerCellStyle}
+                >
                   {day}
                 </th>
               )}
@@ -378,12 +407,20 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
         </thead>
         <tbody>
           <Index each={allDates()}>
-            {(weekDates) => (
+            {(weekDates, weekIndex) => (
               <tr>
                 <Index each={weekDates()}>
-                  {(date) => (
+                  {(date, dayIndex) => (
                     <Show when={date()} fallback={<td />}>
-                      {props.children?.(date()!)}
+                      <RangeCalendarGridCellPositionContext.Provider
+                        value={() => ({
+                          weekIndex,
+                          dayIndex,
+                          lastWeekIndex: allDates().length - 1,
+                        })}
+                      >
+                        {props.children?.(date()!)}
+                      </RangeCalendarGridCellPositionContext.Provider>
                     </Show>
                   )}
                 </Index>
@@ -402,9 +439,18 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
 export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
   const state = useRangeCalendarContext();
   const currentMonthStart = useContext(RangeCalendarGridMonthContext);
+  const cellPosition = useContext(RangeCalendarGridCellPositionContext);
   const [cellRef, setCellRef] = createSignal<HTMLDivElement | null>(null);
   const isOutsideMonth = createMemo(
-    () => currentMonthStart != null && !isSameMonth(currentMonthStart, props.date),
+    () => currentMonthStart != null && !isSameMonth(currentMonthStart(), props.date),
+  );
+  const position = createMemo(
+    () =>
+      cellPosition?.() ?? {
+        weekIndex: 0,
+        dayIndex: 0,
+        lastWeekIndex: 0,
+      },
   );
 
   const cellAria = createRangeCalendarCell(
@@ -415,6 +461,9 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
     state,
     cellRef,
   );
+  const { hoverProps, isHovered } = createHover(() => ({
+    isDisabled: cellAria.isDisabled || cellAria.isUnavailable,
+  }));
 
   const renderValues = createMemo<RangeCalendarCellRenderProps>(() => ({
     isSelected: cellAria.isSelected,
@@ -427,6 +476,11 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
     isOutsideMonth: cellAria.isOutsideMonth,
     isToday: cellAria.isToday,
     isPressed: cellAria.isPressed,
+    isHovered: isHovered(),
+    isFirstChild: position().dayIndex === 0,
+    isLastChild: position().dayIndex === 6,
+    isFirstWeek: position().weekIndex === 0,
+    isLastWeek: position().weekIndex === position().lastWeekIndex,
     formattedDate: cellAria.formattedDate,
   }));
 
@@ -436,6 +490,14 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-RangeCalendarCell",
+    },
+    renderValues,
+  );
+  const cellRenderProps = useRenderProps(
+    {
+      class: props.cellClass,
+      style: props.cellStyle,
+      defaultClassName: "solidaria-RangeCalendarCellWrapper",
     },
     renderValues,
   );
@@ -449,10 +511,11 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
   };
 
   return (
-    <td {...cellAria.cellProps}>
+    <td {...cellAria.cellProps} class={cellRenderProps.class()} style={cellRenderProps.style()}>
       <div
         ref={setCellRef}
         {...cellAria.buttonProps}
+        {...hoverProps}
         class={renderProps.class()}
         style={renderProps.style()}
         data-selected={dataAttr(cellAria.isSelected)}
@@ -465,6 +528,7 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
         data-outside-month={dataAttr(cellAria.isOutsideMonth)}
         data-today={dataAttr(cellAria.isToday)}
         data-pressed={dataAttr(cellAria.isPressed)}
+        data-hovered={dataAttr(isHovered())}
       >
         {getChildren()}
       </div>

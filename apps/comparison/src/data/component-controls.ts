@@ -60,6 +60,13 @@ import {
 } from "./daterangepicker-demo";
 import { datePickerDemoDefaults, datePickerSizeOptions } from "./datepicker-demo";
 import {
+  rangeCalendarDemoDefaults,
+  rangeCalendarFirstDayOfWeekOptions,
+  rangeCalendarPageBehaviorOptions,
+  rangeCalendarSelectionAlignmentOptions,
+  rangeCalendarVisibleMonthsOptions,
+} from "./rangecalendar-demo";
+import {
   dividerDemoDefaults,
   dividerOrientationOptions,
   dividerSizeOptions,
@@ -2417,6 +2424,129 @@ const dateRangePickerControls: ComponentControlGroup = {
   note: "Modeled from the S2 DateRangePicker docs control surface for label, size, validation, disabled, required, help text, and one/two-month popover routing. Date availability, range form submission, time granularity, and calendar-system states remain dedicated route states.",
 };
 
+const rangeCalendarControls: ComponentControlGroup = {
+  slug: "rangecalendar",
+  title: "RangeCalendar",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "startValue",
+      label: "startValue",
+      kind: "text",
+      defaultValue: rangeCalendarDemoDefaults.startValue,
+    },
+    {
+      name: "endValue",
+      label: "endValue",
+      kind: "text",
+      defaultValue: rangeCalendarDemoDefaults.endValue,
+    },
+    {
+      name: "focusedValue",
+      label: "focusedValue",
+      kind: "text",
+      defaultValue: rangeCalendarDemoDefaults.focusedValue,
+    },
+    {
+      name: "visibleMonths",
+      label: "visibleMonths",
+      kind: "select",
+      defaultValue: rangeCalendarDemoDefaults.visibleMonths,
+      options: defaultableOptions(rangeCalendarVisibleMonthsOptions),
+    },
+    {
+      name: "pageBehavior",
+      label: "pageBehavior",
+      kind: "select",
+      defaultValue: rangeCalendarDemoDefaults.pageBehavior,
+      options: defaultableOptions(rangeCalendarPageBehaviorOptions),
+    },
+    {
+      name: "selectionAlignment",
+      label: "selectionAlignment",
+      kind: "select",
+      defaultValue: rangeCalendarDemoDefaults.selectionAlignment,
+      options: defaultableOptions(rangeCalendarSelectionAlignmentOptions),
+    },
+    {
+      name: "firstDayOfWeek",
+      label: "firstDayOfWeek",
+      kind: "select",
+      defaultValue: rangeCalendarDemoDefaults.firstDayOfWeek,
+      options: defaultableOptions(rangeCalendarFirstDayOfWeekOptions),
+    },
+    {
+      name: "constrainRange",
+      label: "constrainRange",
+      kind: "switch",
+      defaultValue: rangeCalendarDemoDefaults.constrainRange,
+    },
+    {
+      name: "unavailableDates",
+      label: "unavailableDates",
+      kind: "switch",
+      defaultValue: rangeCalendarDemoDefaults.unavailableDates,
+    },
+    {
+      name: "allowsNonContiguousRanges",
+      label: "allowsNonContiguousRanges",
+      kind: "switch",
+      defaultValue: rangeCalendarDemoDefaults.allowsNonContiguousRanges,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: rangeCalendarDemoDefaults.isDisabled,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: rangeCalendarDemoDefaults.isReadOnly,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: rangeCalendarDemoDefaults.isInvalid,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: rangeCalendarDemoDefaults.errorMessage,
+    },
+  ],
+  apiProps: [
+    "value",
+    "defaultValue",
+    "onChange",
+    "focusedValue",
+    "defaultFocusedValue",
+    "onFocusChange",
+    "minValue",
+    "maxValue",
+    "isDateUnavailable",
+    "isDisabled",
+    "isReadOnly",
+    "isInvalid",
+    "errorMessage",
+    "visibleMonths",
+    "firstDayOfWeek",
+    "pageBehavior",
+    "selectionAlignment",
+    "allowsNonContiguousRanges",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 RangeCalendar docs and source control surface. The viewer drives controlled range value, focusedValue, visible month count, paging, selection alignment, first weekday, unavailable-date policy, non-contiguous range policy, disabled/read-only/invalid states, and error text into both stacks.",
+};
+
 const calendarControls: ComponentControlGroup = {
   slug: "calendar",
   title: "Calendar",
@@ -3087,6 +3217,7 @@ export const componentControlGroups = {
   numberfield: numberFieldControls,
   picker: pickerControls,
   radiogroup: radioGroupControls,
+  rangecalendar: rangeCalendarControls,
   searchfield: searchFieldControls,
   segmentedcontrol: segmentedControlControls,
   selectboxgroup: selectBoxGroupControls,

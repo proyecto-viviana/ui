@@ -21,6 +21,7 @@
     "test:dialog": "vp run build && playwright test e2e/dialog-visual.spec.ts --reporter=line",
     "test:datepicker": "vp run build && playwright test e2e/datepicker-visual.spec.ts --reporter=line",
     "test:daterangepicker": "vp run build && playwright test e2e/daterangepicker-visual.spec.ts --reporter=line",
+    "test:rangecalendar": "vp run build && playwright test e2e/rangecalendar-visual.spec.ts --reporter=line",
     "preview": "astro preview",
     "typecheck": "vp run build:workspace-deps && astro check",
     "dev:worker": "XDG_CONFIG_HOME=/tmp/proyecto-viviana-wrangler vp exec wrangler dev --config wrangler.jsonc",

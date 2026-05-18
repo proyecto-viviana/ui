@@ -54,6 +54,7 @@ import {
   Provider as SolidSpectrumProvider,
   Radio as SolidSpectrumRadio,
   RadioGroup as SolidSpectrumRadioGroup,
+  RangeCalendar as SolidSpectrumRangeCalendar,
   SearchField as SolidSpectrumSearchField,
   Skeleton as SolidSpectrumSkeleton,
   Slider as SolidSpectrumSlider,
@@ -207,6 +208,20 @@ import {
   serializeDateRangePickerDemoProps,
   type DateRangePickerDemoProps,
 } from "@comparison/data/daterangepicker-demo";
+import {
+  comparisonControlsEvent as rangeCalendarControlsEvent,
+  isRangeCalendarDateUnavailable,
+  normalizeRangeCalendarDemoProps,
+  rangeCalendarDateFromString,
+  rangeCalendarDemoPropsFromWindow,
+  rangeCalendarMaxValue,
+  rangeCalendarMinValue,
+  rangeCalendarValueFromDemo,
+  rangeCalendarVisibleMonthsFromString,
+  serializeRangeCalendarDemoProps,
+  serializeRangeCalendarValue,
+  type RangeCalendarDemoProps,
+} from "@comparison/data/rangecalendar-demo";
 import {
   dividerDemoPropsFromWindow,
   normalizeDividerDemoProps,
@@ -614,6 +629,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   daterangepicker: () => h(SolidSpectrumDateRangePickerDemo, {}),
   datepicker: () => h(SolidSpectrumDatePickerDemo, {}),
+  rangecalendar: () => h(SolidSpectrumRangeCalendarDemo, {}),
   divider: () => h(SolidSpectrumDividerDemo, {}),
   form: () => h(SolidSpectrumFormDemo, {}),
   image: () => h(SolidSpectrumImageDemo, {}),
@@ -2556,6 +2572,134 @@ function SolidSpectrumCalendarDemo() {
               return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
             },
             onFocusChange: (nextFocusedValue) => {
+              setFocusedValue(() => nextFocusedValue);
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumRangeCalendarDemo() {
+  const [demoProps, setDemoProps] = createSignal<RangeCalendarDemoProps>(
+    rangeCalendarDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(rangeCalendarValueFromDemo(demoProps()));
+  const [focusedValue, setFocusedValue] = createSignal(
+    rangeCalendarDateFromString(demoProps().focusedValue || demoProps().startValue),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "rangecalendar") {
+        const nextProps = normalizeRangeCalendarDemoProps({
+          ...demoProps(),
+          ...(event.detail.props ?? {}),
+        });
+        setDemoProps(nextProps);
+        setValue(() => rangeCalendarValueFromDemo(nextProps));
+        setFocusedValue(() =>
+          rangeCalendarDateFromString(nextProps.focusedValue || nextProps.startValue),
+        );
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(rangeCalendarControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(rangeCalendarControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeRangeCalendarDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-value"() {
+            return serializeRangeCalendarValue(value());
+          },
+          get "data-comparison-focused-value"() {
+            return focusedValue() ? String(focusedValue()) : "";
+          },
+          "data-comparison-control-root": "rangecalendar",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(SolidSpectrumRangeCalendar, {
+            class: "comparison-rangecalendar-root",
+            "aria-label": "Trip dates",
+            get value() {
+              return value() ?? undefined;
+            },
+            onChange: (nextValue: ReturnType<typeof value>) => {
+              setValue(() => nextValue);
+            },
+            get minValue() {
+              return demoProps().constrainRange ? rangeCalendarMinValue : undefined;
+            },
+            get maxValue() {
+              return demoProps().constrainRange ? rangeCalendarMaxValue : undefined;
+            },
+            get isDateUnavailable() {
+              return demoProps().unavailableDates ? isRangeCalendarDateUnavailable : undefined;
+            },
+            get allowsNonContiguousRanges() {
+              return demoProps().allowsNonContiguousRanges;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get firstDayOfWeek() {
+              return demoProps().firstDayOfWeek || undefined;
+            },
+            get visibleMonths() {
+              return rangeCalendarVisibleMonthsFromString(demoProps().visibleMonths);
+            },
+            get pageBehavior() {
+              return demoProps().pageBehavior || undefined;
+            },
+            get selectionAlignment() {
+              return demoProps().selectionAlignment || undefined;
+            },
+            get focusedValue() {
+              return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
+            },
+            onFocusChange: (nextFocusedValue: ReturnType<typeof focusedValue>) => {
               setFocusedValue(() => nextFocusedValue);
             },
           }),

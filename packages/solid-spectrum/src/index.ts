@@ -135,8 +135,13 @@ export { DatePicker } from "./calendar/DatePicker";
 export type { DatePickerProps, DatePickerSize } from "./calendar/DatePicker";
 export { DateRangePicker } from "./calendar/DateRangePicker";
 export type { DateRangePickerProps, DateRangePickerSize } from "./calendar/DateRangePicker";
-export { RangeCalendar } from "./calendar/RangeCalendar";
-export type { RangeCalendarProps, RangeCalendarSize, RangeValue } from "./calendar/RangeCalendar";
+export { RangeCalendar, RangeCalendarContext } from "./calendar/RangeCalendar";
+export type {
+  RangeCalendarFirstDayOfWeek,
+  RangeCalendarProps,
+  RangeCalendarSize,
+  RangeValue,
+} from "./calendar/RangeCalendar";
 export { TimeField } from "./calendar/TimeField";
 export type { TimeFieldProps, TimeFieldSize, TimeValue } from "./calendar/TimeField";
 

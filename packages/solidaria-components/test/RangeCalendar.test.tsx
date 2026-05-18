@@ -115,6 +115,54 @@ describe("RangeCalendar", () => {
       expect(headerCells.length).toBe(7);
     });
 
+    it("should render exactly seven structural cells per week row", async () => {
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const rows = Array.from(document.querySelectorAll("tbody tr"));
+      expect(rows.length).toBeGreaterThan(0);
+      for (const row of rows) {
+        expect(row.children).toHaveLength(7);
+      }
+    });
+
+    it("should expose row and column position render props for styling", async () => {
+      render(() => (
+        <RangeCalendar
+          aria-label="Positioned range calendar"
+          defaultFocusedValue={new CalendarDate(2026, 2, 15)}
+        >
+          <RangeCalendarGrid>
+            {(date) => (
+              <RangeCalendarCell date={date}>
+                {(cell) => (
+                  <span
+                    data-first-child={String(cell.isFirstChild)}
+                    data-last-child={String(cell.isLastChild)}
+                    data-first-week={String(cell.isFirstWeek)}
+                    data-last-week={String(cell.isLastWeek)}
+                  >
+                    {cell.formattedDate}
+                  </span>
+                )}
+              </RangeCalendarCell>
+            )}
+          </RangeCalendarGrid>
+        </RangeCalendar>
+      ));
+      await waitForRangeCalendarHydration();
+
+      const firstRowSpans = document.querySelectorAll("tbody tr:first-child span");
+      const lastRowSpans = document.querySelectorAll("tbody tr:last-child span");
+
+      expect(firstRowSpans[0]).toHaveAttribute("data-first-child", "true");
+      expect(firstRowSpans[0]).toHaveAttribute("data-first-week", "true");
+      expect(firstRowSpans[6]).toHaveAttribute("data-last-child", "true");
+      expect(lastRowSpans[0]).toHaveAttribute("data-last-week", "true");
+    });
+
     it("should render with custom class", async () => {
       render(() => <TestRangeCalendar calendarProps={{ class: "my-range-calendar" }} />);
       await waitForRangeCalendarHydration();

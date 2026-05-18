@@ -336,11 +336,6 @@ const dateRangePickerPopoverFrame = style({
   width: "[max-content]",
 });
 
-const dateRangeCalendarPopoverStyle: JSX.CSSProperties = {
-  width: "272px",
-  "max-width": "100%",
-};
-
 function formatRangeDate(date: DateValue | null | undefined, locale: string, timeZone: string) {
   if (!date) return "";
   return new Intl.DateTimeFormat(locale, {
@@ -442,11 +437,7 @@ function DateRangeDisplay(props: {
           style={popoverEnterStyle}
         >
           <div class={dateRangePickerPopoverFrame} style={{ "min-width": "240px" }}>
-            <RangeCalendar
-              size="md"
-              visibleMonths={props.maxVisibleMonths ?? 1}
-              UNSAFE_style={dateRangeCalendarPopoverStyle}
-            />
+            <RangeCalendar size="md" visibleMonths={props.maxVisibleMonths ?? 1} />
           </div>
         </DateRangePickerContent>
       </div>

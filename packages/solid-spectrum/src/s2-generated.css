@@ -17164,6 +17164,1164 @@
     outline-style: none;
   }
 
+  ._ob13 {
+    box-sizing: content-box;
+  }
+
+  .Sp13 {
+    padding-inline-start: 4px;
+  }
+
+  .Sd13 {
+    padding-inline-start: 0px;
+  }
+
+  .Rp13 {
+    padding-inline-end: 4px;
+  }
+
+  .Rd13 {
+    padding-inline-end: 0px;
+  }
+
+  .Tj13 {
+    padding-top: 2px;
+  }
+
+  .Td13 {
+    padding-top: 0px;
+  }
+
+  .Qj13 {
+    padding-bottom: 2px;
+  }
+
+  .Qd13 {
+    padding-bottom: 0px;
+  }
+
+  ._Pc13 {
+    position: relative;
+  }
+
+  .__ca13 {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  .Z0q26ub13 {
+    width: var(--cell-responsive-size);
+  }
+
+  .F0q26ub13 {
+    height: var(--cell-responsive-size);
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  ._Le13 {
+    outline-style: none;
+  }
+
+  ._oa13 {
+    box-sizing: border-box;
+  }
+
+  ._Pc13 {
+    position: relative;
+  }
+
+  .Za13 {
+    width: 100%;
+  }
+
+  .Fb13 {
+    height: 100%;
+  }
+
+  .sd13 {
+    display: flex;
+  }
+
+  .sk13 {
+    display: none;
+  }
+
+  .eb13 {
+    align-items: center;
+  }
+
+  ._Ca13 {
+    justify-content: center;
+  }
+
+  .__ca13 {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  ._Pc13 {
+    position: relative;
+  }
+
+  .Za13 {
+    width: 100%;
+  }
+
+  .Fb13 {
+    height: 100%;
+  }
+}
+
+@layer _.a, _.b, _.c, _.d, _.e, _.f, _.g, _.h, _.i;
+
+@layer _.a {
+  ._Le13 {
+    outline-style: none;
+  }
+
+  ._Lf13 {
+    outline-style: solid;
+  }
+
+  .Oh13 {
+    outline-color: light-dark(rgb(75, 117, 255), rgb(64, 105, 253));
+  }
+
+  ._Mc13 {
+    outline-width: 2px;
+  }
+
+  ._Kb13 {
+    outline-offset: -2px;
+  }
+
+  ._Kb13 {
+    outline-offset: -2px;
+  }
+
+  ._Kd13 {
+    outline-offset: 2px;
+  }
+
+  ._Kd13 {
+    outline-offset: 2px;
+  }
+
+  .Yd13 {
+    transition-property:
+      color, background-color, var(--gp, color), border-color, text-decoration-color, fill, stroke,
+      opacity, box-shadow, transform, translate, scale, rotate, filter, backdrop-filter;
+  }
+
+  .Xb13 {
+    transition-duration: 150ms;
+  }
+
+  ._2b13 {
+    transition-timing-function: cubic-bezier(0.45, 0, 0.4, 1);
+  }
+
+  ._Pc13 {
+    position: relative;
+  }
+
+  .uk13 {
+    font-family:
+      var(--s2-font-family-sans, adobe-clean-spectrum-vf), adobe-clean-variable, adobe-clean,
+      ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .-_6BNtrc-c13 {
+    --fs: pow(1.125, 0);
+  }
+
+  .vx13 {
+    font-size: round(var(--s2-font-size-base, 14) * var(--fs) / 16 * 1rem, 1px);
+  }
+
+  .xb13 {
+    font-weight: 400;
+  }
+
+  ._xa13 {
+    font-synthesis-weight: none;
+  }
+
+  ._Fb13 {
+    line-height: 1.5;
+  }
+
+  .pt13 {
+    color: light-dark(rgb(41, 41, 41), rgb(219, 219, 219));
+  }
+
+  .pt13 {
+    color: light-dark(rgb(41, 41, 41), rgb(219, 219, 219));
+  }
+
+  .px13 {
+    color: white;
+  }
+
+  .px13 {
+    color: white;
+  }
+
+  .pp13 {
+    color: light-dark(rgb(198, 198, 198), rgb(68, 68, 68));
+  }
+
+  .pp13 {
+    color: light-dark(rgb(198, 198, 198), rgb(68, 68, 68));
+  }
+
+  .ri13 {
+    cursor: default;
+  }
+
+  .Za13 {
+    width: 100%;
+  }
+
+  .Fb13 {
+    height: 100%;
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .sd13 {
+    display: flex;
+  }
+
+  .eb13 {
+    align-items: center;
+  }
+
+  ._Ca13 {
+    justify-content: center;
+  }
+
+  ._yb13 {
+    forced-color-adjust: none;
+  }
+
+  .g913 {
+    background-color: transparent;
+  }
+
+  .gH13 {
+    background-color: light-dark(rgb(233, 233, 233), rgb(44, 44, 44));
+  }
+
+  .g913 {
+    background-color: transparent;
+  }
+
+  .gH13 {
+    background-color: light-dark(rgb(233, 233, 233), rgb(44, 44, 44));
+  }
+
+  .g913 {
+    background-color: transparent;
+  }
+
+  .gNAacne13 {
+    background-color: light-dark(rgb(142, 185, 252), rgb(26, 58, 195));
+  }
+
+  .gJj9Tpd13 {
+    background-color: light-dark(rgb(255, 214, 209), rgb(87, 17, 7));
+  }
+
+  .g913 {
+    background-color: transparent;
+  }
+
+  .g5qAiPc13 {
+    background-color: light-dark(
+      light-dark(rgb(59, 99, 251), rgb(86, 129, 255)),
+      light-dark(rgb(93, 137, 255), rgb(52, 91, 248))
+    );
+  }
+
+  .gUgARdd13 {
+    background-color: light-dark(
+      light-dark(rgb(39, 77, 234), rgb(105, 149, 254)),
+      light-dark(rgb(114, 158, 253), rgb(37, 73, 229))
+    );
+  }
+
+  .gUgARdd13 {
+    background-color: light-dark(
+      light-dark(rgb(39, 77, 234), rgb(105, 149, 254)),
+      light-dark(rgb(114, 158, 253), rgb(37, 73, 229))
+    );
+  }
+
+  .g913 {
+    background-color: transparent;
+  }
+
+  .g7aei813 {
+    background-color: light-dark(
+      light-dark(rgb(215, 50, 32), rgb(252, 67, 46)),
+      light-dark(rgb(255, 81, 61), rgb(205, 46, 29))
+    );
+  }
+
+  .gYvV9s13 {
+    background-color: light-dark(
+      light-dark(rgb(183, 40, 24), rgb(255, 103, 86)),
+      light-dark(rgb(255, 118, 101), rgb(177, 38, 23))
+    );
+  }
+
+  .g7aei813 {
+    background-color: light-dark(
+      light-dark(rgb(215, 50, 32), rgb(252, 67, 46)),
+      light-dark(rgb(255, 81, 61), rgb(205, 46, 29))
+    );
+  }
+
+  .gYvV9s13 {
+    background-color: light-dark(
+      light-dark(rgb(183, 40, 24), rgb(255, 103, 86)),
+      light-dark(rgb(255, 118, 101), rgb(177, 38, 23))
+    );
+  }
+
+  .g5qAiPc13 {
+    background-color: light-dark(
+      light-dark(rgb(59, 99, 251), rgb(86, 129, 255)),
+      light-dark(rgb(93, 137, 255), rgb(52, 91, 248))
+    );
+  }
+
+  .gUgARdd13 {
+    background-color: light-dark(
+      light-dark(rgb(39, 77, 234), rgb(105, 149, 254)),
+      light-dark(rgb(114, 158, 253), rgb(37, 73, 229))
+    );
+  }
+
+  .gUgARdd13 {
+    background-color: light-dark(
+      light-dark(rgb(39, 77, 234), rgb(105, 149, 254)),
+      light-dark(rgb(114, 158, 253), rgb(37, 73, 229))
+    );
+  }
+
+  .g913 {
+    background-color: transparent;
+  }
+
+  .g7aei813 {
+    background-color: light-dark(
+      light-dark(rgb(215, 50, 32), rgb(252, 67, 46)),
+      light-dark(rgb(255, 81, 61), rgb(205, 46, 29))
+    );
+  }
+
+  .gYvV9s13 {
+    background-color: light-dark(
+      light-dark(rgb(183, 40, 24), rgb(255, 103, 86)),
+      light-dark(rgb(255, 118, 101), rgb(177, 38, 23))
+    );
+  }
+
+  .g7aei813 {
+    background-color: light-dark(
+      light-dark(rgb(215, 50, 32), rgb(252, 67, 46)),
+      light-dark(rgb(255, 81, 61), rgb(205, 46, 29))
+    );
+  }
+
+  .gYvV9s13 {
+    background-color: light-dark(
+      light-dark(rgb(183, 40, 24), rgb(255, 103, 86)),
+      light-dark(rgb(255, 118, 101), rgb(177, 38, 23))
+    );
+  }
+}
+
+@layer _.b.l {
+  @media (forced-colors: active) {
+    .Olc13 {
+      outline-color: Highlight;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .Yle13 {
+      transition-property: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .Xlb13 {
+      transition-duration: 150ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    ._2lb13 {
+      transition-timing-function: cubic-bezier(0.45, 0, 0.4, 1);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .plb13 {
+      color: ButtonText;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ple13 {
+      color: HighlightText;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ple13 {
+      color: HighlightText;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ple13 {
+      color: HighlightText;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .plc13 {
+      color: GrayText;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .gl913 {
+      background-color: transparent;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .gle13 {
+      background-color: Highlight;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .gle13 {
+      background-color: Highlight;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .gle13 {
+      background-color: Highlight;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .gle13 {
+      background-color: Highlight;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .gl913 {
+      background-color: transparent;
+    }
+  }
+}
+
+@layer _.b {
+  .ucJ9TBTb13:lang(ar) {
+    font-family: adobe-clean-arabic, myriad-arabic, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  ._FnuYUwec13:lang(ja, ko, zh, zh-Hant, zh-Hans, zh-CN, zh-SG) {
+    line-height: 1.7;
+  }
+}
+
+@layer _.c {
+  .ud3Euai13:lang(he) {
+    font-family: adobe-clean-hebrew, myriad-hebrew, ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+@layer _.d {
+  .uea13:lang(ja) {
+    font-family:
+      adobe-clean-han-japanese, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Osaka,
+      YuGothic, "Yu Gothic", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+  }
+}
+
+@layer _.e {
+  .ugb13:lang(ko) {
+    font-family:
+      adobe-clean-han-korean, source-han-korean, "Malgun Gothic", "Apple Gothic", sans-serif;
+  }
+}
+
+@layer _.f {
+  .uhd13:lang(zh) {
+    font-family:
+      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Heiti TC Light", sans-serif;
+  }
+}
+
+@layer _.g {
+  .uje13:lang(zh-hant) {
+    font-family:
+      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Microsoft JhengHei UI",
+      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
+  }
+}
+
+@layer _.h {
+  .u2NhKxcl13:lang(zh-HK) {
+    font-family:
+      adobe-clean-han-hong-kong, source-han-hong-kong, "MingLiu", "Microsoft JhengHei UI",
+      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
+  }
+}
+
+@layer _.i {
+  .uic13:lang(zh-Hans, zh-CN, zh-SG) {
+    font-family:
+      adobe-clean-han-simplified-c, source-han-simplified-c, "SimSun", "Heiti SC Light", sans-serif;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  ._Pa13 {
+    position: absolute;
+  }
+
+  ._lakDin13 {
+    bottom: 12.5%;
+  }
+
+  ._EF13 {
+    left: 50%;
+  }
+
+  ._ZRWeLS13 {
+    transform: translateX(-50%);
+  }
+
+  .ZS16uu13 {
+    width: calc(0.25rem * var(--s2-scale));
+  }
+
+  .Fe13 {
+    height: calc(0.25rem * var(--s2-scale));
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .g5ZbAob13 {
+    background-color: currentColor;
+  }
+
+  .sk13 {
+    display: none;
+  }
+
+  .sb13 {
+    display: block;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  ._Pa13 {
+    position: absolute;
+  }
+
+  .WzErnCb13 {
+    top: calc(50% - 1px);
+  }
+
+  ._EjhYzGc13 {
+    left: calc(25% - 1px);
+  }
+
+  ._RjhYzGc13 {
+    right: calc(25% - 1px);
+  }
+
+  .FlAZvq13 {
+    height: calc(0.125rem * var(--s2-scale));
+  }
+
+  ._ZN7ydnb13 {
+    transform: rotate(-16deg);
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .g5ZbAob13 {
+    background-color: currentColor;
+  }
+}
+
+@layer _.a, _.b;
+
+@layer _.a {
+  ._Pa13 {
+    position: absolute;
+  }
+
+  ._9a13 {
+    z-index: -1;
+  }
+
+  .Wr13 {
+    top: 0px;
+  }
+
+  ._Al13 {
+    inset-inline-start: -4px;
+  }
+
+  ._Ar13 {
+    inset-inline-start: 0px;
+  }
+
+  ._Ar13 {
+    inset-inline-start: 0px;
+  }
+
+  ._Ar13 {
+    inset-inline-start: 0px;
+  }
+
+  ._zl13 {
+    inset-inline-end: -4px;
+  }
+
+  ._zr13 {
+    inset-inline-end: 0px;
+  }
+
+  ._zr13 {
+    inset-inline-end: 0px;
+  }
+
+  ._zr13 {
+    inset-inline-end: 0px;
+  }
+
+  ._lr13 {
+    bottom: 0px;
+  }
+
+  .od13 {
+    border-start-start-radius: 0px;
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .kd13 {
+    border-end-start-radius: 0px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .nd13 {
+    border-start-end-radius: 0px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .jd13 {
+    border-end-end-radius: 0px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .gG13 {
+    background-color: light-dark(rgb(229, 240, 254), rgb(12, 33, 117));
+  }
+
+  .gZbQnx13 {
+    background-color: light-dark(rgb(255, 246, 245), rgb(54, 10, 3));
+  }
+
+  ._yb13 {
+    forced-color-adjust: none;
+  }
+}
+
+@layer _.b.l {
+  @media (forced-colors: active) {
+    .gle13 {
+      background-color: Highlight;
+    }
+  }
+}
+
+@layer _.a, _.b;
+
+@layer _.a {
+  ._Pa13 {
+    position: absolute;
+  }
+
+  ._9c13 {
+    z-index: 1;
+  }
+
+  .Wr13 {
+    top: 0px;
+  }
+
+  ._Al13 {
+    inset-inline-start: -4px;
+  }
+
+  ._Ar13 {
+    inset-inline-start: 0px;
+  }
+
+  ._Ar13 {
+    inset-inline-start: 0px;
+  }
+
+  ._Ar13 {
+    inset-inline-start: 0px;
+  }
+
+  ._zl13 {
+    inset-inline-end: -4px;
+  }
+
+  ._zr13 {
+    inset-inline-end: 0px;
+  }
+
+  ._zr13 {
+    inset-inline-end: 0px;
+  }
+
+  ._zr13 {
+    inset-inline-end: 0px;
+  }
+
+  ._lr13 {
+    bottom: 0px;
+  }
+
+  .ma13 {
+    border-inline-start-width: 0px;
+  }
+
+  .mb13 {
+    border-inline-start-width: 1px;
+  }
+
+  .mb13 {
+    border-inline-start-width: 1px;
+  }
+
+  .mb13 {
+    border-inline-start-width: 1px;
+  }
+
+  ._kb13 {
+    border-top-width: 1px;
+  }
+
+  .la13 {
+    border-inline-end-width: 0px;
+  }
+
+  .lb13 {
+    border-inline-end-width: 1px;
+  }
+
+  .lb13 {
+    border-inline-end-width: 1px;
+  }
+
+  .lb13 {
+    border-inline-end-width: 1px;
+  }
+
+  .hb13 {
+    border-bottom-width: 1px;
+  }
+
+  ._jf13 {
+    border-style: solid;
+  }
+
+  .ix13 {
+    border-color: light-dark(rgb(75, 117, 255), rgb(64, 105, 253));
+  }
+
+  .ip13 {
+    border-color: light-dark(rgb(215, 50, 32), rgb(252, 67, 46));
+  }
+
+  .od13 {
+    border-start-start-radius: 0px;
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .og13 {
+    border-start-start-radius: 9999px;
+  }
+
+  .kd13 {
+    border-end-start-radius: 0px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .kg13 {
+    border-end-start-radius: 9999px;
+  }
+
+  .nd13 {
+    border-start-end-radius: 0px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .ng13 {
+    border-start-end-radius: 9999px;
+  }
+
+  .jd13 {
+    border-end-end-radius: 0px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+
+  .jg13 {
+    border-end-end-radius: 9999px;
+  }
+}
+
+@layer _.b.l {
+  @media (forced-colors: active) {
+    .ilb13 {
+      border-color: ButtonText;
+    }
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  .-_8sjo0b-t5ZbAob13 {
+    --iconPrimary: currentColor;
+  }
+
+  .ZuUmpre13 {
+    width: 1.4285714285714286em;
+  }
+
+  .FuUmpre13 {
+    height: 1.4285714285714286em;
+  }
+
+  ._yb13 {
+    forced-color-adjust: none;
+  }
+}
+
+@layer _.a, _.b, _.c, _.d, _.e, _.f, _.g, _.h, _.i;
+
+@layer _.a {
+  .sd13 {
+    display: flex;
+  }
+
+  .Jy13 {
+    margin-top: 0rem;
+  }
+
+  .Gy13 {
+    margin-bottom: 0rem;
+  }
+
+  .Iy13 {
+    margin-inline-start: 0rem;
+  }
+
+  .Hy13 {
+    margin-inline-end: 0rem;
+  }
+
+  .ea13 {
+    align-items: baseline;
+  }
+
+  .Uc13 {
+    row-gap: 0.42857142857142855em;
+  }
+
+  .qc13 {
+    column-gap: 0.42857142857142855em;
+  }
+
+  .uk13 {
+    font-family:
+      var(--s2-font-family-sans, adobe-clean-spectrum-vf), adobe-clean-variable, adobe-clean,
+      ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .-_6BNtrc-c13 {
+    --fs: pow(1.125, 0);
+  }
+
+  .vx13 {
+    font-size: round(var(--s2-font-size-base, 14) * var(--fs) / 16 * 1rem, 1px);
+  }
+
+  .xb13 {
+    font-weight: 400;
+  }
+
+  ._xa13 {
+    font-synthesis-weight: none;
+  }
+
+  ._Fb13 {
+    line-height: 1.5;
+  }
+
+  .pv13 {
+    color: light-dark(rgb(80, 80, 80), rgb(175, 175, 175));
+  }
+
+  .pq13 {
+    color: light-dark(rgb(215, 50, 32), rgb(252, 67, 46));
+  }
+
+  .pp13 {
+    color: light-dark(rgb(198, 198, 198), rgb(68, 68, 68));
+  }
+}
+
+@layer _.b.s {
+  @media not ((hover: hover) and (pointer: fine)) {
+    .Usd13 {
+      row-gap: 0.47058823529411764em;
+    }
+  }
+
+  @media not ((hover: hover) and (pointer: fine)) {
+    .qsd13 {
+      column-gap: 0.47058823529411764em;
+    }
+  }
+}
+
+@layer _.b {
+  .ucJ9TBTb13:lang(ar) {
+    font-family: adobe-clean-arabic, myriad-arabic, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  ._FnuYUwec13:lang(ja, ko, zh, zh-Hant, zh-Hans, zh-CN, zh-SG) {
+    line-height: 1.7;
+  }
+}
+
+@layer _.c {
+  .ud3Euai13:lang(he) {
+    font-family: adobe-clean-hebrew, myriad-hebrew, ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+@layer _.d {
+  .uea13:lang(ja) {
+    font-family:
+      adobe-clean-han-japanese, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Osaka,
+      YuGothic, "Yu Gothic", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+  }
+}
+
+@layer _.e {
+  .ugb13:lang(ko) {
+    font-family:
+      adobe-clean-han-korean, source-han-korean, "Malgun Gothic", "Apple Gothic", sans-serif;
+  }
+}
+
+@layer _.f {
+  .uhd13:lang(zh) {
+    font-family:
+      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Heiti TC Light", sans-serif;
+  }
+}
+
+@layer _.g {
+  .uje13:lang(zh-hant) {
+    font-family:
+      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Microsoft JhengHei UI",
+      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
+  }
+}
+
+@layer _.h {
+  .u2NhKxcl13:lang(zh-HK) {
+    font-family:
+      adobe-clean-han-hong-kong, source-han-hong-kong, "MingLiu", "Microsoft JhengHei UI",
+      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
+  }
+}
+
+@layer _.i {
+  .uic13:lang(zh-Hans, zh-CN, zh-SG) {
+    font-family:
+      adobe-clean-han-simplified-c, source-han-simplified-c, "SimSun", "Heiti SC Light", sans-serif;
+  }
+}
+
+@layer _.b.l {
+  @media (forced-colors: active) {
+    .plQBRyrc13 {
+      color: Mark;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .plc13 {
+      color: GrayText;
+    }
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  ._Le13 {
+    outline-style: none;
+  }
+
   ._oa13 {
     box-sizing: border-box;
   }
@@ -17274,22 +18432,6 @@
 
   .__ca13 {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  }
-}
-
-@layer _.a;
-
-@layer _.a {
-  ._Pc13 {
-    position: relative;
-  }
-
-  .Za13 {
-    width: 100%;
-  }
-
-  .Fb13 {
-    height: 100%;
   }
 }
 
@@ -17611,245 +18753,6 @@
   .uic13:lang(zh-Hans, zh-CN, zh-SG) {
     font-family:
       adobe-clean-han-simplified-c, source-han-simplified-c, "SimSun", "Heiti SC Light", sans-serif;
-  }
-}
-
-@layer _.a;
-
-@layer _.a {
-  ._Pa13 {
-    position: absolute;
-  }
-
-  ._lakDin13 {
-    bottom: 12.5%;
-  }
-
-  ._EF13 {
-    left: 50%;
-  }
-
-  ._ZRWeLS13 {
-    transform: translateX(-50%);
-  }
-
-  .ZS16uu13 {
-    width: calc(0.25rem * var(--s2-scale));
-  }
-
-  .Fe13 {
-    height: calc(0.25rem * var(--s2-scale));
-  }
-
-  .og13 {
-    border-start-start-radius: 9999px;
-  }
-
-  .ng13 {
-    border-start-end-radius: 9999px;
-  }
-
-  .kg13 {
-    border-end-start-radius: 9999px;
-  }
-
-  .jg13 {
-    border-end-end-radius: 9999px;
-  }
-
-  .g5ZbAob13 {
-    background-color: currentColor;
-  }
-
-  .sk13 {
-    display: none;
-  }
-
-  .sb13 {
-    display: block;
-  }
-}
-
-@layer _.a;
-
-@layer _.a {
-  .-_8sjo0b-t5ZbAob13 {
-    --iconPrimary: currentColor;
-  }
-
-  .ZuUmpre13 {
-    width: 1.4285714285714286em;
-  }
-
-  .FuUmpre13 {
-    height: 1.4285714285714286em;
-  }
-
-  ._yb13 {
-    forced-color-adjust: none;
-  }
-}
-
-@layer _.a, _.b, _.c, _.d, _.e, _.f, _.g, _.h, _.i;
-
-@layer _.a {
-  .sd13 {
-    display: flex;
-  }
-
-  .Jy13 {
-    margin-top: 0rem;
-  }
-
-  .Gy13 {
-    margin-bottom: 0rem;
-  }
-
-  .Iy13 {
-    margin-inline-start: 0rem;
-  }
-
-  .Hy13 {
-    margin-inline-end: 0rem;
-  }
-
-  .ea13 {
-    align-items: baseline;
-  }
-
-  .Uc13 {
-    row-gap: 0.42857142857142855em;
-  }
-
-  .qc13 {
-    column-gap: 0.42857142857142855em;
-  }
-
-  .uk13 {
-    font-family:
-      var(--s2-font-family-sans, adobe-clean-spectrum-vf), adobe-clean-variable, adobe-clean,
-      ui-sans-serif, system-ui, sans-serif;
-  }
-
-  .-_6BNtrc-c13 {
-    --fs: pow(1.125, 0);
-  }
-
-  .vx13 {
-    font-size: round(var(--s2-font-size-base, 14) * var(--fs) / 16 * 1rem, 1px);
-  }
-
-  .xb13 {
-    font-weight: 400;
-  }
-
-  ._xa13 {
-    font-synthesis-weight: none;
-  }
-
-  ._Fb13 {
-    line-height: 1.5;
-  }
-
-  .pv13 {
-    color: light-dark(rgb(80, 80, 80), rgb(175, 175, 175));
-  }
-
-  .pq13 {
-    color: light-dark(rgb(215, 50, 32), rgb(252, 67, 46));
-  }
-
-  .pp13 {
-    color: light-dark(rgb(198, 198, 198), rgb(68, 68, 68));
-  }
-}
-
-@layer _.b.s {
-  @media not ((hover: hover) and (pointer: fine)) {
-    .Usd13 {
-      row-gap: 0.47058823529411764em;
-    }
-  }
-
-  @media not ((hover: hover) and (pointer: fine)) {
-    .qsd13 {
-      column-gap: 0.47058823529411764em;
-    }
-  }
-}
-
-@layer _.b {
-  .ucJ9TBTb13:lang(ar) {
-    font-family: adobe-clean-arabic, myriad-arabic, ui-sans-serif, system-ui, sans-serif;
-  }
-
-  ._FnuYUwec13:lang(ja, ko, zh, zh-Hant, zh-Hans, zh-CN, zh-SG) {
-    line-height: 1.7;
-  }
-}
-
-@layer _.c {
-  .ud3Euai13:lang(he) {
-    font-family: adobe-clean-hebrew, myriad-hebrew, ui-sans-serif, system-ui, sans-serif;
-  }
-}
-
-@layer _.d {
-  .uea13:lang(ja) {
-    font-family:
-      adobe-clean-han-japanese, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Osaka,
-      YuGothic, "Yu Gothic", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
-  }
-}
-
-@layer _.e {
-  .ugb13:lang(ko) {
-    font-family:
-      adobe-clean-han-korean, source-han-korean, "Malgun Gothic", "Apple Gothic", sans-serif;
-  }
-}
-
-@layer _.f {
-  .uhd13:lang(zh) {
-    font-family:
-      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Heiti TC Light", sans-serif;
-  }
-}
-
-@layer _.g {
-  .uje13:lang(zh-hant) {
-    font-family:
-      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Microsoft JhengHei UI",
-      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
-  }
-}
-
-@layer _.h {
-  .u2NhKxcl13:lang(zh-HK) {
-    font-family:
-      adobe-clean-han-hong-kong, source-han-hong-kong, "MingLiu", "Microsoft JhengHei UI",
-      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
-  }
-}
-
-@layer _.i {
-  .uic13:lang(zh-Hans, zh-CN, zh-SG) {
-    font-family:
-      adobe-clean-han-simplified-c, source-han-simplified-c, "SimSun", "Heiti SC Light", sans-serif;
-  }
-}
-
-@layer _.b.l {
-  @media (forced-colors: active) {
-    .plQBRyrc13 {
-      color: Mark;
-    }
-  }
-
-  @media (forced-colors: active) {
-    .plc13 {
-      color: GrayText;
-    }
   }
 }
 

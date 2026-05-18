@@ -50,6 +50,7 @@ partial if any gate remains unresolved.
 - [Link](./link-validation-notes.md)
 - [Meter](./meter-validation-notes.md)
 - [NotificationBadge](./notificationbadge-validation-notes.md)
+- [RangeCalendar](./rangecalendar-validation-notes.md)
 - [Skeleton](./skeleton-validation-notes.md)
 - [StatusLight](./statuslight-validation-notes.md)
 - [Text](./text-validation-notes.md)

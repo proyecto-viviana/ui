@@ -223,6 +223,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Calendar directly; Solid uses @proyecto-viviana/solid-spectrum with the public Calendar subpath, CalendarContext export, S2 firstDayOfWeek string normalization, invalid selected-cell error description linkage, localized RangeCalendar selection prompt descriptions across React Aria's prompt locale set, multi-month grid composition, pageBehavior/selectionAlignment state support, keyboard matrix parity, focus/reset state parity, Unicode display calendars, custom createCalendar routing, forced-colors computed contracts, seven-column default grid geometry, S2 header/nav token parity, and strict zero-tolerance Calendar-root pair diff evidence for the deterministic unselected grid, controlled selected date, and deterministic multi-month layout.",
   }),
 
+  rangecalendar: styledLiveOfficialEntry({
+    slug: "rangecalendar",
+    title: "RangeCalendar",
+    category: "Components",
+    summary:
+      "Date-range Calendar route mounted on both stacks with controlled range value, focusedValue, validation, unavailable-date, non-contiguous range, paging, first weekday, and multi-month controls.",
+    styledSummary: "React Spectrum RangeCalendar vs Solid Spectrum RangeCalendar.",
+    styledNote:
+      "React uses @react-spectrum/s2 RangeCalendar directly; Solid uses @proyecto-viviana/solid-spectrum RangeCalendar with S2 header/nav styling, exact seven-column month grid geometry, controlled range value, validation error linkage, unavailable-date strike treatment, firstDayOfWeek string normalization, visibleMonths/pageBehavior/selectionAlignment routing, and DateRangePicker popover reuse without the old fixed-width gutter.",
+  }),
+
   provider: {
     ...createGapEntry({
       slug: "provider",

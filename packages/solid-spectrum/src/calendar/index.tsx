@@ -643,7 +643,12 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
   );
 }
 
-export { RangeCalendar } from "./RangeCalendar";
-export type { RangeCalendarProps, RangeCalendarSize, RangeValue } from "./RangeCalendar";
+export { RangeCalendar, RangeCalendarContext } from "./RangeCalendar";
+export type {
+  RangeCalendarFirstDayOfWeek,
+  RangeCalendarProps,
+  RangeCalendarSize,
+  RangeValue,
+} from "./RangeCalendar";
 
 export type { CalendarDate, DateValue };
