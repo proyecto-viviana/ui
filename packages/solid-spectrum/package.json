@@ -40,6 +40,12 @@
       "import": "./dist/ActionMenu.js",
       "default": "./dist/ActionMenu.js"
     },
+    "./Breadcrumbs": {
+      "types": "./dist/Breadcrumbs.d.ts",
+      "solid": "./src/Breadcrumbs.ts",
+      "import": "./dist/Breadcrumbs.js",
+      "default": "./dist/Breadcrumbs.js"
+    },
     "./Menu": {
       "types": "./dist/Menu.d.ts",
       "solid": "./src/Menu.ts",

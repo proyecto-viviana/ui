@@ -1589,6 +1589,20 @@ a {
   padding: 24px;
 }
 
+.comparison-breadcrumbs-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  inline-size: 560px;
+  max-inline-size: 100%;
+  min-block-size: 96px;
+  padding: 24px;
+}
+
+.comparison-breadcrumbs-row [aria-label="Project location"] {
+  inline-size: 100%;
+}
+
 .comparison-accordion-row {
   display: grid;
   gap: 16px;

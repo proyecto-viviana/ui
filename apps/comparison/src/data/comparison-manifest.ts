@@ -201,6 +201,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 MenuTrigger, ActionButton, Menu, MenuItem, Text, and Keyboard directly; Solid uses @proyecto-viviana/solid-spectrum with the public Menu subpath, MenuContext export, top-level MenuTrigger popover behavior, generated S2 menu/item styling, and browser route contracts for action, selection, keyboard, and cleanup behavior.",
   }),
 
+  breadcrumbs: styledLiveOfficialEntry({
+    slug: "breadcrumbs",
+    title: "Breadcrumbs",
+    category: "Components",
+    summary:
+      "Hierarchy navigation route mounted on both stacks with S2 size, disabled, dynamic collection action, and overflow breadcrumb menu controls.",
+    styledSummary: "React Spectrum Breadcrumbs vs Solid Spectrum Breadcrumbs.",
+    styledNote:
+      "React uses @react-spectrum/s2 Breadcrumbs and Breadcrumb directly; Solid uses @proyecto-viviana/solid-spectrum with the public Breadcrumbs subpath, BreadcrumbsContext export, static child support, dynamic collection actions, link DOM props, and deterministic overflow menu composition.",
+  }),
+
   provider: {
     ...createGapEntry({
       slug: "provider",

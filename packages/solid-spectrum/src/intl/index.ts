@@ -9,6 +9,7 @@ export interface S2IntlStrings {
   "actionbar.selected": string;
   "actionbar.selectedAll": string;
   "button.pending": string;
+  "breadcrumbs.more": string;
   "menu.moreActions": string;
   "menu.unavailable": string;
   "notificationbadge.indicatorOnly": string;

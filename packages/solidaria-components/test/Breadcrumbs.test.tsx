@@ -86,6 +86,24 @@ describe("Breadcrumbs", () => {
       expect(screen.getByText("Category")).toBeInTheDocument();
     });
 
+    it("should render static breadcrumb children", () => {
+      render(() => (
+        <Breadcrumbs aria-label="Static breadcrumbs">
+          <BreadcrumbItem id="home" href="/">
+            Home
+          </BreadcrumbItem>
+          <BreadcrumbItem id="products" href="/products">
+            Products
+          </BreadcrumbItem>
+          <BreadcrumbItem id="category">Category</BreadcrumbItem>
+        </Breadcrumbs>
+      ));
+
+      expect(screen.getByRole("navigation", { name: "Static breadcrumbs" })).toBeInTheDocument();
+      expect(screen.getAllByRole("listitem")).toHaveLength(3);
+      expect(screen.getByText("Category")).toHaveAttribute("aria-current", "page");
+    });
+
     it("should render with custom class", () => {
       render(() => (
         <Breadcrumbs items={breadcrumbItems} getKey={(item) => item.id} class="my-breadcrumbs">
@@ -284,6 +302,24 @@ describe("Breadcrumbs", () => {
 
       await user.click(screen.getByText("Home"));
       expect(onAction).toHaveBeenCalledWith("home-key");
+    });
+
+    it("should call onAction for static children using BreadcrumbItem ids", async () => {
+      const onAction = vi.fn();
+      render(() => (
+        <Breadcrumbs onAction={onAction} aria-label="Static action breadcrumbs">
+          <BreadcrumbItem id="home" href="/">
+            Home
+          </BreadcrumbItem>
+          <BreadcrumbItem id="products" href="/products">
+            Products
+          </BreadcrumbItem>
+          <BreadcrumbItem id="category">Category</BreadcrumbItem>
+        </Breadcrumbs>
+      ));
+
+      await user.click(screen.getByText("Products"));
+      expect(onAction).toHaveBeenCalledWith("products");
     });
 
     it("should not call onAction for current breadcrumb item", async () => {

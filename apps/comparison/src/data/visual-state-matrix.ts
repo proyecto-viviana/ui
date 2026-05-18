@@ -246,6 +246,38 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Open Menu popover has strict zero-tolerance pair-diff evidence and computed style/geometry parity for item icon, label, description, and keyboard shortcut slots.",
     },
   ],
+  breadcrumbs: [
+    {
+      id: "styled.route-controls",
+      label: "Styled route controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/breadcrumbs-contract.spec.ts",
+      note: "Breadcrumbs route mounts both stacks with S2 size, disabled, default path, overflow path, dynamic collection action dispatch, and path truncation behavior.",
+    },
+    {
+      id: "styled.default",
+      label: "Styled default",
+      kind: "static",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "asserted",
+      spec: "e2e/breadcrumbs-visual.spec.ts",
+      note: "Default Breadcrumbs path has bounded pair-diff evidence and computed style parity across comparable visible React Spectrum and Solid nodes.",
+    },
+    {
+      id: "styled.overflow-menu",
+      label: "Styled overflow menu",
+      kind: "overlay",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "na",
+      spec: "e2e/breadcrumbs-visual.spec.ts",
+      note: "Overflow Breadcrumbs menu has browser assertions for collapsed middle item exposure; Menu component visual parity is covered by the Menu pass.",
+    },
+  ],
   actionbar: [
     {
       id: "styled.route-controls",

@@ -5,6 +5,7 @@
   "actionbar.selected": "{count} selected",
   "actionbar.selectedAll": "All selected",
   "button.pending": "pending",
+  "breadcrumbs.more": "More items",
   "menu.moreActions": "More actions",
   "menu.unavailable": "Unavailable",
   "notificationbadge.indicatorOnly": "New activity",

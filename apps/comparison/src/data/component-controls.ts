@@ -28,6 +28,11 @@ import {
   badgeVariantOptions,
 } from "./badge-demo";
 import {
+  breadcrumbsDemoDefaults,
+  breadcrumbsItemSetOptions,
+  breadcrumbsSizeOptions,
+} from "./breadcrumbs-demo";
+import {
   buttonDemoDefaults,
   buttonFillStyleOptions,
   buttonIconPlacementOptions,
@@ -502,6 +507,58 @@ const menuControls: ComponentControlGroup = {
     "aria-details",
   ],
   note: "Modeled from the S2 Menu docs and MenuTrigger API. The route drives official trigger placement axes, trigger ActionButton size, menu size, disabled trigger state, and action/selection modes through the documented composition.",
+};
+
+const breadcrumbsControls: ComponentControlGroup = {
+  slug: "breadcrumbs",
+  title: "Breadcrumbs",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: breadcrumbsDemoDefaults.size,
+      options: options(breadcrumbsSizeOptions),
+    },
+    {
+      name: "itemSet",
+      label: "itemSet",
+      kind: "radio",
+      defaultValue: breadcrumbsDemoDefaults.itemSet,
+      options: options(breadcrumbsItemSetOptions),
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: breadcrumbsDemoDefaults.isDisabled,
+    },
+  ],
+  apiProps: [
+    "children",
+    "items",
+    "dependencies",
+    "onAction",
+    "size",
+    "isDisabled",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "href",
+    "hrefLang",
+    "target",
+    "rel",
+    "download",
+    "ping",
+    "referrerPolicy",
+    "routerOptions",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-details",
+  ],
+  note: "Modeled from the S2 Breadcrumbs docs. The viewer drives size, disabled state, the default static-length path, and the collection overflow path that collapses middle items into the documented breadcrumb menu.",
 };
 
 const checkboxControls: ComponentControlGroup = {
@@ -2837,6 +2894,7 @@ export const componentControlGroups = {
   avatar: avatarControls,
   avatargroup: avatarGroupControls,
   badge: badgeControls,
+  breadcrumbs: breadcrumbsControls,
   button: buttonControls,
   buttongroup: buttonGroupControls,
   checkbox: checkboxControls,

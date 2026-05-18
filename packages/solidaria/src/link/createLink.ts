@@ -74,6 +74,8 @@ export interface AriaLinkProps {
   "aria-labelledby"?: string;
   /** Identifies the element (or elements) that describes the object. */
   "aria-describedby"?: string;
+  /** Identifies the element (or elements) that provide a detailed description. */
+  "aria-details"?: string;
 }
 
 export interface LinkAria {
@@ -167,6 +169,9 @@ export function createLink(props: MaybeAccessor<AriaLinkProps> = {}): LinkAria {
     }
     if (p["aria-describedby"]) {
       ariaProps["aria-describedby"] = p["aria-describedby"];
+    }
+    if (p["aria-details"]) {
+      ariaProps["aria-details"] = p["aria-details"];
     }
 
     // Handle onClick - prevent default navigation when appropriate

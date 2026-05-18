@@ -13,6 +13,8 @@ import {
   Avatar as SpectrumAvatar,
   AvatarGroup as SpectrumAvatarGroup,
   Badge as SpectrumBadge,
+  Breadcrumb as SpectrumBreadcrumb,
+  Breadcrumbs as SpectrumBreadcrumbs,
   Button as SpectrumButton,
   ButtonGroup as SpectrumButtonGroup,
   Card as SpectrumCard,
@@ -111,6 +113,13 @@ import {
   normalizeBadgeDemoProps,
   serializeBadgeDemoProps,
 } from "@comparison/data/badge-demo";
+import {
+  breadcrumbsDemoPropsFromWindow,
+  breadcrumbsItemsForSet,
+  normalizeBreadcrumbsDemoProps,
+  serializeBreadcrumbPath,
+  serializeBreadcrumbsDemoProps,
+} from "@comparison/data/breadcrumbs-demo";
 import {
   comparisonActionItems as actionItems,
   comparisonTabItems as tabItems,
@@ -453,6 +462,7 @@ export const reactStyledFixtures = {
   avatar: () => jsx(ReactAvatarDemo, {}),
   avatargroup: () => jsx(ReactAvatarGroupDemo, {}),
   badge: () => jsx(ReactBadgeDemo, {}),
+  breadcrumbs: () => jsx(ReactBreadcrumbsDemo, {}),
   buttongroup: () => jsx(ReactButtonGroupDemo, {}),
   linkbutton: () => jsx(ReactLinkButtonDemo, {}),
   togglebutton: () => jsx(ReactToggleButtonDemo, {}),
@@ -826,6 +836,90 @@ function ReactMenuDemo() {
           }),
         ],
       }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactBreadcrumbsDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(breadcrumbsDemoPropsFromWindow);
+  const [pathItems, setPathItems] = useState(() =>
+    breadcrumbsItemsForSet(breadcrumbsDemoPropsFromWindow().itemSet),
+  );
+  const [actionCount, setActionCount] = useState(0);
+  const [lastAction, setLastAction] = useState("");
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "breadcrumbs") {
+        const nextProps = normalizeBreadcrumbsDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setPathItems(breadcrumbsItemsForSet(nextProps.itemSet));
+        setActionCount(0);
+        setLastAction("");
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const handleAction = (key) => {
+    const nextKey = String(key);
+    const sourceItems = breadcrumbsItemsForSet(demoProps.itemSet);
+    const index = sourceItems.findIndex((item) => item.id === nextKey);
+    setActionCount((count) => count + 1);
+    setLastAction(nextKey);
+    if (index >= 0) {
+      setPathItems(sourceItems.slice(0, index + 1));
+    }
+  };
+
+  const breadcrumbs =
+    demoProps.itemSet === "standard"
+      ? jsx(SpectrumBreadcrumbs, {
+          size: demoProps.size,
+          isDisabled: demoProps.isDisabled,
+          UNSAFE_style: { width: "100%" },
+          "aria-label": "Project location",
+          onAction: handleAction,
+          children: pathItems.map((item) =>
+            jsx(
+              SpectrumBreadcrumb,
+              {
+                id: item.id,
+                href: item.href,
+                children: item.label,
+              },
+              item.id,
+            ),
+          ),
+        })
+      : jsx(SpectrumBreadcrumbs, {
+          items: pathItems,
+          size: demoProps.size,
+          isDisabled: demoProps.isDisabled,
+          UNSAFE_style: { width: "100%" },
+          "aria-label": "Project location",
+          onAction: handleAction,
+          children: (item) =>
+            jsx(SpectrumBreadcrumb, {
+              id: item.id,
+              href: item.href,
+              children: item.label,
+            }),
+        });
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-breadcrumbs-row",
+      "data-comparison-control-root": "breadcrumbs",
+      "data-comparison-control-props": serializeBreadcrumbsDemoProps(demoProps),
+      "data-comparison-breadcrumbs-props": serializeBreadcrumbsDemoProps(demoProps),
+      "data-comparison-action-count": String(actionCount),
+      "data-comparison-last-action": lastAction,
+      "data-comparison-path": serializeBreadcrumbPath(pathItems),
+      children: breadcrumbs,
     }),
     colorScheme,
   );

@@ -17,6 +17,8 @@ export interface AriaBreadcrumbsProps {
   "aria-labelledby"?: string;
   /** Identifies the element (or elements) that describes the breadcrumbs. */
   "aria-describedby"?: string;
+  /** Identifies the element (or elements) that provide a detailed description. */
+  "aria-details"?: string;
   /** Whether the breadcrumbs are disabled. */
   isDisabled?: boolean;
 }
@@ -58,6 +60,7 @@ export function createBreadcrumbs(
 
     return mergeProps(filterDOMProps(p as Record<string, unknown>, { labelable: true }), {
       "aria-label": ariaLabel,
+      "aria-details": p["aria-details"],
     });
   };
 
@@ -136,6 +139,9 @@ export function createBreadcrumbItem(
     },
     get "aria-describedby"() {
       return getProps()["aria-describedby"];
+    },
+    get "aria-details"() {
+      return getProps()["aria-details"];
     },
   });
 

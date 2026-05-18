@@ -110,13 +110,15 @@ export type {
 } from "./badge";
 
 // Breadcrumbs
-export { BreadcrumbItem as Breadcrumb, Breadcrumbs } from "./breadcrumbs";
+export { Breadcrumb, BreadcrumbItem, Breadcrumbs, BreadcrumbsContext } from "./breadcrumbs/index";
 export type {
-  BreadcrumbItemProps as BreadcrumbProps,
+  BreadcrumbItemProps,
+  BreadcrumbProps,
   BreadcrumbsProps,
   BreadcrumbsSize,
   BreadcrumbsVariant,
-} from "./breadcrumbs";
+  S2BreadcrumbsSize,
+} from "./breadcrumbs/index";
 
 // Calendar and date/time fields
 export { Calendar } from "./calendar";

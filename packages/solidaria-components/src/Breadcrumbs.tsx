@@ -10,9 +10,12 @@ import {
   type JSX,
   createContext,
   createMemo,
+  createSignal,
+  children as resolveChildren,
   splitProps,
   useContext,
   For,
+  Show,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
@@ -34,6 +37,20 @@ import {
   filterDOMProps,
 } from "./utils";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) {
+    return;
+  }
+
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface BreadcrumbsRenderProps {
   /** Whether the breadcrumbs are disabled. */
   isDisabled: boolean;
@@ -48,12 +65,14 @@ export interface BreadcrumbsProps<T> extends Omit<AriaBreadcrumbsProps, "isDisab
   isDisabled?: boolean;
   /** Handler called when a breadcrumb item is activated. */
   onAction?: (key: string | number) => void;
-  /** The children of the component - render function for each item. */
-  children: (item: T) => JSX.Element;
+  /** The children of the component, or a render function for collection items. */
+  children?: JSX.Element | ((item: T) => JSX.Element);
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<BreadcrumbsRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<BreadcrumbsRenderProps>;
+  /** Ref for the navigation element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 export interface BreadcrumbItemRenderProps {
@@ -81,11 +100,17 @@ export interface BreadcrumbItemProps
   style?: StyleOrFunction<BreadcrumbItemRenderProps>;
   /** Whether this item is disabled. */
   isDisabled?: boolean;
+  /** Ref for the breadcrumb item element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 interface BreadcrumbsContextValue {
   isDisabled: Accessor<boolean>;
   onAction?: (key: string | number) => void;
+  registerStaticItem?: () => number;
+  staticItemCount?: Accessor<number>;
+  resetStaticItems?: () => void;
+  setStaticItemCount?: (count: number) => void;
 }
 
 export const BreadcrumbsContext = createContext<BreadcrumbsContextValue | null>(null);
@@ -108,14 +133,26 @@ function defaultItemKey(item: unknown, index: number): string | number {
 export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
   const [local, ariaProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot", "items", "getKey", "isDisabled", "onAction"],
-    ["aria-label", "aria-labelledby", "aria-describedby"],
+    ["children", "class", "style", "slot", "items", "getKey", "isDisabled", "onAction", "ref"],
+    ["aria-label", "aria-labelledby", "aria-describedby", "aria-details"],
   );
 
   const isDisabled = () => local.isDisabled ?? false;
   const items = () => local.items ?? [];
+  const hasCollectionItems = () => local.items !== undefined;
   const getItemKey = (item: T, index: number): string | number =>
     local.getKey?.(item) ?? defaultItemKey(item, index);
+  const [staticItemCount, setStaticItemCount] = createSignal(0);
+  let nextStaticIndex = 0;
+  const resetStaticItems = () => {
+    nextStaticIndex = 0;
+    setStaticItemCount(0);
+  };
+  const registerStaticItem = () => {
+    const index = nextStaticIndex;
+    nextStaticIndex += 1;
+    return index;
+  };
 
   const { navProps } = createBreadcrumbs({
     get "aria-label"() {
@@ -148,12 +185,21 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
-
   return (
-    <BreadcrumbsContext.Provider value={{ isDisabled, onAction: local.onAction }}>
+    <BreadcrumbsContext.Provider
+      value={{
+        isDisabled,
+        onAction: local.onAction,
+        registerStaticItem,
+        staticItemCount,
+        resetStaticItems,
+        setStaticItemCount,
+      }}
+    >
       <nav
         {...navProps}
         {...domProps()}
+        ref={(element) => assignRef(local.ref, element)}
         class={renderProps.class()}
         style={renderProps.style()}
         data-disabled={isDisabled() || undefined}
@@ -167,23 +213,48 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
             padding: 0,
           }}
         >
-          <For each={items()}>
-            {(item, index) => {
-              const itemKey = getItemKey(item, index());
-              const isLast = () => index() === items().length - 1;
+          <Show
+            when={hasCollectionItems()}
+            fallback={
+              <StaticBreadcrumbItems>{local.children as JSX.Element}</StaticBreadcrumbItems>
+            }
+          >
+            <For each={items()}>
+              {(item, index) => {
+                const itemKey = getItemKey(item, index());
+                const isLast = () => index() === items().length - 1;
+                const renderItem = local.children as ((item: T) => JSX.Element) | undefined;
 
-              return (
-                <li style={{ display: "flex", "align-items": "center" }}>
-                  <BreadcrumbItemContext.Provider value={{ itemKey, isLast }}>
-                    {props.children(item)}
-                  </BreadcrumbItemContext.Provider>
-                </li>
-              );
-            }}
-          </For>
+                return (
+                  <li style={{ display: "flex", "align-items": "center" }}>
+                    <BreadcrumbItemContext.Provider value={{ itemKey, isLast }}>
+                      {renderItem?.(item)}
+                    </BreadcrumbItemContext.Provider>
+                  </li>
+                );
+              }}
+            </For>
+          </Show>
         </ol>
       </nav>
     </BreadcrumbsContext.Provider>
+  );
+}
+
+function StaticBreadcrumbItems(props: { children?: JSX.Element }): JSX.Element {
+  const context = useContext(BreadcrumbsContext);
+  const staticChildren = resolveChildren(() => props.children);
+  const childArray = createMemo(() => {
+    context?.resetStaticItems?.();
+    const array = staticChildren.toArray();
+    context?.setStaticItemCount?.(array.length);
+    return array;
+  });
+
+  return (
+    <For each={childArray()}>
+      {(child) => <li style={{ display: "flex", "align-items": "center" }}>{child}</li>}
+    </For>
   );
 }
 
@@ -191,13 +262,20 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
  * A BreadcrumbItem represents an individual breadcrumb in the navigation trail.
  */
 export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
-  const [local, ariaProps] = splitProps(props, ["class", "style", "slot", "isDisabled"]);
+  const [local, ariaProps] = splitProps(props, ["class", "style", "slot", "isDisabled", "ref"]);
 
   const context = useContext(BreadcrumbsContext);
   const itemContext = useContext(BreadcrumbItemContext);
+  const staticIndex = itemContext ? null : context?.registerStaticItem?.();
   const isDisabled = () => local.isDisabled ?? context?.isDisabled() ?? false;
-  const isCurrent = () => ariaProps.isCurrent ?? itemContext?.isLast() ?? false;
-  const itemKey = () => itemContext?.itemKey ?? null;
+  const isCurrent = () =>
+    ariaProps.isCurrent ??
+    itemContext?.isLast() ??
+    (staticIndex !== null &&
+      staticIndex !== undefined &&
+      context?.staticItemCount !== undefined &&
+      staticIndex === context.staticItemCount() - 1);
+  const itemKey = () => itemContext?.itemKey ?? ariaProps.id ?? null;
 
   const handlePress = (e: PressEvent) => {
     ariaProps.onPress?.(e);
@@ -268,6 +346,9 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
     get "aria-describedby"() {
       return ariaProps["aria-describedby"];
     },
+    get "aria-details"() {
+      return ariaProps["aria-details"];
+    },
     get "aria-current"() {
       return ariaProps["aria-current"];
     },
@@ -317,6 +398,10 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
     <Dynamic
       component={elementType()}
       {...mergedItemProps()}
+      ref={(element: HTMLElement) => assignRef(local.ref, element)}
+      href={isCurrent() ? undefined : (mergedItemProps() as { href?: string }).href}
+      aria-current={isCurrent() ? (ariaProps["aria-current"] ?? "page") : undefined}
+      aria-disabled={isDisabled() || isCurrent() || undefined}
       class={renderProps.class()}
       style={mergedStyle()}
       data-current={isCurrent() || undefined}
