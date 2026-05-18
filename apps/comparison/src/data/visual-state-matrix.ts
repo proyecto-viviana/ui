@@ -1814,7 +1814,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "planned",
       spec: "e2e/calendar-visual.spec.ts",
-      note: "Standalone Calendar route renders the official unselected default Calendar example on both stacks with current visual evidence; strict React-vs-Solid pair diff remains planned.",
+      note: "Standalone Calendar route renders the official unselected default Calendar example on both stacks, with seven-column grid width, no trailing ghost column, and title typography asserted; strict React-vs-Solid pair diff remains planned.",
+    },
+    {
+      id: "styled.calendar.multi-month-layout",
+      label: "Multi-month flush layout",
+      kind: "static",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "planned",
+      spec: "e2e/calendar-visual.spec.ts",
+      note: "Two-month Calendar route keeps both month grids flush to the Calendar root and prevents stacked month headings on both stacks; strict React-vs-Solid pair diff remains planned.",
     },
     {
       id: "styled.calendar.controls",

@@ -58,17 +58,41 @@ async function calendarVisualContract(root: Locator) {
           )
         : null;
       const heading = root?.querySelector("h2");
+      const grids = Array.from(root?.querySelectorAll('[role="grid"]') ?? []) as HTMLElement[];
       const gridRect = grid.getBoundingClientRect();
+      const firstGridRect = grids[0]?.getBoundingClientRect() ?? gridRect;
+      const lastGridRect = grids[grids.length - 1]?.getBoundingClientRect() ?? gridRect;
       const selectedRect = selectedRoot?.getBoundingClientRect();
       const selectedStyles = selectedPaintElement
         ? window.getComputedStyle(selectedPaintElement)
         : null;
+      const calendarRoot = root?.querySelector(".comparison-calendar-root") as HTMLElement | null;
+      const calendarRect = calendarRoot?.getBoundingClientRect();
+      const visibleHeading =
+        Array.from(root?.querySelectorAll("h2") ?? []).find((element) => {
+          const ariaHidden = element.getAttribute("aria-hidden");
+          const ariaLive = element.getAttribute("aria-live");
+          return ariaHidden === "true" || ariaLive === "polite";
+        }) ?? heading;
+      const titleElement =
+        Array.from(visibleHeading?.querySelectorAll("div") ?? []).find((element) =>
+          /\d{4}/.test(element.textContent ?? ""),
+        ) ?? visibleHeading;
+      const headingRect = visibleHeading?.getBoundingClientRect();
+      const titleStyles = titleElement ? window.getComputedStyle(titleElement) : null;
 
       return {
         headingText: heading?.textContent?.trim() ?? null,
+        headingHeight: headingRect ? Math.round(headingRect.height) : null,
+        titleColor: titleStyles?.color ?? null,
+        titleFontWeight: titleStyles?.fontWeight ?? null,
+        titleLineHeight: titleStyles?.lineHeight ?? null,
         gridColumnCount: grid.querySelectorAll("thead th").length,
         gridWidth: Math.round(gridRect.width),
         gridHeight: Math.round(gridRect.height),
+        calendarWidth: calendarRect ? Math.round(calendarRect.width) : null,
+        gridLeftOffset: calendarRect ? Math.round(firstGridRect.left - calendarRect.left) : null,
+        gridRightGap: calendarRect ? Math.round(calendarRect.right - lastGridRect.right) : null,
         selectedText: selectedRoot?.textContent?.trim() ?? null,
         selectedWidth: selectedRect ? Math.round(selectedRect.width) : null,
         selectedHeight: selectedRect ? Math.round(selectedRect.height) : null,
@@ -92,6 +116,15 @@ test.describe("comparison Calendar visual coverage", () => {
       expect(solid.gridColumnCount).toBe(7);
       expect(react.selectedText).toBeNull();
       expect(solid.selectedText).toBeNull();
+      expect(react.calendarWidth).toBe(react.gridWidth);
+      expect(solid.calendarWidth).toBe(solid.gridWidth);
+      expect(react.gridLeftOffset).toBe(0);
+      expect(solid.gridLeftOffset).toBe(0);
+      expect(react.gridRightGap).toBe(0);
+      expect(solid.gridRightGap).toBe(0);
+      expect(solid.titleColor).toBe(react.titleColor);
+      expect(solid.titleFontWeight).toBe(react.titleFontWeight);
+      expect(solid.titleLineHeight).toBe(react.titleLineHeight);
       expect(react.gridWidth).toBeGreaterThan(180);
       expect(solid.gridWidth).toBeGreaterThan(180);
       expect(react.gridHeight).toBeGreaterThan(150);
@@ -119,5 +152,23 @@ test.describe("comparison Calendar visual coverage", () => {
       expect(react.selectedColor).not.toBe(react.selectedBackground);
       expect(solid.selectedColor).not.toBe(solid.selectedBackground);
     }
+  });
+
+  test("Calendar multi-month layout keeps the heading compact and grids flush", async ({
+    page,
+  }) => {
+    const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
+      visibleMonths: "2",
+    });
+
+    const react = await calendarVisualContract(reactRoot);
+    const solid = await calendarVisualContract(solidRoot);
+
+    expect(react.gridLeftOffset).toBe(0);
+    expect(solid.gridLeftOffset).toBe(0);
+    expect(react.gridRightGap).toBe(0);
+    expect(solid.gridRightGap).toBe(0);
+    expect(react.headingHeight).toBeLessThanOrEqual(32);
+    expect(solid.headingHeight).toBeLessThanOrEqual(32);
   });
 });

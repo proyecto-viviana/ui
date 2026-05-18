@@ -155,10 +155,6 @@ function monthTitle(date: CalendarDate, locale: string | undefined, timeZone: st
 const calendarRoot = style<{ isMultiMonth?: boolean }>({
   ...setColorScheme(),
   display: "flex",
-  containerType: {
-    default: "inline-size",
-    isMultiMonth: "normal",
-  },
   flexDirection: "column",
   gap: 24,
   disableTapHighlight: true,
@@ -166,14 +162,8 @@ const calendarRoot = style<{ isMultiMonth?: boolean }>({
     type: "paddingStart",
     value: 4,
   },
-  "--cell-responsive-size": {
-    type: "width",
-    value: "[min(var(--s2-calendar-cell-max-width), (100cqw - (var(--cell-gap) * 12)) / 7)]",
-  },
-  width: {
-    default: "[calc(7 * var(--s2-calendar-cell-max-width) + var(--cell-gap) * 12)]",
-    isMultiMonth: "[max-content]",
-  },
+  "--cell-responsive-size": "--s2-calendar-cell-max-width",
+  width: "fit",
 });
 
 const calendarHeader = style({
@@ -191,27 +181,25 @@ const calendarHeading = style<{ isMultiMonth?: boolean }>({
   minWidth: 0,
 });
 
-const calendarTitleRow = style<{ isMultiMonth?: boolean }>({
-  display: "grid",
-  gridTemplateColumns: {
-    default: "1fr",
-    isMultiMonth: "[repeat(var(--s2-calendar-visible-months), minmax(0, 1fr))]",
-  },
-  gap: 24,
+const calendarTitle = style({
+  font: "title-lg",
+  textAlign: "center",
   flexGrow: 1,
   flexShrink: 0,
+  flexBasis: "0%",
+  minWidth: 0,
 });
 
-const calendarTitleStyle: JSX.CSSProperties = {
-  "font-family":
-    "adobe-clean-spectrum-vf, adobe-clean-variable, adobe-clean, ui-sans-serif, system-ui, sans-serif",
-  "font-size": "18px",
-  "font-weight": 700,
-  "line-height": "22px",
-  "text-align": "center",
-  "flex-grow": 1,
-  "flex-shrink": 0,
-};
+const calendarTitleSpacer = style<{ size: 24 | 32 }>({
+  visibility: "hidden",
+  flexShrink: 0,
+  width: {
+    size: {
+      24: 24,
+      32: 32,
+    },
+  },
+});
 
 const calendarMonths = style<{ isMultiMonth?: boolean }>({
   display: "flex",
@@ -418,12 +406,20 @@ function CalendarHeading(props: { visibleMonths: number; locale?: string }): JSX
 
   return (
     <h2 aria-live="polite" class={calendarHeading}>
-      <div
-        class={calendarTitleRow({ isMultiMonth: props.visibleMonths > 1 })}
-        style={{ "--s2-calendar-visible-months": props.visibleMonths }}
-      >
-        <For each={months()}>{(title) => <div style={calendarTitleStyle}>{title}</div>}</For>
-      </div>
+      <For each={months()}>
+        {(title, index) =>
+          index() === 0 ? (
+            <div class={calendarTitle}>{title}</div>
+          ) : (
+            <>
+              <div class={calendarTitleSpacer({ size: 32 })} />
+              <div class={calendarTitleSpacer({ size: 24 })} />
+              <div class={calendarTitleSpacer({ size: 32 })} />
+              <div class={calendarTitle}>{title}</div>
+            </>
+          )
+        }
+      </For>
     </h2>
   );
 }
@@ -471,18 +467,12 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
     ...(mergedUnsafeStyle() ?? {}),
     "--cell-gap": "4px",
     "--cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-    "--cell-responsive-size":
-      visibleMonths() > 1
-        ? "var(--cell-max-width)"
-        : "min(var(--cell-max-width), (100cqw - (var(--cell-gap) * 12)) / 7)",
+    "--cell-responsive-size": "var(--cell-max-width)",
     "--s2-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
     "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
     "--s2-calendar-visible-months": visibleMonths(),
-    width:
-      visibleMonths() > 1
-        ? "max-content"
-        : "calc(7 * var(--cell-max-width) + var(--cell-gap) * 12)",
-    "max-width": visibleMonths() > 1 ? "unset" : "100%",
+    width: "fit-content",
+    "max-width": "100%",
   });
   const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
   const describedBy = () => {

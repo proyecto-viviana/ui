@@ -2530,6 +2530,8 @@ function ReactCalendarDemo() {
 
   const selectedValue = value;
   const visibleMonths = calendarVisibleMonthsFromString(demoProps.visibleMonths);
+  const resolvedVisibleMonths = visibleMonths ?? 1;
+  const calendarReferenceWidth = `${resolvedVisibleMonths * 224 + (resolvedVisibleMonths - 1) * 24}px`;
   const calendarProps = {
     "aria-label": "Event date",
     onChange: (nextValue) => setValue(nextValue),
@@ -2544,6 +2546,11 @@ function ReactCalendarDemo() {
     visibleMonths,
     pageBehavior: demoProps.pageBehavior || undefined,
     UNSAFE_className: "comparison-calendar-root",
+    UNSAFE_style: {
+      "--cell-responsive-size": "32px",
+      width: calendarReferenceWidth,
+      maxWidth: "100%",
+    },
   };
 
   if (selectedValue) {
