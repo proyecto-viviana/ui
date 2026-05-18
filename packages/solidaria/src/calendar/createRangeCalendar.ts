@@ -92,7 +92,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   // Previous button props
   const prevButtonProps = createMemo(() => {
     const p = getProps();
-    const isDisabled = p.isDisabled || state.isDisabled();
+    const isDisabled = p.isDisabled || state.isDisabled() || state.isPreviousVisibleRangeInvalid();
 
     return {
       "aria-label": "Previous month",
@@ -109,7 +109,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   // Next button props
   const nextButtonProps = createMemo(() => {
     const p = getProps();
-    const isDisabled = p.isDisabled || state.isDisabled();
+    const isDisabled = p.isDisabled || state.isDisabled() || state.isNextVisibleRangeInvalid();
 
     return {
       "aria-label": "Next month",

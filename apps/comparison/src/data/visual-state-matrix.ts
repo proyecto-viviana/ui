@@ -1976,9 +1976,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "static",
       react: "visual",
       solid: "visual",
-      pairDiff: "planned",
+      pairDiff: "strict",
       spec: "e2e/rangecalendar-visual.spec.ts",
-      note: "Both styled stacks mount RangeCalendar directly with controlled range value and visible selected-range treatment. Strict pair-diff remains planned while the route records geometry and state contracts.",
+      note: "Strict zero-tolerance pair-diff covers both rendered month grids in the deterministic two-month constrained route, including the selected invalid range and unavailable-date strike treatment.",
     },
     {
       id: "styled.grid.geometry",

@@ -13,7 +13,6 @@ import {
 } from "solid-js";
 import {
   RangeCalendar as HeadlessRangeCalendar,
-  RangeCalendarButton,
   RangeCalendarCell,
   RangeCalendarGrid,
   useRangeCalendarContext,
@@ -24,14 +23,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { useLocale } from "@proyecto-viviana/solidaria";
 import { DateFormatter, type RangeCalendarStateProps } from "@proyecto-viviana/solid-stately";
-import {
-  baseColor,
-  focusRing,
-  lightDark,
-  setColorScheme,
-  style,
-  type StyleString,
-} from "../s2-style";
+import { focusRing, lightDark, setColorScheme, style, type StyleString } from "../s2-style";
 import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
 import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { pressScale } from "../pressScale";
@@ -45,6 +37,7 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { ActionButton, type ActionButtonSize } from "../button/ActionButton";
 
 export type RangeCalendarSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "xl";
 type NormalizedRangeCalendarSize = "sm" | "md" | "lg" | "xl";
@@ -156,6 +149,20 @@ function normalizeFirstDayOfWeek(
   }
 }
 
+function actionButtonSize(size: NormalizedRangeCalendarSize): ActionButtonSize {
+  switch (size) {
+    case "sm":
+      return "S";
+    case "lg":
+      return "L";
+    case "xl":
+      return "XL";
+    case "md":
+    default:
+      return "M";
+  }
+}
+
 function monthTitle(date: CalendarDate, locale: string | undefined, timeZone: string): string {
   const formattableMonth = date.calendar.getFormattableMonth?.(date) ?? date;
   return new DateFormatter(locale ?? "en-US", {
@@ -191,7 +198,6 @@ const rangeCalendarHeading = style({
   justifyContent: "space-between",
   margin: 0,
   flexGrow: 1,
-  minWidth: 0,
 });
 
 const rangeCalendarTitle = style({
@@ -199,19 +205,15 @@ const rangeCalendarTitle = style({
   textAlign: "center",
   flexGrow: 1,
   flexShrink: 0,
-  flexBasis: "0%",
-  minWidth: 0,
 });
 
 const rangeCalendarTitleSpacer32 = style({
   visibility: "hidden",
-  flexShrink: 0,
   width: 32,
 });
 
 const rangeCalendarTitleSpacer24 = style({
   visibility: "hidden",
-  flexShrink: 0,
   width: 24,
 });
 
@@ -226,31 +228,12 @@ const rangeCalendarMonths = style<{ isMultiMonth?: boolean }>({
   width: "[max-content]",
 });
 
-const rangeCalendarNavButton = style<{ buttonSize: number }>({
-  ...focusRing(),
-  font: "ui",
-  fontWeight: "medium",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "[var(--s2-calendar-button-size)]",
-  height: "[var(--s2-calendar-button-size)]",
-  borderStyle: "none",
-  borderRadius: "full",
-  backgroundColor: {
-    default: "transparent",
-    isHovered: baseColor("gray-100"),
-    isPressed: baseColor("gray-200"),
+const rangeCalendarNavButtonWrapper = style<{ direction?: "ltr" | "rtl" }>({
+  scale: {
+    direction: {
+      rtl: -1,
+    },
   },
-  color: {
-    default: baseColor("neutral"),
-    isDisabled: "disabled",
-  },
-  cursor: {
-    default: "default",
-    isDisabled: "default",
-  },
-  transition: "default",
 });
 
 const rangeCalendarGrid = style({
@@ -280,7 +263,27 @@ const rangeCalendarHeaderCell = style({
 
 const rangeCalendarCellWrapper = style({
   outlineStyle: "none",
-  boxSizing: "content-box",
+  boxSizing: "border-box",
+  paddingStart: 0,
+  paddingEnd: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  position: "relative",
+  disableTapHighlight: true,
+  width: "--cell-responsive-size",
+  height: "--cell-responsive-size",
+});
+
+const rangeCalendarCellOuter = style<{
+  isOutsideMonth?: boolean;
+  isFirstChild?: boolean;
+  isLastChild?: boolean;
+  isFirstWeek?: boolean;
+  isLastWeek?: boolean;
+}>({
+  outlineStyle: "none",
+  boxSizing: "border-box",
+  position: "relative",
   paddingStart: {
     default: 4,
     isFirstChild: 0,
@@ -297,20 +300,6 @@ const rangeCalendarCellWrapper = style({
     default: 2,
     isLastWeek: 0,
   },
-  position: "relative",
-  disableTapHighlight: true,
-  width: "--cell-responsive-size",
-  height: "--cell-responsive-size",
-});
-
-const rangeCalendarCellOuter = style<{
-  isOutsideMonth?: boolean;
-}>({
-  outlineStyle: "none",
-  boxSizing: "border-box",
-  position: "relative",
-  width: "full",
-  height: "full",
   display: {
     default: "flex",
     isOutsideMonth: "none",
@@ -420,7 +409,6 @@ const rangeCalendarCellInner = style<{
     isSelectionStart: "white",
     isSelectionEnd: "white",
     isDisabled: "disabled",
-    isUnavailable: "disabled",
     forcedColors: {
       default: "ButtonText",
       isSelected: "HighlightText",
@@ -580,7 +568,7 @@ const rangeCalendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean 
   margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
-  font: "body-sm",
+  font: "ui",
   color: {
     default: "neutral-subdued",
     isInvalid: {
@@ -618,6 +606,47 @@ function RangeCalendarHeading(props: { visibleMonths: number; locale?: string })
         }
       </For>
     </h2>
+  );
+}
+
+function RangeCalendarNavigationButton(props: {
+  slot: "previous" | "next";
+  size: NormalizedRangeCalendarSize;
+  children: JSX.Element;
+}): JSX.Element {
+  const state = useRangeCalendarContext();
+  const locale = useLocale();
+  const isDisabled = () =>
+    state.isDisabled() ||
+    (props.slot === "previous"
+      ? state.isPreviousVisibleRangeInvalid()
+      : state.isNextVisibleRangeInvalid());
+  const label = () => (props.slot === "previous" ? "Previous month" : "Next month");
+  const onPress = () => {
+    if (isDisabled()) {
+      return;
+    }
+
+    if (props.slot === "previous") {
+      state.focusPreviousPage();
+    } else {
+      state.focusNextPage();
+    }
+  };
+
+  return (
+    <div class={rangeCalendarNavButtonWrapper({ direction: locale().direction })}>
+      <ActionButton
+        aria-label={label()}
+        isDisabled={isDisabled()}
+        isQuiet
+        onPress={onPress}
+        size={actionButtonSize(props.size)}
+        tabIndex={-1}
+      >
+        {props.children}
+      </ActionButton>
+    </div>
   );
 }
 
@@ -772,29 +801,15 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
       style={rootStyle()}
     >
       <header class={rangeCalendarHeader}>
-        <RangeCalendarButton
-          slot="previous"
-          class={rangeCalendarNavButton({ buttonSize: sizeConfig().buttonSize })}
-          style={{
-            width: `${sizeConfig().buttonSize}px`,
-            height: `${sizeConfig().buttonSize}px`,
-          }}
-        >
+        <RangeCalendarNavigationButton slot="previous" size={size()}>
           <ChevronLeftIcon styles={rangeCalendarNavIcon} />
-        </RangeCalendarButton>
+        </RangeCalendarNavigationButton>
 
         <RangeCalendarHeading visibleMonths={visibleMonths()} locale={locale()} />
 
-        <RangeCalendarButton
-          slot="next"
-          class={rangeCalendarNavButton({ buttonSize: sizeConfig().buttonSize })}
-          style={{
-            width: `${sizeConfig().buttonSize}px`,
-            height: `${sizeConfig().buttonSize}px`,
-          }}
-        >
+        <RangeCalendarNavigationButton slot="next" size={size()}>
           <ChevronRightIcon styles={rangeCalendarNavIcon} />
-        </RangeCalendarButton>
+        </RangeCalendarNavigationButton>
       </header>
 
       <div class={rangeCalendarMonths({ isMultiMonth: visibleMonths() > 1 })}>
@@ -816,11 +831,7 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
                   cellClass={rangeCalendarCellWrapper}
                   cellStyle={() => cellBoxStyle(size())}
                   style={() => cellBoxStyle(size())}
-                  class={({ isOutsideMonth }) =>
-                    rangeCalendarCellOuter({
-                      isOutsideMonth,
-                    })
-                  }
+                  class={rangeCalendarCellOuter}
                 >
                   {(cell) => <RangeCalendarCellContent cell={cell} date={date} />}
                 </RangeCalendarCell>
@@ -831,12 +842,12 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
       </div>
 
       <Show when={isInvalid() && local.errorMessage}>
-        <p
+        <span
           id={errorMessageId}
           class={rangeCalendarHelpText({ isInvalid: true, isDisabled: Boolean(rest.isDisabled) })}
         >
           {local.errorMessage}
-        </p>
+        </span>
       </Show>
     </HeadlessRangeCalendar>
   );

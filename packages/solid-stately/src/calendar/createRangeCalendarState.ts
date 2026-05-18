@@ -30,6 +30,8 @@ import { access, type MaybeAccessor } from "../utils";
 import type { CalendarDayOfWeek, ValidationState } from "./createCalendarState";
 
 const dayOfWeekNames: CalendarDayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+type RangeCalendarSelectionAlignment = "start" | "center" | "end";
+type RangeCalendarPageBehavior = "single" | "visible";
 
 export interface DateRange {
   start: CalendarDate;
@@ -70,6 +72,10 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
   visibleMonths?: number;
+  /** Controls how the initial visible months are aligned around the current value. */
+  selectionAlignment?: RangeCalendarSelectionAlignment;
+  /** Controls whether pagination moves by one month or the visible month count. */
+  pageBehavior?: RangeCalendarPageBehavior;
   /** Controls which days are disabled. */
   isDateDisabled?: (date: DateValue) => boolean;
   /** Validation state. */
@@ -135,6 +141,10 @@ export interface RangeCalendarState<T extends DateValue = DateValue> {
   focusPreviousSection: () => void;
   /** Moves focus to the next section (year). */
   focusNextSection: () => void;
+  /** Whether the previous visible range would be outside the allowed date range. */
+  isPreviousVisibleRangeInvalid: () => boolean;
+  /** Whether the next visible range would be outside the allowed date range. */
+  isNextVisibleRangeInvalid: () => boolean;
   /** Moves focus to the previous day. */
   focusPreviousDay: () => void;
   /** Moves focus to the next day. */
@@ -206,6 +216,81 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return constrained;
   };
 
+  const visibleRangeEndFromStart = (start: CalendarDate): CalendarDate => {
+    let end = endOfMonth(start);
+
+    for (let i = 1; i < visibleMonths; i++) {
+      end = endOfMonth(end.add({ months: 1 }));
+    }
+
+    return end;
+  };
+
+  const rawAlignStart = (date: CalendarDate): CalendarDate => startOfMonth(date);
+
+  const rawAlignEnd = (date: CalendarDate): CalendarDate =>
+    startOfMonth(date).subtract({ months: Math.max(visibleMonths - 1, 0) });
+
+  const constrainVisibleRangeStart = (date: CalendarDate, aligned: CalendarDate): CalendarDate => {
+    const minValue = access(props.minValue);
+    const maxValue = access(props.maxValue);
+    let constrained = aligned;
+
+    if (minValue && date.compare(toDisplayCalendarDate(minValue)) >= 0) {
+      const minStart = rawAlignStart(toDisplayCalendarDate(minValue));
+      if (minStart.compare(constrained) > 0) {
+        constrained = minStart;
+      }
+    }
+
+    if (maxValue && date.compare(toDisplayCalendarDate(maxValue)) <= 0) {
+      const maxStart = rawAlignEnd(toDisplayCalendarDate(maxValue));
+      if (maxStart.compare(constrained) < 0) {
+        constrained = maxStart;
+      }
+    }
+
+    return constrained;
+  };
+
+  const alignStart = (date: CalendarDate): CalendarDate =>
+    constrainVisibleRangeStart(date, rawAlignStart(date));
+
+  const alignEnd = (date: CalendarDate): CalendarDate =>
+    constrainVisibleRangeStart(date, rawAlignEnd(date));
+
+  const alignCenter = (date: CalendarDate): CalendarDate => {
+    let offset = Math.floor(visibleMonths / 2);
+    if (offset > 0 && visibleMonths % 2 === 0) {
+      offset--;
+    }
+
+    return constrainVisibleRangeStart(date, rawAlignStart(date).subtract({ months: offset }));
+  };
+
+  const defaultSelectionAlignment = (): RangeCalendarSelectionAlignment => {
+    const currentValue = access(props.value) ?? props.defaultValue;
+    if (!currentValue?.start || !currentValue?.end) {
+      return "center";
+    }
+
+    const start = alignCenter(toDisplayCalendarDate(currentValue.start));
+    const end = visibleRangeEndFromStart(start);
+    return toDisplayCalendarDate(currentValue.end).compare(end) > 0 ? "start" : "center";
+  };
+
+  const alignVisibleRangeStart = (date: CalendarDate): CalendarDate => {
+    switch (props.selectionAlignment ?? defaultSelectionAlignment()) {
+      case "start":
+        return alignStart(date);
+      case "end":
+        return alignEnd(date);
+      case "center":
+      default:
+        return alignCenter(date);
+    }
+  };
+
   // Determine the initially focused date
   const getInitialFocusedDate = (): CalendarDate => {
     const controlledFocused = access(props.focusedValue);
@@ -229,8 +314,10 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const [internalValue, setInternalValue] = createSignal<RangeValue<T> | null>(
     props.defaultValue ?? null,
   );
-  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(
-    constrainDate(getInitialFocusedDate()),
+  const initialFocusedDate = constrainDate(getInitialFocusedDate());
+  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(initialFocusedDate);
+  const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
+    alignVisibleRangeStart(initialFocusedDate),
   );
   const [anchorDate, setAnchorDate] = createSignal<CalendarDate | null>(null);
   const [isFocused, setFocused] = createSignal(false);
@@ -280,17 +367,10 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return { start: focused, end: anchor };
   });
 
-  // Visible range based on focused date
+  // Visible range based on React Stately's selection alignment rules.
   const visibleRange = createMemo(() => {
-    const focused = focusedDate();
-    const start = startOfMonth(focused);
-    let end = endOfMonth(focused);
-
-    for (let i = 1; i < visibleMonths; i++) {
-      end = endOfMonth(end.add({ months: 1 }));
-    }
-
-    return { start, end };
+    const start = visibleRangeStart();
+    return { start, end: visibleRangeEndFromStart(start) };
   });
 
   createEffect(() => {
@@ -307,6 +387,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       !isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
     ) {
       setFocusedDateInternal(nextFocusedDate);
+      setVisibleRangeStart(alignVisibleRangeStart(nextFocusedDate));
     }
   });
 
@@ -327,6 +408,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     }
 
     setFocusedDateInternal(nextFocusedDate);
+    setVisibleRangeStart(alignVisibleRangeStart(nextFocusedDate));
     props.onFocusChange?.(nextFocusedDate);
   });
 
@@ -339,6 +421,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     }
 
     setFocusedDateInternal(nextFocusedDate);
+    setVisibleRangeStart(alignVisibleRangeStart(nextFocusedDate));
   });
 
   // Format week days for headers
@@ -401,6 +484,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     }
 
     setFocusedDateInternal(constrained);
+    setVisibleRangeStart(alignVisibleRangeStart(constrained));
     props.onFocusChange?.(constrained);
   };
 
@@ -452,6 +536,17 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return false;
   };
 
+  const isDateOutsideAllowedRange = (date: DateValue): boolean => {
+    const minValue = access(props.minValue);
+    const maxValue = access(props.maxValue);
+    const calDate = toDisplayCalendarDate(date);
+
+    if (minValue && calDate.compare(toDisplayCalendarDate(minValue)) < 0) return true;
+    if (maxValue && calDate.compare(toDisplayCalendarDate(maxValue)) > 0) return true;
+
+    return false;
+  };
+
   // Check if a date is outside the visible range
   const isOutsideVisibleRange = (date: DateValue): boolean => {
     const range = visibleRange();
@@ -466,11 +561,13 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
   // Navigation methods
   const focusPreviousPage = () => {
-    setFocusedDate(focusedDate().subtract({ months: 1 }));
+    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    setFocusedDate(focusedDate().subtract({ months: pageMonths }));
   };
 
   const focusNextPage = () => {
-    setFocusedDate(focusedDate().add({ months: 1 }));
+    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    setFocusedDate(focusedDate().add({ months: pageMonths }));
   };
 
   const focusPreviousSection = () => {
@@ -479,6 +576,18 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
   const focusNextSection = () => {
     setFocusedDate(focusedDate().add({ years: 1 }));
+  };
+
+  const isPreviousVisibleRangeInvalid = () => {
+    const start = visibleRange().start;
+    const previous = start.subtract({ days: 1 });
+    return isSameDay(previous, start) || isDateOutsideAllowedRange(previous);
+  };
+
+  const isNextVisibleRangeInvalid = () => {
+    const end = visibleRange().end;
+    const next = end.add({ days: 1 });
+    return isSameDay(next, end) || isDateOutsideAllowedRange(next);
   };
 
   const focusPreviousDay = () => {
@@ -600,6 +709,8 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     focusNextPage,
     focusPreviousSection,
     focusNextSection,
+    isPreviousVisibleRangeInvalid,
+    isNextVisibleRangeInvalid,
     focusPreviousDay,
     focusNextDay,
     focusPreviousWeek,

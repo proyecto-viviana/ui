@@ -13,6 +13,8 @@ import {
 } from "@internationalized/date";
 import { type MaybeAccessor } from "../utils";
 import type { CalendarDayOfWeek, ValidationState } from "./createCalendarState";
+type RangeCalendarSelectionAlignment = "start" | "center" | "end";
+type RangeCalendarPageBehavior = "single" | "visible";
 export interface DateRange {
   start: CalendarDate;
   end: CalendarDate;
@@ -50,6 +52,10 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
   visibleMonths?: number;
+  /** Controls how the initial visible months are aligned around the current value. */
+  selectionAlignment?: RangeCalendarSelectionAlignment;
+  /** Controls whether pagination moves by one month or the visible month count. */
+  pageBehavior?: RangeCalendarPageBehavior;
   /** Controls which days are disabled. */
   isDateDisabled?: (date: DateValue) => boolean;
   /** Validation state. */
@@ -117,6 +123,10 @@ export interface RangeCalendarState<T extends DateValue = DateValue> {
   focusPreviousSection: () => void;
   /** Moves focus to the next section (year). */
   focusNextSection: () => void;
+  /** Whether the previous visible range would be outside the allowed date range. */
+  isPreviousVisibleRangeInvalid: () => boolean;
+  /** Whether the next visible range would be outside the allowed date range. */
+  isNextVisibleRangeInvalid: () => boolean;
   /** Moves focus to the previous day. */
   focusPreviousDay: () => void;
   /** Moves focus to the next day. */

@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
+import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 async function rangeCalendarRoot(panel: Locator) {
   const root = panel.locator('[data-comparison-control-root="rangecalendar"]');
@@ -9,10 +10,12 @@ async function rangeCalendarRoot(panel: Locator) {
 }
 
 async function rangeCalendarFixtures(page: Page) {
+  await pinComparisonTheme(page, "dark");
   await page.goto(
     "/components/rangecalendar/?visibleMonths=2&firstDayOfWeek=mon&isInvalid=true&unavailableDates=true&allowsNonContiguousRanges=true&constrainRange=true",
   );
   await waitForComparisonRouteReady(page);
+  await clearPointer(page);
 
   const section = await styledSection(page);
   const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -60,6 +63,28 @@ async function rangeCalendarContract(root: Locator) {
 }
 
 test.describe("comparison RangeCalendar visual coverage", () => {
+  test("RangeCalendar month grids are pixel-identical", async ({ page }) => {
+    const { reactRoot, solidRoot } = await rangeCalendarFixtures(page);
+    const reactGrids = reactRoot.locator('[role="grid"]');
+    const solidGrids = solidRoot.locator('[role="grid"]');
+
+    await expect(reactGrids).toHaveCount(2);
+    await expect(solidGrids).toHaveCount(2);
+
+    await expectExactScreenshotPair(
+      page,
+      reactGrids.nth(0),
+      solidGrids.nth(0),
+      "RangeCalendar constrained leading month grid",
+    );
+    await expectExactScreenshotPair(
+      page,
+      reactGrids.nth(1),
+      solidGrids.nth(1),
+      "RangeCalendar selected range month grid",
+    );
+  });
+
   test("route mounts both styled stacks with S2 range calendar gates", async ({ page }) => {
     const { reactRoot, solidRoot } = await rangeCalendarFixtures(page);
 

@@ -321,13 +321,16 @@ export function RangeCalendarButton(props: RangeCalendarButtonProps): JSX.Elemen
     }
     return calendarAria.nextButtonProps;
   });
+  const isDisabled = createMemo(
+    () => props.isDisabled || Boolean(buttonProps().disabled) || state.isDisabled(),
+  );
 
   return (
     <button
       {...buttonProps()}
       class={props.class ?? "solidaria-RangeCalendarButton"}
       style={props.style}
-      disabled={props.isDisabled || state.isDisabled()}
+      disabled={isDisabled()}
     >
       {props.children}
     </button>

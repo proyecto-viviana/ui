@@ -197,6 +197,33 @@ describe("RangeCalendar", () => {
       expect(januaryButton).toBeTruthy();
       expect(januaryButton).toHaveAttribute("data-outside-month");
     });
+
+    it("should align multi-month visible range against maxValue", async () => {
+      render(() => (
+        <RangeCalendar
+          aria-label="Constrained range calendar"
+          visibleMonths={2}
+          value={{ start: new CalendarDate(2025, 2, 3), end: new CalendarDate(2025, 2, 7) }}
+          minValue={new CalendarDate(2025, 2, 3)}
+          maxValue={new CalendarDate(2025, 2, 20)}
+        >
+          <RangeCalendarGrid>{(date) => <RangeCalendarCell date={date} />}</RangeCalendarGrid>
+          <RangeCalendarGrid offset={{ months: 1 }}>
+            {(date) => <RangeCalendarCell date={date} />}
+          </RangeCalendarGrid>
+        </RangeCalendar>
+      ));
+      await waitForRangeCalendarHydration();
+
+      const grids = document.querySelectorAll('table[role="grid"]');
+      const inMonthLabels = (grid: Element | undefined) =>
+        Array.from(grid?.querySelectorAll('div[role="button"]:not([data-outside-month])') ?? [])
+          .map((button) => button.getAttribute("aria-label") ?? "")
+          .join(" ");
+      expect(grids.length).toBe(2);
+      expect(inMonthLabels(grids[0])).toContain("January 31, 2025");
+      expect(inMonthLabels(grids[1])).toContain("February 20, 2025");
+    });
   });
 
   // ============================================
