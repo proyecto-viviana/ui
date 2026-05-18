@@ -1894,7 +1894,17 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/calendar-contract.spec.ts; packages/solidaria-components/test/RangeCalendar.test.tsx",
-      note: "Calendar validation route now asserts visible error text and selected-cell aria-invalid/aria-describedby linkage on both stacks. RangeCalendar unit coverage asserts localized start/finish range-selection prompt descriptions and invalid error-id composition, with prompt strings mirrored across React Aria's locale set. Browser rerun for the Calendar route assertion is deferred until browser focus is allowed.",
+      note: "Calendar validation route asserts visible error text and selected-cell aria-invalid/aria-describedby linkage on both stacks. RangeCalendar unit coverage asserts localized start/finish range-selection prompt descriptions and invalid error-id composition, with prompt strings mirrored across React Aria's locale set.",
+    },
+    {
+      id: "styled.calendar.forced-colors",
+      label: "Forced-colors contrast",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/calendar-visual.spec.ts",
+      note: "Forced-colors media emulation verifies the browser environment and compares the actual selected paint node plus default, unavailable, and invalid help-text foreground colors between React Spectrum and Solid.",
     },
     {
       id: "styled.calendar.selected-value",

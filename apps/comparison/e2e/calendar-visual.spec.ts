@@ -102,6 +102,70 @@ async function calendarVisualContract(root: Locator) {
     });
 }
 
+async function calendarForcedColorsContract(root: Locator) {
+  return root.evaluate((element) => {
+    function isTransparent(value: string) {
+      return value === "transparent" || /^rgba\(.+,\s*0\)$/.test(value);
+    }
+
+    function styleMap(node: Element | null, keys: readonly string[]) {
+      if (!(node instanceof HTMLElement) && !(node instanceof SVGElement)) {
+        return null;
+      }
+
+      const styles = window.getComputedStyle(node);
+      return Object.fromEntries(
+        keys.map((key) => {
+          const value = styles.getPropertyValue(key);
+          return [key, key.endsWith("color") && isTransparent(value) ? "transparent" : value];
+        }),
+      );
+    }
+
+    function buttonForDate(day: number) {
+      return (
+        Array.from(element.querySelectorAll('[role="button"]')).find((button) =>
+          (button.getAttribute("aria-label") ?? "").includes(`February ${day}, 2025`),
+        ) ?? null
+      );
+    }
+
+    function selectedPaintElement(node: Element | null) {
+      if (!node) return null;
+
+      return (
+        ([node, ...Array.from(node.querySelectorAll("*"))] as Element[]).find((candidate) => {
+          if (!(candidate instanceof HTMLElement) && !(candidate instanceof SVGElement)) {
+            return false;
+          }
+
+          const rect = candidate.getBoundingClientRect();
+          return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            !isTransparent(window.getComputedStyle(candidate).backgroundColor)
+          );
+        }) ?? node
+      );
+    }
+
+    const selected = buttonForDate(3);
+    const defaultCell = buttonForDate(4);
+    const unavailable = buttonForDate(10);
+    const error = Array.from(element.querySelectorAll("*")).find(
+      (node) => node.textContent?.trim() === "Date is unavailable.",
+    );
+
+    return {
+      mediaMatches: window.matchMedia("(forced-colors: active)").matches,
+      selected: styleMap(selectedPaintElement(selected), ["background-color", "color"]),
+      defaultCell: styleMap(defaultCell, ["color"]),
+      unavailable: styleMap(unavailable, ["color"]),
+      error: styleMap(error ?? null, ["color", "forced-color-adjust"]),
+    };
+  });
+}
+
 test.describe("comparison Calendar visual coverage", () => {
   test("Calendar official default renders an unselected S2 grid in light and dark themes", async ({
     page,
@@ -170,5 +234,31 @@ test.describe("comparison Calendar visual coverage", () => {
     expect(solid.gridRightGap).toBe(0);
     expect(react.headingHeight).toBeLessThanOrEqual(32);
     expect(solid.headingHeight).toBeLessThanOrEqual(32);
+  });
+
+  test("Calendar forced-colors branch matches React Spectrum", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await expect(page.evaluate(() => matchMedia("(forced-colors: active)").matches)).resolves.toBe(
+      true,
+    );
+
+    const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
+      value: "2025-02-03",
+      unavailableDates: "true",
+      isInvalid: "true",
+      errorMessage: "Date is unavailable.",
+    });
+
+    const react = await calendarForcedColorsContract(reactRoot);
+    const solid = await calendarForcedColorsContract(solidRoot);
+
+    expect(solid).toEqual(react);
+    expect(solid.mediaMatches).toBe(true);
+    expect(solid.selected?.["background-color"]).not.toBe("rgba(0, 0, 0, 0)");
+    expect(solid.selected?.["background-color"]).not.toBe("transparent");
+    expect(solid.selected?.color).not.toBe(solid.selected?.["background-color"]);
+    expect(solid.defaultCell?.color).toBeTruthy();
+    expect(solid.unavailable?.color).toBeTruthy();
+    expect(solid.error?.color).not.toBe(solid.defaultCell?.color);
   });
 });
