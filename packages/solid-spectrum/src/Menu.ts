@@ -1,12 +1,11 @@
-export { ActionMenu, ActionMenuContext } from "./menu/ActionMenu";
-export type { ActionMenuProps } from "./menu/ActionMenu";
-
 export {
   Collection,
   ContextualHelpPopover,
   Header,
   Heading,
   Keyboard,
+  Menu,
+  MenuContext,
   MenuItem,
   MenuSection,
   MenuTrigger,
@@ -14,13 +13,19 @@ export {
   Text,
   UnavailableMenuItemTrigger,
 } from "./menu/index";
+export { Content } from "./view";
 export type {
   ContextualHelpPopoverProps,
+  Key,
+  MenuAlign,
+  MenuDirection,
   MenuItemProps,
+  MenuProps,
   MenuSectionProps,
+  MenuSize,
   MenuTriggerProps,
+  Selection,
+  SelectionMode,
   SubmenuTriggerProps,
   UnavailableMenuItemTriggerProps,
 } from "./menu/index";
-
-export type { Key } from "@proyecto-viviana/solid-stately";

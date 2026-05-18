@@ -25,7 +25,8 @@ import { RadioGroup, Radio } from "../src/radio";
 import { ComboBox, ComboBoxOption } from "../src/combobox";
 import { Select, SelectTrigger, SelectValue, SelectListBox, SelectOption } from "../src/select";
 import { ListBox, ListBoxOption } from "../src/listbox";
-import { MenuTrigger, MenuButton, Menu, MenuItem, ActionMenu } from "../src/menu";
+import { ActionMenu } from "../src/ActionMenu";
+import { MenuTrigger, MenuButton, Menu, MenuItem } from "../src/menu";
 import { GridList, GridListItem } from "../src/gridlist";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "../src/table";
 import { Tree, TreeItem } from "../src/tree";
@@ -359,7 +360,7 @@ describe("Regression: Menu", () => {
 
   it("renders trigger, click → menu with items, and snapshot", async () => {
     const user = setupUser();
-    const { container } = render(() => (
+    render(() => (
       <MenuTrigger>
         <MenuButton>Actions</MenuButton>
         <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
@@ -377,7 +378,7 @@ describe("Regression: Menu", () => {
     expect(menuItems.length).toBe(3);
     expect(menuItems[0].textContent).toContain("Edit");
 
-    expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
+    expect(normalizeIds(document.body.innerHTML)).toMatchSnapshot();
   });
 });
 
@@ -390,7 +391,7 @@ describe("Regression: ActionMenu", () => {
 
   it("renders button with aria-label, click → menu, and snapshot", async () => {
     const user = setupUser();
-    const { container } = render(() => <ActionMenu items={items} getKey={(i) => i.id} />);
+    render(() => <ActionMenu aria-label="Actions" items={items} getKey={(i) => i.id} />);
 
     const trigger = screen.getByRole("button", { name: "Actions" });
     expect(trigger).toBeInTheDocument();
@@ -400,7 +401,7 @@ describe("Regression: ActionMenu", () => {
     await user.click(trigger);
     expect(screen.getByRole("menu")).toBeInTheDocument();
 
-    expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
+    expect(normalizeIds(document.body.innerHTML)).toMatchSnapshot();
   });
 });
 
@@ -1080,8 +1081,9 @@ describe("Regression: Form", () => {
 
 describe("DOM prop forwarding: ActionMenu (MenuButton)", () => {
   it("forwards aria-label to trigger button", async () => {
-    const user = setupUser();
-    render(() => <ActionMenu items={[{ id: "a", label: "A" }]} getKey={(i) => i.id} />);
+    render(() => (
+      <ActionMenu aria-label="Actions" items={[{ id: "a", label: "A" }]} getKey={(i) => i.id} />
+    ));
 
     const trigger = screen.getByRole("button", { name: "Actions" });
     expect(trigger).toHaveAttribute("aria-label", "Actions");

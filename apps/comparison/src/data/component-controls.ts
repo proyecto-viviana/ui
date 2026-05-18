@@ -60,6 +60,14 @@ import {
 import { imageDemoDefaults, imageObjectFitOptions, imageSourceModeOptions } from "./image-demo";
 import { linkDemoDefaults, linkStaticColorOptions, linkVariantOptions } from "./link-demo";
 import {
+  menuAlignOptions,
+  menuDemoDefaults,
+  menuDirectionOptions,
+  menuSelectionModeOptions,
+  menuSizeOptions,
+  menuTriggerSizeOptions,
+} from "./menu-demo";
+import {
   meterDemoDefaults,
   meterLabelPositionOptions,
   meterSizeOptions,
@@ -412,6 +420,88 @@ const actionMenuControls: ComponentControlGroup = {
     "aria-describedby",
   ],
   note: "Modeled from the S2 ActionMenu docs, viewer controls, and placement API. The route drives the documented viewer axes plus shouldFlip into React and Solid; Solid now exposes the public trigger-facing API, static JSX child composition, pressScale trigger motion, and closed-trigger, open-menu, interaction-state, placement-axis, forced-colors, reduced-motion, semantic accessibility, touch, virtual activation, target-size, and contrast evidence.",
+};
+
+const menuControls: ComponentControlGroup = {
+  slug: "menu",
+  title: "Menu",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "triggerSize",
+      label: "triggerSize",
+      kind: "radio",
+      defaultValue: menuDemoDefaults.triggerSize,
+      options: options(menuTriggerSizeOptions),
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: menuDemoDefaults.size,
+      options: options(menuSizeOptions),
+    },
+    {
+      name: "align",
+      label: "align",
+      kind: "radio",
+      defaultValue: menuDemoDefaults.align,
+      options: options(menuAlignOptions),
+    },
+    {
+      name: "direction",
+      label: "direction",
+      kind: "select",
+      defaultValue: menuDemoDefaults.direction,
+      options: options(menuDirectionOptions),
+    },
+    {
+      name: "shouldFlip",
+      label: "shouldFlip",
+      kind: "switch",
+      defaultValue: menuDemoDefaults.shouldFlip,
+    },
+    {
+      name: "selectionMode",
+      label: "selectionMode",
+      kind: "radio",
+      defaultValue: menuDemoDefaults.selectionMode,
+      options: options(menuSelectionModeOptions),
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: menuDemoDefaults.isDisabled,
+    },
+  ],
+  apiProps: [
+    "children",
+    "items",
+    "disabledKeys",
+    "onAction",
+    "onClose",
+    "selectionMode",
+    "selectedKeys",
+    "defaultSelectedKeys",
+    "onSelectionChange",
+    "shouldCloseOnSelect",
+    "shouldFocusWrap",
+    "autoFocus",
+    "size",
+    "hideLinkOutIcon",
+    "align",
+    "direction",
+    "shouldFlip",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-details",
+  ],
+  note: "Modeled from the S2 Menu docs and MenuTrigger API. The route drives official trigger placement axes, trigger ActionButton size, menu size, disabled trigger state, and action/selection modes through the documented composition.",
 };
 
 const checkboxControls: ComponentControlGroup = {
@@ -2758,6 +2848,7 @@ export const componentControlGroups = {
   image: imageControls,
   link: linkControls,
   linkbutton: linkButtonControls,
+  menu: menuControls,
   meter: meterControls,
   numberfield: numberFieldControls,
   picker: pickerControls,

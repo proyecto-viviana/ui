@@ -2,8 +2,11 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from "vitest";
+import type { JSX } from "solid-js";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { ActionButton } from "../src";
+import * as MenuSubpath from "../src/Menu";
 import {
   ContextualHelpPopover,
   Header,
@@ -11,6 +14,7 @@ import {
   MenuTrigger,
   MenuButton,
   Menu,
+  MenuContext,
   MenuItem,
   MenuSection,
   MenuSeparator,
@@ -26,6 +30,17 @@ const items = [
 ];
 
 describe("Menu (solid-spectrum)", () => {
+  it("mirrors the public S2 Menu subpath exports", () => {
+    expect(MenuSubpath.Menu).toBe(Menu);
+    expect(MenuSubpath.MenuContext).toBe(MenuContext);
+    expect(MenuSubpath.MenuItem).toBe(MenuItem);
+    expect(MenuSubpath.MenuSection).toBe(MenuSection);
+    expect(MenuSubpath.MenuTrigger).toBe(MenuTrigger);
+    expect(MenuSubpath.UnavailableMenuItemTrigger).toBe(UnavailableMenuItemTrigger);
+    expect(MenuSubpath.Collection).toBeDefined();
+    expect(MenuSubpath.ContextualHelpPopover).toBe(ContextualHelpPopover);
+  });
+
   describe("MenuTrigger", () => {
     it("renders wrapper div with relative inline-block", () => {
       const { container } = render(() => (
@@ -80,6 +95,33 @@ describe("Menu (solid-spectrum)", () => {
       expect(
         within(helpPopover as HTMLElement).getByText("Ask an admin to enable this command."),
       ).toBeInTheDocument();
+    });
+
+    it("opens documented ActionButton composition in a top-level Menu popover", async () => {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger align="end" direction="top" shouldFlip={false}>
+          <ActionButton aria-label="Layer actions">Layer actions</ActionButton>
+          <Menu aria-label="Layer actions">
+            <MenuItem id="copy" textValue="Copy">
+              Copy
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Layer actions" });
+      expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+
+      await user.click(trigger);
+
+      const menu = await screen.findByRole("menu", { name: "Layer actions" });
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(trigger).toHaveAttribute("aria-controls", menu.id);
+      expect(menu.closest("[data-trigger='MenuTrigger']")).toBeInTheDocument();
+      expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
     });
   });
 
@@ -338,6 +380,37 @@ describe("Menu (solid-spectrum)", () => {
       expect(heading.className).toContain("-macro-static");
       expect(heading.className).not.toContain("text-2xl");
       expect(heading.className).not.toContain("text-primary-100");
+    });
+
+    it("supports MenuContext slots, refs, unsafe classes, and unsafe styles", () => {
+      let menuElement: HTMLUListElement | undefined;
+      render(() => (
+        <MenuContext.Provider
+          value={{
+            slots: {
+              toolbar: {
+                "aria-label": "Context menu",
+                UNSAFE_className: "context-menu-class",
+                UNSAFE_style: { "--context-menu": "1px" } as JSX.CSSProperties,
+                ref: (element) => {
+                  menuElement = element;
+                },
+              },
+            },
+          }}
+        >
+          <Menu slot="toolbar">
+            <MenuItem id="copy" textValue="Copy">
+              Copy
+            </MenuItem>
+          </Menu>
+        </MenuContext.Provider>
+      ));
+
+      const menu = screen.getByRole("menu", { name: "Context menu" });
+      expect(menuElement).toBe(menu);
+      expect(menu.className).toContain("context-menu-class");
+      expect(menu.getAttribute("style")).toContain("--context-menu: 1px");
     });
   });
 

@@ -40,6 +40,12 @@
       "import": "./dist/ActionMenu.js",
       "default": "./dist/ActionMenu.js"
     },
+    "./Menu": {
+      "types": "./dist/Menu.d.ts",
+      "solid": "./src/Menu.ts",
+      "import": "./dist/Menu.js",
+      "default": "./dist/Menu.js"
+    },
     "./theme.css": {
       "import": "./dist/theme.css",
       "default": "./src/theme.css"

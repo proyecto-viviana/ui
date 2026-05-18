@@ -1,7 +1,10 @@
 import {
   children as resolveChildren,
+  createEffect,
+  createSignal,
   type JSX,
   mergeProps,
+  onCleanup,
   splitProps,
   useContext,
 } from "solid-js";
@@ -10,6 +13,7 @@ import {
   type ButtonProps as HeadlessButtonProps,
   type ButtonRenderProps,
   DialogTriggerContext,
+  MenuTriggerContext,
   PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
@@ -145,9 +149,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
 
   const { isProgressVisible } = createPendingState(() => local.isPending);
   const dialogTriggerContext = useContext(DialogTriggerContext);
+  const menuTriggerContext = useContext(MenuTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   let buttonElement: HTMLButtonElement | undefined;
+  const [resolvedButtonElement, setResolvedButtonElement] = createSignal<HTMLButtonElement | null>(
+    null,
+  );
   const assignButtonRefs = mergeContextRefs(
     (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
     props.ref,
@@ -212,6 +220,75 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
 
   const getPressScaleStyle = (renderProps: ButtonRenderProps): JSX.CSSProperties =>
     pressScale(() => buttonElement, mergedUnsafeStyle())(renderProps);
+  const menuTriggerButtonProps = (): Partial<HeadlessButtonProps> => {
+    if (!menuTriggerContext) {
+      return {};
+    }
+
+    return {
+      get "aria-haspopup"() {
+        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-haspopup"] as
+          | "menu"
+          | true
+          | undefined;
+      },
+      get "aria-expanded"() {
+        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-expanded"] as
+          | boolean
+          | undefined;
+      },
+      get "aria-controls"() {
+        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-controls"] as
+          | string
+          | undefined;
+      },
+      get "aria-disabled"() {
+        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-disabled"] as
+          | boolean
+          | undefined;
+      },
+    };
+  };
+  const syncMenuTriggerAttribute = (element: HTMLButtonElement, name: string, value: unknown) => {
+    if (value == null) {
+      element.removeAttribute(name);
+      return;
+    }
+
+    element.setAttribute(name, String(value));
+  };
+
+  createEffect(() => {
+    const element = resolvedButtonElement();
+    if (!element || !menuTriggerContext) {
+      return;
+    }
+
+    const triggerProps = menuTriggerContext.triggerProps as Record<string, unknown>;
+    syncMenuTriggerAttribute(element, "aria-haspopup", triggerProps["aria-haspopup"]);
+    syncMenuTriggerAttribute(element, "aria-expanded", triggerProps["aria-expanded"]);
+    syncMenuTriggerAttribute(element, "aria-controls", triggerProps["aria-controls"]);
+    syncMenuTriggerAttribute(element, "aria-disabled", triggerProps["aria-disabled"]);
+  });
+  createEffect(() => {
+    const element = resolvedButtonElement();
+    if (!element || !menuTriggerContext) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+        return;
+      }
+
+      (menuTriggerContext.triggerProps as { onKeyDown?: (e: KeyboardEvent) => void }).onKeyDown?.(
+        event,
+      );
+    };
+
+    element.addEventListener("keydown", onKeyDown);
+    onCleanup(() => element.removeEventListener("keydown", onKeyDown));
+  });
 
   const pendingAccessibleLabel = () => {
     const existingLabel = (headlessProps as Record<string, unknown>)["aria-label"];
@@ -339,11 +416,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   return (
     <HeadlessButton
       {...headlessProps}
+      {...menuTriggerButtonProps()}
       aria-label={pendingAccessibleLabel()}
       isPending={local.isPending}
       isPendingFocusable
       ref={(element: HTMLButtonElement) => {
         buttonElement = element;
+        setResolvedButtonElement(element);
         assignButtonRefs(element);
       }}
       onHoverChange={(hovered) => {

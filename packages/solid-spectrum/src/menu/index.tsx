@@ -1,4 +1,13 @@
-import { type JSX, Show, createContext, createUniqueId, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  Show,
+  createContext,
+  createSignal,
+  createUniqueId,
+  mergeProps,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   Menu as HeadlessMenu,
   MenuItem as HeadlessMenuItem,
@@ -7,6 +16,8 @@ import {
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
   Popover as HeadlessPopover,
+  MenuTriggerContext,
+  PopoverTriggerContext,
   type MenuProps as HeadlessMenuProps,
   type MenuItemProps as HeadlessMenuItemProps,
   type MenuSectionProps as HeadlessMenuSectionProps,
@@ -19,8 +30,11 @@ import {
   usePopoverTrigger,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
-import type { Key } from "@proyecto-viviana/solid-stately";
+import type { Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
 import { useProviderProps, useTheme } from "../provider";
+import type { StyleString } from "../s2-style";
+import { mergeStyles } from "../s2-style/runtime";
+import { pressScale } from "../pressScale";
 import { centerBaseline } from "../icon/center-baseline";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import S2ChevronIcon from "../icon/ui-icons/Chevron";
@@ -58,11 +72,27 @@ import {
   type S2MenuItemStyleProps,
   type S2MenuSize,
 } from "./s2-menu-styles";
-import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
+import {
+  MenuLinkOutIconContext,
+  MenuSizeContext,
+  MenuTriggerOptionsContext,
+  type MenuAlign,
+  type MenuDirection,
+} from "./menu-context";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type MenuSize = S2MenuSize | "sm" | "md" | "lg";
+export type { MenuAlign, MenuDirection };
 
 const UnavailableMenuItemContext = createContext(false);
+export const MenuContext = createContext<SpectrumContextValue<MenuProps<any>>>(null);
 const linkOutIconSize: Record<S2MenuSize, "M" | "L" | "XL"> = {
   S: "M",
   M: "L",
@@ -79,6 +109,12 @@ const selectionIconSize: Record<S2MenuSize, "XS" | "S" | "M" | "L"> = {
 export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class" | "style"> {
   /** The size of the menu. */
   size?: MenuSize;
+  /** Alignment of the menu relative to the trigger. @default 'start' */
+  align?: MenuAlign;
+  /** Where the Menu opens relative to its trigger. @default 'bottom' */
+  direction?: MenuDirection;
+  /** Whether the menu should automatically flip direction when space is limited. */
+  shouldFlip?: boolean;
   /** Additional CSS class name. */
   class?: string;
 }
@@ -90,16 +126,37 @@ export interface MenuButtonProps extends Omit<HeadlessMenuButtonProps, "class" |
   variant?: "primary" | "secondary" | "quiet";
 }
 
-export interface MenuProps<T> extends Omit<HeadlessMenuProps<T>, "class" | "style"> {
+export interface MenuProps<T> extends Omit<HeadlessMenuProps<T>, "class" | "style" | "ref"> {
   /** Additional CSS class name. */
   class?: string;
   /** Hides the default link out icons on menu items that open links in a new tab. */
   hideLinkOutIcon?: boolean;
+  /** The size of the menu. @default 'M' */
+  size?: MenuSize;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString | (() => StyleString | undefined);
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Ref for the menu element. */
+  ref?: RefLike<HTMLUListElement>;
 }
 
-export interface MenuItemProps<T> extends Omit<HeadlessMenuItemProps<T>, "class" | "style"> {
+export interface MenuItemProps<T> extends Omit<
+  HeadlessMenuItemProps<T>,
+  "class" | "style" | "ref"
+> {
   /** Additional CSS class name. */
   class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString | (() => StyleString | undefined);
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Ref for the menu item element. */
+  ref?: RefLike<HTMLLIElement>;
   /**
    * Optional icon to display before the label.
    * Use a function returning JSX for SSR compatibility: `icon={() => <MyIcon />}`
@@ -176,20 +233,112 @@ function isTextOnlyChildren(children: unknown): children is string | number {
   return typeof children === "string" || typeof children === "number";
 }
 
+function menuPlacement(direction: MenuDirection | undefined, align: MenuAlign | undefined): string {
+  const resolvedDirection = direction ?? "bottom";
+  const resolvedAlign = align ?? "start";
+
+  switch (resolvedDirection) {
+    case "left":
+    case "right":
+    case "start":
+    case "end":
+      return `${resolvedDirection} ${resolvedAlign === "end" ? "bottom" : "top"}`;
+    case "bottom":
+    case "top":
+    default:
+      return `${resolvedDirection} ${resolvedAlign}`;
+  }
+}
+
+function menuPlacementAxis(
+  direction: MenuDirection | undefined,
+): NonNullable<PopoverRenderProps["placement"]> {
+  if (direction === "start") {
+    return "left";
+  }
+  if (direction === "end") {
+    return "right";
+  }
+  return direction ?? "bottom";
+}
+
 /**
  * A menu trigger wraps a button and menu, handling the open/close state.
  */
 export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
   const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["size", "class"]);
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "size",
+    "align",
+    "direction",
+    "shouldFlip",
+    "class",
+  ]);
   const size = () => normalizeMenuSize(local.size);
 
   return (
     <MenuSizeContext.Provider value={size()}>
       <div class={`relative inline-block ${local.class ?? ""}`}>
-        <HeadlessMenuTrigger {...headlessProps}>{props.children}</HeadlessMenuTrigger>
+        <HeadlessMenuTrigger {...headlessProps}>
+          <MenuTriggerOverlayContext
+            align={() => local.align}
+            direction={() => local.direction}
+            shouldFlip={() => local.shouldFlip}
+          >
+            {props.children}
+          </MenuTriggerOverlayContext>
+        </HeadlessMenuTrigger>
       </div>
     </MenuSizeContext.Provider>
+  );
+}
+
+interface MenuTriggerOverlayContextProps {
+  children: JSX.Element;
+  align: () => MenuAlign | undefined;
+  direction: () => MenuDirection | undefined;
+  shouldFlip: () => boolean | undefined;
+}
+
+function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.Element {
+  const triggerContext = useContext(MenuTriggerContext);
+  const [triggerElement, setTriggerElement] = createSignal<HTMLElement | null>(null);
+  const triggerId = createUniqueId();
+
+  const popoverTriggerContext = {
+    state: {
+      isOpen: () => triggerContext?.state.isOpen() ?? false,
+      open: () => triggerContext?.state.open(),
+      close: () => triggerContext?.state.close(),
+      toggle: () => triggerContext?.state.toggle(),
+    },
+    triggerRef: () => triggerElement(),
+    setTriggerRef: (element: HTMLElement | null) => {
+      if (!element) {
+        return;
+      }
+
+      const current = triggerElement();
+      if (!current || !current.isConnected) {
+        setTriggerElement(element);
+      }
+    },
+    triggerId,
+    trigger: "MenuTrigger",
+  };
+
+  return (
+    <MenuTriggerOptionsContext.Provider
+      value={{
+        align: props.align,
+        direction: props.direction,
+        shouldFlip: props.shouldFlip,
+      }}
+    >
+      <PopoverTriggerContext.Provider value={popoverTriggerContext}>
+        {props.children}
+      </PopoverTriggerContext.Provider>
+    </MenuTriggerOptionsContext.Provider>
   );
 }
 
@@ -199,8 +348,9 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
  */
 export function MenuButton(props: MenuButtonProps): JSX.Element {
   const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["class", "variant"]);
+  const [local, headlessProps] = splitProps(mergedProps, ["class", "variant", "ref"]);
   const size = useContext(MenuSizeContext);
+  const popoverTrigger = usePopoverTrigger();
   const sizeStyle = buttonSizeStyles[size];
   const variant = local.variant ?? "secondary";
   const customClass = local.class ?? "";
@@ -230,7 +380,14 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
   };
 
   return (
-    <HeadlessMenuButton {...headlessProps} class={getClassName}>
+    <HeadlessMenuButton
+      {...headlessProps}
+      ref={(element) => {
+        popoverTrigger?.setTriggerRef(element);
+        mergeContextRefs(local.ref)(element);
+      }}
+      class={getClassName}
+    >
       {props.children as JSX.Element}
       {/* Chevron rotates via CSS based on data-open attribute */}
       <ChevronIcon
@@ -244,47 +401,110 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
  * A menu displays a list of actions or options for the user to choose from.
  */
 export function Menu<T>(props: MenuProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["class", "hideLinkOutIcon"]);
-  const size = useContext(MenuSizeContext);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(MenuContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "class",
+    "hideLinkOutIcon",
+    "size",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "ref",
+    "slot",
+    "children",
+  ]);
+  const triggerSize = useContext(MenuSizeContext);
+  const size = () => normalizeMenuSize(local.size ?? triggerSize);
   const theme = useTheme();
   const popoverTrigger = usePopoverTrigger();
-  const customClass = local.class ?? "";
+  const triggerOptions = useContext(MenuTriggerOptionsContext);
   const isSubmenu = () => popoverTrigger?.trigger === "SubmenuTrigger";
+  const isMenuTriggerPopover = () => popoverTrigger?.trigger === "MenuTrigger";
+  const isPopoverMenu = () => isSubmenu() || isMenuTriggerPopover();
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const mergedRef = mergeContextRefs(contextProps?.ref, props.ref);
+  const mergedUnsafeClassName = () =>
+    [contextProps?.UNSAFE_className, props.UNSAFE_className].filter(Boolean).join(" ");
 
   const getClassName = (renderProps: MenuRenderProps): string => {
-    return [s2Menu({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
+    const baseClassName = s2Menu({ ...renderProps, size: size() });
+    if (isPopoverMenu()) {
+      return baseClassName;
+    }
+
+    return [mergedUnsafeClassName(), mergeStyles(baseClassName, mergedStyles()), local.class]
+      .filter(Boolean)
+      .join(" ");
+  };
+  const getStandaloneStyle = () => (isPopoverMenu() ? {} : (mergedUnsafeStyle() ?? {}));
+  const getFrameClassName = () =>
+    [
+      menuFrame,
+      mergedUnsafeClassName(),
+      mergeContextStyles(contextProps?.styles, props.styles),
+      local.class,
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const getFrameStyle = () => mergedUnsafeStyle();
+  const popoverPlacement = () =>
+    menuPlacement(triggerOptions?.direction(), triggerOptions?.align());
+  const popoverPlacementAxis = () => menuPlacementAxis(triggerOptions?.direction());
+  const popoverShouldFlip = () => triggerOptions?.shouldFlip();
+  const getPopoverClassName = (renderProps: PopoverRenderProps): string => {
+    return menuPopover({
+      ...renderProps,
+      placement: renderProps.placement ?? popoverPlacementAxis(),
+      colorScheme: theme.colorScheme,
+    });
   };
   const menuContent = () => (
-    <HeaderContext.Provider value={{ styles: () => menuSectionHeader({ size }) }}>
-      <HeadingContext.Provider
-        value={{
-          role: "presentation",
-          styles: menuSectionHeading,
-        }}
-      >
-        <TextContext.Provider
+    <MenuSizeContext.Provider value={size()}>
+      <HeaderContext.Provider value={{ styles: () => menuSectionHeader({ size: size() }) }}>
+        <HeadingContext.Provider
           value={{
-            slots: {
-              default: {
-                styles: () => menuItemLabel({ size }),
-                "data-rsp-slot": "text",
-              },
-              label: {
-                styles: () => menuItemLabel({ size }),
-                "data-rsp-slot": "text",
-              },
-              description: {
-                styles: () => menuItemDescription({ size, isFocused: false, isDisabled: false }),
-                "data-rsp-slot": "text",
-              },
-            },
+            role: "presentation",
+            styles: menuSectionHeading,
           }}
         >
-          <HeadlessMenu {...headlessProps} class={getClassName} children={props.children} />
-        </TextContext.Provider>
-      </HeadingContext.Provider>
-    </HeaderContext.Provider>
+          <TextContext.Provider
+            value={{
+              slots: {
+                default: {
+                  styles: () => menuItemLabel({ size: size() }),
+                  "data-rsp-slot": "text",
+                },
+                label: {
+                  styles: () => menuItemLabel({ size: size() }),
+                  "data-rsp-slot": "text",
+                },
+                description: {
+                  styles: () =>
+                    menuItemDescription({
+                      size: size(),
+                      isFocused: false,
+                      isDisabled: false,
+                    }),
+                  "data-rsp-slot": "text",
+                },
+              },
+            }}
+          >
+            <HeadlessMenu
+              {...headlessProps}
+              ref={mergedRef}
+              class={getClassName}
+              style={getStandaloneStyle}
+              children={local.children}
+            />
+          </TextContext.Provider>
+        </HeadingContext.Provider>
+      </HeaderContext.Provider>
+    </MenuSizeContext.Provider>
   );
 
   if (isSubmenu()) {
@@ -297,11 +517,31 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
           crossOffset={-8}
           isNonModal
           autoFocus={false}
-          class={(renderProps: PopoverRenderProps) =>
-            menuPopover({ ...renderProps, colorScheme: theme.colorScheme })
-          }
+          class={getPopoverClassName}
         >
-          <div class={menuFrame}>{menuContent()}</div>
+          <div class={getFrameClassName()} style={getFrameStyle()}>
+            {menuContent()}
+          </div>
+        </HeadlessPopover>
+      </MenuLinkOutIconContext.Provider>
+    );
+  }
+
+  if (isMenuTriggerPopover()) {
+    return (
+      <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
+        <HeadlessPopover
+          trigger="MenuTrigger"
+          triggerRef={() => popoverTrigger?.triggerRef() ?? null}
+          placement={popoverPlacement() as never}
+          offset={8}
+          shouldFlip={popoverShouldFlip()}
+          autoFocus={false}
+          class={getPopoverClassName}
+        >
+          <div class={getFrameClassName()} style={getFrameStyle()}>
+            {menuContent()}
+          </div>
         </HeadlessPopover>
       </MenuLinkOutIconContext.Provider>
     );
@@ -322,6 +562,10 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, [
     "children",
     "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "ref",
     "icon",
     "shortcut",
     "isDestructive",
@@ -336,16 +580,22 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const isLinkOut = () => headlessProps.href != null && headlessProps.target === "_blank";
   const chevronStyle = () =>
     locale().direction === "rtl" ? ({ transform: "scaleX(-1)" } as JSX.CSSProperties) : undefined;
+  const [itemElement, setItemElement] = createSignal<HTMLLIElement | null>(null);
+  const mergedStyles = () => (typeof local.styles === "function" ? local.styles() : local.styles);
 
   const getClassName = (renderProps: MenuItemRenderProps): string => {
     const isFocused = (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused;
     return [
-      s2MenuItem({
-        ...renderProps,
-        isFocused,
-        size,
-        isLink: headlessProps.href != null,
-      }),
+      local.UNSAFE_className,
+      mergeStyles(
+        s2MenuItem({
+          ...renderProps,
+          isFocused,
+          size,
+          isLink: headlessProps.href != null,
+        }),
+        mergedStyles(),
+      ),
       local.isDestructive ? "text-danger-400" : "",
       customClass,
     ]
@@ -358,6 +608,8 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     size,
     isLink: headlessProps.href != null,
   });
+  const getStyle = (renderProps: MenuItemRenderProps) =>
+    pressScale(() => itemElement(), local.UNSAFE_style)(renderProps);
   const iconContextValue = {
     slot: "icon",
     render: centerBaseline({
@@ -472,7 +724,12 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     <HeadlessMenuItem
       {...headlessProps}
       aria-describedby={ariaDescribedBy()}
+      ref={(element) => {
+        setItemElement(element);
+        mergeContextRefs(local.ref)(element);
+      }}
       class={getClassName}
+      style={getStyle}
       children={renderChildren}
     />
   );
@@ -533,10 +790,8 @@ MenuTrigger.Button = MenuButton;
 export const Item = MenuItem;
 export const Section = MenuSection;
 
-export type { Key };
+export type { Key, Selection, SelectionMode };
 
-export { ActionMenu, ActionMenuContext } from "./ActionMenu";
-export type { ActionMenuProps } from "./ActionMenu";
 export { SubmenuTrigger } from "./SubmenuTrigger";
 export type { SubmenuTriggerProps } from "./SubmenuTrigger";
 export { ContextualHelpTrigger } from "./ContextualHelpTrigger";

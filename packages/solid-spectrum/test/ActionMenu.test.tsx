@@ -8,23 +8,16 @@ import { createSignal } from "solid-js";
 import packageJson from "../package.json";
 import * as actionMenuSubpath from "../src/ActionMenu";
 import {
+  ActionMenu,
   ActionMenu as SubpathActionMenu,
+  ActionMenuContext,
   ContextualHelpPopover,
   Heading as SubpathHeading,
   MenuItem as SubpathMenuItem,
   Text as SubpathText,
   UnavailableMenuItemTrigger,
 } from "../src/ActionMenu";
-import {
-  ActionMenu,
-  ActionMenuContext,
-  Header,
-  Heading,
-  Menu,
-  MenuItem,
-  MenuSection,
-  SubmenuTrigger,
-} from "../src/menu";
+import { Header, Heading, Menu, MenuItem, MenuSection, SubmenuTrigger } from "../src/menu";
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
 

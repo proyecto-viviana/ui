@@ -76,21 +76,24 @@ export type { ActionMenuProps } from "./menu/ActionMenu";
 export {
   Collection,
   Menu,
+  MenuContext,
   MenuItem,
   MenuSection,
   MenuTrigger,
   SubmenuTrigger,
   UnavailableMenuItemTrigger,
-} from "./menu";
+} from "./menu/index";
 export type {
   MenuItemProps,
+  MenuAlign,
+  MenuDirection,
   MenuProps,
   MenuSectionProps,
   MenuSize,
   SubmenuTriggerProps,
   MenuTriggerProps,
   UnavailableMenuItemTriggerProps,
-} from "./menu";
+} from "./menu/index";
 
 // Avatar
 export { Avatar, AvatarContext, AvatarGroup, AvatarGroupContext } from "./avatar";

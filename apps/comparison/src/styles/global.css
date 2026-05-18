@@ -1578,7 +1578,8 @@ a {
   border-radius: 6px;
 }
 
-.comparison-actionmenu-row {
+.comparison-actionmenu-row,
+.comparison-menu-row {
   position: relative;
   display: flex;
   align-items: flex-start;

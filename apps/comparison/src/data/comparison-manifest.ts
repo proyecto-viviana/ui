@@ -190,6 +190,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 ActionMenu with the official compositional MenuItem example; Solid uses @proyecto-viviana/solid-spectrum ActionMenu with static JSX MenuItem composition, the public trigger-facing API, localized default label, generated S2 More icon, generated S2 menu/item styling, pressScale trigger motion, and closed-trigger, open-menu, trigger interaction, placement-axis, forced-colors, reduced-motion, semantic accessibility, touch, virtual activation, target-size, and contrast evidence.",
   }),
 
+  menu: styledLiveOfficialEntry({
+    slug: "menu",
+    title: "Menu",
+    category: "Components",
+    summary:
+      "Compositional Menu route mounted on both stacks with S2 MenuTrigger placement controls, ActionButton trigger sizing, menu sizing, disabled trigger state, and selection modes.",
+    styledSummary: "React Spectrum Menu vs Solid Spectrum Menu.",
+    styledNote:
+      "React uses @react-spectrum/s2 MenuTrigger, ActionButton, Menu, MenuItem, Text, and Keyboard directly; Solid uses @proyecto-viviana/solid-spectrum with the public Menu subpath, MenuContext export, top-level MenuTrigger popover behavior, generated S2 menu/item styling, and browser route contracts for action, selection, keyboard, and cleanup behavior.",
+  }),
+
   provider: {
     ...createGapEntry({
       slug: "provider",
