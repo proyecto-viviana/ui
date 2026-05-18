@@ -274,6 +274,27 @@ describe("DateRangePicker", () => {
     });
   });
 
+  it("renders content with defaultOpen", async () => {
+    render(() => <TestDateRangePicker pickerProps={{ defaultOpen: true }} />);
+    await waitForHydration();
+
+    await waitFor(() => {
+      expect(document.querySelector(".solidaria-DateRangePickerContent")).toBeInTheDocument();
+    });
+  });
+
+  it("requests but does not mutate controlled open state", async () => {
+    const onOpenChange = vi.fn();
+    render(() => <TestDateRangePicker pickerProps={{ isOpen: false, onOpenChange }} />);
+    await waitForHydration();
+
+    const trigger = document.querySelector(".solidaria-DateRangePickerButton") as HTMLElement;
+    await user.click(trigger);
+
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+    expect(document.querySelector(".solidaria-DateRangePickerContent")).not.toBeInTheDocument();
+  });
+
   it("opens via Space key on trigger button", async () => {
     render(() => <TestDateRangePicker />);
     await waitForHydration();

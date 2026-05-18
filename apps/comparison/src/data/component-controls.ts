@@ -53,6 +53,11 @@ import {
   checkboxGroupSizeOptions,
 } from "./checkboxgroup-demo";
 import { comboBoxDemoDefaults, comboBoxKeyOptions, comboBoxSizeOptions } from "./combobox-demo";
+import {
+  dateRangePickerDemoDefaults,
+  dateRangePickerSizeOptions,
+  dateRangePickerVisibleMonthsOptions,
+} from "./daterangepicker-demo";
 import { datePickerDemoDefaults, datePickerSizeOptions } from "./datepicker-demo";
 import {
   dividerDemoDefaults,
@@ -2319,6 +2324,99 @@ const datePickerControls: ComponentControlGroup = {
   note: "Modeled from the S2 DatePicker docs control surface for label, size, validation, disabled, required, and help text. Calendar paging, date availability, time granularity, and multi-month popover states remain dedicated visual/behavior route states.",
 };
 
+const dateRangePickerControls: ComponentControlGroup = {
+  slug: "daterangepicker",
+  title: "DateRangePicker",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "label",
+      label: "label",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.label,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: dateRangePickerDemoDefaults.size,
+      options: options(dateRangePickerSizeOptions),
+    },
+    {
+      name: "maxVisibleMonths",
+      label: "maxVisibleMonths",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.maxVisibleMonths,
+      options: options(dateRangePickerVisibleMonthsOptions),
+    },
+    {
+      name: "description",
+      label: "description",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.description,
+    },
+    {
+      name: "errorMessage",
+      label: "errorMessage",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.errorMessage,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isInvalid",
+      label: "isInvalid",
+      kind: "switch",
+      defaultValue: false,
+    },
+  ],
+  apiProps: [
+    "label",
+    "description",
+    "errorMessage",
+    "isRequired",
+    "isDisabled",
+    "isReadOnly",
+    "isInvalid",
+    "size",
+    "placeholderValue",
+    "minValue",
+    "maxValue",
+    "granularity",
+    "hourCycle",
+    "hideTimeZone",
+    "maxVisibleMonths",
+    "pageBehavior",
+    "firstDayOfWeek",
+    "isDateUnavailable",
+    "allowsNonContiguousRanges",
+    "defaultOpen",
+    "isOpen",
+    "startName",
+    "endName",
+    "shouldFlip",
+    "onChange",
+    "onOpenChange",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 DateRangePicker docs control surface for label, size, validation, disabled, required, help text, and one/two-month popover routing. Date availability, range form submission, time granularity, and calendar-system states remain dedicated route states.",
+};
+
 const calendarControls: ComponentControlGroup = {
   slug: "calendar",
   title: "Calendar",
@@ -2977,6 +3075,7 @@ export const componentControlGroups = {
   checkbox: checkboxControls,
   checkboxgroup: checkboxGroupControls,
   combobox: comboBoxControls,
+  daterangepicker: dateRangePickerControls,
   datepicker: datePickerControls,
   divider: dividerControls,
   form: formControls,

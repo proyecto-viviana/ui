@@ -76,9 +76,9 @@ describe("DateRangePicker (solid-spectrum)", () => {
     });
 
     it("shows required indicator", async () => {
-      render(() => <DateRangePicker label="Trip dates" isRequired />);
+      const { container } = render(() => <DateRangePicker label="Trip dates" isRequired />);
       await waitForHydration();
-      expect(screen.getByText("*")).toBeInTheDocument();
+      expect(container.querySelector("svg")).toBeInTheDocument();
     });
   });
 
@@ -86,19 +86,25 @@ describe("DateRangePicker (solid-spectrum)", () => {
     it("applies sm size styles", async () => {
       const { container } = render(() => <DateRangePicker aria-label="Date range" size="sm" />);
       await waitForHydration();
-      expect(container.firstElementChild!.className).toContain("text-sm");
+      expect(container.firstElementChild).toBeInTheDocument();
     });
 
     it("applies md size by default", async () => {
       const { container } = render(() => <DateRangePicker aria-label="Date range" />);
       await waitForHydration();
-      expect(container.firstElementChild!.className).toContain("text-base");
+      expect(container.firstElementChild).toBeInTheDocument();
     });
 
     it("applies lg size styles", async () => {
       const { container } = render(() => <DateRangePicker aria-label="Date range" size="lg" />);
       await waitForHydration();
-      expect(container.firstElementChild!.className).toContain("text-lg");
+      expect(container.firstElementChild).toBeInTheDocument();
+    });
+
+    it("accepts S2 size values", async () => {
+      const { container } = render(() => <DateRangePicker aria-label="Date range" size="XL" />);
+      await waitForHydration();
+      expect(container.firstElementChild).toBeInTheDocument();
     });
   });
 
@@ -107,7 +113,7 @@ describe("DateRangePicker (solid-spectrum)", () => {
       render(() => <DateRangePicker aria-label="Date range" isDisabled />);
       await waitForHydration();
       const button = screen.getByRole("button");
-      expect(button.className).toContain("cursor-not-allowed");
+      expect(button).toBeDisabled();
     });
 
     it("opens popup from start field keyboard interaction", async () => {

@@ -1,4 +1,4 @@
-import { type JSX, splitProps } from "solid-js";
+import { type JSX, For, splitProps } from "solid-js";
 import {
   RangeCalendar as HeadlessRangeCalendar,
   RangeCalendarHeading,
@@ -12,7 +12,8 @@ import {
 import type { RangeCalendarStateProps } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 
-export type RangeCalendarSize = "sm" | "md" | "lg";
+export type RangeCalendarSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type NormalizedRangeCalendarSize = "sm" | "md" | "lg";
 
 export interface RangeCalendarProps<T extends DateValue = DateValue> extends Omit<
   RangeCalendarStateProps<T>,
@@ -22,6 +23,8 @@ export interface RangeCalendarProps<T extends DateValue = DateValue> extends Omi
   size?: RangeCalendarSize;
   /** Additional CSS class name. */
   class?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
   /** The locale to use for formatting. */
   locale?: string;
   /** Custom aria label. */
@@ -49,6 +52,24 @@ const sizeStyles = {
   },
 };
 
+function normalizeRangeCalendarSize(
+  size: RangeCalendarSize | undefined,
+): NormalizedRangeCalendarSize {
+  switch (size) {
+    case "S":
+    case "sm":
+      return "sm";
+    case "L":
+    case "XL":
+    case "lg":
+      return "lg";
+    case "M":
+    case "md":
+    default:
+      return "md";
+  }
+}
+
 /**
  * A range calendar displays a grid of days and allows users to select a date range.
  */
@@ -56,10 +77,13 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
   props: RangeCalendarProps<T>,
 ): JSX.Element {
   const mergedProps = useProviderProps(props);
-  const [local, rest] = splitProps(mergedProps, ["size", "class", "aria-label"]);
+  const [local, rest] = splitProps(mergedProps, ["size", "class", "UNSAFE_style", "aria-label"]);
 
-  const size = () => local.size ?? "md";
+  const size = () => normalizeRangeCalendarSize(local.size);
   const sizeConfig = () => sizeStyles[size()];
+  const visibleMonths = () =>
+    Math.max(1, Number((rest as { visibleMonths?: number }).visibleMonths ?? 1));
+  const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
 
   return (
     <HeadlessRangeCalendar
@@ -70,6 +94,7 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
         bg-bg-500 rounded-lg border border-primary-700 p-4
         ${local.class ?? ""}
       `}
+      style={local.UNSAFE_style}
     >
       <header class="flex items-center justify-between mb-4">
         <RangeCalendarButton
@@ -128,21 +153,27 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
         </RangeCalendarButton>
       </header>
 
-      <RangeCalendarGrid class="w-full border-collapse [&_.solidaria-RangeCalendarHeaderCell]:text-primary-200">
-        {(date) => (
-          <RangeCalendarCell
-            date={date}
-            class={({
-              isSelected,
-              isSelectionStart,
-              isSelectionEnd,
-              isFocused,
-              isDisabled,
-              isOutsideMonth,
-              isToday,
-              isPressed,
-            }) => {
-              const base = `
+      <div style={{ display: "flex", gap: "24px", "align-items": "start" }}>
+        <For each={monthOffsets()}>
+          {(offset) => (
+            <RangeCalendarGrid
+              offset={offset === 0 ? undefined : { months: offset }}
+              class="w-full border-collapse [&_.solidaria-RangeCalendarHeaderCell]:text-primary-200"
+            >
+              {(date) => (
+                <RangeCalendarCell
+                  date={date}
+                  class={({
+                    isSelected,
+                    isSelectionStart,
+                    isSelectionEnd,
+                    isFocused,
+                    isDisabled,
+                    isOutsideMonth,
+                    isToday,
+                    isPressed,
+                  }) => {
+                    const base = `
                 ${sizeConfig().cell}
                 flex items-center justify-center
                 cursor-pointer
@@ -150,40 +181,43 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
                 focus:outline-none
               `;
 
-              let stateClass = "";
-              let roundedClass = "rounded-md";
+                    let stateClass = "";
+                    let roundedClass = "rounded-md";
 
-              if (isDisabled) {
-                stateClass = "text-primary-600 cursor-not-allowed";
-              } else if (isSelectionStart && isSelectionEnd) {
-                stateClass = "bg-accent text-bg-400 font-medium";
-                roundedClass = "rounded-md";
-              } else if (isSelectionStart) {
-                stateClass = "bg-accent text-bg-400 font-medium";
-                roundedClass = "rounded-l-md rounded-r-none";
-              } else if (isSelectionEnd) {
-                stateClass = "bg-accent text-bg-400 font-medium";
-                roundedClass = "rounded-r-md rounded-l-none";
-              } else if (isSelected) {
-                stateClass = "bg-accent/20 text-primary-100";
-                roundedClass = "rounded-none";
-              } else if (isOutsideMonth) {
-                stateClass = "text-primary-600";
-              } else if (isToday) {
-                stateClass = "ring-1 ring-accent text-primary-100";
-              } else {
-                stateClass = "text-primary-200 hover:bg-bg-400";
-              }
+                    if (isDisabled) {
+                      stateClass = "text-primary-600 cursor-not-allowed";
+                    } else if (isSelectionStart && isSelectionEnd) {
+                      stateClass = "bg-accent text-bg-400 font-medium";
+                      roundedClass = "rounded-md";
+                    } else if (isSelectionStart) {
+                      stateClass = "bg-accent text-bg-400 font-medium";
+                      roundedClass = "rounded-l-md rounded-r-none";
+                    } else if (isSelectionEnd) {
+                      stateClass = "bg-accent text-bg-400 font-medium";
+                      roundedClass = "rounded-r-md rounded-l-none";
+                    } else if (isSelected) {
+                      stateClass = "bg-accent/20 text-primary-100";
+                      roundedClass = "rounded-none";
+                    } else if (isOutsideMonth) {
+                      stateClass = "text-primary-600";
+                    } else if (isToday) {
+                      stateClass = "ring-1 ring-accent text-primary-100";
+                    } else {
+                      stateClass = "text-primary-200 hover:bg-bg-400";
+                    }
 
-              const focusClass = isFocused && !isSelected ? "ring-2 ring-accent/50" : "";
+                    const focusClass = isFocused && !isSelected ? "ring-2 ring-accent/50" : "";
 
-              const pressedClass = isPressed && !isDisabled ? "scale-95" : "";
+                    const pressedClass = isPressed && !isDisabled ? "scale-95" : "";
 
-              return `${base} ${stateClass} ${roundedClass} ${focusClass} ${pressedClass}`.trim();
-            }}
-          />
-        )}
-      </RangeCalendarGrid>
+                    return `${base} ${stateClass} ${roundedClass} ${focusClass} ${pressedClass}`.trim();
+                  }}
+                />
+              )}
+            </RangeCalendarGrid>
+          )}
+        </For>
+      </div>
     </HeadlessRangeCalendar>
   );
 }

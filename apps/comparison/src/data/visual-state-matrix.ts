@@ -1969,6 +1969,38 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Side-panel controls dispatch label, size, validation, disabled, required, and help text props into both mounted styled stacks.",
     },
   ],
+  daterangepicker: [
+    {
+      id: "styled.field.default",
+      label: "Closed range field",
+      kind: "static",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "planned",
+      spec: "e2e/daterangepicker-visual.spec.ts",
+      note: "Solid styled DateRangePicker is mounted in the comparison app and uses the generated S2 field shell, required/invalid/help text, S2 size values, and controlled/default open state coverage. Strict field pair-diff remains planned because the Solid headless layer does not yet expose slot-based DateInput segments.",
+    },
+    {
+      id: "styled.calendar.open",
+      label: "Open range calendar popover",
+      kind: "overlay",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "planned",
+      spec: "e2e/daterangepicker-visual.spec.ts",
+      note: "Open-state evidence exists for both stacks, including one/two visible-month routing. RangeCalendar S2 styling remains separately tracked before strict overlay pair-diff can be accepted.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts",
+      note: "Side-panel controls dispatch label, size, validation, disabled, required, help text, and maxVisibleMonths props into both mounted styled stacks.",
+    },
+  ],
 };
 
 function stateTargetsFor(entry: ComparisonEntry): readonly VisualStateTarget[] {

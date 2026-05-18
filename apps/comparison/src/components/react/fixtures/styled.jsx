@@ -25,6 +25,7 @@ import {
   ComboBox as SpectrumComboBox,
   ComboBoxItem as SpectrumComboBoxItem,
   Content as SpectrumContent,
+  DateRangePicker as SpectrumDateRangePicker,
   DatePicker as SpectrumDatePicker,
   Dialog as SpectrumDialog,
   DialogTrigger as SpectrumDialogTrigger,
@@ -182,6 +183,11 @@ import {
   normalizeDatePickerDemoProps,
   serializeDatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
+import {
+  dateRangePickerDemoPropsFromWindow,
+  normalizeDateRangePickerDemoProps,
+  serializeDateRangePickerDemoProps,
+} from "@comparison/data/daterangepicker-demo";
 import {
   dividerDemoPropsFromWindow,
   normalizeDividerDemoProps,
@@ -497,6 +503,7 @@ export const reactStyledFixtures = {
   picker: () => jsx(ReactPickerDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
+  daterangepicker: () => jsx(ReactDateRangePickerDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
   searchfield: () => jsx(ReactSearchFieldDemo, {}),
   skeleton: () => jsx(ReactSkeletonDemo, {}),
@@ -2617,6 +2624,48 @@ function ReactDatePickerDemo() {
         onChange: (nextValue) => setValue(nextValue == null ? "" : String(nextValue)),
         onOpenChange: setIsOpen,
         UNSAFE_className: "comparison-datepicker-root",
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactDateRangePickerDemo() {
+  const [demoProps, setDemoProps] = useState(dateRangePickerDemoPropsFromWindow);
+  const [value, setValue] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "daterangepicker") {
+        const nextProps = normalizeDateRangePickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue("");
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-value": value,
+      "data-comparison-open": String(isOpen),
+      "data-comparison-color-scheme": colorScheme,
+      children: jsx(SpectrumDateRangePicker, {
+        "data-comparison-control-root": "daterangepicker",
+        "data-comparison-control-props": serializeDateRangePickerDemoProps(demoProps),
+        label: demoProps.label,
+        size: demoProps.size,
+        maxVisibleMonths: Number(demoProps.maxVisibleMonths),
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => setValue(nextValue == null ? "" : JSON.stringify(nextValue)),
+        onOpenChange: setIsOpen,
+        UNSAFE_className: "comparison-daterangepicker-root",
       }),
     }),
     colorScheme,

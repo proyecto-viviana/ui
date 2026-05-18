@@ -142,6 +142,10 @@ export interface DateRangePickerProps<T extends DateValue = DateValue>
   style?: StyleOrFunction<DateRangePickerRenderProps>;
   locale?: string;
   shouldCloseOnSelect?: boolean;
+  /** Whether the overlay is open by default (uncontrolled). */
+  defaultOpen?: boolean;
+  /** Whether the overlay is open (controlled). */
+  isOpen?: boolean;
   /** Callback when the overlay open state changes. */
   onOpenChange?: (isOpen: boolean) => void;
 }
@@ -437,9 +441,10 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
 function DateRangePickerInner<T extends DateValue = CalendarDate>(
   props: DateRangePickerProps<T>,
 ): JSX.Element {
-  const [local, stateProps, rest] = splitProps(
+  const [local, overlayProps, stateProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot", "shouldCloseOnSelect", "onOpenChange"],
+    ["children", "class", "style", "slot", "shouldCloseOnSelect"],
+    ["defaultOpen", "isOpen", "onOpenChange"],
     [
       "value",
       "defaultValue",
@@ -461,29 +466,31 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     ],
   );
 
-  const [isOpen, setIsOpen] = createSignal(false);
+  const [internalOpen, setInternalOpen] = createSignal(overlayProps.defaultOpen ?? false);
+  const isOpen = () => access(overlayProps.isOpen) ?? internalOpen();
+  const setOpen = (open: boolean) => {
+    if (access(overlayProps.isOpen) === undefined) {
+      setInternalOpen(open);
+    }
+    overlayProps.onOpenChange?.(open);
+  };
+
   let triggerRef: HTMLElement | null = null;
   const overlayState = {
     get isOpen() {
       return isOpen();
     },
-    open: () => setIsOpen(true),
-    close: () => setIsOpen(false),
-    toggle: () => setIsOpen((prev) => !prev),
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+    toggle: () => setOpen(!isOpen()),
   };
-
-  // Wire onOpenChange callback
-  createEffect(() => {
-    const open = overlayState.isOpen;
-    local.onOpenChange?.(open);
-  });
 
   const calendarState = createRangeCalendarState({
     ...stateProps,
     onChange: (value) => {
       stateProps.onChange?.(value);
       if (local.shouldCloseOnSelect !== false && value?.start && value?.end) {
-        overlayState.close();
+        setOpen(false);
       }
     },
   });

@@ -25,6 +25,7 @@ await import("../packages/solid-spectrum/src/breadcrumbs/s2-breadcrumbs-styles")
 await import("../packages/solid-spectrum/src/menu/s2-menu-styles");
 await import("../packages/solid-spectrum/src/picker");
 await import("../packages/solid-spectrum/src/combobox");
+await import("../packages/solid-spectrum/src/datepicker");
 await import("../packages/solid-spectrum/src/link");
 
 const css = [

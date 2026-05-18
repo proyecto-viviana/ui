@@ -34,6 +34,7 @@ import {
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
+  DateRangePicker as SolidSpectrumDateRangePicker,
   DatePicker as SolidSpectrumDatePicker,
   Divider as SolidSpectrumDivider,
   Form as SolidSpectrumForm,
@@ -200,6 +201,12 @@ import {
   serializeDatePickerDemoProps,
   type DatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
+import {
+  dateRangePickerDemoPropsFromWindow,
+  normalizeDateRangePickerDemoProps,
+  serializeDateRangePickerDemoProps,
+  type DateRangePickerDemoProps,
+} from "@comparison/data/daterangepicker-demo";
 import {
   dividerDemoPropsFromWindow,
   normalizeDividerDemoProps,
@@ -605,6 +612,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
+  daterangepicker: () => h(SolidSpectrumDateRangePickerDemo, {}),
   datepicker: () => h(SolidSpectrumDatePickerDemo, {}),
   divider: () => h(SolidSpectrumDividerDemo, {}),
   form: () => h(SolidSpectrumFormDemo, {}),
@@ -2644,6 +2652,105 @@ function SolidSpectrumDatePickerDemo() {
             },
             onChange: (nextValue: unknown) => {
               setValue(nextValue == null ? "" : String(nextValue));
+            },
+            onOpenChange: setIsOpen,
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumDateRangePickerDemo() {
+  const [demoProps, setDemoProps] = createSignal<DateRangePickerDemoProps>(
+    dateRangePickerDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal("");
+  const [isOpen, setIsOpen] = createSignal(false);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "daterangepicker") {
+        const nextProps = normalizeDateRangePickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue("");
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeDateRangePickerDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-value"() {
+            return value();
+          },
+          get "data-comparison-open"() {
+            return String(isOpen());
+          },
+          "data-comparison-control-root": "daterangepicker",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(SolidSpectrumDateRangePicker, {
+            class: "comparison-daterangepicker-root",
+            get label() {
+              return demoProps().label;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get maxVisibleMonths() {
+              return Number(demoProps().maxVisibleMonths);
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onChange: (nextValue: unknown) => {
+              setValue(nextValue == null ? "" : JSON.stringify(nextValue));
             },
             onOpenChange: setIsOpen,
           }),
