@@ -7,7 +7,8 @@ import {
 } from "./comparison-page";
 import {
   clearPointer,
-  expectExactScreenshotPair,
+  compareScreenshots,
+  exactPairDiff,
   pinComparisonTheme,
   type ComparisonColorScheme,
 } from "./visual-diff";
@@ -46,6 +47,73 @@ async function calendarFixtures(
   await expect(solidRoot).toBeVisible();
 
   return { reactCanvas, reactRoot, solidCanvas, solidRoot };
+}
+
+async function waitForCalendarScreenshotFrame(target: Locator) {
+  await target.evaluate(async () => {
+    if ("fonts" in document) {
+      await document.fonts.ready;
+    }
+
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
+}
+
+async function fixedCalendarRootScreenshot(target: Locator) {
+  await waitForCalendarScreenshotFrame(target);
+
+  const previousStyle = await target.evaluate((element) => {
+    const htmlElement = element as HTMLElement;
+    const style = htmlElement.getAttribute("style");
+
+    htmlElement.style.position = "fixed";
+    htmlElement.style.insetBlockStart = "128px";
+    htmlElement.style.insetInlineStart = "384px";
+    htmlElement.style.margin = "0";
+    htmlElement.style.zIndex = "2147483647";
+
+    return style;
+  });
+
+  try {
+    await waitForCalendarScreenshotFrame(target);
+    return await target.screenshot({ animations: "disabled" });
+  } finally {
+    await target.evaluate((element, style) => {
+      const htmlElement = element as HTMLElement;
+      if (style === null) {
+        htmlElement.removeAttribute("style");
+      } else {
+        htmlElement.setAttribute("style", style);
+      }
+    }, previousStyle);
+  }
+}
+
+async function expectExactCalendarRootPair(
+  page: Page,
+  reactRoot: Locator,
+  solidRoot: Locator,
+  label: string,
+) {
+  const previousScroll = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+
+  try {
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(async () => {
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+    });
+
+    const reactPng = await fixedCalendarRootScreenshot(reactRoot);
+    const solidPng = await fixedCalendarRootScreenshot(solidRoot);
+    const diff = await compareScreenshots(page, reactPng, solidPng, label, exactPairDiff);
+
+    return { reactPng, solidPng, diff };
+  } finally {
+    await page.evaluate(({ x, y }) => window.scrollTo(x, y), previousScroll);
+  }
 }
 
 async function calendarVisualContract(root: Locator) {
@@ -180,11 +248,28 @@ async function calendarForcedColorsContract(root: Locator) {
 
 test.describe("comparison Calendar visual coverage", () => {
   test("Calendar unselected grid is pixel-identical", async ({ page }) => {
-    const { reactCanvas, solidCanvas } = await calendarFixtures(page, "dark", {
+    const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
       focusedValue: "2025-02-15",
     });
 
-    await expectExactScreenshotPair(page, reactCanvas, solidCanvas, "Calendar unselected grid");
+    await expectExactCalendarRootPair(page, reactRoot, solidRoot, "Calendar unselected grid");
+  });
+
+  test("Calendar selected date is pixel-identical", async ({ page }) => {
+    const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
+      value: "2025-02-03",
+    });
+
+    await expectExactCalendarRootPair(page, reactRoot, solidRoot, "Calendar selected date");
+  });
+
+  test("Calendar multi-month layout is pixel-identical", async ({ page }) => {
+    const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
+      focusedValue: "2025-02-15",
+      visibleMonths: "2",
+    });
+
+    await expectExactCalendarRootPair(page, reactRoot, solidRoot, "Calendar multi-month layout");
   });
 
   test("Calendar official default renders an unselected S2 grid in light and dark themes", async ({

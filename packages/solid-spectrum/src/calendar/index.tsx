@@ -4,6 +4,7 @@ import {
   For,
   Show,
   createContext,
+  createSignal,
   createUniqueId,
   mergeProps,
   splitProps,
@@ -15,6 +16,7 @@ import {
   CalendarGrid,
   CalendarCell,
   useCalendarContext,
+  type CalendarCellRenderProps,
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
@@ -30,6 +32,7 @@ import {
 } from "../s2-style";
 import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
 import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
+import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
@@ -193,15 +196,16 @@ const calendarTitle = style({
   minWidth: 0,
 });
 
-const calendarTitleSpacer = style<{ size: 24 | 32 }>({
+const calendarTitleSpacer32 = style({
   visibility: "hidden",
   flexShrink: 0,
-  width: {
-    size: {
-      24: 24,
-      32: 32,
-    },
-  },
+  width: 32,
+});
+
+const calendarTitleSpacer24 = style({
+  visibility: "hidden",
+  flexShrink: 0,
+  width: 24,
 });
 
 const calendarMonths = style<{ isMultiMonth?: boolean }>({
@@ -277,26 +281,15 @@ const calendarCellWrapper = style({
   height: "--cell-responsive-size",
 });
 
-const calendarCell = style<{
-  isSelected?: boolean;
-  isFocused?: boolean;
+const calendarCellOuter = style<{
   isDisabled?: boolean;
   isOutsideMonth?: boolean;
-  isPressed?: boolean;
-  isHovered?: boolean;
-  isUnavailable?: boolean;
   isFirstChild?: boolean;
   isLastChild?: boolean;
   isFirstWeek?: boolean;
   isLastWeek?: boolean;
 }>({
-  ...focusRing(),
-  transition: {
-    default: "default",
-    forcedColors: "none",
-  },
-  outlineOffset: 2,
-  position: "relative",
+  outlineStyle: "none",
   boxSizing: "border-box",
   paddingStart: {
     default: 4,
@@ -314,15 +307,48 @@ const calendarCell = style<{
     default: 2,
     isLastWeek: 0,
   },
+  position: "relative",
+  width: "full",
+  height: "full",
+  display: {
+    default: "flex",
+    isOutsideMonth: "none",
+  },
+  alignItems: "center",
+  justifyContent: "center",
+  disableTapHighlight: true,
+});
+
+const calendarCellInnerFrame = style({
+  position: "relative",
+  width: "full",
+  height: "full",
+});
+
+const calendarCellInner = style<{
+  isSelected?: boolean;
+  isDisabled?: boolean;
+  isPressed?: boolean;
+  isHovered?: boolean;
+  isUnavailable?: boolean;
+  isInvalid?: boolean;
+}>({
+  ...focusRing(),
+  transition: {
+    default: "default",
+    forcedColors: "none",
+  },
+  outlineOffset: {
+    default: -2,
+    isSelected: 2,
+  },
+  position: "relative",
   font: "body-sm",
   cursor: "default",
   width: "full",
   height: "full",
   borderRadius: "full",
-  display: {
-    default: "flex",
-    isOutsideMonth: "none",
-  },
+  display: "flex",
   alignItems: "center",
   justifyContent: "center",
   forcedColorAdjust: "none",
@@ -338,8 +364,12 @@ const calendarCell = style<{
       default: lightDark("accent-900", "accent-700"),
       isHovered: lightDark("accent-1000", "accent-600"),
       isPressed: lightDark("accent-1000", "accent-600"),
-      isFocused: lightDark("accent-1000", "accent-600"),
       isDisabled: "transparent",
+      isInvalid: {
+        default: lightDark("negative-900", "negative-700"),
+        isHovered: lightDark("negative-1000", "negative-600"),
+        isPressed: lightDark("negative-1000", "negative-600"),
+      },
     },
     forcedColors: {
       default: "transparent",
@@ -382,6 +412,7 @@ const calendarNavIcon = style({
   },
   width: "[1.4285714285714286em]",
   height: "[1.4285714285714286em]",
+  forcedColorAdjust: "none",
 });
 
 const calendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
@@ -418,15 +449,39 @@ function CalendarHeading(props: { visibleMonths: number; locale?: string }): JSX
             <div class={calendarTitle}>{title}</div>
           ) : (
             <>
-              <div class={calendarTitleSpacer({ size: 32 })} />
-              <div class={calendarTitleSpacer({ size: 24 })} />
-              <div class={calendarTitleSpacer({ size: 32 })} />
+              <div class={calendarTitleSpacer32} />
+              <div class={calendarTitleSpacer24} />
+              <div class={calendarTitleSpacer32} />
               <div class={calendarTitle}>{title}</div>
             </>
           )
         }
       </For>
     </h2>
+  );
+}
+
+function CalendarCellContent(props: { cell: CalendarCellRenderProps }): JSX.Element {
+  const [innerElement, setInnerElement] = createSignal<HTMLDivElement | null>(null);
+
+  return (
+    <div class={calendarCellInnerFrame}>
+      <div
+        ref={setInnerElement}
+        style={pressScale(innerElement, {})(props.cell)}
+        class={calendarCellInner({
+          isSelected: props.cell.isSelected,
+          isDisabled: props.cell.isDisabled,
+          isUnavailable: props.cell.isUnavailable,
+          isPressed: props.cell.isPressed,
+          isHovered: props.cell.isHovered,
+          isInvalid: props.cell.isInvalid,
+        })}
+      >
+        <div class={calendarTodayDot({ isToday: props.cell.isToday })} role="presentation" />
+        <div>{props.cell.formattedDate}</div>
+      </div>
+    </div>
   );
 }
 
@@ -551,26 +606,16 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
                   cellStyle={() => cellBoxStyle(size())}
                   style={() => cellBoxStyle(size())}
                   class={({
-                    isSelected,
-                    isFocused,
                     isDisabled,
-                    isUnavailable,
                     isOutsideMonth,
-                    isPressed,
-                    isHovered,
                     isFirstChild,
                     isLastChild,
                     isFirstWeek,
                     isLastWeek,
                   }) =>
-                    calendarCell({
-                      isSelected,
-                      isFocused,
+                    calendarCellOuter({
                       isDisabled,
-                      isUnavailable,
                       isOutsideMonth,
-                      isPressed,
-                      isHovered,
                       isFirstChild,
                       isLastChild,
                       isFirstWeek,
@@ -578,12 +623,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
                     })
                   }
                 >
-                  {({ formattedDate, isToday }) => (
-                    <>
-                      <div class={calendarTodayDot({ isToday })} role="presentation" />
-                      <span>{formattedDate}</span>
-                    </>
-                  )}
+                  {(cell) => <CalendarCellContent cell={cell} />}
                 </CalendarCell>
               )}
             </CalendarGrid>

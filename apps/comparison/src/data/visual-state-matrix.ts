@@ -1814,7 +1814,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "strict",
       spec: "e2e/calendar-visual.spec.ts",
-      note: "Standalone Calendar route renders the official unselected default Calendar example on both stacks, with seven-column grid width, no trailing ghost column, title typography, S2 nav icon sizing, and strict zero-tolerance React-vs-Solid pair diff asserted.",
+      note: "Standalone Calendar route renders the official unselected default Calendar example on both stacks, with seven-column grid width, no trailing ghost column, title typography, S2 nav icon sizing, and strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff asserted.",
     },
     {
       id: "styled.calendar.multi-month-layout",
@@ -1822,9 +1822,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "static",
       react: "visual",
       solid: "visual",
-      pairDiff: "planned",
+      pairDiff: "strict",
       spec: "e2e/calendar-visual.spec.ts",
-      note: "Two-month Calendar route keeps both month grids flush to the Calendar root and prevents stacked month headings on both stacks; strict React-vs-Solid pair diff remains planned.",
+      note: "Two-month Calendar route with visibleMonths=2 and focusedValue=2025-02-15 keeps both month grids flush to the Calendar root, uses static heading spacers, prevents a trailing ghost column, and passes strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
     },
     {
       id: "styled.calendar.controls",
@@ -1912,9 +1912,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "static",
       react: "visual",
       solid: "visual",
-      pairDiff: "planned",
+      pairDiff: "strict",
       spec: "e2e/calendar-visual.spec.ts",
-      note: "Controlled selected-date visual state paints the selected day on both stacks; strict React-vs-Solid pair diff remains planned.",
+      note: "Controlled selected-date route with value=2025-02-03 asserts the selected inner paint, focus-ring offset, and pressScale-backed glyph parity through strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
     },
   ],
   datepicker: [
