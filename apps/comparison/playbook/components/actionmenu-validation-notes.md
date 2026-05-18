@@ -123,6 +123,26 @@
   `vp run --filter @proyecto-viviana/solid-spectrum build`,
   `vp run check:fix`, `vp run check`, and `git diff --check`.
 
+## Latest Unavailable Contextual Help Source Slice Summary
+
+- Matched the upstream unavailable item branch more closely: unavailable menu
+  items keep submenu-trigger semantics, expose the unavailable descriptor, and
+  open a contextual help popover with the submenu trigger id used by
+  `aria-controls`.
+- Reset contextual help content away from the surrounding menu text context and
+  added S2 heading/body text contexts so help popovers use contextual help
+  typography instead of menu item typography. Popover aria/id props are now
+  typed on the styled wrapper because those attributes are forwarded to the
+  headless popover element.
+- Added direct S2 `Menu` and ActionMenu subpath coverage for unavailable items:
+  descriptor labelling, hover-open behavior, submenu help dialog identity,
+  accessible popover name, contextual heading styling, body content, and the
+  `isUnavailable={false}` plain-item fallback.
+- Verification for this slice:
+  `vp test packages/solid-spectrum/test/Menu.test.tsx packages/solid-spectrum/test/ActionMenu.test.tsx`
+  (`55` passed), `vp run --filter @proyecto-viviana/solid-spectrum build`,
+  `vp run check:fix`, `vp run check`, and `git diff --check`.
+
 ## Agent Workflow
 
 No subagents are assigned for the initial ActionMenu slice. Keep work local

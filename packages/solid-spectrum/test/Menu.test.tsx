@@ -2,9 +2,10 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import {
+  ContextualHelpPopover,
   Header,
   Heading,
   MenuTrigger,
@@ -13,6 +14,8 @@ import {
   MenuItem,
   MenuSection,
   MenuSeparator,
+  Text,
+  UnavailableMenuItemTrigger,
 } from "../src/menu";
 
 /** Minimal menu items for testing. */
@@ -36,6 +39,47 @@ describe("Menu (solid-spectrum)", () => {
 
       const wrapper = container.querySelector(".relative.inline-block");
       expect(wrapper).toBeInTheDocument();
+    });
+
+    it("opens contextual help popovers for unavailable menu items", async () => {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Actions</MenuButton>
+          <Menu aria-label="Actions">
+            <UnavailableMenuItemTrigger isUnavailable>
+              <MenuItem id="locked" textValue="Locked action">
+                <Text slot="label">Locked action</Text>
+              </MenuItem>
+              <ContextualHelpPopover>
+                <>
+                  <Heading>Locked action</Heading>
+                  <Text>Ask an admin to enable this command.</Text>
+                </>
+              </ContextualHelpPopover>
+            </UnavailableMenuItemTrigger>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const menuItem = screen.getByRole("menuitem", { name: /Locked action/ });
+      expect(menuItem).toHaveAttribute("aria-haspopup", "menu");
+      expect(menuItem.querySelector('[data-rsp-slot="descriptor"] svg')).toHaveAccessibleName(
+        "Unavailable",
+      );
+
+      await user.hover(menuItem);
+
+      await waitFor(() => expect(menuItem).toHaveAttribute("aria-expanded", "true"));
+      const helpPopoverId = menuItem.getAttribute("aria-controls");
+      expect(helpPopoverId).toBeTruthy();
+      const helpPopover = document.getElementById(helpPopoverId!);
+      expect(helpPopover).toHaveAttribute("role", "dialog");
+      expect(helpPopover).toHaveAttribute("data-trigger", "SubmenuTrigger");
+      expect(helpPopover).toHaveAccessibleName("Locked action");
+      expect(
+        within(helpPopover as HTMLElement).getByText("Ask an admin to enable this command."),
+      ).toBeInTheDocument();
     });
   });
 

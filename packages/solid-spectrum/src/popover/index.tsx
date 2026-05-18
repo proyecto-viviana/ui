@@ -21,6 +21,14 @@ export interface PopoverTriggerProps extends HeadlessPopoverTriggerProps {
 export interface PopoverProps extends Omit<HeadlessPopoverProps, "class" | "style" | "children"> {
   /** The content of the popover. */
   children: JSX.Element;
+  /** DOM id for the popover element. */
+  id?: string;
+  /** Accessible label for the popover. */
+  "aria-label"?: string;
+  /** Id of the element that labels the popover. */
+  "aria-labelledby"?: string;
+  /** Id of the element that describes the popover. */
+  "aria-describedby"?: string;
   /** The position of the popover relative to the trigger. */
   placement?: PopoverPlacement;
   /** Size variant of the popover. */

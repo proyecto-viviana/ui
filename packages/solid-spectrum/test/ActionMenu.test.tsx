@@ -737,7 +737,8 @@ describe("ActionMenu (solid-spectrum)", () => {
     });
   });
 
-  it("supports unavailable menu item composition from the ActionMenu subpath", () => {
+  it("supports unavailable menu item composition from the ActionMenu subpath", async () => {
+    const user = setupUser();
     render(() => (
       <SubpathActionMenu defaultOpen>
         <UnavailableMenuItemTrigger isUnavailable>
@@ -756,11 +757,59 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     const menuItem = screen.getByRole("menuitem", { name: /Locked action/ });
     expect(menuItem).toHaveAttribute("aria-haspopup", "menu");
+    expect(menuItem).not.toHaveAttribute("aria-expanded");
 
     const descriptorId = menuItem.getAttribute("aria-describedby");
     expect(descriptorId).toBeTruthy();
     const descriptor = document.getElementById(descriptorId!);
     expect(descriptor).toBeInTheDocument();
     expect(within(descriptor!).getByRole("img", { name: "Unavailable" })).toBeInTheDocument();
+
+    await user.hover(menuItem);
+
+    await waitFor(() => expect(menuItem).toHaveAttribute("aria-expanded", "true"));
+    const helpPopoverId = menuItem.getAttribute("aria-controls");
+    expect(helpPopoverId).toBeTruthy();
+    const helpPopover = document.getElementById(helpPopoverId!);
+    expect(helpPopover).toHaveAttribute("role", "dialog");
+    expect(helpPopover).toHaveAttribute("data-trigger", "SubmenuTrigger");
+    expect(helpPopover).toHaveAccessibleName("Locked action");
+
+    const heading = within(helpPopover as HTMLElement).getByText("Locked action");
+    expect(heading.tagName).toBe("H2");
+    expect(helpPopover).toHaveAttribute("aria-labelledby", heading.id);
+    expect(heading.getAttribute("class")).toContain("-macro-");
+    expect(heading.getAttribute("class")).not.toContain("text-3xl");
+    expect(
+      within(helpPopover as HTMLElement).getByText("Ask an admin to enable this command."),
+    ).toBeInTheDocument();
+  });
+
+  it("renders unavailable menu item trigger as a plain item when available", async () => {
+    const user = setupUser();
+    render(() => (
+      <SubpathActionMenu defaultOpen>
+        <UnavailableMenuItemTrigger isUnavailable={false}>
+          <SubpathMenuItem id="share" textValue="Share">
+            <SubpathText slot="label">Share</SubpathText>
+          </SubpathMenuItem>
+          <ContextualHelpPopover>
+            <SubpathHeading level={2}>Share</SubpathHeading>
+          </ContextualHelpPopover>
+        </UnavailableMenuItemTrigger>
+      </SubpathActionMenu>
+    ));
+
+    const menuItem = screen.getByRole("menuitem", { name: "Share" });
+    expect(menuItem).not.toHaveAttribute("aria-haspopup");
+    expect(menuItem).not.toHaveAttribute("aria-describedby");
+    expect(menuItem.querySelector('[data-rsp-slot="descriptor"]')).not.toBeInTheDocument();
+
+    await user.hover(menuItem);
+
+    const submenuHelpPopover = screen
+      .getAllByRole("dialog")
+      .find((dialog) => dialog.getAttribute("data-trigger") === "SubmenuTrigger");
+    expect(submenuHelpPopover).toBeUndefined();
   });
 });

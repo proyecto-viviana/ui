@@ -1,7 +1,9 @@
-import { type JSX, Show, splitProps } from "solid-js";
+import { type JSX, Show, createUniqueId, splitProps, useContext } from "solid-js";
+import { MenuTriggerContext } from "@proyecto-viviana/solidaria-components";
 import { TooltipTrigger, Tooltip } from "../tooltip";
 import { Popover, type PopoverProps } from "../popover";
 import { style } from "../s2-style";
+import { HeadingContext, TextContext } from "../text";
 
 export interface ContextualHelpProps {
   /** Help trigger content. */
@@ -40,15 +42,55 @@ const contextualHelpInner = style({
   color: "neutral",
 });
 
+const contextualHelpHeading = style({
+  font: "heading-xs",
+  margin: 0,
+  marginBottom: 8,
+});
+
+const contextualHelpText = style({
+  font: "body-sm",
+});
+
 /**
  * A popover with contextual help sizing for unavailable menu item affordances.
  */
 export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.Element {
   const [local, popoverProps] = splitProps(props, ["children", "class"]);
+  const menuTriggerContext = useContext(MenuTriggerContext);
+  const titleId = createUniqueId();
+  const menuTriggerMenuProps = () => menuTriggerContext?.menuProps as { id?: string } | undefined;
+  const popoverId = () => popoverProps.id ?? menuTriggerMenuProps()?.id;
+  const ariaLabelledBy = () =>
+    popoverProps["aria-labelledby"] ?? (popoverProps["aria-label"] ? undefined : titleId);
+  const headingContext = {
+    slots: {
+      default: {
+        id: titleId,
+        level: 2 as const,
+        styles: contextualHelpHeading,
+      },
+      title: {
+        id: titleId,
+        level: 2 as const,
+        styles: contextualHelpHeading,
+      },
+    },
+  };
+  const textContext = {
+    slots: {
+      default: {
+        styles: contextualHelpText,
+        "data-rsp-slot": "text",
+      },
+    },
+  };
 
   return (
     <Popover
       {...popoverProps}
+      id={popoverId()}
+      aria-labelledby={ariaLabelledBy()}
       trigger="SubmenuTrigger"
       placement={popoverProps.placement ?? "end top"}
       offset={popoverProps.offset ?? -2}
@@ -56,7 +98,11 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
       padding="none"
       class={[contextualHelpFrame, local.class].filter(Boolean).join(" ")}
     >
-      <div class={contextualHelpInner}>{local.children}</div>
+      <div class={contextualHelpInner}>
+        <TextContext.Provider value={textContext}>
+          <HeadingContext.Provider value={headingContext}>{local.children}</HeadingContext.Provider>
+        </TextContext.Provider>
+      </div>
     </Popover>
   );
 }
