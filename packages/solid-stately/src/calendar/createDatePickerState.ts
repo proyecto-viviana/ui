@@ -38,6 +38,9 @@ export interface DatePickerStateOptions<T extends DateValue = DateValue> {
   hideTimeZone?: boolean;
   placeholderValue?: DateValue;
   shouldCloseOnSelect?: boolean | (() => boolean);
+  defaultOpen?: boolean;
+  isOpen?: MaybeAccessor<boolean | undefined>;
+  onOpenChange?: (isOpen: boolean) => void;
   isDateUnavailable?: (date: DateValue) => boolean;
   validationState?: MaybeAccessor<ValidationState | undefined>;
 }
@@ -74,7 +77,7 @@ export function createDatePickerState<T extends DateValue = DateValue>(
 
   // Internal signals for value and overlay state
   const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
-  const [isOpen, setIsOpen] = createSignal(false);
+  const [internalOpen, setInternalOpen] = createSignal(props.defaultOpen ?? false);
 
   // Transient selections for date and time
   const [selectedDate, setSelectedDate] = createSignal<DateValue | null>(null);
@@ -106,6 +109,7 @@ export function createDatePickerState<T extends DateValue = DateValue>(
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
+  const isOpen: Accessor<boolean> = () => access(props.isOpen) ?? internalOpen();
 
   // Date and time portions of the current value
   const dateValue = createMemo<DateValue | null>(() => {
@@ -199,7 +203,7 @@ export function createDatePickerState<T extends DateValue = DateValue>(
       commitValue(date, timePart);
 
       if (shouldClose) {
-        setIsOpen(false);
+        setOpen(false);
       }
     } else if (hasTime()) {
       // Store date transiently, waiting for time selection
@@ -209,7 +213,7 @@ export function createDatePickerState<T extends DateValue = DateValue>(
       commitValue(date, null);
 
       if (shouldClose) {
-        setIsOpen(false);
+        setOpen(false);
       }
     }
   };
@@ -240,7 +244,10 @@ export function createDatePickerState<T extends DateValue = DateValue>(
 
   const setOpen = (openValue: boolean) => {
     if (openValue) {
-      setIsOpen(true);
+      if (access(props.isOpen) === undefined) {
+        setInternalOpen(true);
+      }
+      props.onOpenChange?.(true);
     } else {
       // When closing, only commit if both date and time are available (when time is required).
       // Don't auto-commit partial selections with placeholder time to avoid phantom values.
@@ -256,7 +263,10 @@ export function createDatePickerState<T extends DateValue = DateValue>(
       // Clear any remaining transient state
       setSelectedDate(null);
       setSelectedTime(null);
-      setIsOpen(false);
+      if (access(props.isOpen) === undefined) {
+        setInternalOpen(false);
+      }
+      props.onOpenChange?.(false);
     }
   };
 

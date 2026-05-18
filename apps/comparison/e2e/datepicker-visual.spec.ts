@@ -467,8 +467,15 @@ async function solidCalendarHoverState(page: Page) {
       throw new Error("Expected hovered Solid calendar cell");
     }
 
+    const paint =
+      ([hovered, ...Array.from(hovered.querySelectorAll("*"))] as HTMLElement[]).find((element) => {
+        const box = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return box.width > 0 && box.height > 0 && style.backgroundColor !== "rgba(0, 0, 0, 0)";
+      }) ?? hovered;
+
     const box = hovered.getBoundingClientRect();
-    const style = getComputedStyle(hovered);
+    const style = getComputedStyle(paint);
     return {
       width: box.width,
       height: box.height,
@@ -796,6 +803,32 @@ test.describe("comparison DatePicker visual parity", () => {
         Math.abs((solidIcon.trailingGap ?? 0) - (reactIcon.trailingGap ?? 0)),
         size,
       ).toBeLessThanOrEqual(1);
+
+      const section = await styledSection(page);
+      const reactCard = await frameworkPanel(section, "React Spectrum stack");
+      const solidCard = await frameworkPanel(section, "Solidaria stack");
+
+      await openCalendar(reactCard);
+      const reactSurface = await calendarSurface(page);
+      await page.waitForTimeout(250);
+      const reactPopoverGeometry = await geometry(reactSurface);
+      await page.keyboard.press("Escape");
+      await expectNoCalendarPopup(page);
+
+      await openCalendar(solidCard);
+      const solidSurface = await calendarSurface(page);
+      await page.waitForTimeout(250);
+      const solidPopoverGeometry = await geometry(solidSurface);
+      await page.keyboard.press("Escape");
+      await expectNoCalendarPopup(page);
+
+      expect(Math.round(solidPopoverGeometry.width), size).toBe(
+        Math.round(reactPopoverGeometry.width),
+      );
+      expect(solidPopoverGeometry.height, size).toBeGreaterThanOrEqual(
+        reactPopoverGeometry.height - 12,
+      );
+      expect(solidPopoverGeometry.height, size).toBeLessThanOrEqual(reactPopoverGeometry.height);
     }
   });
 

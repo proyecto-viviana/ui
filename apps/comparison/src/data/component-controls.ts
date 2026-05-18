@@ -2304,6 +2304,8 @@ const datePickerControls: ComponentControlGroup = {
     "pageBehavior",
     "firstDayOfWeek",
     "isDateUnavailable",
+    "defaultOpen",
+    "isOpen",
     "shouldFlip",
     "onChange",
     "onOpenChange",

@@ -152,6 +152,28 @@ describe("DatePicker", () => {
       });
     });
 
+    it("should render calendar content with defaultOpen", async () => {
+      render(() => <TestDatePicker pickerProps={{ defaultOpen: true }} />);
+      await waitForDatePickerHydration();
+
+      await waitFor(() => {
+        const content = document.querySelector(".solidaria-DatePickerContent");
+        expect(content).toBeInTheDocument();
+      });
+    });
+
+    it("should request but not mutate controlled open state", async () => {
+      const onOpenChange = vi.fn();
+      render(() => <TestDatePicker pickerProps={{ isOpen: false, onOpenChange }} />);
+      await waitForDatePickerHydration();
+
+      const button = document.querySelector(".solidaria-DatePickerButton") as HTMLElement;
+      await user.click(button);
+
+      expect(onOpenChange).toHaveBeenCalledWith(true);
+      expect(document.querySelector(".solidaria-DatePickerContent")).not.toBeInTheDocument();
+    });
+
     it("should set data-open attribute when open", async () => {
       render(() => <TestDatePicker />);
       await waitForDatePickerHydration();

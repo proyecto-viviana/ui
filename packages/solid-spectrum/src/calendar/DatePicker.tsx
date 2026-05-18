@@ -53,26 +53,6 @@ export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   placeholder?: string;
 }
 
-const sizeStyles: Record<
-  NormalizedDatePickerSize,
-  {
-    legacyCalendarSize: "sm" | "md" | "lg" | "xl";
-  }
-> = {
-  S: {
-    legacyCalendarSize: "sm",
-  },
-  M: {
-    legacyCalendarSize: "md",
-  },
-  L: {
-    legacyCalendarSize: "lg",
-  },
-  XL: {
-    legacyCalendarSize: "xl",
-  },
-};
-
 function normalizeDatePickerSize(size: DatePickerSize | undefined): NormalizedDatePickerSize {
   switch (size) {
     case "S":
@@ -109,6 +89,7 @@ function datePickerFieldGroupStyle(size: NormalizedDatePickerSize): JSX.CSSPrope
 
 const popoverEnterStyle: JSX.CSSProperties = {
   animation: "s2-datepicker-popover-in 200ms cubic-bezier(0.45, 0, 0.4, 1)",
+  "max-height": "none",
 };
 
 const datePickerRoot = style(
@@ -377,6 +358,11 @@ const datePickerPopoverFrame = style({
   width: "[max-content]",
 });
 
+const datePickerCalendarPopoverStyle: JSX.CSSProperties = {
+  width: "272px",
+  "max-width": "100%",
+};
+
 /**
  * A date picker combines a date field and a calendar popup.
  */
@@ -535,7 +521,6 @@ function DatePickerPopup(props: {
   calendarProps?: Record<string, unknown>;
 }): JSX.Element {
   const theme = useTheme();
-  const calendarSize = () => sizeStyles[props.size].legacyCalendarSize;
 
   return (
     <DatePickerContent
@@ -543,9 +528,13 @@ function DatePickerPopup(props: {
       style={popoverEnterStyle}
     >
       <div class={datePickerPopoverFrame} style={{ "min-width": "240px" }}>
-        <Calendar size={calendarSize()} {...(props.calendarProps ?? {})} />
+        <Calendar
+          size="md"
+          UNSAFE_style={datePickerCalendarPopoverStyle}
+          {...(props.calendarProps ?? {})}
+        />
         <Show when={props.hasTime}>
-          <TimeField size={calendarSize()} label="Time" />
+          <TimeField size="md" label="Time" />
         </Show>
       </div>
     </DatePickerContent>

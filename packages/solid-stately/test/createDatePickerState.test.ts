@@ -113,6 +113,29 @@ describe("createDatePickerState", () => {
     expect(state.isOpen()).toBe(false);
   });
 
+  it("supports uncontrolled defaultOpen", () => {
+    const state = createDatePickerState({
+      defaultOpen: true,
+    });
+
+    expect(state.isOpen()).toBe(true);
+    state.close();
+    expect(state.isOpen()).toBe(false);
+  });
+
+  it("supports controlled open state and onOpenChange", () => {
+    const onOpenChange = vi.fn();
+    const state = createDatePickerState({
+      isOpen: false,
+      onOpenChange,
+    });
+
+    expect(state.isOpen()).toBe(false);
+    state.open();
+    expect(state.isOpen()).toBe(false);
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+  });
+
   it("showEra is false for AD dates", () => {
     const state = createDatePickerState({
       defaultValue: new CalendarDate(2024, 1, 1),

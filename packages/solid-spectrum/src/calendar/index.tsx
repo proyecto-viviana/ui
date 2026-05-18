@@ -527,7 +527,6 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
     props.ref,
   );
   const rootStyle = () => ({
-    ...(mergedUnsafeStyle() ?? {}),
     "--cell-gap": "4px",
     "--cell-max-width": `${sizeConfig().cellMaxWidth}px`,
     "--cell-responsive-size": "var(--cell-max-width)",
@@ -536,6 +535,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
     "--s2-calendar-visible-months": visibleMonths(),
     width: "fit-content",
     "max-width": "100%",
+    ...(mergedUnsafeStyle() ?? {}),
   });
   const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
   return (

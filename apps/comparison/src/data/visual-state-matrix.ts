@@ -1926,7 +1926,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "planned",
       spec: "e2e/datepicker-visual.spec.ts",
-      note: "Current closed-field visual evidence exists and the live Solid fixture is guarded. Solid now uses generated S2 field/calendar styling with explicit light/dark theme coverage; strict React-vs-Solid visual parity remains planned.",
+      note: "Current closed-field visual evidence exists and the live Solid fixture is guarded. Solid uses generated S2 field styling with explicit light/dark theme coverage and controlled/default open state parity; strict React-vs-Solid visual parity remains planned.",
     },
     {
       id: "styled.calendar.open",
@@ -1936,7 +1936,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "planned",
       spec: "e2e/datepicker-visual.spec.ts",
-      note: "Covers open calendar geometry with current visual evidence for both sides. The Solid popover surface and calendar grid now use generated S2 styling and theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
+      note: "Covers settled open calendar geometry with current visual evidence for both sides. The Solid popover surface now keeps React S2 DatePicker's medium calendar geometry across field sizes, reads hover paint from the inner Calendar cell, and uses generated S2 styling with theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
     },
     {
       id: "styled.calendar.select-date",

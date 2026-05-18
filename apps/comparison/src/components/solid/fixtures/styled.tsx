@@ -2562,6 +2562,7 @@ function SolidSpectrumDatePickerDemo() {
     datePickerDemoPropsFromWindow(),
   );
   const [value, setValue] = createSignal("");
+  const [isOpen, setIsOpen] = createSignal(false);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -2609,6 +2610,9 @@ function SolidSpectrumDatePickerDemo() {
           get "data-comparison-value"() {
             return value();
           },
+          get "data-comparison-open"() {
+            return String(isOpen());
+          },
           "data-comparison-control-root": "datepicker",
           get "data-comparison-control-props"() {
             return serializedProps();
@@ -2641,6 +2645,7 @@ function SolidSpectrumDatePickerDemo() {
             onChange: (nextValue: unknown) => {
               setValue(nextValue == null ? "" : String(nextValue));
             },
+            onOpenChange: setIsOpen,
           }),
         ],
       ),

@@ -116,6 +116,10 @@ export type DatePickerProps<T extends DateValue = DateValue> = Omit<
     locale?: string;
     /** Whether the calendar should close when a date is selected. */
     shouldCloseOnSelect?: boolean;
+    /** Whether the overlay is open by default (uncontrolled). */
+    defaultOpen?: boolean;
+    /** Whether the overlay is open (controlled). */
+    isOpen?: boolean;
     /** Callback when the overlay open state changes. */
     onOpenChange?: (isOpen: boolean) => void;
     /** The number of months to display in the calendar popover. */
@@ -236,11 +240,14 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
 ): JSX.Element {
   const [local, stateProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot", "shouldCloseOnSelect", "onOpenChange"],
+    ["children", "class", "style", "slot", "shouldCloseOnSelect"],
     [
       "value",
       "defaultValue",
       "onChange",
+      "isOpen",
+      "defaultOpen",
+      "onOpenChange",
       "minValue",
       "maxValue",
       "isDisabled",
@@ -279,12 +286,6 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     close: datePickerState.close,
     toggle: () => datePickerState.setOpen(!datePickerState.isOpen()),
   };
-
-  // Wire onOpenChange callback
-  createEffect(() => {
-    const open = datePickerState.isOpen();
-    local.onOpenChange?.(open);
-  });
 
   // Create field state synced through datePickerState
   const fieldState = createDateFieldState<T>({
