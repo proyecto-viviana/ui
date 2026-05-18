@@ -221,7 +221,7 @@ export function Provider(props: ProviderProps): JSX.Element {
       return locale();
     },
     get direction() {
-      return local.locale ? (isRTL(local.locale) ? "rtl" : "ltr") : inheritedLocale().direction;
+      return isRTL(locale()) ? "rtl" : "ltr";
     },
     get colorScheme() {
       return colorScheme();

@@ -6,7 +6,8 @@
  */
 
 import { createMemo } from "solid-js";
-import { type MaybeAccessor } from "../utils/reactivity";
+import { DateFormatter, startOfWeek, today } from "@internationalized/date";
+import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { CalendarState, CalendarDate } from "@proyecto-viviana/solid-stately";
 
 export interface AriaCalendarGridProps {
@@ -31,12 +32,23 @@ export interface CalendarGridAria {
  * Provides the behavior and accessibility implementation for a calendar grid.
  */
 export function createCalendarGrid<T extends CalendarState>(
-  _props: MaybeAccessor<AriaCalendarGridProps>,
+  props: MaybeAccessor<AriaCalendarGridProps>,
   state: T,
   ref?: () => HTMLElement | null,
 ): CalendarGridAria {
   // Week days for headers
-  const weekDays = createMemo(() => state.weekDays());
+  const weekDays = createMemo(() => {
+    const gridProps = access(props);
+    const formatter = new DateFormatter(state.locale(), {
+      weekday: gridProps.weekdayStyle ?? "narrow",
+      timeZone: state.timeZone,
+    });
+    const weekStart = startOfWeek(today(state.timeZone), state.locale(), state.firstDayOfWeek());
+
+    return Array.from({ length: 7 }, (_, index) =>
+      formatter.format(weekStart.add({ days: index }).toDate(state.timeZone)),
+    );
+  });
 
   // Handle keyboard navigation
   const isRTL = (): boolean => {

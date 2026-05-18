@@ -1837,6 +1837,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Modeled controls dispatch the official viewer surface into both stacks: visibleMonths, pageBehavior, firstDayOfWeek, and isDisabled.",
     },
     {
+      id: "styled.calendar.provider-locale",
+      label: "Provider locale and RTL",
+      kind: "keyboard",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/calendar-contract.spec.ts",
+      note: "Calendar route now asserts Provider locale inheritance for French month titles, narrow weekday headers, localized cell labels, serialized control props, and Arabic RTL direction with horizontal day-key movement.",
+    },
+    {
       id: "styled.calendar.focused-value",
       label: "Focused value visible range",
       kind: "interaction",

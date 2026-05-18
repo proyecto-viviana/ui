@@ -2576,6 +2576,7 @@ function ReactCalendarDemo() {
       children: jsx(SpectrumCalendar, calendarProps),
     }),
     colorScheme,
+    demoProps.locale || undefined,
   );
 }
 

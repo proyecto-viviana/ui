@@ -18,6 +18,7 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
+import { useLocale } from "@proyecto-viviana/solidaria";
 import type { CalendarStateProps } from "@proyecto-viviana/solid-stately";
 import {
   baseColor,
@@ -431,6 +432,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
   const providerProps = useProviderProps(props);
   const contextProps = getSlottedContextProps(useContext(CalendarContext), props.slot);
   const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const providerLocale = useLocale();
   const [local, rest] = splitProps(mergedProps, [
     "size",
     "styles",
@@ -452,6 +454,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
   const size = () => normalizeCalendarSize(local.size);
   const sizeConfig = () => sizeStyles[size()];
   const visibleMonths = () => Math.max(1, Number(local.visibleMonths ?? 1));
+  const locale = () => local.locale ?? providerLocale().locale;
   const validationState = () =>
     typeof local.validationState === "function" ? local.validationState() : local.validationState;
   const isInvalid = () => local.isInvalid || validationState() === "invalid";
@@ -493,7 +496,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
       firstDayOfWeek={normalizeFirstDayOfWeek(local.firstDayOfWeek)}
       validationState={isInvalid() ? "invalid" : validationState()}
       visibleMonths={visibleMonths()}
-      locale={local.locale}
+      locale={locale()}
       class={[
         contextProps?.UNSAFE_className,
         local.UNSAFE_className,
@@ -516,7 +519,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
           <ChevronLeftIcon styles={calendarNavIcon} />
         </CalendarButton>
 
-        <CalendarHeading visibleMonths={visibleMonths()} locale={local.locale} />
+        <CalendarHeading visibleMonths={visibleMonths()} locale={locale()} />
 
         <CalendarButton
           slot="next"

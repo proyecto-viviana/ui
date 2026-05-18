@@ -59,6 +59,27 @@ async function focusDate(panel: Locator, day: number) {
     .focus();
 }
 
+async function focusSelectedDate(root: Locator) {
+  await root
+    .locator(
+      '[data-selected][role="button"], [data-selected] [role="button"], [aria-selected="true"] [role="button"]',
+    )
+    .first()
+    .focus();
+}
+
+async function weekHeaderText(panel: Locator) {
+  return panel
+    .getByRole("grid")
+    .first()
+    .locator("thead th")
+    .evaluateAll((headers) => headers.map((header) => header.textContent?.trim() ?? ""));
+}
+
+async function providerDirection(root: Locator) {
+  return root.evaluate((element) => element.closest("[dir]")?.getAttribute("dir") ?? null);
+}
+
 async function expectMonths(panel: Locator, months: string[]) {
   for (const month of months) {
     await expect(panel.getByText(month, { exact: true }).first()).toBeVisible();
@@ -143,6 +164,58 @@ test.describe("comparison Calendar route contract", () => {
     );
     await expect(reactPanel.getByRole("grid")).toHaveCount(2);
     await expect(solidPanel.getByRole("grid")).toHaveCount(2);
+  });
+
+  test("Calendar inherits Provider locale for month titles and week starts", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await calendarFixtures(page, {
+      locale: "fr-FR",
+      focusedValue: "2025-02-15",
+    });
+
+    await expectMonths(reactPanel, ["février 2025"]);
+    await expectMonths(solidPanel, ["février 2025"]);
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      JSON.stringify({
+        ...calendarDemoDefaults,
+        locale: "fr-FR",
+        focusedValue: "2025-02-15",
+      }),
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      JSON.stringify({
+        ...calendarDemoDefaults,
+        locale: "fr-FR",
+        focusedValue: "2025-02-15",
+      }),
+    );
+    await expect(
+      reactPanel.getByRole("button", { name: /samedi 15 février 2025/i }).first(),
+    ).toBeVisible();
+    await expect(
+      solidPanel.getByRole("button", { name: /samedi 15 février 2025/i }).first(),
+    ).toBeVisible();
+    await expect(weekHeaderText(reactPanel)).resolves.toEqual(["L", "M", "M", "J", "V", "S", "D"]);
+    await expect(weekHeaderText(solidPanel)).resolves.toEqual(["L", "M", "M", "J", "V", "S", "D"]);
+  });
+
+  test("Calendar inherits RTL direction for keyboard day movement", async ({ page }) => {
+    const { reactRoot, solidRoot } = await calendarFixtures(page, {
+      locale: "ar-AE",
+      value: "2025-02-03",
+    });
+
+    await expect(providerDirection(reactRoot)).resolves.toBe("rtl");
+    await expect(providerDirection(solidRoot)).resolves.toBe("rtl");
+
+    await focusSelectedDate(reactRoot);
+    await page.keyboard.press("ArrowRight");
+    await expect(reactRoot).toHaveAttribute("data-comparison-focused-value", "2025-02-02");
+
+    await focusSelectedDate(solidRoot);
+    await page.keyboard.press("ArrowRight");
+    await expect(solidRoot).toHaveAttribute("data-comparison-focused-value", "2025-02-02");
   });
 
   test("Calendar focusedValue and selectionAlignment control the visible range", async ({

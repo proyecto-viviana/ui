@@ -17,7 +17,6 @@ import {
   endOfMonth,
   startOfWeek,
   getWeeksInMonth,
-  getDayOfWeek,
   DateFormatter,
   toCalendarDate as intlToCalendarDate,
 } from "@internationalized/date";
@@ -26,6 +25,9 @@ import { access, type MaybeAccessor } from "../utils";
 export type ValidationState = "valid" | "invalid";
 export type CalendarPageBehavior = "single" | "visible";
 export type CalendarSelectionAlignment = "start" | "center" | "end";
+export type CalendarDayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
+
+const dayOfWeekNames: CalendarDayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** The current value (controlled). */
@@ -51,7 +53,7 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   /** Handler called when the focused date changes. */
   onFocusChange?: (date: CalendarDate) => void;
   /** The locale to use for formatting. */
-  locale?: string;
+  locale?: MaybeAccessor<string | undefined>;
   /** Callback that is called for each date in the calendar to determine if it is unavailable. */
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
@@ -89,6 +91,10 @@ export interface CalendarState<T extends DateValue = DateValue> {
   visibleRange: Accessor<{ start: CalendarDate; end: CalendarDate }>;
   /** The timezone used for date calculations. */
   timeZone: string;
+  /** The locale used for formatting and locale-specific week starts. */
+  locale: Accessor<string>;
+  /** The explicitly requested first weekday, or undefined for the locale default. */
+  firstDayOfWeek: Accessor<CalendarDayOfWeek | undefined>;
   /** The validation state. */
   validationState: Accessor<ValidationState | undefined>;
   /** Whether a date is selected. */
@@ -152,8 +158,10 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   props: CalendarStateProps<T> = {},
 ): CalendarState<T> {
   const timeZone = getLocalTimeZone();
-  const locale = props.locale ?? "en-US";
+  const locale = createMemo(() => access(props.locale) ?? "en-US");
   const visibleMonths = props.visibleMonths ?? 1;
+  const firstDayOfWeekName = (): CalendarDayOfWeek | undefined =>
+    props.firstDayOfWeek == null ? undefined : dayOfWeekNames[props.firstDayOfWeek];
 
   const selectionAlignmentOffset = (): number => {
     switch (props.selectionAlignment) {
@@ -273,14 +281,9 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
 
   // Format week days for headers
   const weekDays = createMemo(() => {
-    const formatter = new DateFormatter(locale, { weekday: "short" });
-    const startDay = props.firstDayOfWeek ?? 0;
+    const formatter = new DateFormatter(locale(), { weekday: "narrow" });
     const days: string[] = [];
-    const base = today(timeZone);
-
-    // Find the start of the week
-    const dayOfWeek = getDayOfWeek(base, locale);
-    const weekStart = base.subtract({ days: (dayOfWeek - startDay + 7) % 7 });
+    const weekStart = startOfWeek(today(timeZone), locale(), firstDayOfWeekName());
 
     for (let i = 0; i < 7; i++) {
       const day = weekStart.add({ days: i });
@@ -292,7 +295,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
 
   // Title (formatted month/year)
   const title = createMemo(() => {
-    const formatter = new DateFormatter(locale, {
+    const formatter = new DateFormatter(locale(), {
       month: "long",
       year: "numeric",
     });
@@ -450,7 +453,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     const startDate = monthStartDate ?? visibleRange().start;
 
     const monthStart = startOfMonth(startDate);
-    const weekStart = startOfWeek(monthStart, locale);
+    const weekStart = startOfWeek(monthStart, locale(), firstDayOfWeekName());
 
     const week: (CalendarDate | null)[] = [];
     const firstDayOfWeek = weekStart.add({ weeks: weekIndex });
@@ -471,7 +474,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   // Get number of weeks in a month
   const getWeeksInMonthFn = (date?: CalendarDate): number => {
     const monthDate = date ?? focusedDate();
-    return getWeeksInMonth(monthDate, locale);
+    return getWeeksInMonth(monthDate, locale(), firstDayOfWeekName());
   };
 
   return {
@@ -483,6 +486,8 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     isReadOnly,
     visibleRange,
     timeZone,
+    locale,
+    firstDayOfWeek: firstDayOfWeekName,
     validationState,
     isSelected,
     isCellFocused,

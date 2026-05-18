@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Calendar, CalendarContext } from "../src/Calendar";
+import { Provider } from "../src/provider";
 import { CalendarDateClass as CalendarDate } from "@proyecto-viviana/solid-stately";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -40,6 +41,23 @@ describe("Calendar (solid-spectrum)", () => {
 
     const headers = Array.from(document.querySelectorAll("th")).map((cell) => cell.textContent);
     expect(headers).toEqual(["M", "T", "W", "T", "F", "S", "S"]);
+  });
+
+  it("inherits Provider locale for month formatting and locale default week start", async () => {
+    render(() => (
+      <Provider locale="fr-FR">
+        <Calendar
+          aria-label="Appointment date"
+          defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+        />
+      </Provider>
+    ));
+    await waitForCalendar();
+
+    expect(screen.getByText("février 2025")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /samedi 15 février 2025/i })).toBeInTheDocument();
+    const headers = Array.from(document.querySelectorAll("th")).map((cell) => cell.textContent);
+    expect(headers).toEqual(["L", "M", "M", "J", "V", "S", "D"]);
   });
 
   it("renders invalid error text and multi-month grids", async () => {

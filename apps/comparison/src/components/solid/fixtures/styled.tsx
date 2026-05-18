@@ -2473,6 +2473,9 @@ function SolidSpectrumCalendarDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      get locale() {
+        return demoProps().locale || undefined;
+      },
       background: "base",
       style: providerShellStyle,
     },

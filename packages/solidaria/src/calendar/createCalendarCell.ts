@@ -5,9 +5,10 @@
  * Based on @react-aria/calendar useCalendarCell
  */
 
-import { createSignal, createMemo, createEffect } from "solid-js";
+import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
+import { useLocale } from "../i18n";
 import type { CalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
 
@@ -54,6 +55,10 @@ export function createCalendarCell<T extends CalendarState>(
   const getProps = () => access(props);
   const [isPressed, setIsPressed] = createSignal(false);
   const timeZone = getLocalTimeZone();
+  const inheritedLocale = useLocale();
+  const stateWithLocale = state as T & { locale?: Accessor<string> };
+  const locale = () => stateWithLocale.locale?.() ?? inheritedLocale().locale;
+  let ignoreNextClick = false;
 
   // Get the date from props
   const date = createMemo(() => getProps().date as CalendarDate);
@@ -72,7 +77,17 @@ export function createCalendarCell<T extends CalendarState>(
 
   // Format the date for display
   const formattedDate = createMemo(() => {
-    return date().day.toString();
+    const d = date();
+    const formatter = new DateFormatter(locale(), {
+      day: "numeric",
+      timeZone,
+      calendar: d.calendar.identifier,
+    } as Intl.DateTimeFormatOptions);
+
+    return (
+      formatter.formatToParts(d.toDate(timeZone)).find((part) => part.type === "day")?.value ??
+      d.day.toString()
+    );
   });
 
   // Handle pointer down - this is where selection happens
@@ -84,6 +99,7 @@ export function createCalendarCell<T extends CalendarState>(
       // Select the date on pointer down for immediate response
       // This matches React Aria's behavior of using onPressStart
       state.selectDate(date());
+      ignoreNextClick = true;
       // Prevent default to avoid double-triggering with onClick
       e.preventDefault();
     }
@@ -91,6 +107,11 @@ export function createCalendarCell<T extends CalendarState>(
 
   // Handle click - kept for accessibility (keyboard Enter/Space)
   const handleClick = () => {
+    if (ignoreNextClick) {
+      ignoreNextClick = false;
+      return;
+    }
+
     // Only select on click if not already selected via pointerdown
     // This handles keyboard activation (Enter/Space)
     if (!isDisabled() && !isUnavailable()) {
@@ -124,12 +145,13 @@ export function createCalendarCell<T extends CalendarState>(
   // Button props (for the interactive element inside)
   const buttonProps = createMemo(() => {
     const d = date();
-    const formatter = new DateFormatter("en-US", {
+    const formatter = new DateFormatter(locale(), {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
-    });
+      calendar: d.calendar.identifier,
+    } as Intl.DateTimeFormatOptions);
 
     return {
       role: "button",

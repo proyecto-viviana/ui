@@ -2364,6 +2364,7 @@ const calendarControls: ComponentControlGroup = {
     "isReadOnly",
     "isInvalid",
     "errorMessage",
+    "locale",
     "firstDayOfWeek",
     "visibleMonths",
     "pageBehavior",

@@ -16,15 +16,18 @@ export const calendarFirstDayOfWeekOptions = [
 export const calendarVisibleMonthsOptions = ["", "1", "2", "3"] as const;
 export const calendarPageBehaviorOptions = ["", "single", "visible"] as const;
 export const calendarSelectionAlignmentOptions = ["", "start", "center", "end"] as const;
+export const calendarLocaleOptions = ["", "fr-FR", "ar-AE"] as const;
 
 export type CalendarDemoFirstDayOfWeek = (typeof calendarFirstDayOfWeekOptions)[number];
 export type CalendarDemoVisibleMonths = (typeof calendarVisibleMonthsOptions)[number];
 export type CalendarDemoPageBehavior = (typeof calendarPageBehaviorOptions)[number];
 export type CalendarDemoSelectionAlignment = (typeof calendarSelectionAlignmentOptions)[number];
+export type CalendarDemoLocale = (typeof calendarLocaleOptions)[number];
 
 export interface CalendarDemoProps {
   value: string;
   focusedValue: string;
+  locale: CalendarDemoLocale;
   firstDayOfWeek: CalendarDemoFirstDayOfWeek;
   visibleMonths: CalendarDemoVisibleMonths;
   pageBehavior: CalendarDemoPageBehavior;
@@ -40,6 +43,7 @@ export interface CalendarDemoProps {
 export const calendarDemoDefaults: CalendarDemoProps = {
   value: "",
   focusedValue: "",
+  locale: "",
   firstDayOfWeek: "",
   visibleMonths: "",
   pageBehavior: "",
@@ -96,6 +100,9 @@ export function normalizeCalendarDemoProps(props: Partial<CalendarDemoProps>): C
       typeof props.focusedValue === "string" && props.focusedValue
         ? props.focusedValue
         : calendarDemoDefaults.focusedValue,
+    locale: isOneOf(props.locale, calendarLocaleOptions)
+      ? props.locale
+      : calendarDemoDefaults.locale,
     firstDayOfWeek: isOneOf(props.firstDayOfWeek, calendarFirstDayOfWeekOptions)
       ? props.firstDayOfWeek
       : calendarDemoDefaults.firstDayOfWeek,
@@ -126,10 +133,12 @@ export function calendarDemoPropsFromSearch(search: string): CalendarDemoProps {
   const visibleMonths = params.get("visibleMonths");
   const pageBehavior = params.get("pageBehavior");
   const selectionAlignment = params.get("selectionAlignment");
+  const locale = params.get("locale");
 
   return normalizeCalendarDemoProps({
     value: params.get("value") || calendarDemoDefaults.value,
     focusedValue: params.get("focusedValue") || calendarDemoDefaults.focusedValue,
+    locale: isOneOf(locale, calendarLocaleOptions) ? locale : calendarDemoDefaults.locale,
     firstDayOfWeek: isOneOf(firstDayOfWeek, calendarFirstDayOfWeekOptions)
       ? firstDayOfWeek
       : calendarDemoDefaults.firstDayOfWeek,
@@ -163,6 +172,7 @@ export function serializeCalendarDemoProps(props: CalendarDemoProps) {
   return JSON.stringify({
     value: props.value,
     focusedValue: props.focusedValue,
+    locale: props.locale,
     firstDayOfWeek: props.firstDayOfWeek,
     visibleMonths: props.visibleMonths,
     pageBehavior: props.pageBehavior,
