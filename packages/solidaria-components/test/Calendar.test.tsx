@@ -190,59 +190,60 @@ describe("Calendar", () => {
       });
     });
 
-    // Note: These keyboard navigation tests are skipped because the grid keyboard
-    // handler uses addEventListener in onMount which doesn't work reliably in jsdom.
-    // The keyboard navigation is tested via e2e tests instead.
-    it.skip("should navigate with keyboard arrow keys", async () => {
+    const keyboardCases: Array<{
+      key: string;
+      shiftKey?: boolean;
+      expectedName: RegExp;
+    }> = [
+      { key: "ArrowRight", expectedName: /June 16, 2024/i },
+      { key: "ArrowLeft", expectedName: /June 14, 2024/i },
+      { key: "ArrowUp", expectedName: /June 8, 2024/i },
+      { key: "ArrowDown", expectedName: /June 22, 2024/i },
+      { key: "Home", expectedName: /June 1, 2024/i },
+      { key: "End", expectedName: /June 30, 2024/i },
+      { key: "PageUp", expectedName: /May 15, 2024/i },
+      { key: "PageDown", expectedName: /July 15, 2024/i },
+      { key: "PageUp", shiftKey: true, expectedName: /June 15, 2023/i },
+      { key: "PageDown", shiftKey: true, expectedName: /June 15, 2025/i },
+    ];
+
+    it.each(keyboardCases)("should navigate with $key keyboard input", async (testCase) => {
       render(() => (
         <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
       ));
       await waitForCalendarHydration();
 
-      // Keyboard navigation is on the grid, not individual cells
-      const grid = screen.getByRole("grid");
-      grid.focus();
-
-      // Press ArrowRight to move to day 16
-      fireEvent.keyDown(grid, { key: "ArrowRight" });
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      day15.focus();
+      fireEvent.keyDown(day15, { key: testCase.key, shiftKey: testCase.shiftKey });
 
       await waitFor(() => {
-        const day16 = screen.getByText("16");
-        expect(day16).toHaveAttribute("data-focused");
+        expect(screen.getByRole("button", { name: testCase.expectedName })).toHaveFocus();
       });
     });
 
-    it.skip("should navigate to previous row with Arrow Up", async () => {
+    it("should move PageDown by one month even when button paging advances by visible months", async () => {
       render(() => (
-        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+        <Calendar
+          aria-label="Dual month calendar"
+          visibleMonths={2}
+          pageBehavior="visible"
+          defaultFocusedValue={new CalendarDate(2024, 6, 15)}
+        >
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <CalendarGrid offset={{ months: 1 }}>
+            {(date) => <CalendarCell date={date} />}
+          </CalendarGrid>
+        </Calendar>
       ));
       await waitForCalendarHydration();
 
-      const grid = screen.getByRole("grid");
-      grid.focus();
-
-      fireEvent.keyDown(grid, { key: "ArrowUp" });
-
-      await waitFor(() => {
-        const day8 = screen.getByText("8");
-        expect(day8).toHaveAttribute("data-focused");
-      });
-    });
-
-    it.skip("should navigate to next row with Arrow Down", async () => {
-      render(() => (
-        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
-      ));
-      await waitForCalendarHydration();
-
-      const grid = screen.getByRole("grid");
-      grid.focus();
-
-      fireEvent.keyDown(grid, { key: "ArrowDown" });
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      day15.focus();
+      fireEvent.keyDown(day15, { key: "PageDown" });
 
       await waitFor(() => {
-        const day22 = screen.getByText("22");
-        expect(day22).toHaveAttribute("data-focused");
+        expect(screen.getByRole("button", { name: /July 15, 2024/i })).toHaveFocus();
       });
     });
 

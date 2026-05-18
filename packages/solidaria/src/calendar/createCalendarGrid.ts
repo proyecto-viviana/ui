@@ -64,6 +64,7 @@ export function createCalendarGrid<T extends CalendarState>(
     switch (e.key) {
       case "ArrowLeft":
         e.preventDefault();
+        e.stopPropagation();
         if (isRTL()) {
           state.focusNextDay();
         } else {
@@ -72,6 +73,7 @@ export function createCalendarGrid<T extends CalendarState>(
         break;
       case "ArrowRight":
         e.preventDefault();
+        e.stopPropagation();
         if (isRTL()) {
           state.focusPreviousDay();
         } else {
@@ -80,34 +82,40 @@ export function createCalendarGrid<T extends CalendarState>(
         break;
       case "ArrowUp":
         e.preventDefault();
+        e.stopPropagation();
         state.focusPreviousWeek();
         break;
       case "ArrowDown":
         e.preventDefault();
+        e.stopPropagation();
         state.focusNextWeek();
         break;
       case "PageUp":
         e.preventDefault();
+        e.stopPropagation();
         if (e.shiftKey) {
           state.focusPreviousSection(); // Previous year
         } else {
-          state.focusPreviousPage(); // Previous month
+          state.setFocusedDate(state.focusedDate().subtract({ months: 1 }));
         }
         break;
       case "PageDown":
         e.preventDefault();
+        e.stopPropagation();
         if (e.shiftKey) {
           state.focusNextSection(); // Next year
         } else {
-          state.focusNextPage(); // Next month
+          state.setFocusedDate(state.focusedDate().add({ months: 1 }));
         }
         break;
       case "Home":
         e.preventDefault();
+        e.stopPropagation();
         state.focusPageStart();
         break;
       case "End":
         e.preventDefault();
+        e.stopPropagation();
         state.focusPageEnd();
         break;
       case "Enter":

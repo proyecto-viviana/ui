@@ -1873,8 +1873,8 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts",
-      note: "ArrowRight updates the reported focused date through onFocusChange and Enter selects that focused date in both stacks.",
+      spec: "e2e/calendar-contract.spec.ts; packages/solidaria-components/test/Calendar.test.tsx",
+      note: "ArrowRight updates the reported focused date through onFocusChange and Enter selects that focused date in both stacks. Package coverage also asserts Arrow keys, Home/End, PageUp/PageDown, Shift+PageUp/PageDown, and the React Aria distinction between keyboard month movement and visible-range button paging.",
     },
     {
       id: "styled.calendar.select-date",
