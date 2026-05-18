@@ -32,6 +32,13 @@ async function waitForRangeCalendarHydration() {
   });
 }
 
+function getDescribedByText(element: Element): string[] {
+  return (element.getAttribute("aria-describedby") ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((id) => document.getElementById(id)?.textContent ?? "");
+}
+
 // Helper component for testing RangeCalendar
 function TestRangeCalendar(props: {
   calendarProps?: Partial<Parameters<typeof RangeCalendar>[0]>;
@@ -421,6 +428,135 @@ describe("RangeCalendar", () => {
 
       const heading = document.querySelector(".solidaria-RangeCalendarHeading");
       expect(heading).toHaveAttribute("aria-live", "polite");
+    });
+
+    it("should describe the focused selectable cell with the start range prompt", async () => {
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+
+      await waitFor(() => {
+        expect(getDescribedByText(day15)).toContain("Click to start selecting date range");
+      });
+    });
+
+    it("should localize range prompt descriptions from the calendar locale", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2024, 6, 15),
+            locale: "fr-FR",
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day15 = screen.getByRole("button", { name: /15 juin 2024/i });
+
+      await waitFor(() => {
+        expect(getDescribedByText(day15)).toContain(
+          "Cliquer pour commencer à sélectionner la plage de dates",
+        );
+      });
+    });
+
+    it("should switch the focused cell description to the finish range prompt after anchoring", async () => {
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      fireEvent.pointerDown(day10);
+      fireEvent.pointerUp(day10);
+
+      await waitFor(() => {
+        expect(
+          getDescribedByText(screen.getByRole("button", { name: /June 10, 2024/i })),
+        ).toContain("Click to finish selecting date range");
+      });
+    });
+
+    it("should cancel an active range anchor with Escape and let idle Escape bubble", async () => {
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const calendar = document.querySelector(".solidaria-RangeCalendar");
+      const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      fireEvent.pointerDown(day10);
+      fireEvent.pointerUp(day10);
+
+      await waitFor(() => {
+        expect(calendar).toHaveAttribute("data-dragging");
+        expect(
+          getDescribedByText(screen.getByRole("button", { name: /June 10, 2024/i })),
+        ).toContain("Click to finish selecting date range");
+      });
+
+      const activeDay10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      expect(fireEvent.keyDown(activeDay10, { key: "Escape" })).toBe(false);
+
+      await waitFor(() => {
+        expect(calendar).not.toHaveAttribute("data-dragging");
+        expect(
+          getDescribedByText(screen.getByRole("button", { name: /June 10, 2024/i })),
+        ).toContain("Click to start selecting date range");
+      });
+
+      expect(
+        fireEvent.keyDown(screen.getByRole("button", { name: /June 10, 2024/i }), {
+          key: "Escape",
+        }),
+      ).toBe(true);
+    });
+
+    it("should compose invalid error descriptions with the range prompt", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            value: {
+              start: new CalendarDate(2024, 6, 10),
+              end: new CalendarDate(2024, 6, 15),
+            },
+            defaultFocusedValue: new CalendarDate(2024, 6, 10),
+            validationState: "invalid",
+            errorMessageId: "range-error",
+            errorMessage: "Invalid range",
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+
+      await waitFor(() => {
+        const ids = day10.getAttribute("aria-describedby")?.split(/\s+/) ?? [];
+        expect(ids[0]).toBe("range-error");
+        expect(ids.length).toBe(2);
+        expect(document.getElementById(ids[1] ?? "")).toHaveTextContent(
+          "Click to start selecting date range",
+        );
+      });
+    });
+
+    it("should omit range prompt descriptions when read only", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2024, 6, 15),
+            isReadOnly: true,
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      expect(day15).not.toHaveAttribute("aria-describedby");
     });
   });
 

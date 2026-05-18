@@ -1893,8 +1893,8 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts",
-      note: "Calendar validation route now asserts visible error text and selected-cell aria-invalid/aria-describedby linkage on both stacks. Browser rerun for this added assertion is deferred until browser focus is allowed.",
+      spec: "e2e/calendar-contract.spec.ts; packages/solidaria-components/test/RangeCalendar.test.tsx",
+      note: "Calendar validation route now asserts visible error text and selected-cell aria-invalid/aria-describedby linkage on both stacks. RangeCalendar unit coverage asserts localized start/finish range-selection prompt descriptions and invalid error-id composition, with prompt strings mirrored across React Aria's locale set. Browser rerun for the Calendar route assertion is deferred until browser focus is allowed.",
     },
     {
       id: "styled.calendar.selected-value",

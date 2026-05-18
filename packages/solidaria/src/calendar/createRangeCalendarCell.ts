@@ -8,9 +8,11 @@
 import { createSignal, createMemo, createEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
+import { createDescription } from "../utils/createDescription";
 import type { RangeCalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
 import { getCalendarHookData } from "./utils";
+import { formatCalendarPrompt } from "./intl";
 
 export interface AriaRangeCalendarCellProps {
   /** The date represented by the cell. */
@@ -85,10 +87,22 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     return getProps().isDisabled || state.isCellDisabled(date());
   });
   const isUnavailable = createMemo(() => state.isCellUnavailable(date()));
+  const isSelectable = createMemo(() => !isDisabled() && !isUnavailable());
   const isOutsideMonth = createMemo(() => {
     return getProps().isOutsideMonth ?? state.isOutsideVisibleRange(date());
   });
   const isToday = createMemo(() => isTodayUtil(date(), timeZone));
+  const rangeSelectionPrompt = createMemo(() => {
+    if (!isFocused() || state.isReadOnly() || !isSelectable()) {
+      return undefined;
+    }
+
+    return formatCalendarPrompt(
+      state.locale(),
+      state.anchorDate() ? "finishRangeSelectionPrompt" : "startRangeSelectionPrompt",
+    );
+  });
+  const descriptionProps = createDescription(rangeSelectionPrompt);
 
   // Format the date for display
   const formattedDate = createMemo(() => {
@@ -98,7 +112,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   // Handle pointer down - selection on pointerdown avoids losing selection when
   // hover/focus updates re-render cells before click fires.
   const handlePointerDown = (e: PointerEvent) => {
-    if (!isDisabled() && !isUnavailable()) {
+    if (isSelectable()) {
       setIsPressed(true);
       state.selectDate(date());
       e.preventDefault();
@@ -107,7 +121,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
 
   // Handle click for keyboard activation (Enter/Space).
   const handleClick = () => {
-    if (!isDisabled() && !isUnavailable()) {
+    if (isSelectable()) {
       state.selectDate(date());
     }
   };
@@ -118,7 +132,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
 
   // Handle hover during range selection
   const handlePointerEnter = () => {
-    if (state.isDragging() && !isDisabled() && !isUnavailable()) {
+    if (state.isDragging() && isSelectable()) {
       state.setFocusedDate(date());
     }
   };
@@ -153,6 +167,10 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
       calendar: d.calendar.identifier,
     });
     const errorMessageId = getCalendarHookData(state)?.errorMessageId;
+    const describedByIds = [
+      isInvalid() ? errorMessageId : undefined,
+      descriptionProps["aria-describedby"],
+    ].filter(Boolean);
 
     return {
       role: "button",
@@ -160,7 +178,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
       "aria-label": formatter.format(d.toDate(timeZone)),
       "aria-disabled": isDisabled() || isUnavailable() || undefined,
       "aria-invalid": isInvalid() || undefined,
-      "aria-describedby": isInvalid() ? errorMessageId : undefined,
+      "aria-describedby": describedByIds.length ? describedByIds.join(" ") : undefined,
       "aria-pressed": isPressed() || undefined,
       disabled: isDisabled() || isUnavailable(),
       onClick: handleClick,

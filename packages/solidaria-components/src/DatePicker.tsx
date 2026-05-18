@@ -738,6 +738,20 @@ export function DateRangePickerErrorMessage(props: DateRangePickerErrorMessagePr
   );
 }
 
+function createEscapeDismissFallback(isOpen: () => boolean, close: () => void): void {
+  createEffect(() => {
+    if (!isOpen() || typeof document === "undefined") return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented || event.isComposing) return;
+      close();
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    onCleanup(() => document.removeEventListener("keydown", onKeyDown));
+  });
+}
+
 /**
  * The content area of the date picker (typically contains a Calendar).
  */
@@ -763,6 +777,8 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
       toggle: context.overlayState.toggle,
     },
   );
+
+  createEscapeDismissFallback(() => context.overlayState.isOpen, context.overlayState.close);
 
   const cleanPopoverProps = () => {
     const {
@@ -834,6 +850,8 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
       toggle: context.overlayState.toggle,
     },
   );
+
+  createEscapeDismissFallback(() => context.overlayState.isOpen, context.overlayState.close);
 
   const cleanPopoverProps = () => {
     const {

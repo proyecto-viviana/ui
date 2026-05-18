@@ -124,9 +124,19 @@ export function createCalendarGrid<T extends CalendarState>(
         state.selectFocusedDate();
         break;
       case "Escape":
-        if ("setAnchorDate" in state && typeof state.setAnchorDate === "function") {
+        if (
+          "anchorDate" in state &&
+          typeof state.anchorDate === "function" &&
+          state.anchorDate() &&
+          "setAnchorDate" in state &&
+          typeof state.setAnchorDate === "function"
+        ) {
           e.preventDefault();
+          e.stopPropagation();
           state.setAnchorDate(null);
+          if ("setDragging" in state && typeof state.setDragging === "function") {
+            state.setDragging(false);
+          }
         }
         break;
     }
