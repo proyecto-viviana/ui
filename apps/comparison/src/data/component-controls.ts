@@ -88,6 +88,7 @@ import {
   dateFieldSizeOptions,
   dateFieldValidationBehaviorOptions,
 } from "./datefield-demo";
+import { dialogDemoDefaults, dialogRoleOptions, dialogSizeOptions } from "./dialog-demo";
 import {
   timeFieldDemoDefaults,
   timeFieldGranularityOptions,
@@ -2079,6 +2080,82 @@ const textAreaControls: ComponentControlGroup = {
   note: "Modeled from the S2 TextArea source as the multiline TextField sibling. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, auto-height content, and controlled value changes into both stacks.",
 };
 
+const dialogControls: ComponentControlGroup = {
+  slug: "dialog",
+  title: "Dialog",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "triggerLabel",
+      label: "triggerLabel",
+      kind: "text",
+      defaultValue: dialogDemoDefaults.triggerLabel,
+    },
+    {
+      name: "title",
+      label: "title",
+      kind: "text",
+      defaultValue: dialogDemoDefaults.title,
+    },
+    {
+      name: "body",
+      label: "body",
+      kind: "text",
+      defaultValue: dialogDemoDefaults.body,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: dialogDemoDefaults.size,
+      options: options(dialogSizeOptions),
+    },
+    {
+      name: "role",
+      label: "role",
+      kind: "radio",
+      defaultValue: dialogDemoDefaults.role,
+      options: options(dialogRoleOptions),
+    },
+    {
+      name: "isOpen",
+      label: "isOpen",
+      kind: "switch",
+      defaultValue: dialogDemoDefaults.isOpen,
+    },
+    {
+      name: "isDismissible",
+      label: "isDismissible",
+      kind: "switch",
+      defaultValue: dialogDemoDefaults.isDismissible,
+    },
+    {
+      name: "isKeyboardDismissDisabled",
+      label: "isKeyboardDismissDisabled",
+      kind: "switch",
+      defaultValue: dialogDemoDefaults.isKeyboardDismissDisabled,
+    },
+  ],
+  apiProps: [
+    "children",
+    "isOpen",
+    "defaultOpen",
+    "onOpenChange",
+    "isDismissible",
+    "isKeyboardDismissDisabled",
+    "role",
+    "size",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "DialogContainer.onDismiss",
+  ],
+  note: "Modeled from the S2 Dialog and DialogTrigger APIs. The viewer drives trigger text, title/body content, size, role, controlled open state, outside-dismiss behavior, and Escape-dismiss behavior into both stacks.",
+};
+
 const pickerControls: ComponentControlGroup = {
   slug: "picker",
   title: "Picker",
@@ -3806,6 +3883,7 @@ export const componentControlGroups = {
   datefield: dateFieldControls,
   daterangepicker: dateRangePickerControls,
   datepicker: datePickerControls,
+  dialog: dialogControls,
   timefield: timeFieldControls,
   divider: dividerControls,
   form: formControls,

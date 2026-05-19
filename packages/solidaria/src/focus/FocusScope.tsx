@@ -154,6 +154,13 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   // Store the element that was focused when the scope mounted
   let nodeToRestore: Element | null = null;
 
+  const getRestorableElement = (element: Element | null, doc: Document): Element | null => {
+    if (!element || element === doc.body || element === doc.documentElement) {
+      return null;
+    }
+    return element;
+  };
+
   // Create focus manager
   const focusManager: FocusManager = {
     focusNext(opts = {}) {
@@ -282,11 +289,11 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       scopeActive &&
       scopeActive !== scopeDoc.body
     ) {
-      nodeToRestore = scopeActive;
+      nodeToRestore = getRestorableElement(scopeActive, scopeDoc);
       return;
     }
 
-    nodeToRestore = topActive;
+    nodeToRestore = getRestorableElement(topActive, document);
   });
 
   // Auto-focus first element

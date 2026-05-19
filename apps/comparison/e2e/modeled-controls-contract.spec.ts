@@ -150,6 +150,14 @@ function defaultValuesForGroup(group: ComponentControlGroup) {
   return Object.fromEntries(group.controls.map((control) => [control.name, control.defaultValue]));
 }
 
+function controlsInInteractionOrder(group: ComponentControlGroup) {
+  return [...group.controls].sort((left, right) => {
+    if (left.name === "isOpen" && right.name !== "isOpen") return 1;
+    if (right.name === "isOpen" && left.name !== "isOpen") return -1;
+    return 0;
+  });
+}
+
 async function controlDefaultsFromForm(form: Locator) {
   return form.evaluate((element) =>
     JSON.parse((element as HTMLFormElement).dataset.controlDefaults ?? "{}"),
@@ -256,7 +264,7 @@ test.describe("modeled comparison controls contract", () => {
       }
 
       const expectedProps: Record<string, unknown> = {};
-      for (const control of group.controls) {
+      for (const control of controlsInInteractionOrder(group)) {
         const value = testValueForControl(group, control);
         expectedProps[control.name] = expectedSerializedValue(group, control, value);
         await setControlValue(form, control, value);

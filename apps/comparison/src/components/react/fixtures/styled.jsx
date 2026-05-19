@@ -239,6 +239,11 @@ import {
   serializeDividerDemoProps,
 } from "@comparison/data/divider-demo";
 import {
+  dialogDemoPropsFromWindow,
+  normalizeDialogDemoProps,
+  serializeDialogDemoProps,
+} from "@comparison/data/dialog-demo";
+import {
   imageDemoPropsFromWindow,
   imageMissingSource,
   imageDemoSources,
@@ -2389,22 +2394,50 @@ function ReactSliderDemo() {
 }
 
 function ReactDialogDemo() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [demoProps, setDemoProps] = useState(dialogDemoPropsFromWindow);
+  const [isOpen, setIsOpen] = useState(() => demoProps.isOpen);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "dialog") {
+        const nextProps = normalizeDialogDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setIsOpen(nextProps.isOpen);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const serializedProps = serializeDialogDemoProps({
+    ...demoProps,
+    isOpen,
+  });
+
   return renderReactSpectrumReference(
     jsx("div", {
+      "data-comparison-control-root": "dialog",
+      "data-comparison-control-props": serializedProps,
       "data-comparison-open": String(isOpen),
       children: jsxs(SpectrumDialogTrigger, {
-        isDismissable: true,
-        onOpenChange: setIsOpen,
+        isOpen,
+        onOpenChange: (nextOpen) => {
+          setIsOpen(nextOpen);
+          setDemoProps((current) => ({ ...current, isOpen: nextOpen }));
+        },
         children: [
-          jsx(SpectrumButton, { variant: "primary", children: "Open Dialog" }),
+          jsx(SpectrumButton, { variant: "primary", children: demoProps.triggerLabel }),
           jsxs(SpectrumDialog, {
-            isDismissible: true,
+            isDismissible: demoProps.isDismissible,
+            isKeyboardDismissDisabled: demoProps.isKeyboardDismissDisabled,
+            role: demoProps.role,
+            size: demoProps.size,
             children: [
-              jsx(SpectrumHeading, { slot: "title", children: "Review Changes" }),
+              jsx(SpectrumHeading, { slot: "title", children: demoProps.title }),
               jsx(SpectrumContent, {
                 children: jsx(SpectrumText, {
-                  children: "Dialog focus and dismissal are compared from this island.",
+                  children: demoProps.body,
                 }),
               }),
             ],
@@ -2412,6 +2445,7 @@ function ReactDialogDemo() {
         ],
       }),
     }),
+    colorScheme,
   );
 }
 

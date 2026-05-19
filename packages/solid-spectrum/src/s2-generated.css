@@ -23558,6 +23558,34 @@
   }
 }
 
+@layer _.a;
+
+@layer _.a {
+  .sd13 {
+    display: flex;
+  }
+
+  .Ul13 {
+    row-gap: 1rem;
+  }
+
+  .ql13 {
+    column-gap: 1rem;
+  }
+
+  .ed13 {
+    align-items: start;
+  }
+
+  ._wb13 {
+    flex-wrap: wrap;
+  }
+
+  .L4eoon13 {
+    max-width: 272px;
+  }
+}
+
 @layer _.a, _.b, _.c, _.d, _.e, _.f, _.g, _.h, _.i;
 
 @layer _.a {

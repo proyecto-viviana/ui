@@ -717,16 +717,7 @@ describe("Dialog a11y focus & ARIA integrity", () => {
 
     // After closing, the dialog should be gone
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    // Focus should return to the trigger (or at least to the trigger's container)
-    // jsdom may report body as activeElement after async close; verify button is focusable
-    const activeEl = document.activeElement;
-    const restored = activeEl === openBtn || openBtn.contains(activeEl as Node);
-    if (!restored) {
-      // In jsdom the focus restore can happen asynchronously — at minimum verify
-      // the trigger is still in the document and focusable
-      expect(openBtn).toBeInTheDocument();
-      expect(openBtn.tabIndex).toBeGreaterThanOrEqual(0);
-    }
+    expect(openBtn).toHaveFocus();
   });
 
   it("ARIA ID integrity: dialog aria-labelledby resolves", () => {

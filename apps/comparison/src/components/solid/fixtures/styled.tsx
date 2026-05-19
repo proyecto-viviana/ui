@@ -37,6 +37,8 @@ import {
   DateField as SolidSpectrumDateField,
   DateRangePicker as SolidSpectrumDateRangePicker,
   DatePicker as SolidSpectrumDatePicker,
+  Dialog as SolidSpectrumDialog,
+  DialogTrigger as SolidSpectrumDialogTrigger,
   Divider as SolidSpectrumDivider,
   Form as SolidSpectrumForm,
   Image as SolidSpectrumImage,
@@ -261,6 +263,12 @@ import {
   serializeDividerDemoProps,
   type DividerDemoProps,
 } from "@comparison/data/divider-demo";
+import {
+  dialogDemoPropsFromWindow,
+  normalizeDialogDemoProps,
+  serializeDialogDemoProps,
+  type DialogDemoProps,
+} from "@comparison/data/dialog-demo";
 import {
   imageDemoPropsFromWindow,
   imageMissingSource,
@@ -665,6 +673,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   timefield: () => h(SolidSpectrumTimeFieldDemo, {}),
   daterangepicker: () => h(SolidSpectrumDateRangePickerDemo, {}),
   datepicker: () => h(SolidSpectrumDatePickerDemo, {}),
+  dialog: () => h(SolidSpectrumDialogDemo, {}),
   rangecalendar: () => h(SolidSpectrumRangeCalendarDemo, {}),
   divider: () => h(SolidSpectrumDividerDemo, {}),
   form: () => h(SolidSpectrumFormDemo, {}),
@@ -2360,6 +2369,116 @@ function SolidSpectrumCheckboxDemo() {
             },
             [() => demoProps().children],
           ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumDialogDemo() {
+  const [demoProps, setDemoProps] = createSignal<DialogDemoProps>(dialogDemoPropsFromWindow());
+  const [isOpen, setIsOpen] = createSignal(demoProps().isOpen);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "dialog") {
+        const nextProps = normalizeDialogDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setIsOpen(nextProps.isOpen);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() =>
+    serializeDialogDemoProps({
+      ...demoProps(),
+      isOpen: isOpen(),
+    }),
+  );
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setIsOpen(nextOpen);
+    setDemoProps((current) => ({ ...current, isOpen: nextOpen }));
+  };
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "dialog",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-open"() {
+            return String(isOpen());
+          },
+        },
+        [
+          hc(SolidSpectrumDialogTrigger, {
+            get isOpen() {
+              return isOpen();
+            },
+            onOpenChange: handleOpenChange,
+            get isDismissible() {
+              return demoProps().isDismissible;
+            },
+            get isKeyboardDismissDisabled() {
+              return demoProps().isKeyboardDismissDisabled;
+            },
+            get trigger() {
+              return hc(
+                SolidSpectrumButton,
+                {
+                  variant: "primary",
+                },
+                [() => demoProps().triggerLabel],
+              );
+            },
+            content: (close: () => void) =>
+              hc(
+                SolidSpectrumDialog,
+                {
+                  get size() {
+                    return demoProps().size;
+                  },
+                  get role() {
+                    return demoProps().role;
+                  },
+                  get title() {
+                    return demoProps().title;
+                  },
+                  get isDismissible() {
+                    return demoProps().isDismissible;
+                  },
+                  onClose: close,
+                },
+                [() => demoProps().body],
+              ),
+          }),
         ],
       ),
     ],

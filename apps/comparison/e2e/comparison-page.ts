@@ -6,7 +6,7 @@ export async function waitForComparisonRouteReady(page: Page) {
   await expect(page.locator("astro-island")).toHaveCount(0);
 
   const section = page.locator("#example").filter({
-    has: page.getByRole("heading", { name: "Example" }),
+    has: page.locator("h2", { hasText: "Example" }),
   });
   await expect(section).toHaveCount(1);
   await expect(
@@ -28,7 +28,7 @@ export async function waitForComparisonRouteReady(page: Page) {
 
 export async function styledSection(page: Page) {
   const section = page.locator("#example").filter({
-    has: page.getByRole("heading", { name: "Example" }),
+    has: page.locator("h2", { hasText: "Example" }),
   });
   await expect(section).toHaveCount(1);
   await section.scrollIntoViewIfNeeded();

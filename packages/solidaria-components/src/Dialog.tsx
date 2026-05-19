@@ -19,9 +19,13 @@ import {
 import {
   createDialog,
   createOverlayTrigger,
+  focusSafely,
   type AriaDialogProps,
 } from "@proyecto-viviana/solidaria";
-import { createOverlayTriggerState } from "@proyecto-viviana/solid-stately";
+import {
+  createOverlayTriggerState,
+  type OverlayTriggerState,
+} from "@proyecto-viviana/solid-stately";
 import { DialogTriggerContext, useOverlayTriggerState } from "./contexts";
 import {
   type RenderChildren,
@@ -91,6 +95,42 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
   // Create overlay trigger props (used via context, not directly applied)
   createOverlayTrigger({ type: "dialog" }, state, () => triggerRef);
 
+  const restoreFocusToTrigger = () => {
+    const trigger = triggerRef;
+    if (!trigger?.isConnected) return;
+
+    const win = trigger.ownerDocument.defaultView ?? window;
+    win.requestAnimationFrame(() => {
+      win.requestAnimationFrame(() => {
+        if (trigger.isConnected && !state.isOpen()) {
+          focusSafely(trigger);
+        }
+      });
+    });
+  };
+
+  const stateWithFocusRestore: OverlayTriggerState = {
+    isOpen: state.isOpen,
+    setOpen: (isOpen) => {
+      state.setOpen(isOpen);
+      if (!isOpen) {
+        restoreFocusToTrigger();
+      }
+    },
+    open: state.open,
+    close: () => {
+      state.close();
+      restoreFocusToTrigger();
+    },
+    toggle: () => {
+      const wasOpen = state.isOpen();
+      state.toggle();
+      if (wasOpen) {
+        restoreFocusToTrigger();
+      }
+    },
+  };
+
   const setTriggerRef = (el: HTMLElement | null) => {
     if (!el) return;
     if (!triggerRef || !triggerRef.isConnected) {
@@ -100,7 +140,7 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
 
   // Context value - memoized to avoid unnecessary re-renders
   const contextValue = createMemo(() => ({
-    state,
+    state: stateWithFocusRestore,
     triggerRef: () => triggerRef,
     setTriggerRef,
     triggerId,
