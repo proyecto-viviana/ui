@@ -199,6 +199,8 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
 
   // Check if value is invalid
   const isInvalid = createMemo(() => {
+    if (validationState() === "invalid") return true;
+
     const v = value();
     if (!v) return false;
 
@@ -209,7 +211,7 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
     if (maxValue && v.compare(maxValue) > 0) return true;
     if (props.isDateUnavailable?.(v)) return true;
 
-    return validationState() === "invalid";
+    return false;
   });
 
   // Generate segments based on granularity and locale

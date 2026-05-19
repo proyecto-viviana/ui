@@ -4,6 +4,19 @@ import { CalendarDate } from "@internationalized/date";
 import { createDateFieldState } from "../src/calendar/createDateFieldState";
 
 describe("createDateFieldState", () => {
+  it("reflects explicit invalid validation state without a value", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        validationState: "invalid",
+      });
+
+      expect(state.value()).toBeNull();
+      expect(state.isInvalid()).toBe(true);
+
+      dispose();
+    });
+  });
+
   it("constrains placeholder commit to minValue on confirm", () => {
     createRoot((dispose) => {
       const minValue = new CalendarDate(2024, 6, 10);

@@ -19,6 +19,7 @@
     "test:default": "vp run build && playwright test e2e/default-state-visual.spec.ts e2e/default-state-pair-diff.spec.ts e2e/live-styled-visual.spec.ts --reporter=line",
     "test:pair": "vp run build && playwright test e2e/default-state-pair-diff.spec.ts --reporter=line",
     "test:dialog": "vp run build && playwright test e2e/dialog-visual.spec.ts --reporter=line",
+    "test:datefield": "vp run build && playwright test e2e/datefield-visual.spec.ts e2e/modeled-controls-contract.spec.ts --grep DateField --reporter=line",
     "test:datepicker": "vp run build && playwright test e2e/datepicker-visual.spec.ts --reporter=line",
     "test:daterangepicker": "vp run build && playwright test e2e/daterangepicker-visual.spec.ts --reporter=line",
     "test:rangecalendar": "vp run build && playwright test e2e/rangecalendar-visual.spec.ts --reporter=line",

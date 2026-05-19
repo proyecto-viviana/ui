@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { DateField, DateInput, DateSegment } from "../src/DateField";
+import { DateField, DateFieldErrorMessage, DateInput, DateSegment } from "../src/DateField";
 import { CalendarDate } from "@internationalized/date";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -89,6 +89,20 @@ describe("DateField", () => {
 
       const field = document.querySelector(".my-date-field");
       expect(field).toBeInTheDocument();
+    });
+
+    it("should render hidden form input when name is provided", async () => {
+      render(() => (
+        <TestDateField
+          fieldProps={{ name: "appointmentDate", defaultValue: new CalendarDate(2025, 2, 3) }}
+        />
+      ));
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveAttribute("type", "date");
+      expect(input).toHaveValue("2025-02-03");
     });
   });
 
@@ -218,7 +232,6 @@ describe("DateField", () => {
 
   describe("validation", () => {
     it("should support isInvalid state", async () => {
-      // Need a value for validation state to be reflected
       render(() => (
         <TestDateField
           fieldProps={{
@@ -231,6 +244,26 @@ describe("DateField", () => {
 
       const field = document.querySelector(".solidaria-DateField");
       expect(field).toHaveAttribute("data-invalid");
+    });
+
+    it("should link state-driven error message to aria-describedby", async () => {
+      render(() => (
+        <DateField
+          aria-label="Test Date Field"
+          validationState="invalid"
+          errorMessage="Date is required"
+        >
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          <DateFieldErrorMessage>Date is required</DateFieldErrorMessage>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      const field = document.querySelector(".solidaria-DateField") as HTMLElement;
+      const error = screen.getByText("Date is required");
+
+      expect(error).toHaveAttribute("id");
+      expect(field.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
     });
 
     it("should mark field as invalid when value is below minValue", async () => {

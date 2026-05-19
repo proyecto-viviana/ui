@@ -34,6 +34,7 @@
     "comparison:test:default": "vp run --filter @proyecto-viviana/comparison test:default",
     "comparison:test:pair": "vp run --filter @proyecto-viviana/comparison test:pair",
     "comparison:test:theme": "vp run --filter @proyecto-viviana/comparison test:theme",
+    "comparison:test:datefield": "vp run --filter @proyecto-viviana/comparison test:datefield",
     "comparison:test:datepicker": "vp run --filter @proyecto-viviana/comparison test:datepicker",
     "comparison:test:dialog": "vp run --filter @proyecto-viviana/comparison test:dialog",
     "comparison:test:rangecalendar": "vp run --filter @proyecto-viviana/comparison test:rangecalendar",

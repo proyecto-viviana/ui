@@ -105,7 +105,7 @@ export function createDateField<T extends DateFieldState>(
     if (p.description) {
       ids.push(descriptionId);
     }
-    if (p.isInvalid && p.errorMessage) {
+    if ((p.isInvalid || state.isInvalid()) && p.errorMessage) {
       ids.push(errorMessageId);
     }
     return ids.length > 0 ? ids.join(" ") : undefined;

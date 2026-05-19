@@ -24,6 +24,7 @@ import {
 } from "@proyecto-viviana/solidaria";
 import {
   createDateFieldState,
+  access,
   type DateFieldState,
   type DateFieldStateProps,
   type DateSegment as DateSegmentType,
@@ -39,6 +40,7 @@ import {
   dataAttr,
   useIsHydrated,
 } from "./utils";
+import { HiddenDateInput } from "./HiddenDateInput";
 import {
   DateRangePickerContext,
   type DateRangePickerFieldContextValue,
@@ -265,6 +267,18 @@ function DateFieldInner<T extends DateValue = CalendarDate>(props: DateFieldProp
         >
           {props.children as JSX.Element}
         </div>
+        <Show when={(rest as Record<string, unknown>).name}>
+          <HiddenDateInput
+            name={(rest as Record<string, unknown>).name as string | undefined}
+            form={(rest as Record<string, unknown>).form as string | undefined}
+            value={state.value()}
+            autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
+            isDisabled={state.isDisabled()}
+            minValue={access(stateProps.minValue) as DateValue | undefined}
+            maxValue={access(stateProps.maxValue) as DateValue | undefined}
+            granularity={state.granularity}
+          />
+        </Show>
       </DateFieldContext.Provider>
     </DateFieldStateContext.Provider>
   );

@@ -34,6 +34,7 @@ import {
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
+  DateField as SolidSpectrumDateField,
   DateRangePicker as SolidSpectrumDateRangePicker,
   DatePicker as SolidSpectrumDatePicker,
   Divider as SolidSpectrumDivider,
@@ -196,6 +197,17 @@ import {
   serializeComboBoxDemoProps,
   type ComboBoxDemoProps,
 } from "@comparison/data/combobox-demo";
+import {
+  dateFieldMaxValue,
+  dateFieldMinValue,
+  dateFieldDemoPropsFromWindow,
+  dateFieldValueFromDemo,
+  isDateFieldDateUnavailable,
+  normalizeDateFieldDemoProps,
+  serializeDateFieldDemoProps,
+  serializeDateFieldValue,
+  type DateFieldDemoProps,
+} from "@comparison/data/datefield-demo";
 import {
   datePickerMaxValue,
   datePickerMinValue,
@@ -637,6 +649,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
+  datefield: () => h(SolidSpectrumDateFieldDemo, {}),
   daterangepicker: () => h(SolidSpectrumDateRangePickerDemo, {}),
   datepicker: () => h(SolidSpectrumDatePickerDemo, {}),
   rangecalendar: () => h(SolidSpectrumRangeCalendarDemo, {}),
@@ -2832,6 +2845,140 @@ function SolidSpectrumDatePickerDemo() {
             },
             onChange: setValue,
             onOpenChange: setIsOpen,
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumDateFieldDemo() {
+  const initialDemoProps = dateFieldDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = createSignal<DateFieldDemoProps>(initialDemoProps);
+  const [value, setValue] = createSignal(dateFieldValueFromDemo(initialDemoProps));
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "datefield") {
+        const nextProps = normalizeDateFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(() => dateFieldValueFromDemo(nextProps));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeDateFieldDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      get locale() {
+        return demoProps().locale || undefined;
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "datefield",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-locale"() {
+            return demoProps().locale;
+          },
+          get "data-comparison-value"() {
+            return serializeDateFieldValue(value());
+          },
+        },
+        [
+          hc(SolidSpectrumDateField, {
+            class: "comparison-datefield-root",
+            get label() {
+              return demoProps().label;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get labelPosition() {
+              return demoProps().labelPosition;
+            },
+            get labelAlign() {
+              return demoProps().labelAlign;
+            },
+            get necessityIndicator() {
+              return demoProps().necessityIndicator;
+            },
+            get value() {
+              return value() ?? undefined;
+            },
+            get granularity() {
+              return demoProps().granularity;
+            },
+            get hourCycle() {
+              return demoProps().hourCycle ? Number(demoProps().hourCycle) : undefined;
+            },
+            get hideTimeZone() {
+              return demoProps().hideTimeZone;
+            },
+            get minValue() {
+              return demoProps().constrainRange
+                ? dateFieldMinValue(demoProps().granularity)
+                : undefined;
+            },
+            get maxValue() {
+              return demoProps().constrainRange
+                ? dateFieldMaxValue(demoProps().granularity)
+                : undefined;
+            },
+            get isDateUnavailable() {
+              return demoProps().unavailableDates ? isDateFieldDateUnavailable : undefined;
+            },
+            get name() {
+              return demoProps().name || undefined;
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onChange: setValue,
           }),
         ],
       ),
