@@ -61,6 +61,7 @@ const dateFieldTextControlValues: Record<string, string> = {
 const timeFieldTextControlValues: Record<string, string> = {
   value: "09:45:30",
   name: "startTime",
+  form: "scheduleForm",
 };
 
 function liveStyledEntry(group: ComponentControlGroup) {

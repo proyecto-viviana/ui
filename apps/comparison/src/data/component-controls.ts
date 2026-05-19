@@ -97,6 +97,7 @@ import {
   timeFieldLocaleOptions,
   timeFieldNecessityIndicatorOptions,
   timeFieldSizeOptions,
+  timeFieldValidationBehaviorOptions,
 } from "./timefield-demo";
 import {
   rangeCalendarDemoDefaults,
@@ -2541,6 +2542,19 @@ const timeFieldControls: ComponentControlGroup = {
       defaultValue: timeFieldDemoDefaults.name,
     },
     {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: timeFieldDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "select",
+      defaultValue: timeFieldDemoDefaults.validationBehavior,
+      options: defaultableOptions(timeFieldValidationBehaviorOptions),
+    },
+    {
       name: "description",
       label: "description",
       kind: "text",
@@ -2614,7 +2628,7 @@ const timeFieldControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 TimeField docs and API surface: label, size, label position/alignment, necessity indicator, controlled time value, granularity, hour cycle, hidden-time-zone state, Provider locale routing, form name, validation, disabled/read-only, required, help text, and min/max constraints drive both mounted stacks.",
+  note: "Modeled from the S2 TimeField docs and API surface: label, size, label position/alignment, necessity indicator, controlled time value, granularity, hour cycle, hidden-time-zone state, Provider locale routing, form owner/name, validation behavior, validation, disabled/read-only, required, help text, and min/max constraints drive both mounted stacks.",
 };
 
 const datePickerControls: ComponentControlGroup = {

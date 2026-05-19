@@ -2861,6 +2861,8 @@ function ReactTimeFieldDemo() {
         minValue: demoProps.constrainRange ? timeFieldMinValue() : undefined,
         maxValue: demoProps.constrainRange ? timeFieldMaxValue() : undefined,
         name: demoProps.name || undefined,
+        form: demoProps.form || undefined,
+        validationBehavior: demoProps.validationBehavior || undefined,
         description: demoProps.description,
         errorMessage: demoProps.errorMessage,
         isDisabled: demoProps.isDisabled,

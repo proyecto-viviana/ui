@@ -122,6 +122,28 @@ describe("TimeField", () => {
       expect(input).toHaveAttribute("type", "time");
       expect(input).toHaveValue("09:30");
     });
+
+    it("should participate in associated form data", async () => {
+      render(() => (
+        <div>
+          <form id="scheduleForm" />
+          <TestTimeField
+            fieldProps={{
+              name: "startTime",
+              form: "scheduleForm",
+              defaultValue: new Time(9, 30),
+            }}
+          />
+        </div>
+      ));
+      await waitForTimeFieldHydration();
+
+      const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+      const form = document.getElementById("scheduleForm") as HTMLFormElement;
+      expect(input).toHaveAttribute("form", "scheduleForm");
+      expect(form).toBeInTheDocument();
+      expect(new FormData(form).getAll("startTime").map(String)).toEqual(["09:30"]);
+    });
   });
 
   // ============================================

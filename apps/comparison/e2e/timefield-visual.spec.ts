@@ -1,11 +1,17 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
-import { expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 const fieldPairThreshold = {
   maxMismatchRatio: 0.04,
   maxDimensionDelta: 2,
   pixelThreshold: 90,
+};
+
+const strictFieldPairThreshold = {
+  maxMismatchRatio: 0,
+  maxDimensionDelta: 0,
+  pixelThreshold: 1,
 };
 
 async function timeFieldRoot(panel: Locator) {
@@ -36,7 +42,11 @@ async function namedInputValues(root: Locator, name: string) {
     );
 }
 
-async function namedInputAttributes(root: Locator, name: string, attribute: "min" | "max") {
+async function namedInputAttributes(
+  root: Locator,
+  name: string,
+  attribute: "min" | "max" | "form",
+) {
   return root
     .locator(`input[name="${name}"]`)
     .evaluateAll(
@@ -60,6 +70,24 @@ async function expectInvalidField(root: Locator) {
       ),
     )
     .toBe(true);
+}
+
+async function associatedFormValues(page: Page, formId: string, name: string) {
+  return page.evaluate(
+    ({ formId, name }) => {
+      document.getElementById(formId)?.remove();
+      const form = document.createElement("form");
+      form.id = formId;
+      document.body.append(form);
+
+      const values = new FormData(form)
+        .getAll(name)
+        .map((value) => String(value).replace(/(\d{2}:\d{2}):00$/, "$1"));
+      form.remove();
+      return values;
+    },
+    { formId, name },
+  );
 }
 
 test.describe("TimeField visual parity", () => {
@@ -92,9 +120,38 @@ test.describe("TimeField visual parity", () => {
     expect(diff.diff.solidWidth).toBeGreaterThan(140);
   });
 
-  test("routes time value, second granularity, hour cycle, and form name", async ({ page }) => {
+  test("closed segmented field is pixel-identical for the deterministic time route", async ({
+    page,
+  }) => {
+    await pinComparisonTheme(page, "dark");
     await page.goto(
-      "/components/timefield/?value=09%3A45%3A30&granularity=second&hourCycle=24&name=startTime",
+      "/components/timefield/?size=XL&value=09%3A30%3A00&hourCycle=24&name=startTime",
+    );
+    await waitForComparisonRouteReady(page);
+    await clearPointer(page);
+
+    const section = await styledSection(page);
+    const reactRoot = await timeFieldRoot(await frameworkPanel(section, "React Spectrum stack"));
+    const solidRoot = await timeFieldRoot(await frameworkPanel(section, "Solidaria stack"));
+    const reactField = await timeFieldComponent(reactRoot);
+    const solidField = await timeFieldComponent(solidRoot);
+
+    const diff = await expectScreenshotPair(
+      page,
+      reactField,
+      solidField,
+      "timefield deterministic closed field",
+      strictFieldPairThreshold,
+    );
+    expect(diff.diff.reactWidth).toBeGreaterThan(160);
+    expect(diff.diff.solidWidth).toBe(diff.diff.reactWidth);
+  });
+
+  test("routes time value, second granularity, hour cycle, form owner, and validation behavior", async ({
+    page,
+  }) => {
+    await page.goto(
+      "/components/timefield/?value=09%3A45%3A30&granularity=second&hourCycle=24&name=startTime&form=scheduleForm&validationBehavior=aria",
     );
     await waitForComparisonRouteReady(page);
 
@@ -106,8 +163,29 @@ test.describe("TimeField visual parity", () => {
     await expect(solidRoot.getByRole("spinbutton")).toHaveCount(3);
     expect(await namedInputValues(reactRoot, "startTime")).toContain("09:45:30");
     expect(await namedInputValues(solidRoot, "startTime")).toContain("09:45:30");
+    expect(await namedInputAttributes(reactRoot, "startTime", "form")).toContain("scheduleForm");
+    expect(await namedInputAttributes(solidRoot, "startTime", "form")).toContain("scheduleForm");
+    await expect
+      .poll(() => associatedFormValues(page, "scheduleForm", "startTime"))
+      .toEqual(["09:45:30", "09:45:30"]);
     await expect(reactRoot).toHaveAttribute("data-comparison-value", "09:45:30");
     await expect(solidRoot).toHaveAttribute("data-comparison-value", "09:45:30");
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"form":"scheduleForm"/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"form":"scheduleForm"/,
+    );
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"validationBehavior":"aria"/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"validationBehavior":"aria"/,
+    );
   });
 
   test("asserts validation, required state, and range constraints", async ({ page }) => {

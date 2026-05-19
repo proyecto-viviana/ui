@@ -3142,6 +3142,12 @@ function SolidSpectrumTimeFieldDemo() {
             get name() {
               return demoProps().name || undefined;
             },
+            get form() {
+              return demoProps().form || undefined;
+            },
+            get validationBehavior() {
+              return demoProps().validationBehavior || undefined;
+            },
             get description() {
               return demoProps().description;
             },

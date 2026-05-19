@@ -10,6 +10,7 @@ export const timeFieldNecessityIndicatorOptions = ["icon", "label"] as const;
 export const timeFieldGranularityOptions = ["hour", "minute", "second"] as const;
 export const timeFieldHourCycleOptions = ["", "12", "24"] as const;
 export const timeFieldLocaleOptions = ["", "fr-FR", "ar-AE", "hi-IN"] as const;
+export const timeFieldValidationBehaviorOptions = ["", "native", "aria"] as const;
 
 export type TimeFieldDemoSize = (typeof timeFieldSizeOptions)[number];
 export type TimeFieldLabelPosition = (typeof timeFieldLabelPositionOptions)[number];
@@ -18,6 +19,7 @@ export type TimeFieldNecessityIndicator = (typeof timeFieldNecessityIndicatorOpt
 export type TimeFieldGranularity = (typeof timeFieldGranularityOptions)[number];
 export type TimeFieldHourCycle = (typeof timeFieldHourCycleOptions)[number];
 export type TimeFieldLocale = (typeof timeFieldLocaleOptions)[number];
+export type TimeFieldValidationBehavior = (typeof timeFieldValidationBehaviorOptions)[number];
 
 export interface TimeFieldDemoProps {
   label: string;
@@ -31,6 +33,8 @@ export interface TimeFieldDemoProps {
   hideTimeZone: boolean;
   locale: TimeFieldLocale;
   name: string;
+  form: string;
+  validationBehavior: TimeFieldValidationBehavior;
   description: string;
   errorMessage: string;
   constrainRange: boolean;
@@ -52,6 +56,8 @@ export const timeFieldDemoDefaults: TimeFieldDemoProps = {
   hideTimeZone: false,
   locale: "",
   name: "",
+  form: "",
+  validationBehavior: "",
   description: "Enter the start time.",
   errorMessage: "Enter a valid start time.",
   constrainRange: false,
@@ -128,6 +134,10 @@ export function normalizeTimeFieldDemoProps(
       ? props.locale
       : timeFieldDemoDefaults.locale,
     name: typeof props.name === "string" ? props.name : timeFieldDemoDefaults.name,
+    form: typeof props.form === "string" ? props.form : timeFieldDemoDefaults.form,
+    validationBehavior: isOneOf(props.validationBehavior, timeFieldValidationBehaviorOptions)
+      ? props.validationBehavior
+      : timeFieldDemoDefaults.validationBehavior,
     description:
       typeof props.description === "string" ? props.description : timeFieldDemoDefaults.description,
     errorMessage:
@@ -151,6 +161,7 @@ export function timeFieldDemoPropsFromSearch(search: string): TimeFieldDemoProps
   const granularity = params.get("granularity");
   const hourCycle = params.get("hourCycle");
   const locale = params.get("locale");
+  const validationBehavior = params.get("validationBehavior");
 
   return normalizeTimeFieldDemoProps({
     label: params.get("label") || timeFieldDemoDefaults.label,
@@ -174,6 +185,10 @@ export function timeFieldDemoPropsFromSearch(search: string): TimeFieldDemoProps
     hideTimeZone: booleanParam(params.get("hideTimeZone")),
     locale: isOneOf(locale, timeFieldLocaleOptions) ? locale : timeFieldDemoDefaults.locale,
     name: params.get("name") ?? timeFieldDemoDefaults.name,
+    form: params.get("form") ?? timeFieldDemoDefaults.form,
+    validationBehavior: isOneOf(validationBehavior, timeFieldValidationBehaviorOptions)
+      ? validationBehavior
+      : timeFieldDemoDefaults.validationBehavior,
     description: params.get("description") ?? timeFieldDemoDefaults.description,
     errorMessage: params.get("errorMessage") ?? timeFieldDemoDefaults.errorMessage,
     constrainRange: booleanParam(params.get("constrainRange")),
@@ -205,6 +220,8 @@ export function serializeTimeFieldDemoProps(props: TimeFieldDemoProps) {
     hideTimeZone: props.hideTimeZone,
     locale: props.locale,
     name: props.name,
+    form: props.form,
+    validationBehavior: props.validationBehavior,
     description: props.description,
     errorMessage: props.errorMessage,
     constrainRange: props.constrainRange,

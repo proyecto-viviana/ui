@@ -727,7 +727,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             : title === "DateField"
               ? "DateField has a live comparison island with S2 segmented field styling, controlled date/time values, form owner/name and associated form-data evidence, validation behavior routing, validation, constraints, strict closed-field pair-diff evidence, and Provider locale/calendar-system routing."
               : title === "TimeField"
-                ? "TimeField has a live comparison island with S2 segmented field styling, controlled time values, form name evidence, validation, constraints, and Provider locale routing."
+                ? "TimeField has a live comparison island with S2 segmented field styling, controlled time values, form owner/name and associated form-data evidence, validation behavior routing, validation, constraints, strict closed-field pair-diff evidence, and Provider locale routing."
                 : title === "DatePicker"
                   ? "DatePicker has a live comparison island with controlled date/date-time values, routed calendar constraints, associated form data evidence, locale/custom-calendar routes, strict closed-field pair-diff evidence, two-month popup state, and open popover evidence."
                   : `${title} has an initial live comparison island. Exhaustive states remain open.`,
@@ -751,7 +751,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             : title === "DateField"
               ? "Contextual help route coverage and additional screen-reader transcript evidence remain tracked after the route, form, validation behavior, and strict closed-field parity pass."
               : title === "TimeField"
-                ? "Strict full-field visual pair-diff and additional screen-reader transcript evidence remain tracked after the route parity foundation."
+                ? "Contextual help route coverage and additional screen-reader transcript evidence remain tracked after the route, form, validation behavior, and strict closed-field parity pass."
                 : title === "DatePicker"
                   ? "Assistive-technology transcript rows, strict open-popover pair-diff, and full popup style token ledger evidence remain tracked after the route, time, locale, form, and closed-field parity pass."
                   : "Detailed state matrices and strict visual assertions remain incomplete.",
@@ -772,7 +772,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
               : title === "DateField"
                 ? "Solid styled DateField is mounted from @proyecto-viviana/solid-spectrum with the S2 field shell, segmented DateInput, required/invalid/help text surface, hidden form input, associated form data, date-time granularity, hour cycle, validation behavior, strict closed-field pair-diff evidence, and locale route controls."
                 : title === "TimeField"
-                  ? "Solid styled TimeField is mounted from @proyecto-viviana/solid-spectrum with the S2 field shell, segmented TimeInput, required/invalid/help text surface, hidden form input, granularity, hour cycle, and locale route controls."
+                  ? "Solid styled TimeField is mounted from @proyecto-viviana/solid-spectrum with the S2 field shell, segmented TimeInput, required/invalid/help text surface, hidden form input, associated form data, granularity, hour cycle, validation behavior, strict closed-field pair-diff evidence, and locale route controls."
                   : title === "DateRangePicker"
                     ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum; S2 field-shell segment parity is asserted for the closed field, popup RangeCalendar geometry has bounded grid screenshot evidence, and date-time, locale, and custom-calendar routes are covered."
                     : title === "Toast"

@@ -1966,9 +1966,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "static",
       react: "visual",
       solid: "visual",
-      pairDiff: "asserted",
+      pairDiff: "strict",
       spec: "e2e/timefield-visual.spec.ts",
-      note: "Standalone TimeField route mounts both stacks with S2 field shell styling, editable time spinbuttons, visible label linkage, help text, and bounded React/Solid field geometry evidence.",
+      note: "Standalone TimeField route mounts both stacks with S2 field shell styling, editable time spinbuttons, visible label linkage, help text, and strict zero-tolerance deterministic closed-field React/Solid pair-diff evidence.",
     },
     {
       id: "styled.timefield.value",
@@ -1978,7 +1978,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/timefield-visual.spec.ts",
-      note: "Route state drives controlled time values, granularity, hourCycle, hidden form name serialization, and Provider locale props through both TimeField stacks.",
+      note: "Route state drives controlled time values, granularity, hourCycle, hidden form owner/name serialization, validationBehavior, associated FormData, and Provider locale props through both TimeField stacks.",
     },
     {
       id: "styled.timefield.validation",
@@ -1998,7 +1998,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "Side-panel controls dispatch label, size, label position/alignment, necessity indicator, controlled value, granularity, hourCycle, hideTimeZone, locale, form name, help/error text, min/max constraints, disabled/read-only, required, and invalid props into both mounted styled stacks.",
+      note: "Side-panel controls dispatch label, size, label position/alignment, necessity indicator, controlled value, granularity, hourCycle, hideTimeZone, locale, form owner/name, validationBehavior, help/error text, min/max constraints, disabled/read-only, required, and invalid props into both mounted styled stacks.",
     },
   ],
   datepicker: [

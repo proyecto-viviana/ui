@@ -75,6 +75,27 @@ describe("TimeField (solid-spectrum)", () => {
     expect(input).toHaveValue("09:30");
   });
 
+  it("passes form ownership through to the hidden input", async () => {
+    render(() => (
+      <div>
+        <form id="scheduleForm" />
+        <TimeField
+          aria-label="Time"
+          name="startTime"
+          form="scheduleForm"
+          defaultValue={new Time(9, 30)}
+          hourCycle={24}
+        />
+      </div>
+    ));
+    await waitForHydration();
+
+    const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+    const form = document.getElementById("scheduleForm") as HTMLFormElement;
+    expect(input).toHaveAttribute("form", "scheduleForm");
+    expect(new FormData(form).getAll("startTime").map(String)).toEqual(["09:30"]);
+  });
+
   it("does not treat errorMessage alone as invalid", async () => {
     render(() => <TimeField aria-label="Time" errorMessage="Time is required" />);
     await waitForHydration();
