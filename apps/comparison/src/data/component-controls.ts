@@ -54,10 +54,15 @@ import {
 } from "./checkboxgroup-demo";
 import { comboBoxDemoDefaults, comboBoxKeyOptions, comboBoxSizeOptions } from "./combobox-demo";
 import {
+  dateRangePickerCalendarSystemOptions,
   dateRangePickerDemoDefaults,
   dateRangePickerFirstDayOfWeekOptions,
+  dateRangePickerGranularityOptions,
+  dateRangePickerHourCycleOptions,
+  dateRangePickerLocaleOptions,
   dateRangePickerPageBehaviorOptions,
   dateRangePickerSizeOptions,
+  dateRangePickerValidationBehaviorOptions,
   dateRangePickerVisibleMonthsOptions,
 } from "./daterangepicker-demo";
 import {
@@ -2829,6 +2834,40 @@ const dateRangePickerControls: ComponentControlGroup = {
       options: defaultableOptions(dateRangePickerPageBehaviorOptions),
     },
     {
+      name: "granularity",
+      label: "granularity",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.granularity,
+      options: options(dateRangePickerGranularityOptions),
+    },
+    {
+      name: "hourCycle",
+      label: "hourCycle",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.hourCycle,
+      options: defaultableOptions(dateRangePickerHourCycleOptions),
+    },
+    {
+      name: "hideTimeZone",
+      label: "hideTimeZone",
+      kind: "switch",
+      defaultValue: dateRangePickerDemoDefaults.hideTimeZone,
+    },
+    {
+      name: "locale",
+      label: "locale",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.locale,
+      options: defaultableOptions(dateRangePickerLocaleOptions),
+    },
+    {
+      name: "calendarSystem",
+      label: "calendarSystem",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.calendarSystem,
+      options: defaultableOptions(dateRangePickerCalendarSystemOptions),
+    },
+    {
       name: "firstDayOfWeek",
       label: "firstDayOfWeek",
       kind: "select",
@@ -2846,6 +2885,19 @@ const dateRangePickerControls: ComponentControlGroup = {
       label: "endName",
       kind: "text",
       defaultValue: dateRangePickerDemoDefaults.endName,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: dateRangePickerDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "select",
+      defaultValue: dateRangePickerDemoDefaults.validationBehavior,
+      options: defaultableOptions(dateRangePickerValidationBehaviorOptions),
     },
     {
       name: "description",
@@ -2920,12 +2972,15 @@ const dateRangePickerControls: ComponentControlGroup = {
     "maxVisibleMonths",
     "pageBehavior",
     "firstDayOfWeek",
+    "createCalendar",
     "isDateUnavailable",
     "allowsNonContiguousRanges",
     "defaultOpen",
     "isOpen",
     "startName",
     "endName",
+    "form",
+    "validationBehavior",
     "shouldFlip",
     "onChange",
     "onOpenChange",
@@ -2936,7 +2991,7 @@ const dateRangePickerControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 DateRangePicker docs control surface for label, size, controlled range value, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, non-contiguous range policy, firstDayOfWeek, pageBehavior, and startName/endName form props. Time granularity/hour cycle and calendar-system states remain dedicated route states.",
+  note: "Modeled from the S2 DateRangePicker docs control surface for label, size, controlled date and date-time range values, granularity, hour cycle, hidden time-zone state, Provider locale routing, custom calendar creation, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, non-contiguous range policy, firstDayOfWeek, pageBehavior, and startName/endName/form props.",
 };
 
 const rangeCalendarControls: ComponentControlGroup = {

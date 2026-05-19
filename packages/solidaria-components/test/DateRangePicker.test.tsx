@@ -16,7 +16,13 @@ import {
 } from "../src/DatePicker";
 import { DateInput, DateSegment } from "../src/DateField";
 import { RangeCalendar, RangeCalendarGrid, RangeCalendarCell } from "../src/RangeCalendar";
-import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
+import {
+  CalendarDate,
+  CalendarDateTime,
+  today,
+  getLocalTimeZone,
+  parseZonedDateTime,
+} from "@internationalized/date";
 
 let user: ReturnType<typeof setupUser>;
 
@@ -271,6 +277,67 @@ describe("DateRangePicker", () => {
     expect(endInput).toHaveValue("2024-06-07");
   });
 
+  it("renders startName and endName hidden datetime inputs with form owner", async () => {
+    const defaultValue = {
+      start: new CalendarDateTime(2025, 2, 3, 8, 45),
+      end: new CalendarDateTime(2025, 2, 14, 17, 30),
+    };
+
+    render(() => (
+      <TestDateRangePicker
+        pickerProps={{
+          defaultValue,
+          granularity: "minute",
+          startName: "startDate",
+          endName: "endDate",
+          form: "booking",
+        }}
+      />
+    ));
+    await waitForHydration();
+
+    const startInput = document.querySelector('input[name="startDate"]') as HTMLInputElement;
+    const endInput = document.querySelector('input[name="endDate"]') as HTMLInputElement;
+
+    expect(startInput).toBeInTheDocument();
+    expect(startInput.type).toBe("datetime-local");
+    expect(startInput).toHaveAttribute("form", "booking");
+    expect(startInput).toHaveValue("2025-02-03T08:45");
+    expect(endInput).toBeInTheDocument();
+    expect(endInput.type).toBe("datetime-local");
+    expect(endInput).toHaveAttribute("form", "booking");
+    expect(endInput).toHaveValue("2025-02-14T17:30");
+  });
+
+  it("preserves zoned range values in hidden form inputs", async () => {
+    const defaultValue = {
+      start: parseZonedDateTime("2025-02-03T08:45:30-05:00[America/New_York]"),
+      end: parseZonedDateTime("2025-02-14T17:30:30-05:00[America/New_York]"),
+    };
+
+    render(() => (
+      <TestDateRangePicker
+        pickerProps={{
+          defaultValue,
+          granularity: "minute",
+          startName: "startDate",
+          endName: "endDate",
+        }}
+      />
+    ));
+    await waitForHydration();
+
+    const startInput = document.querySelector('input[name="startDate"]') as HTMLInputElement;
+    const endInput = document.querySelector('input[name="endDate"]') as HTMLInputElement;
+
+    expect(startInput).toBeInTheDocument();
+    expect(startInput.type).toBe("hidden");
+    expect(startInput.value).toBe("2025-02-03T08:45:30-05:00[America/New_York]");
+    expect(endInput).toBeInTheDocument();
+    expect(endInput.type).toBe("hidden");
+    expect(endInput.value).toBe("2025-02-14T17:30:30-05:00[America/New_York]");
+  });
+
   it("supports DateInput start/end slots with editable segments", async () => {
     const defaultValue = {
       start: new CalendarDate(2024, 6, 1),
@@ -307,6 +374,38 @@ describe("DateRangePicker", () => {
     await waitFor(() => {
       expect(document.querySelector('input[name="startDate"]')).toHaveValue("2024-06-02");
       expect(document.querySelector('input[name="endDate"]')).toHaveValue("2024-06-07");
+    });
+  });
+
+  it("supports DateInput start/end date-time segments without stripping time", async () => {
+    const defaultValue = {
+      start: new CalendarDateTime(2025, 2, 3, 8, 45),
+      end: new CalendarDateTime(2025, 2, 14, 17, 30),
+    };
+
+    render(() => (
+      <DateRangePicker
+        aria-label="Range"
+        defaultValue={defaultValue}
+        granularity="minute"
+        hourCycle={24}
+        startName="startDate"
+        endName="endDate"
+      >
+        <DateRangeSegmentFields />
+      </DateRangePicker>
+    ));
+    await waitForHydration();
+
+    const startInput = screen.getByTestId("start-input");
+    const startHour = within(startInput).getByRole("spinbutton", { name: "Hour" });
+    expect(startHour).toHaveAttribute("aria-valuenow", "8");
+
+    fireEvent.keyDown(startHour, { key: "ArrowUp" });
+
+    await waitFor(() => {
+      expect(document.querySelector('input[name="startDate"]')).toHaveValue("2025-02-03T09:45");
+      expect(document.querySelector('input[name="endDate"]')).toHaveValue("2025-02-14T17:30");
     });
   });
 

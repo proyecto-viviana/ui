@@ -15,7 +15,15 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
+import { useLocale } from "@proyecto-viviana/solidaria";
+import {
+  type CalendarDateTime,
+  type TimeValue,
+  toCalendarDateTime,
+  toZoned,
+} from "@proyecto-viviana/solid-stately";
 import { RangeCalendar } from "./RangeCalendar";
+import { TimeField } from "../datepicker";
 import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../s2-style";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
@@ -389,6 +397,14 @@ const dateRangePickerPopoverFrame = style({
   width: "[max-content]",
 });
 
+const dateRangePickerTimeFields = style({
+  display: "flex",
+  gap: 16,
+  alignItems: "start",
+  flexWrap: "wrap",
+  maxWidth: "[272px]",
+});
+
 function DateRangeDisplay(props: {
   size: NormalizedDateRangePickerSize;
   isInvalid: boolean;
@@ -401,13 +417,53 @@ function DateRangeDisplay(props: {
   maxValue?: DateValue;
   isDateUnavailable?: (date: DateValue) => boolean;
   allowsNonContiguousRanges?: boolean;
+  createCalendar?: HeadlessDateRangePickerProps["createCalendar"];
   firstDayOfWeek?: DateRangePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
   pageBehavior?: "single" | "visible";
+  hourCycle?: 12 | 24;
+  hideTimeZone?: boolean;
+  placeholderValue?: DateValue;
 }): JSX.Element {
   const context = useDateRangePickerContext();
   const theme = useTheme();
   const state = context.calendarState;
   const isDisabled = () => state.isDisabled();
+  const timeGranularity = () => {
+    const granularity = context.startFieldState.granularity;
+    return granularity === "hour" || granularity === "minute" || granularity === "second"
+      ? granularity
+      : undefined;
+  };
+  const timeValueFor = (part: "start" | "end"): TimeValue | null => {
+    const value =
+      part === "start" ? context.startFieldState.value() : context.endFieldState.value();
+    return value && "hour" in value ? (value as unknown as TimeValue) : null;
+  };
+  const commitTimeValue = (part: "start" | "end", nextTime: TimeValue | null) => {
+    if (!nextTime) {
+      return;
+    }
+
+    const fieldState = part === "start" ? context.startFieldState : context.endFieldState;
+    const currentValue = fieldState.value();
+    if (!currentValue) {
+      return;
+    }
+
+    let nextValue: DateValue = toCalendarDateTime(currentValue, nextTime);
+    if ("timeZone" in currentValue && !("timeZone" in nextValue)) {
+      nextValue = toZoned(nextValue as CalendarDateTime, currentValue.timeZone);
+    }
+    fieldState.setValue(nextValue);
+  };
+  const timeMinValue = () =>
+    props.minValue && "hour" in props.minValue
+      ? (props.minValue as unknown as TimeValue)
+      : undefined;
+  const timeMaxValue = () =>
+    props.maxValue && "hour" in props.maxValue
+      ? (props.maxValue as unknown as TimeValue)
+      : undefined;
 
   return (
     <>
@@ -510,12 +566,49 @@ function DateRangeDisplay(props: {
               maxValue={props.maxValue}
               isDateUnavailable={props.isDateUnavailable}
               allowsNonContiguousRanges={props.allowsNonContiguousRanges}
+              createCalendar={props.createCalendar}
               firstDayOfWeek={props.firstDayOfWeek}
               pageBehavior={props.pageBehavior}
               isInvalid={props.isInvalid}
               errorMessage={props.isInvalid ? props.errorMessage : undefined}
               visibleMonths={props.maxVisibleMonths ?? 1}
             />
+            <Show when={timeGranularity()}>
+              <div class={dateRangePickerTimeFields}>
+                <TimeField
+                  size="md"
+                  label="Start time"
+                  value={timeValueFor("start") ?? undefined}
+                  minValue={timeMinValue()}
+                  maxValue={timeMaxValue()}
+                  granularity={timeGranularity()}
+                  hourCycle={props.hourCycle}
+                  hideTimeZone={props.hideTimeZone}
+                  placeholderValue={
+                    props.placeholderValue && "hour" in props.placeholderValue
+                      ? (props.placeholderValue as unknown as TimeValue)
+                      : undefined
+                  }
+                  onChange={(nextValue) => commitTimeValue("start", nextValue)}
+                />
+                <TimeField
+                  size="md"
+                  label="End time"
+                  value={timeValueFor("end") ?? undefined}
+                  minValue={timeMinValue()}
+                  maxValue={timeMaxValue()}
+                  granularity={timeGranularity()}
+                  hourCycle={props.hourCycle}
+                  hideTimeZone={props.hideTimeZone}
+                  placeholderValue={
+                    props.placeholderValue && "hour" in props.placeholderValue
+                      ? (props.placeholderValue as unknown as TimeValue)
+                      : undefined
+                  }
+                  onChange={(nextValue) => commitTimeValue("end", nextValue)}
+                />
+              </div>
+            </Show>
           </div>
         </DateRangePickerContent>
       </div>
@@ -557,12 +650,14 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
       "pageBehavior",
       "allowsNonContiguousRanges",
       "placeholderValue",
+      "createCalendar",
     ],
   );
 
   const size = () => normalizeDateRangePickerSize(local.size);
   const isInvalid = () => local.isInvalid === true;
   const maxVisibleMonths = () => Math.max(1, Number(local.maxVisibleMonths ?? 1));
+  const locale = useLocale();
 
   return (
     <HeadlessDateRangePicker
@@ -570,6 +665,7 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
       {...rest}
       firstDayOfWeek={normalizeFirstDayOfWeek(calendarProps.firstDayOfWeek)}
       visibleMonths={maxVisibleMonths()}
+      locale={(rest as { locale?: string }).locale ?? locale().locale}
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}
@@ -600,8 +696,12 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
         maxValue={calendarProps.maxValue}
         isDateUnavailable={calendarProps.isDateUnavailable}
         allowsNonContiguousRanges={calendarProps.allowsNonContiguousRanges}
+        createCalendar={calendarProps.createCalendar}
         firstDayOfWeek={calendarProps.firstDayOfWeek}
         pageBehavior={calendarProps.pageBehavior}
+        hourCycle={(rest as { hourCycle?: 12 | 24 }).hourCycle}
+        hideTimeZone={(rest as { hideTimeZone?: boolean }).hideTimeZone}
+        placeholderValue={calendarProps.placeholderValue}
       />
     </HeadlessDateRangePicker>
   );

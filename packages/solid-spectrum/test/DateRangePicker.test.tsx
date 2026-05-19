@@ -2,8 +2,9 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@solidjs/testing-library";
-import { parseDate } from "@proyecto-viviana/solid-stately";
+import { render, screen, waitFor, fireEvent, within } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
+import { parseDate, parseDateTime } from "@proyecto-viviana/solid-stately";
 import { DateRangePicker } from "../src/calendar/DateRangePicker";
 
 async function waitForHydration() {
@@ -204,6 +205,62 @@ describe("DateRangePicker (solid-spectrum)", () => {
         button.getAttribute("aria-label")?.includes("February 10, 2025"),
       );
       expect(unavailable).toHaveAttribute("aria-disabled", "true");
+    });
+
+    it("renders popup time fields and wires time changes back to the range value", async () => {
+      let latest = {
+        start: parseDateTime("2025-02-03T08:45:00"),
+        end: parseDateTime("2025-02-14T17:30:00"),
+      };
+
+      function ControlledDateRangePicker() {
+        const [value, setValue] = createSignal(latest);
+
+        return (
+          <DateRangePicker
+            aria-label="Date range"
+            defaultOpen
+            value={value()}
+            granularity="minute"
+            hourCycle={24}
+            startName="startDate"
+            endName="endDate"
+            onChange={(nextValue) => {
+              if (nextValue) {
+                latest = nextValue as typeof latest;
+                setValue(() => nextValue as typeof latest);
+              }
+            }}
+          />
+        );
+      }
+
+      render(() => <ControlledDateRangePicker />);
+
+      const dialog = await screen.findByRole("dialog", { name: "Range calendar" });
+      await waitFor(() => {
+        expect(screen.getByText("Start time")).toBeInTheDocument();
+        expect(screen.getByText("End time")).toBeInTheDocument();
+      });
+
+      let popupStartHourSegment: HTMLElement | undefined;
+      await waitFor(() => {
+        const hourSegments = within(dialog).getAllByRole("spinbutton", {
+          name: /hour/i,
+        }) as HTMLElement[];
+        expect(hourSegments.length).toBeGreaterThan(0);
+        popupStartHourSegment = hourSegments[0];
+      });
+      if (!popupStartHourSegment) {
+        throw new Error("Expected popup start hour segment");
+      }
+      fireEvent.keyDown(popupStartHourSegment, { key: "ArrowUp" });
+
+      await waitFor(() => {
+        expect(String(latest.start)).toContain("T09:45");
+        expect(document.querySelector('input[name="startDate"]')).toHaveValue("2025-02-03T09:45");
+        expect(document.querySelector('input[name="endDate"]')).toHaveValue("2025-02-14T17:30");
+      });
     });
   });
 

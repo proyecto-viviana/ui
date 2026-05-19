@@ -39,10 +39,11 @@ const meterTextControlValues: Record<string, string> = {
 };
 
 const dateRangePickerTextControlValues: Record<string, string> = {
-  startValue: "2025-02-03",
-  endValue: "2025-02-14",
+  startValue: "2025-02-03T08:45:00",
+  endValue: "2025-02-14T17:30:00",
   startName: "startDate",
   endName: "endDate",
+  form: "tripForm",
 };
 
 const datePickerTextControlValues: Record<string, string> = {

@@ -148,12 +148,22 @@ export interface DateRangePickerProps<T extends DateValue = DateValue>
   isOpen?: boolean;
   /** Callback when the overlay open state changes. */
   onOpenChange?: (isOpen: boolean) => void;
+  /** The granularity of the date/time fields. */
+  granularity?: "day" | "hour" | "minute" | "second";
+  /** Whether to show the hour in 12 or 24 hour format. */
+  hourCycle?: 12 | 24;
+  /** Whether to hide the time zone in date/time fields. */
+  hideTimeZone?: boolean;
+  /** The placeholder date used to determine segment structure. */
+  placeholderValue?: DateValue;
   /** The name for the start date input used in HTML form submission. */
   startName?: string;
   /** The name for the end date input used in HTML form submission. */
   endName?: string;
   /** The associated form id for the hidden start/end date inputs. */
   form?: string;
+  /** Controls whether native or ARIA validation should be used. */
+  validationBehavior?: "native" | "aria";
 }
 
 export interface DatePickerButtonRenderProps {
@@ -463,6 +473,11 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
       "defaultFocusedValue",
       "onFocusChange",
       "locale",
+      "granularity",
+      "hourCycle",
+      "hideTimeZone",
+      "placeholderValue",
+      "createCalendar",
       "isDateUnavailable",
       "visibleMonths",
       "isDateDisabled",
@@ -493,10 +508,25 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     toggle: () => setOpen(!isOpen()),
   };
 
+  const [internalRangeValue, setInternalRangeValue] = createSignal<RangeValue<T> | null>(
+    stateProps.defaultValue ?? null,
+  );
+  const currentRangeValue = createMemo<RangeValue<T> | null>(() => {
+    const controlled = access(stateProps.value);
+    return controlled !== undefined ? controlled : internalRangeValue();
+  });
+  const setCommittedRangeValue = (value: RangeValue<T> | null) => {
+    if (access(stateProps.value) === undefined) {
+      setInternalRangeValue(() => value);
+    }
+    stateProps.onChange?.(value);
+  };
+
   const calendarState = createRangeCalendarState({
     ...stateProps,
+    value: currentRangeValue,
     onChange: (value) => {
-      stateProps.onChange?.(value);
+      setCommittedRangeValue(value);
       if (local.shouldCloseOnSelect !== false && value?.start && value?.end) {
         setOpen(false);
       }
@@ -510,14 +540,24 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
   );
   const isRequired = createMemo(() => Boolean((rest as { isRequired?: boolean }).isRequired));
   const [startFieldValue, setStartFieldValue] = createSignal<T | null>(
-    calendarState.value()?.start ?? null,
+    currentRangeValue()?.start ?? null,
   );
   const [endFieldValue, setEndFieldValue] = createSignal<T | null>(
-    calendarState.value()?.end ?? null,
+    currentRangeValue()?.end ?? null,
   );
+  const rangeGranularity = createMemo<"day" | "hour" | "minute" | "second">(() => {
+    if (stateProps.granularity) {
+      return stateProps.granularity;
+    }
+    const value = currentRangeValue()?.start ?? currentRangeValue()?.end;
+    if (value && "hour" in value) {
+      return "second" in value ? "second" : "minute";
+    }
+    return "day";
+  });
 
   createEffect(() => {
-    const value = calendarState.value();
+    const value = currentRangeValue();
     setStartFieldValue(() => value?.start ?? null);
     setEndFieldValue(() => value?.end ?? null);
   });
@@ -532,7 +572,7 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     const nextStart = part === "start" ? nextValue : startFieldValue();
     const nextEnd = part === "end" ? nextValue : endFieldValue();
 
-    calendarState.setValue(
+    setCommittedRangeValue(
       nextStart && nextEnd ? ({ start: nextStart, end: nextEnd } as RangeValue<T>) : null,
     );
   };
@@ -544,6 +584,10 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     isReadOnly: stateProps.isReadOnly,
     isRequired,
     locale: access(stateProps.locale),
+    granularity: rangeGranularity(),
+    hourCycle: stateProps.hourCycle,
+    hideTimeZone: stateProps.hideTimeZone,
+    placeholderValue: stateProps.placeholderValue,
     validationState: () => (isInvalid() ? "invalid" : access(stateProps.validationState)),
     isDateUnavailable: stateProps.isDateUnavailable,
   } satisfies Partial<DateFieldStateProps<T>>;
@@ -658,20 +702,22 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
             <HiddenDateInput
               name={(rest as Record<string, unknown>).startName as string | undefined}
               form={(rest as Record<string, unknown>).form as string | undefined}
-              value={calendarState.value()?.start ?? null}
+              value={() => currentRangeValue()?.start ?? null}
               isDisabled={access(stateProps.isDisabled) ?? false}
-              minValue={access(stateProps.minValue) as DateValue | undefined}
-              maxValue={access(stateProps.maxValue) as DateValue | undefined}
+              minValue={() => access(stateProps.minValue) as DateValue | undefined}
+              maxValue={() => access(stateProps.maxValue) as DateValue | undefined}
+              granularity={rangeGranularity()}
             />
           </Show>
           <Show when={(rest as Record<string, unknown>).endName}>
             <HiddenDateInput
               name={(rest as Record<string, unknown>).endName as string | undefined}
               form={(rest as Record<string, unknown>).form as string | undefined}
-              value={calendarState.value()?.end ?? null}
+              value={() => currentRangeValue()?.end ?? null}
               isDisabled={access(stateProps.isDisabled) ?? false}
-              minValue={access(stateProps.minValue) as DateValue | undefined}
-              maxValue={access(stateProps.maxValue) as DateValue | undefined}
+              minValue={() => access(stateProps.minValue) as DateValue | undefined}
+              maxValue={() => access(stateProps.maxValue) as DateValue | undefined}
+              granularity={rangeGranularity()}
             />
           </Show>
         </RangeCalendarContext.Provider>

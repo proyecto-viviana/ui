@@ -112,6 +112,18 @@ async function rangeCalendarContract(dialog: Locator) {
   });
 }
 
+async function hiddenInputValue(panel: Locator, name: string) {
+  return panel.locator(`input[name="${name}"]`).first().inputValue();
+}
+
+async function segmentTexts(panel: Locator) {
+  return panel
+    .locator('[role="spinbutton"]')
+    .evaluateAll((segments) =>
+      segments.map((segment) => segment.textContent?.trim() ?? "").filter(Boolean),
+    );
+}
+
 test.describe("comparison DateRangePicker visual parity", () => {
   test("closed segmented range fields are pixel-identical", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
@@ -285,5 +297,114 @@ test.describe("comparison DateRangePicker visual parity", () => {
     await expect(solidPanel.locator('input[name="endDate"]')).toHaveValue("2025-02-14");
     await page.keyboard.press("Escape");
     await expectOpenState(solidRoot, false);
+  });
+
+  test("date-time route wires popup time fields and hidden form values", async ({ page }) => {
+    await page.goto(
+      "/components/daterangepicker/?size=XL&startValue=2025-02-03T08:45:00&endValue=2025-02-14T17:30:00&granularity=minute&hourCycle=24&hideTimeZone=true&startName=startDate&endName=endDate&form=tripForm&validationBehavior=aria",
+    );
+    await waitForComparisonRouteReady(page);
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = await controlRoot(reactPanel);
+    const solidRoot = await controlRoot(solidPanel);
+
+    for (const root of [reactRoot, solidRoot]) {
+      await expect
+        .poll(async () =>
+          JSON.parse((await root.getAttribute("data-comparison-control-props")) ?? "{}"),
+        )
+        .toMatchObject({
+          startValue: "2025-02-03T08:45:00",
+          endValue: "2025-02-14T17:30:00",
+          granularity: "minute",
+          hourCycle: "24",
+          hideTimeZone: true,
+          startName: "startDate",
+          endName: "endDate",
+          form: "tripForm",
+          validationBehavior: "aria",
+        });
+    }
+
+    for (const panel of [reactPanel, solidPanel]) {
+      await expect(panel.locator('[role="spinbutton"]')).toHaveCount(10);
+      await expect(panel.locator('input[name="startDate"]').first()).toHaveAttribute(
+        "form",
+        "tripForm",
+      );
+      await expect(panel.locator('input[name="endDate"]').first()).toHaveAttribute(
+        "form",
+        "tripForm",
+      );
+      await expect.poll(() => hiddenInputValue(panel, "startDate")).toContain("2025-02-03T08:45");
+      await expect.poll(() => hiddenInputValue(panel, "endDate")).toContain("2025-02-14T17:30");
+    }
+
+    await openRangeCalendar(reactPanel);
+    const reactDialog = page.locator('[role="dialog"]').last();
+    await expect(reactDialog.getByText("Start time")).toBeVisible();
+    await expect(reactDialog.getByText("End time")).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    await openRangeCalendar(solidPanel);
+    const solidDialog = await solidRangeCalendarDialog(page);
+    await expect(solidDialog.getByText("Start time")).toBeVisible();
+    await expect(solidDialog.getByText("End time")).toBeVisible();
+    await solidDialog.getByRole("spinbutton", { name: /hour/i }).first().press("ArrowUp");
+
+    await expect
+      .poll(() => hiddenInputValue(solidPanel, "startDate"))
+      .toContain("2025-02-03T09:45");
+    await expect
+      .poll(async () => solidRoot.getAttribute("data-comparison-value"))
+      .toContain("2025-02-03T09:45");
+  });
+
+  test("locale and custom calendar routes keep seven-column grids", async ({ page }) => {
+    await page.goto(
+      "/components/daterangepicker/?locale=hi-IN-u-ca-indian&startValue=2025-02-03&endValue=2025-02-14",
+    );
+    await waitForComparisonRouteReady(page);
+
+    let section = await styledSection(page);
+    let reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    let solidPanel = await frameworkPanel(section, "Solidaria stack");
+    let reactRoot = await controlRoot(reactPanel);
+    let solidRoot = await controlRoot(solidPanel);
+
+    await expect(reactRoot).toHaveAttribute("data-comparison-locale", "hi-IN-u-ca-indian");
+    await expect(solidRoot).toHaveAttribute("data-comparison-locale", "hi-IN-u-ca-indian");
+    await expect.poll(() => segmentTexts(solidPanel)).toEqual(await segmentTexts(reactPanel));
+
+    await page.goto(
+      "/components/daterangepicker/?calendarSystem=custom454&startValue=2025-02-03&endValue=2025-02-14&maxVisibleMonths=2",
+    );
+    await waitForComparisonRouteReady(page);
+
+    section = await styledSection(page);
+    reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    solidPanel = await frameworkPanel(section, "Solidaria stack");
+    reactRoot = await controlRoot(reactPanel);
+    solidRoot = await controlRoot(solidPanel);
+
+    await expect(reactRoot).toHaveAttribute("data-comparison-calendar-system", "custom454");
+    await expect(solidRoot).toHaveAttribute("data-comparison-calendar-system", "custom454");
+
+    const reactDialog = await openDialogFromPanel(page, reactPanel);
+    const reactContract = await rangeCalendarContract(reactDialog);
+    await page.keyboard.press("Escape");
+    const solidDialog = await openDialogFromPanel(page, solidPanel);
+    const solidContract = await rangeCalendarContract(solidDialog);
+
+    for (const contract of [reactContract, solidContract]) {
+      expect(contract.gridCount).toBe(2);
+      expect(contract.columnCounts).toEqual([7, 7]);
+      for (const rowCounts of contract.rowCellCounts) {
+        expect(rowCounts.every((count) => count === 7)).toBe(true);
+      }
+    }
   });
 });
