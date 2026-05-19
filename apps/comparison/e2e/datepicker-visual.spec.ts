@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkPanel, styledSection } from "./comparison-page";
-import { pinComparisonTheme } from "./visual-diff";
+import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
+import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 type ElementGeometry = {
   x: number;
@@ -15,6 +15,12 @@ const strictPairDiff = {
   maxMismatchRatio: 0,
   maxDimensionDelta: 0,
   pixelThreshold: 0,
+};
+
+const datePickerFieldPairDiff = {
+  maxMismatchRatio: 0,
+  maxDimensionDelta: 0,
+  pixelThreshold: 1,
 };
 
 async function frameworkCard(
@@ -153,6 +159,22 @@ async function openCalendar(card: Locator) {
   const trigger = card.getByRole("button", { name: /calendar|choose date/i });
   await expect(trigger).toBeVisible();
   await trigger.click();
+}
+
+async function closedDatePickerField(panel: Locator) {
+  const root = panel.locator('[data-comparison-control-root="datepicker"]');
+  await expect(root).toHaveCount(1);
+  await expect(root).toBeVisible();
+
+  const nestedField = root.locator(".comparison-datepicker-root").first();
+  if ((await nestedField.count()) > 0) {
+    await expect(nestedField).toBeVisible();
+    return nestedField;
+  }
+
+  await expect(root.locator('[role="spinbutton"]')).toHaveCount(3);
+  await expect(root.getByRole("button", { name: /calendar|choose date/i })).toBeVisible();
+  return root;
 }
 
 async function pickFirstEnabledDate(popover: Locator) {
@@ -566,7 +588,59 @@ async function datePickerNamedInputAttributes(root: Locator, name: string, attri
     );
 }
 
+async function associatedFormValues(page: Page, formId: string, name: string) {
+  return page.evaluate(
+    ({ formId, name }) => {
+      document.getElementById(formId)?.remove();
+      const form = document.createElement("form");
+      form.id = formId;
+      document.body.append(form);
+
+      const values = new FormData(form).getAll(name).map(String);
+      form.remove();
+      return values;
+    },
+    { formId, name },
+  );
+}
+
 test.describe("comparison DatePicker visual parity", () => {
+  test("closed segmented field is pixel-identical for the deterministic date route", async ({
+    page,
+  }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/datepicker/?size=XL&value=2025-02-03&name=dueDate");
+    await waitForComparisonRouteReady(page);
+    await clearPointer(page);
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+
+    for (const panel of [reactPanel, solidPanel]) {
+      await expect(panel.locator('[role="spinbutton"]')).toHaveCount(3);
+      await expect(panel.getByRole("spinbutton", { name: /month/i }).first()).toBeVisible();
+      await expect(panel.getByRole("spinbutton", { name: /day/i }).first()).toBeVisible();
+      await expect(panel.getByRole("spinbutton", { name: /year/i }).first()).toBeVisible();
+    }
+
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    });
+    const reactField = await closedDatePickerField(reactPanel);
+    const solidField = await closedDatePickerField(solidPanel);
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      reactField,
+      solidField,
+      "DatePicker closed segmented field",
+      datePickerFieldPairDiff,
+    );
+  });
+
   test("React and Solid DatePickers are visually comparable when closed and open", async ({
     page,
   }) => {
@@ -818,6 +892,10 @@ test.describe("comparison DatePicker visual parity", () => {
         "projectForm",
       );
     }
+
+    await expect
+      .poll(() => associatedFormValues(page, "projectForm", "dueDate"))
+      .toEqual([value, value]);
 
     await expect(reactCard.locator("[data-comparison-value]")).toHaveAttribute(
       "data-comparison-value",

@@ -343,6 +343,26 @@ describe("DatePicker", () => {
       expect(input.getAttribute("form")).toBe("projectForm");
     });
 
+    it("should participate in associated form data", async () => {
+      render(() => (
+        <div>
+          <form id="projectForm" />
+          <TestDatePicker
+            pickerProps={{
+              name: "dueDate",
+              form: "projectForm",
+              defaultValue: new CalendarDate(2025, 2, 3),
+            }}
+          />
+        </div>
+      ));
+      await waitForDatePickerHydration();
+
+      const form = document.getElementById("projectForm") as HTMLFormElement;
+      expect(form).toBeInTheDocument();
+      expect(new FormData(form).getAll("dueDate").map(String)).toEqual(["2025-02-03"]);
+    });
+
     it("should preserve zoned values in the hidden form input", async () => {
       const value = parseZonedDateTime("2025-02-03T08:45:30-05:00[America/New_York]");
       render(() => (

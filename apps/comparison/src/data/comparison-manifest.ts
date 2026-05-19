@@ -729,7 +729,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
               : title === "TimeField"
                 ? "TimeField has a live comparison island with S2 segmented field styling, controlled time values, form name evidence, validation, constraints, and Provider locale routing."
                 : title === "DatePicker"
-                  ? "DatePicker has a live comparison island with controlled date value, routed calendar constraints, form name evidence, two-month popup state, and open popover evidence. Time, form submission, and locale states remain open."
+                  ? "DatePicker has a live comparison island with controlled date/date-time values, routed calendar constraints, associated form data evidence, locale/custom-calendar routes, strict closed-field pair-diff evidence, two-month popup state, and open popover evidence."
                   : `${title} has an initial live comparison island. Exhaustive states remain open.`,
         parity: "partial",
         priority: "live",
@@ -753,7 +753,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
               : title === "TimeField"
                 ? "Strict full-field visual pair-diff and additional screen-reader transcript evidence remain tracked after the route parity foundation."
                 : title === "DatePicker"
-                  ? "Time granularity/hourCycle/hideTimeZone, form submission/validationBehavior, locale/calendar-system, and strict visual pair-diff rows remain incomplete."
+                  ? "Assistive-technology transcript rows, strict open-popover pair-diff, and full popup style token ledger evidence remain tracked after the route, time, locale, form, and closed-field parity pass."
                   : "Detailed state matrices and strict visual assertions remain incomplete.",
         ],
         layers: {
@@ -768,7 +768,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
               ? "live"
               : "missing",
             title === "DatePicker"
-              ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum; S2 calendar-state routing covers controlled value, maxVisibleMonths, firstDayOfWeek, pageBehavior, min/max, unavailable dates, and form name evidence, while time and locale rows remain partial."
+              ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum; S2 calendar-state routing covers controlled date/date-time values, popup TimeField state, maxVisibleMonths, firstDayOfWeek, pageBehavior, min/max, unavailable dates, associated form data, locale/custom calendar routing, and strict closed-field pair-diff evidence."
               : title === "DateField"
                 ? "Solid styled DateField is mounted from @proyecto-viviana/solid-spectrum with the S2 field shell, segmented DateInput, required/invalid/help text surface, hidden form input, date-time granularity, hour cycle, and locale route controls."
                 : title === "TimeField"

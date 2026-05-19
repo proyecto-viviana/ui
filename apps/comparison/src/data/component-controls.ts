@@ -2786,7 +2786,7 @@ const datePickerControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 DatePicker docs control surface for label, size, controlled date and date-time values, granularity, hour cycle, hidden time-zone state, Provider locale routing, custom calendar creation, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, firstDayOfWeek, pageBehavior, and name form prop.",
+  note: "Modeled from the S2 DatePicker docs control surface for label, size, controlled date and date-time values, granularity, hour cycle, hidden time-zone state, Provider locale routing, custom calendar creation, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, firstDayOfWeek, pageBehavior, form owner/name props, and validation behavior.",
 };
 
 const dateRangePickerControls: ComponentControlGroup = {

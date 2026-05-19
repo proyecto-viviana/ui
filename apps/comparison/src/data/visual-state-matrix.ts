@@ -2008,9 +2008,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "static",
       react: "visual",
       solid: "visual",
-      pairDiff: "planned",
+      pairDiff: "strict",
       spec: "e2e/datepicker-visual.spec.ts",
-      note: "Current closed-field visual evidence exists and the live Solid fixture is guarded. Solid uses generated S2 field styling with explicit light/dark theme coverage and controlled/default open state parity; strict React-vs-Solid visual parity remains planned.",
+      note: "The deterministic selected-date closed field has strict normalized React-vs-Solid pair-diff evidence. Solid uses generated S2 field styling with explicit light/dark theme coverage and controlled/default open state parity.",
     },
     {
       id: "styled.calendar.open",
@@ -2050,7 +2050,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/datepicker-visual.spec.ts",
-      note: "Side-panel controls dispatch label, size, controlled value, maxVisibleMonths, firstDayOfWeek, pageBehavior, name, validation, disabled/read-only, required, help text, min/max constraints, and unavailable-date props into both mounted styled stacks. Time, locale/calendar-system, form, validationBehavior, and submit rows remain open.",
+      note: "Side-panel controls dispatch label, size, controlled date/date-time values, granularity, hourCycle, hideTimeZone, maxVisibleMonths, firstDayOfWeek, pageBehavior, name, form, validationBehavior, locale/calendar-system, disabled/read-only, required, help text, min/max constraints, and unavailable-date props into both mounted styled stacks. Browser rows assert hidden input values and associated FormData for the routed form owner.",
     },
   ],
   rangecalendar: [
