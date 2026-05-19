@@ -55,6 +55,7 @@ const datePickerTextControlValues: Record<string, string> = {
 const dateFieldTextControlValues: Record<string, string> = {
   value: "2025-02-03T08:45:00",
   name: "appointmentDate",
+  form: "appointmentForm",
 };
 
 const timeFieldTextControlValues: Record<string, string> = {

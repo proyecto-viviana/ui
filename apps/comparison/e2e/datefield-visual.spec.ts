@@ -1,11 +1,17 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
-import { expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 const fieldPairThreshold = {
   maxMismatchRatio: 0.03,
   maxDimensionDelta: 2,
   pixelThreshold: 80,
+};
+
+const strictFieldPairThreshold = {
+  maxMismatchRatio: 0,
+  maxDimensionDelta: 0,
+  pixelThreshold: 1,
 };
 
 async function dateFieldRoot(panel: Locator) {
@@ -36,7 +42,11 @@ async function namedInputValues(root: Locator, name: string) {
     );
 }
 
-async function namedInputAttributes(root: Locator, name: string, attribute: "min" | "max") {
+async function namedInputAttributes(
+  root: Locator,
+  name: string,
+  attribute: "min" | "max" | "form",
+) {
   return root
     .locator(`input[name="${name}"]`)
     .evaluateAll(
@@ -57,6 +67,24 @@ async function expectInvalidField(root: Locator) {
       ),
     )
     .toBe(true);
+}
+
+async function associatedFormValues(page: Page, formId: string, name: string) {
+  return page.evaluate(
+    ({ formId, name }) => {
+      document.getElementById(formId)?.remove();
+      const form = document.createElement("form");
+      form.id = formId;
+      document.body.append(form);
+
+      const values = new FormData(form)
+        .getAll(name)
+        .map((value) => String(value).replace(/:00$/, ""));
+      form.remove();
+      return values;
+    },
+    { formId, name },
+  );
 }
 
 test.describe("DateField visual parity", () => {
@@ -89,9 +117,36 @@ test.describe("DateField visual parity", () => {
     expect(diff.diff.solidWidth).toBeGreaterThan(180);
   });
 
-  test("routes date-time value, granularity, hour cycle, and form name", async ({ page }) => {
+  test("closed segmented field is pixel-identical for the deterministic date route", async ({
+    page,
+  }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/datefield/?size=XL&value=2025-02-03&name=appointmentDate");
+    await waitForComparisonRouteReady(page);
+    await clearPointer(page);
+
+    const section = await styledSection(page);
+    const reactRoot = await dateFieldRoot(await frameworkPanel(section, "React Spectrum stack"));
+    const solidRoot = await dateFieldRoot(await frameworkPanel(section, "Solidaria stack"));
+    const reactField = await dateFieldComponent(reactRoot);
+    const solidField = await dateFieldComponent(solidRoot);
+
+    const diff = await expectScreenshotPair(
+      page,
+      reactField,
+      solidField,
+      "datefield deterministic closed field",
+      strictFieldPairThreshold,
+    );
+    expect(diff.diff.reactWidth).toBeGreaterThan(200);
+    expect(diff.diff.solidWidth).toBe(diff.diff.reactWidth);
+  });
+
+  test("routes date-time value, granularity, hour cycle, form owner, and validation behavior", async ({
+    page,
+  }) => {
     await page.goto(
-      "/components/datefield/?value=2025-02-03T08%3A45%3A00&granularity=minute&hourCycle=24&name=appointmentDate",
+      "/components/datefield/?value=2025-02-03T08%3A45%3A00&granularity=minute&hourCycle=24&name=appointmentDate&form=appointmentForm&validationBehavior=aria",
     );
     await waitForComparisonRouteReady(page);
 
@@ -103,8 +158,33 @@ test.describe("DateField visual parity", () => {
     await expect(solidRoot.getByRole("spinbutton")).toHaveCount(5);
     expect(await namedInputValues(reactRoot, "appointmentDate")).toContain("2025-02-03T08:45");
     expect(await namedInputValues(solidRoot, "appointmentDate")).toContain("2025-02-03T08:45");
+    expect(await namedInputAttributes(reactRoot, "appointmentDate", "form")).toContain(
+      "appointmentForm",
+    );
+    expect(await namedInputAttributes(solidRoot, "appointmentDate", "form")).toContain(
+      "appointmentForm",
+    );
+    await expect
+      .poll(() => associatedFormValues(page, "appointmentForm", "appointmentDate"))
+      .toEqual(["2025-02-03T08:45", "2025-02-03T08:45"]);
     await expect(reactRoot).toHaveAttribute("data-comparison-value", "2025-02-03T08:45:00");
     await expect(solidRoot).toHaveAttribute("data-comparison-value", "2025-02-03T08:45:00");
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"form":"appointmentForm"/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"form":"appointmentForm"/,
+    );
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"validationBehavior":"aria"/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"validationBehavior":"aria"/,
+    );
   });
 
   test("asserts validation, required state, range constraints, and unavailable dates", async ({

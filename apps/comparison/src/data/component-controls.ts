@@ -86,6 +86,7 @@ import {
   dateFieldLocaleOptions,
   dateFieldNecessityIndicatorOptions,
   dateFieldSizeOptions,
+  dateFieldValidationBehaviorOptions,
 } from "./datefield-demo";
 import {
   timeFieldDemoDefaults,
@@ -2365,6 +2366,19 @@ const dateFieldControls: ComponentControlGroup = {
       defaultValue: dateFieldDemoDefaults.name,
     },
     {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: dateFieldDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "select",
+      defaultValue: dateFieldDemoDefaults.validationBehavior,
+      options: defaultableOptions(dateFieldValidationBehaviorOptions),
+    },
+    {
       name: "description",
       label: "description",
       kind: "text",
@@ -2445,7 +2459,7 @@ const dateFieldControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 DateField docs and API surface: label, size, label position/alignment, necessity indicator, controlled value, date-time granularity, hour cycle, hidden-time-zone state, Provider locale/calendar-system routing, form name, validation, disabled/read-only, required, help text, min/max constraints, and unavailable dates drive both mounted stacks.",
+  note: "Modeled from the S2 DateField docs and API surface: label, size, label position/alignment, necessity indicator, controlled value, date-time granularity, hour cycle, hidden-time-zone state, Provider locale/calendar-system routing, form owner/name, validation behavior, validation, disabled/read-only, required, help text, min/max constraints, and unavailable dates drive both mounted stacks.",
 };
 
 const timeFieldControls: ComponentControlGroup = {

@@ -65,4 +65,24 @@ describe("DateField (solid-spectrum)", () => {
     expect(input).toHaveAttribute("type", "date");
     expect(input).toHaveValue("2025-02-03");
   });
+
+  it("passes form ownership through to the hidden input", async () => {
+    render(() => (
+      <div>
+        <form id="appointmentForm" />
+        <DateField
+          aria-label="Date"
+          name="appointmentDate"
+          form="appointmentForm"
+          defaultValue={new CalendarDate(2025, 2, 3)}
+        />
+      </div>
+    ));
+    await waitForHydration();
+
+    const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
+    const form = document.getElementById("appointmentForm") as HTMLFormElement;
+    expect(input).toHaveAttribute("form", "appointmentForm");
+    expect(new FormData(form).getAll("appointmentDate").map(String)).toEqual(["2025-02-03"]);
+  });
 });

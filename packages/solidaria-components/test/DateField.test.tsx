@@ -104,6 +104,28 @@ describe("DateField", () => {
       expect(input).toHaveAttribute("type", "date");
       expect(input).toHaveValue("2025-02-03");
     });
+
+    it("should participate in associated form data", async () => {
+      render(() => (
+        <div>
+          <form id="appointmentForm" />
+          <TestDateField
+            fieldProps={{
+              name: "appointmentDate",
+              form: "appointmentForm",
+              defaultValue: new CalendarDate(2025, 2, 3),
+            }}
+          />
+        </div>
+      ));
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
+      const form = document.getElementById("appointmentForm") as HTMLFormElement;
+      expect(input).toHaveAttribute("form", "appointmentForm");
+      expect(form).toBeInTheDocument();
+      expect(new FormData(form).getAll("appointmentDate").map(String)).toEqual(["2025-02-03"]);
+    });
   });
 
   // ============================================

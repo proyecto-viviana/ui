@@ -2807,6 +2807,8 @@ function ReactDateFieldDemo() {
         maxValue: demoProps.constrainRange ? dateFieldMaxValue(demoProps.granularity) : undefined,
         isDateUnavailable: demoProps.unavailableDates ? isDateFieldDateUnavailable : undefined,
         name: demoProps.name || undefined,
+        form: demoProps.form || undefined,
+        validationBehavior: demoProps.validationBehavior || undefined,
         description: demoProps.description,
         errorMessage: demoProps.errorMessage,
         isDisabled: demoProps.isDisabled,

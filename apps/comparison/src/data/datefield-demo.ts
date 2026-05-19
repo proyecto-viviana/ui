@@ -15,6 +15,7 @@ export const dateFieldNecessityIndicatorOptions = ["icon", "label"] as const;
 export const dateFieldGranularityOptions = ["day", "hour", "minute", "second"] as const;
 export const dateFieldHourCycleOptions = ["", "12", "24"] as const;
 export const dateFieldLocaleOptions = ["", "fr-FR", "hi-IN-u-ca-indian", "ar-AE"] as const;
+export const dateFieldValidationBehaviorOptions = ["", "native", "aria"] as const;
 
 export type DateFieldDemoSize = (typeof dateFieldSizeOptions)[number];
 export type DateFieldLabelPosition = (typeof dateFieldLabelPositionOptions)[number];
@@ -23,6 +24,7 @@ export type DateFieldNecessityIndicator = (typeof dateFieldNecessityIndicatorOpt
 export type DateFieldGranularity = (typeof dateFieldGranularityOptions)[number];
 export type DateFieldHourCycle = (typeof dateFieldHourCycleOptions)[number];
 export type DateFieldLocale = (typeof dateFieldLocaleOptions)[number];
+export type DateFieldValidationBehavior = (typeof dateFieldValidationBehaviorOptions)[number];
 
 export interface DateFieldDemoProps {
   label: string;
@@ -36,6 +38,8 @@ export interface DateFieldDemoProps {
   hideTimeZone: boolean;
   locale: DateFieldLocale;
   name: string;
+  form: string;
+  validationBehavior: DateFieldValidationBehavior;
   description: string;
   errorMessage: string;
   constrainRange: boolean;
@@ -58,6 +62,8 @@ export const dateFieldDemoDefaults: DateFieldDemoProps = {
   hideTimeZone: false,
   locale: "",
   name: "",
+  form: "",
+  validationBehavior: "",
   description: "Enter the appointment date.",
   errorMessage: "Enter a valid appointment date.",
   constrainRange: false,
@@ -147,6 +153,10 @@ export function normalizeDateFieldDemoProps(
       ? props.locale
       : dateFieldDemoDefaults.locale,
     name: typeof props.name === "string" ? props.name : dateFieldDemoDefaults.name,
+    form: typeof props.form === "string" ? props.form : dateFieldDemoDefaults.form,
+    validationBehavior: isOneOf(props.validationBehavior, dateFieldValidationBehaviorOptions)
+      ? props.validationBehavior
+      : dateFieldDemoDefaults.validationBehavior,
     description:
       typeof props.description === "string" ? props.description : dateFieldDemoDefaults.description,
     errorMessage:
@@ -171,6 +181,7 @@ export function dateFieldDemoPropsFromSearch(search: string): DateFieldDemoProps
   const granularity = params.get("granularity");
   const hourCycle = params.get("hourCycle");
   const locale = params.get("locale");
+  const validationBehavior = params.get("validationBehavior");
 
   return normalizeDateFieldDemoProps({
     label: params.get("label") || dateFieldDemoDefaults.label,
@@ -194,6 +205,10 @@ export function dateFieldDemoPropsFromSearch(search: string): DateFieldDemoProps
     hideTimeZone: booleanParam(params.get("hideTimeZone")),
     locale: isOneOf(locale, dateFieldLocaleOptions) ? locale : dateFieldDemoDefaults.locale,
     name: params.get("name") ?? dateFieldDemoDefaults.name,
+    form: params.get("form") ?? dateFieldDemoDefaults.form,
+    validationBehavior: isOneOf(validationBehavior, dateFieldValidationBehaviorOptions)
+      ? validationBehavior
+      : dateFieldDemoDefaults.validationBehavior,
     description: params.get("description") ?? dateFieldDemoDefaults.description,
     errorMessage: params.get("errorMessage") ?? dateFieldDemoDefaults.errorMessage,
     constrainRange: booleanParam(params.get("constrainRange")),
@@ -226,6 +241,8 @@ export function serializeDateFieldDemoProps(props: DateFieldDemoProps) {
     hideTimeZone: props.hideTimeZone,
     locale: props.locale,
     name: props.name,
+    form: props.form,
+    validationBehavior: props.validationBehavior,
     description: props.description,
     errorMessage: props.errorMessage,
     constrainRange: props.constrainRange,
