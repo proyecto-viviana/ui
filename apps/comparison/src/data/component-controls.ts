@@ -61,10 +61,15 @@ import {
   dateRangePickerVisibleMonthsOptions,
 } from "./daterangepicker-demo";
 import {
+  datePickerCalendarSystemOptions,
   datePickerDemoDefaults,
   datePickerFirstDayOfWeekOptions,
+  datePickerGranularityOptions,
+  datePickerHourCycleOptions,
+  datePickerLocaleOptions,
   datePickerPageBehaviorOptions,
   datePickerSizeOptions,
+  datePickerValidationBehaviorOptions,
   datePickerVisibleMonthsOptions,
 } from "./datepicker-demo";
 import {
@@ -2618,6 +2623,40 @@ const datePickerControls: ComponentControlGroup = {
       defaultValue: datePickerDemoDefaults.value,
     },
     {
+      name: "granularity",
+      label: "granularity",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.granularity,
+      options: options(datePickerGranularityOptions),
+    },
+    {
+      name: "hourCycle",
+      label: "hourCycle",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.hourCycle,
+      options: defaultableOptions(datePickerHourCycleOptions),
+    },
+    {
+      name: "hideTimeZone",
+      label: "hideTimeZone",
+      kind: "switch",
+      defaultValue: datePickerDemoDefaults.hideTimeZone,
+    },
+    {
+      name: "locale",
+      label: "locale",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.locale,
+      options: defaultableOptions(datePickerLocaleOptions),
+    },
+    {
+      name: "calendarSystem",
+      label: "calendarSystem",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.calendarSystem,
+      options: defaultableOptions(datePickerCalendarSystemOptions),
+    },
+    {
       name: "maxVisibleMonths",
       label: "maxVisibleMonths",
       kind: "select",
@@ -2643,6 +2682,19 @@ const datePickerControls: ComponentControlGroup = {
       label: "name",
       kind: "text",
       defaultValue: datePickerDemoDefaults.name,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: datePickerDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.validationBehavior,
+      options: defaultableOptions(datePickerValidationBehaviorOptions),
     },
     {
       name: "description",
@@ -2708,6 +2760,8 @@ const datePickerControls: ComponentControlGroup = {
     "granularity",
     "hourCycle",
     "hideTimeZone",
+    "locale",
+    "createCalendar",
     "maxVisibleMonths",
     "pageBehavior",
     "firstDayOfWeek",
@@ -2721,11 +2775,13 @@ const datePickerControls: ComponentControlGroup = {
     "UNSAFE_className",
     "UNSAFE_style",
     "name",
+    "form",
+    "validationBehavior",
     "aria-label",
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 DatePicker docs control surface for label, size, controlled value, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, firstDayOfWeek, pageBehavior, and name form prop. Time granularity/hour cycle and calendar-system states remain dedicated route states.",
+  note: "Modeled from the S2 DatePicker docs control surface for label, size, controlled date and date-time values, granularity, hour cycle, hidden time-zone state, Provider locale routing, custom calendar creation, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, firstDayOfWeek, pageBehavior, and name form prop.",
 };
 
 const dateRangePickerControls: ComponentControlGroup = {

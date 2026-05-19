@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { DatePicker } from "../src/calendar/DatePicker";
 import {
   CalendarDateClass as CalendarDate,
@@ -83,6 +84,46 @@ describe("DatePicker (solid-spectrum)", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Time")).toBeInTheDocument();
+    });
+  });
+
+  it("wires popup TimeField changes back to the DatePicker value", async () => {
+    let latest = new CalendarDateTime(2024, 6, 15, 10, 30);
+
+    function ControlledDatePicker() {
+      const [value, setValue] = createSignal(latest);
+
+      return (
+        <DatePicker
+          label="Event"
+          value={value()}
+          granularity="minute"
+          hourCycle={24}
+          onChange={(nextValue) => {
+            if (nextValue) {
+              latest = nextValue as typeof latest;
+              setValue(() => nextValue as typeof latest);
+            }
+          }}
+        />
+      );
+    }
+
+    render(() => <ControlledDatePicker />);
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByText("Time")).toBeInTheDocument();
+    });
+
+    const hourSegments = screen.getAllByRole("spinbutton", { name: /hour/i }) as HTMLElement[];
+    const popupHourSegment = hourSegments[hourSegments.length - 1];
+    popupHourSegment.focus();
+    await user.keyboard("{ArrowUp}");
+
+    await waitFor(() => {
+      expect(String(latest)).toContain("T11:30");
     });
   });
 

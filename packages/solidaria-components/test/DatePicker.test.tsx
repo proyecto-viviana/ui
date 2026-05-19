@@ -12,6 +12,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
 import { DateInput, DateSegment } from "../src/DateField";
 import {
@@ -21,7 +22,7 @@ import {
   CalendarButton,
   CalendarHeading,
 } from "../src/Calendar";
-import { CalendarDate } from "@internationalized/date";
+import { CalendarDate, CalendarDateTime, parseZonedDateTime } from "@internationalized/date";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -320,6 +321,74 @@ describe("DatePicker", () => {
 
       expect(segmentTexts.join(" ")).toContain("20");
       expect(segmentTexts.join(" ")).toContain("2024");
+    });
+
+    it("should render hidden datetime input with form owner", async () => {
+      render(() => (
+        <TestDatePicker
+          pickerProps={{
+            name: "dueDate",
+            form: "projectForm",
+            defaultValue: new CalendarDateTime(2025, 2, 3, 8, 45),
+            granularity: "minute",
+          }}
+        />
+      ));
+      await waitForDatePickerHydration();
+
+      const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expect(input.type).toBe("datetime-local");
+      expect(input.value).toBe("2025-02-03T08:45");
+      expect(input.getAttribute("form")).toBe("projectForm");
+    });
+
+    it("should preserve zoned values in the hidden form input", async () => {
+      const value = parseZonedDateTime("2025-02-03T08:45:30-05:00[America/New_York]");
+      render(() => (
+        <TestDatePicker
+          pickerProps={{
+            name: "dueDate",
+            defaultValue: value,
+            granularity: "minute",
+          }}
+        />
+      ));
+      await waitForDatePickerHydration();
+
+      const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expect(input.type).toBe("hidden");
+      expect(input.value).toBe("2025-02-03T08:45:30-05:00[America/New_York]");
+    });
+
+    it("should update hidden input when controlled zoned value changes", async () => {
+      const initialValue = parseZonedDateTime("2025-02-03T08:45:30-05:00[America/New_York]");
+      const nextValue = parseZonedDateTime("2025-02-03T09:45:30-05:00[America/New_York]");
+
+      function ControlledDatePicker() {
+        const [value, setValue] = createSignal(initialValue);
+
+        queueMicrotask(() => setValue(nextValue));
+
+        return (
+          <TestDatePicker
+            pickerProps={{
+              name: "dueDate",
+              value: value(),
+              granularity: "minute",
+            }}
+          />
+        );
+      }
+
+      render(() => <ControlledDatePicker />);
+      await waitForDatePickerHydration();
+
+      const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.value).toBe("2025-02-03T09:45:30-05:00[America/New_York]");
+      });
     });
   });
 

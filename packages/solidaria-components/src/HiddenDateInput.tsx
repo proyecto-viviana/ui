@@ -5,17 +5,23 @@
  * Renders server-side with the initial value for SSR safety.
  */
 import { type JSX, createEffect } from "solid-js";
-import { type DateValue, toCalendarDateTime } from "@proyecto-viviana/solid-stately";
+import { type DateValue } from "@proyecto-viviana/solid-stately";
+
+type MaybeAccessor<T> = T | (() => T);
 
 export interface HiddenDateInputProps {
   name?: string;
   form?: string;
-  value?: DateValue | null;
+  value?: MaybeAccessor<DateValue | null | undefined>;
   autoComplete?: string;
   isDisabled?: boolean;
-  minValue?: DateValue;
-  maxValue?: DateValue;
+  minValue?: MaybeAccessor<DateValue | undefined>;
+  maxValue?: MaybeAccessor<DateValue | undefined>;
   granularity?: "day" | "hour" | "minute" | "second";
+}
+
+function accessValue<T>(value: MaybeAccessor<T> | undefined): T | undefined {
+  return typeof value === "function" ? (value as () => T)() : value;
 }
 
 function formatDateValue(
@@ -24,8 +30,11 @@ function formatDateValue(
 ): string {
   if (!value) return "";
 
-  // Convert ZonedDateTime to CalendarDateTime so hidden input value is timezone-agnostic
-  const dateValue = "timeZone" in value ? toCalendarDateTime(value) : value;
+  if ("timeZone" in value) {
+    return String(value);
+  }
+
+  const dateValue = value;
 
   const year = String(dateValue.year).padStart(4, "0");
   const month = String(dateValue.month).padStart(2, "0");
@@ -52,10 +61,20 @@ function formatDateValue(
 
 export function HiddenDateInput(props: HiddenDateInputProps): JSX.Element {
   const granularity = () => props.granularity ?? "day";
-  const inputType = () => (granularity() === "day" ? "date" : "datetime-local");
-  const formattedValue = () => formatDateValue(props.value as DateValue | undefined, granularity());
-  const formattedMin = () => formatDateValue(props.minValue, granularity());
-  const formattedMax = () => formatDateValue(props.maxValue, granularity());
+  const value = () => accessValue(props.value);
+  const minValue = () => accessValue(props.minValue);
+  const maxValue = () => accessValue(props.maxValue);
+  const hasTimeZoneValue = () =>
+    Boolean(
+      (value() && "timeZone" in value()!) ||
+      (minValue() && "timeZone" in minValue()!) ||
+      (maxValue() && "timeZone" in maxValue()!),
+    );
+  const inputType = () =>
+    hasTimeZoneValue() ? "hidden" : granularity() === "day" ? "date" : "datetime-local";
+  const formattedValue = () => formatDateValue(value(), granularity());
+  const formattedMin = () => formatDateValue(minValue(), granularity());
+  const formattedMax = () => formatDateValue(maxValue(), granularity());
 
   let inputRef: HTMLInputElement | undefined;
 

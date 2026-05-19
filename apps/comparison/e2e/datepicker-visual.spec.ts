@@ -169,6 +169,8 @@ async function pickFirstEnabledDate(popover: Locator) {
 }
 
 async function calendarPopup(page: Page) {
+  await expect(page.locator('[role="grid"]').first()).toBeVisible();
+
   const popover = page
     .locator(".comparison-popover")
     .filter({ has: page.locator('[role="grid"]') })
@@ -541,6 +543,29 @@ async function datePickerCalendarContract(dialog: Locator) {
   });
 }
 
+async function datePickerSpinbuttonTexts(root: Locator) {
+  return root
+    .getByRole("spinbutton")
+    .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? "").filter(Boolean));
+}
+
+async function datePickerNamedInputValues(root: Locator, name: string) {
+  return root
+    .locator(`input[name="${name}"]`)
+    .evaluateAll((inputs) =>
+      inputs.map((input) => (input as HTMLInputElement).value.replace(/(\d{2}:\d{2}):00$/, "$1")),
+    );
+}
+
+async function datePickerNamedInputAttributes(root: Locator, name: string, attribute: string) {
+  return root
+    .locator(`input[name="${name}"]`)
+    .evaluateAll(
+      (inputs, attr) => inputs.map((input) => input.getAttribute(attr)).filter(Boolean) as string[],
+      attribute,
+    );
+}
+
 test.describe("comparison DatePicker visual parity", () => {
   test("React and Solid DatePickers are visually comparable when closed and open", async ({
     page,
@@ -686,9 +711,12 @@ test.describe("comparison DatePicker visual parity", () => {
     await expect(reactCard.getByText("Select a due date.")).toBeVisible();
     await expect(solidCard.getByText("Select a due date.")).toBeVisible();
 
+    await reactRoot.scrollIntoViewIfNeeded();
     const reactGeometry = await geometry(reactRoot);
-    const solidGeometry = await geometry(solidRoot);
     assertVisibleFieldGeometry(reactGeometry);
+
+    await solidRoot.scrollIntoViewIfNeeded();
+    const solidGeometry = await geometry(solidRoot);
     assertVisibleFieldGeometry(solidGeometry);
     expect(solidGeometry.height).toBeGreaterThan(reactGeometry.height * 0.5);
   });
@@ -756,6 +784,130 @@ test.describe("comparison DatePicker visual parity", () => {
       expect(contract.maxDisabled).toBe(true);
       expect(contract.unavailableDisabled).toBe(true);
     }
+  });
+
+  test("date-time route drives time field, hidden input, and shared popup time state", async ({
+    page,
+  }) => {
+    const value = "2025-02-03T08:45:30-05:00[America/New_York]";
+    await page.goto(
+      `/components/datepicker/?value=${encodeURIComponent(value)}&granularity=minute&hourCycle=24&hideTimeZone=true&name=dueDate&form=projectForm&validationBehavior=aria`,
+    );
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const section = await styledSection(page);
+    const reactCard = await frameworkPanel(section, "React Spectrum stack");
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactCard.locator('[data-comparison-control-root="datepicker"]');
+    const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+
+    for (const root of [reactRoot, solidRoot]) {
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"granularity":"minute"/);
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"hourCycle":"24"/);
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"hideTimeZone":true/);
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"form":"projectForm"/);
+      await expect(root).toHaveAttribute(
+        "data-comparison-control-props",
+        /"validationBehavior":"aria"/,
+      );
+      await expect(root.getByRole("spinbutton", { name: /hour/i }).first()).toBeVisible();
+      await expect(root.getByRole("spinbutton", { name: /minute/i }).first()).toBeVisible();
+      expect(await datePickerNamedInputValues(root, "dueDate")).toContain(value);
+      expect(await datePickerNamedInputAttributes(root, "dueDate", "form")).toContain(
+        "projectForm",
+      );
+    }
+
+    await expect(reactCard.locator("[data-comparison-value]")).toHaveAttribute(
+      "data-comparison-value",
+      value,
+    );
+    await expect(solidCard.locator("[data-comparison-value]")).toHaveAttribute(
+      "data-comparison-value",
+      value,
+    );
+
+    await openCalendar(reactCard);
+    const reactDialog = await calendarPopup(page);
+    await expect(reactDialog.getByText("Time").first()).toBeVisible();
+    await expect(reactDialog.getByRole("spinbutton", { name: /hour/i }).first()).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expectNoCalendarPopup(page);
+
+    await openCalendar(solidCard);
+    const solidDialog = await calendarPopup(page);
+    await expect(solidDialog.getByText("Time").first()).toBeVisible();
+    const solidPopupHour = solidDialog.getByRole("spinbutton", { name: /hour/i }).first();
+    await expect(solidPopupHour).toBeVisible();
+    await solidPopupHour.focus();
+    await page.keyboard.press("ArrowUp");
+    await expect(solidCard.locator("[data-comparison-value]")).toHaveAttribute(
+      "data-comparison-value",
+      /2025-02-03T09:45/,
+    );
+  });
+
+  test("Provider locale and custom calendar-system routes stay in parity", async ({ page }) => {
+    await page.goto("/components/datepicker/?locale=hi-IN-u-ca-indian&value=2025-02-03");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    let section = await styledSection(page);
+    let reactCard = await frameworkPanel(section, "React Spectrum stack");
+    let solidCard = await frameworkPanel(section, "Solidaria stack");
+    let reactRoot = reactCard.locator('[data-comparison-control-root="datepicker"]');
+    let solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+
+    await expect(reactCard.locator("[data-comparison-locale]")).toHaveAttribute(
+      "data-comparison-locale",
+      "hi-IN-u-ca-indian",
+    );
+    await expect(solidCard.locator("[data-comparison-locale]")).toHaveAttribute(
+      "data-comparison-locale",
+      "hi-IN-u-ca-indian",
+    );
+    const reactTexts = await datePickerSpinbuttonTexts(reactRoot);
+    await expect.poll(() => datePickerSpinbuttonTexts(solidRoot)).toEqual(reactTexts);
+
+    await page.goto("/components/datepicker/?calendarSystem=custom454&value=2025-02-03");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    section = await styledSection(page);
+    reactCard = await frameworkPanel(section, "React Spectrum stack");
+    solidCard = await frameworkPanel(section, "Solidaria stack");
+    reactRoot = reactCard.locator('[data-comparison-control-root="datepicker"]');
+    solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+
+    for (const root of [reactRoot, solidRoot]) {
+      await expect(root).toHaveAttribute(
+        "data-comparison-control-props",
+        /"calendarSystem":"custom454"/,
+      );
+    }
+    await expect(reactCard.locator("[data-comparison-calendar-system]")).toHaveAttribute(
+      "data-comparison-calendar-system",
+      "custom454",
+    );
+    await expect(solidCard.locator("[data-comparison-calendar-system]")).toHaveAttribute(
+      "data-comparison-calendar-system",
+      "custom454",
+    );
+
+    await openCalendar(reactCard);
+    let dialog = await calendarPopup(page);
+    let contract = await datePickerCalendarContract(dialog);
+    expect(contract.columnCounts).toEqual([7]);
+    expect(contract.rowCellCounts.every((row) => row.every((count) => count === 7))).toBe(true);
+    await page.keyboard.press("Escape");
+    await expectNoCalendarPopup(page);
+
+    await openCalendar(solidCard);
+    dialog = await calendarPopup(page);
+    contract = await datePickerCalendarContract(dialog);
+    expect(contract.columnCounts).toEqual([7]);
+    expect(contract.rowCellCounts.every((row) => row.every((count) => count === 7))).toBe(true);
   });
 
   test("opening Solid DatePicker does not scroll the comparison page", async ({ page }) => {

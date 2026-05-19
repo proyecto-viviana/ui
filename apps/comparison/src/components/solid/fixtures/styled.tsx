@@ -2783,6 +2783,9 @@ function SolidSpectrumDatePickerDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      get locale() {
+        return demoProps().locale || undefined;
+      },
       background: "base",
       style: providerShellStyle,
     },
@@ -2792,6 +2795,12 @@ function SolidSpectrumDatePickerDemo() {
         {
           get "data-comparison-color-scheme"() {
             return colorScheme();
+          },
+          get "data-comparison-locale"() {
+            return demoProps().locale;
+          },
+          get "data-comparison-calendar-system"() {
+            return demoProps().calendarSystem;
           },
           get "data-comparison-value"() {
             return serializeDatePickerValue(value());
@@ -2816,14 +2825,33 @@ function SolidSpectrumDatePickerDemo() {
             get value() {
               return value() ?? undefined;
             },
+            get granularity() {
+              return demoProps().granularity;
+            },
+            get hourCycle() {
+              return demoProps().hourCycle ? Number(demoProps().hourCycle) : undefined;
+            },
+            get hideTimeZone() {
+              return demoProps().hideTimeZone;
+            },
+            get locale() {
+              return demoProps().locale || undefined;
+            },
             get maxVisibleMonths() {
               return Number(demoProps().maxVisibleMonths);
             },
             get minValue() {
-              return demoProps().constrainRange ? datePickerMinValue : undefined;
+              return demoProps().constrainRange
+                ? datePickerMinValue(demoProps().granularity)
+                : undefined;
             },
             get maxValue() {
-              return demoProps().constrainRange ? datePickerMaxValue : undefined;
+              return demoProps().constrainRange
+                ? datePickerMaxValue(demoProps().granularity)
+                : undefined;
+            },
+            get createCalendar() {
+              return calendarCreateCalendarForDemo(demoProps().calendarSystem);
             },
             get isDateUnavailable() {
               return demoProps().unavailableDates ? isDatePickerDateUnavailable : undefined;
@@ -2836,6 +2864,12 @@ function SolidSpectrumDatePickerDemo() {
             },
             get name() {
               return demoProps().name || undefined;
+            },
+            get form() {
+              return demoProps().form || undefined;
+            },
+            get validationBehavior() {
+              return demoProps().validationBehavior || undefined;
             },
             get description() {
               return demoProps().description;

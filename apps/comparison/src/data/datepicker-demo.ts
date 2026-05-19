@@ -1,4 +1,9 @@
-import { parseDate, type DateValue } from "@proyecto-viviana/solid-stately";
+import {
+  parseDate,
+  parseDateTime,
+  parseZonedDateTime,
+  type DateValue,
+} from "@proyecto-viviana/solid-stately";
 import { comparisonControlsEvent } from "./button-demo";
 
 export { comparisonControlsEvent };
@@ -16,11 +21,21 @@ export const datePickerFirstDayOfWeekOptions = [
   "sat",
 ] as const;
 export const datePickerPageBehaviorOptions = ["", "single", "visible"] as const;
+export const datePickerGranularityOptions = ["day", "hour", "minute", "second"] as const;
+export const datePickerHourCycleOptions = ["", "12", "24"] as const;
+export const datePickerLocaleOptions = ["", "fr-FR", "hi-IN-u-ca-indian", "ar-AE"] as const;
+export const datePickerCalendarSystemOptions = ["", "custom454"] as const;
+export const datePickerValidationBehaviorOptions = ["", "native", "aria"] as const;
 
 export type DatePickerDemoSize = (typeof datePickerSizeOptions)[number];
 export type DatePickerVisibleMonths = (typeof datePickerVisibleMonthsOptions)[number];
 export type DatePickerFirstDayOfWeek = (typeof datePickerFirstDayOfWeekOptions)[number];
 export type DatePickerPageBehavior = (typeof datePickerPageBehaviorOptions)[number];
+export type DatePickerGranularity = (typeof datePickerGranularityOptions)[number];
+export type DatePickerHourCycle = (typeof datePickerHourCycleOptions)[number];
+export type DatePickerLocale = (typeof datePickerLocaleOptions)[number];
+export type DatePickerCalendarSystem = (typeof datePickerCalendarSystemOptions)[number];
+export type DatePickerValidationBehavior = (typeof datePickerValidationBehaviorOptions)[number];
 
 export interface DatePickerDemoProps {
   label: string;
@@ -29,7 +44,14 @@ export interface DatePickerDemoProps {
   maxVisibleMonths: DatePickerVisibleMonths;
   firstDayOfWeek: DatePickerFirstDayOfWeek;
   pageBehavior: DatePickerPageBehavior;
+  granularity: DatePickerGranularity;
+  hourCycle: DatePickerHourCycle;
+  hideTimeZone: boolean;
+  locale: DatePickerLocale;
+  calendarSystem: DatePickerCalendarSystem;
   name: string;
+  form: string;
+  validationBehavior: DatePickerValidationBehavior;
   description: string;
   errorMessage: string;
   constrainRange: boolean;
@@ -47,7 +69,14 @@ export const datePickerDemoDefaults: DatePickerDemoProps = {
   maxVisibleMonths: "1",
   firstDayOfWeek: "",
   pageBehavior: "",
+  granularity: "day",
+  hourCycle: "",
+  hideTimeZone: false,
+  locale: "",
+  calendarSystem: "",
   name: "",
+  form: "",
+  validationBehavior: "",
   description: "Choose the project due date.",
   errorMessage: "Select a due date.",
   constrainRange: false,
@@ -75,6 +104,14 @@ export function datePickerDateFromString(value: string): DateValue | null {
   }
 
   try {
+    if (value.includes("[")) {
+      return parseZonedDateTime(value);
+    }
+
+    if (value.includes("T")) {
+      return parseDateTime(value);
+    }
+
     return parseDate(value);
   } catch {
     return null;
@@ -91,8 +128,13 @@ export function serializeDatePickerValue(value: DateValue | null): string {
   return value ? String(value) : "";
 }
 
-export const datePickerMinValue = parseDate("2025-02-03");
-export const datePickerMaxValue = parseDate("2025-02-20");
+export function datePickerMinValue(granularity: DatePickerGranularity): DateValue {
+  return granularity === "day" ? parseDate("2025-02-03") : parseDateTime("2025-02-03T00:00:00");
+}
+
+export function datePickerMaxValue(granularity: DatePickerGranularity): DateValue {
+  return granularity === "day" ? parseDate("2025-02-20") : parseDateTime("2025-02-20T23:59:59");
+}
 
 export function isDatePickerDateUnavailable(date: DateValue): boolean {
   return date.day === 10 || date.day === 11;
@@ -115,7 +157,24 @@ export function normalizeDatePickerDemoProps(
     pageBehavior: isOneOf(props.pageBehavior, datePickerPageBehaviorOptions)
       ? props.pageBehavior
       : datePickerDemoDefaults.pageBehavior,
+    granularity: isOneOf(props.granularity, datePickerGranularityOptions)
+      ? props.granularity
+      : datePickerDemoDefaults.granularity,
+    hourCycle: isOneOf(props.hourCycle, datePickerHourCycleOptions)
+      ? props.hourCycle
+      : datePickerDemoDefaults.hourCycle,
+    hideTimeZone: props.hideTimeZone === true,
+    locale: isOneOf(props.locale, datePickerLocaleOptions)
+      ? props.locale
+      : datePickerDemoDefaults.locale,
+    calendarSystem: isOneOf(props.calendarSystem, datePickerCalendarSystemOptions)
+      ? props.calendarSystem
+      : datePickerDemoDefaults.calendarSystem,
     name: typeof props.name === "string" ? props.name : datePickerDemoDefaults.name,
+    form: typeof props.form === "string" ? props.form : datePickerDemoDefaults.form,
+    validationBehavior: isOneOf(props.validationBehavior, datePickerValidationBehaviorOptions)
+      ? props.validationBehavior
+      : datePickerDemoDefaults.validationBehavior,
     description:
       typeof props.description === "string"
         ? props.description
@@ -139,6 +198,11 @@ export function datePickerDemoPropsFromSearch(search: string): DatePickerDemoPro
   const maxVisibleMonths = params.get("maxVisibleMonths");
   const firstDayOfWeek = params.get("firstDayOfWeek");
   const pageBehavior = params.get("pageBehavior");
+  const granularity = params.get("granularity");
+  const hourCycle = params.get("hourCycle");
+  const locale = params.get("locale");
+  const calendarSystem = params.get("calendarSystem");
+  const validationBehavior = params.get("validationBehavior");
 
   return normalizeDatePickerDemoProps({
     label: params.get("label") || datePickerDemoDefaults.label,
@@ -153,7 +217,22 @@ export function datePickerDemoPropsFromSearch(search: string): DatePickerDemoPro
     pageBehavior: isOneOf(pageBehavior, datePickerPageBehaviorOptions)
       ? pageBehavior
       : datePickerDemoDefaults.pageBehavior,
+    granularity: isOneOf(granularity, datePickerGranularityOptions)
+      ? granularity
+      : datePickerDemoDefaults.granularity,
+    hourCycle: isOneOf(hourCycle, datePickerHourCycleOptions)
+      ? hourCycle
+      : datePickerDemoDefaults.hourCycle,
+    hideTimeZone: booleanParam(params.get("hideTimeZone")),
+    locale: isOneOf(locale, datePickerLocaleOptions) ? locale : datePickerDemoDefaults.locale,
+    calendarSystem: isOneOf(calendarSystem, datePickerCalendarSystemOptions)
+      ? calendarSystem
+      : datePickerDemoDefaults.calendarSystem,
     name: params.get("name") ?? datePickerDemoDefaults.name,
+    form: params.get("form") ?? datePickerDemoDefaults.form,
+    validationBehavior: isOneOf(validationBehavior, datePickerValidationBehaviorOptions)
+      ? validationBehavior
+      : datePickerDemoDefaults.validationBehavior,
     description: params.get("description") ?? datePickerDemoDefaults.description,
     errorMessage: params.get("errorMessage") ?? datePickerDemoDefaults.errorMessage,
     constrainRange: booleanParam(params.get("constrainRange")),
@@ -181,7 +260,14 @@ export function serializeDatePickerDemoProps(props: DatePickerDemoProps) {
     maxVisibleMonths: props.maxVisibleMonths,
     firstDayOfWeek: props.firstDayOfWeek,
     pageBehavior: props.pageBehavior,
+    granularity: props.granularity,
+    hourCycle: props.hourCycle,
+    hideTimeZone: props.hideTimeZone,
+    locale: props.locale,
+    calendarSystem: props.calendarSystem,
     name: props.name,
+    form: props.form,
+    validationBehavior: props.validationBehavior,
     description: props.description,
     errorMessage: props.errorMessage,
     constrainRange: props.constrainRange,

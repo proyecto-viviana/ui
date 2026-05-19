@@ -34,6 +34,7 @@ import {
   createDatePickerState,
   access,
   type DateFieldState,
+  type DatePickerState,
   type CalendarStateProps,
   type CalendarState,
   type RangeCalendarState,
@@ -82,6 +83,7 @@ export interface DateRangePickerRenderProps extends Omit<DatePickerRenderProps, 
 
 export interface DatePickerContextValue {
   fieldState: DateFieldState<DateValue>;
+  datePickerState: DatePickerState<DateValue>;
   calendarState: CalendarState<DateValue>;
   overlayState: {
     isOpen: boolean;
@@ -116,6 +118,10 @@ export type DatePickerProps<T extends DateValue = DateValue> = Omit<
     isOpen?: boolean;
     /** Callback when the overlay open state changes. */
     onOpenChange?: (isOpen: boolean) => void;
+    /** The name for the hidden date input used in HTML form submission. */
+    name?: string;
+    /** The associated form id for the hidden date input. */
+    form?: string;
     /** The number of months to display in the calendar popover. */
     visibleMonths?: number;
     /** Controls whether calendar paging advances by one month or by the visible month range. */
@@ -258,6 +264,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       "hourCycle",
       "hideTimeZone",
       "placeholderValue",
+      "createCalendar",
       "validationState",
       "description",
       "errorMessage",
@@ -310,6 +317,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     isDisabled: stateProps.isDisabled,
     isReadOnly: stateProps.isReadOnly,
     locale: stateProps.locale,
+    createCalendar: stateProps.createCalendar as CalendarStateProps<T>["createCalendar"],
     isDateUnavailable: stateProps.isDateUnavailable,
     firstDayOfWeek: stateProps.firstDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined,
     visibleMonths: stateProps.visibleMonths,
@@ -332,6 +340,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
 
   const contextValue: DatePickerContextValue = {
     fieldState: fieldState as unknown as DateFieldState<DateValue>,
+    datePickerState: datePickerState as unknown as DatePickerState<DateValue>,
     calendarState: calendarState as unknown as CalendarState<DateValue>,
     overlayState,
     triggerRef,
@@ -400,11 +409,12 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
             <Show when={(rest as Record<string, unknown>).name}>
               <HiddenDateInput
                 name={(rest as Record<string, unknown>).name as string | undefined}
-                value={datePickerState.value()}
+                form={(rest as Record<string, unknown>).form as string | undefined}
+                value={() => datePickerState.value()}
                 autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
                 isDisabled={access(stateProps.isDisabled) ?? false}
-                minValue={access(stateProps.minValue) as DateValue | undefined}
-                maxValue={access(stateProps.maxValue) as DateValue | undefined}
+                minValue={() => access(stateProps.minValue) as DateValue | undefined}
+                maxValue={() => access(stateProps.maxValue) as DateValue | undefined}
                 granularity={datePickerState.granularity}
               />
             </Show>

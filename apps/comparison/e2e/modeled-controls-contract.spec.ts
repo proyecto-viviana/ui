@@ -45,6 +45,12 @@ const dateRangePickerTextControlValues: Record<string, string> = {
   endName: "endDate",
 };
 
+const datePickerTextControlValues: Record<string, string> = {
+  value: "2025-02-03T08:45:00",
+  name: "dueDate",
+  form: "projectForm",
+};
+
 const dateFieldTextControlValues: Record<string, string> = {
   value: "2025-02-03T08:45:00",
   name: "appointmentDate",
@@ -89,6 +95,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "daterangepicker" && control.name in dateRangePickerTextControlValues) {
       return dateRangePickerTextControlValues[control.name];
+    }
+    if (group.slug === "datepicker" && control.name in datePickerTextControlValues) {
+      return datePickerTextControlValues[control.name];
     }
     if (group.slug === "datefield" && control.name in dateFieldTextControlValues) {
       return dateFieldTextControlValues[control.name];

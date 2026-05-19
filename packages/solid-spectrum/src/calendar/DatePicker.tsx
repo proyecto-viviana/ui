@@ -10,10 +10,12 @@ import {
   DatePickerContent,
   DateInput,
   DateSegment,
+  useDatePickerContext,
   type DatePickerProps as HeadlessDatePickerProps,
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
+import { useLocale } from "@proyecto-viviana/solidaria";
 import { Calendar } from "./index";
 import { TimeField } from "../datepicker";
 import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../s2-style";
@@ -421,6 +423,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       "firstDayOfWeek",
       "pageBehavior",
       "placeholderValue",
+      "createCalendar",
     ],
   );
 
@@ -428,6 +431,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   const isInvalid = () => local.isInvalid === true;
   const isDisabled = () => rest.isDisabled === true;
   const visibleMonths = () => Math.max(1, Number(local.maxVisibleMonths ?? 1));
+  const locale = useLocale();
 
   const hasTime = () => {
     const granularity = (rest as { granularity?: string }).granularity;
@@ -445,6 +449,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       {...rest}
       firstDayOfWeek={normalizeFirstDayOfWeek(calendarProps.firstDayOfWeek)}
       visibleMonths={visibleMonths()}
+      locale={(rest as { locale?: string }).locale ?? locale().locale}
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}
@@ -541,6 +546,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           hasTime={hasTime()}
           maxVisibleMonths={visibleMonths()}
           calendarProps={calendarProps}
+          hourCycle={(rest as { hourCycle?: 12 | 24 }).hourCycle}
         />
       </div>
 
@@ -568,8 +574,14 @@ function DatePickerPopup(props: {
   hasTime?: boolean;
   maxVisibleMonths?: number;
   calendarProps?: Record<string, unknown>;
+  hourCycle?: 12 | 24;
 }): JSX.Element {
   const theme = useTheme();
+  const datePicker = useDatePickerContext();
+  const timeGranularity = () =>
+    datePicker.datePickerState.granularity === "day"
+      ? "minute"
+      : datePicker.datePickerState.granularity;
 
   return (
     <DatePickerContent
@@ -584,7 +596,18 @@ function DatePickerPopup(props: {
           {...(props.calendarProps ?? {})}
         />
         <Show when={props.hasTime}>
-          <TimeField size="md" label="Time" />
+          <TimeField
+            size="md"
+            label="Time"
+            value={datePicker.datePickerState.timeValue() ?? undefined}
+            granularity={timeGranularity()}
+            hourCycle={props.hourCycle}
+            onChange={(nextValue) => {
+              if (nextValue) {
+                datePicker.datePickerState.setTimeValue(nextValue);
+              }
+            }}
+          />
         </Show>
       </div>
     </DatePickerContent>
