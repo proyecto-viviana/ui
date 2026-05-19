@@ -137,6 +137,9 @@ function expectedSerializedValue(
   if (group.slug === "meter" && control.name in meterTextControlValues) {
     return Number(value);
   }
+  if (group.slug === "actionbar" && control.name === "selectedItemCount" && value !== "all") {
+    return Number(value);
+  }
   return value;
 }
 

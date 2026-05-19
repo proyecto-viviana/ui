@@ -54,10 +54,12 @@ export function normalizeAvatarDemoProps(props: Partial<AvatarDemoProps> = {}): 
 
 export function avatarDemoPropsFromSearch(search: string): AvatarDemoProps {
   const params = new URLSearchParams(search);
+  const size = params.get("size");
+
   return normalizeAvatarDemoProps({
     alt: params.get("alt") ?? avatarDemoDefaults.alt,
     src: params.get("src") ?? avatarDemoDefaults.src,
-    size: isAvatarSize(params.get("size")) ? params.get("size")! : avatarDemoDefaults.size,
+    size: isAvatarSize(size) ? size : avatarDemoDefaults.size,
     isOverBackground: booleanParam(params.get("isOverBackground")),
   });
 }

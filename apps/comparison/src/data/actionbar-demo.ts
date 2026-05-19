@@ -66,7 +66,9 @@ export function normalizeActionBarDemoProps(
 export function actionBarDemoPropsFromSearch(search: string): ActionBarDemoProps {
   const params = new URLSearchParams(search);
   return normalizeActionBarDemoProps({
-    selectedItemCount: params.get("selectedItemCount") ?? actionBarDemoDefaults.selectedItemCount,
+    selectedItemCount: normalizeSelectedItemCount(
+      params.get("selectedItemCount") ?? actionBarDemoDefaults.selectedItemCount,
+    ),
     isEmphasized: params.get("isEmphasized") === "true",
     useScrollRef: params.get("useScrollRef") === "true",
     useCollection: params.get("useCollection") === "true",

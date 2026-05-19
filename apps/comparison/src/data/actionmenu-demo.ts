@@ -97,13 +97,22 @@ export function normalizeActionMenuDemoProps(
 
 export function actionMenuDemoPropsFromSearch(search: string): ActionMenuDemoProps {
   const params = new URLSearchParams(search);
+  const size = params.get("size");
+  const menuSize = params.get("menuSize");
+  const align = params.get("align");
+  const direction = params.get("direction");
+  const shouldFlip = params.get("shouldFlip");
 
   return normalizeActionMenuDemoProps({
-    size: params.get("size") ?? actionMenuDemoDefaults.size,
-    menuSize: params.get("menuSize") ?? actionMenuDemoDefaults.menuSize,
-    align: params.get("align") ?? actionMenuDemoDefaults.align,
-    direction: params.get("direction") ?? actionMenuDemoDefaults.direction,
-    shouldFlip: params.get("shouldFlip") ?? actionMenuDemoDefaults.shouldFlip,
+    size: isOneOf(size, actionMenuSizeOptions) ? size : actionMenuDemoDefaults.size,
+    menuSize: isOneOf(menuSize, actionMenuMenuSizeOptions)
+      ? menuSize
+      : actionMenuDemoDefaults.menuSize,
+    align: isOneOf(align, actionMenuAlignOptions) ? align : actionMenuDemoDefaults.align,
+    direction: isOneOf(direction, actionMenuDirectionOptions)
+      ? direction
+      : actionMenuDemoDefaults.direction,
+    shouldFlip: shouldFlip == null ? actionMenuDemoDefaults.shouldFlip : booleanParam(shouldFlip),
     isQuiet: params.get("isQuiet") === "true",
     isDisabled: params.get("isDisabled") === "true",
   });

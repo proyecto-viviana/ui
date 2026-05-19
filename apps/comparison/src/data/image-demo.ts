@@ -51,14 +51,13 @@ export function normalizeImageDemoProps(props: Partial<ImageDemoProps> = {}): Im
 
 export function imageDemoPropsFromSearch(search: string): ImageDemoProps {
   const params = new URLSearchParams(search);
+  const sourceMode = params.get("sourceMode");
+  const objectFit = params.get("objectFit");
+
   return normalizeImageDemoProps({
     alt: params.get("alt") ?? imageDemoDefaults.alt,
-    sourceMode: isImageSourceMode(params.get("sourceMode"))
-      ? params.get("sourceMode")!
-      : imageDemoDefaults.sourceMode,
-    objectFit: isImageObjectFit(params.get("objectFit"))
-      ? params.get("objectFit")!
-      : imageDemoDefaults.objectFit,
+    sourceMode: isImageSourceMode(sourceMode) ? sourceMode : imageDemoDefaults.sourceMode,
+    objectFit: isImageObjectFit(objectFit) ? objectFit : imageDemoDefaults.objectFit,
   });
 }
 

@@ -91,14 +91,24 @@ export function normalizeMenuDemoProps(props: Partial<MenuDemoProps> = {}): Menu
 
 export function menuDemoPropsFromSearch(search: string): MenuDemoProps {
   const params = new URLSearchParams(search);
+  const triggerSize = params.get("triggerSize");
+  const size = params.get("size");
+  const align = params.get("align");
+  const direction = params.get("direction");
+  const shouldFlip = params.get("shouldFlip");
+  const selectionMode = params.get("selectionMode");
 
   return normalizeMenuDemoProps({
-    triggerSize: params.get("triggerSize") ?? menuDemoDefaults.triggerSize,
-    size: params.get("size") ?? menuDemoDefaults.size,
-    align: params.get("align") ?? menuDemoDefaults.align,
-    direction: params.get("direction") ?? menuDemoDefaults.direction,
-    shouldFlip: params.get("shouldFlip") ?? menuDemoDefaults.shouldFlip,
-    selectionMode: params.get("selectionMode") ?? menuDemoDefaults.selectionMode,
+    triggerSize: isOneOf(triggerSize, menuTriggerSizeOptions)
+      ? triggerSize
+      : menuDemoDefaults.triggerSize,
+    size: isOneOf(size, menuSizeOptions) ? size : menuDemoDefaults.size,
+    align: isOneOf(align, menuAlignOptions) ? align : menuDemoDefaults.align,
+    direction: isOneOf(direction, menuDirectionOptions) ? direction : menuDemoDefaults.direction,
+    shouldFlip: shouldFlip == null ? menuDemoDefaults.shouldFlip : booleanParam(shouldFlip),
+    selectionMode: isOneOf(selectionMode, menuSelectionModeOptions)
+      ? selectionMode
+      : menuDemoDefaults.selectionMode,
     isDisabled: params.get("isDisabled") === "true",
   });
 }

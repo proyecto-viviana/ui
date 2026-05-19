@@ -71,10 +71,14 @@ export function normalizeBreadcrumbsDemoProps(
 
 export function breadcrumbsDemoPropsFromSearch(search: string): BreadcrumbsDemoProps {
   const params = new URLSearchParams(search);
+  const size = params.get("size");
+  const itemSet = params.get("itemSet");
 
   return normalizeBreadcrumbsDemoProps({
-    size: params.get("size") ?? breadcrumbsDemoDefaults.size,
-    itemSet: params.get("itemSet") ?? breadcrumbsDemoDefaults.itemSet,
+    size: isOneOf(size, breadcrumbsSizeOptions) ? size : breadcrumbsDemoDefaults.size,
+    itemSet: isOneOf(itemSet, breadcrumbsItemSetOptions)
+      ? itemSet
+      : breadcrumbsDemoDefaults.itemSet,
     isDisabled: params.get("isDisabled") === "true",
   });
 }

@@ -66,15 +66,14 @@ export function normalizeAvatarGroupDemoProps(
 
 export function avatarGroupDemoPropsFromSearch(search: string): AvatarGroupDemoProps {
   const params = new URLSearchParams(search);
+  const size = params.get("size");
+  const count = params.get("count");
+
   return normalizeAvatarGroupDemoProps({
     label: params.get("label") ?? avatarGroupDemoDefaults.label,
     ariaLabel: params.get("ariaLabel") ?? avatarGroupDemoDefaults.ariaLabel,
-    size: isAvatarGroupSize(params.get("size"))
-      ? params.get("size")!
-      : avatarGroupDemoDefaults.size,
-    count: isAvatarGroupCount(params.get("count"))
-      ? params.get("count")!
-      : avatarGroupDemoDefaults.count,
+    size: isAvatarGroupSize(size) ? size : avatarGroupDemoDefaults.size,
+    count: isAvatarGroupCount(count) ? count : avatarGroupDemoDefaults.count,
   });
 }
 

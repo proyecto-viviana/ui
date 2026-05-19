@@ -6,7 +6,7 @@ import {
   type ComparisonSlug,
 } from "./comparison-manifest";
 
-export type VisualStateKind = "static" | "overlay" | "interaction" | "keyboard";
+export type VisualStateKind = "static" | "overlay" | "interaction" | "keyboard" | "visual";
 export type VisualStateSideStatus = "visual" | "asserted" | "planned" | "missing" | "na";
 export type PairDiffStatus = "strict" | "asserted" | "planned" | "blocked" | "na";
 

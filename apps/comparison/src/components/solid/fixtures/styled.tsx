@@ -268,6 +268,7 @@ import {
   normalizeImageDemoProps,
   serializeImageDemoProps,
   type ImageDemoProps,
+  type ImageObjectFit,
 } from "@comparison/data/image-demo";
 import {
   formDemoPropsFromWindow,
@@ -1912,7 +1913,7 @@ function SolidSpectrumMeterDemo() {
   );
 }
 
-function imageFrameStyle(objectFit: string): JSX.CSSProperties {
+function imageFrameStyle(objectFit: ImageObjectFit): JSX.CSSProperties {
   return {
     width: "160px",
     height: "96px",
@@ -2075,7 +2076,7 @@ function SolidSkeletonContent() {
         h(SolidSpectrumText, { UNSAFE_style: skeletonMetaStyle }, "Here is an icon."),
       ]),
     ]),
-  ]) as JSX.Element;
+  ]) as unknown as JSX.Element;
 }
 
 function SolidSpectrumSkeletonDemo() {
@@ -2564,7 +2565,7 @@ function SolidSpectrumCalendarDemo() {
             get value() {
               return value() ?? undefined;
             },
-            onChange: (nextValue) => {
+            onChange: (nextValue: NonNullable<ReturnType<typeof calendarDateFromString>>) => {
               setValue(() => nextValue);
             },
             get minValue() {
@@ -2606,7 +2607,9 @@ function SolidSpectrumCalendarDemo() {
             get focusedValue() {
               return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
             },
-            onFocusChange: (nextFocusedValue) => {
+            onFocusChange: (
+              nextFocusedValue: NonNullable<ReturnType<typeof calendarDateFromString>>,
+            ) => {
               setFocusedValue(() => nextFocusedValue);
             },
           }),
@@ -3449,7 +3452,7 @@ function SolidSpectrumSwitchDemo() {
     },
     background: "base",
     style: providerShellStyle,
-    get children() {
+    get children(): JSX.Element {
       return h(
         "div",
         {
@@ -3493,7 +3496,7 @@ function SolidSpectrumSwitchDemo() {
             },
           }),
         ],
-      );
+      ) as unknown as JSX.Element;
     },
   });
 }
@@ -4234,7 +4237,7 @@ function SolidSpectrumComboBoxDemo() {
               },
             },
             renderProp((item: (typeof comboBoxItems)[number]) =>
-              hc(SolidSpectrumComboBoxItem, { id: item.id }, item.label),
+              hc(SolidSpectrumComboBoxItem, { id: item.id }, [item.label]),
             ),
           ),
         ],
@@ -5142,7 +5145,7 @@ function SolidSpectrumSegmentedControlDemo() {
               return `${selectedKey()}|${demoProps().isJustified}|${demoProps().isDisabled}`;
             },
             keyed: true,
-            children: (_key: string) =>
+            children: () =>
               hc(
                 SolidSpectrumSegmentedControl,
                 {
@@ -5163,7 +5166,7 @@ function SolidSpectrumSegmentedControlDemo() {
                   hc(SolidSpectrumSegmentedControlItem, { id: "grid" }, ["Grid"]),
                   hc(SolidSpectrumSegmentedControlItem, { id: "board" }, ["Board"]),
                 ],
-              ),
+              ) as unknown as JSX.Element,
           }),
         ],
       ),
@@ -5376,7 +5379,7 @@ function SolidSpectrumCardViewDemo() {
 }
 
 const providerShellStyle = {
-  padding: 0,
+  padding: "0",
   background: "transparent",
 };
 
