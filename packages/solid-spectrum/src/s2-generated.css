@@ -22478,20 +22478,8 @@
     --S: calc(var(--F, var(--M)) * 3 / 8);
   }
 
-  .-R_-Rj13 {
-    --R: 2px;
-  }
-
   .-R_-Rp13 {
     --R: 4px;
-  }
-
-  .-R_-R1DOfn13 {
-    --R: 6px;
-  }
-
-  .-R_-R1DOfn13 {
-    --R: 6px;
   }
 
   .-m_-mc13 {
@@ -22790,68 +22778,6 @@
   }
 }
 
-@layer _.a, _.b;
-
-@layer _.a {
-  ._Le13 {
-    outline-style: none;
-  }
-
-  .Na13 {
-    min-width: 0px;
-  }
-
-  ._ub13 {
-    flex-grow: 1;
-  }
-
-  ._vb13 {
-    flex-shrink: 1;
-  }
-
-  ._Nc13 {
-    overflow-x: hidden;
-  }
-
-  .Pc13 {
-    overflow-y: hidden;
-  }
-
-  ._Yb13 {
-    text-overflow: ellipsis;
-  }
-
-  ._7c13 {
-    white-space: nowrap;
-  }
-
-  .pt13 {
-    color: light-dark(rgb(41, 41, 41), rgb(219, 219, 219));
-  }
-
-  .pv13 {
-    color: light-dark(rgb(80, 80, 80), rgb(175, 175, 175));
-  }
-
-  .pp13 {
-    color: light-dark(rgb(198, 198, 198), rgb(68, 68, 68));
-  }
-}
-
-@layer _.b.l {
-  @media (forced-colors: active) {
-    .plb13 {
-      color: ButtonText;
-    }
-  }
-
-  @media (forced-colors: active) {
-    .plc13 {
-      color: GrayText;
-    }
-  }
-}
-
 @layer _.a;
 
 @layer _.a {
@@ -22866,9 +22792,25 @@
   .Rj13 {
     padding-inline-end: 2px;
   }
+}
 
-  .pv13 {
-    color: light-dark(rgb(80, 80, 80), rgb(175, 175, 175));
+@layer _.a;
+
+@layer _.a {
+  ._va13 {
+    flex-shrink: 0;
+  }
+
+  ._ub13 {
+    flex-grow: 1;
+  }
+
+  .sd13 {
+    display: flex;
+  }
+
+  ._Cb13 {
+    justify-content: end;
   }
 }
 

@@ -39,6 +39,10 @@ import {
   dataAttr,
   useIsHydrated,
 } from "./utils";
+import {
+  DateRangePickerContext,
+  type DateRangePickerFieldContextValue,
+} from "./DateRangePickerContext";
 
 export interface DateFieldRenderProps {
   /** Whether the field is disabled. */
@@ -127,6 +131,25 @@ export function useDateFieldContext(): DateFieldContextValue {
     throw new Error("DateField components must be used within a DateField");
   }
   return context;
+}
+
+function useDateInputContext(
+  slot?: string,
+): DateFieldContextValue | DateRangePickerFieldContextValue {
+  const dateFieldContext = useContext(DateFieldContext);
+  if (dateFieldContext) {
+    return dateFieldContext;
+  }
+
+  const dateRangePickerContext = useContext(DateRangePickerContext);
+  if (dateRangePickerContext && slot === "start") {
+    return dateRangePickerContext.startFieldContext;
+  }
+  if (dateRangePickerContext && slot === "end") {
+    return dateRangePickerContext.endFieldContext;
+  }
+
+  throw new Error("DateInput components must be used within a DateField or DateRangePicker slot");
 }
 
 /**
@@ -251,7 +274,7 @@ function DateFieldInner<T extends DateValue = CalendarDate>(props: DateFieldProp
  * The input area containing date segments.
  */
 export function DateInput(props: DateInputProps): JSX.Element {
-  const context = useDateFieldContext();
+  const context = useDateInputContext(props.slot);
   const { state, aria } = context;
   const [isFocused, setIsFocused] = createSignal(false);
   const [inputRef, setInputRef] = createSignal<HTMLDivElement | null>(null);
@@ -282,18 +305,20 @@ export function DateInput(props: DateInputProps): JSX.Element {
   });
 
   return (
-    <div
-      ref={setInputRef}
-      {...aria.inputProps}
-      class={renderProps.class()}
-      style={renderProps.style()}
-      data-disabled={dataAttr(state.isDisabled())}
-      data-focused={dataAttr(isFocused())}
-      onFocusIn={() => setIsFocused(true)}
-      onFocusOut={() => setIsFocused(false)}
-    >
-      <For each={state.segments()}>{(segment) => props.children?.(segment)}</For>
-    </div>
+    <DateFieldContext.Provider value={context as DateFieldContextValue}>
+      <div
+        ref={setInputRef}
+        {...aria.inputProps}
+        class={renderProps.class()}
+        style={renderProps.style()}
+        data-disabled={dataAttr(state.isDisabled())}
+        data-focused={dataAttr(isFocused())}
+        onFocusIn={() => setIsFocused(true)}
+        onFocusOut={() => setIsFocused(false)}
+      >
+        <For each={state.segments()}>{(segment) => props.children?.(segment)}</For>
+      </div>
+    </DateFieldContext.Provider>
   );
 }
 

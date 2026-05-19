@@ -2018,9 +2018,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "static",
       react: "visual",
       solid: "visual",
-      pairDiff: "planned",
+      pairDiff: "strict",
       spec: "e2e/daterangepicker-visual.spec.ts",
-      note: "Solid styled DateRangePicker is mounted in the comparison app and uses the generated S2 field shell, required/invalid/help text, S2 size values, and controlled/default open state coverage. Strict field pair-diff remains planned because the Solid headless layer does not yet expose slot-based DateInput segments.",
+      note: "Closed segmented DateRangePicker fields expose six spinbuttons across both stacks, use the S2 field shell with slotted start/end DateInputs, update Solid hidden start/end form inputs through segment editing, and have exact normalized React/Solid pair-diff coverage.",
     },
     {
       id: "styled.calendar.open",
@@ -2030,7 +2030,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/daterangepicker-visual.spec.ts",
-      note: "Open popover asserts two S2-styled month grids with seven-column rows, 224px grid widths, controlled range value, firstDayOfWeek/pageBehavior routing, unavailable-date disabled semantics, invalid error text, and React/Solid grid screenshots with zero dimension delta and zero mismatches above a one-channel raster tolerance.",
+      note: "Open popover asserts two S2-styled month grids with seven-column rows, 224px grid widths, controlled range value, firstDayOfWeek/pageBehavior routing, unavailable-date disabled semantics, invalid error text, and bounded normalized React/Solid grid screenshots with zero dimension delta and a one-channel 1.3% raster threshold.",
     },
     {
       id: "styled.props.controls",

@@ -14,11 +14,12 @@ async function waitForHydration() {
 
 describe("DateRangePicker (solid-spectrum)", () => {
   describe("basic rendering", () => {
-    it("renders start and end date display fields", async () => {
-      const { container } = render(() => <DateRangePicker aria-label="Date range" />);
+    it("renders start and end segmented date fields", async () => {
+      render(() => <DateRangePicker aria-label="Date range" />);
       await waitForHydration();
-      expect(container.textContent).toContain("Start date");
-      expect(container.textContent).toContain("End date");
+      expect(screen.getByLabelText("Start date")).toBeInTheDocument();
+      expect(screen.getByLabelText("End date")).toBeInTheDocument();
+      expect(screen.getAllByRole("spinbutton")).toHaveLength(6);
     });
 
     it("renders range separator", async () => {
@@ -117,16 +118,31 @@ describe("DateRangePicker (solid-spectrum)", () => {
       expect(button).toBeDisabled();
     });
 
-    it("opens popup from start field keyboard interaction", async () => {
-      render(() => <DateRangePicker aria-label="Date range" />);
+    it("edits start/end segments through the closed field", async () => {
+      render(() => (
+        <DateRangePicker
+          aria-label="Date range"
+          defaultValue={{
+            start: parseDate("2025-02-03"),
+            end: parseDate("2025-02-14"),
+          }}
+          startName="startDate"
+          endName="endDate"
+        />
+      ));
       await waitForHydration();
 
-      const startField = screen.getByLabelText("Start date");
-      startField.focus();
-      fireEvent.keyDown(startField, { key: "Enter" });
+      const startInput = screen.getByLabelText("Start date");
+      const startDay = Array.from(startInput.querySelectorAll('[role="spinbutton"]')).find(
+        (segment) => segment.getAttribute("aria-label") === "Day",
+      );
+      expect(startDay).toHaveAttribute("aria-valuenow", "3");
+
+      fireEvent.keyDown(startDay as HTMLElement, { key: "ArrowUp" });
 
       await waitFor(() => {
-        expect(screen.getByRole("dialog", { name: "Range calendar" })).toBeInTheDocument();
+        expect(document.querySelector('input[name="startDate"]')).toHaveValue("2025-02-04");
+        expect(document.querySelector('input[name="endDate"]')).toHaveValue("2025-02-14");
       });
     });
 

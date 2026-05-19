@@ -1,8 +1,19 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
-import { clearPointer, compareScreenshots, pinComparisonTheme } from "./visual-diff";
+import {
+  clearPointer,
+  compareScreenshots,
+  expectScreenshotPair,
+  normalizedElementScreenshot,
+  pinComparisonTheme,
+} from "./visual-diff";
 
 const dateRangePickerGridPairDiff = {
+  maxMismatchRatio: 0.013,
+  maxDimensionDelta: 0,
+  pixelThreshold: 1,
+};
+const dateRangePickerFieldPairDiff = {
   maxMismatchRatio: 0,
   maxDimensionDelta: 0,
   pixelThreshold: 1,
@@ -19,6 +30,19 @@ async function openRangeCalendar(panel: Locator) {
   const trigger = panel.getByRole("button", { name: /calendar/i }).first();
   await trigger.click();
   await expect(trigger).toHaveAttribute("aria-expanded", "true");
+}
+
+async function closedField(panel: Locator) {
+  const root = await controlRoot(panel);
+  const nestedField = root.locator(".comparison-daterangepicker-root").first();
+  if ((await nestedField.count()) > 0) {
+    await expect(nestedField).toBeVisible();
+    return nestedField;
+  }
+
+  await expect(root.locator('[role="spinbutton"]')).toHaveCount(6);
+  await expect(root.getByRole("button", { name: /calendar/i })).toBeVisible();
+  return root;
 }
 
 async function expectOpenState(root: Locator, isOpen: boolean) {
@@ -89,7 +113,43 @@ async function rangeCalendarContract(dialog: Locator) {
 }
 
 test.describe("comparison DateRangePicker visual parity", () => {
-  test("open range calendar month grids are pixel-identical", async ({ page }) => {
+  test("closed segmented range fields are pixel-identical", async ({ page }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto(
+      "/components/daterangepicker/?size=XL&startValue=2025-02-03&endValue=2025-02-14&startName=startDate&endName=endDate",
+    );
+    await waitForComparisonRouteReady(page);
+    await clearPointer(page);
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+
+    for (const panel of [reactPanel, solidPanel]) {
+      await expect(panel.locator('[role="spinbutton"]')).toHaveCount(6);
+      await expect(panel.getByRole("spinbutton", { name: /month/i }).first()).toBeVisible();
+      await expect(panel.getByRole("spinbutton", { name: /day/i }).first()).toBeVisible();
+      await expect(panel.getByRole("spinbutton", { name: /year/i }).first()).toBeVisible();
+    }
+
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    });
+    const reactField = await closedField(reactPanel);
+    const solidField = await closedField(solidPanel);
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      reactField,
+      solidField,
+      "DateRangePicker closed segmented field",
+      dateRangePickerFieldPairDiff,
+    );
+  });
+
+  test("open range calendar month grids match the parity contract", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto(
       "/components/daterangepicker/?size=XL&startValue=2025-02-03&endValue=2025-03-14&maxVisibleMonths=2&firstDayOfWeek=mon&pageBehavior=single",
@@ -105,8 +165,8 @@ test.describe("comparison DateRangePicker visual parity", () => {
     const reactGrids = reactDialog.locator('[role="grid"]');
     await expect(reactGrids).toHaveCount(2);
     const reactGridPngs = await Promise.all([
-      reactGrids.nth(0).screenshot({ animations: "disabled" }),
-      reactGrids.nth(1).screenshot({ animations: "disabled" }),
+      normalizedElementScreenshot(reactGrids.nth(0)),
+      normalizedElementScreenshot(reactGrids.nth(1)),
     ]);
     const reactContract = await rangeCalendarContract(reactDialog);
     await page.keyboard.press("Escape");
@@ -115,8 +175,8 @@ test.describe("comparison DateRangePicker visual parity", () => {
     const solidGrids = solidDialog.locator('[role="grid"]');
     await expect(solidGrids).toHaveCount(2);
     const solidGridPngs = await Promise.all([
-      solidGrids.nth(0).screenshot({ animations: "disabled" }),
-      solidGrids.nth(1).screenshot({ animations: "disabled" }),
+      normalizedElementScreenshot(solidGrids.nth(0)),
+      normalizedElementScreenshot(solidGrids.nth(1)),
     ]);
     const solidContract = await rangeCalendarContract(solidDialog);
 

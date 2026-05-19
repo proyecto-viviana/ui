@@ -721,7 +721,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
         componentStatus: "parity",
         summary:
           title === "DateRangePicker"
-            ? "DateRangePicker has a live comparison island with routed range value, calendar constraints, form names, and open popover evidence. Segment, time, and locale states remain open."
+            ? "DateRangePicker has a live comparison island with segmented range fields, routed range value, calendar constraints, form names, exact closed-field pair-diff evidence, and open popover evidence. Time and locale states remain open."
             : `${title} has an initial live comparison island. Exhaustive states remain open.`,
         parity: "partial",
         priority: "live",
@@ -735,7 +735,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
               ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum and guarded by focused DatePicker specs."
               : "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
           title === "DateRangePicker"
-            ? "Closed-field pair diff, segment editing, time, and locale/calendar-system states remain incomplete."
+            ? "Time and locale/calendar-system states remain incomplete."
             : "Detailed state matrices and strict visual assertions remain incomplete.",
         ],
         layers: {
@@ -747,7 +747,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             title === "DatePicker"
               ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum; S2 styling parity remains partial and guarded by focused DatePicker specs."
               : title === "DateRangePicker"
-                ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum; S2 field-shell parity is partial and RangeCalendar styling remains separately tracked."
+                ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum; S2 field-shell segment parity is asserted for the closed field, and the open RangeCalendar popover has bounded grid screenshot evidence plus separately tracked calendar-system/time rows."
                 : title === "Toast"
                   ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
                   : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,

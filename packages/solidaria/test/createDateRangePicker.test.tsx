@@ -49,6 +49,8 @@ function TestDateRangePickerAria(props: {
       <div data-testid="group" {...aria.groupProps} />
       <div data-testid="start" {...aria.startFieldProps} />
       <div data-testid="end" {...aria.endFieldProps} />
+      <div data-testid="start-input" {...aria.startInputProps} />
+      <div data-testid="end-input" {...aria.endInputProps} />
       <button data-testid="button" {...aria.buttonProps} />
       <div data-testid="dialog" {...aria.dialogProps} />
       <div data-testid="calendar" {...aria.calendarProps} />
@@ -78,6 +80,8 @@ describe("createDateRangePicker", () => {
     expect(screen.getByTestId("calendar")).toHaveAttribute("aria-label", "Range month grid");
     expect(screen.getByTestId("start")).toHaveAttribute("aria-label", "From");
     expect(screen.getByTestId("end")).toHaveAttribute("aria-label", "To");
+    expect(screen.getByTestId("start-input")).toHaveAttribute("aria-label", "From");
+    expect(screen.getByTestId("end-input")).toHaveAttribute("aria-label", "To");
   });
 
   it("uses localized start/end defaults for spanish locale", () => {

@@ -1,6 +1,6 @@
-// @ts-nocheck - DateRangePicker still depends on the headless range-field model rather than
-// slot-based DateInput segments; the remaining type cleanup belongs with that parity pass.
-import { type JSX, createMemo, Show, splitProps } from "solid-js";
+// @ts-nocheck - style-system types need a dedicated pass; removing this would require
+// fixing style-definition type mismatches unrelated to component behavior.
+import { type JSX, Show, splitProps } from "solid-js";
 import {
   DateRangePicker as HeadlessDateRangePicker,
   DateRangePickerLabel as HeadlessDateRangePickerLabel,
@@ -8,6 +8,8 @@ import {
   DateRangePickerErrorMessage as HeadlessDateRangePickerErrorMessage,
   DateRangePickerButton,
   DateRangePickerContent,
+  DateInput,
+  DateSegment,
   useDateRangePickerContext,
   type DateRangePickerProps as HeadlessDateRangePickerProps,
   type CalendarDate,
@@ -145,14 +147,7 @@ const dateRangePickerFieldGroup = style({
   transition: "default",
   textWrap: "nowrap",
   paddingStart: "edge-to-text",
-  paddingEnd: {
-    size: {
-      S: 2,
-      M: 4,
-      L: "[6px]",
-      XL: "[6px]",
-    },
-  },
+  paddingEnd: 4,
   backgroundColor: {
     default: baseColor("gray-25"),
     forcedColors: "Field",
@@ -187,29 +182,61 @@ const dateRangePickerFieldGroup = style({
   minWidth: 0,
 });
 
-const dateRangePickerFieldPart = style<{ isPlaceholder?: boolean; isDisabled?: boolean }>({
-  outlineStyle: "none",
-  minWidth: 0,
+const dateRangeInputContainer = style({
   flexGrow: 1,
   flexShrink: 1,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
+  minWidth: 0,
+  height: "full",
+  overflowX: "auto",
+  overflowY: "hidden",
+  scrollbarWidth: "none",
+  display: "flex",
+  alignItems: "center",
+  textWrap: "nowrap",
+});
+
+const dateSegment = style<{
+  isFocused?: boolean;
+  isPunctuation?: boolean;
+  isDisabled?: boolean;
+}>({
+  outlineStyle: "none",
+  caretColor: "transparent",
+  backgroundColor: {
+    default: "transparent",
+    isFocused: "blue-800",
+    forcedColors: {
+      default: "transparent",
+      isFocused: "Highlight",
+    },
+  },
   color: {
-    default: "neutral",
-    isPlaceholder: "neutral-subdued",
+    isFocused: "white",
     isDisabled: "disabled",
     forcedColors: {
-      default: "ButtonText",
+      isFocused: "HighlightText",
       isDisabled: "GrayText",
     },
   },
+  borderRadius: "[2px]",
+  paddingX: {
+    default: 2,
+    isPunctuation: 0,
+  },
+  paddingY: 2,
+  forcedColorAdjust: "none",
 });
 
 const dateRangeSeparator = style({
   flexShrink: 0,
   paddingX: 2,
-  color: "neutral-subdued",
+});
+
+const calendarButtonWrapper = style({
+  flexShrink: 0,
+  flexGrow: 1,
+  display: "flex",
+  justifyContent: "end",
 });
 
 const fieldErrorIcon = style({
@@ -362,15 +389,6 @@ const dateRangePickerPopoverFrame = style({
   width: "[max-content]",
 });
 
-function formatRangeDate(date: DateValue | null | undefined, locale: string, timeZone: string) {
-  if (!date) return "";
-  return new Intl.DateTimeFormat(locale, {
-    month: "numeric",
-    day: "numeric",
-    year: "numeric",
-  }).format(date.toDate(timeZone));
-}
-
 function DateRangeDisplay(props: {
   size: NormalizedDateRangePickerSize;
   isInvalid: boolean;
@@ -390,13 +408,6 @@ function DateRangeDisplay(props: {
   const theme = useTheme();
   const state = context.calendarState;
   const isDisabled = () => state.isDisabled();
-  const locale = () => state.locale?.() ?? "en-US";
-  const startDisplay = createMemo(() =>
-    formatRangeDate(state.value?.()?.start ?? state.anchorDate?.(), locale(), state.timeZone),
-  );
-  const endDisplay = createMemo(() =>
-    formatRangeDate(state.value?.()?.end, locale(), state.timeZone),
-  );
 
   return (
     <>
@@ -422,32 +433,52 @@ function DateRangeDisplay(props: {
       </Show>
 
       <div
+        role="presentation"
         class={dateRangePickerFieldGroup({
           size: props.size,
           isInvalid: props.isInvalid,
           isDisabled: isDisabled(),
         })}
+        onClick={(event) => {
+          const target = event.target as HTMLElement;
+          if (target.closest('button, [role="spinbutton"]')) {
+            return;
+          }
+          event.currentTarget.querySelector<HTMLElement>('[role="spinbutton"]')?.focus();
+        }}
       >
-        <div
-          {...context.pickerAria.startFieldProps}
-          class={dateRangePickerFieldPart({
-            isPlaceholder: !startDisplay(),
-            isDisabled: isDisabled(),
-          })}
-        >
-          {startDisplay() || "Start date"}
-        </div>
-        <span class={dateRangeSeparator} aria-hidden="true">
-          &ndash;
-        </span>
-        <div
-          {...context.pickerAria.endFieldProps}
-          class={dateRangePickerFieldPart({
-            isPlaceholder: !endDisplay(),
-            isDisabled: isDisabled(),
-          })}
-        >
-          {endDisplay() || "End date"}
+        <div class={dateRangeInputContainer}>
+          <DateInput slot="start" class="">
+            {(segment) => (
+              <DateSegment
+                segment={segment}
+                class={({ isFocused, isEditable }) =>
+                  dateSegment({
+                    isFocused,
+                    isDisabled: !isEditable && isDisabled(),
+                    isPunctuation: segment.type === "literal",
+                  })
+                }
+              />
+            )}
+          </DateInput>
+          <span class={dateRangeSeparator} aria-hidden="true">
+            &ndash;
+          </span>
+          <DateInput slot="end" class="">
+            {(segment) => (
+              <DateSegment
+                segment={segment}
+                class={({ isFocused, isEditable }) =>
+                  dateSegment({
+                    isFocused,
+                    isDisabled: !isEditable && isDisabled(),
+                    isPunctuation: segment.type === "literal",
+                  })
+                }
+              />
+            )}
+          </DateInput>
         </div>
 
         <Show when={props.isInvalid}>
@@ -456,13 +487,15 @@ function DateRangeDisplay(props: {
           </CenterBaseline>
         </Show>
 
-        <DateRangePickerButton
-          class={({ isDisabled, isOpen }) =>
-            calendarButton({ isDisabled, isOpen, size: props.size })
-          }
-        >
-          <S2CalendarIcon styles={calendarIcon} />
-        </DateRangePickerButton>
+        <div class={calendarButtonWrapper}>
+          <DateRangePickerButton
+            class={({ isDisabled, isOpen }) =>
+              calendarButton({ isDisabled, isOpen, size: props.size })
+            }
+          >
+            <S2CalendarIcon styles={calendarIcon} />
+          </DateRangePickerButton>
+        </div>
 
         <DateRangePickerContent
           class={dateRangePickerPopover({ colorScheme: theme.colorScheme })}

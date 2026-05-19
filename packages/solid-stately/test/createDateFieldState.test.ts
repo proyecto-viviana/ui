@@ -81,4 +81,22 @@ describe("createDateFieldState", () => {
       dispose();
     });
   });
+
+  it("does not force leading zeroes for default month and day segments", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 3),
+      });
+
+      const segmentText = Object.fromEntries(
+        state.segments().map((segment) => [segment.type, segment.text]),
+      );
+
+      expect(segmentText.month).toBe("2");
+      expect(segmentText.day).toBe("3");
+      expect(segmentText.year).toBe("2025");
+
+      dispose();
+    });
+  });
 });

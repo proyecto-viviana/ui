@@ -38,6 +38,8 @@ export interface DateRangePickerAria {
   labelProps: Record<string, unknown>;
   startFieldProps: Record<string, unknown>;
   endFieldProps: Record<string, unknown>;
+  startInputProps: Record<string, unknown>;
+  endInputProps: Record<string, unknown>;
   buttonProps: Record<string, unknown>;
   dialogProps: Record<string, unknown>;
   calendarProps: Record<string, unknown>;
@@ -155,6 +157,40 @@ export function createDateRangePicker<T extends RangeCalendarState>(
     };
   });
 
+  const startInputProps = createMemo(() => {
+    const p = getProps();
+    const defaults = getDateRangePickerLabelDefaults(locale().locale);
+    const isDisabled = p.isDisabled || state.isDisabled();
+    const isReadOnly = p.isReadOnly || state.isReadOnly();
+    const isInvalid = p.isInvalid;
+
+    return {
+      id: startFieldId,
+      "aria-label": p.startFieldAriaLabel ?? defaults.startField,
+      "aria-describedby": getAriaDescribedBy(),
+      "aria-disabled": isDisabled || undefined,
+      "aria-readonly": isReadOnly || undefined,
+      "aria-invalid": isInvalid || undefined,
+    };
+  });
+
+  const endInputProps = createMemo(() => {
+    const p = getProps();
+    const defaults = getDateRangePickerLabelDefaults(locale().locale);
+    const isDisabled = p.isDisabled || state.isDisabled();
+    const isReadOnly = p.isReadOnly || state.isReadOnly();
+    const isInvalid = p.isInvalid;
+
+    return {
+      id: endFieldId,
+      "aria-label": p.endFieldAriaLabel ?? defaults.endField,
+      "aria-describedby": getAriaDescribedBy(),
+      "aria-disabled": isDisabled || undefined,
+      "aria-readonly": isReadOnly || undefined,
+      "aria-invalid": isInvalid || undefined,
+    };
+  });
+
   const buttonProps = createMemo(() => {
     const p = getProps();
     const defaults = getDateRangePickerLabelDefaults(locale().locale);
@@ -204,6 +240,12 @@ export function createDateRangePicker<T extends RangeCalendarState>(
     },
     get endFieldProps() {
       return endFieldProps();
+    },
+    get startInputProps() {
+      return startInputProps();
+    },
+    get endInputProps() {
+      return endInputProps();
     },
     get buttonProps() {
       return buttonProps();

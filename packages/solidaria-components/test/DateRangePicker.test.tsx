@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, cleanup, waitFor, screen } from "@solidjs/testing-library";
+import { render, cleanup, waitFor, screen, within, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import {
@@ -14,6 +14,7 @@ import {
   DateRangePickerContent,
   useDateRangePickerContext,
 } from "../src/DatePicker";
+import { DateInput, DateSegment } from "../src/DateField";
 import { RangeCalendar, RangeCalendarGrid, RangeCalendarCell } from "../src/RangeCalendar";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
 
@@ -37,6 +38,20 @@ function DateRangeFields() {
       </div>
       <div data-testid="end-field" {...context.pickerAria.endFieldProps}>
         End
+      </div>
+    </div>
+  );
+}
+
+function DateRangeSegmentFields() {
+  return (
+    <div>
+      <div data-testid="start-input">
+        <DateInput slot="start">{(segment) => <DateSegment segment={segment} />}</DateInput>
+      </div>
+      <span aria-hidden="true">&ndash;</span>
+      <div data-testid="end-input">
+        <DateInput slot="end">{(segment) => <DateSegment segment={segment} />}</DateInput>
       </div>
     </div>
   );
@@ -254,6 +269,45 @@ describe("DateRangePicker", () => {
     expect(endInput).toBeInTheDocument();
     expect(endInput).toHaveAttribute("form", "booking");
     expect(endInput).toHaveValue("2024-06-07");
+  });
+
+  it("supports DateInput start/end slots with editable segments", async () => {
+    const defaultValue = {
+      start: new CalendarDate(2024, 6, 1),
+      end: new CalendarDate(2024, 6, 7),
+    };
+
+    render(() => (
+      <DateRangePicker
+        aria-label="Range"
+        defaultValue={defaultValue}
+        startName="startDate"
+        endName="endDate"
+      >
+        <DateRangeSegmentFields />
+      </DateRangePicker>
+    ));
+    await waitForHydration();
+
+    const startInput = screen.getByTestId("start-input");
+    const endInput = screen.getByTestId("end-input");
+    expect(within(startInput).getByRole("spinbutton", { name: "Month" })).toHaveAttribute(
+      "aria-valuenow",
+      "6",
+    );
+    expect(within(endInput).getByRole("spinbutton", { name: "Day" })).toHaveAttribute(
+      "aria-valuenow",
+      "7",
+    );
+
+    fireEvent.keyDown(within(startInput).getByRole("spinbutton", { name: "Day" }), {
+      key: "ArrowUp",
+    });
+
+    await waitFor(() => {
+      expect(document.querySelector('input[name="startDate"]')).toHaveValue("2024-06-02");
+      expect(document.querySelector('input[name="endDate"]')).toHaveValue("2024-06-07");
+    });
   });
 
   // ===== Validation =====

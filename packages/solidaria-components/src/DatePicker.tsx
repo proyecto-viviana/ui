@@ -41,6 +41,7 @@ import {
   type CalendarDate,
   type DateValue,
   type RangeCalendarStateProps,
+  type RangeValue,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -55,6 +56,12 @@ import { DateFieldContext } from "./DateField";
 import { CalendarContext } from "./Calendar";
 import { RangeCalendarContext } from "./RangeCalendar";
 import { HiddenDateInput } from "./HiddenDateInput";
+import {
+  DateRangePickerContext,
+  useDateRangePickerContext,
+  type DateRangePickerContextValue,
+  type DateRangePickerFieldContextValue,
+} from "./DateRangePickerContext";
 
 export interface DatePickerRenderProps {
   /** Whether the picker is disabled. */
@@ -85,19 +92,6 @@ export interface DatePickerContextValue {
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (element: HTMLElement | null) => void;
   pickerAria: ReturnType<typeof createDatePicker>;
-}
-
-export interface DateRangePickerContextValue {
-  calendarState: RangeCalendarState<DateValue>;
-  overlayState: {
-    isOpen: boolean;
-    open: () => void;
-    close: () => void;
-    toggle: () => void;
-  };
-  triggerRef: () => HTMLElement | null;
-  setTriggerRef: (element: HTMLElement | null) => void;
-  pickerAria: ReturnType<typeof createDateRangePicker>;
 }
 
 export type DatePickerProps<T extends DateValue = DateValue> = Omit<
@@ -177,24 +171,20 @@ export interface DatePickerButtonProps extends SlotProps {
 export interface DateRangePickerButtonProps extends DatePickerButtonProps {}
 
 export const DatePickerContext = createContext<DatePickerContextValue | null>(null);
-export const DateRangePickerContext = createContext<DateRangePickerContextValue | null>(null);
 export const DatePickerStateContext = createContext<DateFieldState<DateValue> | null>(null);
 export const DateRangePickerStateContext = createContext<RangeCalendarState<DateValue> | null>(
   null,
 );
+export { DateRangePickerContext, useDateRangePickerContext } from "./DateRangePickerContext";
+export type {
+  DateRangePickerContextValue,
+  DateRangePickerFieldContextValue,
+} from "./DateRangePickerContext";
 
 export function useDatePickerContext(): DatePickerContextValue {
   const context = useContext(DatePickerContext);
   if (!context) {
     throw new Error("DatePicker components must be used within a DatePicker");
-  }
-  return context;
-}
-
-export function useDateRangePickerContext(): DateRangePickerContextValue {
-  const context = useContext(DateRangePickerContext);
-  if (!context) {
-    throw new Error("DateRangePicker components must be used within a DateRangePicker");
   }
   return context;
 }
@@ -502,6 +492,64 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
       }
     },
   });
+
+  const isInvalid = createMemo(
+    () =>
+      Boolean((rest as { isInvalid?: boolean }).isInvalid) ||
+      calendarState.validationState() === "invalid",
+  );
+  const isRequired = createMemo(() => Boolean((rest as { isRequired?: boolean }).isRequired));
+  const [startFieldValue, setStartFieldValue] = createSignal<T | null>(
+    calendarState.value()?.start ?? null,
+  );
+  const [endFieldValue, setEndFieldValue] = createSignal<T | null>(
+    calendarState.value()?.end ?? null,
+  );
+
+  createEffect(() => {
+    const value = calendarState.value();
+    setStartFieldValue(() => value?.start ?? null);
+    setEndFieldValue(() => value?.end ?? null);
+  });
+
+  const setRangeFieldValue = (part: "start" | "end", nextValue: T | null) => {
+    if (part === "start") {
+      setStartFieldValue(() => nextValue);
+    } else {
+      setEndFieldValue(() => nextValue);
+    }
+
+    const nextStart = part === "start" ? nextValue : startFieldValue();
+    const nextEnd = part === "end" ? nextValue : endFieldValue();
+
+    calendarState.setValue(
+      nextStart && nextEnd ? ({ start: nextStart, end: nextEnd } as RangeValue<T>) : null,
+    );
+  };
+
+  const rangeFieldStateProps = {
+    minValue: stateProps.minValue,
+    maxValue: stateProps.maxValue,
+    isDisabled: stateProps.isDisabled,
+    isReadOnly: stateProps.isReadOnly,
+    isRequired,
+    locale: access(stateProps.locale),
+    validationState: () => (isInvalid() ? "invalid" : access(stateProps.validationState)),
+    isDateUnavailable: stateProps.isDateUnavailable,
+  } satisfies Partial<DateFieldStateProps<T>>;
+
+  const startFieldState = createDateFieldState<T>({
+    ...rangeFieldStateProps,
+    value: startFieldValue,
+    onChange: (value) => setRangeFieldValue("start", value),
+  });
+
+  const endFieldState = createDateFieldState<T>({
+    ...rangeFieldStateProps,
+    value: endFieldValue,
+    onChange: (value) => setRangeFieldValue("end", value),
+  });
+
   const pickerAria = createDateRangePicker(
     () => ({
       ...(rest as Record<string, unknown>),
@@ -512,15 +560,44 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     overlayState as AriaDatePickerState,
   );
 
-  const isInvalid = createMemo(
-    () =>
-      Boolean((rest as { isInvalid?: boolean }).isInvalid) ||
-      calendarState.validationState() === "invalid",
-  );
-  const isRequired = createMemo(() => Boolean((rest as { isRequired?: boolean }).isRequired));
+  const startFieldContext: DateRangePickerFieldContextValue = {
+    state: startFieldState as unknown as DateFieldState<DateValue>,
+    aria: {
+      labelProps: {},
+      get inputProps() {
+        return pickerAria.startInputProps;
+      },
+      get descriptionProps() {
+        return pickerAria.descriptionProps;
+      },
+      get errorMessageProps() {
+        return pickerAria.errorMessageProps;
+      },
+    },
+  };
+
+  const endFieldContext: DateRangePickerFieldContextValue = {
+    state: endFieldState as unknown as DateFieldState<DateValue>,
+    aria: {
+      labelProps: {},
+      get inputProps() {
+        return pickerAria.endInputProps;
+      },
+      get descriptionProps() {
+        return pickerAria.descriptionProps;
+      },
+      get errorMessageProps() {
+        return pickerAria.errorMessageProps;
+      },
+    },
+  };
 
   const contextValue: DateRangePickerContextValue = {
     calendarState: calendarState as unknown as RangeCalendarState<DateValue>,
+    startFieldState: startFieldState as unknown as DateFieldState<DateValue>,
+    endFieldState: endFieldState as unknown as DateFieldState<DateValue>,
+    startFieldContext,
+    endFieldContext,
     overlayState,
     triggerRef: () => triggerRef,
     setTriggerRef: (element) => {
