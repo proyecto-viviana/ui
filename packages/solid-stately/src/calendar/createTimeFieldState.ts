@@ -139,6 +139,8 @@ export function createTimeFieldState<T extends TimeValue = Time>(
 
   // Check if value is invalid
   const isInvalid = createMemo(() => {
+    if (validationState() === "invalid") return true;
+
     const v = value();
     if (!v) return false;
 
@@ -148,7 +150,7 @@ export function createTimeFieldState<T extends TimeValue = Time>(
     if (minValue && compareTime(v, minValue) < 0) return true;
     if (maxValue && compareTime(v, maxValue) > 0) return true;
 
-    return validationState() === "invalid";
+    return false;
   });
 
   // Generate segments based on granularity

@@ -705,6 +705,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       [
         ["dialog", "Dialog"],
         ["datefield", "DateField"],
+        ["timefield", "TimeField"],
         ["daterangepicker", "DateRangePicker"],
         ["datepicker", "DatePicker"],
         ["tooltip", "Tooltip"],
@@ -725,9 +726,11 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             ? "DateRangePicker has a live comparison island with segmented range fields, routed range value, calendar constraints, form names, exact closed-field pair-diff evidence, and open popover evidence. Time and locale states remain open."
             : title === "DateField"
               ? "DateField has a live comparison island with S2 segmented field styling, controlled date/time values, form name evidence, validation, constraints, and Provider locale/calendar-system routing."
-              : title === "DatePicker"
-                ? "DatePicker has a live comparison island with controlled date value, routed calendar constraints, form name evidence, two-month popup state, and open popover evidence. Time, form submission, and locale states remain open."
-                : `${title} has an initial live comparison island. Exhaustive states remain open.`,
+              : title === "TimeField"
+                ? "TimeField has a live comparison island with S2 segmented field styling, controlled time values, form name evidence, validation, constraints, and Provider locale routing."
+                : title === "DatePicker"
+                  ? "DatePicker has a live comparison island with controlled date value, routed calendar constraints, form name evidence, two-month popup state, and open popover evidence. Time, form submission, and locale states remain open."
+                  : `${title} has an initial live comparison island. Exhaustive states remain open.`,
         parity: "partial",
         priority: "live",
         gapSummary: [
@@ -738,34 +741,43 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum and reuses the S2 RangeCalendar popover with routed picker state."
             : title === "DateField"
               ? "Solid styled DateField is mounted from @proyecto-viviana/solid-spectrum and mirrors the S2 segmented FieldGroup composition."
-              : title === "DatePicker"
-                ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum and guarded by focused DatePicker specs."
-                : "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
+              : title === "TimeField"
+                ? "Solid styled TimeField is mounted from @proyecto-viviana/solid-spectrum and mirrors the S2 segmented FieldGroup composition."
+                : title === "DatePicker"
+                  ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum and guarded by focused DatePicker specs."
+                  : "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
           title === "DateRangePicker"
             ? "Time and locale/calendar-system states remain incomplete."
             : title === "DateField"
               ? "Strict full-field visual pair-diff and additional screen-reader transcript evidence remain tracked after the route parity foundation."
-              : title === "DatePicker"
-                ? "Time granularity/hourCycle/hideTimeZone, form submission/validationBehavior, locale/calendar-system, and strict visual pair-diff rows remain incomplete."
-                : "Detailed state matrices and strict visual assertions remain incomplete.",
+              : title === "TimeField"
+                ? "Strict full-field visual pair-diff and additional screen-reader transcript evidence remain tracked after the route parity foundation."
+                : title === "DatePicker"
+                  ? "Time granularity/hourCycle/hideTimeZone, form submission/validationBehavior, locale/calendar-system, and strict visual pair-diff rows remain incomplete."
+                  : "Detailed state matrices and strict visual assertions remain incomplete.",
         ],
         layers: {
           styled: layerTrack(
             `Styled ${title}`,
             `React Spectrum ${title} vs Solid styled implementation.`,
             title === "Toast" ? "tracked" : "live",
-            title === "DatePicker" || title === "DateRangePicker" || title === "DateField"
+            title === "DatePicker" ||
+              title === "DateRangePicker" ||
+              title === "DateField" ||
+              title === "TimeField"
               ? "live"
               : "missing",
             title === "DatePicker"
               ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum; S2 calendar-state routing covers controlled value, maxVisibleMonths, firstDayOfWeek, pageBehavior, min/max, unavailable dates, and form name evidence, while time and locale rows remain partial."
               : title === "DateField"
                 ? "Solid styled DateField is mounted from @proyecto-viviana/solid-spectrum with the S2 field shell, segmented DateInput, required/invalid/help text surface, hidden form input, date-time granularity, hour cycle, and locale route controls."
-                : title === "DateRangePicker"
-                  ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum; S2 field-shell segment parity is asserted for the closed field, and the open RangeCalendar popover has bounded grid screenshot evidence plus separately tracked calendar-system/time rows."
-                  : title === "Toast"
-                    ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
-                    : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
+                : title === "TimeField"
+                  ? "Solid styled TimeField is mounted from @proyecto-viviana/solid-spectrum with the S2 field shell, segmented TimeInput, required/invalid/help text surface, hidden form input, granularity, hour cycle, and locale route controls."
+                  : title === "DateRangePicker"
+                    ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum; S2 field-shell segment parity is asserted for the closed field, and the open RangeCalendar popover has bounded grid screenshot evidence plus separately tracked calendar-system/time rows."
+                    : title === "Toast"
+                      ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
+                      : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
           ),
           components: layerTrack(
             `Component ${title}`,

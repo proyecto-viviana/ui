@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { TimeField } from "../src/calendar/TimeField";
+import { TimeClass as Time } from "@proyecto-viviana/solid-stately";
 
 async function waitForHydration() {
   await waitFor(() => {
@@ -46,5 +47,41 @@ describe("TimeField (solid-spectrum)", () => {
     expect(error).toHaveAttribute("id");
     expect(group).toHaveAttribute("aria-describedby");
     expect(group.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
+  });
+
+  it("uses the S2 size names and field shell for visible segments", async () => {
+    render(() => (
+      <TimeField label="Meeting time" size="XL" defaultValue={new Time(9, 30)} hourCycle={24} />
+    ));
+    await waitForHydration();
+
+    const root = document.querySelector(".solidaria-TimeField") as HTMLElement;
+    const group = root.querySelector('[role="presentation"]') as HTMLElement;
+
+    expect(root.className).toContain("macro");
+    expect(group.className).toContain("macro");
+    expect(screen.getAllByRole("spinbutton")).toHaveLength(2);
+  });
+
+  it("renders a hidden form input when name is provided", async () => {
+    render(() => (
+      <TimeField aria-label="Time" name="startTime" defaultValue={new Time(9, 30)} hourCycle={24} />
+    ));
+    await waitForHydration();
+
+    const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input).toHaveAttribute("type", "time");
+    expect(input).toHaveValue("09:30");
+  });
+
+  it("does not treat errorMessage alone as invalid", async () => {
+    render(() => <TimeField aria-label="Time" errorMessage="Time is required" />);
+    await waitForHydration();
+
+    const group = document.querySelector('[role="group"]') as HTMLElement;
+
+    expect(group).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByText("Time is required")).not.toBeInTheDocument();
   });
 });

@@ -67,6 +67,7 @@ import {
   Text as SpectrumText,
   TextArea as SpectrumTextArea,
   TextField as SpectrumTextField,
+  TimeField as SpectrumTimeField,
   Tooltip as SpectrumTooltip,
   TooltipTrigger as SpectrumTooltipTrigger,
   ToggleButton as SpectrumToggleButton,
@@ -190,6 +191,15 @@ import {
   serializeDateFieldDemoProps,
   serializeDateFieldValue,
 } from "@comparison/data/datefield-demo";
+import {
+  timeFieldMaxValue,
+  timeFieldMinValue,
+  timeFieldDemoPropsFromWindow,
+  timeFieldValueFromDemo,
+  normalizeTimeFieldDemoProps,
+  serializeTimeFieldDemoProps,
+  serializeTimeFieldValue,
+} from "@comparison/data/timefield-demo";
 import {
   datePickerMaxValue,
   datePickerMinValue,
@@ -539,6 +549,7 @@ export const reactStyledFixtures = {
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
   datefield: () => jsx(ReactDateFieldDemo, {}),
+  timefield: () => jsx(ReactTimeFieldDemo, {}),
   daterangepicker: () => jsx(ReactDateRangePickerDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
   rangecalendar: () => jsx(ReactRangeCalendarDemo, {}),
@@ -2795,6 +2806,58 @@ function ReactDateFieldDemo() {
         isInvalid: demoProps.isInvalid,
         onChange: (nextValue) => setValue(nextValue),
         UNSAFE_className: "comparison-datefield-root",
+      }),
+    }),
+    colorScheme,
+    demoProps.locale || void 0,
+  );
+}
+
+function ReactTimeFieldDemo() {
+  const initialDemoProps = timeFieldDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = useState(() => initialDemoProps);
+  const [value, setValue] = useState(() => timeFieldValueFromDemo(initialDemoProps));
+  const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "timefield") {
+        const nextProps = normalizeTimeFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(timeFieldValueFromDemo(nextProps));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "timefield",
+      "data-comparison-control-props": serializeTimeFieldDemoProps(demoProps),
+      "data-comparison-value": serializeTimeFieldValue(value),
+      "data-comparison-locale": demoProps.locale,
+      "data-comparison-color-scheme": colorScheme,
+      children: jsx(SpectrumTimeField, {
+        label: demoProps.label,
+        size: demoProps.size,
+        labelPosition: demoProps.labelPosition,
+        labelAlign: demoProps.labelAlign,
+        necessityIndicator: demoProps.necessityIndicator,
+        value: value ?? undefined,
+        granularity: demoProps.granularity,
+        hourCycle: demoProps.hourCycle ? Number(demoProps.hourCycle) : undefined,
+        hideTimeZone: demoProps.hideTimeZone,
+        minValue: demoProps.constrainRange ? timeFieldMinValue() : undefined,
+        maxValue: demoProps.constrainRange ? timeFieldMaxValue() : undefined,
+        name: demoProps.name || undefined,
+        description: demoProps.description,
+        errorMessage: demoProps.errorMessage,
+        isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
+        isRequired: demoProps.isRequired,
+        isInvalid: demoProps.isInvalid,
+        onChange: (nextValue) => setValue(nextValue),
+        UNSAFE_className: "comparison-timefield-root",
       }),
     }),
     colorScheme,

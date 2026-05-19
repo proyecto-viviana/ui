@@ -105,6 +105,23 @@ describe("TimeField", () => {
       const field = document.querySelector(".my-time-field");
       expect(field).toBeInTheDocument();
     });
+
+    it("should render hidden form input when name is provided", async () => {
+      render(() => (
+        <TestTimeField
+          fieldProps={{
+            name: "startTime",
+            defaultValue: new Time(9, 30),
+          }}
+        />
+      ));
+      await waitForTimeFieldHydration();
+
+      const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveAttribute("type", "time");
+      expect(input).toHaveValue("09:30");
+    });
   });
 
   // ============================================
@@ -190,6 +207,45 @@ describe("TimeField", () => {
       // data-placeholder is an empty string attribute when true (standard data attribute pattern)
       const placeholderSegment = document.querySelector("[data-placeholder]");
       expect(placeholderSegment).toBeInTheDocument();
+    });
+  });
+
+  // ============================================
+  // VALIDATION
+  // ============================================
+
+  describe("validation", () => {
+    it("should support explicit invalid state without a value", async () => {
+      render(() => (
+        <TimeField aria-label="Test Time" validationState="invalid" errorMessage="Time is required">
+          <TimeInput>{(segment) => <TimeSegment segment={segment} />}</TimeInput>
+          <TimeFieldErrorMessage>Time is required</TimeFieldErrorMessage>
+        </TimeField>
+      ));
+      await waitForTimeFieldHydration();
+
+      const field = document.querySelector(".solidaria-TimeField") as HTMLElement;
+      const error = screen.getByText("Time is required");
+
+      expect(field).toHaveAttribute("data-invalid");
+      expect(error).toHaveAttribute("id");
+      expect(field.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
+    });
+
+    it("should mark field as invalid when value is outside min and max values", async () => {
+      render(() => (
+        <TestTimeField
+          fieldProps={{
+            defaultValue: new Time(7, 30),
+            minValue: new Time(8, 0),
+            maxValue: new Time(18, 0),
+          }}
+        />
+      ));
+      await waitForTimeFieldHydration();
+
+      const field = document.querySelector(".solidaria-TimeField");
+      expect(field).toHaveAttribute("data-invalid");
     });
   });
 

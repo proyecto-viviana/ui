@@ -650,6 +650,8 @@ export {
   type TimeValue,
 } from "./TimeField";
 
+export { HiddenTimeInput, type HiddenTimeInputProps } from "./HiddenTimeInput";
+
 export {
   DatePicker,
   DateRangePicker,

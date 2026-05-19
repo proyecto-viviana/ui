@@ -68,6 +68,7 @@ import {
   TextArea as SolidSpectrumTextArea,
   TextField as SolidSpectrumTextField,
   Text as SolidSpectrumText,
+  TimeField as SolidSpectrumTimeField,
   ToggleButton as SolidSpectrumToggleButton,
   ToggleButtonGroup as SolidSpectrumToggleButtonGroup,
   createIcon,
@@ -208,6 +209,16 @@ import {
   serializeDateFieldValue,
   type DateFieldDemoProps,
 } from "@comparison/data/datefield-demo";
+import {
+  timeFieldMaxValue,
+  timeFieldMinValue,
+  timeFieldDemoPropsFromWindow,
+  timeFieldValueFromDemo,
+  normalizeTimeFieldDemoProps,
+  serializeTimeFieldDemoProps,
+  serializeTimeFieldValue,
+  type TimeFieldDemoProps,
+} from "@comparison/data/timefield-demo";
 import {
   datePickerMaxValue,
   datePickerMinValue,
@@ -650,6 +661,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
+  timefield: () => h(SolidSpectrumTimeFieldDemo, {}),
   daterangepicker: () => h(SolidSpectrumDateRangePickerDemo, {}),
   datepicker: () => h(SolidSpectrumDatePickerDemo, {}),
   rangecalendar: () => h(SolidSpectrumRangeCalendarDemo, {}),
@@ -2956,6 +2968,133 @@ function SolidSpectrumDateFieldDemo() {
             },
             get isDateUnavailable() {
               return demoProps().unavailableDates ? isDateFieldDateUnavailable : undefined;
+            },
+            get name() {
+              return demoProps().name || undefined;
+            },
+            get description() {
+              return demoProps().description;
+            },
+            get errorMessage() {
+              return demoProps().errorMessage;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
+            get isRequired() {
+              return demoProps().isRequired;
+            },
+            get isInvalid() {
+              return demoProps().isInvalid;
+            },
+            onChange: setValue,
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumTimeFieldDemo() {
+  const initialDemoProps = timeFieldDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = createSignal<TimeFieldDemoProps>(initialDemoProps);
+  const [value, setValue] = createSignal(timeFieldValueFromDemo(initialDemoProps));
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "timefield") {
+        const nextProps = normalizeTimeFieldDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(() => timeFieldValueFromDemo(nextProps));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeTimeFieldDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      get locale() {
+        return demoProps().locale || undefined;
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "timefield",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-locale"() {
+            return demoProps().locale;
+          },
+          get "data-comparison-value"() {
+            return serializeTimeFieldValue(value());
+          },
+        },
+        [
+          hc(SolidSpectrumTimeField, {
+            class: "comparison-timefield-root",
+            get label() {
+              return demoProps().label;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get labelPosition() {
+              return demoProps().labelPosition;
+            },
+            get labelAlign() {
+              return demoProps().labelAlign;
+            },
+            get necessityIndicator() {
+              return demoProps().necessityIndicator;
+            },
+            get value() {
+              return value() ?? undefined;
+            },
+            get granularity() {
+              return demoProps().granularity;
+            },
+            get hourCycle() {
+              return demoProps().hourCycle ? Number(demoProps().hourCycle) : undefined;
+            },
+            get hideTimeZone() {
+              return demoProps().hideTimeZone;
+            },
+            get minValue() {
+              return demoProps().constrainRange ? timeFieldMinValue() : undefined;
+            },
+            get maxValue() {
+              return demoProps().constrainRange ? timeFieldMaxValue() : undefined;
             },
             get name() {
               return demoProps().name || undefined;

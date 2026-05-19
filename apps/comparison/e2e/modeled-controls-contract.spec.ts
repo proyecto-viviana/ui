@@ -50,6 +50,11 @@ const dateFieldTextControlValues: Record<string, string> = {
   name: "appointmentDate",
 };
 
+const timeFieldTextControlValues: Record<string, string> = {
+  value: "09:45:30",
+  name: "startTime",
+};
+
 function liveStyledEntry(group: ComponentControlGroup) {
   return comparisonEntries.find(
     (entry) =>
@@ -87,6 +92,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "datefield" && control.name in dateFieldTextControlValues) {
       return dateFieldTextControlValues[control.name];
+    }
+    if (group.slug === "timefield" && control.name in timeFieldTextControlValues) {
+      return timeFieldTextControlValues[control.name];
     }
     if (control.name === "selectedKeys" && group.slug === "selectboxgroup") {
       return "starter,pro";

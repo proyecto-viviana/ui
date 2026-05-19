@@ -35,6 +35,12 @@ export interface AriaTimeFieldProps {
   description?: string;
   /** Error message. */
   errorMessage?: string;
+  /** The name of the input element, used when submitting an HTML form. */
+  name?: string;
+  /** The id of the form the hidden input belongs to. */
+  form?: string;
+  /** Describes the autocomplete behavior for the hidden input. */
+  autoComplete?: string;
 }
 
 export interface TimeFieldAria {
@@ -89,7 +95,7 @@ export function createTimeField<T extends TimeFieldState<TimeValue>>(
     if (p.description) {
       ids.push(descriptionId);
     }
-    if (p.isInvalid && p.errorMessage) {
+    if ((p.isInvalid || state.isInvalid()) && p.errorMessage) {
       ids.push(errorMessageId);
     }
     return ids.length > 0 ? ids.join(" ") : undefined;

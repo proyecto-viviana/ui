@@ -22,6 +22,7 @@ import {
 } from "@proyecto-viviana/solidaria";
 import {
   createTimeFieldState,
+  access,
   type TimeFieldState,
   type TimeFieldStateProps,
   type TimeSegment as TimeSegmentType,
@@ -36,6 +37,7 @@ import {
   dataAttr,
   useIsHydrated,
 } from "./utils";
+import { HiddenTimeInput } from "./HiddenTimeInput";
 
 export interface TimeFieldRenderProps {
   /** Whether the field is disabled. */
@@ -228,6 +230,18 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(props: TimeFieldProps<T
         >
           {props.children as JSX.Element}
         </div>
+        <Show when={(rest as Record<string, unknown>).name}>
+          <HiddenTimeInput
+            name={(rest as Record<string, unknown>).name as string | undefined}
+            form={(rest as Record<string, unknown>).form as string | undefined}
+            value={state.value()}
+            autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
+            isDisabled={state.isDisabled()}
+            minValue={access(stateProps.minValue) as TimeValue | undefined}
+            maxValue={access(stateProps.maxValue) as TimeValue | undefined}
+            granularity={state.granularity}
+          />
+        </Show>
       </TimeFieldContext.Provider>
     </TimeFieldStateContext.Provider>
   );

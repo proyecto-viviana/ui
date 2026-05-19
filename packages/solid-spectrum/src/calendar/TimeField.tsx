@@ -1,155 +1,479 @@
-import { type JSX, splitProps } from "solid-js";
+// @ts-nocheck - style-system generics need the same dedicated pass as DateField.
+import { type JSX, Show, splitProps } from "solid-js";
 import {
   TimeField as HeadlessTimeField,
-  TimeFieldLabel,
-  TimeFieldDescription,
-  TimeFieldErrorMessage,
+  TimeFieldLabel as HeadlessTimeFieldLabel,
+  TimeFieldDescription as HeadlessTimeFieldDescription,
+  TimeFieldErrorMessage as HeadlessTimeFieldErrorMessage,
   TimeInput,
   TimeSegment,
+  useTimeFieldContext,
   type TimeFieldProps as HeadlessTimeFieldProps,
+  type TimeFieldRenderProps,
+  type TimeSegmentRenderProps,
   type TimeValue,
 } from "@proyecto-viviana/solidaria-components";
+import { useLocale } from "@proyecto-viviana/solidaria";
+import type { StyleString } from "../s2-style";
+import { baseColor, focusRing, fontRelative, style } from "../s2-style";
+import {
+  control,
+  controlFont,
+  field,
+  fieldInput,
+  fieldLabel,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils";
+import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
+import { useFormProps, useIsInForm } from "../form";
 
-export type TimeFieldSize = "sm" | "md" | "lg";
+export type TimeFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type S2TimeFieldSize = "S" | "M" | "L" | "XL";
+export type TimeFieldLabelPosition = "top" | "side";
+export type TimeFieldLabelAlign = "start" | "end";
+export type TimeFieldNecessityIndicator = "icon" | "label";
 
 export interface TimeFieldProps<T extends TimeValue = TimeValue> extends Omit<
   HeadlessTimeFieldProps<T>,
   "class" | "style" | "children"
 > {
-  /** The size of the field. @default 'md' */
+  /** The size of the field. @default 'M' */
   size?: TimeFieldSize;
-  /** Additional CSS class name. */
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
   /** Label for the field. */
-  label?: string;
+  label?: JSX.Element;
   /** Description text. */
-  description?: string;
+  description?: JSX.Element;
   /** Error message. */
-  errorMessage?: string;
+  errorMessage?: JSX.Element;
+  /** Position of the label relative to the field. */
+  labelPosition?: TimeFieldLabelPosition;
+  /** Label alignment for side labels. */
+  labelAlign?: TimeFieldLabelAlign;
+  /** Whether required fields show an icon or text label. */
+  necessityIndicator?: TimeFieldNecessityIndicator;
 }
 
-const sizeStyles = {
-  sm: {
-    container: "text-sm",
-    input: "px-2 py-1 gap-0.5",
-    segment: "px-0.5",
-    label: "text-xs",
+interface TimeFieldStyleProps extends TimeFieldRenderProps {
+  size?: S2TimeFieldSize;
+  labelPosition?: TimeFieldLabelPosition;
+  labelAlign?: TimeFieldLabelAlign;
+  isFocusWithin?: boolean;
+  isInForm?: boolean;
+}
+
+const timeFieldRoot = style<TimeFieldStyleProps>(
+  {
+    ...field(),
   },
-  md: {
-    container: "text-base",
-    input: "px-3 py-2 gap-1",
-    segment: "px-1",
-    label: "text-sm",
+  getAllowedOverrides(),
+);
+
+const timeFieldLabelWrapper = style<TimeFieldStyleProps>({
+  gridArea: "label",
+  display: "inline",
+  textAlign: {
+    labelAlign: {
+      start: "start",
+      end: "end",
+    },
   },
-  lg: {
-    container: "text-lg",
-    input: "px-4 py-3 gap-1.5",
-    segment: "px-1.5",
-    label: "text-base",
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
   },
-};
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+  },
+});
+
+const timeFieldLabel = style<TimeFieldStyleProps>({
+  ...fieldLabel(),
+});
+
+const timeFieldGroup = style<TimeFieldStyleProps>({
+  ...focusRing(),
+  ...control({ shape: "default" }),
+  ...fieldInput(),
+  borderWidth: 2,
+  borderStyle: "solid",
+  textWrap: "nowrap",
+  paddingX: "edge-to-text",
+  transition: "default",
+  borderColor: {
+    default: baseColor("gray-300"),
+    forcedColors: "ButtonBorder",
+    isInvalid: {
+      default: baseColor("negative"),
+      forcedColors: "Mark",
+    },
+    isFocusWithin: {
+      default: "gray-900",
+      isInvalid: "negative-1000",
+      forcedColors: "Highlight",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  backgroundColor: {
+    default: "gray-25",
+    forcedColors: "Field",
+  },
+  color: {
+    default: baseColor("neutral"),
+    forcedColors: "ButtonText",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const segmentContainer = style({
+  flexGrow: 1,
+  flexShrink: 1,
+  minWidth: 0,
+  height: "full",
+  overflowX: "auto",
+  overflowY: "hidden",
+  scrollbarWidth: "none",
+  display: "flex",
+  alignItems: "center",
+  textWrap: "nowrap",
+});
+
+const timeSegment = style<
+  TimeSegmentRenderProps & { isPunctuation?: boolean; isDisabled?: boolean }
+>({
+  outlineStyle: "none",
+  caretColor: "transparent",
+  backgroundColor: {
+    default: "transparent",
+    isFocused: "blue-800",
+    forcedColors: {
+      default: "transparent",
+      isFocused: "Highlight",
+    },
+  },
+  color: {
+    isFocused: "white",
+    isDisabled: "disabled",
+    forcedColors: {
+      isFocused: "HighlightText",
+      isDisabled: "GrayText",
+    },
+  },
+  borderRadius: "[2px]",
+  paddingX: {
+    default: 2,
+    isPunctuation: 0,
+  },
+  paddingY: 2,
+  forcedColorAdjust: "none",
+});
+
+const helpText = style<TimeFieldStyleProps>({
+  gridArea: "helptext",
+  display: "flex",
+  margin: 0,
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const fieldErrorIcon = style({
+  size: fontRelative(20),
+  marginStart: "text-to-visual",
+  marginEnd: fontRelative(-2),
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+  },
+});
+
+const requiredIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const noWrap = style({
+  whiteSpace: "nowrap",
+});
+
+function normalizeTimeFieldSize(size: TimeFieldSize | undefined): S2TimeFieldSize {
+  switch (size) {
+    case "S":
+    case "sm":
+      return "S";
+    case "L":
+    case "lg":
+      return "L";
+    case "XL":
+      return "XL";
+    case "M":
+    case "md":
+    default:
+      return "M";
+  }
+}
+
+function requiredIconStyle(size: S2TimeFieldSize): JSX.CSSProperties {
+  const pixelSize = size === "L" || size === "XL" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function focusFirstEditableSegment(event: Event & { currentTarget: HTMLDivElement }) {
+  const target = event.target as Element | null;
+  if (target?.closest('[role="spinbutton"]')) {
+    return;
+  }
+
+  event.preventDefault();
+  const segments = Array.from(
+    event.currentTarget.querySelectorAll<HTMLElement>(
+      '[role="spinbutton"]:not([aria-disabled="true"])',
+    ),
+  );
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (!segments[i].hasAttribute("data-placeholder")) {
+      segments[i].focus();
+      return;
+    }
+  }
+  segments[0]?.focus();
+}
+
+function TimeFieldContent(props: {
+  label?: JSX.Element;
+  description?: JSX.Element;
+  errorMessage?: JSX.Element;
+  size: S2TimeFieldSize;
+  labelPosition: TimeFieldLabelPosition;
+  labelAlign: TimeFieldLabelAlign;
+  necessityIndicator: TimeFieldNecessityIndicator;
+}): JSX.Element {
+  const state = useTimeFieldContext();
+  const isDisabled = () => state.isDisabled();
+  const isInvalid = () => state.isInvalid();
+  const isRequired = () => state.isRequired();
+
+  return (
+    <>
+      <Show when={props.label}>
+        <div
+          class={timeFieldLabelWrapper({
+            size: props.size,
+            labelPosition: props.labelPosition,
+            labelAlign: props.labelAlign,
+          })}
+        >
+          <HeadlessTimeFieldLabel
+            class={timeFieldLabel({
+              size: props.size,
+              labelPosition: props.labelPosition,
+              isDisabled: isDisabled(),
+            })}
+          >
+            {props.label}
+            <Show when={isRequired() || props.necessityIndicator === "label"}>
+              <span class={noWrap}>
+                &nbsp;
+                <Show
+                  when={props.necessityIndicator === "icon"}
+                  fallback={
+                    <span aria-hidden={isRequired() ? true : undefined}>
+                      {isRequired() ? "(required)" : "(optional)"}
+                    </span>
+                  }
+                >
+                  <AsteriskIcon
+                    size={props.size === "S" ? "M" : props.size}
+                    styles={requiredIcon}
+                    style={requiredIconStyle(props.size)}
+                    aria-hidden="true"
+                  />
+                </Show>
+              </span>
+            </Show>
+          </HeadlessTimeFieldLabel>
+        </div>
+      </Show>
+
+      <div
+        class={timeFieldGroup({
+          size: props.size,
+          isInvalid: isInvalid(),
+          isDisabled: isDisabled(),
+        })}
+        onPointerDown={(event) => {
+          if (event.pointerType === "mouse") {
+            focusFirstEditableSegment(event);
+          }
+        }}
+        onTouchEnd={focusFirstEditableSegment}
+        data-disabled={isDisabled() ? "true" : undefined}
+        data-invalid={isInvalid() ? "true" : undefined}
+      >
+        <TimeInput class={segmentContainer}>
+          {(segment) => (
+            <TimeSegment
+              segment={segment}
+              class={(renderProps) =>
+                timeSegment({
+                  ...renderProps,
+                  isDisabled: isDisabled(),
+                  isPunctuation: segment.type === "literal",
+                })
+              }
+            />
+          )}
+        </TimeInput>
+
+        <Show when={isInvalid() && !isDisabled()}>
+          <CenterBaseline>
+            <AlertTriangleIcon styles={fieldErrorIcon} />
+          </CenterBaseline>
+        </Show>
+      </div>
+
+      <Show when={props.description && !isInvalid()}>
+        <HeadlessTimeFieldDescription
+          class={helpText({ size: props.size, isInvalid: false, isDisabled: isDisabled() })}
+        >
+          {props.description}
+        </HeadlessTimeFieldDescription>
+      </Show>
+
+      <Show when={props.errorMessage && isInvalid()}>
+        <HeadlessTimeFieldErrorMessage
+          class={helpText({ size: props.size, isInvalid: true, isDisabled: isDisabled() })}
+        >
+          {props.errorMessage}
+        </HeadlessTimeFieldErrorMessage>
+      </Show>
+    </>
+  );
+}
 
 /**
  * A time field allows users to enter and edit time values using a keyboard.
  */
 export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const mergedProps = useProviderProps(useFormProps(props));
+  const isInForm = useIsInForm();
   const [local, rest] = splitProps(mergedProps, [
     "size",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
     "label",
     "description",
     "errorMessage",
     "isInvalid",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
   ]);
 
-  const size = () => local.size ?? "md";
-  const sizeConfig = () => sizeStyles[size()];
-  const isInvalid = () => local.isInvalid || !!local.errorMessage;
+  const size = () => normalizeTimeFieldSize(local.size);
+  const labelPosition = () => local.labelPosition ?? "top";
+  const labelAlign = () => local.labelAlign ?? "start";
+  const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const isInvalid = () => local.isInvalid === true;
+  const locale = useLocale();
+
+  const rootClassName = (renderProps: TimeFieldRenderProps) =>
+    [
+      "solidaria-TimeField",
+      local.UNSAFE_className,
+      local.class,
+      timeFieldRoot(
+        {
+          ...renderProps,
+          size: size(),
+          labelPosition: labelPosition(),
+          isInForm,
+        },
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   return (
     <HeadlessTimeField
       {...rest}
-      label={local.label}
-      description={local.description}
-      errorMessage={local.errorMessage}
-      isInvalid={isInvalid()}
-      class={`
-        flex flex-col gap-1
-        ${sizeConfig().container}
-        ${local.class ?? ""}
-      `}
+      locale={(rest as { locale?: string }).locale ?? locale().locale}
+      validationState={
+        isInvalid()
+          ? "invalid"
+          : (rest as { validationState?: "valid" | "invalid" }).validationState
+      }
+      label={local.label as string | undefined}
+      description={local.description as string | undefined}
+      errorMessage={local.errorMessage as string | undefined}
+      class={rootClassName}
+      style={local.UNSAFE_style}
     >
-      {local.label && (
-        <TimeFieldLabel class={`font-medium text-primary-200 ${sizeConfig().label}`}>
-          {local.label}
-          {rest.isRequired && <span class="text-red-500 ml-0.5">*</span>}
-        </TimeFieldLabel>
-      )}
-
-      <TimeInput
-        class={({ isFocused, isDisabled }) => {
-          const base = `
-            inline-flex items-center
-            ${sizeConfig().input}
-            bg-bg-400 rounded-md border
-            transition-colors duration-150
-          `;
-
-          let borderClass = "border-primary-600";
-          if (isInvalid()) {
-            borderClass = "border-red-500";
-          } else if (isFocused) {
-            borderClass = "border-accent";
-          }
-
-          const disabledClass = isDisabled ? "opacity-50 cursor-not-allowed" : "";
-
-          const focusClass = isFocused ? "ring-2 ring-accent/30" : "";
-
-          return `${base} ${borderClass} ${disabledClass} ${focusClass}`.trim();
-        }}
-      >
-        {(segment) => (
-          <TimeSegment
-            segment={segment}
-            class={({ isFocused, isPlaceholder, isEditable }) => {
-              const base = `
-                ${sizeConfig().segment}
-                rounded
-                outline-none
-                tabular-nums
-              `;
-
-              let stateClass = "";
-              if (segment.type === "literal") {
-                stateClass = "text-primary-400";
-              } else if (isPlaceholder) {
-                stateClass = "text-primary-500 italic";
-              } else {
-                stateClass = "text-primary-100";
-              }
-
-              const focusClass = isFocused && isEditable ? "bg-accent text-bg-400" : "";
-
-              return `${base} ${stateClass} ${focusClass}`.trim();
-            }}
-          />
-        )}
-      </TimeInput>
-
-      {local.description && !isInvalid() && (
-        <TimeFieldDescription class={`text-primary-400 ${sizeConfig().label}`}>
-          {local.description}
-        </TimeFieldDescription>
-      )}
-
-      {isInvalid() && local.errorMessage && (
-        <TimeFieldErrorMessage class={`text-red-500 ${sizeConfig().label}`}>
-          {local.errorMessage}
-        </TimeFieldErrorMessage>
-      )}
+      <TimeFieldContent
+        label={local.label}
+        description={local.description}
+        errorMessage={local.errorMessage}
+        size={size()}
+        labelPosition={labelPosition()}
+        labelAlign={labelAlign()}
+        necessityIndicator={necessityIndicator()}
+      />
     </HeadlessTimeField>
   );
 }
