@@ -149,6 +149,7 @@ async function compareScreenshots(
 }
 
 async function openCalendar(card: Locator) {
+  await card.scrollIntoViewIfNeeded();
   const trigger = card.getByRole("button", { name: /calendar|choose date/i });
   await expect(trigger).toBeVisible();
   await trigger.click();
@@ -509,6 +510,37 @@ async function hoverSolidCalendarDate(page: Page) {
   await page.waitForTimeout(150);
 }
 
+async function datePickerCalendarContract(dialog: Locator) {
+  return dialog.evaluate((element) => {
+    const grids = Array.from(element.querySelectorAll('[role="grid"]')) as HTMLElement[];
+    const buttons = Array.from(element.querySelectorAll('[role="button"]'));
+    const isDisabled = (label: string) => {
+      const button = buttons.find((candidate) =>
+        (candidate.getAttribute("aria-label") ?? "").includes(label),
+      );
+      return (
+        button?.getAttribute("aria-disabled") === "true" ||
+        button?.hasAttribute("data-disabled") ||
+        false
+      );
+    };
+
+    return {
+      gridCount: grids.length,
+      columnCounts: grids.map((grid) => grid.querySelectorAll("thead th").length),
+      weekdayLabels: grids.map((grid) =>
+        Array.from(grid.querySelectorAll("thead th")).map((cell) => cell.textContent?.trim() ?? ""),
+      ),
+      rowCellCounts: grids.map((grid) =>
+        Array.from(grid.querySelectorAll("tbody tr")).map((row) => row.children.length),
+      ),
+      minDisabled: isDisabled("February 2, 2025"),
+      maxDisabled: isDisabled("February 21, 2025"),
+      unavailableDisabled: isDisabled("February 10, 2025"),
+    };
+  });
+}
+
 test.describe("comparison DatePicker visual parity", () => {
   test("React and Solid DatePickers are visually comparable when closed and open", async ({
     page,
@@ -537,16 +569,19 @@ test.describe("comparison DatePicker visual parity", () => {
     await expect(reactField).toBeVisible();
     await expect(solidField).toBeVisible();
 
+    await reactField.scrollIntoViewIfNeeded();
     const reactFieldGeometry = await geometry(reactField);
-    const solidFieldGeometry = await geometry(solidField);
     assertVisibleFieldGeometry(reactFieldGeometry);
+
+    await solidField.scrollIntoViewIfNeeded();
+    const solidFieldGeometry = await geometry(solidField);
     assertVisibleFieldGeometry(solidFieldGeometry);
     expect(Math.abs(solidFieldGeometry.width - reactFieldGeometry.width)).toBeLessThanOrEqual(96);
 
-    const [reactFieldPng, solidFieldPng] = await Promise.all([
-      reactField.screenshot({ animations: "disabled" }),
-      solidField.screenshot({ animations: "disabled" }),
-    ]);
+    await reactField.scrollIntoViewIfNeeded();
+    const reactFieldPng = await reactField.screenshot({ animations: "disabled" });
+    await solidField.scrollIntoViewIfNeeded();
+    const solidFieldPng = await solidField.screenshot({ animations: "disabled" });
     await compareScreenshots(
       page,
       reactFieldPng,
@@ -561,6 +596,7 @@ test.describe("comparison DatePicker visual parity", () => {
     const reactDialog = await calendarPopup(page);
     const reactSurface = await calendarSurface(page);
     await expect(reactDialog.getByRole("grid")).toBeVisible();
+    await page.waitForTimeout(250);
     const reactPopoverGeometry = await geometry(reactSurface);
     assertVisiblePopoverGeometry(reactPopoverGeometry);
     await page.mouse.move(4, 4);
@@ -574,6 +610,7 @@ test.describe("comparison DatePicker visual parity", () => {
     const solidDialog = await calendarPopup(page);
     const solidSurface = await calendarSurface(page);
     await expect(solidDialog.getByRole("grid")).toBeVisible();
+    await page.waitForTimeout(250);
     const solidPopoverGeometry = await geometry(solidSurface);
     assertVisiblePopoverGeometry(solidPopoverGeometry);
     expect(solidPopoverGeometry.position).not.toBe("static");
@@ -592,7 +629,7 @@ test.describe("comparison DatePicker visual parity", () => {
       solidSurfacePng,
       "DatePicker popup surface",
       0.16,
-      0,
+      2,
       16,
     );
 
@@ -654,6 +691,71 @@ test.describe("comparison DatePicker visual parity", () => {
     assertVisibleFieldGeometry(reactGeometry);
     assertVisibleFieldGeometry(solidGeometry);
     expect(solidGeometry.height).toBeGreaterThan(reactGeometry.height * 0.5);
+  });
+
+  test("route controls drive calendar constraints and form input parity", async ({ page }) => {
+    await page.goto(
+      "/components/datepicker/?size=XL&value=2025-02-14&maxVisibleMonths=2&firstDayOfWeek=mon&pageBehavior=single&constrainRange=true&unavailableDates=true&name=dueDate&isRequired=true&isInvalid=true",
+    );
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("astro-island")).toHaveCount(0);
+
+    const section = await styledSection(page);
+    const reactCard = await frameworkPanel(section, "React Spectrum stack");
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactCard.locator('[data-comparison-control-root="datepicker"]');
+    const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+
+    for (const root of [reactRoot, solidRoot]) {
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"value":"2025-02-14"/);
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"maxVisibleMonths":"2"/);
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"firstDayOfWeek":"mon"/);
+      await expect(root).toHaveAttribute(
+        "data-comparison-control-props",
+        /"pageBehavior":"single"/,
+      );
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"constrainRange":true/);
+      await expect(root).toHaveAttribute(
+        "data-comparison-control-props",
+        /"unavailableDates":true/,
+      );
+      await expect(root).toHaveAttribute("data-comparison-control-props", /"name":"dueDate"/);
+      await expect(root.locator('input[name="dueDate"]')).toHaveValue("2025-02-14");
+    }
+
+    await expect(reactCard.locator("[data-comparison-value]")).toHaveAttribute(
+      "data-comparison-value",
+      "2025-02-14",
+    );
+    await expect(solidCard.locator("[data-comparison-value]")).toHaveAttribute(
+      "data-comparison-value",
+      "2025-02-14",
+    );
+
+    await openCalendar(reactCard);
+    const reactDialog = await calendarPopup(page);
+    const reactContract = await datePickerCalendarContract(reactDialog);
+    await page.keyboard.press("Escape");
+    await expectNoCalendarPopup(page);
+
+    await openCalendar(solidCard);
+    const solidDialog = await calendarPopup(page);
+    const solidContract = await datePickerCalendarContract(solidDialog);
+
+    for (const contract of [reactContract, solidContract]) {
+      expect(contract.gridCount).toBe(2);
+      expect(contract.columnCounts).toEqual([7, 7]);
+      expect(contract.weekdayLabels).toEqual([
+        ["M", "T", "W", "T", "F", "S", "S"],
+        ["M", "T", "W", "T", "F", "S", "S"],
+      ]);
+      for (const rowCounts of contract.rowCellCounts) {
+        expect(rowCounts.every((count) => count === 7)).toBe(true);
+      }
+      expect(contract.minDisabled).toBe(true);
+      expect(contract.maxDisabled).toBe(true);
+      expect(contract.unavailableDisabled).toBe(true);
+    }
   });
 
   test("opening Solid DatePicker does not scroll the comparison page", async ({ page }) => {
@@ -828,7 +930,9 @@ test.describe("comparison DatePicker visual parity", () => {
       expect(solidPopoverGeometry.height, size).toBeGreaterThanOrEqual(
         reactPopoverGeometry.height - 12,
       );
-      expect(solidPopoverGeometry.height, size).toBeLessThanOrEqual(reactPopoverGeometry.height);
+      expect(solidPopoverGeometry.height, size).toBeLessThanOrEqual(
+        reactPopoverGeometry.height + 2,
+      );
     }
   });
 

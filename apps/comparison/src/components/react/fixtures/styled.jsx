@@ -180,9 +180,14 @@ import {
   serializeComboBoxDemoProps,
 } from "@comparison/data/combobox-demo";
 import {
+  datePickerMaxValue,
+  datePickerMinValue,
   datePickerDemoPropsFromWindow,
+  datePickerValueFromDemo,
+  isDatePickerDateUnavailable,
   normalizeDatePickerDemoProps,
   serializeDatePickerDemoProps,
+  serializeDatePickerValue,
 } from "@comparison/data/datepicker-demo";
 import {
   dateRangePickerMaxValue,
@@ -2682,8 +2687,9 @@ function ReactRangeCalendarDemo() {
 }
 
 function ReactDatePickerDemo() {
-  const [demoProps, setDemoProps] = useState(datePickerDemoPropsFromWindow);
-  const [value, setValue] = useState("");
+  const initialDemoProps = datePickerDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = useState(() => initialDemoProps);
+  const [value, setValue] = useState(() => datePickerValueFromDemo(initialDemoProps));
   const [isOpen, setIsOpen] = useState(false);
   const colorScheme = useComparisonResolvedTheme();
   useEffect(() => {
@@ -2691,7 +2697,7 @@ function ReactDatePickerDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "datepicker") {
         const nextProps = normalizeDatePickerDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setValue("");
+        setValue(datePickerValueFromDemo(nextProps));
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
@@ -2700,7 +2706,7 @@ function ReactDatePickerDemo() {
 
   return renderReactSpectrumReference(
     jsx("div", {
-      "data-comparison-value": value,
+      "data-comparison-value": serializeDatePickerValue(value),
       "data-comparison-open": String(isOpen),
       "data-comparison-color-scheme": colorScheme,
       children: jsx(SpectrumDatePicker, {
@@ -2708,12 +2714,21 @@ function ReactDatePickerDemo() {
         "data-comparison-control-props": serializeDatePickerDemoProps(demoProps),
         label: demoProps.label,
         size: demoProps.size,
+        value: value ?? undefined,
+        maxVisibleMonths: Number(demoProps.maxVisibleMonths),
+        minValue: demoProps.constrainRange ? datePickerMinValue : undefined,
+        maxValue: demoProps.constrainRange ? datePickerMaxValue : undefined,
+        isDateUnavailable: demoProps.unavailableDates ? isDatePickerDateUnavailable : undefined,
+        firstDayOfWeek: demoProps.firstDayOfWeek || undefined,
+        pageBehavior: demoProps.pageBehavior || undefined,
+        name: demoProps.name || undefined,
         description: demoProps.description,
         errorMessage: demoProps.errorMessage,
         isDisabled: demoProps.isDisabled,
+        isReadOnly: demoProps.isReadOnly,
         isRequired: demoProps.isRequired,
         isInvalid: demoProps.isInvalid,
-        onChange: (nextValue) => setValue(nextValue == null ? "" : String(nextValue)),
+        onChange: (nextValue) => setValue(nextValue),
         onOpenChange: setIsOpen,
         UNSAFE_className: "comparison-datepicker-root",
       }),

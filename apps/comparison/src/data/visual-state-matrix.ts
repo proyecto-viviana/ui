@@ -1936,7 +1936,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "planned",
       spec: "e2e/datepicker-visual.spec.ts",
-      note: "Covers settled open calendar geometry with current visual evidence for both sides. The Solid popover surface now keeps React S2 DatePicker's medium calendar geometry across field sizes, reads hover paint from the inner Calendar cell, and uses generated S2 styling with theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
+      note: "Covers settled open calendar geometry with current visual evidence for both sides. The Solid popover surface keeps React S2 DatePicker's medium calendar geometry across field sizes, preserves seven weekday columns with no extra blank day column, routes two visible months, first-day, min/max, unavailable, and paging state through the headless DatePicker calendar state, reads hover paint from the inner Calendar cell, and uses generated S2 styling with theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
     },
     {
       id: "styled.calendar.select-date",
@@ -1965,8 +1965,8 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "Side-panel controls dispatch label, size, validation, disabled, required, and help text props into both mounted styled stacks.",
+      spec: "e2e/datepicker-visual.spec.ts",
+      note: "Side-panel controls dispatch label, size, controlled value, maxVisibleMonths, firstDayOfWeek, pageBehavior, name, validation, disabled/read-only, required, help text, min/max constraints, and unavailable-date props into both mounted styled stacks. Time, locale/calendar-system, form, validationBehavior, and submit rows remain open.",
     },
   ],
   rangecalendar: [

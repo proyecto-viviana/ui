@@ -1,6 +1,6 @@
-// @ts-nocheck — style-system types need a dedicated pass; removing this would require
+// @ts-nocheck - style-system types need a dedicated pass; removing this would require
 // fixing ~20 style-definition type mismatches unrelated to component behavior.
-import { type JSX, createEffect, createSignal, onCleanup, splitProps, Show } from "solid-js";
+import { type JSX, splitProps, Show } from "solid-js";
 import {
   DatePicker as HeadlessDatePicker,
   DatePickerLabel as HeadlessDatePickerLabel,
@@ -34,10 +34,11 @@ import {
 
 export type DatePickerSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type NormalizedDatePickerSize = "S" | "M" | "L" | "XL";
+export type DatePickerFirstDayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat";
 
 export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   HeadlessDatePickerProps<T>,
-  "class" | "style" | "children"
+  "class" | "style" | "children" | "firstDayOfWeek" | "visibleMonths"
 > {
   /** The size of the picker. @default 'md' */
   size?: DatePickerSize;
@@ -51,6 +52,14 @@ export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   errorMessage?: string;
   /** Placeholder text. */
   placeholder?: string;
+  /**
+   * The maximum number of months to display at once in the calendar popover.
+   *
+   * @default 1
+   */
+  maxVisibleMonths?: number;
+  /** The day that starts the week. */
+  firstDayOfWeek?: DatePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 function normalizeDatePickerSize(size: DatePickerSize | undefined): NormalizedDatePickerSize {
@@ -67,6 +76,29 @@ function normalizeDatePickerSize(size: DatePickerSize | undefined): NormalizedDa
     case "md":
     default:
       return "M";
+  }
+}
+
+function normalizeFirstDayOfWeek(
+  firstDayOfWeek: DatePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined,
+): 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined {
+  switch (firstDayOfWeek) {
+    case "sun":
+      return 0;
+    case "mon":
+      return 1;
+    case "tue":
+      return 2;
+    case "wed":
+      return 3;
+    case "thu":
+      return 4;
+    case "fri":
+      return 5;
+    case "sat":
+      return 6;
+    default:
+      return firstDayOfWeek;
   }
 }
 
@@ -372,7 +404,16 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   const mergedProps = useProviderProps(props);
   const [local, calendarProps, rest] = splitProps(
     mergedProps,
-    ["size", "class", "label", "description", "errorMessage", "isInvalid", "placeholder"],
+    [
+      "size",
+      "class",
+      "label",
+      "description",
+      "errorMessage",
+      "isInvalid",
+      "placeholder",
+      "maxVisibleMonths",
+    ],
     [
       "minValue",
       "maxValue",
@@ -386,7 +427,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   const size = () => normalizeDatePickerSize(local.size);
   const isInvalid = () => local.isInvalid === true;
   const isDisabled = () => rest.isDisabled === true;
-  const [fieldGroupRef, setFieldGroupRef] = createSignal<HTMLDivElement | null>(null);
+  const visibleMonths = () => Math.max(1, Number(local.maxVisibleMonths ?? 1));
 
   const hasTime = () => {
     const granularity = (rest as { granularity?: string }).granularity;
@@ -400,7 +441,10 @@ export function DatePicker<T extends DateValue = CalendarDate>(
 
   return (
     <HeadlessDatePicker
+      {...calendarProps}
       {...rest}
+      firstDayOfWeek={normalizeFirstDayOfWeek(calendarProps.firstDayOfWeek)}
+      visibleMonths={visibleMonths()}
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}
@@ -441,7 +485,6 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       </Show>
 
       <div
-        ref={setFieldGroupRef}
         class={datePickerFieldGroup({
           size: size(),
           isInvalid: isInvalid(),
@@ -493,7 +536,12 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           <S2CalendarIcon styles={calendarIcon} />
         </DatePickerButton>
 
-        <DatePickerPopup size={size()} hasTime={hasTime()} calendarProps={calendarProps} />
+        <DatePickerPopup
+          size={size()}
+          hasTime={hasTime()}
+          maxVisibleMonths={visibleMonths()}
+          calendarProps={calendarProps}
+        />
       </div>
 
       <Show when={local.description && !isInvalid()}>
@@ -518,6 +566,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
 function DatePickerPopup(props: {
   size: NormalizedDatePickerSize;
   hasTime?: boolean;
+  maxVisibleMonths?: number;
   calendarProps?: Record<string, unknown>;
 }): JSX.Element {
   const theme = useTheme();
@@ -530,6 +579,7 @@ function DatePickerPopup(props: {
       <div class={datePickerPopoverFrame} style={{ "min-width": "240px" }}>
         <Calendar
           size="md"
+          visibleMonths={props.maxVisibleMonths}
           UNSAFE_style={datePickerCalendarPopoverStyle}
           {...(props.calendarProps ?? {})}
         />

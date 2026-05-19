@@ -60,7 +60,13 @@ import {
   dateRangePickerSizeOptions,
   dateRangePickerVisibleMonthsOptions,
 } from "./daterangepicker-demo";
-import { datePickerDemoDefaults, datePickerSizeOptions } from "./datepicker-demo";
+import {
+  datePickerDemoDefaults,
+  datePickerFirstDayOfWeekOptions,
+  datePickerPageBehaviorOptions,
+  datePickerSizeOptions,
+  datePickerVisibleMonthsOptions,
+} from "./datepicker-demo";
 import {
   rangeCalendarDemoDefaults,
   rangeCalendarFirstDayOfWeekOptions,
@@ -2269,6 +2275,39 @@ const datePickerControls: ComponentControlGroup = {
       options: options(datePickerSizeOptions),
     },
     {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: datePickerDemoDefaults.value,
+    },
+    {
+      name: "maxVisibleMonths",
+      label: "maxVisibleMonths",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.maxVisibleMonths,
+      options: options(datePickerVisibleMonthsOptions),
+    },
+    {
+      name: "pageBehavior",
+      label: "pageBehavior",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.pageBehavior,
+      options: defaultableOptions(datePickerPageBehaviorOptions),
+    },
+    {
+      name: "firstDayOfWeek",
+      label: "firstDayOfWeek",
+      kind: "select",
+      defaultValue: datePickerDemoDefaults.firstDayOfWeek,
+      options: defaultableOptions(datePickerFirstDayOfWeekOptions),
+    },
+    {
+      name: "name",
+      label: "name",
+      kind: "text",
+      defaultValue: datePickerDemoDefaults.name,
+    },
+    {
       name: "description",
       label: "description",
       kind: "text",
@@ -2281,10 +2320,28 @@ const datePickerControls: ComponentControlGroup = {
       defaultValue: datePickerDemoDefaults.errorMessage,
     },
     {
+      name: "constrainRange",
+      label: "constrainRange",
+      kind: "switch",
+      defaultValue: datePickerDemoDefaults.constrainRange,
+    },
+    {
+      name: "unavailableDates",
+      label: "unavailableDates",
+      kind: "switch",
+      defaultValue: datePickerDemoDefaults.unavailableDates,
+    },
+    {
       name: "isDisabled",
       label: "isDisabled",
       kind: "switch",
       defaultValue: false,
+    },
+    {
+      name: "isReadOnly",
+      label: "isReadOnly",
+      kind: "switch",
+      defaultValue: datePickerDemoDefaults.isReadOnly,
     },
     {
       name: "isRequired",
@@ -2326,11 +2383,12 @@ const datePickerControls: ComponentControlGroup = {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
+    "name",
     "aria-label",
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 DatePicker docs control surface for label, size, validation, disabled, required, and help text. Calendar paging, date availability, time granularity, and multi-month popover states remain dedicated visual/behavior route states.",
+  note: "Modeled from the S2 DatePicker docs control surface for label, size, controlled value, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, firstDayOfWeek, pageBehavior, and name form prop. Time granularity/hour cycle and calendar-system states remain dedicated route states.",
 };
 
 const dateRangePickerControls: ComponentControlGroup = {

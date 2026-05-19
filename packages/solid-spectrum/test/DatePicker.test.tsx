@@ -86,32 +86,59 @@ describe("DatePicker (solid-spectrum)", () => {
     });
   });
 
-  it("popover frame width tracks field group width via ResizeObserver", async () => {
-    render(() => <DatePicker label="Event" />);
+  it("routes calendar state props into the popup calendar", async () => {
+    render(() => (
+      <DatePicker
+        label="Event"
+        defaultValue={new CalendarDate(2025, 2, 14)}
+        maxVisibleMonths={2}
+        firstDayOfWeek="mon"
+        minValue={new CalendarDate(2025, 2, 3)}
+        maxValue={new CalendarDate(2025, 2, 20)}
+        isDateUnavailable={(date) => date.day === 10}
+      />
+    ));
+    await waitForHydration();
+
+    const button = screen.getByRole("button");
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("grid")).toHaveLength(2);
+    });
+
+    const [firstGrid] = screen.getAllByRole("grid");
+    const weekdayLabels = Array.from(firstGrid.querySelectorAll("thead th")).map(
+      (cell) => cell.textContent?.trim() ?? "",
+    );
+    expect(weekdayLabels).toEqual(["M", "T", "W", "T", "F", "S", "S"]);
+    expect(screen.getByRole("button", { name: /Sunday, February 2, 2025/ })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: /Monday, February 10, 2025/ })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: /Friday, February 21, 2025/ })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+  });
+
+  it("renders fixed medium calendar popover geometry by default", async () => {
+    render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2025, 2, 14)} />);
     await waitForHydration();
 
     const button = screen.getByRole("button");
     await user.click(button);
 
     const dialog = await waitFor(() => screen.getByRole("dialog"));
-
-    // Trigger ResizeObserver with a mock width
-    const instances = (
-      globalThis as unknown as {
-        ResizeObserver: typeof ResizeObserver & {
-          getInstances(): Array<{
-            trigger(entries: Array<{ contentRect: { width: number } }>): void;
-          }>;
-        };
-      }
-    ).ResizeObserver.getInstances();
-    for (const inst of instances) {
-      inst.trigger([{ contentRect: { width: 350 } } as unknown as ResizeObserverEntry]);
-    }
-
     const frame = dialog.firstElementChild as HTMLElement;
+
+    expect(frame.style.minWidth).toBe("240px");
     await waitFor(() => {
-      expect(frame.style.width).toBe("350px");
+      expect(screen.getAllByRole("grid")).toHaveLength(1);
     });
   });
 

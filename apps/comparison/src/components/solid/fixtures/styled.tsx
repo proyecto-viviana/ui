@@ -197,9 +197,14 @@ import {
   type ComboBoxDemoProps,
 } from "@comparison/data/combobox-demo";
 import {
+  datePickerMaxValue,
+  datePickerMinValue,
   datePickerDemoPropsFromWindow,
+  datePickerValueFromDemo,
+  isDatePickerDateUnavailable,
   normalizeDatePickerDemoProps,
   serializeDatePickerDemoProps,
+  serializeDatePickerValue,
   type DatePickerDemoProps,
 } from "@comparison/data/datepicker-demo";
 import {
@@ -2715,10 +2720,9 @@ function SolidSpectrumRangeCalendarDemo() {
 }
 
 function SolidSpectrumDatePickerDemo() {
-  const [demoProps, setDemoProps] = createSignal<DatePickerDemoProps>(
-    datePickerDemoPropsFromWindow(),
-  );
-  const [value, setValue] = createSignal("");
+  const initialDemoProps = datePickerDemoPropsFromWindow();
+  const [demoProps, setDemoProps] = createSignal<DatePickerDemoProps>(initialDemoProps);
+  const [value, setValue] = createSignal(datePickerValueFromDemo(initialDemoProps));
   const [isOpen, setIsOpen] = createSignal(false);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
@@ -2729,7 +2733,7 @@ function SolidSpectrumDatePickerDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "datepicker") {
         const nextProps = normalizeDatePickerDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setValue("");
+        setValue(datePickerValueFromDemo(nextProps));
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -2765,7 +2769,7 @@ function SolidSpectrumDatePickerDemo() {
             return colorScheme();
           },
           get "data-comparison-value"() {
-            return value();
+            return serializeDatePickerValue(value());
           },
           get "data-comparison-open"() {
             return String(isOpen());
@@ -2784,6 +2788,30 @@ function SolidSpectrumDatePickerDemo() {
             get size() {
               return demoProps().size;
             },
+            get value() {
+              return value() ?? undefined;
+            },
+            get maxVisibleMonths() {
+              return Number(demoProps().maxVisibleMonths);
+            },
+            get minValue() {
+              return demoProps().constrainRange ? datePickerMinValue : undefined;
+            },
+            get maxValue() {
+              return demoProps().constrainRange ? datePickerMaxValue : undefined;
+            },
+            get isDateUnavailable() {
+              return demoProps().unavailableDates ? isDatePickerDateUnavailable : undefined;
+            },
+            get firstDayOfWeek() {
+              return demoProps().firstDayOfWeek || undefined;
+            },
+            get pageBehavior() {
+              return demoProps().pageBehavior || undefined;
+            },
+            get name() {
+              return demoProps().name || undefined;
+            },
             get description() {
               return demoProps().description;
             },
@@ -2793,15 +2821,16 @@ function SolidSpectrumDatePickerDemo() {
             get isDisabled() {
               return demoProps().isDisabled;
             },
+            get isReadOnly() {
+              return demoProps().isReadOnly;
+            },
             get isRequired() {
               return demoProps().isRequired;
             },
             get isInvalid() {
               return demoProps().isInvalid;
             },
-            onChange: (nextValue: unknown) => {
-              setValue(nextValue == null ? "" : String(nextValue));
-            },
+            onChange: setValue,
             onOpenChange: setIsOpen,
           }),
         ],
