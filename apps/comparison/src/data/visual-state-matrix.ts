@@ -938,6 +938,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Browser assertions cover conditional source rendering, custom error content, and ImageCoordinator multi-image rendering.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/image-visual.spec.ts; packages/solid-spectrum/test/Image.test.tsx",
+      note: "Computed browser contracts compare the wrapper/image/source DOM against React Spectrum, while focused unit tests assert Image exposes only the documented S2 wrapper surface: no legacy class alias or arbitrary root id/data/ARIA/event props, with unsafe props and refs preserved.",
+    },
+    {
       id: "styled.forced-colors",
       label: "Forced colors environment",
       kind: "static",

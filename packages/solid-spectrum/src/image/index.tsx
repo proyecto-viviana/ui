@@ -14,6 +14,7 @@ import {
 } from "solid-js";
 import { style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -42,10 +43,7 @@ export interface ImageSource {
   height?: number;
 }
 
-export interface ImageProps extends Omit<
-  JSX.HTMLAttributes<HTMLDivElement>,
-  "class" | "style" | "children" | "slot" | "ref"
-> {
+export interface ImageProps {
   /** The URL of the image or a list of conditional sources. */
   src?: string | ImageSource[];
   /** Accessible alt text for the image. */
@@ -61,17 +59,15 @@ export interface ImageProps extends Omit<
   renderError?: () => JSX.Element;
   group?: ImageGroup;
   itemProp?: string;
-  class?: string;
   slot?: string | null;
-  UNSAFE_className?: string;
+  UNSAFE_className?: UnsafeClassName | string;
   UNSAFE_style?: JSX.CSSProperties;
-  hidden?: boolean;
   ref?: RefLike<HTMLDivElement>;
 }
 
-interface ImageContextValue extends ImageProps {
+type ImageContextValue = ImageProps & {
   hidden?: boolean;
-}
+};
 
 export const ImageContext = createContext<SpectrumContextValue<ImageContextValue>>(null);
 
@@ -254,7 +250,6 @@ export function Image(props: ImageProps): JSX.Element {
     "renderError",
     "group",
     "itemProp",
-    "class",
     "slot",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -343,9 +338,7 @@ export function Image(props: ImageProps): JSX.Element {
   const slot = () => (local.slot === null ? undefined : (local.slot ?? contextProps?.slot));
   const wrapperClass = () =>
     [
-      contextProps?.UNSAFE_className,
       local.UNSAFE_className,
-      local.class,
       mergeStyles(
         imageWrapperStyles as unknown as StyleString,
         mergeContextStyles(contextProps?.styles, props.styles),

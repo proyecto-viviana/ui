@@ -269,14 +269,8 @@ export { IllustratedMessage } from "./illustratedmessage";
 export type { IllustratedMessageProps } from "./illustratedmessage";
 
 // Image
-export {
-  createImageGroup,
-  DefaultImageGroup,
-  Image,
-  ImageContext,
-  ImageCoordinator,
-} from "./image";
-export type { ImageCoordinatorProps, ImageGroup, ImageProps, ImageSource } from "./image";
+export { Image, ImageContext, ImageCoordinator } from "./image";
+export type { ImageCoordinatorProps, ImageProps } from "./image";
 
 // InlineAlert
 export { InlineAlert } from "./inlinealert";
