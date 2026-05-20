@@ -27,9 +27,13 @@ const numberFieldTextControlValues: Record<string, string> = {
 
 const sliderTextControlValues: Record<string, string> = {
   value: "72",
+  defaultValue: "64",
   minValue: "0",
   maxValue: "100",
   step: "5",
+  fillOffset: "20",
+  name: "volume",
+  form: "audioForm",
 };
 
 const meterTextControlValues: Record<string, string> = {
@@ -158,7 +162,10 @@ function expectedSerializedValue(
   if (group.slug === "numberfield" && control.name in numberFieldTextControlValues) {
     return Number(value);
   }
-  if (group.slug === "slider" && control.name in sliderTextControlValues) {
+  if (
+    group.slug === "slider" &&
+    ["value", "defaultValue", "minValue", "maxValue", "step", "fillOffset"].includes(control.name)
+  ) {
     return Number(value);
   }
   if (group.slug === "meter" && control.name in meterTextControlValues) {

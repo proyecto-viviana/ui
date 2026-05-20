@@ -36,6 +36,16 @@ async function controlProps(root: Locator) {
   >;
 }
 
+async function sliderValue(slider: Locator) {
+  return slider.evaluate((element) =>
+    element instanceof HTMLInputElement ? element.value : element.getAttribute("aria-valuenow"),
+  );
+}
+
+function rangeInput(root: Locator) {
+  return root.locator('input[type="range"]').first();
+}
+
 async function sliderGeometry(root: Locator) {
   return root.evaluate((element) => {
     const numberOrNull = (value: number | undefined | null) =>
@@ -66,9 +76,11 @@ async function sliderGeometry(root: Locator) {
           candidate.children.length === 0 && candidate.textContent?.trim() === "Volume",
       ) ?? null;
     const output =
-      Array.from(element.querySelectorAll<HTMLElement>("[role='status'],output,*")).find(
-        (candidate) => candidate.children.length === 0 && candidate.textContent?.trim() === "72",
-      ) ?? null;
+      element.querySelector<HTMLElement>("output") ??
+      Array.from(element.querySelectorAll<HTMLElement>("[role='status']")).find(
+        (candidate) => candidate.children.length === 0,
+      ) ??
+      null;
     const divs = Array.from(element.querySelectorAll<HTMLElement>("div"));
     const thumbCandidates = divs
       .map((node) => {
@@ -160,7 +172,69 @@ function expectNear(
   expect(Math.abs((received ?? 0) - (expected ?? 0)), label).toBeLessThanOrEqual(tolerance);
 }
 
+function expectSliderGeometryToMatch(
+  solid: Awaited<ReturnType<typeof sliderGeometry>>,
+  react: Awaited<ReturnType<typeof sliderGeometry>>,
+) {
+  expect(solid.sliderCount).toBe(react.sliderCount);
+  expect(solid.valueNow).toBe(react.valueNow);
+  expect(solid.valueMin).toBe(react.valueMin);
+  expect(solid.valueMax).toBe(react.valueMax);
+  expect(solid.valueText).toBe(react.valueText);
+  expect(solid.disabled).toBe(react.disabled);
+  expect(solid.labelText).toBe(react.labelText);
+  expect(solid.outputText).toBe(react.outputText);
+  expect(solid.labelColor).toBe(react.labelColor);
+  expect(solid.outputColor).toBe(react.outputColor);
+  expect(solid.thumbBackground).toBe(react.thumbBackground);
+  expect(solid.thumbBorderColor).toBe(react.thumbBorderColor);
+  expect(solid.trackBackground).toBe(react.trackBackground);
+  expect(solid.fillBackground).toBe(react.fillBackground);
+
+  expectNear(solid.slider?.width ?? null, react.slider?.width ?? null, 1, "Slider thumb width");
+  expectNear(solid.slider?.height ?? null, react.slider?.height ?? null, 1, "Slider thumb height");
+  expectNear(solid.track?.width ?? null, react.track?.width ?? null, 2, "Slider track width");
+  expectNear(solid.track?.height ?? null, react.track?.height ?? null, 1, "Slider track height");
+  expectNear(solid.fill?.height ?? null, react.fill?.height ?? null, 1, "Slider fill height");
+  expectNear(solid.thumbCenterDelta, react.thumbCenterDelta, 1, "Slider thumb centerline");
+}
+
 test.describe("comparison Slider visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await sliderFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(page, fixtures.reactCanvas, fixtures.solidCanvas, "Slider default", {
+      maxMismatchRatio: 0.22,
+      maxDimensionDelta: 24,
+      pixelThreshold: 64,
+    });
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      label: "Volume",
+      valueSource: "value",
+      value: 40,
+      defaultValue: 40,
+      fillOffset: 0,
+      labelPosition: "top",
+      labelAlign: "start",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      label: "Volume",
+      valueSource: "value",
+      value: 40,
+      defaultValue: 40,
+      fillOffset: 0,
+      labelPosition: "top",
+      labelAlign: "start",
+    });
+
+    expectSliderGeometryToMatch(
+      await sliderGeometry(fixtures.solidRoot),
+      await sliderGeometry(fixtures.reactRoot),
+    );
+  });
+
   test("emphasized XL thick precise state matches current React Spectrum", async ({ page }) => {
     const fixtures = await sliderFixtures(
       page,
@@ -203,41 +277,54 @@ test.describe("comparison Slider visual parity", () => {
     const react = await sliderGeometry(fixtures.reactRoot);
     const solid = await sliderGeometry(fixtures.solidRoot);
 
-    expect(solid.sliderCount).toBe(react.sliderCount);
-    expect(solid.valueNow).toBe(react.valueNow);
-    expect(solid.valueMin).toBe(react.valueMin);
-    expect(solid.valueMax).toBe(react.valueMax);
-    expect(solid.valueText).toBe(react.valueText);
-    expect(solid.disabled).toBe(react.disabled);
-    expect(solid.labelText).toBe(react.labelText);
-    expect(solid.outputText).toBe(react.outputText);
-    expect(solid.labelColor).toBe(react.labelColor);
-    expect(solid.outputColor).toBe(react.outputColor);
-    expect(solid.thumbBackground).toBe(react.thumbBackground);
-    expect(solid.thumbBorderColor).toBe(react.thumbBorderColor);
-    expect(solid.trackBackground).toBe(react.trackBackground);
-    expect(solid.fillBackground).toBe(react.fillBackground);
+    expectSliderGeometryToMatch(solid, react);
+  });
 
-    expectNear(solid.slider?.width ?? null, react.slider?.width ?? null, 1, "Slider thumb width");
-    expectNear(
-      solid.slider?.height ?? null,
-      react.slider?.height ?? null,
-      1,
-      "Slider thumb height",
+  test("defaultValue initializes uncontrolled value and fillOffset shifts fill", async ({
+    page,
+  }) => {
+    const fixtures = await sliderFixtures(
+      page,
+      "?valueSource=defaultValue&defaultValue=64&fillOffset=20&name=volume&form=audioForm",
     );
-    expectNear(solid.track?.width ?? null, react.track?.width ?? null, 2, "Slider track width");
-    expectNear(solid.track?.height ?? null, react.track?.height ?? null, 1, "Slider track height");
-    expectNear(solid.fill?.height ?? null, react.fill?.height ?? null, 1, "Slider fill height");
-    expectNear(solid.thumbCenterDelta, react.thumbCenterDelta, 1, "Slider thumb centerline");
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      valueSource: "defaultValue",
+      defaultValue: 64,
+      fillOffset: 20,
+      name: "volume",
+      form: "audioForm",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      valueSource: "defaultValue",
+      defaultValue: 64,
+      fillOffset: 20,
+      name: "volume",
+      form: "audioForm",
+    });
+
+    await expect.poll(async () => sliderValue(fixtures.reactSlider)).toBe("64");
+    await expect.poll(async () => sliderValue(fixtures.solidSlider)).toBe("64");
+    await expect(rangeInput(fixtures.reactRoot)).toHaveAttribute("name", "volume");
+    await expect(rangeInput(fixtures.solidRoot)).toHaveAttribute("name", "volume");
+    await expect(rangeInput(fixtures.reactRoot)).toHaveAttribute("form", "audioForm");
+    await expect(rangeInput(fixtures.solidRoot)).toHaveAttribute("form", "audioForm");
+
+    const react = await sliderGeometry(fixtures.reactRoot);
+    const solid = await sliderGeometry(fixtures.solidRoot);
+    expectSliderGeometryToMatch(solid, react);
+    expectNear(solid.fill?.x ?? null, react.fill?.x ?? null, 2, "Slider fill offset x");
+
+    await fixtures.reactSlider.focus();
+    await fixtures.reactSlider.press("ArrowRight");
+    await fixtures.solidSlider.focus();
+    await fixtures.solidSlider.press("ArrowRight");
+    await expect.poll(async () => sliderValue(fixtures.reactSlider)).toBe("65");
+    await expect.poll(async () => sliderValue(fixtures.solidSlider)).toBe("65");
   });
 
   test("keyboard updates controlled value and keeps focus on both stacks", async ({ page }) => {
     const fixtures = await sliderFixtures(page);
-
-    const sliderValue = (slider: Locator) =>
-      slider.evaluate((element) =>
-        element instanceof HTMLInputElement ? element.value : element.getAttribute("aria-valuenow"),
-      );
 
     for (const item of [
       { panel: fixtures.reactPanel, root: fixtures.reactRoot, slider: fixtures.reactSlider },

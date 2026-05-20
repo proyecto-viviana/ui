@@ -167,10 +167,13 @@ import { numberFieldDemoDefaults, numberFieldSizeOptions } from "./numberfield-d
 import { pickerDemoDefaults, pickerKeyOptions, pickerSizeOptions } from "./picker-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
 import {
+  sliderLabelAlignOptions,
+  sliderLabelPositionOptions,
   sliderDemoDefaults,
   sliderSizeOptions,
   sliderThumbStyleOptions,
   sliderTrackStyleOptions,
+  sliderValueSourceOptions,
 } from "./slider-demo";
 import { skeletonDemoDefaults } from "./skeleton-demo";
 import {
@@ -1733,6 +1736,19 @@ const sliderControls: ComponentControlGroup = {
       defaultValue: String(sliderDemoDefaults.value),
     },
     {
+      name: "valueSource",
+      label: "value source",
+      kind: "radio",
+      defaultValue: sliderDemoDefaults.valueSource,
+      options: options(sliderValueSourceOptions),
+    },
+    {
+      name: "defaultValue",
+      label: "defaultValue",
+      kind: "text",
+      defaultValue: String(sliderDemoDefaults.defaultValue),
+    },
+    {
       name: "minValue",
       label: "minValue",
       kind: "text",
@@ -1772,6 +1788,44 @@ const sliderControls: ComponentControlGroup = {
       options: options(sliderThumbStyleOptions),
     },
     {
+      name: "fillOffset",
+      label: "fillOffset",
+      kind: "text",
+      defaultValue: String(sliderDemoDefaults.fillOffset),
+    },
+    {
+      name: "labelPosition",
+      label: "labelPosition",
+      kind: "radio",
+      defaultValue: sliderDemoDefaults.labelPosition,
+      options: options(sliderLabelPositionOptions),
+    },
+    {
+      name: "labelAlign",
+      label: "labelAlign",
+      kind: "radio",
+      defaultValue: sliderDemoDefaults.labelAlign,
+      options: options(sliderLabelAlignOptions),
+    },
+    {
+      name: "name",
+      label: "name",
+      kind: "text",
+      defaultValue: sliderDemoDefaults.name,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: sliderDemoDefaults.form,
+    },
+    {
+      name: "withContextualHelp",
+      label: "contextualHelp",
+      kind: "switch",
+      defaultValue: sliderDemoDefaults.withContextualHelp,
+    },
+    {
       name: "isEmphasized",
       label: "isEmphasized",
       kind: "switch",
@@ -1799,6 +1853,7 @@ const sliderControls: ComponentControlGroup = {
     "thumbStyle",
     "fillOffset",
     "formatOptions",
+    "contextualHelp",
     "name",
     "form",
     "isDisabled",
@@ -1811,7 +1866,7 @@ const sliderControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 Slider source control surface. The viewer drives label, controlled numeric value, min/max/step, S2 size, emphasized treatment, track/thumb style, and disabled state into both stacks.",
+  note: "Modeled from the S2 Slider source control surface. The viewer drives label, controlled/default numeric value, min/max/step, S2 size, emphasized treatment, track/thumb style, fillOffset, label position/alignment, contextualHelp, name/form, and disabled state into both stacks.",
 };
 
 const textFieldControls: ComponentControlGroup = {

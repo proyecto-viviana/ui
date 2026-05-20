@@ -388,7 +388,7 @@ export type {
 } from "./text";
 
 // Slider
-export { RangeSlider, Slider } from "./slider";
+export { RangeSlider, Slider, SliderContext } from "./slider";
 export type {
   RangeSliderProps,
   RangeSliderSize,

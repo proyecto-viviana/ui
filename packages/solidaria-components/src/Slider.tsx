@@ -72,6 +72,8 @@ export interface SliderProps extends Omit<AriaSliderProps, "label">, SlotProps {
   class?: ClassNameOrFunction<SliderRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<SliderRenderProps>;
+  /** Ref for the slider root element. */
+  ref?: (el: HTMLDivElement) => void;
 }
 
 export interface SliderTrackRenderProps {
@@ -162,7 +164,7 @@ export const SliderOutputContext = SliderContext;
 export function Slider(props: SliderProps): JSX.Element {
   const [local, stateProps, ariaProps, rest] = splitProps(
     props,
-    ["class", "style", "slot"],
+    ["class", "style", "slot", "ref"],
     [
       "value",
       "defaultValue",
@@ -322,6 +324,7 @@ export function Slider(props: SliderProps): JSX.Element {
       <div
         {...domProps()}
         {...cleanGroupProps()}
+        ref={local.ref}
         class={renderProps.class()}
         style={renderProps.style()}
         data-disabled={state.isDisabled || undefined}

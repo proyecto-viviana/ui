@@ -350,6 +350,7 @@ import {
   type SearchFieldDemoProps,
 } from "@comparison/data/searchfield-demo";
 import {
+  initialSliderDemoValue,
   normalizeSliderDemoProps,
   serializeSliderDemoProps,
   sliderDemoPropsFromWindow,
@@ -4667,7 +4668,7 @@ function SolidSpectrumComboBoxDemo() {
 
 function SolidSpectrumSliderDemo() {
   const [demoProps, setDemoProps] = createSignal<SliderDemoProps>(sliderDemoPropsFromWindow());
-  const [value, setValue] = createSignal(demoProps().value);
+  const [value, setValue] = createSignal(initialSliderDemoValue(demoProps()));
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -4677,7 +4678,7 @@ function SolidSpectrumSliderDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "slider") {
         const nextProps = normalizeSliderDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setValue(nextProps.value);
+        setValue(initialSliderDemoValue(nextProps));
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -4694,12 +4695,7 @@ function SolidSpectrumSliderDemo() {
     });
   });
 
-  const serializedProps = createMemo(() =>
-    serializeSliderDemoProps({
-      ...demoProps(),
-      value: value(),
-    }),
-  );
+  const serializedProps = createMemo(() => serializeSliderDemoProps(demoProps()));
 
   return hc(
     SolidSpectrumProvider,
@@ -4731,7 +4727,12 @@ function SolidSpectrumSliderDemo() {
               return demoProps().label;
             },
             get value() {
-              return value();
+              return demoProps().valueSource === "value" ? value() : undefined;
+            },
+            get defaultValue() {
+              return demoProps().valueSource === "defaultValue"
+                ? demoProps().defaultValue
+                : undefined;
             },
             get minValue() {
               return demoProps().minValue;
@@ -4751,6 +4752,29 @@ function SolidSpectrumSliderDemo() {
             get thumbStyle() {
               return demoProps().thumbStyle;
             },
+            get fillOffset() {
+              return demoProps().fillOffset;
+            },
+            get labelPosition() {
+              return demoProps().labelPosition;
+            },
+            get labelAlign() {
+              return demoProps().labelAlign;
+            },
+            get contextualHelp() {
+              return demoProps().withContextualHelp
+                ? hc(SolidSpectrumContextualHelp, {}, [
+                    hc(SolidSpectrumHeading, { slot: "title" }, ["Volume help"]),
+                    hc(SolidSpectrumText, {}, ["Choose an output level."]),
+                  ])
+                : undefined;
+            },
+            get name() {
+              return demoProps().name || undefined;
+            },
+            get form() {
+              return demoProps().form || undefined;
+            },
             get isEmphasized() {
               return demoProps().isEmphasized;
             },
@@ -4759,10 +4783,9 @@ function SolidSpectrumSliderDemo() {
             },
             onChange: (nextValue: number) => {
               setValue(nextValue);
-              setDemoProps((current: SliderDemoProps) => ({
-                ...current,
-                value: nextValue,
-              }));
+              setDemoProps((current: SliderDemoProps) =>
+                current.valueSource === "value" ? { ...current, value: nextValue } : current,
+              );
             },
           }),
         ],

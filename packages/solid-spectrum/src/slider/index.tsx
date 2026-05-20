@@ -1,5 +1,15 @@
 // @ts-nocheck
-import { type JSX, createUniqueId, Show, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createMemo,
+  createUniqueId,
+  mergeProps,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
+import { useLocale } from "@proyecto-viviana/solidaria";
 import {
   Slider as HeadlessSlider,
   SliderOutput as HeadlessSliderOutput,
@@ -22,6 +32,15 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils";
 import { useProviderProps } from "../provider";
+import { useFormProps, useIsInForm } from "../form";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type SliderSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2SliderSize = "S" | "M" | "L" | "XL";
@@ -33,7 +52,7 @@ export type SliderLabelAlign = "start" | "end";
 
 export interface SliderProps extends Omit<
   HeadlessSliderProps,
-  "class" | "style" | "children" | "label"
+  "class" | "style" | "children" | "label" | "slot" | "ref"
 > {
   size?: SliderSize;
   /** Legacy alias. Prefer S2 `isEmphasized`. */
@@ -44,6 +63,7 @@ export interface SliderProps extends Omit<
   fillOffset?: number;
   class?: string;
   label?: JSX.Element;
+  contextualHelp?: JSX.Element;
   showOutput?: boolean;
   showMinMax?: boolean;
   labelPosition?: SliderLabelPosition;
@@ -51,6 +71,8 @@ export interface SliderProps extends Omit<
   styles?: StyleString;
   UNSAFE_className?: string;
   UNSAFE_style?: JSX.CSSProperties;
+  slot?: string | null;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 type SliderStyleState = SliderRenderProps & {
@@ -58,7 +80,10 @@ type SliderStyleState = SliderRenderProps & {
   labelPosition?: SliderLabelPosition;
   labelAlign?: SliderLabelAlign;
   isInForm?: boolean;
+  direction?: "ltr" | "rtl";
 };
+
+export const SliderContext = createContext<SpectrumContextValue<SliderProps>>(null);
 
 const sliderRoot = style<SliderStyleState>(
   {
@@ -399,7 +424,10 @@ function pressScaleStyle(
  * A slider allows users to select a value from a range.
  */
 export function Slider(props: SliderProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const isInForm = useIsInForm();
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(SliderContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",
@@ -412,12 +440,16 @@ export function Slider(props: SliderProps): JSX.Element {
     "UNSAFE_style",
     "class",
     "label",
+    "contextualHelp",
     "showOutput",
     "showMinMax",
     "labelPosition",
     "labelAlign",
+    "slot",
+    "ref",
   ]);
 
+  const locale = useLocale();
   const size = () => normalizeSliderSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -430,20 +462,37 @@ export function Slider(props: SliderProps): JSX.Element {
   const orientation = (): SliderOrientation => headlessProps.orientation ?? "horizontal";
   const labelId = createUniqueId();
   let thumbElement: HTMLDivElement | undefined;
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
+  const formatter = createMemo(
+    () => new Intl.NumberFormat(locale().locale, headlessProps.formatOptions),
+  );
+  const maxLabelLength = createMemo(() => {
+    const minLabelLength = [...formatter().format(minValue())].length;
+    const maxLabelLength = [...formatter().format(maxValue())].length;
+    return Math.max(minLabelLength, maxLabelLength);
+  });
+  const cssDirection = () => (locale().direction === "rtl" ? "right" : "left");
 
   const rootClass = (renderProps: SliderRenderProps) =>
     [
-      local.UNSAFE_className,
-      local.class,
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
       sliderRoot(
         {
           ...renderProps,
           size: size(),
           labelPosition: labelPosition(),
           labelAlign: labelAlign(),
-          isInForm: false,
+          isInForm,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -454,7 +503,8 @@ export function Slider(props: SliderProps): JSX.Element {
     size: size(),
     labelPosition: labelPosition(),
     labelAlign: labelAlign(),
-    isInForm: false,
+    isInForm,
+    direction: locale().direction,
   });
 
   const SliderTrackContent = (props: { rootRenderProps: SliderRenderProps }) => {
@@ -504,7 +554,7 @@ export function Slider(props: SliderProps): JSX.Element {
 
       return {
         width: `${Math.abs(fillWidth) * 100}%`,
-        left: `${offset * 100}%`,
+        [cssDirection()]: `${offset * 100}%`,
       };
     };
 
@@ -558,23 +608,28 @@ export function Slider(props: SliderProps): JSX.Element {
         (!headlessProps["aria-label"] && local.label ? labelId : undefined)
       }
       aria-label={headlessProps["aria-label"]}
+      ref={(element) => assignRootRef(element)}
+      slot={local.slot ?? undefined}
       class={rootClass}
-      style={local.UNSAFE_style}
+      style={mergedUnsafeStyle()}
     >
       {(renderProps: SliderRenderProps) => (
         <>
           <div class={labelContainer(labelStyleState(renderProps))}>
-            <Show when={local.label}>
+            <Show when={local.label || local.contextualHelp}>
               <span id={labelId} class={sliderLabel(labelStyleState(renderProps))}>
                 {local.label}
               </span>
+              <Show when={local.contextualHelp}>
+                <span data-slot="contextualHelp">{local.contextualHelp}</span>
+              </Show>
             </Show>
             <Show when={labelPosition() === "top" && showOutput()}>
               <HeadlessSliderOutput
                 class={outputStyle(labelStyleState(renderProps))}
                 style={{
-                  width: `${String(maxValue()).length}ch`,
-                  "min-width": `${String(maxValue()).length}ch`,
+                  width: `${maxLabelLength()}ch`,
+                  "min-width": `${maxLabelLength()}ch`,
                   "font-variant-numeric": "tabular-nums",
                 }}
               />
@@ -596,8 +651,8 @@ export function Slider(props: SliderProps): JSX.Element {
               <HeadlessSliderOutput
                 class={outputStyle(labelStyleState(renderProps))}
                 style={{
-                  width: `${String(maxValue()).length}ch`,
-                  "min-width": `${String(maxValue()).length}ch`,
+                  width: `${maxLabelLength()}ch`,
+                  "min-width": `${maxLabelLength()}ch`,
                   "font-variant-numeric": "tabular-nums",
                 }}
               />
