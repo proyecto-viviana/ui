@@ -141,6 +141,12 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
     get onPressEnd() {
       return ariaProps.onPressEnd;
     },
+    get onPressUp() {
+      return ariaProps.onPressUp;
+    },
+    get onPressChange() {
+      return ariaProps.onPressChange;
+    },
     get onClick() {
       return ariaProps.onClick;
     },

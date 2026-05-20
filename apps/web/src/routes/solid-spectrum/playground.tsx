@@ -778,12 +778,15 @@ function Playground() {
                   <Link variant="secondary" onPress={() => setLastAction("Secondary link pressed")}>
                     Secondary Link
                   </Link>
-                  <Link variant="subtle" onPress={() => setLastAction("Subtle link pressed")}>
-                    Subtle Link
+                  <Link
+                    isStandalone
+                    isQuiet
+                    onPress={() => setLastAction("Quiet standalone link pressed")}
+                  >
+                    Quiet Standalone Link
                   </Link>
                 </div>
                 <div class="flex flex-wrap gap-4">
-                  <Link isDisabled>Disabled Link</Link>
                   <Link href="https://example.com" aria-current="page">
                     Current Page Link
                   </Link>

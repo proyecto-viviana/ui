@@ -12,14 +12,28 @@ import {
   mergeContextUnsafeStyle,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
-import { getAllowedOverrides, staticColor as staticColorStyle } from "../s2-internal/style-utils";
-import { useProviderProps } from "../provider";
+import {
+  getAllowedOverrides,
+  staticColor as staticColorStyle,
+  type UnsafeClassName,
+} from "../s2-internal/style-utils";
 import { createIsSkeleton, useInertAttribute, useSkeletonText } from "../skeleton";
 
-export type LinkVariant = "primary" | "secondary" | "subtle";
-export type LinkStaticColor = "white" | "black" | "auto";
+type LinkVariant = "primary" | "secondary";
+type LinkStaticColor = "white" | "black" | "auto";
 
-export interface LinkProps extends Omit<HeadlessLinkProps, "class" | "style" | "children" | "ref"> {
+export interface LinkProps extends Omit<
+  HeadlessLinkProps,
+  | "isDisabled"
+  | "class"
+  | "style"
+  | "children"
+  | "ref"
+  | "onHoverStart"
+  | "onHoverEnd"
+  | "onHoverChange"
+  | "onClick"
+> {
   /** The visual style of the link. @default 'primary' */
   variant?: LinkVariant;
   /** The static color style to apply when the link appears over a color background. */
@@ -31,11 +45,9 @@ export interface LinkProps extends Omit<HeadlessLinkProps, "class" | "style" | "
   /** Spectrum-defined generated classes. */
   styles?: StyleString;
   /** Additional CSS class name. Use only as a last resort. */
-  UNSAFE_className?: string;
+  UNSAFE_className?: UnsafeClassName | string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
   /** The content of the link. */
   children?: JSX.Element;
   /** Ref for the underlying link element. */
@@ -44,11 +56,16 @@ export interface LinkProps extends Omit<HeadlessLinkProps, "class" | "style" | "
 
 export const LinkContext = createContext<SpectrumContextValue<LinkProps>>(null);
 
-type S2LinkVariant = "primary" | "secondary";
+type UnsupportedLinkProps = Pick<
+  HeadlessLinkProps,
+  "isDisabled" | "onHoverStart" | "onHoverEnd" | "onHoverChange" | "onClick"
+> & {
+  class?: string;
+};
 
 const linkStyles = style<
   LinkRenderProps & {
-    variant: S2LinkVariant;
+    variant: LinkVariant;
     staticColor?: LinkStaticColor;
     isStaticColor: boolean;
     isQuiet?: boolean;
@@ -112,14 +129,12 @@ const linkStyles = style<
  * ```
  */
 export function Link(props: LinkProps): JSX.Element {
-  const providerProps = useProviderProps(props);
   const contextProps = getSlottedContextProps(useContext(LinkContext), props.slot);
   const mergedProps = mergeProps(
     { variant: "primary" as const },
-    providerProps,
     contextProps ?? {},
     props,
-  );
+  ) as LinkProps & Partial<UnsupportedLinkProps>;
   const [local, headlessProps] = splitProps(mergedProps, [
     "variant",
     "staticColor",
@@ -128,13 +143,17 @@ export function Link(props: LinkProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
     "ref",
     "children",
+    "class",
+    "isDisabled",
+    "onHoverStart",
+    "onHoverEnd",
+    "onHoverChange",
+    "onClick",
   ]);
 
-  const variant = (): S2LinkVariant =>
-    local.variant === "subtle" ? "secondary" : (local.variant ?? "primary");
+  const variant = () => local.variant ?? "primary";
   const isSkeleton = createIsSkeleton();
   const inertRef = useInertAttribute(isSkeleton);
   const assignRefs = mergeContextRefs(
@@ -152,9 +171,7 @@ export function Link(props: LinkProps): JSX.Element {
 
   const getClassName = (renderProps: LinkRenderProps): string =>
     [
-      contextProps?.UNSAFE_className,
-      props.UNSAFE_className,
-      props.class,
+      local.UNSAFE_className,
       linkStyles(
         {
           ...renderProps,

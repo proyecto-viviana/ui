@@ -278,7 +278,7 @@ export type { InlineAlertProps, InlineAlertVariant } from "./inlinealert";
 
 // Link
 export { Link, LinkContext } from "./link";
-export type { LinkProps, LinkStaticColor, LinkVariant } from "./link";
+export type { LinkProps } from "./link";
 
 // ListView
 export { ListView, ListViewItem } from "./list";

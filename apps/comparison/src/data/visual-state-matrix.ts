@@ -986,6 +986,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Computed style contracts compare text color, underline treatment, focus outline, both variants, and every documented staticColor route state.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/link-visual.spec.ts; packages/solid-spectrum/test/Link.test.tsx",
+      note: "Computed browser contracts compare tag, role, href, disabled markers, and visual-prop data attributes against React Spectrum, while focused unit tests assert the styled S2 Link no longer exposes legacy subtle/class/disabled/hover/click branches.",
+    },
+    {
       id: "styled.quiet-hover",
       label: "Quiet standalone hover branch",
       kind: "interaction",

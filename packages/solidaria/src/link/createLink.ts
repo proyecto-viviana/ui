@@ -52,6 +52,10 @@ export interface AriaLinkProps {
   onPressStart?: (e: PressEvent) => void;
   /** Handler that is called when a press interaction ends. */
   onPressEnd?: (e: PressEvent) => void;
+  /** Handler that is called when a press is released over the target. */
+  onPressUp?: (e: PressEvent) => void;
+  /** Handler that is called when the press state changes. */
+  onPressChange?: (isPressed: boolean) => void;
   /** Handler that is called when the element is clicked. */
   onClick?: (e: MouseEvent) => void;
   /** Handler that is called when the element receives focus. */
@@ -109,6 +113,12 @@ export function createLink(props: MaybeAccessor<AriaLinkProps> = {}): LinkAria {
     },
     get onPressEnd() {
       return getProps().onPressEnd;
+    },
+    get onPressUp() {
+      return getProps().onPressUp;
+    },
+    get onPressChange() {
+      return getProps().onPressChange;
     },
   });
 

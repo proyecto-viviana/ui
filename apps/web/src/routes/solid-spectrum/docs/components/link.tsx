@@ -30,10 +30,9 @@ function LinkPage() {
 
       <Example
         title="Variants"
-        description="Three visual variants for different contexts."
-        code={`<Link variant="default">Default</Link>
-<Link variant="secondary">Secondary</Link>
-<Link variant="subtle">Subtle</Link>`}
+        description="Two visual variants for different contexts."
+        code={`<Link variant="primary">Primary</Link>
+<Link variant="secondary">Secondary</Link>`}
       >
         <div
           class="flex flex-wrap gap-4"
@@ -43,13 +42,10 @@ function LinkPage() {
           }}
         >
           <Link variant="primary" onPress={() => setLastAction("Default pressed")}>
-            Default
+            Primary
           </Link>
           <Link variant="secondary" onPress={() => setLastAction("Secondary pressed")}>
             Secondary
-          </Link>
-          <Link variant="subtle" onPress={() => setLastAction("Subtle pressed")}>
-            Subtle
           </Link>
           {lastAction() && <span class="text-sm text-primary-400">{lastAction()}</span>}
         </div>
@@ -63,19 +59,6 @@ function LinkPage() {
 </Link>`}
       >
         <Link onPress={() => setLastAction("Action link pressed!")}>Client-side Action</Link>
-      </Example>
-
-      <Example
-        title="Disabled"
-        description="Disabled links cannot be activated."
-        code={`<Link isDisabled>Disabled Link</Link>`}
-      >
-        <div class="flex flex-wrap gap-4">
-          <Link isDisabled>Disabled Link</Link>
-          <Link href="https://example.com" isDisabled>
-            Disabled Href Link
-          </Link>
-        </div>
       </Example>
 
       <Example
@@ -98,15 +81,26 @@ function LinkPage() {
           { name: "target", type: "string", description: "Link target (_blank, _self, etc.)" },
           {
             name: "variant",
-            type: "'primary' | 'secondary' | 'subtle'",
+            type: "'primary' | 'secondary'",
             default: "'primary'",
             description: "Visual style",
           },
           {
-            name: "isDisabled",
+            name: "staticColor",
+            type: "'auto' | 'black' | 'white'",
+            description: "Static color treatment for colored backgrounds",
+          },
+          {
+            name: "isStandalone",
             type: "boolean",
             default: "false",
-            description: "Prevents activation",
+            description: "Applies standalone typography",
+          },
+          {
+            name: "isQuiet",
+            type: "boolean",
+            default: "false",
+            description: "Removes the standalone underline until hover or keyboard focus",
           },
           {
             name: "onPress",
@@ -124,10 +118,6 @@ function LinkPage() {
             Renders as native <code>&lt;a&gt;</code> when href is provided
           </li>
           <li>Enter key activates links in all cases</li>
-          <li>
-            Disabled state uses <code>aria-disabled</code> (not HTML disabled, which removes it from
-            focus order)
-          </li>
           <li>Press events normalized across mouse, touch, and keyboard interactions</li>
         </ul>
       </AccessibilitySection>
