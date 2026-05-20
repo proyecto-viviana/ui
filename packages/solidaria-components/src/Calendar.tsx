@@ -46,6 +46,20 @@ import {
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) {
+    return;
+  }
+
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface CalendarRenderProps {
   /** Whether the calendar is disabled. */
   isDisabled: boolean;
@@ -68,6 +82,8 @@ export interface CalendarProps<T extends DateValue = DateValue>
   style?: StyleOrFunction<CalendarRenderProps>;
   /** The locale to use for formatting. */
   locale?: string;
+  /** Ref for the calendar root element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface CalendarGridRenderProps {
@@ -94,6 +110,8 @@ export interface CalendarCellRenderProps {
   isSelected: boolean;
   /** Whether the cell is focused. */
   isFocused: boolean;
+  /** Whether the cell should display a keyboard focus ring. */
+  isFocusVisible: boolean;
   /** Whether the cell is disabled. */
   isDisabled: boolean;
   /** Whether the cell is unavailable. */
@@ -214,7 +232,7 @@ function CalendarWithState<T extends DateValue = CalendarDate>(
 ): JSX.Element {
   const [local, stateProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot", "state"],
+    ["children", "class", "style", "slot", "state", "ref"],
     [
       "value",
       "defaultValue",
@@ -267,6 +285,7 @@ function CalendarWithState<T extends DateValue = CalendarDate>(
   return (
     <div
       {...calendarAria.calendarProps}
+      ref={(el) => assignRef(local.ref, el)}
       class={renderProps.class()}
       style={renderProps.style()}
       data-disabled={dataAttr(state().isDisabled())}
@@ -287,7 +306,7 @@ function CalendarWithState<T extends DateValue = CalendarDate>(
 function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<T>): JSX.Element {
   const [local, stateProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot"],
+    ["children", "class", "style", "slot", "ref"],
     [
       "value",
       "defaultValue",
@@ -344,6 +363,7 @@ function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<
     <CalendarContext.Provider value={state as unknown as CalendarState<DateValue>}>
       <div
         {...calendarAria.calendarProps}
+        ref={(el) => assignRef(local.ref, el)}
         class={renderProps.class()}
         style={renderProps.style()}
         data-disabled={dataAttr(state.isDisabled())}
@@ -588,6 +608,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
   const renderValues = createMemo<CalendarCellRenderProps>(() => ({
     isSelected: cellAria.isSelected,
     isFocused: cellAria.isFocused,
+    isFocusVisible: cellAria.isFocusVisible,
     isDisabled: cellAria.isDisabled,
     isUnavailable: cellAria.isUnavailable,
     isInvalid: cellAria.isInvalid,
@@ -638,6 +659,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
         style={renderProps.style()}
         data-selected={dataAttr(cellAria.isSelected)}
         data-focused={dataAttr(cellAria.isFocused)}
+        data-focus-visible={dataAttr(cellAria.isFocusVisible)}
         data-disabled={dataAttr(cellAria.isDisabled)}
         data-unavailable={dataAttr(cellAria.isUnavailable)}
         data-invalid={dataAttr(cellAria.isInvalid)}

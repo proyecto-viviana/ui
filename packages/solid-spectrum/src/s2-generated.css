@@ -19328,220 +19328,6 @@
   }
 }
 
-@layer _.a;
-
-@layer _.a {
-  .sd13 {
-    display: flex;
-  }
-
-  .eb13 {
-    align-items: center;
-  }
-
-  ._Ce13 {
-    justify-content: space-between;
-  }
-
-  .Jy13 {
-    margin-top: 0rem;
-  }
-
-  .Gy13 {
-    margin-bottom: 0rem;
-  }
-
-  .Iy13 {
-    margin-inline-start: 0rem;
-  }
-
-  .Hy13 {
-    margin-inline-end: 0rem;
-  }
-
-  ._ub13 {
-    flex-grow: 1;
-  }
-
-  .Na13 {
-    min-width: 0px;
-  }
-}
-
-@layer _.a, _.b, _.c, _.d, _.e, _.f, _.g, _.h, _.i;
-
-@layer _.a {
-  .uk13 {
-    font-family:
-      var(--s2-font-family-sans, adobe-clean-spectrum-vf), adobe-clean-variable, adobe-clean,
-      ui-sans-serif, system-ui, sans-serif;
-  }
-
-  .-_6BNtrc-e13 {
-    --fs: pow(1.125, 2);
-  }
-
-  .vx13 {
-    font-size: round(var(--s2-font-size-base, 14) * var(--fs) / 16 * 1rem, 1px);
-  }
-
-  .xd13 {
-    font-weight: 700;
-  }
-
-  ._xa13 {
-    font-synthesis-weight: none;
-  }
-
-  ._Fd13 {
-    line-height: round(
-      1em * (1.15 + (1 - ((min(32, var(--s2-font-size-base, 14) * var(--fs)) - 10)) / 22) * 0.15),
-      2px
-    );
-  }
-
-  .po13 {
-    color: light-dark(rgb(19, 19, 19), rgb(242, 242, 242));
-  }
-
-  ._Wa13 {
-    text-align: center;
-  }
-
-  ._ub13 {
-    flex-grow: 1;
-  }
-
-  ._va13 {
-    flex-shrink: 0;
-  }
-
-  ._sa13 {
-    flex-basis: 0%;
-  }
-
-  .Na13 {
-    min-width: 0px;
-  }
-}
-
-@layer _.b {
-  .ucJ9TBTb13:lang(ar) {
-    font-family: adobe-clean-arabic, myriad-arabic, ui-sans-serif, system-ui, sans-serif;
-  }
-
-  .xX0cczbc13:lang(ja, ko, zh) {
-    font-weight: 500;
-  }
-
-  ._xX0cczba13:lang(ja, ko, zh) {
-    font-synthesis-weight: none;
-  }
-
-  ._FnuYUweb13:lang(ja, ko, zh, zh-Hant, zh-Hans, zh-CN, zh-SG) {
-    line-height: 1.5;
-  }
-}
-
-@layer _.c {
-  .ud3Euai13:lang(he) {
-    font-family: adobe-clean-hebrew, myriad-hebrew, ui-sans-serif, system-ui, sans-serif;
-  }
-
-  .xfd13:lang(ja, ko, zh, zh-Hant, zh-Hans) {
-    font-weight: 700;
-  }
-
-  ._xfa13:lang(ja, ko, zh, zh-Hant, zh-Hans) {
-    font-synthesis-weight: none;
-  }
-}
-
-@layer _.d {
-  .uea13:lang(ja) {
-    font-family:
-      adobe-clean-han-japanese, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Osaka,
-      YuGothic, "Yu Gothic", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
-  }
-
-  .xfX0cczbc13:lang(ja, ko, zh):lang(ja, ko, zh, zh-Hant, zh-Hans) {
-    font-weight: 500;
-  }
-
-  ._xfX0cczba13:lang(ja, ko, zh):lang(ja, ko, zh, zh-Hant, zh-Hans) {
-    font-synthesis-weight: none;
-  }
-}
-
-@layer _.e {
-  .ugb13:lang(ko) {
-    font-family:
-      adobe-clean-han-korean, source-han-korean, "Malgun Gothic", "Apple Gothic", sans-serif;
-  }
-}
-
-@layer _.f {
-  .uhd13:lang(zh) {
-    font-family:
-      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Heiti TC Light", sans-serif;
-  }
-}
-
-@layer _.g {
-  .uje13:lang(zh-hant) {
-    font-family:
-      adobe-clean-han-traditional, source-han-traditional, "MingLiu", "Microsoft JhengHei UI",
-      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
-  }
-}
-
-@layer _.h {
-  .u2NhKxcl13:lang(zh-HK) {
-    font-family:
-      adobe-clean-han-hong-kong, source-han-hong-kong, "MingLiu", "Microsoft JhengHei UI",
-      "Microsoft JhengHei", "Heiti TC Light", sans-serif;
-  }
-}
-
-@layer _.i {
-  .uic13:lang(zh-Hans, zh-CN, zh-SG) {
-    font-family:
-      adobe-clean-han-simplified-c, source-han-simplified-c, "SimSun", "Heiti SC Light", sans-serif;
-  }
-}
-
-@layer _.a;
-
-@layer _.a {
-  ._6b13 {
-    visibility: hidden;
-  }
-
-  ._va13 {
-    flex-shrink: 0;
-  }
-
-  .ZC13 {
-    width: calc(2rem * var(--s2-scale));
-  }
-}
-
-@layer _.a;
-
-@layer _.a {
-  ._6b13 {
-    visibility: hidden;
-  }
-
-  ._va13 {
-    flex-shrink: 0;
-  }
-
-  .Zo13 {
-    width: calc(1.5rem * var(--s2-scale));
-  }
-}
-
 @layer _.a, _.b, _.c, _.d, _.e, _.f, _.g, _.h, _.i;
 
 @layer _.a {
@@ -19775,6 +19561,22 @@
   .uic13:lang(zh-Hans, zh-CN, zh-SG) {
     font-family:
       adobe-clean-han-simplified-c, source-han-simplified-c, "SimSun", "Heiti SC Light", sans-serif;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  .__na13 {
+    border-collapse: collapse;
+  }
+
+  .__oe13 {
+    border-spacing: 0rem;
+  }
+
+  ._Bb13 {
+    isolation: isolate;
   }
 }
 
@@ -20070,6 +19872,13 @@
     );
   }
 
+  .gUgARdd13 {
+    background-color: light-dark(
+      light-dark(rgb(39, 77, 234), rgb(105, 149, 254)),
+      light-dark(rgb(114, 158, 253), rgb(37, 73, 229))
+    );
+  }
+
   .g913 {
     background-color: transparent;
   }
@@ -20078,6 +19887,13 @@
     background-color: light-dark(
       light-dark(rgb(215, 50, 32), rgb(252, 67, 46)),
       light-dark(rgb(255, 81, 61), rgb(205, 46, 29))
+    );
+  }
+
+  .gYvV9s13 {
+    background-color: light-dark(
+      light-dark(rgb(183, 40, 24), rgb(255, 103, 86)),
+      light-dark(rgb(255, 118, 101), rgb(177, 38, 23))
     );
   }
 

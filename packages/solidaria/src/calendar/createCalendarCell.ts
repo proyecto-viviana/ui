@@ -8,7 +8,10 @@
 import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
+import { createFocusRing } from "../interactions/createFocusRing";
+import { getInteractionModality } from "../interactions/createInteractionModality";
 import { useLocale } from "../i18n";
+import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
 import { getCalendarHookData } from "./utils";
@@ -31,6 +34,8 @@ export interface CalendarCellAria {
   isSelected: boolean;
   /** Whether the cell is focused. */
   isFocused: boolean;
+  /** Whether the cell should display a keyboard focus ring. */
+  isFocusVisible: boolean;
   /** Whether the cell is disabled. */
   isDisabled: boolean;
   /** Whether the cell is unavailable (e.g., booked date). */
@@ -57,6 +62,7 @@ export function createCalendarCell<T extends CalendarState>(
 ): CalendarCellAria {
   const getProps = () => access(props);
   const [isPressed, setIsPressed] = createSignal(false);
+  const { focusProps, isFocusVisible: isRingFocusVisible } = createFocusRing();
   const timeZone = getLocalTimeZone();
   const inheritedLocale = useLocale();
   const stateWithLocale = state as T & { locale?: Accessor<string> };
@@ -78,6 +84,9 @@ export function createCalendarCell<T extends CalendarState>(
     () => getProps().isOutsideMonth ?? state.isOutsideVisibleRange(date()),
   );
   const isToday = createMemo(() => isTodayUtil(date(), timeZone));
+  const isCellFocusVisible = createMemo(
+    () => isFocused() && isRingFocusVisible() && getInteractionModality() !== null,
+  );
 
   // Format the date for display
   const formattedDate = createMemo(() => {
@@ -163,28 +172,32 @@ export function createCalendarCell<T extends CalendarState>(
     }
     const errorMessageId = getCalendarHookData(state)?.errorMessageId;
 
-    return {
-      role: "button",
-      tabIndex: isFocused() ? 0 : -1,
-      "aria-label": label,
-      "aria-disabled": isDisabled() || isUnavailable() || undefined,
-      "aria-invalid": isInvalid() || undefined,
-      "aria-describedby": isInvalid() ? errorMessageId : undefined,
-      "aria-pressed": isPressed() || undefined,
-      disabled: isDisabled() || isUnavailable(),
-      onClick: handleClick,
-      onPointerDown: handlePointerDown,
-      onPointerUp: handlePointerUp,
-      onPointerLeave: handlePointerUp,
-      onFocus: () => {
-        // Only update if this cell isn't already the focused date
-        // This prevents infinite loops when focus is programmatically set
-        if (!state.isCellFocused(d)) {
-          state.setFocusedDate(d);
-        }
-        state.setFocused(true);
-      },
-    };
+    return mergeProps(
+      focusProps as Record<string, unknown>,
+      {
+        role: "button",
+        tabIndex: isFocused() ? 0 : -1,
+        "aria-label": label,
+        "aria-disabled": isDisabled() || isUnavailable() || undefined,
+        "aria-invalid": isInvalid() || undefined,
+        "aria-describedby": isInvalid() ? errorMessageId : undefined,
+        "aria-pressed": isPressed() || undefined,
+        "data-focus-visible": isCellFocusVisible() || undefined,
+        disabled: isDisabled() || isUnavailable(),
+        onClick: handleClick,
+        onPointerDown: handlePointerDown,
+        onPointerUp: handlePointerUp,
+        onPointerLeave: handlePointerUp,
+        onFocus: () => {
+          // Only update if this cell isn't already the focused date.
+          // This prevents infinite loops when focus is programmatically set.
+          if (!state.isCellFocused(d)) {
+            state.setFocusedDate(d);
+          }
+          state.setFocused(true);
+        },
+      } as Record<string, unknown>,
+    );
   });
 
   return {
@@ -199,6 +212,9 @@ export function createCalendarCell<T extends CalendarState>(
     },
     get isFocused() {
       return isFocused();
+    },
+    get isFocusVisible() {
+      return isCellFocusVisible();
     },
     get isDisabled() {
       return isDisabled();

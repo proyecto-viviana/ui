@@ -2074,7 +2074,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "strict",
       spec: "e2e/calendar-visual.spec.ts",
-      note: "Two-month Calendar route with visibleMonths=2 and focusedValue=2025-02-15 keeps both month grids flush to the Calendar root, uses static heading spacers, prevents a trailing ghost column, and passes strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
+      note: "Two-month Calendar route with visibleMonths=2 and focusedValue=2025-02-15 keeps both month grids flush to the Calendar root, uses S2's intrinsic title/spacer flex math, prevents a trailing ghost column, and passes strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
     },
     {
       id: "styled.calendar.controls",
@@ -2154,7 +2154,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/calendar-visual.spec.ts",
-      note: "Forced-colors media emulation verifies the browser environment and compares the actual selected paint node plus default, unavailable, and invalid help-text foreground colors between React Spectrum and Solid.",
+      note: "Forced-colors media emulation verifies the browser environment and compares the actual selected paint node plus default foreground, unavailable foreground, unavailable strike geometry/color, and invalid help-text foreground between React Spectrum and Solid.",
     },
     {
       id: "styled.calendar.selected-value",
@@ -2164,7 +2164,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "strict",
       spec: "e2e/calendar-visual.spec.ts",
-      note: "Controlled selected-date route with value=2025-02-03 asserts the selected inner paint, focus-ring offset, and pressScale-backed glyph parity through strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
+      note: "Controlled selected-date route with value=2025-02-03 asserts the selected inner paint, focus-ring offset, focus-visible selected branch stability, and pressScale-backed glyph parity through strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
     },
   ],
   datefield: [

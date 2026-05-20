@@ -120,14 +120,35 @@ describe("Calendar (solid-spectrum)", () => {
     expect(screen.getByText("April 2025")).toBeInTheDocument();
   });
 
-  it("merges CalendarContext props", async () => {
+  it("merges CalendarContext props, refs, and unsafe styles", async () => {
+    const contextRef = { current: null as HTMLDivElement | null };
+    let localRef: HTMLDivElement | undefined;
+
     render(() => (
-      <CalendarContext.Provider value={{ isDisabled: true, firstDayOfWeek: "mon" }}>
-        <Calendar aria-label="Appointment date" value={new CalendarDate(2025, 2, 3)} />
+      <CalendarContext.Provider
+        value={{
+          isDisabled: true,
+          firstDayOfWeek: "mon",
+          ref: contextRef,
+          UNSAFE_style: { margin: "3px" },
+        }}
+      >
+        <Calendar
+          aria-label="Appointment date"
+          value={new CalendarDate(2025, 2, 3)}
+          ref={(element) => {
+            localRef = element;
+          }}
+          UNSAFE_style={{ width: "224px" }}
+        />
       </CalendarContext.Provider>
     ));
     await waitForCalendar();
 
+    const root = screen.getByRole("application", { name: /Appointment date/i });
+    expect(contextRef.current).toBe(root);
+    expect(localRef).toBe(root);
+    expect(root).toHaveStyle({ margin: "3px", width: "224px" });
     expect(screen.getByRole("button", { name: "Previous month" })).toBeDisabled();
     const headers = Array.from(document.querySelectorAll("th")).map((cell) => cell.textContent);
     expect(headers[0]).toBe("M");
@@ -156,6 +177,27 @@ describe("Calendar (solid-spectrum)", () => {
 
     await user.click(screen.getByRole("button", { name: /February 12, 2025/i }));
     expect(String(selected)).toBe("2025-02-12");
+  });
+
+  it("exposes keyboard focus-visible state and unavailable strike markup", async () => {
+    render(() => (
+      <Calendar
+        aria-label="Appointment date"
+        defaultFocusedValue={new CalendarDate(2025, 2, 9)}
+        isDateUnavailable={(date) => date.day === 10}
+      />
+    ));
+    await waitForCalendar();
+
+    await user.keyboard("{Tab}");
+    const focusedDate = screen.getByRole("button", { name: /February 9, 2025/i });
+    focusedDate.focus();
+    await waitFor(() => expect(focusedDate).toHaveAttribute("data-focus-visible"));
+
+    const unavailableDate = screen.getByRole("button", { name: /February 10, 2025/i });
+    const presentationMarks = unavailableDate.querySelectorAll('[role="presentation"]');
+    expect(unavailableDate).toHaveAttribute("aria-disabled", "true");
+    expect(presentationMarks).toHaveLength(2);
   });
 
   it("syncs controlled focusedValue changes to the visible range", async () => {

@@ -184,7 +184,6 @@ const calendarHeading = style<{ isMultiMonth?: boolean }>({
   justifyContent: "space-between",
   margin: 0,
   flexGrow: 1,
-  minWidth: 0,
 });
 
 const calendarTitle = style({
@@ -192,19 +191,15 @@ const calendarTitle = style({
   textAlign: "center",
   flexGrow: 1,
   flexShrink: 0,
-  flexBasis: "0%",
-  minWidth: 0,
 });
 
 const calendarTitleSpacer32 = style({
   visibility: "hidden",
-  flexShrink: 0,
   width: 32,
 });
 
 const calendarTitleSpacer24 = style({
   visibility: "hidden",
-  flexShrink: 0,
   width: 24,
 });
 
@@ -250,7 +245,6 @@ const calendarGrid = style({
   borderCollapse: "collapse",
   borderSpacing: 0,
   isolation: "isolate",
-  tableLayout: "fixed",
 });
 
 const calendarHeaderCell = style({
@@ -330,6 +324,7 @@ const calendarCellInner = style<{
   isDisabled?: boolean;
   isPressed?: boolean;
   isHovered?: boolean;
+  isFocusVisible?: boolean;
   isUnavailable?: boolean;
   isInvalid?: boolean;
 }>({
@@ -364,11 +359,13 @@ const calendarCellInner = style<{
       default: lightDark("accent-900", "accent-700"),
       isHovered: lightDark("accent-1000", "accent-600"),
       isPressed: lightDark("accent-1000", "accent-600"),
+      isFocusVisible: lightDark("accent-1000", "accent-600"),
       isDisabled: "transparent",
       isInvalid: {
         default: lightDark("negative-900", "negative-700"),
         isHovered: lightDark("negative-1000", "negative-600"),
         isPressed: lightDark("negative-1000", "negative-600"),
+        isFocusVisible: lightDark("negative-1000", "negative-600"),
       },
     },
     forcedColors: {
@@ -388,6 +385,17 @@ const calendarCellInner = style<{
       isDisabled: "GrayText",
     },
   },
+});
+
+const calendarUnavailableSlash = style({
+  position: "absolute",
+  top: "[calc(50% - 1px)]",
+  left: "[calc(25% - 1px)]",
+  right: "[calc(25% - 1px)]",
+  height: 2,
+  transform: "rotate(-16deg)",
+  borderRadius: "full",
+  backgroundColor: "[currentColor]",
 });
 
 const calendarTodayDot = style<{ isToday?: boolean }>({
@@ -475,11 +483,15 @@ function CalendarCellContent(props: { cell: CalendarCellRenderProps }): JSX.Elem
           isUnavailable: props.cell.isUnavailable,
           isPressed: props.cell.isPressed,
           isHovered: props.cell.isHovered,
+          isFocusVisible: props.cell.isFocusVisible,
           isInvalid: props.cell.isInvalid,
         })}
       >
         <div class={calendarTodayDot({ isToday: props.cell.isToday })} role="presentation" />
         <div>{props.cell.formattedDate}</div>
+        <Show when={props.cell.isUnavailable}>
+          <div class={calendarUnavailableSlash} role="presentation" />
+        </Show>
       </div>
     </div>
   );
@@ -593,7 +605,6 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
               class={calendarGrid}
               style={{
                 width: `${sizeConfig().cellMaxWidth * 7}px`,
-                "table-layout": "fixed",
               }}
               weekdayStyle="narrow"
               headerCellClass={calendarHeaderCell}

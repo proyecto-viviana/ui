@@ -66,11 +66,19 @@ async function fixedCalendarRootScreenshot(target: Locator) {
   const previousStyle = await target.evaluate((element) => {
     const htmlElement = element as HTMLElement;
     const style = htmlElement.getAttribute("style");
+    let surfaceColor = window.getComputedStyle(htmlElement).backgroundColor;
+    let parent = htmlElement.parentElement;
+
+    while (parent && (surfaceColor === "transparent" || /^rgba\(.+,\s*0\)$/.test(surfaceColor))) {
+      surfaceColor = window.getComputedStyle(parent).backgroundColor;
+      parent = parent.parentElement;
+    }
 
     htmlElement.style.position = "fixed";
     htmlElement.style.insetBlockStart = "128px";
     htmlElement.style.insetInlineStart = "384px";
     htmlElement.style.margin = "0";
+    htmlElement.style.backgroundColor = surfaceColor;
     htmlElement.style.zIndex = "2147483647";
 
     return style;
@@ -229,6 +237,23 @@ async function calendarForcedColorsContract(root: Locator) {
       );
     }
 
+    function unavailableStrikeElement(node: Element | null) {
+      if (!node) return null;
+
+      return (
+        Array.from(node.querySelectorAll('[role="presentation"]')).find((candidate) => {
+          if (!(candidate instanceof HTMLElement) && !(candidate instanceof SVGElement)) {
+            return false;
+          }
+
+          const styles = window.getComputedStyle(candidate);
+          return (
+            styles.position === "absolute" && styles.height === "2px" && styles.transform !== "none"
+          );
+        }) ?? null
+      );
+    }
+
     const selected = buttonForDate(3);
     const defaultCell = buttonForDate(4);
     const unavailable = buttonForDate(10);
@@ -241,6 +266,12 @@ async function calendarForcedColorsContract(root: Locator) {
       selected: styleMap(selectedPaintElement(selected), ["background-color", "color"]),
       defaultCell: styleMap(defaultCell, ["color"]),
       unavailable: styleMap(unavailable, ["color"]),
+      unavailableStrike: styleMap(unavailableStrikeElement(unavailable), [
+        "background-color",
+        "border-radius",
+        "height",
+        "transform",
+      ]),
       error: styleMap(error ?? null, ["color", "forced-color-adjust"]),
     };
   });
@@ -364,6 +395,9 @@ test.describe("comparison Calendar visual coverage", () => {
     expect(solid.selected?.color).not.toBe(solid.selected?.["background-color"]);
     expect(solid.defaultCell?.color).toBeTruthy();
     expect(solid.unavailable?.color).toBeTruthy();
+    expect(solid.unavailableStrike).toEqual(react.unavailableStrike);
+    expect(solid.unavailableStrike?.height).toBe("2px");
+    expect(solid.unavailableStrike?.transform).not.toBe("none");
     expect(solid.error?.color).not.toBe(solid.defaultCell?.color);
   });
 });
