@@ -20,7 +20,7 @@ export type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 export interface ComboBoxStateProps<T = unknown> {
   /** The items to display in the combobox dropdown. */
-  items: T[];
+  items?: T[];
   /** Default items when uncontrolled. */
   defaultItems?: T[];
   /** Function to get the key for an item. */

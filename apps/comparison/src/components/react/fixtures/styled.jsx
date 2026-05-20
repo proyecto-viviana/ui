@@ -2322,6 +2322,32 @@ function ReactComboBoxDemo() {
   const [selectedKey, setSelectedKey] = useState(() => demoProps.selectedKey);
   const [inputValue, setInputValue] = useState(() => demoProps.inputValue);
   const colorScheme = useComparisonResolvedTheme();
+  const menuWidth = Number.parseInt(demoProps.menuWidth, 10);
+  const numericMenuWidth = Number.isFinite(menuWidth) && menuWidth > 0 ? menuWidth : undefined;
+  const disabledKeys = demoProps.disableEnterprise ? ["enterprise"] : undefined;
+  const selectionProps =
+    demoProps.selectionSource === "selectedKey"
+      ? { selectedKey }
+      : { defaultSelectedKey: demoProps.selectedKey };
+  const inputProps =
+    demoProps.inputSource === "inputValue"
+      ? { inputValue }
+      : { defaultInputValue: demoProps.inputValue };
+  const contextualHelp = demoProps.withContextualHelp
+    ? jsxs(SpectrumContextualHelp, {
+        children: [
+          jsx(SpectrumHeading, { slot: "title", children: "Plan help" }),
+          jsx(SpectrumContent, { children: "Pick the plan that matches expected usage." }),
+        ],
+      })
+    : undefined;
+  const renderKey = [
+    demoProps.selectionSource,
+    demoProps.selectionSource === "defaultSelectedKey" ? demoProps.selectedKey : "controlled",
+    demoProps.inputSource,
+    demoProps.inputSource === "defaultInputValue" ? demoProps.inputValue : "controlled",
+    demoProps.withContextualHelp,
+  ].join("|");
 
   useEffect(() => {
     const handleControlsChange = (event) => {
@@ -2337,45 +2363,83 @@ function ReactComboBoxDemo() {
   }, []);
 
   return renderReactSpectrumReference(
-    jsx("div", {
-      "data-comparison-control-root": "combobox",
-      "data-comparison-control-props": serializeComboBoxDemoProps({
-        ...demoProps,
-        selectedKey,
-        inputValue,
-      }),
-      "data-comparison-value": selectedKey,
-      "data-comparison-input-value": inputValue,
-      children: jsx(SpectrumComboBox, {
-        label: demoProps.label,
-        selectedKey,
-        inputValue,
-        placeholder: demoProps.placeholder,
-        size: demoProps.size,
-        description: demoProps.description,
-        errorMessage: demoProps.errorMessage,
-        isDisabled: demoProps.isDisabled,
-        isRequired: demoProps.isRequired,
-        isInvalid: demoProps.isInvalid,
-        onSelectionChange: (nextKey) => {
-          const nextSelectedKey = String(nextKey);
-          const nextInputValue = comboBoxLabelForKey(nextSelectedKey);
-          setSelectedKey(nextSelectedKey);
-          setInputValue(nextInputValue);
-          setDemoProps((current) => ({
-            ...current,
-            selectedKey: nextSelectedKey,
-            inputValue: nextInputValue,
-          }));
-        },
-        onInputChange: (nextValue) => {
-          setInputValue(nextValue);
-          setDemoProps((current) => ({ ...current, inputValue: nextValue }));
-        },
-        children: (item) =>
-          jsx(SpectrumComboBoxItem, { id: item.id, children: item.label }, item.id),
-        items: comboBoxItems,
-      }),
+    jsxs(Fragment, {
+      children: [
+        demoProps.form ? jsx("form", { id: demoProps.form, hidden: true }) : null,
+        jsx("div", {
+          "data-comparison-control-root": "combobox",
+          "data-comparison-control-props": serializeComboBoxDemoProps(demoProps),
+          "data-comparison-value": selectedKey,
+          "data-comparison-input-value": inputValue,
+          children: jsx(
+            SpectrumComboBox,
+            {
+              label: demoProps.label,
+              ...selectionProps,
+              ...inputProps,
+              placeholder: demoProps.placeholder,
+              size: demoProps.size,
+              labelPosition: demoProps.labelPosition,
+              labelAlign: demoProps.labelAlign,
+              necessityIndicator: demoProps.necessityIndicator,
+              contextualHelp,
+              description: demoProps.description,
+              errorMessage: demoProps.errorMessage,
+              name: demoProps.name || undefined,
+              form: demoProps.form || undefined,
+              formValue: demoProps.formValue,
+              validationBehavior: demoProps.validationBehavior,
+              menuTrigger: demoProps.menuTrigger,
+              direction: demoProps.direction,
+              align: demoProps.align,
+              menuWidth: numericMenuWidth,
+              shouldFlip: demoProps.shouldFlip,
+              disabledKeys,
+              allowsCustomValue: demoProps.allowsCustomValue,
+              isDisabled: demoProps.isDisabled,
+              isReadOnly: demoProps.isReadOnly,
+              isRequired: demoProps.isRequired,
+              isInvalid: demoProps.isInvalid,
+              onSelectionChange: (nextKey) => {
+                if (nextKey == null) {
+                  return;
+                }
+                const nextSelectedKey = String(nextKey);
+                const nextInputValue = comboBoxLabelForKey(nextSelectedKey);
+                setSelectedKey(nextSelectedKey);
+                setInputValue(nextInputValue);
+                setDemoProps((current) => ({
+                  ...current,
+                  ...(current.selectionSource === "selectedKey"
+                    ? { selectedKey: nextSelectedKey }
+                    : {}),
+                  ...(current.inputSource === "inputValue" ? { inputValue: nextInputValue } : {}),
+                }));
+              },
+              onInputChange: (nextValue) => {
+                setInputValue(nextValue);
+                setDemoProps((current) =>
+                  current.inputSource === "inputValue"
+                    ? { ...current, inputValue: nextValue }
+                    : current,
+                );
+              },
+              children: (item) =>
+                jsx(
+                  SpectrumComboBoxItem,
+                  {
+                    id: item.id,
+                    isDisabled: item.id === "enterprise" && demoProps.disableEnterprise,
+                    children: item.label,
+                  },
+                  item.id,
+                ),
+              items: comboBoxItems,
+            },
+            renderKey,
+          ),
+        }),
+      ],
     }),
     colorScheme,
   );

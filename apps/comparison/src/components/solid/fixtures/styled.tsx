@@ -4623,6 +4623,21 @@ function SolidSpectrumComboBoxDemo() {
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
+  const menuWidth = createMemo(() => {
+    const parsed = Number.parseInt(demoProps().menuWidth, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  });
+  const disabledKeys = createMemo(() =>
+    demoProps().disableEnterprise ? ["enterprise"] : undefined,
+  );
+  const contextualHelp = createMemo(() =>
+    demoProps().withContextualHelp
+      ? hc(SolidSpectrumContextualHelp, {}, [
+          hc(SolidSpectrumHeading, { slot: "title" }, ["Plan help"]),
+          h("p", {}, ["Pick the plan that matches expected usage."]),
+        ])
+      : undefined,
+  );
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
@@ -4647,13 +4662,7 @@ function SolidSpectrumComboBoxDemo() {
     });
   });
 
-  const serializedProps = createMemo(() =>
-    serializeComboBoxDemoProps({
-      ...demoProps(),
-      selectedKey: selectedKey(),
-      inputValue: inputValue(),
-    }),
-  );
+  const serializedProps = createMemo(() => serializeComboBoxDemoProps(demoProps()));
 
   return hc(
     SolidSpectrumProvider,
@@ -4665,6 +4674,12 @@ function SolidSpectrumComboBoxDemo() {
       style: providerShellStyle,
     },
     [
+      h("form", {
+        hidden: true,
+        get id() {
+          return demoProps().form || "combobox-external-form";
+        },
+      }),
       hc(
         "div",
         {
@@ -4693,10 +4708,20 @@ function SolidSpectrumComboBoxDemo() {
                 return demoProps().label;
               },
               get selectedKey() {
-                return selectedKey();
+                return demoProps().selectionSource === "selectedKey" ? selectedKey() : undefined;
+              },
+              get defaultSelectedKey() {
+                return demoProps().selectionSource === "defaultSelectedKey"
+                  ? demoProps().selectedKey
+                  : undefined;
               },
               get inputValue() {
-                return inputValue();
+                return demoProps().inputSource === "inputValue" ? inputValue() : undefined;
+              },
+              get defaultInputValue() {
+                return demoProps().inputSource === "defaultInputValue"
+                  ? demoProps().inputValue
+                  : undefined;
               },
               get placeholder() {
                 return demoProps().placeholder;
@@ -4704,14 +4729,62 @@ function SolidSpectrumComboBoxDemo() {
               get size() {
                 return demoProps().size;
               },
+              get labelPosition() {
+                return demoProps().labelPosition;
+              },
+              get labelAlign() {
+                return demoProps().labelAlign;
+              },
+              get necessityIndicator() {
+                return demoProps().necessityIndicator;
+              },
+              get contextualHelp() {
+                return contextualHelp();
+              },
               get description() {
                 return demoProps().description;
               },
               get errorMessage() {
                 return demoProps().errorMessage;
               },
+              get name() {
+                return demoProps().name || undefined;
+              },
+              get form() {
+                return demoProps().form || undefined;
+              },
+              get formValue() {
+                return demoProps().formValue;
+              },
+              get validationBehavior() {
+                return demoProps().validationBehavior;
+              },
+              get menuTrigger() {
+                return demoProps().menuTrigger;
+              },
+              get direction() {
+                return demoProps().direction;
+              },
+              get align() {
+                return demoProps().align;
+              },
+              get menuWidth() {
+                return menuWidth();
+              },
+              get shouldFlip() {
+                return demoProps().shouldFlip;
+              },
+              get disabledKeys() {
+                return disabledKeys();
+              },
+              get allowsCustomValue() {
+                return demoProps().allowsCustomValue;
+              },
               get isDisabled() {
                 return demoProps().isDisabled;
+              },
+              get isReadOnly() {
+                return demoProps().isReadOnly;
               },
               get isRequired() {
                 return demoProps().isRequired;
@@ -4720,25 +4793,41 @@ function SolidSpectrumComboBoxDemo() {
                 return demoProps().isInvalid;
               },
               onSelectionChange: (nextKey: unknown) => {
+                if (nextKey == null) {
+                  return;
+                }
                 const nextSelectedKey = String(nextKey);
+                const nextInputValue = comboBoxLabelForKey(nextSelectedKey);
                 setSelectedKey(nextSelectedKey as ComboBoxDemoProps["selectedKey"]);
-                setInputValue(comboBoxLabelForKey(nextSelectedKey));
+                setInputValue(nextInputValue);
                 setDemoProps((current: ComboBoxDemoProps) => ({
                   ...current,
-                  selectedKey: nextSelectedKey as ComboBoxDemoProps["selectedKey"],
-                  inputValue: comboBoxLabelForKey(nextSelectedKey),
+                  ...(current.selectionSource === "selectedKey"
+                    ? { selectedKey: nextSelectedKey as ComboBoxDemoProps["selectedKey"] }
+                    : {}),
+                  ...(current.inputSource === "inputValue" ? { inputValue: nextInputValue } : {}),
                 }));
               },
               onInputChange: (nextValue: string) => {
                 setInputValue(nextValue);
-                setDemoProps((current: ComboBoxDemoProps) => ({
-                  ...current,
-                  inputValue: nextValue,
-                }));
+                setDemoProps((current: ComboBoxDemoProps) =>
+                  current.inputSource === "inputValue"
+                    ? { ...current, inputValue: nextValue }
+                    : current,
+                );
               },
             },
             renderProp((item: (typeof comboBoxItems)[number]) =>
-              hc(SolidSpectrumComboBoxItem, { id: item.id }, [item.label]),
+              hc(
+                SolidSpectrumComboBoxItem,
+                {
+                  id: item.id,
+                  get isDisabled() {
+                    return item.id === "enterprise" && demoProps().disableEnterprise;
+                  },
+                },
+                [item.label],
+              ),
             ),
           ),
         ],

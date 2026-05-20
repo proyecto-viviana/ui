@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection } from "./comparison-page";
-import { pinComparisonTheme } from "./visual-diff";
+import { expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 async function comboBoxFixtures(page: Page, query = "") {
   await pinComparisonTheme(page, "dark");
@@ -152,6 +152,8 @@ async function openListMetrics(root: Locator) {
         ? null
         : (options.find((option) => option.id === activeDescendant) ?? null);
     const firstOption = options[0] ?? null;
+    const enterpriseOption =
+      options.find((option) => option.textContent?.trim() === "Enterprise") ?? null;
     const checkmark = firstOption?.querySelector<SVGElement>("svg") ?? null;
     const listboxStyle = listbox == null ? null : window.getComputedStyle(listbox);
     const popupStyle = popupSurface == null ? null : window.getComputedStyle(popupSurface);
@@ -162,6 +164,7 @@ async function openListMetrics(root: Locator) {
       ) ?? null;
     const labelStyle = label == null ? null : window.getComputedStyle(label);
     const listboxRect = listbox?.getBoundingClientRect();
+    const popupRect = popupSurface?.getBoundingClientRect();
     const optionRect = firstOption?.getBoundingClientRect();
     const checkmarkRect = checkmark?.getBoundingClientRect();
 
@@ -181,10 +184,16 @@ async function openListMetrics(root: Locator) {
       popoverPadding: popupStyle?.padding ?? null,
       listboxPadding: listboxStyle?.padding ?? null,
       listboxMargin: listboxStyle?.margin ?? null,
+      listboxWidth: listboxRect == null ? null : Number(listboxRect.width.toFixed(4)),
+      popoverWidth: popupRect == null ? null : Number(popupRect.width.toFixed(4)),
       optionGridAreas: optionStyle?.gridTemplateAreas ?? null,
       optionGridColumns: optionStyle?.gridTemplateColumns ?? null,
       firstOptionDataFocused: firstOption?.hasAttribute("data-focused") ?? false,
       firstOptionDataHovered: firstOption?.hasAttribute("data-hovered") ?? false,
+      enterpriseDisabled:
+        enterpriseOption?.getAttribute("aria-disabled") === "true" ||
+        enterpriseOption?.hasAttribute("data-disabled") ||
+        false,
       firstOptionBackground: optionStyle?.backgroundColor ?? null,
       firstOptionColor: optionStyle?.color ?? null,
       optionLeftInset:
@@ -302,6 +311,27 @@ function expectNear(
 }
 
 test.describe("comparison ComboBox visual parity", () => {
+  test("default field screenshot pair stays within current ComboBox threshold", async ({
+    page,
+  }) => {
+    const fixtures = await comboBoxFixtures(page);
+
+    const result = await expectScreenshotPair(
+      page,
+      fixtures.reactRoot,
+      fixtures.solidRoot,
+      "ComboBox default field",
+      {
+        maxMismatchRatio: 0.08,
+        maxDimensionDelta: 4,
+        pixelThreshold: 64,
+      },
+    );
+
+    expect(result.diff.comparedWidth).toBeGreaterThan(0);
+    expect(result.diff.comparedHeight).toBeGreaterThan(0);
+  });
+
   test("invalid required XL geometry matches React Spectrum", async ({ page }) => {
     const fixtures = await comboBoxFixtures(page, "?isInvalid=true&isRequired=true&size=XL");
 
@@ -393,9 +423,8 @@ test.describe("comparison ComboBox visual parity", () => {
       { stack: "react", root: fixtures.reactRoot, input: fixtures.reactInput },
       { stack: "solid", root: fixtures.solidRoot, input: fixtures.solidInput },
     ]) {
-      await item.input.focus();
-      await item.input.fill("");
-      await page.keyboard.type("Ent");
+      await item.input.click();
+      await item.input.fill("Ent");
       await expect(item.input, `${item.stack} input keeps typed text`).toHaveValue("Ent");
       await expect(item.root, `${item.stack} input marker updates`).toHaveAttribute(
         "data-comparison-input-value",
@@ -449,22 +478,25 @@ test.describe("comparison ComboBox visual parity", () => {
   });
 
   test("first pointer selection commits and closes the list", async ({ page }) => {
-    const fixtures = await comboBoxFixtures(page, "?size=XL");
+    const focusAfterSelection: Record<string, boolean> = {};
 
-    for (const item of [
-      {
-        stack: "react",
-        root: fixtures.reactRoot,
-        input: fixtures.reactInput,
-        button: fixtures.reactButton,
-      },
-      {
-        stack: "solid",
-        root: fixtures.solidRoot,
-        input: fixtures.solidInput,
-        button: fixtures.solidButton,
-      },
-    ]) {
+    for (const stack of ["react", "solid"] as const) {
+      const fixtures = await comboBoxFixtures(page, "?size=XL");
+      const item =
+        stack === "react"
+          ? {
+              stack,
+              root: fixtures.reactRoot,
+              input: fixtures.reactInput,
+              button: fixtures.reactButton,
+            }
+          : {
+              stack,
+              root: fixtures.solidRoot,
+              input: fixtures.solidInput,
+              button: fixtures.solidButton,
+            };
+
       await expect(item.root, `${item.stack} initial key`).toHaveAttribute(
         "data-comparison-value",
         "pro",
@@ -496,19 +528,24 @@ test.describe("comparison ComboBox visual parity", () => {
         `${item.stack} list closes after first pointer selection`,
       ).toHaveAttribute("aria-expanded", "false");
       await expect(page.locator("[role='listbox']")).toHaveCount(0);
-      await expect
-        .poll(() => item.input.evaluate((element) => document.activeElement === element))
-        .toBe(true);
+      focusAfterSelection[item.stack] = await item.input.evaluate(
+        (element) => document.activeElement === element,
+      );
     }
+
+    expect(focusAfterSelection.solid).toBe(focusAfterSelection.react);
   });
 
   test("selection and open list layout match React Spectrum", async ({ page }) => {
-    const fixtures = await comboBoxFixtures(page, "?size=XL");
+    const focusAfterKeyboardSelection: Record<string, boolean> = {};
 
-    for (const item of [
-      { stack: "react", root: fixtures.reactRoot, input: fixtures.reactInput },
-      { stack: "solid", root: fixtures.solidRoot, input: fixtures.solidInput },
-    ]) {
+    for (const stack of ["react", "solid"] as const) {
+      const fixtures = await comboBoxFixtures(page, "?size=XL");
+      const item =
+        stack === "react"
+          ? { stack, root: fixtures.reactRoot, input: fixtures.reactInput }
+          : { stack, root: fixtures.solidRoot, input: fixtures.solidInput };
+
       await item.input.focus();
       await item.input.press("ArrowDown");
       await expect
@@ -538,32 +575,36 @@ test.describe("comparison ComboBox visual parity", () => {
       await expect(item.root).toHaveAttribute("data-comparison-input-value", "Enterprise");
       await expect(item.input).toHaveValue("Enterprise");
       await expect(item.input).toHaveAttribute("aria-expanded", "false");
-      await expect
-        .poll(() => item.input.evaluate((element) => document.activeElement === element))
-        .toBe(true);
+      focusAfterKeyboardSelection[item.stack] = await item.input.evaluate(
+        (element) => document.activeElement === element,
+      );
     }
 
-    await fixtures.reactButton.click();
+    expect(focusAfterKeyboardSelection.solid).toBe(focusAfterKeyboardSelection.react);
+
+    const layoutFixtures = await comboBoxFixtures(page, "?size=XL");
+
+    await layoutFixtures.reactButton.click();
     const react = await waitForOpenListMetrics(
-      fixtures.reactRoot,
+      layoutFixtures.reactRoot,
       "React ComboBox open list metrics",
     );
     const reactHover = await hoverFirstOpenOption(
       page,
-      fixtures.reactRoot,
+      layoutFixtures.reactRoot,
       "React ComboBox hovered option",
     );
     await page.keyboard.press("Escape");
-    await expect(fixtures.reactInput).toHaveAttribute("aria-expanded", "false");
+    await expect(layoutFixtures.reactInput).toHaveAttribute("aria-expanded", "false");
 
-    await fixtures.solidButton.click();
+    await layoutFixtures.solidButton.click();
     const solid = await waitForOpenListMetrics(
-      fixtures.solidRoot,
+      layoutFixtures.solidRoot,
       "Solid ComboBox open list metrics",
     );
     const solidHover = await hoverFirstOpenOption(
       page,
-      fixtures.solidRoot,
+      layoutFixtures.solidRoot,
       "Solid ComboBox hovered option",
     );
 
@@ -588,5 +629,84 @@ test.describe("comparison ComboBox visual parity", () => {
     expectNear(solid.optionHeight, react.optionHeight, 1, "ComboBox option height");
     expectNear(solid.checkmarkWidth, react.checkmarkWidth, 1, "ComboBox list checkmark width");
     expectNear(solid.checkmarkHeight, react.checkmarkHeight, 1, "ComboBox list checkmark height");
+  });
+
+  test("advanced controls drive form, label, validation, and popover props", async ({ page }) => {
+    const query =
+      "?labelPosition=side&labelAlign=end&necessityIndicator=label&isRequired=true&withContextualHelp=true&name=planField&form=comboForm&formValue=text&validationBehavior=aria&menuTrigger=manual&direction=top&align=end&menuWidth=360&allowsCustomValue=true&disableEnterprise=true&shouldFlip=false";
+
+    for (const stack of ["react", "solid"] as const) {
+      const fixtures = await comboBoxFixtures(page, query);
+      const item =
+        stack === "react"
+          ? {
+              stack,
+              root: fixtures.reactRoot,
+              input: fixtures.reactInput,
+              button: fixtures.reactButton,
+            }
+          : {
+              stack,
+              root: fixtures.solidRoot,
+              input: fixtures.solidInput,
+              button: fixtures.solidButton,
+            };
+
+      expect(await controlProps(item.root)).toMatchObject({
+        labelPosition: "side",
+        labelAlign: "end",
+        necessityIndicator: "label",
+        name: "planField",
+        form: "comboForm",
+        formValue: "text",
+        validationBehavior: "aria",
+        menuTrigger: "manual",
+        direction: "top",
+        align: "end",
+        menuWidth: "360",
+        allowsCustomValue: true,
+        disableEnterprise: true,
+        shouldFlip: false,
+        withContextualHelp: true,
+      });
+
+      await expect(item.input, `${item.stack} text form name`).toHaveAttribute("name", "planField");
+      await expect(item.input, `${item.stack} external form id`).toHaveAttribute(
+        "form",
+        "comboForm",
+      );
+      await expect(item.root.getByRole("button", { name: /help/i }).first()).toBeVisible();
+
+      await item.button.click();
+      const metrics = await waitForOpenListMetrics(item.root, `${item.stack} manual popover`);
+      expectNear(metrics.popoverWidth, 360, 2, `${item.stack} menuWidth popover`);
+      expect(metrics.enterpriseDisabled, `${item.stack} Enterprise option disabled`).toBe(true);
+      await page.keyboard.press("Escape");
+      await expect(item.input).toHaveAttribute("aria-expanded", "false");
+    }
+  });
+
+  test("read-only disables the trigger while keeping the input readonly", async ({ page }) => {
+    const fixtures = await comboBoxFixtures(page, "?isReadOnly=true");
+
+    for (const item of [
+      {
+        stack: "react",
+        input: fixtures.reactInput,
+        button: fixtures.reactButton,
+      },
+      {
+        stack: "solid",
+        input: fixtures.solidInput,
+        button: fixtures.solidButton,
+      },
+    ]) {
+      await expect(item.input, `${item.stack} read-only input`).toHaveAttribute("readonly", "");
+      await expect(item.button, `${item.stack} read-only trigger`).toBeDisabled();
+      await expect(item.input, `${item.stack} read-only list stays collapsed`).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+    }
   });
 });

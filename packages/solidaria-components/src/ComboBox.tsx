@@ -50,6 +50,17 @@ import {
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface ComboBoxRenderProps {
   /** Whether the combobox listbox is open. */
   isOpen: boolean;
@@ -73,7 +84,9 @@ export interface ComboBoxRenderProps {
 
 export interface ComboBoxProps<T> extends Omit<AriaComboBoxProps, "children">, SlotProps {
   /** The items to render in the combobox. */
-  items: T[];
+  items?: T[];
+  /** The default items to render in the combobox when uncontrolled. */
+  defaultItems?: T[];
   /** Function to get the key from an item. */
   getKey?: (item: T) => Key;
   /** Function to get the text value from an item. */
@@ -132,6 +145,10 @@ export interface ComboBoxProps<T> extends Omit<AriaComboBoxProps, "children">, S
   class?: ClassNameOrFunction<ComboBoxRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ComboBoxRenderProps>;
+  /** Ref for the root combobox element. */
+  ref?: RefLike<HTMLDivElement>;
+  /** Internal alias for libraries that wrap ComboBox and need a root ref. */
+  rootRef?: RefLike<HTMLDivElement>;
   /** Slot definitions provided through ComboBoxContext. */
   slots?: Record<string, Partial<ComboBoxProps<T>>>;
 }
@@ -309,9 +326,10 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     : props;
   const [local, stateProps, ariaProps] = splitProps(
     mergedComboBoxProps,
-    ["class", "style", "slot", "children", "slots"],
+    ["class", "style", "slot", "children", "ref", "rootRef", "slots"],
     [
       "items",
+      "defaultItems",
       "getKey",
       "getTextValue",
       "getDisabled",
@@ -346,6 +364,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   const state = createComboBoxState<T>({
     get items() {
       return stateProps.items;
+    },
+    get defaultItems() {
+      return stateProps.defaultItems;
     },
     get getKey() {
       return stateProps.getKey;
@@ -507,7 +528,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           isOpen: comboBoxAria.isOpen,
           isFocused: comboBoxAria.isFocused,
           isFocusVisible: comboBoxAria.isFocusVisible,
-          items: stateProps.items,
+          items: stateProps.items ?? stateProps.defaultItems ?? [],
           inputRef: () => inputRef,
           setInputRef: (el) => {
             inputRef = el;
@@ -532,6 +553,10 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
         <div
           {...domProps()}
           {...cleanHoverProps()}
+          ref={(el) => {
+            assignRef(local.ref, el);
+            assignRef(local.rootRef, el);
+          }}
           class={renderProps.class()}
           style={renderProps.style()}
           data-open={comboBoxAria.isOpen() || undefined}
@@ -820,12 +845,13 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
 export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element {
   const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
 
-  const context = useContext(ComboBoxContext);
-  if (!context) {
+  const rawContext = useContext(ComboBoxContext);
+  if (!rawContext) {
     throw new Error("ComboBoxListBox must be used within a ComboBox");
   }
+  const context = rawContext as ComboBoxContextValue<T>;
   const { state: comboBoxState, isOpen, inputRef, buttonRef, setListBoxRef } = context;
-  const state = comboBoxState as ComboBoxState<T>;
+  const state = comboBoxState;
 
   let listBoxRef: HTMLUListElement | undefined;
 
@@ -880,6 +906,19 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   };
 
   const items = () => Array.from(state.collection());
+  const getNodeValue = (node: { key: Key; value?: T | null; index?: number }): T | null => {
+    if (node.value != null) {
+      return node.value;
+    }
+
+    return (
+      context.items.find((item, index) => {
+        const candidate = item as { key?: Key; id?: Key };
+        const key = candidate.key ?? candidate.id ?? index;
+        return key === node.key;
+      }) ?? null
+    );
+  };
 
   const setListBoxElement = (el: HTMLUListElement) => {
     listBoxRef = el;
@@ -910,7 +949,10 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
           }
         >
           <For each={items()}>
-            {(node) => (node.value != null ? (local.children as Function)!(node.value) : null)}
+            {(node) => {
+              const value = getNodeValue(node);
+              return value != null ? (local.children as Function)!(value) : null;
+            }}
           </For>
         </Show>
       </ul>

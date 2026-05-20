@@ -328,9 +328,28 @@ export function createComboBox<T>(
   });
 
   // Handle press on button trigger
+  let wasOpenOnButtonPressStart = false;
+  const scheduleButtonOpenFallback = (startedOpen: boolean) => {
+    if (startedOpen) {
+      return;
+    }
+
+    setTimeout(() => {
+      const p = getProps();
+      const isDisabled = p.isDisabled ?? state.isDisabled;
+      const isReadOnly = p.isReadOnly ?? state.isReadOnly;
+      if (!state.isOpen() && !isDisabled && !isReadOnly) {
+        inputRef()?.focus();
+        state.open(null, "manual");
+      }
+    }, 0);
+  };
+
   const { pressProps } = createPress({
     get isDisabled() {
-      return getProps().isDisabled ?? state.isDisabled;
+      return (
+        (getProps().isDisabled ?? state.isDisabled) || (getProps().isReadOnly ?? state.isReadOnly)
+      );
     },
     preventFocusOnPress: true,
     onPressStart(e) {
@@ -338,19 +357,23 @@ export function createComboBox<T>(
         return;
       }
 
+      wasOpenOnButtonPressStart = state.isOpen();
       inputRef()?.focus();
       state.toggle(
         e.pointerType === "keyboard" || e.pointerType === "virtual" ? "first" : null,
         "manual",
       );
+      scheduleButtonOpenFallback(wasOpenOnButtonPressStart);
     },
     onPress(e) {
       if (e.pointerType !== "touch") {
         return;
       }
 
+      wasOpenOnButtonPressStart = state.isOpen();
       inputRef()?.focus();
       state.toggle(null, "manual");
+      scheduleButtonOpenFallback(wasOpenOnButtonPressStart);
     },
   });
 
@@ -645,6 +668,7 @@ export function createComboBox<T>(
       const p = getProps();
       const isOpen = state.isOpen();
       const isDisabled = p.isDisabled ?? state.isDisabled;
+      const isReadOnly = p.isReadOnly ?? state.isReadOnly;
 
       return mergeProps(
         pressProps as Record<string, unknown>,
@@ -655,10 +679,11 @@ export function createComboBox<T>(
           "aria-haspopup": "listbox",
           "aria-expanded": isOpen,
           "aria-controls": isOpen ? listBoxId : undefined,
-          "aria-disabled": isDisabled || undefined,
+          "aria-disabled": isDisabled || isReadOnly || undefined,
+          disabled: isDisabled || isReadOnly || undefined,
           "aria-label": stringFormatter?.().format("buttonLabel") ?? "Show suggestions",
           "data-open": isOpen || undefined,
-          "data-disabled": isDisabled || undefined,
+          "data-disabled": isDisabled || isReadOnly || undefined,
         } as Record<string, unknown>,
       ) as JSX.HTMLAttributes<HTMLElement>;
     },

@@ -200,7 +200,7 @@ export type {
 } from "./color/ColorSwatchPicker";
 
 // ComboBox
-export { ComboBox, ComboBoxOption as ComboBoxItem } from "./combobox";
+export { ComboBox, ComboBoxContext, ComboBoxOption as ComboBoxItem } from "./combobox";
 export type {
   ComboBoxOptionProps as ComboBoxItemProps,
   ComboBoxProps,

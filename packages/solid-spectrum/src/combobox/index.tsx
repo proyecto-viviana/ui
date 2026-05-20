@@ -1,5 +1,15 @@
 // @ts-nocheck
-import { type JSX, createContext, onCleanup, Show, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createEffect,
+  createSignal,
+  mergeProps,
+  onCleanup,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   ComboBox as HeadlessComboBox,
   ComboBoxButton as HeadlessComboBoxButton,
@@ -55,6 +65,15 @@ import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { useProviderProps, useTheme } from "../provider";
+import { FormContext, useFormProps, useIsInForm } from "../form";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type ComboBoxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2ComboBoxSize = "S" | "M" | "L" | "XL";
@@ -64,7 +83,7 @@ export type ComboBoxNecessityIndicator = "icon" | "label";
 
 export interface ComboBoxProps<T> extends Omit<
   HeadlessComboBoxProps<T>,
-  "class" | "style" | "children"
+  "class" | "style" | "children" | "slot" | "ref" | "rootRef"
 > {
   size?: ComboBoxSize;
   styles?: StyleString;
@@ -78,11 +97,14 @@ export interface ComboBoxProps<T> extends Omit<
   labelPosition?: ComboBoxLabelPosition;
   labelAlign?: ComboBoxLabelAlign;
   necessityIndicator?: ComboBoxNecessityIndicator;
+  contextualHelp?: JSX.Element;
   direction?: "bottom" | "top";
   align?: "start" | "end";
   menuWidth?: number;
   shouldFlip?: boolean;
   children?: JSX.Element | ((item: T) => JSX.Element);
+  slot?: string | null;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface ComboBoxInputProps extends Omit<HeadlessComboBoxInputProps, "class" | "style"> {
@@ -127,6 +149,7 @@ interface ComboBoxOptionStyleProps extends ComboBoxOptionRenderProps {
 }
 
 const ComboBoxSizeContext = createContext<S2ComboBoxSize>("M");
+export const ComboBoxContext = createContext<SpectrumContextValue<ComboBoxProps<any>>>(null);
 
 const comboBoxRoot = style<ComboBoxStyleProps>(
   {
@@ -596,6 +619,46 @@ function ComboBoxListBoxPopover(props: {
     comboBoxContext?.inputRef?.() ??
     comboBoxContext?.buttonRef?.() ??
     null;
+  const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
+
+  const updateTriggerWidth = () => {
+    const trigger = triggerRef();
+    if (trigger) {
+      setTriggerWidth(`${trigger.getBoundingClientRect().width}px`);
+    }
+  };
+
+  createEffect(() => {
+    const trigger = triggerRef();
+    if (!trigger) {
+      setTriggerWidth(undefined);
+      return;
+    }
+
+    updateTriggerWidth();
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(updateTriggerWidth);
+    resizeObserver.observe(trigger);
+    onCleanup(() => resizeObserver.disconnect());
+  });
+
+  const resolvedTriggerWidth = () => {
+    const explicitMenuWidth = props.menuWidth();
+    if (explicitMenuWidth != null) {
+      return `${explicitMenuWidth}px`;
+    }
+
+    const measuredWidth = triggerWidth();
+    if (measuredWidth) {
+      return measuredWidth;
+    }
+
+    const trigger = triggerRef();
+    return trigger ? `${trigger.getBoundingClientRect().width}px` : undefined;
+  };
 
   return (
     <HeadlessPopover
@@ -621,7 +684,7 @@ function ComboBoxListBoxPopover(props: {
         })
       }
       style={() => ({
-        "--trigger-width": props.menuWidth() == null ? undefined : `${props.menuWidth()}px`,
+        "--trigger-width": resolvedTriggerWidth(),
         minWidth: "var(--trigger-width)",
         width: "var(--trigger-width)",
       })}
@@ -677,7 +740,19 @@ function ComboBoxFieldLabel(props: {
 }
 
 export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const isInForm = useIsInForm();
+  const formContext = useContext(FormContext);
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(ComboBoxContext), props.slot);
+  const defaultProps: Partial<ComboBoxProps<T>> = {
+    labelPosition: "top",
+    labelAlign: "start",
+    necessityIndicator: "icon",
+    direction: "bottom",
+    align: "start",
+    shouldFlip: true,
+  };
+  const mergedProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "styles",
@@ -691,11 +766,15 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "contextualHelp",
     "direction",
     "align",
     "menuWidth",
     "shouldFlip",
+    "defaultItems",
     "children",
+    "slot",
+    "ref",
   ]);
 
   const size = () => normalizeComboBoxSize(local.size);
@@ -705,9 +784,17 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   const direction = () => local.direction ?? "bottom";
   const align = () => local.align ?? "start";
   const shouldFlip = () => local.shouldFlip ?? true;
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
 
   const rootClassName = (renderProps: ComboBoxRenderProps) =>
     [
+      contextProps?.UNSAFE_className,
       local.UNSAFE_className,
       local.class,
       comboBoxRoot(
@@ -715,9 +802,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           ...renderProps,
           size: size(),
           labelPosition: labelPosition(),
-          isInForm: false,
+          isInForm,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -750,13 +837,17 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     <ComboBoxSizeContext.Provider value={size()}>
       <HeadlessComboBox
         {...headlessProps}
+        items={headlessProps.items ?? props.defaultItems}
+        defaultItems={props.defaultItems}
         allowsEmptyCollection
         label={local.label}
-        description={local.description}
+        description={local.isInvalid ? undefined : local.description}
         errorMessage={local.errorMessage}
         isInvalid={local.isInvalid}
+        slot={local.slot ?? undefined}
+        rootRef={(element) => assignRootRef(element)}
         class={rootClassName}
-        style={local.UNSAFE_style}
+        style={mergedUnsafeStyle()}
         children={(renderProps: ComboBoxRenderProps) => (
           <>
             <Show when={local.label}>
@@ -772,6 +863,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                     necessityIndicator={necessityIndicator()}
                   />
                 </HeadlessComboBoxLabel>
+                <Show when={local.contextualHelp}>
+                  <span data-slot="contextualHelp">{local.contextualHelp}</span>
+                </Show>
               </div>
             </Show>
 
@@ -810,11 +904,21 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
               menuWidth={() => local.menuWidth}
               shouldFlip={shouldFlip}
             >
-              <HeadlessComboBoxListBox
-                class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+              <FormContext.Provider
+                value={{
+                  ...(formContext ?? {}),
+                  get size() {
+                    return size();
+                  },
+                  isRequired: undefined,
+                }}
               >
-                {listBoxChildren}
-              </HeadlessComboBoxListBox>
+                <HeadlessComboBoxListBox
+                  class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+                >
+                  {listBoxChildren}
+                </HeadlessComboBoxListBox>
+              </FormContext.Provider>
             </ComboBoxListBoxPopover>
           </>
         )}
@@ -884,6 +988,12 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class", "children"]);
   const size = useContext(ComboBoxSizeContext);
   const isLink = () => (props as Record<string, unknown>).href != null;
+  const textLabel = () =>
+    isTextOnlyChildren(local.children)
+      ? Array.isArray(local.children)
+        ? local.children.join("")
+        : String(local.children)
+      : undefined;
   const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
     [
       comboBoxOption({
@@ -899,7 +1009,11 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     comboBoxCheckmark({ ...renderProps, size });
 
   return (
-    <HeadlessComboBoxOption {...headlessProps} class={optionClass}>
+    <HeadlessComboBoxOption
+      {...headlessProps}
+      aria-label={headlessProps["aria-label"] ?? textLabel()}
+      class={optionClass}
+    >
       {(renderProps: ComboBoxOptionRenderProps) => (
         <>
           <CheckmarkIcon

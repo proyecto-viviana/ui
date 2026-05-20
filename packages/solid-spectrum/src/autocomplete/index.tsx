@@ -1,13 +1,5 @@
 import { type JSX, splitProps } from "solid-js";
-import {
-  ComboBox,
-  ComboBoxInput,
-  ComboBoxButton,
-  ComboBoxListBox,
-  ComboBoxOption,
-  type FilterFn,
-  type Key,
-} from "../combobox";
+import { ComboBox, ComboBoxOption, type FilterFn, type Key } from "../combobox";
 
 export type SearchAutocompleteSize = "sm" | "md" | "lg";
 
@@ -121,17 +113,11 @@ export function SearchAutocomplete<T extends SearchAutocompleteItem = SearchAuto
         getTextValue={getTextValue}
         onSelectionChange={handleSelectionChange}
       >
-        <ComboBox.InputGroup>
-          <ComboBoxInput />
-          <ComboBoxButton />
-        </ComboBox.InputGroup>
-        <ComboBoxListBox>
-          {(item: T) => (
-            <ComboBoxOption id={item.id}>
-              {local.renderItem ? local.renderItem(item) : getTextValue(item)}
-            </ComboBoxOption>
-          )}
-        </ComboBoxListBox>
+        {(item: T) => (
+          <ComboBoxOption id={item.id}>
+            {local.renderItem ? local.renderItem(item) : getTextValue(item)}
+          </ComboBoxOption>
+        )}
       </ComboBox>
     </div>
   );
