@@ -96,6 +96,8 @@ export interface CheckboxGroupProps
   class?: ClassNameOrFunction<CheckboxGroupRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<CheckboxGroupRenderProps>;
+  /** Ref for the checkbox group root element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface CheckboxProps extends Omit<AriaCheckboxProps, "children">, SlotProps {
@@ -151,6 +153,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     "class",
     "style",
     "slot",
+    "ref",
     "description",
     "errorMessage",
   ]);
@@ -198,6 +201,9 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const cleanGroupProps = () => {
     const { ref: _ref, ...rest } = groupAria.groupProps as Record<string, unknown>;
     return rest;
+  };
+  const setGroupRef = (el: HTMLDivElement) => {
+    assignRef(local.ref, el);
   };
   const groupDescribedBy = () => {
     const ids = [
@@ -248,6 +254,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
       <div
         {...domProps()}
         {...cleanGroupProps()}
+        ref={setGroupRef}
         aria-describedby={groupDescribedBy()}
         class={renderProps.class()}
         style={renderProps.style()}

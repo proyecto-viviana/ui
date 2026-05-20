@@ -54,8 +54,13 @@ import {
 } from "./checkbox-demo";
 import {
   checkboxGroupDemoDefaults,
+  checkboxGroupLabelAlignOptions,
+  checkboxGroupLabelPositionOptions,
+  checkboxGroupNecessityIndicatorOptions,
   checkboxGroupOrientationOptions,
   checkboxGroupSizeOptions,
+  checkboxGroupValidationBehaviorOptions,
+  checkboxGroupValueSourceOptions,
 } from "./checkboxgroup-demo";
 import { comboBoxDemoDefaults, comboBoxKeyOptions, comboBoxSizeOptions } from "./combobox-demo";
 import {
@@ -798,10 +803,23 @@ const checkboxGroupControls: ComponentControlGroup = {
       defaultValue: checkboxGroupDemoDefaults.label,
     },
     {
+      name: "valueSource",
+      label: "valueSource",
+      kind: "radio",
+      defaultValue: checkboxGroupDemoDefaults.valueSource,
+      options: options(checkboxGroupValueSourceOptions),
+    },
+    {
       name: "selectedValues",
       label: "selectedValues",
       kind: "text",
       defaultValue: checkboxGroupDemoDefaults.selectedValues,
+    },
+    {
+      name: "defaultValue",
+      label: "defaultValue",
+      kind: "text",
+      defaultValue: checkboxGroupDemoDefaults.defaultValue,
     },
     {
       name: "size",
@@ -818,6 +836,46 @@ const checkboxGroupControls: ComponentControlGroup = {
       options: options(checkboxGroupOrientationOptions),
     },
     {
+      name: "labelPosition",
+      label: "labelPosition",
+      kind: "radio",
+      defaultValue: checkboxGroupDemoDefaults.labelPosition,
+      options: options(checkboxGroupLabelPositionOptions),
+    },
+    {
+      name: "labelAlign",
+      label: "labelAlign",
+      kind: "radio",
+      defaultValue: checkboxGroupDemoDefaults.labelAlign,
+      options: options(checkboxGroupLabelAlignOptions),
+    },
+    {
+      name: "necessityIndicator",
+      label: "necessityIndicator",
+      kind: "radio",
+      defaultValue: checkboxGroupDemoDefaults.necessityIndicator,
+      options: options(checkboxGroupNecessityIndicatorOptions),
+    },
+    {
+      name: "name",
+      label: "name",
+      kind: "text",
+      defaultValue: checkboxGroupDemoDefaults.name,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: checkboxGroupDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "radio",
+      defaultValue: checkboxGroupDemoDefaults.validationBehavior,
+      options: options(checkboxGroupValidationBehaviorOptions),
+    },
+    {
       name: "description",
       label: "description",
       kind: "text",
@@ -828,6 +886,12 @@ const checkboxGroupControls: ComponentControlGroup = {
       label: "errorMessage",
       kind: "text",
       defaultValue: checkboxGroupDemoDefaults.errorMessage,
+    },
+    {
+      name: "withContextualHelp",
+      label: "contextualHelp",
+      kind: "switch",
+      defaultValue: checkboxGroupDemoDefaults.withContextualHelp,
     },
     {
       name: "isEmphasized",
@@ -870,6 +934,10 @@ const checkboxGroupControls: ComponentControlGroup = {
     "orientation",
     "description",
     "errorMessage",
+    "contextualHelp",
+    "name",
+    "form",
+    "validationBehavior",
     "isEmphasized",
     "isDisabled",
     "isReadOnly",
@@ -878,6 +946,7 @@ const checkboxGroupControls: ComponentControlGroup = {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "slot",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -885,7 +954,7 @@ const checkboxGroupControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 CheckboxGroup source control surface. The viewer drives label, selected values, S2 size, orientation, description/error text, emphasized treatment, and disabled/read-only/required/invalid states into both stacks.",
+  note: "Modeled from the S2 CheckboxGroup docs and source control surface. The viewer drives label, controlled/default selected values, S2 size, orientation, label placement/alignment, necessity indicator, form name/form props, validation behavior, description/error text, contextualHelp, emphasized treatment, and disabled/read-only/required/invalid states into both stacks.",
 };
 
 const switchControls: ComponentControlGroup = {

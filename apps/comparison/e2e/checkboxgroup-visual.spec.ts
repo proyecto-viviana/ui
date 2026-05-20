@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkPanel, styledSection } from "./comparison-page";
-import { pinComparisonTheme } from "./visual-diff";
+import { frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
+import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 async function checkboxGroupFixtures(page: Page, query = "") {
   await pinComparisonTheme(page, "dark");
@@ -20,6 +20,8 @@ async function checkboxGroupFixtures(page: Page, query = "") {
   return {
     reactPanel,
     solidPanel,
+    reactCanvas: await frameworkCanvas(section, "React Spectrum stack"),
+    solidCanvas: await frameworkCanvas(section, "Solidaria stack"),
     reactRoot,
     solidRoot,
     reactEmail: reactPanel.getByRole("checkbox", { name: "Email" }).first(),
@@ -44,6 +46,7 @@ async function checkboxGroupGeometry(root: Locator) {
     const checkedInputs = Array.from(
       element.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked'),
     );
+    const inputs = Array.from(element.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
     const firstCheckedLabel = checkedInputs[0]?.closest("label") as HTMLElement | null;
     const box = firstCheckedLabel
       ? Array.from(firstCheckedLabel.querySelectorAll<HTMLElement>("div, span")).find(
@@ -69,13 +72,26 @@ async function checkboxGroupGeometry(root: Locator) {
     const boxStyle = box == null ? null : window.getComputedStyle(box);
     const boxRect = box?.getBoundingClientRect();
     const iconRect = icon?.getBoundingClientRect();
-    const helpText = Array.from(element.querySelectorAll<HTMLElement>("div")).find((candidate) =>
-      candidate.textContent?.includes("Select at least one channel"),
+    const helpText = Array.from(element.querySelectorAll<HTMLElement>("div, p, span")).find(
+      (candidate) => {
+        const rect = candidate.getBoundingClientRect();
+        return (
+          candidate.textContent?.trim() === "Select at least one channel." &&
+          rect.width > 0 &&
+          rect.height > 0
+        );
+      },
     );
 
     return {
       selectedValues: checkedInputs.map((input) => input.value).join(","),
       checkedCount: checkedInputs.length,
+      inputNames: inputs.map((input) => input.getAttribute("name") ?? "").join(","),
+      inputForms: inputs.map((input) => input.getAttribute("form") ?? "").join(","),
+      requiredCount: inputs.filter((input) => input.required).length,
+      ariaRequiredValues: inputs
+        .map((input) => input.getAttribute("aria-required") ?? "")
+        .join(","),
       role: group?.getAttribute("role") ?? null,
       itemFlexDirection: itemContainerStyle?.flexDirection ?? null,
       labelColor: labelStyle?.color ?? null,
@@ -104,7 +120,81 @@ function expectNear(
   expect(Math.abs((received ?? 0) - (expected ?? 0)), label).toBeLessThanOrEqual(tolerance);
 }
 
+type CheckboxGroupGeometry = Awaited<ReturnType<typeof checkboxGroupGeometry>>;
+
+function expectCheckboxGroupGeometryToMatch(
+  solid: CheckboxGroupGeometry,
+  react: CheckboxGroupGeometry,
+  options: { icon?: boolean } = {},
+) {
+  expect(solid.selectedValues).toBe(react.selectedValues);
+  expect(solid.checkedCount).toBe(react.checkedCount);
+  expect(solid.inputNames).toBe(react.inputNames);
+  expect(solid.inputForms).toBe(react.inputForms);
+  expect(solid.requiredCount).toBe(react.requiredCount);
+  expect(solid.ariaRequiredValues).toBe(react.ariaRequiredValues);
+  expect(solid.role).toBe(react.role);
+  expect(solid.itemFlexDirection).toBe(react.itemFlexDirection);
+  expect(solid.labelColor).toBe(react.labelColor);
+  expect(solid.boxBorderColor).toBe(react.boxBorderColor);
+  expect(solid.boxBackground).toBe(react.boxBackground);
+  expect(solid.boxTransform).toBe(react.boxTransform);
+  expect(solid.boxWillChange).toBe(react.boxWillChange);
+  expect(solid.helpText).toBe(react.helpText);
+  expect(solid.invalid).toBe(react.invalid);
+  expectNear(solid.boxWidth, react.boxWidth, 0.75, "CheckboxGroup child box width");
+  expectNear(solid.boxHeight, react.boxHeight, 0.75, "CheckboxGroup child box height");
+
+  if (options.icon) {
+    expectNear(solid.iconWidth, react.iconWidth, 0.75, "CheckboxGroup child icon width");
+    expectNear(solid.iconHeight, react.iconHeight, 0.75, "CheckboxGroup child icon height");
+  } else {
+    expect(solid.iconWidth).toBe(react.iconWidth);
+    expect(solid.iconHeight).toBe(react.iconHeight);
+  }
+}
+
 test.describe("comparison CheckboxGroup visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await checkboxGroupFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactRoot,
+      fixtures.solidRoot,
+      "CheckboxGroup default",
+      { maxMismatchRatio: 0.08, maxDimensionDelta: 16, pixelThreshold: 64 },
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      label: "Notifications",
+      valueSource: "value",
+      selectedValues: "email",
+      defaultValue: "email",
+      size: "M",
+      orientation: "vertical",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      label: "Notifications",
+      valueSource: "value",
+      selectedValues: "email",
+      defaultValue: "email",
+      size: "M",
+      orientation: "vertical",
+    });
+    await expect(fixtures.reactEmail).toBeChecked();
+    await expect(fixtures.solidEmail).toBeChecked();
+    await expect(fixtures.reactSms).not.toBeChecked();
+    await expect(fixtures.solidSms).not.toBeChecked();
+
+    expectCheckboxGroupGeometryToMatch(
+      await checkboxGroupGeometry(fixtures.solidRoot),
+      await checkboxGroupGeometry(fixtures.reactRoot),
+      { icon: true },
+    );
+  });
+
   test("selection can add and remove multiple values on both stacks", async ({ page }) => {
     const fixtures = await checkboxGroupFixtures(page);
 
@@ -174,20 +264,57 @@ test.describe("comparison CheckboxGroup visual parity", () => {
     const react = await checkboxGroupGeometry(fixtures.reactRoot);
     const solid = await checkboxGroupGeometry(fixtures.solidRoot);
 
-    expect(solid.selectedValues).toBe(react.selectedValues);
-    expect(solid.checkedCount).toBe(react.checkedCount);
-    expect(solid.role).toBe(react.role);
-    expect(solid.itemFlexDirection).toBe(react.itemFlexDirection);
-    expect(solid.labelColor).toBe(react.labelColor);
-    expect(solid.boxBorderColor).toBe(react.boxBorderColor);
-    expect(solid.boxBackground).toBe(react.boxBackground);
-    expect(solid.boxTransform).toBe(react.boxTransform);
-    expect(solid.boxWillChange).toBe(react.boxWillChange);
-    expect(solid.helpText).toBe(react.helpText);
-    expect(solid.invalid).toBe(react.invalid);
-    expectNear(solid.boxWidth, react.boxWidth, 0.75, "CheckboxGroup child box width");
-    expectNear(solid.boxHeight, react.boxHeight, 0.75, "CheckboxGroup child box height");
-    expectNear(solid.iconWidth, react.iconWidth, 0.75, "CheckboxGroup child icon width");
-    expectNear(solid.iconHeight, react.iconHeight, 0.75, "CheckboxGroup child icon height");
+    expectCheckboxGroupGeometryToMatch(solid, react, { icon: true });
+  });
+
+  test("defaultValue initializes uncontrolled value and form props", async ({ page }) => {
+    const fixtures = await checkboxGroupFixtures(
+      page,
+      "?valueSource=defaultValue&defaultValue=email,sms&selectedValues=push&name=channels&form=settingsForm&isRequired=true&validationBehavior=aria",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      valueSource: "defaultValue",
+      selectedValues: "push",
+      defaultValue: "email,sms",
+      name: "channels",
+      form: "settingsForm",
+      isRequired: true,
+      validationBehavior: "aria",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      valueSource: "defaultValue",
+      selectedValues: "push",
+      defaultValue: "email,sms",
+      name: "channels",
+      form: "settingsForm",
+      isRequired: true,
+      validationBehavior: "aria",
+    });
+    await expect(fixtures.reactEmail).toBeChecked();
+    await expect(fixtures.solidEmail).toBeChecked();
+    await expect(fixtures.reactSms).toBeChecked();
+    await expect(fixtures.solidSms).toBeChecked();
+    await expect(fixtures.reactRoot).toHaveAttribute(
+      "data-comparison-selected-values",
+      "email,sms",
+    );
+    await expect(fixtures.solidRoot).toHaveAttribute(
+      "data-comparison-selected-values",
+      "email,sms",
+    );
+
+    expectCheckboxGroupGeometryToMatch(
+      await checkboxGroupGeometry(fixtures.solidRoot),
+      await checkboxGroupGeometry(fixtures.reactRoot),
+      { icon: true },
+    );
+
+    await fixtures.reactPanel.getByText("Email").first().click();
+    await fixtures.solidPanel.getByText("Email").first().click();
+    await expect(fixtures.reactEmail).not.toBeChecked();
+    await expect(fixtures.solidEmail).not.toBeChecked();
+    await expect(fixtures.reactRoot).toHaveAttribute("data-comparison-selected-values", "sms");
+    await expect(fixtures.solidRoot).toHaveAttribute("data-comparison-selected-values", "sms");
   });
 });

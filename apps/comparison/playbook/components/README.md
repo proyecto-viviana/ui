@@ -19,7 +19,7 @@ normalized to the current gate checklist.
 
 - Legacy accepted under prior playbook: AvatarGroup, Badge, Button, Button
   family, Divider, Form, Image, Link, Meter, Skeleton, and StatusLight.
-- Current-gate normalized: ActionBar, Avatar, Checkbox,
+- Current-gate normalized: ActionBar, Avatar, Checkbox, CheckboxGroup,
   SegmentedControl, SelectBoxGroup, and Slider.
 - Active current-gate pass: none.
 - Comparison-live with explicit release-hardening backfill gaps: none.
@@ -46,6 +46,7 @@ partial if any gate remains unresolved.
 - [Button](./button-validation-notes.md)
 - [Button family](./button-family-validation-notes.md)
 - [Checkbox](./checkbox-validation-notes.md)
+- [CheckboxGroup](./checkboxgroup-validation-notes.md)
 - [ContextualHelp](./contextualhelp-validation-notes.md)
 - [Divider](./divider-validation-notes.md)
 - [Form](./form-validation-notes.md)

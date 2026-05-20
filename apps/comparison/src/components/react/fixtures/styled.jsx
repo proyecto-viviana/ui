@@ -158,8 +158,8 @@ import {
 } from "@comparison/data/checkbox-demo";
 import {
   checkboxGroupDemoPropsFromWindow,
+  initialCheckboxGroupDemoValue,
   normalizeCheckboxGroupDemoProps,
-  selectedValuesArrayFromText,
   serializeCheckboxGroupDemoProps,
 } from "@comparison/data/checkboxgroup-demo";
 import {
@@ -2582,16 +2582,14 @@ function ReactCheckboxDemo() {
 
 function ReactCheckboxGroupDemo() {
   const [demoProps, setDemoProps] = useState(checkboxGroupDemoPropsFromWindow);
-  const [value, setValue] = useState(() =>
-    selectedValuesArrayFromText(demoProps.selectedValues, ["email"]),
-  );
+  const [value, setValue] = useState(() => initialCheckboxGroupDemoValue(demoProps));
   const colorScheme = useComparisonResolvedTheme();
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "checkboxgroup") {
         const nextProps = normalizeCheckboxGroupDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setValue(selectedValuesArrayFromText(nextProps.selectedValues, ["email"]));
+        setValue(initialCheckboxGroupDemoValue(nextProps));
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
@@ -2599,35 +2597,66 @@ function ReactCheckboxGroupDemo() {
   }, []);
 
   const selectedValues = value.join(",");
+  const valueProps =
+    demoProps.valueSource === "defaultValue"
+      ? { defaultValue: initialCheckboxGroupDemoValue(demoProps) }
+      : { value };
+  const renderKey = [
+    demoProps.valueSource,
+    demoProps.valueSource === "defaultValue" ? demoProps.defaultValue : "controlled",
+    demoProps.name,
+    demoProps.form,
+    demoProps.validationBehavior,
+  ].join("|");
 
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-values": selectedValues,
       "data-comparison-control-root": "checkboxgroup",
-      "data-comparison-control-props": serializeCheckboxGroupDemoProps({
-        ...demoProps,
-        selectedValues,
-      }),
-      children: jsx(SpectrumCheckboxGroup, {
-        label: demoProps.label,
-        value,
-        size: demoProps.size,
-        orientation: demoProps.orientation,
-        description: demoProps.description,
-        errorMessage: demoProps.errorMessage,
-        isEmphasized: demoProps.isEmphasized,
-        isDisabled: demoProps.isDisabled,
-        isReadOnly: demoProps.isReadOnly,
-        isRequired: demoProps.isRequired,
-        isInvalid: demoProps.isInvalid,
-        onChange: (nextValue) => {
-          setValue(nextValue.map(String));
-          setDemoProps((current) => ({ ...current, selectedValues: nextValue.join(",") }));
+      "data-comparison-control-props": serializeCheckboxGroupDemoProps(demoProps),
+      children: jsx(
+        SpectrumCheckboxGroup,
+        {
+          label: demoProps.label,
+          ...valueProps,
+          size: demoProps.size,
+          orientation: demoProps.orientation,
+          labelPosition: demoProps.labelPosition,
+          labelAlign: demoProps.labelAlign,
+          necessityIndicator: demoProps.necessityIndicator,
+          name: demoProps.name || undefined,
+          form: demoProps.form || undefined,
+          validationBehavior: demoProps.validationBehavior || undefined,
+          description: demoProps.description,
+          errorMessage: demoProps.errorMessage,
+          contextualHelp: demoProps.withContextualHelp
+            ? jsxs(SpectrumContextualHelp, {
+                children: [
+                  jsx(SpectrumHeading, { children: "Notification help" }),
+                  jsx(SpectrumContent, { children: "Choose every channel that should alert you." }),
+                ],
+              })
+            : undefined,
+          isEmphasized: demoProps.isEmphasized,
+          isDisabled: demoProps.isDisabled,
+          isReadOnly: demoProps.isReadOnly,
+          isRequired: demoProps.isRequired,
+          isInvalid: demoProps.isInvalid,
+          onChange: (nextValue) => {
+            const nextSelectedValues = nextValue.map(String);
+            setValue(nextSelectedValues);
+            setDemoProps((current) =>
+              current.valueSource === "value"
+                ? { ...current, selectedValues: nextSelectedValues.join(",") }
+                : current,
+            );
+          },
+          children: checkboxGroupItems.map((item) =>
+            jsx(SpectrumCheckbox, { value: item.value, children: item.label }, item.value),
+          ),
         },
-        children: checkboxGroupItems.map((item) =>
-          jsx(SpectrumCheckbox, { value: item.value, children: item.label }, item.value),
-        ),
-      }),
+        renderKey,
+      ),
     }),
     colorScheme,
   );

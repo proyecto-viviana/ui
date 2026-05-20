@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { Checkbox, CheckboxContext, CheckboxGroup, Form } from "../src";
+import { Checkbox, CheckboxContext, CheckboxGroup, CheckboxGroupContext, Form } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
 
@@ -374,6 +374,80 @@ describe("Checkbox", () => {
       expect(root).toHaveStyle({ margin: "1px" });
       expect(ref).toHaveBeenCalledWith(root);
       expect(inputRef).toHaveBeenCalledWith(checkbox);
+    });
+
+    it("passes CheckboxGroup form props through descendant checkbox inputs", () => {
+      render(() => (
+        <CheckboxGroup
+          label="Notification channels"
+          name="channels"
+          form="settingsForm"
+          isRequired
+          validationBehavior="aria"
+        >
+          <Checkbox value="email">Email</Checkbox>
+          <Checkbox value="sms">SMS</Checkbox>
+        </CheckboxGroup>
+      ));
+
+      const group = screen.getByRole("group", { name: "Notification channels" });
+      const email = screen.getByRole("checkbox", { name: "Email" });
+
+      expect(group).toBeInTheDocument();
+      expect(email).toHaveAttribute("name", "channels");
+      expect(email).toHaveAttribute("form", "settingsForm");
+      expect(email).toHaveAttribute("aria-required", "true");
+    });
+
+    it("merges CheckboxGroupContext props, unsafe style, and refs", () => {
+      const ref = vi.fn();
+
+      render(() => (
+        <CheckboxGroupContext.Provider
+          value={{
+            label: "Context notifications",
+            defaultValue: ["sms"],
+            name: "channels",
+            form: "settingsForm",
+            UNSAFE_className: "context-group",
+            UNSAFE_style: { margin: "2px" },
+            ref,
+          }}
+        >
+          <CheckboxGroup>
+            <Checkbox value="email">Email</Checkbox>
+            <Checkbox value="sms">SMS</Checkbox>
+          </CheckboxGroup>
+        </CheckboxGroupContext.Provider>
+      ));
+
+      const group = screen.getByRole("group", { name: "Context notifications" });
+      const sms = screen.getByRole("checkbox", { name: "SMS" });
+
+      expect(group).toHaveClass("context-group");
+      expect(group).toHaveStyle({ margin: "2px" });
+      expect(ref).toHaveBeenCalledWith(group);
+      expect(sms).toBeChecked();
+      expect(sms).toHaveAttribute("name", "channels");
+      expect(sms).toHaveAttribute("form", "settingsForm");
+    });
+
+    it("inherits Form props on CheckboxGroup without forcing required on selected children", () => {
+      render(() => (
+        <Form isRequired isDisabled necessityIndicator="label" size="XL">
+          <CheckboxGroup label="Channels" defaultValue={["email"]}>
+            <Checkbox value="email">Email</Checkbox>
+            <Checkbox value="sms">SMS</Checkbox>
+          </CheckboxGroup>
+        </Form>
+      ));
+
+      const email = screen.getByRole("checkbox", { name: "Email" });
+
+      expect(email).toBeDisabled();
+      expect(email).toBeChecked();
+      expect(email).not.toHaveAttribute("aria-required");
+      expect(screen.getByText("(required)")).toBeInTheDocument();
     });
 
     it("allows custom data attributes to be passed through", () => {
