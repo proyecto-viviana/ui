@@ -428,6 +428,11 @@ describe("createButton", () => {
       expect(buttonProps["aria-controls"]).toBe("menu-1");
     });
 
+    it("passes through aria-details", () => {
+      const { buttonProps } = createButton({ "aria-details": "details-1" });
+      expect(buttonProps["aria-details"]).toBe("details-1");
+    });
+
     it("passes through aria-current", () => {
       const { buttonProps } = createButton({ "aria-current": "page" });
       expect(buttonProps["aria-current"]).toBe("page");

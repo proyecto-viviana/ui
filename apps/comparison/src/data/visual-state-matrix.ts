@@ -506,6 +506,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "The docs-style prop controls drive the same children, variant, fillStyle, size, staticColor, disabled, and pending props into both stacks.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM attribute contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/button-visual.spec.ts",
+      note: "Asserts styled visual props remain class-driven like React S2 and do not leak Solid-only data-variant, data-style, data-size, or data-static-color root attributes while retaining RAC state data attributes.",
+    },
+    {
       id: "styled.props.visual-matrix",
       label: "Documented visual prop matrix",
       kind: "static",

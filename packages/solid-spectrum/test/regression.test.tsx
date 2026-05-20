@@ -119,9 +119,9 @@ function normalizeIds(html: string): string {
 }
 
 function expectS2Button(button: HTMLElement, text: string): void {
-  expect(button).toHaveAttribute("data-variant", "primary");
-  expect(button).toHaveAttribute("data-style", "fill");
-  expect(button).toHaveAttribute("data-size", "M");
+  expect(button).not.toHaveAttribute("data-variant");
+  expect(button).not.toHaveAttribute("data-style");
+  expect(button).not.toHaveAttribute("data-size");
   expect(button).toHaveAttribute("type", "button");
   expect(button.textContent).toContain(text);
   expect(button.querySelector('[data-rsp-slot="text"]')?.textContent).toBe(text);
@@ -134,7 +134,7 @@ afterEach(() => cleanup());
 // ═══════════════════════════════════════════════════════════════
 
 describe("Regression: Button", () => {
-  it("renders with role, S2 data attributes, and text slot", () => {
+  it("renders with role, React S2 root attributes, and text slot", () => {
     render(() => <Button>Save</Button>);
     const btn = screen.getByRole("button");
     expect(btn).toBeInTheDocument();

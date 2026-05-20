@@ -859,6 +859,17 @@ describe("Button", () => {
       expect(button).toHaveAttribute("aria-describedby", "desc");
     });
 
+    it("should support aria-details", () => {
+      render(() => (
+        <>
+          <span id="details">Detailed help</span>
+          <Button aria-details="details">Test</Button>
+        </>
+      ));
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-details", "details");
+    });
+
     it("should support aria-pressed for toggle buttons", () => {
       render(() => <Button aria-pressed={true}>Toggle</Button>);
       const button = screen.getByRole("button");

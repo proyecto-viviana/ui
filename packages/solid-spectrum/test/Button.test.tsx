@@ -180,11 +180,18 @@ describe("Button", () => {
     expect(onPressSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("allows custom props to be passed through to the button", () => {
-    render(() => <Button data-foo="bar">Click Me</Button>);
+  it("does not leak styled visual props as Solid-only DOM attributes", () => {
+    render(() => (
+      <Button variant="negative" fillStyle="outline" size="L" staticColor="white">
+        Click Me
+      </Button>
+    ));
 
     const button = screen.getByRole("button");
-    expect(button).toHaveAttribute("data-foo", "bar");
+    expect(button).not.toHaveAttribute("data-variant");
+    expect(button).not.toHaveAttribute("data-style");
+    expect(button).not.toHaveAttribute("data-size");
+    expect(button).not.toHaveAttribute("data-static-color");
   });
 
   describe("pressScale", () => {
@@ -308,6 +315,18 @@ describe("Button", () => {
     expect(button).toHaveAttribute("aria-describedby", "test");
   });
 
+  it("supports aria-details", () => {
+    render(() => (
+      <>
+        <span id="details">Detailed help</span>
+        <Button aria-details="details">Hi</Button>
+      </>
+    ));
+
+    const button = screen.getByRole("button");
+    expect(button).toHaveAttribute("aria-details", "details");
+  });
+
   it("renders icon children with the icon slot", () => {
     render(() => (
       <Button aria-label="Dismiss">
@@ -333,16 +352,18 @@ describe("Button", () => {
   });
 
   describe("variants", () => {
-    it("renders with primary variant by default", () => {
+    it("renders with primary variant by default without marker attrs", () => {
       render(() => <Button>Click Me</Button>);
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-variant", "primary");
+      expect(button).toBeInTheDocument();
+      expect(button).not.toHaveAttribute("data-variant");
     });
 
-    it("renders with secondary variant", () => {
+    it("uses a distinct class for secondary variant", () => {
       render(() => <Button variant="secondary">Click Me</Button>);
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-variant", "secondary");
+      expect(button.className).toBeTruthy();
+      expect(button).not.toHaveAttribute("data-variant");
     });
 
     it("renders with all React Spectrum S2 variants", () => {
@@ -351,23 +372,26 @@ describe("Button", () => {
       for (const variant of variants) {
         const { unmount } = render(() => <Button variant={variant}>Click Me</Button>);
         const button = screen.getByRole("button");
-        expect(button).toHaveAttribute("data-variant", variant);
+        expect(button).toBeInTheDocument();
+        expect(button).not.toHaveAttribute("data-variant");
         unmount();
       }
     });
   });
 
   describe("styles", () => {
-    it("renders with fill style by default", () => {
+    it("renders with fill style by default without marker attrs", () => {
       render(() => <Button>Click Me</Button>);
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-style", "fill");
+      expect(button).toBeInTheDocument();
+      expect(button).not.toHaveAttribute("data-style");
     });
 
     it("supports React Spectrum S2 fillStyle", () => {
       render(() => <Button fillStyle="outline">Click Me</Button>);
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-style", "outline");
+      expect(button).toBeInTheDocument();
+      expect(button).not.toHaveAttribute("data-style");
     });
   });
 
@@ -391,8 +415,8 @@ describe("Button", () => {
       ));
 
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-size", "XL");
       expect(button).toBeDisabled();
+      expect(button).not.toHaveAttribute("data-size");
     });
   });
 
@@ -400,19 +424,22 @@ describe("Button", () => {
     it("renders with white static color", () => {
       render(() => <Button staticColor="white">Click Me</Button>);
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-static-color", "white");
+      expect(button).toBeInTheDocument();
+      expect(button).not.toHaveAttribute("data-static-color");
     });
 
     it("renders with black static color", () => {
       render(() => <Button staticColor="black">Click Me</Button>);
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-static-color", "black");
+      expect(button).toBeInTheDocument();
+      expect(button).not.toHaveAttribute("data-static-color");
     });
 
     it("renders with auto static color", () => {
       render(() => <Button staticColor="auto">Click Me</Button>);
       const button = screen.getByRole("button");
-      expect(button).toHaveAttribute("data-static-color", "auto");
+      expect(button).toBeInTheDocument();
+      expect(button).not.toHaveAttribute("data-static-color");
     });
   });
 

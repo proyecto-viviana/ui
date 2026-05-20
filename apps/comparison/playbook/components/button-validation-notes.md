@@ -1,8 +1,117 @@
 # Button Validation Notes
 
-Button is the first component run through the restructured playbook as a real
-validation pass. This file records the sources consulted, layer-by-layer audit,
-code changes, tests, and remaining acceptance blockers.
+Date: 2026-05-20
+Status: accepted
+
+Button has now been normalized against the current acceptance gates. Historical
+evidence from the original 2026-05-13 pass remains below; this closeout records
+the current S2 docs/source parity fixes, root DOM contract checks, and refreshed
+Button-specific gates.
+
+## Current-Gate Closeout
+
+- Scope: direct styled S2 `Button`, plus the Solidaria hook/headless typing
+  required to support its documented root API. `Button family` remains a
+  separate component-family note.
+- Sources rechecked: React Spectrum S2 Button docs/API, React Aria Button
+  docs/API, `@react-spectrum/s2/src/Button.tsx`, RAC Button source, Solidaria
+  button hook/headless sources, Solid Spectrum Button source, comparison route
+  controls, and Button visual specs.
+- Result: accepted for the Button root. Solid now exposes the documented S2
+  Button API, omits React S2's intentionally hidden RAC/custom props from the
+  styled public type, preserves React Aria state data attributes, and no longer
+  emits Solid-only visual prop marker attributes on the root.
+
+## Acceptance Gate Checklist
+
+- [x] Public API: comparison controls and ledger include the current documented
+      Button API, including `aria-current`, `aria-details`, `aria-disabled`,
+      `aria-expanded`, `aria-haspopup`, `aria-pressed`, `autoFocus`, `id`, `slot`,
+      `UNSAFE_className`, and `UNSAFE_style`.
+- [x] Styled public type: `ButtonProps` matches the S2 docs/source intent by
+      omitting custom `render`, `isPendingFocusable`, hover callback internals, raw
+      `onClick`, link/non-native element props, and `allowFocusWhenDisabled`.
+- [x] DOM contract: visual props remain class-driven like React S2 and do not
+      leak `data-variant`, `data-style`, `data-size`, or `data-static-color` on the
+      Button root.
+- [x] Accessibility contract: `aria-details` is typed and tested at hook,
+      headless, and styled layers; existing pending/focus/press semantics remain
+      covered.
+- [x] Harness contract: Button interactive controls cover the docs-style option
+      surface, and a focused Playwright assertion guards root DOM attribute parity.
+- [x] Evidence handoff: visual-state matrix, component README status, this note,
+      unit tests, build, and Button visual spec are refreshed for this pass.
+
+## Agent Workflow
+
+| Step                    | Status | Evidence                                                                         |
+| ----------------------- | ------ | -------------------------------------------------------------------------------- |
+| Research                | done   | React Spectrum S2 Button docs/API, React Aria Button docs/API, source audit      |
+| Baseline and source map | done   | Existing Button note plus current S2 source/API recheck                          |
+| Implementation          | done   | Button type narrowing, root attr cleanup, `aria-details` typing                  |
+| Harness                 | done   | Comparison Button API ledger and root DOM attribute e2e gate                     |
+| Verification            | done   | Focused package tests, comparison build, Button visual e2e, report/guard refresh |
+| Handoff                 | done   | Matrix row, README normalization status, closeout note, commit                   |
+
+## Behavior State Machine
+
+- Stable states: default, disabled, pending, icon-leading, icon-only, each
+  documented `variant`, `fillStyle`, `size`, and `staticColor` option.
+- Transient states: hover, pressed, keyboard focus-visible, and delayed pending
+  spinner remain covered by the existing Button visual and family behavior
+  specs.
+- Cleanup contract: changing visual props must only change S2 generated classes
+  and computed styles; it must not create Solid-only root marker attributes.
+- Press contract: Button activation remains owned by React Aria `onPress`
+  semantics, with pending suppression and focusability covered by existing unit
+  and family specs.
+
+## Accessibility And I18n
+
+- Button remains a native `button` by default, with React Aria press/focus
+  semantics and documented ARIA prop forwarding.
+- `aria-details` is now present in Solidaria public typing and covered at
+  `createButton`, headless Button, and styled S2 Button layers.
+- Existing pending coverage continues to assert focusability, disabled
+  semantics, progressbar exposure, and press suppression.
+- No locale-specific formatting or bidirectional text behavior is introduced by
+  this root API/DOM-contract pass.
+
+## Style Source-To-Computed
+
+- React S2 Button source drives visual props through generated classes rather
+  than public root `data-*` markers.
+- Solid S2 Button now follows that contract: `variant`, `fillStyle`, `size`, and
+  `staticColor` affect class generation and computed output, not root marker
+  attributes.
+- React Aria state attributes such as hover, pressed, focus, disabled, and
+  pending remain valid because RAC Button emits those state attributes and S2
+  style branches depend on them.
+- The new visual-state row `styled.root-dom-contract` links this source contract
+  to `e2e/button-visual.spec.ts`.
+
+## Evidence And Caveats
+
+- Current report refresh:
+  - `comparison:report:gaps`: official entries `69`, live on both sides `47`,
+    missing/gap `22`, visual states tracked `253`, visual evidence states `76`,
+    strict pair-diff states `46`, blocked states `22`.
+  - `comparison:report:exports`: React S2 value exports `208`,
+    `solid-spectrum` public value exports `157`, missing React S2 value exports
+    `57`, extra Solid exports `6`, missing catalogue root exports `0`.
+  - `guard:rac-export-gap`: missing Solidaria Components RAC exports `0`.
+- Button-specific focused tests pass for Solidaria hook, Solidaria Components
+  Button, Solid Spectrum Button, Button family context, and Button regression
+  coverage.
+- The comparison app build passes after the Button API/type changes.
+- `e2e/button-visual.spec.ts` passes and includes the root DOM attribute parity
+  guard.
+- Full shared `packages/solid-spectrum/test/regression.test.tsx` still contains
+  unrelated existing snapshot/assertion drift in non-Button suites, so this
+  pass uses the focused Button regression gate rather than accepting unrelated
+  snapshot churn.
+- `LinkButton`, `ActionButton`, and other Button-family component root marker
+  contracts remain owned by their own component passes.
 
 ## Target
 
@@ -166,7 +275,8 @@ code changes, tests, and remaining acceptance blockers.
   - no stale pressed, hovered, pending, focus-visible, timers, or event listeners
     after release, blur, pending false, unmount, or route change.
 - Visual-state rows changed:
-  - none in this pass; existing focused Button suite was reused.
+  - added `styled.root-dom-contract` to assert React/Solid root DOM attribute
+    parity for styled visual props.
 
 ## Runtime Semantics
 

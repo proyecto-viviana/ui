@@ -602,18 +602,21 @@ test.describe("comparison Button visual parity", () => {
     await expect(reactRoot).toHaveAttribute("data-comparison-button-props", expected);
     await expect(solidRoot).toHaveAttribute("data-comparison-button-props", expected);
     await expect(fixtures.reactCanvas.getByRole("button", { name: "Delete" })).toBeVisible();
-    await expect(fixtures.solidCanvas.getByRole("button", { name: "Delete" })).toHaveAttribute(
-      "data-variant",
-      "negative",
-    );
-    await expect(fixtures.solidCanvas.getByRole("button", { name: "Delete" })).toHaveAttribute(
-      "data-style",
-      "outline",
-    );
-    await expect(fixtures.solidCanvas.getByRole("button", { name: "Delete" })).toHaveAttribute(
-      "data-size",
-      "L",
-    );
+    await expect(fixtures.solidCanvas.getByRole("button", { name: "Delete" })).toBeVisible();
+  });
+
+  test("Button root visual props do not leak as Solid-only DOM attributes", async ({ page }) => {
+    const fixtures = await buttonFixtures(page, {
+      variant: "negative",
+      fillStyle: "outline",
+      size: "L",
+      staticColor: "white",
+    });
+
+    for (const attr of ["data-variant", "data-style", "data-size", "data-static-color"]) {
+      await expect(fixtures.reactButtonElement).not.toHaveAttribute(attr);
+      await expect(fixtures.solidButtonElement).not.toHaveAttribute(attr);
+    }
   });
 
   test("Button color scheme control drives React and Solid examples", async ({ page }) => {

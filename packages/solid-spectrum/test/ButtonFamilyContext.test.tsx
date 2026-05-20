@@ -36,8 +36,8 @@ describe("button-family S2 contexts", () => {
     const button = screen.getByRole("button", { name: "Save" });
     const link = screen.getByRole("link", { name: "Docs" });
 
-    expect(button).toHaveAttribute("data-size", "XL");
     expect(button).toBeDisabled();
+    expect(button).not.toHaveAttribute("data-size");
     expect(link).toHaveAttribute("data-size", "XL");
   });
 

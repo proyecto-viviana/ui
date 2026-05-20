@@ -7,7 +7,25 @@ export type ButtonFillStyle = "fill" | "outline";
 export type ButtonSize = "S" | "M" | "L" | "XL";
 export type StaticColor = "white" | "black" | "auto";
 
-export interface ButtonProps extends Omit<HeadlessButtonProps, "class" | "children" | "style"> {
+type StyledButtonBaseProps = Omit<
+  HeadlessButtonProps,
+  | "class"
+  | "children"
+  | "style"
+  | "render"
+  | "isPendingFocusable"
+  | "onClick"
+  | "onHoverStart"
+  | "onHoverEnd"
+  | "onHoverChange"
+  | "elementType"
+  | "href"
+  | "target"
+  | "rel"
+  | "allowFocusWhenDisabled"
+>;
+
+export interface ButtonProps extends StyledButtonBaseProps {
   /** The content to display in the Button. */
   children?: JSX.Element;
   /** The visual style of the Button. */

@@ -2,6 +2,8 @@ import { Accessor } from "solid-js";
 import { PressEvent } from "../interactions";
 
 export interface AriaButtonProps {
+  /** The element's unique identifier. */
+  id?: string | number;
   /** Whether the button is disabled. */
   isDisabled?: Accessor<boolean> | boolean;
   /** Handler called when the press is released over the target. */
@@ -51,6 +53,8 @@ export interface AriaButtonProps {
   "aria-labelledby"?: string;
   /** The id of the element that describes the button. */
   "aria-describedby"?: string;
+  /** The id of the element that provides detailed, extended description for the button. */
+  "aria-details"?: string;
   /** Identifies the element (or elements) whose contents or presence are controlled by the button. */
   "aria-controls"?: string;
   /** Indicates the current "pressed" state of toggle buttons. */

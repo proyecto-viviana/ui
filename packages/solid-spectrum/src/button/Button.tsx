@@ -41,16 +41,23 @@ import {
   type RefLike,
 } from "./spectrum-context";
 
+type RuntimeButtonProps = ButtonProps & {
+  onHoverChange?: (isHovered: boolean) => void;
+};
+
 export function Button(props: ButtonProps): JSX.Element {
-  const providerProps = useProviderProps(useFormProps(props));
-  const contextProps = getSlottedContextProps(useButtonContext(), props.slot);
+  const runtimeProps = props as RuntimeButtonProps;
+  const providerProps = useProviderProps(useFormProps(runtimeProps));
+  const contextProps = getSlottedContextProps(useButtonContext(), runtimeProps.slot);
   const defaultProps: Partial<ButtonProps> = {
     variant: "primary",
     size: "M",
     fillStyle: "fill",
   };
 
-  const merged = useFormProps(mergeProps(defaultProps, providerProps, contextProps ?? {}, props));
+  const merged = useFormProps(
+    mergeProps(defaultProps, providerProps, contextProps ?? {}, runtimeProps),
+  );
 
   const [local, headlessProps] = splitProps(merged, [
     "variant",
@@ -74,13 +81,13 @@ export function Button(props: ButtonProps): JSX.Element {
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
-  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, runtimeProps.styles);
   const mergedUnsafeStyle = () =>
-    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, runtimeProps.UNSAFE_style);
   let buttonElement: HTMLButtonElement | undefined;
   const assignButtonRefs = mergeContextRefs(
     (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
-    props.ref,
+    runtimeProps.ref,
   );
 
   const variant = (): ButtonVariant => local.variant ?? "primary";
@@ -237,10 +244,6 @@ export function Button(props: ButtonProps): JSX.Element {
       }}
       class={getClassName}
       style={getPressScaleStyle}
-      data-variant={variant()}
-      data-style={fillStyle()}
-      data-size={size()}
-      data-static-color={local.staticColor || undefined}
     >
       <ButtonContent />
     </HeadlessButton>
