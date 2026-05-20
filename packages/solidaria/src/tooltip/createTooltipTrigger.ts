@@ -18,9 +18,9 @@ export interface TooltipTriggerProps {
   isDisabled?: boolean;
   /**
    * The trigger mechanism for the tooltip.
-   * @default 'focus'
+   * @default 'hover'
    */
-  trigger?: "focus";
+  trigger?: "focus" | "hover";
   /**
    * Whether the tooltip should close when the trigger is pressed.
    * @default true
@@ -103,7 +103,7 @@ export function createTooltipTrigger(
   ref: () => HTMLElement | null | undefined,
 ): TooltipTriggerAria {
   const isDisabled = () => props.isDisabled ?? false;
-  const trigger = () => props.trigger;
+  const trigger = () => props.trigger ?? "hover";
   const shouldCloseOnPress = () => props.shouldCloseOnPress ?? true;
 
   const tooltipId = createId();
@@ -113,7 +113,7 @@ export function createTooltipTrigger(
   let isFocused = false;
 
   const handleShow = () => {
-    if (isHovered || isFocused) {
+    if (!isDisabled() && (isHovered || isFocused)) {
       state.open(isFocused);
     }
   };
@@ -145,7 +145,7 @@ export function createTooltipTrigger(
   });
 
   const onHoverStart = () => {
-    if (trigger() === "focus") {
+    if (isDisabled() || trigger() === "focus") {
       return;
     }
     // Hover events (onPointerEnter) only fire from pointer interactions,
@@ -155,7 +155,7 @@ export function createTooltipTrigger(
   };
 
   const onHoverEnd = () => {
-    if (trigger() === "focus") {
+    if (isDisabled() || trigger() === "focus") {
       return;
     }
     isFocused = false;
@@ -164,7 +164,7 @@ export function createTooltipTrigger(
   };
 
   const closeOnPress = () => {
-    if (!shouldCloseOnPress()) {
+    if (isDisabled() || !shouldCloseOnPress()) {
       return;
     }
     isFocused = false;
@@ -180,6 +180,10 @@ export function createTooltipTrigger(
   };
 
   const onFocus = () => {
+    if (isDisabled()) {
+      return;
+    }
+
     const visible = isFocusVisible();
     if (visible) {
       isFocused = true;
@@ -193,14 +197,14 @@ export function createTooltipTrigger(
     handleHide(true);
   };
 
-  const { hoverProps } = createHover({
+  const { hoverProps } = createHover(() => ({
     isDisabled: isDisabled(),
     onHoverStart,
     onHoverEnd,
-  });
+  }));
 
   const { focusableProps } = createFocusable({
-    isDisabled: isDisabled(),
+    isDisabled,
     onFocus,
     onBlur,
   });
@@ -209,7 +213,7 @@ export function createTooltipTrigger(
     ...focusableProps,
     ...hoverProps,
     get "aria-describedby"() {
-      return state.isOpen() ? tooltipId : undefined;
+      return !isDisabled() && state.isOpen() ? tooltipId : undefined;
     },
     onPointerDown: closeOnPress,
     onKeyDown: onKeyDownPress,

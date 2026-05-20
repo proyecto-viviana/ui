@@ -7,15 +7,11 @@ import { Tooltip, TooltipTrigger, SimpleTooltip } from "../src/tooltip";
 import { Button } from "../src/button";
 
 describe("Tooltip (solid-spectrum)", () => {
-  describe("variant styles", () => {
-    const variantCases = [
-      { variant: "default" as const, expected: "bg-neutral-900" },
-      { variant: "neutral" as const, expected: "bg-neutral-800" },
-      { variant: "info" as const, expected: "bg-blue-600" },
-    ];
+  describe("legacy variant prop", () => {
+    const variants = ["default", "neutral", "info"] as const;
 
-    variantCases.forEach(({ variant, expected }) => {
-      it(`applies ${variant} variant classes`, () => {
+    variants.forEach((variant) => {
+      it(`accepts ${variant} without changing the S2 surface contract`, () => {
         render(() => (
           <TooltipTrigger isOpen>
             <Button>Trigger</Button>
@@ -24,13 +20,15 @@ describe("Tooltip (solid-spectrum)", () => {
         ));
 
         const tooltip = screen.getByRole("tooltip");
-        expect(tooltip.className).toContain(expected);
+        expect(tooltip).toHaveTextContent("Tip content");
+        expect(tooltip.className).not.toContain("bg-neutral-900");
+        expect(tooltip.className).not.toContain("bg-blue-600");
       });
     });
   });
 
   describe("defaults", () => {
-    it("uses default variant when none specified", () => {
+    it("uses the generated S2 tooltip class when none specified", () => {
       render(() => (
         <TooltipTrigger isOpen>
           <Button>Trigger</Button>
@@ -39,8 +37,8 @@ describe("Tooltip (solid-spectrum)", () => {
       ));
 
       const tooltip = screen.getByRole("tooltip");
-      // default variant has bg-neutral-900
-      expect(tooltip.className).toContain("bg-neutral-900");
+      expect(tooltip.className).toContain("-macro-dynamic");
+      expect(tooltip.className).not.toContain("animate-in");
     });
 
     it("uses top placement by default", () => {
@@ -54,28 +52,52 @@ describe("Tooltip (solid-spectrum)", () => {
       const tooltip = screen.getByRole("tooltip");
       expect(tooltip).toHaveAttribute("data-placement", "top");
     });
+
+    it("renders the S2 arrow by default", () => {
+      render(() => (
+        <TooltipTrigger isOpen>
+          <Button>Trigger</Button>
+          <Tooltip>Tip content</Tooltip>
+        </TooltipTrigger>
+      ));
+
+      const tooltip = screen.getByRole("tooltip");
+      expect(tooltip.querySelector("[data-rsp-slot='tooltip-arrow']")).toBeInTheDocument();
+    });
   });
 
   describe("placement", () => {
-    const placements = ["top", "bottom", "left", "right"] as const;
+    const placements = ["top", "bottom", "left", "right", "start", "end"] as const;
 
     placements.forEach((placement) => {
-      it(`sets data-placement="${placement}"`, () => {
+      it(`sets data-placement from TooltipTrigger placement="${placement}"`, () => {
         render(() => (
-          <TooltipTrigger isOpen>
+          <TooltipTrigger isOpen placement={placement}>
             <Button>Trigger</Button>
-            <Tooltip placement={placement}>Tip</Tooltip>
+            <Tooltip>Tip</Tooltip>
           </TooltipTrigger>
         ));
 
         const tooltip = screen.getByRole("tooltip");
-        expect(tooltip).toHaveAttribute("data-placement", placement);
+        const expected = placement === "start" ? "left" : placement === "end" ? "right" : placement;
+        expect(tooltip).toHaveAttribute("data-placement", expected);
       });
+    });
+
+    it("preserves the legacy Tooltip placement prop", () => {
+      render(() => (
+        <TooltipTrigger isOpen>
+          <Button>Trigger</Button>
+          <Tooltip placement="bottom">Tip</Tooltip>
+        </TooltipTrigger>
+      ));
+
+      expect(screen.getByRole("tooltip")).toHaveAttribute("data-placement", "bottom");
     });
   });
 
   describe("arrow", () => {
-    it("renders arrow when showArrow={true}", () => {
+    it("renders the S2 arrow svg when showArrow={true}", () => {
       render(() => (
         <TooltipTrigger isOpen>
           <Button>Trigger</Button>
@@ -84,82 +106,59 @@ describe("Tooltip (solid-spectrum)", () => {
       ));
 
       const tooltip = screen.getByRole("tooltip");
-      // Arrow is a div with border-4 class
-      const arrow = tooltip.querySelector(".border-4");
+      const arrow = tooltip.querySelector("[data-rsp-slot='tooltip-arrow']");
+      const svg = tooltip.querySelector("svg");
+      const path = tooltip.querySelector("path");
       expect(arrow).toBeInTheDocument();
+      expect(svg).toHaveAttribute("viewBox", "0 0 10 5");
+      expect(path).toHaveAttribute(
+        "d",
+        "M4.29289 4.29289L0 0H10L5.70711 4.29289C5.31658 4.68342 4.68342 4.68342 4.29289 4.29289Z",
+      );
     });
 
-    it("does not render arrow by default", () => {
+    it("does not render arrow when showArrow={false}", () => {
       render(() => (
         <TooltipTrigger isOpen>
           <Button>Trigger</Button>
-          <Tooltip>No arrow</Tooltip>
+          <Tooltip showArrow={false}>No arrow</Tooltip>
         </TooltipTrigger>
       ));
 
       const tooltip = screen.getByRole("tooltip");
-      const arrow = tooltip.querySelector(".border-4");
+      const arrow = tooltip.querySelector("[data-rsp-slot='tooltip-arrow']");
       expect(arrow).not.toBeInTheDocument();
     });
 
-    it("arrow has variant-specific border color for default variant", () => {
+    it("uses generated S2 arrow classes instead of border triangles", () => {
       render(() => (
         <TooltipTrigger isOpen>
           <Button>Trigger</Button>
-          <Tooltip showArrow variant="default">
-            Content
-          </Tooltip>
+          <Tooltip>Content</Tooltip>
         </TooltipTrigger>
       ));
 
       const tooltip = screen.getByRole("tooltip");
-      const arrow = tooltip.querySelector(".border-4");
-      expect(arrow!.className).toContain("border-neutral-900");
-    });
-
-    it("arrow has variant-specific border color for info variant", () => {
-      render(() => (
-        <TooltipTrigger isOpen>
-          <Button>Trigger</Button>
-          <Tooltip showArrow variant="info">
-            Content
-          </Tooltip>
-        </TooltipTrigger>
-      ));
-
-      const tooltip = screen.getByRole("tooltip");
-      const arrow = tooltip.querySelector(".border-4");
-      expect(arrow!.className).toContain("border-blue-600");
+      expect(tooltip.querySelector(".border-4")).not.toBeInTheDocument();
+      expect(tooltip.querySelector("svg")?.className.baseVal).toContain("-macro-dynamic");
     });
   });
 
-  describe("animation classes", () => {
-    it("includes animation base classes", () => {
+  describe("class passthrough", () => {
+    it("combines UNSAFE_className and class aliases with the S2 class", () => {
       render(() => (
         <TooltipTrigger isOpen>
           <Button>Trigger</Button>
-          <Tooltip>Animated</Tooltip>
+          <Tooltip UNSAFE_className="unsafe-class" class="legacy-class">
+            Styled
+          </Tooltip>
         </TooltipTrigger>
       ));
 
       const tooltip = screen.getByRole("tooltip");
-      expect(tooltip.className).toContain("animate-in");
-      expect(tooltip.className).toContain("fade-in-0");
-      expect(tooltip.className).toContain("zoom-in-95");
-    });
-
-    it("includes exit animation classes", () => {
-      render(() => (
-        <TooltipTrigger isOpen>
-          <Button>Trigger</Button>
-          <Tooltip>Animated</Tooltip>
-        </TooltipTrigger>
-      ));
-
-      const tooltip = screen.getByRole("tooltip");
-      expect(tooltip.className).toContain("data-[exiting]:animate-out");
-      expect(tooltip.className).toContain("data-[exiting]:fade-out-0");
-      expect(tooltip.className).toContain("data-[exiting]:zoom-out-95");
+      expect(tooltip).toHaveClass("unsafe-class");
+      expect(tooltip).toHaveClass("legacy-class");
+      expect(tooltip.className).toContain("-macro-dynamic");
     });
   });
 

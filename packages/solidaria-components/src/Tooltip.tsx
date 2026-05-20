@@ -43,12 +43,23 @@ export interface TooltipRenderProps {
   /** Whether the tooltip is currently exiting (for animations). */
   isExiting: boolean;
   /** The placement of the tooltip relative to the trigger. */
-  placement: "top" | "bottom" | "left" | "right" | null;
+  placement: TooltipResolvedPlacement | null;
 }
+
+export type TooltipPlacement = "top" | "bottom" | "left" | "right" | "start" | "end";
+export type TooltipResolvedPlacement = "top" | "bottom" | "left" | "right";
 
 export interface TooltipTriggerComponentProps extends StateProps, AriaProps {
   /** The children of the tooltip trigger (trigger element and tooltip). */
   children: JSX.Element;
+  /** The placement of the tooltip relative to the trigger. */
+  placement?: TooltipPlacement;
+  /** The placement padding between the tooltip and viewport edge. */
+  containerPadding?: number;
+  /** The additional offset along the cross axis. */
+  crossOffset?: number;
+  /** Whether the tooltip should flip when there is insufficient room. */
+  shouldFlip?: boolean;
 }
 
 export interface TooltipProps extends SlotProps {
@@ -63,15 +74,30 @@ export interface TooltipProps extends SlotProps {
   /** Whether the tooltip is open by default (uncontrolled). */
   defaultOpen?: boolean;
   /** The placement of the tooltip relative to the trigger. */
-  placement?: "top" | "bottom" | "left" | "right";
-  /** Whether to render the tooltip in a portal. */
+  placement?: TooltipPlacement;
+  /** The placement padding between the tooltip and viewport edge. */
+  containerPadding?: number;
+  /** The additional offset along the cross axis. */
+  crossOffset?: number;
+  /** Whether the tooltip should flip when there is insufficient room. */
   shouldFlip?: boolean;
+  /** Whether the tooltip should be disabled. */
+  isDisabled?: boolean;
+  /** The element language. */
+  lang?: string;
+  /** The text direction. */
+  dir?: "ltr" | "rtl";
 }
 
 interface TooltipTriggerContextValue {
   state: TooltipTriggerState;
   tooltipProps: { id: string };
   triggerRef: () => HTMLElement | null | undefined;
+  placement: () => TooltipPlacement | undefined;
+  containerPadding: () => number | undefined;
+  crossOffset: () => number | undefined;
+  shouldFlip: () => boolean | undefined;
+  isDisabled: () => boolean | undefined;
 }
 
 const TooltipTriggerContext = createContext<TooltipTriggerContextValue | null>(null);
@@ -132,6 +158,11 @@ export const TooltipTrigger: ParentComponent<TooltipTriggerComponentProps> = (pr
     state,
     tooltipProps,
     triggerRef: () => triggerRef,
+    placement: () => props.placement,
+    containerPadding: () => props.containerPadding,
+    crossOffset: () => props.crossOffset,
+    shouldFlip: () => props.shouldFlip,
+    isDisabled: () => props.isDisabled,
   };
 
   const processChildren = () => {
@@ -172,11 +203,71 @@ const TriggerWrapper: ParentComponent<{
   ref: (el: HTMLElement) => void;
 }> = (props) => {
   const child = () => props.children as JSX.Element;
+  const [triggerElement, setTriggerElement] = createSignal<HTMLElement | null>(null);
+
+  createEffect(() => {
+    const element = triggerElement();
+    if (!element) {
+      return;
+    }
+
+    const triggerProps = props.triggerProps as Record<string, unknown>;
+    const describedBy = triggerProps["aria-describedby"] as string | undefined;
+    if (describedBy) {
+      element.setAttribute("aria-describedby", describedBy);
+    } else {
+      element.removeAttribute("aria-describedby");
+    }
+
+    const listeners: Array<[string, EventListener]> = [];
+    const eventProps = [
+      ["onFocus", "focus"],
+      ["onBlur", "blur"],
+      ["onPointerEnter", "pointerenter"],
+      ["onPointerLeave", "pointerleave"],
+      ["onPointerOver", "pointerover"],
+      ["onPointerOut", "pointerout"],
+      ["onMouseEnter", "mouseenter"],
+      ["onMouseLeave", "mouseleave"],
+      ["onTouchStart", "touchstart"],
+      ["onPointerDown", "pointerdown"],
+      ["onKeyDown", "keydown"],
+    ] as const;
+
+    for (const [propName, eventName] of eventProps) {
+      const handler = triggerProps[propName];
+      if (typeof handler === "function") {
+        const listener = handler as EventListener;
+        element.addEventListener(eventName, listener);
+        listeners.push([eventName, listener]);
+      }
+    }
+
+    onCleanup(() => {
+      for (const [eventName, listener] of listeners) {
+        element.removeEventListener(eventName, listener);
+      }
+      if (describedBy && element.getAttribute("aria-describedby") === describedBy) {
+        element.removeAttribute("aria-describedby");
+      }
+    });
+  });
 
   // We wrap in a span with display:contents to not affect layout.
   // However, display:contents makes getBoundingClientRect return zeros,
   // so we pass a ref callback that finds the first actual element child.
   const handleRef = (span: HTMLSpanElement) => {
+    const findElementChild = (el: Element): HTMLElement | null => {
+      for (const child of el.children) {
+        if (child instanceof HTMLElement) {
+          return child;
+        }
+        const found = findElementChild(child);
+        if (found) return found;
+      }
+      return null;
+    };
+
     // Find the first element child that has dimensions (not display:contents)
     const findVisibleChild = (el: Element): HTMLElement | null => {
       if (el instanceof HTMLElement) {
@@ -195,16 +286,20 @@ const TriggerWrapper: ParentComponent<{
     // Use requestAnimationFrame to ensure children are rendered and have dimensions
     // This is necessary because SolidJS may not have computed child layout yet
     const resolveRef = () => {
+      const elementChild = findElementChild(span);
       const visibleChild = findVisibleChild(span);
-      if (visibleChild) {
-        props.ref(visibleChild);
-      } else {
-        props.ref(span);
-      }
+      setTriggerElement(elementChild ?? visibleChild ?? span);
+      props.ref(visibleChild ?? elementChild ?? span);
     };
+
+    const elementChild = findElementChild(span);
+    if (elementChild) {
+      setTriggerElement(elementChild);
+    }
 
     const immediateChild = findVisibleChild(span);
     if (immediateChild) {
+      setTriggerElement(elementChild ?? immediateChild);
       props.ref(immediateChild);
     } else {
       requestAnimationFrame(resolveRef);
@@ -212,7 +307,7 @@ const TriggerWrapper: ParentComponent<{
   };
 
   return (
-    <span {...props.triggerProps} ref={handleRef} style={{ display: "contents" }}>
+    <span ref={handleRef} style={{ display: "contents" }}>
       {child()}
     </span>
   );
@@ -242,9 +337,13 @@ export function Tooltip(props: TooltipProps): JSX.Element {
   });
 
   const state = () => context?.state ?? localState;
-  const placement = () => props.placement ?? "top";
+  const placement = () => props.placement ?? context?.placement() ?? "top";
+  const containerPadding = () => props.containerPadding ?? context?.containerPadding() ?? 12;
+  const crossOffset = () => props.crossOffset ?? context?.crossOffset() ?? 0;
+  const shouldFlip = () => props.shouldFlip ?? context?.shouldFlip() ?? true;
+  const isDisabled = () => props.isDisabled ?? context?.isDisabled() ?? false;
 
-  const isOpen = () => state().isOpen();
+  const isOpen = () => !isDisabled() && state().isOpen();
 
   // Exit animation state machine: 'closed' | 'open' | 'exiting'
   // Keeps the tooltip mounted during exit animation so CSS transitions can play.
@@ -301,6 +400,9 @@ export function Tooltip(props: TooltipProps): JSX.Element {
         state={state()}
         contextTooltipProps={context?.tooltipProps ?? {}}
         placement={placement()}
+        containerPadding={containerPadding()}
+        crossOffset={crossOffset()}
+        shouldFlip={shouldFlip()}
         triggerRef={context?.triggerRef ?? (() => null)}
         isExiting={isExiting()}
         onTooltipRef={setTooltipEl}
@@ -316,7 +418,10 @@ function TooltipContent(
   props: TooltipProps & {
     state: TooltipTriggerState;
     contextTooltipProps: { id?: string };
-    placement: "top" | "bottom" | "left" | "right";
+    placement: TooltipPlacement;
+    containerPadding: number;
+    crossOffset: number;
+    shouldFlip: boolean;
     triggerRef: () => HTMLElement | null | undefined;
     isExiting: boolean;
     onTooltipRef: (el: HTMLDivElement | null) => void;
@@ -337,6 +442,9 @@ function TooltipContent(
     left: "0px",
     visibility: "visible" as "hidden" | "visible",
   });
+  const [renderedPlacement, setRenderedPlacement] = createSignal<TooltipResolvedPlacement>(
+    resolvePlacement(props.placement),
+  );
 
   // Enter animation state: starts true on mount, clears after first animation frame.
   // Uses getAnimations() to detect CSS animations/transitions - if none exist (JSDOM,
@@ -376,7 +484,7 @@ function TooltipContent(
   const values = createMemo<TooltipRenderProps>(() => ({
     isEntering: isEntering(),
     isExiting: props.isExiting,
-    placement: props.placement,
+    placement: renderedPlacement(),
   }));
 
   const renderProps = useRenderProps(
@@ -406,30 +514,48 @@ function TooltipContent(
     // when the element might be positioned off-screen initially
     const tooltipWidth = tooltipRef.offsetWidth;
     const tooltipHeight = tooltipRef.offsetHeight;
-    const offset = 8; // Gap between trigger and tooltip
+    const offset = 9;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const containerPadding = props.containerPadding;
+    const crossOffset = props.crossOffset;
+    const placement = maybeFlipPlacement(
+      resolvePlacement(props.placement),
+      triggerRect,
+      tooltipWidth,
+      tooltipHeight,
+      viewportWidth,
+      viewportHeight,
+      containerPadding,
+      offset,
+      props.shouldFlip,
+    );
 
     let top = 0;
     let left = 0;
 
-    switch (props.placement) {
+    switch (placement) {
       case "top":
         top = triggerRect.top - tooltipHeight - offset;
-        left = triggerRect.left + (triggerRect.width - tooltipWidth) / 2;
+        left = triggerRect.left + (triggerRect.width - tooltipWidth) / 2 + crossOffset;
         break;
       case "bottom":
         top = triggerRect.bottom + offset;
-        left = triggerRect.left + (triggerRect.width - tooltipWidth) / 2;
+        left = triggerRect.left + (triggerRect.width - tooltipWidth) / 2 + crossOffset;
         break;
       case "left":
-        top = triggerRect.top + (triggerRect.height - tooltipHeight) / 2;
+        top = triggerRect.top + (triggerRect.height - tooltipHeight) / 2 + crossOffset;
         left = triggerRect.left - tooltipWidth - offset;
         break;
       case "right":
-        top = triggerRect.top + (triggerRect.height - tooltipHeight) / 2;
+        top = triggerRect.top + (triggerRect.height - tooltipHeight) / 2 + crossOffset;
         left = triggerRect.right + offset;
         break;
     }
 
+    left = clamp(left, containerPadding, viewportWidth - tooltipWidth - containerPadding);
+    top = clamp(top, containerPadding, viewportHeight - tooltipHeight - containerPadding);
+    setRenderedPlacement(placement);
     setPositionStyles({
       top: `${top}px`,
       left: `${left}px`,
@@ -473,13 +599,23 @@ function TooltipContent(
     });
   });
 
-  const domProps = filterDOMProps(props);
+  const domProps = filterDOMProps(props, { global: true });
 
   // Extract ref from ariaTooltipProps to avoid type conflicts (SolidJS ref types are element-specific)
   const { ref: _ariaRef, ...cleanAriaProps } = ariaTooltipProps as Record<string, unknown>;
 
   const setRef = (el: HTMLDivElement) => {
     tooltipRef = el;
+    if (!props.dir) {
+      el.dir = getDocumentDirection();
+    }
+    if (!props.lang) {
+      const documentLang = document.documentElement.lang;
+      const navigatorLang = typeof navigator !== "undefined" ? navigator.language : "";
+      el.lang = documentLang.includes("-")
+        ? documentLang
+        : navigatorLang || documentLang || "en-US";
+    }
     props.onTooltipRef(el);
   };
 
@@ -502,7 +638,7 @@ function TooltipContent(
           ...positionStyles(),
           ...renderProps.style(),
         }}
-        data-placement={props.placement}
+        data-placement={renderedPlacement()}
         data-entering={isEntering() || undefined}
         data-exiting={props.isExiting || undefined}
       >
@@ -510,6 +646,63 @@ function TooltipContent(
       </div>
     </OverlayContainer>
   );
+}
+
+function resolvePlacement(placement: TooltipPlacement): TooltipResolvedPlacement {
+  if (placement === "start") {
+    return getDocumentDirection() === "rtl" ? "right" : "left";
+  }
+  if (placement === "end") {
+    return getDocumentDirection() === "rtl" ? "left" : "right";
+  }
+  return placement;
+}
+
+function getDocumentDirection(): "ltr" | "rtl" {
+  if (typeof document === "undefined") {
+    return "ltr";
+  }
+
+  return document.documentElement.dir === "rtl" ? "rtl" : "ltr";
+}
+
+function maybeFlipPlacement(
+  placement: TooltipResolvedPlacement,
+  triggerRect: DOMRect,
+  tooltipWidth: number,
+  tooltipHeight: number,
+  viewportWidth: number,
+  viewportHeight: number,
+  containerPadding: number,
+  offset: number,
+  shouldFlip: boolean,
+): TooltipResolvedPlacement {
+  if (!shouldFlip) {
+    return placement;
+  }
+
+  switch (placement) {
+    case "top":
+      return triggerRect.top - tooltipHeight - offset < containerPadding ? "bottom" : placement;
+    case "bottom":
+      return triggerRect.bottom + tooltipHeight + offset > viewportHeight - containerPadding
+        ? "top"
+        : placement;
+    case "left":
+      return triggerRect.left - tooltipWidth - offset < containerPadding ? "right" : placement;
+    case "right":
+      return triggerRect.right + tooltipWidth + offset > viewportWidth - containerPadding
+        ? "left"
+        : placement;
+  }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  if (max < min) {
+    return min;
+  }
+
+  return Math.min(Math.max(value, min), max);
 }
 
 export type { TooltipTriggerState };

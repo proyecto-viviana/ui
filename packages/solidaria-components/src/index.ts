@@ -402,7 +402,9 @@ export {
   TooltipContext,
   TooltipTriggerStateContext,
   type TooltipProps,
+  type TooltipPlacement,
   type TooltipRenderProps,
+  type TooltipResolvedPlacement,
   type TooltipTriggerComponentProps,
   type TooltipTriggerState,
 } from "./Tooltip";

@@ -160,6 +160,11 @@ import {
   statusLightVariantOptions,
 } from "./statuslight-demo";
 import { switchDemoDefaults, switchSizeOptions } from "./switch-demo";
+import {
+  tooltipDemoDefaults,
+  tooltipPlacementOptions,
+  tooltipTriggerOptions,
+} from "./tooltip-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
 import {
@@ -3864,6 +3869,90 @@ const selectBoxGroupControls: ComponentControlGroup = {
   note: "Modeled from the S2 SelectBoxGroup docs control surface. The viewer drives orientation, selection mode, selected key set, and disabled state into both stacks. Source-only illustration and disabled-item coverage stays on dedicated route states and specs rather than extra docs controls.",
 };
 
+const tooltipControls: ComponentControlGroup = {
+  slug: "tooltip",
+  title: "Tooltip",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "actionLabel",
+      label: "trigger aria-label",
+      kind: "text",
+      defaultValue: tooltipDemoDefaults.actionLabel,
+    },
+    {
+      name: "children",
+      label: "children",
+      kind: "text",
+      defaultValue: tooltipDemoDefaults.children,
+    },
+    {
+      name: "placement",
+      label: "placement",
+      kind: "radio",
+      defaultValue: tooltipDemoDefaults.placement,
+      options: options(tooltipPlacementOptions),
+    },
+    {
+      name: "trigger",
+      label: "trigger",
+      kind: "radio",
+      defaultValue: tooltipDemoDefaults.trigger,
+      options: options(tooltipTriggerOptions),
+    },
+    {
+      name: "delay",
+      label: "delay",
+      kind: "text",
+      defaultValue: tooltipDemoDefaults.delay,
+    },
+    {
+      name: "isOpen",
+      label: "isOpen",
+      kind: "switch",
+      defaultValue: tooltipDemoDefaults.isOpen,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: tooltipDemoDefaults.isDisabled,
+    },
+    {
+      name: "shouldFlip",
+      label: "shouldFlip",
+      kind: "switch",
+      defaultValue: tooltipDemoDefaults.shouldFlip,
+    },
+    {
+      name: "shouldCloseOnPress",
+      label: "shouldCloseOnPress",
+      kind: "switch",
+      defaultValue: tooltipDemoDefaults.shouldCloseOnPress,
+    },
+  ],
+  apiProps: [
+    "children",
+    "containerPadding",
+    "crossOffset",
+    "defaultOpen",
+    "delay",
+    "isDisabled",
+    "isOpen",
+    "onOpenChange",
+    "placement",
+    "shouldCloseOnPress",
+    "shouldFlip",
+    "trigger",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 Tooltip docs/API viewer. The route drives icon-only ActionButton trigger composition, content, placement, trigger mode, delay, disabled suppression, controlled open, flip, and close-on-press into both stacks; non-interactive/disabled-button help remains ContextualHelp coverage.",
+};
+
 export const componentControlGroups = {
   accordion: accordionControls,
   actionbar: actionBarControls,
@@ -3905,6 +3994,7 @@ export const componentControlGroups = {
   switch: switchControls,
   textarea: textAreaControls,
   textfield: textFieldControls,
+  tooltip: tooltipControls,
   togglebutton: toggleButtonControls,
   togglebuttongroup: toggleButtonGroupControls,
 } as const satisfies Record<string, ComponentControlGroup>;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, fireEvent, screen, waitFor } from "@solidjs/testing-library";
+import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { resetTooltipState } from "@proyecto-viviana/solid-stately";
 import { Tooltip, TooltipTrigger } from "../src/Tooltip";
@@ -40,6 +40,26 @@ describe("TooltipTrigger", () => {
     expect(screen.getByText("Tooltip content")).toBeInTheDocument();
   });
 
+  it("should describe the actual trigger element when controlled open", async () => {
+    vi.useRealTimers();
+
+    render(() => (
+      <TooltipTrigger isOpen>
+        <Button data-testid="trigger">Hover me</Button>
+        <Tooltip data-testid="tooltip">Tooltip content</Tooltip>
+      </TooltipTrigger>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("trigger")).toHaveAttribute(
+        "aria-describedby",
+        screen.getByTestId("tooltip").id,
+      );
+    });
+
+    vi.useFakeTimers();
+  });
+
   it("should hide tooltip when isOpen is false", () => {
     render(() => (
       <TooltipTrigger isOpen={false}>
@@ -62,12 +82,18 @@ describe("TooltipTrigger", () => {
       </TooltipTrigger>
     ));
 
-    // Get the wrapper span that has the trigger props (not the button itself)
     const trigger = screen.getByTestId("trigger");
-    const wrapper = trigger.closest("span")!;
 
-    // Fire pointerEnter on the wrapper which has the hover handlers
-    fireEvent.pointerEnter(wrapper, { pointerType: "mouse" });
+    await waitFor(() => {
+      expect(trigger.closest("span")).toBeInTheDocument();
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    const hoverEvent = new Event("pointerenter", { cancelable: true });
+    Object.defineProperty(hoverEvent, "pointerType", { value: "mouse" });
+    trigger.dispatchEvent(hoverEvent);
 
     await waitFor(() => {
       expect(onOpenChange).toHaveBeenCalledWith(true);
@@ -169,6 +195,46 @@ describe("Tooltip", () => {
     ));
 
     expect(screen.getByTestId("tooltip")).toHaveAttribute("data-placement", "bottom");
+  });
+
+  it("should inherit placement from TooltipTrigger", () => {
+    render(() => (
+      <TooltipTrigger isOpen placement="bottom">
+        <Button>Hover me</Button>
+        <Tooltip data-testid="tooltip">Content</Tooltip>
+      </TooltipTrigger>
+    ));
+
+    expect(screen.getByTestId("tooltip")).toHaveAttribute("data-placement", "bottom");
+  });
+
+  it("should resolve start and end placements using document direction", () => {
+    const originalDir = document.documentElement.dir;
+    document.documentElement.dir = "rtl";
+
+    try {
+      render(() => (
+        <TooltipTrigger isOpen placement="start">
+          <Button>Hover me</Button>
+          <Tooltip data-testid="tooltip">Content</Tooltip>
+        </TooltipTrigger>
+      ));
+
+      expect(screen.getByTestId("tooltip")).toHaveAttribute("data-placement", "right");
+    } finally {
+      document.documentElement.dir = originalDir;
+    }
+  });
+
+  it("should suppress controlled open state when disabled on the trigger", () => {
+    render(() => (
+      <TooltipTrigger isOpen isDisabled>
+        <Button>Hover me</Button>
+        <Tooltip data-testid="tooltip">Content</Tooltip>
+      </TooltipTrigger>
+    ));
+
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
   });
 
   it("should work standalone with controlled state", () => {

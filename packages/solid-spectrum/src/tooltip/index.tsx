@@ -2,12 +2,17 @@ import { type JSX, Show, splitProps } from "solid-js";
 import {
   Tooltip as HeadlessTooltip,
   TooltipTrigger as HeadlessTooltipTrigger,
+  type TooltipPlacement,
   type TooltipProps as HeadlessTooltipProps,
   type TooltipTriggerComponentProps as HeadlessTooltipTriggerProps,
   type TooltipRenderProps,
+  type TooltipResolvedPlacement,
 } from "@proyecto-viviana/solidaria-components";
+import { centerPadding, setColorScheme, style, type StyleString } from "../s2-style";
+import { mergeStyles } from "../s2-style/runtime";
+import { useTheme, type ColorScheme } from "../provider";
 
-export type TooltipPlacement = "top" | "bottom" | "left" | "right";
+export type { TooltipPlacement };
 export type TooltipVariant = "default" | "neutral" | "info";
 
 export interface TooltipTriggerProps extends HeadlessTooltipTriggerProps {
@@ -20,48 +25,103 @@ export interface TooltipProps extends Omit<HeadlessTooltipProps, "class" | "styl
   children: JSX.Element;
   /** The position of the tooltip relative to the trigger. */
   placement?: TooltipPlacement;
-  /** Visual variant of the tooltip. */
+  /** Deprecated legacy visual variant. Spectrum 2 tooltips use a single neutral treatment. */
   variant?: TooltipVariant;
-  /** Additional CSS class name. */
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
-  /** Whether to show an arrow pointing to the trigger. */
+  /** Backward-compatible arrow toggle. Spectrum 2 tooltips render an arrow by default. */
   showArrow?: boolean;
 }
 
-// Note: Position is now calculated by the headless layer (solidaria-components)
-// so we don't need CSS positioning classes here
-const baseStyles = [
-  "px-3 py-2 rounded-lg",
-  "text-sm font-medium",
-  "shadow-lg",
-  "pointer-events-auto",
-  "animate-in fade-in-0 zoom-in-95",
-  "data-[exiting]:animate-out data-[exiting]:fade-out-0 data-[exiting]:zoom-out-95",
-].join(" ");
+const tooltip = style<TooltipRenderProps & { colorScheme: ColorScheme | null }>({
+  ...setColorScheme(),
+  justifyContent: "center",
+  alignItems: "center",
+  maxWidth: 160,
+  minHeight: 24,
+  boxSizing: "border-box",
+  font: "ui-sm",
+  color: {
+    default: "gray-25" as never,
+    forcedColors: "ButtonText",
+  },
+  borderWidth: {
+    forcedColors: 1,
+  },
+  borderStyle: {
+    forcedColors: "solid",
+  },
+  borderColor: {
+    forcedColors: "transparent",
+  },
+  backgroundColor: "neutral",
+  borderRadius: "default",
+  paddingX: "edge-to-text",
+  paddingY: centerPadding(),
+  transition: "default",
+  transitionDuration: 200,
+  transitionTimingFunction: {
+    isExiting: "in",
+  },
+  translateX: {
+    placement: {
+      left: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      right: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  translateY: {
+    placement: {
+      top: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      bottom: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  opacity: {
+    isEntering: 0,
+    isExiting: 0,
+  },
+  overflowWrap: {
+    default: "break-word",
+  },
+});
 
-const variantStyles: Record<TooltipVariant, string> = {
-  default: "bg-neutral-900 text-on-color dark:bg-neutral-100 dark:text-neutral-900",
-  neutral: "bg-neutral-800 text-neutral-100 dark:bg-neutral-200 dark:text-neutral-900",
-  info: "bg-blue-600 text-on-color dark:bg-blue-500",
-};
-
-const arrowStyles: Record<TooltipPlacement, string> = {
-  top: "bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-l-transparent border-r-transparent border-b-transparent",
-  bottom:
-    "top-0 left-1/2 -translate-x-1/2 -translate-y-full border-l-transparent border-r-transparent border-t-transparent",
-  left: "right-0 top-1/2 -translate-y-1/2 translate-x-full border-t-transparent border-b-transparent border-r-transparent",
-  right:
-    "left-0 top-1/2 -translate-y-1/2 -translate-x-full border-t-transparent border-b-transparent border-l-transparent",
-};
-
-const getArrowBorderColor = (variant: TooltipVariant): string => {
-  const colors: Record<TooltipVariant, string> = {
-    default: "border-neutral-900 dark:border-neutral-100",
-    neutral: "border-neutral-800 dark:border-neutral-200",
-    info: "border-blue-600 dark:border-blue-500",
-  };
-  return colors[variant];
-};
+const arrowStyles = style<TooltipRenderProps>({
+  display: "block",
+  fill: "gray-800" as never,
+  width: 10,
+  height: 5,
+  rotate: {
+    placement: {
+      top: 0,
+      bottom: "180deg",
+      left: "-90deg",
+      right: "90deg",
+    },
+  },
+  translateX: {
+    placement: {
+      left: "-25%",
+      right: "25%",
+    },
+  },
+});
 
 /**
  * TooltipTrigger wraps around a trigger element and a Tooltip.
@@ -85,45 +145,91 @@ export function TooltipTrigger(props: TooltipTriggerProps): JSX.Element {
  *
  * @example
  * ```tsx
- * <TooltipTrigger>
+ * <TooltipTrigger placement="top">
  *   <Button>Save</Button>
- *   <Tooltip placement="top">Save your changes</Tooltip>
+ *   <Tooltip>Save your changes</Tooltip>
  * </TooltipTrigger>
  * ```
  */
 export function Tooltip(props: TooltipProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["placement", "variant", "class", "showArrow"]);
+  const theme = useTheme();
+  const [local, rest] = splitProps(props, [
+    "children",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "showArrow",
+    "variant",
+  ]);
 
-  const placement = () => local.placement ?? "top";
-  const variant = () => local.variant ?? "default";
+  const showArrow = () => local.showArrow !== false;
 
   return (
     <HeadlessTooltip
       {...rest}
-      placement={placement()}
-      class={(_renderProps: TooltipRenderProps) => {
-        const classes = [baseStyles, variantStyles[variant()], local.class ?? ""]
+      class={(renderProps: TooltipRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          mergeStyles(
+            tooltip({
+              ...renderProps,
+              placement: renderProps.placement ?? "top",
+              colorScheme: theme.colorScheme,
+            }),
+            local.styles,
+          ),
+        ]
           .filter(Boolean)
-          .join(" ");
-        return classes;
-      }}
+          .join(" ")
+      }
+      style={local.UNSAFE_style}
     >
       {(renderProps: TooltipRenderProps) => (
         <>
-          {props.children}
-          <Show when={local.showArrow}>
+          <Show when={showArrow()}>
             <div
-              class={[
-                "absolute w-0 h-0 border-4",
-                arrowStyles[renderProps.placement ?? placement()],
-                getArrowBorderColor(variant()),
-              ].join(" ")}
-            />
+              aria-hidden="true"
+              data-rsp-slot="tooltip-arrow"
+              style={arrowFrameStyle(renderProps.placement ?? "top")}
+            >
+              <svg
+                class={arrowStyles({ ...renderProps, placement: renderProps.placement ?? "top" })}
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 10 5"
+              >
+                <path d="M4.29289 4.29289L0 0H10L5.70711 4.29289C5.31658 4.68342 4.68342 4.68342 4.29289 4.29289Z" />
+              </svg>
+            </div>
           </Show>
+          {local.children}
         </>
       )}
     </HeadlessTooltip>
   );
+}
+
+function arrowFrameStyle(placement: TooltipResolvedPlacement): JSX.CSSProperties {
+  const base: JSX.CSSProperties = {
+    position: "absolute",
+    width: "10px",
+    height: "5px",
+    "line-height": 0,
+    "pointer-events": "none",
+  };
+
+  switch (placement) {
+    case "bottom":
+      return { ...base, top: "-5px", left: "50%", transform: "translateX(-50%)" };
+    case "left":
+      return { ...base, right: "-7.5px", top: "50%", transform: "translateY(-50%)" };
+    case "right":
+      return { ...base, left: "-7.5px", top: "50%", transform: "translateY(-50%)" };
+    case "top":
+    default:
+      return { ...base, bottom: "-5px", left: "50%", transform: "translateX(-50%)" };
+  }
 }
 
 export interface SimpleTooltipProps {
