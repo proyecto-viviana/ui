@@ -262,6 +262,25 @@ test.describe("comparison button-family behavior contracts", () => {
     }
   });
 
+  test("ToggleButtonGroup disallowEmptySelection keeps the active key on both stacks", async ({
+    page,
+  }) => {
+    const cards = await buttonFamilyCards(
+      page,
+      "togglebuttongroup",
+      "?disallowEmptySelection=true",
+    );
+
+    for (const card of [cards.react, cards.solid]) {
+      const root = card.locator("[data-comparison-selected-keys]").first();
+      const left = card.getByRole("radio", { name: "Left" });
+      await expect(root).toHaveAttribute("data-comparison-selected-keys", "left");
+      await left.click();
+      await expect(root).toHaveAttribute("data-comparison-selected-keys", "left");
+      await expect(left).toBeChecked();
+    }
+  });
+
   test("staticColor controls expose official S2 options only", async ({ page }) => {
     for (const slug of staticColorComponents) {
       const cards = await buttonFamilyCards(page, slug);

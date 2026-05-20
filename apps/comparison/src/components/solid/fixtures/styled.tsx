@@ -5504,6 +5504,7 @@ function SolidSpectrumToggleButtonGroupDemo() {
         "data-comparison-group-props": serializedProps,
         "data-comparison-control-props": serializedProps,
         selectionMode: props.selectionMode,
+        disallowEmptySelection: props.disallowEmptySelection,
         size: props.size,
         density: props.density,
         orientation: props.orientation,

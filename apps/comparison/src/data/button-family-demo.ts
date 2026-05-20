@@ -76,6 +76,7 @@ export interface ButtonGroupDemoProps {
 export interface ToggleButtonGroupDemoProps {
   selectionMode: ToggleButtonGroupSelectionMode;
   selectedKeys: string;
+  disallowEmptySelection: boolean;
   size: ActionButtonDemoSize;
   density: GroupDensity;
   orientation: GroupOrientation;
@@ -132,6 +133,7 @@ export const buttonGroupDemoDefaults: ButtonGroupDemoProps = {
 export const toggleButtonGroupDemoDefaults: ToggleButtonGroupDemoProps = {
   selectionMode: "single",
   selectedKeys: "left",
+  disallowEmptySelection: false,
   size: actionButtonDemoDefaults.size,
   density: "regular",
   orientation: "horizontal",
@@ -287,6 +289,7 @@ export function toggleButtonGroupDemoPropsFromSearch(search: string): ToggleButt
       params.get("selectedKeys"),
       toggleButtonGroupDemoDefaults.selectedKeys,
     ),
+    disallowEmptySelection: booleanParam(params.get("disallowEmptySelection")),
     size: isOneOf(size, actionButtonSizeOptions) ? size : toggleButtonGroupDemoDefaults.size,
     density: isOneOf(density, groupDensityOptions)
       ? density
@@ -439,6 +442,7 @@ export function normalizeToggleButtonGroupDemoProps(
       props.selectedKeys,
       selectionMode === "multiple" ? "left,center" : toggleButtonGroupDemoDefaults.selectedKeys,
     ),
+    disallowEmptySelection: props.disallowEmptySelection === true,
     size: isOneOf(props.size, actionButtonSizeOptions)
       ? props.size
       : toggleButtonGroupDemoDefaults.size,
@@ -515,6 +519,7 @@ export function serializeToggleButtonGroupDemoProps(props: ToggleButtonGroupDemo
   return JSON.stringify({
     selectionMode: props.selectionMode,
     selectedKeys: props.selectedKeys,
+    disallowEmptySelection: props.disallowEmptySelection,
     size: props.size,
     density: props.density,
     orientation: props.orientation,

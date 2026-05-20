@@ -3690,6 +3690,12 @@ const toggleButtonGroupControls: ComponentControlGroup = {
       defaultValue: toggleButtonGroupDemoDefaults.selectedKeys,
     },
     {
+      name: "disallowEmptySelection",
+      label: "disallowEmptySelection",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
       name: "size",
       label: "size",
       kind: "radio",
@@ -3754,6 +3760,7 @@ const toggleButtonGroupControls: ComponentControlGroup = {
     "selectionMode",
     "selectedKeys",
     "defaultSelectedKeys",
+    "disallowEmptySelection",
     "onSelectionChange",
     "size",
     "density",
@@ -3770,7 +3777,7 @@ const toggleButtonGroupControls: ComponentControlGroup = {
     "UNSAFE_className",
     "UNSAFE_style",
   ],
-  note: "Modeled from the S2 ToggleButtonGroup docs control surface. The viewer drives group selection, size, density, orientation, quiet/emphasized/justified treatment, static color, icon content, and disabled state into both stacks.",
+  note: "Modeled from the S2 ToggleButtonGroup docs control surface. The viewer drives group selection, empty-selection behavior, size, density, orientation, quiet/emphasized/justified treatment, static color, icon content, and disabled state into both stacks.",
 };
 
 const segmentedControlControls: ComponentControlGroup = {

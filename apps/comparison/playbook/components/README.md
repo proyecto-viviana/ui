@@ -57,4 +57,5 @@ partial if any gate remains unresolved.
 - [Text](./text-validation-notes.md)
 - [Toast](./toast-validation-notes.md)
 - [ToggleButton](./togglebutton-validation-notes.md)
+- [ToggleButtonGroup](./togglebuttongroup-validation-notes.md)
 - [Tooltip](./tooltip-validation-notes.md)

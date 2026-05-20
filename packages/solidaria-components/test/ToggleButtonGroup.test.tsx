@@ -112,6 +112,39 @@ describe("ToggleButtonGroup", () => {
     expect(onSelectionChange).toHaveBeenCalledWith(new Set(["a", "b"]));
   });
 
+  it("respects disallowEmptySelection in single selection mode", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <ToggleButtonGroup
+        selectionMode="single"
+        disallowEmptySelection
+        defaultSelectedKeys={["a"]}
+        onSelectionChange={onSelectionChange}
+        aria-label="Text align"
+      >
+        {() => (
+          <>
+            <ToggleButton id="a" aria-label="A">
+              A
+            </ToggleButton>
+            <ToggleButton id="b" aria-label="B">
+              B
+            </ToggleButton>
+          </>
+        )}
+      </ToggleButtonGroup>
+    ));
+
+    const radios = screen.getAllByRole("radio");
+    expect(radios[0]).toHaveAttribute("aria-checked", "true");
+
+    await user.click(radios[0]);
+
+    expect(radios[0]).toHaveAttribute("aria-checked", "true");
+    expect(onSelectionChange).not.toHaveBeenCalledWith(new Set());
+  });
+
   it("uses keyboard arrow navigation between items", () => {
     render(() => (
       <ToggleButtonGroup selectionMode="multiple" aria-label="Formatting">

@@ -1171,7 +1171,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/grouped-button-controls-visual.spec.ts",
-      note: "The docs-style prop controls drive selectionMode, selectedKeys, size, density, orientation, staticColor, icon placement, quiet, emphasized, justified, and disabled props into both stacks.",
+      note: "The docs-style prop controls drive selectionMode, selectedKeys, disallowEmptySelection, size, density, orientation, staticColor, icon placement, quiet, emphasized, justified, and disabled props into both stacks.",
     },
   ],
   segmentedcontrol: [

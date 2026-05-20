@@ -1873,6 +1873,7 @@ function ReactToggleButtonGroupDemo() {
           selectedKeys: Array.from(selectedKeys).join(","),
         }),
         selectionMode: groupProps.selectionMode,
+        disallowEmptySelection: groupProps.disallowEmptySelection,
         size: groupProps.size,
         density: groupProps.density,
         orientation: groupProps.orientation,

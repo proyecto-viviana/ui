@@ -108,6 +108,7 @@ const groupedControlCases: GroupedControlCase[] = [
     expectedProps: {
       selectionMode: "single",
       selectedKeys: "left",
+      disallowEmptySelection: false,
       size: "M",
       density: "regular",
       orientation: "horizontal",
@@ -127,10 +128,11 @@ const groupedControlCases: GroupedControlCase[] = [
     title: "ToggleButtonGroup compact vertical selected icon start",
     id: "togglebuttongroup-compact-vertical-selected-icon-start",
     query:
-      "?density=compact&orientation=vertical&size=XL&isQuiet=true&isEmphasized=true&isJustified=true&iconPlacement=start&selectedKeys=center",
+      "?density=compact&orientation=vertical&size=XL&isQuiet=true&isEmphasized=true&isJustified=true&iconPlacement=start&selectedKeys=center&disallowEmptySelection=true",
     controlRole: "radio",
     controlName: "Center",
     expectedProps: {
+      disallowEmptySelection: true,
       size: "XL",
       density: "compact",
       orientation: "vertical",
@@ -423,6 +425,7 @@ test.describe("comparison grouped button controls visual parity", () => {
     await form.locator('input[name="density"][value="compact"]').check();
     await form.locator('input[name="orientation"][value="vertical"]').check();
     await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await form.locator('input[name="disallowEmptySelection"]').check();
     await form.locator('input[name="isEmphasized"]').check();
     await form.locator('input[name="isJustified"]').check();
 
@@ -439,6 +442,7 @@ test.describe("comparison grouped button controls visual parity", () => {
     const expected = {
       selectionMode: "single",
       selectedKeys: "center",
+      disallowEmptySelection: true,
       size: "XL",
       density: "compact",
       orientation: "vertical",

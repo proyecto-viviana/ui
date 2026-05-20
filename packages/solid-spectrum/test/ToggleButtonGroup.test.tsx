@@ -63,6 +63,31 @@ describe("ToggleButtonGroup (solid-spectrum)", () => {
     expect(onSelectionChange).toHaveBeenCalledWith(new Set(["bold", "italic"]));
   });
 
+  it("forwards disallowEmptySelection to grouped toggle state", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <ToggleButtonGroup
+        aria-label="Text alignment"
+        selectionMode="single"
+        disallowEmptySelection
+        defaultSelectedKeys={["left"]}
+        onSelectionChange={onSelectionChange}
+      >
+        <ToggleButton id="left">Left</ToggleButton>
+        <ToggleButton id="right">Right</ToggleButton>
+      </ToggleButtonGroup>
+    ));
+
+    const left = screen.getByRole("radio", { name: "Left" });
+    expect(left).toHaveAttribute("aria-checked", "true");
+
+    await user.click(left);
+
+    expect(left).toHaveAttribute("aria-checked", "true");
+    expect(onSelectionChange).not.toHaveBeenCalledWith(new Set());
+  });
+
   it("passes S2 group styling props and disabled state to child ToggleButtons", async () => {
     const user = setupUser();
     const onPress = vi.fn();
