@@ -186,6 +186,15 @@ import {
   type RadioGroupDemoProps,
 } from "@comparison/data/radiogroup-demo";
 import {
+  initialSegmentedControlSelectedKey,
+  normalizeSegmentedControlDemoProps,
+  segmentedControlDemoPropsFromWindow,
+  segmentedControlItems,
+  serializeSegmentedControlDemoProps,
+  type SegmentedControlDemoProps,
+  type SegmentedControlKey,
+} from "@comparison/data/segmentedcontrol-demo";
+import {
   normalizeNumberFieldDemoProps,
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
@@ -557,33 +566,6 @@ function stringParamFromWindow<T extends string>(
 function selectedKeysParamFromWindow(fallback: string[]) {
   const value = queryParamFromWindow("selectedKeys");
   return new Set(value ? value.split(",").filter(Boolean) : fallback);
-}
-
-const segmentedControlKeys = ["list", "grid", "board"] as const;
-type SegmentedControlKey = (typeof segmentedControlKeys)[number];
-
-interface SegmentedControlDemoProps {
-  selectedKey: SegmentedControlKey;
-  isJustified: boolean;
-  isDisabled: boolean;
-}
-
-function segmentedControlDemoPropsFromWindow(): SegmentedControlDemoProps {
-  return {
-    selectedKey: stringParamFromWindow("selectedKey", segmentedControlKeys, "list"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-  };
-}
-
-function normalizeSegmentedControlDemoProps(props: Partial<SegmentedControlDemoProps>) {
-  return {
-    selectedKey: segmentedControlKeys.includes(props.selectedKey as SegmentedControlKey)
-      ? (props.selectedKey as SegmentedControlKey)
-      : "list",
-    isJustified: props.isJustified === true,
-    isDisabled: props.isDisabled === true,
-  };
 }
 
 type SelectBoxSelectionMode = "single" | "multiple";
@@ -5582,7 +5564,9 @@ function SolidSpectrumSegmentedControlDemo() {
   const [demoProps, setDemoProps] = createSignal<SegmentedControlDemoProps>(
     segmentedControlDemoPropsFromWindow(),
   );
-  const [selectedKey, setSelectedKey] = createSignal(demoProps().selectedKey);
+  const [selectedKey, setSelectedKey] = createSignal<SegmentedControlKey>(
+    initialSegmentedControlSelectedKey(demoProps()),
+  );
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -5591,7 +5575,7 @@ function SolidSpectrumSegmentedControlDemo() {
   createEffect(() => {
     segmentedControlRoot?.setAttribute(
       "data-comparison-control-props",
-      JSON.stringify(demoProps()),
+      serializeSegmentedControlDemoProps(demoProps()),
     );
   });
 
@@ -5600,7 +5584,7 @@ function SolidSpectrumSegmentedControlDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "segmentedcontrol") {
         const nextProps = normalizeSegmentedControlDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setSelectedKey(nextProps.selectedKey);
+        setSelectedKey(initialSegmentedControlSelectedKey(nextProps));
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -5616,6 +5600,19 @@ function SolidSpectrumSegmentedControlDemo() {
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
     });
   });
+
+  const renderKey = createMemo(() =>
+    [
+      demoProps().selectionSource,
+      demoProps().selectionSource === "defaultSelectedKey"
+        ? demoProps().defaultSelectedKey
+        : demoProps().selectedKey,
+      demoProps().disabledKey,
+      demoProps().iconPlacement,
+      demoProps().isJustified,
+      demoProps().isDisabled,
+    ].join("|"),
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -5640,7 +5637,7 @@ function SolidSpectrumSegmentedControlDemo() {
         [
           createComponent(Show, {
             get when() {
-              return `${selectedKey()}|${demoProps().isJustified}|${demoProps().isDisabled}`;
+              return renderKey();
             },
             keyed: true,
             children: () =>
@@ -5652,18 +5649,39 @@ function SolidSpectrumSegmentedControlDemo() {
                   ref: (element: HTMLElement) => {
                     segmentedControlRoot = element;
                   },
-                  "data-comparison-control-props": JSON.stringify(demoProps()),
+                  "data-comparison-control-props": serializeSegmentedControlDemoProps(demoProps()),
                   isJustified: demoProps().isJustified,
                   isDisabled: demoProps().isDisabled,
-                  selectedKey: selectedKey(),
+                  get selectedKey() {
+                    return demoProps().selectionSource === "selectedKey" ? selectedKey() : null;
+                  },
+                  get defaultSelectedKey() {
+                    return demoProps().selectionSource === "defaultSelectedKey"
+                      ? demoProps().defaultSelectedKey
+                      : undefined;
+                  },
                   onSelectionChange: (key: string | number) =>
                     setSelectedKey(String(key) as SegmentedControlKey),
                 },
-                [
-                  hc(SolidSpectrumSegmentedControlItem, { id: "list" }, ["List"]),
-                  hc(SolidSpectrumSegmentedControlItem, { id: "grid" }, ["Grid"]),
-                  hc(SolidSpectrumSegmentedControlItem, { id: "board" }, ["Board"]),
-                ],
+                segmentedControlItems.map((item) =>
+                  hc(
+                    SolidSpectrumSegmentedControlItem,
+                    {
+                      id: item.id,
+                      get isDisabled() {
+                        return demoProps().disabledKey === item.id;
+                      },
+                      get "aria-label"() {
+                        return demoProps().iconPlacement === "only" ? item.label : undefined;
+                      },
+                    },
+                    solidSingleButtonFamilyChildren(
+                      item.label,
+                      () => demoProps().iconPlacement,
+                      () => s2ToggleButtonText,
+                    ),
+                  ),
+                ),
               ) as unknown as JSX.Element,
           }),
         ],

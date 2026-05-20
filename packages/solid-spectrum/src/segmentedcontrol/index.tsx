@@ -25,6 +25,14 @@ import { control } from "../s2-internal/style-utils";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { useProviderProps } from "../provider";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export interface SegmentedControlProps extends Omit<
   HeadlessToggleButtonGroupProps,
@@ -36,6 +44,8 @@ export interface SegmentedControlProps extends Omit<
   | "defaultSelectedKeys"
   | "onSelectionChange"
   | "orientation"
+  | "slot"
+  | "ref"
 > {
   /** The content to display in the segmented control. */
   children?: JSX.Element;
@@ -55,6 +65,10 @@ export interface SegmentedControlProps extends Omit<
   UNSAFE_style?: JSX.CSSProperties;
   /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the underlying radiogroup element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface SegmentedControlItemProps extends Omit<
@@ -74,6 +88,9 @@ export interface SegmentedControlItemProps extends Omit<
   /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
 }
+
+export const SegmentedControlContext =
+  createContext<SpectrumContextValue<SegmentedControlProps>>(null);
 
 interface InternalSegmentedControlContextValue {
   register?: (id: Key) => void;
@@ -172,7 +189,8 @@ const itemText = style({
  */
 export function SegmentedControl(props: SegmentedControlProps): JSX.Element {
   const providerProps = useProviderProps(props);
-  const merged = mergeProps(providerProps, props);
+  const contextProps = getSlottedContextProps(useContext(SegmentedControlContext), props.slot);
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "isJustified",
@@ -183,16 +201,26 @@ export function SegmentedControl(props: SegmentedControlProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
+    "slot",
+    "ref",
   ]);
 
   const selectedKeys = () => (local.selectedKey != null ? [local.selectedKey] : undefined);
   const defaultSelectedKeys = () =>
     local.defaultSelectedKey != null ? [local.defaultSelectedKey] : undefined;
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
   const className = () =>
     [
-      local.UNSAFE_className,
-      local.class,
-      mergeStyles(segmentedControl.toString() as StyleString, local.styles),
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
+      mergeStyles(segmentedControl.toString() as StyleString, mergedStyles()),
     ]
       .filter(Boolean)
       .join(" ");
@@ -211,8 +239,10 @@ export function SegmentedControl(props: SegmentedControlProps): JSX.Element {
           local.onSelectionChange?.(firstKey);
         }
       }}
+      ref={(element) => assignRef(element)}
+      slot={local.slot ?? undefined}
       class={className()}
-      style={local.UNSAFE_style}
+      style={mergedUnsafeStyle()}
       data-justified={local.isJustified ? "true" : undefined}
       data-disabled={headlessProps.isDisabled ? "true" : undefined}
     >

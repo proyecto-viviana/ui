@@ -42,9 +42,12 @@ export interface S2ActionButtonStyleProps extends S2ActionButtonRenderState {
   isInGroup: boolean;
 }
 
-const iconOnly = ":has([slot=icon], [slot=avatar]):not(:has([data-rsp-slot=text]))";
-const avatarOnly = ":has([slot=avatar]):not(:has([slot=icon], [data-rsp-slot=text]))";
-const textOnly = ":has([data-rsp-slot=text]):not(:has([slot=icon], [slot=avatar]))";
+const iconOnly =
+  ":has([slot=icon], [data-slot=icon], [slot=avatar]):not(:has([data-rsp-slot=text]))";
+const avatarOnly =
+  ":has([slot=avatar]):not(:has([slot=icon], [data-slot=icon], [data-rsp-slot=text]))";
+const textOnly =
+  ":has([data-rsp-slot=text]):not(:has([slot=icon], [data-slot=icon], [slot=avatar]))";
 const controlStyle = control({ shape: "default", icon: true });
 const defaultActionButtonBackground = {
   default: {

@@ -167,6 +167,13 @@ import {
   serializeRadioGroupDemoProps,
 } from "@comparison/data/radiogroup-demo";
 import {
+  initialSegmentedControlSelectedKey,
+  normalizeSegmentedControlDemoProps,
+  segmentedControlDemoPropsFromWindow,
+  segmentedControlItems,
+  serializeSegmentedControlDemoProps,
+} from "@comparison/data/segmentedcontrol-demo";
+import {
   normalizeNumberFieldDemoProps,
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
@@ -481,24 +488,6 @@ function stringParamFromWindow(name, allowed, fallback) {
 function selectedKeysParamFromWindow(fallback) {
   const value = queryParamFromWindow("selectedKeys");
   return new Set(value ? value.split(",").filter(Boolean) : fallback);
-}
-
-const segmentedControlKeys = ["list", "grid", "board"];
-
-function segmentedControlDemoPropsFromWindow() {
-  return {
-    selectedKey: stringParamFromWindow("selectedKey", segmentedControlKeys, "list"),
-    isJustified: booleanParamFromWindow("isJustified"),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-  };
-}
-
-function normalizeSegmentedControlDemoProps(props) {
-  return {
-    selectedKey: segmentedControlKeys.includes(props?.selectedKey) ? props.selectedKey : "list",
-    isJustified: props?.isJustified === true,
-    isDisabled: props?.isDisabled === true,
-  };
 }
 
 function selectedKeysSetFromValue(value, fallback, selectionMode) {
@@ -1910,37 +1899,65 @@ function ReactToggleButtonGroupDemo() {
 
 function ReactSegmentedControlDemo() {
   const [demoProps, setDemoProps] = useState(segmentedControlDemoPropsFromWindow);
-  const [selectedKey, setSelectedKey] = useState(demoProps.selectedKey);
+  const [selectedKey, setSelectedKey] = useState(() =>
+    initialSegmentedControlSelectedKey(demoProps),
+  );
   const colorScheme = useComparisonResolvedTheme();
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "segmentedcontrol") {
         const nextProps = normalizeSegmentedControlDemoProps(event.detail.props);
         setDemoProps(nextProps);
-        setSelectedKey(nextProps.selectedKey);
+        setSelectedKey(initialSegmentedControlSelectedKey(nextProps));
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
+  const selectionProps =
+    demoProps.selectionSource === "defaultSelectedKey"
+      ? { defaultSelectedKey: demoProps.defaultSelectedKey }
+      : { selectedKey };
+  const renderKey = [
+    demoProps.selectionSource,
+    demoProps.selectionSource === "defaultSelectedKey"
+      ? demoProps.defaultSelectedKey
+      : demoProps.selectedKey,
+    demoProps.disabledKey,
+    demoProps.iconPlacement,
+    demoProps.isJustified,
+    demoProps.isDisabled,
+  ].join("|");
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-selected-key": selectedKey,
-      children: jsxs(SpectrumSegmentedControl, {
-        "aria-label": "View mode",
-        "data-comparison-control-root": "segmentedcontrol",
-        "data-comparison-control-props": JSON.stringify(demoProps),
-        isJustified: demoProps.isJustified,
-        isDisabled: demoProps.isDisabled,
-        selectedKey,
-        onSelectionChange: (key) => setSelectedKey(String(key)),
-        children: [
-          jsx(SpectrumSegmentedControlItem, { id: "list", children: "List" }),
-          jsx(SpectrumSegmentedControlItem, { id: "grid", children: "Grid" }),
-          jsx(SpectrumSegmentedControlItem, { id: "board", children: "Board" }),
-        ],
-      }),
+      children: jsxs(
+        SpectrumSegmentedControl,
+        {
+          "aria-label": "View mode",
+          "data-comparison-control-root": "segmentedcontrol",
+          "data-comparison-control-props": serializeSegmentedControlDemoProps(demoProps),
+          isJustified: demoProps.isJustified,
+          isDisabled: demoProps.isDisabled,
+          ...selectionProps,
+          onSelectionChange: (key) => setSelectedKey(String(key)),
+          children: segmentedControlItems.map((item) =>
+            jsx(
+              SpectrumSegmentedControlItem,
+              {
+                id: item.id,
+                isDisabled: demoProps.disabledKey === item.id,
+                "aria-label": demoProps.iconPlacement === "only" ? item.label : void 0,
+                children: renderSingleButtonFamilyChildren(item.label, demoProps.iconPlacement),
+              },
+              item.id,
+            ),
+          ),
+        },
+        renderKey,
+      ),
     }),
     colorScheme,
   );

@@ -1177,7 +1177,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   segmentedcontrol: [
     assertedDefaultState({
       slug: "segmentedcontrol",
-      note: "SegmentedControl default visual evidence exists for both sides and compared with an asserted threshold; icon slots and strict pair-diff coverage remain open.",
+      note: "SegmentedControl default visual evidence exists for both sides and is compared against the current React Spectrum reference.",
     }),
     {
       id: "styled.selection.single",
@@ -1190,6 +1190,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Clicking Grid moves the controlled selected key from list to grid on both stacks.",
     },
     {
+      id: "styled.selection.default-key",
+      label: "Default selected key",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      note: "The route can omit controlled selectedKey, pass defaultSelectedKey, initialize Board selected on both stacks, and then allow uncontrolled selection changes.",
+    },
+    {
       id: "styled.selection-indicator.justified",
       label: "Justified selected indicator",
       kind: "static",
@@ -1200,6 +1210,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Justified Grid-selected SegmentedControl state has current visual evidence and asserts radiogroup semantics, selected key, root background, equal item widths, and selection-indicator geometry against React Spectrum.",
     },
     {
+      id: "styled.item.icon-disabled",
+      label: "Item icon and disabled state",
+      kind: "static",
+      react: "visual",
+      solid: "visual",
+      pairDiff: "asserted",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      note: "Icon-only items preserve accessible names and render disabled item state on both stacks; forced clicks on the disabled item leave selection unchanged.",
+    },
+    {
       id: "styled.props.controls",
       label: "Interactive prop controls",
       kind: "interaction",
@@ -1207,7 +1227,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/collection-button-controls-visual.spec.ts",
-      note: "The docs-style prop controls drive selectedKey, isJustified, and isDisabled into both stacks.",
+      note: "The docs-style prop controls drive selection source, selectedKey, defaultSelectedKey, item isDisabled, icon placement, isJustified, and group isDisabled into both stacks.",
     },
     {
       id: "styled.keyboard.selection",

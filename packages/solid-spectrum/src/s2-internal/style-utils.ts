@@ -256,7 +256,7 @@ interface ControlResult {
   paddingY?: 0 | `[${string}]`;
 }
 
-const iconOnly = ":has([slot=icon]):not(:has([data-rsp-slot=text]))";
+const iconOnly = ":has([slot=icon], [data-slot=icon]):not(:has([data-rsp-slot=text]))";
 
 /**
  * Common styles for a pill or round rect shaped container with text and icon slots.

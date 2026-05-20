@@ -64,7 +64,7 @@ async function segmentedControlGeometry(root: Locator) {
     return {
       role: element.getAttribute("role"),
       rootBackground: window.getComputedStyle(element).backgroundColor,
-      selectedName: selected?.textContent?.trim() ?? "",
+      selectedName: selected?.getAttribute("aria-label") ?? selected?.textContent?.trim() ?? "",
       selectedWidth: selectedRect == null ? null : Number(selectedRect.width.toFixed(4)),
       indicatorWidth: indicatorRect == null ? null : Number(indicatorRect.width.toFixed(4)),
       indicatorHeight: indicatorRect == null ? null : Number(indicatorRect.height.toFixed(4)),
@@ -78,6 +78,34 @@ async function segmentedControlGeometry(root: Locator) {
           : Number((indicatorRect.top - selectedRect.top).toFixed(4)),
       itemWidths,
     };
+  });
+}
+
+async function segmentedControlItemComposition(root: Locator) {
+  return root.evaluate((element) => {
+    const radios = Array.from(element.querySelectorAll<HTMLElement>('[role="radio"]'));
+    const radioInfo = radios.map((radio) => {
+      const label = radio.getAttribute("aria-label") ?? radio.textContent?.trim() ?? "";
+      const icon = radio.querySelector<SVGElement>("svg");
+      const text = radio.querySelector<HTMLElement>('[data-rsp-slot="text"]');
+      const iconRect = icon?.getBoundingClientRect();
+      const textRect = text?.getBoundingClientRect();
+
+      return {
+        label,
+        textContent: radio.textContent?.trim() ?? "",
+        ariaChecked: radio.getAttribute("aria-checked"),
+        ariaDisabled: radio.getAttribute("aria-disabled"),
+        disabled: radio.hasAttribute("disabled"),
+        hasIcon: icon != null,
+        iconWidth: iconRect == null ? null : Number(iconRect.width.toFixed(4)),
+        iconHeight: iconRect == null ? null : Number(iconRect.height.toFixed(4)),
+        hasTextSlot: text != null,
+        textWidth: textRect == null ? null : Number(textRect.width.toFixed(4)),
+      };
+    });
+
+    return radioInfo;
   });
 }
 
@@ -301,6 +329,136 @@ test.describe("comparison collection button controls visual parity", () => {
       "SegmentedControl indicator top",
     );
     expect(Math.max(...solid.itemWidths) - Math.min(...solid.itemWidths)).toBeLessThanOrEqual(1);
+  });
+
+  test("SegmentedControl defaultSelectedKey initializes uncontrolled selection", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "segmentedcontrol",
+      "?selectionSource=defaultSelectedKey&defaultSelectedKey=board",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      selectionSource: "defaultSelectedKey",
+      defaultSelectedKey: "board",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      selectionSource: "defaultSelectedKey",
+      defaultSelectedKey: "board",
+    });
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "board");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "board");
+    await expect(fixtures.reactRoot.getByRole("radio", { name: "Board" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await expect(fixtures.solidRoot.getByRole("radio", { name: "Board" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+
+    await fixtures.reactRoot.getByRole("radio", { name: "Grid" }).click();
+    await fixtures.solidRoot.getByRole("radio", { name: "Grid" }).click();
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "grid");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "grid");
+    await expect(fixtures.reactRoot.getByRole("radio", { name: "Grid" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await expect(fixtures.solidRoot.getByRole("radio", { name: "Grid" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+  });
+
+  test("SegmentedControl icon-only item and disabled item state match React Spectrum", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "segmentedcontrol",
+      "?selectedKey=grid&iconPlacement=only&disabledKey=board",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      selectedKey: "grid",
+      iconPlacement: "only",
+      disabledKey: "board",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      selectedKey: "grid",
+      iconPlacement: "only",
+      disabledKey: "board",
+    });
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "SegmentedControl icon-only disabled item",
+      { maxMismatchRatio: 0.24, maxDimensionDelta: 32, pixelThreshold: 64 },
+    );
+
+    const reactItems = await segmentedControlItemComposition(fixtures.reactRoot);
+    const solidItems = await segmentedControlItemComposition(fixtures.solidRoot);
+    const reactGrid = reactItems.find((item) => item.label === "Grid");
+    const solidGrid = solidItems.find((item) => item.label === "Grid");
+    const reactBoard = reactItems.find((item) => item.label === "Board");
+    const solidBoard = solidItems.find((item) => item.label === "Board");
+
+    expect(solidItems.map((item) => item.label)).toEqual(["List", "Grid", "Board"]);
+    expect(solidGrid).toMatchObject({
+      ariaChecked: "true",
+      hasIcon: true,
+      hasTextSlot: false,
+      textContent: "",
+    });
+    expect(solidBoard).toMatchObject({
+      disabled: true,
+      hasIcon: true,
+      hasTextSlot: false,
+    });
+    expect(reactBoard).toMatchObject({ disabled: true });
+    expectNear(
+      solidGrid?.iconWidth ?? null,
+      reactGrid?.iconWidth ?? null,
+      1,
+      "icon-only Grid width",
+    );
+    expectNear(
+      solidGrid?.iconHeight ?? null,
+      reactGrid?.iconHeight ?? null,
+      1,
+      "icon-only Grid height",
+    );
+    expectNear(
+      solidBoard?.iconWidth ?? null,
+      reactBoard?.iconWidth ?? null,
+      1,
+      "disabled Board icon width",
+    );
+
+    await fixtures.reactRoot.getByRole("radio", { name: "Board" }).click({ force: true });
+    await fixtures.solidRoot.getByRole("radio", { name: "Board" }).click({ force: true });
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "grid");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "grid");
   });
 
   test("SelectBoxGroup horizontal multiple state matches current React Spectrum", async ({
@@ -531,6 +689,9 @@ test.describe("comparison collection button controls visual parity", () => {
     const form = page.locator('[data-comparison-controls="segmentedcontrol"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
     await form.locator('input[name="selectedKey"][value="grid"]').check();
+    await form.locator('input[name="defaultSelectedKey"][value="board"]').check();
+    await form.locator('input[name="disabledKey"][value="board"]').check();
+    await form.locator('input[name="iconPlacement"][value="start"]').check();
     await form.locator('input[name="isJustified"]').check();
     await form.locator('input[name="isDisabled"]').check();
 
@@ -553,12 +714,20 @@ test.describe("comparison collection button controls visual parity", () => {
       "grid",
     );
     expect(await controlProps(reactRoot)).toMatchObject({
+      selectionSource: "selectedKey",
       selectedKey: "grid",
+      defaultSelectedKey: "board",
+      disabledKey: "board",
+      iconPlacement: "start",
       isJustified: true,
       isDisabled: true,
     });
     expect(await controlProps(solidRoot)).toMatchObject({
+      selectionSource: "selectedKey",
       selectedKey: "grid",
+      defaultSelectedKey: "board",
+      disabledKey: "board",
+      iconPlacement: "start",
       isJustified: true,
       isDisabled: true,
     });
@@ -575,6 +744,10 @@ test.describe("comparison collection button controls visual parity", () => {
     await expect(solidRoot).toHaveAttribute("data-disabled", "true");
     await expect(reactRoot.getByRole("radio", { name: "Grid" })).toBeDisabled();
     await expect(solidRoot.getByRole("radio", { name: "Grid" })).toBeDisabled();
+    await expect(reactRoot.getByRole("radio", { name: "Board" })).toBeDisabled();
+    await expect(solidRoot.getByRole("radio", { name: "Board" })).toBeDisabled();
+    await expect(reactRoot.getByRole("radio", { name: "Grid" }).locator("svg")).toBeVisible();
+    await expect(solidRoot.getByRole("radio", { name: "Grid" }).locator("svg")).toBeVisible();
 
     const reactGeometry = await segmentedControlGeometry(reactRoot);
     const solidGeometry = await segmentedControlGeometry(solidRoot);

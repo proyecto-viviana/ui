@@ -809,19 +809,19 @@
     line-height: 1.5;
   }
 
-  .egLWx3bb13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .enpkAwdb13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     align-items: center;
   }
 
-  .SgLWx3bd13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .SnpkAwdd13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     padding-inline-start: 0px;
   }
 
-  .RgLWx3bd13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .RnpkAwdd13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     padding-inline-end: 0px;
   }
 
-  .-Qg41Lb-gLWx3bIy13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .-Qg41Lb-npkAwdIy13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     --iconMargin: 0rem;
   }
 }
@@ -3942,19 +3942,19 @@
     line-height: 1.5;
   }
 
-  .egLWx3bb13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .enpkAwdb13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     align-items: center;
   }
 
-  .SgLWx3bd13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .SnpkAwdd13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     padding-inline-start: 0px;
   }
 
-  .RgLWx3bd13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .RnpkAwdd13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     padding-inline-end: 0px;
   }
 
-  .-Qg41Lb-gLWx3bIy13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .-Qg41Lb-npkAwdIy13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     --iconMargin: 0rem;
   }
 }
@@ -5012,11 +5012,11 @@
     line-height: 1.5;
   }
 
-  .SgLWx3bd13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .SnpkAwdd13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     padding-inline-start: 0px;
   }
 
-  .RgLWx3bd13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .RnpkAwdd13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     padding-inline-end: 0px;
   }
 
@@ -5044,23 +5044,33 @@
     border-end-end-radius: round(var(--radius) * var(--size), 1px);
   }
 
-  .-Qg41Lb-y5UFLdIy13:has([slot="icon"], [slot="avatar"]):not(:has([data-rsp-slot="text"])) {
+  .-Qg41Lb-jInYsbIy13:has([slot="icon"], [data-slot="icon"], [slot="avatar"]):not(
+      :has([data-rsp-slot="text"])
+    ) {
     --iconMargin: 0rem;
   }
 
-  .Cy5UFLd2sgPTb13:has([slot="icon"], [slot="avatar"]):not(:has([data-rsp-slot="text"])) {
+  .CjInYsb2sgPTb13:has([slot="icon"], [data-slot="icon"], [slot="avatar"]):not(
+      :has([data-rsp-slot="text"])
+    ) {
     grid-template-areas: "icon";
   }
 
-  .Dy5UFLdQgYBrc13:has([slot="icon"], [slot="avatar"]):not(:has([data-rsp-slot="text"])) {
+  .DjInYsbQgYBrc13:has([slot="icon"], [data-slot="icon"], [slot="avatar"]):not(
+      :has([data-rsp-slot="text"])
+    ) {
     grid-template-columns: auto;
   }
 
-  .-B5H9Ae-wAP22cWr13:has([data-rsp-slot="text"]):not(:has([slot="icon"], [slot="avatar"])) {
+  .-B5H9Ae-d7BehbWr13:has([data-rsp-slot="text"]):not(
+      :has([slot="icon"], [data-slot="icon"], [slot="avatar"])
+    ) {
     --badgeTop: 0px;
   }
 
-  .-dcAs1c-wAP22cZa13:has([data-rsp-slot="text"]):not(:has([slot="icon"], [slot="avatar"])) {
+  .-dcAs1c-d7BehbZa13:has([data-rsp-slot="text"]):not(
+      :has([slot="icon"], [data-slot="icon"], [slot="avatar"])
+    ) {
     --badgePosition: 100%;
   }
 }
@@ -5086,23 +5096,33 @@
     font-family: adobe-clean-hebrew, myriad-hebrew, ui-sans-serif, system-ui, sans-serif;
   }
 
-  .SsAUsHd13:has([slot="avatar"]):not(:has([slot="icon"], [data-rsp-slot="text"])) {
+  .SpJYBPbd13:has([slot="avatar"]):not(
+      :has([slot="icon"], [data-slot="icon"], [data-rsp-slot="text"])
+    ) {
     padding-inline-start: 0px;
   }
 
-  .RsAUsHd13:has([slot="avatar"]):not(:has([slot="icon"], [data-rsp-slot="text"])) {
+  .RpJYBPbd13:has([slot="avatar"]):not(
+      :has([slot="icon"], [data-slot="icon"], [data-rsp-slot="text"])
+    ) {
     padding-inline-end: 0px;
   }
 
-  .-Qg41Lb-sAUsHIy13:has([slot="avatar"]):not(:has([slot="icon"], [data-rsp-slot="text"])) {
+  .-Qg41Lb-pJYBPbIy13:has([slot="avatar"]):not(
+      :has([slot="icon"], [data-slot="icon"], [data-rsp-slot="text"])
+    ) {
     --iconMargin: 0rem;
   }
 
-  .CwAP22cUolIUb13:has([data-rsp-slot="text"]):not(:has([slot="icon"], [slot="avatar"])) {
+  .Cd7BehbUolIUb13:has([data-rsp-slot="text"]):not(
+      :has([slot="icon"], [data-slot="icon"], [slot="avatar"])
+    ) {
     grid-template-areas: "text";
   }
 
-  .DwAP22cQgYBrc13:has([data-rsp-slot="text"]):not(:has([slot="icon"], [slot="avatar"])) {
+  .Dd7BehbQgYBrc13:has([data-rsp-slot="text"]):not(
+      :has([slot="icon"], [data-slot="icon"], [slot="avatar"])
+    ) {
     grid-template-columns: auto;
   }
 }
@@ -8457,11 +8477,11 @@
     line-height: 1.5;
   }
 
-  .egLWx3bb13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .enpkAwdb13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     align-items: center;
   }
 
-  .-Qg41Lb-gLWx3bIy13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .-Qg41Lb-npkAwdIy13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     --iconMargin: 0rem;
   }
 
@@ -11444,7 +11464,7 @@
     line-height: 1.5;
   }
 
-  .-Qg41Lb-gLWx3bIy13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .-Qg41Lb-npkAwdIy13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     --iconMargin: 0rem;
   }
 }
@@ -13143,7 +13163,7 @@
     line-height: 1.5;
   }
 
-  .-Qg41Lb-gLWx3bIy13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .-Qg41Lb-npkAwdIy13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     --iconMargin: 0rem;
   }
 
@@ -15715,7 +15735,7 @@
     line-height: 1.5;
   }
 
-  .-Qg41Lb-gLWx3bIy13:has([slot="icon"]):not(:has([data-rsp-slot="text"])) {
+  .-Qg41Lb-npkAwdIy13:has([slot="icon"], [data-slot="icon"]):not(:has([data-rsp-slot="text"])) {
     --iconMargin: 0rem;
   }
 

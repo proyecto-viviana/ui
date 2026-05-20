@@ -149,6 +149,13 @@ import {
   radioGroupOrientationOptions,
   radioGroupSizeOptions,
 } from "./radiogroup-demo";
+import {
+  segmentedControlDemoDefaults,
+  segmentedControlDisabledKeyOptions,
+  segmentedControlIconPlacementOptions,
+  segmentedControlKeyOptions,
+  segmentedControlSelectionSourceOptions,
+} from "./segmentedcontrol-demo";
 import { numberFieldDemoDefaults, numberFieldSizeOptions } from "./numberfield-demo";
 import { pickerDemoDefaults, pickerKeyOptions, pickerSizeOptions } from "./picker-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
@@ -3786,36 +3793,63 @@ const segmentedControlControls: ComponentControlGroup = {
   coverage: "modeled",
   controls: [
     {
+      name: "selectionSource",
+      label: "selection source",
+      kind: "radio",
+      defaultValue: segmentedControlDemoDefaults.selectionSource,
+      options: options(segmentedControlSelectionSourceOptions),
+    },
+    {
       name: "selectedKey",
       label: "selectedKey",
       kind: "radio",
-      defaultValue: "list",
-      options: [
-        { value: "list", label: "list" },
-        { value: "grid", label: "grid" },
-        { value: "board", label: "board" },
-      ],
+      defaultValue: segmentedControlDemoDefaults.selectedKey,
+      options: options(segmentedControlKeyOptions),
+    },
+    {
+      name: "defaultSelectedKey",
+      label: "defaultSelectedKey",
+      kind: "radio",
+      defaultValue: segmentedControlDemoDefaults.defaultSelectedKey,
+      options: options(segmentedControlKeyOptions),
+    },
+    {
+      name: "disabledKey",
+      label: "item isDisabled",
+      kind: "radio",
+      defaultValue: segmentedControlDemoDefaults.disabledKey,
+      options: options(segmentedControlDisabledKeyOptions),
+    },
+    {
+      name: "iconPlacement",
+      label: "item icon",
+      kind: "radio",
+      defaultValue: segmentedControlDemoDefaults.iconPlacement,
+      options: options(segmentedControlIconPlacementOptions),
     },
     {
       name: "isJustified",
       label: "isJustified",
       kind: "switch",
-      defaultValue: false,
+      defaultValue: segmentedControlDemoDefaults.isJustified,
     },
     {
       name: "isDisabled",
       label: "isDisabled",
       kind: "switch",
-      defaultValue: false,
+      defaultValue: segmentedControlDemoDefaults.isDisabled,
     },
   ],
   apiProps: [
     "children",
+    "id",
+    "SegmentedControlItem.isDisabled",
     "isDisabled",
     "isJustified",
     "selectedKey",
     "defaultSelectedKey",
     "onSelectionChange",
+    "slot",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -3823,7 +3857,7 @@ const segmentedControlControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 SegmentedControl docs control surface. The viewer drives selectedKey, justified layout, and disabled state into both stacks so selection indicator and root background parity can be inspected interactively.",
+  note: "Modeled from the S2 SegmentedControl docs control surface. The viewer drives controlled and default selection, item disabled state, item icon/text composition, justified layout, and group disabled state into both stacks so selection indicator, slots, and root background parity can be inspected interactively.",
 };
 
 const selectBoxGroupControls: ComponentControlGroup = {

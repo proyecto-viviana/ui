@@ -352,7 +352,11 @@ export type {
 } from "./searchfield";
 
 // SegmentedControl
-export { SegmentedControl, SegmentedControlItem } from "./segmentedcontrol";
+export {
+  SegmentedControl,
+  SegmentedControlContext,
+  SegmentedControlItem,
+} from "./segmentedcontrol";
 export type { SegmentedControlItemProps, SegmentedControlProps } from "./segmentedcontrol";
 
 // SelectBoxGroup

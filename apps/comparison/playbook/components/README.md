@@ -53,6 +53,7 @@ partial if any gate remains unresolved.
 - [NotificationBadge](./notificationbadge-validation-notes.md)
 - [RangeCalendar](./rangecalendar-validation-notes.md)
 - [Skeleton](./skeleton-validation-notes.md)
+- [SegmentedControl](./segmentedcontrol-validation-notes.md)
 - [StatusLight](./statuslight-validation-notes.md)
 - [Text](./text-validation-notes.md)
 - [Toast](./toast-validation-notes.md)
