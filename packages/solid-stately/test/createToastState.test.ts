@@ -80,8 +80,8 @@ describe("createToastState", () => {
 
       state.add(secondToast.content, secondToast.props);
       expect(state.visibleToasts().length).toBe(2);
-      expect(state.visibleToasts()[0].content).toBe(newValue[0].content);
-      expect(state.visibleToasts()[1].content).toBe(secondToast.content);
+      expect(state.visibleToasts()[0].content).toBe(secondToast.content);
+      expect(state.visibleToasts()[1].content).toBe(newValue[0].content);
 
       dispose();
     });
@@ -97,22 +97,22 @@ describe("createToastState", () => {
       state.add("Third Toast");
 
       expect(state.visibleToasts()).toHaveLength(3);
-      expect(state.visibleToasts()[0].content).toBe("First Toast");
+      expect(state.visibleToasts()[0].content).toBe("Third Toast");
       expect(state.visibleToasts()[1].content).toBe("Second Toast");
-      expect(state.visibleToasts()[2].content).toBe("Third Toast");
+      expect(state.visibleToasts()[2].content).toBe("First Toast");
 
       // Close the middle toast
       const secondToastKey = state.visibleToasts()[1].key;
       state.close(secondToastKey);
 
       expect(state.visibleToasts()).toHaveLength(2);
-      expect(state.visibleToasts()[0].content).toBe("First Toast");
-      expect(state.visibleToasts()[1].content).toBe("Third Toast");
+      expect(state.visibleToasts()[0].content).toBe("Third Toast");
+      expect(state.visibleToasts()[1].content).toBe("First Toast");
 
       // Close the first toast
       state.close(state.visibleToasts()[0].key);
       expect(state.visibleToasts().length).toBe(1);
-      expect(state.visibleToasts()[0].content).toBe("Third Toast");
+      expect(state.visibleToasts()[0].content).toBe("First Toast");
 
       dispose();
     });
@@ -181,19 +181,19 @@ describe("createToastState", () => {
 
       state.add("Second Toast");
       expect(state.visibleToasts()).toHaveLength(2);
-      expect(state.visibleToasts()[0].content).toBe("First Toast");
-      expect(state.visibleToasts()[1].content).toBe("Second Toast");
+      expect(state.visibleToasts()[0].content).toBe("Second Toast");
+      expect(state.visibleToasts()[1].content).toBe("First Toast");
 
       state.add("Third Toast");
       expect(state.visibleToasts()).toHaveLength(3);
-      expect(state.visibleToasts()[0].content).toBe("First Toast");
+      expect(state.visibleToasts()[0].content).toBe("Third Toast");
       expect(state.visibleToasts()[1].content).toBe("Second Toast");
-      expect(state.visibleToasts()[2].content).toBe("Third Toast");
+      expect(state.visibleToasts()[2].content).toBe("First Toast");
 
       state.close(state.visibleToasts()[1].key);
       expect(state.visibleToasts()).toHaveLength(2);
-      expect(state.visibleToasts()[0].content).toBe("First Toast");
-      expect(state.visibleToasts()[1].content).toBe("Third Toast");
+      expect(state.visibleToasts()[0].content).toBe("Third Toast");
+      expect(state.visibleToasts()[1].content).toBe("First Toast");
 
       dispose();
     });
@@ -291,6 +291,23 @@ describe("ToastQueue", () => {
     expect(toasts[2].content).toBe("Low Priority");
   });
 
+  it("should place newer same-priority toasts first", () => {
+    const queue = new ToastQueue<string>({ maxVisibleToasts: 5 });
+    const callback = vi.fn();
+
+    queue.subscribe(callback);
+    queue.add("First Toast");
+    queue.add("Second Toast");
+    queue.add("Third Toast");
+
+    const toasts = callback.mock.calls[callback.mock.calls.length - 1][0];
+    expect(toasts.map((toast: any) => toast.content)).toEqual([
+      "Third Toast",
+      "Second Toast",
+      "First Toast",
+    ]);
+  });
+
   it("should call onClose callback when toast is closed", () => {
     const queue = new ToastQueue<string>();
     const onClose = vi.fn();
@@ -332,6 +349,24 @@ describe("ToastQueue", () => {
     queue.remove(key);
     const finalToasts = callback.mock.calls[callback.mock.calls.length - 1][0];
     expect(finalToasts).toHaveLength(0);
+  });
+
+  it("should clear all toasts and call onClose callbacks", () => {
+    const queue = new ToastQueue<string>();
+    const callback = vi.fn();
+    const firstClose = vi.fn();
+    const secondClose = vi.fn();
+
+    queue.subscribe(callback);
+    queue.add("First Toast", { onClose: firstClose });
+    queue.add("Second Toast", { onClose: secondClose });
+
+    queue.clear();
+
+    const finalToasts = callback.mock.calls[callback.mock.calls.length - 1][0];
+    expect(finalToasts).toHaveLength(0);
+    expect(firstClose).toHaveBeenCalledTimes(1);
+    expect(secondClose).toHaveBeenCalledTimes(1);
   });
 
   it("should replace toast objects when marking exit animations", () => {

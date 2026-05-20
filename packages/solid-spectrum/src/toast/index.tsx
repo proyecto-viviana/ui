@@ -1,4 +1,16 @@
-import { type JSX, splitProps, For, Show } from "solid-js";
+import {
+  type JSX,
+  type Accessor,
+  createContext,
+  createEffect,
+  createSignal,
+  For,
+  onCleanup,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
+import { FocusScope, createPreventScroll } from "@proyecto-viviana/solidaria";
 import {
   Toast as HeadlessToast,
   ToastRegion as HeadlessToastRegion,
@@ -17,309 +29,747 @@ import {
   type ToastRenderProps,
   type ToastRegionRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { ToastQueue, type QueuedToast, type ToastOptions } from "@proyecto-viviana/solid-stately";
+import {
+  ToastQueue as StatelyToastQueue,
+  type QueuedToast,
+  type ToastOptions as StatelyToastOptions,
+} from "@proyecto-viviana/solid-stately";
+import { ActionButton, Button } from "../button";
+import { AlertTriangleIcon } from "../icon/s2wf-icons/AlertTriangleIcon";
+import { CheckmarkCircleIcon } from "../icon/s2wf-icons/CheckmarkCircleIcon";
+import { ChevronDownIcon } from "../icon/s2wf-icons/ChevronDownIcon";
+import { CloseIcon } from "../icon/s2wf-icons/CloseIcon";
+import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
+import { focusRing, style } from "../s2-style";
 
-export type ToastPlacement =
-  | "top"
-  | "top-start"
-  | "top-end"
-  | "bottom"
-  | "bottom-start"
-  | "bottom-end";
-export type ToastVariant = "info" | "success" | "warning" | "error" | "neutral";
+export type ToastPlacement = "top" | "top end" | "bottom" | "bottom end";
+export type ToastVariant = "positive" | "negative" | "info" | "neutral";
+type LegacyToastVariant = "success" | "warning" | "error";
+type ToastEdge = "top" | "bottom";
+type ToastAlign = "center" | "end";
+
+export interface ToastOptions extends Omit<StatelyToastOptions, "priority"> {
+  /** A label for the action button within the toast. */
+  actionLabel?: string;
+  /** Handler that is called when the action button is pressed. */
+  onAction?: () => void;
+  /** Whether the toast should automatically close when an action is performed. */
+  shouldCloseOnAction?: boolean;
+}
 
 export interface ToastProviderProps extends HeadlessToastProviderProps {}
 
 export interface ToastRegionProps extends Omit<
   HeadlessToastRegionProps,
-  "class" | "style" | "children"
+  "class" | "style" | "children" | "placement"
 > {
-  /** The placement of the toast region. */
+  /** Placement of the toast container on the page. @default "bottom" */
   placement?: ToastPlacement;
   /** Additional CSS class name. */
   class?: string;
 }
 
+export interface ToastContainerProps extends ToastRegionProps {}
+
 export interface ToastProps extends Omit<HeadlessToastProps, "class" | "style"> {
   /** Additional CSS class name. */
   class?: string;
+  /** Internal index accessor used by ToastRegion for S2 stack rendering. */
+  index?: Accessor<number>;
+  /** Internal visible toasts accessor used by ToastRegion for S2 stack rendering. */
+  visibleToasts?: Accessor<QueuedToast<ToastContent>[]>;
+  /** Internal expanded stack state accessor used by ToastContainer. */
+  isExpanded?: Accessor<boolean>;
+  /** Internal stack expansion handler used by ToastContainer. */
+  onToggleExpanded?: () => void;
+  /** Internal placement edge used for collapsed background stack positioning. */
+  placementEdge?: ToastEdge;
 }
 
-const regionStyles = ["flex flex-col gap-3", "p-4"].join(" ");
+interface ToastContainerContextValue {
+  isExpanded: Accessor<boolean>;
+  toggleExpanded: () => void;
+  collapse: () => void;
+  clear: () => void;
+}
 
-const toastBaseStyles = [
-  "flex items-start gap-3",
-  "px-4 py-3",
-  "rounded-lg shadow-lg",
-  "min-w-[300px] max-w-[400px]",
-  "border",
-  "data-[animation=entering]:animate-in data-[animation=entering]:fade-in-0 data-[animation=entering]:slide-in-from-right-5",
-  "data-[animation=exiting]:animate-out data-[animation=exiting]:fade-out-0 data-[animation=exiting]:slide-out-to-right-5",
-].join(" ");
+const ToastContainerContext = createContext<ToastContainerContextValue | null>(null);
 
-const variantStyles: Record<ToastVariant, string> = {
-  info: "bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200",
-  success:
-    "bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200",
-  warning:
-    "bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-200",
-  error:
-    "bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200",
-  neutral:
-    "bg-neutral-50 border-neutral-200 text-neutral-800 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200",
-};
+const toastRegion = style<{ placement: ToastEdge; align: ToastAlign; isExpanded?: boolean }>({
+  ...focusRing(),
+  display: "flex",
+  flexDirection: {
+    placement: {
+      top: "column",
+      bottom: "column-reverse",
+    },
+  },
+  position: "fixed",
+  insetX: 0,
+  width: "fit",
+  top: {
+    placement: {
+      top: {
+        default: 16,
+        isExpanded: 0,
+      },
+    },
+  },
+  bottom: {
+    placement: {
+      bottom: {
+        default: 16,
+        isExpanded: 0,
+      },
+    },
+  },
+  marginStart: {
+    align: {
+      center: "auto",
+      end: "auto",
+    },
+  },
+  marginEnd: {
+    align: {
+      center: "auto",
+      end: 16,
+    },
+  },
+  boxSizing: "border-box",
+  maxHeight: "full",
+  borderRadius: "lg",
+});
 
-const iconStyles: Record<ToastVariant, string> = {
-  info: "text-blue-500 dark:text-blue-400",
-  success: "text-green-500 dark:text-green-400",
-  warning: "text-yellow-500 dark:text-yellow-400",
-  error: "text-red-500 dark:text-red-400",
-  neutral: "text-neutral-500 dark:text-neutral-400",
-};
+const toastList = style<{ placement: ToastEdge; isExpanded?: boolean }>({
+  position: "relative",
+  flexGrow: 1,
+  display: "flex",
+  gap: 8,
+  flexDirection: {
+    placement: {
+      top: "column",
+      bottom: "column-reverse",
+    },
+  },
+  boxSizing: "border-box",
+  margin: 0,
+  marginX: {
+    default: 0,
+    isExpanded: -8,
+  },
+  padding: {
+    default: 0,
+    isExpanded: 8,
+  },
+  paddingBottom: {
+    isExpanded: {
+      placement: {
+        top: 8,
+        bottom: 16,
+      },
+    },
+  },
+  paddingTop: {
+    isExpanded: {
+      placement: {
+        top: 16,
+        bottom: 8,
+      },
+    },
+  },
+  overflow: {
+    isExpanded: "auto",
+  },
+});
 
-const closeButtonStyles = [
-  "ml-auto -mr-1 -mt-1",
-  "p-1 rounded-md",
-  "text-current opacity-60 hover:opacity-100",
-  "transition-opacity",
-  "focus:outline-none focus:ring-2 focus:ring-offset-2",
-].join(" ");
+const toastStyle = style<{ variant: ToastVariant; isExpanded?: boolean }>({
+  ...focusRing(),
+  outlineColor: {
+    default: "focus-ring",
+    isExpanded: "white",
+  },
+  display: "flex",
+  gap: 16,
+  paddingStart: 16,
+  paddingEnd: 8,
+  paddingY: 12,
+  borderRadius: "lg",
+  minHeight: 56,
+  maxWidth: "[min(336px,90vw)]",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  font: "ui",
+  color: "white",
+  backgroundColor: {
+    variant: {
+      neutral: "neutral-subdued",
+      info: "informative",
+      positive: "positive",
+      negative: "negative",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  boxShadow: {
+    default: "elevated",
+    isExpanded: "none",
+  },
+  willChange: "transform",
+});
 
-const InfoIcon = () => (
-  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
+const toastBody = style<{ isSingle?: boolean }>({
+  display: {
+    default: "grid",
+    isSingle: "flex",
+  },
+  gridTemplateColumns: ["auto", "1fr", "auto"],
+  gridTemplateAreas: ["content content content", "expand . action"],
+  flexGrow: 1,
+  flexWrap: "wrap",
+  alignItems: "center",
+  columnGap: 24,
+  rowGap: 8,
+});
 
-const SuccessIcon = () => (
-  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
+const toastContent = style({
+  display: "flex",
+  gap: 8,
+  alignItems: "baseline",
+  gridArea: "content",
+  width: "fit",
+  overflowWrap: "break-word",
+  wordBreak: "break-word",
+  minWidth: 0,
+});
 
-const WarningIcon = () => (
-  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-    />
-  </svg>
-);
+const toastText = style({
+  minWidth: 0,
+});
 
-const ErrorIcon = () => (
-  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
+const toastDescription = style({
+  font: "body-sm",
+  opacity: 0.9,
+  marginTop: 2,
+});
 
-const CloseIcon = () => (
-  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M6 18L18 6M6 6l12 12"
-    />
-  </svg>
-);
+const toastIcon = style({
+  flexShrink: 0,
+  color: "white",
+});
 
-const getVariantIcon = (variant: ToastVariant) => {
-  switch (variant) {
+const toastAction = style({
+  marginStart: "auto",
+  gridArea: "action",
+});
+
+const toastExpand = style({
+  gridArea: "expand",
+});
+
+const toastBackground = style({
+  position: "fixed",
+  inset: 0,
+  backgroundColor: "transparent-overlay-500",
+  pointerEvents: "auto",
+});
+
+const toastControls = style<{ isExpanded?: boolean }>({
+  colorScheme: "light",
+  pointerEvents: "auto",
+  display: {
+    default: "none",
+    isExpanded: "flex",
+  },
+  justifyContent: "end",
+  gap: 8,
+  opacity: {
+    default: 0,
+    isExpanded: 1,
+  },
+});
+
+const closeButtonStyles = style({
+  ...focusRing(),
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+  width: 32,
+  height: 32,
+  borderRadius: "full",
+  borderWidth: 0,
+  padding: 0,
+  color: "white",
+  backgroundColor: {
+    default: "transparent",
+    isHovered: "transparent-overlay-100",
+    isPressed: "transparent-overlay-200",
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+function normalizePlacement(placement?: ToastPlacement): {
+  placement: ToastPlacement;
+  edge: ToastEdge;
+  align: ToastAlign;
+} {
+  const normalized = placement ?? "bottom";
+  const [edge, align = "center"] = normalized.split(" ") as [ToastEdge, ToastAlign?];
+  return {
+    placement: normalized,
+    edge,
+    align: align === "end" ? "end" : "center",
+  };
+}
+
+function normalizeVariant(
+  variant?: ToastContent["variant"],
+  type?: ToastContent["type"],
+): ToastVariant {
+  if (variant) {
+    return variant;
+  }
+
+  switch (type as ToastVariant | LegacyToastVariant | undefined) {
+    case "positive":
     case "success":
-      return <SuccessIcon />;
-    case "warning":
-      return <WarningIcon />;
+      return "positive";
+    case "negative":
     case "error":
-      return <ErrorIcon />;
+    case "warning":
+      return "negative";
     case "info":
+      return "info";
     case "neutral":
     default:
-      return <InfoIcon />;
+      return "neutral";
   }
-};
+}
+
+function getVariantIcon(variant: ToastVariant): JSX.Element | null {
+  switch (variant) {
+    case "positive":
+      return <CheckmarkCircleIcon aria-hidden="true" />;
+    case "negative":
+      return <AlertTriangleIcon aria-hidden="true" />;
+    case "info":
+      return <InfoCircleIcon aria-hidden="true" />;
+    case "neutral":
+    default:
+      return null;
+  }
+}
+
+function closeGlobalToast(key: string) {
+  globalToastQueue.close(key);
+  globalToastQueue.remove(key);
+}
+
+function addSpectrumToast(
+  children: string,
+  variant: ToastVariant,
+  options: ToastOptions = {},
+): () => void {
+  const timeout =
+    options.timeout && !options.actionLabel ? Math.max(options.timeout, 5000) : undefined;
+  const key = headlessAddToast(
+    {
+      children,
+      variant,
+      actionLabel: options.actionLabel,
+      onAction: options.onAction,
+      shouldCloseOnAction: options.shouldCloseOnAction,
+    },
+    {
+      timeout,
+      onClose: options.onClose,
+    },
+  );
+
+  return () => closeGlobalToast(key);
+}
 
 /**
  * ToastProvider creates a toast queue context for descendant components.
- * Wrap your app or a section that needs toast notifications.
- *
- * @example
- * ```tsx
- * <ToastProvider>
- *   <App />
- *   <ToastRegion placement="bottom-end" />
- * </ToastProvider>
- * ```
+ * Most S2 usage should render ToastContainer once at the app root instead.
  */
 export function ToastProvider(props: ToastProviderProps): JSX.Element {
   return <HeadlessToastProvider {...props} />;
 }
 
 /**
- * ToastRegion displays all visible toasts in a fixed position.
- *
- * @example
- * ```tsx
- * <ToastRegion placement="bottom-end" />
- * ```
+ * ToastRegion displays all visible toasts from the surrounding ToastProvider.
+ * This remains for lower-level composition; ToastContainer self-wires the global queue.
  */
 export function ToastRegion(props: ToastRegionProps): JSX.Element {
   const [local, rest] = splitProps(props, ["placement", "class"]);
+  const placement = () => normalizePlacement(local.placement);
+  const containerContext = useContext(ToastContainerContext);
+  const isExpanded = () => containerContext?.isExpanded() ?? false;
+  createPreventScroll({
+    get isDisabled() {
+      return !isExpanded();
+    },
+  });
+  const toggleExpanded = (visibleToasts: QueuedToast<ToastContent>[]) => {
+    if (!isExpanded() && visibleToasts.length <= 1) {
+      return;
+    }
+    containerContext?.toggleExpanded();
+  };
+  const handleRegionKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== "Escape" || !isExpanded()) {
+      return;
+    }
+
+    event.stopPropagation();
+    containerContext?.collapse();
+  };
+  const handleListClick = (event: MouseEvent, visibleToasts: QueuedToast<ToastContent>[]) => {
+    const target = event.target;
+    if (isExpanded() || !(target instanceof Element) || target.closest("button")) {
+      return;
+    }
+    toggleExpanded(visibleToasts);
+  };
+  createEffect(() => {
+    if (!isExpanded() || !containerContext) {
+      return;
+    }
+
+    const ownerDocument = globalThis.document;
+    if (!ownerDocument) {
+      return;
+    }
+
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      containerContext.collapse();
+    };
+
+    ownerDocument.addEventListener("keydown", handleDocumentKeyDown, true);
+    onCleanup(() => ownerDocument.removeEventListener("keydown", handleDocumentKeyDown, true));
+  });
 
   return (
     <HeadlessToastRegion
       {...rest}
-      placement={local.placement ?? "bottom-end"}
-      class={(_renderProps: ToastRegionRenderProps) => {
-        return [regionStyles, local.class ?? ""].filter(Boolean).join(" ");
-      }}
+      placement={placement().placement}
+      class={(_renderProps: ToastRegionRenderProps) =>
+        [
+          toastRegion({
+            placement: placement().edge,
+            align: placement().align,
+            isExpanded: isExpanded(),
+          }),
+          local.class ?? "",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
     >
-      {(regionProps: ToastRegionRenderProps) => (
-        <For each={regionProps.visibleToasts()}>{(toast) => <Toast toast={toast} />}</For>
-      )}
+      {(regionProps: ToastRegionRenderProps) => {
+        const visibleToasts = () => regionProps.visibleToasts();
+
+        return (
+          <FocusScope contain={isExpanded()}>
+            <div
+              data-solid-spectrum-toast-focus-scope=""
+              onKeyDown={handleRegionKeyDown}
+              style={{ display: "contents" }}
+            >
+              <Show when={containerContext && isExpanded()}>
+                <div
+                  class={toastBackground}
+                  data-solid-spectrum-toast-background=""
+                  onClick={containerContext?.collapse}
+                />
+              </Show>
+              <div
+                class={toastList({ placement: placement().edge, isExpanded: isExpanded() })}
+                data-solid-spectrum-toast-list=""
+                onClick={(event) => handleListClick(event, visibleToasts())}
+              >
+                <For each={visibleToasts()}>
+                  {(toast, index) => (
+                    <Toast
+                      toast={toast}
+                      index={index}
+                      visibleToasts={visibleToasts}
+                      isExpanded={isExpanded}
+                      onToggleExpanded={() => toggleExpanded(visibleToasts())}
+                      placementEdge={placement().edge}
+                    />
+                  )}
+                </For>
+              </div>
+              <Show when={containerContext}>
+                {(context) => (
+                  <div
+                    class={toastControls({ isExpanded: isExpanded() })}
+                    data-solid-spectrum-toast-controls=""
+                  >
+                    <ActionButton size="S" onPress={context().clear}>
+                      Clear all
+                    </ActionButton>
+                    <ActionButton size="S" onPress={context().collapse}>
+                      Collapse
+                    </ActionButton>
+                  </div>
+                )}
+              </Show>
+            </div>
+          </FocusScope>
+        );
+      }}
     </HeadlessToastRegion>
   );
 }
 
-export const ToastContainer = ToastRegion;
-
 /**
- * Toast displays an individual notification with icon, content, and close button.
- *
- * Usually you don't need to use this directly - ToastRegion renders toasts automatically.
+ * A ToastContainer renders the queued toasts in an application. It should be placed
+ * at the root of the app.
  */
-export function Toast(props: ToastProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["toast", "class"]);
+export function ToastContainer(props: ToastContainerProps): JSX.Element {
+  const [isExpanded, setIsExpanded] = createSignal(false);
+  const unsubscribe = globalToastQueue.subscribe((toasts) => {
+    if (toasts.length === 0) {
+      setIsExpanded(false);
+    }
+  });
+  onCleanup(unsubscribe);
 
-  const content = () => local.toast.content;
-  const variant = (): ToastVariant => content().type ?? "neutral";
+  const context: ToastContainerContextValue = {
+    isExpanded,
+    toggleExpanded: () => setIsExpanded((value) => !value),
+    collapse: () => setIsExpanded(false),
+    clear: () => globalToastQueue.clear(),
+  };
 
   return (
-    <HeadlessToast
-      {...rest}
-      toast={local.toast}
-      class={(_renderProps: ToastRenderProps) => {
-        return [toastBaseStyles, variantStyles[variant()], local.class ?? ""]
-          .filter(Boolean)
-          .join(" ");
-      }}
-    >
-      <div class={`flex-shrink-0 ${iconStyles[variant()]}`}>{getVariantIcon(variant())}</div>
+    <ToastContainerContext.Provider value={context}>
+      <ToastProvider useGlobalQueue>
+        <ToastRegion {...props} />
+      </ToastProvider>
+    </ToastContainerContext.Provider>
+  );
+}
 
-      <div class="flex-1 min-w-0">
-        <Show when={content().title}>
-          <HeadlessToastTitle class="font-semibold text-sm">{content().title}</HeadlessToastTitle>
-        </Show>
-        <Show when={content().description}>
-          <HeadlessToastDescription class="text-sm opacity-90 mt-1">
-            {content().description}
-          </HeadlessToastDescription>
-        </Show>
-        <Show when={content().action}>
-          <button
-            type="button"
-            class="mt-2 text-sm font-medium underline hover:no-underline"
-            onClick={content().action?.onAction}
+/** Toast displays an individual notification with icon, content, action, and close button. */
+export function Toast(props: ToastProps): JSX.Element {
+  const [local, rest] = splitProps(props, [
+    "toast",
+    "class",
+    "index",
+    "visibleToasts",
+    "isExpanded",
+    "onToggleExpanded",
+    "placementEdge",
+  ]);
+  const state = useToastContext();
+  const content = () => local.toast.content;
+  const variant = () => normalizeVariant(content().variant, content().type);
+  const title = () => content().children ?? content().title;
+  const actionLabel = () => content().actionLabel ?? content().action?.label;
+  const actionHandler = () => content().onAction ?? content().action?.onAction;
+  const visibleToasts = () => local.visibleToasts?.() ?? [local.toast];
+  const index = () => local.index?.() ?? visibleToasts().indexOf(local.toast);
+  const isMain = () => index() <= 0;
+  const isExpanded = () => local.isExpanded?.() ?? false;
+  const shouldRenderAsSingle = () => !isMain() || visibleToasts().length <= 1 || isExpanded();
+  const handleAction = () => {
+    actionHandler()?.();
+    if (content().shouldCloseOnAction) {
+      state.close(local.toast.key);
+      state.remove(local.toast.key);
+    }
+  };
+
+  const backgroundStyle = () =>
+    ({
+      position: "absolute",
+      [local.placementEdge === "top" ? "bottom" : "top"]: "0",
+      left: "0",
+      width: "100%",
+      translate: `0 0 ${(-12 * index()) / 16}rem`,
+      opacity: index() >= 3 ? 0 : 1,
+      "z-index": visibleToasts().length - index() - 1,
+      "pointer-events": "none",
+    }) as JSX.CSSProperties;
+
+  return (
+    <Show
+      when={!isMain() && !isExpanded()}
+      fallback={
+        <HeadlessToast
+          {...rest}
+          toast={local.toast}
+          data-solid-spectrum-variant={variant()}
+          style={{
+            "z-index": visibleToasts().length - index() - 1,
+          }}
+          class={(_renderProps: ToastRenderProps) =>
+            [toastStyle({ variant: variant(), isExpanded: isExpanded() }), local.class ?? ""]
+              .filter(Boolean)
+              .join(" ")
+          }
+        >
+          <div class={toastBody({ isSingle: shouldRenderAsSingle() })}>
+            <div class={toastContent}>
+              <Show when={getVariantIcon(variant())}>
+                {(icon) => (
+                  <span class={toastIcon} data-solid-spectrum-toast-icon="">
+                    {icon()}
+                  </span>
+                )}
+              </Show>
+              <div class={toastText}>
+                <Show when={title()}>
+                  <HeadlessToastTitle>{title()}</HeadlessToastTitle>
+                </Show>
+                <Show when={content().description}>
+                  <HeadlessToastDescription class={toastDescription}>
+                    {content().description}
+                  </HeadlessToastDescription>
+                </Show>
+              </div>
+            </div>
+            <Show when={!isExpanded() && visibleToasts().length > 1}>
+              <ActionButton
+                isQuiet
+                staticColor="white"
+                styles={toastExpand}
+                onPress={local.onToggleExpanded}
+              >
+                Show all
+                <ChevronDownIcon
+                  aria-hidden="true"
+                  style={{
+                    rotate: local.placementEdge === "bottom" ? "180deg" : undefined,
+                  }}
+                />
+              </ActionButton>
+            </Show>
+            <Show when={actionLabel()}>
+              <Button
+                variant="secondary"
+                fillStyle="outline"
+                staticColor="white"
+                styles={toastAction}
+                onPress={handleAction}
+              >
+                {actionLabel()}
+              </Button>
+            </Show>
+          </div>
+
+          <HeadlessToastCloseButton
+            toast={local.toast}
+            class={closeButtonStyles({})}
+            aria-label="Close"
           >
-            {content().action?.label}
-          </button>
-        </Show>
-      </div>
-
-      <HeadlessToastCloseButton toast={local.toast} class={closeButtonStyles} aria-label="Dismiss">
-        <CloseIcon />
-      </HeadlessToastCloseButton>
-    </HeadlessToast>
+            <CloseIcon aria-hidden="true" />
+          </HeadlessToastCloseButton>
+        </HeadlessToast>
+      }
+    >
+      <div
+        role="presentation"
+        style={backgroundStyle()}
+        class={toastStyle({ variant: variant(), isExpanded: isExpanded() })}
+        data-solid-spectrum-toast-background-item=""
+        data-solid-spectrum-variant={variant()}
+      />
+    </Show>
   );
 }
 
 /**
- * Add a toast to the global queue.
- * Use this to show toasts from anywhere in your app.
- *
- * @example
- * ```tsx
- * // Show a success toast
- * addToast({
- *   title: 'Success!',
- *   description: 'Your changes have been saved.',
- *   type: 'success',
- * });
- *
- * // Show an error toast with auto-dismiss
- * addToast({
- *   title: 'Error',
- *   description: 'Something went wrong.',
- *   type: 'error',
- * }, { timeout: 5000 });
- *
- * // Show a toast with action
- * addToast({
- *   title: 'File deleted',
- *   type: 'info',
- *   action: {
- *     label: 'Undo',
- *     onAction: () => restoreFile(),
- *   },
- * }, { timeout: 10000 });
- * ```
+ * Add a legacy Solid toast to the global queue.
+ * Prefer ToastQueue.neutral/positive/negative/info for the React Spectrum S2 API.
  */
-export function addToast(content: ToastContent, options?: ToastOptions): string {
+export function addToast(content: ToastContent, options?: StatelyToastOptions): string {
   return headlessAddToast(content, options);
 }
 
-/**
- * Convenience function to show a success toast.
- */
-export function toastSuccess(message: string, options?: Omit<ToastOptions, "priority">): string {
-  return addToast({ title: message, type: "success" }, { timeout: 5000, ...options });
+/** Backward-compatible helper for existing Solid callers. */
+export function toastSuccess(
+  message: string,
+  options?: Omit<StatelyToastOptions, "priority">,
+): string {
+  return addToast(
+    { title: message, type: "success", variant: "positive" },
+    { timeout: 5000, ...options },
+  );
 }
 
-/**
- * Convenience function to show an error toast.
- */
-export function toastError(message: string, options?: Omit<ToastOptions, "priority">): string {
-  return addToast({ title: message, type: "error" }, { timeout: 8000, ...options });
+/** Backward-compatible helper for existing Solid callers. */
+export function toastError(
+  message: string,
+  options?: Omit<StatelyToastOptions, "priority">,
+): string {
+  return addToast(
+    { title: message, type: "error", variant: "negative" },
+    { timeout: 8000, ...options },
+  );
 }
 
-/**
- * Convenience function to show a warning toast.
- */
-export function toastWarning(message: string, options?: Omit<ToastOptions, "priority">): string {
-  return addToast({ title: message, type: "warning" }, { timeout: 6000, ...options });
+/** Backward-compatible helper for existing Solid callers. */
+export function toastWarning(
+  message: string,
+  options?: Omit<StatelyToastOptions, "priority">,
+): string {
+  return addToast(
+    { title: message, type: "warning", variant: "negative" },
+    { timeout: 6000, ...options },
+  );
 }
 
-/**
- * Convenience function to show an info toast.
- */
-export function toastInfo(message: string, options?: Omit<ToastOptions, "priority">): string {
-  return addToast({ title: message, type: "info" }, { timeout: 5000, ...options });
+/** Backward-compatible helper for existing Solid callers. */
+export function toastInfo(
+  message: string,
+  options?: Omit<StatelyToastOptions, "priority">,
+): string {
+  return addToast({ title: message, type: "info", variant: "info" }, { timeout: 5000, ...options });
 }
+
+export const ToastQueue = {
+  /** Queues a neutral toast. */
+  neutral(children: string, options: ToastOptions = {}): () => void {
+    return addSpectrumToast(children, "neutral", options);
+  },
+  /** Queues a positive toast. */
+  positive(children: string, options: ToastOptions = {}): () => void {
+    return addSpectrumToast(children, "positive", options);
+  },
+  /** Queues a negative toast. */
+  negative(children: string, options: ToastOptions = {}): () => void {
+    return addSpectrumToast(children, "negative", options);
+  },
+  /** Queues an informational toast. */
+  info(children: string, options: ToastOptions = {}): () => void {
+    return addSpectrumToast(children, "info", options);
+  },
+};
 
 export {
   ToastContext,
   globalToastQueue,
-  ToastQueue,
+  StatelyToastQueue,
   useToastContext,
   type ToastContent,
   type ToastRenderProps,
   type ToastRegionRenderProps,
   type QueuedToast,
-  type ToastOptions,
+  type StatelyToastOptions,
 };

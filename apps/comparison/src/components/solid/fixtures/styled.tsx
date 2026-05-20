@@ -75,6 +75,8 @@ import {
   TimeField as SolidSpectrumTimeField,
   Tooltip as SolidSpectrumTooltip,
   TooltipTrigger as SolidSpectrumTooltipTrigger,
+  ToastContainer as SolidSpectrumToastContainer,
+  ToastQueue as SolidSpectrumToastQueue,
   ToggleButton as SolidSpectrumToggleButton,
   ToggleButtonGroup as SolidSpectrumToggleButtonGroup,
   createIcon,
@@ -365,6 +367,12 @@ import {
   tooltipDemoPropsFromWindow,
   type TooltipDemoProps,
 } from "@comparison/data/tooltip-demo";
+import {
+  normalizeToastDemoProps,
+  serializeToastDemoProps,
+  toastDemoPropsFromWindow,
+  type ToastDemoProps,
+} from "@comparison/data/toast-demo";
 import {
   actionButtonGroupDemoPropsFromWindow,
   buttonGroupDemoPropsFromWindow,
@@ -715,6 +723,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   textarea: () => h(SolidSpectrumTextAreaDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
   tooltip: () => h(SolidSpectrumTooltipDemo, {}),
+  toast: () => h(SolidSpectrumToastDemo, {}),
   togglebutton: () => h(SolidSpectrumToggleButtonDemo, {}),
   togglebuttongroup: () => h(SolidSpectrumToggleButtonGroupDemo, {}),
 };
@@ -3887,6 +3896,102 @@ function SolidSpectrumTooltipDemo() {
               hc(SolidSpectrumTooltip, {}, [() => demoProps().children]),
             ],
           ),
+        ],
+      ),
+    ],
+  );
+}
+
+function solidToastQueueOptions(demoProps: ToastDemoProps, onAction: () => void) {
+  return {
+    actionLabel: demoProps.showAction ? demoProps.actionLabel : undefined,
+    onAction: demoProps.showAction ? onAction : undefined,
+    shouldCloseOnAction: demoProps.shouldCloseOnAction,
+    timeout: demoProps.autoDismiss ? demoProps.timeout : undefined,
+  };
+}
+
+function SolidSpectrumToastDemo() {
+  const [demoProps, setDemoProps] = createSignal<ToastDemoProps>(toastDemoPropsFromWindow());
+  const [actionCount, setActionCount] = createSignal(0);
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  let closeToasts: Array<() => void> = [];
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "toast") {
+        setActionCount(0);
+        setDemoProps(normalizeToastDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setDemoProps(toastDemoPropsFromWindow());
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  createEffect(() => {
+    const currentProps = demoProps();
+    closeToasts.forEach((close) => close());
+    closeToasts = Array.from({ length: currentProps.count }, (_item, index) =>
+      SolidSpectrumToastQueue[currentProps.variant](
+        currentProps.count > 1 ? `${currentProps.children} ${index + 1}` : currentProps.children,
+        solidToastQueueOptions(currentProps, () => setActionCount((count) => count + 1)),
+      ),
+    );
+    onCleanup(() => {
+      closeToasts.forEach((close) => close());
+      closeToasts = [];
+    });
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-toast-stage",
+          style: { "max-width": "100%", "min-height": "96px", width: "360px" },
+          "data-comparison-control-root": "toast",
+          get "data-comparison-control-props"() {
+            return serializeToastDemoProps(demoProps());
+          },
+          get "data-comparison-toast-props"() {
+            return serializeToastDemoProps(demoProps());
+          },
+          get "data-comparison-toast-action-count"() {
+            return String(actionCount());
+          },
+        },
+        [
+          h(SolidSpectrumToastContainer, {
+            get placement() {
+              return demoProps().placement;
+            },
+            get "aria-label"() {
+              return demoProps()["aria-label"];
+            },
+            portal: false,
+          }),
         ],
       ),
     ],

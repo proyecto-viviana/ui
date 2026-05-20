@@ -2,11 +2,13 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import {
+  ToastContainer,
   ToastProvider,
   ToastRegion,
   Toast,
+  ToastQueue,
   addToast,
   toastSuccess,
   toastError,
@@ -18,13 +20,14 @@ import type { QueuedToast, ToastContent } from "../src/toast";
 
 /** Drain all toasts from the global queue. */
 function clearGlobalToasts() {
-  const toasts = globalToastQueue.visibleToasts;
-  if (typeof toasts === "function") {
-    (toasts() as QueuedToast<ToastContent>[]).forEach((t) => globalToastQueue.remove(t.key));
-  }
+  globalToastQueue.clear();
 }
 
 describe("Toast (solid-spectrum)", () => {
+  beforeEach(() => {
+    clearGlobalToasts();
+  });
+
   afterEach(() => {
     clearGlobalToasts();
     cleanup();
@@ -44,19 +47,86 @@ describe("Toast (solid-spectrum)", () => {
       const region = screen.getByRole("region");
       expect(region).toBeInTheDocument();
     });
+
+    it("ToastContainer self-wires the global queue with S2 default placement", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("Queued from S2 API");
+
+      const region = screen.getByRole("region", { name: "Notifications" });
+      expect(region).toHaveAttribute("data-placement", "bottom");
+      expect(screen.getByText("Queued from S2 API")).toBeInTheDocument();
+    });
+
+    it("renders the S2 collapsed stack and expands with controls", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+      ToastQueue.negative("Third toast");
+
+      const region = screen.getByRole("region", { name: "Notifications" });
+      expect(screen.getByText("Third toast")).toBeInTheDocument();
+      expect(screen.queryByText("Second toast")).not.toBeInTheDocument();
+      expect(region.querySelectorAll("[data-solid-spectrum-toast-background-item]")).toHaveLength(
+        2,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /Show all/ }));
+
+      expect(screen.getByText("Second toast")).toBeInTheDocument();
+      expect(screen.getByText("Third toast")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Clear all" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Collapse" })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
+
+      expect(screen.queryByText("Second toast")).not.toBeInTheDocument();
+      expect(region.querySelectorAll("[data-solid-spectrum-toast-background-item]")).toHaveLength(
+        2,
+      );
+    });
+
+    it("clears the expanded stack from the container controls", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+
+      fireEvent.click(screen.getByRole("button", { name: /Show all/ }));
+      fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
+
+      expect(screen.queryByRole("region", { name: "Notifications" })).not.toBeInTheDocument();
+      expect(screen.queryByText("First toast")).not.toBeInTheDocument();
+    });
+
+    it("collapses the expanded stack on Escape", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+
+      fireEvent.click(screen.getByRole("button", { name: /Show all/ }));
+      expect(screen.getByText("First toast")).toBeInTheDocument();
+
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(screen.queryByText("First toast")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Show all/ })).toBeInTheDocument();
+    });
   });
 
-  describe("variant styles", () => {
+  describe("variant contract", () => {
     const variantCases = [
-      { type: "info" as const, colorFragment: "bg-blue-50" },
-      { type: "success" as const, colorFragment: "bg-green-50" },
-      { type: "warning" as const, colorFragment: "bg-yellow-50" },
-      { type: "error" as const, colorFragment: "bg-red-50" },
-      { type: "neutral" as const, colorFragment: "bg-neutral-50" },
+      { type: "info" as const, normalized: "info" },
+      { type: "success" as const, normalized: "positive" },
+      { type: "warning" as const, normalized: "negative" },
+      { type: "error" as const, normalized: "negative" },
+      { type: "neutral" as const, normalized: "neutral" },
     ];
 
-    variantCases.forEach(({ type, colorFragment }) => {
-      it(`applies ${type} variant color classes`, () => {
+    variantCases.forEach(({ type, normalized }) => {
+      it(`normalizes ${type} to the S2 ${normalized} variant`, () => {
         render(() => (
           <ToastProvider useGlobalQueue>
             <ToastRegion portal={false} />
@@ -68,13 +138,14 @@ describe("Toast (solid-spectrum)", () => {
         const region = screen.getByRole("region");
         const toastEl = region.querySelector(`[data-type="${type}"]`);
         expect(toastEl).toBeInTheDocument();
-        expect(toastEl!.className).toContain(colorFragment);
+        expect(toastEl).toHaveAttribute("data-solid-spectrum-variant", normalized);
+        expect(toastEl!.className).toContain("macro-dynamic");
       });
     });
   });
 
   describe("variant icons", () => {
-    it("renders SuccessIcon SVG for success variant", () => {
+    it("renders the S2 CheckmarkCircle SVG for positive variants", () => {
       render(() => (
         <ToastProvider useGlobalQueue>
           <ToastRegion portal={false} />
@@ -87,12 +158,11 @@ describe("Toast (solid-spectrum)", () => {
       const toastEl = region.querySelector('[data-type="success"]');
       const svg = toastEl?.querySelector("svg");
       expect(svg).toBeInTheDocument();
-      // SuccessIcon path includes "9 12l2 2 4-4" (checkmark in circle)
-      const path = svg?.querySelector("path");
-      expect(path?.getAttribute("d")).toContain("9 12l2 2 4-4");
+      expect(svg).toHaveAttribute("viewBox", "0 0 20 20");
+      expect(svg?.querySelectorAll("path")).toHaveLength(2);
     });
 
-    it("renders WarningIcon SVG for warning variant", () => {
+    it("renders the S2 AlertTriangle SVG for negative variants", () => {
       render(() => (
         <ToastProvider useGlobalQueue>
           <ToastRegion portal={false} />
@@ -105,30 +175,11 @@ describe("Toast (solid-spectrum)", () => {
       const toastEl = region.querySelector('[data-type="warning"]');
       const svg = toastEl?.querySelector("svg");
       expect(svg).toBeInTheDocument();
-      // WarningIcon path includes "12 9v2m0 4h.01" (triangle exclamation)
-      const path = svg?.querySelector("path");
-      expect(path?.getAttribute("d")).toContain("12 9v2m0 4h.01");
+      expect(svg).toHaveAttribute("viewBox", "0 0 20 20");
+      expect(svg?.querySelectorAll("path")).toHaveLength(3);
     });
 
-    it("renders ErrorIcon SVG for error variant", () => {
-      render(() => (
-        <ToastProvider useGlobalQueue>
-          <ToastRegion portal={false} />
-        </ToastProvider>
-      ));
-
-      addToast({ title: "Failed", type: "error" });
-
-      const region = screen.getByRole("region");
-      const toastEl = region.querySelector('[data-type="error"]');
-      const svg = toastEl?.querySelector("svg");
-      expect(svg).toBeInTheDocument();
-      // ErrorIcon path includes "10 14l2-2m0 0l2-2" (X in circle)
-      const path = svg?.querySelector("path");
-      expect(path?.getAttribute("d")).toContain("10 14l2-2m0 0l2-2");
-    });
-
-    it("renders InfoIcon SVG for info variant", () => {
+    it("renders the S2 InfoCircle SVG for info variant and no icon for neutral", () => {
       render(() => (
         <ToastProvider useGlobalQueue>
           <ToastRegion portal={false} />
@@ -141,9 +192,22 @@ describe("Toast (solid-spectrum)", () => {
       const toastEl = region.querySelector('[data-type="info"]');
       const svg = toastEl?.querySelector("svg");
       expect(svg).toBeInTheDocument();
-      // InfoIcon path includes "13 16h-1v-4h-1m1-4h.01" (i in circle)
-      const path = svg?.querySelector("path");
-      expect(path?.getAttribute("d")).toContain("13 16h-1v-4h-1m1-4h.01");
+      expect(svg).toHaveAttribute("viewBox", "0 0 20 20");
+
+      clearGlobalToasts();
+      cleanup();
+      render(() => (
+        <ToastProvider useGlobalQueue>
+          <ToastRegion portal={false} />
+        </ToastProvider>
+      ));
+
+      addToast({ title: "Plain", type: "neutral" });
+
+      const neutralToast = screen.getByRole("region").querySelector('[data-type="neutral"]');
+      expect(
+        neutralToast?.querySelector("[data-solid-spectrum-toast-icon]"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -189,7 +253,28 @@ describe("Toast (solid-spectrum)", () => {
 
       const actionButton = screen.getByText("Undo");
       expect(actionButton).toBeInTheDocument();
-      expect(actionButton.tagName).toBe("BUTTON");
+      expect(actionButton.closest("button")).toBeInTheDocument();
+    });
+
+    it("closes an actionable toast when shouldCloseOnAction is true", () => {
+      const onAction = vi.fn();
+
+      render(() => (
+        <ToastProvider useGlobalQueue>
+          <ToastRegion portal={false} />
+        </ToastProvider>
+      ));
+
+      ToastQueue.info("File deleted", {
+        actionLabel: "Undo",
+        onAction,
+        shouldCloseOnAction: true,
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText("File deleted")).not.toBeInTheDocument();
     });
 
     it("links alertdialog labeling to title and description elements", () => {
@@ -214,7 +299,7 @@ describe("Toast (solid-spectrum)", () => {
   });
 
   describe("close button", () => {
-    it("renders close button with Dismiss aria-label and CloseIcon SVG", () => {
+    it("renders close button with Close aria-label and S2 CloseIcon SVG", () => {
       render(() => (
         <ToastProvider useGlobalQueue>
           <ToastRegion portal={false} />
@@ -225,11 +310,11 @@ describe("Toast (solid-spectrum)", () => {
 
       const region = screen.getByRole("region");
       const toastEl = region.querySelector('[data-type="info"]')!;
-      const closeBtn = toastEl.querySelector('button[aria-label="Dismiss"]');
+      const closeBtn = toastEl.querySelector('button[aria-label="Close"]');
       expect(closeBtn).toBeInTheDocument();
-      // CloseIcon SVG should be inside the close button
       const svg = closeBtn!.querySelector("svg");
       expect(svg).toBeInTheDocument();
+      expect(svg).toHaveAttribute("viewBox", "0 0 20 20");
     });
   });
 
@@ -250,7 +335,7 @@ describe("Toast (solid-spectrum)", () => {
       expect(toastEl).toHaveAttribute("data-animation");
     });
 
-    it("applies animation CSS classes in toast base styles", () => {
+    it("applies generated S2 classes for toast styling", () => {
       render(() => (
         <ToastProvider useGlobalQueue>
           <ToastRegion portal={false} />
@@ -261,19 +346,53 @@ describe("Toast (solid-spectrum)", () => {
 
       const region = screen.getByRole("region");
       const toastEl = region.querySelector('[data-type="success"]');
-      // The base styles include data-[animation=entering]:animate-in
-      expect(toastEl!.className).toContain("data-[animation=entering]:animate-in");
+      expect(toastEl!.className).toContain("macro-dynamic");
     });
   });
 
-  describe("global API helpers", () => {
+  describe("S2 ToastQueue API and legacy helpers", () => {
+    it("ToastQueue returns a close function and queues S2 content", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      const close = ToastQueue.positive("Saved successfully");
+
+      const toast = screen.getByText("Saved successfully").closest('[role="alertdialog"]');
+      expect(toast).toHaveAttribute("data-solid-spectrum-variant", "positive");
+
+      close();
+
+      expect(screen.queryByText("Saved successfully")).not.toBeInTheDocument();
+    });
+
+    it("ToastQueue enforces S2 timeout rules", () => {
+      const spy = vi.spyOn(globalToastQueue, "add");
+
+      ToastQueue.info("Auto close", { timeout: 100 });
+      expect(spy).toHaveBeenLastCalledWith(
+        expect.objectContaining({ children: "Auto close", variant: "info" }),
+        expect.objectContaining({ timeout: 5000 }),
+      );
+
+      ToastQueue.info("Needs action", { actionLabel: "Undo", timeout: 100 });
+      expect(spy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          children: "Needs action",
+          variant: "info",
+          actionLabel: "Undo",
+        }),
+        expect.objectContaining({ timeout: undefined }),
+      );
+
+      spy.mockRestore();
+    });
+
     it("toastSuccess sets type to success with 5s timeout", () => {
       const spy = vi.spyOn(globalToastQueue, "add");
 
       toastSuccess("It worked!");
 
       expect(spy).toHaveBeenCalledWith(
-        { title: "It worked!", type: "success" },
+        expect.objectContaining({ title: "It worked!", type: "success", variant: "positive" }),
         expect.objectContaining({ timeout: 5000 }),
       );
 
@@ -286,7 +405,11 @@ describe("Toast (solid-spectrum)", () => {
       toastError("Something broke");
 
       expect(spy).toHaveBeenCalledWith(
-        { title: "Something broke", type: "error" },
+        expect.objectContaining({
+          title: "Something broke",
+          type: "error",
+          variant: "negative",
+        }),
         expect.objectContaining({ timeout: 8000 }),
       );
 
@@ -299,7 +422,7 @@ describe("Toast (solid-spectrum)", () => {
       toastWarning("Be careful");
 
       expect(spy).toHaveBeenCalledWith(
-        { title: "Be careful", type: "warning" },
+        expect.objectContaining({ title: "Be careful", type: "warning", variant: "negative" }),
         expect.objectContaining({ timeout: 6000 }),
       );
 
@@ -312,7 +435,7 @@ describe("Toast (solid-spectrum)", () => {
       toastInfo("Just so you know");
 
       expect(spy).toHaveBeenCalledWith(
-        { title: "Just so you know", type: "info" },
+        expect.objectContaining({ title: "Just so you know", type: "info", variant: "info" }),
         expect.objectContaining({ timeout: 5000 }),
       );
 

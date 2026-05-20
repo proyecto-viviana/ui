@@ -234,6 +234,18 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 RangeCalendar directly; Solid uses @proyecto-viviana/solid-spectrum RangeCalendar with S2 header/nav styling, strict zero-tolerance month-grid pair diffs, exact seven-column month grid geometry, controlled range value, validation error linkage, unavailable-date strike treatment, firstDayOfWeek string normalization, visibleMonths/pageBehavior/selectionAlignment routing, and DateRangePicker popover reuse without the old fixed-width gutter.",
   }),
 
+  toast: styledLiveOfficialEntry({
+    slug: "toast",
+    title: "Toast",
+    category: "Components",
+    summary:
+      "Toast route mounted on both stacks with S2 ToastContainer/ToastQueue primitives, variant methods, placement, multi-toast stack controls, action, close-on-action, timeout, and Notifications landmark controls.",
+    styledSummary:
+      "React Spectrum ToastContainer/ToastQueue vs Solid Spectrum ToastContainer/ToastQueue.",
+    styledNote:
+      "React uses @react-spectrum/s2 ToastContainer and ToastQueue directly; Solid uses @proyecto-viviana/solid-spectrum ToastContainer and ToastQueue on top of Solidaria/Solid Stately toast primitives with S2 variant mapping, default bottom placement, collapsed/expanded stack controls, the Notifications landmark, 5s minimum auto-dismiss, and actionable-toast no-auto-dismiss behavior.",
+  }),
+
   provider: {
     ...createGapEntry({
       slug: "provider",
@@ -710,7 +722,6 @@ const entryOverrides: Record<string, ComparisonEntry> = {
         ["datepicker", "DatePicker"],
         ["contextualhelp", "ContextualHelp"],
         ["tooltip", "Tooltip"],
-        ["toast", "Toast"],
       ] as const
     ).map(([slug, title]) => [
       slug,
@@ -741,15 +752,13 @@ const entryOverrides: Record<string, ComparisonEntry> = {
         parity: "partial",
         priority: "live",
         gapSummary: [
-          title === "Toast"
-            ? "React Spectrum Toast reference remains tracked."
-            : title === "Dialog"
-              ? "React styled Dialog is mounted from @react-spectrum/s2 with DialogTrigger, Dialog, Heading, and Content."
-              : title === "ContextualHelp"
-                ? "React styled ContextualHelp is mounted from @react-spectrum/s2 with Heading and Content children."
-                : title === "Tooltip"
-                  ? "React styled Tooltip is mounted from @react-spectrum/s2 with TooltipTrigger, icon-only ActionButton trigger, and S2 Tooltip content."
-                  : "React styled island remains mounted from @react-spectrum/s2.",
+          title === "Dialog"
+            ? "React styled Dialog is mounted from @react-spectrum/s2 with DialogTrigger, Dialog, Heading, and Content."
+            : title === "ContextualHelp"
+              ? "React styled ContextualHelp is mounted from @react-spectrum/s2 with Heading and Content children."
+              : title === "Tooltip"
+                ? "React styled Tooltip is mounted from @react-spectrum/s2 with TooltipTrigger, icon-only ActionButton trigger, and S2 Tooltip content."
+                : "React styled island remains mounted from @react-spectrum/s2.",
           title === "DateRangePicker"
             ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum and reuses the S2 RangeCalendar popover with routed picker state."
             : title === "Dialog"
@@ -785,7 +794,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
           styled: layerTrack(
             `Styled ${title}`,
             `React Spectrum ${title} vs Solid styled implementation.`,
-            title === "Toast" ? "tracked" : "live",
+            "live",
             title === "Dialog" ||
               title === "DatePicker" ||
               title === "DateRangePicker" ||
@@ -809,14 +818,12 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                         ? "Solid styled ContextualHelp is mounted from @proyecto-viviana/solid-spectrum with S2 ActionButton trigger, Popover surface, variant icons, controlled open state, placement routing, and press/touch activation."
                         : title === "Tooltip"
                           ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 neutral surface styling, always-on arrow by default, trigger-level placement/start/end routing, disabled suppression, controlled open state, hover/focus behavior, Escape cleanup, and modeled viewer controls."
-                          : title === "Toast"
-                            ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
-                            : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
+                          : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
           ),
           components: layerTrack(
             `Component ${title}`,
             "Component-layer parity target.",
-            title === "Toast" ? "tracked" : "live",
+            "live",
             "tracked",
             "Solid component comparison is still tracked separately from the styled island.",
           ),

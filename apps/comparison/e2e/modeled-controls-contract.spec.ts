@@ -42,6 +42,11 @@ const tooltipTextControlValues: Record<string, string> = {
   delay: "250",
 };
 
+const toastTextControlValues: Record<string, string> = {
+  count: "2",
+  timeout: "5000",
+};
+
 const contextualHelpTextControlValues: Record<string, string> = {
   offset: "10",
   crossOffset: "2",
@@ -109,6 +114,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (group.slug === "tooltip" && control.name in tooltipTextControlValues) {
       return tooltipTextControlValues[control.name];
     }
+    if (group.slug === "toast" && control.name in toastTextControlValues) {
+      return toastTextControlValues[control.name];
+    }
     if (group.slug === "contextualhelp" && control.name in contextualHelpTextControlValues) {
       return contextualHelpTextControlValues[control.name];
     }
@@ -157,6 +165,9 @@ function expectedSerializedValue(
     return Number(value);
   }
   if (group.slug === "tooltip" && control.name === "delay") {
+    return Number(value);
+  }
+  if (group.slug === "toast" && control.name in toastTextControlValues) {
     return Number(value);
   }
   if (group.slug === "contextualhelp" && control.name in contextualHelpTextControlValues) {

@@ -49,6 +49,8 @@ export interface ToastState<T> {
    * Call this from the component layer when the CSS exit animation finishes.
    */
   remove: (key: string) => void;
+  /** Clears all queued and visible toasts. */
+  clear: () => void;
   /** Pauses all toast timers. */
   pauseAll: () => void;
   /** Resumes all toast timers. */
@@ -96,6 +98,10 @@ export declare class ToastQueue<T> {
    * Remove a toast after exit animation completes.
    */
   remove(key: string): void;
+  /**
+   * Clear all queued and visible toasts.
+   */
+  clear(): void;
   /**
    * Pause all toast timers.
    */

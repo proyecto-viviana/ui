@@ -171,6 +171,7 @@ import {
   tooltipPlacementOptions,
   tooltipTriggerOptions,
 } from "./tooltip-demo";
+import { toastDemoDefaults, toastPlacementOptions, toastVariantOptions } from "./toast-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
 import {
@@ -4057,6 +4058,94 @@ const tooltipControls: ComponentControlGroup = {
   note: "Modeled from the S2 Tooltip docs/API viewer. The route drives icon-only ActionButton trigger composition, content, placement, trigger mode, delay, disabled suppression, controlled open, flip, and close-on-press into both stacks; non-interactive/disabled-button help remains ContextualHelp coverage.",
 };
 
+const toastControls: ComponentControlGroup = {
+  slug: "toast",
+  title: "Toast",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "children",
+      label: "children",
+      kind: "text",
+      defaultValue: toastDemoDefaults.children,
+    },
+    {
+      name: "variant",
+      label: "variant",
+      kind: "radio",
+      defaultValue: toastDemoDefaults.variant,
+      options: options(toastVariantOptions),
+    },
+    {
+      name: "placement",
+      label: "placement",
+      kind: "radio",
+      defaultValue: toastDemoDefaults.placement,
+      options: options(toastPlacementOptions),
+    },
+    {
+      name: "count",
+      label: "queued toasts",
+      kind: "text",
+      defaultValue: toastDemoDefaults.count,
+    },
+    {
+      name: "showAction",
+      label: "action",
+      kind: "switch",
+      defaultValue: toastDemoDefaults.showAction,
+    },
+    {
+      name: "actionLabel",
+      label: "actionLabel",
+      kind: "text",
+      defaultValue: toastDemoDefaults.actionLabel,
+    },
+    {
+      name: "shouldCloseOnAction",
+      label: "shouldCloseOnAction",
+      kind: "switch",
+      defaultValue: toastDemoDefaults.shouldCloseOnAction,
+    },
+    {
+      name: "autoDismiss",
+      label: "auto dismiss",
+      kind: "switch",
+      defaultValue: toastDemoDefaults.autoDismiss,
+    },
+    {
+      name: "timeout",
+      label: "timeout",
+      kind: "text",
+      defaultValue: toastDemoDefaults.timeout,
+    },
+    {
+      name: "aria-label",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: toastDemoDefaults["aria-label"],
+    },
+  ],
+  apiProps: [
+    "ToastContainer",
+    "ToastQueue.neutral",
+    "ToastQueue.positive",
+    "ToastQueue.negative",
+    "ToastQueue.info",
+    "children",
+    "variant",
+    "placement",
+    "count",
+    "timeout",
+    "actionLabel",
+    "onAction",
+    "shouldCloseOnAction",
+    "onClose",
+    "aria-label",
+  ],
+  note: "Modeled from the S2 Toast docs/API viewer. The route mounts ToastContainer once per stack and drives ToastQueue variant methods, placement, multi-toast stack controls, actionable toasts, close-on-action behavior, auto-dismiss timeout rules, and the Notifications landmark label into both stacks.",
+};
+
 export const componentControlGroups = {
   accordion: accordionControls,
   actionbar: actionBarControls,
@@ -4100,6 +4189,7 @@ export const componentControlGroups = {
   textarea: textAreaControls,
   textfield: textFieldControls,
   tooltip: tooltipControls,
+  toast: toastControls,
   togglebutton: toggleButtonControls,
   togglebuttongroup: toggleButtonGroupControls,
 } as const satisfies Record<string, ComponentControlGroup>;

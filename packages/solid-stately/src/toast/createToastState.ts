@@ -56,6 +56,8 @@ export interface ToastState<T> {
    * If hasExitAnimation is false, close() removes immediately and this is not needed.
    */
   remove: (key: string) => void;
+  /** Clears all queued and visible toasts. */
+  clear: () => void;
   /** Pauses all toast timers. */
   pauseAll: () => void;
   /** Resumes all toast timers. */
@@ -160,7 +162,7 @@ export class ToastQueue<T> {
     let high = this.queue.length;
     while (low < high) {
       const mid = Math.floor((low + high) / 2);
-      if (toast.priority > this.queue[mid].priority) {
+      if (toast.priority >= this.queue[mid].priority) {
         high = mid;
       } else {
         low = mid + 1;
@@ -210,6 +212,19 @@ export class ToastQueue<T> {
 
     this.queue = this.queue.filter((t) => t.key !== key);
     this.updateVisibility();
+  }
+
+  /**
+   * Clear all queued and visible toasts.
+   */
+  clear(): void {
+    for (const toast of this.queue) {
+      toast.timer?.cancel();
+      toast.onClose?.();
+    }
+
+    this.queue = [];
+    this.notify();
   }
 
   /**
@@ -295,6 +310,7 @@ export function createToastState<T>(props: ToastStateProps<T>): ToastState<T> {
     add: (content, options) => props.queue.add(content, options),
     close: (key) => props.queue.close(key),
     remove: (key) => props.queue.remove(key),
+    clear: () => props.queue.clear(),
     pauseAll: () => props.queue.pauseAll(),
     resumeAll: () => props.queue.resumeAll(),
   };

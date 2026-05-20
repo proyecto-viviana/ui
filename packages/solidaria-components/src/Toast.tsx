@@ -21,6 +21,7 @@ import {
   type ToastState,
   type QueuedToast,
   type ToastQueueOptions,
+  type ToastOptions,
   ToastQueue,
   createToastState,
 } from "@proyecto-viviana/solid-stately";
@@ -38,12 +39,22 @@ import {
 } from "./utils";
 
 export interface ToastContent {
+  /** Spectrum Toast message content. */
+  children?: string;
   /** The title of the toast. */
   title?: string;
   /** The description/body of the toast. */
   description?: string;
-  /** The type/variant of the toast (info, success, warning, error). */
-  type?: "info" | "success" | "warning" | "error";
+  /** Spectrum variant. */
+  variant?: "info" | "positive" | "negative" | "neutral";
+  /** Backward-compatible type/variant of the toast. */
+  type?: "info" | "success" | "warning" | "error" | "positive" | "negative" | "neutral";
+  /** Spectrum action button label. */
+  actionLabel?: string;
+  /** Handler called when the Spectrum action button is pressed. */
+  onAction?: () => void;
+  /** Whether the toast should close when the Spectrum action is performed. */
+  shouldCloseOnAction?: boolean;
   /** Custom action button. */
   action?: {
     label: string;
@@ -81,7 +92,17 @@ export interface ToastRegionProps {
   /** Whether to render in a portal. */
   portal?: boolean;
   /** Placement of the toast region. */
-  placement?: "top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end";
+  placement?:
+    | "top"
+    | "top start"
+    | "top end"
+    | "top-start"
+    | "top-end"
+    | "bottom"
+    | "bottom start"
+    | "bottom end"
+    | "bottom-start"
+    | "bottom-end";
 }
 
 export interface ToastProps {
@@ -115,7 +136,7 @@ export function useToastContext(): ToastState<ToastContent> {
 
 /** Default global toast queue that can be used for app-wide toasts. */
 export const globalToastQueue = new ToastQueue<ToastContent>({
-  maxVisibleToasts: 5,
+  maxVisibleToasts: Infinity,
   hasExitAnimation: true,
 });
 
@@ -123,11 +144,12 @@ export const globalToastQueue = new ToastQueue<ToastContent>({
  * Add a toast to the global queue.
  * Convenience function for adding toasts from anywhere in the app.
  */
-export function addToast(
-  content: ToastContent,
-  options?: { timeout?: number; priority?: number },
-): string {
+export function addToast(content: ToastContent, options?: ToastOptions): string {
   return globalToastQueue.add(content, options);
+}
+
+function normalizeToastPlacement(placement?: ToastRegionProps["placement"]) {
+  return (placement ?? "bottom").replace("-", " ") as NonNullable<ToastRegionProps["placement"]>;
 }
 
 export interface ToastProviderProps {
@@ -225,38 +247,48 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
   );
 
   const placementStyles = createMemo<JSX.CSSProperties>(() => {
-    const placement = local.placement ?? "bottom-end";
+    const placement = normalizeToastPlacement(local.placement);
+    const [edge, align = "center"] = placement.split(" ");
     const base: JSX.CSSProperties = {
       position: "fixed",
       "z-index": 100001,
       display: "flex",
-      "flex-direction": "column",
+      "flex-direction": edge === "top" ? "column" : "column-reverse",
       gap: "8px",
       padding: "16px",
       "pointer-events": "none",
     };
 
-    switch (placement) {
-      case "top":
-        return { ...base, top: 0, left: "50%", transform: "translateX(-50%)" } as JSX.CSSProperties;
-      case "top-start":
-        return { ...base, top: 0, left: 0 } as JSX.CSSProperties;
-      case "top-end":
-        return { ...base, top: 0, right: 0 } as JSX.CSSProperties;
-      case "bottom":
-        return {
-          ...base,
-          bottom: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-        } as JSX.CSSProperties;
-      case "bottom-start":
-        return { ...base, bottom: 0, left: 0 } as JSX.CSSProperties;
-      case "bottom-end":
-      default:
-        return { ...base, bottom: 0, right: 0 } as JSX.CSSProperties;
+    if (edge === "top") {
+      if (align === "end") {
+        return { ...base, top: "16px", right: "16px" } as JSX.CSSProperties;
+      }
+      if (align === "start") {
+        return { ...base, top: "16px", left: "16px" } as JSX.CSSProperties;
+      }
+      return {
+        ...base,
+        top: "16px",
+        left: "50%",
+        transform: "translateX(-50%)",
+      } as JSX.CSSProperties;
     }
+
+    if (align === "end") {
+      return { ...base, bottom: "16px", right: "16px" } as JSX.CSSProperties;
+    }
+    if (align === "start") {
+      return { ...base, bottom: "16px", left: "16px" } as JSX.CSSProperties;
+    }
+    return {
+      ...base,
+      bottom: "16px",
+      left: "50%",
+      transform: "translateX(-50%)",
+    } as JSX.CSSProperties;
   });
+
+  const normalizedPlacement = () => normalizeToastPlacement(local.placement);
 
   const visibleToasts = () => state()?.visibleToasts() ?? [];
   const hasToasts = () => visibleToasts().length > 0;
@@ -281,7 +313,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
         {...cleanRegionProps}
         class={renderProps.class()}
         style={mergedStyle()}
-        data-placement={local.placement ?? "bottom-end"}
+        data-placement={normalizedPlacement()}
       >
         {renderedChildren()}
       </div>
@@ -329,10 +361,11 @@ export function Toast(props: ToastProps): JSX.Element {
     });
   });
 
+  const hasTitle = () => !!(local.toast.content.children ?? local.toast.content.title);
   const toastAria = createToast({
     toast: local.toast,
     state,
-    hasTitle: !!local.toast.content.title,
+    hasTitle: hasTitle(),
     hasDescription: !!local.toast.content.description,
   });
 
@@ -456,7 +489,8 @@ export function Toast(props: ToastProps): JSX.Element {
         class={renderProps.class()}
         style={mergedStyle()}
         data-animation={local.toast.animation}
-        data-type={local.toast.content.type}
+        data-type={local.toast.content.type ?? local.toast.content.variant}
+        data-variant={local.toast.content.variant}
         on:click={handleRootClick}
       >
         {renderProps.renderChildren()}
@@ -559,26 +593,33 @@ export interface DefaultToastProps {
  */
 export function DefaultToast(props: DefaultToastProps): JSX.Element {
   const content = () => props.toast.content;
+  const title = () => content().children ?? content().title;
+  const actionLabel = () => content().actionLabel ?? content().action?.label;
+  const actionHandler = () => content().onAction ?? content().action?.onAction;
+  const state = useToastContext();
+  const handleAction = () => {
+    actionHandler()?.();
+    if (content().shouldCloseOnAction) {
+      state.close(props.toast.key);
+      state.remove(props.toast.key);
+    }
+  };
 
   return (
     <Toast toast={props.toast}>
       <div style={{ display: "flex", "align-items": "flex-start", gap: "12px" }}>
         <div style={{ flex: 1 }}>
-          <Show when={content().title}>
+          <Show when={title()}>
             <ToastTitle style={{ "font-weight": "bold", "margin-bottom": "4px" }}>
-              {content().title}
+              {title()}
             </ToastTitle>
           </Show>
           <Show when={content().description}>
             <ToastDescription>{content().description}</ToastDescription>
           </Show>
-          <Show when={content().action}>
-            <button
-              type="button"
-              style={{ "margin-top": "8px" }}
-              onClick={content().action?.onAction}
-            >
-              {content().action?.label}
+          <Show when={actionLabel()}>
+            <button type="button" style={{ "margin-top": "8px" }} onClick={handleAction}>
+              {actionLabel()}
             </button>
           </Show>
         </div>

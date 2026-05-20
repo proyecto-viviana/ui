@@ -461,7 +461,7 @@ export type {
 
 // Toast
 export { ToastContainer, ToastQueue } from "./toast";
-export type { ToastOptions, ToastRegionProps as ToastContainerProps } from "./toast";
+export type { ToastContainerProps, ToastOptions } from "./toast";
 
 // Tooltip
 export { Tooltip, TooltipTrigger } from "./tooltip";
