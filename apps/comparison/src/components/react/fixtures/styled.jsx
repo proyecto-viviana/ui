@@ -174,6 +174,16 @@ import {
   serializeSegmentedControlDemoProps,
 } from "@comparison/data/segmentedcontrol-demo";
 import {
+  initialSelectBoxGroupSelectedKeys,
+  normalizeSelectBoxGroupDemoProps,
+  selectBoxGroupDemoPropsFromWindow,
+  selectBoxGroupIllustrationItemIds,
+  selectBoxGroupItems,
+  selectBoxGroupKeysFromValue,
+  serializeSelectBoxGroupDemoProps,
+  serializeSelectBoxGroupKeys,
+} from "@comparison/data/selectboxgroup-demo";
+import {
   normalizeNumberFieldDemoProps,
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
@@ -429,11 +439,6 @@ const ReactPlanIllustration = createIllustration((props) =>
   }),
 );
 
-const selectBoxItems = [
-  { id: "starter", label: "Starter", description: "For small teams" },
-  { id: "pro", label: "Pro", description: "For growing teams" },
-];
-
 const radioGroupItems = [
   { value: "starter", label: "Starter" },
   { value: "pro", label: "Pro" },
@@ -445,8 +450,6 @@ const checkboxGroupItems = [
   { value: "sms", label: "SMS" },
   { value: "push", label: "Push" },
 ];
-
-const selectBoxIllustrationItems = new Set(["starter", "pro"]);
 
 const cardItems = [
   { id: "apollo", title: "Apollo", status: "Active" },
@@ -488,45 +491,6 @@ function stringParamFromWindow(name, allowed, fallback) {
 function selectedKeysParamFromWindow(fallback) {
   const value = queryParamFromWindow("selectedKeys");
   return new Set(value ? value.split(",").filter(Boolean) : fallback);
-}
-
-function selectedKeysSetFromValue(value, fallback, selectionMode) {
-  const keys = String(value || fallback.join(","))
-    .split(",")
-    .map((key) => key.trim())
-    .filter(Boolean);
-  return new Set(selectionMode === "single" ? keys.slice(0, 1) : keys);
-}
-
-function selectBoxGroupDemoPropsFromWindow() {
-  const selectionMode = stringParamFromWindow("selectionMode", ["single", "multiple"], "single");
-  return {
-    orientation: stringParamFromWindow("orientation", ["horizontal", "vertical"], "horizontal"),
-    selectionMode,
-    selectedKeys: Array.from(
-      selectedKeysParamFromWindow(selectionMode === "multiple" ? ["starter", "pro"] : ["starter"]),
-    ).join(","),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    disablePro: booleanParamFromWindow("disablePro"),
-    withIllustrations: booleanParamFromWindow("withIllustrations", true),
-  };
-}
-
-function normalizeSelectBoxGroupDemoProps(props) {
-  const selectionMode = props?.selectionMode === "multiple" ? "multiple" : "single";
-  return {
-    orientation: props?.orientation === "vertical" ? "vertical" : "horizontal",
-    selectionMode,
-    selectedKeys:
-      typeof props?.selectedKeys === "string" && props.selectedKeys.trim()
-        ? props.selectedKeys
-        : selectionMode === "multiple"
-          ? "starter,pro"
-          : "starter",
-    isDisabled: props?.isDisabled === true,
-    disablePro: props?.disablePro === true,
-    withIllustrations: props?.withIllustrations !== false,
-  };
 }
 
 export const reactStyledFixtures = {
@@ -1966,7 +1930,7 @@ function ReactSegmentedControlDemo() {
 function ReactSelectBoxGroupDemo() {
   const [demoProps, setDemoProps] = useState(selectBoxGroupDemoPropsFromWindow);
   const [selectedKeys, setSelectedKeys] = useState(() =>
-    selectedKeysSetFromValue(demoProps.selectedKeys, ["starter"], demoProps.selectionMode),
+    initialSelectBoxGroupSelectedKeys(demoProps),
   );
   const colorScheme = useComparisonResolvedTheme();
   useEffect(() => {
@@ -1974,9 +1938,7 @@ function ReactSelectBoxGroupDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "selectboxgroup") {
         setDemoProps((current) => {
           const nextProps = normalizeSelectBoxGroupDemoProps({ ...current, ...event.detail.props });
-          setSelectedKeys(
-            selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
-          );
+          setSelectedKeys(initialSelectBoxGroupSelectedKeys(nextProps));
           return nextProps;
         });
       }
@@ -1985,37 +1947,68 @@ function ReactSelectBoxGroupDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
+  const selectionProps =
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? {
+          defaultSelectedKeys: selectBoxGroupKeysFromValue(
+            demoProps.defaultSelectedKeys,
+            ["starter"],
+            demoProps.selectionMode,
+          ),
+        }
+      : { selectedKeys };
+  const renderKey = [
+    demoProps.orientation,
+    demoProps.selectionMode,
+    demoProps.selectionSource,
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? demoProps.defaultSelectedKeys
+      : demoProps.selectedKeys,
+    demoProps.disabledKeys,
+    demoProps.disabledItem,
+    demoProps.isDisabled,
+    demoProps.withIllustrations,
+  ].join("|");
+
   return renderReactSpectrumReference(
     jsx("div", {
-      "data-comparison-selected-keys": Array.from(selectedKeys).join(","),
-      children: jsx(SpectrumSelectBoxGroup, {
-        "aria-label": "Plans",
-        "data-comparison-control-root": "selectboxgroup",
-        "data-comparison-control-props": JSON.stringify(demoProps),
-        orientation: demoProps.orientation,
-        selectionMode: demoProps.selectionMode,
-        isDisabled: demoProps.isDisabled,
-        selectedKeys,
-        onSelectionChange: (keys) => setSelectedKeys(keys === "all" ? new Set() : new Set(keys)),
-        children: selectBoxItems.map((item) =>
-          jsxs(
-            SpectrumSelectBox,
-            {
-              id: item.id,
-              textValue: item.label,
-              isDisabled: demoProps.disablePro && item.id === "pro",
-              children: [
-                demoProps.withIllustrations && selectBoxIllustrationItems.has(item.id)
-                  ? jsx(ReactPlanIllustration, { slot: "illustration" })
-                  : null,
-                jsx(SpectrumText, { slot: "label", children: item.label }),
-                jsx(SpectrumText, { slot: "description", children: item.description }),
-              ],
-            },
-            item.id,
+      "data-comparison-selected-keys": serializeSelectBoxGroupKeys(selectedKeys),
+      children: jsx(
+        SpectrumSelectBoxGroup,
+        {
+          "aria-label": "Plans",
+          "data-comparison-control-root": "selectboxgroup",
+          "data-comparison-control-props": serializeSelectBoxGroupDemoProps(demoProps),
+          orientation: demoProps.orientation,
+          selectionMode: demoProps.selectionMode,
+          isDisabled: demoProps.isDisabled,
+          disabledKeys: selectBoxGroupKeysFromValue(demoProps.disabledKeys, [], "multiple"),
+          ...selectionProps,
+          onSelectionChange: (keys) =>
+            setSelectedKeys(
+              keys === "all" ? new Set(selectBoxGroupItems.map((item) => item.id)) : new Set(keys),
+            ),
+          children: selectBoxGroupItems.map((item) =>
+            jsxs(
+              SpectrumSelectBox,
+              {
+                id: item.id,
+                textValue: item.label,
+                isDisabled: demoProps.disabledItem === item.id,
+                children: [
+                  demoProps.withIllustrations && selectBoxGroupIllustrationItemIds.has(item.id)
+                    ? jsx(ReactPlanIllustration, { slot: "illustration" })
+                    : null,
+                  jsx(SpectrumText, { slot: "label", children: item.label }),
+                  jsx(SpectrumText, { slot: "description", children: item.description }),
+                ],
+              },
+              item.id,
+            ),
           ),
-        ),
-      }),
+        },
+        renderKey,
+      ),
     }),
     colorScheme,
   );

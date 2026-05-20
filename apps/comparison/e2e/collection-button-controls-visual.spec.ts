@@ -580,6 +580,42 @@ test.describe("comparison collection button controls visual parity", () => {
     );
   });
 
+  test("SelectBoxGroup defaultSelectedKeys initializes uncontrolled selection", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "selectboxgroup",
+      "?selectionSource=defaultSelectedKeys&defaultSelectedKeys=pro",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      selectionSource: "defaultSelectedKeys",
+      defaultSelectedKeys: "pro",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      selectionSource: "defaultSelectedKeys",
+      defaultSelectedKeys: "pro",
+    });
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "pro");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "pro");
+
+    await fixtures.reactRoot.getByRole("option", { name: "Starter" }).click();
+    await fixtures.solidRoot.getByRole("option", { name: "Starter" }).click();
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter");
+  });
+
   test("SelectBoxGroup hover text color follows React Spectrum state ramp", async ({ page }) => {
     const fixtures = await collectionFixtures(
       page,
@@ -601,7 +637,7 @@ test.describe("comparison collection button controls visual parity", () => {
     const fixtures = await collectionFixtures(
       page,
       "selectboxgroup",
-      "?selectionMode=multiple&selectedKeys=starter&orientation=horizontal&withIllustrations=true&disablePro=true",
+      "?selectionMode=multiple&selectedKeys=starter&orientation=horizontal&withIllustrations=true&disabledItem=pro",
     );
 
     await clearPointer(page);
@@ -620,7 +656,7 @@ test.describe("comparison collection button controls visual parity", () => {
     const fixtures = await collectionFixtures(
       page,
       "selectboxgroup",
-      "?selectionMode=multiple&selectedKeys=starter&orientation=horizontal&withIllustrations=true&disablePro=true",
+      "?selectionMode=multiple&selectedKeys=starter&orientation=horizontal&withIllustrations=true&disabledItem=pro",
     );
 
     expect(await controlProps(fixtures.reactRoot)).toMatchObject({
@@ -628,14 +664,14 @@ test.describe("comparison collection button controls visual parity", () => {
       orientation: "horizontal",
       selectedKeys: "starter",
       withIllustrations: true,
-      disablePro: true,
+      disabledItem: "pro",
     });
     expect(await controlProps(fixtures.solidRoot)).toMatchObject({
       selectionMode: "multiple",
       orientation: "horizontal",
       selectedKeys: "starter",
       withIllustrations: true,
-      disablePro: true,
+      disabledItem: "pro",
     });
 
     const react = await selectBoxIllustrationAndDisabledState(fixtures.reactRoot);
@@ -678,6 +714,40 @@ test.describe("comparison collection button controls visual parity", () => {
     ).toHaveAttribute("data-comparison-selected-keys", "starter");
     await expect(reactPro).toHaveAttribute("aria-selected", "false");
     await expect(solidPro).toHaveAttribute("aria-selected", "false");
+  });
+
+  test("SelectBoxGroup disabledKeys suppresses selection", async ({ page }) => {
+    const fixtures = await collectionFixtures(
+      page,
+      "selectboxgroup",
+      "?selectionMode=multiple&selectedKeys=starter&disabledKeys=pro",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      selectionMode: "multiple",
+      selectedKeys: "starter",
+      disabledKeys: "pro",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      selectionMode: "multiple",
+      selectedKeys: "starter",
+      disabledKeys: "pro",
+    });
+
+    const reactPro = fixtures.reactRoot.getByRole("option", { name: "Pro" });
+    const solidPro = fixtures.solidRoot.getByRole("option", { name: "Pro" });
+    await expect(reactPro).toHaveAttribute("aria-disabled", "true");
+    await expect(solidPro).toHaveAttribute("aria-disabled", "true");
+
+    await reactPro.click({ force: true });
+    await solidPro.click({ force: true });
+
+    await expect(
+      fixtures.reactPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-keys]").first(),
+    ).toHaveAttribute("data-comparison-selected-keys", "starter");
   });
 
   test("SegmentedControl interactive prop controls drive both stacks", async ({ page }) => {
@@ -795,6 +865,9 @@ test.describe("comparison collection button controls visual parity", () => {
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
     await form.locator('input[name="selectionMode"][value="multiple"]').check();
     await form.locator('input[name="selectedKeys"]').fill("starter,pro");
+    await form.locator('input[name="defaultSelectedKeys"]').fill("pro");
+    await form.locator('input[name="disabledKeys"]').fill("pro");
+    await form.locator('input[name="disabledItem"][value="pro"]').check();
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -811,13 +884,21 @@ test.describe("comparison collection button controls visual parity", () => {
       "starter,pro",
     );
     expect(await controlProps(reactRoot)).toMatchObject({
+      selectionSource: "selectedKeys",
       selectionMode: "multiple",
       selectedKeys: "starter,pro",
+      defaultSelectedKeys: "pro",
+      disabledKeys: "pro",
+      disabledItem: "pro",
       withIllustrations: true,
     });
     expect(await controlProps(solidRoot)).toMatchObject({
+      selectionSource: "selectedKeys",
       selectionMode: "multiple",
       selectedKeys: "starter,pro",
+      defaultSelectedKeys: "pro",
+      disabledKeys: "pro",
+      disabledItem: "pro",
       withIllustrations: true,
     });
     await expect(reactRoot.locator('[data-slot="illustration"]').first()).toBeVisible();

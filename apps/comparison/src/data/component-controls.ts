@@ -156,6 +156,13 @@ import {
   segmentedControlKeyOptions,
   segmentedControlSelectionSourceOptions,
 } from "./segmentedcontrol-demo";
+import {
+  selectBoxGroupDemoDefaults,
+  selectBoxGroupDisabledItemOptions,
+  selectBoxGroupOrientationOptions,
+  selectBoxGroupSelectionModeOptions,
+  selectBoxGroupSelectionSourceOptions,
+} from "./selectboxgroup-demo";
 import { numberFieldDemoDefaults, numberFieldSizeOptions } from "./numberfield-demo";
 import { pickerDemoDefaults, pickerKeyOptions, pickerSizeOptions } from "./picker-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
@@ -3869,33 +3876,59 @@ const selectBoxGroupControls: ComponentControlGroup = {
       name: "orientation",
       label: "orientation",
       kind: "radio",
-      defaultValue: "horizontal",
-      options: [
-        { value: "horizontal", label: "horizontal" },
-        { value: "vertical", label: "vertical" },
-      ],
+      defaultValue: selectBoxGroupDemoDefaults.orientation,
+      options: options(selectBoxGroupOrientationOptions),
     },
     {
       name: "selectionMode",
       label: "selectionMode",
       kind: "radio",
-      defaultValue: "single",
-      options: [
-        { value: "single", label: "single" },
-        { value: "multiple", label: "multiple" },
-      ],
+      defaultValue: selectBoxGroupDemoDefaults.selectionMode,
+      options: options(selectBoxGroupSelectionModeOptions),
+    },
+    {
+      name: "selectionSource",
+      label: "selection source",
+      kind: "radio",
+      defaultValue: selectBoxGroupDemoDefaults.selectionSource,
+      options: options(selectBoxGroupSelectionSourceOptions),
     },
     {
       name: "selectedKeys",
       label: "selectedKeys",
       kind: "text",
-      defaultValue: "starter",
+      defaultValue: selectBoxGroupDemoDefaults.selectedKeys,
+    },
+    {
+      name: "defaultSelectedKeys",
+      label: "defaultSelectedKeys",
+      kind: "text",
+      defaultValue: selectBoxGroupDemoDefaults.defaultSelectedKeys,
+    },
+    {
+      name: "disabledKeys",
+      label: "disabledKeys",
+      kind: "text",
+      defaultValue: selectBoxGroupDemoDefaults.disabledKeys,
+    },
+    {
+      name: "disabledItem",
+      label: "item isDisabled",
+      kind: "radio",
+      defaultValue: selectBoxGroupDemoDefaults.disabledItem,
+      options: options(selectBoxGroupDisabledItemOptions),
     },
     {
       name: "isDisabled",
       label: "isDisabled",
       kind: "switch",
-      defaultValue: false,
+      defaultValue: selectBoxGroupDemoDefaults.isDisabled,
+    },
+    {
+      name: "withIllustrations",
+      label: "illustrations",
+      kind: "switch",
+      defaultValue: selectBoxGroupDemoDefaults.withIllustrations,
     },
   ],
   apiProps: [
@@ -3904,9 +3937,14 @@ const selectBoxGroupControls: ComponentControlGroup = {
     "selectionMode",
     "selectedKeys",
     "defaultSelectedKeys",
+    "disabledKeys",
+    "SelectBox.isDisabled",
     "onSelectionChange",
+    "disallowEmptySelection",
+    "escapeKeyBehavior",
     "orientation",
     "isDisabled",
+    "slot",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -3914,7 +3952,7 @@ const selectBoxGroupControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 SelectBoxGroup docs control surface. The viewer drives orientation, selection mode, selected key set, and disabled state into both stacks. Source-only illustration and disabled-item coverage stays on dedicated route states and specs rather than extra docs controls.",
+  note: "Modeled from the S2 SelectBoxGroup docs control surface. The viewer drives orientation, selection mode, controlled/default selection, disabledKeys, item isDisabled, group disabled state, and illustration slot composition into both stacks.",
 };
 
 const contextualHelpControls: ComponentControlGroup = {

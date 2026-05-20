@@ -1243,7 +1243,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
   selectboxgroup: [
     assertedDefaultState({
       slug: "selectboxgroup",
-      note: "SelectBoxGroup default visual evidence exists for both sides and compared with an asserted threshold; strict pair-diff coverage remains open.",
+      note: "SelectBoxGroup default visual evidence exists for both sides and is compared against the current React Spectrum reference.",
     }),
     {
       id: "styled.selection.single",
@@ -1254,6 +1254,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/button-family-contract.spec.ts",
       note: "Clicking Pro moves the controlled selected key from starter to pro on both stacks.",
+    },
+    {
+      id: "styled.selection.default-keys",
+      label: "Default selected keys",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      note: "The route can omit controlled selectedKeys, pass defaultSelectedKeys, initialize Pro selected on both stacks, and then allow uncontrolled selection changes.",
     },
     {
       id: "styled.selection.multiple-slots",
@@ -1283,7 +1293,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/collection-button-controls-visual.spec.ts",
-      note: "The docs-style prop controls drive the real S2 viewer surface only: orientation, selectionMode, selectedKeys, and isDisabled. Illustration-slot and disabled-item coverage stays on dedicated route states and specs.",
+      note: "The docs-style prop controls drive orientation, selectionMode, selection source, selectedKeys, defaultSelectedKeys, disabledKeys, item isDisabled, group disabled state, and illustration slot composition into both stacks.",
     },
     {
       id: "styled.keyboard.selection",
@@ -1304,6 +1314,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "asserted",
       spec: "e2e/collection-button-controls-visual.spec.ts",
       note: "Horizontal multiple SelectBoxGroup with illustration slots and a disabled Pro option has current visual evidence and asserts illustration geometry, disabled-item label color, and disabled option state against React Spectrum.",
+    },
+    {
+      id: "styled.disabled-keys.behavior",
+      label: "Disabled keys behavior",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/collection-button-controls-visual.spec.ts",
+      note: "Group disabledKeys marks Pro disabled on both stacks and forced clicks leave the controlled selected key set unchanged.",
     },
     {
       id: "styled.disabled-item.behavior",

@@ -2,9 +2,13 @@ import {
   children as resolveChildren,
   createContext,
   createEffect,
+  createMemo,
   type JSX,
+  mergeProps,
+  onCleanup,
   Show,
   splitProps,
+  createSignal,
   useContext,
 } from "solid-js";
 import {
@@ -21,15 +25,24 @@ import { baseColor, focusRing, style } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { useProviderProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";
+import { pressScale } from "../pressScale";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type SelectBoxOrientation = "horizontal" | "vertical";
 
 export interface SelectBoxGroupProps<T> extends Omit<
   HeadlessListBoxProps<T>,
-  "class" | "style" | "children" | "layout" | "orientation"
+  "class" | "style" | "children" | "layout" | "orientation" | "slot" | "ref"
 > {
   /** The SelectBox elements contained within the SelectBoxGroup. */
-  children: (item: T) => JSX.Element;
+  children: JSX.Element | ((item: T) => JSX.Element);
   /** The layout direction of the content in each SelectBox. @default 'vertical' */
   orientation?: SelectBoxOrientation;
   /** Whether the SelectBoxGroup is disabled. */
@@ -42,6 +55,10 @@ export interface SelectBoxGroupProps<T> extends Omit<
   UNSAFE_style?: JSX.CSSProperties;
   /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the underlying listbox element. */
+  ref?: RefLike<HTMLUListElement>;
 }
 
 export interface SelectBoxProps extends Omit<
@@ -68,7 +85,23 @@ interface SelectBoxContextValue {
   isDisabled?: boolean;
 }
 
+interface StaticSelectBoxItem {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+  props: SelectBoxProps;
+}
+
+interface StaticSelectBoxCollectionContextValue {
+  registerItem(item: StaticSelectBoxItem): void;
+  unregisterItem(id: Key): void;
+}
+
 const SelectBoxContext = createContext<SelectBoxContextValue>({ orientation: "vertical" });
+const StaticSelectBoxCollectionContext =
+  createContext<StaticSelectBoxCollectionContextValue | null>(null);
+export const SelectBoxGroupContext =
+  createContext<SpectrumContextValue<SelectBoxGroupProps<unknown>>>(null);
 const selectBoxGroupStyles = style<{ orientation?: SelectBoxOrientation }>({
   display: "grid",
   gridAutoRows: "1fr",
@@ -308,7 +341,12 @@ const selectBoxLabel = style<ListBoxOptionRenderProps & { orientation?: SelectBo
  * SelectBoxGroup allows users to select one or more options from a list.
  */
 export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(
+    useContext(SelectBoxGroupContext) as SpectrumContextValue<SelectBoxGroupProps<T>>,
+    props.slot,
+  );
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "orientation",
@@ -318,10 +356,37 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
+    "slot",
+    "ref",
   ]);
   const orientation = (): SelectBoxOrientation => local.orientation ?? "vertical";
   const selectionMode = (): "single" | "multiple" =>
     local.selectionMode === "multiple" ? "multiple" : "single";
+  const [staticItems, setStaticItems] = createSignal<StaticSelectBoxItem[]>([]);
+  const staticItemMap = new Map<Key, StaticSelectBoxItem>();
+  const usesStaticChildren = () => headlessProps.items == null;
+  const syncStaticItems = () => setStaticItems(Array.from(staticItemMap.values()));
+  const staticCollectionContext: StaticSelectBoxCollectionContextValue = {
+    registerItem(item) {
+      const previous = staticItemMap.get(item.id);
+      if (
+        previous &&
+        previous.textValue === item.textValue &&
+        previous.isDisabled === item.isDisabled &&
+        previous.props === item.props
+      ) {
+        return;
+      }
+
+      staticItemMap.set(item.id, item);
+      syncStaticItems();
+    },
+    unregisterItem(id) {
+      if (staticItemMap.delete(id)) {
+        syncStaticItems();
+      }
+    },
+  };
   const contextValue = {
     get orientation() {
       return orientation();
@@ -333,43 +398,79 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
       return local.isDisabled;
     },
   };
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignGroupRefs = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLUListElement> } | null)?.ref,
+    props.ref,
+  );
   const className = (_renderProps: ListBoxRenderProps): string =>
     [
-      local.UNSAFE_className,
-      local.class,
-      mergeStyles(selectBoxGroupStyles({ orientation: orientation() }), local.styles),
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
+      mergeStyles(selectBoxGroupStyles({ orientation: orientation() }), mergedStyles()),
     ]
       .filter(Boolean)
       .join(" ");
+  const collectionItems = createMemo(() =>
+    usesStaticChildren() ? (staticItems() as unknown as T[]) : headlessProps.items,
+  );
+  const getKey = () =>
+    usesStaticChildren() ? (item: T) => (item as StaticSelectBoxItem).id : headlessProps.getKey;
+  const getTextValue = () =>
+    usesStaticChildren()
+      ? (item: T) =>
+          (item as StaticSelectBoxItem).textValue ?? String((item as StaticSelectBoxItem).id)
+      : headlessProps.getTextValue;
+  const getDisabled = () =>
+    usesStaticChildren()
+      ? (item: T) => Boolean((item as StaticSelectBoxItem).isDisabled)
+      : headlessProps.getDisabled;
+  const renderItem = (item: T) =>
+    usesStaticChildren() ? (
+      <SelectBox {...(item as StaticSelectBoxItem).props} />
+    ) : typeof local.children === "function" ? (
+      local.children(item)
+    ) : null;
+  const staticRegistrationChildren = () => {
+    if (!usesStaticChildren()) {
+      return null;
+    }
+
+    const resolved = resolveChildren(() => local.children as JSX.Element);
+    return resolved();
+  };
 
   return (
     <SelectBoxContext.Provider value={contextValue}>
+      <StaticSelectBoxCollectionContext.Provider
+        value={usesStaticChildren() ? staticCollectionContext : null}
+      >
+        {staticRegistrationChildren()}
+      </StaticSelectBoxCollectionContext.Provider>
       <HeadlessListBox
         {...headlessProps}
+        ref={(element) => assignGroupRefs(element)}
+        items={collectionItems() ?? []}
+        getKey={getKey()}
+        getTextValue={getTextValue()}
+        getDisabled={getDisabled()}
         isDisabled={local.isDisabled}
         selectionMode={selectionMode()}
         layout="grid"
         orientation={orientation()}
+        slot={local.slot ?? undefined}
         class={className}
-        style={local.UNSAFE_style}
+        style={mergedUnsafeStyle()}
         data-orientation={orientation()}
         data-disabled={local.isDisabled ? "true" : undefined}
       >
-        {(item: T) => local.children(item)}
+        {(item: T) => renderItem(item)}
       </HeadlessListBox>
     </SelectBoxContext.Provider>
   );
-}
-
-type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
-
-function assignRef<T>(ref: RefLike<T>, el: T): void {
-  if (!ref) return;
-  if (typeof ref === "function") {
-    ref(el);
-  } else {
-    ref.current = el;
-  }
 }
 
 function replaceManagedClass(element: Element, dataAttribute: string, nextClass: string): void {
@@ -453,6 +554,7 @@ function applySlotClasses(
  */
 export function SelectBox(props: SelectBoxProps): JSX.Element {
   const context = useContext(SelectBoxContext);
+  const staticCollection = useContext(StaticSelectBoxCollectionContext);
   const [local, headlessProps] = splitProps(props, [
     "children",
     "styles",
@@ -461,10 +563,32 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     "class",
     "ref",
   ]);
+  createEffect(() => {
+    if (!staticCollection) {
+      return;
+    }
+
+    staticCollection.registerItem({
+      id: props.id,
+      textValue: headlessProps.textValue ?? headlessProps["aria-label"],
+      isDisabled: !!headlessProps.isDisabled,
+      props,
+    });
+  });
+
+  onCleanup(() => {
+    staticCollection?.unregisterItem(props.id);
+  });
+
+  if (staticCollection) {
+    return null;
+  }
+
   const orientation = (): SelectBoxOrientation => context.orientation ?? "vertical";
   const selectionMode = () => context.selectionMode ?? "single";
   const isDisabled = () => !!headlessProps.isDisabled || !!context.isDisabled;
   let optionElement: HTMLLIElement | undefined;
+  const assignOptionRef = mergeContextRefs(local.ref);
   const getClassName = (renderProps: ListBoxOptionRenderProps): string =>
     [
       local.UNSAFE_className,
@@ -480,9 +604,8 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
-  const getStyle = (_renderProps: ListBoxOptionRenderProps): JSX.CSSProperties => ({
-    ...(local.UNSAFE_style ?? {}),
-  });
+  const getStyle = (renderProps: ListBoxOptionRenderProps): JSX.CSSProperties =>
+    pressScale(() => optionElement, local.UNSAFE_style)(renderProps);
 
   function SelectBoxContent(renderProps: ListBoxOptionRenderProps) {
     const resolvedChildren = resolveChildren(() => local.children);
@@ -516,7 +639,7 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
       isDisabled={isDisabled()}
       ref={(element) => {
         optionElement = element;
-        assignRef(local.ref, element);
+        assignOptionRef(element);
       }}
       class={getClassName}
       style={getStyle}

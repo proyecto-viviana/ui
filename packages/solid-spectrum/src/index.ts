@@ -360,7 +360,7 @@ export {
 export type { SegmentedControlItemProps, SegmentedControlProps } from "./segmentedcontrol";
 
 // SelectBoxGroup
-export { SelectBox, SelectBoxGroup } from "./selectboxgroup";
+export { SelectBox, SelectBoxGroup, SelectBoxGroupContext } from "./selectboxgroup";
 export type { SelectBoxGroupProps, SelectBoxOrientation, SelectBoxProps } from "./selectboxgroup";
 
 // Skeleton

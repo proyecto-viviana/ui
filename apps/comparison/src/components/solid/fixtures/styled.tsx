@@ -195,6 +195,17 @@ import {
   type SegmentedControlKey,
 } from "@comparison/data/segmentedcontrol-demo";
 import {
+  initialSelectBoxGroupSelectedKeys,
+  normalizeSelectBoxGroupDemoProps,
+  selectBoxGroupDemoPropsFromWindow,
+  selectBoxGroupIllustrationItemIds,
+  selectBoxGroupItems,
+  selectBoxGroupKeysFromValue,
+  serializeSelectBoxGroupDemoProps,
+  serializeSelectBoxGroupKeys,
+  type SelectBoxGroupDemoProps,
+} from "@comparison/data/selectboxgroup-demo";
+import {
   normalizeNumberFieldDemoProps,
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
@@ -477,11 +488,6 @@ const SolidPlanIllustration = createIllustration((props: JSX.SvgSVGAttributes<SV
   )() as JSX.Element;
 });
 
-const selectBoxItems = [
-  { id: "starter", label: "Starter", description: "For small teams" },
-  { id: "pro", label: "Pro", description: "For growing teams" },
-];
-
 const radioGroupItems = [
   { value: "starter", label: "Starter" },
   { value: "pro", label: "Pro" },
@@ -493,8 +499,6 @@ const checkboxGroupItems = [
   { value: "sms", label: "SMS" },
   { value: "push", label: "Push" },
 ];
-
-const selectBoxIllustrationItems = new Set(["starter", "pro"]);
 
 const cardItems = [
   { id: "apollo", title: "Apollo", status: "Active" },
@@ -566,70 +570,6 @@ function stringParamFromWindow<T extends string>(
 function selectedKeysParamFromWindow(fallback: string[]) {
   const value = queryParamFromWindow("selectedKeys");
   return new Set(value ? value.split(",").filter(Boolean) : fallback);
-}
-
-type SelectBoxSelectionMode = "single" | "multiple";
-
-interface SelectBoxGroupDemoProps {
-  orientation: "horizontal" | "vertical";
-  selectionMode: SelectBoxSelectionMode;
-  selectedKeys: string;
-  isDisabled: boolean;
-  disablePro: boolean;
-  withIllustrations: boolean;
-}
-
-function selectedKeysSetFromValue(
-  value: string | undefined,
-  fallback: string[],
-  selectionMode: SelectBoxSelectionMode,
-) {
-  const keys = String(value || fallback.join(","))
-    .split(",")
-    .map((key) => key.trim())
-    .filter(Boolean);
-  return new Set(selectionMode === "single" ? keys.slice(0, 1) : keys);
-}
-
-function selectBoxGroupDemoPropsFromWindow(): SelectBoxGroupDemoProps {
-  const selectionMode = stringParamFromWindow(
-    "selectionMode",
-    ["single", "multiple"] as const,
-    "single",
-  );
-  return {
-    orientation: stringParamFromWindow(
-      "orientation",
-      ["horizontal", "vertical"] as const,
-      "horizontal",
-    ),
-    selectionMode,
-    selectedKeys: Array.from(
-      selectedKeysParamFromWindow(selectionMode === "multiple" ? ["starter", "pro"] : ["starter"]),
-    ).join(","),
-    isDisabled: booleanParamFromWindow("isDisabled"),
-    disablePro: booleanParamFromWindow("disablePro"),
-    withIllustrations: booleanParamFromWindow("withIllustrations", true),
-  };
-}
-
-function normalizeSelectBoxGroupDemoProps(
-  props: Partial<SelectBoxGroupDemoProps>,
-): SelectBoxGroupDemoProps {
-  const selectionMode = props.selectionMode === "multiple" ? "multiple" : "single";
-  return {
-    orientation: props.orientation === "vertical" ? "vertical" : "horizontal",
-    selectionMode,
-    selectedKeys:
-      typeof props.selectedKeys === "string" && props.selectedKeys.trim()
-        ? props.selectedKeys
-        : selectionMode === "multiple"
-          ? "starter,pro"
-          : "starter",
-    isDisabled: props.isDisabled === true,
-    disablePro: props.disablePro === true,
-    withIllustrations: props.withIllustrations !== false,
-  };
 }
 
 function solidSingleButtonFamilyChildren(
@@ -5695,16 +5635,19 @@ function SolidSpectrumSelectBoxGroupDemo() {
     selectBoxGroupDemoPropsFromWindow(),
   );
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
-    selectedKeysSetFromValue(demoProps().selectedKeys, ["starter"], demoProps().selectionMode),
+    initialSelectBoxGroupSelectedKeys(demoProps()),
   );
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
-  const selectedKeyText = createMemo(() => Array.from(selectedKeys()).join(","));
+  const selectedKeyText = createMemo(() => serializeSelectBoxGroupKeys(selectedKeys()));
   let selectBoxGroupRoot: HTMLElement | undefined;
 
   createEffect(() => {
-    selectBoxGroupRoot?.setAttribute("data-comparison-control-props", JSON.stringify(demoProps()));
+    selectBoxGroupRoot?.setAttribute(
+      "data-comparison-control-props",
+      serializeSelectBoxGroupDemoProps(demoProps()),
+    );
   });
 
   onMount(() => {
@@ -5715,9 +5658,7 @@ function SolidSpectrumSelectBoxGroupDemo() {
             ...current,
             ...(event.detail.props ?? {}),
           });
-          setSelectedKeys(
-            selectedKeysSetFromValue(nextProps.selectedKeys, ["starter"], nextProps.selectionMode),
-          );
+          setSelectedKeys(initialSelectBoxGroupSelectedKeys(nextProps));
           return nextProps;
         });
       }
@@ -5766,7 +5707,7 @@ function SolidSpectrumSelectBoxGroupDemo() {
                 selectBoxGroupRoot = element;
               },
               get "data-comparison-control-props"() {
-                return JSON.stringify(demoProps());
+                return serializeSelectBoxGroupDemoProps(demoProps());
               },
               get orientation() {
                 return demoProps().orientation;
@@ -5777,27 +5718,46 @@ function SolidSpectrumSelectBoxGroupDemo() {
               get isDisabled() {
                 return demoProps().isDisabled;
               },
-              items: selectBoxItems,
-              getKey: (item: (typeof selectBoxItems)[number]) => item.id,
-              getTextValue: (item: (typeof selectBoxItems)[number]) => item.label,
+              get items() {
+                return selectBoxGroupItems;
+              },
+              getKey: (item: (typeof selectBoxGroupItems)[number]) => item.id,
+              getTextValue: (item: (typeof selectBoxGroupItems)[number]) => item.label,
+              get disabledKeys() {
+                return selectBoxGroupKeysFromValue(demoProps().disabledKeys, [], "multiple");
+              },
               get selectedKeys() {
-                return selectedKeys();
+                return demoProps().selectionSource === "selectedKeys" ? selectedKeys() : undefined;
+              },
+              get defaultSelectedKeys() {
+                return demoProps().selectionSource === "defaultSelectedKeys"
+                  ? selectBoxGroupKeysFromValue(
+                      demoProps().defaultSelectedKeys,
+                      ["starter"],
+                      demoProps().selectionMode,
+                    )
+                  : undefined;
               },
               onSelectionChange: (keys: "all" | Set<string | number>) =>
                 setSelectedKeys(
-                  keys === "all" ? new Set<string>() : new Set<string>(Array.from(keys, String)),
+                  keys === "all"
+                    ? new Set(selectBoxGroupItems.map((item) => item.id))
+                    : new Set<string>(Array.from(keys, String)),
                 ),
             },
-            renderProp((item: (typeof selectBoxItems)[number]) =>
+            renderProp((item: (typeof selectBoxGroupItems)[number]) =>
               hc(
                 SolidSpectrumSelectBox,
                 {
                   id: item.id,
                   textValue: item.label,
-                  isDisabled: demoProps().disablePro && item.id === "pro",
+                  get isDisabled() {
+                    return demoProps().disabledItem === item.id;
+                  },
                 },
                 [
-                  ...(demoProps().withIllustrations && selectBoxIllustrationItems.has(item.id)
+                  ...(demoProps().withIllustrations &&
+                  selectBoxGroupIllustrationItemIds.has(item.id)
                     ? [
                         hc(SolidPlanIllustration, {
                           slot: "illustration",
