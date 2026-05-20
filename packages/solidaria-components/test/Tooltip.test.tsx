@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { resetTooltipState } from "@proyecto-viviana/solid-stately";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { Tooltip, TooltipTrigger } from "../src/Tooltip";
 import { Button } from "../src/Button";
 
@@ -100,6 +101,27 @@ describe("TooltipTrigger", () => {
     });
 
     vi.useFakeTimers(); // Restore for other tests
+  });
+
+  it("should not open from touch pointer hover", async () => {
+    const onOpenChange = vi.fn();
+
+    render(() => (
+      <TooltipTrigger onOpenChange={onOpenChange} delay={0}>
+        <Button data-testid="trigger">Hover me</Button>
+        <Tooltip data-testid="tooltip">Tooltip content</Tooltip>
+      </TooltipTrigger>
+    ));
+
+    const trigger = screen.getByTestId("trigger");
+    trigger.dispatchEvent(
+      createPointerEvent("pointerenter", { pointerId: 1, pointerType: "touch" }),
+    );
+    vi.advanceTimersByTime(0);
+
+    expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+    expect(trigger).not.toHaveAttribute("aria-describedby");
+    expect(onOpenChange).not.toHaveBeenCalledWith(true);
   });
 
   it("should support controlled open state with signals", () => {

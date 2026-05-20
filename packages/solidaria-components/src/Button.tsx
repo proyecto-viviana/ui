@@ -10,6 +10,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createSignal,
   splitProps,
   useContext,
 } from "solid-js";
@@ -206,16 +207,20 @@ export function Button(props: ButtonProps): JSX.Element {
   const resolvePending = (): boolean => !!local.isPending;
   const isPendingFocusable = () => local.isPendingFocusable !== false;
 
-  let buttonEl: HTMLButtonElement | undefined;
+  const [resolvedButtonEl, setResolvedButtonEl] = createSignal<HTMLButtonElement | null>(null);
   const buttonId = createId((ariaProps as Record<string, unknown>).id as string | undefined);
   const progressId = createId();
 
   // Explicit trigger ownership: a button toggles overlays only when it is the
   // registered trigger element for the surrounding trigger context.
   const isDialogTrigger = () =>
-    !!dialogTriggerContext && !!buttonEl && dialogTriggerContext.triggerRef() === buttonEl;
+    !!dialogTriggerContext &&
+    !!resolvedButtonEl() &&
+    dialogTriggerContext.triggerRef() === resolvedButtonEl();
   const isPopoverTrigger = () =>
-    !!popoverTriggerContext && !!buttonEl && popoverTriggerContext.triggerRef() === buttonEl;
+    !!popoverTriggerContext &&
+    !!resolvedButtonEl() &&
+    popoverTriggerContext.triggerRef() === resolvedButtonEl();
 
   const handlePress = (e: PressEvent) => {
     if (resolvePending()) {
@@ -338,7 +343,7 @@ export function Button(props: ButtonProps): JSX.Element {
   });
 
   const handleRef = (el: HTMLButtonElement) => {
-    buttonEl = el;
+    setResolvedButtonEl(el);
     assignRef(local.ref, el);
 
     buttonPropsRef?.(el);
@@ -364,6 +369,20 @@ export function Button(props: ButtonProps): JSX.Element {
           | "submit"
           | "reset"
           | undefined);
+  const popoverTriggerAriaProps = () => {
+    const triggerProps = popoverTriggerContext?.triggerProps;
+    if (!triggerProps || !isPopoverTrigger()) {
+      return {};
+    }
+
+    const next: Record<string, unknown> = {};
+    for (const name of ["aria-haspopup", "aria-expanded", "aria-controls"]) {
+      if (triggerProps[name] != null) {
+        next[name] = triggerProps[name];
+      }
+    }
+    return next;
+  };
   const disablePendingInteractions = (props: Record<string, unknown>) => {
     if (!resolvePending()) {
       return props;
@@ -403,6 +422,7 @@ export function Button(props: ButtonProps): JSX.Element {
     ({
       ...domProps(),
       ...disablePendingInteractions(cleanButtonProps()),
+      ...popoverTriggerAriaProps(),
       ...cleanFocusProps(),
       ...cleanHoverProps(),
       type: buttonType(),

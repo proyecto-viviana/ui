@@ -1,8 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { Tooltip, TooltipTrigger, SimpleTooltip } from "../src/tooltip";
 import { Button } from "../src/button";
 
@@ -63,6 +64,26 @@ describe("Tooltip (solid-spectrum)", () => {
 
       const tooltip = screen.getByRole("tooltip");
       expect(tooltip.querySelector("[data-rsp-slot='tooltip-arrow']")).toBeInTheDocument();
+    });
+
+    it("does not open from touch pointer hover", () => {
+      const onOpenChange = vi.fn();
+
+      render(() => (
+        <TooltipTrigger delay={0} onOpenChange={onOpenChange}>
+          <Button data-testid="trigger">Trigger</Button>
+          <Tooltip>Tip content</Tooltip>
+        </TooltipTrigger>
+      ));
+
+      const trigger = screen.getByTestId("trigger");
+      trigger.dispatchEvent(
+        createPointerEvent("pointerenter", { pointerId: 1, pointerType: "touch" }),
+      );
+
+      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+      expect(trigger).not.toHaveAttribute("aria-describedby");
+      expect(onOpenChange).not.toHaveBeenCalledWith(true);
     });
   });
 

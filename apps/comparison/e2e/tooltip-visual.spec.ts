@@ -100,6 +100,22 @@ async function expectTooltipHidden(page: Page) {
   await expect(page.getByRole("tooltip")).toHaveCount(0);
 }
 
+async function touchHover(trigger: Locator) {
+  await trigger.evaluate((element) => {
+    const pointerInit = {
+      bubbles: true,
+      cancelable: true,
+      pointerId: 1,
+      pointerType: "touch",
+      clientX: 8,
+      clientY: 8,
+    };
+
+    element.dispatchEvent(new PointerEvent("pointerenter", pointerInit));
+    element.dispatchEvent(new PointerEvent("pointerover", pointerInit));
+  });
+}
+
 test.describe("comparison Tooltip visual parity", () => {
   test("controlled open state renders S2 surface, arrow, and trigger ARIA on both stacks", async ({
     page,
@@ -209,5 +225,17 @@ test.describe("comparison Tooltip visual parity", () => {
     tooltip = await tooltipForTrigger(setup.solidButton);
     await setup.solidButton.click();
     await expect(tooltip).toHaveCount(0);
+  });
+
+  test("touch pointer hover does not show Tooltip on either stack", async ({ page }) => {
+    const { reactButton, solidButton } = await setupTooltipRoute(page, { delay: 0 });
+
+    await touchHover(reactButton);
+    await touchHover(solidButton);
+    await page.waitForTimeout(150);
+
+    await expect(reactButton).not.toHaveAttribute("aria-describedby", /.+/);
+    await expect(solidButton).not.toHaveAttribute("aria-describedby", /.+/);
+    await expectTooltipHidden(page);
   });
 });

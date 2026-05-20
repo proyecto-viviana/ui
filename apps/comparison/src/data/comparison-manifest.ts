@@ -708,6 +708,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
         ["timefield", "TimeField"],
         ["daterangepicker", "DateRangePicker"],
         ["datepicker", "DatePicker"],
+        ["contextualhelp", "ContextualHelp"],
         ["tooltip", "Tooltip"],
         ["toast", "Toast"],
       ] as const
@@ -732,9 +733,11 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                   ? "TimeField has a live comparison island with S2 segmented field styling, controlled time values, form owner/name and associated form-data evidence, validation behavior routing, validation, constraints, strict closed-field pair-diff evidence, and Provider locale routing."
                   : title === "DatePicker"
                     ? "DatePicker has a live comparison island with controlled date/date-time values, routed calendar constraints, associated form data evidence, locale/custom-calendar routes, strict closed-field pair-diff evidence, two-month popup state, and open popover evidence."
-                    : title === "Tooltip"
-                      ? "Tooltip has a live comparison island with S2 ActionButton trigger composition, routed content, placement, trigger, delay, disabled, controlled open, flip, close-on-press controls, S2 arrow styling, and hover/focus lifecycle coverage."
-                      : `${title} has an initial live comparison island. Exhaustive states remain open.`,
+                    : title === "ContextualHelp"
+                      ? "ContextualHelp has a live comparison island with S2 icon ActionButton trigger composition, routed heading/content, variant, trigger size, controlled open, placement, offset, container padding, flip, and press/touch popover behavior coverage."
+                      : title === "Tooltip"
+                        ? "Tooltip has a live comparison island with S2 ActionButton trigger composition, routed content, placement, trigger, delay, disabled, controlled open, flip, close-on-press controls, S2 arrow styling, and hover/focus lifecycle coverage."
+                        : `${title} has an initial live comparison island. Exhaustive states remain open.`,
         parity: "partial",
         priority: "live",
         gapSummary: [
@@ -742,9 +745,11 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             ? "React Spectrum Toast reference remains tracked."
             : title === "Dialog"
               ? "React styled Dialog is mounted from @react-spectrum/s2 with DialogTrigger, Dialog, Heading, and Content."
-              : title === "Tooltip"
-                ? "React styled Tooltip is mounted from @react-spectrum/s2 with TooltipTrigger, icon-only ActionButton trigger, and S2 Tooltip content."
-                : "React styled island remains mounted from @react-spectrum/s2.",
+              : title === "ContextualHelp"
+                ? "React styled ContextualHelp is mounted from @react-spectrum/s2 with Heading and Content children."
+                : title === "Tooltip"
+                  ? "React styled Tooltip is mounted from @react-spectrum/s2 with TooltipTrigger, icon-only ActionButton trigger, and S2 Tooltip content."
+                  : "React styled island remains mounted from @react-spectrum/s2.",
           title === "DateRangePicker"
             ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum and reuses the S2 RangeCalendar popover with routed picker state."
             : title === "Dialog"
@@ -755,9 +760,11 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                   ? "Solid styled TimeField is mounted from @proyecto-viviana/solid-spectrum and mirrors the S2 segmented FieldGroup composition."
                   : title === "DatePicker"
                     ? "Solid styled DatePicker is mounted from @proyecto-viviana/solid-spectrum and guarded by focused DatePicker specs."
-                    : title === "Tooltip"
-                      ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 token styling, S2 arrow path, trigger-level placement, disabled suppression, and hover/focus behavior."
-                      : "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
+                    : title === "ContextualHelp"
+                      ? "Solid styled ContextualHelp is mounted from @proyecto-viviana/solid-spectrum with a press-open Popover trigger instead of Tooltip."
+                      : title === "Tooltip"
+                        ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 token styling, S2 arrow path, trigger-level placement, disabled suppression, and hover/focus behavior."
+                        : "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
           title === "DateRangePicker"
             ? "Assistive-technology transcript rows remain tracked after the route, time, locale, and custom-calendar parity pass."
             : title === "Dialog"
@@ -768,9 +775,11 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                   ? "Contextual help route coverage and additional screen-reader transcript evidence remain tracked after the route, form, validation behavior, and strict closed-field parity pass."
                   : title === "DatePicker"
                     ? "Assistive-technology transcript rows, strict open-popover pair-diff, and full popup style token ledger evidence remain tracked after the route, time, locale, form, and closed-field parity pass."
-                    : title === "Tooltip"
-                      ? "Touch-screen tooltip non-display transcript evidence and ContextualHelp substitution examples remain tracked after route, behavior, and visual parity coverage."
-                      : "Detailed state matrices and strict visual assertions remain incomplete.",
+                    : title === "ContextualHelp"
+                      ? "Strict open-popover visual pair-diff and assistive-technology transcript rows remain tracked after the press/touch substitution, controlled route, and modeled-controls pass."
+                      : title === "Tooltip"
+                        ? "Advanced standalone geometry/rendering props remain tracked after route, behavior, visual parity, touch non-display, and ContextualHelp substitution coverage."
+                        : "Detailed state matrices and strict visual assertions remain incomplete.",
         ],
         layers: {
           styled: layerTrack(
@@ -782,6 +791,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
               title === "DateRangePicker" ||
               title === "DateField" ||
               title === "TimeField" ||
+              title === "ContextualHelp" ||
               title === "Tooltip"
               ? "live"
               : "missing",
@@ -795,11 +805,13 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                     ? "Solid styled TimeField is mounted from @proyecto-viviana/solid-spectrum with the S2 field shell, segmented TimeInput, required/invalid/help text surface, hidden form input, associated form data, granularity, hour cycle, validation behavior, strict closed-field pair-diff evidence, and locale route controls."
                     : title === "DateRangePicker"
                       ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum; S2 field-shell segment parity is asserted for the closed field, popup RangeCalendar geometry has bounded grid screenshot evidence, and date-time, locale, and custom-calendar routes are covered."
-                      : title === "Tooltip"
-                        ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 neutral surface styling, always-on arrow by default, trigger-level placement/start/end routing, disabled suppression, controlled open state, hover/focus behavior, Escape cleanup, and modeled viewer controls."
-                        : title === "Toast"
-                          ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
-                          : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
+                      : title === "ContextualHelp"
+                        ? "Solid styled ContextualHelp is mounted from @proyecto-viviana/solid-spectrum with S2 ActionButton trigger, Popover surface, variant icons, controlled open state, placement routing, and press/touch activation."
+                        : title === "Tooltip"
+                          ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 neutral surface styling, always-on arrow by default, trigger-level placement/start/end routing, disabled suppression, controlled open state, hover/focus behavior, Escape cleanup, and modeled viewer controls."
+                          : title === "Toast"
+                            ? "Solid styled Toast is not live until the route imports and renders @proyecto-viviana/solid-spectrum Toast."
+                            : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
           ),
           components: layerTrack(
             `Component ${title}`,

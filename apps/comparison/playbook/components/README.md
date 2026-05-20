@@ -44,6 +44,7 @@ partial if any gate remains unresolved.
 - [Badge](./badge-validation-notes.md)
 - [Button](./button-validation-notes.md)
 - [Button family](./button-family-validation-notes.md)
+- [ContextualHelp](./contextualhelp-validation-notes.md)
 - [Divider](./divider-validation-notes.md)
 - [Form](./form-validation-notes.md)
 - [Image](./image-validation-notes.md)
@@ -54,3 +55,4 @@ partial if any gate remains unresolved.
 - [Skeleton](./skeleton-validation-notes.md)
 - [StatusLight](./statuslight-validation-notes.md)
 - [Text](./text-validation-notes.md)
+- [Tooltip](./tooltip-validation-notes.md)

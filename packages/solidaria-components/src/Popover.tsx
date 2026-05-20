@@ -175,7 +175,7 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
   let triggerRef: HTMLElement | null = null;
   const triggerId = createUniqueId();
 
-  createOverlayTrigger({ type: "dialog" }, state, () => triggerRef);
+  const triggerAria = createOverlayTrigger({ type: "dialog" }, state, () => triggerRef);
 
   const contextValue = createMemo(() => ({
     state: {
@@ -192,6 +192,8 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
       }
     },
     triggerId,
+    triggerProps: triggerAria.triggerProps,
+    overlayProps: triggerAria.overlayProps,
     trigger: "PopoverTrigger",
   }));
 
@@ -371,6 +373,10 @@ export function Popover(props: PopoverProps): JSX.Element {
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
+  const overlayId = () => {
+    const restId = (rest as Record<string, unknown>).id as string | undefined;
+    return restId ?? (triggerContext?.overlayProps?.id as string | undefined);
+  };
 
   const cleanPopoverProps = () => {
     const {
@@ -437,6 +443,7 @@ export function Popover(props: PopoverProps): JSX.Element {
           {...domProps()}
           {...cleanPopoverProps()}
           ref={popoverRef}
+          id={overlayId()}
           role={shouldBeDialog() ? "dialog" : undefined}
           tabIndex={shouldBeDialog() ? -1 : undefined}
           class={renderProps.class()}

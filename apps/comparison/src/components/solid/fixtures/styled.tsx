@@ -34,6 +34,7 @@ import {
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
+  ContextualHelp as SolidSpectrumContextualHelp,
   DateField as SolidSpectrumDateField,
   DateRangePicker as SolidSpectrumDateRangePicker,
   DatePicker as SolidSpectrumDatePicker,
@@ -41,6 +42,7 @@ import {
   DialogTrigger as SolidSpectrumDialogTrigger,
   Divider as SolidSpectrumDivider,
   Form as SolidSpectrumForm,
+  Heading as SolidSpectrumHeading,
   Image as SolidSpectrumImage,
   ImageCoordinator as SolidSpectrumImageCoordinator,
   Keyboard as SolidSpectrumKeyboard,
@@ -349,6 +351,13 @@ import {
   switchDemoPropsFromWindow,
   type SwitchDemoProps,
 } from "@comparison/data/switch-demo";
+import {
+  contextualHelpDemoPropsFromWindow,
+  isContextualHelpOpenControlChecked,
+  normalizeContextualHelpDemoProps,
+  serializeContextualHelpDemoProps,
+  type ContextualHelpDemoProps,
+} from "@comparison/data/contextualhelp-demo";
 import {
   isTooltipOpenControlChecked,
   normalizeTooltipDemoProps,
@@ -678,6 +687,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
+  contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
   timefield: () => h(SolidSpectrumTimeFieldDemo, {}),
   daterangepicker: () => h(SolidSpectrumDateRangePickerDemo, {}),
@@ -3674,6 +3684,107 @@ function SolidSpectrumSwitchDemo() {
       ) as unknown as JSX.Element;
     },
   });
+}
+
+function SolidSpectrumContextualHelpDemo() {
+  const [demoProps, setDemoProps] = createSignal<ContextualHelpDemoProps>(
+    contextualHelpDemoPropsFromWindow(),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "contextualhelp") {
+        setDemoProps(normalizeContextualHelpDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setDemoProps(contextualHelpDemoPropsFromWindow());
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-button-row",
+          "data-comparison-control-root": "contextualhelp",
+          get "data-comparison-control-props"() {
+            return serializeContextualHelpDemoProps(demoProps());
+          },
+        },
+        [
+          hc(
+            SolidSpectrumContextualHelp,
+            {
+              get "aria-label"() {
+                return demoProps().triggerLabel;
+              },
+              get containerPadding() {
+                return demoProps().containerPadding;
+              },
+              get crossOffset() {
+                return demoProps().crossOffset;
+              },
+              get isOpen() {
+                return demoProps().isOpen;
+              },
+              get offset() {
+                return demoProps().offset;
+              },
+              onOpenChange: (nextOpen: boolean) => {
+                setDemoProps((current: ContextualHelpDemoProps) =>
+                  current.isOpen && !nextOpen && isContextualHelpOpenControlChecked()
+                    ? current
+                    : normalizeContextualHelpDemoProps({
+                        ...current,
+                        isOpen: nextOpen,
+                      }),
+                );
+              },
+              get placement() {
+                return demoProps().placement;
+              },
+              get shouldFlip() {
+                return demoProps().shouldFlip;
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get variant() {
+                return demoProps().variant;
+              },
+            },
+            [
+              hc(SolidSpectrumHeading, { slot: "title" }, [() => demoProps().heading]),
+              hc(SolidSpectrumText, {}, [() => demoProps().content]),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
 }
 
 function SolidSpectrumTooltipDemo() {

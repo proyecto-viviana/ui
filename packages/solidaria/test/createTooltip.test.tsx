@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal, createRoot, Show } from "solid-js";
 import { createTooltipTriggerState, resetTooltipState } from "@proyecto-viviana/solid-stately";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { createTooltip, createTooltipTrigger } from "../src/tooltip";
 
 describe("createTooltipTrigger", () => {
@@ -294,6 +295,36 @@ describe("createTooltipTrigger - hover behavior", () => {
 
     // Tooltip should be visible immediately
     expect(screen.queryByTestId("tooltip")).not.toBeNull();
+  });
+
+  it("does not open tooltip from touch hover events", () => {
+    function TestComponent() {
+      let ref: HTMLButtonElement | undefined;
+      const state = createTooltipTriggerState({ delay: 0 });
+      const { triggerProps, tooltipProps } = createTooltipTrigger({}, state, () => ref);
+
+      return (
+        <>
+          <button ref={ref} {...triggerProps} data-testid="trigger">
+            Hover me
+          </button>
+          <Show when={state.isOpen()}>
+            <div {...tooltipProps} data-testid="tooltip" role="tooltip">
+              Tooltip content
+            </div>
+          </Show>
+        </>
+      );
+    }
+
+    render(() => <TestComponent />);
+    const trigger = screen.getByTestId("trigger");
+
+    fireEvent(trigger, createPointerEvent("pointerenter", { pointerId: 1, pointerType: "touch" }));
+    vi.advanceTimersByTime(0);
+
+    expect(screen.queryByTestId("tooltip")).toBeNull();
+    expect(trigger.getAttribute("aria-describedby")).toBeNull();
   });
 
   it("hides tooltip when hover leaves the trigger", () => {

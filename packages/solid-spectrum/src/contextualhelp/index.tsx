@@ -1,18 +1,51 @@
-import { type JSX, Show, createUniqueId, splitProps, useContext } from "solid-js";
+import { type JSX, createUniqueId, splitProps, useContext } from "solid-js";
 import { MenuTriggerContext } from "@proyecto-viviana/solidaria-components";
-import { TooltipTrigger, Tooltip } from "../tooltip";
 import { Popover, type PopoverProps } from "../popover";
-import { style } from "../s2-style";
+import { PopoverTrigger } from "../popover";
+import { ActionButton, type ActionButtonSize } from "../button/ActionButton";
+import { style, type StyleString } from "../s2-style";
 import { HeadingContext, TextContext } from "../text";
+import { HelpCircleIcon } from "../icon/s2wf-icons/HelpCircleIcon";
+import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 
-export interface ContextualHelpProps {
-  /** Help trigger content. */
+export type ContextualHelpVariant = "help" | "info";
+export type ContextualHelpSize = Extract<ActionButtonSize, "XS" | "S">;
+
+export interface ContextualHelpProps extends Omit<
+  PopoverProps,
+  | "children"
+  | "class"
+  | "defaultOpen"
+  | "isOpen"
+  | "onOpenChange"
+  | "padding"
+  | "showArrow"
+  | "size"
+  | "trigger"
+> {
+  /** Contextual help popover content. */
   children?: JSX.Element;
-  /** Help text/content rendered in overlay. */
-  content: JSX.Element;
-  /** Accessible label for the default trigger button. */
+  /** Backward-compatible content alias. Prefer children for S2 parity. */
+  content?: JSX.Element;
+  /** Accessible label for the icon trigger button. */
   triggerLabel?: string;
-  /** Additional CSS class for trigger wrapper. */
+  /** Indicates whether contents are informative or provide help. @default 'help' */
+  variant?: ContextualHelpVariant;
+  /** Size of the trigger ActionButton. @default 'XS' */
+  size?: ContextualHelpSize;
+  /** Whether the overlay is open by default (uncontrolled). */
+  defaultOpen?: boolean;
+  /** Whether the overlay is open (controlled). */
+  isOpen?: boolean;
+  /** Handler called when the overlay's open state changes. */
+  onOpenChange?: (isOpen: boolean) => void;
+  /** Spectrum-defined generated classes for the trigger. */
+  styles?: StyleString;
+  /** Additional CSS class name for the trigger. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles for the trigger. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible trigger class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
 }
 
@@ -108,24 +141,88 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
 }
 
 export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
-  const [local] = splitProps(props, ["children", "content", "triggerLabel", "class"]);
+  const [local, popoverProps] = splitProps(props, [
+    "children",
+    "content",
+    "triggerLabel",
+    "variant",
+    "size",
+    "defaultOpen",
+    "isOpen",
+    "onOpenChange",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ]);
+  const titleId = createUniqueId();
+  const variant = () => local.variant ?? "help";
+  const triggerLabel = () =>
+    local.triggerLabel ??
+    local["aria-label"] ??
+    (variant() === "info" ? "More information" : "Contextual help");
+  const icon = () => (variant() === "info" ? <InfoCircleIcon /> : <HelpCircleIcon />);
+  const content = () => local.content ?? local.children;
+  const headingContext = {
+    slots: {
+      default: {
+        id: titleId,
+        level: 2 as const,
+        styles: contextualHelpHeading,
+      },
+      title: {
+        id: titleId,
+        level: 2 as const,
+        styles: contextualHelpHeading,
+      },
+    },
+  };
+  const textContext = {
+    slots: {
+      default: {
+        styles: contextualHelpText,
+        "data-rsp-slot": "text",
+      },
+    },
+  };
+
   return (
-    <TooltipTrigger>
-      <Show
-        when={local.children}
-        fallback={
-          <button
-            type="button"
-            aria-label={local.triggerLabel ?? "More information"}
-            class={`inline-flex h-5 w-5 items-center justify-center rounded-full border border-primary-500 text-xs text-primary-200 hover:bg-bg-300 ${local.class ?? ""}`}
-          >
-            ?
-          </button>
-        }
+    <PopoverTrigger
+      defaultOpen={local.defaultOpen}
+      isOpen={local.isOpen}
+      onOpenChange={local.onOpenChange}
+    >
+      <ActionButton
+        aria-label={triggerLabel()}
+        aria-labelledby={local["aria-labelledby"]}
+        aria-describedby={local["aria-describedby"]}
+        aria-haspopup="dialog"
+        size={local.size ?? "XS"}
+        isQuiet
+        styles={local.styles}
+        UNSAFE_className={[local.UNSAFE_className, local.class].filter(Boolean).join(" ")}
+        UNSAFE_style={local.UNSAFE_style}
       >
-        {local.children}
-      </Show>
-      <Tooltip>{local.content}</Tooltip>
-    </TooltipTrigger>
+        {icon()}
+      </ActionButton>
+      <Popover
+        {...popoverProps}
+        aria-label={triggerLabel()}
+        placement={popoverProps.placement ?? "bottom start"}
+        offset={popoverProps.offset ?? 8}
+        shouldFlip={popoverProps.shouldFlip ?? true}
+        padding="none"
+        class={contextualHelpFrame}
+      >
+        <div class={contextualHelpInner}>
+          <TextContext.Provider value={textContext}>
+            <HeadingContext.Provider value={headingContext}>{content()}</HeadingContext.Provider>
+          </TextContext.Provider>
+        </div>
+      </Popover>
+    </PopoverTrigger>
   );
 }

@@ -24,6 +24,7 @@ import {
   CheckboxGroup as SpectrumCheckboxGroup,
   ComboBox as SpectrumComboBox,
   ComboBoxItem as SpectrumComboBoxItem,
+  ContextualHelp as SpectrumContextualHelp,
   Content as SpectrumContent,
   DateField as SpectrumDateField,
   DateRangePicker as SpectrumDateRangePicker,
@@ -309,6 +310,12 @@ import {
   switchDemoPropsFromWindow,
 } from "@comparison/data/switch-demo";
 import {
+  contextualHelpDemoPropsFromWindow,
+  isContextualHelpOpenControlChecked,
+  normalizeContextualHelpDemoProps,
+  serializeContextualHelpDemoProps,
+} from "@comparison/data/contextualhelp-demo";
+import {
   isTooltipOpenControlChecked,
   normalizeTooltipDemoProps,
   serializeTooltipDemoProps,
@@ -549,6 +556,7 @@ export const reactStyledFixtures = {
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   combobox: () => jsx(ReactComboBoxDemo, {}),
+  contextualhelp: () => jsx(ReactContextualHelpDemo, {}),
   divider: () => jsx(ReactDividerDemo, {}),
   image: () => jsx(ReactImageDemo, {}),
   form: () => jsx(ReactFormDemo, {}),
@@ -3074,6 +3082,56 @@ function ReactSwitchDemo() {
           setDemoProps((current) => ({ ...current, isSelected: nextSelected }));
         },
         children: demoProps.children,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactContextualHelpDemo() {
+  const [demoProps, setDemoProps] = useState(contextualHelpDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "contextualhelp") {
+        setDemoProps(normalizeContextualHelpDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    setDemoProps(contextualHelpDemoPropsFromWindow());
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-button-row",
+      "data-comparison-control-root": "contextualhelp",
+      "data-comparison-control-props": serializeContextualHelpDemoProps(demoProps),
+      children: jsxs(SpectrumContextualHelp, {
+        "aria-label": demoProps.triggerLabel,
+        containerPadding: demoProps.containerPadding,
+        crossOffset: demoProps.crossOffset,
+        isOpen: demoProps.isOpen,
+        offset: demoProps.offset,
+        onOpenChange: (nextOpen) => {
+          setDemoProps((current) =>
+            current.isOpen && !nextOpen && isContextualHelpOpenControlChecked()
+              ? current
+              : normalizeContextualHelpDemoProps({
+                  ...current,
+                  isOpen: nextOpen,
+                }),
+          );
+        },
+        placement: demoProps.placement,
+        shouldFlip: demoProps.shouldFlip,
+        size: demoProps.size,
+        variant: demoProps.variant,
+        children: [
+          jsx(SpectrumHeading, { children: demoProps.heading }),
+          jsx(SpectrumContent, { children: demoProps.content }),
+        ],
       }),
     }),
     colorScheme,

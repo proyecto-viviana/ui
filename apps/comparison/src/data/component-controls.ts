@@ -54,6 +54,12 @@ import {
 } from "./checkboxgroup-demo";
 import { comboBoxDemoDefaults, comboBoxKeyOptions, comboBoxSizeOptions } from "./combobox-demo";
 import {
+  contextualHelpDemoDefaults,
+  contextualHelpPlacementOptions,
+  contextualHelpSizeOptions,
+  contextualHelpVariantOptions,
+} from "./contextualhelp-demo";
+import {
   dateRangePickerCalendarSystemOptions,
   dateRangePickerDemoDefaults,
   dateRangePickerFirstDayOfWeekOptions,
@@ -3869,6 +3875,104 @@ const selectBoxGroupControls: ComponentControlGroup = {
   note: "Modeled from the S2 SelectBoxGroup docs control surface. The viewer drives orientation, selection mode, selected key set, and disabled state into both stacks. Source-only illustration and disabled-item coverage stays on dedicated route states and specs rather than extra docs controls.",
 };
 
+const contextualHelpControls: ComponentControlGroup = {
+  slug: "contextualhelp",
+  title: "ContextualHelp",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "triggerLabel",
+      label: "trigger aria-label",
+      kind: "text",
+      defaultValue: contextualHelpDemoDefaults.triggerLabel,
+    },
+    {
+      name: "heading",
+      label: "heading",
+      kind: "text",
+      defaultValue: contextualHelpDemoDefaults.heading,
+    },
+    {
+      name: "content",
+      label: "content",
+      kind: "text",
+      defaultValue: contextualHelpDemoDefaults.content,
+    },
+    {
+      name: "variant",
+      label: "variant",
+      kind: "radio",
+      defaultValue: contextualHelpDemoDefaults.variant,
+      options: options(contextualHelpVariantOptions),
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: contextualHelpDemoDefaults.size,
+      options: options(contextualHelpSizeOptions),
+    },
+    {
+      name: "placement",
+      label: "placement",
+      kind: "select",
+      defaultValue: contextualHelpDemoDefaults.placement,
+      options: options(contextualHelpPlacementOptions),
+    },
+    {
+      name: "offset",
+      label: "offset",
+      kind: "text",
+      defaultValue: contextualHelpDemoDefaults.offset,
+    },
+    {
+      name: "crossOffset",
+      label: "crossOffset",
+      kind: "text",
+      defaultValue: contextualHelpDemoDefaults.crossOffset,
+    },
+    {
+      name: "containerPadding",
+      label: "containerPadding",
+      kind: "text",
+      defaultValue: contextualHelpDemoDefaults.containerPadding,
+    },
+    {
+      name: "isOpen",
+      label: "isOpen",
+      kind: "switch",
+      defaultValue: contextualHelpDemoDefaults.isOpen,
+    },
+    {
+      name: "shouldFlip",
+      label: "shouldFlip",
+      kind: "switch",
+      defaultValue: contextualHelpDemoDefaults.shouldFlip,
+    },
+  ],
+  apiProps: [
+    "children",
+    "containerPadding",
+    "crossOffset",
+    "defaultOpen",
+    "id",
+    "isOpen",
+    "offset",
+    "onOpenChange",
+    "placement",
+    "shouldFlip",
+    "size",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "variant",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 ContextualHelp docs/API viewer. The route drives popover content, variant, ActionButton size, placement, offset, crossOffset, containerPadding, controlled open, and flip behavior into both stacks; this is the press/touch alternative for help that cannot rely on Tooltip.",
+};
+
 const tooltipControls: ComponentControlGroup = {
   slug: "tooltip",
   title: "Tooltip",
@@ -3969,6 +4073,7 @@ export const componentControlGroups = {
   checkbox: checkboxControls,
   checkboxgroup: checkboxGroupControls,
   combobox: comboBoxControls,
+  contextualhelp: contextualHelpControls,
   datefield: dateFieldControls,
   daterangepicker: dateRangePickerControls,
   datepicker: datePickerControls,

@@ -42,6 +42,12 @@ const tooltipTextControlValues: Record<string, string> = {
   delay: "250",
 };
 
+const contextualHelpTextControlValues: Record<string, string> = {
+  offset: "10",
+  crossOffset: "2",
+  containerPadding: "14",
+};
+
 const dateRangePickerTextControlValues: Record<string, string> = {
   startValue: "2025-02-03T08:45:00",
   endValue: "2025-02-14T17:30:00",
@@ -103,6 +109,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (group.slug === "tooltip" && control.name in tooltipTextControlValues) {
       return tooltipTextControlValues[control.name];
     }
+    if (group.slug === "contextualhelp" && control.name in contextualHelpTextControlValues) {
+      return contextualHelpTextControlValues[control.name];
+    }
     if (group.slug === "daterangepicker" && control.name in dateRangePickerTextControlValues) {
       return dateRangePickerTextControlValues[control.name];
     }
@@ -148,6 +157,9 @@ function expectedSerializedValue(
     return Number(value);
   }
   if (group.slug === "tooltip" && control.name === "delay") {
+    return Number(value);
+  }
+  if (group.slug === "contextualhelp" && control.name in contextualHelpTextControlValues) {
     return Number(value);
   }
   if (group.slug === "actionbar" && control.name === "selectedItemCount" && value !== "all") {

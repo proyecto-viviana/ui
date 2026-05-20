@@ -90,6 +90,28 @@ describe("Popover", () => {
       expect(screen.getByTestId("popover-content")).toBeInTheDocument();
     });
 
+    it("should expose trigger aria-expanded and aria-controls while open", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover aria-label="Quick audit note">Content</Popover>
+        </PopoverTrigger>
+      ));
+
+      const button = screen.getByRole("button", { name: "Open" });
+      expect(button).toHaveAttribute("aria-expanded", "false");
+
+      await user.click(button);
+
+      await waitFor(() => {
+        const dialog = screen.getByRole("dialog", { name: "Quick audit note" });
+        expect(button).toHaveAttribute("aria-expanded", "true");
+        expect(button).toHaveAttribute("aria-controls", dialog.id);
+      });
+    });
+
     it('should have role="dialog" when modal', async () => {
       const user = setupUser();
 
