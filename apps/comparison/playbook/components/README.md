@@ -55,4 +55,6 @@ partial if any gate remains unresolved.
 - [Skeleton](./skeleton-validation-notes.md)
 - [StatusLight](./statuslight-validation-notes.md)
 - [Text](./text-validation-notes.md)
+- [Toast](./toast-validation-notes.md)
+- [ToggleButton](./togglebutton-validation-notes.md)
 - [Tooltip](./tooltip-validation-notes.md)
