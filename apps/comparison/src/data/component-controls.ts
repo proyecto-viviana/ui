@@ -1112,7 +1112,7 @@ const avatarGroupControls: ComponentControlGroup = {
     "aria-describedby",
     "aria-details",
   ],
-  note: "Modeled from the S2 AvatarGroup docs and source. The viewer drives visible label text and group size while the route fixes the documented aria-label and four-avatar child composition; child-count coverage remains query-only test evidence.",
+  note: "Modeled from the S2 AvatarGroup docs and source. The viewer drives visible label text and group size while the route fixes the documented aria-label and four-avatar child composition; child-count coverage remains query-only test evidence, and S2-filtered aria-description props are represented in the route fixture.",
 };
 
 const imageControls: ComponentControlGroup = {

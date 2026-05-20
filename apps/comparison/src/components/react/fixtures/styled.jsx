@@ -1154,21 +1154,47 @@ function ReactAvatarGroupDemo() {
       className: "comparison-avatar-group-row",
       "data-comparison-control-root": "avatargroup",
       "data-comparison-control-props": serializeAvatarGroupDemoProps(demoProps),
-      children: jsx(SpectrumAvatarGroup, {
-        label: demoProps.label || undefined,
-        "aria-label": demoProps.ariaLabel,
-        size: Number(demoProps.size),
-        children: avatarGroupItems.slice(0, Number(demoProps.count)).map((item) =>
-          jsx(
-            SpectrumAvatar,
-            {
-              alt: item.alt,
-              src: item.src,
-            },
-            item.id,
-          ),
+      children: [
+        jsx(
+          "span",
+          {
+            id: "avatargroup-route-description",
+            hidden: true,
+            children: "Avatar group route description",
+          },
+          "description",
         ),
-      }),
+        jsx(
+          "div",
+          {
+            id: "avatargroup-route-details",
+            hidden: true,
+            children: "Avatar group route details",
+          },
+          "details",
+        ),
+        jsx(
+          SpectrumAvatarGroup,
+          {
+            label: demoProps.label || undefined,
+            "aria-label": demoProps.ariaLabel,
+            "aria-describedby": "avatargroup-route-description",
+            "aria-details": "avatargroup-route-details",
+            size: Number(demoProps.size),
+            children: avatarGroupItems.slice(0, Number(demoProps.count)).map((item) =>
+              jsx(
+                SpectrumAvatar,
+                {
+                  alt: item.alt,
+                  src: item.src,
+                },
+                item.id,
+              ),
+            ),
+          },
+          "group",
+        ),
+      ],
     }),
     colorScheme,
   );

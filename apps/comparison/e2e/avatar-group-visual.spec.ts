@@ -95,6 +95,8 @@ async function avatarGroupContract(group: Locator) {
       role: element.getAttribute("role"),
       ariaLabel: element.getAttribute("aria-label"),
       ariaLabelledBy: element.getAttribute("aria-labelledby") ? "present" : null,
+      ariaDescribedBy: element.getAttribute("aria-describedby"),
+      ariaDetails: element.getAttribute("aria-details"),
       sizeVariable: styles.getPropertyValue("--size").trim(),
       display: styles.display,
       alignItems: styles.alignItems,
@@ -164,6 +166,10 @@ test.describe("comparison AvatarGroup visual parity", () => {
     await expect(page.locator('input[name="count"]')).toHaveCount(0);
     await expect(fixtures.reactGroup).toHaveAccessibleName("Collaborators Reviewers");
     await expect(fixtures.solidGroup).toHaveAccessibleName("Collaborators Reviewers");
+    await expect(fixtures.reactGroup).not.toHaveAttribute("aria-describedby");
+    await expect(fixtures.solidGroup).not.toHaveAttribute("aria-describedby");
+    await expect(fixtures.reactGroup).not.toHaveAttribute("aria-details");
+    await expect(fixtures.solidGroup).not.toHaveAttribute("aria-details");
     await expect(fixtures.reactGroup.locator('[slot="avatar"]')).toHaveCount(3);
     await expect(fixtures.solidGroup.locator('[slot="avatar"]')).toHaveCount(3);
   });

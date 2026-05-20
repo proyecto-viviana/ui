@@ -84,6 +84,7 @@ describe("AvatarGroup", () => {
       <AvatarGroup
         aria-label="Reviewers"
         aria-describedby="details"
+        aria-details="details-panel"
         id="reviewers"
         data-testid="group"
         hidden
@@ -100,6 +101,7 @@ describe("AvatarGroup", () => {
     expect(group).toHaveAttribute("data-testid", "group");
     expect(group).toHaveAttribute("aria-label", "Reviewers");
     expect(group).not.toHaveAttribute("aria-describedby");
+    expect(group).not.toHaveAttribute("aria-details");
     expect(group).not.toHaveAttribute("hidden");
     expect(onClick).not.toHaveBeenCalled();
   });

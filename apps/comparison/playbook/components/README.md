@@ -17,10 +17,11 @@ implemented/pass notes keep their historical evidence, but they should be
 treated as legacy accepted under the prior playbook until each note is
 normalized to the current gate checklist.
 
-- Legacy accepted under prior playbook: AvatarGroup, Badge, Button, Button
-  family, Divider, Form, Image, Link, Meter, Skeleton, and StatusLight.
-- Current-gate normalized: ActionBar, ActionMenu, Avatar, Calendar, Checkbox,
-  CheckboxGroup, ComboBox, SegmentedControl, SelectBoxGroup, and Slider.
+- Legacy accepted under prior playbook: Badge, Button, Button family, Divider,
+  Form, Image, Link, Meter, Skeleton, and StatusLight.
+- Current-gate normalized: ActionBar, ActionMenu, Avatar, AvatarGroup,
+  Calendar, Checkbox, CheckboxGroup, ComboBox, SegmentedControl, SelectBoxGroup,
+  and Slider.
 - Active current-gate pass: none.
 - Comparison-live with explicit release-hardening backfill gaps: none.
 - Pre-pass only: Accordion, Text, and NotificationBadge.

@@ -657,7 +657,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/avatar-group-visual.spec.ts",
-      note: "The docs-style prop controls drive label text and group size into both stacks; child count remains a query-only matrix axis.",
+      note: "The docs-style prop controls drive label text and group size into both stacks; child count remains a query-only matrix axis, and S2-filtered ARIA description props are asserted absent on both roots.",
     },
     {
       id: "styled.context.children",

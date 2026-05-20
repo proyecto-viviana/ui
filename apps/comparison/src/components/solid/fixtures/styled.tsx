@@ -1563,6 +1563,16 @@ function SolidSpectrumAvatarGroupDemo() {
           },
         },
         [
+          h("span", {
+            id: "avatargroup-route-description",
+            hidden: true,
+            children: "Avatar group route description",
+          }),
+          h("div", {
+            id: "avatargroup-route-details",
+            hidden: true,
+            children: "Avatar group route details",
+          }),
           () =>
             hc(
               SolidSpectrumAvatarGroup,
@@ -1573,6 +1583,8 @@ function SolidSpectrumAvatarGroupDemo() {
                 get "aria-label"() {
                   return demoProps().ariaLabel;
                 },
+                "aria-describedby": "avatargroup-route-description",
+                "aria-details": "avatargroup-route-details",
                 get size() {
                   return Number(demoProps().size) as 16 | 20 | 24 | 28 | 32 | 36 | 40;
                 },
