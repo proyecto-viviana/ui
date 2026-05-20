@@ -1,5 +1,8 @@
 # ActionMenu Validation Notes
 
+Date: 2026-05-20
+Status: accepted
+
 ## Target
 
 - Component: ActionMenu
@@ -12,7 +15,7 @@
   more-actions label, trigger sizing and quiet styling, menu sizing,
   controlled/uncontrolled open state, disabled keys, close-on-select behavior,
   S2 subpath exports, route controls, browser contracts, and visual evidence.
-- Date: 2026-05-16
+- Date: 2026-05-20
 
 ## Task Status
 
@@ -32,6 +35,22 @@
 | 11 Harness integrity   | done   | Current reports list ActionMenu live on both sides; default visual state moved from `blocked` to `planned`                                                                                                                                                                                                                                                                                         | None                   |
 | 12 Comparison evidence | done   | Browser route contract covers mount, controls, disabled trigger, action callback keys, keyboard/outside/focus-out/touch/virtual ARIA behavior, scoped axe/manual semantics, target size/contrast, plus default trigger, trigger interaction, open-menu, transition lifecycle, placement, forced-colors, and reduced-motion visual/computed parity                                                  | None                   |
 | 13 Acceptance          | done   | Focused package tests, route contract, visual spec, reports, comparison build, and repo check pass for the completed ActionMenu source ledger                                                                                                                                                                                                                                                      | None                   |
+
+## Current Component Closeout
+
+- Closeout date: 2026-05-20.
+- Current gate status: accepted.
+- Documentation/source check: React Spectrum S2 MCP `ActionMenu` API and installed `@react-spectrum/s2/src/ActionMenu.tsx` match the Solid public API, route controls, and source ledger below.
+- Package verification on 2026-05-20:
+  `vp test run packages/solid-spectrum/test/ActionMenu.test.tsx` (`29` passed),
+  `vp test run packages/solid-spectrum/test/Menu.test.tsx` (`30` passed), and
+  `vp test run packages/solidaria-components/test/Menu.test.tsx packages/solidaria-components/test/Popover.test.tsx packages/solidaria/test/overlays.test.tsx` (`145` passed).
+- Browser verification on 2026-05-20:
+  `vp run --filter @proyecto-viviana/comparison build` passed, and
+  `vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/actionmenu-contract.spec.ts e2e/actionmenu-visual.spec.ts --reporter=line` passed `25/25`.
+- Report/check verification on 2026-05-20:
+  `vp run comparison:report:gaps`, `vp run comparison:report:exports`, and
+  `vp run check` passed.
 
 ## Current After ActionMenu Submenu Source Slice
 
@@ -913,7 +932,7 @@ below is checked with direct evidence.
 - Refs:
   focusable ref to trigger button.
 - Unsupported or intentionally different branches:
-  none accepted yet.
+  none for the current ActionMenu surface.
 
 ## Cross-Layer Audit
 
