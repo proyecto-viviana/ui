@@ -46,7 +46,12 @@ import {
   buttonStaticColorOptions,
   buttonVariantOptions,
 } from "./button-demo";
-import { checkboxDemoDefaults, checkboxSizeOptions } from "./checkbox-demo";
+import {
+  checkboxDemoDefaults,
+  checkboxSelectionSourceOptions,
+  checkboxSizeOptions,
+  checkboxValidationBehaviorOptions,
+} from "./checkbox-demo";
 import {
   checkboxGroupDemoDefaults,
   checkboxGroupOrientationOptions,
@@ -672,8 +677,21 @@ const checkboxControls: ComponentControlGroup = {
       options: options(checkboxSizeOptions),
     },
     {
+      name: "selectionSource",
+      label: "selection source",
+      kind: "radio",
+      defaultValue: checkboxDemoDefaults.selectionSource,
+      options: options(checkboxSelectionSourceOptions),
+    },
+    {
       name: "isSelected",
       label: "isSelected",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "defaultSelected",
+      label: "defaultSelected",
       kind: "switch",
       defaultValue: false,
     },
@@ -690,6 +708,31 @@ const checkboxControls: ComponentControlGroup = {
       defaultValue: false,
     },
     {
+      name: "name",
+      label: "name",
+      kind: "text",
+      defaultValue: checkboxDemoDefaults.name,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: checkboxDemoDefaults.value,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: checkboxDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "radio",
+      defaultValue: checkboxDemoDefaults.validationBehavior,
+      options: options(checkboxValidationBehaviorOptions),
+    },
+    {
       name: "isDisabled",
       label: "isDisabled",
       kind: "switch",
@@ -698,6 +741,12 @@ const checkboxControls: ComponentControlGroup = {
     {
       name: "isReadOnly",
       label: "isReadOnly",
+      kind: "switch",
+      defaultValue: false,
+    },
+    {
+      name: "isRequired",
+      label: "isRequired",
       kind: "switch",
       defaultValue: false,
     },
@@ -716,10 +765,16 @@ const checkboxControls: ComponentControlGroup = {
     "defaultSelected",
     "onChange",
     "isIndeterminate",
+    "name",
+    "value",
+    "form",
     "isDisabled",
     "isReadOnly",
     "isInvalid",
     "isRequired",
+    "validationBehavior",
+    "inputRef",
+    "slot",
     "styles",
     "aria-label",
     "aria-labelledby",
@@ -728,7 +783,7 @@ const checkboxControls: ComponentControlGroup = {
     "UNSAFE_className",
     "UNSAFE_style",
   ],
-  note: "Modeled from the S2 Checkbox docs and source control surface. The viewer drives label text, S2 sizes, selected and indeterminate states, emphasized treatment, disabled/read-only behavior, and invalid styling into both stacks.",
+  note: "Modeled from the S2 Checkbox docs and source control surface. The viewer drives label text, S2 sizes, controlled/default selected state, indeterminate state, emphasized treatment, form name/value/form props, validation behavior, required, disabled/read-only behavior, and invalid styling into both stacks.",
 };
 
 const checkboxGroupControls: ComponentControlGroup = {

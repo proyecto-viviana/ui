@@ -159,7 +159,7 @@ export type {
 } from "./cardview";
 
 // Checkbox
-export { Checkbox, CheckboxGroup } from "./checkbox";
+export { Checkbox, CheckboxContext, CheckboxGroup } from "./checkbox";
 export type {
   CheckboxGroupOrientation,
   CheckboxGroupProps,

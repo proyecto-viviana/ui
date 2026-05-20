@@ -36,6 +36,10 @@ async function controlProps(root: Locator) {
   >;
 }
 
+function checkboxInput(root: Locator) {
+  return root.locator('input[type="checkbox"]').first();
+}
+
 async function checkboxGeometry(root: Locator) {
   return root.evaluate((element) => {
     const numberOrNull = (value: number | undefined | null) =>
@@ -64,6 +68,11 @@ async function checkboxGeometry(root: Locator) {
 
     return {
       checked: input?.checked ?? false,
+      name: input?.getAttribute("name") ?? null,
+      value: input?.getAttribute("value") ?? null,
+      form: input?.getAttribute("form") ?? null,
+      required: input?.required ?? false,
+      ariaRequired: input?.getAttribute("aria-required") ?? null,
       ariaInvalid: input?.getAttribute("aria-invalid") ?? null,
       disabled: input?.disabled ?? false,
       readOnly: input?.getAttribute("aria-readonly") === "true",
@@ -188,7 +197,78 @@ function matrixTranslateZ(transform: string | null) {
   return values.length >= 15 ? values[14] : null;
 }
 
+function expectCheckboxGeometryToMatch(
+  solid: CheckboxGeometry,
+  react: CheckboxGeometry,
+  options: { icon?: boolean } = {},
+) {
+  expect(solid.checked).toBe(react.checked);
+  expect(solid.name).toBe(react.name);
+  expect(solid.value).toBe(react.value);
+  expect(solid.form).toBe(react.form);
+  expect(solid.required).toBe(react.required);
+  expect(solid.ariaRequired).toBe(react.ariaRequired);
+  expect(solid.ariaInvalid).toBe(react.ariaInvalid);
+  expect(solid.disabled).toBe(react.disabled);
+  expect(solid.readOnly).toBe(react.readOnly);
+  expect(solid.boxBackground).toBe(react.boxBackground);
+  expect(solid.boxBorderColor).toBe(react.boxBorderColor);
+  expect(solid.rootColor).toBe(react.rootColor);
+  expectNear(solid.rootHeight, react.rootHeight, 0.75, "Checkbox root height");
+  expectNear(solid.boxWidth, react.boxWidth, 0.75, "Checkbox box width");
+  expectNear(solid.boxHeight, react.boxHeight, 0.75, "Checkbox box height");
+  expectNear(solid.boxCenterDelta, react.boxCenterDelta, 0.75, "Checkbox box centerline");
+
+  if (options.icon) {
+    expectNear(solid.iconWidth, react.iconWidth, 0.75, "Checkbox icon width");
+    expectNear(solid.iconHeight, react.iconHeight, 0.75, "Checkbox icon height");
+    expectNear(solid.iconCenterDelta, react.iconCenterDelta, 0.75, "Checkbox icon centerline");
+  } else {
+    expect(solid.iconWidth).toBe(react.iconWidth);
+    expect(solid.iconHeight).toBe(react.iconHeight);
+  }
+}
+
 test.describe("comparison Checkbox visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await checkboxFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "Checkbox default",
+      {
+        maxMismatchRatio: 0.16,
+        maxDimensionDelta: 16,
+        pixelThreshold: 64,
+      },
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      children: "Enable alerts",
+      size: "M",
+      selectionSource: "isSelected",
+      isSelected: false,
+      defaultSelected: false,
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      children: "Enable alerts",
+      size: "M",
+      selectionSource: "isSelected",
+      isSelected: false,
+      defaultSelected: false,
+    });
+    await expect(fixtures.reactCheckbox).not.toBeChecked();
+    await expect(fixtures.solidCheckbox).not.toBeChecked();
+
+    expectCheckboxGeometryToMatch(
+      await checkboxGeometry(fixtures.solidRoot),
+      await checkboxGeometry(fixtures.reactRoot),
+    );
+  });
+
   test("selected emphasized XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await checkboxFixtures(page, "?isSelected=true&isEmphasized=true&size=XL");
 
@@ -221,16 +301,60 @@ test.describe("comparison Checkbox visual parity", () => {
     const react = await checkboxGeometry(fixtures.reactRoot);
     const solid = await checkboxGeometry(fixtures.solidRoot);
 
-    expect(solid.checked).toBe(react.checked);
-    expect(solid.boxBackground).toBe(react.boxBackground);
-    expect(solid.boxBorderColor).toBe(react.boxBorderColor);
-    expectNear(solid.rootHeight, react.rootHeight, 0.75, "Checkbox root height");
-    expectNear(solid.boxWidth, react.boxWidth, 0.75, "Checkbox box width");
-    expectNear(solid.boxHeight, react.boxHeight, 0.75, "Checkbox box height");
-    expectNear(solid.boxCenterDelta, react.boxCenterDelta, 0.75, "Checkbox box centerline");
-    expectNear(solid.iconWidth, react.iconWidth, 0.75, "Checkbox icon width");
-    expectNear(solid.iconHeight, react.iconHeight, 0.75, "Checkbox icon height");
-    expectNear(solid.iconCenterDelta, react.iconCenterDelta, 0.75, "Checkbox icon centerline");
+    expectCheckboxGeometryToMatch(solid, react, { icon: true });
+  });
+
+  test("defaultSelected initializes uncontrolled value and form props", async ({ page }) => {
+    const fixtures = await checkboxFixtures(
+      page,
+      "?selectionSource=defaultSelected&defaultSelected=true&name=alerts&value=email&form=settingsForm&isRequired=true&validationBehavior=aria",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      selectionSource: "defaultSelected",
+      defaultSelected: true,
+      name: "alerts",
+      value: "email",
+      form: "settingsForm",
+      isRequired: true,
+      validationBehavior: "aria",
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      selectionSource: "defaultSelected",
+      defaultSelected: true,
+      name: "alerts",
+      value: "email",
+      form: "settingsForm",
+      isRequired: true,
+      validationBehavior: "aria",
+    });
+    await expect(fixtures.reactCheckbox).toBeChecked();
+    await expect(fixtures.solidCheckbox).toBeChecked();
+    await expect(checkboxInput(fixtures.reactRoot)).toHaveAttribute("name", "alerts");
+    await expect(checkboxInput(fixtures.solidRoot)).toHaveAttribute("name", "alerts");
+    await expect(checkboxInput(fixtures.reactRoot)).toHaveAttribute("value", "email");
+    await expect(checkboxInput(fixtures.solidRoot)).toHaveAttribute("value", "email");
+    await expect(checkboxInput(fixtures.reactRoot)).toHaveAttribute("form", "settingsForm");
+    await expect(checkboxInput(fixtures.solidRoot)).toHaveAttribute("form", "settingsForm");
+
+    expectCheckboxGeometryToMatch(
+      await checkboxGeometry(fixtures.solidRoot),
+      await checkboxGeometry(fixtures.reactRoot),
+      { icon: true },
+    );
+
+    await fixtures.reactRoot.click();
+    await fixtures.solidRoot.click();
+    await expect(fixtures.reactCheckbox).not.toBeChecked();
+    await expect(fixtures.solidCheckbox).not.toBeChecked();
+    await expect(fixtures.reactPanel.locator("[data-comparison-checked]").first()).toHaveAttribute(
+      "data-comparison-checked",
+      "false",
+    );
+    await expect(fixtures.solidPanel.locator("[data-comparison-checked]").first()).toHaveAttribute(
+      "data-comparison-checked",
+      "false",
+    );
   });
 
   test("click toggles selected state on both stacks", async ({ page }) => {

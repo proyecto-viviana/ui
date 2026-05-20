@@ -168,6 +168,7 @@ import {
 } from "@comparison/data/button-demo";
 import {
   checkboxDemoPropsFromWindow,
+  initialCheckboxDemoSelected,
   normalizeCheckboxDemoProps,
   serializeCheckboxDemoProps,
   type CheckboxDemoProps,
@@ -2228,7 +2229,7 @@ function SolidSpectrumButtonDemo() {
 
 function SolidSpectrumCheckboxDemo() {
   const [demoProps, setDemoProps] = createSignal(checkboxDemoPropsFromWindow());
-  const [isSelected, setIsSelected] = createSignal(demoProps().isSelected);
+  const [isSelected, setIsSelected] = createSignal(initialCheckboxDemoSelected(demoProps()));
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -2238,7 +2239,7 @@ function SolidSpectrumCheckboxDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "checkbox") {
         const nextProps = normalizeCheckboxDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setIsSelected(nextProps.isSelected);
+        setIsSelected(initialCheckboxDemoSelected(nextProps));
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -2255,11 +2256,19 @@ function SolidSpectrumCheckboxDemo() {
     });
   });
 
-  const serializedProps = createMemo(() =>
-    serializeCheckboxDemoProps({
-      ...demoProps(),
-      isSelected: isSelected(),
-    }),
+  const serializedProps = createMemo(() => serializeCheckboxDemoProps(demoProps()));
+  const renderKey = createMemo(() =>
+    [
+      demoProps().selectionSource,
+      demoProps().selectionSource === "defaultSelected"
+        ? demoProps().defaultSelected
+        : "controlled",
+      demoProps().name,
+      demoProps().value,
+      demoProps().form,
+      demoProps().validationBehavior,
+      demoProps().isRequired,
+    ].join("|"),
   );
 
   return hc(
@@ -2283,44 +2292,72 @@ function SolidSpectrumCheckboxDemo() {
           },
         },
         [
-          hc(
-            SolidSpectrumCheckbox,
-            {
-              "data-comparison-control-root": "checkbox",
-              get "data-comparison-control-props"() {
-                return serializedProps();
-              },
-              get size() {
-                return demoProps().size;
-              },
-              get isSelected() {
-                return isSelected();
-              },
-              get isIndeterminate() {
-                return demoProps().isIndeterminate;
-              },
-              get isEmphasized() {
-                return demoProps().isEmphasized;
-              },
-              get isDisabled() {
-                return demoProps().isDisabled;
-              },
-              get isReadOnly() {
-                return demoProps().isReadOnly;
-              },
-              get isInvalid() {
-                return demoProps().isInvalid;
-              },
-              onChange: (nextSelected: boolean) => {
-                setIsSelected(nextSelected);
-                setDemoProps((current: CheckboxDemoProps) => ({
-                  ...current,
-                  isSelected: nextSelected,
-                }));
-              },
+          createComponent(Show, {
+            get when() {
+              return renderKey();
             },
-            [() => demoProps().children],
-          ),
+            keyed: true,
+            children: () =>
+              hc(
+                SolidSpectrumCheckbox,
+                {
+                  "data-comparison-control-root": "checkbox",
+                  get "data-comparison-control-props"() {
+                    return serializedProps();
+                  },
+                  get size() {
+                    return demoProps().size;
+                  },
+                  get isSelected() {
+                    return demoProps().selectionSource === "isSelected" ? isSelected() : undefined;
+                  },
+                  get defaultSelected() {
+                    return demoProps().selectionSource === "defaultSelected"
+                      ? demoProps().defaultSelected
+                      : undefined;
+                  },
+                  get isIndeterminate() {
+                    return demoProps().isIndeterminate;
+                  },
+                  get isEmphasized() {
+                    return demoProps().isEmphasized;
+                  },
+                  get name() {
+                    return demoProps().name || undefined;
+                  },
+                  get value() {
+                    return demoProps().value || undefined;
+                  },
+                  get form() {
+                    return demoProps().form || undefined;
+                  },
+                  get validationBehavior() {
+                    return demoProps().validationBehavior || undefined;
+                  },
+                  get isDisabled() {
+                    return demoProps().isDisabled;
+                  },
+                  get isReadOnly() {
+                    return demoProps().isReadOnly;
+                  },
+                  get isRequired() {
+                    return demoProps().isRequired;
+                  },
+                  get isInvalid() {
+                    return demoProps().isInvalid;
+                  },
+                  onChange: (nextSelected: boolean) => {
+                    setIsSelected(nextSelected);
+                    setDemoProps((current: CheckboxDemoProps) =>
+                      current.selectionSource === "isSelected"
+                        ? { ...current, isSelected: nextSelected }
+                        : current,
+                    );
+                  },
+                },
+                [() => demoProps().children],
+              ) as unknown as JSX.Element,
+          }),
         ],
       ),
     ],

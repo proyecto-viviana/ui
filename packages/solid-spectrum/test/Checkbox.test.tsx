@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { Checkbox, CheckboxGroup } from "../src/checkbox";
+import { Checkbox, CheckboxContext, CheckboxGroup, Form } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
 
@@ -158,6 +158,16 @@ describe("Checkbox", () => {
       expect(checkbox).toBeDisabled();
       await user.click(checkbox);
       expect(onChangeSpy).not.toHaveBeenCalled();
+    });
+
+    it("inherits disabled state from Form", () => {
+      render(() => (
+        <Form isDisabled>
+          <Checkbox aria-label="Test checkbox" />
+        </Form>
+      ));
+
+      expect(screen.getByRole("checkbox")).toBeDisabled();
     });
   });
 
@@ -316,6 +326,56 @@ describe("Checkbox", () => {
   });
 
   describe("custom props", () => {
+    it("passes form input props through the hidden checkbox input", () => {
+      render(() => (
+        <Checkbox
+          aria-label="Test checkbox"
+          name="terms"
+          value="agree"
+          form="signupForm"
+          isRequired
+          validationBehavior="aria"
+        />
+      ));
+      const checkbox = screen.getByRole("checkbox");
+
+      expect(checkbox).toHaveAttribute("name", "terms");
+      expect(checkbox).toHaveAttribute("value", "agree");
+      expect(checkbox).toHaveAttribute("form", "signupForm");
+      expect(checkbox).toHaveAttribute("aria-required", "true");
+    });
+
+    it("merges CheckboxContext props, styles, unsafe style, and refs", () => {
+      const ref = vi.fn();
+      const inputRef = vi.fn();
+
+      render(() => (
+        <CheckboxContext.Provider
+          value={{
+            "aria-label": "Context checkbox",
+            defaultSelected: true,
+            UNSAFE_className: "context-checkbox",
+            UNSAFE_style: { margin: "1px" },
+            ref,
+            inputRef,
+          }}
+        >
+          <Checkbox />
+        </CheckboxContext.Provider>
+      ));
+
+      const checkbox = screen.getByRole("checkbox", {
+        name: "Context checkbox",
+      }) as HTMLInputElement;
+      const root = checkbox.closest(".context-checkbox") as HTMLElement;
+
+      expect(checkbox).toBeChecked();
+      expect(root).toHaveClass("context-checkbox");
+      expect(root).toHaveStyle({ margin: "1px" });
+      expect(ref).toHaveBeenCalledWith(root);
+      expect(inputRef).toHaveBeenCalledWith(checkbox);
+    });
+
     it("allows custom data attributes to be passed through", () => {
       render(() => <Checkbox aria-label="Test checkbox" data-testid="custom-checkbox" />);
       const checkbox = screen.getByRole("checkbox");

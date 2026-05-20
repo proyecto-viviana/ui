@@ -5,7 +5,7 @@ import {
   createUniqueId,
   type JSX,
   splitProps,
-  mergeProps as solidMergeProps,
+  mergeProps,
   Show,
   useContext,
 } from "solid-js";
@@ -31,6 +31,15 @@ import { CenterBaseline } from "../icon/center-baseline";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import DashIcon from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
+import { useFormProps, useIsInForm } from "../form";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type CheckboxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2CheckboxSize = "S" | "M" | "L" | "XL";
@@ -45,7 +54,7 @@ const CheckboxGroupStyleContext = createContext<CheckboxGroupStyleContextValue>(
 
 export interface CheckboxProps extends Omit<
   HeadlessCheckboxProps,
-  "class" | "children" | "render" | "style"
+  "class" | "children" | "render" | "style" | "slot" | "ref" | "inputRef"
 > {
   /** The size of the checkbox. */
   size?: CheckboxSize;
@@ -61,6 +70,12 @@ export interface CheckboxProps extends Omit<
   class?: string;
   /** Label text for the checkbox. */
   children?: JSX.Element;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the underlying label element. */
+  ref?: RefLike<HTMLLabelElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
 }
 
 export interface CheckboxGroupProps extends Omit<
@@ -102,6 +117,8 @@ interface CheckboxStyleProps {
 
 type CheckboxStyleState = CheckboxRenderProps & CheckboxStyleProps;
 type CheckboxGroupStyleState = CheckboxGroupRenderProps & CheckboxStyleProps;
+
+export const CheckboxContext = createContext<SpectrumContextValue<CheckboxProps>>(null);
 
 const checkboxGroupRoot = style<CheckboxGroupStyleState>(
   {
@@ -320,8 +337,10 @@ function checkboxIconSizeStyle(size: number): JSX.CSSProperties {
  */
 export function Checkbox(props: CheckboxProps): JSX.Element {
   const groupStyleContext = useContext(CheckboxGroupStyleContext);
-  const providerProps = useProviderProps(props);
-  const merged = solidMergeProps(providerProps);
+  const isInForm = useIsInForm();
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(CheckboxContext), props.slot);
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
 
   const [local, headlessProps] = splitProps(merged, [
     "size",
@@ -331,24 +350,39 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     "UNSAFE_style",
     "class",
     "children",
+    "slot",
+    "ref",
+    "inputRef",
   ]);
 
   const size = () => normalizeCheckboxSize(local.size ?? groupStyleContext.size);
   const isEmphasized = () => local.isEmphasized ?? groupStyleContext.isEmphasized;
   let boxElement: HTMLDivElement | undefined;
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLLabelElement> } | null)?.ref,
+    props.ref,
+  );
+  const assignInputRef = mergeContextRefs(
+    (contextProps as { inputRef?: RefLike<HTMLInputElement> } | null)?.inputRef,
+    props.inputRef,
+  );
 
   const getClassName = (renderProps: CheckboxRenderProps): string => {
     return [
-      local.UNSAFE_className,
-      local.class,
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
       wrapper(
         {
           ...renderProps,
           size: size(),
           isEmphasized: isEmphasized(),
-          isInForm: false,
+          isInForm,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -365,8 +399,11 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       isReadOnly={headlessProps.isReadOnly}
       isInvalid={headlessProps.isInvalid}
       isIndeterminate={headlessProps.isIndeterminate}
+      ref={(element) => assignRootRef(element)}
+      inputRef={(element) => assignInputRef(element)}
+      slot={local.slot ?? undefined}
       class={getClassName}
-      style={local.UNSAFE_style}
+      style={mergedUnsafeStyle()}
     >
       {(renderProps: CheckboxRenderProps) => {
         const checkbox = (
@@ -424,7 +461,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const defaultProps: Partial<CheckboxGroupProps> = {
     orientation: "vertical",
   };
-  const mergedProps = solidMergeProps(defaultProps, providerProps);
+  const mergedProps = mergeProps(defaultProps, providerProps);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "orientation",
