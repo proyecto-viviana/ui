@@ -14,6 +14,17 @@ import {
 } from "@proyecto-viviana/solidaria";
 import { type SlotProps, filterDOMProps } from "./utils";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface SeparatorRenderProps {
   /** The orientation of the separator. */
   orientation: Orientation;
@@ -24,6 +35,8 @@ export interface SeparatorProps extends AriaSeparatorProps, SlotProps {
   class?: string | ((renderProps: SeparatorRenderProps) => string);
   /** The inline style for the element. A function may be provided to receive render props. */
   style?: JSX.CSSProperties | ((renderProps: SeparatorRenderProps) => JSX.CSSProperties);
+  /** Ref for the underlying separator element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 export const SeparatorContext = createContext<SeparatorProps | null>(null);
@@ -44,7 +57,7 @@ export const SeparatorContext = createContext<SeparatorProps | null>(null);
  * ```
  */
 export function Separator(props: SeparatorProps): JSX.Element {
-  const [local, ariaProps] = splitProps(props, ["class", "style", "slot"]);
+  const [local, ariaProps] = splitProps(props, ["class", "style", "ref", "slot"]);
 
   const elementType = createMemo(() => {
     let element = ariaProps.elementType || "hr";
@@ -60,13 +73,19 @@ export function Separator(props: SeparatorProps): JSX.Element {
       return ariaProps.orientation;
     },
     get elementType() {
-      return elementType();
+      return ariaProps.elementType;
     },
     get "aria-label"() {
       return ariaProps["aria-label"];
     },
     get "aria-labelledby"() {
       return ariaProps["aria-labelledby"];
+    },
+    get "aria-describedby"() {
+      return ariaProps["aria-describedby"];
+    },
+    get "aria-details"() {
+      return ariaProps["aria-details"];
     },
     get id() {
       return ariaProps.id;
@@ -100,6 +119,7 @@ export function Separator(props: SeparatorProps): JSX.Element {
       component={elementType()}
       {...domProps()}
       {...separatorAria.separatorProps}
+      ref={(el: HTMLElement) => assignRef(local.ref, el)}
       class={resolvedClass()}
       style={resolvedStyle()}
       slot={local.slot}

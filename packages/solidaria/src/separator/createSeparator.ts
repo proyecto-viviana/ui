@@ -26,6 +26,10 @@ export interface AriaSeparatorProps {
   "aria-label"?: string;
   /** Identifies the element(s) that labels the separator. */
   "aria-labelledby"?: string;
+  /** Identifies the element(s) that describes the separator. */
+  "aria-describedby"?: string;
+  /** Identifies the element(s) that provide a detailed description. */
+  "aria-details"?: string;
   /** The element's unique identifier. */
   id?: string;
 }
@@ -52,8 +56,6 @@ export function createSeparator(props: MaybeAccessor<AriaSeparatorProps> = {}): 
       ariaOrientation = "vertical";
     }
 
-    // React Aria Components emits an explicit separator role even for hr.
-    // Keep horizontal aria-orientation implicit, but do not rely on the native role alone.
     if (p.elementType !== "hr") {
       return {
         ...domProps,
@@ -64,7 +66,6 @@ export function createSeparator(props: MaybeAccessor<AriaSeparatorProps> = {}): 
 
     return {
       ...domProps,
-      role: "separator",
     };
   };
 

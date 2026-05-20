@@ -239,13 +239,7 @@ export type {
 
 // Divider
 export { Divider, DividerContext } from "./divider";
-export type {
-  DividerOrientation,
-  DividerProps,
-  DividerSize,
-  DividerStaticColor,
-  DividerVariant,
-} from "./divider";
+export type { DividerOrientation, DividerProps, DividerSize, DividerStaticColor } from "./divider";
 
 // DropZone
 export { DropZone } from "./dropzone";

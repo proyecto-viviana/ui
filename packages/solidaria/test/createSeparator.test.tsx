@@ -12,6 +12,8 @@ function TestSeparator(props: {
   orientation?: "horizontal" | "vertical";
   elementType?: string;
   "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-details"?: string;
 }) {
   const { separatorProps } = createSeparator({
     get orientation() {
@@ -22,6 +24,12 @@ function TestSeparator(props: {
     },
     get "aria-label"() {
       return props["aria-label"];
+    },
+    get "aria-describedby"() {
+      return props["aria-describedby"];
+    },
+    get "aria-details"() {
+      return props["aria-details"];
     },
   });
 
@@ -43,6 +51,7 @@ describe("createSeparator", () => {
     const separator = screen.getByTestId("separator");
     // hr elements have implicit separator role
     expect(separator.tagName).toBe("HR");
+    expect(separator).not.toHaveAttribute("role");
   });
 
   it("should have default horizontal orientation", () => {
@@ -62,6 +71,20 @@ describe("createSeparator", () => {
     render(() => <TestSeparator elementType="div" aria-label="Section divider" />);
     const separator = screen.getByRole("separator");
     expect(separator).toHaveAttribute("aria-label", "Section divider");
+  });
+
+  it("should support aria descriptions", () => {
+    render(() => (
+      <TestSeparator
+        elementType="div"
+        aria-label="Section divider"
+        aria-describedby="separator-description"
+        aria-details="separator-details"
+      />
+    ));
+    const separator = screen.getByRole("separator");
+    expect(separator).toHaveAttribute("aria-describedby", "separator-description");
+    expect(separator).toHaveAttribute("aria-details", "separator-details");
   });
 
   it("should not add aria-orientation for hr elements", () => {

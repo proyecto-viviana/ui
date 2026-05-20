@@ -1,5 +1,96 @@
 # Divider Validation Notes
 
+Date: 2026-05-20
+Status: accepted
+
+Divider has now been normalized against the current acceptance gates.
+Historical evidence from the original 2026-05-15 pass remains below; this
+closeout records the current S2 docs/source API correction, the React Aria
+Separator role nuance, root DOM contract coverage, and refreshed Divider gates.
+
+## Current-Gate Closeout
+
+- Scope: direct styled S2 `Divider`, plus the Solidaria separator hook/headless
+  behavior needed for the documented Divider root API.
+- Sources rechecked: React Spectrum S2 Divider docs/API, React Aria Separator
+  docs/API, `@react-spectrum/s2/src/Divider.tsx`, RAC `Separator` source,
+  React Aria `useSeparator` source, Solidaria separator sources, Solid Spectrum
+  Divider source, comparison route controls, and Divider visual specs.
+- Result: accepted for Divider. Solid now exposes the documented S2 Divider API
+  without legacy `variant`, `class`, or lowercase size aliases; forwards
+  documented description ARIA props and refs through the separator stack; and
+  matches RAC's default `hr role="separator"` behavior while preserving the
+  hook-level explicit `elementType="hr"` no-role branch.
+
+## Acceptance Gate Checklist
+
+- [x] Public API: comparison controls and ledger include the current documented
+      Divider API: `orientation`, S/M/L `size`, `staticColor`, `id`, `slot`,
+      `styles`, `UNSAFE_className`, `UNSAFE_style`, and ARIA label/description
+      props.
+- [x] Styled public type: `DividerProps` now follows S2 source intent by hiding
+      headless `class`, raw `style`, `elementType`, and legacy aliases from the
+      styled component surface.
+- [x] DOM/accessibility contract: default Divider emits the RAC default
+      horizontal `hr role="separator"` branch, vertical emits
+      `aria-orientation="vertical"`, explicit headless `elementType="hr"`
+      remains covered as the hook no-role branch, and `aria-describedby` /
+      `aria-details` pass through all layers.
+- [x] Style source-to-computed: `orientation`, `size`, and `staticColor` remain
+      class-driven through the S2 style macro and do not leak Solid-only root
+      `data-*` visual markers.
+- [x] Harness contract: route controls match the docs-style option surface, the
+      computed contract compares role/orientation/tag/style output against
+      React Spectrum, and the visual-state matrix includes a root DOM contract
+      row.
+- [x] Evidence handoff: focused unit tests, package builds, comparison build,
+      Divider Playwright, reports, guards, README status, and this note are
+      refreshed for the current gate.
+
+## Agent Workflow
+
+| Step                    | Status | Evidence                                                                      |
+| ----------------------- | ------ | ----------------------------------------------------------------------------- |
+| Research                | done   | S2 Divider API, React Aria Separator API/source, RAC Separator source         |
+| Baseline and source map | done   | Existing Divider note plus current source/API recheck                         |
+| Implementation          | done   | Divider type narrowing, separator ref/ARIA forwarding, role branch correction |
+| Harness                 | done   | Root DOM contract added to Divider e2e and visual-state matrix                |
+| Verification            | done   | Focused unit tests, package builds, comparison build, Divider visual e2e      |
+| Handoff                 | done   | README normalization status, closeout note, commit                            |
+
+## Behavior State Machine
+
+- Stable states: default horizontal M, horizontal S/M/L, vertical S/M/L, and
+  static color omitted/auto/black/white.
+- Environment states: forced-colors active branch resolves to the same computed
+  system-color output as React Spectrum.
+- Transient states: not applicable. Divider has no press, hover, focus,
+  keyboard, value, overlay, loading, or async transitions.
+- Cleanup contract: not applicable. Divider owns no timers, observers, portals,
+  global listeners, or subscriptions.
+
+## Accessibility And I18n
+
+- Divider uses React Aria separator semantics. The default styled branch matches
+  RAC's rendered default `hr role="separator"` output, and the underlying hook
+  still preserves the explicit `elementType="hr"` no-role branch.
+- Horizontal orientation keeps `aria-orientation` implicit; vertical orientation
+  emits `aria-orientation="vertical"`.
+- `aria-label`, `aria-labelledby`, `aria-describedby`, `aria-details`, and `id`
+  are typed and tested at hook/headless/styled layers.
+- No locale-specific formatting, generated IDs, live-region announcements, or
+  bidirectional text behavior is introduced by Divider.
+
+## Style Source-To-Computed
+
+- React S2 Divider source drives `size`, `orientation`, `staticColor`, styles,
+  and unsafe props through the generated class string.
+- Solid S2 Divider now follows that contract without accepting legacy `sm` /
+  `md` / `lg` size aliases or the legacy Separator `variant` prop.
+- The browser contract asserts root tag, explicit role/default aria output,
+  absence of visual prop marker attributes, dimensions, radius, margins,
+  flex behavior, and forced-colors background parity.
+
 ## Target
 
 - Component: Divider
@@ -102,24 +193,24 @@
 - Refs/imperative behavior:
   - Ref merging follows the shared S2 context/local ref helper.
 - Unsupported or intentionally different branches:
-  - Legacy `sm`, `md`, and `lg` size aliases map to `S`, `M`, and `L` for
-    backward compatibility.
-  - Legacy `variant` remains accepted for source compatibility but is not part
-    of the S2 Divider API and does not affect S2 output.
+  - None accepted for the styled S2 Divider root. Legacy lowercase size aliases
+    and legacy Separator `variant`/`class` aliases were removed from the S2
+    Divider public surface during current-gate normalization.
 
 ## Source Branch Coverage
 
-| Layer    | Upstream branch                        | Solid owner                 | Class              | Observable                                           | Status  | Evidence                                 |
-| -------- | -------------------------------------- | --------------------------- | ------------------ | ---------------------------------------------------- | ------- | ---------------------------------------- |
-| Headless | horizontal separator element           | `createSeparator`           | accessibility/DOM  | `<hr role="separator">`, no `aria-orientation`       | matched | unit and e2e contract                    |
-| Headless | vertical separator element             | `createSeparator`           | accessibility/DOM  | `<div role="separator" aria-orientation="vertical">` | matched | unit and e2e contract                    |
-| Styled   | `DividerContext` merge                 | S2 `Divider`                | context            | context props apply and local props override         | matched | unit tests                               |
-| Styled   | `size` S/M/L                           | S2 `Divider` style macro    | visual             | 1px/2px/4px thickness branches match React           | matched | computed-style matrix                    |
-| Styled   | `orientation` horizontal/vertical      | S2 `Divider` style macro    | visual/semantics   | width/height and element semantics match React       | matched | computed-style matrix                    |
-| Styled   | `staticColor` omitted/auto/black/white | S2 `Divider` style macro    | visual/environment | overlay color branches match React                   | matched | route controls and computed-style matrix |
-| Styled   | forced-colors background               | S2 `Divider` style macro    | visual/a11y        | `ButtonBorder` branch matches React                  | matched | forced-colors e2e                        |
-| Styled   | `styles` and unsafe props              | S2 `Divider`                | API                | classes and inline styles merge with context         | matched | unit tests                               |
-| Harness  | optional-prop omitted sentinel         | route controls/data helpers | route integrity    | visible `default` label, no blank option leak        | matched | e2e route-control test                   |
+| Layer    | Upstream branch                        | Solid owner                     | Class              | Observable                                           | Status  | Evidence                                 |
+| -------- | -------------------------------------- | ------------------------------- | ------------------ | ---------------------------------------------------- | ------- | ---------------------------------------- |
+| Headless | RAC default horizontal separator       | `Separator` + `createSeparator` | accessibility/DOM  | `<hr role="separator">`, no `aria-orientation`       | matched | unit and e2e contract                    |
+| Headless | explicit hook `elementType="hr"`       | `createSeparator`               | accessibility/DOM  | `<hr>`, native separator role only                   | matched | hook and headless unit tests             |
+| Headless | vertical separator element             | `createSeparator`               | accessibility/DOM  | `<div role="separator" aria-orientation="vertical">` | matched | unit and e2e contract                    |
+| Styled   | `DividerContext` merge                 | S2 `Divider`                    | context            | context props apply and local props override         | matched | unit tests                               |
+| Styled   | `size` S/M/L                           | S2 `Divider` style macro        | visual             | 1px/2px/4px thickness branches match React           | matched | computed-style matrix                    |
+| Styled   | `orientation` horizontal/vertical      | S2 `Divider` style macro        | visual/semantics   | width/height and element semantics match React       | matched | computed-style matrix                    |
+| Styled   | `staticColor` omitted/auto/black/white | S2 `Divider` style macro        | visual/environment | overlay color branches match React                   | matched | route controls and computed-style matrix |
+| Styled   | forced-colors background               | S2 `Divider` style macro        | visual/a11y        | `ButtonBorder` branch matches React                  | matched | forced-colors e2e                        |
+| Styled   | `styles` and unsafe props              | S2 `Divider`                    | API                | classes and inline styles merge with context         | matched | unit tests                               |
+| Harness  | optional-prop omitted sentinel         | route controls/data helpers     | route integrity    | visible `default` label, no blank option leak        | matched | e2e route-control test                   |
 
 ## Transition Plan
 
@@ -144,12 +235,16 @@
 ## Runtime Semantics
 
 - Native element/role decision:
-  - horizontal renders an `hr` with explicit `role="separator"` to match RAC.
+  - styled Divider's default horizontal branch renders an `hr` with explicit
+    `role="separator"` to match RAC's default `Separator` behavior.
+  - the lower-level hook preserves React Aria's explicit `elementType="hr"`
+    branch, where the native separator role is used without a role attribute.
   - vertical renders a `div` with `role="separator"` and
     `aria-orientation="vertical"`.
 - Accessible name/description assertions:
-  - ARIA label props pass through the headless separator API; unit tests query
-    named separators through `aria-label`.
+  - ARIA label and description props pass through the hook, headless component,
+    and styled Divider API; unit tests query named separators and assert
+    `aria-describedby` / `aria-details`.
 - ID stability and collision checks:
   - no generated IDs.
 - Modality rows:
@@ -170,7 +265,7 @@
 ## Evidence
 
 ```bash
-vp test run packages/solidaria-components/test/Separator.test.tsx packages/solid-spectrum/test/Divider.test.tsx
+vp test run packages/solidaria/test/createSeparator.test.tsx packages/solidaria-components/test/Separator.test.tsx packages/solid-spectrum/test/Divider.test.tsx
 vp run --filter @proyecto-viviana/solidaria build
 vp run --filter @proyecto-viviana/solidaria-components build
 vp run --filter @proyecto-viviana/solid-spectrum build
@@ -185,25 +280,29 @@ vp run check
 
 Results:
 
-- Solidaria Components Separator + Solid Spectrum Divider tests: `22 passed`.
+- Solidaria createSeparator + Solidaria Components Separator + Solid Spectrum
+  Divider tests: `35 passed`.
 - Solidaria build: passed.
 - Solidaria Components build: passed.
 - Solid Spectrum build: passed.
 - Comparison build: passed and generated `/components/divider/`.
 - Divider Playwright suite: `4 passed`.
-- Current gap report lists official styled entries live on both sides at `33`,
-  missing/gap entries at `36`, visual states tracked at `172`, visual evidence
-  states at `49`, strict pair-diff states at `32`, and blocked visual states at
-  `35`.
-- Current export report lists missing React S2 value exports at `80` of `208`
-  and extra Solid value exports at `3`.
-- RAC export and tracked-symbol guards still report no missing Solid names.
+- Current gap report lists official styled entries live on both sides at `47`,
+  missing/gap entries at `22`, visual states tracked at `260`, visual evidence
+  states at `76`, strict pair-diff states at `46`, and blocked visual states at
+  `22`.
+- Current export report lists `solid-spectrum` public value exports at `157`,
+  missing React S2 value exports at `57` of `208`, and extra Solid value exports
+  at `6`.
+- RAC export and tracked-symbol guards still report no missing Solid names;
+  `guard:rac-export-gap` reports `166` extra Solidaria Components exports and
+  `guard:rac-parity` keeps the existing `TreeHeader` / `TreeSection` tracker
+  warning.
 - Full repo check: passed.
 
 ## Handoff
 
-- Legacy status: Divider was accepted for owned behavior under the prior
-  playbook; current-gate normalization is pending.
+- Current-gate status: Divider is accepted as of 2026-05-20.
 - No prior-playbook in-scope Divider gates remained open at the time of this
   pass.
 - The next styled pass should be selected from `vp run comparison:report:gaps`.

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { Divider, DividerContext } from "../src/divider";
 
@@ -12,6 +12,7 @@ describe("Divider (solid-spectrum)", () => {
 
     expect(divider.tagName).toBe("HR");
     expect(divider.className).not.toBe("");
+    expect(divider).toHaveAttribute("role", "separator");
     expect(divider).not.toHaveAttribute("aria-orientation");
   });
 
@@ -38,18 +39,6 @@ describe("Divider (solid-spectrum)", () => {
     expect(dividers[2]?.className).not.toBe(dividers[1]?.className);
   });
 
-  it("maps legacy Separator size aliases to S2 sizes", () => {
-    const { container } = render(() => (
-      <>
-        <Divider aria-label="legacy" size="lg" />
-        <Divider aria-label="s2" size="L" />
-      </>
-    ));
-
-    const dividers = Array.from(container.querySelectorAll('[role="separator"], hr'));
-    expect(dividers[0]?.className).toBe(dividers[1]?.className);
-  });
-
   it("supports context props and unsafe escape hatches", () => {
     render(() => (
       <DividerContext.Provider
@@ -61,7 +50,7 @@ describe("Divider (solid-spectrum)", () => {
           UNSAFE_style: { margin: "2px" },
         }}
       >
-        <Divider aria-label="Context divider" class="local-divider" />
+        <Divider aria-label="Context divider" UNSAFE_className="local-divider" />
       </DividerContext.Provider>
     ));
 
@@ -70,6 +59,49 @@ describe("Divider (solid-spectrum)", () => {
     expect(divider).toHaveClass("local-divider");
     expect(divider).toHaveAttribute("aria-orientation", "vertical");
     expect(divider.style.margin).toBe("2px");
+  });
+
+  it("passes through documented ARIA description props", () => {
+    render(() => (
+      <>
+        <span id="divider-description">Description</span>
+        <div id="divider-details">Details</div>
+        <Divider
+          aria-label="Detailed divider"
+          aria-describedby="divider-description"
+          aria-details="divider-details"
+        />
+      </>
+    ));
+
+    const divider = screen.getByRole("separator", { name: "Detailed divider" });
+    expect(divider).toHaveAttribute("aria-describedby", "divider-description");
+    expect(divider).toHaveAttribute("aria-details", "divider-details");
+  });
+
+  it("does not leak S2 visual props as root marker attributes", () => {
+    render(() => (
+      <Divider aria-label="Visual divider" orientation="vertical" size="L" staticColor="black" />
+    ));
+    const divider = screen.getByRole("separator", { name: "Visual divider" });
+    expect(divider).not.toHaveAttribute("data-size");
+    expect(divider).not.toHaveAttribute("data-static-color");
+    expect(divider).not.toHaveAttribute("data-orientation");
+  });
+
+  it("merges context and local refs", () => {
+    const contextRef = vi.fn();
+    const localRef = vi.fn();
+
+    render(() => (
+      <DividerContext.Provider value={{ ref: contextRef }}>
+        <Divider aria-label="Ref divider" ref={localRef} />
+      </DividerContext.Provider>
+    ));
+
+    const divider = screen.getByRole("separator", { name: "Ref divider" });
+    expect(contextRef).toHaveBeenCalledWith(divider);
+    expect(localRef).toHaveBeenCalledWith(divider);
   });
 
   it("lets local props override context props", () => {

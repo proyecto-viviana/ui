@@ -804,6 +804,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Computed style contracts compare separator semantics, thickness, radius, static color overlay, and vertical/horizontal geometry across representative route states.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/divider-visual.spec.ts",
+      note: "The computed contract asserts React Aria's native horizontal hr semantics plus absence of Solid-only data markers for orientation, size, and static color.",
+    },
+    {
       id: "styled.forced-colors",
       label: "Forced colors",
       kind: "static",

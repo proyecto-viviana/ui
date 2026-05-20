@@ -14,16 +14,13 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 
-export type DividerSize = "S" | "M" | "L" | "sm" | "md" | "lg";
+export type DividerSize = "S" | "M" | "L";
 export type DividerOrientation = "horizontal" | "vertical";
 export type DividerStaticColor = "white" | "black" | "auto";
-export type DividerVariant = "default" | "subtle" | "strong";
-
-type S2DividerSize = "S" | "M" | "L";
 
 export interface DividerProps extends Omit<
   HeadlessSeparatorProps,
-  "class" | "style" | "elementType" | "slot"
+  "class" | "style" | "elementType" | "slot" | "ref"
 > {
   /**
    * How thick the Divider should be.
@@ -43,10 +40,6 @@ export interface DividerProps extends Omit<
   UNSAFE_className?: UnsafeClassName | string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
-  /** Backward-compatible Separator variant alias. Not part of the S2 Divider API. */
-  variant?: DividerVariant;
   slot?: string | null;
   ref?: RefLike<HTMLElement>;
 }
@@ -54,7 +47,7 @@ export interface DividerProps extends Omit<
 export const DividerContext = createContext<SpectrumContextValue<DividerProps>>(null);
 
 const dividerStyles = style<{
-  size: S2DividerSize;
+  size: DividerSize;
   orientation: DividerOrientation;
   staticColor?: DividerStaticColor;
   isStaticColor: boolean;
@@ -106,19 +99,6 @@ const dividerStyles = style<{
   getAllowedOverrides(),
 );
 
-function normalizeSize(size: DividerSize | undefined): S2DividerSize {
-  switch (size) {
-    case "sm":
-      return "S";
-    case "md":
-      return "M";
-    case "lg":
-      return "L";
-    default:
-      return size ?? "M";
-  }
-}
-
 /**
  * Dividers bring clarity to a layout by grouping and dividing content in close proximity.
  */
@@ -132,12 +112,10 @@ export function Divider(props: DividerProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
-    "variant",
     "slot",
     "ref",
   ]);
-  const size = () => normalizeSize(local.size);
+  const size = () => local.size ?? "M";
   const orientation = () => local.orientation ?? "horizontal";
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -154,7 +132,6 @@ export function Divider(props: DividerProps): JSX.Element {
       class={[
         contextProps?.UNSAFE_className,
         local.UNSAFE_className,
-        local.class,
         dividerStyles(
           {
             size: size(),

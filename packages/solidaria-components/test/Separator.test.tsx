@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { Separator } from "../src/Separator";
 import {
@@ -61,6 +61,13 @@ describe("Separator", () => {
     expect(separator.tagName).toBe("SPAN");
   });
 
+  it("should preserve React Aria's explicit hr hook branch", () => {
+    render(() => <Separator elementType="hr" />);
+    const separator = screen.getByRole("separator");
+    expect(separator.tagName).toBe("HR");
+    expect(separator).not.toHaveAttribute("role");
+  });
+
   it("should default to horizontal orientation", () => {
     render(() => <Separator />);
     const separator = screen.getByRole("separator");
@@ -99,6 +106,30 @@ describe("Separator", () => {
     expect(separator).toHaveAttribute("aria-labelledby", "sep-label");
   });
 
+  it("should support aria description props", () => {
+    render(() => (
+      <>
+        <span id="sep-description">Description</span>
+        <div id="sep-details">Details</div>
+        <Separator
+          aria-label="Divider"
+          aria-describedby="sep-description"
+          aria-details="sep-details"
+        />
+      </>
+    ));
+    const separator = screen.getByRole("separator", { name: "Divider" });
+    expect(separator).toHaveAttribute("aria-describedby", "sep-description");
+    expect(separator).toHaveAttribute("aria-details", "sep-details");
+  });
+
+  it("should expose the underlying separator ref", () => {
+    const ref = vi.fn();
+    render(() => <Separator ref={ref} />);
+    const separator = screen.getByRole("separator");
+    expect(ref).toHaveBeenCalledWith(separator);
+  });
+
   it("should keep custom elementType for vertical orientation", () => {
     render(() => <Separator orientation="vertical" elementType="span" />);
     const separator = screen.getByRole("separator");
@@ -121,6 +152,21 @@ describe("Separator", () => {
         <>
           <span id="sep-label">Section</span>
           <Separator aria-labelledby="sep-label" />
+        </>
+      ));
+      assertAriaIdIntegrity(document.body);
+    });
+
+    it("ARIA ID: no dangling refs with aria-describedby and aria-details", () => {
+      render(() => (
+        <>
+          <span id="sep-description">Description</span>
+          <div id="sep-details">Details</div>
+          <Separator
+            aria-label="Section"
+            aria-describedby="sep-description"
+            aria-details="sep-details"
+          />
         </>
       ));
       assertAriaIdIntegrity(document.body);
