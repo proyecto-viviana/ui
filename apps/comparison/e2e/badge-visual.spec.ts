@@ -56,7 +56,13 @@ async function badgeContract(root: Locator) {
 
     return {
       tagName: element.tagName,
+      id: element.getAttribute("id"),
       role: element.getAttribute("role"),
+      ariaLabel: element.getAttribute("aria-label"),
+      ariaLabelledBy: element.getAttribute("aria-labelledby"),
+      ariaDescribedBy: element.getAttribute("aria-describedby"),
+      ariaDetails: element.getAttribute("aria-details"),
+      hidden: element.hasAttribute("hidden"),
       text: element.textContent?.trim(),
       display: styles.display,
       alignItems: styles.alignItems,
@@ -155,6 +161,18 @@ test.describe("comparison Badge visual parity", () => {
     await expectRadioValues(page, "size", badgeSizeOptions, "L");
     await expectRadioValues(page, "overflowMode", badgeOverflowModeOptions, "truncate");
     await expectRadioValues(page, "iconPlacement", badgeIconPlacementOptions, "start");
+    await expect(fixtures.reactRoot).toHaveAttribute("id", "badge-route-root");
+    await expect(fixtures.solidRoot).toHaveAttribute("id", "badge-route-root");
+    await expect(fixtures.reactRoot).not.toHaveAttribute("aria-label");
+    await expect(fixtures.solidRoot).not.toHaveAttribute("aria-label");
+    await expect(fixtures.reactRoot).not.toHaveAttribute("aria-labelledby");
+    await expect(fixtures.solidRoot).not.toHaveAttribute("aria-labelledby");
+    await expect(fixtures.reactRoot).not.toHaveAttribute("aria-describedby");
+    await expect(fixtures.solidRoot).not.toHaveAttribute("aria-describedby");
+    await expect(fixtures.reactRoot).not.toHaveAttribute("aria-details");
+    await expect(fixtures.solidRoot).not.toHaveAttribute("aria-details");
+    await expect(fixtures.reactRoot).not.toHaveAttribute("hidden");
+    await expect(fixtures.solidRoot).not.toHaveAttribute("hidden");
   });
 
   test("Badge computed styles match React Spectrum across variant, fill, and icon states", async ({

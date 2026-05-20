@@ -695,7 +695,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/badge-visual.spec.ts",
-      note: "The docs-style prop controls drive text, variant, fill style, size, overflow, and icon content into both stacks.",
+      note: "The docs-style prop controls drive text, variant, fill style, size, overflow, and icon content into both stacks; S2-filtered ARIA/global props are asserted absent on both roots.",
     },
     {
       id: "styled.props.variant-fill-size",
@@ -706,6 +706,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/badge-visual.spec.ts",
       note: "Computed style contracts compare color, background, border, size, text overflow, and icon slot behavior across representative route states.",
+    },
+    {
+      id: "styled.forced-colors",
+      label: "Forced colors environment",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/badge-visual.spec.ts",
+      note: "Forced-colors media emulation compares the negative outline icon route against React Spectrum's computed contract.",
     },
   ],
   statuslight: [

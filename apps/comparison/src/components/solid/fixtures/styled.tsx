@@ -1643,6 +1643,12 @@ function SolidSpectrumBadgeDemo() {
       {
         "data-comparison-control-root": "badge",
         "data-comparison-control-props": serializeBadgeDemoProps(props),
+        id: "badge-route-root",
+        "aria-label": "Badge route label",
+        "aria-labelledby": "badge-route-labelledby",
+        "aria-describedby": "badge-route-description",
+        "aria-details": "badge-route-details",
+        hidden: true,
         variant: props.variant,
         fillStyle: props.fillStyle,
         size: props.size,

@@ -1611,6 +1611,12 @@ function ReactBadgeDemo() {
       children: jsx(SpectrumBadge, {
         "data-comparison-control-root": "badge",
         "data-comparison-control-props": serializeBadgeDemoProps(demoProps),
+        id: "badge-route-root",
+        "aria-label": "Badge route label",
+        "aria-labelledby": "badge-route-labelledby",
+        "aria-describedby": "badge-route-description",
+        "aria-details": "badge-route-details",
+        hidden: true,
         variant: demoProps.variant,
         fillStyle: demoProps.fillStyle,
         size: demoProps.size,

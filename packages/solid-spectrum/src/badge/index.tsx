@@ -6,6 +6,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
+import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import { fontRelative, lightDark, style, type StyleString } from "../s2-style";
 import { centerBaseline } from "../icon/center-baseline";
 import { IconContext } from "../icon/spectrum-icon";
@@ -327,7 +328,7 @@ export function Badge(props: BadgeProps): JSX.Element {
       >
         <SkeletonWrapper>
           <span
-            {...domProps}
+            {...filterDOMProps(domProps)}
             ref={(element) => assignRef(element)}
             role="presentation"
             class={[

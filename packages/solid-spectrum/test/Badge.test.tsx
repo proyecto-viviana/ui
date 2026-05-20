@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { Badge, BadgeContext, Text, createIcon } from "../src";
 import { Skeleton } from "../src/skeleton";
@@ -99,6 +99,37 @@ describe("Badge (solid-spectrum)", () => {
     expect(badge).toHaveClass("local-badge");
     expect(badge).toHaveClass("unsafe-badge");
     expect(badge.style.margin).toBe("2px");
+  });
+
+  it("matches S2 DOM prop filtering on the root", () => {
+    const onClick = vi.fn();
+
+    const { container } = render(() => (
+      <Badge
+        id="release-state"
+        data-testid="badge"
+        aria-label="Release state"
+        aria-labelledby="release-label"
+        aria-describedby="release-description"
+        aria-details="release-details"
+        hidden
+        onClick={onClick}
+      >
+        Published
+      </Badge>
+    ));
+
+    const badge = container.querySelector('[data-testid="badge"]') as HTMLElement;
+    badge.click();
+
+    expect(badge).toHaveAttribute("id", "release-state");
+    expect(badge).toHaveAttribute("data-testid", "badge");
+    expect(badge).not.toHaveAttribute("aria-label");
+    expect(badge).not.toHaveAttribute("aria-labelledby");
+    expect(badge).not.toHaveAttribute("aria-describedby");
+    expect(badge).not.toHaveAttribute("aria-details");
+    expect(badge).not.toHaveAttribute("hidden");
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it("uses the shared Skeleton wrapper", () => {

@@ -1327,7 +1327,7 @@ const badgeControls: ComponentControlGroup = {
     "aria-describedby",
     "aria-details",
   ],
-  note: "Modeled from the S2 Badge docs and source. The viewer drives text content, color variant, fill style, size, overflow mode, and optional icon content into both stacks.",
+  note: "Modeled from the S2 Badge docs and source. The viewer drives text content, color variant, fill style, size, overflow mode, and optional icon content into both stacks; inherited ARIA/global props are represented in the route fixture and filtered per S2 root behavior.",
 };
 
 const statusLightControls: ComponentControlGroup = {
