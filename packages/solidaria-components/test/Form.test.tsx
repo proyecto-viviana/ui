@@ -67,6 +67,41 @@ describe("Form", () => {
     expect(onReset).toHaveBeenCalledTimes(1);
   });
 
+  it("forwards documented ARIA description props", () => {
+    render(() => (
+      <>
+        <span id="form-description">Description</span>
+        <div id="form-details">Details</div>
+        <Form
+          aria-label="Project form"
+          aria-describedby="form-description"
+          aria-details="form-details"
+        />
+      </>
+    ));
+
+    const form = screen.getByRole("form", { name: "Project form" });
+    expect(form).toHaveAttribute("aria-describedby", "form-description");
+    expect(form).toHaveAttribute("aria-details", "form-details");
+  });
+
+  it("exposes the underlying form ref", () => {
+    const callbackRef = vi.fn();
+    const objectRef: { current: HTMLFormElement | null } = { current: null };
+
+    render(() => (
+      <>
+        <Form aria-label="Callback form" ref={callbackRef} />
+        <Form aria-label="Object form" ref={objectRef} />
+      </>
+    ));
+
+    const callbackForm = screen.getByRole("form", { name: "Callback form" });
+    const objectForm = screen.getByRole("form", { name: "Object form" });
+    expect(callbackRef).toHaveBeenCalledWith(callbackForm);
+    expect(objectRef.current).toBe(objectForm);
+  });
+
   it("provides validation errors through FormValidationContext", () => {
     const validationErrors: ValidationErrors = {
       email: "Invalid email",

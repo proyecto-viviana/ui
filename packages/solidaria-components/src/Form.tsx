@@ -20,12 +20,25 @@ import {
   filterDOMProps,
 } from "./utils";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface FormRenderProps {
   validationBehavior: ValidationBehavior;
 }
 
 export interface FormProps
-  extends Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "children" | "class" | "style">, SlotProps {
+  extends
+    Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "children" | "class" | "style" | "ref">,
+    SlotProps {
   /** Server-side validation errors keyed by field name. */
   validationErrors?: ValidationErrors;
   /** Validation behavior mode. */
@@ -44,6 +57,8 @@ export interface FormProps
   class?: ClassNameOrFunction<FormRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<FormRenderProps>;
+  /** Ref for the underlying form element. */
+  ref?: RefLike<HTMLFormElement>;
 }
 
 export const FormContext = createContext<FormProps | null>(null);
@@ -84,6 +99,7 @@ export function Form(props: FormProps): JSX.Element {
     "children",
     "class",
     "style",
+    "ref",
     "slot",
   ]);
 
@@ -106,6 +122,7 @@ export function Form(props: FormProps): JSX.Element {
   return (
     <form
       {...filteredDomProps}
+      ref={(el) => assignRef(local.ref, el)}
       noValidate={validationBehavior !== "native"}
       class={renderProps.class()}
       style={renderProps.style()}

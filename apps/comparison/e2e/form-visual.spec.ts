@@ -60,7 +60,15 @@ async function formContract(root: Locator) {
 
     return {
       tagName: element.tagName,
+      role: element.getAttribute("role"),
       noValidate: (element as HTMLFormElement).noValidate,
+      dataSize: element.getAttribute("data-size"),
+      dataLabelPosition: element.getAttribute("data-label-position"),
+      dataLabelAlign: element.getAttribute("data-label-align"),
+      dataNecessityIndicator: element.getAttribute("data-necessity-indicator"),
+      dataRequired: element.getAttribute("data-required"),
+      dataDisabled: element.getAttribute("data-disabled"),
+      dataEmphasized: element.getAttribute("data-emphasized"),
       display: styles.display,
       gridTemplateColumns: styles.gridTemplateColumns,
       rowGap: styles.rowGap,

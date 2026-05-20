@@ -8,8 +8,9 @@ import {
 import { style, type StyleString } from "../s2-style";
 import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
 import { createIsSkeleton } from "../skeleton";
+import { assignRef } from "../button/spectrum-context";
 
-export type FormSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+export type FormSize = "S" | "M" | "L" | "XL";
 export type FormLabelPosition = "top" | "side";
 export type FormLabelAlign = "start" | "end";
 export type FormNecessityIndicator = "icon" | "label";
@@ -31,17 +32,15 @@ export interface FormStyleProps {
   isEmphasized?: boolean;
 }
 
-type S2FormSize = "S" | "M" | "L" | "XL";
-
-export interface FormProps extends Omit<HeadlessFormProps, "class" | "style">, FormStyleProps {
+export interface FormProps
+  extends Omit<HeadlessFormProps, "class" | "style" | "ref">, FormStyleProps {
   /** Spectrum-defined generated classes. */
   styles?: StyleString;
   /** Additional CSS class name. Use only as a last resort. */
   UNSAFE_className?: UnsafeClassName | string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
+  ref?: HeadlessFormProps["ref"];
 }
 
 export interface FieldErrorProps extends Omit<HeadlessFieldErrorProps, "class"> {
@@ -134,7 +133,7 @@ export function useFormProps<T extends object>(props: T): T {
   }) as T;
 }
 
-const formStyles = style<{ labelPosition: FormLabelPosition; size: S2FormSize }>(
+const formStyles = style<{ labelPosition: FormLabelPosition; size: FormSize }>(
   {
     display: "grid",
     gridTemplateColumns: {
@@ -156,24 +155,6 @@ const formStyles = style<{ labelPosition: FormLabelPosition; size: S2FormSize }>
   getAllowedOverrides(),
 );
 
-function normalizeFormSize(size: FormSize | undefined): S2FormSize {
-  switch (size) {
-    case "sm":
-      return "S";
-    case "md":
-      return "M";
-    case "lg":
-      return "L";
-    case "S":
-    case "M":
-    case "L":
-    case "XL":
-      return size;
-    default:
-      return "M";
-  }
-}
-
 export function Form(props: FormProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, [
     "size",
@@ -186,11 +167,11 @@ export function Form(props: FormProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
+    "ref",
     "children",
   ]);
 
-  const size = () => normalizeFormSize(local.size);
+  const size = () => local.size ?? "M";
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
@@ -223,9 +204,9 @@ export function Form(props: FormProps): JSX.Element {
     <FormContext.Provider value={contextValue}>
       <HeadlessForm
         {...headlessProps}
+        ref={(el) => assignRef(local.ref, el)}
         class={[
           local.UNSAFE_className,
-          local.class,
           formStyles({ size: size(), labelPosition: labelPosition() }, local.styles),
         ]
           .filter(Boolean)

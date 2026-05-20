@@ -77,6 +77,73 @@ describe("Form (solid-spectrum)", () => {
     expect(onReset).toHaveBeenCalledTimes(1);
   });
 
+  it("forwards documented ARIA description props through the S2 wrapper", () => {
+    render(() => (
+      <>
+        <span id="form-description">Description</span>
+        <div id="form-details">Details</div>
+        <Form
+          aria-label="Project form"
+          aria-describedby="form-description"
+          aria-details="form-details"
+        >
+          <TextField label="Name" />
+        </Form>
+      </>
+    ));
+
+    const form = screen.getByRole("form", { name: "Project form" });
+    expect(form).toHaveAttribute("aria-describedby", "form-description");
+    expect(form).toHaveAttribute("aria-details", "form-details");
+  });
+
+  it("does not leak S2 visual props as root marker attributes", () => {
+    render(() => (
+      <Form
+        aria-label="Project form"
+        size="XL"
+        labelPosition="side"
+        labelAlign="end"
+        necessityIndicator="label"
+        isRequired
+        isDisabled
+        isEmphasized
+      >
+        <TextField label="Name" />
+      </Form>
+    ));
+
+    const form = screen.getByRole("form", { name: "Project form" });
+    expect(form).not.toHaveAttribute("data-size");
+    expect(form).not.toHaveAttribute("data-label-position");
+    expect(form).not.toHaveAttribute("data-label-align");
+    expect(form).not.toHaveAttribute("data-necessity-indicator");
+    expect(form).not.toHaveAttribute("data-required");
+    expect(form).not.toHaveAttribute("data-disabled");
+    expect(form).not.toHaveAttribute("data-emphasized");
+  });
+
+  it("exposes the S2 form root ref", () => {
+    const callbackRef = vi.fn();
+    const objectRef: { current: HTMLFormElement | null } = { current: null };
+
+    render(() => (
+      <>
+        <Form aria-label="Callback form" ref={callbackRef}>
+          <TextField label="Name" />
+        </Form>
+        <Form aria-label="Object form" ref={objectRef}>
+          <TextField label="Email" />
+        </Form>
+      </>
+    ));
+
+    const callbackForm = screen.getByRole("form", { name: "Callback form" });
+    const objectForm = screen.getByRole("form", { name: "Object form" });
+    expect(callbackRef).toHaveBeenCalledWith(callbackForm);
+    expect(objectRef.current).toBe(objectForm);
+  });
+
   it("provides S2 field props to TextField and Button children", () => {
     render(() => (
       <Form

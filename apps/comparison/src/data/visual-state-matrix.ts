@@ -890,6 +890,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Computed style contracts compare Form grid layout plus inherited TextField and Button size, disabled, required, emphasized, necessity indicator, validation behavior, and label placement across every documented route option.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/form-visual.spec.ts",
+      note: "The computed contract asserts Form visual props stay class/context driven and do not leak Solid-only data markers for size, label placement, required, disabled, or emphasized state.",
+    },
+    {
       id: "styled.forced-colors",
       label: "Forced colors branch",
       kind: "static",
