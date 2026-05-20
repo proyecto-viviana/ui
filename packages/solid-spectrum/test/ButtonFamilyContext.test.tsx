@@ -38,7 +38,8 @@ describe("button-family S2 contexts", () => {
 
     expect(button).toBeDisabled();
     expect(button).not.toHaveAttribute("data-size");
-    expect(link).toHaveAttribute("data-size", "XL");
+    expect(link).toHaveAttribute("aria-disabled", "true");
+    expect(link).not.toHaveAttribute("data-size");
   });
 
   it("merges local and context refs for Button", () => {
@@ -76,8 +77,9 @@ describe("button-family S2 contexts", () => {
     ));
 
     const button = screen.getByRole("button", { name: "Inspect" });
-    expect(button).toHaveAttribute("data-size", "XL");
     expect(button).toBeDisabled();
+    expect(button).not.toHaveAttribute("data-size");
+    expect(button).not.toHaveAttribute("data-quiet");
   });
 
   it("provides S2 child composition contexts inside ActionButton", () => {
@@ -137,9 +139,10 @@ describe("button-family S2 contexts", () => {
     const button = screen.getByRole("button", { name: "Copy" });
 
     expect(toolbar).toHaveAttribute("aria-orientation", "vertical");
-    expect(toolbar).toHaveAttribute("data-density", "compact");
-    expect(button).toHaveAttribute("data-size", "XL");
-    expect(button).toHaveAttribute("data-quiet", "true");
+    expect(toolbar).toHaveAttribute("data-orientation", "vertical");
+    expect(toolbar).not.toHaveAttribute("data-density");
+    expect(button).not.toHaveAttribute("data-size");
+    expect(button).not.toHaveAttribute("data-quiet");
   });
 
   it("uses Toolbar behavior for ActionButtonGroup arrow navigation", async () => {
@@ -168,8 +171,9 @@ describe("button-family S2 contexts", () => {
     ));
 
     const button = screen.getByRole("button", { name: "Bold" });
-    expect(button).toHaveAttribute("data-size", "XL");
     expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(button).not.toHaveAttribute("data-size");
+    expect(button).not.toHaveAttribute("data-emphasized");
   });
 
   it("applies ToggleButtonGroupContext to selection state and child styling", () => {
@@ -186,7 +190,7 @@ describe("button-family S2 contexts", () => {
 
     const left = screen.getByRole("radio", { name: "Left" });
     expect(left).toHaveAttribute("aria-checked", "true");
-    expect(left).toHaveAttribute("data-size", "XL");
-    expect(left).toHaveAttribute("data-emphasized", "true");
+    expect(left).not.toHaveAttribute("data-size");
+    expect(left).not.toHaveAttribute("data-emphasized");
   });
 });

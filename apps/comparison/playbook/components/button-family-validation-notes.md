@@ -1,5 +1,133 @@
 # Button Family Validation Notes
 
+Date: 2026-05-20
+Status: accepted
+
+Button family has now been normalized against the current acceptance gates. The
+original 2026-05-14 family pass remains below as historical evidence; this
+closeout records the current root API/DOM-contract parity fixes, refreshed
+viewer API ledgers, and focused Button-family gates.
+
+## Current-Gate Closeout
+
+- Scope: `ActionButton`, `ActionButtonGroup`, `ButtonGroup`, `LinkButton`,
+  `ToggleButton`, and `ToggleButtonGroup`. The direct `Button` root is closed in
+  `button-validation-notes.md`; this note keeps the family-level composition and
+  grouped-control contracts.
+- Sources rechecked: React Spectrum S2 docs/API for every Button-family member,
+  installed S2 source for the same components, React Aria Button/Link/
+  ToggleButton/ToggleButtonGroup/Toolbar behavior, Solidaria headless sources,
+  Solid Spectrum family wrappers, comparison controls, and focused package/e2e
+  specs.
+- Result: accepted for the Button-family-owned surface. Solid now keeps visual
+  props class-driven like React S2, removes Solid-only root visual markers,
+  preserves React Aria state/group markers where upstream emits them, and
+  tracks the current documented prop ledgers in the comparison viewer.
+
+## Acceptance Gate Checklist
+
+- [x] Public API: comparison API ledgers match current S2 docs for
+      ActionButton, LinkButton, ToggleButton, ActionButtonGroup, ButtonGroup,
+      and ToggleButtonGroup, including missing ARIA/details/slot/id/form/link/
+      press/focus props where documented.
+- [x] Styled public types: ActionButton, LinkButton, and ToggleButton no longer
+      expose styled-layer internals such as custom `render`, raw `onClick`, or
+      hidden non-S2 headless props.
+- [x] DOM contract: visual props remain class/computed-style inputs and do not
+      leak Solid-only `data-size`, `data-static-color`, `data-quiet`,
+      `data-emphasized`, `data-variant`, `data-style`, `data-density`,
+      `data-requested-orientation`, or group disabled markers where React S2
+      does not emit them.
+- [x] React Aria state contract: valid upstream state markers remain intact,
+      including press/hover/focus/disabled/selected attributes on controls and
+      React Aria group orientation/disabled attributes where applicable.
+- [x] Harness contract: focused Playwright gates compare root DOM attributes,
+      viewer controls, computed/icon geometry, screenshot pairs, and interaction
+      behavior against the React Spectrum stack.
+- [x] Evidence handoff: visual-state matrix, component README normalization
+      status, this note, focused unit tests, comparison build, e2e specs,
+      reports, guards, check, and commit are refreshed for this pass.
+
+## Agent Workflow
+
+| Step                    | Status | Evidence                                                                                               |
+| ----------------------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| Research                | done   | Current S2 docs/API, installed S2 source, React Aria source/docs, Solid wrappers and headless sources  |
+| Baseline and source map | done   | Existing family note, Button closeout, root-marker audit, comparison route/control audit               |
+| Implementation          | done   | Family root attr cleanup, type narrowing, comparison API ledger refresh, matrix root-DOM rows          |
+| Harness                 | done   | Unit attr assertions plus e2e root data attribute parity for single and grouped family components      |
+| Verification            | done   | Focused package tests, comparison build, 125 focused Playwright tests, reports, guards, `vp run check` |
+| Handoff                 | done   | README current-gate status, closeout note, clean worktree verification before commit                   |
+
+## Behavior State Machine
+
+- Stable states: default, disabled, pending where supported, selected where
+  supported, icon-leading/icon-only content, documented size/staticColor/quiet/
+  emphasized/fill/variant/density/orientation/justified options, and ButtonGroup
+  overflow wrapping.
+- Transient states: hover, pressed, focus-visible, ActionButton pending spinner,
+  ToggleButton selected toggles, ToggleButtonGroup selection movement, and
+  ActionButtonGroup toolbar keyboard navigation remain covered by focused unit
+  and e2e specs.
+- DOM cleanup contract: changing visual props must affect generated classes,
+  computed styles, geometry, and screenshots, not Solid-only root marker
+  attributes.
+- Group contract: ActionButtonGroup mirrors React Aria Toolbar orientation
+  output; ButtonGroup mirrors React S2's plain root with no group state data
+  markers; ToggleButtonGroup mirrors React Aria group orientation/disabled
+  output without S2-only density leakage.
+
+## Accessibility And I18n
+
+- Button-family controls retain React Aria press/focus semantics, disabled and
+  pending behavior, link semantics, toggle `aria-pressed`, single-selection radio
+  semantics, and group keyboard navigation.
+- The API ledgers now include documented `aria-details` and other ARIA props for
+  family members where S2 exposes them.
+- Existing pending-label localization for Button and ActionButton remains
+  covered through S2 intl strings.
+- No bidirectional layout behavior changed in this pass; orientation behavior is
+  asserted through React Aria/S2 group semantics and computed layout.
+
+## Style Source-To-Computed
+
+- React S2 drives Button-family visual props through generated classes and
+  style branches, not public root visual-prop data attributes.
+- Solid now follows that source-to-computed path for ActionButton, LinkButton,
+  ToggleButton, ActionButtonGroup, ButtonGroup, and ToggleButtonGroup.
+- The new `styled.root-dom-contract` matrix rows bind this source contract to
+  `e2e/actionbutton-visual.spec.ts`,
+  `e2e/single-button-controls-visual.spec.ts`, and
+  `e2e/grouped-button-controls-visual.spec.ts`.
+- Root data attributes that remain are upstream state or structural attributes,
+  not Solid-only shortcuts for styling branches.
+
+## Evidence And Caveats
+
+- Current report refresh:
+  - `comparison:report:gaps`: official entries `69`, live on both sides `47`,
+    missing/gap `22`, visual states tracked `259`, visual evidence states `76`,
+    strict pair-diff states `46`, blocked states `22`.
+  - `comparison:report:exports`: React S2 value exports `208`,
+    `solid-spectrum` public value exports `157`, missing React S2 value exports
+    `57`, extra Solid exports `6`, missing catalogue root exports `0`.
+  - `guard:rac-export-gap`: missing Solidaria Components RAC exports `0`.
+  - `guard:rac-parity`: missing required/backlog tracked symbols `0`; tracker
+    still warns that `TreeHeader` and `TreeSection` are absent from the RAC
+    source index.
+- Focused package tests:
+  - `vp test run packages/solid-spectrum/test/ButtonFamilyContext.test.tsx packages/solid-spectrum/test/ToggleButtonGroup.test.tsx packages/solid-spectrum/test/Link.test.tsx packages/solid-spectrum/test/Wave4Components.test.tsx packages/solid-spectrum/test/ActionBar.test.tsx packages/solid-spectrum/test/Accordion.test.tsx packages/solid-spectrum/test/Disclosure.test.tsx`:
+    7 files, 103 tests passed.
+- Comparison/build/browser gates:
+  - `vp run --filter @proyecto-viviana/comparison build`: passed.
+  - `vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/grouped-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line`:
+    125 passed.
+  - `vp run check`: formatting, lint, and `tsc --noEmit` passed.
+- Caveat: standalone support components remain owned by their own component
+  notes. This family pass only accepts how Button-family components compose
+  Avatar, Image, NotificationBadge, Skeleton, Text, Link, and related support
+  surfaces.
+
 This pass covers the complete Button family, including the standalone Button
 backfill plus the family entries: `ActionButton`, `ActionButtonGroup`,
 `ButtonGroup`, `LinkButton`, `ToggleButton`, and `ToggleButtonGroup`.
@@ -266,8 +394,8 @@ their standalone routes are validated in their own passes.
 
 Current acceptance boundary:
 
-- Legacy status: Button-family-owned behavior was accepted under the prior
-  playbook; current-gate normalization is pending.
+- Button-family-owned behavior is accepted under the current gate as of
+  2026-05-20.
 - Standalone support components are not accepted by family composition
   evidence. Use each component note as the authority for Avatar, AvatarGroup,
   Image, Skeleton, Text, NotificationBadge, Link, Badge, StatusLight, Meter,

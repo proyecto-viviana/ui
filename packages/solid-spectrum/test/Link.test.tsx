@@ -244,15 +244,16 @@ describe("Link (solid-spectrum)", () => {
 });
 
 describe("LinkButton (solid-spectrum)", () => {
-  it("renders an anchor with S2 button data attributes and text slot", () => {
+  it("renders an anchor with S2 button styling and text slot", () => {
     render(() => <LinkButton href="https://example.com">Open docs</LinkButton>);
 
     const link = screen.getByRole("link", { name: "Open docs" });
     expect(link.tagName).toBe("A");
     expect(link).toHaveAttribute("href", "https://example.com");
-    expect(link).toHaveAttribute("data-variant", "primary");
-    expect(link).toHaveAttribute("data-style", "fill");
-    expect(link).toHaveAttribute("data-size", "M");
+    expect(link.className).not.toBe("");
+    expect(link).not.toHaveAttribute("data-variant");
+    expect(link).not.toHaveAttribute("data-style");
+    expect(link).not.toHaveAttribute("data-size");
     expect(link.querySelector('[data-rsp-slot="text"]')?.textContent).toBe("Open docs");
   });
 
@@ -264,9 +265,10 @@ describe("LinkButton (solid-spectrum)", () => {
     ));
 
     const link = screen.getByRole("link", { name: "Billing" });
-    expect(link).toHaveAttribute("data-variant", "accent");
-    expect(link).toHaveAttribute("data-style", "outline");
-    expect(link).toHaveAttribute("data-size", "XL");
+    expect(link.className).not.toBe("");
+    expect(link).not.toHaveAttribute("data-variant");
+    expect(link).not.toHaveAttribute("data-style");
+    expect(link).not.toHaveAttribute("data-size");
   });
 
   it("does not call onPress while disabled", async () => {

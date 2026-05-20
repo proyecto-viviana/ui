@@ -155,6 +155,13 @@ async function controlColors(root: Locator) {
   });
 }
 
+async function rootAttrs(root: Locator, attrs: string[]) {
+  return root.evaluate(
+    (element, names) => Object.fromEntries(names.map((name) => [name, element.getAttribute(name)])),
+    attrs,
+  );
+}
+
 function expectNear(
   received: number | null,
   expected: number | null,
@@ -227,6 +234,17 @@ test.describe("comparison single button-derived visual parity", () => {
         );
         expectNear(solid.gap, react.gap, 1, `${item.title} icon text gap`);
       }
+    });
+
+    test(`${item.title} root data attributes match React Spectrum`, async ({ page }) => {
+      const fixtures = await singleControlFixtures(page, item);
+      const attrs =
+        item.slug === "linkbutton"
+          ? ["data-variant", "data-style", "data-size", "data-static-color"]
+          : ["data-size", "data-static-color", "data-quiet", "data-emphasized"];
+
+      const reactAttrs = await rootAttrs(fixtures.reactControl, attrs);
+      await expect.poll(() => rootAttrs(fixtures.solidControl, attrs)).toEqual(reactAttrs);
     });
   }
 

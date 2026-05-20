@@ -204,6 +204,13 @@ async function groupLayout(root: Locator) {
   });
 }
 
+async function rootAttrs(root: Locator, attrs: string[]) {
+  return root.evaluate(
+    (element, names) => Object.fromEntries(names.map((name) => [name, element.getAttribute(name)])),
+    attrs,
+  );
+}
+
 async function iconAlignmentContract(control: Locator) {
   return control.evaluate((element) => {
     const numberOrNull = (value: number | undefined | null) =>
@@ -276,9 +283,8 @@ test.describe("comparison grouped button controls visual parity", () => {
       expectNear(solid.gap, react.gap, 1, `${item.title} group gap`);
 
       if (item.slug === "buttongroup") {
-        expect(solid.dataOrientation).toBe(
-          item.expectedFlexDirection === "column" ? "vertical" : "horizontal",
-        );
+        expect(solid.dataOrientation).toBeNull();
+        expect(react.dataOrientation).toBeNull();
         if (item.expectedFlexDirection === "column") {
           expectNear(solid.width, react.width, 1, `${item.title} wrapped group width`);
         }
@@ -292,6 +298,19 @@ test.describe("comparison grouped button controls visual parity", () => {
           fixtures.solidPanel.locator("[data-comparison-selected-keys]").first(),
         ).toHaveAttribute("data-comparison-selected-keys", item.expectedSelected);
       }
+    });
+
+    test(`${item.title} root data attributes match React Spectrum`, async ({ page }) => {
+      const fixtures = await groupedFixtures(page, item);
+      const attrs = [
+        "data-orientation",
+        "data-density",
+        "data-disabled",
+        "data-requested-orientation",
+      ];
+
+      const reactAttrs = await rootAttrs(fixtures.reactRoot, attrs);
+      await expect.poll(() => rootAttrs(fixtures.solidRoot, attrs)).toEqual(reactAttrs);
     });
 
     test(`${item.title} icon geometry matches React Spectrum`, async ({ page }) => {

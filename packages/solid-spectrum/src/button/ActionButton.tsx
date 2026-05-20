@@ -57,6 +57,28 @@ import {
 
 export type { ActionButtonSize } from "./group-context";
 
+type StyledActionButtonBaseProps = Omit<
+  HeadlessButtonProps,
+  | "class"
+  | "style"
+  | "children"
+  | "render"
+  | "isPendingFocusable"
+  | "onClick"
+  | "onHoverStart"
+  | "onHoverEnd"
+  | "onHoverChange"
+  | "elementType"
+  | "href"
+  | "target"
+  | "rel"
+  | "allowFocusWhenDisabled"
+>;
+
+type RuntimeActionButtonProps = ActionButtonProps & {
+  onHoverChange?: (isHovered: boolean) => void;
+};
+
 const avatarSize: Record<ActionButtonSize, number> = {
   XS: 14,
   S: 16,
@@ -65,10 +87,7 @@ const avatarSize: Record<ActionButtonSize, number> = {
   XL: 26,
 };
 
-export interface ActionButtonProps extends Omit<
-  HeadlessButtonProps,
-  "class" | "style" | "children"
-> {
+export interface ActionButtonProps extends StyledActionButtonBaseProps {
   /** The content to display in the ActionButton. */
   children?: JSX.Element;
   /** The size of the button. @default 'M' */
@@ -85,16 +104,15 @@ export interface ActionButtonProps extends Omit<
   UNSAFE_className?: string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
 }
 
 /**
  * ActionButtons allow users to perform an action.
  */
 export function ActionButton(props: ActionButtonProps): JSX.Element {
-  const providerProps = useProviderProps(props);
-  const contextProps = getSlottedContextProps(useActionButtonContext(), props.slot);
+  const runtimeProps = props as RuntimeActionButtonProps;
+  const providerProps = useProviderProps(runtimeProps);
+  const contextProps = getSlottedContextProps(useActionButtonContext(), runtimeProps.slot);
   const groupContext = getSlottedContextProps(useActionButtonGroupContext(), undefined);
   const defaultProps: Partial<ActionButtonProps> = {
     size: "M",
@@ -127,7 +145,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     },
   };
 
-  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props, groupProps);
+  const merged = mergeProps(
+    defaultProps,
+    providerProps,
+    contextProps ?? {},
+    runtimeProps,
+    groupProps,
+  );
   const [local, headlessProps] = splitProps(merged, [
     "size",
     "staticColor",
@@ -136,7 +160,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
     "children",
     "ref",
     "onPress",
@@ -158,7 +181,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   );
   const assignButtonRefs = mergeContextRefs(
     (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
-    props.ref,
+    runtimeProps.ref,
   );
 
   const size = (): ActionButtonSize => local.size ?? "M";
@@ -171,9 +194,9 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       (popoverTriggerContext?.triggerRef() === buttonElement &&
         popoverTriggerContext.state.isOpen()));
   const pendingLabel = () => stringFormatter().format("button.pending");
-  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, runtimeProps.styles);
   const mergedUnsafeStyle = () =>
-    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, runtimeProps.UNSAFE_style);
   const getS2State = (renderProps: ButtonRenderProps): S2ActionButtonRenderState => ({
     isHovered: renderProps.isHovered || isOverlayTriggerOpen(),
     isPressed: renderProps.isPressed,
@@ -186,7 +209,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   const getClassName = (renderProps: ButtonRenderProps): string =>
     [
       local.UNSAFE_className,
-      local.class,
       mergeStyles(
         s2ActionButton({
           ...getS2State(renderProps),
@@ -438,9 +460,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       }}
       class={getClassName}
       style={getPressScaleStyle}
-      data-size={size()}
-      data-static-color={local.staticColor || undefined}
-      data-quiet={local.isQuiet ? "true" : undefined}
     >
       <ActionButtonContent />
     </HeadlessButton>

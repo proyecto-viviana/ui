@@ -31,7 +31,12 @@ import {
 } from "./spectrum-context";
 import type { ButtonFillStyle, ButtonSize, ButtonVariant, StaticColor } from "./types";
 
-export interface LinkButtonProps extends Omit<HeadlessLinkProps, "class" | "style" | "children"> {
+type StyledLinkButtonBaseProps = Omit<
+  HeadlessLinkProps,
+  "class" | "style" | "children" | "onClick"
+>;
+
+export interface LinkButtonProps extends StyledLinkButtonBaseProps {
   /** The content to display in the LinkButton. */
   children?: JSX.Element;
   /** The visual style of the LinkButton. */
@@ -193,10 +198,6 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
         setIsPressed(false);
         headlessProps.onPressEnd?.(event);
       }}
-      data-variant={variant()}
-      data-style={fillStyle()}
-      data-size={size()}
-      data-static-color={local.staticColor || undefined}
     >
       <LinkButtonContent />
     </HeadlessLink>

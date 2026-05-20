@@ -42,8 +42,6 @@ export interface ButtonGroupProps extends Omit<
   UNSAFE_className?: string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
   /** @internal Whether a parent context should suppress rendering the group. */
   isHidden?: boolean;
 }
@@ -53,7 +51,6 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   const contextProps = getSlottedContextProps(useButtonGroupContext(), props.slot);
   const merged = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
-    "class",
     "UNSAFE_className",
     "UNSAFE_style",
     "styles",
@@ -85,7 +82,6 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   const className = () =>
     [
       local.UNSAFE_className,
-      local.class,
       s2ButtonGroup(
         {
           size: size(),
@@ -183,9 +179,6 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
       }}
       class={className()}
       style={mergedUnsafeStyle()}
-      data-orientation={effectiveOrientation()}
-      data-requested-orientation={orientation()}
-      data-disabled={local.isDisabled || undefined}
     >
       <ButtonContext.Provider value={contextValue}>
         <LinkButtonContext.Provider value={contextValue}>

@@ -21,7 +21,7 @@ describe("ToggleButtonGroup (solid-spectrum)", () => {
 
     const group = screen.getByRole("radiogroup", { name: "Text alignment" });
     expect(group).toHaveAttribute("data-orientation", "horizontal");
-    expect(group).toHaveAttribute("data-density", "regular");
+    expect(group).not.toHaveAttribute("data-density");
 
     const left = screen.getByRole("radio", { name: "Left" });
     const right = screen.getByRole("radio", { name: "Right" });
@@ -107,14 +107,15 @@ describe("ToggleButtonGroup (solid-spectrum)", () => {
     ));
 
     const group = screen.getByRole("radiogroup", { name: "Pinned columns" });
-    expect(group).toHaveAttribute("data-density", "compact");
+    expect(group).toHaveAttribute("data-orientation", "horizontal");
+    expect(group).not.toHaveAttribute("data-density");
     expect(group).toHaveAttribute("data-disabled", "true");
 
     const button = screen.getByRole("radio", { name: "First" });
     expect(button).toBeDisabled();
-    expect(button).toHaveAttribute("data-size", "XL");
-    expect(button).toHaveAttribute("data-quiet", "true");
-    expect(button).toHaveAttribute("data-emphasized", "true");
+    expect(button).not.toHaveAttribute("data-size");
+    expect(button).not.toHaveAttribute("data-quiet");
+    expect(button).not.toHaveAttribute("data-emphasized");
 
     await user.click(button);
     expect(onPress).not.toHaveBeenCalled();

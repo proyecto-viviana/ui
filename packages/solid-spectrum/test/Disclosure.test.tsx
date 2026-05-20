@@ -108,7 +108,7 @@ describe("Disclosure (solid-spectrum)", () => {
 
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(trigger).not.toContainElement(action);
-    expect(action).toHaveAttribute("data-size", "M");
+    expect(action).not.toHaveAttribute("data-size");
 
     await user.click(action);
     expect(trigger).toHaveAttribute("aria-expanded", "true");

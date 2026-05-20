@@ -37,10 +37,29 @@ import {
 
 export type ToggleButtonSize = ActionButtonSize;
 
-export interface ToggleButtonProps extends Omit<
+type StyledToggleButtonBaseProps = Omit<
   HeadlessToggleButtonProps,
-  "class" | "style" | "children"
-> {
+  | "class"
+  | "style"
+  | "children"
+  | "onClick"
+  | "elementType"
+  | "href"
+  | "target"
+  | "rel"
+  | "allowFocusWhenDisabled"
+  | "form"
+  | "formAction"
+  | "formEncType"
+  | "formMethod"
+  | "formNoValidate"
+  | "formTarget"
+  | "name"
+  | "type"
+  | "value"
+>;
+
+export interface ToggleButtonProps extends StyledToggleButtonBaseProps {
   /** The content to display in the button. */
   children?: JSX.Element;
   /** The size of the button. @default 'M' */
@@ -57,8 +76,6 @@ export interface ToggleButtonProps extends Omit<
   UNSAFE_className?: string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
 }
 
 /**
@@ -117,7 +134,6 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
     "children",
     "ref",
     "density",
@@ -148,7 +164,6 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   const getClassName = (renderProps: ToggleButtonRenderProps): string =>
     [
       local.UNSAFE_className,
-      local.class,
       mergeStyles(
         s2ActionButton({
           ...getS2State(renderProps),
@@ -233,10 +248,6 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       }}
       class={getClassName}
       style={getPressScaleStyle}
-      data-size={size()}
-      data-static-color={local.staticColor || undefined}
-      data-quiet={local.isQuiet ? "true" : undefined}
-      data-emphasized={local.isEmphasized ? "true" : undefined}
     >
       <ToggleButtonContent />
     </HeadlessToggleButton>

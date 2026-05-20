@@ -604,6 +604,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "The docs-style prop controls drive the same children, size, staticColor, icon placement, quiet, disabled, and pending props into both stacks.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM data attributes",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/actionbutton-visual.spec.ts",
+      note: "Root DOM assertions compare React Spectrum and Solid ActionButton visual-prop data markers and prevent Solid-only size/staticColor/quiet attributes from leaking onto the root.",
+    },
+    {
       id: "styled.pending.behavior",
       label: "Pending focus and press suppression",
       kind: "interaction",
@@ -1041,6 +1051,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/grouped-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive size, density, orientation, staticColor, icon placement, quiet, justified, and disabled props into both stacks.",
     },
+    {
+      id: "styled.root-dom-contract",
+      label: "Root DOM data attributes",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "Root DOM assertions keep ActionButtonGroup aligned with React Spectrum Toolbar output: orientation is retained, while Solid-only density and disabled markers are absent.",
+    },
   ],
   buttongroup: [
     visualDefaultState({
@@ -1078,6 +1098,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/grouped-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive orientation, alignment, size, icon placement, disabled state, and the comparison overflow width into both stacks.",
+    },
+    {
+      id: "styled.root-dom-contract",
+      label: "Root DOM data attributes",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "Root DOM assertions keep ButtonGroup aligned with React Spectrum's plain div root by preventing Solid-only orientation, requested-orientation, density, and disabled markers.",
     },
   ],
   togglebutton: [
@@ -1117,6 +1147,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/single-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive children, size, staticColor, icon placement, quiet, emphasized, selected, and disabled props into both stacks.",
     },
+    {
+      id: "styled.root-dom-contract",
+      label: "Root DOM data attributes",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/single-button-controls-visual.spec.ts",
+      note: "Root DOM assertions compare React Spectrum and Solid ToggleButton visual-prop data markers and prevent Solid-only size/staticColor/quiet/emphasized attributes from leaking onto the root.",
+    },
   ],
   linkbutton: [
     visualDefaultState({
@@ -1144,6 +1184,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/single-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive children, href, variant, fillStyle, size, staticColor, icon placement, and disabled props into both stacks.",
+    },
+    {
+      id: "styled.root-dom-contract",
+      label: "Root DOM data attributes",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/single-button-controls-visual.spec.ts",
+      note: "Root DOM assertions compare React Spectrum and Solid LinkButton visual-prop data markers and prevent Solid-only variant/fillStyle/size/staticColor attributes from leaking onto the root.",
     },
     {
       id: "styled.primary-fill-colors",
@@ -1192,6 +1242,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/grouped-button-controls-visual.spec.ts",
       note: "The docs-style prop controls drive selectionMode, selectedKeys, disallowEmptySelection, size, density, orientation, staticColor, icon placement, quiet, emphasized, justified, and disabled props into both stacks.",
+    },
+    {
+      id: "styled.root-dom-contract",
+      label: "Root DOM data attributes",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/grouped-button-controls-visual.spec.ts",
+      note: "Root DOM assertions keep ToggleButtonGroup aligned with React Aria group output: orientation and disabled state are retained, while Solid-only density markers are absent.",
     },
   ],
   segmentedcontrol: [

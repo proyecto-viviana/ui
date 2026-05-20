@@ -48,8 +48,6 @@ export interface ToggleButtonGroupProps extends Omit<
   UNSAFE_className?: string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
 }
 
 /**
@@ -77,7 +75,6 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
     "ref",
   ]);
 
@@ -94,7 +91,6 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
   const className = () =>
     [
       local.UNSAFE_className,
-      local.class,
       s2ActionButtonGroup(
         {
           size: size(),
@@ -144,7 +140,6 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
       class={className()}
       style={mergedUnsafeStyle()}
       data-orientation={orientation()}
-      data-density={density()}
       data-disabled={local.isDisabled || undefined}
     >
       {() => (

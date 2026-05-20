@@ -51,9 +51,11 @@ describe("Wave 4 UI Components", () => {
       expect(getByRole("button")).toBeDefined();
     });
 
-    it("applies size prop", () => {
-      const { getByRole } = render(() => <ToggleButton size="sm">SM</ToggleButton>);
-      expect(getByRole("button")).toHaveAttribute("data-size", "sm");
+    it("applies size prop without exposing visual prop markers", () => {
+      const { getByRole } = render(() => <ToggleButton size="S">SM</ToggleButton>);
+      const button = getByRole("button");
+      expect(button.className).not.toBe("");
+      expect(button).not.toHaveAttribute("data-size");
     });
   });
 
@@ -63,9 +65,11 @@ describe("Wave 4 UI Components", () => {
       expect(getByRole("button")).toBeDefined();
     });
 
-    it("accepts quiet mode", () => {
+    it("accepts quiet mode without exposing visual prop markers", () => {
       const { getByRole } = render(() => <ActionButton isQuiet>Quiet</ActionButton>);
-      expect(getByRole("button")).toHaveAttribute("data-quiet", "true");
+      const button = getByRole("button");
+      expect(button.className).not.toBe("");
+      expect(button).not.toHaveAttribute("data-quiet");
     });
   });
 

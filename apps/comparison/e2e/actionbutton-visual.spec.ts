@@ -386,10 +386,26 @@ test.describe("comparison ActionButton visual parity", () => {
       )
       .toBe(expected);
     await expect(fixtures.reactCanvas.getByRole("button", { name: "Archive" })).toBeVisible();
-    await expect(fixtures.solidCanvas.getByRole("button", { name: "Archive" })).toHaveAttribute(
-      "data-size",
-      "XL",
-    );
+    await expect(fixtures.solidCanvas.getByRole("button", { name: "Archive" })).toBeVisible();
+  });
+
+  test("ActionButton root data attributes match current React Spectrum", async ({ page }) => {
+    const fixtures = await actionButtonFixtures(page, {
+      size: "XL",
+      staticColor: "black",
+      isQuiet: true,
+      iconPlacement: "start",
+    });
+    const attrs = ["data-size", "data-static-color", "data-quiet"];
+    const readAttrs = (root: Locator) =>
+      root.evaluate(
+        (element, names) =>
+          Object.fromEntries(names.map((name) => [name, element.getAttribute(name)])),
+        attrs,
+      );
+
+    const reactAttrs = await readAttrs(fixtures.reactButton);
+    await expect.poll(() => readAttrs(fixtures.solidButton)).toEqual(reactAttrs);
   });
 
   for (const item of actionButtonCases) {

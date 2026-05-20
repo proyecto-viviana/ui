@@ -157,10 +157,10 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBar>
       ));
 
-      const group = container.querySelector("[data-density='regular']");
-      expect(group).toHaveAttribute("aria-label", "Actions");
-      expect(group).toHaveAttribute("data-orientation", "horizontal");
-      expect(screen.getByRole("button", { name: "Edit" })).toHaveAttribute("data-quiet", "true");
+      expect(screen.getByRole("toolbar", { name: "Actions" })).toHaveAttribute("data-open", "true");
+      const edit = screen.getByRole("button", { name: "Edit" });
+      expect(edit.className).not.toBe("");
+      expect(edit).not.toHaveAttribute("data-quiet");
     });
 
     it("propagates staticColor auto to child action buttons when emphasized", () => {
@@ -170,10 +170,9 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBar>
       ));
 
-      expect(screen.getByRole("button", { name: "Edit" })).toHaveAttribute(
-        "data-static-color",
-        "auto",
-      );
+      const edit = screen.getByRole("button", { name: "Edit" });
+      expect(edit.className).not.toBe("");
+      expect(edit).not.toHaveAttribute("data-static-color");
     });
 
     it("keeps the last selected count during scrollRef exit", async () => {

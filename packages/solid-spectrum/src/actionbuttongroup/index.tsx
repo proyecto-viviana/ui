@@ -45,8 +45,6 @@ export interface ActionButtonGroupProps extends Omit<
   UNSAFE_className?: string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
 }
 
 /**
@@ -68,7 +66,6 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
     "ref",
   ]);
   const size = () => local.size ?? "M";
@@ -84,7 +81,6 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
   const className = () =>
     [
       local.UNSAFE_className,
-      local.class,
       s2ActionButtonGroup(
         {
           size: size(),
@@ -130,8 +126,6 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
       class={className()}
       style={mergedUnsafeStyle()}
       data-orientation={orientation()}
-      data-density={density()}
-      data-disabled={local.isDisabled || undefined}
     >
       <ActionButtonGroupContext.Provider value={contextValue}>
         {local.children}
