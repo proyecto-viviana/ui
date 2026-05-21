@@ -32,6 +32,7 @@ import {
   Dialog as SpectrumDialog,
   DialogTrigger as SpectrumDialogTrigger,
   Divider as SpectrumDivider,
+  Footer as SpectrumFooter,
   Form as SpectrumForm,
   Heading as SpectrumHeading,
   Image as SpectrumImage,
@@ -3338,6 +3339,14 @@ function ReactContextualHelpDemo() {
         children: [
           jsx(SpectrumHeading, { children: demoProps.heading }),
           jsx(SpectrumContent, { children: demoProps.content }),
+          jsx(SpectrumFooter, {
+            children: jsx(SpectrumLink, {
+              isStandalone: true,
+              href: "#",
+              target: "_blank",
+              children: "Learn more about segments",
+            }),
+          }),
         ],
       }),
     }),

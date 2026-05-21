@@ -6,6 +6,8 @@
   "actionbar.selectedAll": "All selected",
   "button.pending": "pending",
   "breadcrumbs.more": "More items",
+  "contextualhelp.help": "Help",
+  "contextualhelp.info": "Information",
   "menu.moreActions": "More actions",
   "menu.unavailable": "Unavailable",
   "notificationbadge.indicatorOnly": "New activity",

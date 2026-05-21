@@ -34,6 +34,7 @@ import {
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
+  Content as SolidSpectrumContent,
   ContextualHelp as SolidSpectrumContextualHelp,
   DateField as SolidSpectrumDateField,
   DateRangePicker as SolidSpectrumDateRangePicker,
@@ -41,6 +42,7 @@ import {
   Dialog as SolidSpectrumDialog,
   DialogTrigger as SolidSpectrumDialogTrigger,
   Divider as SolidSpectrumDivider,
+  Footer as SolidSpectrumFooter,
   Form as SolidSpectrumForm,
   Heading as SolidSpectrumHeading,
   Image as SolidSpectrumImage,
@@ -3825,7 +3827,12 @@ function SolidSpectrumContextualHelpDemo() {
             },
             [
               hc(SolidSpectrumHeading, { slot: "title" }, [() => demoProps().heading]),
-              hc(SolidSpectrumText, {}, [() => demoProps().content]),
+              hc(SolidSpectrumContent, {}, [() => demoProps().content]),
+              hc(SolidSpectrumFooter, {}, [
+                hc(SolidSpectrumLink, { isStandalone: true, href: "#", target: "_blank" }, [
+                  "Learn more about segments",
+                ]),
+              ]),
             ],
           ),
         ],

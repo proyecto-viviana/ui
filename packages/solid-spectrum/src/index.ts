@@ -209,8 +209,12 @@ export type {
 } from "./combobox";
 
 // ContextualHelp
-export { ContextualHelp, ContextualHelpPopover } from "./contextualhelp";
-export type { ContextualHelpPopoverProps, ContextualHelpProps } from "./contextualhelp";
+export { ContextualHelp, ContextualHelpContext, ContextualHelpPopover } from "./contextualhelp";
+export type {
+  ContextualHelpPopoverProps,
+  ContextualHelpProps,
+  ContextualHelpStyleProps,
+} from "./contextualhelp";
 
 // Dialog
 export { Dialog, DialogTrigger } from "./dialog";

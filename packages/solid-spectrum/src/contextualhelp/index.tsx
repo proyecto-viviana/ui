@@ -1,15 +1,37 @@
-import { type JSX, createUniqueId, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createUniqueId,
+  mergeProps,
+  splitProps,
+  useContext,
+} from "solid-js";
 import { MenuTriggerContext } from "@proyecto-viviana/solidaria-components";
-import { Popover, type PopoverProps } from "../popover";
+import { createStringFormatter, filterDOMProps } from "@proyecto-viviana/solidaria";
+import { Popover, type PopoverProps, type PopoverTriggerProps } from "../popover";
 import { PopoverTrigger } from "../popover";
 import { ActionButton, type ActionButtonSize } from "../button/ActionButton";
 import { style, type StyleString } from "../s2-style";
-import { HeadingContext, TextContext } from "../text";
+import { ContentContext, FooterContext, HeadingContext, TextContext } from "../text";
 import { HelpCircleIcon } from "../icon/s2wf-icons/HelpCircleIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
+import { s2IntlStrings, type S2IntlStrings } from "../intl";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type ContextualHelpVariant = "help" | "info";
 export type ContextualHelpSize = Extract<ActionButtonSize, "XS" | "S">;
+
+export interface ContextualHelpStyleProps {
+  /** Indicates whether contents are informative or provide help. @default 'help' */
+  variant?: ContextualHelpVariant;
+}
 
 export interface ContextualHelpProps extends Omit<
   PopoverProps,
@@ -21,6 +43,7 @@ export interface ContextualHelpProps extends Omit<
   | "padding"
   | "showArrow"
   | "size"
+  | "slot"
   | "trigger"
 > {
   /** Contextual help popover content. */
@@ -47,6 +70,12 @@ export interface ContextualHelpProps extends Omit<
   UNSAFE_style?: JSX.CSSProperties;
   /** Backward-compatible trigger class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
+  /** Id of the element that provides detailed information. */
+  "aria-details"?: string;
+  /** Slotted context key. */
+  slot?: string | null;
+  /** Ref for the icon trigger button. */
+  ref?: RefLike<HTMLButtonElement>;
 }
 
 export interface ContextualHelpPopoverProps extends Omit<
@@ -59,21 +88,34 @@ export interface ContextualHelpPopoverProps extends Omit<
   class?: string;
 }
 
+export const ContextualHelpContext = createContext<SpectrumContextValue<ContextualHelpProps>>(null);
+
 const contextualHelpFrame = style({
   minWidth: 268,
   width: 268,
   padding: 24,
   boxSizing: "border-box",
-  height: "full",
 });
 
 const contextualHelpInner = style({
+  display: "flex",
+  flexDirection: "column",
+  flexGrow: 1,
+  maxHeight: "inherit",
+  boxSizing: "border-box",
+  outlineStyle: "none",
+  overflow: "auto",
   borderRadius: "none",
   padding: 24,
-  margin: "[calc(24px * -1)]",
   font: "body-sm",
   color: "neutral",
 });
+
+const contextualHelpInnerStyle: JSX.CSSProperties = {
+  // React S2 uses calc(self(paddingTop) * -1); the local style macro does not emit
+  // negative margin classes for this component, so keep the computed margin explicit.
+  margin: "-24px",
+};
 
 const contextualHelpHeading = style({
   font: "heading-xs",
@@ -83,6 +125,11 @@ const contextualHelpHeading = style({
 
 const contextualHelpText = style({
   font: "body-sm",
+});
+
+const contextualHelpFooter = style({
+  font: "body-sm",
+  marginTop: 16,
 });
 
 /**
@@ -118,6 +165,12 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
       },
     },
   };
+  const contentContext = {
+    styles: contextualHelpText,
+  };
+  const footerContext = {
+    styles: contextualHelpFooter,
+  };
 
   return (
     <Popover
@@ -129,19 +182,29 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
       offset={popoverProps.offset ?? -2}
       crossOffset={popoverProps.crossOffset ?? -8}
       padding="none"
-      class={[contextualHelpFrame, local.class].filter(Boolean).join(" ")}
+      class={local.class}
     >
-      <div class={contextualHelpInner}>
-        <TextContext.Provider value={textContext}>
-          <HeadingContext.Provider value={headingContext}>{local.children}</HeadingContext.Provider>
-        </TextContext.Provider>
+      <div class={contextualHelpFrame}>
+        <div class={contextualHelpInner} style={contextualHelpInnerStyle}>
+          <TextContext.Provider value={textContext}>
+            <ContentContext.Provider value={contentContext}>
+              <FooterContext.Provider value={footerContext}>
+                <HeadingContext.Provider value={headingContext}>
+                  {local.children}
+                </HeadingContext.Provider>
+              </FooterContext.Provider>
+            </ContentContext.Provider>
+          </TextContext.Provider>
+        </div>
       </div>
     </Popover>
   );
 }
 
 export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
-  const [local, popoverProps] = splitProps(props, [
+  const contextProps = getSlottedContextProps(useContext(ContextualHelpContext), props.slot);
+  const merged = mergeProps(contextProps ?? {}, props) as ContextualHelpProps;
+  const [local, popoverProps] = splitProps(merged, [
     "children",
     "content",
     "triggerLabel",
@@ -154,18 +217,38 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
+    "id",
+    "ref",
+    "slot",
     "aria-label",
     "aria-labelledby",
     "aria-describedby",
+    "aria-details",
   ]);
   const titleId = createUniqueId();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const variant = () => local.variant ?? "help";
-  const triggerLabel = () =>
-    local.triggerLabel ??
-    local["aria-label"] ??
-    (variant() === "info" ? "More information" : "Contextual help");
+  const variantLabel = () =>
+    stringFormatter().format(`contextualhelp.${variant()}` as keyof S2IntlStrings);
+  const triggerLabel = () => {
+    const explicitLabel = local.triggerLabel ?? local["aria-label"];
+    return explicitLabel ? `${explicitLabel} ${variantLabel()}` : variantLabel();
+  };
   const icon = () => (variant() === "info" ? <InfoCircleIcon /> : <HelpCircleIcon />);
   const content = () => local.content ?? local.children;
+  const triggerDomProps = () =>
+    filterDOMProps(merged as Record<string, unknown>, { labelable: true });
+  const triggerClassName = () =>
+    [contextProps?.UNSAFE_className, contextProps?.class, props.UNSAFE_className, props.class]
+      .filter(Boolean)
+      .join(" ");
+  const triggerStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const triggerUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const triggerRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
+    props.ref,
+  );
   const headingContext = {
     slots: {
       default: {
@@ -188,23 +271,42 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
       },
     },
   };
+  const contentContext = {
+    styles: contextualHelpText,
+  };
+  const footerContext = {
+    styles: contextualHelpFooter,
+  };
+  const popoverTriggerProps: Partial<PopoverTriggerProps> = {
+    get defaultOpen() {
+      return local.defaultOpen;
+    },
+    get isOpen() {
+      return local.isOpen;
+    },
+    get onOpenChange() {
+      return local.onOpenChange;
+    },
+  };
 
   return (
-    <PopoverTrigger
-      defaultOpen={local.defaultOpen}
-      isOpen={local.isOpen}
-      onOpenChange={local.onOpenChange}
-    >
+    <PopoverTrigger {...popoverTriggerProps}>
       <ActionButton
+        {...triggerDomProps()}
+        id={local.id}
         aria-label={triggerLabel()}
         aria-labelledby={local["aria-labelledby"]}
         aria-describedby={local["aria-describedby"]}
+        aria-details={local["aria-details"]}
         aria-haspopup="dialog"
+        ref={(element: HTMLButtonElement) => {
+          triggerRef(element);
+        }}
         size={local.size ?? "XS"}
         isQuiet
-        styles={local.styles}
-        UNSAFE_className={[local.UNSAFE_className, local.class].filter(Boolean).join(" ")}
-        UNSAFE_style={local.UNSAFE_style}
+        styles={triggerStyles()}
+        UNSAFE_className={triggerClassName()}
+        UNSAFE_style={triggerUnsafeStyle()}
       >
         {icon()}
       </ActionButton>
@@ -212,15 +314,23 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
         {...popoverProps}
         aria-label={triggerLabel()}
         placement={popoverProps.placement ?? "bottom start"}
-        offset={popoverProps.offset ?? 8}
+        containerPadding={popoverProps.containerPadding ?? 8}
+        offset={8}
         shouldFlip={popoverProps.shouldFlip ?? true}
         padding="none"
-        class={contextualHelpFrame}
       >
-        <div class={contextualHelpInner}>
-          <TextContext.Provider value={textContext}>
-            <HeadingContext.Provider value={headingContext}>{content()}</HeadingContext.Provider>
-          </TextContext.Provider>
+        <div class={contextualHelpFrame}>
+          <div class={contextualHelpInner} style={contextualHelpInnerStyle}>
+            <TextContext.Provider value={textContext}>
+              <ContentContext.Provider value={contentContext}>
+                <FooterContext.Provider value={footerContext}>
+                  <HeadingContext.Provider value={headingContext}>
+                    {content()}
+                  </HeadingContext.Provider>
+                </FooterContext.Provider>
+              </ContentContext.Provider>
+            </TextContext.Provider>
+          </div>
         </div>
       </Popover>
     </PopoverTrigger>

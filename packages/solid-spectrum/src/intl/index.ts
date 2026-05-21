@@ -10,6 +10,8 @@ export interface S2IntlStrings {
   "actionbar.selectedAll": string;
   "button.pending": string;
   "breadcrumbs.more": string;
+  "contextualhelp.help": string;
+  "contextualhelp.info": string;
   "menu.moreActions": string;
   "menu.unavailable": string;
   "notificationbadge.indicatorOnly": string;

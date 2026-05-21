@@ -2004,9 +2004,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "overlay",
       react: "asserted",
       solid: "asserted",
-      pairDiff: "planned",
+      pairDiff: "asserted",
       spec: "e2e/contextualhelp-visual.spec.ts",
-      note: "Controlled open state renders Heading and Content children in a dialog popover for both stacks, with routed variant, size, placement, offset, container padding, and flip props.",
+      note: "Controlled open state renders Heading, Content, and Footer children in a dialog popover for both stacks, with routed variant, size, placement, crossOffset, container padding, flip props, and React-pinned offset geometry.",
     },
     {
       id: "styled.touch.press",
@@ -2026,7 +2026,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts + e2e/contextualhelp-visual.spec.ts",
-      note: "The docs-style prop controls drive trigger label, heading, content, variant, ActionButton size, placement, offset, crossOffset, containerPadding, open state, and flip into both stacks.",
+      note: "The docs-style prop controls drive trigger label, heading, content, footer, variant, ActionButton size, placement, crossOffset, containerPadding, open state, and flip into both stacks. Offset is serialized for API visibility while the rendered main popover follows React S2's offset={8}.",
     },
   ],
   tooltip: [

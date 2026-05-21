@@ -4460,7 +4460,7 @@ const contextualHelpControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 ContextualHelp docs/API viewer. The route drives popover content, variant, ActionButton size, placement, offset, crossOffset, containerPadding, controlled open, and flip behavior into both stacks; this is the press/touch alternative for help that cannot rely on Tooltip.",
+  note: "Modeled from the S2 ContextualHelp docs/API viewer. The route drives popover content, variant, ActionButton size, placement, crossOffset, containerPadding, controlled open, and flip behavior into both stacks. The route serializes offset for API visibility, while the main ContextualHelp popover is pinned to React S2's offset={8}; this is the press/touch alternative for help that cannot rely on Tooltip.",
 };
 
 const tooltipControls: ComponentControlGroup = {

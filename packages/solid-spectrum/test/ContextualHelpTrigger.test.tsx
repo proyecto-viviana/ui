@@ -3,9 +3,11 @@
  */
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
-import { ContextualHelp } from "../src/contextualhelp";
+import { ContextualHelp, ContextualHelpContext } from "../src/contextualhelp";
 import { ContextualHelpTrigger } from "../src/menu/ContextualHelpTrigger";
+import { Content, Footer, Heading } from "../src/text";
 
 describe("ContextualHelpTrigger (solid-spectrum)", () => {
   const defaultChildren: [any, any] = [
@@ -63,7 +65,7 @@ describe("ContextualHelp (solid-spectrum)", () => {
   it("opens a dialog popover from touch press instead of a tooltip", async () => {
     render(() => <ContextualHelp>Touch-accessible help content</ContextualHelp>);
 
-    const trigger = screen.getByRole("button", { name: "Contextual help" });
+    const trigger = screen.getByRole("button", { name: "Help" });
     trigger.dispatchEvent(
       createPointerEvent("pointerdown", {
         pointerId: 1,
@@ -82,7 +84,7 @@ describe("ContextualHelp (solid-spectrum)", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Contextual help" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Help" })).toBeInTheDocument();
     });
     expect(screen.getByText("Touch-accessible help content")).toBeInTheDocument();
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
@@ -97,23 +99,93 @@ describe("ContextualHelp (solid-spectrum)", () => {
       </ContextualHelp>
     ));
 
-    expect(
-      screen.getByRole("button", { name: "More information", hidden: true }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Information", hidden: true })).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "More information" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Information" })).toBeInTheDocument();
     });
+  });
+
+  it("reacts to controlled open state changes", async () => {
+    const ControlledContextualHelp = () => {
+      const [isOpen, setOpen] = createSignal(false);
+
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open externally
+          </button>
+          <ContextualHelp isOpen={isOpen()} onOpenChange={setOpen}>
+            Controlled help content
+          </ContextualHelp>
+        </>
+      );
+    };
+
+    render(() => <ControlledContextualHelp />);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open externally" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: "Help" })).toBeInTheDocument();
+    });
+    expect(screen.getByText("Controlled help content")).toBeInTheDocument();
   });
 
   it("keeps the legacy content alias while rendering as a popover dialog", async () => {
     render(() => <ContextualHelp content="Alias help content" triggerLabel="Why unavailable?" />);
 
-    const trigger = screen.getByRole("button", { name: "Why unavailable?" });
+    const trigger = screen.getByRole("button", { name: "Why unavailable? Help" });
     fireEvent.click(trigger);
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Why unavailable?" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Why unavailable? Help" })).toBeInTheDocument();
     });
     expect(screen.getByText("Alias help content")).toBeInTheDocument();
+  });
+
+  it("styles Heading, Content, and Footer children using the S2 contextual help slots", async () => {
+    render(() => (
+      <ContextualHelp isOpen>
+        <Heading>Permission required</Heading>
+        <Content>Your admin must grant permission.</Content>
+        <Footer>Learn more about segments</Footer>
+      </ContextualHelp>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: "Help" })).toBeInTheDocument();
+    });
+    const heading = screen.getByRole("heading", { name: "Permission required", level: 2 });
+    expect(heading.id).toBeTruthy();
+    expect(heading.className).toBeTruthy();
+    expect(screen.getByText("Your admin must grant permission.").className).toBeTruthy();
+    expect(screen.getByText("Learn more about segments").className).toBeTruthy();
+  });
+
+  it("accepts ContextualHelpContext trigger props and refs", async () => {
+    let triggerRef: HTMLButtonElement | undefined;
+    render(() => (
+      <ContextualHelpContext.Provider
+        value={{
+          id: "field-help",
+          "aria-labelledby": "field-label field-help",
+          size: "S",
+          ref: (element) => {
+            triggerRef = element;
+          },
+        }}
+      >
+        <ContextualHelp isOpen>
+          <Heading>Context from field label</Heading>
+          <Content>Contextual help content</Content>
+        </ContextualHelp>
+      </ContextualHelpContext.Provider>
+    ));
+
+    const trigger = screen.getByRole("button", { hidden: true });
+    expect(trigger).toHaveAttribute("id", "field-help");
+    expect(trigger).toHaveAttribute("aria-labelledby", "field-label field-help");
+    expect(triggerRef).toBe(trigger);
   });
 });
