@@ -55,6 +55,22 @@ async function namedInputAttributes(
     );
 }
 
+async function namedInputDetails(root: Locator, name: string) {
+  return root.locator(`input[name="${name}"]`).evaluateAll((inputs) =>
+    inputs.map((input) => {
+      const element = input as HTMLInputElement;
+      return {
+        type: element.getAttribute("type"),
+        value: element.value.replace(/:00$/, ""),
+        hidden: element.hasAttribute("hidden"),
+        required: element.required,
+        min: element.getAttribute("min"),
+        max: element.getAttribute("max"),
+      };
+    }),
+  );
+}
+
 async function expectInvalidField(root: Locator) {
   const field = root.locator('[role="group"]').first();
   await expect
@@ -158,6 +174,12 @@ test.describe("DateField visual parity", () => {
     await expect(solidRoot.getByRole("spinbutton")).toHaveCount(5);
     expect(await namedInputValues(reactRoot, "appointmentDate")).toContain("2025-02-03T08:45");
     expect(await namedInputValues(solidRoot, "appointmentDate")).toContain("2025-02-03T08:45");
+    expect(await namedInputDetails(reactRoot, "appointmentDate")).toContainEqual(
+      expect.objectContaining({ type: "hidden", value: "2025-02-03T08:45" }),
+    );
+    expect(await namedInputDetails(solidRoot, "appointmentDate")).toContainEqual(
+      expect.objectContaining({ type: "hidden", value: "2025-02-03T08:45" }),
+    );
     expect(await namedInputAttributes(reactRoot, "appointmentDate", "form")).toContain(
       "appointmentForm",
     );
@@ -187,11 +209,11 @@ test.describe("DateField visual parity", () => {
     );
   });
 
-  test("asserts validation, required state, range constraints, and unavailable dates", async ({
+  test("keeps native validation hidden while preserving required form input semantics", async ({
     page,
   }) => {
     await page.goto(
-      "/components/datefield/?value=2025-02-10&constrainRange=true&unavailableDates=true&isRequired=true&isInvalid=true&name=appointmentDate",
+      "/components/datefield/?value=2025-02-10&constrainRange=true&unavailableDates=true&isRequired=true&name=appointmentDate",
     );
     await waitForComparisonRouteReady(page);
 
@@ -200,12 +222,74 @@ test.describe("DateField visual parity", () => {
     const solidRoot = await dateFieldRoot(await frameworkPanel(section, "Solidaria stack"));
 
     for (const root of [reactRoot, solidRoot]) {
+      await expect(root.getByText("Enter the appointment date.")).toBeVisible();
+      await expect(root.getByText("Enter a valid appointment date.")).toHaveCount(0);
+      expect(await namedInputValues(root, "appointmentDate")).toContain("2025-02-10");
+      expect(await namedInputDetails(root, "appointmentDate")).toContainEqual(
+        expect.objectContaining({
+          type: "text",
+          value: "2025-02-10",
+          hidden: true,
+          required: true,
+          min: null,
+          max: null,
+        }),
+      );
+    }
+  });
+
+  test("surfaces aria validation, range constraints, and unavailable dates", async ({ page }) => {
+    await page.goto(
+      "/components/datefield/?value=2025-02-10&constrainRange=true&unavailableDates=true&isRequired=true&name=appointmentDate&validationBehavior=aria",
+    );
+    await waitForComparisonRouteReady(page);
+
+    const section = await styledSection(page);
+    const reactRoot = await dateFieldRoot(await frameworkPanel(section, "React Spectrum stack"));
+    const solidRoot = await dateFieldRoot(await frameworkPanel(section, "Solidaria stack"));
+
+    await expect(reactRoot).toHaveAttribute("data-comparison-react-builtin-invalid", "true");
+    for (const root of [reactRoot, solidRoot]) {
       await expect(root.getByText("Enter a valid appointment date.")).toBeVisible();
       await expectInvalidField(root);
       expect(await namedInputValues(root, "appointmentDate")).toContain("2025-02-10");
+      expect(await namedInputDetails(root, "appointmentDate")).toContainEqual(
+        expect.objectContaining({
+          type: "hidden",
+          value: "2025-02-10",
+          hidden: false,
+          required: false,
+          min: null,
+          max: null,
+        }),
+      );
     }
-    expect(await namedInputAttributes(solidRoot, "appointmentDate", "min")).toContain("2025-02-03");
-    expect(await namedInputAttributes(solidRoot, "appointmentDate", "max")).toContain("2025-02-20");
+  });
+
+  test("routes contextual help and forced leading zero segments", async ({ page }) => {
+    await page.goto(
+      "/components/datefield/?value=2025-02-03&withContextualHelp=true&shouldForceLeadingZeros=true",
+    );
+    await waitForComparisonRouteReady(page);
+
+    const section = await styledSection(page);
+    const reactRoot = await dateFieldRoot(await frameworkPanel(section, "React Spectrum stack"));
+    const solidRoot = await dateFieldRoot(await frameworkPanel(section, "Solidaria stack"));
+
+    await expect(reactRoot.getByRole("button")).toHaveCount(1);
+    await expect(solidRoot.getByRole("button")).toHaveCount(1);
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"withContextualHelp":true/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"withContextualHelp":true/,
+    );
+    const reactTexts = await spinbuttonTexts(reactRoot);
+    expect(reactTexts).toContain("02");
+    expect(reactTexts).toContain("03");
+    await expect.poll(() => spinbuttonTexts(solidRoot)).toEqual(reactTexts);
   });
 
   test("keeps Provider locale and Unicode calendar text in parity", async ({ page }) => {

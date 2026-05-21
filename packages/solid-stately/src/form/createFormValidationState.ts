@@ -179,18 +179,11 @@ function isEqualValidation(a: ValidationResult | null, b: ValidationResult | nul
  * ```
  */
 export function createFormValidationState<T>(props: FormValidationProps<T>): FormValidationState {
-  const {
-    isInvalid,
-    validationState,
-    name,
-    builtinValidation: builtinValidationProp,
-    validate,
-    validationBehavior = "aria",
-  } = props;
+  const validationBehavior = () => props.validationBehavior ?? "aria";
 
   // Backward compatibility
   const isInvalidProp = createMemo(
-    () => isInvalid ?? (validationState === "invalid" ? true : undefined),
+    () => props.isInvalid ?? (props.validationState === "invalid" ? true : undefined),
   );
 
   // Controlled error from isInvalid prop
@@ -206,6 +199,7 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
 
   // Client-side validation
   const clientError = createMemo<ValidationResult | null>(() => {
+    const validate = props.validate;
     if (!validate || props.value == null) {
       return null;
     }
@@ -215,6 +209,7 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
 
   // Built-in validation (skip if valid)
   const builtinValidation = createMemo<ValidationResult | undefined>(() => {
+    const builtinValidationProp = props.builtinValidation;
     if (builtinValidationProp?.validationDetails.valid) {
       return undefined;
     }
@@ -224,6 +219,7 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
   // Server errors from context
   const serverErrors = useContext(FormValidationContext);
   const serverErrorMessages = createMemo(() => {
+    const name = props.name;
     if (name) {
       return Array.isArray(name)
         ? name.flatMap((n) => asArray(serverErrors[n]))
@@ -279,7 +275,7 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
 
   // Display validation (what the user sees)
   const displayValidation = createMemo<ValidationResult>(() => {
-    if (validationBehavior === "native") {
+    if (validationBehavior() === "native") {
       return controlledError() || serverError() || currentValidity();
     }
     return (
@@ -296,7 +292,7 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
     displayValidation,
     updateValidation(value: ValidationResult) {
       // If validationBehavior is 'aria', update in realtime. Otherwise, store until commit.
-      if (validationBehavior === "aria" && !isEqualValidation(currentValidity(), value)) {
+      if (validationBehavior() === "aria" && !isEqualValidation(currentValidity(), value)) {
         setCurrentValidity(value);
       } else {
         nextValidation = value;
@@ -310,14 +306,14 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
         setCurrentValidity(error);
       }
       // Do not commit validation after the next render for native behavior.
-      if (validationBehavior === "native") {
+      if (validationBehavior() === "native") {
         setCommitQueued(false);
       }
       setServerErrorCleared(true);
     },
     commitValidation() {
       // Commit validation state so the user sees it on blur/change/submit.
-      if (validationBehavior === "native") {
+      if (validationBehavior() === "native") {
         const error = clientError() || builtinValidation() || nextValidation;
         if (!isEqualValidation(error, lastError)) {
           lastError = error;

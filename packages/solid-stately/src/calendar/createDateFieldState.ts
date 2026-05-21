@@ -19,6 +19,15 @@ import {
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
+import {
+  createFormValidationState,
+  DEFAULT_VALIDATION_RESULT,
+  VALID_VALIDITY_STATE,
+  type ValidationBehavior,
+  type ValidationFunction,
+  type ValidationResult,
+  type ValidityState,
+} from "../form";
 
 export type DateSegmentType =
   | "year"
@@ -68,6 +77,8 @@ export interface DateFieldStateProps<T extends DateValue = DateValue> {
   isReadOnly?: MaybeAccessor<boolean>;
   /** Whether the field is required. */
   isRequired?: MaybeAccessor<boolean>;
+  /** Whether the value is invalid (controlled). */
+  isInvalid?: boolean;
   /** The locale to use for formatting. */
   locale?: string;
   /** The granularity of the date/time (day, hour, minute, second). */
@@ -78,8 +89,14 @@ export interface DateFieldStateProps<T extends DateValue = DateValue> {
   hideTimeZone?: boolean;
   /** The placeholder date (determines segment structure). */
   placeholderValue?: DateValue;
+  /** Whether to force leading zeroes in month/day segments. */
+  shouldForceLeadingZeros?: boolean;
   /** Validation state. */
   validationState?: MaybeAccessor<ValidationState | undefined>;
+  /** Validation behavior mode. */
+  validationBehavior?: ValidationBehavior;
+  /** Custom validation function. */
+  validate?: ValidationFunction<T>;
   /** Description text. */
   description?: string;
   /** Error message. */
@@ -125,6 +142,16 @@ export interface DateFieldState<T extends DateValue = DateValue> {
   granularity: "day" | "hour" | "minute" | "second";
   /** Whether the value is invalid. */
   isInvalid: Accessor<boolean>;
+  /** Realtime validation results, including native and custom constraints. */
+  realtimeValidation: Accessor<ValidationResult>;
+  /** Currently displayed validation results. */
+  displayValidation: Accessor<ValidationResult>;
+  /** Updates the current validation result. */
+  updateValidation: (result: ValidationResult) => void;
+  /** Resets displayed validation to valid. */
+  resetValidation: () => void;
+  /** Commits realtime validation to displayed validation. */
+  commitValidation: () => void;
   /** The locale. */
   locale: string;
   /** The time zone. */
@@ -195,24 +222,67 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const isRequired = createMemo(() => access(props.isRequired) ?? false);
-  const validationState = createMemo(() => access(props.validationState));
-
-  // Check if value is invalid
-  const isInvalid = createMemo(() => {
-    if (validationState() === "invalid") return true;
-
+  const explicitValidationState = createMemo(() => access(props.validationState));
+  const validationBehavior = () => props.validationBehavior ?? "native";
+  const builtinValidation = createMemo<ValidationResult>(() => {
     const v = value();
-    if (!v) return false;
+    if (!v) return DEFAULT_VALIDATION_RESULT;
 
     const minValue = access(props.minValue);
     const maxValue = access(props.maxValue);
+    const validationDetails: ValidityState = { ...VALID_VALIDITY_STATE };
+    const validationErrors: string[] = [];
 
-    if (minValue && v.compare(minValue) < 0) return true;
-    if (maxValue && v.compare(maxValue) > 0) return true;
-    if (props.isDateUnavailable?.(v)) return true;
+    if (minValue && v.compare(minValue) < 0) {
+      validationDetails.rangeUnderflow = true;
+      validationErrors.push("Value is below the minimum date.");
+    }
 
-    return false;
+    if (maxValue && v.compare(maxValue) > 0) {
+      validationDetails.rangeOverflow = true;
+      validationErrors.push("Value is above the maximum date.");
+    }
+
+    if (props.isDateUnavailable?.(v)) {
+      validationDetails.customError = true;
+      validationErrors.push("Date is unavailable.");
+    }
+
+    if (validationErrors.length === 0) {
+      return DEFAULT_VALIDATION_RESULT;
+    }
+
+    validationDetails.valid = false;
+    return {
+      isInvalid: true,
+      validationDetails,
+      validationErrors,
+    };
   });
+  const validation = createFormValidationState<T>({
+    get value() {
+      return value();
+    },
+    get isInvalid() {
+      return props.isInvalid;
+    },
+    get validationState() {
+      return explicitValidationState();
+    },
+    get validationBehavior() {
+      return validationBehavior();
+    },
+    get validate() {
+      return props.validate;
+    },
+    get builtinValidation() {
+      return builtinValidation();
+    },
+  });
+  const isInvalid = createMemo(() => validation.displayValidation().isInvalid);
+  const validationState = createMemo<ValidationState | undefined>(
+    () => explicitValidationState() ?? (isInvalid() ? "invalid" : undefined),
+  );
 
   // Generate segments based on granularity and locale
   const segments = createMemo<DateSegment[]>(() => {
@@ -223,10 +293,11 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
     const segs: DateSegment[] = [];
 
     // Determine format options based on granularity
+    const shouldForceLeadingZeros = props.shouldForceLeadingZeros === true;
     const formatOptions: Intl.DateTimeFormatOptions = {
       year: "numeric",
-      month: "numeric",
-      day: "numeric",
+      month: shouldForceLeadingZeros ? "2-digit" : "numeric",
+      day: shouldForceLeadingZeros ? "2-digit" : "numeric",
     };
 
     if (granularity !== "day") {
@@ -262,13 +333,15 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
 
         segs.push({
           type,
-          text: hasValue ? part.value : getPlaceholderText(type, locale, granularity),
+          text: hasValue
+            ? part.value
+            : getPlaceholderText(type, locale, granularity, shouldForceLeadingZeros),
           value: segValue ?? partValue,
           minValue: getMinValue(type),
           maxValue: getMaxValue(type, v ?? placeholder),
           isEditable: !isDisabled() && !isReadOnly(),
           isPlaceholder: !hasValue,
-          placeholder: getPlaceholderText(type, locale, granularity),
+          placeholder: getPlaceholderText(type, locale, granularity, shouldForceLeadingZeros),
         });
       }
     }
@@ -402,8 +475,8 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
 
     const options: Intl.DateTimeFormatOptions = fieldOptions ?? {
       year: "numeric",
-      month: "numeric",
-      day: "numeric",
+      month: props.shouldForceLeadingZeros === true ? "2-digit" : "numeric",
+      day: props.shouldForceLeadingZeros === true ? "2-digit" : "numeric",
     };
 
     if (granularity !== "day") {
@@ -436,6 +509,11 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
     validationState,
     granularity,
     isInvalid,
+    realtimeValidation: validation.realtimeValidation,
+    displayValidation: validation.displayValidation,
+    updateValidation: validation.updateValidation,
+    resetValidation: validation.resetValidation,
+    commitValidation: validation.commitValidation,
     locale,
     timeZone,
   };
@@ -541,14 +619,15 @@ function getPlaceholderText(
   type: DateSegmentType,
   locale: string,
   granularity: "day" | "hour" | "minute" | "second",
+  shouldForceLeadingZeros = false,
 ): string {
   if (type === "literal") return "";
   if (type === "dayPeriod") return "AM";
 
   const formatOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
-    month: "numeric",
-    day: "numeric",
+    month: shouldForceLeadingZeros ? "2-digit" : "numeric",
+    day: shouldForceLeadingZeros ? "2-digit" : "numeric",
   };
 
   if (granularity !== "day") {

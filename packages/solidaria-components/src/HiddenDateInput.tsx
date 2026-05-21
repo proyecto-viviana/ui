@@ -4,8 +4,9 @@
  * A hidden native date/datetime-local input for form submission.
  * Renders server-side with the initial value for SSR safety.
  */
-import { type JSX, createEffect } from "solid-js";
-import { type DateValue } from "@proyecto-viviana/solid-stately";
+import { type JSX, createEffect, createSignal } from "solid-js";
+import { type DateValue, type FormValidationState } from "@proyecto-viviana/solid-stately";
+import { createFormValidation } from "@proyecto-viviana/solidaria";
 
 type MaybeAccessor<T> = T | (() => T);
 
@@ -15,6 +16,10 @@ export interface HiddenDateInputProps {
   value?: MaybeAccessor<DateValue | null | undefined>;
   autoComplete?: string;
   isDisabled?: boolean;
+  isRequired?: boolean;
+  validationBehavior?: "aria" | "native";
+  validationState?: FormValidationState;
+  focus?: () => void;
   minValue?: MaybeAccessor<DateValue | undefined>;
   maxValue?: MaybeAccessor<DateValue | undefined>;
   granularity?: "day" | "hour" | "minute" | "second";
@@ -61,6 +66,9 @@ function formatDateValue(
 
 export function HiddenDateInput(props: HiddenDateInputProps): JSX.Element {
   const granularity = () => props.granularity ?? "day";
+  const hasValidationBehavior = () => props.validationBehavior != null;
+  const validationBehavior = () => props.validationBehavior;
+  const usesNativeValidation = () => validationBehavior() === "native";
   const value = () => accessValue(props.value);
   const minValue = () => accessValue(props.minValue);
   const maxValue = () => accessValue(props.maxValue);
@@ -71,24 +79,48 @@ export function HiddenDateInput(props: HiddenDateInputProps): JSX.Element {
       (maxValue() && "timeZone" in maxValue()!),
     );
   const inputType = () =>
-    hasTimeZoneValue() ? "hidden" : granularity() === "day" ? "date" : "datetime-local";
+    usesNativeValidation()
+      ? "text"
+      : hasValidationBehavior()
+        ? "hidden"
+        : hasTimeZoneValue()
+          ? "hidden"
+          : granularity() === "day"
+            ? "date"
+            : "datetime-local";
   const formattedValue = () => formatDateValue(value(), granularity());
   const formattedMin = () => formatDateValue(minValue(), granularity());
   const formattedMax = () => formatDateValue(maxValue(), granularity());
 
-  let inputRef: HTMLInputElement | undefined;
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement>();
+
+  if (props.validationState) {
+    createFormValidation(
+      {
+        get validationBehavior() {
+          return validationBehavior();
+        },
+        get focus() {
+          return props.focus;
+        },
+      },
+      props.validationState,
+      inputRef,
+    );
+  }
 
   createEffect(() => {
     const val = formattedValue();
-    if (inputRef && inputRef.value !== val) {
-      inputRef.value = val;
+    const input = inputRef();
+    if (input && input.value !== val) {
+      input.value = val;
     }
   });
 
   return (
     <input
       ref={(el) => {
-        inputRef = el;
+        setInputRef(el);
       }}
       type={inputType()}
       name={props.name}
@@ -96,8 +128,11 @@ export function HiddenDateInput(props: HiddenDateInputProps): JSX.Element {
       value={formattedValue()}
       autocomplete={props.autoComplete}
       disabled={props.isDisabled}
-      min={formattedMin() || undefined}
-      max={formattedMax() || undefined}
+      required={usesNativeValidation() && props.isRequired ? true : undefined}
+      hidden={usesNativeValidation() || undefined}
+      min={hasValidationBehavior() ? undefined : formattedMin() || undefined}
+      max={hasValidationBehavior() ? undefined : formattedMax() || undefined}
+      onChange={usesNativeValidation() ? () => {} : undefined}
       tabIndex={-1}
       aria-hidden="true"
       style={

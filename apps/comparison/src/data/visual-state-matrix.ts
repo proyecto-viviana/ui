@@ -2326,7 +2326,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "strict",
       spec: "e2e/datefield-visual.spec.ts",
-      note: "Standalone DateField route mounts both stacks with S2 field shell styling, three editable date spinbuttons, visible label linkage, help text, and strict zero-tolerance deterministic closed-field React/Solid pair-diff evidence.",
+      note: "Standalone DateField route mounts both stacks with S2 field shell styling, three editable date spinbuttons, visible label linkage, help text, contextual-help coverage, and strict zero-tolerance deterministic closed-field React/Solid pair-diff evidence.",
     },
     {
       id: "styled.field.datetime",
@@ -2336,7 +2336,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/datefield-visual.spec.ts",
-      note: "Route state drives controlled date-time values, granularity, hourCycle, hidden form owner/name serialization, validationBehavior, associated FormData, and Provider locale/calendar-system props through both DateField stacks.",
+      note: "Route state drives controlled date-time values, granularity, hourCycle, leading-zero formatting, hidden form owner/name serialization, validationBehavior, associated FormData, and Provider locale props through both DateField stacks.",
     },
     {
       id: "styled.field.validation",
@@ -2346,7 +2346,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/datefield-visual.spec.ts",
-      note: "Invalid state, error text, min/max constraints, unavailable-date invalidation, required state, disabled/read-only state, and hidden input min/max attributes are asserted where the DOM contract exposes them.",
+      note: "Invalid state, error text, native hidden required input semantics, aria hidden input semantics, min/max constraints, unavailable-date invalidation, required state, and disabled/read-only state are asserted. The React fixture marks route-derived built-in aria invalidity with data-comparison-react-builtin-invalid when it normalizes the comparison reference.",
     },
     {
       id: "styled.props.controls",
@@ -2356,7 +2356,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "Side-panel controls dispatch label, size, label position/alignment, necessity indicator, controlled value, granularity, hourCycle, hideTimeZone, locale, form owner/name, validationBehavior, help/error text, min/max constraints, unavailable dates, disabled/read-only, required, and invalid props into both mounted styled stacks.",
+      note: "Side-panel controls dispatch label, contextual help, size, label position/alignment, necessity indicator, controlled value, leading-zero formatting, granularity, hourCycle, hideTimeZone, locale, form owner/name, validationBehavior, help/error text, min/max constraints, unavailable dates, disabled/read-only, required, and invalid props into both mounted styled stacks.",
     },
   ],
   timefield: [

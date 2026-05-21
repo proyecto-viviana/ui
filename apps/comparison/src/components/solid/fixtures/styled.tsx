@@ -3130,6 +3130,14 @@ function SolidSpectrumDateFieldDemo() {
   });
 
   const serializedProps = createMemo(() => serializeDateFieldDemoProps(demoProps()));
+  const contextualHelp = createMemo(() =>
+    demoProps().withContextualHelp
+      ? hc(SolidSpectrumContextualHelp, {}, [
+          hc(SolidSpectrumHeading, { slot: "title" }, ["Date help"]),
+          hc(SolidSpectrumContent, {}, ["Choose an available appointment date."]),
+        ])
+      : undefined,
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -3179,11 +3187,17 @@ function SolidSpectrumDateFieldDemo() {
             get necessityIndicator() {
               return demoProps().necessityIndicator;
             },
+            get contextualHelp() {
+              return contextualHelp();
+            },
             get value() {
               return value() ?? undefined;
             },
             get granularity() {
               return demoProps().granularity;
+            },
+            get shouldForceLeadingZeros() {
+              return demoProps().shouldForceLeadingZeros;
             },
             get hourCycle() {
               return demoProps().hourCycle ? Number(demoProps().hourCycle) : undefined;

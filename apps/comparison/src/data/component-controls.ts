@@ -2784,6 +2784,12 @@ const dateFieldControls: ComponentControlGroup = {
       options: options(dateFieldNecessityIndicatorOptions),
     },
     {
+      name: "withContextualHelp",
+      label: "contextualHelp",
+      kind: "switch",
+      defaultValue: dateFieldDemoDefaults.withContextualHelp,
+    },
+    {
       name: "value",
       label: "value",
       kind: "text",
@@ -2795,6 +2801,12 @@ const dateFieldControls: ComponentControlGroup = {
       kind: "select",
       defaultValue: dateFieldDemoDefaults.granularity,
       options: options(dateFieldGranularityOptions),
+    },
+    {
+      name: "shouldForceLeadingZeros",
+      label: "shouldForceLeadingZeros",
+      kind: "switch",
+      defaultValue: dateFieldDemoDefaults.shouldForceLeadingZeros,
     },
     {
       name: "hourCycle",
@@ -2896,10 +2908,12 @@ const dateFieldControls: ComponentControlGroup = {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "contextualHelp",
     "placeholderValue",
     "minValue",
     "maxValue",
     "granularity",
+    "shouldForceLeadingZeros",
     "hourCycle",
     "hideTimeZone",
     "isDateUnavailable",
@@ -2915,8 +2929,9 @@ const dateFieldControls: ComponentControlGroup = {
     "aria-label",
     "aria-labelledby",
     "aria-describedby",
+    "aria-details",
   ],
-  note: "Modeled from the S2 DateField docs and API surface: label, size, label position/alignment, necessity indicator, controlled value, date-time granularity, hour cycle, hidden-time-zone state, Provider locale/calendar-system routing, form owner/name, validation behavior, validation, disabled/read-only, required, help text, min/max constraints, and unavailable dates drive both mounted stacks.",
+  note: "Modeled from the S2 DateField docs and API surface: label, contextual help, size, label position/alignment, necessity indicator, controlled value, leading-zero formatting, date-time granularity, hour cycle, hidden-time-zone state, Provider locale/calendar-system routing, form owner/name, validation behavior, validation, disabled/read-only, required, help text, min/max constraints, and unavailable dates drive both mounted stacks.",
 };
 
 const timeFieldControls: ComponentControlGroup = {

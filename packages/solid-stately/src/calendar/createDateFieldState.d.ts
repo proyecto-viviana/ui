@@ -8,6 +8,7 @@ import { type Accessor } from "solid-js";
 import { type CalendarDate, type DateValue } from "@internationalized/date";
 import { type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
+import { type ValidationBehavior, type ValidationFunction, type ValidationResult } from "../form";
 export type DateSegmentType =
   | "year"
   | "month"
@@ -54,6 +55,8 @@ export interface DateFieldStateProps<T extends DateValue = DateValue> {
   isReadOnly?: MaybeAccessor<boolean>;
   /** Whether the field is required. */
   isRequired?: MaybeAccessor<boolean>;
+  /** Whether the value is invalid (controlled). */
+  isInvalid?: boolean;
   /** The locale to use for formatting. */
   locale?: string;
   /** The granularity of the date/time (day, hour, minute, second). */
@@ -64,8 +67,14 @@ export interface DateFieldStateProps<T extends DateValue = DateValue> {
   hideTimeZone?: boolean;
   /** The placeholder date (determines segment structure). */
   placeholderValue?: DateValue;
+  /** Whether to force leading zeroes in month/day segments. */
+  shouldForceLeadingZeros?: boolean;
   /** Validation state. */
   validationState?: MaybeAccessor<ValidationState | undefined>;
+  /** Validation behavior mode. */
+  validationBehavior?: ValidationBehavior;
+  /** Custom validation function. */
+  validate?: ValidationFunction<T>;
   /** Description text. */
   description?: string;
   /** Error message. */
@@ -74,6 +83,8 @@ export interface DateFieldStateProps<T extends DateValue = DateValue> {
   allowsNonContiguousRanges?: boolean;
   /** Whether to create a date or datetime. */
   createCalendar?: (name: string) => unknown;
+  /** Whether a date is unavailable. */
+  isDateUnavailable?: (date: DateValue) => boolean;
 }
 export interface DateFieldState<T extends DateValue = DateValue> {
   /** The current value. */
@@ -108,10 +119,22 @@ export interface DateFieldState<T extends DateValue = DateValue> {
   granularity: "day" | "hour" | "minute" | "second";
   /** Whether the value is invalid. */
   isInvalid: Accessor<boolean>;
+  /** Realtime validation results, including native and custom constraints. */
+  realtimeValidation: Accessor<ValidationResult>;
+  /** Currently displayed validation results. */
+  displayValidation: Accessor<ValidationResult>;
+  /** Updates the current validation result. */
+  updateValidation: (result: ValidationResult) => void;
+  /** Resets displayed validation to valid. */
+  resetValidation: () => void;
+  /** Commits realtime validation to displayed validation. */
+  commitValidation: () => void;
   /** The locale. */
   locale: string;
   /** The time zone. */
   timeZone: string;
+  /** The default value. */
+  defaultValue: T | null;
 }
 /**
  * Provides state management for a date field component.

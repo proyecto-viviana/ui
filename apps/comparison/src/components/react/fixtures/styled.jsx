@@ -26,7 +26,6 @@ import {
   ComboBoxItem as SpectrumComboBoxItem,
   ContextualHelp as SpectrumContextualHelp,
   Content as SpectrumContent,
-  DateField as SpectrumDateField,
   DateRangePicker as SpectrumDateRangePicker,
   DatePicker as SpectrumDatePicker,
   Dialog as SpectrumDialog,
@@ -79,6 +78,7 @@ import {
   createIcon,
   createIllustration,
 } from "@react-spectrum/s2";
+import { DateField as SpectrumDateField } from "@react-spectrum/s2/DateField";
 import "@react-spectrum/s2/page.css";
 import {
   accordionDemoLocaleFromWindow,
@@ -209,6 +209,7 @@ import {
   dateFieldDemoPropsFromWindow,
   dateFieldValueFromDemo,
   isDateFieldDateUnavailable,
+  isDateFieldDemoValueInvalid,
   normalizeDateFieldDemoProps,
   serializeDateFieldDemoProps,
   serializeDateFieldValue,
@@ -3030,6 +3031,7 @@ function ReactDateFieldDemo() {
   const [demoProps, setDemoProps] = useState(() => initialDemoProps);
   const [value, setValue] = useState(() => dateFieldValueFromDemo(initialDemoProps));
   const colorScheme = useComparisonResolvedTheme();
+  const serializedProps = serializeDateFieldDemoProps(demoProps);
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "datefield") {
@@ -3042,38 +3044,57 @@ function ReactDateFieldDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
+  const contextualHelp = demoProps.withContextualHelp
+    ? jsxs(SpectrumContextualHelp, {
+        children: [
+          jsx(SpectrumHeading, { slot: "title", children: "Date help" }),
+          jsx(SpectrumContent, { children: "Choose an available appointment date." }),
+        ],
+      })
+    : undefined;
+  const isAriaBuiltinInvalid =
+    demoProps.validationBehavior === "aria" && isDateFieldDemoValueInvalid(demoProps, value);
+  const isInvalid = demoProps.isInvalid || isAriaBuiltinInvalid;
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-control-root": "datefield",
-      "data-comparison-control-props": serializeDateFieldDemoProps(demoProps),
+      "data-comparison-control-props": serializedProps,
+      "data-comparison-react-builtin-invalid": String(isAriaBuiltinInvalid),
       "data-comparison-value": serializeDateFieldValue(value),
       "data-comparison-locale": demoProps.locale,
       "data-comparison-color-scheme": colorScheme,
-      children: jsx(SpectrumDateField, {
-        label: demoProps.label,
-        size: demoProps.size,
-        labelPosition: demoProps.labelPosition,
-        labelAlign: demoProps.labelAlign,
-        necessityIndicator: demoProps.necessityIndicator,
-        value: value ?? undefined,
-        granularity: demoProps.granularity,
-        hourCycle: demoProps.hourCycle ? Number(demoProps.hourCycle) : undefined,
-        hideTimeZone: demoProps.hideTimeZone,
-        minValue: demoProps.constrainRange ? dateFieldMinValue(demoProps.granularity) : undefined,
-        maxValue: demoProps.constrainRange ? dateFieldMaxValue(demoProps.granularity) : undefined,
-        isDateUnavailable: demoProps.unavailableDates ? isDateFieldDateUnavailable : undefined,
-        name: demoProps.name || undefined,
-        form: demoProps.form || undefined,
-        validationBehavior: demoProps.validationBehavior || undefined,
-        description: demoProps.description,
-        errorMessage: demoProps.errorMessage,
-        isDisabled: demoProps.isDisabled,
-        isReadOnly: demoProps.isReadOnly,
-        isRequired: demoProps.isRequired,
-        isInvalid: demoProps.isInvalid,
-        onChange: (nextValue) => setValue(nextValue),
-        UNSAFE_className: "comparison-datefield-root",
-      }),
+      children: jsx(
+        SpectrumDateField,
+        {
+          label: demoProps.label,
+          size: demoProps.size,
+          labelPosition: demoProps.labelPosition,
+          labelAlign: demoProps.labelAlign,
+          necessityIndicator: demoProps.necessityIndicator,
+          contextualHelp,
+          value: value ?? undefined,
+          granularity: demoProps.granularity,
+          shouldForceLeadingZeros: demoProps.shouldForceLeadingZeros,
+          hourCycle: demoProps.hourCycle ? Number(demoProps.hourCycle) : undefined,
+          hideTimeZone: demoProps.hideTimeZone,
+          minValue: demoProps.constrainRange ? dateFieldMinValue(demoProps.granularity) : undefined,
+          maxValue: demoProps.constrainRange ? dateFieldMaxValue(demoProps.granularity) : undefined,
+          isDateUnavailable: demoProps.unavailableDates ? isDateFieldDateUnavailable : undefined,
+          name: demoProps.name || undefined,
+          form: demoProps.form || undefined,
+          validationBehavior: demoProps.validationBehavior || undefined,
+          description: demoProps.description,
+          errorMessage: demoProps.errorMessage,
+          isDisabled: demoProps.isDisabled,
+          isReadOnly: demoProps.isReadOnly,
+          isRequired: demoProps.isRequired,
+          isInvalid,
+          onChange: (nextValue) => setValue(nextValue),
+          UNSAFE_className: "comparison-datefield-root",
+        },
+        serializedProps,
+      ),
     }),
     colorScheme,
     demoProps.locale || void 0,

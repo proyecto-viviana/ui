@@ -53,6 +53,8 @@ export interface DateFieldProps<T extends DateValue = DateValue> extends Omit<
   class?: string;
   /** Label for the field. */
   label?: JSX.Element;
+  /** A ContextualHelp element to render next to the label. */
+  contextualHelp?: JSX.Element;
   /** Description text. */
   description?: JSX.Element;
   /** Error message. */
@@ -293,6 +295,7 @@ function focusFirstEditableSegment(event: Event & { currentTarget: HTMLDivElemen
 
 function DateFieldContent(props: {
   label?: JSX.Element;
+  contextualHelp?: JSX.Element;
   description?: JSX.Element;
   errorMessage?: JSX.Element;
   size: S2DateFieldSize;
@@ -344,6 +347,11 @@ function DateFieldContent(props: {
               </span>
             </Show>
           </HeadlessDateFieldLabel>
+          <Show when={props.contextualHelp}>
+            <span data-slot="contextualHelp" class={noWrap}>
+              {props.contextualHelp}
+            </span>
+          </Show>
         </div>
       </Show>
 
@@ -418,6 +426,7 @@ export function DateField<T extends DateValue = CalendarDate>(
     "UNSAFE_style",
     "class",
     "label",
+    "contextualHelp",
     "description",
     "errorMessage",
     "isInvalid",
@@ -468,6 +477,7 @@ export function DateField<T extends DateValue = CalendarDate>(
     >
       <DateFieldContent
         label={local.label}
+        contextualHelp={local.contextualHelp}
         description={local.description}
         errorMessage={local.errorMessage}
         size={size()}

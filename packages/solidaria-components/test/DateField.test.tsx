@@ -12,6 +12,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { DateField, DateFieldErrorMessage, DateInput, DateSegment } from "../src/DateField";
+import { Form } from "../src/Form";
 import { CalendarDate } from "@internationalized/date";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -101,8 +102,67 @@ describe("DateField", () => {
 
       const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
       expect(input).toBeInTheDocument();
-      expect(input).toHaveAttribute("type", "date");
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
       expect(input).toHaveValue("2025-02-03");
+    });
+
+    it("should render a native required input for native validation behavior", async () => {
+      render(() => (
+        <TestDateField
+          fieldProps={{
+            name: "appointmentDate",
+            isRequired: true,
+            validationBehavior: "native",
+            defaultValue: new CalendarDate(2025, 2, 3),
+          }}
+        />
+      ));
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
+      expect(input).toBeRequired();
+    });
+
+    it("should render hidden input semantics for aria validation behavior", async () => {
+      render(() => (
+        <TestDateField
+          fieldProps={{
+            name: "appointmentDate",
+            isRequired: true,
+            validationBehavior: "aria",
+            defaultValue: new CalendarDate(2025, 2, 3),
+          }}
+        />
+      ));
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "hidden");
+      expect(input).not.toHaveAttribute("hidden");
+      expect(input).not.toBeRequired();
+    });
+
+    it("should inherit validation behavior from Form context", async () => {
+      render(() => (
+        <Form validationBehavior="aria">
+          <TestDateField
+            fieldProps={{
+              name: "appointmentDate",
+              isRequired: true,
+              defaultValue: new CalendarDate(2025, 2, 3),
+            }}
+          />
+        </Form>
+      ));
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "hidden");
+      expect(input).not.toHaveAttribute("hidden");
+      expect(input).not.toBeRequired();
     });
 
     it("should participate in associated form data", async () => {
@@ -295,6 +355,7 @@ describe("DateField", () => {
           fieldProps={{
             value: new CalendarDate(2024, 6, 5),
             minValue: new CalendarDate(2024, 6, 10),
+            validationBehavior: "aria",
           }}
         />
       ));
@@ -311,6 +372,7 @@ describe("DateField", () => {
           fieldProps={{
             value: new CalendarDate(2024, 6, 20),
             maxValue: new CalendarDate(2024, 6, 15),
+            validationBehavior: "aria",
           }}
         />
       ));
@@ -318,6 +380,53 @@ describe("DateField", () => {
 
       const field = document.querySelector(".solidaria-DateField");
       expect(field).toHaveAttribute("data-invalid");
+    });
+
+    it("should mark field as invalid when isDateUnavailable rejects the value", async () => {
+      render(() => (
+        <TestDateField
+          fieldProps={{
+            value: new CalendarDate(2024, 6, 15),
+            isDateUnavailable: (date) => date.day === 15,
+            validationBehavior: "aria",
+          }}
+        />
+      ));
+      await waitForDateFieldHydration();
+
+      const field = document.querySelector(".solidaria-DateField");
+      expect(field).toHaveAttribute("data-invalid");
+    });
+
+    it("should mark field as invalid when validate returns an error", async () => {
+      render(() => (
+        <TestDateField
+          fieldProps={{
+            value: new CalendarDate(2024, 6, 15),
+            validate: () => "Unavailable date",
+            validationBehavior: "aria",
+          }}
+        />
+      ));
+      await waitForDateFieldHydration();
+
+      const field = document.querySelector(".solidaria-DateField");
+      expect(field).toHaveAttribute("data-invalid");
+    });
+
+    it("should keep native validation hidden until validation is committed", async () => {
+      render(() => (
+        <TestDateField
+          fieldProps={{
+            value: new CalendarDate(2024, 6, 15),
+            isDateUnavailable: (date) => date.day === 15,
+          }}
+        />
+      ));
+      await waitForDateFieldHydration();
+
+      const field = document.querySelector(".solidaria-DateField");
+      expect(field).not.toHaveAttribute("data-invalid");
     });
   });
 

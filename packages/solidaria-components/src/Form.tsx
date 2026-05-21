@@ -107,7 +107,9 @@ export function Form(props: FormProps): JSX.Element {
   const errors = local.validationErrors ?? {};
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Form",

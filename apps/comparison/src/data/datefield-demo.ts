@@ -3,7 +3,7 @@ import {
   parseDateTime,
   parseZonedDateTime,
   type DateValue,
-} from "@proyecto-viviana/solid-stately";
+} from "@internationalized/date";
 import { comparisonControlsEvent } from "./button-demo";
 
 export { comparisonControlsEvent };
@@ -32,8 +32,10 @@ export interface DateFieldDemoProps {
   labelPosition: DateFieldLabelPosition;
   labelAlign: DateFieldLabelAlign;
   necessityIndicator: DateFieldNecessityIndicator;
+  withContextualHelp: boolean;
   value: string;
   granularity: DateFieldGranularity;
+  shouldForceLeadingZeros: boolean;
   hourCycle: DateFieldHourCycle;
   hideTimeZone: boolean;
   locale: DateFieldLocale;
@@ -56,8 +58,10 @@ export const dateFieldDemoDefaults: DateFieldDemoProps = {
   labelPosition: "top",
   labelAlign: "start",
   necessityIndicator: "icon",
+  withContextualHelp: false,
   value: "2025-02-03",
   granularity: "day",
+  shouldForceLeadingZeros: false,
   hourCycle: "",
   hideTimeZone: false,
   locale: "",
@@ -125,6 +129,27 @@ export function isDateFieldDateUnavailable(date: DateValue): boolean {
   return date.day === 10 || date.day === 11;
 }
 
+export function isDateFieldDemoValueInvalid(
+  props: Pick<DateFieldDemoProps, "constrainRange" | "granularity" | "unavailableDates">,
+  value: DateValue | null,
+): boolean {
+  if (!value) {
+    return false;
+  }
+
+  if (props.constrainRange) {
+    if (value.compare(dateFieldMinValue(props.granularity)) < 0) {
+      return true;
+    }
+
+    if (value.compare(dateFieldMaxValue(props.granularity)) > 0) {
+      return true;
+    }
+  }
+
+  return props.unavailableDates && isDateFieldDateUnavailable(value);
+}
+
 export function normalizeDateFieldDemoProps(
   props: Partial<DateFieldDemoProps>,
 ): DateFieldDemoProps {
@@ -141,10 +166,12 @@ export function normalizeDateFieldDemoProps(
     necessityIndicator: isOneOf(props.necessityIndicator, dateFieldNecessityIndicatorOptions)
       ? props.necessityIndicator
       : dateFieldDemoDefaults.necessityIndicator,
+    withContextualHelp: props.withContextualHelp === true,
     value: typeof props.value === "string" ? props.value : dateFieldDemoDefaults.value,
     granularity: isOneOf(props.granularity, dateFieldGranularityOptions)
       ? props.granularity
       : dateFieldDemoDefaults.granularity,
+    shouldForceLeadingZeros: props.shouldForceLeadingZeros === true,
     hourCycle: isOneOf(props.hourCycle, dateFieldHourCycleOptions)
       ? props.hourCycle
       : dateFieldDemoDefaults.hourCycle,
@@ -195,10 +222,12 @@ export function dateFieldDemoPropsFromSearch(search: string): DateFieldDemoProps
     necessityIndicator: isOneOf(necessityIndicator, dateFieldNecessityIndicatorOptions)
       ? necessityIndicator
       : dateFieldDemoDefaults.necessityIndicator,
+    withContextualHelp: booleanParam(params.get("withContextualHelp")),
     value: params.get("value") ?? dateFieldDemoDefaults.value,
     granularity: isOneOf(granularity, dateFieldGranularityOptions)
       ? granularity
       : dateFieldDemoDefaults.granularity,
+    shouldForceLeadingZeros: booleanParam(params.get("shouldForceLeadingZeros")),
     hourCycle: isOneOf(hourCycle, dateFieldHourCycleOptions)
       ? hourCycle
       : dateFieldDemoDefaults.hourCycle,
@@ -235,8 +264,10 @@ export function serializeDateFieldDemoProps(props: DateFieldDemoProps) {
     labelPosition: props.labelPosition,
     labelAlign: props.labelAlign,
     necessityIndicator: props.necessityIndicator,
+    withContextualHelp: props.withContextualHelp,
     value: props.value,
     granularity: props.granularity,
+    shouldForceLeadingZeros: props.shouldForceLeadingZeros,
     hourCycle: props.hourCycle,
     hideTimeZone: props.hideTimeZone,
     locale: props.locale,

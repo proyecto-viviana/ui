@@ -41,6 +41,7 @@ import {
   useIsHydrated,
 } from "./utils";
 import { HiddenDateInput } from "./HiddenDateInput";
+import { FormContext, type FormProps } from "./Form";
 import {
   DateRangePickerContext,
   type DateRangePickerFieldContextValue,
@@ -127,6 +128,53 @@ export interface DateFieldContextValue {
 export const DateFieldContext = createContext<DateFieldContextValue | null>(null);
 export const DateFieldStateContext = createContext<DateFieldState<DateValue> | null>(null);
 
+function withFormValidationBehavior<P extends object>(props: P, formContext: FormProps | null): P {
+  if (!formContext?.validationBehavior) {
+    return props;
+  }
+
+  return new Proxy(props, {
+    get(target, property, receiver) {
+      const localValue = Reflect.get(target, property, receiver);
+      if (property === "validationBehavior" && localValue === undefined) {
+        return formContext.validationBehavior;
+      }
+
+      return localValue;
+    },
+    has(target, property) {
+      return (
+        Reflect.has(target, property) ||
+        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
+      );
+    },
+    ownKeys(target) {
+      const keys = new Set(Reflect.ownKeys(target));
+      if (formContext.validationBehavior !== undefined) {
+        keys.add("validationBehavior");
+      }
+
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+      if (descriptor) {
+        return descriptor;
+      }
+
+      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => formContext.validationBehavior,
+        };
+      }
+
+      return undefined;
+    },
+  });
+}
+
 export function useDateFieldContext(): DateFieldContextValue {
   const context = useContext(DateFieldContext);
   if (!context) {
@@ -172,6 +220,7 @@ export function DateField<T extends DateValue = CalendarDate>(
 ): JSX.Element {
   // Use hydration-safe pattern for client-only rendering
   const isHydrated = useIsHydrated();
+  const formContext = useContext(FormContext);
 
   return (
     <Show
@@ -180,24 +229,33 @@ export function DateField<T extends DateValue = CalendarDate>(
         <div class="solidaria-DateField solidaria-DateField--placeholder" aria-hidden="true" />
       }
     >
-      <DateFieldInner {...props} />
+      <DateFieldInner {...props} __formContext={formContext} />
     </Show>
   );
 }
 
+type DateFieldInnerProps<T extends DateValue = DateValue> = DateFieldProps<T> & {
+  __formContext?: FormProps | null;
+};
+
 /**
  * Internal DateField component that renders after client mount.
  */
-function DateFieldInner<T extends DateValue = CalendarDate>(props: DateFieldProps<T>): JSX.Element {
+function DateFieldInner<T extends DateValue = CalendarDate>(
+  props: DateFieldInnerProps<T>,
+): JSX.Element {
+  const formContext = props.__formContext ?? useContext(FormContext);
+  const mergedProps = withFormValidationBehavior(props, formContext);
   const [local, stateProps, rest] = splitProps(
-    props,
-    ["children", "class", "style", "slot"],
+    mergedProps,
+    ["children", "class", "style", "slot", "__formContext"],
     [
       "value",
       "defaultValue",
       "onChange",
       "minValue",
       "maxValue",
+      "isInvalid",
       "isDisabled",
       "isReadOnly",
       "isRequired",
@@ -206,9 +264,13 @@ function DateFieldInner<T extends DateValue = CalendarDate>(props: DateFieldProp
       "hourCycle",
       "hideTimeZone",
       "placeholderValue",
+      "shouldForceLeadingZeros",
       "validationState",
+      "validationBehavior",
+      "validate",
       "description",
       "errorMessage",
+      "isDateUnavailable",
     ],
   );
 
@@ -242,6 +304,11 @@ function DateFieldInner<T extends DateValue = CalendarDate>(props: DateFieldProp
     renderValues,
   );
 
+  const validationBehavior = () =>
+    (stateProps as { validationBehavior?: "aria" | "native" }).validationBehavior ??
+    formContext?.validationBehavior ??
+    "native";
+
   return (
     <DateFieldStateContext.Provider value={state as unknown as DateFieldState<DateValue>}>
       <DateFieldContext.Provider
@@ -265,7 +332,7 @@ function DateFieldInner<T extends DateValue = CalendarDate>(props: DateFieldProp
           data-required={dataAttr(state.isRequired())}
           data-invalid={dataAttr(state.isInvalid())}
         >
-          {props.children as JSX.Element}
+          {local.children as JSX.Element}
         </div>
         <Show when={(rest as Record<string, unknown>).name}>
           <HiddenDateInput
@@ -274,6 +341,12 @@ function DateFieldInner<T extends DateValue = CalendarDate>(props: DateFieldProp
             value={state.value()}
             autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
             isDisabled={state.isDisabled()}
+            isRequired={state.isRequired()}
+            validationBehavior={validationBehavior()}
+            validationState={state}
+            focus={() => {
+              fieldRef()?.querySelector<HTMLElement>('[role="spinbutton"]')?.focus();
+            }}
             minValue={access(stateProps.minValue) as DateValue | undefined}
             maxValue={access(stateProps.maxValue) as DateValue | undefined}
             granularity={state.granularity}

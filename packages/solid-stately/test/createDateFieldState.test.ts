@@ -112,4 +112,87 @@ describe("createDateFieldState", () => {
       dispose();
     });
   });
+
+  it("forces leading zeroes for month and day segments when requested", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 3),
+        shouldForceLeadingZeros: true,
+      });
+
+      const segmentText = Object.fromEntries(
+        state.segments().map((segment) => [segment.type, segment.text]),
+      );
+
+      expect(segmentText.month).toBe("02");
+      expect(segmentText.day).toBe("03");
+      expect(segmentText.year).toBe("2025");
+
+      dispose();
+    });
+  });
+
+  it("tracks unavailable dates in realtime without displaying them for native validation", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 10),
+        isDateUnavailable: (date) => date.day === 10,
+      });
+
+      expect(state.isInvalid()).toBe(false);
+      expect(state.realtimeValidation().isInvalid).toBe(true);
+
+      state.commitValidation();
+      expect(state.isInvalid()).toBe(true);
+
+      dispose();
+    });
+  });
+
+  it("displays unavailable dates immediately for aria validation", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 10),
+        validationBehavior: "aria",
+        isDateUnavailable: (date) => date.day === 10,
+      });
+
+      expect(state.isInvalid()).toBe(true);
+      expect(state.displayValidation().validationErrors).toContain("Date is unavailable.");
+
+      dispose();
+    });
+  });
+
+  it("tracks custom validation errors in realtime without displaying them for native validation", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 3),
+        validate: () => "Unavailable date",
+      });
+
+      expect(state.isInvalid()).toBe(false);
+      expect(state.realtimeValidation().isInvalid).toBe(true);
+
+      state.commitValidation();
+      expect(state.isInvalid()).toBe(true);
+
+      dispose();
+    });
+  });
+
+  it("displays custom validation errors immediately for aria validation", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 3),
+        validationBehavior: "aria",
+        validate: () => "Unavailable date",
+      });
+
+      expect(state.isInvalid()).toBe(true);
+      expect(state.displayValidation().validationErrors).toContain("Unavailable date");
+
+      dispose();
+    });
+  });
 });

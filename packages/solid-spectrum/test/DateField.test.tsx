@@ -50,6 +50,32 @@ describe("DateField (solid-spectrum)", () => {
     expect(screen.getAllByRole("spinbutton")).toHaveLength(3);
   });
 
+  it("renders contextual help next to the visible label", async () => {
+    render(() => (
+      <DateField label="Birth date" contextualHelp={<button type="button">Date help</button>} />
+    ));
+    await waitForHydration();
+
+    const contextualHelp = document.querySelector('[data-slot="contextualHelp"]') as HTMLElement;
+    expect(contextualHelp).toBeInTheDocument();
+    expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Date help" }));
+  });
+
+  it("forwards shouldForceLeadingZeros to visible date segments", async () => {
+    render(() => (
+      <DateField
+        aria-label="Date"
+        defaultValue={new CalendarDate(2025, 2, 3)}
+        shouldForceLeadingZeros
+      />
+    ));
+    await waitForHydration();
+
+    const segmentTexts = screen.getAllByRole("spinbutton").map((segment) => segment.textContent);
+    expect(segmentTexts).toContain("02");
+    expect(segmentTexts).toContain("03");
+  });
+
   it("renders a hidden form input when name is provided", async () => {
     render(() => (
       <DateField
@@ -62,7 +88,8 @@ describe("DateField (solid-spectrum)", () => {
 
     const input = document.querySelector('input[name="appointmentDate"]') as HTMLInputElement;
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute("type", "date");
+    expect(input).toHaveAttribute("type", "text");
+    expect(input).toHaveAttribute("hidden");
     expect(input).toHaveValue("2025-02-03");
   });
 
