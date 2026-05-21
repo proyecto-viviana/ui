@@ -19,9 +19,10 @@ normalized to the current gate checklist.
 
 - Legacy accepted under prior playbook: none.
 - Current-gate normalized: Accordion, ActionBar, ActionMenu, Avatar,
-  AvatarGroup, Badge, Button, Button family, Calendar, Checkbox, CheckboxGroup,
-  ComboBox, Divider, Form, Image, Link, Meter, NotificationBadge, RangeCalendar,
-  SegmentedControl, SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
+  AvatarGroup, Badge, Breadcrumbs, Button, Button family, Calendar, Checkbox,
+  CheckboxGroup, ComboBox, Divider, Form, Image, Link, Meter,
+  NotificationBadge, RangeCalendar, SegmentedControl, SelectBoxGroup, Skeleton,
+  Slider, StatusLight, and Text.
 - Active current-gate pass: none.
 - Comparison-live with explicit release-hardening backfill gaps: none.
 - Pre-pass only: none.
