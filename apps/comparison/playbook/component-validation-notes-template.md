@@ -67,6 +67,7 @@ of scope.
 | Behavior State Machine                   | not-started |          |                |
 | Style Source-To-Computed Parity          | not-started |          |                |
 | React-Vs-Solid Comparison Harness Parity | not-started |          |                |
+| Known Defects And Regression Protection  | not-started |          |                |
 | Evidence And Handoff                     | not-started |          |                |
 
 ### 1. Official Docs And Viewer Parity
@@ -170,9 +171,24 @@ of scope.
 - [ ] Focused route tests prove controls update mounted React and Solid DOM:
 - [ ] Computed style, a11y, geometry, runtime, or pair-diff evidence covers
       rendering-affecting branches:
+- [ ] Shared serialized route props are route-plumbing evidence only and are not
+      counted as implementation parity without DOM/style/a11y/interaction proof:
 - [ ] Harness stability is proven:
 
-### 9. Evidence And Handoff
+### 9. Known Defects And Regression Protection
+
+- [ ] Known defect search completed across notes, blockers, TODO/FIXME comments,
+      skipped tests, focused failures, comparison reports, and observed UI bugs:
+- [ ] Known behavioral, styling, layout, accessibility, API, i18n, lifecycle, or
+      harness defects classified:
+- [ ] Known `port bug` and unresolved `harness bug` rows block acceptance:
+- [ ] Fixed user-visible bugs have durable regression assertions:
+- [ ] Layout and geometry regressions checked explicitly:
+- [ ] Canonical user scenarios exercised end to end:
+- [ ] Expected composition contexts exercised:
+- [ ] Legacy accepted status handled:
+
+### 10. Evidence And Handoff
 
 - [ ] Focused package tests:
 - [ ] Focused Playwright/runtime tests:
@@ -336,6 +352,27 @@ browser-observable output.
 - React/Solid capture isolation:
 - Failure taxonomy:
 - Browser/device coverage:
+
+## Known Defects And Regression Protection
+
+Use this table before acceptance, including for components previously marked
+accepted under an older gate model.
+
+| Finding source | Defect or risk | Class | Blocking? | Regression evidence or owner |
+| -------------- | -------------- | ----- | --------- | ---------------------------- |
+|                |                |       |           |                              |
+
+Canonical scenario smoke:
+
+| Scenario | React result | Solid result | Status | Evidence |
+| -------- | ------------ | ------------ | ------ | -------- |
+|          |              |              |        |          |
+
+Composition smoke:
+
+| Composition context | Upstream expectation | Solid result | Status | Evidence |
+| ------------------- | -------------------- | ------------ | ------ | -------- |
+|                     |                      |              |        |          |
 
 ## Evidence
 

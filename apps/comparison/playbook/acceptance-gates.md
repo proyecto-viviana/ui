@@ -18,6 +18,7 @@ place when a pass is partial.
 | Behavior State Machine                   | Inputs, events, transitions, callback ordering, controlled/uncontrolled paths, or cleanup are not modeled and tested.                 |
 | Style Source-To-Computed Parity          | S2 style branches, tokens, geometry, icons, forced colors, or viewer canvas conditions are not traced from source to computed output. |
 | React-Vs-Solid Comparison Harness Parity | The route, controls, fixtures, or pair evidence cannot prove the same public state in React and Solid.                                |
+| Known Defects And Regression Protection  | Known user-visible bugs, legacy accepted gaps, or fixed regressions lack classification, owner, or durable assertions.                |
 | Evidence And Handoff                     | Tests, reports, status, blockers, or ownership are missing.                                                                           |
 
 ## Gate Outcome Summary
@@ -49,6 +50,7 @@ to individual rows inside a gate, not to the whole gate.
 | Behavior State Machine                   | not-started |          |                |
 | Style Source-To-Computed Parity          | not-started |          |                |
 | React-Vs-Solid Comparison Harness Parity | not-started |          |                |
+| Known Defects And Regression Protection  | not-started |          |                |
 | Evidence And Handoff                     | not-started |          |                |
 ```
 
@@ -184,10 +186,43 @@ to individual rows inside a gate, not to the whole gate.
 - [ ] Focused route tests prove controls update mounted React and Solid DOM.
 - [ ] Computed style, accessibility, geometry, runtime, or pair-diff evidence
       covers the source branches and viewer states that affect rendering.
+- [ ] Shared serialized route props are treated as route-plumbing evidence only;
+      they are not counted as implementation parity without DOM, style,
+      accessibility, interaction, or geometry assertions.
 - [ ] Harness stability is proven: theme, viewport, fonts, animation, capture
       isolation, and failure taxonomy are recorded.
 
-## 9. Evidence And Handoff
+## 9. Known Defects And Regression Protection
+
+Use [Known Defects And Regression Protection](./known-defects-regression.md)
+for the search, classification, regression evidence, scenario smoke, and
+composition smoke details.
+
+- [ ] Current component notes, pre-pass notes, blockers, TODO/FIXME comments,
+      skipped tests, failing focused specs, comparison reports, and observed UI
+      bugs were searched for known defects.
+- [ ] Every known behavioral, styling, layout, accessibility, API, i18n,
+      lifecycle, or harness defect is classified as `port bug`,
+      `upstream drift`, `harness bug`, `threshold debt`, `out-of-scope`, or
+      `unrelated family failure`.
+- [ ] Known `port bug` and unresolved `harness bug` rows block acceptance.
+- [ ] A fixed user-visible bug has durable regression coverage in the owning
+      layer: package test, Playwright/runtime test, computed style assertion,
+      geometry assertion, accessibility assertion, or strict pair evidence.
+- [ ] Layout and geometry regressions are checked explicitly: extra rows or
+      columns, clipping, overflow, alignment, portal placement, focus-ring
+      clipping, responsive width, text wrapping, RTL geometry, and grid math.
+- [ ] Canonical user scenarios were exercised end to end for the component:
+      typical open/select/close, keyboard navigation, disabled/read-only
+      suppression, form paths, controlled updates, validation paths, or
+      overlay dismissal where applicable.
+- [ ] Expected composition contexts were exercised where upstream supports them:
+      `Provider`, `Form`, field wrappers, slots, collection items, overlays,
+      groups, and related child components.
+- [ ] Components previously accepted under an older gate model are marked
+      `legacy-accepted` or `accepted-prior-gates` until this gate is complete.
+
+## 10. Evidence And Handoff
 
 - [ ] Focused package tests run or are marked not applicable with reason.
 - [ ] Focused Playwright/runtime tests run.
@@ -218,4 +253,5 @@ Use these blocker labels in component notes and handoffs:
 | `behavior-blocker`  | State machine, event, interaction, callback, controlled/uncontrolled, async, or cleanup behavior is unproven or wrong. |
 | `style-blocker`     | S2 token/style, computed style, geometry, icon/image, forced-colors, or viewer canvas parity is unproven or wrong.     |
 | `route-blocker`     | The comparison route, controls, fixtures, or harness cannot prove parity.                                              |
+| `defect-blocker`    | Known user-visible defects, legacy accepted gaps, or regression coverage gaps remain unresolved.                       |
 | `evidence-blocker`  | Required tests, reports, notes, status, or ownership are missing.                                                      |

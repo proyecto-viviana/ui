@@ -16,8 +16,9 @@ before changing styled component code.
   interaction timelines next, computed styles and current pair diffs after that.
 - Acceptance gates are additive. Documentation/viewer parity, external
   authority, upstream source, Solid idioms, accessibility/i18n, behavior, style,
-  React-vs-Solid comparison parity, and evidence/handoff must all be checked.
-  Do not use one as a substitute for another.
+  React-vs-Solid comparison parity, known-defect/regression protection, and
+  evidence/handoff must all be checked. Do not use one as a substitute for
+  another.
 - Do not use per-side committed screenshot assertions as component acceptance
   gates. Remove `toHaveScreenshot`, `toMatchSnapshot`, and helper wrappers that
   compare current React to old React PNGs or current Solid to old Solid PNGs.
@@ -46,6 +47,9 @@ before changing styled component code.
 - Visual failures must be classified as `port bug`, `upstream drift`,
   `harness bug`, `threshold debt`, or `unrelated family failure` before
   acceptance changes are made.
+- Known user-visible bugs, skipped tests, focused failures, TODO/FIXME findings,
+  or legacy accepted gaps block acceptance unless they are classified,
+  explicitly out of scope, or fixed with durable regression evidence.
 - When a pass discovers that the current component provides context, slots,
   props, refs, or state to another component that has not been validated yet,
   create or update that future component's validation notes immediately. Record
@@ -173,7 +177,8 @@ Validate:
 
 - both panels render;
 - exactly one `data-comparison-control-root` exists per fixture;
-- controls update mounted DOM and serialized props;
+- controls update mounted DOM. Serialized props can prove route plumbing, but
+  they do not prove implementation parity by themselves;
 - route controls use official S2 prop names, option values, and defaults;
 - route-control tests assert visible option labels/order, selected default, and
   absence of internal sentinel values for optional props;
@@ -506,6 +511,7 @@ Goal: accept only the facts proven in this pass and leave future work ordered.
 
 Open:
 
+- [Known Defects And Regression Protection](./playbook/known-defects-regression.md)
 - [Tests And Sign-Off](./playbook/tests-signoff.md)
 - [Acceptance Gates](./playbook/acceptance-gates.md)
 - files changed in Tasks 2-12
@@ -515,6 +521,7 @@ Output:
 - final checks;
 - report/doc updates only for proven facts;
 - gate outcome summary updated for every gate;
+- known defect table updated with classifications and regression evidence;
 - handoff with remaining blockers assigned to future ordered tasks.
 
 Validate:
@@ -540,6 +547,11 @@ The official docs/viewer parity table must have no in-scope `route-gap` or
 `port-gap` rows unless the handoff explicitly keeps the component unaccepted for
 that surface. `docs-drift` rows must name whether installed source or current
 React behavior was used as authority.
+
+The known-defect/regression table must have no blocking `port bug` or unresolved
+`harness bug` rows. Every fixed user-visible behavior, styling, layout,
+accessibility, API, i18n, lifecycle, or harness bug must name the durable
+regression assertion that protects it.
 
 The acceptance-gates checklist must show all in-scope items complete. If one
 gate remains incomplete, mark the component `partial` and list the blocker

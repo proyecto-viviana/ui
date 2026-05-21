@@ -13,6 +13,11 @@ responsive behavior.
   match upstream.
 - Section headers, separators, empty states, loader rows, and virtualized rows
   have upstream heights and padding.
+- Calendar, table, grid, collection, and list layouts have the same row and
+  column counts as upstream. Extra or missing columns, placeholder cells, ghost
+  rows, and off-by-one grid math are geometry blockers.
+- Responsive constraints, wrapping, overflow, and clipping are checked at the
+  widths used by the official viewer and comparison route.
 - Focus rings and outlines are not clipped by screenshot frames.
 - Dark mode, light mode, forced colors, RTL, and mobile widths do not change
   geometry unexpectedly.

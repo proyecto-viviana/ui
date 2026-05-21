@@ -12,8 +12,9 @@ as the working artifact for a component pass. Component notes live in
 Every pass also uses [Acceptance Gates](./acceptance-gates.md). The gates are
 blocking and additive. Documentation/viewer parity, external authority,
 upstream source, Solid idioms, accessibility/i18n, behavior, style,
-React-vs-Solid harness parity, and evidence/handoff must all be proven.
-Passing one gate never substitutes for another.
+React-vs-Solid harness parity, known-defect/regression protection, and
+evidence/handoff must all be proven. Passing one gate never substitutes for
+another.
 Each gate must also have an explicit outcome summary in the component notes, so
 the final status is visible without inferring it from scattered checklist rows.
 
@@ -53,7 +54,7 @@ checklists are prompts. Do not open every checklist up front.
 | Runtime    | Always        | [State Transitions And Timelines](./state-transitions.md), [Runtime Semantics And Lifecycle](./runtime-semantics-lifecycle.md), [Accessibility And I18n](./accessibility-i18n.md)                                                                  |
 | Runtime    | Conditional   | [Interactions And Motion](./interactions-motion.md), [Geometry](./geometry.md)                                                                                                                                                                     |
 | Evidence   | Always        | [Harness And Evidence Integrity](./harness-evidence-integrity.md), [Visual Regression](./visual-regression.md)                                                                                                                                     |
-| Acceptance | Always        | [Tests And Sign-Off](./tests-signoff.md)                                                                                                                                                                                                           |
+| Acceptance | Always        | [Known Defects And Regression Protection](./known-defects-regression.md), [Tests And Sign-Off](./tests-signoff.md)                                                                                                                                 |
 
 ## Depth Rule
 
@@ -89,6 +90,12 @@ The comparison harness is the final parity surface, not the only parity surface.
 React-vs-Solid parity in our route is accepted only after the route itself
 matches the live official docs/viewer and the Solid code has source and idiom
 evidence.
+
+`Known Defects And Regression Protection` is required before signoff. Search
+existing notes, blockers, skipped tests, TODO/FIXME comments, focused failures,
+comparison reports, and observed UI bugs. Known port bugs and unresolved harness
+bugs keep the component partial, and fixed user-visible bugs need durable
+regression assertions.
 
 `Agent Workflow` is the required coordination model for multi-agent passes.
 Do not let an agent's general confidence replace validation-note rows. Agent
@@ -131,3 +138,8 @@ enough. `pending` and `staticColor` were tested separately, but upstream wired
 `staticColor` into the nested `ProgressCircle`. Future passes must record that
 kind of coupling in the interaction dependency map and cover it with a minimal
 subpart contract.
+
+Calendar also showed that layout bugs can hide inside otherwise green visual
+evidence. Extra grid columns, clipped content, overlay placement, focus-ring
+geometry, and responsive math need explicit geometry assertions when upstream
+layout depends on them.

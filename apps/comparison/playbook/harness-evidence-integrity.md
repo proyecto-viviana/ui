@@ -16,6 +16,13 @@ Record the evidence order for the pass:
 Do not accept a component based on per-side committed screenshot baselines. They
 are intentionally not part of the acceptance hierarchy.
 
+Do not accept implementation parity from same-source serialized route props.
+For example, matching `data-comparison-control-props` on the React and Solid
+panels proves the route serializer and normalizer sent the same input. It does
+not prove the components consumed that input unless paired with DOM,
+accessibility, interaction, computed style, geometry, event, or cleanup
+assertions.
+
 When a pass removes these gates, explicitly record any leftover committed
 screenshot artifacts as repository hygiene: obsolete per-side PNG baselines,
 snapshot directories, and report text that still describes committed screenshot
@@ -35,6 +42,8 @@ Before trusting screenshots, prove or record:
   state concurrently;
 - current React-vs-Solid pair assertions are used instead of per-side committed
   screenshot assertions;
+- shared control-prop JSON assertions are limited to route-plumbing coverage
+  and never counted as component behavior, style, API, or accessibility parity;
 - no focused acceptance spec still calls Playwright `toHaveScreenshot`,
   `toMatchSnapshot`, or a helper that wraps those APIs for React/Solid panels;
 - obsolete committed screenshot PNGs and report wording are either cleaned up in
@@ -77,6 +86,8 @@ Record in the component validation notes:
 - harness changes made or confirmed;
 - current pair-diff status;
 - classified failure list;
+- any route-plumbing assertions that were intentionally excluded from parity
+  evidence;
 - deferred repository cleanup for stale committed screenshot PNGs/report
   wording;
 - browser/device coverage;

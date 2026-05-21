@@ -43,9 +43,16 @@ rg --files apps/comparison/e2e | rg '<slug>.*\.spec\.ts$'
   is present.
 - Focused control tests prove modeled settings change mounted React and Solid
   DOM, not only serialized props.
+- `data-comparison-control-props` equality proves route plumbing only. It must
+  be paired with observable DOM, style, geometry, accessibility, interaction, or
+  event assertions before it is used as parity evidence.
 - Focused control tests include at least one assertion over the control surface
   itself for modeled optional props: expected option values/order, selected
   default, and absence of non-official sentinel options.
+- Canonical user scenarios exercise the mounted component, not only the control
+  panel. Include open/select/close, keyboard navigation, disabled/read-only
+  suppression, form behavior, validation, controlled updates, or overlay
+  dismissal where the upstream component supports those paths.
 
 ## Evidence
 

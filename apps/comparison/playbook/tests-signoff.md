@@ -7,7 +7,8 @@ Acceptance also requires the component's
 [Acceptance Gates](./acceptance-gates.md) checklist. The gates are additive:
 documentation/viewer parity, external authority, upstream source, Solid idioms,
 accessibility/i18n, behavior, style, React-vs-Solid harness parity, and
-evidence/handoff must all be complete for the component to be marked accepted.
+known-defect/regression protection, and evidence/handoff must all be complete
+for the component to be marked accepted.
 
 ## Layer Sign-Off
 
@@ -43,6 +44,13 @@ evidence/handoff must all be complete for the component to be marked accepted.
   CSS-variable evidence.
 - React-vs-Solid harness parity: route evidence proves both stacks match only
   after the route has been validated against the official docs/viewer.
+- Known defect/regression protection: current notes, blockers, TODO/FIXME
+  comments, skipped tests, focused failures, comparison reports, and observed UI
+  bugs are checked; known port bugs and unresolved harness bugs block
+  acceptance.
+- Regression coverage: every fixed user-visible bug has a durable assertion in
+  the owning layer. Inspection-only fixes are not accepted for behavior,
+  styling, layout, accessibility, API, i18n, lifecycle, or harness bugs.
 - `solid-stately`: controlled/uncontrolled state, callbacks, validation,
   disabled/readonly, collection/date edge cases.
 - `solidaria`: ARIA attributes, labels, descriptions, keyboard handlers, focus,
@@ -57,6 +65,25 @@ evidence/handoff must all be complete for the component to be marked accepted.
 - Visual evidence: semantic behavior, interaction timelines, computed styles,
   and current pair diffs are green. Per-side committed screenshot assertions are
   not acceptance gates and should be removed from focused suites.
+- Route-plumbing evidence: matching serialized route props proves the harness
+  sent the same input only. It must not be counted as implementation parity
+  without observable DOM, accessibility, interaction, computed style, geometry,
+  event, or cleanup assertions.
+- Known-defect evidence: use
+  [Known Defects And Regression Protection](./known-defects-regression.md) for
+  search commands, classification, scenario smoke, and composition smoke before
+  status closeout.
+
+## Status Source Of Truth
+
+The component validation note's gate outcome table is the source of truth for
+accepted, partial, or pre-pass status. Manifest badges, component README lists,
+coverage reports, and handoff summaries must not claim a stronger status than
+the note.
+
+Use `legacy-accepted` or `accepted-prior-gates` for components accepted before
+the current gate model. They become current accepted only after every gate,
+including known-defect/regression protection, is complete.
 
 ## Required Commands
 
@@ -82,6 +109,9 @@ Record:
 - runtime semantics and lifecycle evidence;
 - harness-integrity status and failure taxonomy;
 - planned or blocked state rows that remain.
+- known defects searched and classified, including user-observed visual or
+  behavior bugs.
+- fixed defects and the regression assertion that now protects each fix.
 - source branch ledger rows still marked `gap` or `deferred-gap`, with the
   destination component note or issue for each deferred row.
 - interaction dependency rows still unproven, with the next test or owner.

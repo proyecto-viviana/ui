@@ -28,6 +28,12 @@ attribute, or CSS-variable assertions for branch-sensitive styling.
 - Focus-ring geometry, portal placement, icon fill/stroke, avatar/image fit,
   slot visibility, spinner stroke, and badge offsets use computed or geometry
   contracts when screenshots are too coarse.
+- Layout math is a first-class style contract. Explicitly assert extra or
+  missing rows/columns, clipping, overflow, alignment, responsive width, text
+  wrapping, popover placement, grid/table geometry, and RTL geometry whenever
+  upstream layout depends on them.
+- A visual bug discovered during review stays a `style-blocker` until fixed or
+  classified out of scope, even when the existing pair-diff threshold passes.
 
 ## Commands
 

@@ -10,28 +10,34 @@ when another component exposes a real cross-component contract. Keep those notes
 under `Incoming Cross-Component Findings` so the later owner validates the
 contract instead of rediscovering it.
 
-## Current-Gate Normalization Status
+## Gate Normalization Status
 
 The acceptance gates were expanded after the first retro-audit sweep. Existing
 implemented/pass notes keep their historical evidence, but they should be
 treated as legacy accepted under the prior playbook until each note is
 normalized to the current gate checklist.
 
-- Legacy accepted under prior playbook: none.
-- Current-gate normalized: Accordion, ActionBar, ActionMenu, Avatar,
+- Current accepted under the full gate model: none.
+- Current-gate normalized before the known-defect/regression gate: Accordion,
+  ActionBar, ActionMenu, Avatar,
   AvatarGroup, Badge, Breadcrumbs, Button, Button family, Calendar, Checkbox,
   CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image, Link, Meter,
   NotificationBadge, RangeCalendar, SegmentedControl, SelectBoxGroup, Skeleton,
   Slider, StatusLight, and Text.
+- Accepted prior to the current known-defect/regression gate: Accordion,
+  ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
+  Button family, Calendar, Checkbox, CheckboxGroup, ComboBox, ContextualHelp,
+  Divider, Form, Image, Link, Meter, NotificationBadge, RangeCalendar,
+  SegmentedControl, SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
 - Active current-gate pass: none.
 - Comparison-live with explicit release-hardening backfill gaps: none.
 - Pre-pass only: none.
 
 Current-gate normalization means the note contains the current
 `Acceptance Gate Checklist`, `Agent Workflow`, `Behavior State Machine`,
-`Accessibility And I18n`, and `Style Source-To-Computed` sections. Until then,
-do not use a legacy accepted note as proof that the component passed the current
-gate model.
+`Accessibility And I18n`, `Style Source-To-Computed`, and
+`Known Defects And Regression Protection` sections. Until then, do not use a
+legacy accepted note as proof that the component passed the current gate model.
 
 Future component passes should not need a legacy-normalization section. Run the
 playbook in order, close in-scope gates before moving on, and mark a component

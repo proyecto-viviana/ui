@@ -34,6 +34,11 @@ Good targets include spinner `stroke`, icon `fill`, hidden text/icon visibility,
 badge offsets, focus-ring geometry, portal placement, `dir`, and static-color
 container variables.
 
+Geometry-sensitive components also need explicit layout contracts for extra or
+missing rows/columns, clipping, overflow, alignment, responsive width, text
+wrapping, grid/table math, portal placement, and RTL geometry. Screenshots can
+hide these bugs behind thresholds or surrounding page chrome.
+
 The preferred shape is a delta check:
 
 - read the baseline React and Solid subpart contracts;
@@ -80,6 +85,9 @@ For example, `button.pressed` is not just a pressed screenshot. It is
   screenshot captures before treating a visual failure as a component bug.
 - Classify failures as `port bug`, `upstream drift`, `harness bug`,
   `threshold debt`, or `unrelated family failure`.
+- A known visual or layout bug blocks acceptance until fixed with computed,
+  geometry, accessibility, interaction, or strict pair evidence, or classified
+  out of scope with an owner.
 
 ## Commands
 

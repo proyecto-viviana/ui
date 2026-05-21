@@ -6,7 +6,8 @@ across all four layers before implementation is accepted.
 This gate proves upstream React source parity. It must be paired with the full
 [Acceptance Gates](./acceptance-gates.md) checklist before acceptance; source
 parity does not replace docs/viewer parity, external authority, Solid idioms,
-accessibility/i18n, behavior, style, harness parity, or evidence/handoff.
+accessibility/i18n, behavior, style, harness parity, known-defect/regression
+protection, or evidence/handoff.
 
 ## Layers
 

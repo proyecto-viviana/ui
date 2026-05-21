@@ -7,7 +7,8 @@ kept in the component validation notes.
 This is the upstream React source parity gate. It does not replace the full
 [Acceptance Gates](./acceptance-gates.md) checklist: docs/viewer parity,
 external authority, Solid idiom checks, accessibility/i18n, behavior, style,
-React-vs-Solid harness parity, or evidence/handoff.
+React-vs-Solid harness parity, known-defect/regression protection, or
+evidence/handoff.
 
 ## Rule
 
