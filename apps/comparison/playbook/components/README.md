@@ -21,10 +21,10 @@ normalized to the current gate checklist.
 - Current-gate normalized: ActionBar, ActionMenu, Avatar, AvatarGroup, Badge,
   Button, Button family, Calendar, Checkbox, CheckboxGroup, ComboBox, Divider,
   Form, Image, Link, Meter, SegmentedControl, SelectBoxGroup, Skeleton, Slider,
-  StatusLight, and Text.
+  StatusLight, Text, and NotificationBadge.
 - Active current-gate pass: none.
 - Comparison-live with explicit release-hardening backfill gaps: none.
-- Pre-pass only: NotificationBadge.
+- Pre-pass only: none.
 
 Current-gate normalization means the note contains the current
 `Acceptance Gate Checklist`, `Agent Workflow`, `Behavior State Machine`,

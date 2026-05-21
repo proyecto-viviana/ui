@@ -1,7 +1,7 @@
 import { type JSX, createContext, createMemo, mergeProps, splitProps, useContext } from "solid-js";
-import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { createStringFormatter, filterDOMProps, useLocale } from "@proyecto-viviana/solidaria";
 import { fontRelative, style, type StyleString } from "../s2-style";
-import { getAllowedOverrides } from "../s2-internal/style-utils";
+import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -12,33 +12,36 @@ import {
 } from "../button/spectrum-context";
 import { s2IntlStrings } from "../intl";
 
-export type NotificationBadgeSize = "S" | "M" | "L" | "XL";
-
-export interface NotificationBadgeProps extends Omit<
-  JSX.HTMLAttributes<HTMLSpanElement>,
-  "class" | "style" | "children" | "slot" | "ref"
-> {
+export interface NotificationBadgeProps {
   /** The value to display in the notification badge. */
   value?: number | null;
   /** The size of the notification badge. @default 'S' */
-  size?: NotificationBadgeSize;
+  size?: "S" | "M" | "L" | "XL";
   /** Spectrum-defined generated classes. */
   styles?: StyleString | (() => StyleString | undefined);
   /** Additional CSS class name. Use only as a last resort. */
-  UNSAFE_className?: string;
+  UNSAFE_className?: UnsafeClassName | string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
+  id?: string;
+  slot?: string | null;
+  ref?: RefLike<HTMLSpanElement>;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
+  "aria-describedby"?: string;
+  "aria-details"?: string;
+  [key: `data-${string}`]: string | undefined;
+}
+
+interface NotificationBadgeContextProps extends NotificationBadgeProps {
   /** Static color inherited from a surrounding component. */
   staticColor?: "black" | "white" | "auto";
   /** Whether the owning control is disabled. */
   isDisabled?: boolean;
-  slot?: string | null;
-  ref?: RefLike<HTMLSpanElement>;
-  "aria-label"?: string;
 }
 
 export const NotificationBadgeContext =
-  createContext<SpectrumContextValue<NotificationBadgeProps>>(null);
+  createContext<SpectrumContextValue<NotificationBadgeContextProps>>(null);
 
 const notificationBadge = style(
   {
@@ -111,8 +114,8 @@ const notificationBadge = style(
 
 export function NotificationBadge(props: NotificationBadgeProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(NotificationBadgeContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
-  const [local, domProps] = splitProps(merged, [
+  const merged = mergeProps(contextProps ?? {}, props) as NotificationBadgeContextProps;
+  const [local] = splitProps(merged, [
     "value",
     "size",
     "styles",
@@ -162,10 +165,14 @@ export function NotificationBadge(props: NotificationBadgeProps): JSX.Element {
   const ariaLabel = () =>
     local["aria-label"] ??
     (value() == null ? stringFormatter().format("notificationbadge.indicatorOnly") : undefined);
+  const mergedUnsafeClassName = () =>
+    [contextProps?.UNSAFE_className, props.UNSAFE_className].filter(Boolean).join(" ") || undefined;
 
   return (
     <span
-      {...domProps}
+      {...(filterDOMProps(merged, {
+        labelable: true,
+      }) as JSX.HTMLAttributes<HTMLSpanElement>)}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLSpanElement> } | null)?.ref,
         props.ref,
@@ -173,8 +180,7 @@ export function NotificationBadge(props: NotificationBadgeProps): JSX.Element {
       role={ariaLabel() ? "img" : undefined}
       aria-label={ariaLabel()}
       class={[
-        contextProps?.UNSAFE_className,
-        local.UNSAFE_className,
+        mergedUnsafeClassName(),
         notificationBadge(
           {
             size: size(),

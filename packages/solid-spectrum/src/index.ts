@@ -313,7 +313,7 @@ export type { PopoverPlacement, PopoverProps, PopoverRenderProps, PopoverSize } 
 
 // Progress
 export { NotificationBadge, NotificationBadgeContext } from "./notificationbadge";
-export type { NotificationBadgeProps, NotificationBadgeSize } from "./notificationbadge";
+export type { NotificationBadgeProps } from "./notificationbadge";
 export { ProgressBar } from "./progress-bar";
 export type { ProgressBarProps, ProgressBarSize, ProgressBarVariant } from "./progress-bar";
 export { ProgressCircle } from "./progress/ProgressCircle";
