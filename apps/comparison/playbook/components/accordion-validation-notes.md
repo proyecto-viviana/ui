@@ -1,5 +1,8 @@
 # Accordion Validation Notes
 
+Date: 2026-05-21
+Status: accepted
+
 ## Target
 
 - Component: Accordion
@@ -624,3 +627,26 @@ Results:
   - `behavior-blocker`: resolved for Accordion; shared state, package
     callbacks, route callback payloads, suppression, and transition behavior
     are covered.
+
+## Current-Gate Normalization Refresh (2026-05-21)
+
+- README normalization: Accordion is listed with the current-gate normalized
+  components, and this note has explicit `Status: accepted`.
+- S2 docs refresh: MCP Accordion page still exposes the same primary example,
+  expanding example, content example, and API surface recorded above.
+- Focused package proof:
+  `vp test run packages/solid-stately/test/createDisclosureState.test.ts packages/solidaria/test/createDisclosure.test.tsx packages/solidaria/test/createDisclosure.ssr.test.tsx packages/solidaria-components/test/Disclosure.test.tsx packages/solid-spectrum/test/Disclosure.test.tsx packages/solid-spectrum/test/Accordion.test.tsx`
+  passed 6 files and 88 tests.
+- Focused browser proof:
+  `vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/accordion-contract.spec.ts e2e/accordion-visual.spec.ts --reporter=line`
+  passed 12 tests.
+- Catalogue and guard proof: `vp run comparison:report:gaps`,
+  `vp run comparison:report:exports`, `vp run guard:rac-parity`, and
+  `vp run guard:rac-export-gap` passed with no Accordion-specific gap and no
+  RAC export gap.
+- Static proof: `vp run check` and `git diff --check` passed.
+- Non-Accordion caveat: the broader
+  `packages/solid-spectrum/test/regression.test.tsx` snapshot suite currently
+  fails in unrelated Slider, Menu, ActionMenu, Tooltip, Breadcrumbs,
+  DateField, and Meter cases, so it is not counted as Accordion evidence in
+  this normalization-only pass.
