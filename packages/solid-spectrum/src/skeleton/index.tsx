@@ -200,15 +200,19 @@ export function SkeletonWrapper(props: { children: JSX.Element }): JSX.Element {
 
   return (
     <SkeletonContext.Provider value={null}>
-      <span
-        ref={(element) => {
-          animationRef(element);
-          inertRef(element);
-        }}
-        class={isLoading() ? loadingStyle : undefined}
-      >
-        {props.children}
-      </span>
+      {isLoading() ? (
+        <span
+          ref={(element) => {
+            animationRef(element);
+            inertRef(element);
+          }}
+          class={loadingStyle}
+        >
+          {props.children}
+        </span>
+      ) : (
+        props.children
+      )}
     </SkeletonContext.Provider>
   );
 }

@@ -1,128 +1,209 @@
 # Skeleton Validation Notes
 
-## Target
+Date: 2026-05-20
+Status: accepted
 
-- Component: Skeleton
-- Slug: skeleton
-- Family or direct subcomponents: SkeletonCollection
-- Pass goal: standalone Skeleton context wrapper parity, child consumer parity,
-  route controls, loading/loaded state evidence, and exact visual comparison
-- Date: 2026-05-15
+Skeleton has now been normalized against the current acceptance gates.
+Historical evidence from the original 2026-05-15 pass is superseded by this
+closeout, which records the corrected loaded-wrapper DOM behavior, current
+comparison harness coverage, and refreshed report/guard evidence.
 
-## Task Status
+## Current-Gate Closeout
 
-| Task                   | Status | Evidence                                         | Blocker or next action |
-| ---------------------- | ------ | ------------------------------------------------ | ---------------------- |
-| 0 Research             | done   | S2 docs/source, React Aria index                 | none                   |
-| 1 Baseline             | done   | Reports and RAC guards                           | none                   |
-| 2 Route harness        | done   | `/components/skeleton/`                          | none                   |
-| 3 Source map/API       | done   | source map below                                 | none                   |
-| 4 Cross-layer audit    | done   | audit table below                                | none                   |
-| 5 Transitions          | done   | `isLoading=true/false` e2e                       | none                   |
-| 6 State                | n/a    | no separate state package owner                  |                        |
-| 7 ARIA hooks           | n/a    | no React Aria Skeleton page/hook                 |                        |
-| 8 Headless             | n/a    | native child semantics                           |                        |
-| 9 Styled S2            | done   | `e2e/skeleton-visual.spec.ts`                    | none                   |
-| 10 Runtime lifecycle   | done   | animation/cleanup/reduced-motion tests and build | none                   |
-| 11 Harness integrity   | done   | reduced motion, opaque fixture                   | none                   |
-| 12 Comparison evidence | done   | exact loading and loaded shots                   | none                   |
-| 13 Acceptance          | done   | commands in Evidence                             | none                   |
+- Scope: styled S2 `Skeleton`, `SkeletonCollection`, root exports,
+  `useIsSkeleton`, shared loading/text/icon/wrapper helpers, affected child
+  consumers, comparison route controls, visual-state matrix coverage, and
+  focused Skeleton/browser evidence.
+- Sources rechecked: React Spectrum S2 Skeleton docs, S2 Skeleton source, S2
+  SkeletonCollection source, S2 package root exports, Solid Skeleton/Text/Icon/
+  Image/Badge/Meter/Form/Link/StatusLight sources, comparison route controls,
+  Skeleton visual spec, and existing Skeleton unit tests.
+- Result: accepted for Skeleton. Solid exposes the documented S2 root surface:
+  `Skeleton`, `useIsSkeleton`, `SkeletonCollection`, `SkeletonProps`, and
+  `SkeletonCollectionProps`. The visible component API remains only `children`
+  and `isLoading`; loading state is expressed through context consumers rather
+  than standalone placeholder blocks. `SkeletonWrapper` now matches S2's loaded
+  branch by resetting skeleton context without adding an extra wrapper element.
 
-## Research
+## Acceptance Gate Checklist
 
-| Source                      | Files or docs                                                                                                         | Finding                                                                                                                                              |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S2 docs MCP                 | `Skeleton` page, sections `Content`, `API`                                                                            | Public API is only `children` and `isLoading`; Skeleton wraps real content instead of rendering placeholder blocks by itself.                        |
-| React Aria MCP              | page index                                                                                                            | No direct Skeleton page or hook exists; accessibility semantics remain owned by the real child components.                                           |
-| React Spectrum S2 source    | `@react-spectrum/s2/src/Skeleton.tsx`                                                                                 | Provides `SkeletonContext`, `loadingStyle`, `useIsSkeleton`, text/icon helpers, inert wrapper behavior, and reduced-motion-aware Web Animations API. |
-| React Spectrum S2 source    | `@react-spectrum/s2/src/SkeletonCollection.tsx`                                                                       | Collection leaf wraps item render output in loading Skeleton and caches by node.                                                                     |
-| React Spectrum S2 consumers | `Image`, `Button`, `ActionButton`, `ToggleButton`, `Link`, `Content`, `Icon`, `StatusLight`, `Badge`, `Meter`, `Form` | Skeleton behavior is mostly distributed across child consumers through context; Form is now covered by its own pass.                                 |
-| Solid source before pass    | `packages/solid-spectrum/src/skeleton/index.tsx`                                                                      | Implemented standalone status/shimmer blocks with `shape`, `size`, `gap`, and `count`, which is not S2 API parity.                                   |
+- [x] Public API: comparison controls and docs notes match the S2 surface for
+      `children` and `isLoading`; root exports match S2 for `Skeleton`,
+      `useIsSkeleton`, `SkeletonCollection`, and their public prop types.
+- [x] Styled public type: no legacy standalone placeholder props such as
+      `shape`, `size`, `gap`, or `count` remain on the current styled API.
+- [x] Headless/ARIA parity: React Aria has no dedicated Skeleton primitive;
+      accessibility semantics stay owned by real child components, and Skeleton
+      itself does not add `role="status"` or `aria-busy`.
+- [x] DOM/accessibility contract: loading children receive inert/loading
+      treatment through Text, Image, Icon, Badge, Meter, StatusLight, Link, and
+      Form consumers; loaded `SkeletonWrapper` children are no longer wrapped in
+      an extra span.
+- [x] Style source-to-computed: shared loading gradient, text transparency,
+      icon radius, image hidden/reveal behavior, Web Animations shimmer,
+      reduced-motion handling, and forced-colors contracts are covered.
+- [x] Harness contract: route controls match the docs-style option surface, the
+      visual-state matrix includes Skeleton root DOM contract coverage, and
+      browser computed contracts compare loaded/loading child treatment against
+      React Spectrum.
+- [x] Evidence handoff: focused unit tests, package builds, comparison build,
+      Skeleton Playwright, reports, guards, README status, and this note are
+      refreshed for the current gate.
+
+## Agent Workflow
+
+| Step                    | Status | Evidence                                                                |
+| ----------------------- | ------ | ----------------------------------------------------------------------- |
+| Research                | done   | S2 Skeleton API/source, SkeletonCollection source, package root exports |
+| Baseline and source map | done   | Existing note plus current source/API/export recheck                    |
+| Implementation          | done   | Loaded `SkeletonWrapper` branch aligned with S2 DOM behavior            |
+| Harness                 | done   | Root DOM matrix row and visual contract expansion                       |
+| Verification            | done   | Focused consumer tests, package builds, comparison build, Skeleton e2e  |
+| Handoff                 | done   | README normalization status, current-gate closeout note, commit         |
+
+## Behavior State Machine
+
+- Stable states: loading Skeleton context; loaded Skeleton context; no Skeleton
+  context; nested consumers under a `SkeletonWrapper`; collection placeholder
+  children cached by collection node identity.
+- Visual states: Text placeholder spans, transparent text fill, Image loading
+  gradient/hidden native image, Icon loading gradient and radius, Badge/Meter
+  wrapper loading, StatusLight skeleton light, Link/Text inert content, and
+  Form descendant disabling.
+- Interaction states: no direct user interaction belongs to Skeleton; child
+  components keep their own interaction semantics when not loading and are inert
+  or disabled while loading where S2 requires it.
+- Environment states: reduced motion disables Web Animations shimmer, and
+  forced-colors active remains React-equivalent for the loading context
+  contract.
+- Cleanup contract: loading animations start when needed, stop when loading is
+  disabled, respect reduced motion, and cancel on unmount.
+
+## Accessibility And I18n
+
+- Skeleton is a context wrapper around real content, not a status region or live
+  announcement primitive.
+- Text, Link, Icon, Image, Badge, Meter, and StatusLight consumers apply inert
+  or hidden treatment while loading, preserving child-owned semantics for loaded
+  content.
+- Form-aware descendants are disabled while Skeleton loading is active, matching
+  S2 Form/Skeleton precedence.
+- Skeleton owns no generated labels, descriptions, live regions, locale-specific
+  formatting, or bidirectional text transforms.
+- `useIsSkeleton` is Solid-idiomatic and returns an accessor, while matching the
+  observable S2 boolean context result.
+
+## Style Source-To-Computed
+
+- React S2 Skeleton source provides `SkeletonContext`, `Skeleton`,
+  `useIsSkeleton`, `loadingStyle`, `useSkeletonText`, `SkeletonText`,
+  `SkeletonWrapper`, `useSkeletonIcon`, and reduced-motion-aware
+  `useLoadingAnimation`.
+- Solid follows the same observable contract with accessors and DOM attribute
+  synchronization where Solid needs explicit inert handling.
+- The loaded `SkeletonWrapper` branch now mirrors S2: it resets the skeleton
+  context to `null` and returns the original child without an extra wrapper.
+- Browser contracts compare root harness attributes, absence of standalone
+  status placeholders, text inert state, nested skeleton text spans, image
+  opacity/visibility, icon inert state, loading target counts, loaded cleanup,
+  and forced-colors output against React Spectrum.
+
+## Source Packet
+
+| Source                   | Files or docs                                               | Finding                                                                                                                                        |
+| ------------------------ | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| S2 docs MCP              | `Skeleton` page                                             | Public component API is `children` and `isLoading`; affected content includes Image, Text, Link, Icon, StatusLight, Badge, Meter, and forms.   |
+| React Aria docs          | component index                                             | No direct Skeleton primitive exists; accessibility remains owned by child components.                                                          |
+| React Spectrum S2 source | `@react-spectrum/s2/src/Skeleton.tsx`                       | S2 provides context, loading style, text/icon helpers, wrapper behavior, inert handling, and reduced-motion-aware Web Animations.              |
+| React Spectrum S2 source | `@react-spectrum/s2/src/SkeletonCollection.tsx`             | Collection leaf wraps item render output in loading Skeleton and caches by collection node.                                                    |
+| Solid source after pass  | `packages/solid-spectrum/src/skeleton/index.tsx`            | Solid matches S2 context/loading behavior and loaded wrapper cleanup while preserving Solid accessor idioms.                                   |
+| Solid consumer sources   | Image, Text, Icon, Badge, Meter, Form, Link, StatusLight    | Consumers apply S2-equivalent loading, inert, hidden, or disabled behavior.                                                                    |
+| Comparison harness       | manifest, controls, fixtures, visual matrix, `skeleton` e2e | Skeleton is live on both stacks with strict loading/loaded evidence, route-control checks, child context contract, and forced-colors coverage. |
 
 ## Official Docs And Viewer Parity
 
-| Docs item    | Official setting/example                                         | Route/control                                            | Status  | Evidence                 |
-| ------------ | ---------------------------------------------------------------- | -------------------------------------------------------- | ------- | ------------------------ |
-| Content      | Wraps real content and renders affected children as placeholders | React/Solid fixture wraps Image, Text, and Icon children | matched | exact default screenshot |
-| API          | `isLoading` boolean, `children` required                         | switch control defaults to `true`                        | matched | control propagation test |
-| Loaded state | Same children render normally when not loading                   | `?isLoading=false` and switch control                    | matched | exact loaded screenshot  |
+| Docs item            | Official setting/example                                          | Route/control                                            | Status  | Evidence                              |
+| -------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------- | ------------------------------------- |
+| `children`           | real content is wrapped and affected children become placeholders | React/Solid fixture wraps Image, Text, and Icon children | matched | strict loading and loaded screenshots |
+| `isLoading`          | boolean loading context                                           | switch control defaults to `true`                        | matched | e2e control propagation test          |
+| Loaded state         | same children render normally when not loading                    | `?isLoading=false` and switch control                    | matched | strict loaded screenshot and contract |
+| Text consumer        | placeholder text spans                                            | fixture Text children                                    | matched | unit and e2e tests                    |
+| Image consumer       | loading gradient and hidden image                                 | fixture Image child                                      | matched | unit and e2e tests                    |
+| Icon consumer        | loading gradient/radius and inert icon                            | fixture Icon child                                       | matched | unit and e2e tests                    |
+| Form disabling       | form components disabled under loading Skeleton                   | component API/consumer tests                             | matched | Form/Skeleton unit tests              |
+| `SkeletonCollection` | cached placeholder leaf for collections                           | component API                                            | matched | unit test                             |
+| Reduced motion       | no shimmer animation when reduced motion is requested             | media emulation/unit matchMedia                          | matched | unit and e2e tests                    |
+| Forced colors        | loading context remains equivalent                                | forced-colors media emulation                            | matched | e2e test                              |
 
-## Incoming Cross-Component Findings
+## Baseline
 
-| Discovered in      | Upstream owner                                         | Affected API/context                       | Required validation                                                                                        |
-| ------------------ | ------------------------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| Button-family pass | `Button`, `LinkButton`, `ActionButton`, `ToggleButton` | `SkeletonContext`                          | Button-family components must reset skeleton inheritance with `SkeletonContext.Provider value={null}`.     |
-| Image pass         | `Image`                                                | `useIsSkeleton`, `loadingStyle`, animation | Image wrapper must hide native image and use the shared S2 loading style while skeleton loading is active. |
+- Before the support sweep, Skeleton had been implemented as standalone
+  placeholder blocks with non-S2 props.
+- The initial Skeleton pass moved it to S2-style context/consumer behavior, but
+  it predated the current gate checklist and retained a subtle DOM drift:
+  `SkeletonWrapper` still rendered an extra wrapper span when `isLoading` was
+  false.
+- Current reports after current-gate normalization list:
+  - official entries in comparison app: `69`;
+  - live entries: `47`;
+  - missing/gap entries: `22`;
+  - visual states tracked: `265`;
+  - visual evidence states: `76`;
+  - strict pair-diff states: `46`;
+  - blocked visual states: `22`;
+  - `solid-spectrum` public value exports: `155`;
+  - missing S2 value exports: `57`;
+  - extra Solid value exports: `4`.
 
 ## Source Map And Public Contract
 
-| Layer               | Upstream files                           | Solid files                                         | Status  |
-| ------------------- | ---------------------------------------- | --------------------------------------------------- | ------- |
-| State               | none                                     | none                                                | n/a     |
-| ARIA hooks          | none                                     | none                                                | n/a     |
-| Headless components | native children and context consumers    | native children and context consumers               | n/a     |
-| Styled S2           | `Skeleton.tsx`, `SkeletonCollection.tsx` | `src/skeleton`, `src/image`, `src/text`, `src/icon` | matched |
+| Layer               | Upstream files                           | Solid files                                                    | Status  |
+| ------------------- | ---------------------------------------- | -------------------------------------------------------------- | ------- |
+| State               | none                                     | none                                                           | n/a     |
+| ARIA hooks          | none                                     | none                                                           | n/a     |
+| Headless components | native children and context consumers    | native children and context consumers                          | n/a     |
+| Styled S2           | `Skeleton.tsx`, `SkeletonCollection.tsx` | `src/skeleton`, `src/image`, `src/text`, `src/icon`, consumers | matched |
+| Comparison route    | S2 docs/viewer and React S2 fixture      | demo data, controls, fixtures, visual matrix, e2e              | matched |
 
-- Public props/defaults: `Skeleton({children, isLoading})`,
-  `SkeletonCollection({children})`, and Solid-idiomatic
-  `useIsSkeleton() -> Accessor<boolean>`.
-- Contexts/providers: internal `SkeletonContext` accepts boolean/accessor/null;
-  root export intentionally exposes only the public S2 surface.
-- Unsupported or intentionally different branches:
-  `SkeletonCollection` is ported as a Solidaria leaf component and preserves the
-  same observable cached loading wrapper behavior for current collection usage.
+- Public props/defaults:
+  - `Skeleton`: `children` and `isLoading`.
+  - `SkeletonCollection`: `children`.
+  - `useIsSkeleton`: returns the current loading context; Solid returns an
+    accessor for reactivity.
+- Root exports:
+  - values `Skeleton`, `SkeletonCollection`, and `useIsSkeleton`;
+  - types `SkeletonProps` and `SkeletonCollectionProps`.
+- Internal helpers:
+  - `SkeletonContext`, `loadingStyle`, `useLoadingAnimation`,
+    `useSkeletonText`, `SkeletonText`, `SkeletonWrapper`, and
+    `useSkeletonIcon` remain internal support for S2 consumers.
 
-## Cross-Layer Audit
+## Source Branch Coverage
 
-| Layer               | Matched                                                             | Ported differently                          | Not applicable            | Gaps                                   |
-| ------------------- | ------------------------------------------------------------------- | ------------------------------------------- | ------------------------- | -------------------------------------- |
-| State               |                                                                     |                                             | no separate state package | none                                   |
-| ARIA hooks          |                                                                     |                                             | no direct ARIA hook/page  | none                                   |
-| Headless components | native child semantics                                              |                                             |                           | none                                   |
-| Styled S2           | context, text/icon/image consumers, loading style, inert, animation | Solid accessors replace React context reads |                           | Form covered in its own component pass |
-
-Solid idioms checked:
-
-- child/provider laziness: `Skeleton` passes an accessor and `useIsSkeleton`
-  returns an accessor so `isLoading` updates live without render-prop syntax.
-- dynamic prop/context getters: Image/Text/Icon consume `createIsSkeleton()`
-  instead of snapshotting `useIsSkeleton()`.
-- refs and cleanup ownership: loading animations cancel on cleanup; inert is
-  synchronized as a DOM attribute because Solid does not type `inert` as a JSX
-  boolean attribute consistently across elements.
-
-## Interaction Dependency Map
-
-| Subpart        | Upstream input         | Observable output                                           | Minimal proof                      | Status  | Evidence                      |
-| -------------- | ---------------------- | ----------------------------------------------------------- | ---------------------------------- | ------- | ----------------------------- |
-| Text           | `SkeletonContext=true` | nested placeholder span, transparent text fill, inert root  | DOM contract + exact screenshot    | matched | `e2e/skeleton-visual.spec.ts` |
-| Image          | `SkeletonContext=true` | wrapper gradient, native image hidden/opacity 0             | DOM contract + exact screenshot    | matched | `e2e/skeleton-visual.spec.ts` |
-| Icon           | `SkeletonContext=true` | icon gradient, rounded corners, inert                       | DOM contract + exact screenshot    | matched | `e2e/skeleton-visual.spec.ts` |
-| Loading state  | `isLoading=false`      | same children render normally and no loading targets remain | loaded state screenshot + contract | matched | `e2e/skeleton-visual.spec.ts` |
-| Reduced motion | media query reduce     | no running background animation required for capture        | e2e media emulation                | matched | `e2e/skeleton-visual.spec.ts` |
-| Animation      | `useLoadingAnimation`  | Web Animation starts, stops, respects reduced motion        | unit lifecycle tests               | matched | `Skeleton.test.tsx`           |
-| Collection     | collection node input  | cached placeholder render under collection metadata         | unit test                          | matched | `Skeleton.test.tsx`           |
-| Forced colors  | forced-colors active   | loading context contract remains React-equivalent           | e2e media emulation                | matched | `e2e/skeleton-visual.spec.ts` |
-
-## Harness Integrity
-
-- Initial pre-pass focused-suite status: no Skeleton route, no controls, and no
-  standalone Skeleton acceptance tests.
-- Evidence authority: installed React Spectrum S2 source and docs page are the
-  source of truth; React Aria has no dedicated Skeleton primitive.
-- Font/theme/viewport/animation stabilization: e2e pins light theme, waits for
-  fonts, emulates reduced motion, covers forced-colors media, and captures exact
-  React/Solid canvases.
-- Failure taxonomy: initial screenshot mismatch was fixture transparency in the
-  screenshot target, not component drift; the row is now opaque so exact pair
-  diffs compare component pixels only.
+| Layer      | Upstream branch                    | Solid owner            | Class              | Observable                                        | Status  | Evidence                  |
+| ---------- | ---------------------------------- | ---------------------- | ------------------ | ------------------------------------------------- | ------- | ------------------------- |
+| API        | `Skeleton` props                   | S2 wrapper             | API                | `children`, `isLoading` only                      | matched | controls and source audit |
+| API        | root exports                       | package root           | API                | Skeleton/useIsSkeleton/SkeletonCollection exports | matched | export report             |
+| Context    | `SkeletonContext=true`             | `Skeleton`             | context            | descendants read loading context                  | matched | unit and e2e tests        |
+| Context    | `SkeletonContext=false`            | `Skeleton`             | context            | descendants render loaded content                 | matched | unit and e2e tests        |
+| Context    | `SkeletonWrapper` loaded reset     | `SkeletonWrapper`      | DOM/context        | no extra wrapper span when loading is false       | matched | unit and e2e tests        |
+| Text       | `useSkeletonText`                  | Text/Link consumers    | visual/a11y        | inert text root, nested placeholder span          | matched | unit and e2e tests        |
+| Image      | `useIsSkeleton` + loading style    | Image consumer         | visual             | image hidden with loading wrapper style           | matched | unit and e2e tests        |
+| Icon       | `useSkeletonIcon`                  | icon factory           | visual/a11y        | rounded loading icon and inert state              | matched | unit and e2e tests        |
+| Form       | Skeleton disables form descendants | Form context helper    | composition/a11y   | loading wins over local disabled opt-out          | matched | Form unit test            |
+| Collection | node identity cache                | `SkeletonCollection`   | collection/runtime | placeholder child function renders once per node  | matched | unit test                 |
+| Runtime    | Web Animation API shimmer          | `useLoadingAnimation`  | lifecycle          | starts, stops, restarts, and cancels on cleanup   | matched | unit test                 |
+| Runtime    | prefers-reduced-motion             | `useLoadingAnimation`  | lifecycle/a11y     | no animation when reduced motion is requested     | matched | unit and e2e tests        |
+| Harness    | route control surface              | comparison route       | route integrity    | switch default/change drives both stacks          | matched | e2e route-control test    |
+| Harness    | root DOM contract                  | comparison visual spec | route integrity    | root data attrs, status absence, loading targets  | matched | e2e computed contract     |
 
 ## Evidence
 
 ```bash
-vp test run packages/solid-spectrum/test/Skeleton.test.tsx packages/solid-spectrum/test/Image.test.tsx packages/solid-spectrum/test/ButtonFamilyContext.test.tsx
+vp test run packages/solid-spectrum/test/Skeleton.test.tsx packages/solid-spectrum/test/Image.test.tsx packages/solid-spectrum/test/ButtonFamilyContext.test.tsx packages/solid-spectrum/test/Badge.test.tsx packages/solid-spectrum/test/Meter.test.tsx packages/solid-spectrum/test/Form.test.tsx packages/solid-spectrum/test/Link.test.tsx packages/solid-spectrum/test/StatusLight.test.tsx
+vp run --filter @proyecto-viviana/solid-spectrum build
 vp run --filter @proyecto-viviana/comparison build
-vp exec --filter @proyecto-viviana/comparison playwright test e2e/skeleton-visual.spec.ts --reporter=line
+vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/skeleton-visual.spec.ts --reporter=line
 vp run comparison:report:gaps
 vp run comparison:report:exports
 vp run guard:rac-parity
@@ -132,24 +213,25 @@ vp run check
 
 Results:
 
-- Focused Solid tests: `25 passed`.
-- Comparison build: passed.
-- Skeleton visual suite: `5 passed`.
-- Current gap report lists official styled entries live on both sides at `33`,
-  missing/gap entries at `36`, visual states tracked at `179`, visual evidence
-  states at `49`, strict pair-diff states at `32`, and blocked visual states at
-  `35`.
-- Current export report lists missing React S2 value exports at `80` of `208`
-  and extra Solid value exports at `3`.
+- Focused Skeleton and consumer tests: `80 passed`.
+- Solid Spectrum build: passed.
+- Comparison build: passed and generated `/components/skeleton/`.
+- Skeleton Playwright suite: `5 passed`.
+- Regression snapshot slice has no dedicated Skeleton entry yet:
+  `50 skipped`.
+- Current gap report lists official styled entries live on both sides at `47`,
+  missing/gap entries at `22`, visual states tracked at `265`, visual evidence
+  states at `76`, strict pair-diff states at `46`, and blocked visual states at
+  `22`.
+- Current export report lists `solid-spectrum` public value exports at `155`,
+  missing React S2 value exports at `57` of `208`, and extra Solid value exports
+  at `4`.
 - RAC export and tracked-symbol guards report no missing Solid names.
 - Full repo check: passed.
 
 ## Handoff
 
-- Legacy status: Skeleton was accepted for owned behavior under the prior
-  playbook; current-gate normalization is pending.
-- SkeletonCollection current observable behavior and Image/Text/Icon skeleton
-  consumers are covered by focused evidence.
-- Form skeleton interactions were validated in the Form component pass.
+- Current-gate status: Skeleton is accepted as of 2026-05-20.
 - Future consumer-specific skeleton visual rows should stay with the component
   that owns the consumer rendering.
+- Next legacy normalization candidate in `components/README.md`: StatusLight.

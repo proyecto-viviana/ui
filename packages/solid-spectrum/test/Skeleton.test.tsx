@@ -9,6 +9,7 @@ import { createIcon } from "../src/icon";
 import {
   Skeleton,
   SkeletonCollection,
+  SkeletonWrapper,
   type SkeletonCollectionProps,
   useIsSkeleton,
   useLoadingAnimation,
@@ -104,6 +105,20 @@ describe("Skeleton (solid-spectrum)", () => {
     expect(textRef).toHaveAttribute("inert");
     expect(iconRef).toBe(container.querySelector("svg"));
     expect(iconRef).toHaveAttribute("inert");
+  });
+
+  it("does not add a wrapper around SkeletonWrapper children when loading is disabled", () => {
+    const { container } = render(() => (
+      <Skeleton isLoading={false}>
+        <SkeletonWrapper>
+          <span data-testid="wrapped">Loaded child</span>
+        </SkeletonWrapper>
+      </Skeleton>
+    ));
+
+    const wrapped = screen.getByTestId("wrapped");
+    expect(container.firstElementChild).toBe(wrapped);
+    expect(wrapped.parentElement).toBe(container);
   });
 
   it("starts, stops, and cleans up loading animations", () => {

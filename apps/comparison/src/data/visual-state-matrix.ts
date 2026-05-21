@@ -1054,6 +1054,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Assertions compare that Skeleton is a context wrapper rather than a standalone status block, and that affected child elements receive inert/loading treatment.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/skeleton-visual.spec.ts; packages/solid-spectrum/test/Skeleton.test.tsx",
+      note: "Computed contracts compare the harness root, control props, absence of status placeholders, loading targets, and loaded wrapper cleanup against React Spectrum.",
+    },
+    {
       id: "styled.forced-colors",
       label: "Forced colors environment",
       kind: "static",

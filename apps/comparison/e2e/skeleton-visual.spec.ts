@@ -80,6 +80,9 @@ async function skeletonContract(row: Locator) {
     });
 
     return {
+      tagName: element.tagName,
+      dataComparisonRoot: element.getAttribute("data-comparison-control-root"),
+      dataComparisonProps: element.getAttribute("data-comparison-control-props"),
       statusCount: element.querySelectorAll('[role="status"]').length,
       textInert: textRoots.map((text) => text.hasAttribute("inert")),
       nestedTextSkeletonCount: textRoots.filter((text) => text.querySelector("[inert]")).length,
