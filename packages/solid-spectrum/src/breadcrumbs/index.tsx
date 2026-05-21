@@ -4,9 +4,13 @@ import {
   type JSX,
   Show,
   createContext,
+  createEffect,
   createMemo,
+  createRoot,
   createSignal,
   mergeProps,
+  onCleanup,
+  onMount,
   splitProps,
   untrack,
   useContext,
@@ -98,6 +102,7 @@ type CollapsedBreadcrumbEntry<T> =
   | {
       kind: "item";
       item: T;
+      index: number;
     }
   | {
       kind: "menu";
@@ -160,10 +165,31 @@ function itemLabel(item: unknown): string {
   );
 }
 
+function canMeasureOverflow(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const userAgent = window.navigator?.userAgent?.toLowerCase() ?? "";
+  return !userAgent.includes("jsdom") && !userAgent.includes("happy-dom");
+}
+
+function fallbackVisibleTailCount(itemCount: number): number {
+  return itemCount > MAX_VISIBLE_ITEMS ? MAX_VISIBLE_ITEMS - 2 : itemCount;
+}
+
 /**
  * Breadcrumbs show hierarchy and navigational context for a user's location within an application.
  */
 export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
+  if (typeof window === "undefined") {
+    return renderBreadcrumbs(props, () => {});
+  }
+
+  return createRoot((disposeRoot) => renderBreadcrumbs(props, disposeRoot));
+}
+
+function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => void): JSX.Element {
   const providerProps = useProviderProps(props);
   const contextProps = getSlottedContextProps(useContext(BreadcrumbsContext), props.slot);
   const mergedProps = mergeProps(
@@ -198,6 +224,22 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
     (contextProps as { ref?: RefLike<HTMLElement> } | null)?.ref,
     props.ref,
   );
+  let rootElement: HTMLElement | undefined;
+  let measurementElement: HTMLElement | undefined;
+  let measurementMenuButton: HTMLElement | undefined;
+  let resizeObserver: ResizeObserver | undefined;
+  let mutationObserver: MutationObserver | undefined;
+  let connectionObserver: MutationObserver | undefined;
+  const observedResizeTargets = new WeakSet<Element>();
+  const observedMutationTargets = new WeakSet<Element>();
+  let retryOverflowUpdateTimeout: number | undefined;
+  const initialOverflowUpdateTimeouts: number[] = [];
+  const measurementId = `rsp-breadcrumbs-${Math.random().toString(36).slice(2)}`;
+  const [canMeasure, setCanMeasure] = createSignal(false);
+  const [visibleTailCount, setVisibleTailCount] = createSignal(MAX_VISIBLE_ITEMS - 2);
+  let cleanupOverflowObservers = () => {};
+  let hasDisposedRoot = false;
+  let hasCleanedOverflowObservers = false;
 
   const getClassName = (renderProps: BreadcrumbsRenderProps): string =>
     [
@@ -215,29 +257,325 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
-  const visibleItems = createMemo(() => {
-    const items = local.items ?? [];
-    if (items.length <= MAX_VISIBLE_ITEMS) {
-      return items;
+  const allItems = createMemo(() => local.items ?? []);
+  const scheduleOverflowRetry = () => {
+    if (
+      hasDisposedRoot ||
+      typeof window === "undefined" ||
+      retryOverflowUpdateTimeout !== undefined
+    ) {
+      return;
     }
 
-    return [items[0], ...items.slice(items.length - 2)];
+    retryOverflowUpdateTimeout = window.setTimeout(() => {
+      retryOverflowUpdateTimeout = undefined;
+      updateOverflow();
+    }, 16);
+  };
+  const updateOverflow = () => {
+    if (hasDisposedRoot) {
+      return;
+    }
+
+    const items = local.items ?? [];
+    if (items.length === 0) {
+      setVisibleTailCount(0);
+      return;
+    }
+
+    if (!canMeasure()) {
+      setVisibleTailCount(fallbackVisibleTailCount(items.length));
+      return;
+    }
+
+    const measureRoot =
+      measurementElement ??
+      (typeof document !== "undefined"
+        ? (document.querySelector(
+            `[data-rsp-breadcrumbs-measure-id="${measurementId}"]`,
+          ) as HTMLElement | null)
+        : undefined);
+    const visibleContainer =
+      measureRoot?.previousElementSibling instanceof HTMLElement
+        ? measureRoot.previousElementSibling
+        : undefined;
+    const container = visibleContainer ?? rootElement;
+    if (measureRoot && measurementElement !== measureRoot) {
+      measurementElement = measureRoot;
+    }
+    if (container && rootElement !== container) {
+      rootElement = container;
+      assignRefs(container);
+    }
+    observeOverflowTargets();
+    if (!measureRoot || !container || typeof window === "undefined") {
+      scheduleOverflowRetry();
+      setVisibleTailCount(fallbackVisibleTailCount(items.length));
+      return;
+    }
+
+    const hiddenItems = Array.from(measureRoot.querySelectorAll("ol > li")).filter(
+      (element): element is HTMLElement => element instanceof HTMLElement,
+    );
+    const folder =
+      measurementMenuButton ??
+      (measureRoot.querySelector("[data-hidden-breadcrumb-menu-button]") as HTMLElement | null);
+    if (hiddenItems.length <= 0 || !folder) {
+      scheduleOverflowRetry();
+      setVisibleTailCount(fallbackVisibleTailCount(items.length));
+      return;
+    }
+
+    const containerWidth = container.offsetWidth || container.getBoundingClientRect().width;
+    const containerGap = Number.parseFloat(window.getComputedStyle(container).gap || "0") || 0;
+    const folderGap =
+      Number.parseFloat(window.getComputedStyle(folder).marginInlineStart || "0") || 0;
+    const widths = hiddenItems.map((breadcrumb) => breadcrumb.offsetWidth + 1);
+    const totalWidth = widths.reduce((sum, width) => sum + width, 0);
+
+    if (
+      totalWidth <= containerWidth - items.length * containerGap &&
+      items.length <= MAX_VISIBLE_ITEMS
+    ) {
+      setVisibleTailCount(items.length);
+      return;
+    }
+
+    const firstWidth = widths.shift() ?? 0;
+    let availableWidth =
+      containerWidth - firstWidth - folderGap - folder.offsetWidth - containerGap;
+    let nextVisibleTailCount = 0;
+    const maxTailCount = MAX_VISIBLE_ITEMS - 2;
+
+    for (const width of widths.reverse()) {
+      availableWidth -= width;
+      if (availableWidth <= 0) {
+        break;
+      }
+      availableWidth -= containerGap;
+      nextVisibleTailCount += 1;
+    }
+
+    const nextTailCount = Math.max(1, Math.min(maxTailCount, nextVisibleTailCount));
+    setVisibleTailCount(nextTailCount);
+  };
+  const queueOverflowUpdate = () => {
+    if (hasDisposedRoot) {
+      return;
+    }
+
+    queueMicrotask(updateOverflow);
+    if (typeof requestAnimationFrame !== "undefined") {
+      requestAnimationFrame(updateOverflow);
+    }
+    if (typeof window !== "undefined") {
+      window.setTimeout(updateOverflow, 0);
+    }
+  };
+  const disposeBreadcrumbsRoot = () => {
+    if (hasDisposedRoot) {
+      return;
+    }
+
+    hasDisposedRoot = true;
+    cleanupOverflowObservers();
+    disposeRoot();
+  };
+  const cleanupIfDisconnected = () => {
+    if (rootElement?.isConnected || measurementElement?.isConnected) {
+      return;
+    }
+
+    disposeBreadcrumbsRoot();
+  };
+  const observeOverflowTargets = () => {
+    if (hasDisposedRoot || !rootElement || (!resizeObserver && !mutationObserver)) {
+      return;
+    }
+
+    const observeElement = (element: HTMLElement, options: { mutations?: boolean } = {}) => {
+      if (resizeObserver && !observedResizeTargets.has(element)) {
+        resizeObserver.observe(element);
+        observedResizeTargets.add(element);
+      }
+
+      if (
+        options.mutations !== false &&
+        mutationObserver &&
+        !observedMutationTargets.has(element)
+      ) {
+        mutationObserver.observe(element, {
+          attributes: true,
+          attributeFilter: ["class", "style"],
+        });
+        observedMutationTargets.add(element);
+      }
+    };
+
+    let element: HTMLElement | null = rootElement;
+    while (element && element !== document.body) {
+      observeElement(element);
+      element = element.parentElement;
+    }
+
+    if (measurementElement) {
+      observeElement(measurementElement, { mutations: false });
+      if (measurementElement.parentElement) {
+        observeElement(measurementElement.parentElement);
+      }
+    }
+  };
+  const setRootElement = (element: HTMLElement) => {
+    if (hasDisposedRoot) {
+      return;
+    }
+
+    rootElement = element;
+    assignRefs(element);
+    observeOverflowTargets();
+    queueOverflowUpdate();
+  };
+  const setMeasurementElement = (element: HTMLElement) => {
+    if (hasDisposedRoot) {
+      return;
+    }
+
+    measurementElement = element;
+    const previousElement = element.previousElementSibling;
+    if (previousElement instanceof HTMLElement) {
+      rootElement = previousElement;
+      assignRefs(previousElement);
+      observeOverflowTargets();
+    }
+    queueOverflowUpdate();
+  };
+  const setMeasurementMenuButton = (element: HTMLElement) => {
+    if (hasDisposedRoot) {
+      return;
+    }
+
+    measurementMenuButton = element;
+    queueOverflowUpdate();
+  };
+
+  createEffect(() => {
+    allItems().length;
+    canMeasure();
+    size();
+    isDisabled();
+    queueOverflowUpdate();
+  });
+
+  onMount(() => {
+    const nextCanMeasure = canMeasureOverflow();
+    setCanMeasure(nextCanMeasure);
+
+    const safeUpdate = () => {
+      if (rootElement && !rootElement.isConnected) {
+        cleanupIfDisconnected();
+        return;
+      }
+
+      updateOverflow();
+    };
+    const safeQueueUpdate = () => {
+      if (rootElement && !rootElement.isConnected) {
+        cleanupIfDisconnected();
+        return;
+      }
+
+      queueOverflowUpdate();
+    };
+    resizeObserver =
+      nextCanMeasure && typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(safeQueueUpdate)
+        : undefined;
+    mutationObserver =
+      nextCanMeasure && typeof MutationObserver !== "undefined"
+        ? new MutationObserver(safeQueueUpdate)
+        : undefined;
+
+    observeOverflowTargets();
+    safeUpdate();
+    window.addEventListener("resize", safeUpdate);
+    if (typeof requestAnimationFrame !== "undefined") {
+      requestAnimationFrame(() => {
+        safeUpdate();
+        requestAnimationFrame(safeUpdate);
+      });
+    }
+    for (const delay of [16, 50, 100, 250]) {
+      initialOverflowUpdateTimeouts.push(window.setTimeout(safeUpdate, delay));
+    }
+    document.fonts?.ready.then(() => {
+      if (!hasDisposedRoot) {
+        safeUpdate();
+      }
+    });
+    connectionObserver =
+      typeof MutationObserver !== "undefined"
+        ? new MutationObserver(cleanupIfDisconnected)
+        : undefined;
+    connectionObserver?.observe(document.body, { childList: true, subtree: true });
+    cleanupOverflowObservers = () => {
+      if (hasCleanedOverflowObservers) {
+        return;
+      }
+
+      hasCleanedOverflowObservers = true;
+      window.removeEventListener("resize", safeUpdate);
+      resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
+      connectionObserver?.disconnect();
+      for (const timeout of initialOverflowUpdateTimeouts) {
+        window.clearTimeout(timeout);
+      }
+      if (retryOverflowUpdateTimeout !== undefined) {
+        window.clearTimeout(retryOverflowUpdateTimeout);
+      }
+    };
+  });
+  onCleanup(() => cleanupOverflowObservers());
+
+  const shouldCollapse = createMemo(() => {
+    const items = allItems();
+    return (
+      items.length > 2 &&
+      (items.length > MAX_VISIBLE_ITEMS || (canMeasure() && visibleTailCount() < items.length))
+    );
+  });
+  createEffect(() => {
+    shouldCollapse();
+    queueOverflowUpdate();
   });
   const collapsedCollection = createMemo<CollapsedBreadcrumbEntry<T>[]>(() => {
-    const items = local.items ?? [];
-    if (items.length <= MAX_VISIBLE_ITEMS) {
+    const items = allItems();
+    if (!shouldCollapse()) {
       return [];
     }
 
+    const tailCount = Math.min(visibleTailCount(), items.length);
+    const sliceIndex = Math.max(1, items.length - tailCount);
+
     return [
-      { kind: "item", item: items[0] as T },
+      { kind: "item", item: items[0] as T, index: 0 },
       { kind: "menu" },
-      ...items.slice(items.length - 2).map((item) => ({ kind: "item" as const, item })),
+      ...items.slice(sliceIndex).map((item, index) => ({
+        kind: "item" as const,
+        item,
+        index: sliceIndex + index,
+      })),
     ];
   });
   const collapsedItems = createMemo(() => {
-    const items = local.items ?? [];
-    return items.length > MAX_VISIBLE_ITEMS ? items.slice(1, items.length - 2) : [];
+    const items = allItems();
+    if (!shouldCollapse()) {
+      return [];
+    }
+
+    const tailCount = Math.min(visibleTailCount(), items.length);
+    const sliceIndex = Math.max(1, items.length - tailCount);
+    return items.slice(1, sliceIndex);
   });
 
   const renderDynamicItem = (item: T | undefined) => {
@@ -252,7 +590,7 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
   return (
     <InternalBreadcrumbsContext.Provider value={{ size, isDisabled, showSeparator }}>
       <Show
-        when={(local.items?.length ?? 0) > MAX_VISIBLE_ITEMS}
+        when={shouldCollapse()}
         fallback={
           <HeadlessBreadcrumbs
             {...headlessProps}
@@ -260,7 +598,7 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
             getKey={local.getKey}
             onAction={local.onAction}
             isDisabled={local.isDisabled}
-            ref={(element: HTMLElement) => assignRefs(element)}
+            ref={setRootElement}
             class={getClassName}
             style={() => mergedUnsafeStyle() ?? {}}
             children={local.children as any}
@@ -273,12 +611,11 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
           getKey={(entry) =>
             entry.kind === "menu"
               ? "__breadcrumb-menu"
-              : (local.getKey?.(entry.item) ??
-                defaultItemKey(entry.item, collapsedCollection().indexOf(entry)))
+              : (local.getKey?.(entry.item) ?? defaultItemKey(entry.item, entry.index))
           }
           onAction={local.onAction}
           isDisabled={local.isDisabled}
-          ref={(element: HTMLElement) => assignRefs(element)}
+          ref={setRootElement}
           class={getClassName}
           style={() => mergedUnsafeStyle() ?? {}}
           children={(entry) =>
@@ -296,6 +633,40 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
             )
           }
         />
+      </Show>
+      <Show when={allItems().length > 0 && canMeasure()}>
+        <div
+          ref={setMeasurementElement}
+          aria-hidden="true"
+          data-rsp-breadcrumbs-measure=""
+          data-rsp-breadcrumbs-measure-id={measurementId}
+          style={{
+            position: "absolute",
+            inset: "0",
+            visibility: "hidden",
+            overflow: "hidden",
+            opacity: 0,
+            "pointer-events": "none",
+          }}
+        >
+          <HeadlessBreadcrumbs
+            {...headlessProps}
+            items={local.items}
+            getKey={local.getKey}
+            isDisabled={local.isDisabled}
+            class={getClassName}
+            style={() => ({})}
+            children={local.children as any}
+          />
+          <ActionButton
+            ref={setMeasurementMenuButton}
+            data-hidden-breadcrumb-menu-button=""
+            isQuiet
+            aria-label="More items"
+          >
+            <FolderBreadcrumbIcon />
+          </ActionButton>
+        </div>
       </Show>
     </InternalBreadcrumbsContext.Provider>
   );

@@ -688,7 +688,7 @@ const breadcrumbsControls: ComponentControlGroup = {
     "aria-describedby",
     "aria-details",
   ],
-  note: "Modeled from the S2 Breadcrumbs docs. The viewer drives size, disabled state, the default static-length path, and the collection overflow path that collapses middle items into the documented breadcrumb menu.",
+  note: "Modeled from the S2 Breadcrumbs docs. The viewer drives size, disabled state, the default static-length path, and the collection overflow path that responsively collapses middle items into the documented breadcrumb menu.",
 };
 
 const checkboxControls: ComponentControlGroup = {

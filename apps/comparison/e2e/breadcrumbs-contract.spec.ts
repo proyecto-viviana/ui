@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
 import { clearPointer, pinComparisonTheme } from "./visual-diff";
 import { breadcrumbsItemSetOptions, breadcrumbsSizeOptions } from "../src/data/breadcrumbs-demo";
@@ -31,6 +31,19 @@ async function breadcrumbsFixtures(page: Page, params: Record<string, string | b
   await expect(solidRoot).toBeVisible();
 
   return { reactPanel, solidPanel, reactRoot, solidRoot };
+}
+
+async function visibleBreadcrumbItems(panel: Locator) {
+  return panel
+    .locator('[aria-label="Project location"]')
+    .first()
+    .locator("li")
+    .evaluateAll((items) =>
+      items.map((item) => ({
+        text: item.textContent?.trim() ?? "",
+        hasMenuButton: item.querySelector('button[aria-label="More items"]') !== null,
+      })),
+    );
 }
 
 test.describe("comparison Breadcrumbs route contract", () => {
@@ -122,5 +135,37 @@ test.describe("comparison Breadcrumbs route contract", () => {
     await expect(solidRoot).toHaveAttribute("data-comparison-last-action", "files");
     await expect(reactRoot).toHaveAttribute("data-comparison-path", "home,files");
     await expect(solidRoot).toHaveAttribute("data-comparison-path", "home,files");
+  });
+
+  test("Breadcrumbs responsive overflow measurement matches React Spectrum", async ({ page }) => {
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await breadcrumbsFixtures(page, {
+      itemSet: "overflow",
+    });
+
+    await expect(reactPanel.getByRole("button", { name: "More items" })).toBeVisible();
+    await expect(solidPanel.getByRole("button", { name: "More items" })).toBeVisible();
+
+    await reactRoot.evaluate((element) => {
+      (element as HTMLElement).style.inlineSize = "100px";
+    });
+    await solidRoot.evaluate((element) => {
+      (element as HTMLElement).style.inlineSize = "100px";
+    });
+
+    const expectedNarrowItems = [
+      { text: "Home", hasMenuButton: false },
+      { text: "", hasMenuButton: true },
+      { text: "Annual report", hasMenuButton: false },
+    ];
+
+    await expect
+      .poll(async () => ({
+        react: await visibleBreadcrumbItems(reactPanel),
+        solid: await visibleBreadcrumbItems(solidPanel),
+      }))
+      .toEqual({
+        react: expectedNarrowItems,
+        solid: expectedNarrowItems,
+      });
   });
 });

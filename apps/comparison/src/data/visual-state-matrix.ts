@@ -255,7 +255,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/breadcrumbs-contract.spec.ts",
-      note: "Breadcrumbs route mounts both stacks with S2 size, disabled, default path, overflow path, dynamic collection action dispatch, and path truncation behavior.",
+      note: "Breadcrumbs route mounts both stacks with S2 size, disabled, default path, overflow path, dynamic collection action dispatch, path truncation behavior, and responsive overflow measurement parity.",
     },
     {
       id: "styled.default",
@@ -275,7 +275,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "na",
       spec: "e2e/breadcrumbs-visual.spec.ts",
-      note: "Overflow Breadcrumbs menu has browser assertions for collapsed middle item exposure; Menu component visual parity is covered by the Menu pass.",
+      note: "Overflow Breadcrumbs menu has browser assertions for collapsed middle item exposure and responsive narrow-width structure; Menu component visual parity is covered by the Menu pass.",
     },
   ],
   actionbar: [

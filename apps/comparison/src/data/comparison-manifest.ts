@@ -206,10 +206,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "Breadcrumbs",
     category: "Components",
     summary:
-      "Hierarchy navigation route mounted on both stacks with S2 size, disabled, dynamic collection action, and overflow breadcrumb menu controls.",
+      "Hierarchy navigation route mounted on both stacks with S2 size, disabled, dynamic collection action, and responsive overflow breadcrumb menu controls.",
     styledSummary: "React Spectrum Breadcrumbs vs Solid Spectrum Breadcrumbs.",
     styledNote:
-      "React uses @react-spectrum/s2 Breadcrumbs and Breadcrumb directly; Solid uses @proyecto-viviana/solid-spectrum with the public Breadcrumbs subpath, BreadcrumbsContext export, static child support, dynamic collection actions, link DOM props, and deterministic overflow menu composition.",
+      "React uses @react-spectrum/s2 Breadcrumbs and Breadcrumb directly; Solid uses @proyecto-viviana/solid-spectrum with the public Breadcrumbs subpath, BreadcrumbsContext export, static child support, dynamic collection actions, link DOM props, and responsive overflow measurement composition.",
   }),
 
   calendar: styledLiveOfficialEntry({
