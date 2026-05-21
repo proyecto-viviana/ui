@@ -1718,6 +1718,10 @@ function SolidSpectrumStatusLightDemo() {
       {
         "data-comparison-control-root": "statuslight",
         "data-comparison-control-props": serializeStatusLightDemoProps(props),
+        id: "statuslight-route-root",
+        "aria-label": "StatusLight route label",
+        "aria-describedby": "statuslight-route-description",
+        "aria-details": "statuslight-route-details",
         variant: props.variant,
         size: props.size,
         role: props.role || undefined,

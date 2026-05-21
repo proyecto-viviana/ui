@@ -56,7 +56,13 @@ async function statusLightContract(root: Locator) {
 
     return {
       tagName: element.tagName,
+      id: element.id,
+      dataComparisonRoot: element.getAttribute("data-comparison-control-root"),
+      dataComparisonProps: element.getAttribute("data-comparison-control-props"),
       role: element.getAttribute("role"),
+      ariaLabel: element.getAttribute("aria-label"),
+      ariaDescribedBy: element.getAttribute("aria-describedby"),
+      ariaDetails: element.getAttribute("aria-details"),
       text: element.textContent?.trim(),
       display: styles.display,
       alignItems: styles.alignItems,
@@ -144,6 +150,36 @@ test.describe("comparison StatusLight visual parity", () => {
     await expect(page.locator('select[name="variant"]')).toHaveValue("notice");
     await expectRadioValues(page, "size", statusLightSizeOptions, "XL");
     await expectRadioValues(page, "role", statusLightRoleOptions, "status");
+  });
+
+  test("StatusLight root DOM contract follows S2 filtering", async ({ page }) => {
+    const defaultFixtures = await statusLightFixtures(page);
+
+    await expect(statusLightContract(defaultFixtures.solidRoot)).resolves.toMatchObject({
+      id: "statuslight-route-root",
+      dataComparisonRoot: "statuslight",
+      role: null,
+      ariaLabel: null,
+      ariaDescribedBy: null,
+      ariaDetails: null,
+    });
+    await expect(statusLightContract(defaultFixtures.solidRoot)).resolves.toEqual(
+      await statusLightContract(defaultFixtures.reactRoot),
+    );
+
+    const statusFixtures = await statusLightFixtures(page, {
+      role: "status",
+    });
+
+    await expect(statusLightContract(statusFixtures.solidRoot)).resolves.toMatchObject({
+      role: "status",
+      ariaLabel: "StatusLight route label",
+      ariaDescribedBy: "statuslight-route-description",
+      ariaDetails: "statuslight-route-details",
+    });
+    await expect(statusLightContract(statusFixtures.solidRoot)).resolves.toEqual(
+      await statusLightContract(statusFixtures.reactRoot),
+    );
   });
 
   test("StatusLight computed styles match React Spectrum across variants and sizes", async ({

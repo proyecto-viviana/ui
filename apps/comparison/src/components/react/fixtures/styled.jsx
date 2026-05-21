@@ -1647,6 +1647,10 @@ function ReactStatusLightDemo() {
       children: jsx(SpectrumStatusLight, {
         "data-comparison-control-root": "statuslight",
         "data-comparison-control-props": serializeStatusLightDemoProps(demoProps),
+        id: "statuslight-route-root",
+        "aria-label": "StatusLight route label",
+        "aria-describedby": "statuslight-route-description",
+        "aria-details": "statuslight-route-details",
         variant: demoProps.variant,
         size: demoProps.size,
         role: demoProps.role || undefined,

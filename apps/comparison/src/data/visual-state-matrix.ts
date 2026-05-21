@@ -766,6 +766,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Computed style contracts compare root typography/layout, every documented SVG light fill, S2 light sizes, text slot behavior, and optional status role across route states.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM prop boundary",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/statuslight-visual.spec.ts",
+      note: "Root contracts compare S2-filtered id, data attributes, optional live status role, and role-gated ARIA labels against React Spectrum.",
+    },
+    {
       id: "styled.forced-colors",
       label: "Forced colors branch",
       kind: "static",

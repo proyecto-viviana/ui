@@ -1,10 +1,14 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { Skeleton } from "../src/skeleton";
-import { StatusLight, StatusLightContext } from "../src/statuslight";
+import { StatusLight, StatusLightContext, type StatusLightProps } from "../src/statuslight";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("StatusLight (solid-spectrum)", () => {
   it("renders the S2 status light structure", () => {
@@ -38,22 +42,6 @@ describe("StatusLight (solid-spectrum)", () => {
     expect(lights[2]?.className.baseVal).not.toBe(lights[0]?.className.baseVal);
   });
 
-  it("maps legacy variant and size aliases to S2 styles", () => {
-    const { container } = render(() => (
-      <>
-        <StatusLight variant="info" size="md">
-          Info alias
-        </StatusLight>
-        <StatusLight variant="informative" size="M">
-          Informative
-        </StatusLight>
-      </>
-    ));
-
-    const lights = Array.from(container.querySelectorAll('svg[aria-hidden="true"]'));
-    expect(lights[0]?.className.baseVal).toBe(lights[1]?.className.baseVal);
-  });
-
   it("supports role, aria attributes, context props, and unsafe escape hatches", () => {
     const { container } = render(() => (
       <StatusLightContext.Provider
@@ -62,13 +50,15 @@ describe("StatusLight (solid-spectrum)", () => {
           variant: "negative",
           size: "XL",
           UNSAFE_className: "context-status",
-          UNSAFE_style: { margin: "2px" },
+          UNSAFE_style: { color: "red", margin: "2px" },
+          "aria-describedby": "context-description",
         }}
       >
         <StatusLight
-          class="local-status"
-          indicatorClass="legacy-indicator"
+          data-testid="status-light-root"
           aria-label="Connection status"
+          UNSAFE_className="local-status"
+          UNSAFE_style={{ margin: "4px" }}
         >
           Offline
         </StatusLight>
@@ -78,11 +68,35 @@ describe("StatusLight (solid-spectrum)", () => {
     const root = screen.getByRole("status", { name: "Connection status" }) as HTMLElement;
     expect(root).toHaveClass("context-status");
     expect(root).toHaveClass("local-status");
-    expect(root.style.margin).toBe("2px");
-    expect(container.querySelector("svg")).toHaveClass("legacy-indicator");
+    expect(root).toHaveAttribute("aria-describedby", "context-description");
+    expect(root.style.color).toBe("red");
+    expect(root.style.margin).toBe("4px");
+    expect(container.querySelector("svg")?.className.baseVal).not.toBe("");
+  });
+
+  it("filters S2-excluded compatibility props from the root and indicator", () => {
+    const onClick = vi.fn();
+    const props = {
+      class: "legacy-status",
+      indicatorClass: "legacy-indicator",
+      style: { margin: "99px" },
+      onClick,
+      "data-testid": "status-light-root",
+    } as unknown as StatusLightProps;
+
+    const { container } = render(() => <StatusLight {...props}>Boundary</StatusLight>);
+
+    const root = screen.getByTestId("status-light-root");
+    root.click();
+    expect(root).not.toHaveClass("legacy-status");
+    expect(root.style.margin).toBe("");
+    expect(onClick).not.toHaveBeenCalled();
+    expect(container.querySelector("svg")).not.toHaveClass("legacy-indicator");
   });
 
   it("filters labelable aria attributes unless role is status", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
     render(() => (
       <>
         <StatusLight aria-label="No role">No role</StatusLight>
@@ -98,6 +112,7 @@ describe("StatusLight (solid-spectrum)", () => {
       "aria-label",
       "With role",
     );
+    expect(warn).toHaveBeenCalledWith("A labelled StatusLight must have a role.");
   });
 
   it("uses the shared skeleton consumers for text and light color", () => {

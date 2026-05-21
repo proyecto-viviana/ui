@@ -1,4 +1,5 @@
 import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
+import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import { CenterBaseline } from "../icon/center-baseline";
 import { style, type StyleString } from "../s2-style";
 import { controlFont, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
@@ -13,7 +14,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 
-export type StatusLightVariant =
+type StatusLightVariant =
   | "informative"
   | "neutral"
   | "positive"
@@ -32,17 +33,10 @@ export type StatusLightVariant =
   | "turquoise"
   | "brown"
   | "cinnamon"
-  | "silver"
-  | "info";
-export type StatusLightSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+  | "silver";
+type StatusLightSize = "S" | "M" | "L" | "XL";
 
-type S2StatusLightVariant = Exclude<StatusLightVariant, "info">;
-type S2StatusLightSize = "S" | "M" | "L" | "XL";
-
-export interface StatusLightProps extends Omit<
-  JSX.HTMLAttributes<HTMLDivElement>,
-  "class" | "style" | "children" | "ref" | "role" | "slot"
-> {
+export interface StatusLightProps {
   /** The content to display as the label. */
   children?: JSX.Element;
   /**
@@ -63,19 +57,21 @@ export interface StatusLightProps extends Omit<
   UNSAFE_className?: UnsafeClassName | string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
-  /** Backward-compatible indicator class alias. Prefer styles for S2 parity. */
-  indicatorClass?: string;
+  id?: string;
   slot?: string | null;
   ref?: RefLike<HTMLDivElement>;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
+  "aria-describedby"?: string;
+  "aria-details"?: string;
+  [key: `data-${string}`]: string | undefined;
 }
 
 export const StatusLightContext = createContext<SpectrumContextValue<StatusLightProps>>(null);
 
 const wrapperStyles = style<{
-  size: S2StatusLightSize;
-  variant: S2StatusLightVariant;
+  size: StatusLightSize;
+  variant: StatusLightVariant;
 }>(
   {
     display: "flex",
@@ -95,8 +91,8 @@ const wrapperStyles = style<{
 );
 
 const lightStyles = style<{
-  size: S2StatusLightSize;
-  variant: S2StatusLightVariant;
+  size: StatusLightSize;
+  variant: StatusLightVariant;
   isSkeleton: boolean;
 }>({
   size: {
@@ -134,27 +130,17 @@ const lightStyles = style<{
   overflow: "visible",
 });
 
-function normalizeSize(size: StatusLightSize | undefined): S2StatusLightSize {
-  switch (size) {
-    case "sm":
-      return "S";
-    case "md":
-      return "M";
-    case "lg":
-      return "L";
-    default:
-      return size ?? "M";
-  }
-}
-
-function normalizeVariant(variant: StatusLightVariant | undefined): S2StatusLightVariant {
-  return variant === "info" ? "informative" : (variant ?? "neutral");
+function mergeUnsafeClassName(
+  contextClassName?: UnsafeClassName | string,
+  localClassName?: UnsafeClassName | string,
+): string | undefined {
+  return [contextClassName, localClassName].filter(Boolean).join(" ") || undefined;
 }
 
 export function StatusLight(props: StatusLightProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(StatusLightContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
-  const [local, domProps] = splitProps(merged, [
+  const merged = mergeProps(contextProps ?? {}, props) as StatusLightProps;
+  const [local] = splitProps(merged, [
     "children",
     "variant",
     "size",
@@ -162,8 +148,7 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
-    "indicatorClass",
+    "id",
     "aria-label",
     "aria-labelledby",
     "aria-describedby",
@@ -172,29 +157,41 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
     "ref",
   ]);
   const isSkeleton = useIsSkeleton();
-  const size = () => normalizeSize(local.size);
-  const variant = () => normalizeVariant(local.variant);
+  const size = () => local.size ?? "M";
+  const variant = () => local.variant ?? "neutral";
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const mergedUnsafeClassName = () =>
+    mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className);
+  const nodeEnv = (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } })
+    .process?.env?.NODE_ENV;
+
+  if (!local.children && !local["aria-label"] && nodeEnv !== "production") {
+    console.warn("If no children are provided, an aria-label must be specified");
+  }
+
+  if (
+    !local.role &&
+    (local["aria-label"] || local["aria-labelledby"]) &&
+    nodeEnv !== "production"
+  ) {
+    console.warn("A labelled StatusLight must have a role.");
+  }
 
   return (
     <TextContext.Provider value={{}}>
       <div
-        {...domProps}
+        {...(filterDOMProps(merged, {
+          labelable: !!local.role,
+        }) as JSX.HTMLAttributes<HTMLDivElement>)}
         ref={mergeContextRefs(
           (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
           props.ref,
         )}
         role={local.role}
-        aria-label={local.role ? local["aria-label"] : undefined}
-        aria-labelledby={local.role ? local["aria-labelledby"] : undefined}
-        aria-describedby={local.role ? local["aria-describedby"] : undefined}
-        aria-details={local.role ? local["aria-details"] : undefined}
         class={[
-          contextProps?.UNSAFE_className,
-          local.UNSAFE_className,
-          local.class,
+          mergedUnsafeClassName(),
           wrapperStyles({ size: size(), variant: variant() }, mergedStyles()),
         ]
           .filter(Boolean)
@@ -203,12 +200,7 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
       >
         <CenterBaseline>
           <svg
-            class={[
-              lightStyles({ size: size(), variant: variant(), isSkeleton: isSkeleton() }),
-              local.indicatorClass,
-            ]
-              .filter(Boolean)
-              .join(" ")}
+            class={lightStyles({ size: size(), variant: variant(), isSkeleton: isSkeleton() })}
             aria-hidden="true"
           >
             <circle r="50%" cx="50%" cy="50%" />

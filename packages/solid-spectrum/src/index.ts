@@ -386,7 +386,7 @@ export type {
 
 // StatusLight
 export { StatusLight, StatusLightContext } from "./statuslight";
-export type { StatusLightProps, StatusLightSize, StatusLightVariant } from "./statuslight";
+export type { StatusLightProps } from "./statuslight";
 
 // Switch
 export { Switch } from "./switch";

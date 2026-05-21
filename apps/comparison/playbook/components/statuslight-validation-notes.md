@@ -1,84 +1,151 @@
 # StatusLight Validation Notes
 
-## Target
+Date: 2026-05-20
+Status: accepted
 
-- Component: StatusLight
-- Slug: statuslight
-- Family or direct subcomponents: StatusLightContext, Text slot,
-  CenterBaseline/SVG light, Skeleton consumer
-- Pass goal: S2 styled StatusLight parity, route controls, labelable live-status
-  behavior, skeleton consumer behavior, forced-colors parity, and strict default
-  visual evidence
-- Date: 2026-05-15
+StatusLight has now been normalized against the current acceptance gates.
+Historical evidence from the original 2026-05-15 pass is superseded by this
+closeout, which records the corrected S2 API boundary, root DOM filtering,
+comparison viewer parity, browser contract coverage, and refreshed
+report/guard evidence.
 
-## Task Status
+## Current-Gate Closeout
 
-| Task                   | Status | Evidence                                                                                          | Blocker or next action |
-| ---------------------- | ------ | ------------------------------------------------------------------------------------------------- | ---------------------- |
-| 0 Research             | done   | S2 StatusLight docs and S2 source                                                                 | None                   |
-| 1 Baseline             | done   | `comparison:report:gaps`, `comparison:report:exports`, RAC guards                                 | None                   |
-| 2 Route harness        | done   | StatusLight controls, route defaults, React/Solid fixtures, visible control assertions            | None                   |
-| 3 Source map/API       | done   | Source map and public contract below                                                              | None                   |
-| 4 Cross-layer audit    | done   | Branch ledger covers wrapper, SVG light, text, role, context, skeleton, and aliases               | None                   |
-| 5 Transitions          | done   | Static component; variant, size, role, skeleton, and forced-colors obligations recorded           | None                   |
-| 6 State                | n/a    | No state package owner                                                                            | None                   |
-| 7 ARIA hooks           | n/a    | StatusLight has no dedicated ARIA hook                                                            | None                   |
-| 8 Headless             | n/a    | Native `div`/`svg`/text composition                                                               | None                   |
-| 9 Styled S2            | done   | `StatusLight`, `StatusLightContext`, S2 style macro branches, unit tests, computed browser matrix | None                   |
-| 10 Runtime lifecycle   | done   | Static markup plus provider contexts; no timers, overlays, portals, or global listeners           | None                   |
-| 11 Harness integrity   | done   | Exact default pair diff, route-control UI assertions, computed matrix, forced-colors contract     | None                   |
-| 12 Comparison evidence | done   | StatusLight Playwright suite `4 passed`; current reports and guards refreshed                     | None                   |
-| 13 Acceptance          | done   | Focused tests, builds, browser evidence, report/guard refresh, full check                         | None                   |
+- Scope: styled S2 `StatusLight`, `StatusLightContext`, public package root
+  exports, comparison route controls, visual-state matrix coverage, Skeleton
+  consumer behavior, and focused styled/browser tests.
+- Sources rechecked: React Spectrum S2 StatusLight API, S2 StatusLight source,
+  S2 package root exports, Solid StatusLight/Text/Skeleton sources, comparison
+  route controls, StatusLight visual spec, and existing StatusLight unit tests.
+- Result: accepted for StatusLight. Solid now exposes the documented S2
+  surface: `children`, documented `variant` values, `size` values `S | M | L |
+XL`, optional `role="status"`, `id`, role-gated ARIA label props, `slot`,
+  `styles`, `UNSAFE_className`, `UNSAFE_style`, `data-*` harness attributes,
+  and `ref`. The styled wrapper no longer exposes legacy `info`, `sm`/`md`/`lg`
+  aliases, legacy `class`, legacy `indicatorClass`, raw `style`, arbitrary DOM
+  events, or exported root type aliases beyond `StatusLightProps`.
+
+## Acceptance Gate Checklist
+
+- [x] Public API: comparison controls and route defaults match the S2 surface
+      for `children`, `variant`, `size`, optional `role="status"`, style
+      props, unsafe props, ARIA labels, `id`, `slot`, and `ref`.
+- [x] Styled public type: `StatusLightProps` omits the prior compatibility
+      aliases and arbitrary DOM event/style/class props; package root type
+      exports only `StatusLightProps`.
+- [x] DOM/accessibility contract: styled StatusLight renders the S2 `div` root,
+      forwards only S2-filtered `id`/`data-*` props by default, forwards label
+      ARIA props only when the status role is present, and keeps `role`
+      optional.
+- [x] Style source-to-computed: S2 style macro output covers wrapper layout,
+      typography, default/neutral color branch, every documented light fill,
+      all S2 light sizes, text slot wrapping, Skeleton light fill, and
+      forced-colors behavior.
+- [x] Harness contract: route controls match the docs-style option surface, the
+      visual-state matrix includes StatusLight root DOM contract coverage, and
+      browser computed contracts compare root DOM, style branches, status role,
+      and forced-colors output against React Spectrum.
+- [x] Evidence handoff: focused unit tests, package builds, comparison build,
+      StatusLight Playwright, regression slice, reports, guards, README status,
+      and this note are refreshed for the current gate.
+
+## Agent Workflow
+
+| Step                    | Status | Evidence                                                              |
+| ----------------------- | ------ | --------------------------------------------------------------------- |
+| Research                | done   | S2 StatusLight API/source, package root exports, current Solid source |
+| Baseline and source map | done   | Existing note plus current source/API/export recheck                  |
+| Implementation          | done   | Styled API narrowing, root export cleanup, DOM prop boundary cleanup  |
+| Harness                 | done   | Route root API props, root DOM matrix row, visual contract expansion  |
+| Verification            | done   | Focused unit tests, package builds, comparison build, StatusLight e2e |
+| Handoff                 | done   | README normalization status, current-gate closeout note, commit       |
+
+## Behavior State Machine
+
+- Stable states: text label; no children with explicit ARIA label; optional
+  `role="status"`; default variant/size fallback; every documented semantic and
+  categorical variant; all S2 sizes.
+- Visual states: wrapper layout/typography, neutral root color branch, SVG
+  light fill variants, S/M/L/XL SVG light sizes, text slot treatment, Skeleton
+  loading light branch, and forced-colors active branch.
+- Context states: `StatusLightContext` can provide slotted visual props, role,
+  ARIA props, styles, unsafe class/style, and refs; local unsafe class merges
+  with context unsafe class and local unsafe style overrides context style keys.
+- Interaction states: no direct user interaction belongs to StatusLight; raw DOM
+  event compatibility props are not part of the styled S2 API and are filtered
+  from the root.
+- Cleanup contract: StatusLight owns no timers, portals, observers,
+  subscriptions, global listeners, generated IDs, or async lifecycle.
+
+## Accessibility And I18n
+
+- The root is a native `div`; `role="status"` is present only when requested.
+- Label ARIA props are S2-filtered: `aria-label`, `aria-labelledby`,
+  `aria-describedby`, and `aria-details` are forwarded only when a role is
+  present.
+- Development warnings mirror the S2 source for missing label text and labelled
+  StatusLights without a role.
+- StatusLight owns no locale-sensitive formatting, generated labels,
+  bidirectional text transforms, or live-update batching. The S2 guidance that
+  only one status light should update simultaneously remains a caller
+  responsibility.
+
+## Style Source-To-Computed
+
+- React S2 StatusLight source renders a flex wrapper with `CenterBaseline`, an
+  aria-hidden SVG circle, `Text` for the label, `StatusLightContext`,
+  `useIsSkeleton`, S2 style macro branches, `filterDOMProps` with
+  `labelable: !!role`, and optional unsafe escape hatches.
+- Solid follows that observable contract without the prior compatibility
+  aliases for variant, size, root class, indicator class, raw style, or root
+  events.
+- Browser contracts compare root tag/id/data attributes, role, role-gated ARIA
+  attributes, root layout/typography/color, SVG light dimensions/fill/overflow,
+  CenterBaseline wrapper styles, text slot DOM, every documented variant, every
+  S2 size, and forced-colors output against React Spectrum.
 
 ## Source Packet
 
 | Source                   | Files or docs                                                         | Finding                                                                                                                                       |
 | ------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| S2 docs MCP              | `StatusLight` page                                                    | Public API includes `children`, `variant`, `size`, optional `role="status"`, label ARIA props, style props, unsafe escapes, and `slot`.       |
-| React Spectrum S2 source | `@react-spectrum/s2/src/StatusLight.tsx`                              | StatusLight uses a flex wrapper, `CenterBaseline`, SVG circle fill/size, `Text`, `StatusLightContext`, `useIsSkeleton`, and labelable props.  |
-| Solid source before pass | `packages/solid-spectrum/src/statuslight/index.tsx`                   | Solid already used the S2 structure from the support sweep, but labelable ARIA filtering and route-control evidence were incomplete.          |
-| Solid source after pass  | `packages/solid-spectrum/src/statuslight/index.tsx`                   | Solid matches the S2 wrapper, SVG light, text slot, context merge, skeleton branch, legacy aliases, and role-gated ARIA labels.               |
-| Comparison harness       | manifest, controls, fixtures, visual matrix, `statuslight-visual` e2e | StatusLight is live on both stacks with strict default visual evidence, route-control checks, computed contracts, and forced-colors evidence. |
+| S2 docs MCP              | `StatusLight` API                                                     | Public API includes `children`, documented variants, S/M/L/XL sizes, optional `role="status"`, label ARIA props, style props, and `slot`.     |
+| React Spectrum S2 source | `@react-spectrum/s2/src/StatusLight.tsx`                              | S2 uses a flex wrapper, `CenterBaseline`, SVG circle fill/size, `Text`, `StatusLightContext`, `useIsSkeleton`, and filtered DOM props.        |
+| Solid source after pass  | `packages/solid-spectrum/src/statuslight/index.tsx`                   | Solid matches the S2 styled prop boundary and strips the prior legacy aliases/event/style/class compatibility branches.                       |
+| Solid consumer sources   | Text and Skeleton                                                     | Text slot and Skeleton loading consumers continue to cover inert text and skeleton light behavior.                                            |
+| Comparison harness       | manifest, controls, fixtures, visual matrix, `statuslight-visual` e2e | StatusLight is live on both stacks with strict default evidence, route-control checks, root DOM contract, computed matrix, and forced-colors. |
 
 ## Official Docs And Viewer Parity
 
-| Docs item    | Official setting/example                                     | Route/control                                 | Status  | Evidence                                |
-| ------------ | ------------------------------------------------------------ | --------------------------------------------- | ------- | --------------------------------------- |
-| `children`   | visible StatusLight label                                    | text input, default `Sync complete`           | matched | e2e asserts default and changed values  |
-| `variant`    | all S2 semantic/categorical variants                         | select options in S2 order, default `neutral` | matched | e2e asserts option labels/order/default |
-| `size`       | `S`, `M`, `L`, `XL`; default `M`                             | radio options in S2 order                     | matched | e2e asserts option labels/order/default |
-| `role`       | optional `status` role                                       | radio options `default`, `status`             | matched | e2e asserts labels/order/default        |
-| ARIA labels  | labelable only when the status role is used in the S2 source | component API                                 | matched | unit test covers role-gated labels      |
-| `slot`       | named slot or `null`                                         | component API and context merge               | matched | unit context test                       |
-| `styles`     | S2 style macro override                                      | component API                                 | matched | style macro accepts allowed overrides   |
-| unsafe props | `UNSAFE_className`, `UNSAFE_style`                           | component API                                 | matched | unit test covers class/style merge      |
+| Docs item     | Official setting/example                                     | Route/control                                 | Status  | Evidence                                |
+| ------------- | ------------------------------------------------------------ | --------------------------------------------- | ------- | --------------------------------------- |
+| `children`    | visible StatusLight label                                    | text input, default `Sync complete`           | matched | e2e asserts default and changed values  |
+| `variant`     | all S2 semantic/categorical variants                         | select options in S2 order, default `neutral` | matched | e2e asserts option labels/order/default |
+| `size`        | `S`, `M`, `L`, `XL`; default `M`                             | radio options in S2 order                     | matched | e2e asserts option labels/order/default |
+| `role`        | optional `status` role                                       | radio options `default`, `status`             | matched | e2e asserts labels/order/default        |
+| ARIA labels   | labelable only when the status role is used in the S2 source | component API and route fixture               | matched | unit and e2e tests                      |
+| `id`/`data-*` | filtered DOM props                                           | route fixture                                 | matched | e2e root DOM contract                   |
+| `slot`        | named slot or `null`                                         | component API and context merge               | matched | source audit and unit context test      |
+| `styles`      | S2 style macro override                                      | component API                                 | matched | source audit and browser contract       |
+| unsafe props  | `UNSAFE_className`, `UNSAFE_style`                           | component API                                 | matched | unit tests                              |
 
 ## Baseline
 
 - Before the support sweep, StatusLight was a catalogue gap with no live Solid
   styled route and no StatusLight-specific strict visual evidence.
-- Before Divider, `comparison:report:gaps` reported:
-  - Official entries in comparison app: `69`.
-  - Official styled entries live on both sides: `32`.
-  - Official entries still missing/gap: `37`.
-  - Official visual states tracked: `169`.
-  - Official visual states with current React/Solid visual evidence: `48`.
-  - Official visual states with strict pair-diff tests: `31`.
-- Before Divider, `comparison:report:exports` reported:
-  - React Spectrum S2 value exports: `208`.
-  - `solid-spectrum` public value exports: `130`.
-  - Missing React S2 value exports: `81`.
-  - Extra Solid value exports: `3`.
-- Current reports list StatusLight live and strict:
-  - live entries: `33`;
-  - missing/gap entries: `36`;
-  - visual states tracked: `173`;
-  - visual evidence states: `49`;
-  - strict pair-diff states: `32`;
-  - blocked visual states: `35`;
-  - missing S2 value exports: `80`.
-- Improvement target: close StatusLight retro-audit gaps without changing its
-  legacy public behavior.
+- The initial StatusLight pass made the component live and visually covered, but
+  kept compatibility branches that S2 does not expose: legacy `info`,
+  `sm`/`md`/`lg`, `class`, `indicatorClass`, and generic DOM prop pass-through.
+- Current reports after current-gate normalization list:
+  - official entries in comparison app: `69`;
+  - live entries: `47`;
+  - missing/gap entries: `22`;
+  - visual states tracked: `266`;
+  - visual evidence states: `76`;
+  - strict pair-diff states: `46`;
+  - blocked visual states: `22`;
+  - `solid-spectrum` public value exports: `155`;
+  - missing S2 value exports: `57`;
+  - extra Solid value exports: `4`.
 
 ## Source Map And Public Contract
 
@@ -91,130 +158,84 @@
 | Comparison route    | S2 docs/viewer and React S2 fixture       | demo data, controls, fixtures, visual matrix, e2e   | matched |
 
 - Public props/defaults:
-  - `variant`: default `neutral`, all S2 variant values supported.
-  - `size`: default `M`, supports `S`, `L`, and `XL`.
-  - `role`: optional `status`; ARIA label props are forwarded only when the
-    role is present, matching React Spectrum's labelable DOM filtering.
-  - `children`, DOM props, `slot`, `styles`, `UNSAFE_className`,
-    `UNSAFE_style`, and `ref` are preserved.
+  - `variant`: default `neutral`; supports `informative`, `neutral`,
+    `positive`, `notice`, `negative`, `yellow`, `chartreuse`, `celery`,
+    `seafoam`, `cyan`, `indigo`, `purple`, `fuchsia`, `magenta`, `pink`,
+    `turquoise`, `brown`, `cinnamon`, and `silver`.
+  - `size`: default `M`; supports `S`, `L`, and `XL`.
+  - `role`: optional `status`; labelable ARIA props are forwarded only when the
+    role is present.
+  - `children`, `id`, `data-*` harness props, `slot`, `styles`,
+    `UNSAFE_className`, `UNSAFE_style`, and `ref` are preserved.
+  - The styled S2 wrapper intentionally omits legacy variant/size aliases,
+    legacy class aliases, raw style, arbitrary events, and arbitrary DOM props.
 - Contexts/providers:
   - `StatusLightContext` is exported and consumed through the shared S2 slotted
     context helper.
-  - `TextContext` wraps the label text so primitive text receives the S2 text
-    slot.
-  - `Skeleton` consumers mark text inert and switch the SVG light to the
-    skeleton fill branch.
+  - Public package root StatusLight exports match S2: values `StatusLight` and
+    `StatusLightContext`, plus type `StatusLightProps`.
+  - `TextContext` wraps the label so primitive text receives the S2 text slot.
+  - Skeleton consumers mark text inert and switch the SVG light to the skeleton
+    fill branch.
 - Refs/imperative behavior:
-  - Ref merging follows the shared S2 context/local ref helper.
-- Unsupported or intentionally different branches:
-  - Legacy `info` maps to `informative`.
-  - Legacy `sm`, `md`, and `lg` sizes map to `S`, `M`, and `L`.
-  - Legacy `class` and `indicatorClass` remain compatibility escape hatches.
+  - Ref merging includes context/local refs.
 
 ## Source Branch Coverage
 
-| Layer   | Upstream branch                      | Solid owner                    | Class              | Observable                                      | Status  | Evidence                |
-| ------- | ------------------------------------ | ------------------------------ | ------------------ | ----------------------------------------------- | ------- | ----------------------- |
-| Styled  | wrapper layout                       | S2 `StatusLight` style macro   | visual/layout      | display, gap, baseline alignment, width, font   | matched | e2e computed contract   |
-| Styled  | wrapper color default/neutral branch | S2 `StatusLight` style macro   | visual             | root foreground color                           | matched | e2e computed contract   |
-| Styled  | SVG light `variant` fill map         | S2 `StatusLight` style macro   | visual             | every documented fill token                     | matched | e2e full variant matrix |
-| Styled  | SVG light `size` S/M/L/XL            | S2 `StatusLight` style macro   | visual             | light width/height                              | matched | e2e size matrix         |
-| Styled  | SVG light overflow                   | S2 `StatusLight` style macro   | visual             | `overflow: visible`                             | matched | e2e computed contract   |
-| Styled  | `CenterBaseline` composition         | `CenterBaseline` helper        | visual/composition | centered baseline wrapper                       | matched | e2e computed contract   |
-| Styled  | text child wrapping                  | `TextContext` + `Text`         | composition        | primitive text receives `data-rsp-slot="text"`  | matched | unit and e2e tests      |
-| Styled  | optional `role="status"`             | native root `div`              | a11y               | live status role only when requested            | matched | unit and e2e tests      |
-| Styled  | labelable ARIA props                 | role-gated DOM attributes      | a11y               | labels forwarded only for `role="status"`       | matched | unit test               |
-| Styled  | `StatusLightContext` merge           | S2 `StatusLight`               | context            | context props apply, local props/classes merge  | matched | unit test               |
-| Styled  | skeleton text/light consumers        | `Skeleton` and `useIsSkeleton` | loading/visual     | inert text and skeleton light fill              | matched | unit test               |
-| Styled  | forced-colors environment            | generated S2 CSS               | visual/a11y        | computed contract matches React                 | matched | e2e forced-colors test  |
-| Compat  | legacy variant/size/class aliases    | S2 `StatusLight`               | compatibility      | aliases map to equivalent S2 output             | matched | unit tests              |
-| Harness | route control surface                | comparison route               | route integrity    | visible labels/order/defaults and changed props | matched | e2e route-control test  |
-
-## Transition Plan
-
-- Static states:
-  - default neutral/M text-only;
-  - every semantic and categorical variant;
-  - S/M/L/XL SVG light sizes;
-  - optional `role="status"`;
-  - role-gated label ARIA props;
-  - forced-colors active;
-  - skeleton loading text/light branch.
-- Interaction timelines:
-  - not applicable. StatusLight has no press, hover, focus, keyboard, or value
-    transition semantics.
-- Overlay/loading/async timelines:
-  - skeleton loading is covered by unit tests; StatusLight owns no async
-    lifecycle.
-- Cleanup assertions:
-  - not applicable. StatusLight owns no timers, portals, observers,
-    subscriptions, or global event listeners.
-- Visual-state rows changed:
-  - StatusLight has strict default evidence plus asserted route-control,
-    full variant/size/role, and forced-colors rows.
-
-## Runtime Semantics
-
-- Native element/role decision:
-  - renders a native `div`; `role="status"` is only present when requested.
-- Accessible name/description assertions:
-  - S2 source only treats label ARIA props as labelable when `role` is present;
-    Solid now filters the same label props unless `role="status"` is active.
-- ID stability and collision checks:
-  - no generated IDs.
-- Modality rows:
-  - not applicable.
-- Event pipeline and consumer handler assertions:
-  - DOM event props remain available through DOM prop pass-through, but
-    StatusLight owns no interaction behavior.
-- Solid idiom regression assertions:
-  - context values merge through `mergeProps`; local props override context
-    values where supplied.
-  - text provider and skeleton consumer remain reactive without eager child
-    evaluation.
-- Announcements:
-  - `role="status"` is available for live updates; multiple simultaneous live
-    updates remain a caller-level S2 usage constraint.
-- Portal/provider/global cleanup:
-  - not applicable.
-- SSR/hydration note:
-  - static markup only; no generated IDs or client lifecycle side effects.
+| Layer   | Upstream branch                      | Solid owner                    | Class              | Observable                                       | Status  | Evidence                |
+| ------- | ------------------------------------ | ------------------------------ | ------------------ | ------------------------------------------------ | ------- | ----------------------- |
+| Styled  | S2 prop boundary                     | S2 `StatusLight` wrapper       | API                | no legacy class/size/variant/event/style props   | matched | unit tests              |
+| Styled  | DOM prop filtering                   | Solidaria `filterDOMProps`     | route integrity    | id/data attrs and role-gated ARIA labels         | matched | unit and e2e tests      |
+| Styled  | wrapper layout                       | S2 `StatusLight` style macro   | visual/layout      | display, gap, baseline alignment, width, font    | matched | e2e computed contract   |
+| Styled  | wrapper color default/neutral branch | S2 `StatusLight` style macro   | visual             | root foreground color                            | matched | e2e computed contract   |
+| Styled  | SVG light `variant` fill map         | S2 `StatusLight` style macro   | visual             | every documented fill token                      | matched | e2e full variant matrix |
+| Styled  | SVG light `size` S/M/L/XL            | S2 `StatusLight` style macro   | visual             | light width/height                               | matched | e2e size matrix         |
+| Styled  | SVG light overflow                   | S2 `StatusLight` style macro   | visual             | `overflow: visible`                              | matched | e2e computed contract   |
+| Styled  | `CenterBaseline` composition         | `CenterBaseline` helper        | visual/composition | centered baseline wrapper                        | matched | e2e computed contract   |
+| Styled  | text child wrapping                  | `TextContext` + `Text`         | composition        | primitive text receives `data-rsp-slot="text"`   | matched | unit and e2e tests      |
+| Styled  | optional `role="status"`             | native root `div`              | a11y               | live status role only when requested             | matched | unit and e2e tests      |
+| Styled  | S2 dev warnings                      | S2 `StatusLight` wrapper       | developer feedback | missing label and labelled-without-role warnings | matched | unit and source audit   |
+| Styled  | `StatusLightContext` merge           | S2 `StatusLight`               | context            | context props apply and unsafe props merge       | matched | unit test               |
+| Styled  | skeleton text/light consumers        | `Skeleton` and `useIsSkeleton` | loading/visual     | inert text and skeleton light fill               | matched | unit test               |
+| Styled  | forced-colors environment            | generated S2 CSS               | visual/a11y        | computed contract matches React                  | matched | e2e forced-colors test  |
+| Harness | route control surface                | comparison route               | route integrity    | visible labels/order/defaults and changed props  | matched | e2e route-control test  |
+| Harness | root DOM contract                    | comparison visual spec         | route integrity    | root id/data, role, and ARIA filtering           | matched | e2e root DOM contract   |
 
 ## Evidence
 
 ```bash
-vp test run packages/solid-spectrum/test/StatusLight.test.tsx
+vp test run packages/solid-spectrum/test/StatusLight.test.tsx packages/solid-spectrum/test/Skeleton.test.tsx
 vp run --filter @proyecto-viviana/solid-spectrum build
 vp run --filter @proyecto-viviana/comparison build
-vp exec --filter @proyecto-viviana/comparison playwright test e2e/statuslight-visual.spec.ts --reporter=line
+vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/statuslight-visual.spec.ts --reporter=line
 vp test run packages/solid-spectrum/test/regression.test.tsx -t "Regression: StatusLight" -u
 vp run comparison:report:gaps
 vp run comparison:report:exports
-vp run guard:rac-export-gap
 vp run guard:rac-parity
+vp run guard:rac-export-gap
 vp run check
 ```
 
 Results:
 
-- Focused Solid StatusLight tests: `6 passed`.
+- Focused StatusLight/Skeleton tests: `16 passed`.
 - Solid Spectrum build: passed.
 - Comparison build: passed and generated `/components/statuslight/`.
-- StatusLight Playwright suite: `4 passed`.
-- StatusLight regression snapshot slice: `1 passed`.
-- Current gap report lists official styled entries live on both sides at `33`,
-  missing/gap entries at `36`, visual states tracked at `173`, visual evidence
-  states at `49`, strict pair-diff states at `32`, and blocked visual states at
-  `35`.
-- Current export report lists missing React S2 value exports at `80` of `208`
-  and extra Solid value exports at `3`.
+- StatusLight Playwright suite: `5 passed`.
+- StatusLight regression snapshot slice: `1 passed`, `49 skipped`.
+- Current gap report lists official styled entries live on both sides at `47`,
+  missing/gap entries at `22`, visual states tracked at `266`, visual evidence
+  states at `76`, strict pair-diff states at `46`, and blocked visual states at
+  `22`.
+- Current export report lists `solid-spectrum` public value exports at `155`,
+  missing React S2 value exports at `57` of `208`, and extra Solid value
+  exports at `4`.
 - RAC export and tracked-symbol guards report no missing Solid names.
 - Full repo check: passed.
 
 ## Handoff
 
-- Legacy status: StatusLight was accepted for owned behavior under the prior
-  playbook; current-gate normalization is pending.
-- No prior-playbook in-scope StatusLight gates remained open at the time of this
-  pass.
-- Use `components/README.md` for the current-gate normalization queue.
+- Current-gate status: StatusLight is accepted as of 2026-05-20.
+- No legacy StatusLight compatibility aliases remain in the styled S2 wrapper.
+- Next component should be selected from `components/README.md` after this
+  commit.
