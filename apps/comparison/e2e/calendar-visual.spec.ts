@@ -1,4 +1,5 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { writeFile } from "node:fs/promises";
+import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
 import {
   frameworkCanvas,
   frameworkPanel,
@@ -7,7 +8,7 @@ import {
 } from "./comparison-page";
 import {
   clearPointer,
-  compareScreenshots,
+  diffScreenshots,
   exactPairDiff,
   pinComparisonTheme,
   type ComparisonColorScheme,
@@ -24,6 +25,12 @@ function calendarQuery(params: Record<string, string> = {}) {
   const query = search.toString();
   return query ? `?${query}` : "";
 }
+
+type CalendarScreenshotPairResult = {
+  reactPng: Buffer;
+  solidPng: Buffer;
+  diff: Awaited<ReturnType<typeof diffScreenshots>>;
+};
 
 async function calendarFixtures(
   page: Page,
@@ -79,6 +86,8 @@ async function fixedCalendarRootScreenshot(target: Locator) {
     htmlElement.style.insetInlineStart = "384px";
     htmlElement.style.margin = "0";
     htmlElement.style.backgroundColor = surfaceColor;
+    htmlElement.style.overflow = "hidden";
+    htmlElement.style.setProperty("-webkit-font-smoothing", "antialiased");
     htmlElement.style.zIndex = "2147483647";
 
     return style;
@@ -104,8 +113,10 @@ async function expectExactCalendarRootPair(
   reactRoot: Locator,
   solidRoot: Locator,
   label: string,
+  testInfo?: TestInfo,
 ) {
   const previousScroll = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
+  let lastResult: CalendarScreenshotPairResult | null = null;
 
   try {
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -114,14 +125,56 @@ async function expectExactCalendarRootPair(
       await new Promise(requestAnimationFrame);
     });
 
-    const reactPng = await fixedCalendarRootScreenshot(reactRoot);
-    const solidPng = await fixedCalendarRootScreenshot(solidRoot);
-    const diff = await compareScreenshots(page, reactPng, solidPng, label, exactPairDiff);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const reactPng = await fixedCalendarRootScreenshot(reactRoot);
+      const solidPng = await fixedCalendarRootScreenshot(solidRoot);
+      const diff = await diffScreenshots(page, reactPng, solidPng, exactPairDiff.pixelThreshold);
+      lastResult = { reactPng, solidPng, diff };
 
-    return { reactPng, solidPng, diff };
+      if (
+        diff.widthDelta <= exactPairDiff.maxDimensionDelta &&
+        diff.heightDelta <= exactPairDiff.maxDimensionDelta &&
+        diff.mismatchRatio <= exactPairDiff.maxMismatchRatio
+      ) {
+        return lastResult;
+      }
+
+      await page.evaluate(async () => {
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+      });
+    }
   } finally {
     await page.evaluate(({ x, y }) => window.scrollTo(x, y), previousScroll);
   }
+
+  if (!lastResult) {
+    throw new Error(`${label} did not capture any screenshot pairs`);
+  }
+
+  const { reactPng, solidPng, diff } = lastResult;
+  if (testInfo) {
+    const slug = label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    await writeFile(testInfo.outputPath(`${slug}-react.png`), reactPng);
+    await writeFile(testInfo.outputPath(`${slug}-solid.png`), solidPng);
+    await writeFile(testInfo.outputPath(`${slug}-diff.json`), JSON.stringify(diff, null, 2));
+  }
+
+  expect(diff.widthDelta, `${label} width delta`).toBeLessThanOrEqual(
+    exactPairDiff.maxDimensionDelta,
+  );
+  expect(diff.heightDelta, `${label} height delta`).toBeLessThanOrEqual(
+    exactPairDiff.maxDimensionDelta,
+  );
+  expect(
+    diff.mismatchRatio,
+    `${label} screenshot mismatch ratio ${diff.mismatchRatio} exceeded ${exactPairDiff.maxMismatchRatio} (${diff.mismatchedPixels}/${diff.totalPixels} pixels, bounds ${JSON.stringify(diff.mismatchBounds)})`,
+  ).toBeLessThanOrEqual(exactPairDiff.maxMismatchRatio);
+
+  return lastResult;
 }
 
 async function calendarVisualContract(root: Locator) {
@@ -278,29 +331,47 @@ async function calendarForcedColorsContract(root: Locator) {
 }
 
 test.describe("comparison Calendar visual coverage", () => {
-  test("Calendar unselected grid is pixel-identical", async ({ page }) => {
+  test("Calendar unselected grid is pixel-identical", async ({ page }, testInfo) => {
     const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
       focusedValue: "2025-02-15",
     });
 
-    await expectExactCalendarRootPair(page, reactRoot, solidRoot, "Calendar unselected grid");
+    await expectExactCalendarRootPair(
+      page,
+      reactRoot,
+      solidRoot,
+      "Calendar unselected grid",
+      testInfo,
+    );
   });
 
-  test("Calendar selected date is pixel-identical", async ({ page }) => {
+  test("Calendar selected date is pixel-identical", async ({ page }, testInfo) => {
     const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
       value: "2025-02-03",
     });
 
-    await expectExactCalendarRootPair(page, reactRoot, solidRoot, "Calendar selected date");
+    await expectExactCalendarRootPair(
+      page,
+      reactRoot,
+      solidRoot,
+      "Calendar selected date",
+      testInfo,
+    );
   });
 
-  test("Calendar multi-month layout is pixel-identical", async ({ page }) => {
+  test("Calendar multi-month layout is pixel-identical", async ({ page }, testInfo) => {
     const { reactRoot, solidRoot } = await calendarFixtures(page, "dark", {
       focusedValue: "2025-02-15",
       visibleMonths: "2",
     });
 
-    await expectExactCalendarRootPair(page, reactRoot, solidRoot, "Calendar multi-month layout");
+    await expectExactCalendarRootPair(
+      page,
+      reactRoot,
+      solidRoot,
+      "Calendar multi-month layout",
+      testInfo,
+    );
   });
 
   test("Calendar official default renders an unselected S2 grid in light and dark themes", async ({

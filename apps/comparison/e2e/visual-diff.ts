@@ -14,6 +14,7 @@ export type ScreenshotDiffResult = {
   mismatchedPixels: number;
   totalPixels: number;
   mismatchRatio: number;
+  mismatchBounds: { left: number; top: number; right: number; bottom: number } | null;
   maxChannelDelta: number;
   pixelThreshold: number;
 };
@@ -427,6 +428,10 @@ export async function diffScreenshots(
         comparedHeight,
       ).data;
       let mismatchedPixels = 0;
+      let mismatchLeft = Number.POSITIVE_INFINITY;
+      let mismatchTop = Number.POSITIVE_INFINITY;
+      let mismatchRight = Number.NEGATIVE_INFINITY;
+      let mismatchBottom = Number.NEGATIVE_INFINITY;
       let maxChannelDelta = 0;
 
       for (let i = 0; i < reactPixels.length; i += 4) {
@@ -438,11 +443,28 @@ export async function diffScreenshots(
         maxChannelDelta = Math.max(maxChannelDelta, delta);
 
         if (delta > pixelThreshold) {
+          const pixelIndex = i / 4;
+          const x = pixelIndex % comparedWidth;
+          const y = Math.floor(pixelIndex / comparedWidth);
+
           mismatchedPixels += 1;
+          mismatchLeft = Math.min(mismatchLeft, x);
+          mismatchTop = Math.min(mismatchTop, y);
+          mismatchRight = Math.max(mismatchRight, x);
+          mismatchBottom = Math.max(mismatchBottom, y);
         }
       }
 
       const totalPixels = comparedWidth * comparedHeight;
+      const mismatchBounds =
+        mismatchedPixels === 0
+          ? null
+          : {
+              left: mismatchLeft,
+              top: mismatchTop,
+              right: mismatchRight,
+              bottom: mismatchBottom,
+            };
 
       return {
         reactWidth: reactImage.width,
@@ -456,6 +478,7 @@ export async function diffScreenshots(
         mismatchedPixels,
         totalPixels,
         mismatchRatio: totalPixels === 0 ? 1 : mismatchedPixels / totalPixels,
+        mismatchBounds,
         maxChannelDelta,
         pixelThreshold,
       };
@@ -485,7 +508,7 @@ export async function compareScreenshots(
   );
   expect(
     result.mismatchRatio,
-    `${label} screenshot mismatch ratio ${result.mismatchRatio} exceeded ${threshold.maxMismatchRatio}`,
+    `${label} screenshot mismatch ratio ${result.mismatchRatio} exceeded ${threshold.maxMismatchRatio} (${result.mismatchedPixels}/${result.totalPixels} pixels, bounds ${JSON.stringify(result.mismatchBounds)})`,
   ).toBeLessThanOrEqual(threshold.maxMismatchRatio);
 
   return result;

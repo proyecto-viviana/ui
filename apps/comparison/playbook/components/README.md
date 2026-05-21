@@ -17,16 +17,16 @@ implemented/pass notes keep their historical evidence, but they should be
 treated as legacy accepted under the prior playbook until each note is
 normalized to the current gate checklist.
 
-- Current accepted under the full gate model: none.
+- Current accepted under the full gate model: Calendar.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar,
-  AvatarGroup, Badge, Breadcrumbs, Button, Button family, Calendar, Checkbox,
+  AvatarGroup, Badge, Breadcrumbs, Button, Button family, Checkbox,
   CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image, Link, Meter,
   NotificationBadge, RangeCalendar, SegmentedControl, SelectBoxGroup, Skeleton,
   Slider, StatusLight, and Text.
 - Accepted prior to the current known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
-  Button family, Calendar, Checkbox, CheckboxGroup, ComboBox, ContextualHelp,
+  Button family, Checkbox, CheckboxGroup, ComboBox, ContextualHelp,
   Divider, Form, Image, Link, Meter, NotificationBadge, RangeCalendar,
   SegmentedControl, SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
 - Active current-gate pass: none.
