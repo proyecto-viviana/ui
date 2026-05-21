@@ -1,5 +1,6 @@
 export {
   Collection,
+  Content,
   ContextualHelpPopover,
   Header,
   Heading,
@@ -13,7 +14,6 @@ export {
   Text,
   UnavailableMenuItemTrigger,
 } from "./menu/index";
-export { Content } from "./view";
 export type {
   ContextualHelpPopoverProps,
   Key,

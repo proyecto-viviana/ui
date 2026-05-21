@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@solidjs/testing-library";
 import { Heading } from "../src/text/Heading";
-import { StyledKeyboard } from "../src/text/Keyboard";
+import { Keyboard } from "../src/text/Keyboard";
 import { ToggleButton } from "../src/button/ToggleButton";
 import { ActionButton } from "../src/button/ActionButton";
 import { ClearButton } from "../src/button/ClearButton";
@@ -31,15 +31,15 @@ describe("Wave 4 UI Components", () => {
       expect(container.querySelector("h1")).toBeDefined();
     });
 
-    it("applies custom class", () => {
-      const { container } = render(() => <Heading class="custom">Title</Heading>);
+    it("applies unsafe class", () => {
+      const { container } = render(() => <Heading UNSAFE_className="custom">Title</Heading>);
       expect(container.querySelector("h3")!.className).toContain("custom");
     });
   });
 
-  describe("StyledKeyboard", () => {
+  describe("Keyboard", () => {
     it("renders keyboard shortcut", () => {
-      const { container } = render(() => <StyledKeyboard>Ctrl+C</StyledKeyboard>);
+      const { container } = render(() => <Keyboard>Ctrl+C</Keyboard>);
       expect(container.textContent).toContain("Ctrl+C");
     });
   });

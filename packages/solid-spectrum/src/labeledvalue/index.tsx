@@ -46,7 +46,7 @@ export function LabeledValue(props: LabeledValueProps): JSX.Element {
         {local.label}
       </UILabel>
       <Show when={resolvedValue()}>
-        <UIText size="md" variant="default" class={local.valueClass}>
+        <UIText UNSAFE_className={`text-primary-100 text-base ${local.valueClass ?? ""}`}>
           {resolvedValue()}
         </UIText>
       </Show>

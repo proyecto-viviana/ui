@@ -46,7 +46,7 @@ import {
   HeaderContext,
   HeadingContext,
   KeyboardContext,
-  StyledKeyboard,
+  Keyboard,
   Text,
   TextContext,
 } from "../text";
@@ -675,7 +675,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
             </Show>
             {local.icon?.()}
             {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
-            {local.shortcut ? <StyledKeyboard>{local.shortcut}</StyledKeyboard> : null}
+            {local.shortcut ? <Keyboard>{local.shortcut}</Keyboard> : null}
             <Show when={isLinkOut() && !hideLinkOutIcon}>
               <span slot="descriptor" class={menuItemDescriptor} data-rsp-slot="descriptor">
                 <LinkOutIcon
@@ -799,4 +799,4 @@ export type { ContextualHelpTriggerProps } from "./ContextualHelpTrigger";
 export { Collection } from "@proyecto-viviana/solidaria-components";
 export { ContextualHelpPopover } from "../contextualhelp";
 export type { ContextualHelpPopoverProps } from "../contextualhelp";
-export { Header, Heading, Keyboard, Text } from "../text";
+export { Content, Header, Heading, Keyboard, Text } from "../text";

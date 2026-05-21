@@ -354,21 +354,25 @@ export type { SkeletonCollectionProps, SkeletonProps } from "./skeleton";
 
 // Text content
 export {
+  Content,
+  ContentContext,
+  Footer,
+  FooterContext,
   Header,
   HeaderContext,
   Heading,
   HeadingContext,
   Keyboard,
   KeyboardContext,
-  StyledKeyboard,
   Text,
   TextContext,
 } from "./text";
 export type {
+  ContentProps,
+  FooterProps,
   HeaderProps,
-  HeadingLevel,
   HeadingProps,
-  StyledKeyboardProps,
+  KeyboardProps,
   TextProps,
 } from "./text";
 
