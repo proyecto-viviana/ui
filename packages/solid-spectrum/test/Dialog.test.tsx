@@ -5,7 +5,21 @@ import { describe, it, expect } from "vitest";
 import { createSignal } from "solid-js";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { DialogTrigger, Dialog } from "../src/dialog";
+import {
+  AlertDialog,
+  ButtonGroup,
+  CloseButton,
+  Content,
+  CustomDialog,
+  Dialog,
+  DialogContainer,
+  DialogTrigger,
+  Footer,
+  FullscreenDialog,
+  Header,
+  Heading,
+  useDialogContainer,
+} from "../src/dialog";
 import { Button } from "../src/button";
 
 describe("Dialog (solid-spectrum)", () => {
@@ -134,5 +148,160 @@ describe("Dialog (solid-spectrum)", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "Dismiss" }));
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
+  it("supports S2 composition slots and hides ButtonGroup when dismissible", async () => {
+    const user = setupUser();
+
+    render(() => (
+      <DialogTrigger>
+        <Button>Open composed</Button>
+        <Dialog isDismissible>
+          <Heading slot="title">Composed settings</Heading>
+          <Header>Dialog header copy</Header>
+          <Content>Composed body</Content>
+          <Footer>Footer copy</Footer>
+          <ButtonGroup>
+            <Button>Save</Button>
+          </ButtonGroup>
+        </Dialog>
+      </DialogTrigger>
+    ));
+
+    await user.click(screen.getByRole("button", { name: "Open composed" }));
+    const dialog = screen.getByRole("dialog", { name: "Composed settings" });
+
+    expect(dialog).toHaveAttribute("data-size", "M");
+    expect(within(dialog).getByText("Dialog header copy")).toBeInTheDocument();
+    expect(within(dialog).getByText("Composed body")).toBeInTheDocument();
+    expect(within(dialog).getByText("Footer copy")).toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: "Dismiss" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("keeps ButtonGroup visible when a composed Dialog is not dismissible", () => {
+    render(() => (
+      <DialogTrigger defaultOpen>
+        <Button>Open actions</Button>
+        <Dialog>
+          <Heading slot="title">Action review</Heading>
+          <Content>Review the action.</Content>
+          <ButtonGroup>
+            <Button>Save</Button>
+          </ButtonGroup>
+        </Dialog>
+      </DialogTrigger>
+    ));
+
+    const dialog = screen.getByRole("dialog", { name: "Action review" });
+    expect(within(dialog).getByRole("button", { name: "Save" })).toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: "Dismiss" })).not.toBeInTheDocument();
+  });
+
+  it("supports DialogContainer and useDialogContainer dismissal", async () => {
+    const user = setupUser();
+    const [isOpen, setIsOpen] = createSignal(true);
+    const dismissals: string[] = [];
+
+    function ContainerAction() {
+      const { close } = useDialogContainer();
+      return <Button onPress={() => close()}>Close contained</Button>;
+    }
+
+    render(() => (
+      <DialogContainer
+        onDismiss={() => {
+          dismissals.push("dismiss");
+          setIsOpen(false);
+        }}
+      >
+        {isOpen() && (
+          <Dialog isDismissible>
+            <Heading slot="title">Contained dialog</Heading>
+            <Content>
+              <ContainerAction />
+            </Content>
+          </Dialog>
+        )}
+      </DialogContainer>
+    ));
+
+    expect(screen.getByRole("dialog", { name: "Contained dialog" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close contained" }));
+    expect(dismissals).toEqual(["dismiss"]);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("maps AlertDialog actions to the shared Dialog surface", async () => {
+    const user = setupUser();
+    const actions: string[] = [];
+
+    render(() => (
+      <AlertDialog
+        defaultOpen
+        title="Delete project"
+        variant="destructive"
+        primaryActionLabel="Delete"
+        secondaryActionLabel="Archive"
+        cancelLabel="Cancel"
+        onPrimaryAction={() => actions.push("primary")}
+        onSecondaryAction={() => actions.push("secondary")}
+        onCancel={() => actions.push("cancel")}
+      >
+        This action changes project state.
+      </AlertDialog>
+    ));
+
+    const dialog = screen.getByRole("alertdialog", { name: "Delete project" });
+    expect(dialog).toHaveClass(/comparison-spectrum-Dialog/);
+    expect(within(dialog).getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Archive" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: "Archive" }));
+    expect(actions).toEqual(["secondary"]);
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
+  it("exports CustomDialog and CloseButton composition", async () => {
+    const user = setupUser();
+
+    render(() => (
+      <DialogTrigger defaultOpen>
+        <Button>Open custom</Button>
+        <CustomDialog>
+          <Heading slot="title">Custom surface</Heading>
+          <Content>Custom body</Content>
+          <CloseButton />
+        </CustomDialog>
+      </DialogTrigger>
+    ));
+
+    const customDialog = screen.getByRole("dialog", { name: "Custom surface" });
+    expect(customDialog).toHaveClass(/comparison-spectrum-CustomDialog/);
+    expect(within(customDialog).getByText("Custom body")).toBeInTheDocument();
+
+    await user.click(within(customDialog).getByRole("button", { name: "Dismiss" }));
+    expect(screen.queryByRole("dialog", { name: "Custom surface" })).not.toBeInTheDocument();
+  });
+
+  it("exports FullscreenDialog composition", () => {
+    render(() => (
+      <DialogTrigger defaultOpen>
+        <Button>Open fullscreen</Button>
+        <FullscreenDialog variant="fullscreenTakeover">
+          <Heading slot="title">Fullscreen surface</Heading>
+          <Content>Fullscreen body</Content>
+        </FullscreenDialog>
+      </DialogTrigger>
+    ));
+
+    const fullscreenDialog = screen.getByRole("dialog", { name: "Fullscreen surface" });
+    expect(fullscreenDialog).toHaveClass(/comparison-spectrum-FullscreenDialog/);
+    expect(fullscreenDialog).toHaveAttribute("data-variant", "fullscreenTakeover");
+    expect(within(fullscreenDialog).getByText("Fullscreen body")).toBeInTheDocument();
   });
 });

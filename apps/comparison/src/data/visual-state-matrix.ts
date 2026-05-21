@@ -2162,7 +2162,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/dialog-visual.spec.ts",
-      note: "Covers visible open state, viewport placement, occlusion, current visual evidence, and a bounded React-vs-Solid surface pair diff while exact typography and close-button raster parity remain tracked.",
+      note: "Covers visible open state, viewport placement, occlusion, S2 close-button glyph sizing, footer reserve, and a bounded React-vs-Solid surface pair diff.",
     },
     {
       id: "styled.dialog.dismiss.outside",
@@ -2202,7 +2202,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "The docs-style side panel drives trigger text, title, body, size, role, controlled open state, dismissible state, and keyboard-dismiss-disabled state into both stacks and verifies serialized route props.",
+      note: "The docs-style side panel drives trigger text, title, body, size, role, controlled open state, dismissible state, and keyboard-dismiss-disabled state into both stacks and verifies serialized route props; package tests cover DialogContainer, AlertDialog, FullscreenDialog, CustomDialog, CloseButton, and slot composition.",
     },
   ],
   calendar: [

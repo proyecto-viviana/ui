@@ -2451,47 +2451,57 @@ function SolidSpectrumDialogDemo() {
           },
         },
         [
-          hc(SolidSpectrumDialogTrigger, {
-            get isOpen() {
-              return isOpen();
+          hc(
+            SolidSpectrumDialogTrigger,
+            {
+              get isOpen() {
+                return isOpen();
+              },
+              onOpenChange: handleOpenChange,
             },
-            onOpenChange: handleOpenChange,
-            get isDismissible() {
-              return demoProps().isDismissible;
-            },
-            get isKeyboardDismissDisabled() {
-              return demoProps().isKeyboardDismissDisabled;
-            },
-            get trigger() {
-              return hc(
-                SolidSpectrumButton,
-                {
-                  variant: "primary",
-                },
-                [() => demoProps().triggerLabel],
-              );
-            },
-            content: (close: () => void) =>
-              hc(
-                SolidSpectrumDialog,
-                {
-                  get size() {
-                    return demoProps().size;
+            [
+              () =>
+                hc(
+                  SolidSpectrumButton,
+                  {
+                    variant: "primary",
                   },
-                  get role() {
-                    return demoProps().role;
+                  [() => demoProps().triggerLabel],
+                ),
+              () =>
+                hc(
+                  SolidSpectrumDialog,
+                  {
+                    get size() {
+                      return demoProps().size;
+                    },
+                    get role() {
+                      return demoProps().role;
+                    },
+                    get isDismissible() {
+                      return demoProps().isDismissible;
+                    },
+                    get isKeyboardDismissDisabled() {
+                      return demoProps().isKeyboardDismissDisabled;
+                    },
                   },
-                  get title() {
-                    return demoProps().title;
-                  },
-                  get isDismissible() {
-                    return demoProps().isDismissible;
-                  },
-                  onClose: close,
-                },
-                [() => demoProps().body],
-              ),
-          }),
+                  [
+                    () => [
+                      hc(
+                        SolidSpectrumHeading,
+                        {
+                          slot: "title",
+                        },
+                        [() => demoProps().title],
+                      ),
+                      hc(SolidSpectrumContent, {}, [
+                        () => hc(SolidSpectrumText, {}, [() => demoProps().body]),
+                      ]),
+                    ],
+                  ],
+                ),
+            ],
+          ),
         ],
       ),
     ],

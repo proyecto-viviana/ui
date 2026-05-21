@@ -735,7 +735,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
         componentStatus: "parity",
         summary:
           title === "Dialog"
-            ? "Dialog has a live comparison island with S2 trigger and modal surface styling, routed title/body/size/role/dismissal/open controls, focus containment, outside/Escape behavior, and bounded open-surface visual evidence."
+            ? "Dialog has a live comparison island with S2 trigger, modal surface, title/content slots, close-button styling, routed title/body/size/role/dismissal/open controls, focus containment, outside/Escape behavior, and bounded open-surface visual evidence."
             : title === "DateRangePicker"
               ? "DateRangePicker has a live comparison island with segmented range fields, routed date/date-time range values, calendar constraints, form owner/name props, locale/custom-calendar routes, exact closed-field pair-diff evidence, and open popover evidence."
               : title === "DateField"
@@ -762,7 +762,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
           title === "DateRangePicker"
             ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum and reuses the S2 RangeCalendar popover with routed picker state."
             : title === "Dialog"
-              ? "Solid styled Dialog is mounted from @proyecto-viviana/solid-spectrum with S2 token styling, S2 size aliases, role routing, controlled open state, outside dismissal, and Escape-dismiss wiring."
+              ? "Solid styled Dialog is mounted from @proyecto-viviana/solid-spectrum with S2 token styling, S2 size aliases, slot composition, close-button parity, role routing, controlled/default open state, outside dismissal, and Escape-dismiss wiring."
               : title === "DateField"
                 ? "Solid styled DateField is mounted from @proyecto-viviana/solid-spectrum and mirrors the S2 segmented FieldGroup composition."
                 : title === "TimeField"
@@ -777,7 +777,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
           title === "DateRangePicker"
             ? "Assistive-technology transcript rows remain tracked after the route, time, locale, and custom-calendar parity pass."
             : title === "Dialog"
-              ? "DialogContainer/onDismiss composition, fullscreen/custom dialog variants, and assistive-technology transcript rows remain tracked after the default Dialog parity pass."
+              ? "Package gates cover DialogContainer/onDismiss, AlertDialog actions, FullscreenDialog, CustomDialog/CloseButton, slot visibility, and dismissible ButtonGroup suppression; live screen-reader transcript tooling remains tracked beyond DOM ARIA/focus assertions."
               : title === "DateField"
                 ? "Contextual help route coverage and additional screen-reader transcript evidence remain tracked after the route, form, validation behavior, and strict closed-field parity pass."
                 : title === "TimeField"

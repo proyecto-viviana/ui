@@ -217,8 +217,31 @@ export type {
 } from "./contextualhelp";
 
 // Dialog
-export { Dialog, DialogTrigger } from "./dialog";
-export type { DialogProps, DialogSize, DialogTriggerProps } from "./dialog";
+export {
+  AlertDialog,
+  CloseButton,
+  CustomDialog,
+  Dialog,
+  DialogContainer,
+  DialogFooter,
+  DialogTrigger,
+  FullscreenDialog,
+  useDialogContainer,
+} from "./dialog";
+export type {
+  AlertDialogProps,
+  AlertDialogVariant,
+  CloseButtonProps,
+  CustomDialogProps,
+  CustomDialogSize,
+  DialogFooterProps,
+  DialogProps,
+  DialogRenderProps,
+  DialogSize,
+  DialogTriggerProps,
+  FullscreenDialogProps,
+  FullscreenDialogVariant,
+} from "./dialog";
 
 // Disclosure
 export {

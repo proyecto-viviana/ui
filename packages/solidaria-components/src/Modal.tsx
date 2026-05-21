@@ -449,8 +449,25 @@ function ModalContent(
   createEffect(() => {
     if (!isOpen() || !modalRef) return;
 
-    const cleanup = ariaHideOutside([modalRef]);
-    onCleanup(cleanup);
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+    const ownerWindow = modalRef.ownerDocument.defaultView ?? window;
+
+    const hideOutside = () => {
+      if (cancelled || !modalRef?.isConnected) return;
+      cleanup = ariaHideOutside([modalRef]);
+    };
+
+    if (modalRef.isConnected) {
+      hideOutside();
+    } else {
+      ownerWindow.queueMicrotask(hideOutside);
+    }
+
+    onCleanup(() => {
+      cancelled = true;
+      cleanup?.();
+    });
   });
 
   const renderValues = createMemo<ModalRenderProps>(() => ({
