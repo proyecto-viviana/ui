@@ -3141,11 +3141,23 @@ const datePickerControls: ComponentControlGroup = {
       defaultValue: datePickerDemoDefaults.value,
     },
     {
+      name: "withContextualHelp",
+      label: "contextualHelp",
+      kind: "switch",
+      defaultValue: datePickerDemoDefaults.withContextualHelp,
+    },
+    {
       name: "granularity",
       label: "granularity",
       kind: "select",
       defaultValue: datePickerDemoDefaults.granularity,
       options: options(datePickerGranularityOptions),
+    },
+    {
+      name: "shouldForceLeadingZeros",
+      label: "shouldForceLeadingZeros",
+      kind: "switch",
+      defaultValue: datePickerDemoDefaults.shouldForceLeadingZeros,
     },
     {
       name: "hourCycle",
@@ -3265,6 +3277,7 @@ const datePickerControls: ComponentControlGroup = {
   ],
   apiProps: [
     "label",
+    "contextualHelp",
     "description",
     "errorMessage",
     "isRequired",
@@ -3276,6 +3289,7 @@ const datePickerControls: ComponentControlGroup = {
     "minValue",
     "maxValue",
     "granularity",
+    "shouldForceLeadingZeros",
     "hourCycle",
     "hideTimeZone",
     "locale",
@@ -3295,11 +3309,12 @@ const datePickerControls: ComponentControlGroup = {
     "name",
     "form",
     "validationBehavior",
+    "validate",
     "aria-label",
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 DatePicker docs control surface for label, size, controlled date and date-time values, granularity, hour cycle, hidden time-zone state, Provider locale routing, custom calendar creation, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, firstDayOfWeek, pageBehavior, form owner/name props, and validation behavior.",
+  note: "Modeled from the S2 DatePicker docs control surface for label, contextual help, size, controlled date and date-time values, granularity, leading-zero formatting, hour cycle, hidden time-zone state, Provider locale routing, custom calendar creation, validation, disabled/read-only, required, help text, one/two-month popover routing, min/max constraints, unavailable dates, firstDayOfWeek, pageBehavior, form owner/name props, validation behavior, and validate.",
 };
 
 const dateRangePickerControls: ComponentControlGroup = {

@@ -52,6 +52,8 @@ export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   description?: string;
   /** Error message. */
   errorMessage?: string;
+  /** A ContextualHelp element to place next to the label. */
+  contextualHelp?: JSX.Element;
   /** Placeholder text. */
   placeholder?: string;
   /**
@@ -412,6 +414,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       "label",
       "description",
       "errorMessage",
+      "contextualHelp",
       "isInvalid",
       "placeholder",
       "maxVisibleMonths",
@@ -486,6 +489,11 @@ export function DatePicker<T extends DateValue = CalendarDate>(
               </span>
             </Show>
           </HeadlessDatePickerLabel>
+          <Show when={local.contextualHelp}>
+            <span data-slot="contextualHelp" class={noWrap}>
+              {local.contextualHelp}
+            </span>
+          </Show>
         </div>
       </Show>
 
@@ -547,6 +555,9 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           maxVisibleMonths={visibleMonths()}
           calendarProps={calendarProps}
           hourCycle={(rest as { hourCycle?: 12 | 24 }).hourCycle}
+          shouldForceLeadingZeros={
+            (rest as { shouldForceLeadingZeros?: boolean }).shouldForceLeadingZeros
+          }
         />
       </div>
 
@@ -575,6 +586,7 @@ function DatePickerPopup(props: {
   maxVisibleMonths?: number;
   calendarProps?: Record<string, unknown>;
   hourCycle?: 12 | 24;
+  shouldForceLeadingZeros?: boolean;
 }): JSX.Element {
   const theme = useTheme();
   const datePicker = useDatePickerContext();
@@ -602,6 +614,7 @@ function DatePickerPopup(props: {
             value={datePicker.datePickerState.timeValue() ?? undefined}
             granularity={timeGranularity()}
             hourCycle={props.hourCycle}
+            shouldForceLeadingZeros={props.shouldForceLeadingZeros}
             onChange={(nextValue) => {
               if (nextValue) {
                 datePicker.datePickerState.setTimeValue(nextValue);

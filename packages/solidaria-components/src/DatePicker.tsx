@@ -57,6 +57,7 @@ import { DateFieldContext } from "./DateField";
 import { CalendarContext } from "./Calendar";
 import { RangeCalendarContext } from "./RangeCalendar";
 import { HiddenDateInput } from "./HiddenDateInput";
+import { FormContext, type FormProps } from "./Form";
 import {
   DateRangePickerContext,
   useDateRangePickerContext,
@@ -197,6 +198,53 @@ export type {
   DateRangePickerFieldContextValue,
 } from "./DateRangePickerContext";
 
+function withFormValidationBehavior<P extends object>(props: P, formContext: FormProps | null): P {
+  if (!formContext?.validationBehavior) {
+    return props;
+  }
+
+  return new Proxy(props, {
+    get(target, property, receiver) {
+      const localValue = Reflect.get(target, property, receiver);
+      if (property === "validationBehavior" && localValue === undefined) {
+        return formContext.validationBehavior;
+      }
+
+      return localValue;
+    },
+    has(target, property) {
+      return (
+        Reflect.has(target, property) ||
+        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
+      );
+    },
+    ownKeys(target) {
+      const keys = new Set(Reflect.ownKeys(target));
+      if (formContext.validationBehavior !== undefined) {
+        keys.add("validationBehavior");
+      }
+
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+      if (descriptor) {
+        return descriptor;
+      }
+
+      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => formContext.validationBehavior,
+        };
+      }
+
+      return undefined;
+    },
+  });
+}
+
 export function useDatePickerContext(): DatePickerContextValue {
   const context = useContext(DatePickerContext);
   if (!context) {
@@ -235,6 +283,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
 ): JSX.Element {
   // Use hydration-safe pattern for client-only rendering
   const isHydrated = useIsHydrated();
+  const formContext = useContext(FormContext);
 
   return (
     <Show
@@ -243,20 +292,26 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         <div class="solidaria-DatePicker solidaria-DatePicker--placeholder" aria-hidden="true" />
       }
     >
-      <DatePickerInner {...props} />
+      <DatePickerInner {...props} __formContext={formContext} />
     </Show>
   );
 }
+
+type DatePickerInnerProps<T extends DateValue = DateValue> = DatePickerProps<T> & {
+  __formContext?: FormProps | null;
+};
 
 /**
  * Internal DatePicker component that renders after client mount.
  */
 function DatePickerInner<T extends DateValue = CalendarDate>(
-  props: DatePickerProps<T>,
+  props: DatePickerInnerProps<T>,
 ): JSX.Element {
+  const formContext = props.__formContext ?? useContext(FormContext);
+  const mergedProps = withFormValidationBehavior(props, formContext);
   const [local, stateProps, rest] = splitProps(
-    props,
-    ["children", "class", "style", "slot", "shouldCloseOnSelect"],
+    mergedProps,
+    ["children", "class", "style", "slot", "shouldCloseOnSelect", "__formContext"],
     [
       "value",
       "defaultValue",
@@ -266,6 +321,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       "onOpenChange",
       "minValue",
       "maxValue",
+      "isInvalid",
       "isDisabled",
       "isReadOnly",
       "isRequired",
@@ -274,8 +330,11 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       "hourCycle",
       "hideTimeZone",
       "placeholderValue",
+      "shouldForceLeadingZeros",
       "createCalendar",
       "validationState",
+      "validationBehavior",
+      "validate",
       "description",
       "errorMessage",
       "isDateUnavailable",
@@ -288,6 +347,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   );
 
   const [triggerRef, setTriggerRef] = createSignal<HTMLElement | null>(null);
+  const [fieldRef, setFieldRef] = createSignal<HTMLDivElement | null>(null);
 
   // Unified state using createDatePickerState as single source of truth
   const datePickerState = createDatePickerState<T>({
@@ -368,7 +428,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     () =>
       fieldState.isInvalid() ||
       datePickerState.builtinValidation().isInvalid ||
-      Boolean((rest as { isInvalid?: boolean }).isInvalid),
+      Boolean(stateProps.isInvalid),
   );
 
   const renderValues = createMemo<DatePickerRenderProps>(() => ({
@@ -388,6 +448,11 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     renderValues,
   );
 
+  const validationBehavior = () =>
+    (stateProps as { validationBehavior?: "aria" | "native" }).validationBehavior ??
+    formContext?.validationBehavior ??
+    "native";
+
   return (
     <DatePickerStateContext.Provider value={fieldState as unknown as DateFieldState<DateValue>}>
       <DatePickerContext.Provider value={contextValue}>
@@ -405,6 +470,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
         >
           <CalendarContext.Provider value={calendarState as unknown as CalendarState<DateValue>}>
             <div
+              ref={setFieldRef}
               {...pickerAria.groupProps}
               class={renderProps.class()}
               style={renderProps.style()}
@@ -422,7 +488,13 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
                 form={(rest as Record<string, unknown>).form as string | undefined}
                 value={() => datePickerState.value()}
                 autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
-                isDisabled={access(stateProps.isDisabled) ?? false}
+                isDisabled={fieldState.isDisabled()}
+                isRequired={fieldState.isRequired()}
+                validationBehavior={validationBehavior()}
+                validationState={fieldState}
+                focus={() => {
+                  fieldRef()?.querySelector<HTMLElement>('[role="spinbutton"]')?.focus();
+                }}
                 minValue={() => access(stateProps.minValue) as DateValue | undefined}
                 maxValue={() => access(stateProps.maxValue) as DateValue | undefined}
                 granularity={datePickerState.granularity}

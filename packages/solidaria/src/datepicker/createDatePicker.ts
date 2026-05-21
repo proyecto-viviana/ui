@@ -167,7 +167,7 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
     if (p.description) {
       ids.push(descriptionId);
     }
-    if (p.isInvalid && p.errorMessage) {
+    if ((p.isInvalid || state.isInvalid()) && p.errorMessage) {
       ids.push(errorMessageId);
     }
     return ids.length > 0 ? ids.join(" ") : undefined;

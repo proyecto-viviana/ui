@@ -41,10 +41,12 @@ export interface DatePickerDemoProps {
   label: string;
   size: DatePickerDemoSize;
   value: string;
+  withContextualHelp: boolean;
   maxVisibleMonths: DatePickerVisibleMonths;
   firstDayOfWeek: DatePickerFirstDayOfWeek;
   pageBehavior: DatePickerPageBehavior;
   granularity: DatePickerGranularity;
+  shouldForceLeadingZeros: boolean;
   hourCycle: DatePickerHourCycle;
   hideTimeZone: boolean;
   locale: DatePickerLocale;
@@ -66,10 +68,12 @@ export const datePickerDemoDefaults: DatePickerDemoProps = {
   label: "Due date",
   size: "M",
   value: "",
+  withContextualHelp: false,
   maxVisibleMonths: "1",
   firstDayOfWeek: "",
   pageBehavior: "",
   granularity: "day",
+  shouldForceLeadingZeros: false,
   hourCycle: "",
   hideTimeZone: false,
   locale: "",
@@ -148,6 +152,7 @@ export function normalizeDatePickerDemoProps(
       typeof props.label === "string" && props.label ? props.label : datePickerDemoDefaults.label,
     size: isOneOf(props.size, datePickerSizeOptions) ? props.size : datePickerDemoDefaults.size,
     value: typeof props.value === "string" ? props.value : datePickerDemoDefaults.value,
+    withContextualHelp: props.withContextualHelp === true,
     maxVisibleMonths: isOneOf(props.maxVisibleMonths, datePickerVisibleMonthsOptions)
       ? props.maxVisibleMonths
       : datePickerDemoDefaults.maxVisibleMonths,
@@ -160,6 +165,7 @@ export function normalizeDatePickerDemoProps(
     granularity: isOneOf(props.granularity, datePickerGranularityOptions)
       ? props.granularity
       : datePickerDemoDefaults.granularity,
+    shouldForceLeadingZeros: props.shouldForceLeadingZeros === true,
     hourCycle: isOneOf(props.hourCycle, datePickerHourCycleOptions)
       ? props.hourCycle
       : datePickerDemoDefaults.hourCycle,
@@ -208,6 +214,7 @@ export function datePickerDemoPropsFromSearch(search: string): DatePickerDemoPro
     label: params.get("label") || datePickerDemoDefaults.label,
     size: isOneOf(size, datePickerSizeOptions) ? size : datePickerDemoDefaults.size,
     value: params.get("value") ?? datePickerDemoDefaults.value,
+    withContextualHelp: booleanParam(params.get("withContextualHelp")),
     maxVisibleMonths: isOneOf(maxVisibleMonths, datePickerVisibleMonthsOptions)
       ? maxVisibleMonths
       : datePickerDemoDefaults.maxVisibleMonths,
@@ -220,6 +227,7 @@ export function datePickerDemoPropsFromSearch(search: string): DatePickerDemoPro
     granularity: isOneOf(granularity, datePickerGranularityOptions)
       ? granularity
       : datePickerDemoDefaults.granularity,
+    shouldForceLeadingZeros: booleanParam(params.get("shouldForceLeadingZeros")),
     hourCycle: isOneOf(hourCycle, datePickerHourCycleOptions)
       ? hourCycle
       : datePickerDemoDefaults.hourCycle,
@@ -257,10 +265,12 @@ export function serializeDatePickerDemoProps(props: DatePickerDemoProps) {
     label: props.label,
     size: props.size,
     value: props.value,
+    withContextualHelp: props.withContextualHelp,
     maxVisibleMonths: props.maxVisibleMonths,
     firstDayOfWeek: props.firstDayOfWeek,
     pageBehavior: props.pageBehavior,
     granularity: props.granularity,
+    shouldForceLeadingZeros: props.shouldForceLeadingZeros,
     hourCycle: props.hourCycle,
     hideTimeZone: props.hideTimeZone,
     locale: props.locale,

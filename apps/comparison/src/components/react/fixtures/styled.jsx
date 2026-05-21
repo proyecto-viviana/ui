@@ -2985,6 +2985,15 @@ function ReactDatePickerDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
+  const contextualHelp = demoProps.withContextualHelp
+    ? jsxs(SpectrumContextualHelp, {
+        children: [
+          jsx(SpectrumHeading, { slot: "title", children: "Date help" }),
+          jsx(SpectrumContent, { children: "Choose an available project due date." }),
+        ],
+      })
+    : undefined;
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-value": serializeDatePickerValue(value),
@@ -2997,8 +3006,10 @@ function ReactDatePickerDemo() {
         "data-comparison-control-props": serializeDatePickerDemoProps(demoProps),
         label: demoProps.label,
         size: demoProps.size,
+        contextualHelp,
         value: value ?? undefined,
         granularity: demoProps.granularity,
+        shouldForceLeadingZeros: demoProps.shouldForceLeadingZeros,
         hourCycle: demoProps.hourCycle ? Number(demoProps.hourCycle) : undefined,
         hideTimeZone: demoProps.hideTimeZone,
         maxVisibleMonths: Number(demoProps.maxVisibleMonths),

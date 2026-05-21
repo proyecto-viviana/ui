@@ -2450,7 +2450,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/datepicker-visual.spec.ts",
-      note: "Side-panel controls dispatch label, size, controlled date/date-time values, granularity, hourCycle, hideTimeZone, maxVisibleMonths, firstDayOfWeek, pageBehavior, name, form, validationBehavior, locale/calendar-system, disabled/read-only, required, help text, min/max constraints, and unavailable-date props into both mounted styled stacks. Browser rows assert hidden input values and associated FormData for the routed form owner.",
+      note: "Side-panel controls dispatch label, contextual help, size, controlled date/date-time values, granularity, leading-zero formatting, hourCycle, hideTimeZone, maxVisibleMonths, firstDayOfWeek, pageBehavior, name, form, validationBehavior, validate, locale/calendar-system, disabled/read-only, required, help text, min/max constraints, and unavailable-date props into both mounted styled stacks. Browser rows assert contextual help routing, forced leading-zero segments, hidden input values, and associated FormData for the routed form owner.",
     },
   ],
   rangecalendar: [

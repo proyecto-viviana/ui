@@ -2977,6 +2977,14 @@ function SolidSpectrumDatePickerDemo() {
   });
 
   const serializedProps = createMemo(() => serializeDatePickerDemoProps(demoProps()));
+  const contextualHelp = createMemo(() =>
+    demoProps().withContextualHelp
+      ? hc(SolidSpectrumContextualHelp, {}, [
+          hc(SolidSpectrumHeading, { slot: "title" }, ["Date help"]),
+          hc(SolidSpectrumContent, {}, ["Choose an available project due date."]),
+        ])
+      : undefined,
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -3023,11 +3031,17 @@ function SolidSpectrumDatePickerDemo() {
             get size() {
               return demoProps().size;
             },
+            get contextualHelp() {
+              return contextualHelp();
+            },
             get value() {
               return value() ?? undefined;
             },
             get granularity() {
               return demoProps().granularity;
+            },
+            get shouldForceLeadingZeros() {
+              return demoProps().shouldForceLeadingZeros;
             },
             get hourCycle() {
               return demoProps().hourCycle ? Number(demoProps().hourCycle) : undefined;

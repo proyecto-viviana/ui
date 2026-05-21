@@ -15,6 +15,7 @@ import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-li
 import { createSignal } from "solid-js";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
 import { DateInput, DateSegment } from "../src/DateField";
+import { Form } from "../src/Form";
 import {
   Calendar,
   CalendarGrid,
@@ -323,7 +324,7 @@ describe("DatePicker", () => {
       expect(segmentTexts.join(" ")).toContain("2024");
     });
 
-    it("should render hidden datetime input with form owner", async () => {
+    it("should render native validation datetime input with form owner by default", async () => {
       render(() => (
         <TestDatePicker
           pickerProps={{
@@ -338,7 +339,8 @@ describe("DatePicker", () => {
 
       const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
       expect(input).toBeInTheDocument();
-      expect(input.type).toBe("datetime-local");
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
       expect(input.value).toBe("2025-02-03T08:45");
       expect(input.getAttribute("form")).toBe("projectForm");
     });
@@ -363,7 +365,7 @@ describe("DatePicker", () => {
       expect(new FormData(form).getAll("dueDate").map(String)).toEqual(["2025-02-03"]);
     });
 
-    it("should preserve zoned values in the hidden form input", async () => {
+    it("should preserve zoned values in the native validation form input", async () => {
       const value = parseZonedDateTime("2025-02-03T08:45:30-05:00[America/New_York]");
       render(() => (
         <TestDatePicker
@@ -378,8 +380,67 @@ describe("DatePicker", () => {
 
       const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
       expect(input).toBeInTheDocument();
-      expect(input.type).toBe("hidden");
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
       expect(input.value).toBe("2025-02-03T08:45:30-05:00[America/New_York]");
+    });
+
+    it("should render a native required input for native validation behavior", async () => {
+      render(() => (
+        <TestDatePicker
+          pickerProps={{
+            name: "dueDate",
+            isRequired: true,
+            validationBehavior: "native",
+            defaultValue: new CalendarDate(2025, 2, 3),
+          }}
+        />
+      ));
+      await waitForDatePickerHydration();
+
+      const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
+      expect(input).toBeRequired();
+    });
+
+    it("should render hidden input semantics for aria validation behavior", async () => {
+      render(() => (
+        <TestDatePicker
+          pickerProps={{
+            name: "dueDate",
+            isRequired: true,
+            validationBehavior: "aria",
+            defaultValue: new CalendarDate(2025, 2, 3),
+          }}
+        />
+      ));
+      await waitForDatePickerHydration();
+
+      const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "hidden");
+      expect(input).not.toHaveAttribute("hidden");
+      expect(input).not.toBeRequired();
+    });
+
+    it("should inherit validation behavior from Form context", async () => {
+      render(() => (
+        <Form validationBehavior="aria">
+          <TestDatePicker
+            pickerProps={{
+              name: "dueDate",
+              isRequired: true,
+              defaultValue: new CalendarDate(2025, 2, 3),
+            }}
+          />
+        </Form>
+      ));
+      await waitForDatePickerHydration();
+
+      const input = document.querySelector('input[name="dueDate"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "hidden");
+      expect(input).not.toHaveAttribute("hidden");
+      expect(input).not.toBeRequired();
     });
 
     it("should update hidden input when controlled zoned value changes", async () => {
@@ -453,6 +514,22 @@ describe("DatePicker", () => {
           pickerProps={{
             value: new CalendarDate(2024, 6, 5),
             minValue: new CalendarDate(2024, 6, 10),
+          }}
+        />
+      ));
+      await waitForDatePickerHydration();
+
+      const picker = document.querySelector(".solidaria-DatePicker");
+      expect(picker).toHaveAttribute("data-invalid");
+    });
+
+    it("should mark picker as invalid when validate returns an error", async () => {
+      render(() => (
+        <TestDatePicker
+          pickerProps={{
+            value: new CalendarDate(2024, 6, 15),
+            validate: () => "Unavailable date",
+            validationBehavior: "aria",
           }}
         />
       ));
@@ -544,6 +621,21 @@ describe("DatePicker", () => {
 
       const picker = document.querySelector(".solidaria-DatePicker");
       expect(picker).toHaveAttribute("aria-label", "Test Date Picker");
+    });
+
+    it("should forward shouldForceLeadingZeros to DateInput segments", async () => {
+      render(() => (
+        <TestDatePicker
+          pickerProps={{
+            defaultValue: new CalendarDate(2025, 2, 3),
+            shouldForceLeadingZeros: true,
+          }}
+        />
+      ));
+      await waitForDatePickerHydration();
+
+      expect(screen.getByRole("spinbutton", { name: /month/i })).toHaveTextContent("02");
+      expect(screen.getByRole("spinbutton", { name: /day/i })).toHaveTextContent("03");
     });
   });
 });

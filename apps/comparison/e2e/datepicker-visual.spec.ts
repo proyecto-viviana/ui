@@ -926,6 +926,42 @@ test.describe("comparison DatePicker visual parity", () => {
     );
   });
 
+  test("routes contextual help and forced leading zero segments", async ({ page }) => {
+    await page.goto(
+      "/components/datepicker/?value=2025-02-03&withContextualHelp=true&shouldForceLeadingZeros=true",
+    );
+    await waitForComparisonRouteReady(page);
+
+    const section = await styledSection(page);
+    const reactCard = await frameworkPanel(section, "React Spectrum stack");
+    const solidCard = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactCard.locator('[data-comparison-control-root="datepicker"]');
+    const solidRoot = solidCard.locator('[data-comparison-control-root="datepicker"]');
+
+    await expect(reactRoot.getByRole("button")).toHaveCount(2);
+    await expect(solidRoot.getByRole("button")).toHaveCount(2);
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"withContextualHelp":true/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"withContextualHelp":true/,
+    );
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"shouldForceLeadingZeros":true/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"shouldForceLeadingZeros":true/,
+    );
+    const reactTexts = await datePickerSpinbuttonTexts(reactRoot);
+    expect(reactTexts).toContain("02");
+    expect(reactTexts).toContain("03");
+    await expect.poll(() => datePickerSpinbuttonTexts(solidRoot)).toEqual(reactTexts);
+  });
+
   test("Provider locale and custom calendar-system routes stay in parity", async ({ page }) => {
     await page.goto("/components/datepicker/?locale=hi-IN-u-ca-indian&value=2025-02-03");
     await page.waitForLoadState("networkidle");

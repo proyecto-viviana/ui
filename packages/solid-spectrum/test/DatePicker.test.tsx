@@ -54,6 +54,32 @@ describe("DatePicker (solid-spectrum)", () => {
     expect(group).toHaveAttribute("aria-required", "true");
   });
 
+  it("renders contextual help next to the visible label", async () => {
+    render(() => (
+      <DatePicker label="Appointment" contextualHelp={<button type="button">Date help</button>} />
+    ));
+    await waitForHydration();
+
+    const contextualHelp = document.querySelector('[data-slot="contextualHelp"]') as HTMLElement;
+    expect(contextualHelp).toBeInTheDocument();
+    expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Date help" }));
+  });
+
+  it("forwards shouldForceLeadingZeros to visible date segments", async () => {
+    render(() => (
+      <DatePicker
+        aria-label="Date"
+        defaultValue={new CalendarDate(2025, 2, 3)}
+        shouldForceLeadingZeros
+      />
+    ));
+    await waitForHydration();
+
+    const segmentTexts = screen.getAllByRole("spinbutton").map((segment) => segment.textContent);
+    expect(segmentTexts).toContain("02");
+    expect(segmentTexts).toContain("03");
+  });
+
   it("forwards custom button aria-label", async () => {
     render(() => <DatePicker aria-label="Date picker" buttonAriaLabel="Choose date" />);
     await waitForHydration();
@@ -85,6 +111,31 @@ describe("DatePicker (solid-spectrum)", () => {
     await waitFor(() => {
       expect(screen.getByText("Time")).toBeInTheDocument();
     });
+  });
+
+  it("forwards shouldForceLeadingZeros to the popup TimeField", async () => {
+    render(() => (
+      <DatePicker
+        label="Event"
+        defaultValue={new CalendarDateTime(2025, 2, 3, 8, 5)}
+        granularity="minute"
+        hourCycle={24}
+        shouldForceLeadingZeros
+      />
+    ));
+    await waitForHydration();
+
+    const button = screen.getByRole("button");
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Time")).toBeInTheDocument();
+    });
+
+    const hourSegments = screen.getAllByRole("spinbutton", { name: /hour/i });
+    const minuteSegments = screen.getAllByRole("spinbutton", { name: /minute/i });
+    expect(hourSegments[hourSegments.length - 1]).toHaveTextContent("08");
+    expect(minuteSegments[minuteSegments.length - 1]).toHaveTextContent("05");
   });
 
   it("wires popup TimeField changes back to the DatePicker value", async () => {
