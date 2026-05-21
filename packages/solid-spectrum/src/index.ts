@@ -292,13 +292,7 @@ export type {
 
 // Meter
 export { Meter, MeterContext } from "./meter";
-export type {
-  MeterLabelPosition,
-  MeterProps,
-  MeterSize,
-  MeterStaticColor,
-  MeterVariant,
-} from "./meter";
+export type { MeterProps } from "./meter";
 
 // NumberField
 export { NumberField } from "./numberfield";

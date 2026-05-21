@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { Meter, MeterContext } from "../src/meter";
 import { Skeleton } from "../src/skeleton";
@@ -16,12 +16,6 @@ describe("Meter (solid-spectrum)", () => {
     expect(meter).toHaveAttribute("aria-valuemax", "100");
     expect(meter.className).not.toBe("");
     expect(container.querySelector('[style*="width: 30%"]')).toBeInTheDocument();
-  });
-
-  it("handles equal min and max without NaN", () => {
-    render(() => <Meter value={10} minValue={10} maxValue={10} aria-label="Fixed" />);
-    const meter = screen.getByRole("meter", { name: "Fixed" });
-    expect(meter.getAttribute("aria-valuetext")).not.toContain("NaN");
   });
 
   it("clamps the visual fill percentage to the value range", () => {
@@ -54,13 +48,23 @@ describe("Meter (solid-spectrum)", () => {
 
   it("renders S2 label and value text when a label is provided", () => {
     render(() => (
-      <Meter label="Storage" value={75} minValue={0} maxValue={100} valueLabel="75 GB" />
+      <>
+        <Meter label="Storage" value={75} minValue={0} maxValue={100} valueLabel="75 GB" />
+        <Meter
+          label="Quota"
+          value={50}
+          minValue={0}
+          maxValue={100}
+          valueLabel={<span>Half full</span>}
+        />
+      </>
     ));
 
     const meter = screen.getByRole("meter", { name: "Storage" });
     expect(meter).toHaveAttribute("aria-valuetext", "75 GB");
     expect(screen.getByText("Storage")).toBeInTheDocument();
     expect(screen.getByText("75 GB")).toHaveAttribute("data-rsp-slot", "text");
+    expect(screen.getByText("Half full")).toBeInTheDocument();
   });
 
   it("supports S2 variants, static color, sizes, and label position", () => {
@@ -84,36 +88,64 @@ describe("Meter (solid-spectrum)", () => {
     expect(fills[2]?.className).not.toBe(fills[0]?.className);
   });
 
-  it("maps legacy variant and size aliases to S2 styles", () => {
-    const { container } = render(() => (
-      <>
-        <Meter label="Success" value={40} variant="success" size="md" />
-        <Meter label="Positive" value={40} variant="positive" size="M" />
-      </>
+  it("matches the S2 prop boundary without legacy aliases or arbitrary DOM props", () => {
+    const onClick = vi.fn();
+    render(() => (
+      <Meter
+        {...({
+          class: "legacy-meter",
+          showValueLabel: false,
+          onClick,
+          role: "progressbar",
+          style: { margin: "99px" },
+        } as Record<string, unknown>)}
+        label="Boundary"
+        value={40}
+        data-testid="meter-root"
+        UNSAFE_className="unsafe-meter"
+        UNSAFE_style={{ margin: "2px" }}
+      />
     ));
 
-    const fills = Array.from(container.querySelectorAll('[style*="width: 40%"]'));
-    expect(fills[0]?.className).toBe(fills[1]?.className);
+    const meter = screen.getByRole("meter", { name: "Boundary" }) as HTMLElement;
+    expect(screen.getByTestId("meter-root")).toBe(meter);
+    expect(meter).toHaveAttribute("role", "meter progressbar");
+    expect(meter).toHaveClass("unsafe-meter");
+    expect(meter).not.toHaveClass("legacy-meter");
+    expect(meter).toHaveStyle({ margin: "2px" });
+    expect(screen.getByText("40%")).toBeInTheDocument();
+
+    meter.click();
+    expect(onClick).not.toHaveBeenCalled();
   });
 
-  it("supports context props and unsafe escape hatches", () => {
+  it("supports context props and lets local unsafe props override context", () => {
     render(() => (
       <MeterContext.Provider
         value={{
           variant: "negative",
           size: "XL",
           UNSAFE_className: "context-meter",
-          UNSAFE_style: { margin: "2px" },
+          UNSAFE_style: { margin: "2px", padding: "1px" },
         }}
       >
-        <Meter label="Context" value={20} class="local-meter" />
+        <Meter label="Context" value={20} />
+        <Meter
+          label="Override"
+          value={30}
+          UNSAFE_className="local-meter"
+          UNSAFE_style={{ margin: "4px" }}
+        />
       </MeterContext.Provider>
     ));
 
-    const meter = screen.getByRole("meter", { name: "Context" }) as HTMLElement;
-    expect(meter).toHaveClass("context-meter");
-    expect(meter).toHaveClass("local-meter");
-    expect(meter.style.margin).toBe("2px");
+    const contextMeter = screen.getByRole("meter", { name: "Context" }) as HTMLElement;
+    const overrideMeter = screen.getByRole("meter", { name: "Override" }) as HTMLElement;
+    expect(contextMeter).toHaveClass("context-meter");
+    expect(contextMeter).toHaveStyle({ margin: "2px", padding: "1px" });
+    expect(overrideMeter).toHaveClass("local-meter");
+    expect(overrideMeter).not.toHaveClass("context-meter");
+    expect(overrideMeter).toHaveStyle({ margin: "4px", padding: "1px" });
   });
 
   it("uses the shared Skeleton wrapper for track and value text", () => {

@@ -852,6 +852,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Computed style contracts compare root grid layout, label/value typography, track/fill geometry, all variants, all sizes, all static colors, label positions, custom ranges, and fill percentage.",
     },
     {
+      id: "styled.root-dom-contract",
+      label: "Root DOM contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/meter-visual.spec.ts; packages/solid-spectrum/test/Meter.test.tsx",
+      note: "Computed contracts compare root tag, role, aria value attributes, harness data attrs, and track/fill DOM against React Spectrum; focused unit tests assert the styled S2 Meter excludes legacy size/variant/class/showValueLabel/raw DOM branches.",
+    },
+    {
       id: "styled.forced-colors",
       label: "Forced colors branch",
       kind: "static",

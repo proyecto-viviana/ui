@@ -60,6 +60,8 @@ async function meterContract(root: Locator) {
     return {
       tagName: element.tagName,
       role: element.getAttribute("role"),
+      dataComparisonRoot: element.getAttribute("data-comparison-control-root"),
+      dataComparisonProps: element.getAttribute("data-comparison-control-props"),
       ariaValueNow: element.getAttribute("aria-valuenow"),
       ariaValueMin: element.getAttribute("aria-valuemin"),
       ariaValueMax: element.getAttribute("aria-valuemax"),

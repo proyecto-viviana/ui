@@ -29,28 +29,12 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 
-export type MeterSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
-export type MeterVariant =
-  | "informative"
-  | "positive"
-  | "notice"
-  | "negative"
-  | "primary"
-  | "accent"
-  | "success"
-  | "warning"
-  | "danger"
-  | "info";
-export type MeterStaticColor = "white" | "black" | "auto";
-export type MeterLabelPosition = "top" | "side";
+type MeterSize = "S" | "M" | "L" | "XL";
+type MeterVariant = "informative" | "positive" | "notice" | "negative";
+type MeterStaticColor = "white" | "black" | "auto";
+type MeterLabelPosition = "top" | "side";
 
-type S2MeterSize = "S" | "M" | "L" | "XL";
-type S2MeterVariant = "informative" | "positive" | "notice" | "negative";
-
-export interface MeterProps extends Omit<
-  JSX.HTMLAttributes<HTMLDivElement>,
-  "class" | "style" | "children" | "ref" | "role" | "slot"
-> {
+export interface MeterProps {
   /** The current value (controlled). @default 0 */
   value?: number;
   /** The smallest value allowed. @default 0 */
@@ -58,7 +42,7 @@ export interface MeterProps extends Omit<
   /** The largest value allowed. @default 100 */
   maxValue?: number;
   /** The content to display as the value's label (e.g. "75 GB"). */
-  valueLabel?: string;
+  valueLabel?: JSX.Element;
   /** The display format of the value label. */
   formatOptions?: Intl.NumberFormatOptions;
   /** The size of the meter. @default 'M' */
@@ -71,29 +55,27 @@ export interface MeterProps extends Omit<
   staticColor?: MeterStaticColor;
   /** The label's overall position relative to the meter. @default 'top' */
   labelPosition?: MeterLabelPosition;
-  /** Legacy value visibility escape hatch. S2 displays the value when a label is present. */
-  showValueLabel?: boolean;
   /** Spectrum-defined generated classes. */
   styles?: StyleString | (() => StyleString | undefined);
   /** Additional CSS class name. Use only as a last resort. */
   UNSAFE_className?: UnsafeClassName | string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
-  class?: string;
+  id?: string;
   slot?: string | null;
   ref?: RefLike<HTMLDivElement>;
   "aria-label"?: string;
   "aria-labelledby"?: string;
   "aria-describedby"?: string;
   "aria-details"?: string;
+  [key: `data-${string}`]: string | undefined;
 }
 
 export const MeterContext = createContext<SpectrumContextValue<MeterProps>>(null);
 
 type MeterStyleState = {
-  size: S2MeterSize;
-  variant: S2MeterVariant;
+  size: MeterSize;
+  variant: MeterVariant;
   staticColor?: MeterStaticColor;
   labelPosition: MeterLabelPosition;
   labelAlign?: "start" | "end";
@@ -222,45 +204,37 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-function safeRange(min: number, max: number): number {
-  const range = max - min;
-  return Number.isFinite(range) && range > 0 ? range : 1;
+function stringValueLabel(value: JSX.Element | undefined): string | undefined {
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+  return undefined;
 }
 
-function normalizeSize(size: MeterSize | undefined): S2MeterSize {
-  switch (size) {
-    case "sm":
-      return "S";
-    case "md":
-      return "M";
-    case "lg":
-      return "L";
-    default:
-      return size ?? "M";
-  }
-}
+function getDataAttributes(source: object): JSX.HTMLAttributes<HTMLDivElement> {
+  const record = source as Record<string, unknown>;
+  const attributes: Record<string, string | undefined> = {};
 
-function normalizeVariant(variant: MeterVariant | undefined): S2MeterVariant {
-  switch (variant) {
-    case "primary":
-    case "accent":
-    case "info":
-      return "informative";
-    case "success":
-      return "positive";
-    case "warning":
-      return "notice";
-    case "danger":
-      return "negative";
-    default:
-      return variant ?? "informative";
+  for (const key in record) {
+    if (key.startsWith("data-")) {
+      const value = record[key];
+      attributes[key] = value == null ? undefined : String(value);
+    }
   }
+
+  return attributes as JSX.HTMLAttributes<HTMLDivElement>;
 }
 
 export function Meter(props: MeterProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(MeterContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
-  const [local, domProps] = splitProps(merged, [
+  const merged = mergeProps(contextProps ?? {}, props) as MeterProps & {
+    class?: string;
+    role?: string;
+    style?: JSX.CSSProperties;
+    showValueLabel?: boolean;
+    children?: JSX.Element;
+  };
+  const [local] = splitProps(merged, [
     "value",
     "minValue",
     "maxValue",
@@ -271,11 +245,9 @@ export function Meter(props: MeterProps): JSX.Element {
     "label",
     "staticColor",
     "labelPosition",
-    "showValueLabel",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
-    "class",
     "slot",
     "ref",
     "id",
@@ -283,10 +255,15 @@ export function Meter(props: MeterProps): JSX.Element {
     "aria-labelledby",
     "aria-describedby",
     "aria-details",
+    "class",
+    "role",
+    "style",
+    "showValueLabel",
+    "children",
   ]);
   const labelId = createUniqueId();
-  const size = () => normalizeSize(local.size);
-  const variant = () => normalizeVariant(local.variant);
+  const size = () => local.size ?? "M";
+  const variant = () => local.variant ?? "informative";
   const labelPosition = () => local.labelPosition ?? "top";
   const isStaticColor = () => !!local.staticColor;
   const state = (labelAlign?: "start" | "end"): MeterStyleState => ({
@@ -314,7 +291,7 @@ export function Meter(props: MeterProps): JSX.Element {
       return local.maxValue;
     },
     get valueLabel() {
-      return local.valueLabel;
+      return stringValueLabel(local.valueLabel);
     },
     get formatOptions() {
       return local.formatOptions;
@@ -337,29 +314,25 @@ export function Meter(props: MeterProps): JSX.Element {
     const minValue = local.minValue ?? 0;
     const maxValue = local.maxValue ?? 100;
     const value = clamp(local.value ?? 0, minValue, maxValue);
-    return ((value - minValue) / safeRange(minValue, maxValue)) * 100;
+    return ((value - minValue) / (maxValue - minValue)) * 100;
   });
-  const valueText = () => meterAria.meterProps["aria-valuetext"] as string | undefined;
-  const showValue = () => !!local.label && local.showValueLabel !== false;
+  const valueText = () =>
+    local.valueLabel ?? (meterAria.meterProps["aria-valuetext"] as string | undefined);
+  const showValue = () => !!local.label;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
 
   return (
     <div
-      {...domProps}
+      {...getDataAttributes(merged)}
       {...meterAria.meterProps}
       role={"meter progressbar" as never}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,
       )}
-      class={[
-        contextProps?.UNSAFE_className,
-        local.UNSAFE_className,
-        local.class,
-        wrapperStyles(state(), mergedStyles()),
-      ]
+      class={[local.UNSAFE_className, wrapperStyles(state(), mergedStyles())]
         .filter(Boolean)
         .join(" ")}
       style={mergedUnsafeStyle()}

@@ -427,13 +427,13 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         description="Display a quantity within a known range"
       >
         <div class="space-y-6">
-          {/* Primary variant */}
+          {/* Sizes */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Primary Variant</h4>
+            <h4 class="text-sm font-medium text-primary-300 mb-2">Sizes</h4>
             <div class="space-y-3">
-              <Meter label="Storage Used" value={75} showValueLabel />
-              <Meter label="Memory" value={45} size="sm" showValueLabel />
-              <Meter label="CPU" value={90} size="lg" showValueLabel />
+              <Meter label="Storage Used" value={75} />
+              <Meter label="Memory" value={45} size="S" />
+              <Meter label="CPU" value={90} size="L" />
             </div>
           </div>
 
@@ -441,11 +441,10 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
           <div>
             <h4 class="text-sm font-medium text-primary-300 mb-2">Color Variants</h4>
             <div class="space-y-3">
-              <Meter label="Success" value={30} variant="success" showValueLabel />
-              <Meter label="Warning" value={65} variant="warning" showValueLabel />
-              <Meter label="Danger" value={85} variant="danger" showValueLabel />
-              <Meter label="Info" value={50} variant="info" showValueLabel />
-              <Meter label="Accent" value={40} variant="accent" showValueLabel />
+              <Meter label="Positive" value={30} variant="positive" />
+              <Meter label="Notice" value={65} variant="notice" />
+              <Meter label="Negative" value={85} variant="negative" />
+              <Meter label="Informative" value={50} variant="informative" />
             </div>
           </div>
 
