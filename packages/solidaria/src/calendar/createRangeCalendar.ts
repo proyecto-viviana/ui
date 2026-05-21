@@ -10,7 +10,12 @@ import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import type { RangeCalendarState } from "@proyecto-viviana/solid-stately";
-import { formatVisibleRangeDescription, setCalendarHookData } from "./utils";
+import {
+  formatSelectedDateDescription,
+  formatVisibleRangeDescription,
+  getCalendarHookData,
+  setCalendarHookData,
+} from "./utils";
 
 export interface AriaRangeCalendarProps {
   /** An ID for the calendar. */
@@ -72,22 +77,19 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     const p = getProps();
     return [p["aria-label"], visibleRangeDescription()].filter(Boolean).join(", ");
   });
+  const selectedDateDescription = createMemo(() => formatSelectedDateDescription(state));
 
   const initialProps = getProps();
-  if (
-    initialProps.id ||
-    initialProps["aria-label"] ||
-    initialProps["aria-labelledby"] ||
-    initialProps["aria-describedby"] ||
-    initialProps["aria-details"] ||
-    initialProps.errorMessage ||
-    initialProps.errorMessageId
-  ) {
-    setCalendarHookData(state, {
-      errorMessageId:
-        initialProps.errorMessage || initialProps.errorMessageId ? errorMessageId : undefined,
-    });
-  }
+  const existingHookData = getCalendarHookData(state);
+  setCalendarHookData(state, {
+    errorMessageId:
+      initialProps.errorMessage || initialProps.errorMessageId
+        ? errorMessageId
+        : existingHookData?.errorMessageId,
+    get selectedDateDescription() {
+      return selectedDateDescription();
+    },
+  });
 
   // Previous button props
   const prevButtonProps = createMemo(() => {

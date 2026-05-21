@@ -46,6 +46,20 @@ import {
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) {
+    return;
+  }
+
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface RangeCalendarRenderProps {
   /** Whether the calendar is disabled. */
   isDisabled: boolean;
@@ -70,6 +84,8 @@ export interface RangeCalendarProps<T extends DateValue = DateValue>
   style?: StyleOrFunction<RangeCalendarRenderProps>;
   /** The locale to use for formatting. */
   locale?: string;
+  /** Ref for the range calendar root element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface RangeCalendarGridRenderProps {
@@ -206,7 +222,7 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
 ): JSX.Element {
   const [local, stateProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot"],
+    ["children", "class", "style", "slot", "ref"],
     [
       "value",
       "defaultValue",
@@ -222,6 +238,8 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
       "createCalendar",
       "isDateUnavailable",
       "visibleMonths",
+      "pageBehavior",
+      "selectionAlignment",
       "isDateDisabled",
       "validationState",
       "allowsNonContiguousRanges",
@@ -254,6 +272,7 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
       <RangeCalendarContext.Provider value={state as unknown as RangeCalendarState<DateValue>}>
         <div
           {...calendarAria.calendarProps}
+          ref={(el) => assignRef(local.ref, el)}
           class={renderProps.class()}
           style={renderProps.style()}
           data-disabled={dataAttr(state.isDisabled())}

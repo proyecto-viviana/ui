@@ -11,8 +11,8 @@ import { focusSafely } from "../utils/focus";
 import { createDescription } from "../utils/createDescription";
 import type { RangeCalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
-import { getCalendarHookData } from "./utils";
-import { formatCalendarPrompt } from "./intl";
+import { getCalendarHookData, getEraFormat } from "./utils";
+import { formatCalendarLabel, formatCalendarPrompt } from "./intl";
 
 export interface AriaRangeCalendarCellProps {
   /** The date represented by the cell. */
@@ -164,9 +164,34 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
       year: "numeric",
       month: "long",
       day: "numeric",
+      era: getEraFormat(d),
       calendar: d.calendar.identifier,
-    });
-    const errorMessageId = getCalendarHookData(state)?.errorMessageId;
+      timeZone,
+    } as Intl.DateTimeFormatOptions);
+    const hookData = getCalendarHookData(state);
+    let label = "";
+
+    if (
+      hookData?.selectedDateDescription &&
+      !state.anchorDate() &&
+      state.value() &&
+      (state.isSelectionStart(d) || state.isSelectionEnd(d))
+    ) {
+      label = `${hookData.selectedDateDescription}, `;
+    }
+
+    label += formatter.format(d.toDate(timeZone));
+    if (isToday()) {
+      label = formatCalendarLabel(
+        state.locale(),
+        isSelected() ? "todayDateSelected" : "todayDate",
+        { date: label },
+      );
+    } else if (isSelected()) {
+      label = formatCalendarLabel(state.locale(), "dateSelected", { date: label });
+    }
+
+    const errorMessageId = hookData?.errorMessageId;
     const describedByIds = [
       isInvalid() ? errorMessageId : undefined,
       descriptionProps["aria-describedby"],
@@ -175,7 +200,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     return {
       role: "button",
       tabIndex: isFocused() ? 0 : -1,
-      "aria-label": formatter.format(d.toDate(timeZone)),
+      "aria-label": label,
       "aria-disabled": isDisabled() || isUnavailable() || undefined,
       "aria-invalid": isInvalid() || undefined,
       "aria-describedby": describedByIds.length ? describedByIds.join(" ") : undefined,

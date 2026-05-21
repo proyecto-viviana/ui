@@ -5,6 +5,22 @@ import {
 } from "@internationalized/string";
 
 type CalendarPromptKey = "startRangeSelectionPrompt" | "finishRangeSelectionPrompt";
+type CalendarLabelKey =
+  | "dateRange"
+  | "dateSelected"
+  | "maximumDate"
+  | "minimumDate"
+  | "selectedDateDescription"
+  | "selectedRangeDescription"
+  | "todayDate"
+  | "todayDateSelected";
+type CalendarLabelVariables = {
+  date?: string;
+  dateRange?: string;
+  startDate?: string;
+  endDate?: string;
+};
+type CalendarLabelMessage = string | ((args: CalendarLabelVariables | undefined) => string);
 
 const calendarPromptStrings: LocalizedStrings<CalendarPromptKey, string> = {
   "ar-AE": {
@@ -147,6 +163,48 @@ const calendarPromptStrings: LocalizedStrings<CalendarPromptKey, string> = {
 
 const calendarPromptDictionary = new LocalizedStringDictionary(calendarPromptStrings);
 
+const calendarLabelStrings: LocalizedStrings<CalendarLabelKey, CalendarLabelMessage> = {
+  "en-US": {
+    dateRange: (args) => `${args?.startDate} to ${args?.endDate}`,
+    dateSelected: (args) => `${args?.date} selected`,
+    maximumDate: "Last available date",
+    minimumDate: "First available date",
+    selectedDateDescription: (args) => `Selected Date: ${args?.date}`,
+    selectedRangeDescription: (args) => `Selected Range: ${args?.dateRange}`,
+    todayDate: (args) => `Today, ${args?.date}`,
+    todayDateSelected: (args) => `Today, ${args?.date} selected`,
+  },
+  "fr-FR": {
+    dateRange: (args) => `${args?.startDate} à ${args?.endDate}`,
+    dateSelected: (args) => `${args?.date} sélectionné`,
+    maximumDate: "Dernière date disponible",
+    minimumDate: "Première date disponible",
+    selectedDateDescription: (args) => `Date sélectionnée : ${args?.date}`,
+    selectedRangeDescription: (args) => `Plage sélectionnée : ${args?.dateRange}`,
+    todayDate: (args) => `Aujourd'hui, ${args?.date}`,
+    todayDateSelected: (args) => `Aujourd’hui, ${args?.date} sélectionné`,
+  },
+  "ar-AE": {
+    dateRange: (args) => `${args?.startDate} إلى ${args?.endDate}`,
+    dateSelected: (args) => `${args?.date} المحدد`,
+    maximumDate: "آخر تاريخ متاح",
+    minimumDate: "أول تاريخ متاح",
+    selectedDateDescription: (args) => `تاريخ محدد: ${args?.date}`,
+    selectedRangeDescription: (args) => `المدى الزمني المحدد: ${args?.dateRange}`,
+    todayDate: (args) => `اليوم، ${args?.date}`,
+    todayDateSelected: (args) => `اليوم، ${args?.date} محدد`,
+  },
+};
+const calendarLabelDictionary = new LocalizedStringDictionary(calendarLabelStrings);
+
 export function formatCalendarPrompt(locale: string, key: CalendarPromptKey): string {
   return new LocalizedStringFormatter(locale, calendarPromptDictionary).format(key);
+}
+
+export function formatCalendarLabel(
+  locale: string,
+  key: CalendarLabelKey,
+  variables?: CalendarLabelVariables,
+): string {
+  return new LocalizedStringFormatter(locale, calendarLabelDictionary).format(key, variables);
 }

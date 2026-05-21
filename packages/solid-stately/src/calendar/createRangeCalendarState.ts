@@ -71,11 +71,11 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   /** Callback to determine if a date is unavailable. */
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
-  visibleMonths?: number;
+  visibleMonths?: MaybeAccessor<number | undefined>;
   /** Controls how the initial visible months are aligned around the current value. */
-  selectionAlignment?: RangeCalendarSelectionAlignment;
+  selectionAlignment?: MaybeAccessor<RangeCalendarSelectionAlignment | undefined>;
   /** Controls whether pagination moves by one month or the visible month count. */
-  pageBehavior?: RangeCalendarPageBehavior;
+  pageBehavior?: MaybeAccessor<RangeCalendarPageBehavior | undefined>;
   /** Controls which days are disabled. */
   isDateDisabled?: (date: DateValue) => boolean;
   /** Validation state. */
@@ -193,7 +193,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const calendar = createMemo(() =>
     (props.createCalendar ?? intlCreateCalendar)(resolvedOptions().calendar as CalendarIdentifier),
   );
-  const visibleMonths = props.visibleMonths ?? 1;
+  const visibleMonths = Math.max(1, Number(access(props.visibleMonths) ?? 1));
   const firstDayOfWeekName = (): CalendarDayOfWeek | undefined =>
     props.firstDayOfWeek == null ? undefined : dayOfWeekNames[props.firstDayOfWeek];
 
@@ -280,7 +280,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   };
 
   const alignVisibleRangeStart = (date: CalendarDate): CalendarDate => {
-    switch (props.selectionAlignment ?? defaultSelectionAlignment()) {
+    switch (access(props.selectionAlignment) ?? defaultSelectionAlignment()) {
       case "start":
         return alignStart(date);
       case "end":
@@ -561,12 +561,12 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
   // Navigation methods
   const focusPreviousPage = () => {
-    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths;
     setFocusedDate(focusedDate().subtract({ months: pageMonths }));
   };
 
   const focusNextPage = () => {
-    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths;
     setFocusedDate(focusedDate().add({ months: pageMonths }));
   };
 

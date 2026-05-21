@@ -2937,6 +2937,7 @@ function ReactRangeCalendarDemo() {
     visibleMonths,
     pageBehavior: demoProps.pageBehavior || undefined,
     selectionAlignment: demoProps.selectionAlignment || undefined,
+    createCalendar: calendarCreateCalendarForDemo(demoProps.calendarSystem),
     focusedValue: demoProps.focusedValue ? (focusedValue ?? undefined) : undefined,
     onFocusChange: (nextFocusedValue) => setFocusedValue(nextFocusedValue),
     UNSAFE_className: "comparison-rangecalendar-root",
@@ -2954,9 +2955,12 @@ function ReactRangeCalendarDemo() {
       "data-comparison-value": serializeRangeCalendarValue(selectedValue),
       "data-comparison-focused-value": focusedValue ? String(focusedValue) : "",
       "data-comparison-color-scheme": colorScheme,
+      "data-comparison-locale": demoProps.locale,
+      "data-comparison-calendar-system": demoProps.calendarSystem,
       children: jsx(SpectrumRangeCalendar, rangeCalendarProps),
     }),
     colorScheme,
+    demoProps.locale || undefined,
   );
 }
 

@@ -6,9 +6,11 @@ import {
   startOfMonth,
 } from "@internationalized/date";
 import type { CalendarState, RangeCalendarState } from "@proyecto-viviana/solid-stately";
+import { formatCalendarLabel } from "./intl";
 
 export interface CalendarHookData {
   errorMessageId?: string;
+  selectedDateDescription?: string;
 }
 
 const hookData = new WeakMap<CalendarState | RangeCalendarState, CalendarHookData>();
@@ -69,6 +71,47 @@ export function formatVisibleRangeDescription(
   return formatRange(dateFormatter, startDate, endDate, timeZone);
 }
 
+export function formatSelectedDateDescription(state: CalendarState | RangeCalendarState): string {
+  const locale = state.locale();
+  const timeZone = state.timeZone;
+  let start: CalendarDate | undefined;
+  let end: CalendarDate | undefined;
+
+  if ("highlightedRange" in state) {
+    const range = state.highlightedRange();
+    start = range?.start;
+    end = range?.end;
+  } else {
+    const value = state.value();
+    start = (value as CalendarDate | null) ?? undefined;
+    end = (value as CalendarDate | null) ?? undefined;
+  }
+
+  const anchorDate = "anchorDate" in state ? state.anchorDate() : null;
+  if (anchorDate || !start || !end) {
+    return "";
+  }
+
+  const dateFormatter = new DateFormatter(locale, {
+    weekday: "long",
+    month: "long",
+    year: "numeric",
+    day: "numeric",
+    era: getEraFormat(start) || getEraFormat(end),
+    timeZone,
+  } as Intl.DateTimeFormatOptions);
+
+  if (isSameDay(start, end)) {
+    return formatCalendarLabel(locale, "selectedDateDescription", {
+      date: dateFormatter.format(start.toDate(timeZone)),
+    });
+  }
+
+  return formatCalendarLabel(locale, "selectedRangeDescription", {
+    dateRange: formatLabelRange(dateFormatter, start, end, timeZone, locale),
+  });
+}
+
 function formatRange(
   dateFormatter: DateFormatter,
   startDate: CalendarDate,
@@ -119,4 +162,66 @@ function formatRange(
   }
 
   return `${startValue} to ${endValue}`;
+}
+
+function formatLabelRange(
+  dateFormatter: DateFormatter,
+  startDate: CalendarDate,
+  endDate: CalendarDate,
+  timeZone: string,
+  locale: string,
+): string {
+  const formatter = dateFormatter as DateFormatter & {
+    formatRangeToParts?: (start: Date, end: Date) => Intl.DateTimeFormatPart[];
+  };
+  const start = startDate.toDate(timeZone);
+  const end = endDate.toDate(timeZone);
+
+  if (!formatter.formatRangeToParts) {
+    return formatCalendarLabel(locale, "dateRange", {
+      startDate: dateFormatter.format(start),
+      endDate: dateFormatter.format(end),
+    });
+  }
+
+  const parts = formatter.formatRangeToParts(start, end) as Array<
+    Intl.DateTimeFormatPart & { source?: "startRange" | "shared" | "endRange" }
+  >;
+  let separatorIndex = -1;
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part?.source === "shared" && part.type === "literal") {
+      separatorIndex = i;
+    } else if (part?.source === "endRange") {
+      break;
+    }
+  }
+
+  if (separatorIndex < 0) {
+    return formatCalendarLabel(locale, "dateRange", {
+      startDate: dateFormatter.format(start),
+      endDate: dateFormatter.format(end),
+    });
+  }
+
+  let startValue = "";
+  let endValue = "";
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (!part) {
+      continue;
+    }
+
+    if (i < separatorIndex) {
+      startValue += part.value;
+    } else if (i > separatorIndex) {
+      endValue += part.value;
+    }
+  }
+
+  return formatCalendarLabel(locale, "dateRange", {
+    startDate: startValue,
+    endDate: endValue,
+  });
 }

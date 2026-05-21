@@ -2841,6 +2841,9 @@ function SolidSpectrumRangeCalendarDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      get locale() {
+        return demoProps().locale || undefined;
+      },
       background: "base",
       style: providerShellStyle,
     },
@@ -2850,6 +2853,12 @@ function SolidSpectrumRangeCalendarDemo() {
         {
           get "data-comparison-color-scheme"() {
             return colorScheme();
+          },
+          get "data-comparison-locale"() {
+            return demoProps().locale;
+          },
+          get "data-comparison-calendar-system"() {
+            return demoProps().calendarSystem;
           },
           get "data-comparison-value"() {
             return serializeRangeCalendarValue(value());
@@ -2907,6 +2916,9 @@ function SolidSpectrumRangeCalendarDemo() {
             },
             get selectionAlignment() {
               return demoProps().selectionAlignment || undefined;
+            },
+            get createCalendar() {
+              return calendarCreateCalendarForDemo(demoProps().calendarSystem);
             },
             get focusedValue() {
               return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;

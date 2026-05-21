@@ -133,8 +133,10 @@ import {
 import {
   rangeCalendarDemoDefaults,
   rangeCalendarFirstDayOfWeekOptions,
+  rangeCalendarLocaleOptions,
   rangeCalendarPageBehaviorOptions,
   rangeCalendarSelectionAlignmentOptions,
+  rangeCalendarSystemOptions,
   rangeCalendarVisibleMonthsOptions,
 } from "./rangecalendar-demo";
 import {
@@ -3565,11 +3567,14 @@ const rangeCalendarControls: ComponentControlGroup = {
     "isReadOnly",
     "isInvalid",
     "errorMessage",
+    "locale",
     "visibleMonths",
     "firstDayOfWeek",
     "pageBehavior",
     "selectionAlignment",
+    "createCalendar",
     "allowsNonContiguousRanges",
+    "autoFocus",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -3577,7 +3582,11 @@ const rangeCalendarControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 RangeCalendar docs and source control surface. The viewer drives controlled range value, focusedValue, visible month count, paging, selection alignment, first weekday, unavailable-date policy, non-contiguous range policy, disabled/read-only/invalid states, and error text into both stacks.",
+  note: `Modeled from the S2 RangeCalendar docs and installed source. The visible side-panel drives controlled range value, focusedValue, visible month count, paging, selection alignment, first weekday, unavailable-date policy, non-contiguous range policy, disabled/read-only/invalid states, and error text into both stacks. Provider locale options (${rangeCalendarLocaleOptions.join(
+    ", ",
+  )}) and custom calendar options (${rangeCalendarSystemOptions.join(
+    ", ",
+  )}) remain route-testable docs/API examples rather than always-visible viewer controls.`,
 };
 
 const calendarControls: ComponentControlGroup = {

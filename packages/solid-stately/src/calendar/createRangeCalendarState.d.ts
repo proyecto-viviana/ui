@@ -51,11 +51,11 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   /** Callback to determine if a date is unavailable. */
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
-  visibleMonths?: number;
+  visibleMonths?: MaybeAccessor<number | undefined>;
   /** Controls how the initial visible months are aligned around the current value. */
-  selectionAlignment?: RangeCalendarSelectionAlignment;
+  selectionAlignment?: MaybeAccessor<RangeCalendarSelectionAlignment | undefined>;
   /** Controls whether pagination moves by one month or the visible month count. */
-  pageBehavior?: RangeCalendarPageBehavior;
+  pageBehavior?: MaybeAccessor<RangeCalendarPageBehavior | undefined>;
   /** Controls which days are disabled. */
   isDateDisabled?: (date: DateValue) => boolean;
   /** Validation state. */

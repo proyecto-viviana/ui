@@ -1,5 +1,11 @@
 import { parseDate, type DateValue, type RangeValue } from "@proyecto-viviana/solid-stately";
 import { comparisonControlsEvent } from "./button-demo";
+import {
+  calendarLocaleOptions,
+  calendarSystemOptions,
+  type CalendarDemoCalendarSystem,
+  type CalendarDemoLocale,
+} from "./calendar-demo";
 
 export { comparisonControlsEvent };
 
@@ -16,21 +22,27 @@ export const rangeCalendarFirstDayOfWeekOptions = [
 export const rangeCalendarVisibleMonthsOptions = ["", "1", "2"] as const;
 export const rangeCalendarPageBehaviorOptions = ["", "single", "visible"] as const;
 export const rangeCalendarSelectionAlignmentOptions = ["", "start", "center", "end"] as const;
+export const rangeCalendarLocaleOptions = calendarLocaleOptions;
+export const rangeCalendarSystemOptions = calendarSystemOptions;
 
 export type RangeCalendarDemoFirstDayOfWeek = (typeof rangeCalendarFirstDayOfWeekOptions)[number];
 export type RangeCalendarDemoVisibleMonths = (typeof rangeCalendarVisibleMonthsOptions)[number];
 export type RangeCalendarDemoPageBehavior = (typeof rangeCalendarPageBehaviorOptions)[number];
 export type RangeCalendarDemoSelectionAlignment =
   (typeof rangeCalendarSelectionAlignmentOptions)[number];
+export type RangeCalendarDemoLocale = CalendarDemoLocale;
+export type RangeCalendarDemoCalendarSystem = CalendarDemoCalendarSystem;
 
 export interface RangeCalendarDemoProps {
   startValue: string;
   endValue: string;
   focusedValue: string;
+  locale: RangeCalendarDemoLocale;
   firstDayOfWeek: RangeCalendarDemoFirstDayOfWeek;
   visibleMonths: RangeCalendarDemoVisibleMonths;
   pageBehavior: RangeCalendarDemoPageBehavior;
   selectionAlignment: RangeCalendarDemoSelectionAlignment;
+  calendarSystem: RangeCalendarDemoCalendarSystem;
   constrainRange: boolean;
   unavailableDates: boolean;
   allowsNonContiguousRanges: boolean;
@@ -44,10 +56,12 @@ export const rangeCalendarDemoDefaults: RangeCalendarDemoProps = {
   startValue: "2025-02-03",
   endValue: "2025-02-07",
   focusedValue: "",
+  locale: "",
   firstDayOfWeek: "",
   visibleMonths: "",
   pageBehavior: "",
   selectionAlignment: "",
+  calendarSystem: "",
   constrainRange: false,
   unavailableDates: false,
   allowsNonContiguousRanges: false,
@@ -122,6 +136,9 @@ export function normalizeRangeCalendarDemoProps(
       typeof props.focusedValue === "string" && props.focusedValue
         ? props.focusedValue
         : rangeCalendarDemoDefaults.focusedValue,
+    locale: isOneOf(props.locale, rangeCalendarLocaleOptions)
+      ? props.locale
+      : rangeCalendarDemoDefaults.locale,
     firstDayOfWeek: isOneOf(props.firstDayOfWeek, rangeCalendarFirstDayOfWeekOptions)
       ? props.firstDayOfWeek
       : rangeCalendarDemoDefaults.firstDayOfWeek,
@@ -134,6 +151,9 @@ export function normalizeRangeCalendarDemoProps(
     selectionAlignment: isOneOf(props.selectionAlignment, rangeCalendarSelectionAlignmentOptions)
       ? props.selectionAlignment
       : rangeCalendarDemoDefaults.selectionAlignment,
+    calendarSystem: isOneOf(props.calendarSystem, rangeCalendarSystemOptions)
+      ? props.calendarSystem
+      : rangeCalendarDemoDefaults.calendarSystem,
     constrainRange: props.constrainRange === true,
     unavailableDates: props.unavailableDates === true,
     allowsNonContiguousRanges: props.allowsNonContiguousRanges === true,
@@ -153,11 +173,14 @@ export function rangeCalendarDemoPropsFromSearch(search: string): RangeCalendarD
   const visibleMonths = params.get("visibleMonths");
   const pageBehavior = params.get("pageBehavior");
   const selectionAlignment = params.get("selectionAlignment");
+  const locale = params.get("locale");
+  const calendarSystem = params.get("calendarSystem");
 
   return normalizeRangeCalendarDemoProps({
     startValue: params.get("startValue") || rangeCalendarDemoDefaults.startValue,
     endValue: params.get("endValue") || rangeCalendarDemoDefaults.endValue,
     focusedValue: params.get("focusedValue") || rangeCalendarDemoDefaults.focusedValue,
+    locale: isOneOf(locale, rangeCalendarLocaleOptions) ? locale : rangeCalendarDemoDefaults.locale,
     firstDayOfWeek: isOneOf(firstDayOfWeek, rangeCalendarFirstDayOfWeekOptions)
       ? firstDayOfWeek
       : rangeCalendarDemoDefaults.firstDayOfWeek,
@@ -170,6 +193,9 @@ export function rangeCalendarDemoPropsFromSearch(search: string): RangeCalendarD
     selectionAlignment: isOneOf(selectionAlignment, rangeCalendarSelectionAlignmentOptions)
       ? selectionAlignment
       : rangeCalendarDemoDefaults.selectionAlignment,
+    calendarSystem: isOneOf(calendarSystem, rangeCalendarSystemOptions)
+      ? calendarSystem
+      : rangeCalendarDemoDefaults.calendarSystem,
     constrainRange: booleanParam(params.get("constrainRange")),
     unavailableDates: booleanParam(params.get("unavailableDates")),
     allowsNonContiguousRanges: booleanParam(params.get("allowsNonContiguousRanges")),
@@ -193,10 +219,12 @@ export function serializeRangeCalendarDemoProps(props: RangeCalendarDemoProps) {
     startValue: props.startValue,
     endValue: props.endValue,
     focusedValue: props.focusedValue,
+    locale: props.locale,
     firstDayOfWeek: props.firstDayOfWeek,
     visibleMonths: props.visibleMonths,
     pageBehavior: props.pageBehavior,
     selectionAlignment: props.selectionAlignment,
+    calendarSystem: props.calendarSystem,
     constrainRange: props.constrainRange,
     unavailableDates: props.unavailableDates,
     allowsNonContiguousRanges: props.allowsNonContiguousRanges,

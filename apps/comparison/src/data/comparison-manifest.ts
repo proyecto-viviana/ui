@@ -231,7 +231,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "Date-range Calendar route mounted on both stacks with controlled range value, focusedValue, validation, unavailable-date, non-contiguous range, paging, first weekday, and multi-month controls.",
     styledSummary: "React Spectrum RangeCalendar vs Solid Spectrum RangeCalendar.",
     styledNote:
-      "React uses @react-spectrum/s2 RangeCalendar directly; Solid uses @proyecto-viviana/solid-spectrum RangeCalendar with S2 header/nav styling, strict zero-tolerance month-grid pair diffs, exact seven-column month grid geometry, controlled range value, validation error linkage, unavailable-date strike treatment, firstDayOfWeek string normalization, visibleMonths/pageBehavior/selectionAlignment routing, and DateRangePicker popover reuse without the old fixed-width gutter.",
+      "React uses @react-spectrum/s2 RangeCalendar directly; Solid uses @proyecto-viviana/solid-spectrum RangeCalendar with S2 header/nav styling, strict zero-tolerance month-grid pair diffs, a bounded isolated root shell pair diff, exact seven-column month grid geometry, root ref/context merging, controlled range value, validation error linkage, unavailable-date strike treatment, firstDayOfWeek string normalization, Provider locale and Unicode/custom calendar routing, forced-colors computed contracts, visibleMonths/pageBehavior/selectionAlignment routing, and DateRangePicker popover reuse without the old fixed-width gutter.",
   }),
 
   toast: styledLiveOfficialEntry({

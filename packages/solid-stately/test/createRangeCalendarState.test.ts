@@ -350,6 +350,24 @@ describe("createRangeCalendarState", () => {
       });
     });
 
+    it("should page by one month when pageBehavior is a single accessor", () => {
+      createRoot((dispose) => {
+        const initialDate = new CalendarDate(2024, 6, 15);
+        const [pageBehavior] = createSignal<"single" | "visible">("single");
+        const state = createRangeCalendarState({
+          defaultFocusedValue: initialDate,
+          visibleMonths: 2,
+          pageBehavior,
+        });
+
+        state.focusNextPage();
+        expect(state.focusedDate().month).toBe(7);
+        expect(state.focusedDate().year).toBe(2024);
+
+        dispose();
+      });
+    });
+
     it("should move to previous year", () => {
       createRoot((dispose) => {
         const initialDate = new CalendarDate(2024, 6, 15);

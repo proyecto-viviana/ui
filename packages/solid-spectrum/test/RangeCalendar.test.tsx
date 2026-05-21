@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { RangeCalendar, RangeCalendarContext } from "../src";
 import { Provider } from "../src/provider";
 import { CalendarDateClass as CalendarDate } from "@proyecto-viviana/solid-stately";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 async function waitForRangeCalendar() {
   await waitFor(() => {
@@ -11,6 +12,8 @@ async function waitForRangeCalendar() {
 }
 
 describe("RangeCalendar (solid-spectrum)", () => {
+  const user = setupUser();
+
   afterEach(() => {
     cleanup();
   });
@@ -30,11 +33,13 @@ describe("RangeCalendar (solid-spectrum)", () => {
     expect(
       screen.getByRole("application", { name: "Trip dates, February 2025" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /February 3, 2025/i })).toHaveAttribute(
-      "data-selection-start",
+    expect(document.querySelector('[data-selection-start][role="button"]')).toHaveAttribute(
+      "aria-label",
+      expect.stringContaining("February 3, 2025 selected"),
     );
-    expect(screen.getByRole("button", { name: /February 7, 2025/i })).toHaveAttribute(
-      "data-selection-end",
+    expect(document.querySelector('[data-selection-end][role="button"]')).toHaveAttribute(
+      "aria-label",
+      expect.stringContaining("February 7, 2025 selected"),
     );
   });
 
@@ -119,21 +124,107 @@ describe("RangeCalendar (solid-spectrum)", () => {
   });
 
   it("merges RangeCalendarContext props", async () => {
+    const contextRef = { current: null as HTMLDivElement | null };
+    let localRef: HTMLDivElement | undefined;
+
     render(() => (
-      <RangeCalendarContext.Provider value={{ isDisabled: true, firstDayOfWeek: "mon" }}>
+      <RangeCalendarContext.Provider
+        value={{
+          isDisabled: true,
+          firstDayOfWeek: "mon",
+          ref: contextRef,
+          UNSAFE_style: { margin: "3px" },
+        }}
+      >
         <RangeCalendar
           aria-label="Trip dates"
           value={{
             start: new CalendarDate(2025, 2, 3),
             end: new CalendarDate(2025, 2, 7),
           }}
+          ref={(element) => {
+            localRef = element;
+          }}
+          UNSAFE_style={{ width: "224px" }}
         />
       </RangeCalendarContext.Provider>
     ));
     await waitForRangeCalendar();
 
+    const root = screen.getByRole("application", { name: /Trip dates/i });
+    expect(contextRef.current).toBe(root);
+    expect(localRef).toBe(root);
+    expect(root).toHaveStyle({ margin: "3px", width: "224px" });
     expect(screen.getByRole("button", { name: "Previous month" })).toBeDisabled();
     const headers = Array.from(document.querySelectorAll("th")).map((cell) => cell.textContent);
     expect(headers[0]).toBe("M");
+  });
+
+  it("pages by visible months by default and by one month when pageBehavior is single", async () => {
+    render(() => (
+      <RangeCalendar
+        aria-label="Trip dates"
+        value={{
+          start: new CalendarDate(2025, 2, 3),
+          end: new CalendarDate(2025, 2, 7),
+        }}
+        visibleMonths={2}
+      />
+    ));
+    await waitForRangeCalendar();
+
+    expect(screen.getByText("February 2025")).toBeInTheDocument();
+    expect(screen.getByText("March 2025")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Next month" }));
+    expect(screen.getByText("April 2025")).toBeInTheDocument();
+    expect(screen.getByText("May 2025")).toBeInTheDocument();
+
+    cleanup();
+
+    render(() => (
+      <RangeCalendar
+        aria-label="Trip dates"
+        value={{
+          start: new CalendarDate(2025, 2, 3),
+          end: new CalendarDate(2025, 2, 7),
+        }}
+        visibleMonths={2}
+        pageBehavior="single"
+      />
+    ));
+    await waitForRangeCalendar();
+
+    await user.click(screen.getByRole("button", { name: "Next month" }));
+    expect(screen.getByText("March 2025")).toBeInTheDocument();
+    expect(screen.getByText("April 2025")).toBeInTheDocument();
+  });
+
+  it("keeps unavailable dates immutable and renders strike markup", async () => {
+    let selected = {
+      start: new CalendarDate(2025, 2, 3),
+      end: new CalendarDate(2025, 2, 7),
+    };
+
+    render(() => (
+      <RangeCalendar
+        aria-label="Trip dates"
+        value={selected}
+        isDateUnavailable={(date) => date.day === 10}
+        onChange={(nextValue) => {
+          if (nextValue) {
+            selected = nextValue;
+          }
+        }}
+      />
+    ));
+    await waitForRangeCalendar();
+
+    const unavailableDate = screen.getByRole("button", { name: /February 10, 2025/i });
+    await user.click(unavailableDate);
+
+    expect(unavailableDate).toHaveAttribute("aria-disabled", "true");
+    expect(unavailableDate.querySelectorAll('[role="presentation"]')).toHaveLength(2);
+    expect(String(selected.start)).toBe("2025-02-03");
+    expect(String(selected.end)).toBe("2025-02-07");
   });
 });

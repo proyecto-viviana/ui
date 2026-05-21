@@ -171,6 +171,27 @@ describe("RangeCalendar", () => {
       expect(calendar).toBeInTheDocument();
     });
 
+    it("should forward object and callback refs to the root element", async () => {
+      const objectRef = { current: null as HTMLDivElement | null };
+      let callbackRef: HTMLDivElement | undefined;
+
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            ref: (element) => {
+              objectRef.current = element;
+              callbackRef = element;
+            },
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const calendar = document.querySelector(".solidaria-RangeCalendar");
+      expect(objectRef.current).toBe(calendar);
+      expect(callbackRef).toBe(calendar);
+    });
+
     it("should mark trailing dates as outside month in an offset grid", async () => {
       render(() => (
         <RangeCalendar
@@ -252,6 +273,30 @@ describe("RangeCalendar", () => {
     it("should navigate to next month on next button click", async () => {
       render(() => (
         <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const nextButton = screen.getByText("▶");
+      const heading = document.querySelector(".solidaria-RangeCalendarHeading");
+
+      expect(heading?.textContent).toContain("June");
+
+      await user.click(nextButton);
+
+      await waitFor(() => {
+        expect(heading?.textContent).toContain("July");
+      });
+    });
+
+    it("should page by one month when pageBehavior is single", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2024, 6, 15),
+            pageBehavior: "single",
+            visibleMonths: 2,
+          }}
+        />
       ));
       await waitForRangeCalendarHydration();
 
@@ -617,6 +662,31 @@ describe("RangeCalendar", () => {
           "Click to start selecting date range",
         );
       });
+    });
+
+    it("should include the selected range description in selected boundary labels", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            value: {
+              start: new CalendarDate(2024, 6, 10),
+              end: new CalendarDate(2024, 6, 15),
+            },
+            defaultFocusedValue: new CalendarDate(2024, 6, 10),
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const startDate = document.querySelector('[data-selection-start][role="button"]');
+      const endDate = document.querySelector('[data-selection-end][role="button"]');
+
+      expect(startDate).toHaveAccessibleName(
+        /^Selected Range: .*June 10.*June 15, 2024, .*June 10, 2024 selected$/,
+      );
+      expect(endDate).toHaveAccessibleName(
+        /^Selected Range: .*June 10.*June 15, 2024, .*June 15, 2024 selected$/,
+      );
     });
 
     it("should omit range prompt descriptions when read only", async () => {
