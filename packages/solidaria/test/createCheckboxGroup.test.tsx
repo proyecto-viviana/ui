@@ -518,6 +518,28 @@ describe("createCheckboxGroup", () => {
     expect(checkboxes[1].checked).toBeFalsy();
   });
 
+  it("defaults required group items to native validation", () => {
+    render(() => (
+      <CheckboxGroup
+        groupProps={{
+          "aria-label": "Favorite Pet",
+          isRequired: true,
+        }}
+        checkboxProps={[
+          { value: "dogs", children: "Dogs" },
+          { value: "cats", children: "Cats" },
+          { value: "dragons", children: "Dragons" },
+        ]}
+      />
+    ));
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    checkboxes.forEach((checkbox) => {
+      expect(checkbox).toHaveAttribute("required");
+      expect(checkbox).not.toHaveAttribute("aria-required");
+    });
+  });
+
   it("propagates group validationBehavior to items", () => {
     render(() => (
       <CheckboxGroup

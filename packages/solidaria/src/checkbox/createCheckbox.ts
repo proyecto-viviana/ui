@@ -27,7 +27,7 @@ export interface AriaCheckboxProps extends AriaToggleProps {
   isRequired?: boolean;
   /**
    * The validation behavior for the checkbox.
-   * @default 'aria'
+   * @default 'native'
    */
   validationBehavior?: "aria" | "native";
 }
@@ -110,7 +110,7 @@ export function createCheckbox(
     ) as JSX.LabelHTMLAttributes<HTMLLabelElement>,
     get inputProps() {
       const p = getProps();
-      const { isRequired, validationBehavior = "aria" } = p;
+      const { isRequired, validationBehavior = "native" } = p;
 
       return mergeProps(toggleResult.inputProps, {
         checked: isSelected(),

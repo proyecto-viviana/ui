@@ -13,6 +13,7 @@ import {
   type CheckboxRenderProps,
   type CheckboxGroupRenderProps,
 } from "../src/Checkbox";
+import { Form } from "../src/Form";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -529,6 +530,26 @@ describe("Checkbox", () => {
       expect(label).toHaveClass("required");
     });
 
+    it("should default required state to native validation", () => {
+      render(() => <Checkbox isRequired>Test</Checkbox>);
+      const checkbox = screen.getByRole("checkbox");
+
+      expect(checkbox).toHaveAttribute("required");
+      expect(checkbox).not.toHaveAttribute("aria-required");
+    });
+
+    it("should inherit Form validation behavior", () => {
+      render(() => (
+        <Form validationBehavior="aria">
+          <Checkbox isRequired>Test</Checkbox>
+        </Form>
+      ));
+      const checkbox = screen.getByRole("checkbox");
+
+      expect(checkbox).not.toHaveAttribute("required");
+      expect(checkbox).toHaveAttribute("aria-required", "true");
+    });
+
     it("should support render props", async () => {
       render(() => (
         <Checkbox>{({ isSelected }) => (isSelected ? "Selected" : "Not Selected")}</Checkbox>
@@ -761,6 +782,36 @@ describe("CheckboxGroup", () => {
 
       const group = screen.getByRole("group");
       expect(group).toHaveAttribute("data-invalid");
+    });
+
+    it("should default required items to native validation", () => {
+      render(() => (
+        <CheckboxGroup aria-label="Options" isRequired>
+          <Checkbox value="a">Option A</Checkbox>
+          <Checkbox value="b">Option B</Checkbox>
+        </CheckboxGroup>
+      ));
+
+      for (const checkbox of screen.getAllByRole("checkbox")) {
+        expect(checkbox).toHaveAttribute("required");
+        expect(checkbox).not.toHaveAttribute("aria-required");
+      }
+    });
+
+    it("should inherit Form validation behavior for required items", () => {
+      render(() => (
+        <Form validationBehavior="aria">
+          <CheckboxGroup aria-label="Options" isRequired>
+            <Checkbox value="a">Option A</Checkbox>
+            <Checkbox value="b">Option B</Checkbox>
+          </CheckboxGroup>
+        </Form>
+      ));
+
+      for (const checkbox of screen.getAllByRole("checkbox")) {
+        expect(checkbox).not.toHaveAttribute("required");
+        expect(checkbox).toHaveAttribute("aria-required", "true");
+      }
     });
   });
 

@@ -68,6 +68,8 @@ async function checkboxGeometry(root: Locator) {
 
     return {
       checked: input?.checked ?? false,
+      indeterminate: input?.indeterminate ?? false,
+      ariaChecked: input?.getAttribute("aria-checked") ?? null,
       name: input?.getAttribute("name") ?? null,
       value: input?.getAttribute("value") ?? null,
       form: input?.getAttribute("form") ?? null,
@@ -77,10 +79,14 @@ async function checkboxGeometry(root: Locator) {
       disabled: input?.disabled ?? false,
       readOnly: input?.getAttribute("aria-readonly") === "true",
       rootDataDisabled: element.getAttribute("data-disabled"),
+      rootDataFocused: element.getAttribute("data-focused"),
+      rootDataFocusVisible: element.getAttribute("data-focus-visible"),
       rootDataHovered: element.getAttribute("data-hovered"),
       rootDataInvalid: element.getAttribute("data-invalid"),
+      rootDataIndeterminate: element.getAttribute("data-indeterminate"),
       rootDataPressed: element.getAttribute("data-pressed"),
       rootDataReadonly: element.getAttribute("data-readonly"),
+      rootDataSelected: element.getAttribute("data-selected"),
       rootHeight: Number(rootRect.height.toFixed(4)),
       rootColor: rootStyle.color,
       boxWidth: numberOrNull(boxRect?.width),
@@ -93,6 +99,11 @@ async function checkboxGeometry(root: Locator) {
       ),
       boxBackground: boxStyle?.backgroundColor ?? null,
       boxBorderColor: boxStyle?.borderColor ?? null,
+      boxBoxShadow: boxStyle?.boxShadow ?? null,
+      boxOutlineColor: boxStyle?.outlineColor ?? null,
+      boxOutlineOffset: boxStyle?.outlineOffset ?? null,
+      boxOutlineStyle: boxStyle?.outlineStyle ?? null,
+      boxOutlineWidth: boxStyle?.outlineWidth ?? null,
       boxTransform: boxStyle?.transform ?? null,
       boxWillChange: boxStyle?.willChange ?? null,
     };
@@ -121,6 +132,60 @@ async function waitForMatchingCheckboxGeometry(
       { message: `Checkbox geometry should match for ${keys.join(", ")}` },
     )
     .toBe(true);
+
+  return latest!;
+}
+
+async function waitForCheckboxGeometryValues(
+  root: Locator,
+  reference: CheckboxGeometry,
+  keys: Array<keyof CheckboxGeometry>,
+) {
+  let latest: CheckboxGeometry | undefined;
+
+  await expect
+    .poll(
+      async () => {
+        latest = await checkboxGeometry(root);
+        return keys
+          .filter((key) => latest![key] !== reference[key])
+          .map((key) => `${String(key)}: ${String(latest![key])} !== ${String(reference[key])}`)
+          .join("\n");
+      },
+      { message: `Checkbox geometry should settle for ${keys.join(", ")}` },
+    )
+    .toBe("");
+
+  return latest!;
+}
+
+async function waitForStableCheckboxGeometry(root: Locator, keys: Array<keyof CheckboxGeometry>) {
+  let latest: CheckboxGeometry | undefined;
+  let previousSignature: string | undefined;
+  let stableSamples = 0;
+
+  await expect
+    .poll(
+      async () => {
+        latest = await checkboxGeometry(root);
+        const signature = keys.map((key) => `${String(key)}:${String(latest![key])}`).join("|");
+
+        if (signature === previousSignature) {
+          stableSamples += 1;
+        } else {
+          previousSignature = signature;
+          stableSamples = 0;
+        }
+
+        return stableSamples >= 2 ? "" : signature;
+      },
+      {
+        intervals: [75, 75, 75, 75, 75, 75, 75, 75],
+        message: `Checkbox geometry should become stable for ${keys.join(", ")}`,
+        timeout: 1500,
+      },
+    )
+    .toBe("");
 
   return latest!;
 }
@@ -203,6 +268,8 @@ function expectCheckboxGeometryToMatch(
   options: { icon?: boolean } = {},
 ) {
   expect(solid.checked).toBe(react.checked);
+  expect(solid.indeterminate).toBe(react.indeterminate);
+  expect(solid.ariaChecked).toBe(react.ariaChecked);
   expect(solid.name).toBe(react.name);
   expect(solid.value).toBe(react.value);
   expect(solid.form).toBe(react.form);
@@ -211,8 +278,18 @@ function expectCheckboxGeometryToMatch(
   expect(solid.ariaInvalid).toBe(react.ariaInvalid);
   expect(solid.disabled).toBe(react.disabled);
   expect(solid.readOnly).toBe(react.readOnly);
+  expect(solid.rootDataFocused).toBe(react.rootDataFocused);
+  expect(solid.rootDataFocusVisible).toBe(react.rootDataFocusVisible);
+  expect(solid.rootDataHovered).toBe(react.rootDataHovered);
+  expect(solid.rootDataIndeterminate).toBe(react.rootDataIndeterminate);
+  expect(solid.rootDataSelected).toBe(react.rootDataSelected);
   expect(solid.boxBackground).toBe(react.boxBackground);
   expect(solid.boxBorderColor).toBe(react.boxBorderColor);
+  expect(solid.boxBoxShadow).toBe(react.boxBoxShadow);
+  expect(solid.boxOutlineColor).toBe(react.boxOutlineColor);
+  expect(solid.boxOutlineOffset).toBe(react.boxOutlineOffset);
+  expect(solid.boxOutlineStyle).toBe(react.boxOutlineStyle);
+  expect(solid.boxOutlineWidth).toBe(react.boxOutlineWidth);
   expect(solid.rootColor).toBe(react.rootColor);
   expectNear(solid.rootHeight, react.rootHeight, 0.75, "Checkbox root height");
   expectNear(solid.boxWidth, react.boxWidth, 0.75, "Checkbox box width");
@@ -336,6 +413,10 @@ test.describe("comparison Checkbox visual parity", () => {
     await expect(checkboxInput(fixtures.solidRoot)).toHaveAttribute("value", "email");
     await expect(checkboxInput(fixtures.reactRoot)).toHaveAttribute("form", "settingsForm");
     await expect(checkboxInput(fixtures.solidRoot)).toHaveAttribute("form", "settingsForm");
+    await expect(checkboxInput(fixtures.reactRoot)).toHaveJSProperty("required", false);
+    await expect(checkboxInput(fixtures.solidRoot)).toHaveJSProperty("required", false);
+    await expect(checkboxInput(fixtures.reactRoot)).toHaveAttribute("aria-required", "true");
+    await expect(checkboxInput(fixtures.solidRoot)).toHaveAttribute("aria-required", "true");
 
     expectCheckboxGeometryToMatch(
       await checkboxGeometry(fixtures.solidRoot),
@@ -355,6 +436,109 @@ test.describe("comparison Checkbox visual parity", () => {
       "data-comparison-checked",
       "false",
     );
+  });
+
+  test("required default and native validation match React Spectrum", async ({ page }) => {
+    for (const query of [
+      "?isRequired=true&name=alerts&value=email",
+      "?isRequired=true&validationBehavior=native&name=alerts&value=email",
+    ]) {
+      const fixtures = await checkboxFixtures(page, query);
+
+      expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+        isRequired: true,
+        name: "alerts",
+        value: "email",
+      });
+      expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+        isRequired: true,
+        name: "alerts",
+        value: "email",
+      });
+
+      const react = await checkboxGeometry(fixtures.reactRoot);
+      const solid = await checkboxGeometry(fixtures.solidRoot);
+
+      expect(react.required).toBe(true);
+      expect(react.ariaRequired).toBeNull();
+      expect(solid.required).toBe(true);
+      expect(solid.ariaRequired).toBeNull();
+      expectCheckboxGeometryToMatch(solid, react);
+    }
+  });
+
+  test("indeterminate emphasized XL state matches React Spectrum", async ({ page }) => {
+    const fixtures = await checkboxFixtures(
+      page,
+      "?isIndeterminate=true&isEmphasized=true&size=XL",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      size: "XL",
+      isIndeterminate: true,
+      isEmphasized: true,
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      size: "XL",
+      isIndeterminate: true,
+      isEmphasized: true,
+    });
+    await expect(checkboxInput(fixtures.reactRoot)).toHaveJSProperty("indeterminate", true);
+    await expect(checkboxInput(fixtures.solidRoot)).toHaveJSProperty("indeterminate", true);
+
+    const react = await checkboxGeometry(fixtures.reactRoot);
+    const solid = await checkboxGeometry(fixtures.solidRoot);
+
+    expect(react.rootDataIndeterminate).toBe("true");
+    expect(solid.rootDataIndeterminate).toBe("true");
+    expectCheckboxGeometryToMatch(solid, react, { icon: true });
+  });
+
+  test("hover and focus-visible states match React Spectrum", async ({ page }) => {
+    const fixtures = await checkboxFixtures(page);
+    const settledStyleKeys: Array<keyof CheckboxGeometry> = [
+      "rootColor",
+      "boxBackground",
+      "boxBorderColor",
+      "boxBoxShadow",
+      "boxOutlineColor",
+      "boxOutlineOffset",
+      "boxOutlineStyle",
+      "boxOutlineWidth",
+    ];
+
+    await fixtures.reactRoot.hover();
+    await expect(fixtures.reactRoot).toHaveAttribute("data-hovered", "true");
+    const reactHover = await waitForStableCheckboxGeometry(fixtures.reactRoot, settledStyleKeys);
+
+    await fixtures.solidRoot.hover();
+    await expect(fixtures.solidRoot).toHaveAttribute("data-hovered", "true");
+    const solidHover = await waitForCheckboxGeometryValues(
+      fixtures.solidRoot,
+      reactHover,
+      settledStyleKeys,
+    );
+
+    expectCheckboxGeometryToMatch(solidHover, reactHover);
+
+    await clearPointer(page);
+    await fixtures.reactCheckbox.focus();
+    await expect(fixtures.reactCheckbox).toBeFocused();
+    await expect(fixtures.reactRoot).toHaveAttribute("data-focused", "true");
+    await expect(fixtures.reactRoot).toHaveAttribute("data-focus-visible", "true");
+    const reactFocus = await waitForStableCheckboxGeometry(fixtures.reactRoot, settledStyleKeys);
+
+    await fixtures.solidCheckbox.focus();
+    await expect(fixtures.solidCheckbox).toBeFocused();
+    await expect(fixtures.solidRoot).toHaveAttribute("data-focused", "true");
+    await expect(fixtures.solidRoot).toHaveAttribute("data-focus-visible", "true");
+    const solidFocus = await waitForCheckboxGeometryValues(
+      fixtures.solidRoot,
+      reactFocus,
+      settledStyleKeys,
+    );
+
+    expectCheckboxGeometryToMatch(solidFocus, reactFocus);
   });
 
   test("click toggles selected state on both stacks", async ({ page }) => {

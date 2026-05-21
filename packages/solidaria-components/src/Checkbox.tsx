@@ -40,6 +40,7 @@ import {
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { FormContext, type FormProps } from "./Form";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -137,6 +138,60 @@ export interface CheckboxContextValue extends CheckboxProps {
 }
 export const CheckboxContext = createContext<CheckboxContextValue | null>(null);
 
+type PropsWithValidationBehavior = {
+  validationBehavior?: "aria" | "native";
+};
+
+function withFormValidationBehavior<T extends PropsWithValidationBehavior>(
+  props: T,
+  formContext: FormProps | null,
+): T {
+  if (!formContext?.validationBehavior) {
+    return props;
+  }
+
+  return new Proxy(props, {
+    get(target, property, receiver) {
+      const localValue = Reflect.get(target, property, receiver);
+      if (property === "validationBehavior" && localValue === undefined) {
+        return formContext.validationBehavior;
+      }
+
+      return localValue;
+    },
+    has(target, property) {
+      return (
+        Reflect.has(target, property) ||
+        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
+      );
+    },
+    ownKeys(target) {
+      const keys = new Set(Reflect.ownKeys(target));
+      if (formContext.validationBehavior !== undefined) {
+        keys.add("validationBehavior");
+      }
+
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+      if (descriptor) {
+        return descriptor;
+      }
+
+      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => formContext.validationBehavior,
+        };
+      }
+
+      return undefined;
+    },
+  });
+}
+
 /**
  * A checkbox group allows a user to select multiple items from a list of options.
  *
@@ -149,13 +204,16 @@ export const CheckboxContext = createContext<CheckboxContextValue | null>(null);
  * ```
  */
 export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
-  const [local, ariaProps] = splitProps(props, [
+  const formContext = useContext(FormContext);
+  const mergedProps = withFormValidationBehavior(props, formContext);
+  const [local, ariaProps] = splitProps(mergedProps, [
     "class",
     "style",
     "slot",
     "ref",
     "description",
     "errorMessage",
+    "children",
   ]);
 
   // Use getters to ensure props are read lazily inside reactive contexts
@@ -167,13 +225,17 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     isReadOnly: ariaProps.isReadOnly,
     isRequired: ariaProps.isRequired,
     isInvalid: ariaProps.isInvalid,
+    validationState: ariaProps.validationState,
+    validate: ariaProps.validate,
+    validationBehavior: ariaProps.validationBehavior,
+    name: ariaProps.name,
   }));
 
   const groupAria = createCheckboxGroup(
     () => ({
       ...ariaProps,
-      description: props.description,
-      errorMessage: props.errorMessage,
+      description: local.description,
+      errorMessage: local.errorMessage,
     }),
     state,
   );
@@ -188,7 +250,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      children: local.children,
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-CheckboxGroup",
@@ -208,8 +270,8 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const groupDescribedBy = () => {
     const ids = [
       (cleanGroupProps() as { "aria-describedby"?: string })["aria-describedby"],
-      props.description ? groupAria.descriptionProps.id : undefined,
-      groupAria.isInvalid && props.errorMessage ? groupAria.errorMessageProps.id : undefined,
+      local.description ? groupAria.descriptionProps.id : undefined,
+      groupAria.isInvalid && local.errorMessage ? groupAria.errorMessageProps.id : undefined,
     ]
       .filter(Boolean)
       .join(" ")
@@ -237,7 +299,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
       },
     };
     const renderedChildren = createMemo(() => {
-      const children = props.children;
+      const children = local.children;
       if (typeof children === "function") {
         return children.length > 0
           ? children(childRenderValues)
@@ -264,14 +326,14 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         data-invalid={groupAria.isInvalid || undefined}
       >
         <GroupChildren />
-        <Show when={props.description}>
+        <Show when={local.description}>
           <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-            {props.description}
+            {local.description}
           </div>
         </Show>
-        <Show when={groupAria.isInvalid && props.errorMessage}>
+        <Show when={groupAria.isInvalid && local.errorMessage}>
           <div {...(groupAria.errorMessageProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-            {props.errorMessage}
+            {local.errorMessage}
           </div>
         </Show>
       </div>
@@ -299,6 +361,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
  */
 export function Checkbox(props: CheckboxProps): JSX.Element {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
+  const formContext = useContext(FormContext);
   const contextProps = useContext(CheckboxContext);
   const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
   const contextBaseProps = createMemo<CheckboxProps>(() => {
@@ -309,6 +372,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   const mergedProps = contextProps
     ? (mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) as CheckboxProps)
     : props;
+  const propsWithFormBehavior = withFormValidationBehavior(mergedProps, formContext);
   const inputRefs = createMemo(
     () =>
       [contextBaseProps().inputRef, contextSlotProps?.inputRef, props.inputRef].filter(
@@ -316,7 +380,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       ) as RefLike<HTMLInputElement>[],
   );
 
-  const [local, ariaProps] = splitProps(mergedProps, [
+  const [local, ariaProps] = splitProps(propsWithFormBehavior, [
     "class",
     "style",
     "render",

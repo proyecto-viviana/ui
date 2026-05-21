@@ -68,7 +68,7 @@ export function createCheckboxGroupItem(
       name: p.name ?? groupData?.name,
       form: p.form ?? groupData?.form,
       isRequired: p.isRequired ?? state.isRequired(),
-      validationBehavior: p.validationBehavior ?? groupData?.validationBehavior ?? "aria",
+      validationBehavior: p.validationBehavior ?? groupData?.validationBehavior ?? "native",
     };
   };
 

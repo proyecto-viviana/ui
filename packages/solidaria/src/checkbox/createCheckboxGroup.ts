@@ -7,7 +7,7 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckboxGroup hook.
  */
 
-import { JSX } from "solid-js";
+import { JSX, createEffect } from "solid-js";
 import { createField } from "../label";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { filterDOMProps } from "../utils/filterDOMProps";
@@ -116,14 +116,19 @@ export function createCheckboxGroup(
     labelElementType: "span",
   });
 
-  // Store data for checkbox group items
-  checkboxGroupData.set(state, {
-    name: getProps().name,
-    form: getProps().form,
-    descriptionId: descriptionProps.id,
-    errorMessageId: errorMessageProps.id,
-    validationBehavior: getProps().validationBehavior ?? "aria",
-  });
+  const updateCheckboxGroupData = () => {
+    checkboxGroupData.set(state, {
+      name: getProps().name,
+      form: getProps().form,
+      descriptionId: descriptionProps.id,
+      errorMessageId: errorMessageProps.id,
+      validationBehavior: getProps().validationBehavior ?? "native",
+    });
+  };
+
+  // Store group metadata synchronously for first-render children, then keep it reactive.
+  updateCheckboxGroupData();
+  createEffect(updateCheckboxGroupData);
 
   // Filter DOM props
   const domProps = () =>

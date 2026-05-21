@@ -326,6 +326,14 @@ describe("Checkbox", () => {
   });
 
   describe("custom props", () => {
+    it("defaults required checkboxes to native validation", () => {
+      render(() => <Checkbox aria-label="Test checkbox" isRequired />);
+      const checkbox = screen.getByRole("checkbox");
+
+      expect(checkbox).toHaveAttribute("required");
+      expect(checkbox).not.toHaveAttribute("aria-required");
+    });
+
     it("passes form input props through the hidden checkbox input", () => {
       render(() => (
         <Checkbox
@@ -343,6 +351,7 @@ describe("Checkbox", () => {
       expect(checkbox).toHaveAttribute("value", "agree");
       expect(checkbox).toHaveAttribute("form", "signupForm");
       expect(checkbox).toHaveAttribute("aria-required", "true");
+      expect(checkbox).not.toHaveAttribute("required");
     });
 
     it("merges CheckboxContext props, styles, unsafe style, and refs", () => {
@@ -376,6 +385,22 @@ describe("Checkbox", () => {
       expect(inputRef).toHaveBeenCalledWith(checkbox);
     });
 
+    it("defaults CheckboxGroup required inputs to native validation", () => {
+      render(() => (
+        <CheckboxGroup label="Notification channels" name="channels" form="settingsForm" isRequired>
+          <Checkbox value="email">Email</Checkbox>
+          <Checkbox value="sms">SMS</Checkbox>
+        </CheckboxGroup>
+      ));
+
+      const email = screen.getByRole("checkbox", { name: "Email" });
+
+      expect(email).toHaveAttribute("name", "channels");
+      expect(email).toHaveAttribute("form", "settingsForm");
+      expect(email).toHaveAttribute("required");
+      expect(email).not.toHaveAttribute("aria-required");
+    });
+
     it("passes CheckboxGroup form props through descendant checkbox inputs", () => {
       render(() => (
         <CheckboxGroup
@@ -397,6 +422,7 @@ describe("Checkbox", () => {
       expect(email).toHaveAttribute("name", "channels");
       expect(email).toHaveAttribute("form", "settingsForm");
       expect(email).toHaveAttribute("aria-required", "true");
+      expect(email).not.toHaveAttribute("required");
     });
 
     it("merges CheckboxGroupContext props, unsafe style, and refs", () => {

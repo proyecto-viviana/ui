@@ -11,8 +11,8 @@ Last refreshed: 2026-05-21.
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | React Aria Components exports | `vp run guard:rac-export-gap`: `0` missing named exports, `166` extra Solid exports                             | The public headless component barrel is no longer blocked on missing names. Behavior still needs component-by-component tests. |
 | Required RAC tracker          | `vp run guard:rac-parity`: no missing tracked symbols                                                           | The narrow required-symbol guard is green. It warns that `TreeHeader` and `TreeSection` are not in the upstream RAC index.     |
-| Spectrum S2 catalogue         | `vp run comparison:report:gaps`: `69` official entries tracked, `47` live on both sides, `22` missing/gap       | Styled parity is still unfinished, but Calendar is no longer a catalogue gap.                                                  |
-| Visual state coverage         | `268` official states tracked, `76` with current React/Solid visual evidence, `46` with strict pair-diff tests  | The visual harness exists, but most states are not strict parity yet.                                                          |
+| Spectrum S2 catalogue         | `vp run comparison:report:gaps`: `69` official entries tracked, `47` live on both sides, `22` missing/gap       | Styled parity is still unfinished; Calendar and Checkbox are accepted under the current full gate model.                       |
+| Visual state coverage         | `272` official states tracked, `76` with current React/Solid visual evidence, `46` with strict pair-diff tests  | The visual harness exists, but most states are not strict parity yet.                                                          |
 | S2 export surface             | `vp run comparison:report:exports`: `46` of `208` React S2 value exports missing; `4` extra Solid value exports | Root catalogue component exports are present; support exports such as contexts, slots, hooks, and helpers are still missing.   |
 
 ## Main Gaps
@@ -45,7 +45,7 @@ as local additions when they are public API.
    still be validated during each remaining form-aware component pass.
 4. For date/time work, continue the cluster rather than treating each widget as
    isolated: DatePicker is partial, Calendar is accepted under the current full
-   gate model, and the remaining date/time notes still need current
+   gate model, Checkbox is accepted under the current full gate model, and the remaining date/time notes still need current
    known-defect/regression validation before they count as current full-gate
    proof.
 5. Convert planned visual-state rows into strict current React/Solid pair-diff
