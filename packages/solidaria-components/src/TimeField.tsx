@@ -38,6 +38,7 @@ import {
   useIsHydrated,
 } from "./utils";
 import { HiddenTimeInput } from "./HiddenTimeInput";
+import { FormContext, type FormProps } from "./Form";
 
 export interface TimeFieldRenderProps {
   /** Whether the field is disabled. */
@@ -118,6 +119,53 @@ export interface TimeFieldContextValue {
 export const TimeFieldContext = createContext<TimeFieldContextValue | null>(null);
 export const TimeFieldStateContext = createContext<TimeFieldState<TimeValue> | null>(null);
 
+function withFormValidationBehavior<P extends object>(props: P, formContext: FormProps | null): P {
+  if (!formContext?.validationBehavior) {
+    return props;
+  }
+
+  return new Proxy(props, {
+    get(target, property, receiver) {
+      const localValue = Reflect.get(target, property, receiver);
+      if (property === "validationBehavior" && localValue === undefined) {
+        return formContext.validationBehavior;
+      }
+
+      return localValue;
+    },
+    has(target, property) {
+      return (
+        Reflect.has(target, property) ||
+        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
+      );
+    },
+    ownKeys(target) {
+      const keys = new Set(Reflect.ownKeys(target));
+      if (formContext.validationBehavior !== undefined) {
+        keys.add("validationBehavior");
+      }
+
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+      if (descriptor) {
+        return descriptor;
+      }
+
+      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => formContext.validationBehavior,
+        };
+      }
+
+      return undefined;
+    },
+  });
+}
+
 function useTimeFieldContextValue(): TimeFieldContextValue {
   const context = useContext(TimeFieldContext);
   if (!context) {
@@ -146,6 +194,7 @@ export function useTimeFieldContext(): TimeFieldState<TimeValue> {
 export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps<T>): JSX.Element {
   // Use hydration-safe pattern for client-only rendering
   const isHydrated = useIsHydrated();
+  const formContext = useContext(FormContext);
 
   return (
     <Show
@@ -154,31 +203,45 @@ export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps
         <div class="solidaria-TimeField solidaria-TimeField--placeholder" aria-hidden="true" />
       }
     >
-      <TimeFieldInner {...props} />
+      <TimeFieldInner {...props} __formContext={formContext} />
     </Show>
   );
 }
 
+type TimeFieldInnerProps<T extends TimeValue = TimeValue> = TimeFieldProps<T> & {
+  __formContext?: FormProps | null;
+};
+
 /**
  * Internal TimeField component that renders after client mount.
  */
-function TimeFieldInner<T extends TimeValue = TimeValue>(props: TimeFieldProps<T>): JSX.Element {
+function TimeFieldInner<T extends TimeValue = TimeValue>(
+  props: TimeFieldInnerProps<T>,
+): JSX.Element {
+  const formContext = props.__formContext ?? useContext(FormContext);
+  const mergedProps = withFormValidationBehavior(props, formContext);
   const [local, stateProps, rest] = splitProps(
-    props,
-    ["children", "class", "style", "slot"],
+    mergedProps,
+    ["children", "class", "style", "slot", "__formContext"],
     [
       "value",
       "defaultValue",
       "onChange",
       "minValue",
       "maxValue",
+      "isInvalid",
       "isDisabled",
       "isReadOnly",
       "isRequired",
       "locale",
       "granularity",
       "hourCycle",
+      "shouldForceLeadingZeros",
       "validationState",
+      "validationBehavior",
+      "validate",
+      "description",
+      "errorMessage",
       "placeholderValue",
     ],
   );
@@ -187,7 +250,15 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(props: TimeFieldProps<T
 
   const state = createTimeFieldState(stateProps);
 
-  const fieldAria = createTimeField(rest, state as unknown as TimeFieldState<TimeValue>, fieldRef);
+  const fieldAria = createTimeField(
+    () => ({
+      ...(rest as Record<string, unknown>),
+      description: stateProps.description,
+      errorMessage: stateProps.errorMessage,
+    }),
+    state as unknown as TimeFieldState<TimeValue>,
+    fieldRef,
+  );
 
   const renderValues = createMemo<TimeFieldRenderProps>(() => ({
     isDisabled: state.isDisabled(),
@@ -204,6 +275,11 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(props: TimeFieldProps<T
     },
     renderValues,
   );
+
+  const validationBehavior = () =>
+    (stateProps as { validationBehavior?: "aria" | "native" }).validationBehavior ??
+    formContext?.validationBehavior ??
+    "native";
 
   return (
     <TimeFieldStateContext.Provider value={state as unknown as TimeFieldState<TimeValue>}>
@@ -228,7 +304,7 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(props: TimeFieldProps<T
           data-required={dataAttr(state.isRequired())}
           data-invalid={dataAttr(state.isInvalid())}
         >
-          {props.children as JSX.Element}
+          {local.children as JSX.Element}
         </div>
         <Show when={(rest as Record<string, unknown>).name}>
           <HiddenTimeInput
@@ -237,6 +313,12 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(props: TimeFieldProps<T
             value={state.value()}
             autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
             isDisabled={state.isDisabled()}
+            isRequired={state.isRequired()}
+            validationBehavior={validationBehavior()}
+            validationState={state}
+            focus={() => {
+              fieldRef()?.querySelector<HTMLElement>('[role="spinbutton"]')?.focus();
+            }}
             minValue={access(stateProps.minValue) as TimeValue | undefined}
             maxValue={access(stateProps.maxValue) as TimeValue | undefined}
             granularity={state.granularity}

@@ -27,8 +27,10 @@ export interface TimeFieldDemoProps {
   labelPosition: TimeFieldLabelPosition;
   labelAlign: TimeFieldLabelAlign;
   necessityIndicator: TimeFieldNecessityIndicator;
+  withContextualHelp: boolean;
   value: string;
   granularity: TimeFieldGranularity;
+  shouldForceLeadingZeros: boolean;
   hourCycle: TimeFieldHourCycle;
   hideTimeZone: boolean;
   locale: TimeFieldLocale;
@@ -50,8 +52,10 @@ export const timeFieldDemoDefaults: TimeFieldDemoProps = {
   labelPosition: "top",
   labelAlign: "start",
   necessityIndicator: "icon",
+  withContextualHelp: false,
   value: "09:30:00",
   granularity: "minute",
+  shouldForceLeadingZeros: false,
   hourCycle: "",
   hideTimeZone: false,
   locale: "",
@@ -106,6 +110,34 @@ export function timeFieldMaxValue(): TimeValue {
   return parseTime("18:00:00");
 }
 
+function getTimePart(value: TimeValue, part: "hour" | "minute" | "second"): number {
+  return part in value ? Number(value[part]) : 0;
+}
+
+function compareTimeValues(a: TimeValue, b: TimeValue): number {
+  const hour = getTimePart(a, "hour") - getTimePart(b, "hour");
+  if (hour !== 0) return hour;
+
+  const minute = getTimePart(a, "minute") - getTimePart(b, "minute");
+  if (minute !== 0) return minute;
+
+  return getTimePart(a, "second") - getTimePart(b, "second");
+}
+
+export function isTimeFieldDemoValueInvalid(
+  props: Pick<TimeFieldDemoProps, "constrainRange">,
+  value: TimeValue | null,
+): boolean {
+  if (!value || !props.constrainRange) {
+    return false;
+  }
+
+  return (
+    compareTimeValues(value, timeFieldMinValue()) < 0 ||
+    compareTimeValues(value, timeFieldMaxValue()) > 0
+  );
+}
+
 export function normalizeTimeFieldDemoProps(
   props: Partial<TimeFieldDemoProps>,
 ): TimeFieldDemoProps {
@@ -122,10 +154,12 @@ export function normalizeTimeFieldDemoProps(
     necessityIndicator: isOneOf(props.necessityIndicator, timeFieldNecessityIndicatorOptions)
       ? props.necessityIndicator
       : timeFieldDemoDefaults.necessityIndicator,
+    withContextualHelp: props.withContextualHelp === true,
     value: typeof props.value === "string" ? props.value : timeFieldDemoDefaults.value,
     granularity: isOneOf(props.granularity, timeFieldGranularityOptions)
       ? props.granularity
       : timeFieldDemoDefaults.granularity,
+    shouldForceLeadingZeros: props.shouldForceLeadingZeros === true,
     hourCycle: isOneOf(props.hourCycle, timeFieldHourCycleOptions)
       ? props.hourCycle
       : timeFieldDemoDefaults.hourCycle,
@@ -175,10 +209,12 @@ export function timeFieldDemoPropsFromSearch(search: string): TimeFieldDemoProps
     necessityIndicator: isOneOf(necessityIndicator, timeFieldNecessityIndicatorOptions)
       ? necessityIndicator
       : timeFieldDemoDefaults.necessityIndicator,
+    withContextualHelp: booleanParam(params.get("withContextualHelp")),
     value: params.get("value") ?? timeFieldDemoDefaults.value,
     granularity: isOneOf(granularity, timeFieldGranularityOptions)
       ? granularity
       : timeFieldDemoDefaults.granularity,
+    shouldForceLeadingZeros: booleanParam(params.get("shouldForceLeadingZeros")),
     hourCycle: isOneOf(hourCycle, timeFieldHourCycleOptions)
       ? hourCycle
       : timeFieldDemoDefaults.hourCycle,
@@ -214,8 +250,10 @@ export function serializeTimeFieldDemoProps(props: TimeFieldDemoProps) {
     labelPosition: props.labelPosition,
     labelAlign: props.labelAlign,
     necessityIndicator: props.necessityIndicator,
+    withContextualHelp: props.withContextualHelp,
     value: props.value,
     granularity: props.granularity,
+    shouldForceLeadingZeros: props.shouldForceLeadingZeros,
     hourCycle: props.hourCycle,
     hideTimeZone: props.hideTimeZone,
     locale: props.locale,

@@ -22,6 +22,7 @@ import {
   TimeInput,
   TimeSegment,
 } from "../src/TimeField";
+import { Form } from "../src/Form";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser is consolidated in solidaria-test-utils.
@@ -119,8 +120,67 @@ describe("TimeField", () => {
 
       const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
       expect(input).toBeInTheDocument();
-      expect(input).toHaveAttribute("type", "time");
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
       expect(input).toHaveValue("09:30");
+    });
+
+    it("should render a native required input for native validation behavior", async () => {
+      render(() => (
+        <TestTimeField
+          fieldProps={{
+            name: "startTime",
+            isRequired: true,
+            validationBehavior: "native",
+            defaultValue: new Time(9, 30),
+          }}
+        />
+      ));
+      await waitForTimeFieldHydration();
+
+      const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
+      expect(input).toBeRequired();
+    });
+
+    it("should render hidden input semantics for aria validation behavior", async () => {
+      render(() => (
+        <TestTimeField
+          fieldProps={{
+            name: "startTime",
+            isRequired: true,
+            validationBehavior: "aria",
+            defaultValue: new Time(9, 30),
+          }}
+        />
+      ));
+      await waitForTimeFieldHydration();
+
+      const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "hidden");
+      expect(input).not.toHaveAttribute("hidden");
+      expect(input).not.toBeRequired();
+    });
+
+    it("should inherit validation behavior from Form context", async () => {
+      render(() => (
+        <Form validationBehavior="aria">
+          <TestTimeField
+            fieldProps={{
+              name: "startTime",
+              isRequired: true,
+              defaultValue: new Time(9, 30),
+            }}
+          />
+        </Form>
+      ));
+      await waitForTimeFieldHydration();
+
+      const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+      expect(input).toHaveAttribute("type", "hidden");
+      expect(input).not.toHaveAttribute("hidden");
+      expect(input).not.toBeRequired();
     });
 
     it("should participate in associated form data", async () => {
@@ -261,12 +321,50 @@ describe("TimeField", () => {
             defaultValue: new Time(7, 30),
             minValue: new Time(8, 0),
             maxValue: new Time(18, 0),
+            validationBehavior: "aria",
           }}
         />
       ));
       await waitForTimeFieldHydration();
 
       const field = document.querySelector(".solidaria-TimeField");
+      expect(field).toHaveAttribute("data-invalid");
+    });
+
+    it("should keep native range validation hidden until committed", async () => {
+      render(() => (
+        <TestTimeField
+          fieldProps={{
+            name: "startTime",
+            defaultValue: new Time(7, 30),
+            minValue: new Time(8, 0),
+          }}
+        />
+      ));
+      await waitForTimeFieldHydration();
+
+      const field = document.querySelector(".solidaria-TimeField") as HTMLElement;
+      const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
+
+      expect(field).not.toHaveAttribute("data-invalid");
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("hidden");
+      expect(input).not.toHaveAttribute("min");
+    });
+
+    it("should support custom validation in aria mode", async () => {
+      render(() => (
+        <TestTimeField
+          fieldProps={{
+            defaultValue: new Time(9, 30),
+            validationBehavior: "aria",
+            validate: () => "Unavailable time",
+          }}
+        />
+      ));
+      await waitForTimeFieldHydration();
+
+      const field = document.querySelector(".solidaria-TimeField") as HTMLElement;
       expect(field).toHaveAttribute("data-invalid");
     });
   });

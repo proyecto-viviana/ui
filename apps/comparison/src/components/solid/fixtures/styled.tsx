@@ -3284,6 +3284,14 @@ function SolidSpectrumTimeFieldDemo() {
   });
 
   const serializedProps = createMemo(() => serializeTimeFieldDemoProps(demoProps()));
+  const contextualHelp = createMemo(() =>
+    demoProps().withContextualHelp
+      ? hc(SolidSpectrumContextualHelp, {}, [
+          hc(SolidSpectrumHeading, { slot: "title" }, ["Time help"]),
+          hc(SolidSpectrumContent, {}, ["Choose a start time in your schedule."]),
+        ])
+      : undefined,
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -3333,11 +3341,17 @@ function SolidSpectrumTimeFieldDemo() {
             get necessityIndicator() {
               return demoProps().necessityIndicator;
             },
+            get contextualHelp() {
+              return contextualHelp();
+            },
             get value() {
               return value() ?? undefined;
             },
             get granularity() {
               return demoProps().granularity;
+            },
+            get shouldForceLeadingZeros() {
+              return demoProps().shouldForceLeadingZeros;
             },
             get hourCycle() {
               return demoProps().hourCycle ? Number(demoProps().hourCycle) : undefined;

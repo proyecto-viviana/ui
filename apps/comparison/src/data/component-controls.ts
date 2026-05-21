@@ -2974,6 +2974,12 @@ const timeFieldControls: ComponentControlGroup = {
       options: options(timeFieldNecessityIndicatorOptions),
     },
     {
+      name: "withContextualHelp",
+      label: "withContextualHelp",
+      kind: "switch",
+      defaultValue: timeFieldDemoDefaults.withContextualHelp,
+    },
+    {
       name: "value",
       label: "value",
       kind: "text",
@@ -2985,6 +2991,12 @@ const timeFieldControls: ComponentControlGroup = {
       kind: "select",
       defaultValue: timeFieldDemoDefaults.granularity,
       options: options(timeFieldGranularityOptions),
+    },
+    {
+      name: "shouldForceLeadingZeros",
+      label: "shouldForceLeadingZeros",
+      kind: "switch",
+      defaultValue: timeFieldDemoDefaults.shouldForceLeadingZeros,
     },
     {
       name: "hourCycle",
@@ -3080,10 +3092,12 @@ const timeFieldControls: ComponentControlGroup = {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "contextualHelp",
     "placeholderValue",
     "minValue",
     "maxValue",
     "granularity",
+    "shouldForceLeadingZeros",
     "hourCycle",
     "hideTimeZone",
     "validate",
@@ -3099,7 +3113,7 @@ const timeFieldControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 TimeField docs and API surface: label, size, label position/alignment, necessity indicator, controlled time value, granularity, hour cycle, hidden-time-zone state, Provider locale routing, form owner/name, validation behavior, validation, disabled/read-only, required, help text, and min/max constraints drive both mounted stacks.",
+  note: "Modeled from the S2 TimeField docs and API surface: label, contextual help, size, label position/alignment, necessity indicator, controlled time value, leading-zero formatting, granularity, hour cycle, hidden-time-zone state, Provider locale routing, form owner/name, validation behavior, validation, disabled/read-only, required, help text, and min/max constraints drive both mounted stacks.",
 };
 
 const datePickerControls: ComponentControlGroup = {

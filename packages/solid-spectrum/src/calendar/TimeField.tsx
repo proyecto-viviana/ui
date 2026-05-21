@@ -56,6 +56,8 @@ export interface TimeFieldProps<T extends TimeValue = TimeValue> extends Omit<
   description?: JSX.Element;
   /** Error message. */
   errorMessage?: JSX.Element;
+  /** Contextual help shown next to the label. */
+  contextualHelp?: JSX.Element;
   /** Position of the label relative to the field. */
   labelPosition?: TimeFieldLabelPosition;
   /** Label alignment for side labels. */
@@ -296,6 +298,7 @@ function TimeFieldContent(props: {
   label?: JSX.Element;
   description?: JSX.Element;
   errorMessage?: JSX.Element;
+  contextualHelp?: JSX.Element;
   size: S2TimeFieldSize;
   labelPosition: TimeFieldLabelPosition;
   labelAlign: TimeFieldLabelAlign;
@@ -345,6 +348,11 @@ function TimeFieldContent(props: {
               </span>
             </Show>
           </HeadlessTimeFieldLabel>
+          <Show when={props.contextualHelp}>
+            <span data-slot="contextualHelp" class={noWrap}>
+              {props.contextualHelp}
+            </span>
+          </Show>
         </div>
       </Show>
 
@@ -419,6 +427,7 @@ export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps
     "label",
     "description",
     "errorMessage",
+    "contextualHelp",
     "isInvalid",
     "labelPosition",
     "labelAlign",
@@ -469,6 +478,7 @@ export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps
         label={local.label}
         description={local.description}
         errorMessage={local.errorMessage}
+        contextualHelp={local.contextualHelp}
         size={size()}
         labelPosition={labelPosition()}
         labelAlign={labelAlign()}

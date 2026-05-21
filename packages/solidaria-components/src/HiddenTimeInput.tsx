@@ -3,18 +3,29 @@
  *
  * A hidden native time input for form submission.
  */
-import { type JSX, createEffect } from "solid-js";
-import { type TimeValue } from "@proyecto-viviana/solid-stately";
+import { type JSX, createEffect, createSignal } from "solid-js";
+import { type FormValidationState, type TimeValue } from "@proyecto-viviana/solid-stately";
+import { createFormValidation } from "@proyecto-viviana/solidaria";
+
+type MaybeAccessor<T> = T | (() => T);
 
 export interface HiddenTimeInputProps {
   name?: string;
   form?: string;
-  value?: TimeValue | null;
+  value?: MaybeAccessor<TimeValue | null | undefined>;
   autoComplete?: string;
   isDisabled?: boolean;
-  minValue?: TimeValue;
-  maxValue?: TimeValue;
+  isRequired?: boolean;
+  validationBehavior?: "aria" | "native";
+  validationState?: FormValidationState;
+  focus?: () => void;
+  minValue?: MaybeAccessor<TimeValue | undefined>;
+  maxValue?: MaybeAccessor<TimeValue | undefined>;
   granularity?: "hour" | "minute" | "second";
+}
+
+function accessValue<T>(value: MaybeAccessor<T> | undefined): T | undefined {
+  return typeof value === "function" ? (value as () => T)() : value;
 }
 
 function formatTimeValue(
@@ -48,33 +59,60 @@ function stepForGranularity(granularity: "hour" | "minute" | "second"): number {
 
 export function HiddenTimeInput(props: HiddenTimeInputProps): JSX.Element {
   const granularity = () => props.granularity ?? "minute";
-  const formattedValue = () => formatTimeValue(props.value, granularity());
-  const formattedMin = () => formatTimeValue(props.minValue, granularity());
-  const formattedMax = () => formatTimeValue(props.maxValue, granularity());
+  const hasValidationBehavior = () => props.validationBehavior != null;
+  const validationBehavior = () => props.validationBehavior;
+  const usesNativeValidation = () => validationBehavior() === "native";
+  const value = () => accessValue(props.value);
+  const minValue = () => accessValue(props.minValue);
+  const maxValue = () => accessValue(props.maxValue);
+  const inputType = () =>
+    usesNativeValidation() ? "text" : hasValidationBehavior() ? "hidden" : "time";
+  const formattedValue = () => formatTimeValue(value(), granularity());
+  const formattedMin = () => formatTimeValue(minValue(), granularity());
+  const formattedMax = () => formatTimeValue(maxValue(), granularity());
 
-  let inputRef: HTMLInputElement | undefined;
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement>();
+
+  if (props.validationState) {
+    createFormValidation(
+      {
+        get validationBehavior() {
+          return validationBehavior();
+        },
+        get focus() {
+          return props.focus;
+        },
+      },
+      props.validationState,
+      inputRef,
+    );
+  }
 
   createEffect(() => {
     const val = formattedValue();
-    if (inputRef && inputRef.value !== val) {
-      inputRef.value = val;
+    const input = inputRef();
+    if (input && input.value !== val) {
+      input.value = val;
     }
   });
 
   return (
     <input
       ref={(el) => {
-        inputRef = el;
+        setInputRef(el);
       }}
-      type="time"
+      type={inputType()}
       name={props.name}
       form={props.form}
       value={formattedValue()}
       autocomplete={props.autoComplete}
       disabled={props.isDisabled}
-      min={formattedMin() || undefined}
-      max={formattedMax() || undefined}
-      step={stepForGranularity(granularity())}
+      required={usesNativeValidation() && props.isRequired ? true : undefined}
+      hidden={usesNativeValidation() || undefined}
+      min={hasValidationBehavior() ? undefined : formattedMin() || undefined}
+      max={hasValidationBehavior() ? undefined : formattedMax() || undefined}
+      step={hasValidationBehavior() ? undefined : stepForGranularity(granularity())}
+      onChange={usesNativeValidation() ? () => {} : undefined}
       tabIndex={-1}
       aria-hidden="true"
       style={

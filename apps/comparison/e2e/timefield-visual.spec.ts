@@ -42,11 +42,7 @@ async function namedInputValues(root: Locator, name: string) {
     );
 }
 
-async function namedInputAttributes(
-  root: Locator,
-  name: string,
-  attribute: "min" | "max" | "form",
-) {
+async function namedInputAttributes(root: Locator, name: string, attribute: "form") {
   return root
     .locator(`input[name="${name}"]`)
     .evaluateAll(
@@ -56,6 +52,22 @@ async function namedInputAttributes(
           .filter(Boolean),
       attribute,
     );
+}
+
+async function namedInputDetails(root: Locator, name: string) {
+  return root.locator(`input[name="${name}"]`).evaluateAll((inputs) =>
+    inputs.map((input) => {
+      const element = input as HTMLInputElement;
+      return {
+        type: element.getAttribute("type"),
+        value: element.value.replace(/(\d{2}:\d{2}):00$/, "$1"),
+        hidden: element.hasAttribute("hidden"),
+        required: element.required,
+        min: element.getAttribute("min"),
+        max: element.getAttribute("max"),
+      };
+    }),
+  );
 }
 
 async function expectInvalidField(root: Locator) {
@@ -163,6 +175,26 @@ test.describe("TimeField visual parity", () => {
     await expect(solidRoot.getByRole("spinbutton")).toHaveCount(3);
     expect(await namedInputValues(reactRoot, "startTime")).toContain("09:45:30");
     expect(await namedInputValues(solidRoot, "startTime")).toContain("09:45:30");
+    expect(await namedInputDetails(reactRoot, "startTime")).toContainEqual(
+      expect.objectContaining({
+        type: "hidden",
+        value: "09:45:30",
+        hidden: false,
+        required: false,
+        min: null,
+        max: null,
+      }),
+    );
+    expect(await namedInputDetails(solidRoot, "startTime")).toContainEqual(
+      expect.objectContaining({
+        type: "hidden",
+        value: "09:45:30",
+        hidden: false,
+        required: false,
+        min: null,
+        max: null,
+      }),
+    );
     expect(await namedInputAttributes(reactRoot, "startTime", "form")).toContain("scheduleForm");
     expect(await namedInputAttributes(solidRoot, "startTime", "form")).toContain("scheduleForm");
     await expect
@@ -188,9 +220,11 @@ test.describe("TimeField visual parity", () => {
     );
   });
 
-  test("asserts validation, required state, and range constraints", async ({ page }) => {
+  test("keeps native validation hidden while preserving required form input semantics", async ({
+    page,
+  }) => {
     await page.goto(
-      "/components/timefield/?value=07%3A30%3A00&constrainRange=true&isRequired=true&isInvalid=true&name=startTime",
+      "/components/timefield/?value=07%3A30%3A00&constrainRange=true&isRequired=true&name=startTime",
     );
     await waitForComparisonRouteReady(page);
 
@@ -199,12 +233,81 @@ test.describe("TimeField visual parity", () => {
     const solidRoot = await timeFieldRoot(await frameworkPanel(section, "Solidaria stack"));
 
     for (const root of [reactRoot, solidRoot]) {
+      await expect(root.getByText("Enter the start time.")).toBeVisible();
+      await expect(root.getByText("Enter a valid start time.")).toHaveCount(0);
+      expect(await namedInputValues(root, "startTime")).toContain("07:30");
+      expect(await namedInputDetails(root, "startTime")).toContainEqual(
+        expect.objectContaining({
+          type: "text",
+          value: "07:30",
+          hidden: true,
+          required: true,
+          min: null,
+          max: null,
+        }),
+      );
+    }
+  });
+
+  test("surfaces aria validation and range constraints", async ({ page }) => {
+    await page.goto(
+      "/components/timefield/?value=07%3A30%3A00&constrainRange=true&isRequired=true&name=startTime&validationBehavior=aria",
+    );
+    await waitForComparisonRouteReady(page);
+
+    const section = await styledSection(page);
+    const reactRoot = await timeFieldRoot(await frameworkPanel(section, "React Spectrum stack"));
+    const solidRoot = await timeFieldRoot(await frameworkPanel(section, "Solidaria stack"));
+
+    await expect(reactRoot).toHaveAttribute("data-comparison-react-builtin-invalid", "true");
+    for (const root of [reactRoot, solidRoot]) {
       await expect(root.getByText("Enter a valid start time.")).toBeVisible();
       await expectInvalidField(root);
       expect(await namedInputValues(root, "startTime")).toContain("07:30");
+      expect(await namedInputDetails(root, "startTime")).toContainEqual(
+        expect.objectContaining({
+          type: "hidden",
+          value: "07:30",
+          hidden: false,
+          required: false,
+          min: null,
+          max: null,
+        }),
+      );
     }
-    expect(await namedInputAttributes(solidRoot, "startTime", "min")).toContain("08:00");
-    expect(await namedInputAttributes(solidRoot, "startTime", "max")).toContain("18:00");
+  });
+
+  test("routes contextual help and forced leading zero segments", async ({ page }) => {
+    await page.goto(
+      "/components/timefield/?value=09%3A30%3A00&hourCycle=12&withContextualHelp=true&shouldForceLeadingZeros=true",
+    );
+    await waitForComparisonRouteReady(page);
+
+    const section = await styledSection(page);
+    const reactRoot = await timeFieldRoot(await frameworkPanel(section, "React Spectrum stack"));
+    const solidRoot = await timeFieldRoot(await frameworkPanel(section, "Solidaria stack"));
+
+    await expect(reactRoot.getByRole("button")).toHaveCount(1);
+    await expect(solidRoot.getByRole("button")).toHaveCount(1);
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"withContextualHelp":true/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"withContextualHelp":true/,
+    );
+    await expect(reactRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"shouldForceLeadingZeros":true/,
+    );
+    await expect(solidRoot).toHaveAttribute(
+      "data-comparison-control-props",
+      /"shouldForceLeadingZeros":true/,
+    );
+    const reactTexts = await spinbuttonTexts(reactRoot);
+    expect(reactTexts).toContain("09");
+    await expect.poll(() => spinbuttonTexts(solidRoot)).toEqual(reactTexts);
   });
 
   test("keeps Provider locale text in parity", async ({ page }) => {

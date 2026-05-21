@@ -2378,7 +2378,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/timefield-visual.spec.ts",
-      note: "Route state drives controlled time values, granularity, hourCycle, hidden form owner/name serialization, validationBehavior, associated FormData, and Provider locale props through both TimeField stacks.",
+      note: "Route state drives controlled time values, granularity, leading-zero formatting, hourCycle, hidden form owner/name serialization, validationBehavior, associated FormData, and Provider locale props through both TimeField stacks.",
     },
     {
       id: "styled.timefield.validation",
@@ -2388,7 +2388,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/timefield-visual.spec.ts",
-      note: "Invalid state, error text, min/max constraints, required state, disabled/read-only state, and hidden input min/max attributes are asserted where the DOM contract exposes them.",
+      note: "Native validation keeps range errors hidden while preserving required text-input semantics; aria validation surfaces range errors immediately with hidden input semantics and no native min/max attributes on either stack.",
     },
     {
       id: "styled.timefield.controls",
@@ -2398,7 +2398,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "Side-panel controls dispatch label, size, label position/alignment, necessity indicator, controlled value, granularity, hourCycle, hideTimeZone, locale, form owner/name, validationBehavior, help/error text, min/max constraints, disabled/read-only, required, and invalid props into both mounted styled stacks.",
+      note: "Side-panel controls dispatch label, contextual help, size, label position/alignment, necessity indicator, controlled value, leading-zero formatting, granularity, hourCycle, hideTimeZone, locale, form owner/name, validationBehavior, help/error text, min/max constraints, disabled/read-only, required, and invalid props into both mounted styled stacks.",
     },
   ],
   datepicker: [

@@ -219,6 +219,7 @@ import {
   timeFieldMinValue,
   timeFieldDemoPropsFromWindow,
   timeFieldValueFromDemo,
+  isTimeFieldDemoValueInvalid,
   normalizeTimeFieldDemoProps,
   serializeTimeFieldDemoProps,
   serializeTimeFieldValue,
@@ -3106,6 +3107,7 @@ function ReactTimeFieldDemo() {
   const [demoProps, setDemoProps] = useState(() => initialDemoProps);
   const [value, setValue] = useState(() => timeFieldValueFromDemo(initialDemoProps));
   const colorScheme = useComparisonResolvedTheme();
+  const serializedProps = serializeTimeFieldDemoProps(demoProps);
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "timefield") {
@@ -3118,10 +3120,23 @@ function ReactTimeFieldDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
+  const contextualHelp = demoProps.withContextualHelp
+    ? jsxs(SpectrumContextualHelp, {
+        children: [
+          jsx(SpectrumHeading, { slot: "title", children: "Time help" }),
+          jsx(SpectrumContent, { children: "Choose a start time in your schedule." }),
+        ],
+      })
+    : undefined;
+  const isAriaBuiltinInvalid =
+    demoProps.validationBehavior === "aria" && isTimeFieldDemoValueInvalid(demoProps, value);
+  const isInvalid = demoProps.isInvalid || isAriaBuiltinInvalid;
+
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-control-root": "timefield",
-      "data-comparison-control-props": serializeTimeFieldDemoProps(demoProps),
+      "data-comparison-control-props": serializedProps,
+      "data-comparison-react-builtin-invalid": String(isAriaBuiltinInvalid),
       "data-comparison-value": serializeTimeFieldValue(value),
       "data-comparison-locale": demoProps.locale,
       "data-comparison-color-scheme": colorScheme,
@@ -3131,8 +3146,10 @@ function ReactTimeFieldDemo() {
         labelPosition: demoProps.labelPosition,
         labelAlign: demoProps.labelAlign,
         necessityIndicator: demoProps.necessityIndicator,
+        contextualHelp,
         value: value ?? undefined,
         granularity: demoProps.granularity,
+        shouldForceLeadingZeros: demoProps.shouldForceLeadingZeros,
         hourCycle: demoProps.hourCycle ? Number(demoProps.hourCycle) : undefined,
         hideTimeZone: demoProps.hideTimeZone,
         minValue: demoProps.constrainRange ? timeFieldMinValue() : undefined,
@@ -3145,7 +3162,7 @@ function ReactTimeFieldDemo() {
         isDisabled: demoProps.isDisabled,
         isReadOnly: demoProps.isReadOnly,
         isRequired: demoProps.isRequired,
-        isInvalid: demoProps.isInvalid,
+        isInvalid,
         onChange: (nextValue) => setValue(nextValue),
         UNSAFE_className: "comparison-timefield-root",
       }),

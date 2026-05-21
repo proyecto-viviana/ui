@@ -63,6 +63,32 @@ describe("TimeField (solid-spectrum)", () => {
     expect(screen.getAllByRole("spinbutton")).toHaveLength(2);
   });
 
+  it("renders contextual help next to the visible label", async () => {
+    render(() => (
+      <TimeField label="Meeting time" contextualHelp={<button type="button">Time help</button>} />
+    ));
+    await waitForHydration();
+
+    const contextualHelp = document.querySelector('[data-slot="contextualHelp"]') as HTMLElement;
+    expect(contextualHelp).toBeInTheDocument();
+    expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Time help" }));
+  });
+
+  it("forwards shouldForceLeadingZeros to visible time segments", async () => {
+    render(() => (
+      <TimeField
+        aria-label="Time"
+        defaultValue={new Time(9, 30)}
+        hourCycle={12}
+        shouldForceLeadingZeros
+      />
+    ));
+    await waitForHydration();
+
+    const segmentTexts = screen.getAllByRole("spinbutton").map((segment) => segment.textContent);
+    expect(segmentTexts).toContain("09");
+  });
+
   it("renders a hidden form input when name is provided", async () => {
     render(() => (
       <TimeField aria-label="Time" name="startTime" defaultValue={new Time(9, 30)} hourCycle={24} />
@@ -71,7 +97,8 @@ describe("TimeField (solid-spectrum)", () => {
 
     const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute("type", "time");
+    expect(input).toHaveAttribute("type", "text");
+    expect(input).toHaveAttribute("hidden");
     expect(input).toHaveValue("09:30");
   });
 

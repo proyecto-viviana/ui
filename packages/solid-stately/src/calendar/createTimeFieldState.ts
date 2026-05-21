@@ -16,6 +16,15 @@ import {
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
+import {
+  createFormValidationState,
+  DEFAULT_VALIDATION_RESULT,
+  VALID_VALIDITY_STATE,
+  type ValidationBehavior,
+  type ValidationFunction,
+  type ValidationResult,
+  type ValidityState,
+} from "../form";
 
 export type TimeValue = Time | CalendarDateTime | ZonedDateTime;
 
@@ -57,14 +66,26 @@ export interface TimeFieldStateProps<T extends TimeValue = Time> {
   isReadOnly?: MaybeAccessor<boolean>;
   /** Whether the field is required. */
   isRequired?: MaybeAccessor<boolean>;
+  /** Whether the value is invalid (controlled). */
+  isInvalid?: boolean;
   /** The locale to use for formatting. */
   locale?: string;
   /** The granularity (hour, minute, second). */
   granularity?: "hour" | "minute" | "second";
   /** Whether to show 12 or 24 hour format. */
   hourCycle?: 12 | 24;
+  /** Whether to force leading zeroes in the hour segment. */
+  shouldForceLeadingZeros?: boolean;
   /** Validation state. */
   validationState?: MaybeAccessor<ValidationState | undefined>;
+  /** Validation behavior mode. */
+  validationBehavior?: ValidationBehavior;
+  /** Custom validation function. */
+  validate?: ValidationFunction<T>;
+  /** Description text. */
+  description?: string;
+  /** Error message. */
+  errorMessage?: string;
   /** The placeholder value. */
   placeholderValue?: T;
   /** Whether dates outside the min/max range are unavailable. Added for API consistency. */
@@ -75,7 +96,7 @@ export interface TimeFieldState<T extends TimeValue = Time> {
   /** The current value. */
   value: Accessor<T | null>;
   /** The default value. */
-  defaultValue: Accessor<T | null>;
+  defaultValue: T | null;
   /** Sets the value. */
   setValue: (value: T | null) => void;
   /** The segments that make up the time. */
@@ -100,6 +121,16 @@ export interface TimeFieldState<T extends TimeValue = Time> {
   granularity: "hour" | "minute" | "second";
   /** Whether the value is invalid. */
   isInvalid: Accessor<boolean>;
+  /** Realtime validation results, including native and custom constraints. */
+  realtimeValidation: Accessor<ValidationResult>;
+  /** Currently displayed validation results. */
+  displayValidation: Accessor<ValidationResult>;
+  /** Updates the current validation result. */
+  updateValidation: (result: ValidationResult) => void;
+  /** Resets displayed validation to valid. */
+  resetValidation: () => void;
+  /** Commits realtime validation to displayed validation. */
+  commitValidation: () => void;
   /** The locale. */
   locale: string;
   /** The hour cycle. */
@@ -135,23 +166,62 @@ export function createTimeFieldState<T extends TimeValue = Time>(
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const isRequired = createMemo(() => access(props.isRequired) ?? false);
-  const validationState = createMemo(() => access(props.validationState));
-
-  // Check if value is invalid
-  const isInvalid = createMemo(() => {
-    if (validationState() === "invalid") return true;
-
+  const explicitValidationState = createMemo(() => access(props.validationState));
+  const validationBehavior = () => props.validationBehavior ?? "native";
+  const builtinValidation = createMemo<ValidationResult>(() => {
     const v = value();
-    if (!v) return false;
+    if (!v) return DEFAULT_VALIDATION_RESULT;
 
     const minValue = access(props.minValue);
     const maxValue = access(props.maxValue);
+    const validationDetails: ValidityState = { ...VALID_VALIDITY_STATE };
+    const validationErrors: string[] = [];
 
-    if (minValue && compareTime(v, minValue) < 0) return true;
-    if (maxValue && compareTime(v, maxValue) > 0) return true;
+    if (minValue && compareTime(v, minValue) < 0) {
+      validationDetails.rangeUnderflow = true;
+      validationErrors.push("Value is below the minimum time.");
+    }
 
-    return false;
+    if (maxValue && compareTime(v, maxValue) > 0) {
+      validationDetails.rangeOverflow = true;
+      validationErrors.push("Value is above the maximum time.");
+    }
+
+    if (validationErrors.length === 0) {
+      return DEFAULT_VALIDATION_RESULT;
+    }
+
+    validationDetails.valid = false;
+    return {
+      isInvalid: true,
+      validationDetails,
+      validationErrors,
+    };
   });
+  const validation = createFormValidationState<T>({
+    get value() {
+      return value();
+    },
+    get isInvalid() {
+      return props.isInvalid;
+    },
+    get validationState() {
+      return explicitValidationState();
+    },
+    get validationBehavior() {
+      return validationBehavior();
+    },
+    get validate() {
+      return props.validate;
+    },
+    get builtinValidation() {
+      return builtinValidation();
+    },
+  });
+  const isInvalid = createMemo(() => validation.displayValidation().isInvalid);
+  const validationState = createMemo<ValidationState | undefined>(
+    () => explicitValidationState() ?? (isInvalid() ? "invalid" : undefined),
+  );
 
   // Generate segments based on granularity
   const segments = createMemo<TimeSegment[]>(() => {
@@ -160,8 +230,9 @@ export function createTimeFieldState<T extends TimeValue = Time>(
     const segs: TimeSegment[] = [];
 
     // Determine format options
+    const shouldForceLeadingZeros = props.shouldForceLeadingZeros === true;
     const formatOptions: Intl.DateTimeFormatOptions = {
-      hour: "2-digit",
+      hour: shouldForceLeadingZeros ? "2-digit" : "numeric",
       minute: "2-digit",
       hourCycle: hourCycle === 12 ? "h12" : "h23",
     };
@@ -307,7 +378,7 @@ export function createTimeFieldState<T extends TimeValue = Time>(
 
   return {
     value,
-    defaultValue: () => initialValue,
+    defaultValue: initialValue,
     setValue,
     segments,
     setSegment,
@@ -320,6 +391,11 @@ export function createTimeFieldState<T extends TimeValue = Time>(
     validationState,
     granularity,
     isInvalid,
+    realtimeValidation: validation.realtimeValidation,
+    displayValidation: validation.displayValidation,
+    updateValidation: validation.updateValidation,
+    resetValidation: validation.resetValidation,
+    commitValidation: validation.commitValidation,
     locale,
     hourCycle,
   };
