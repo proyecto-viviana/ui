@@ -351,7 +351,7 @@ describe("ToastQueue", () => {
     expect(finalToasts).toHaveLength(0);
   });
 
-  it("should clear all toasts and call onClose callbacks", () => {
+  it("should clear all toasts without calling onClose callbacks", () => {
     const queue = new ToastQueue<string>();
     const callback = vi.fn();
     const firstClose = vi.fn();
@@ -365,8 +365,8 @@ describe("ToastQueue", () => {
 
     const finalToasts = callback.mock.calls[callback.mock.calls.length - 1][0];
     expect(finalToasts).toHaveLength(0);
-    expect(firstClose).toHaveBeenCalledTimes(1);
-    expect(secondClose).toHaveBeenCalledTimes(1);
+    expect(firstClose).not.toHaveBeenCalled();
+    expect(secondClose).not.toHaveBeenCalled();
   });
 
   it("should replace toast objects when marking exit animations", () => {

@@ -3947,10 +3947,15 @@ function SolidSpectrumTooltipDemo() {
   );
 }
 
-function solidToastQueueOptions(demoProps: ToastDemoProps, onAction: () => void) {
+function solidToastQueueOptions(
+  demoProps: ToastDemoProps,
+  onAction: () => void,
+  onClose: () => void,
+) {
   return {
     actionLabel: demoProps.showAction ? demoProps.actionLabel : undefined,
     onAction: demoProps.showAction ? onAction : undefined,
+    onClose,
     shouldCloseOnAction: demoProps.shouldCloseOnAction,
     timeout: demoProps.autoDismiss ? demoProps.timeout : undefined,
   };
@@ -3959,15 +3964,29 @@ function solidToastQueueOptions(demoProps: ToastDemoProps, onAction: () => void)
 function SolidSpectrumToastDemo() {
   const [demoProps, setDemoProps] = createSignal<ToastDemoProps>(toastDemoPropsFromWindow());
   const [actionCount, setActionCount] = createSignal(0);
+  const [closeCount, setCloseCount] = createSignal(0);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
   let closeToasts: Array<() => void> = [];
+  let suppressCloseCount = false;
+  const closeExistingToasts = () => {
+    suppressCloseCount = true;
+    closeToasts.forEach((close) => close());
+    closeToasts = [];
+    suppressCloseCount = false;
+  };
+  const handleToastClose = () => {
+    if (!suppressCloseCount) {
+      setCloseCount((count) => count + 1);
+    }
+  };
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "toast") {
         setActionCount(0);
+        setCloseCount(0);
         setDemoProps(normalizeToastDemoProps(event.detail.props ?? {}));
       }
     };
@@ -3988,16 +4007,19 @@ function SolidSpectrumToastDemo() {
 
   createEffect(() => {
     const currentProps = demoProps();
-    closeToasts.forEach((close) => close());
+    closeExistingToasts();
     closeToasts = Array.from({ length: currentProps.count }, (_item, index) =>
       SolidSpectrumToastQueue[currentProps.variant](
         currentProps.count > 1 ? `${currentProps.children} ${index + 1}` : currentProps.children,
-        solidToastQueueOptions(currentProps, () => setActionCount((count) => count + 1)),
+        solidToastQueueOptions(
+          currentProps,
+          () => setActionCount((count) => count + 1),
+          handleToastClose,
+        ),
       ),
     );
     onCleanup(() => {
-      closeToasts.forEach((close) => close());
-      closeToasts = [];
+      closeExistingToasts();
     });
   });
 
@@ -4025,6 +4047,9 @@ function SolidSpectrumToastDemo() {
           },
           get "data-comparison-toast-action-count"() {
             return String(actionCount());
+          },
+          get "data-comparison-toast-close-count"() {
+            return String(closeCount());
           },
         },
         [

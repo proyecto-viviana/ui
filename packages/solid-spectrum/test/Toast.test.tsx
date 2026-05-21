@@ -16,6 +16,7 @@ import {
   toastInfo,
   globalToastQueue,
 } from "../src/toast";
+import { Provider } from "../src/provider";
 import type { QueuedToast, ToastContent } from "../src/toast";
 
 /** Drain all toasts from the global queue. */
@@ -88,16 +89,36 @@ describe("Toast (solid-spectrum)", () => {
     });
 
     it("clears the expanded stack from the container controls", () => {
+      const onClose = vi.fn();
+
       render(() => <ToastContainer portal={false} />);
 
-      ToastQueue.neutral("First toast");
-      ToastQueue.info("Second toast");
+      ToastQueue.neutral("First toast", { onClose });
+      ToastQueue.info("Second toast", { onClose });
 
       fireEvent.click(screen.getByRole("button", { name: /Show all/ }));
       fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
 
       expect(screen.queryByRole("region", { name: "Notifications" })).not.toBeInTheDocument();
       expect(screen.queryByText("First toast")).not.toBeInTheDocument();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it("localizes S2 stack controls and close label from Provider locale", () => {
+      render(() => (
+        <Provider locale="es-ES">
+          <ToastContainer portal={false} />
+        </Provider>
+      ));
+
+      ToastQueue.neutral("Primer aviso");
+      ToastQueue.info("Segundo aviso");
+
+      fireEvent.click(screen.getByRole("button", { name: "Mostrar todo" }));
+
+      expect(screen.getByRole("button", { name: "Borrar todo" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Contraer" })).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Cerrar" }).length).toBeGreaterThan(0);
     });
 
     it("collapses the expanded stack on Escape", () => {
@@ -384,6 +405,19 @@ describe("Toast (solid-spectrum)", () => {
       );
 
       spy.mockRestore();
+    });
+
+    it("ToastQueue passes S2 DOM options through to the toast root", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.info("Identified toast", {
+        id: "identified-toast",
+        "data-toast-source": "s2-queue",
+      });
+
+      const toast = screen.getByText("Identified toast").closest('[role="alertdialog"]');
+      expect(toast).toHaveAttribute("id", "identified-toast");
+      expect(toast).toHaveAttribute("data-toast-source", "s2-queue");
     });
 
     it("toastSuccess sets type to success with 5s timeout", () => {

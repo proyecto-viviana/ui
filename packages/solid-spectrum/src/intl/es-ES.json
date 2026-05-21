@@ -11,5 +11,8 @@
   "menu.moreActions": "Más acciones",
   "menu.unavailable": "No disponible",
   "notificationbadge.indicatorOnly": "Nueva actividad",
-  "notificationbadge.plus": "{notifications}+"
+  "notificationbadge.plus": "{notifications}+",
+  "toast.clearAll": "Borrar todo",
+  "toast.collapse": "Contraer",
+  "toast.showAll": "Mostrar todo"
 }

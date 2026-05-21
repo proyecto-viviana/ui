@@ -10,7 +10,12 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import { FocusScope, createPreventScroll } from "@proyecto-viviana/solidaria";
+import {
+  FocusScope,
+  createPreventScroll,
+  createStringFormatter,
+  filterDOMProps,
+} from "@proyecto-viviana/solidaria";
 import {
   Toast as HeadlessToast,
   ToastRegion as HeadlessToastRegion,
@@ -40,6 +45,7 @@ import { CheckmarkCircleIcon } from "../icon/s2wf-icons/CheckmarkCircleIcon";
 import { ChevronDownIcon } from "../icon/s2wf-icons/ChevronDownIcon";
 import { CloseIcon } from "../icon/s2wf-icons/CloseIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
+import { s2IntlStrings } from "../intl";
 import { focusRing, style } from "../s2-style";
 
 export type ToastPlacement = "top" | "top end" | "bottom" | "bottom end";
@@ -49,6 +55,10 @@ type ToastEdge = "top" | "bottom";
 type ToastAlign = "center" | "end";
 
 export interface ToastOptions extends Omit<StatelyToastOptions, "priority"> {
+  /** DOM id passed through to the queued toast content. */
+  id?: string;
+  /** Data attributes passed through to the queued toast content. */
+  [dataAttribute: `data-${string}`]: string | number | boolean | undefined;
   /** A label for the action button within the toast. */
   actionLabel?: string;
   /** Handler that is called when the action button is pressed. */
@@ -94,6 +104,15 @@ interface ToastContainerContextValue {
 }
 
 const ToastContainerContext = createContext<ToastContainerContextValue | null>(null);
+
+const toastAriaIntlStrings = {
+  "en-US": {
+    close: "Close",
+  },
+  "es-ES": {
+    close: "Cerrar",
+  },
+};
 
 const toastRegion = style<{ placement: ToastEdge; align: ToastAlign; isExpanded?: boolean }>({
   ...focusRing(),
@@ -235,6 +254,7 @@ const toastBody = style<{ isSingle?: boolean }>({
 
 const toastContent = style({
   display: "flex",
+  cursor: "default",
   gap: 8,
   alignItems: "baseline",
   gridArea: "content",
@@ -377,6 +397,7 @@ function addSpectrumToast(
 ): () => void {
   const timeout =
     options.timeout && !options.actionLabel ? Math.max(options.timeout, 5000) : undefined;
+  const domProps = filterDOMProps(options as Record<string, unknown>);
   const key = headlessAddToast(
     {
       children,
@@ -384,6 +405,7 @@ function addSpectrumToast(
       actionLabel: options.actionLabel,
       onAction: options.onAction,
       shouldCloseOnAction: options.shouldCloseOnAction,
+      ...domProps,
     },
     {
       timeout,
@@ -409,6 +431,7 @@ export function ToastProvider(props: ToastProviderProps): JSX.Element {
 export function ToastRegion(props: ToastRegionProps): JSX.Element {
   const [local, rest] = splitProps(props, ["placement", "class"]);
   const placement = () => normalizePlacement(local.placement);
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const containerContext = useContext(ToastContainerContext);
   const isExpanded = () => containerContext?.isExpanded() ?? false;
   createPreventScroll({
@@ -520,10 +543,10 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
                     data-solid-spectrum-toast-controls=""
                   >
                     <ActionButton size="S" onPress={context().clear}>
-                      Clear all
+                      {stringFormatter().format("toast.clearAll")}
                     </ActionButton>
                     <ActionButton size="S" onPress={context().collapse}>
-                      Collapse
+                      {stringFormatter().format("toast.collapse")}
                     </ActionButton>
                   </div>
                 )}
@@ -577,7 +600,10 @@ export function Toast(props: ToastProps): JSX.Element {
     "placementEdge",
   ]);
   const state = useToastContext();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+  const ariaStringFormatter = createStringFormatter(toastAriaIntlStrings);
   const content = () => local.toast.content;
+  const contentDomProps = () => filterDOMProps(content() as Record<string, unknown>);
   const variant = () => normalizeVariant(content().variant, content().type);
   const title = () => content().children ?? content().title;
   const actionLabel = () => content().actionLabel ?? content().action?.label;
@@ -612,6 +638,7 @@ export function Toast(props: ToastProps): JSX.Element {
       when={!isMain() && !isExpanded()}
       fallback={
         <HeadlessToast
+          {...contentDomProps()}
           {...rest}
           toast={local.toast}
           data-solid-spectrum-variant={variant()}
@@ -651,7 +678,7 @@ export function Toast(props: ToastProps): JSX.Element {
                 styles={toastExpand}
                 onPress={local.onToggleExpanded}
               >
-                Show all
+                {stringFormatter().format("toast.showAll")}
                 <ChevronDownIcon
                   aria-hidden="true"
                   style={{
@@ -676,7 +703,7 @@ export function Toast(props: ToastProps): JSX.Element {
           <HeadlessToastCloseButton
             toast={local.toast}
             class={closeButtonStyles({})}
-            aria-label="Close"
+            aria-label={ariaStringFormatter().format("close")}
           >
             <CloseIcon aria-hidden="true" />
           </HeadlessToastCloseButton>

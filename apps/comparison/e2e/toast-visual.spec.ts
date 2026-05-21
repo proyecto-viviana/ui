@@ -5,6 +5,17 @@ import {
   toastVariantOptions,
 } from "../src/data/toast-demo";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
+import {
+  expectScreenshotPair,
+  pinComparisonTheme,
+  type ScreenshotDiffThreshold,
+} from "./visual-diff";
+
+const toastDefaultPairDiff: ScreenshotDiffThreshold = {
+  maxMismatchRatio: 0.01,
+  maxDimensionDelta: 4,
+  pixelThreshold: 48,
+};
 
 function toastQuery(params: Record<string, string | boolean | number | undefined> = {}) {
   const search = new URLSearchParams();
@@ -22,6 +33,7 @@ async function toastFixtures(
   page: Page,
   params: Record<string, string | boolean | number | undefined> = {},
 ) {
+  await pinComparisonTheme(page, "light");
   await page.goto(`/components/toast/${toastQuery(params)}`);
   await waitForComparisonRouteReady(page);
   const section = await styledSection(page);
@@ -111,6 +123,14 @@ test.describe("Toast comparison route", () => {
     expect(Number.parseFloat(solidStyle.borderRadius)).toBeGreaterThan(0);
     expect(Number.parseFloat(reactStyle.minHeight)).toBeGreaterThanOrEqual(56);
     expect(Number.parseFloat(solidStyle.minHeight)).toBeGreaterThanOrEqual(56);
+
+    await expectScreenshotPair(
+      page,
+      alertToast(react.region),
+      alertToast(solid.region),
+      "Toast default surface",
+      toastDefaultPairDiff,
+    );
   });
 
   test("routes ToastQueue variant methods and icon contracts", async ({ page }) => {
@@ -216,9 +236,11 @@ test.describe("Toast comparison route", () => {
     });
 
     for (const stack of [react, solid]) {
+      await expect(stack.root).toHaveAttribute("data-comparison-toast-close-count", "0");
       await stack.region.getByRole("button", { name: /Show all/ }).click();
       await stack.region.getByRole("button", { name: "Clear all" }).click();
       await expect(stack.region.getByText(/Clearable toast/)).toHaveCount(0);
+      await expect(stack.root).toHaveAttribute("data-comparison-toast-close-count", "0");
     }
   });
 
@@ -233,6 +255,7 @@ test.describe("Toast comparison route", () => {
       await expect(stack.region.getByRole("button", { name: "Undo" })).toBeVisible();
       await stack.region.getByRole("button", { name: "Undo" }).click();
       await expect(stack.root).toHaveAttribute("data-comparison-toast-action-count", "1");
+      await expect(stack.root).toHaveAttribute("data-comparison-toast-close-count", "1");
       await expect(stack.region.getByText("File deleted")).toHaveCount(0);
     }
   });

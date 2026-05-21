@@ -220,7 +220,6 @@ export class ToastQueue<T> {
   clear(): void {
     for (const toast of this.queue) {
       toast.timer?.cancel();
-      toast.onClose?.();
     }
 
     this.queue = [];

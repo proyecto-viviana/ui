@@ -39,6 +39,10 @@ import {
 } from "./utils";
 
 export interface ToastContent {
+  /** DOM id for the toast root when content is queued through Spectrum ToastQueue. */
+  id?: string;
+  /** Data attributes for the toast root when content is queued through Spectrum ToastQueue. */
+  [dataAttribute: `data-${string}`]: string | number | boolean | undefined;
   /** Spectrum Toast message content. */
   children?: string;
   /** The title of the toast. */
@@ -106,6 +110,10 @@ export interface ToastRegionProps {
 }
 
 export interface ToastProps {
+  /** DOM id for the toast root. */
+  id?: string;
+  /** Data attributes for the toast root. */
+  [dataAttribute: `data-${string}`]: string | number | boolean | undefined;
   /** The toast data. */
   toast: QueuedToast<ToastContent>;
   /** The children of the component - can be JSX or render function. */

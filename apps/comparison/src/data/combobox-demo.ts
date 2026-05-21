@@ -107,6 +107,16 @@ function booleanParam(value: string | null | undefined) {
   return value === "true" || value === "on" || value === "1";
 }
 
+function optionParam<T extends readonly string[]>(
+  params: URLSearchParams,
+  name: string,
+  options: T,
+  fallback: T[number],
+): T[number] {
+  const value = params.get(name);
+  return isOneOf(value, options) ? value : fallback;
+}
+
 export function comboBoxLabelForKey(key: string | null | undefined) {
   return comboBoxItems.find((item) => item.id === key)?.label ?? comboBoxDemoDefaults.inputValue;
 }
@@ -185,43 +195,68 @@ export function comboBoxDemoPropsFromSearch(search: string): ComboBoxDemoProps {
   return normalizeComboBoxDemoProps({
     label: params.get("label") || comboBoxDemoDefaults.label,
     selectedKey: normalizedSelectedKey,
-    selectionSource: isOneOf(params.get("selectionSource"), comboBoxSelectionSourceOptions)
-      ? params.get("selectionSource")!
-      : comboBoxDemoDefaults.selectionSource,
+    selectionSource: optionParam(
+      params,
+      "selectionSource",
+      comboBoxSelectionSourceOptions,
+      comboBoxDemoDefaults.selectionSource,
+    ),
     inputValue: params.get("inputValue") ?? comboBoxLabelForKey(normalizedSelectedKey),
-    inputSource: isOneOf(params.get("inputSource"), comboBoxInputSourceOptions)
-      ? params.get("inputSource")!
-      : comboBoxDemoDefaults.inputSource,
+    inputSource: optionParam(
+      params,
+      "inputSource",
+      comboBoxInputSourceOptions,
+      comboBoxDemoDefaults.inputSource,
+    ),
     placeholder: params.get("placeholder") ?? comboBoxDemoDefaults.placeholder,
     size: isOneOf(size, comboBoxSizeOptions) ? size : comboBoxDemoDefaults.size,
-    labelPosition: isOneOf(params.get("labelPosition"), comboBoxLabelPositionOptions)
-      ? params.get("labelPosition")!
-      : comboBoxDemoDefaults.labelPosition,
-    labelAlign: isOneOf(params.get("labelAlign"), comboBoxLabelAlignOptions)
-      ? params.get("labelAlign")!
-      : comboBoxDemoDefaults.labelAlign,
-    necessityIndicator: isOneOf(params.get("necessityIndicator"), comboBoxNecessityIndicatorOptions)
-      ? params.get("necessityIndicator")!
-      : comboBoxDemoDefaults.necessityIndicator,
+    labelPosition: optionParam(
+      params,
+      "labelPosition",
+      comboBoxLabelPositionOptions,
+      comboBoxDemoDefaults.labelPosition,
+    ),
+    labelAlign: optionParam(
+      params,
+      "labelAlign",
+      comboBoxLabelAlignOptions,
+      comboBoxDemoDefaults.labelAlign,
+    ),
+    necessityIndicator: optionParam(
+      params,
+      "necessityIndicator",
+      comboBoxNecessityIndicatorOptions,
+      comboBoxDemoDefaults.necessityIndicator,
+    ),
     description: params.get("description") ?? comboBoxDemoDefaults.description,
     errorMessage: params.get("errorMessage") ?? comboBoxDemoDefaults.errorMessage,
     name: params.get("name") ?? comboBoxDemoDefaults.name,
     form: params.get("form") ?? comboBoxDemoDefaults.form,
-    formValue: isOneOf(params.get("formValue"), comboBoxFormValueOptions)
-      ? params.get("formValue")!
-      : comboBoxDemoDefaults.formValue,
-    validationBehavior: isOneOf(params.get("validationBehavior"), comboBoxValidationBehaviorOptions)
-      ? params.get("validationBehavior")!
-      : comboBoxDemoDefaults.validationBehavior,
-    menuTrigger: isOneOf(params.get("menuTrigger"), comboBoxMenuTriggerOptions)
-      ? params.get("menuTrigger")!
-      : comboBoxDemoDefaults.menuTrigger,
-    direction: isOneOf(params.get("direction"), comboBoxDirectionOptions)
-      ? params.get("direction")!
-      : comboBoxDemoDefaults.direction,
-    align: isOneOf(params.get("align"), comboBoxAlignOptions)
-      ? params.get("align")!
-      : comboBoxDemoDefaults.align,
+    formValue: optionParam(
+      params,
+      "formValue",
+      comboBoxFormValueOptions,
+      comboBoxDemoDefaults.formValue,
+    ),
+    validationBehavior: optionParam(
+      params,
+      "validationBehavior",
+      comboBoxValidationBehaviorOptions,
+      comboBoxDemoDefaults.validationBehavior,
+    ),
+    menuTrigger: optionParam(
+      params,
+      "menuTrigger",
+      comboBoxMenuTriggerOptions,
+      comboBoxDemoDefaults.menuTrigger,
+    ),
+    direction: optionParam(
+      params,
+      "direction",
+      comboBoxDirectionOptions,
+      comboBoxDemoDefaults.direction,
+    ),
+    align: optionParam(params, "align", comboBoxAlignOptions, comboBoxDemoDefaults.align),
     menuWidth: params.get("menuWidth") ?? comboBoxDemoDefaults.menuWidth,
     isDisabled: booleanParam(params.get("isDisabled")),
     isReadOnly: booleanParam(params.get("isReadOnly")),

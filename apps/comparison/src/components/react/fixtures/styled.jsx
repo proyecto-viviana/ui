@@ -3408,10 +3408,11 @@ function ReactTooltipDemo() {
   );
 }
 
-function toastQueueOptions(demoProps, onAction) {
+function toastQueueOptions(demoProps, onAction, onClose) {
   return {
     actionLabel: demoProps.showAction ? demoProps.actionLabel : undefined,
     onAction: demoProps.showAction ? onAction : undefined,
+    onClose,
     shouldCloseOnAction: demoProps.shouldCloseOnAction,
     timeout: demoProps.autoDismiss ? demoProps.timeout : undefined,
   };
@@ -3420,13 +3421,21 @@ function toastQueueOptions(demoProps, onAction) {
 function ReactToastDemo() {
   const [demoProps, setDemoProps] = useState(toastDemoPropsFromWindow);
   const [actionCount, setActionCount] = useState(0);
+  const [closeCount, setCloseCount] = useState(0);
   const closeRefs = useRef([]);
+  const suppressCloseCountRef = useRef(false);
   const colorScheme = useComparisonResolvedTheme();
+  const handleToastClose = () => {
+    if (!suppressCloseCountRef.current) {
+      setCloseCount((count) => count + 1);
+    }
+  };
 
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "toast") {
         setActionCount(0);
+        setCloseCount(0);
         setDemoProps(normalizeToastDemoProps(event.detail.props ?? {}));
       }
     };
@@ -3436,17 +3445,22 @@ function ReactToastDemo() {
   }, []);
 
   useEffect(() => {
+    suppressCloseCountRef.current = true;
     closeRefs.current.forEach((close) => close());
+    closeRefs.current = [];
+    suppressCloseCountRef.current = false;
     closeRefs.current = Array.from({ length: demoProps.count }, (_item, index) =>
       SpectrumToastQueue[demoProps.variant](
         demoProps.count > 1 ? `${demoProps.children} ${index + 1}` : demoProps.children,
-        toastQueueOptions(demoProps, () => setActionCount((count) => count + 1)),
+        toastQueueOptions(demoProps, () => setActionCount((count) => count + 1), handleToastClose),
       ),
     );
 
     return () => {
+      suppressCloseCountRef.current = true;
       closeRefs.current.forEach((close) => close());
       closeRefs.current = [];
+      suppressCloseCountRef.current = false;
     };
   }, [demoProps]);
 
@@ -3458,6 +3472,7 @@ function ReactToastDemo() {
       "data-comparison-control-props": serializeToastDemoProps(demoProps),
       "data-comparison-toast-props": serializeToastDemoProps(demoProps),
       "data-comparison-toast-action-count": String(actionCount),
+      "data-comparison-toast-close-count": String(closeCount),
       children: jsx(SpectrumToastContainer, {
         placement: demoProps.placement,
         "aria-label": demoProps["aria-label"],

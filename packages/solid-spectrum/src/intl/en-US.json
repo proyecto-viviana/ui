@@ -11,5 +11,8 @@
   "menu.moreActions": "More actions",
   "menu.unavailable": "Unavailable",
   "notificationbadge.indicatorOnly": "New activity",
-  "notificationbadge.plus": "{notifications}+"
+  "notificationbadge.plus": "{notifications}+",
+  "toast.clearAll": "Clear all",
+  "toast.collapse": "Collapse",
+  "toast.showAll": "Show all"
 }
