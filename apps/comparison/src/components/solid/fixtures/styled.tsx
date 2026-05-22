@@ -29,6 +29,7 @@ import {
   ButtonGroup as SolidSpectrumButtonGroup,
   Calendar as SolidSpectrumCalendar,
   Card as SolidSpectrumCard,
+  CardPreview as SolidSpectrumCardPreview,
   CardView as SolidSpectrumCardView,
   Checkbox as SolidSpectrumCheckbox,
   CheckboxGroup as SolidSpectrumCheckboxGroup,
@@ -509,6 +510,9 @@ const cardItems = [
   { id: "zephyr", title: "Zephyr", status: "Queued" },
 ];
 
+const cardPreviewImageSrc =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 180'%3E%3Crect width='320' height='180' fill='%232c7be5'/%3E%3Cpath d='M0 132 82 74l68 42 62-58 108 96v26H0z' fill='%23d6e9ff' opacity='.9'/%3E%3Ccircle cx='248' cy='48' r='24' fill='%23fff3b0'/%3E%3C/svg%3E";
+
 const actionBarItems = [
   { id: "edit", label: "Edit" },
   { id: "copy", label: "Copy" },
@@ -618,6 +622,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   breadcrumbs: () => h(SolidSpectrumBreadcrumbsDemo, {}),
   buttongroup: () => h(SolidSpectrumButtonGroupDemo, {}),
   calendar: () => h(SolidSpectrumCalendarDemo, {}),
+  card: () => h(SolidSpectrumCardDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
@@ -6152,12 +6157,71 @@ function SolidSpectrumCardViewDemo() {
                 ),
             },
             renderProp((item: (typeof cardItems)[number]) =>
-              hc(SolidSpectrumCard, {}, [
-                hc("strong", {}, [item.title]),
-                " ",
-                hc("span", {}, [item.status]),
+              hc(SolidSpectrumCard, { id: item.id, textValue: item.title }, [
+                hc(SolidSpectrumContent, {}, [
+                  hc(SolidSpectrumText, { slot: "title" }, [item.title]),
+                  hc(SolidSpectrumText, { slot: "description" }, [item.status]),
+                ]),
               ]),
             ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumCardDemo() {
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+  });
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [
+          hc(
+            SolidSpectrumCard,
+            {
+              size: "M",
+              density: "regular",
+              variant: "primary",
+              UNSAFE_style: { width: "240px" },
+            },
+            [
+              hc(SolidSpectrumCardPreview, {}, [
+                hc(SolidSpectrumImage, { src: cardPreviewImageSrc, alt: "" }),
+              ]),
+              hc(SolidSpectrumContent, {}, [
+                hc(SolidSpectrumText, { slot: "title" }, ["Apollo"]),
+                hc(SolidSpectrumText, { slot: "description" }, ["Active"]),
+              ]),
+            ],
           ),
         ],
       ),

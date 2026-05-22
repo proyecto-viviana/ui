@@ -534,6 +534,16 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 SelectBoxGroup and SelectBox directly; Solid uses @proyecto-viviana/solid-spectrum SelectBoxGroup and SelectBox over the shared headless ListBox semantics.",
   }),
 
+  card: styledLiveOfficialEntry({
+    slug: "card",
+    title: "Card",
+    category: "Components",
+    summary: "Standalone object Card mounted on both stacks with preview, content, and text slots.",
+    styledSummary: "React Spectrum Card vs Solid Spectrum Card.",
+    styledNote:
+      "React uses @react-spectrum/s2 Card, CardPreview, Image, Content, and Text directly; Solid uses @proyecto-viviana/solid-spectrum Card, CardPreview, Image, Content, and Text with S2-derived size, density, variant, preview, and slot styling.",
+  }),
+
   cardview: styledLiveOfficialEntry({
     slug: "cardview",
     title: "CardView",
@@ -541,7 +551,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     summary: "Selectable card collection mounted on both stacks with controlled single selection.",
     styledSummary: "React Spectrum CardView vs Solid Spectrum CardView.",
     styledNote:
-      "React uses @react-spectrum/s2 CardView and Card directly; Solid uses @proyecto-viviana/solid-spectrum CardView and Card over the shared headless GridList semantics.",
+      "React uses @react-spectrum/s2 CardView and Card directly; Solid uses @proyecto-viviana/solid-spectrum CardView and Card over shared GridList semantics with source-backed layout options, selectionStyle to selectionBehavior mapping, controlled selection, and official Content/Text slot composition.",
   }),
 
   checkbox: styledLiveOfficialEntry({

@@ -35,6 +35,11 @@ const liveStyledVisualCases: LiveStyledVisualCase[] = [
     threshold: { maxMismatchRatio: 0.38, maxDimensionDelta: 96, pixelThreshold: 64 },
   },
   {
+    slug: "card",
+    title: "Card",
+    threshold: { maxMismatchRatio: 0.42, maxDimensionDelta: 128, pixelThreshold: 64 },
+  },
+  {
     slug: "cardview",
     title: "CardView",
     threshold: { maxMismatchRatio: 0.42, maxDimensionDelta: 128, pixelThreshold: 64 },

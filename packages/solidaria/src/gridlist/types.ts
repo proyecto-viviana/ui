@@ -24,6 +24,8 @@ export interface AriaGridListProps {
   onAction?: (key: Key) => void;
   /** Whether selection should occur on press up. */
   shouldSelectOnPressUp?: boolean;
+  /** How selection should behave when pressing an item. */
+  selectionBehavior?: "replace" | "toggle";
   /** Whether the grid list is disabled. */
   isDisabled?: boolean;
 }
@@ -33,7 +35,7 @@ export interface AriaGridListProps {
  */
 export interface GridListAria {
   /** Props to spread on the grid list element. */
-  gridProps: JSX.HTMLAttributes<HTMLUListElement>;
+  gridProps: JSX.HTMLAttributes<HTMLElement>;
 }
 
 /**
@@ -44,6 +46,8 @@ export interface AriaGridListItemProps {
   node: GridNode<unknown>;
   /** Whether the grid list is virtualized. */
   isVirtualized?: boolean;
+  /** How selection should behave when pressing an item. */
+  selectionBehavior?: "replace" | "toggle";
   /** Handler for item action. */
   onAction?: () => void;
 }
@@ -53,7 +57,7 @@ export interface AriaGridListItemProps {
  */
 export interface GridListItemAria {
   /** Props to spread on the item element. */
-  rowProps: JSX.HTMLAttributes<HTMLLIElement>;
+  rowProps: JSX.HTMLAttributes<HTMLElement>;
   /** Props to spread on the grid cell wrapper. */
   gridCellProps: JSX.HTMLAttributes<HTMLDivElement>;
   /** Whether the item is selected. */

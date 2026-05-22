@@ -19,6 +19,7 @@ import {
   ButtonGroup as SpectrumButtonGroup,
   Calendar as SpectrumCalendar,
   Card as SpectrumCard,
+  CardPreview as SpectrumCardPreview,
   CardView as SpectrumCardView,
   Checkbox as SpectrumCheckbox,
   CheckboxGroup as SpectrumCheckboxGroup,
@@ -461,6 +462,9 @@ const cardItems = [
   { id: "zephyr", title: "Zephyr", status: "Queued" },
 ];
 
+const cardPreviewImageSrc =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 180'%3E%3Crect width='320' height='180' fill='%232c7be5'/%3E%3Cpath d='M0 132 82 74l68 42 62-58 108 96v26H0z' fill='%23d6e9ff' opacity='.9'/%3E%3Ccircle cx='248' cy='48' r='24' fill='%23fff3b0'/%3E%3C/svg%3E";
+
 const actionBarItems = [
   { id: "edit", label: "Edit" },
   { id: "copy", label: "Copy" },
@@ -512,6 +516,7 @@ export const reactStyledFixtures = {
   breadcrumbs: () => jsx(ReactBreadcrumbsDemo, {}),
   buttongroup: () => jsx(ReactButtonGroupDemo, {}),
   calendar: () => jsx(ReactCalendarDemo, {}),
+  card: () => jsx(ReactCardDemo, {}),
   linkbutton: () => jsx(ReactLinkButtonDemo, {}),
   togglebutton: () => jsx(ReactToggleButtonDemo, {}),
   togglebuttongroup: () => jsx(ReactToggleButtonGroupDemo, {}),
@@ -2073,15 +2078,41 @@ function ReactCardViewDemo() {
         selectedKeys,
         onSelectionChange: (keys) => setSelectedKeys(keys === "all" ? new Set() : new Set(keys)),
         children: (item) =>
-          jsxs(SpectrumCard, {
+          jsx(SpectrumCard, {
             id: item.id,
             textValue: item.title,
-            children: [
-              jsx(SpectrumText, { slot: "title", children: item.title }),
-              jsx(SpectrumText, { slot: "description", children: item.status }),
-            ],
+            children: jsxs(SpectrumContent, {
+              children: [
+                jsx(SpectrumText, { slot: "title", children: item.title }),
+                jsx(SpectrumText, { slot: "description", children: item.status }),
+              ],
+            }),
           }),
       }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactCardDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsx(SpectrumCard, {
+      size: "M",
+      density: "regular",
+      variant: "primary",
+      UNSAFE_style: { width: 240 },
+      children: [
+        jsx(SpectrumCardPreview, {
+          children: jsx(SpectrumImage, { src: cardPreviewImageSrc, alt: "" }),
+        }),
+        jsxs(SpectrumContent, {
+          children: [
+            jsx(SpectrumText, { slot: "title", children: "Apollo" }),
+            jsx(SpectrumText, { slot: "description", children: "Active" }),
+          ],
+        }),
+      ],
     }),
     colorScheme,
   );

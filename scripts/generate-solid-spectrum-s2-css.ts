@@ -27,6 +27,8 @@ await import("../packages/solid-spectrum/src/picker");
 await import("../packages/solid-spectrum/src/combobox");
 await import("../packages/solid-spectrum/src/datepicker");
 await import("../packages/solid-spectrum/src/link");
+await import("../packages/solid-spectrum/src/card/index");
+await import("../packages/solid-spectrum/src/cardview/index");
 
 const css = [
   "/* Generated from vendored Adobe Spectrum 2 style declarations. Do not edit by hand. */",

@@ -18,9 +18,11 @@ export function createGridListItem<
 >(
   props: Accessor<AriaGridListItemProps>,
   state: Accessor<GridState<T, C>>,
-  _ref: Accessor<HTMLLIElement | null>,
+  _ref: Accessor<HTMLElement | null>,
 ): GridListItemAria {
   const [isPressed, setIsPressed] = createSignal(false);
+  let isPointerPressed = false;
+  let ignoreNextClick = false;
 
   const isSelected = createMemo(() => {
     const s = state();
@@ -40,8 +42,7 @@ export function createGridListItem<
     return s.focusedKey === p.node.key;
   });
 
-  // Handle click/press for selection and actions
-  const onClick = (e: MouseEvent) => {
+  const handleActivation = (e: MouseEvent | PointerEvent) => {
     const s = state();
     const p = props();
 
@@ -55,7 +56,7 @@ export function createGridListItem<
     if (s.selectionMode !== "none") {
       if (e.shiftKey && s.selectionMode === "multiple") {
         s.extendSelection(p.node.key);
-      } else if (e.ctrlKey || e.metaKey) {
+      } else if (p.selectionBehavior === "toggle" || e.ctrlKey || e.metaKey) {
         s.toggleSelection(p.node.key);
       } else {
         // Replace selection or toggle if already selected
@@ -85,6 +86,16 @@ export function createGridListItem<
         p.onAction();
       }
     }
+  };
+
+  // Handle click/press for selection and actions.
+  const onClick = (e: MouseEvent) => {
+    if (ignoreNextClick) {
+      ignoreNextClick = false;
+      return;
+    }
+
+    handleActivation(e);
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -125,10 +136,39 @@ export function createGridListItem<
   };
 
   const onPointerDown = () => {
+    if (isDisabled()) return;
+    isPointerPressed = true;
     setIsPressed(true);
   };
 
-  const onPointerUp = () => {
+  const onPointerUp = (e: PointerEvent) => {
+    const wasPointerPressed = isPointerPressed;
+    isPointerPressed = false;
+    setIsPressed(false);
+
+    if (!wasPointerPressed || isDisabled()) return;
+
+    const currentTarget = e.currentTarget;
+    const target = e.target;
+    if (
+      currentTarget instanceof HTMLElement &&
+      target instanceof Node &&
+      !currentTarget.contains(target)
+    ) {
+      return;
+    }
+
+    ignoreNextClick = true;
+    handleActivation(e);
+  };
+
+  const onPointerCancel = () => {
+    isPointerPressed = false;
+    setIsPressed(false);
+  };
+
+  const onPointerLeave = () => {
+    isPointerPressed = false;
     setIsPressed(false);
   };
 
@@ -147,6 +187,8 @@ export function createGridListItem<
       onFocus,
       onPointerDown,
       onPointerUp,
+      onPointerCancel,
+      onPointerLeave,
     };
 
     // Add aria-rowindex for virtualized lists
@@ -154,7 +196,7 @@ export function createGridListItem<
       baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
     }
 
-    return baseProps as JSX.HTMLAttributes<HTMLLIElement>;
+    return baseProps as JSX.HTMLAttributes<HTMLElement>;
   });
 
   const gridCellProps = createMemo(() => {

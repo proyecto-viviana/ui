@@ -1486,10 +1486,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Attempting to click the disabled Pro option leaves the controlled selected key set unchanged on both stacks.",
     },
   ],
+  card: [
+    assertedDefaultState({
+      slug: "card",
+      note: "Standalone Card visual evidence covers the official Card, CardPreview, Image, Content, and Text composition with S2 size, density, and variant props on both stacks; interactive Card states remain part of the Card/CardView pass until strict pair-diff and runtime rows are complete.",
+    }),
+  ],
   cardview: [
     assertedDefaultState({
       slug: "cardview",
-      note: "CardView default visual evidence exists for both sides and compared with an asserted threshold; virtualization, selection styles, loading, keyboard, and strict pair-diff coverage remain open.",
+      note: "CardView default visual evidence covers the official CardView plus Card Content/Text slot composition and source-backed size, density, variant, layout, and highlight-selection defaults; virtualization/waterfall, loading, drag/drop, and strict pair-diff coverage remain open.",
     }),
     {
       id: "styled.selection.single",

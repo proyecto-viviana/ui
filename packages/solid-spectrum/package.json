@@ -52,6 +52,18 @@
       "import": "./dist/Calendar.js",
       "default": "./dist/Calendar.js"
     },
+    "./Card": {
+      "types": "./dist/Card.d.ts",
+      "solid": "./src/Card.ts",
+      "import": "./dist/Card.js",
+      "default": "./dist/Card.js"
+    },
+    "./CardView": {
+      "types": "./dist/CardView.d.ts",
+      "solid": "./src/CardView.ts",
+      "import": "./dist/CardView.js",
+      "default": "./dist/CardView.js"
+    },
     "./RangeCalendar": {
       "types": "./dist/RangeCalendar.d.ts",
       "solid": "./src/RangeCalendar.ts",

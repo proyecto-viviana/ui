@@ -9,7 +9,6 @@
  */
 
 import {
-  type Accessor,
   type JSX,
   createContext,
   createEffect,
@@ -63,6 +62,17 @@ import {
   useRenderDropIndicator,
 } from "./DragAndDrop";
 
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
+
 export interface GridListRenderProps {
   /** Whether the grid list has focus. */
   isFocused: boolean;
@@ -86,6 +96,8 @@ export interface GridListProps<T extends object>
   getDisabled?: (item: T) => boolean;
   /** The selection mode. */
   selectionMode?: "none" | "single" | "multiple";
+  /** How selection should behave when pressing an item. */
+  selectionBehavior?: "replace" | "toggle";
   /** Keys of disabled items. */
   disabledKeys?: Iterable<Key>;
   /** Currently selected keys (controlled). */
@@ -100,6 +112,8 @@ export interface GridListProps<T extends object>
   class?: ClassNameOrFunction<GridListRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<GridListRenderProps>;
+  /** Ref for the grid list root element. */
+  ref?: RefLike<HTMLDivElement>;
   /** A function to render when the grid list is empty. */
   renderEmptyState?: () => JSX.Element;
   /** Whether there are more items to load. */
@@ -125,12 +139,16 @@ export interface GridListItemRenderProps {
   isHovered: boolean;
   /** Whether the item is disabled. */
   isDisabled: boolean;
+  /** The grid list selection mode. */
+  selectionMode: "none" | "single" | "multiple";
+  /** How selection behaves when pressing an item. */
+  selectionBehavior: "replace" | "toggle";
 }
 
 export interface GridListItemProps<T extends object>
   extends
     SlotProps,
-    Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children" | "id"> {
+    Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children" | "id" | "ref"> {
   /** The unique key for the item. */
   id: Key;
   /** The item value. */
@@ -145,6 +163,8 @@ export interface GridListItemProps<T extends object>
   textValue?: string;
   /** Handler called when the item is activated. */
   onAction?: () => void;
+  /** Ref for the rendered row element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface GridListLoadMoreItemProps extends SlotProps {
@@ -168,6 +188,7 @@ interface GridListContextValue<T extends object> {
   state: GridState<T, GridCollection<T>>;
   collection: GridCollection<T>;
   isDisabled: boolean;
+  selectionBehavior: "replace" | "toggle";
   dragAndDropHooks?: DragAndDropHooks<T>;
   dragState?: unknown;
   dropState?: unknown;
@@ -267,6 +288,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "children",
       "class",
       "style",
+      "ref",
       "slot",
       "renderEmptyState",
       "hasMore",
@@ -284,10 +306,11 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "selectedKeys",
       "defaultSelectedKeys",
       "onSelectionChange",
+      "selectionBehavior",
     ],
   );
 
-  const [ref, setRef] = createSignal<HTMLUListElement | null>(null);
+  const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
 
   const collection = createMemo(() =>
     buildGridCollection(
@@ -320,6 +343,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     collection: collection(),
     disabledKeys: allDisabledKeys(),
     selectionMode: stateProps.selectionMode,
+    selectionBehavior: stateProps.selectionBehavior,
     selectedKeys: stateProps.selectedKeys,
     defaultSelectedKeys: stateProps.defaultSelectedKeys,
     onSelectionChange: stateProps.onSelectionChange,
@@ -334,6 +358,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       isVirtualized: ariaProps.isVirtualized,
       onAction: ariaProps.onAction,
       isDisabled: ariaProps.isDisabled,
+      selectionBehavior: stateProps.selectionBehavior,
     }),
     () => state,
     ref,
@@ -544,6 +569,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     state,
     collection: collection(),
     isDisabled: ariaProps.isDisabled ?? false,
+    selectionBehavior: stateProps.selectionBehavior ?? "replace",
     dragAndDropHooks: local.dragAndDropHooks,
     dragState: dragState(),
     dropState: dropState(),
@@ -563,7 +589,10 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       >
         <CollectionRendererContext.Provider value={collectionRenderer()}>
           <div
-            ref={setRef}
+            ref={(element) => {
+              setRef(element);
+              assignRef(local.ref, element);
+            }}
             {...mergeProps(
               domProps(),
               cleanGridProps(),
@@ -644,6 +673,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     "textValue",
     "onAction",
     "children",
+    "ref",
   ]);
 
   const context = useContext(GridListStateContext);
@@ -676,9 +706,10 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     () => ({
       node: itemNode(),
       onAction: local.onAction,
+      selectionBehavior: listContext?.selectionBehavior ?? "replace",
     }),
     () => state,
-    ref as Accessor<HTMLLIElement | null>,
+    ref,
   );
   const isSelected = () => itemAria.isSelected;
   const isDisabled = () => itemAria.isDisabled;
@@ -722,6 +753,8 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     isPressed: isPressed(),
     isHovered: isHovered(),
     isDisabled: isDisabled(),
+    selectionMode: state.selectionMode,
+    selectionBehavior: listContext?.selectionBehavior ?? "replace",
   }));
 
   const renderProps = useRenderProps(
@@ -749,7 +782,10 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
 
   return (
     <div
-      ref={setRef}
+      ref={(element) => {
+        setRef(element);
+        assignRef(local.ref, element);
+      }}
       {...domProps}
       {...mergeProps(
         cleanRowProps(),
@@ -777,7 +813,13 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
 /**
  * A checkbox for item selection in a grid list.
  */
-export function GridListSelectionCheckbox(props: { itemKey: Key }): JSX.Element {
+export function GridListSelectionCheckbox(props: {
+  itemKey: Key;
+  class?: string;
+  style?: JSX.CSSProperties;
+  excludeFromTabOrder?: boolean;
+  "aria-label"?: string;
+}): JSX.Element {
   const context = useContext(GridListStateContext);
   if (!context) {
     throw new Error("GridListSelectionCheckbox must be used within a GridList");
@@ -790,7 +832,15 @@ export function GridListSelectionCheckbox(props: { itemKey: Key }): JSX.Element 
     () => state,
   );
 
-  return <input {...checkboxAria.checkboxProps} />;
+  return (
+    <input
+      {...checkboxAria.checkboxProps}
+      class={props.class}
+      style={props.style}
+      tabIndex={props.excludeFromTabOrder ? -1 : undefined}
+      aria-label={props["aria-label"] ?? "Select"}
+    />
+  );
 }
 
 export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Element {

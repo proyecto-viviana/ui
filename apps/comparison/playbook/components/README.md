@@ -29,7 +29,7 @@ normalized to the current gate checklist.
   Link, Meter, NotificationBadge, RangeCalendar, SegmentedControl,
   SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
 - Active current-gate pass: none.
-- Comparison-live with explicit release-hardening backfill gaps: none.
+- Comparison-live with explicit release-hardening backfill gaps: Card/CardView.
 - Pre-pass only: none.
 
 Current-gate normalization means the note contains the current
@@ -53,6 +53,7 @@ partial if any gate remains unresolved.
 - [Button](./button-validation-notes.md)
 - [Button family](./button-family-validation-notes.md)
 - [Calendar](./calendar-validation-notes.md)
+- [Card/CardView](./card-cardview-validation-notes.md)
 - [Checkbox](./checkbox-validation-notes.md)
 - [CheckboxGroup](./checkboxgroup-validation-notes.md)
 - [ComboBox](./combobox-validation-notes.md)

@@ -15,6 +15,8 @@ import type { AriaGridListProps, GridListAria } from "./types";
 interface GridListData {
   /** The generated ID for the grid list. */
   gridListId: string;
+  /** How selection should behave when pressing an item. */
+  selectionBehavior: "replace" | "toggle";
   /** Actions registered for the grid list. */
   actions: {
     onAction?: (key: Key) => void;
@@ -41,7 +43,7 @@ export function getGridListData<T extends object, C extends GridCollection<T>>(
 export function createGridList<T extends object, C extends GridCollection<T> = GridCollection<T>>(
   props: Accessor<AriaGridListProps>,
   state: Accessor<GridState<T, C>>,
-  _ref: Accessor<HTMLUListElement | null>,
+  _ref: Accessor<HTMLElement | null>,
 ): GridListAria {
   // Generate a unique ID for the grid list
   const gridListId = props().id ?? createId();
@@ -49,6 +51,9 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
   // Store grid list data for child components
   const gridListData: GridListData = {
     gridListId,
+    get selectionBehavior() {
+      return props().selectionBehavior ?? "replace";
+    },
     actions: {
       get onAction() {
         return props().onAction;
@@ -190,7 +195,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       baseProps["aria-rowcount"] = s.collection.rowCount;
     }
 
-    return baseProps as JSX.HTMLAttributes<HTMLUListElement>;
+    return baseProps as JSX.HTMLAttributes<HTMLElement>;
   });
 
   return {
