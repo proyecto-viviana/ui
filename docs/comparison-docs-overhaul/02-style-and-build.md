@@ -50,11 +50,32 @@ populate the registry; the script then flushes the registry to disk. The
 comparison app consumes this CSS by importing `solid-spectrum`'s built
 `dist/*.css` artifacts.
 
-**Gap to note:** the generation script's import list does **not** include
-`disclosure`, `table`, `card`, or `tabs`. The docs chrome needs `Disclosure`
-(nav) and `Table` (prop tables); their CSS is not in the current
-`s2-generated.css`. The generation script must be extended, or the chrome must
-collect its own CSS (next section).
+### 2a. Defect found: missing component CSS in the shipped package
+
+This is a **pre-existing bug in `solid-spectrum` itself**, not a docs-tooling
+detail. Verified facts:
+
+- `disclosure/index.tsx` produces all its styling from 7 runtime `style()`
+  calls and imports **no** static `.css`. `accordion` re-uses `disclosure`.
+- The package ships 4 CSS files, but `theme.css` / `styles.css` /
+  `components.css` are one-line `@import` chains that all resolve to
+  `s2-generated.css` — so that single file is the entire stylesheet.
+- `generate-solid-spectrum-s2-css.ts` imports ~18 modules; its list **excludes**
+  `disclosure`, `accordion`, `table`, `card`, and `tabs`, and none of the 18
+  transitively import them.
+
+Consequence: those components' CSS never reaches `s2-generated.css`, so any
+consumer importing them with `components.css` gets an **unstyled** component —
+including the comparison app's own `accordion` entry today.
+
+Impact on the overhaul: the chrome dogfoods `Disclosure` (nav) and `Table`
+(prop tables), so this must be fixed regardless. The fix is mechanical — add the
+missing modules to the generator's import list — but the team should **run the
+generator and diff** to confirm there is no transitive pull missed and that the
+collected CSS is complete. This likely also explains part of why
+`CURRENT_STATUS.md` flags Disclosure/Tabs as "missing or blocked" styled
+entries (see [`05-phasing.md`](05-phasing.md) risk register). Confidence: high
+on the omission (directly verified); not yet confirmed by running the generator.
 
 ## 3. Recommended CSS pipeline for the chrome
 

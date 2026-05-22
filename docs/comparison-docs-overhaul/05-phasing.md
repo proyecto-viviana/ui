@@ -16,8 +16,15 @@ Each phase is independently shippable and leaves the app working.
   `docs/CURRENT_STATUS.md` to match.
 - Prototype one chrome `style()` call end-to-end (author → generate CSS →
   render in Astro) to confirm [`02`](02-style-and-build.md) approach A.
+- **Fix the `solid-spectrum` CSS defect** ([`02`](02-style-and-build.md) §2a):
+  add `disclosure`/`accordion`/`table`/`card`/`tabs` to
+  `scripts/generate-solid-spectrum-s2-css.ts`, regenerate `s2-generated.css`,
+  and diff to confirm the components are now styled. This is a `solid-spectrum`
+  change, separate from the comparison-app overhaul, and a prerequisite for the
+  chrome.
 
-Exit: ADR updated; style + SSR approach proven on a throwaway branch.
+Exit: ADR updated; style + SSR approach proven on a throwaway branch;
+`solid-spectrum` CSS defect fixed and verified.
 
 ### Phase 1 — Chrome shell
 
@@ -74,16 +81,17 @@ Exit: no hand-written S2-surface CSS remains; reports and suites green.
 
 ## Risk register
 
-| Risk                                                                      | Severity | Mitigation                                                                         |
-| ------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------- |
-| Chrome `style()` CSS not collected / FOUC                                 | Med      | Approach A build step ([`02`](02-style-and-build.md) §3); prove in Phase 0.        |
-| `Disclosure`/`Table`/`Card` CSS absent from `s2-generated.css`            | Med      | Extend the generation import list; verified gap.                                   |
-| Prop-metadata extraction larger than expected                             | High     | Isolated as Phase 4; `PropTable` degrades gracefully to `apiProps`.                |
-| Solid SSR + selective hydration friction in Astro                         | Med      | Integration already present; per-region `client:*` decisions in Phase 1.           |
-| Upstream MDX uses RSC-only constructs (`docs:` import, server components) | Med      | Migration script strips/replaces them; pilot in Phase 2 surfaces edge cases early. |
-| Two component libraries (React + Solid) bundled — build weight            | Low      | Already the case today; `astro.config` warning policy tuned.                       |
-| Visual drift from upstream over time                                      | Low      | Keep upstream `s2-docs` vendored; periodic diff.                                   |
-| e2e/visual specs assert on `.s2-*` selectors                              | Med      | Phase 6 selector migration; inventory specs before deleting CSS.                   |
+| Risk                                                                                                                       | Severity | Mitigation                                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chrome `style()` CSS not collected / FOUC                                                                                  | Med      | Approach A build step ([`02`](02-style-and-build.md) §3); prove in Phase 0.                                                                                                    |
+| **`solid-spectrum` defect:** `Disclosure`/`Accordion`/`Table`/`Card`/`Tabs` CSS absent from the shipped `s2-generated.css` | High     | Extend the generator's import list; **fix in solid-spectrum, not the app**. Verified omission; confirm by running the generator + diff. See [`02`](02-style-and-build.md) §2a. |
+| Chrome depends on Disclosure/Table, which `CURRENT_STATUS.md` flags as not-yet-parity styled components                    | Med      | Pre-existing tracked WIP; chrome fidelity is gated on those components reaching parity. Dogfooding will surface their bugs early.                                              |
+| Prop-metadata extraction larger than expected                                                                              | High     | Isolated as Phase 4; `PropTable` degrades gracefully to `apiProps`.                                                                                                            |
+| Solid SSR + selective hydration friction in Astro                                                                          | Med      | Integration already present; per-region `client:*` decisions in Phase 1.                                                                                                       |
+| Upstream MDX uses RSC-only constructs (`docs:` import, server components)                                                  | Med      | Migration script strips/replaces them; pilot in Phase 2 surfaces edge cases early.                                                                                             |
+| Two component libraries (React + Solid) bundled — build weight                                                             | Low      | Already the case today; `astro.config` warning policy tuned.                                                                                                                   |
+| Visual drift from upstream over time                                                                                       | Low      | Keep upstream `s2-docs` vendored; periodic diff.                                                                                                                               |
+| e2e/visual specs assert on `.s2-*` selectors                                                                               | Med      | Phase 6 selector migration; inventory specs before deleting CSS.                                                                                                               |
 
 ## Open questions (Phase 0)
 
