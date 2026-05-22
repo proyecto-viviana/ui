@@ -720,7 +720,7 @@ class HSLColorImpl implements Color {
       return { style: "percent" };
     }
     if (channel === "hue") {
-      return { maximumFractionDigits: 0 };
+      return { style: "unit", unit: "degree", unitDisplay: "narrow", maximumFractionDigits: 0 };
     }
     return { style: "percent", maximumFractionDigits: 0 };
   }
@@ -893,7 +893,7 @@ class HSBColorImpl implements Color {
       return { style: "percent" };
     }
     if (channel === "hue") {
-      return { maximumFractionDigits: 0 };
+      return { style: "unit", unit: "degree", unitDisplay: "narrow", maximumFractionDigits: 0 };
     }
     return { style: "percent", maximumFractionDigits: 0 };
   }

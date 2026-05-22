@@ -95,10 +95,16 @@ export interface ColorSliderRenderProps {
   isDragging: boolean;
   /** The color channel being controlled. */
   channel: ColorChannel;
+  /** The slider orientation. */
+  orientation: "horizontal" | "vertical";
   /** The current value. */
   value: number;
+  /** The formatted current value. */
+  valueLabel: string;
   /** The current color. */
   color: Color;
+  /** The default inline styles applied by the color slider hook. */
+  defaultStyle: JSX.CSSProperties;
 }
 
 export interface ColorSliderProps extends Omit<AriaColorSliderOptions, "channel">, SlotProps {
@@ -110,6 +116,8 @@ export interface ColorSliderProps extends Omit<AriaColorSliderOptions, "channel"
   onChange?: (color: Color) => void;
   /** Handler called when dragging ends. */
   onChangeEnd?: (color: Color) => void;
+  /** Color space used for channel values. */
+  colorSpace?: ColorSpace;
   /** The color channel to control. */
   channel: ColorChannel;
   /** A visible label for the slider. */
@@ -127,6 +135,10 @@ export interface ColorSliderTrackRenderProps {
   isDisabled: boolean;
   /** Whether the slider is being dragged. */
   isDragging: boolean;
+  /** The slider orientation. */
+  orientation: "horizontal" | "vertical";
+  /** The default inline styles applied by the color slider hook. */
+  defaultStyle: JSX.CSSProperties;
 }
 
 export interface ColorSliderTrackProps extends SlotProps {
@@ -136,6 +148,24 @@ export interface ColorSliderTrackProps extends SlotProps {
   class?: ClassNameOrFunction<ColorSliderTrackRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ColorSliderTrackRenderProps>;
+}
+
+export interface ColorSliderLabelProps extends SlotProps {
+  /** The label contents. */
+  children?: JSX.Element;
+  /** The CSS className for the element. */
+  class?: string;
+  /** The inline style for the element. */
+  style?: JSX.CSSProperties;
+}
+
+export interface ColorSliderOutputProps extends SlotProps {
+  /** The output contents. Defaults to the formatted slider value. */
+  children?: JSX.Element | ((renderProps: ColorSliderRenderProps) => JSX.Element);
+  /** The CSS className for the element. */
+  class?: string;
+  /** The inline style for the element. */
+  style?: JSX.CSSProperties;
 }
 
 export interface ColorSliderThumbRenderProps {
@@ -149,6 +179,10 @@ export interface ColorSliderThumbRenderProps {
   isFocusVisible: boolean;
   /** Whether the thumb is hovered. */
   isHovered: boolean;
+  /** The current display color. */
+  color: Color;
+  /** The default inline styles applied by the color slider hook. */
+  defaultStyle: JSX.CSSProperties;
 }
 
 export interface ColorSliderThumbProps extends SlotProps {
@@ -158,6 +192,8 @@ export interface ColorSliderThumbProps extends SlotProps {
   class?: ClassNameOrFunction<ColorSliderThumbRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ColorSliderThumbRenderProps>;
+  /** Ref callback for the thumb element. */
+  ref?: (element: HTMLDivElement) => void;
 }
 
 interface ColorSliderContextValue {
@@ -165,8 +201,11 @@ interface ColorSliderContextValue {
   trackProps: JSX.HTMLAttributes<HTMLDivElement>;
   thumbProps: JSX.HTMLAttributes<HTMLDivElement>;
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  outputProps: JSX.HTMLAttributes<HTMLOutputElement>;
+  labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   trackRef: HTMLDivElement | undefined;
   setTrackRef: (el: HTMLDivElement) => void;
+  setInputRef: (el: HTMLInputElement) => void;
 }
 
 export const ColorSliderContext = createContext<ColorSliderContextValue | null>(null);
@@ -179,8 +218,19 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
   const [local, stateProps, ariaProps, rest] = splitProps(
     props,
     ["children", "class", "style", "slot", "label"],
-    ["value", "defaultValue", "onChange", "onChangeEnd", "channel"],
-    ["aria-label", "aria-labelledby", "aria-describedby", "isDisabled", "channelName"],
+    ["value", "defaultValue", "onChange", "onChangeEnd", "channel", "colorSpace"],
+    [
+      "id",
+      "aria-label",
+      "aria-labelledby",
+      "aria-describedby",
+      "aria-details",
+      "isDisabled",
+      "name",
+      "form",
+      "orientation",
+      "channelName",
+    ],
   );
 
   // Create color slider state
@@ -190,6 +240,8 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
     onChange: stateProps.onChange ?? pickerContext?.onChange,
     onChangeEnd: stateProps.onChangeEnd,
     channel: stateProps.channel,
+    colorSpace: stateProps.colorSpace,
+    orientation: ariaProps.orientation,
     isDisabled: ariaProps.isDisabled,
   }));
 
@@ -197,27 +249,41 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
   const setTrackRef = (el: HTMLDivElement) => {
     trackRef = el;
   };
+  let inputRef: HTMLInputElement | undefined;
+  const setInputRef = (el: HTMLInputElement) => {
+    inputRef = el;
+  };
 
   // Create color slider aria props
-  const { trackProps, thumbProps, inputProps, labelProps } = createColorSlider(
+  const colorSliderAria = createColorSlider(
     () => ({
+      id: ariaProps.id,
       channel: stateProps.channel,
+      label: local.label,
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
+      "aria-details": ariaProps["aria-details"],
       isDisabled: ariaProps.isDisabled,
+      name: ariaProps.name,
+      form: ariaProps.form,
+      orientation: ariaProps.orientation,
       channelName: ariaProps.channelName,
     }),
     () => state,
     () => trackRef ?? null,
+    () => inputRef ?? null,
   );
 
   const renderValues = createMemo<ColorSliderRenderProps>(() => ({
     isDisabled: state.isDisabled,
     isDragging: state.isDragging,
     channel: state.channel,
+    orientation: state.orientation,
     value: state.getThumbValue(),
+    valueLabel: state.getThumbValueLabel(),
     color: state.value,
+    defaultStyle: (colorSliderAria.trackProps as { style?: JSX.CSSProperties }).style ?? {},
   }));
 
   const renderProps = useRenderProps(
@@ -238,11 +304,26 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
     <ColorSliderContext.Provider
       value={{
         state,
-        trackProps,
-        thumbProps,
-        inputProps,
-        trackRef,
+        get trackProps() {
+          return colorSliderAria.trackProps;
+        },
+        get thumbProps() {
+          return colorSliderAria.thumbProps;
+        },
+        get inputProps() {
+          return colorSliderAria.inputProps;
+        },
+        get outputProps() {
+          return colorSliderAria.outputProps;
+        },
+        get labelProps() {
+          return colorSliderAria.labelProps;
+        },
+        get trackRef() {
+          return trackRef;
+        },
         setTrackRef,
+        setInputRef,
       }}
     >
       <div
@@ -251,15 +332,71 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
         style={renderProps.style()}
         data-disabled={state.isDisabled || undefined}
         data-dragging={state.isDragging || undefined}
-        data-channel={state.channel}
+        data-orientation={state.orientation}
+        slot={local.slot || undefined}
       >
-        <Show when={local.label}>
-          <label {...labelProps}>{local.label}</label>
-        </Show>
-
         {renderProps.renderChildren()}
       </div>
     </ColorSliderContext.Provider>
+  );
+}
+
+/**
+ * The label element of a color slider.
+ */
+export function ColorSliderLabel(props: ColorSliderLabelProps): JSX.Element {
+  const [local, domProps] = splitProps(props, ["class", "slot", "children"]);
+
+  const context = useContext(ColorSliderContext);
+  if (!context) {
+    throw new Error("ColorSliderLabel must be used within a ColorSlider");
+  }
+
+  const labelProps = () => {
+    const { ref: _ref, ...rest } = context.labelProps as Record<string, unknown>;
+    return rest;
+  };
+
+  return (
+    <label {...domProps} {...labelProps()} class={local.class}>
+      {local.children}
+    </label>
+  );
+}
+
+/**
+ * The output element of a color slider.
+ */
+export function ColorSliderOutput(props: ColorSliderOutputProps): JSX.Element {
+  const [local, domProps] = splitProps(props, ["class", "slot", "children"]);
+
+  const context = useContext(ColorSliderContext);
+  if (!context) {
+    throw new Error("ColorSliderOutput must be used within a ColorSlider");
+  }
+
+  const state = context.state;
+
+  const renderValues = createMemo<ColorSliderRenderProps>(() => ({
+    isDisabled: state.isDisabled,
+    isDragging: state.isDragging,
+    channel: state.channel,
+    orientation: state.orientation,
+    value: state.getThumbValue(),
+    valueLabel: state.getThumbValueLabel(),
+    color: state.value,
+    defaultStyle: (context.trackProps as { style?: JSX.CSSProperties }).style ?? {},
+  }));
+
+  const children = () =>
+    typeof local.children === "function"
+      ? local.children(renderValues())
+      : (local.children ?? renderValues().valueLabel);
+
+  return (
+    <output {...domProps} {...context.outputProps} class={local.class}>
+      {children()}
+    </output>
   );
 }
 
@@ -274,11 +411,13 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
     throw new Error("ColorSliderTrack must be used within a ColorSlider");
   }
 
-  const { state, trackProps, setTrackRef } = context;
+  const state = context.state;
 
   const renderValues = createMemo<ColorSliderTrackRenderProps>(() => ({
     isDisabled: state.isDisabled,
     isDragging: state.isDragging,
+    orientation: state.orientation,
+    defaultStyle: (context.trackProps as { style?: JSX.CSSProperties }).style ?? {},
   }));
 
   const renderProps = useRenderProps(
@@ -292,12 +431,16 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
   );
 
   const cleanTrackProps = () => {
-    const { ref: _ref, style: _trackStyle, ...rest } = trackProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _trackStyle,
+      ...rest
+    } = context.trackProps as Record<string, unknown>;
     return rest;
   };
 
   const mergedStyle = () => {
-    const trackStyle = (trackProps as { style?: Record<string, string> }).style || {};
+    const trackStyle = (context.trackProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...trackStyle, ...renderStyle };
   };
@@ -305,12 +448,13 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
   return (
     <div
       {...domProps}
-      ref={setTrackRef}
+      ref={context.setTrackRef}
       {...cleanTrackProps()}
       class={renderProps.class()}
       style={mergedStyle()}
       data-disabled={state.isDisabled || undefined}
       data-dragging={state.isDragging || undefined}
+      data-orientation={state.orientation}
     >
       {renderProps.renderChildren()}
     </div>
@@ -321,14 +465,14 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
  * The thumb element of a color slider.
  */
 export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children", "ref"]);
 
   const context = useContext(ColorSliderContext);
   if (!context) {
     throw new Error("ColorSliderThumb must be used within a ColorSlider");
   }
 
-  const { state, thumbProps, inputProps } = context;
+  const state = context.state;
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
@@ -344,6 +488,8 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
+    color: state.getDisplayColor(),
+    defaultStyle: (context.thumbProps as { style?: JSX.CSSProperties }).style ?? {},
   }));
 
   const renderProps = useRenderProps(
@@ -357,7 +503,11 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
   );
 
   const cleanThumbProps = () => {
-    const { ref: _ref, style: _thumbStyle, ...rest } = thumbProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _thumbStyle,
+      ...rest
+    } = context.thumbProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -370,13 +520,13 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
   };
   const mergedInputProps = () => {
     return mergeProps(
-      inputProps as Record<string, unknown>,
+      context.inputProps as Record<string, unknown>,
       cleanFocusProps(),
     ) as JSX.InputHTMLAttributes<HTMLInputElement>;
   };
 
   const mergedStyle = () => {
-    const thumbStyle = (thumbProps as { style?: Record<string, string> }).style || {};
+    const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...thumbStyle, ...renderStyle };
   };
@@ -386,6 +536,7 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
       {...domProps}
       {...cleanThumbProps()}
       {...cleanHoverProps()}
+      ref={local.ref}
       class={renderProps.class()}
       style={mergedStyle()}
       data-disabled={state.isDisabled || undefined}
@@ -394,7 +545,7 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
       data-focus-visible={isFocusVisible() || undefined}
       data-hovered={isHovered() || undefined}
     >
-      <input {...mergedInputProps()} />
+      <input ref={context.setInputRef} {...mergedInputProps()} />
       {renderProps.renderChildren()}
     </div>
   );
@@ -402,6 +553,8 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
 
 ColorSlider.Track = ColorSliderTrack;
 ColorSlider.Thumb = ColorSliderThumb;
+ColorSlider.Label = ColorSliderLabel;
+ColorSlider.Output = ColorSliderOutput;
 
 export interface ColorAreaRenderProps {
   /** Whether the area is disabled. */

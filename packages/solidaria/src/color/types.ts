@@ -6,14 +6,26 @@ import type { JSX } from "solid-js";
 import type { ColorChannel, Color, ColorSpace } from "@proyecto-viviana/solid-stately";
 
 export interface AriaColorSliderOptions {
+  /** Element id for the slider track group. */
+  id?: string;
   /** The channel this slider controls. */
   channel: ColorChannel;
+  /** Visible label content, used to connect custom labels with the slider. */
+  label?: JSX.Element;
   /** Accessible label for the slider. */
   "aria-label"?: string;
   /** ID of element that labels the slider. */
   "aria-labelledby"?: string;
   /** ID of element that describes the slider. */
   "aria-describedby"?: string;
+  /** ID of element that provides detailed information about the slider. */
+  "aria-details"?: string;
+  /** Name for the hidden range input. */
+  name?: string;
+  /** Associated form owner for the hidden range input. */
+  form?: string;
+  /** The slider orientation. */
+  orientation?: "horizontal" | "vertical";
   /** Whether the slider is disabled. */
   isDisabled?: boolean;
   /** Localized channel name. */

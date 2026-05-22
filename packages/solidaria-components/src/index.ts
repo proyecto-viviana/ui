@@ -781,6 +781,8 @@ export {
 
 export {
   ColorSlider,
+  ColorSliderLabel,
+  ColorSliderOutput,
   ColorSliderTrack,
   ColorSliderThumb,
   ColorThumb,
@@ -788,6 +790,8 @@ export {
   ColorSliderStateContext,
   type ColorSliderProps,
   type ColorSliderRenderProps,
+  type ColorSliderLabelProps,
+  type ColorSliderOutputProps,
   type ColorSliderTrackProps,
   type ColorSliderTrackRenderProps,
   type ColorSliderThumbProps,

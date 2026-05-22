@@ -4,8 +4,10 @@
  */
 
 import { createSignal, createMemo, type Accessor } from "solid-js";
-import type { Color, ColorChannel } from "./types";
+import type { Color, ColorChannel, ColorSpace } from "./types";
 import { normalizeColor } from "./Color";
+
+export type ColorSliderOrientation = "horizontal" | "vertical";
 
 export interface ColorSliderStateOptions {
   /** The current color value (controlled). */
@@ -18,6 +20,10 @@ export interface ColorSliderStateOptions {
   onChangeEnd?: (color: Color) => void;
   /** The color channel this slider controls. */
   channel: ColorChannel;
+  /** The color space to use for channel values. */
+  colorSpace?: ColorSpace;
+  /** The slider orientation. */
+  orientation?: ColorSliderOrientation;
   /** Whether the slider is disabled. */
   isDisabled?: boolean;
   /** The locale for formatting. */
@@ -31,6 +37,8 @@ export interface ColorSliderState {
   readonly isDragging: boolean;
   /** The color channel being controlled. */
   readonly channel: ColorChannel;
+  /** The slider orientation. */
+  readonly orientation: ColorSliderOrientation;
   /** The step value for the channel. */
   readonly step: number;
   /** The page step value for the channel. */
@@ -74,6 +82,12 @@ export function createColorSliderState(
 ): ColorSliderState {
   const getOptions = () => options();
 
+  const normalizeValue = (value: Color | string) => {
+    const color = normalizeColor(value);
+    const colorSpace = getOptions().colorSpace;
+    return colorSpace ? color.toFormat(colorSpace) : color;
+  };
+
   // Internal value state
   const [internalValue, setInternalValue] = createSignal<Color | null>(null);
   const [isDragging, setIsDragging] = createSignal(false);
@@ -82,7 +96,7 @@ export function createColorSliderState(
   const initValue = () => {
     const opts = getOptions();
     if (opts.defaultValue) {
-      return normalizeColor(opts.defaultValue);
+      return normalizeValue(opts.defaultValue);
     }
     return null;
   };
@@ -99,12 +113,16 @@ export function createColorSliderState(
   const value = createMemo(() => {
     const opts = getOptions();
     if (opts.value !== undefined) {
-      return normalizeColor(opts.value);
+      return normalizeValue(opts.value);
     }
-    return internalValue() ?? normalizeColor("#ff0000");
+    const fallback = internalValue() ?? normalizeValue("#ff0000");
+    return opts.colorSpace ? fallback.toFormat(opts.colorSpace) : fallback;
   });
 
   const channel = createMemo(() => getOptions().channel);
+  const orientation = createMemo<ColorSliderOrientation>(
+    () => getOptions().orientation ?? "horizontal",
+  );
   const isDisabled = createMemo(() => getOptions().isDisabled ?? false);
   const locale = createMemo(() => getOptions().locale ?? "en-US");
 
@@ -119,16 +137,17 @@ export function createColorSliderState(
   // Update value
   const updateValue = (newColor: Color) => {
     const opts = getOptions();
+    const nextColor = opts.colorSpace ? newColor.toFormat(opts.colorSpace) : newColor;
 
     // Controlled mode
     if (opts.value !== undefined) {
-      opts.onChange?.(newColor);
+      opts.onChange?.(nextColor);
       return;
     }
 
     // Uncontrolled mode
-    setInternalValue(newColor);
-    opts.onChange?.(newColor);
+    setInternalValue(nextColor);
+    opts.onChange?.(nextColor);
   };
 
   // Get thumb value
@@ -150,8 +169,14 @@ export function createColorSliderState(
 
   // Set thumb value
   const setThumbValue = (newValue: number) => {
-    const clamped = Math.max(minValue(), Math.min(maxValue(), newValue));
-    const rounded = Math.round(clamped / step()) * step();
+    const min = minValue();
+    const max = maxValue();
+    const stepValue = step();
+    const clamped = Math.max(min, Math.min(max, newValue));
+    const precision = `${stepValue}`.split(".")[1]?.length ?? 0;
+    const rounded = Number(
+      (Math.round((clamped - min) / stepValue) * stepValue + min).toFixed(precision),
+    );
     const newColor = value().withChannelValue(channel(), rounded);
     updateValue(newColor);
   };
@@ -190,6 +215,9 @@ export function createColorSliderState(
   // Get display color (alpha = 1)
   const getDisplayColor = () => {
     const v = value();
+    if (channel() === "hue") {
+      return normalizeColor(`hsl(${v.getChannelValue("hue")}, 100%, 50%)`);
+    }
     return v.withChannelValue("alpha", 1);
   };
 
@@ -210,6 +238,9 @@ export function createColorSliderState(
     },
     get channel() {
       return channel();
+    },
+    get orientation() {
+      return orientation();
     },
     get step() {
       return step();

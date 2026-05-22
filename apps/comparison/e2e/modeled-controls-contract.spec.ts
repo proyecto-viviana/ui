@@ -50,6 +50,20 @@ const colorAreaTextControlValues: Record<string, string> = {
   slot: "color",
 };
 
+const colorSliderTextControlValues: Record<string, string> = {
+  ariaLabel: "Contract color slider",
+  ariaLabelledBy: "colorslider-labelledby",
+  ariaDescribedBy: "colorslider-describedby",
+  ariaDetails: "colorslider-details",
+  label: "Hue channel",
+  value: "hsl(80, 100%, 50%)",
+  defaultValue: "hsl(200, 100%, 50%)",
+  name: "hueChannel",
+  form: "colorForm",
+  id: "contract-colorslider",
+  slot: "color",
+};
+
 const colorFieldTextControlValues: Record<string, string> = {
   ariaLabel: "Contract color field",
   ariaLabelledBy: "colorfield-labelledby",
@@ -145,6 +159,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "colorarea" && control.name in colorAreaTextControlValues) {
       return colorAreaTextControlValues[control.name];
+    }
+    if (group.slug === "colorslider" && control.name in colorSliderTextControlValues) {
+      return colorSliderTextControlValues[control.name];
     }
     if (group.slug === "colorfield" && control.name in colorFieldTextControlValues) {
       return colorFieldTextControlValues[control.name];

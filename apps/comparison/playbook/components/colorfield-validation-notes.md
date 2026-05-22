@@ -189,5 +189,5 @@ No subagents were used for this component pass.
 - Dedicated assistive-technology transcript capture remains process-wide
   tooling debt; this pass includes semantic DOM, keyboard, and browser parity
   assertions but not a screen-reader transcript.
-- Other color components (`ColorSlider`, `ColorSwatch`, `ColorSwatchPicker`,
-  and `ColorWheel`) remain separate component passes.
+- Remaining color components (`ColorSwatch`, `ColorSwatchPicker`, and
+  `ColorWheel`) remain separate component passes.

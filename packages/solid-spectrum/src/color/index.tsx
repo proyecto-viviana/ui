@@ -11,10 +11,14 @@ import {
   Show,
 } from "solid-js";
 import { Portal } from "solid-js/web";
+import { useLocale } from "@proyecto-viviana/solidaria";
 import {
   ColorSlider as HeadlessColorSlider,
+  ColorSliderLabel as HeadlessColorSliderLabel,
+  ColorSliderOutput as HeadlessColorSliderOutput,
   ColorSliderTrack as HeadlessColorSliderTrack,
   ColorSliderThumb as HeadlessColorSliderThumb,
+  ColorSliderContext as HeadlessColorSliderContext,
   ColorArea as HeadlessColorArea,
   ColorAreaThumb as HeadlessColorAreaThumb,
   ColorAreaContext as HeadlessColorAreaContext,
@@ -58,6 +62,7 @@ import {
   fieldInput,
   fieldLabel,
   getAllowedOverrides,
+  type StylesProp,
   type StylesPropWithHeight,
   type UnsafeClassName,
 } from "../s2-internal/style-utils";
@@ -141,16 +146,129 @@ const sizeStyles = {
   },
 };
 
+interface ColorSliderStyleProps extends Partial<ColorSliderRenderProps> {}
+
+const colorSliderRoot = style<ColorSliderStyleProps>(
+  {
+    width: {
+      orientation: {
+        horizontal: 192,
+      },
+    },
+    height: {
+      orientation: {
+        vertical: 192,
+      },
+    },
+    display: {
+      orientation: {
+        horizontal: "grid",
+        vertical: "block",
+      },
+    },
+    gridTemplateColumns: ["1fr", "auto"],
+    gridTemplateAreas: ["label output", "track track"],
+    rowGap: 4,
+  },
+  getAllowedOverrides(),
+);
+
+const colorSliderLabelWrapper = style<ColorSliderStyleProps>({
+  gridArea: "label",
+  display: "inline",
+  cursor: {
+    default: "default",
+    isDisabled: "default",
+  },
+});
+
+const colorSliderLabel = style<ColorSliderStyleProps>({
+  ...fieldLabel(),
+});
+
+const colorSliderOutput = style<ColorSliderStyleProps>({
+  gridArea: "output",
+  font: controlFont(),
+  cursor: "default",
+  color: {
+    default: "neutral-subdued",
+    isDisabled: "disabled",
+  },
+});
+
+const colorSliderTrack = style<ColorSliderTrackRenderProps>({
+  gridArea: "track",
+  width: {
+    orientation: {
+      horizontal: "full",
+      vertical: 24,
+    },
+  },
+  height: {
+    orientation: {
+      horizontal: 24,
+      vertical: "full",
+    },
+  },
+  borderRadius: "default",
+  outlineColor: {
+    default: "gray-1000/10" as never,
+    forcedColors: "ButtonBorder",
+  },
+  outlineWidth: 1,
+  outlineOffset: -1,
+  outlineStyle: {
+    default: "solid",
+    isDisabled: "none",
+  },
+  backgroundColor: {
+    isDisabled: "disabled",
+  },
+});
+
+const colorSliderThumb = style<ColorSliderThumbRenderProps>({
+  transition: "[width, height]",
+  size: {
+    default: 16,
+    isFocusVisible: 32,
+  },
+  backgroundColor: {
+    isDisabled: "disabled",
+  },
+  borderRadius: "full",
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderWidth: 2,
+  borderColor: {
+    default: "white",
+    isDisabled: "disabled",
+  },
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: "black/42" as never,
+    forcedColors: "ButtonBorder",
+  },
+});
+
 export interface ColorSliderProps extends Omit<
   HeadlessColorSliderProps,
   "class" | "style" | "children"
 > {
-  /** The size of the color slider. */
-  size?: ColorSize;
-  /** Additional CSS class name. */
+  /** Spectrum-defined generated classes. */
+  styles?: StylesProp;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
-  /** Show the current value. */
+  /** Deprecated legacy size prop. ColorSlider uses the Spectrum 2 fixed track size. */
+  size?: ColorSize;
+  /** Deprecated legacy value visibility prop. Spectrum 2 shows horizontal output. */
   showValue?: boolean;
+  /** Contextual help shown next to the visible label. */
+  contextualHelp?: JSX.Element;
 }
 
 /**
@@ -169,85 +287,198 @@ export interface ColorSliderProps extends Omit<
  * ```
  */
 export function ColorSlider(props: ColorSliderProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["size", "class", "showValue"]);
+  const mergedProps = useProviderProps(useFormProps(props));
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "size",
+    "showValue",
+    "label",
+    "contextualHelp",
+  ]);
+  const locale = useLocale();
 
-  const size = () => local.size ?? "md";
-  const styles = () => sizeStyles[size()];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: ColorSliderRenderProps): string => {
-    const base = "flex flex-col gap-1.5";
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50";
-    }
-    return [base, stateClass, customClass].filter(Boolean).join(" ");
-  };
-
-  const contextValue = createMemo(() => ({ size: size() }));
+  const orientation = () => headlessProps.orientation ?? "horizontal";
+  const hasExplicitAriaLabel = () =>
+    Boolean(headlessProps["aria-label"] || headlessProps["aria-labelledby"]);
+  const hasVisibleLabel = () =>
+    orientation() === "horizontal" &&
+    (Boolean(local.label) || (local.label === undefined && !hasExplicitAriaLabel()));
+  const labelForAria = () => (hasVisibleLabel() ? (local.label ?? " ") : undefined);
+  const ariaLabel = () =>
+    headlessProps["aria-label"] ??
+    (orientation() === "vertical" && typeof local.label === "string" ? local.label : undefined);
 
   return (
-    <ColorSizeContext.Provider value={contextValue()}>
-      <HeadlessColorSlider {...headlessProps} class={getClassName}>
-        {(renderProps: ColorSliderRenderProps) => (
-          <>
-            <div class="flex items-center justify-between">
-              <Show when={headlessProps.label}>
-                <span class={`text-primary-200 font-medium ${styles().slider.label}`}>
-                  {headlessProps.label}
-                </span>
-              </Show>
-              <Show when={local.showValue}>
-                <span class={`text-primary-400 ${styles().slider.label}`}>
-                  {Math.round(renderProps.value)}
-                </span>
-              </Show>
+    <HeadlessColorSlider
+      {...headlessProps}
+      label={labelForAria()}
+      aria-label={ariaLabel()}
+      class={(renderProps: ColorSliderRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          colorSliderRoot(renderProps, mergeStyles(local.styles)),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={() => ({
+        "grid-template-areas": '"label output" "track track"',
+        ...local.UNSAFE_style,
+      })}
+    >
+      {(renderProps: ColorSliderRenderProps) => (
+        <>
+          <Show when={hasVisibleLabel()}>
+            <div class={colorSliderLabelWrapper(renderProps)} style={{ "grid-area": "label" }}>
+              <HeadlessColorSliderLabel class={colorSliderLabel(renderProps)}>
+                {local.label ??
+                  renderProps.color.getChannelName(renderProps.channel, locale().locale)}
+                <Show when={local.contextualHelp}>
+                  <span data-slot="contextualHelp">{local.contextualHelp}</span>
+                </Show>
+              </HeadlessColorSliderLabel>
             </div>
-            <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
-          </>
-        )}
-      </HeadlessColorSlider>
-    </ColorSizeContext.Provider>
+          </Show>
+          <Show when={renderProps.orientation === "horizontal"}>
+            <HeadlessColorSliderOutput
+              class={colorSliderOutput(renderProps)}
+              style={{ "grid-area": "output" }}
+            />
+          </Show>
+          <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
+        </>
+      )}
+    </HeadlessColorSlider>
   );
+}
+
+interface ColorSliderTrackProps {
+  /** The children of the track. */
+  children?: JSX.Element | ((renderProps: ColorSliderTrackRenderProps) => JSX.Element);
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
 }
 
 /**
  * The track component for a color slider.
  */
-export function ColorSliderTrack(props: {
-  children?: JSX.Element | (() => JSX.Element);
+function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+  ]);
+
+  return (
+    <HeadlessColorSliderTrack
+      {...headlessProps}
+      class={(renderProps: ColorSliderTrackRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          mergeStyles(colorSliderTrack(renderProps), local.styles),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={(renderProps: ColorSliderTrackRenderProps) => {
+        const background = renderProps.defaultStyle.background;
+        return {
+          "grid-area": "track",
+          background:
+            renderProps.isDisabled || !background
+              ? undefined
+              : `${background}, repeating-conic-gradient(#E1E1E1 0% 25%, white 0% 50%) 50% / 16px 16px`,
+          ...local.UNSAFE_style,
+        };
+      }}
+    >
+      {local.children}
+    </HeadlessColorSliderTrack>
+  );
+}
+
+interface ColorSliderThumbProps {
+  /** Custom thumb children. Defaults to the Spectrum 2 inner ring and drag loupe. */
+  children?: JSX.Element | ((renderProps: ColorSliderThumbRenderProps) => JSX.Element);
+  /** Ref callback for the thumb element. */
+  ref?: (element: HTMLDivElement) => void;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
-}): JSX.Element {
-  const context = useContext(ColorSizeContext);
-  const styles = sizeStyles[context.size];
-  const customClass = props.class ?? "";
-
-  const getClassName = (renderProps: ColorSliderTrackRenderProps): string => {
-    const base = `relative ${styles.slider.track} shadow-inner border border-bg-300`;
-    const dragClass = renderProps.isDragging ? "cursor-grabbing" : "cursor-pointer";
-    return [base, dragClass, customClass].filter(Boolean).join(" ");
-  };
-
-  return <HeadlessColorSliderTrack class={getClassName}>{props.children}</HeadlessColorSliderTrack>;
 }
 
 /**
  * The thumb component for a color slider.
  */
-export function ColorSliderThumb(props: { class?: string }): JSX.Element {
-  const context = useContext(ColorSizeContext);
-  const styles = sizeStyles[context.size];
-  const customClass = props.class ?? "";
+function ColorSliderThumb(props: ColorSliderThumbProps = {}): JSX.Element {
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "ref",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+  ]);
+  let thumbElement: HTMLDivElement | undefined;
 
-  const getClassName = (renderProps: ColorSliderThumbRenderProps): string => {
-    const base = `${styles.slider.thumb} rounded-full border-2 border-on-color shadow-md cursor-grab`;
-    const dragClass = renderProps.isDragging ? "cursor-grabbing scale-110" : "";
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-accent-300 ring-offset-2" : "";
-    const disabledClass = renderProps.isDisabled ? "cursor-not-allowed" : "";
-    return [base, dragClass, focusClass, disabledClass, customClass].filter(Boolean).join(" ");
-  };
-
-  return <HeadlessColorSliderThumb class={getClassName} />;
+  return (
+    <HeadlessColorSliderThumb
+      {...headlessProps}
+      ref={(element: HTMLDivElement) => {
+        thumbElement = element;
+        local.ref?.(element);
+      }}
+      class={(renderProps: ColorSliderThumbRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          mergeStyles(colorSliderThumb(renderProps), local.styles),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={(renderProps: ColorSliderThumbRenderProps) => ({
+        background: renderProps.isDisabled
+          ? undefined
+          : `linear-gradient(${renderProps.color.toString("css")}, ${renderProps.color.toString("css")}), repeating-conic-gradient(#E1E1E1 0% 25%, white 0% 50%) 50% / 16px 16px`,
+        "background-color": undefined,
+        ...local.UNSAFE_style,
+      })}
+    >
+      {(renderProps: ColorSliderThumbRenderProps) =>
+        typeof local.children === "function" ? (
+          local.children(renderProps)
+        ) : (
+          <>
+            {local.children ?? <div class={colorAreaThumbRing} />}
+            <ColorAreaLoupe
+              isOpen={renderProps.isDragging}
+              color={renderProps.color}
+              anchor={() => thumbElement}
+            />
+          </>
+        )
+      }
+    </HeadlessColorSliderThumb>
+  );
 }
 
 export interface ColorAreaProps extends Omit<
@@ -1308,10 +1539,12 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
   );
 }
 
-ColorSlider.Track = ColorSliderTrack;
-ColorSlider.Thumb = ColorSliderThumb;
 ColorWheel.Track = ColorWheelTrack;
 ColorWheel.Thumb = ColorWheelThumb;
+
+export const ColorSliderContext = HeadlessColorSliderContext as ReturnType<
+  typeof createContext<unknown>
+>;
 
 export const ColorAreaContext = HeadlessColorAreaContext as ReturnType<
   typeof createContext<unknown>

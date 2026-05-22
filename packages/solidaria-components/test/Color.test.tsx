@@ -6,10 +6,12 @@
 
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal, useContext } from "solid-js";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { createSignal } from "solid-js";
 import {
   ColorSlider,
-  ColorSliderContext,
+  ColorSliderLabel,
+  ColorSliderOutput,
   ColorSliderTrack,
   ColorSliderThumb,
   ColorArea,
@@ -32,18 +34,14 @@ import { I18nProvider } from "@proyecto-viviana/solidaria";
 function TestColorSlider(props: Parameters<typeof ColorSlider>[0]) {
   return (
     <ColorSlider {...props}>
-      {() => <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>}
+      {() => (
+        <>
+          {props.label != null && <ColorSliderLabel>{props.label}</ColorSliderLabel>}
+          <ColorSliderOutput />
+          <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
+        </>
+      )}
     </ColorSlider>
-  );
-}
-
-function DragStateTrigger() {
-  const context = useContext(ColorSliderContext);
-  if (!context) return null;
-  return (
-    <button type="button" onClick={() => context.state.setDragging(true)}>
-      Start drag
-    </button>
   );
 }
 
@@ -188,10 +186,70 @@ describe("Color Components", () => {
 
         expect(screen.getByText("Hue")).toBeTruthy();
       });
+
+      it("should wire visible label and output to the group and range input", () => {
+        render(() => (
+          <TestColorSlider
+            channel="hue"
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            label="Hue"
+          />
+        ));
+
+        const label = screen.getByText("Hue");
+        const group = screen.getByRole("group", { name: "Hue" });
+        const input = screen.getByRole("slider", { name: "Hue" });
+        const output = document.querySelector("output");
+
+        expect(label.id).toBeTruthy();
+        expect(group).toHaveAttribute("aria-labelledby", label.id);
+        expect(input).toHaveAttribute("aria-labelledby", label.id);
+        expect(output).toHaveAttribute("for", input.id);
+        expect(output).toHaveTextContent(/0/);
+      });
+
+      it("should provide the default channel name when no visible or explicit label is supplied", () => {
+        render(() => (
+          <TestColorSlider channel="hue" defaultValue={parseColor("hsl(0, 100%, 50%)")} />
+        ));
+
+        expect(screen.getByRole("group", { name: "Hue" })).toBeTruthy();
+        expect(screen.getByRole("slider", { name: "Hue" })).toBeTruthy();
+      });
+
+      it("should propagate form and description props to the hidden range input", () => {
+        render(() => (
+          <>
+            <p id="hue-hint">Adjust hue.</p>
+            <p id="hue-details">Hue details.</p>
+            <TestColorSlider
+              id="favorite-hue"
+              channel="hue"
+              defaultValue={parseColor("hsl(0, 100%, 50%)")}
+              label="Hue"
+              name="hueChannel"
+              form="colorForm"
+              aria-describedby="hue-hint"
+              aria-details="hue-details"
+            />
+          </>
+        ));
+
+        const group = screen.getByRole("group", { name: "Hue" });
+        const input = screen.getByRole("slider", { name: "Hue" });
+
+        expect(group).toHaveAttribute("id", "favorite-hue");
+        expect(group).not.toHaveAttribute("aria-describedby");
+        expect(group).not.toHaveAttribute("aria-details");
+        expect(input).toHaveAttribute("name", "hueChannel");
+        expect(input).toHaveAttribute("form", "colorForm");
+        expect(input).toHaveAttribute("aria-describedby", "hue-hint");
+        expect(input).toHaveAttribute("aria-details", "hue-details");
+      });
     });
 
     describe("data attributes", () => {
-      it("should have data-channel attribute", () => {
+      it("should match React Aria root data attributes", () => {
         render(() => (
           <TestColorSlider
             channel="saturation"
@@ -201,7 +259,8 @@ describe("Color Components", () => {
         ));
 
         const slider = document.querySelector(".solidaria-ColorSlider");
-        expect(slider?.getAttribute("data-channel")).toBe("saturation");
+        expect(slider?.getAttribute("data-orientation")).toBe("horizontal");
+        expect(slider).not.toHaveAttribute("data-channel");
       });
 
       it("should have data-disabled when disabled", () => {
@@ -229,8 +288,8 @@ describe("Color Components", () => {
           />
         ));
 
-        const slider = document.querySelector(".solidaria-ColorSlider");
-        expect(slider?.getAttribute("data-channel")).toBe("hue");
+        const slider = screen.getByRole("slider", { name: "Hue" });
+        expect(slider).toHaveAttribute("max", "360");
       });
 
       it("should work with saturation channel", () => {
@@ -242,8 +301,8 @@ describe("Color Components", () => {
           />
         ));
 
-        const slider = document.querySelector(".solidaria-ColorSlider");
-        expect(slider?.getAttribute("data-channel")).toBe("saturation");
+        const slider = screen.getByRole("slider", { name: "Saturation" });
+        expect(slider).toHaveAttribute("max", "100");
       });
 
       it("should work with lightness channel", () => {
@@ -255,8 +314,8 @@ describe("Color Components", () => {
           />
         ));
 
-        const slider = document.querySelector(".solidaria-ColorSlider");
-        expect(slider?.getAttribute("data-channel")).toBe("lightness");
+        const slider = screen.getByRole("slider", { name: "Lightness" });
+        expect(slider).toHaveAttribute("max", "100");
       });
 
       it("should work with alpha channel", () => {
@@ -268,8 +327,8 @@ describe("Color Components", () => {
           />
         ));
 
-        const slider = document.querySelector(".solidaria-ColorSlider");
-        expect(slider?.getAttribute("data-channel")).toBe("alpha");
+        const slider = screen.getByRole("slider", { name: "Alpha" });
+        expect(slider).toHaveAttribute("max", "1");
       });
     });
 
@@ -290,28 +349,135 @@ describe("Color Components", () => {
       it("should call onChangeEnd when dragging ends", () => {
         const onChangeEnd = vi.fn();
         render(() => (
-          <ColorSlider
+          <TestColorSlider
             channel="hue"
             defaultValue={parseColor("hsl(0, 100%, 50%)")}
             aria-label="Hue"
             onChangeEnd={onChangeEnd}
-          >
-            {() => (
-              <>
-                <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
-                <DragStateTrigger />
-              </>
-            )}
-          </ColorSlider>
+          />
         ));
 
-        fireEvent.click(screen.getByRole("button", { name: "Start drag" }));
-        const input = document.querySelector(
-          '.solidaria-ColorSlider-thumb input[type="range"]',
-        ) as HTMLInputElement;
-        fireEvent.blur(input);
+        const track = screen.getByRole("group", { name: "Hue" });
+        Object.defineProperty(track, "getBoundingClientRect", {
+          configurable: true,
+          value: () => ({ ...createMockRect(0, 0, 360), height: 24, bottom: 24 }),
+        });
 
+        fireEvent.mouseDown(track, { clientX: 180, clientY: 12 });
+        fireEvent.mouseUp(window, { clientX: 180, clientY: 12 });
         expect(onChangeEnd).toHaveBeenCalledTimes(1);
+      });
+
+      it("should expose hue and color names in aria-valuetext", () => {
+        render(() => (
+          <TestColorSlider
+            channel="hue"
+            defaultValue={parseColor("hsl(240, 100%, 50%)")}
+            aria-label="Hue"
+          />
+        ));
+
+        expect(screen.getByRole("slider", { name: "Hue" })).toHaveAttribute(
+          "aria-valuetext",
+          expect.stringMatching(/blue/i),
+        );
+
+        cleanup();
+
+        render(() => (
+          <TestColorSlider
+            channel="saturation"
+            defaultValue={parseColor("hsl(240, 50%, 50%)")}
+            aria-label="Saturation"
+          />
+        ));
+
+        expect(screen.getByRole("slider", { name: "Saturation" })).toHaveAttribute(
+          "aria-valuetext",
+          expect.stringMatching(/blue/i),
+        );
+      });
+
+      it("should map vertical pointer movement from bottom to top", async () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorSlider
+            channel="brightness"
+            colorSpace="hsb"
+            defaultValue={parseColor("hsb(0, 50%, 50%)")}
+            orientation="vertical"
+            aria-label="Brightness"
+            onChange={onChange}
+          />
+        ));
+
+        const slider = document.querySelector(".solidaria-ColorSlider") as HTMLElement;
+        const track = screen.getByRole("group", { name: "Brightness" });
+        const thumb = document.querySelector(".solidaria-ColorSlider-thumb") as HTMLElement;
+        const input = screen.getByRole("slider", { name: "Brightness" });
+
+        expect(slider).toHaveAttribute("data-orientation", "vertical");
+        expect(track).toHaveAttribute("data-orientation", "vertical");
+        expect(input).toHaveAttribute("aria-orientation", "vertical");
+        expect((track as HTMLElement).style.background).toContain("to top");
+        expect(thumb.style.top).toBe("50%");
+
+        Object.defineProperty(track, "getBoundingClientRect", {
+          configurable: true,
+          value: () => ({ ...createMockRect(0, 0, 24), height: 100, bottom: 100 }),
+        });
+
+        fireEvent.pointerDown(track, { clientX: 12, clientY: 25, pointerId: 1 });
+        fireEvent.pointerUp(window, { clientX: 12, clientY: 25, pointerId: 1 });
+
+        await waitFor(() => {
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("brightness")).toBe(75);
+        });
+      });
+
+      it("should flip horizontal gradient, thumb placement, pointer, and keyboard in RTL", async () => {
+        const user = setupUser();
+        const onChange = vi.fn();
+        render(() => (
+          <I18nProvider locale="ar-AE">
+            <TestColorSlider
+              channel="red"
+              colorSpace="rgb"
+              defaultValue={parseColor("rgb(100, 0, 0)")}
+              aria-label="Red"
+              onChange={onChange}
+            />
+          </I18nProvider>
+        ));
+
+        const track = screen.getByRole("group", { name: "Red" });
+        const thumb = document.querySelector(".solidaria-ColorSlider-thumb") as HTMLElement;
+
+        expect((track as HTMLElement).style.background).toContain("to left");
+        expect(thumb.style.left).toBe(`${(1 - 100 / 255) * 100}%`);
+
+        Object.defineProperty(track, "getBoundingClientRect", {
+          configurable: true,
+          value: () => ({ ...createMockRect(0, 0, 255), height: 24, bottom: 24 }),
+        });
+
+        fireEvent.pointerDown(track, { clientX: 0, clientY: 12, pointerId: 1 });
+        fireEvent.pointerUp(window, { clientX: 0, clientY: 12, pointerId: 1 });
+
+        await waitFor(() => {
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("red")).toBe(255);
+        });
+
+        const currentInput = screen.getByRole("slider", { name: "Red" });
+        expect(document.activeElement).toBe(currentInput);
+        await user.keyboard("{ArrowRight}");
+
+        await waitFor(() => {
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("red")).toBe(254);
+        });
       });
     });
   });

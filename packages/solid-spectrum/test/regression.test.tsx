@@ -59,15 +59,7 @@ import { StatusLight } from "../src/statuslight";
 import { Separator } from "../src/separator";
 
 // ── Color ───────────────────────────────────────────────────────
-import {
-  ColorArea,
-  ColorSlider,
-  ColorSliderTrack,
-  ColorSliderThumb,
-  ColorWheel,
-  ColorWheelTrack,
-  ColorWheelThumb,
-} from "../src/color";
+import { ColorArea, ColorSlider, ColorWheel, ColorWheelTrack, ColorWheelThumb } from "../src/color";
 
 // ── Other ───────────────────────────────────────────────────────
 import { Avatar } from "../src/avatar";
@@ -942,11 +934,7 @@ describe("Regression: ColorArea", () => {
 describe("Regression: ColorSlider", () => {
   it("renders slider with track and thumb, and snapshot", () => {
     const { container } = render(() => (
-      <ColorSlider channel="hue" aria-label="Hue" defaultValue="hsl(0, 100%, 50%)">
-        <ColorSliderTrack>
-          <ColorSliderThumb />
-        </ColorSliderTrack>
-      </ColorSlider>
+      <ColorSlider channel="hue" aria-label="Hue" defaultValue="hsl(0, 100%, 50%)" />
     ));
 
     const slider = screen.getByRole("slider");

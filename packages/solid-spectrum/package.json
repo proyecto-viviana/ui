@@ -64,6 +64,12 @@
       "import": "./dist/ColorField.js",
       "default": "./dist/ColorField.js"
     },
+    "./ColorSlider": {
+      "types": "./dist/ColorSlider.d.ts",
+      "solid": "./src/ColorSlider.ts",
+      "import": "./dist/ColorSlider.js",
+      "default": "./dist/ColorSlider.js"
+    },
     "./Card": {
       "types": "./dist/Card.d.ts",
       "solid": "./src/Card.ts",

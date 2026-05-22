@@ -196,6 +196,7 @@ export {
   ColorField,
   ColorFieldContext,
   ColorSlider,
+  ColorSliderContext,
   ColorSwatch,
   ColorWheel,
   getColorChannels,

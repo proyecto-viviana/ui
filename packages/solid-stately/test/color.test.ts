@@ -343,6 +343,72 @@ describe("createColorSliderState", () => {
       dispose();
     });
   });
+
+  it("should default to horizontal orientation and expose vertical orientation", () => {
+    createRoot((dispose) => {
+      const horizontal = createColorSliderState(() => ({
+        channel: "hue",
+        defaultValue: "hsl(0, 100%, 50%)",
+      }));
+      const vertical = createColorSliderState(() => ({
+        channel: "hue",
+        defaultValue: "hsl(0, 100%, 50%)",
+        orientation: "vertical",
+      }));
+
+      expect(horizontal.orientation).toBe("horizontal");
+      expect(vertical.orientation).toBe("vertical");
+      dispose();
+    });
+  });
+
+  it("should format hue labels with degree units", () => {
+    createRoot((dispose) => {
+      const state = createColorSliderState(() => ({
+        channel: "hue",
+        defaultValue: "hsl(50, 100%, 50%)",
+      }));
+
+      expect(state.getThumbValueLabel()).toBe("50°");
+      dispose();
+    });
+  });
+
+  it("should normalize values and changes into the requested color space", () => {
+    createRoot((dispose) => {
+      let changedColor: Color | null = null;
+      const state = createColorSliderState(() => ({
+        channel: "brightness",
+        colorSpace: "hsb",
+        defaultValue: "#336699",
+        onChange: (color) => {
+          changedColor = color;
+        },
+      }));
+
+      expect(state.value.getColorSpace()).toBe("hsb");
+      state.setThumbValue(80);
+      expect(changedColor).toBeTruthy();
+      expect(changedColor!.getColorSpace()).toBe("hsb");
+      expect(changedColor!.getChannelValue("brightness")).toBe(80);
+      dispose();
+    });
+  });
+
+  it("should use full saturation and lightness for hue display color", () => {
+    createRoot((dispose) => {
+      const state = createColorSliderState(() => ({
+        channel: "hue",
+        defaultValue: "hsl(90, 20%, 20%)",
+      }));
+
+      const displayColor = state.getDisplayColor();
+      expect(displayColor.getChannelValue("hue")).toBe(90);
+      expect(displayColor.getChannelValue("saturation")).toBe(100);
+      expect(displayColor.getChannelValue("lightness")).toBe(50);
+      dispose();
+    });
+  });
 });
 
 describe("createColorAreaState", () => {

@@ -587,6 +587,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2/ColorArea directly; Solid uses @proyecto-viviana/solid-spectrum ColorArea with the public ColorArea subpath, S2 root/thumb/loupe styling, generated gradient background, hidden channel range inputs, controlled/default value routing, colorSpace conversion, form name forwarding, RTL channel geometry, and route controls covering the documented S2 API surface.",
   }),
 
+  colorslider: styledLiveOfficialEntry({
+    slug: "colorslider",
+    title: "ColorSlider",
+    category: "Components",
+    summary:
+      "Single-channel color slider mounted on both stacks with S2 label/output layout, controlled/default value modes, colorSpace, channel selection, orientation, form forwarding, ARIA labels, and disabled state.",
+    styledSummary: "React Spectrum ColorSlider vs Solid Spectrum ColorSlider.",
+    styledNote:
+      "React uses @react-spectrum/s2/ColorSlider directly; Solid uses @proyecto-viviana/solid-spectrum ColorSlider with the public ColorSlider subpath, S2 root/track/thumb/loupe styling, generated channel gradient, hidden range input forwarding, controlled/default value routing, colorSpace conversion, RTL and vertical geometry, and route controls covering the documented S2 API surface.",
+  }),
+
   colorfield: styledLiveOfficialEntry({
     slug: "colorfield",
     title: "ColorField",
