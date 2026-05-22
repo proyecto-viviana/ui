@@ -598,6 +598,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2/ColorSlider directly; Solid uses @proyecto-viviana/solid-spectrum ColorSlider with the public ColorSlider subpath, S2 root/track/thumb/loupe styling, generated channel gradient, hidden range input forwarding, controlled/default value routing, colorSpace conversion, RTL and vertical geometry, and route controls covering the documented S2 API surface.",
   }),
 
+  colorswatch: styledLiveOfficialEntry({
+    slug: "colorswatch",
+    title: "ColorSwatch",
+    category: "Components",
+    summary:
+      "Static color preview swatch mounted on both stacks with color value, colorName, S2 size and rounding, transparent/no-color slash rendering, ARIA labels/details, id, and slot controls.",
+    styledSummary: "React Spectrum ColorSwatch vs Solid Spectrum ColorSwatch.",
+    styledNote:
+      "React uses @react-spectrum/s2/ColorSwatch directly; Solid uses @proyecto-viviana/solid-spectrum ColorSwatch with the public ColorSwatch subpath, React Aria color naming, transparent/no-color slash rendering, S2 size/rounding/border styles, and route controls covering the documented API surface.",
+  }),
+
   colorfield: styledLiveOfficialEntry({
     slug: "colorfield",
     title: "ColorField",

@@ -1,30 +1,42 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
-import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { ColorSwatch } from "../src/color";
 
 describe("ColorSwatch (solid-spectrum)", () => {
-  it("renders non-interactive swatch by default", () => {
-    render(() => <ColorSwatch color="#ff0000" aria-label="Red" />);
-    expect(screen.getByRole("img", { name: "Red" })).toBeInTheDocument();
+  it("renders a non-interactive swatch with composed accessible name", () => {
+    render(() => <ColorSwatch color="#ff0000" colorName="Fire truck red" aria-label="Preview" />);
+    expect(screen.getByRole("img", { name: "Fire truck red, Preview" })).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it("renders as semantic toggle button when selectable", async () => {
-    const user = setupUser();
-    const onClick = vi.fn();
-
+  it("applies S2 size, rounding, and escape-hatch props", () => {
     render(() => (
-      <ColorSwatch color="#00ff00" aria-label="Green" isSelectable isSelected onClick={onClick} />
+      <ColorSwatch
+        color="#00ff00"
+        size="L"
+        rounding="full"
+        class="custom"
+        UNSAFE_className="unsafe"
+        UNSAFE_style={{ outline: "1px solid red" }}
+        aria-label="Green"
+      />
     ));
 
-    const button = screen.getByRole("button", { name: "Green" });
-    expect(button).toHaveAttribute("aria-pressed", "true");
+    const swatch = screen.getByRole("img", { name: /Green/ }) as HTMLElement;
+    expect(swatch.className).toContain("custom");
+    expect(swatch.className).toContain("unsafe");
+    expect(swatch.style.outline).toBe("1px solid red");
+  });
 
-    await user.click(button);
-    expect(onClick).toHaveBeenCalledTimes(1);
+  it("renders the transparent slash when no color is provided", () => {
+    render(() => <ColorSwatch aria-label="Preview" />);
+
+    const swatch = screen.getByRole("img", { name: "transparent, Preview" }) as HTMLElement;
+    const style = swatch.getAttribute("style") ?? "";
+    expect(style).toContain("linear-gradient");
+    expect(style).not.toContain("repeating-conic-gradient");
   });
 });

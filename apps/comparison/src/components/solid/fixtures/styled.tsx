@@ -36,6 +36,7 @@ import {
   ColorArea as SolidSpectrumColorArea,
   ColorField as SolidSpectrumColorField,
   ColorSlider as SolidSpectrumColorSlider,
+  ColorSwatch as SolidSpectrumColorSwatch,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
   Content as SolidSpectrumContent,
@@ -204,6 +205,12 @@ import {
   serializeColorSliderDemoProps,
   type ColorSliderDemoProps,
 } from "@comparison/data/colorslider-demo";
+import {
+  colorSwatchDemoPropsFromWindow,
+  normalizeColorSwatchDemoProps,
+  serializeColorSwatchDemoProps,
+  type ColorSwatchDemoProps,
+} from "@comparison/data/colorswatch-demo";
 import {
   colorFieldDemoDefaults,
   colorFieldDemoPropsFromWindow,
@@ -624,6 +631,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   colorarea: () => h(SolidSpectrumColorAreaDemo, {}),
   colorslider: () => h(SolidSpectrumColorSliderDemo, {}),
+  colorswatch: () => h(SolidSpectrumColorSwatchDemo, {}),
   colorfield: () => h(SolidSpectrumColorFieldDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
@@ -5401,6 +5409,98 @@ function SolidSpectrumColorSliderDemo() {
             },
             onChangeEnd: (nextValue: ReturnType<typeof parseSolidColorSliderValue>) => {
               setFinalValue(nextValue);
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumColorSwatchDemo() {
+  const [demoProps, setDemoProps] = createSignal<ColorSwatchDemoProps>(
+    colorSwatchDemoPropsFromWindow(),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  const locale = buttonDemoLocaleFromWindow();
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "colorswatch") {
+        setDemoProps(normalizeColorSwatchDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeColorSwatchDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      locale,
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "colorswatch",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(SolidSpectrumColorSwatch, {
+            get color() {
+              return demoProps().color || undefined;
+            },
+            get colorName() {
+              return demoProps().colorName || undefined;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get rounding() {
+              return demoProps().rounding;
+            },
+            get "aria-label"() {
+              return demoProps().ariaLabel || undefined;
+            },
+            get "aria-labelledby"() {
+              return demoProps().ariaLabelledBy || undefined;
+            },
+            get "aria-describedby"() {
+              return demoProps().ariaDescribedBy || undefined;
+            },
+            get "aria-details"() {
+              return demoProps().ariaDetails || undefined;
+            },
+            get id() {
+              return demoProps().id || undefined;
+            },
+            get slot() {
+              return demoProps().slot || undefined;
             },
           }),
         ],

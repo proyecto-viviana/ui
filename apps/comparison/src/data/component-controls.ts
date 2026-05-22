@@ -76,6 +76,11 @@ import {
   colorSliderValueSourceOptions,
 } from "./colorslider-demo";
 import {
+  colorSwatchDemoDefaults,
+  colorSwatchRoundingOptions,
+  colorSwatchSizeOptions,
+} from "./colorswatch-demo";
+import {
   colorFieldChannelOptions,
   colorFieldColorSpaceOptions,
   colorFieldDemoDefaults,
@@ -2155,6 +2160,92 @@ const colorSliderControls: ComponentControlGroup = {
     "value",
   ],
   note: "Modeled from the S2 ColorSlider docs, API, and source. The viewer drives controlled/default value, colorSpace, channel, orientation, visible/default label behavior, horizontal output, form name forwarding, ARIA labelling/details, disabled state, id, and slot into both stacks.",
+};
+
+const colorSwatchControls: ComponentControlGroup = {
+  slug: "colorswatch",
+  title: "ColorSwatch",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "color",
+      label: "color",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.color,
+    },
+    {
+      name: "colorName",
+      label: "colorName",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.colorName,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: colorSwatchDemoDefaults.size,
+      options: options(colorSwatchSizeOptions),
+    },
+    {
+      name: "rounding",
+      label: "rounding",
+      kind: "radio",
+      defaultValue: colorSwatchDemoDefaults.rounding,
+      options: options(colorSwatchRoundingOptions),
+    },
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.ariaLabel,
+    },
+    {
+      name: "ariaLabelledBy",
+      label: "aria-labelledby",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.ariaLabelledBy,
+    },
+    {
+      name: "ariaDescribedBy",
+      label: "aria-describedby",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.ariaDescribedBy,
+    },
+    {
+      name: "ariaDetails",
+      label: "aria-details",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.ariaDetails,
+    },
+    {
+      name: "id",
+      label: "id",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.id,
+    },
+    {
+      name: "slot",
+      label: "slot",
+      kind: "text",
+      defaultValue: colorSwatchDemoDefaults.slot,
+    },
+  ],
+  apiProps: [
+    "aria-describedby",
+    "aria-details",
+    "aria-label",
+    "aria-labelledby",
+    "color",
+    "colorName",
+    "id",
+    "rounding",
+    "size",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 ColorSwatch docs, API, and source. The viewer drives color, colorName, S2 size/rounding, ARIA labelling/details, id, and slot into both stacks, with transparent/no-color slash rendering covered as a route state and styles tracked as an API-only prop.",
 };
 
 const colorFieldControls: ComponentControlGroup = {
@@ -5222,6 +5313,7 @@ export const componentControlGroups = {
   checkboxgroup: checkboxGroupControls,
   colorarea: colorAreaControls,
   colorslider: colorSliderControls,
+  colorswatch: colorSwatchControls,
   colorfield: colorFieldControls,
   combobox: comboBoxControls,
   contextualhelp: contextualHelpControls,

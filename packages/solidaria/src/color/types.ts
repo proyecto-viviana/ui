@@ -158,13 +158,27 @@ export interface ColorFieldAria {
 }
 
 export interface AriaColorSwatchOptions {
+  /** Element id for the swatch. */
+  id?: string;
+  /** A named slot for the swatch element. */
+  slot?: string;
   /** The color to display. */
-  color: Color | string;
+  color?: Color | string;
+  /** Localized color name override. */
+  colorName?: string;
   /** Accessible label for the swatch. */
   "aria-label"?: string;
+  /** ID of element that labels the swatch. */
+  "aria-labelledby"?: string;
+  /** ID of element that describes the swatch. */
+  "aria-describedby"?: string;
+  /** ID of element that provides detailed information about the swatch. */
+  "aria-details"?: string;
 }
 
 export interface ColorSwatchAria {
   /** Props for the swatch element. */
   swatchProps: JSX.HTMLAttributes<HTMLDivElement>;
+  /** The normalized color displayed by the swatch. */
+  color: Color;
 }

@@ -70,6 +70,12 @@
       "import": "./dist/ColorSlider.js",
       "default": "./dist/ColorSlider.js"
     },
+    "./ColorSwatch": {
+      "types": "./dist/ColorSwatch.d.ts",
+      "solid": "./src/ColorSwatch.ts",
+      "import": "./dist/ColorSwatch.js",
+      "default": "./dist/ColorSwatch.js"
+    },
     "./Card": {
       "types": "./dist/Card.d.ts",
       "solid": "./src/Card.ts",

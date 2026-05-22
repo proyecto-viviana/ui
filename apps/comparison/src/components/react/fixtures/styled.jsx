@@ -88,6 +88,7 @@ import {
   ColorSlider as SpectrumColorSlider,
   parseColor as spectrumParseSliderColor,
 } from "@react-spectrum/s2/ColorSlider";
+import { ColorSwatch as SpectrumColorSwatch } from "@react-spectrum/s2/ColorSwatch";
 import { DateField as SpectrumDateField } from "@react-spectrum/s2/DateField";
 import "@react-spectrum/s2/page.css";
 import {
@@ -190,6 +191,12 @@ import {
   normalizeColorSliderDemoProps,
   serializeColorSliderDemoProps,
 } from "@comparison/data/colorslider-demo";
+import {
+  colorSwatchDemoPropsFromWindow,
+  comparisonControlsEvent as colorSwatchControlsEvent,
+  normalizeColorSwatchDemoProps,
+  serializeColorSwatchDemoProps,
+} from "@comparison/data/colorswatch-demo";
 import {
   colorFieldDemoDefaults,
   colorFieldDemoPropsFromWindow,
@@ -542,6 +549,7 @@ export const reactStyledFixtures = {
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   colorarea: () => jsx(ReactColorAreaDemo, {}),
   colorslider: () => jsx(ReactColorSliderDemo, {}),
+  colorswatch: () => jsx(ReactColorSwatchDemo, {}),
   colorfield: () => jsx(ReactColorFieldDemo, {}),
   combobox: () => jsx(ReactComboBoxDemo, {}),
   contextualhelp: () => jsx(ReactContextualHelpDemo, {}),
@@ -2827,6 +2835,60 @@ function ReactColorSliderDemo() {
             );
           },
           onChangeEnd: setFinalValue,
+        },
+        renderKey,
+      ),
+    }),
+    colorScheme,
+    locale,
+  );
+}
+
+function ReactColorSwatchDemo() {
+  const [demoProps, setDemoProps] = useState(colorSwatchDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+  const locale = buttonDemoLocaleFromWindow();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "colorswatch") {
+        setDemoProps(normalizeColorSwatchDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(colorSwatchControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(colorSwatchControlsEvent, handleControlsChange);
+  }, []);
+
+  const renderKey = [
+    demoProps.color,
+    demoProps.colorName,
+    demoProps.size,
+    demoProps.rounding,
+    demoProps.ariaLabel,
+    demoProps.ariaLabelledBy,
+    demoProps.ariaDescribedBy,
+    demoProps.ariaDetails,
+    demoProps.id,
+    demoProps.slot,
+  ].join("|");
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "colorswatch",
+      "data-comparison-control-props": serializeColorSwatchDemoProps(demoProps),
+      children: jsx(
+        SpectrumColorSwatch,
+        {
+          color: demoProps.color || undefined,
+          colorName: demoProps.colorName || undefined,
+          size: demoProps.size,
+          rounding: demoProps.rounding,
+          "aria-label": demoProps.ariaLabel || undefined,
+          "aria-labelledby": demoProps.ariaLabelledBy || undefined,
+          "aria-describedby": demoProps.ariaDescribedBy || undefined,
+          "aria-details": demoProps.ariaDetails || undefined,
+          id: demoProps.id || undefined,
+          slot: demoProps.slot || undefined,
         },
         renderKey,
       ),

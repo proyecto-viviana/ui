@@ -29,6 +29,7 @@ import {
   ColorFieldInput as HeadlessColorFieldInput,
   ColorFieldContext as HeadlessColorFieldContext,
   ColorSwatch as HeadlessColorSwatch,
+  ColorSwatchContext as HeadlessColorSwatchContext,
   type ColorSliderProps as HeadlessColorSliderProps,
   type ColorAreaProps as HeadlessColorAreaProps,
   type ColorWheelProps as HeadlessColorWheelProps,
@@ -1354,17 +1355,68 @@ function ColorFieldError(props: { class?: string; children?: JSX.Element }): JSX
   );
 }
 
-export interface ColorSwatchProps extends Omit<HeadlessColorSwatchProps, "class" | "style"> {
+export type ColorSwatchSize = "XS" | "S" | "M" | "L";
+export type ColorSwatchRounding = "default" | "none" | "full";
+
+interface ColorSwatchStyleProps extends Partial<ColorSwatchRenderProps> {
+  size?: ColorSwatchSize;
+  rounding?: ColorSwatchRounding;
+}
+
+const colorSwatchRoot = style<ColorSwatchStyleProps>(
+  {
+    width: {
+      size: {
+        XS: 16,
+        S: 24,
+        M: 32,
+        L: 40,
+      },
+    },
+    height: {
+      size: {
+        XS: 16,
+        S: 24,
+        M: 32,
+        L: 40,
+      },
+    },
+    borderRadius: {
+      rounding: {
+        default: "sm",
+        none: "none",
+        full: "full",
+      },
+    },
+    borderColor: "gray-1000/42" as never,
+    borderWidth: 1,
+    borderStyle: "solid",
+    boxSizing: "border-box",
+    forcedColorAdjust: "none",
+    "--slash-color": {
+      type: "color",
+      value: "red-900" as never,
+    },
+  },
+  getAllowedOverrides({ height: true }),
+);
+
+export interface ColorSwatchProps extends Omit<
+  HeadlessColorSwatchProps,
+  "class" | "style" | "children"
+> {
   /** The size of the color swatch. */
-  size?: ColorSize;
+  size?: ColorSwatchSize;
+  /** Corner rounding for the color swatch. */
+  rounding?: ColorSwatchRounding;
+  /** Spectrum-defined generated classes. */
+  styles?: StylesPropWithHeight;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
   /** Additional CSS class name. */
   class?: string;
-  /** Whether the swatch is selectable. */
-  isSelectable?: boolean;
-  /** Whether the swatch is selected. */
-  isSelected?: boolean;
-  /** Handler called when the swatch is clicked. */
-  onClick?: () => void;
 }
 
 /**
@@ -1372,70 +1424,57 @@ export interface ColorSwatchProps extends Omit<HeadlessColorSwatchProps, "class"
  *
  * @example
  * ```tsx
- * <ColorSwatch color={parseColor('#ff0000')} />
- *
- * // Selectable swatch
- * <ColorSwatch
- *   color={parseColor('#00ff00')}
- *   isSelectable
- *   isSelected={selectedColor === '#00ff00'}
- *   onClick={() => setSelectedColor('#00ff00')}
- * />
+ * <ColorSwatch color={parseColor('#ff0000')} aria-label="Selected color" />
  * ```
  */
 export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, [
     "size",
+    "rounding",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
-    "isSelectable",
-    "isSelected",
-    "onClick",
-    "aria-label",
   ]);
 
-  const size = () => local.size ?? "md";
-  const styles = () => sizeStyles[size()];
-  const customClass = local.class ?? "";
+  const size = () => local.size ?? "M";
+  const rounding = () => local.rounding ?? "default";
 
-  const getClassName = (_renderProps: ColorSwatchRenderProps): string => {
-    const base = `${styles().swatch} rounded-md border border-bg-300 shadow-sm`;
-    const selectableClass = local.isSelectable
-      ? "cursor-pointer hover:scale-105 transition-transform"
-      : "";
-    const selectedClass = local.isSelected
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-    return [base, selectableClass, selectedClass, customClass].filter(Boolean).join(" ");
+  const getClassName = (renderProps: ColorSwatchRenderProps): string => {
+    return [
+      local.UNSAFE_className,
+      local.class,
+      colorSwatchRoot(
+        {
+          ...renderProps,
+          size: size(),
+          rounding: rounding(),
+        },
+        mergeStyles(local.styles),
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
   };
 
-  const handleClick = () => {
-    if (local.isSelectable && local.onClick) {
-      local.onClick();
-    }
+  const getStyle = (renderProps: ColorSwatchRenderProps): JSX.CSSProperties => {
+    const swatchColor = renderProps.color;
+    const colorValue = swatchColor.toString("css");
+    const background =
+      swatchColor.getChannelValue("alpha") > 0
+        ? `linear-gradient(${colorValue}, ${colorValue}), repeating-conic-gradient(#e6e6e6 0% 25%, white 0% 50%) 0% 50% / 16px 16px`
+        : "linear-gradient(to bottom right, transparent calc(50% - 2px), var(--slash-color) calc(50% - 2px) calc(50% + 2px), transparent calc(50% + 2px)) no-repeat";
+
+    return {
+      background,
+      ...local.UNSAFE_style,
+    };
   };
 
-  if (local.isSelectable && local.onClick) {
-    return (
-      <button
-        type="button"
-        class="inline-flex bg-transparent border-0 p-0 cursor-pointer"
-        onClick={handleClick}
-        aria-pressed={local.isSelected}
-        aria-label={local["aria-label"]}
-      >
-        <HeadlessColorSwatch
-          {...headlessProps}
-          aria-label={local["aria-label"]}
-          class={getClassName}
-        />
-      </button>
-    );
-  }
-
-  return (
-    <HeadlessColorSwatch {...headlessProps} aria-label={local["aria-label"]} class={getClassName} />
-  );
+  return <HeadlessColorSwatch {...headlessProps} class={getClassName} style={getStyle} />;
 }
+
+export const ColorSwatchContext = HeadlessColorSwatchContext;
 
 export interface ColorPickerProps {
   /** The current color value (controlled). */

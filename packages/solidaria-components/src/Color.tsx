@@ -1687,8 +1687,16 @@ export interface ColorSwatchRenderProps {
 export interface ColorSwatchProps extends SlotProps {
   /** The color to display. */
   color?: Color | string;
+  /** Localized color name override. */
+  colorName?: string;
   /** Accessible label for the swatch. */
   "aria-label"?: string;
+  /** ID of element that labels the swatch. */
+  "aria-labelledby"?: string;
+  /** ID of element that describes the swatch. */
+  "aria-describedby"?: string;
+  /** ID of element that provides detailed information about the swatch. */
+  "aria-details"?: string;
   /** The children of the component. */
   children?: RenderChildren<ColorSwatchRenderProps>;
   /** The CSS className for the element. */
@@ -1705,26 +1713,28 @@ export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
   const pickerContext = useContext(ColorPickerContextInternal);
   const [local, ariaProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot", "color"],
-    ["aria-label"],
+    ["children", "class", "style", "slot", "color", "colorName"],
+    ["aria-label", "aria-labelledby", "aria-describedby", "aria-details"],
   );
 
   const resolvedColor = createMemo<Color | string>(() => {
-    return local.color ?? swatchContext?.color ?? pickerContext?.value ?? "#0000";
+    return local.color ?? swatchContext?.color ?? pickerContext?.value ?? "#fff0";
   });
 
-  // Create color swatch aria props
-  const { swatchProps } = createColorSwatch(() => ({
+  const swatchAria = createColorSwatch(() => ({
+    id: (rest as Record<string, unknown>).id as string | undefined,
+    slot: local.slot,
     color: resolvedColor(),
+    colorName: local.colorName,
     "aria-label": ariaProps["aria-label"],
+    "aria-labelledby": ariaProps["aria-labelledby"],
+    "aria-describedby": ariaProps["aria-describedby"],
+    "aria-details": ariaProps["aria-details"],
   }));
 
-  // Normalize color
-  const color = createMemo(() => normalizeColor(resolvedColor()));
-
   const renderValues = createMemo<ColorSwatchRenderProps>(() => ({
-    color: color(),
-    colorValue: color().toString("css"),
+    color: swatchAria.color,
+    colorValue: swatchAria.color.toString("css"),
   }));
 
   const renderProps = useRenderProps(
@@ -1742,12 +1752,16 @@ export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
   );
 
   const cleanSwatchProps = () => {
-    const { ref: _ref, style: _swatchStyle, ...rest } = swatchProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _swatchStyle,
+      ...rest
+    } = swatchAria.swatchProps as Record<string, unknown>;
     return rest;
   };
 
   const mergedStyle = () => {
-    const swatchStyle = (swatchProps as { style?: Record<string, string> }).style || {};
+    const swatchStyle = (swatchAria.swatchProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...swatchStyle, ...renderStyle };
   };

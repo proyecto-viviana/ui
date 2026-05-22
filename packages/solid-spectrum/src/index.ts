@@ -198,6 +198,7 @@ export {
   ColorSlider,
   ColorSliderContext,
   ColorSwatch,
+  ColorSwatchContext,
   ColorWheel,
   getColorChannels,
   parseColor,
@@ -218,6 +219,8 @@ export type {
   ColorSize,
   ColorSliderProps,
   ColorSwatchProps,
+  ColorSwatchRounding,
+  ColorSwatchSize,
   ColorWheelProps,
 } from "./color";
 export { ColorSwatchPicker } from "./color/ColorSwatchPicker";

@@ -1051,6 +1051,44 @@ describe("Color Components", () => {
         const swatch = document.querySelector(".solidaria-ColorSwatch");
         expect(swatch).toBeTruthy();
       });
+
+      it("should compose color name and aria label", () => {
+        render(() => (
+          <ColorSwatch color="#ff0000" colorName="Fire truck red" aria-label="Background color" />
+        ));
+
+        const swatch = screen.getByRole("img", {
+          name: "Fire truck red, Background color",
+        }) as HTMLElement;
+        expect(swatch.style.backgroundColor).toBe("rgb(255, 0, 0)");
+        expect(swatch.style.forcedColorAdjust).toBe("none");
+      });
+
+      it("should render a transparent fallback when no color is provided", () => {
+        render(() => <ColorSwatch />);
+
+        expect(screen.getByRole("img", { name: "transparent" })).toBeTruthy();
+      });
+
+      it("should forward id and ARIA reference props", () => {
+        render(() => (
+          <ColorSwatch
+            color="#ff0000"
+            id="swatch-id"
+            slot="color"
+            aria-labelledby="external-label"
+            aria-describedby="desc-id"
+            aria-details="details-id"
+          />
+        ));
+
+        const swatch = document.querySelector(".solidaria-ColorSwatch") as HTMLElement;
+        expect(swatch).toHaveAttribute("id", "swatch-id");
+        expect(swatch).toHaveAttribute("slot", "color");
+        expect(swatch).toHaveAttribute("aria-labelledby", "swatch-id external-label");
+        expect(swatch).toHaveAttribute("aria-describedby", "desc-id");
+        expect(swatch).toHaveAttribute("aria-details", "details-id");
+      });
     });
 
     describe("render props", () => {
@@ -1082,13 +1120,13 @@ describe("Color Components", () => {
         </ColorPicker>
       ));
 
-      const swatch = screen.getByRole("img", { name: "Current color" });
+      const swatch = screen.getByRole("img", { name: /Current color/ });
       expect((swatch as HTMLElement).style.backgroundColor).toBe("rgb(255, 0, 0)");
 
       setValue(parseColor("#00ff00"));
 
       await waitFor(() => {
-        const updatedSwatch = screen.getByRole("img", { name: "Current color" });
+        const updatedSwatch = screen.getByRole("img", { name: /Current color/ });
         expect((updatedSwatch as HTMLElement).style.backgroundColor).toBe("rgb(0, 255, 0)");
       });
     });
