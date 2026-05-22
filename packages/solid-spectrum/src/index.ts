@@ -192,6 +192,7 @@ export type {
 // Color
 export {
   ColorArea,
+  ColorAreaContext,
   ColorField,
   ColorSlider,
   ColorSwatch,
@@ -201,10 +202,13 @@ export {
 } from "./color";
 export type {
   Color,
+  ColorAxes,
   ColorAreaProps,
   ColorChannel,
+  ColorChannelRange,
   ColorFieldProps,
   ColorFormat,
+  ColorSpace,
   ColorSize,
   ColorSliderProps,
   ColorSwatchProps,

@@ -61,8 +61,6 @@ import { Separator } from "../src/separator";
 // ── Color ───────────────────────────────────────────────────────
 import {
   ColorArea,
-  ColorAreaGradient,
-  ColorAreaThumb,
   ColorSlider,
   ColorSliderTrack,
   ColorSliderThumb,
@@ -921,16 +919,22 @@ describe("Regression: Separator", () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe("Regression: ColorArea", () => {
-  it("renders gradient container with 2D area, and snapshot", () => {
+  it("renders the S2 default color area composition, and snapshot", () => {
     const { container } = render(() => (
-      <ColorArea aria-label="Color" defaultValue="hsba(0, 100%, 100%, 1)">
-        <ColorAreaGradient />
-        <ColorAreaThumb />
-      </ColorArea>
+      <ColorArea
+        aria-label="Color"
+        defaultValue="#9B80FF"
+        colorSpace="rgb"
+        xChannel="red"
+        yChannel="green"
+      />
     ));
 
-    // Should have the color area container
-    expect(container.firstElementChild).toBeInTheDocument();
+    const area = screen.getByRole("group", { name: "Color, Color picker" });
+    const sliders = Array.from(container.querySelectorAll('input[type="range"]'));
+    expect(area).toBeInTheDocument();
+    expect(sliders).toHaveLength(2);
+    expect(container.querySelector(".solidaria-ColorArea-gradient")).not.toBeInTheDocument();
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });

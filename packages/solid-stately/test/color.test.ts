@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { createRoot } from "solid-js";
+import { createRoot, createSignal } from "solid-js";
 import type { Color } from "../src/color";
 import {
   parseColor,
@@ -174,6 +174,12 @@ describe("Color", () => {
     it("should get color name", () => {
       const red = parseColor("#ff0000");
       expect(red.getColorName("en-US")).toBeTruthy();
+    });
+
+    it("should match React Stately OKLCH color names", () => {
+      const purple = parseColor("#9B80FF");
+      expect(purple.getColorName("en-US")).toBe("vibrant purple");
+      expect(purple.getHueName("en-US")).toBe("purple");
     });
 
     it("should get color space", () => {
@@ -489,6 +495,30 @@ describe("createColorAreaState", () => {
       expect(state.yChannelStep).toBe(1);
       expect(state.xChannelPageStep).toBe(10);
       expect(state.yChannelPageStep).toBe(10);
+      dispose();
+    });
+  });
+
+  it("should normalize values and change payloads to the requested color space", () => {
+    createRoot((dispose) => {
+      let changedColor: Color | null = null;
+      const [colorSpace, setColorSpace] = createSignal<"rgb" | "hsl" | "hsb">("hsb");
+      const state = createColorAreaState(() => ({
+        defaultValue: "#9B80FF",
+        colorSpace: colorSpace(),
+        xChannel: "saturation",
+        yChannel: "brightness",
+        onChange: (color) => {
+          changedColor = color;
+        },
+      }));
+
+      expect(state.value.getColorSpace()).toBe("hsb");
+      state.setXValue(50);
+      expect(changedColor?.getColorSpace()).toBe("hsb");
+
+      setColorSpace("rgb");
+      expect(state.value.getColorSpace()).toBe("rgb");
       dispose();
     });
   });

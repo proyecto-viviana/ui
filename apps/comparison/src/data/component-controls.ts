@@ -63,6 +63,12 @@ import {
   checkboxGroupValueSourceOptions,
 } from "./checkboxgroup-demo";
 import {
+  colorAreaChannelOptions,
+  colorAreaColorSpaceOptions,
+  colorAreaDemoDefaults,
+  colorAreaValueSourceOptions,
+} from "./colorarea-demo";
+import {
   comboBoxAlignOptions,
   comboBoxDemoDefaults,
   comboBoxDirectionOptions,
@@ -1868,6 +1874,137 @@ const numberFieldControls: ComponentControlGroup = {
     "aria-describedby",
   ],
   note: "Modeled from the S2 NumberField source control surface. The viewer drives label, controlled numeric value, placeholder, S2 size, min/max/step, stepper visibility, description/error text, and disabled/read-only/required/invalid states into both stacks.",
+};
+
+const colorAreaControls: ComponentControlGroup = {
+  slug: "colorarea",
+  title: "ColorArea",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.ariaLabel,
+    },
+    {
+      name: "ariaLabelledBy",
+      label: "aria-labelledby",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.ariaLabelledBy,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.value,
+    },
+    {
+      name: "valueSource",
+      label: "value source",
+      kind: "radio",
+      defaultValue: colorAreaDemoDefaults.valueSource,
+      options: options(colorAreaValueSourceOptions),
+    },
+    {
+      name: "defaultValue",
+      label: "defaultValue",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.defaultValue,
+    },
+    {
+      name: "colorSpace",
+      label: "colorSpace",
+      kind: "select",
+      defaultValue: colorAreaDemoDefaults.colorSpace,
+      options: defaultableOptions(colorAreaColorSpaceOptions),
+    },
+    {
+      name: "xChannel",
+      label: "xChannel",
+      kind: "select",
+      defaultValue: colorAreaDemoDefaults.xChannel,
+      options: options(colorAreaChannelOptions),
+    },
+    {
+      name: "yChannel",
+      label: "yChannel",
+      kind: "select",
+      defaultValue: colorAreaDemoDefaults.yChannel,
+      options: options(colorAreaChannelOptions),
+    },
+    {
+      name: "xName",
+      label: "xName",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.xName,
+    },
+    {
+      name: "yName",
+      label: "yName",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.yName,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.form,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: colorAreaDemoDefaults.isDisabled,
+    },
+    {
+      name: "ariaDescribedBy",
+      label: "aria-describedby",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.ariaDescribedBy,
+    },
+    {
+      name: "ariaDetails",
+      label: "aria-details",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.ariaDetails,
+    },
+    {
+      name: "id",
+      label: "id",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.id,
+    },
+    {
+      name: "slot",
+      label: "slot",
+      kind: "text",
+      defaultValue: colorAreaDemoDefaults.slot,
+    },
+  ],
+  apiProps: [
+    "aria-describedby",
+    "aria-details",
+    "aria-label",
+    "aria-labelledby",
+    "colorSpace",
+    "defaultValue",
+    "form",
+    "id",
+    "isDisabled",
+    "onChange",
+    "onChangeEnd",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "value",
+    "xChannel",
+    "xName",
+    "yChannel",
+    "yName",
+  ],
+  note: "Modeled from the S2 ColorArea docs, API, and source. The viewer uses the official controlled #9B80FF red/green example as its default and drives controlled/default value, colorSpace, channel axes, form field names, ARIA labelling/details, disabled state, id, and slot into both stacks.",
 };
 
 const sliderControls: ComponentControlGroup = {
@@ -4713,6 +4850,7 @@ export const componentControlGroups = {
   calendar: calendarControls,
   checkbox: checkboxControls,
   checkboxgroup: checkboxGroupControls,
+  colorarea: colorAreaControls,
   combobox: comboBoxControls,
   contextualhelp: contextualHelpControls,
   datefield: dateFieldControls,

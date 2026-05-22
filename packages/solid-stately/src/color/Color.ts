@@ -58,18 +58,23 @@ const CHANNEL_NAMES: Record<ColorChannel, string> = {
   alpha: "Alpha",
 };
 
-// Hue names for color naming
-const HUE_NAMES: Array<{ max: number; name: string }> = [
-  { max: 15, name: "pink" },
-  { max: 48, name: "red" },
-  { max: 94, name: "orange" },
-  { max: 135, name: "yellow" },
-  { max: 175, name: "green" },
-  { max: 264, name: "cyan" },
-  { max: 284, name: "blue" },
-  { max: 320, name: "purple" },
-  { max: 349, name: "magenta" },
-  { max: 360, name: "pink" },
+// React Stately uses OKLCH for color names so that lightness is perceptually
+// consistent across hues.
+const ORANGE_LIGHTNESS_THRESHOLD = 0.68;
+const YELLOW_GREEN_LIGHTNESS_THRESHOLD = 0.85;
+const MAX_DARK_LIGHTNESS = 0.55;
+const GRAY_THRESHOLD = 0.001;
+const OKLCH_HUES: Array<[number, string]> = [
+  [0, "pink"],
+  [15, "red"],
+  [48, "orange"],
+  [94, "yellow"],
+  [135, "green"],
+  [175, "cyan"],
+  [264, "blue"],
+  [284, "purple"],
+  [320, "magenta"],
+  [349, "pink"],
 ];
 
 /**
@@ -252,79 +257,157 @@ function hsbToRgb(h: number, s: number, b: number): { r: number; g: number; b: n
   };
 }
 
-/**
- * Get hue name from hue angle.
- */
-function getHueNameFromAngle(hue: number): string {
-  for (const { max, name } of HUE_NAMES) {
-    if (hue <= max) {
-      return name;
+function getOklchHueName(l: number, c: number, h: number): [string, number] {
+  if (c < GRAY_THRESHOLD) {
+    return ["gray", l];
+  }
+
+  for (let i = 0; i < OKLCH_HUES.length; i += 1) {
+    let [hue, hueName] = OKLCH_HUES[i];
+    const [nextHue, nextHueName] = OKLCH_HUES[i + 1] || [360, "pink"];
+    if (h >= hue && h < nextHue) {
+      if (hueName === "orange") {
+        if (l < ORANGE_LIGHTNESS_THRESHOLD) {
+          hueName = "brown";
+        } else {
+          l = l - ORANGE_LIGHTNESS_THRESHOLD + MAX_DARK_LIGHTNESS;
+        }
+      }
+
+      if (h > hue + (nextHue - hue) / 2 && hueName !== nextHueName) {
+        hueName = `${hueName} ${nextHueName}`;
+      } else if (hueName === "yellow" && l < YELLOW_GREEN_LIGHTNESS_THRESHOLD) {
+        hueName = "yellow green";
+      }
+
+      return [hueName.toLocaleLowerCase(), l];
     }
   }
-  return "pink";
+
+  return ["pink", l];
 }
 
-/**
- * Get a human-readable color name based on RGB values.
- */
-function getColorNameFromRgb(r: number, g: number, b: number, alpha: number): string {
-  // Convert to HSL for analysis
-  const { h, s, l } = rgbToHsl(r, g, b);
+function getColorNameFromColor(color: Color): string {
+  let [l, c, h] = toOKLCH(color);
+  const alpha = color.getChannelValue("alpha");
 
-  // Handle edge cases
-  if (l >= 100) {
-    return alpha < 1 ? `white ${Math.round(alpha * 100)}% transparent` : "white";
-  }
-  if (l <= 0) {
-    return alpha < 1 ? `black ${Math.round(alpha * 100)}% transparent` : "black";
+  if (l > 0.999) {
+    return alpha < 1 ? `white ${Math.round((1 - alpha) * 100)}% transparent` : "white";
   }
 
-  // Build color name
-  const parts: string[] = [];
-
-  // Lightness descriptor
-  if (l < 30) {
-    parts.push("very dark");
-  } else if (l < 55) {
-    parts.push("dark");
-  } else if (l > 85) {
-    parts.push("very light");
-  } else if (l > 70) {
-    parts.push("light");
+  if (l < 0.001) {
+    return alpha < 1 ? `black ${Math.round((1 - alpha) * 100)}% transparent` : "black";
   }
 
-  // Saturation/chroma descriptor
-  if (s < 10) {
-    parts.push("gray");
-  } else if (s < 30) {
-    parts.push("grayish");
-  } else if (s > 80) {
-    parts.push("vibrant");
+  let hue: string;
+  [hue, l] = getOklchHueName(l, c, h);
+
+  let chroma = "";
+  if (c <= 0.1 && c >= GRAY_THRESHOLD) {
+    chroma = l >= 0.7 ? "pale" : "grayish";
+  } else if (c >= 0.15) {
+    chroma = "vibrant";
   }
 
-  // Hue name (skip if gray)
-  if (s >= 10) {
-    let hueName = getHueNameFromAngle(h);
-
-    // Special cases
-    if (hueName === "orange" && l < 68) {
-      hueName = "brown";
-    }
-    if (hueName === "yellow" && l < 85 && s > 50) {
-      hueName = "yellow green";
-    }
-
-    parts.push(hueName);
+  let lightness = "";
+  if (l < 0.3) {
+    lightness = "very dark";
+  } else if (l < MAX_DARK_LIGHTNESS) {
+    lightness = "dark";
+  } else if (l < 0.7) {
+    lightness = "";
+  } else if (l < 0.85) {
+    lightness = "light";
+  } else {
+    lightness = "very light";
   }
 
-  let name = parts.join(" ");
-
-  // Add transparency
+  const name = [lightness, chroma, hue].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
   if (alpha < 1) {
-    name += ` ${Math.round(alpha * 100)}% transparent`;
+    return `${Math.round((1 - alpha) * 100)}% transparent ${name}`.trim();
   }
 
-  return name || "color";
+  return name;
+}
+
+function getHueNameFromColor(color: Color): string {
+  const [l, c, h] = toOKLCH(color);
+  const [name] = getOklchHueName(l, c, h);
+  return name;
+}
+
+function toOKLCH(color: Color): [number, number, number] {
+  const rgb = color.toFormat("rgb");
+  let red = rgb.getChannelValue("red") / 255;
+  let green = rgb.getChannelValue("green") / 255;
+  let blue = rgb.getChannelValue("blue") / 255;
+  [red, green, blue] = linSRGB(red, green, blue);
+  const [x, y, z] = linSRGBToXYZ(red, green, blue);
+  const [l, a, b] = xyzToOKLab(x, y, z);
+  return okLabToOKLCH(l, a, b);
+}
+
+function okLabToOKLCH(l: number, a: number, b: number): [number, number, number] {
+  const hue = (Math.atan2(b, a) * 180) / Math.PI;
+  return [l, Math.sqrt(a ** 2 + b ** 2), hue >= 0 ? hue : hue + 360];
+}
+
+function linSRGB(r: number, g: number, b: number): [number, number, number] {
+  return [linSRGBComponent(r), linSRGBComponent(g), linSRGBComponent(b)];
+}
+
+function linSRGBComponent(value: number) {
+  const sign = value < 0 ? -1 : 1;
+  const abs = Math.abs(value);
+
+  if (abs <= 0.04045) {
+    return value / 12.92;
+  }
+
+  return sign * Math.pow((abs + 0.055) / 1.055, 2.4);
+}
+
+function linSRGBToXYZ(r: number, g: number, b: number): [number, number, number] {
+  const matrix = [
+    506752 / 1228815,
+    87881 / 245763,
+    12673 / 70218,
+    87098 / 409605,
+    175762 / 245763,
+    12673 / 175545,
+    7918 / 409605,
+    87881 / 737289,
+    1001167 / 1053270,
+  ];
+  return multiplyMatrix(matrix, r, g, b);
+}
+
+function xyzToOKLab(x: number, y: number, z: number): [number, number, number] {
+  const xyzToLMS = [
+    0.819022437996703, 0.3619062600528904, -0.1288737815209879, 0.0329836539323885,
+    0.9292868615863434, 0.0361446663506424, 0.0481771893596242, 0.2642395317527308,
+    0.6335478284694309,
+  ];
+  const lmsToOKLab = [
+    0.210454268309314, 0.7936177747023054, -0.0040720430116193, 1.9779985324311684,
+    -2.4285922420485799, 0.450593709617411, 0.0259040424655478, 0.7827717124575296,
+    -0.8086757549230774,
+  ];
+
+  const [a, b, c] = multiplyMatrix(xyzToLMS, x, y, z);
+  return multiplyMatrix(lmsToOKLab, Math.cbrt(a), Math.cbrt(b), Math.cbrt(c));
+}
+
+function multiplyMatrix(
+  matrix: number[],
+  x: number,
+  y: number,
+  z: number,
+): [number, number, number] {
+  const a = matrix[0] * x + matrix[1] * y + matrix[2] * z;
+  const b = matrix[3] * x + matrix[4] * y + matrix[5] * z;
+  const c = matrix[6] * x + matrix[7] * y + matrix[8] * z;
+  return [a, b, c];
 }
 
 /**
@@ -493,13 +576,12 @@ class RGBColorImpl implements Color {
     return ["red", "green", "blue"];
   }
 
-  getColorName(locale: string): string {
-    return getColorNameFromRgb(this.red, this.green, this.blue, this.alpha);
+  getColorName(_locale: string): string {
+    return getColorNameFromColor(this);
   }
 
   getHueName(_locale: string): string {
-    const { h } = rgbToHsl(this.red, this.green, this.blue);
-    return getHueNameFromAngle(h);
+    return getHueNameFromColor(this);
   }
 }
 
@@ -669,12 +751,11 @@ class HSLColorImpl implements Color {
   }
 
   getColorName(_locale: string): string {
-    const { r, g, b } = hslToRgb(this.hue, this.saturation, this.lightness);
-    return getColorNameFromRgb(r, g, b, this.alpha);
+    return getColorNameFromColor(this);
   }
 
   getHueName(_locale: string): string {
-    return getHueNameFromAngle(this.hue);
+    return getHueNameFromColor(this);
   }
 }
 
@@ -843,12 +924,11 @@ class HSBColorImpl implements Color {
   }
 
   getColorName(_locale: string): string {
-    const { r, g, b } = hsbToRgb(this.hue, this.saturation, this.brightness);
-    return getColorNameFromRgb(r, g, b, this.alpha);
+    return getColorNameFromColor(this);
   }
 
   getHueName(_locale: string): string {
-    return getHueNameFromAngle(this.hue);
+    return getHueNameFromColor(this);
   }
 }
 

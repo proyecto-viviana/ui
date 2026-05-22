@@ -36,6 +36,20 @@ const sliderTextControlValues: Record<string, string> = {
   form: "audioForm",
 };
 
+const colorAreaTextControlValues: Record<string, string> = {
+  ariaLabel: "Contract color",
+  ariaLabelledBy: "colorarea-labelledby",
+  ariaDescribedBy: "colorarea-describedby",
+  ariaDetails: "colorarea-details",
+  value: "#80C8FF",
+  defaultValue: "#3366CC",
+  xName: "redChannel",
+  yName: "greenChannel",
+  form: "colorForm",
+  id: "contract-colorarea",
+  slot: "color",
+};
+
 const meterTextControlValues: Record<string, string> = {
   value: "45",
   minValue: "0",
@@ -111,6 +125,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "slider" && control.name in sliderTextControlValues) {
       return sliderTextControlValues[control.name];
+    }
+    if (group.slug === "colorarea" && control.name in colorAreaTextControlValues) {
+      return colorAreaTextControlValues[control.name];
     }
     if (group.slug === "meter" && control.name in meterTextControlValues) {
       return meterTextControlValues[control.name];

@@ -3,7 +3,7 @@
  */
 
 import type { JSX } from "solid-js";
-import type { ColorChannel, Color } from "@proyecto-viviana/solid-stately";
+import type { ColorChannel, Color, ColorSpace } from "@proyecto-viviana/solid-stately";
 
 export interface AriaColorSliderOptions {
   /** The channel this slider controls. */
@@ -34,6 +34,8 @@ export interface ColorSliderAria {
 }
 
 export interface AriaColorAreaOptions {
+  /** Element id for the color area. */
+  id?: string;
   /** The X channel. */
   xChannel?: ColorChannel;
   /** The Y channel. */
@@ -44,6 +46,16 @@ export interface AriaColorAreaOptions {
   "aria-labelledby"?: string;
   /** ID of element that describes the area. */
   "aria-describedby"?: string;
+  /** ID of element that provides detailed information about the area. */
+  "aria-details"?: string;
+  /** Color space to use for channel axes. */
+  colorSpace?: ColorSpace;
+  /** Name for the hidden X-axis range input. */
+  xName?: string;
+  /** Name for the hidden Y-axis range input. */
+  yName?: string;
+  /** Associated form owner for the hidden range inputs. */
+  form?: string;
   /** Whether the area is disabled. */
   isDisabled?: boolean;
 }

@@ -412,6 +412,8 @@ export interface ColorAreaRenderProps {
   yChannel: ColorChannel;
   /** The current color. */
   color: Color;
+  /** The default inline styles applied by the color area hook. */
+  defaultStyle: JSX.CSSProperties;
 }
 
 export interface ColorAreaProps extends AriaColorAreaOptions, SlotProps {
@@ -454,6 +456,8 @@ export interface ColorAreaThumbRenderProps {
   isDisabled: boolean;
   /** Whether the thumb is being dragged. */
   isDragging: boolean;
+  /** The current display color. */
+  color: Color;
   /** Whether the thumb is focused. */
   isFocused: boolean;
   /** Whether the thumb has keyboard focus. */
@@ -469,6 +473,8 @@ export interface ColorAreaThumbProps extends SlotProps {
   class?: ClassNameOrFunction<ColorAreaThumbRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ColorAreaThumbRenderProps>;
+  /** Ref callback for the thumb element. */
+  ref?: (element: HTMLDivElement) => void;
 }
 
 interface ColorAreaContextValue {
@@ -492,8 +498,18 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
   const [local, stateProps, ariaProps, rest] = splitProps(
     props,
     ["children", "class", "style", "slot"],
-    ["value", "defaultValue", "onChange", "onChangeEnd", "xChannel", "yChannel"],
-    ["aria-label", "aria-labelledby", "aria-describedby", "isDisabled"],
+    ["value", "defaultValue", "onChange", "onChangeEnd", "xChannel", "yChannel", "colorSpace"],
+    [
+      "id",
+      "aria-label",
+      "aria-labelledby",
+      "aria-describedby",
+      "aria-details",
+      "isDisabled",
+      "xName",
+      "yName",
+      "form",
+    ],
   );
 
   // Create color area state
@@ -504,6 +520,7 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
     onChangeEnd: stateProps.onChangeEnd,
     xChannel: stateProps.xChannel,
     yChannel: stateProps.yChannel,
+    colorSpace: stateProps.colorSpace,
     isDisabled: ariaProps.isDisabled,
   }));
 
@@ -514,12 +531,17 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
   };
 
   // Create color area aria props
-  const { colorAreaProps, gradientProps, thumbProps, xInputProps, yInputProps } = createColorArea(
+  const colorAreaAria = createColorArea(
     () => ({
+      id: ariaProps.id,
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
+      "aria-details": ariaProps["aria-details"],
       isDisabled: ariaProps.isDisabled,
+      xName: ariaProps.xName,
+      yName: ariaProps.yName,
+      form: ariaProps.form,
     }),
     () => state,
     () => areaRef ?? null,
@@ -531,7 +553,34 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
     xChannel: state.xChannel,
     yChannel: state.yChannel,
     color: state.value,
+    defaultStyle: (colorAreaAria.colorAreaProps as { style?: JSX.CSSProperties }).style ?? {},
   }));
+
+  const childRenderValues: ColorAreaRenderProps = {
+    get isDisabled() {
+      return state.isDisabled;
+    },
+    get isDragging() {
+      return state.isDragging;
+    },
+    get xChannel() {
+      return state.xChannel;
+    },
+    get yChannel() {
+      return state.yChannel;
+    },
+    get color() {
+      return state.value;
+    },
+    get defaultStyle() {
+      return (colorAreaAria.colorAreaProps as { style?: JSX.CSSProperties }).style ?? {};
+    },
+  };
+
+  const colorAreaChildren = () => {
+    const children = props.children;
+    return typeof children === "function" ? children(childRenderValues) : children;
+  };
 
   const renderProps = useRenderProps(
     {
@@ -548,12 +597,17 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
   );
 
   const cleanColorAreaProps = () => {
-    const { ref: _ref, style: _areaStyle, ...rest } = colorAreaProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _areaStyle,
+      ...rest
+    } = colorAreaAria.colorAreaProps as Record<string, unknown>;
     return rest;
   };
 
   const mergedStyle = () => {
-    const areaStyle = (colorAreaProps as { style?: Record<string, string> }).style || {};
+    const areaStyle =
+      (colorAreaAria.colorAreaProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...areaStyle, ...renderStyle };
   };
@@ -562,11 +616,21 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
     <ColorAreaContext.Provider
       value={{
         state,
-        colorAreaProps,
-        gradientProps,
-        thumbProps,
-        xInputProps,
-        yInputProps,
+        get colorAreaProps() {
+          return colorAreaAria.colorAreaProps;
+        },
+        get gradientProps() {
+          return colorAreaAria.gradientProps;
+        },
+        get thumbProps() {
+          return colorAreaAria.thumbProps;
+        },
+        get xInputProps() {
+          return colorAreaAria.xInputProps;
+        },
+        get yInputProps() {
+          return colorAreaAria.yInputProps;
+        },
         areaRef,
         setAreaRef,
       }}
@@ -577,10 +641,11 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
         {...cleanColorAreaProps()}
         class={renderProps.class()}
         style={mergedStyle()}
+        slot={local.slot ?? undefined}
         data-disabled={state.isDisabled || undefined}
         data-dragging={state.isDragging || undefined}
       >
-        {renderProps.renderChildren()}
+        {colorAreaChildren()}
       </div>
     </ColorAreaContext.Provider>
   );
@@ -597,7 +662,7 @@ export function ColorAreaGradient(props: ColorAreaGradientProps): JSX.Element {
     throw new Error("ColorAreaGradient must be used within a ColorArea");
   }
 
-  const { state, gradientProps } = context;
+  const { state } = context;
 
   const renderValues = createMemo<ColorAreaGradientRenderProps>(() => ({
     isDisabled: state.isDisabled,
@@ -614,12 +679,16 @@ export function ColorAreaGradient(props: ColorAreaGradientProps): JSX.Element {
   );
 
   const cleanGradientProps = () => {
-    const { ref: _ref, style: _gradStyle, ...rest } = gradientProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _gradStyle,
+      ...rest
+    } = context.gradientProps as Record<string, unknown>;
     return rest;
   };
 
   const mergedStyle = () => {
-    const gradStyle = (gradientProps as { style?: Record<string, string> }).style || {};
+    const gradStyle = (context.gradientProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...gradStyle, ...renderStyle };
   };
@@ -641,16 +710,18 @@ export function ColorAreaGradient(props: ColorAreaGradientProps): JSX.Element {
  * The thumb element of a color area.
  */
 export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children", "ref"]);
 
   const context = useContext(ColorAreaContext);
   if (!context) {
     throw new Error("ColorAreaThumb must be used within a ColorArea");
   }
 
-  const { state, thumbProps, xInputProps, yInputProps } = context;
+  const { state } = context;
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  let xInputRef: HTMLInputElement | undefined;
+  let yInputRef: HTMLInputElement | undefined;
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
@@ -661,6 +732,7 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
   const renderValues = createMemo<ColorAreaThumbRenderProps>(() => ({
     isDisabled: state.isDisabled,
     isDragging: state.isDragging,
+    color: state.getDisplayColor(),
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
@@ -677,7 +749,11 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
   );
 
   const cleanThumbProps = () => {
-    const { ref: _ref, style: _thumbStyle, ...rest } = thumbProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _thumbStyle,
+      ...rest
+    } = context.thumbProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -689,27 +765,44 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
     return rest;
   };
   const mergedXInputProps = () => {
-    return mergeProps(
-      xInputProps as Record<string, unknown>,
-      cleanFocusProps(),
-    ) as JSX.InputHTMLAttributes<HTMLInputElement>;
+    const { value: _value, ...inputProps } = context.xInputProps as Record<string, unknown>;
+    return mergeProps(inputProps, cleanFocusProps()) as JSX.InputHTMLAttributes<HTMLInputElement>;
   };
   const mergedYInputProps = () => {
-    return mergeProps(
-      yInputProps as Record<string, unknown>,
-      cleanFocusProps(),
-    ) as JSX.InputHTMLAttributes<HTMLInputElement>;
+    const { value: _value, ...inputProps } = context.yInputProps as Record<string, unknown>;
+    return mergeProps(inputProps, cleanFocusProps()) as JSX.InputHTMLAttributes<HTMLInputElement>;
   };
 
   const mergedStyle = () => {
-    const thumbStyle = (thumbProps as { style?: Record<string, string> }).style || {};
+    const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...thumbStyle, ...renderStyle };
   };
 
+  const syncInputValue = (input: HTMLInputElement | undefined, value: number) => {
+    const nextValue = String(value);
+    const update = () => {
+      if (input && input.value !== nextValue) {
+        input.value = nextValue;
+      }
+    };
+
+    update();
+    queueMicrotask(update);
+  };
+
+  createEffect(() => {
+    syncInputValue(xInputRef, state.getXValue());
+  });
+
+  createEffect(() => {
+    syncInputValue(yInputRef, state.getYValue());
+  });
+
   return (
     <div
       {...domProps}
+      ref={local.ref}
       {...cleanThumbProps()}
       {...cleanHoverProps()}
       class={renderProps.class()}
@@ -720,8 +813,20 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
       data-focus-visible={isFocusVisible() || undefined}
       data-hovered={isHovered() || undefined}
     >
-      <input {...mergedXInputProps()} />
-      <input {...mergedYInputProps()} />
+      <input
+        {...mergedXInputProps()}
+        ref={(el) => {
+          xInputRef = el;
+          syncInputValue(el, state.getXValue());
+        }}
+      />
+      <input
+        {...mergedYInputProps()}
+        ref={(el) => {
+          yInputRef = el;
+          syncInputValue(el, state.getYValue());
+        }}
+      />
       {renderProps.renderChildren()}
     </div>
   );

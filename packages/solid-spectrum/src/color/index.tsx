@@ -1,11 +1,23 @@
-import { type JSX, splitProps, createContext, createMemo, useContext, Show } from "solid-js";
+import {
+  type JSX,
+  splitProps,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  onCleanup,
+  useContext,
+  Show,
+} from "solid-js";
+import { Portal } from "solid-js/web";
 import {
   ColorSlider as HeadlessColorSlider,
   ColorSliderTrack as HeadlessColorSliderTrack,
   ColorSliderThumb as HeadlessColorSliderThumb,
   ColorArea as HeadlessColorArea,
-  ColorAreaGradient as HeadlessColorAreaGradient,
   ColorAreaThumb as HeadlessColorAreaThumb,
+  ColorAreaContext as HeadlessColorAreaContext,
   ColorWheel as HeadlessColorWheel,
   ColorWheelTrack as HeadlessColorWheelTrack,
   ColorWheelThumb as HeadlessColorWheelThumb,
@@ -27,7 +39,22 @@ import {
   type ColorFieldRenderProps,
   type ColorSwatchRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { Color, ColorChannel, ColorFormat } from "@proyecto-viviana/solid-stately";
+import type {
+  Color,
+  ColorAxes,
+  ColorChannel,
+  ColorChannelRange,
+  ColorFormat,
+  ColorSpace,
+} from "@proyecto-viviana/solid-stately";
+import { style, type StyleString } from "../s2-style";
+import { keyframes } from "../s2-style/style-macro";
+import { mergeStyles } from "../s2-style/runtime";
+import {
+  getAllowedOverrides,
+  type StylesPropWithHeight,
+  type UnsafeClassName,
+} from "../s2-internal/style-utils";
 
 export type ColorSize = "sm" | "md" | "lg";
 
@@ -216,11 +243,102 @@ export interface ColorAreaProps extends Omit<
   HeadlessColorAreaProps,
   "class" | "style" | "children"
 > {
-  /** The size of the color area. */
-  size?: ColorSize;
-  /** Additional CSS class name. */
-  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StylesPropWithHeight;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
 }
+
+const legacyColorAreaSizes: Record<ColorSize, string> = {
+  sm: "12rem",
+  md: "16rem",
+  lg: "20rem",
+};
+
+const colorAreaRoot = style<ColorAreaRenderProps>(
+  {
+    position: "relative",
+    size: 192,
+    minSize: 64,
+    borderRadius: "default",
+    outlineColor: {
+      default: "gray-1000/10" as never,
+      forcedColors: "ButtonBorder",
+    },
+    outlineWidth: 1,
+    outlineOffset: -1,
+    outlineStyle: {
+      default: "solid",
+      isDisabled: "none",
+    },
+    backgroundColor: {
+      isDisabled: "disabled",
+    },
+  },
+  getAllowedOverrides({ height: true }),
+);
+
+const colorAreaThumb = style<ColorAreaThumbRenderProps>({
+  transition: "[width, height]",
+  size: {
+    default: 16,
+    isFocusVisible: 32,
+  },
+  backgroundColor: {
+    isDisabled: "disabled",
+  },
+  borderRadius: "full",
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderWidth: 2,
+  borderColor: {
+    default: "white",
+    isDisabled: "disabled",
+  },
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: "black/42" as never,
+    forcedColors: "ButtonBorder",
+  },
+});
+
+const colorAreaThumbRing = style({
+  size: "full",
+  borderRadius: "full",
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderWidth: 1,
+  borderColor: {
+    default: "black/42" as never,
+    forcedColors: "ButtonBorder",
+  },
+});
+
+const colorAreaLoupe = style({
+  filter: "elevated",
+  pointerEvents: "none",
+  animationDuration: 125,
+  animationFillMode: "forwards",
+  animationTimingFunction: "in-out",
+  isolation: "isolate",
+});
+
+const colorAreaLoupeEnterAnimation = keyframes(`
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+`);
+
+const colorAreaLoupeExitAnimation = keyframes(`
+  to {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+`);
 
 /**
  * A color area allows users to select a color by dragging in a 2D gradient.
@@ -238,64 +356,222 @@ export interface ColorAreaProps extends Omit<
  * ```
  */
 export function ColorArea(props: ColorAreaProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["size", "class"]);
-
-  const size = () => local.size ?? "md";
-  const styles = () => sizeStyles[size()];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: ColorAreaRenderProps): string => {
-    const base = `relative ${styles().area.container} rounded-lg overflow-hidden border border-bg-300 shadow-inner`;
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50 cursor-not-allowed";
-    }
-    return [base, stateClass, customClass].filter(Boolean).join(" ");
-  };
-
-  const contextValue = createMemo(() => ({ size: size() }));
+  const [local, headlessProps] = splitProps(props, ["styles", "UNSAFE_className", "UNSAFE_style"]);
 
   return (
-    <ColorSizeContext.Provider value={contextValue()}>
-      <HeadlessColorArea {...headlessProps} class={getClassName}>
-        {() => (
-          <>
-            <ColorAreaGradient />
-            <ColorAreaThumb />
-          </>
-        )}
-      </HeadlessColorArea>
-    </ColorSizeContext.Provider>
+    <HeadlessColorArea
+      {...headlessProps}
+      class={(renderProps: ColorAreaRenderProps) =>
+        [local.UNSAFE_className, colorAreaRoot(renderProps, mergeStyles(local.styles))]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={(renderProps: ColorAreaRenderProps) => ({
+        ...renderProps.defaultStyle,
+        background: renderProps.isDisabled ? undefined : renderProps.defaultStyle.background,
+        position: undefined,
+        ...local.UNSAFE_style,
+      })}
+    >
+      {() => <ColorAreaThumb />}
+    </HeadlessColorArea>
   );
-}
-
-/**
- * The gradient background for a color area.
- */
-export function ColorAreaGradient(props: { class?: string }): JSX.Element {
-  const customClass = props.class ?? "";
-  const className = `absolute inset-0 ${customClass}`;
-
-  return <HeadlessColorAreaGradient class={className} />;
 }
 
 /**
  * The thumb component for a color area.
  */
-export function ColorAreaThumb(props: { class?: string }): JSX.Element {
-  const context = useContext(ColorSizeContext);
-  const styles = sizeStyles[context.size];
-  const customClass = props.class ?? "";
+interface ColorAreaThumbProps {
+  /** Custom thumb children. Defaults to the Spectrum 2 inner ring and drag loupe. */
+  children?: JSX.Element | ((renderProps: ColorAreaThumbRenderProps) => JSX.Element);
+  /** Ref callback for the thumb element. */
+  ref?: (element: HTMLDivElement) => void;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
+}
 
-  const getClassName = (renderProps: ColorAreaThumbRenderProps): string => {
-    const base = `${styles.area.thumb} rounded-full border-2 border-on-color shadow-md cursor-grab`;
-    const dragClass = renderProps.isDragging ? "cursor-grabbing scale-110" : "";
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-accent-300 ring-offset-2" : "";
-    const disabledClass = renderProps.isDisabled ? "cursor-not-allowed" : "";
-    return [base, dragClass, focusClass, disabledClass, customClass].filter(Boolean).join(" ");
-  };
+function ColorAreaThumb(props: ColorAreaThumbProps = {}): JSX.Element {
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "ref",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  let thumbElement: HTMLDivElement | undefined;
 
-  return <HeadlessColorAreaThumb class={getClassName} />;
+  return (
+    <HeadlessColorAreaThumb
+      {...headlessProps}
+      ref={(element: HTMLDivElement) => {
+        thumbElement = element;
+        local.ref?.(element);
+      }}
+      class={(renderProps: ColorAreaThumbRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          mergeStyles(colorAreaThumb(renderProps), local.styles),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={(renderProps: ColorAreaThumbRenderProps) => ({
+        background: renderProps.isDisabled
+          ? undefined
+          : `linear-gradient(${renderProps.color.toString("css")}, ${renderProps.color.toString("css")}), repeating-conic-gradient(#E1E1E1 0% 25%, white 0% 50%) 50% / 16px 16px`,
+        "background-color": undefined,
+        ...local.UNSAFE_style,
+      })}
+    >
+      {(renderProps: ColorAreaThumbRenderProps) =>
+        typeof local.children === "function" ? (
+          local.children(renderProps)
+        ) : (
+          <>
+            {local.children ?? <div class={colorAreaThumbRing} />}
+            <ColorAreaLoupe
+              isOpen={renderProps.isDragging}
+              color={renderProps.color}
+              anchor={() => thumbElement}
+            />
+          </>
+        )
+      }
+    </HeadlessColorAreaThumb>
+  );
+}
+
+function ColorAreaLoupe(props: {
+  isOpen: boolean;
+  color: Color;
+  anchor: () => HTMLElement | undefined;
+}): JSX.Element {
+  const patternId = createUniqueId();
+  const [phase, setPhase] = createSignal<"open" | "exiting" | "closed">(
+    props.isOpen ? "open" : "closed",
+  );
+  const [rect, setRect] = createSignal<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
+  createEffect(() => {
+    if (props.isOpen) {
+      setPhase("open");
+    } else if (phase() === "open") {
+      setPhase("exiting");
+    }
+  });
+
+  createEffect(() => {
+    props.color.toString("css");
+
+    if ((phase() === "closed" && !props.isOpen) || typeof window === "undefined") {
+      setRect(null);
+      return;
+    }
+
+    const update = () => {
+      const element = props.anchor();
+      if (!element) {
+        setRect(null);
+        return;
+      }
+
+      const next = element.getBoundingClientRect();
+      setRect({
+        top: next.top,
+        left: next.left,
+        width: next.width,
+        height: next.height,
+      });
+    };
+
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    onCleanup(() => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    });
+  });
+
+  return (
+    <Show when={phase() !== "closed" && typeof document !== "undefined" && rect()}>
+      {(currentRect) => {
+        const loupeWidth = 48;
+        const loupeHeight = 64;
+        const borderWidth = 1;
+        const handleSize = 16;
+        const offset = 12;
+        const r = currentRect();
+
+        return (
+          <Portal mount={document.body}>
+            <svg
+              aria-hidden="true"
+              class={colorAreaLoupe}
+              width={loupeWidth + borderWidth * 2}
+              height={loupeHeight + borderWidth * 2}
+              style={{
+                position: "fixed",
+                top: `${r.top + r.height / 2}px`,
+                left: `${r.left + r.width / 2}px`,
+                "margin-top": `${-loupeHeight - borderWidth * 2 - handleSize / 2 - offset}px`,
+                "margin-left": `${-loupeWidth / 2 - borderWidth}px`,
+                "animation-name":
+                  phase() === "exiting"
+                    ? colorAreaLoupeExitAnimation
+                    : colorAreaLoupeEnterAnimation,
+              }}
+              onAnimationEnd={(event) => {
+                if (phase() === "exiting" && event.animationName === colorAreaLoupeExitAnimation) {
+                  setPhase("closed");
+                }
+              }}
+            >
+              <pattern
+                id={patternId}
+                x="0"
+                y="0"
+                width="16"
+                height="16"
+                patternUnits="userSpaceOnUse"
+              >
+                <rect fill="white" x="0" y="0" width="16" height="16" />
+                <rect fill="#E1E1E1" x="0" y="0" width="8" height="8" />
+                <rect fill="#E1E1E1" x="8" y="8" width="8" height="8" />
+              </pattern>
+              <path
+                d="M25 1a24 24 0 0124 24c0 16.255-24 40-24 40S1 41.255 1 25A24 24 0 0125 1z"
+                fill={`url(#${patternId})`}
+              />
+              <path
+                d="M25 1a24 24 0 0124 24c0 16.255-24 40-24 40S1 41.255 1 25A24 24 0 0125 1z"
+                fill={props.color.toString("css")}
+              />
+              <path
+                d="M25 3A21.98 21.98 0 003 25c0 6.2 4 14.794 11.568 24.853A144.233 144.233 0 0025 62.132a144.085 144.085 0 0010.4-12.239C42.99 39.816 47 31.209 47 25A21.98 21.98 0 0025 3m0-2a24 24 0 0124 24c0 16.255-24 40-24 40S1 41.255 1 25A24 24 0 0125 1z"
+                fill="white"
+                stroke="rgba(0, 0, 0, 0.42)"
+                stroke-width="1"
+              />
+            </svg>
+          </Portal>
+        );
+      }}
+    </Show>
+  );
 }
 
 export interface ColorWheelProps extends Omit<
@@ -613,7 +889,10 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
         onChange={props.onChange}
         xChannel="saturation"
         yChannel="lightness"
-        size={size()}
+        UNSAFE_style={{
+          width: legacyColorAreaSizes[size()],
+          height: legacyColorAreaSizes[size()],
+        }}
         isDisabled={props.isDisabled}
       />
 
@@ -661,13 +940,15 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
 
 ColorSlider.Track = ColorSliderTrack;
 ColorSlider.Thumb = ColorSliderThumb;
-ColorArea.Gradient = ColorAreaGradient;
-ColorArea.Thumb = ColorAreaThumb;
 ColorWheel.Track = ColorWheelTrack;
 ColorWheel.Thumb = ColorWheelThumb;
 ColorField.Input = ColorFieldInput;
 
-export type { Color, ColorChannel, ColorFormat };
+export const ColorAreaContext = HeadlessColorAreaContext as ReturnType<
+  typeof createContext<unknown>
+>;
+
+export type { Color, ColorAxes, ColorChannel, ColorChannelRange, ColorFormat, ColorSpace };
 
 export { parseColor, getColorChannels } from "@proyecto-viviana/solid-stately";
 

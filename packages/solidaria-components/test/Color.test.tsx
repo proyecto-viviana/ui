@@ -26,6 +26,7 @@ import {
   ColorSwatchPickerItem,
 } from "../src/Color";
 import { parseColor } from "@proyecto-viviana/solid-stately";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 
 // Helper components using render props pattern
 function TestColorSlider(props: Parameters<typeof ColorSlider>[0]) {
@@ -383,6 +384,193 @@ describe("Color Components", () => {
 
         const area = document.querySelector(".solidaria-ColorArea");
         expect(area).toBeTruthy();
+      });
+
+      it("should forward ARIA, slot, and hidden range form props", () => {
+        render(() => (
+          <>
+            <form id="colorForm" />
+            <TestColorArea
+              defaultValue={parseColor("#9B80FF")}
+              colorSpace="rgb"
+              aria-label="Color picker"
+              aria-describedby="color-help"
+              aria-details="color-details"
+              id="favorite-color"
+              slot="color"
+              xChannel="red"
+              yChannel="green"
+              xName="redChannel"
+              yName="greenChannel"
+              form="colorForm"
+            />
+          </>
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        expect(area).toHaveAttribute("id", "favorite-color");
+        expect(area).toHaveAttribute("slot", "color");
+        expect(area).not.toHaveAttribute("aria-describedby");
+        expect(area).not.toHaveAttribute("aria-details");
+
+        const inputs = Array.from(area.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+        expect(inputs).toHaveLength(2);
+        expect(inputs[0]).toHaveAttribute("name", "redChannel");
+        expect(inputs[1]).toHaveAttribute("name", "greenChannel");
+        expect(inputs[0]).toHaveAttribute("form", "colorForm");
+        expect(inputs[1]).toHaveAttribute("form", "colorForm");
+        expect(inputs[0]).toHaveAttribute("aria-label", "Color picker, Color picker");
+        expect(inputs[0]).toHaveAttribute("aria-roledescription", "2D slider");
+        expect(inputs[0]).toHaveAttribute("aria-orientation", "horizontal");
+        expect(inputs[0]).toHaveAttribute("aria-describedby", "color-help");
+        expect(inputs[0]).toHaveAttribute("aria-details", "color-details");
+        expect(inputs[1]).toHaveAttribute("aria-label", "Color picker, Color picker");
+        expect(inputs[1]).toHaveAttribute("aria-orientation", "vertical");
+        expect(inputs[1]).toHaveAttribute("aria-describedby", "color-help");
+        expect(inputs[1]).toHaveAttribute("aria-details", "color-details");
+        expect(inputs[1]).toHaveAttribute("aria-hidden", "true");
+      });
+
+      it("should apply the generated area gradient on the root", () => {
+        render(() => (
+          <TestColorArea
+            defaultValue={parseColor("#9B80FF")}
+            colorSpace="rgb"
+            aria-label="Color picker"
+            xChannel="red"
+            yChannel="green"
+          />
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        expect(area).toHaveStyle({ "touch-action": "none" });
+        expect((area as HTMLElement).style.backgroundImage).toContain("linear-gradient(to right");
+        expect((area as HTMLElement).style.backgroundColor).toBe("rgb(0, 0, 255)");
+        expect((area as HTMLElement).style.backgroundBlendMode).toBe("screen");
+      });
+
+      it("should preserve the generated area gradient when disabled", () => {
+        render(() => (
+          <TestColorArea
+            defaultValue={parseColor("#9B80FF")}
+            colorSpace="rgb"
+            aria-label="Color picker"
+            xChannel="red"
+            yChannel="green"
+            isDisabled
+          />
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        expect(area).toHaveAttribute("data-disabled", "true");
+        expect(area).not.toHaveAttribute("aria-disabled");
+        expect((area as HTMLElement).style.backgroundImage).toContain("linear-gradient(to right");
+        expect((area as HTMLElement).style.backgroundColor).toBe("rgb(0, 0, 255)");
+        expect((area as HTMLElement).style.backgroundBlendMode).toBe("screen");
+      });
+
+      it("should update the focused horizontal input from keyboard events", async () => {
+        const onChange = vi.fn();
+        const [value, setValue] = createSignal(parseColor("rgb(100, 0, 0)"));
+        render(() => (
+          <TestColorArea
+            value={value()}
+            colorSpace="rgb"
+            aria-label="Color picker"
+            xChannel="red"
+            yChannel="green"
+            onChange={(color) => {
+              onChange(color);
+              setValue(color);
+            }}
+          />
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        const input = area.querySelector<HTMLInputElement>(
+          'input[type="range"]',
+        ) as HTMLInputElement;
+
+        input.focus();
+        fireEvent.keyDown(input, { key: "ArrowRight" });
+
+        await waitFor(() => {
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("red")).toBe(101);
+          const currentInput = area.querySelector<HTMLInputElement>('input[type="range"]');
+          expect(currentInput).toBe(input);
+          expect(currentInput?.value).toBe("101");
+        });
+      });
+
+      it("should update from pointer interaction and call onChangeEnd with the settled value", async () => {
+        const onChange = vi.fn();
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorArea
+            defaultValue={parseColor("rgb(0, 0, 0)")}
+            colorSpace="rgb"
+            aria-label="Color picker"
+            xChannel="red"
+            yChannel="green"
+            onChange={onChange}
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        Object.defineProperty(area, "getBoundingClientRect", {
+          configurable: true,
+          value: () => createMockRect(0, 0, 100),
+        });
+
+        fireEvent.pointerDown(area, { clientX: 50, clientY: 50, pointerId: 1 });
+        fireEvent.pointerMove(area, { clientX: 100, clientY: 0, pointerId: 1 });
+        fireEvent.pointerUp(area, { clientX: 100, clientY: 0, pointerId: 1 });
+
+        await waitFor(() => {
+          expect(onChange).toHaveBeenCalled();
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("red")).toBe(255);
+          expect(changedColor.getChannelValue("green")).toBe(255);
+          expect(onChangeEnd).toHaveBeenCalled();
+          const settledColor = onChangeEnd.mock.lastCall?.[0];
+          expect(settledColor.getChannelValue("red")).toBe(255);
+          expect(settledColor.getChannelValue("green")).toBe(255);
+        });
+      });
+
+      it("should flip horizontal keyboard and thumb behavior in RTL", async () => {
+        const onChange = vi.fn();
+        render(() => (
+          <I18nProvider locale="ar-AE">
+            <TestColorArea
+              defaultValue={parseColor("rgb(100, 0, 0)")}
+              colorSpace="rgb"
+              aria-label="Color picker"
+              xChannel="red"
+              yChannel="green"
+              onChange={onChange}
+            />
+          </I18nProvider>
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        const thumb = document.querySelector(".solidaria-ColorArea-thumb") as HTMLElement;
+        const input = area.querySelector<HTMLInputElement>(
+          'input[type="range"]',
+        ) as HTMLInputElement;
+
+        expect((area as HTMLElement).style.backgroundImage).toContain("linear-gradient(to left");
+        expect(thumb.style.left).toBe(`${(1 - 100 / 255) * 100}%`);
+
+        input.focus();
+        fireEvent.keyDown(input, { key: "ArrowRight" });
+
+        await waitFor(() => {
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("red")).toBe(99);
+        });
       });
     });
   });

@@ -33,6 +33,7 @@ import {
   CardView as SolidSpectrumCardView,
   Checkbox as SolidSpectrumCheckbox,
   CheckboxGroup as SolidSpectrumCheckboxGroup,
+  ColorArea as SolidSpectrumColorArea,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
   Content as SolidSpectrumContent,
@@ -84,6 +85,7 @@ import {
   ToggleButtonGroup as SolidSpectrumToggleButtonGroup,
   createIcon,
   createIllustration,
+  parseColor as parseSolidSpectrumColor,
 } from "@proyecto-viviana/solid-spectrum";
 import { s2ButtonText } from "../../../../../../packages/solid-spectrum/src/button/s2-button-styles";
 import {
@@ -183,6 +185,14 @@ import {
   serializeCheckboxGroupDemoProps,
   type CheckboxGroupDemoProps,
 } from "@comparison/data/checkboxgroup-demo";
+import {
+  colorAreaDemoDefaults,
+  colorAreaDemoPropsFromWindow,
+  initialColorAreaDemoValue,
+  normalizeColorAreaDemoProps,
+  serializeColorAreaDemoProps,
+  type ColorAreaDemoProps,
+} from "@comparison/data/colorarea-demo";
 import {
   normalizeRadioGroupDemoProps,
   radioGroupDemoPropsFromWindow,
@@ -535,44 +545,12 @@ function staticColorBackdropValue(staticColor: string | undefined | null) {
   return explicitStaticColor(staticColor);
 }
 
-function booleanParamFromWindow(name: string, fallback = false) {
-  if (typeof window === "undefined") {
-    return fallback;
-  }
-
-  const value = new URLSearchParams(window.location.search).get(name);
-  if (value == null) {
-    return fallback;
-  }
-
-  return value === "true" || value === "on" || value === "1";
-}
-
 function queryParamFromWindow(name: string) {
   if (typeof window === "undefined") {
     return null;
   }
 
   return new URLSearchParams(window.location.search).get(name);
-}
-
-function stringParamFromWindow<T extends string>(
-  name: string,
-  allowed: readonly T[],
-  fallback: T,
-): T;
-function stringParamFromWindow<T extends string>(
-  name: string,
-  allowed: readonly T[],
-  fallback: T | undefined,
-): T | undefined;
-function stringParamFromWindow<T extends string>(
-  name: string,
-  allowed: readonly T[],
-  fallback: T | undefined,
-) {
-  const value = queryParamFromWindow(name);
-  return allowed.includes(value as T) ? (value as T) : fallback;
 }
 
 function selectedKeysParamFromWindow(fallback: string[]) {
@@ -625,6 +603,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   card: () => h(SolidSpectrumCardDemo, {}),
   checkbox: () => h(SolidSpectrumCheckboxDemo, {}),
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
+  colorarea: () => h(SolidSpectrumColorAreaDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -5079,6 +5058,157 @@ function SolidSpectrumSliderDemo() {
               setDemoProps((current: SliderDemoProps) =>
                 current.valueSource === "value" ? { ...current, value: nextValue } : current,
               );
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function parseSolidColorAreaValue(value: string, fallback = colorAreaDemoDefaults.value) {
+  try {
+    return parseSolidSpectrumColor(value || fallback);
+  } catch {
+    return parseSolidSpectrumColor(fallback);
+  }
+}
+
+function solidColorToCssString(color: ReturnType<typeof parseSolidColorAreaValue>) {
+  return color.toString("css");
+}
+
+function SolidSpectrumColorAreaDemo() {
+  const [demoProps, setDemoProps] = createSignal<ColorAreaDemoProps>(
+    colorAreaDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(
+    parseSolidColorAreaValue(initialColorAreaDemoValue(demoProps())),
+  );
+  const [finalValue, setFinalValue] = createSignal(
+    parseSolidColorAreaValue(initialColorAreaDemoValue(demoProps())),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  const locale = buttonDemoLocaleFromWindow();
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "colorarea") {
+        const nextProps = normalizeColorAreaDemoProps(event.detail.props ?? {});
+        const nextValue = parseSolidColorAreaValue(initialColorAreaDemoValue(nextProps));
+        setDemoProps(nextProps);
+        setValue(nextValue);
+        setFinalValue(nextValue);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeColorAreaDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      locale,
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "colorarea",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            return solidColorToCssString(value());
+          },
+          get "data-comparison-final-value"() {
+            return solidColorToCssString(finalValue());
+          },
+        },
+        [
+          hc(SolidSpectrumColorArea, {
+            get "aria-label"() {
+              return demoProps().ariaLabel || undefined;
+            },
+            get "aria-labelledby"() {
+              return demoProps().ariaLabelledBy || undefined;
+            },
+            get "aria-describedby"() {
+              return demoProps().ariaDescribedBy || undefined;
+            },
+            get "aria-details"() {
+              return demoProps().ariaDetails || undefined;
+            },
+            get value() {
+              return demoProps().valueSource === "value" ? value() : undefined;
+            },
+            get defaultValue() {
+              return demoProps().valueSource === "defaultValue"
+                ? parseSolidColorAreaValue(
+                    demoProps().defaultValue,
+                    colorAreaDemoDefaults.defaultValue,
+                  )
+                : undefined;
+            },
+            get colorSpace() {
+              return demoProps().colorSpace || undefined;
+            },
+            get xChannel() {
+              return demoProps().xChannel;
+            },
+            get yChannel() {
+              return demoProps().yChannel;
+            },
+            get xName() {
+              return demoProps().xName || undefined;
+            },
+            get yName() {
+              return demoProps().yName || undefined;
+            },
+            get form() {
+              return demoProps().form || undefined;
+            },
+            get id() {
+              return demoProps().id || undefined;
+            },
+            get slot() {
+              return demoProps().slot || undefined;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            onChange: (nextValue: ReturnType<typeof parseSolidColorAreaValue>) => {
+              setValue(nextValue);
+              setDemoProps((current: ColorAreaDemoProps) =>
+                current.valueSource === "value"
+                  ? { ...current, value: solidColorToCssString(nextValue) }
+                  : current,
+              );
+            },
+            onChangeEnd: (nextValue: ReturnType<typeof parseSolidColorAreaValue>) => {
+              setFinalValue(nextValue);
             },
           }),
         ],

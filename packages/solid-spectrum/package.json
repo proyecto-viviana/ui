@@ -52,6 +52,12 @@
       "import": "./dist/Calendar.js",
       "default": "./dist/Calendar.js"
     },
+    "./ColorArea": {
+      "types": "./dist/ColorArea.d.ts",
+      "solid": "./src/ColorArea.ts",
+      "import": "./dist/ColorArea.js",
+      "default": "./dist/ColorArea.js"
+    },
     "./Card": {
       "types": "./dist/Card.d.ts",
       "solid": "./src/Card.ts",

@@ -576,6 +576,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 CheckboxGroup and Checkbox directly; Solid uses @proyecto-viviana/solid-spectrum CheckboxGroup and Checkbox with S2-derived field layout and group-propagated checkbox size/emphasis.",
   }),
 
+  colorarea: styledLiveOfficialEntry({
+    slug: "colorarea",
+    title: "ColorArea",
+    category: "Components",
+    summary:
+      "Two-dimensional color selection surface mounted on both stacks with the official controlled red/green example, default/controlled value modes, colorSpace, channel axes, form fields, ARIA labels, and disabled state.",
+    styledSummary: "React Spectrum ColorArea vs Solid Spectrum ColorArea.",
+    styledNote:
+      "React uses @react-spectrum/s2/ColorArea directly; Solid uses @proyecto-viviana/solid-spectrum ColorArea with the public ColorArea subpath, S2 root/thumb/loupe styling, generated gradient background, hidden channel range inputs, controlled/default value routing, colorSpace conversion, form name forwarding, RTL channel geometry, and route controls covering the documented S2 API surface.",
+  }),
+
   combobox: styledLiveOfficialEntry({
     slug: "combobox",
     title: "ComboBox",

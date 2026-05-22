@@ -4,9 +4,10 @@
  * Provides ARIA attributes and keyboard/pointer handling for a 2D color area.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo, createSignal, type Accessor } from "solid-js";
 import type { Color, ColorAreaState, ColorChannel } from "@proyecto-viviana/solid-stately";
 import { parseColor } from "@proyecto-viviana/solid-stately";
+import { useLocale } from "../i18n";
 import { createId } from "../ssr";
 import type { AriaColorAreaOptions, ColorAreaAria } from "./types";
 
@@ -20,10 +21,60 @@ export function createColorArea(
 ): ColorAreaAria {
   const getProps = () => props();
   const getState = () => state();
+  const locale = useLocale();
+  const isRTL = () => locale().direction === "rtl";
+  const [focusedInput, setFocusedInput] = createSignal<"x" | "y" | null>(null);
+  const [valueChangedViaKeyboard, setValueChangedViaKeyboard] = createSignal(false);
+  const [valueChangedViaInputChangeEvent, setValueChangedViaInputChangeEvent] = createSignal(false);
 
   // Generate IDs
+  const colorAreaId = createId();
   const xInputId = createId();
   const yInputId = createId();
+
+  const colorPickerLabel = () => "Color picker";
+  const colorInputLabel = () => {
+    const ariaLabel = getProps()["aria-label"];
+    return ariaLabel ? `${ariaLabel}, ${colorPickerLabel()}` : colorPickerLabel();
+  };
+  const colorAreaLabel = () => {
+    const ariaLabel = getProps()["aria-label"];
+    return ariaLabel ? `${ariaLabel}, ${colorPickerLabel()}` : undefined;
+  };
+  const formatChannelValueText = (channel: ColorChannel) => {
+    const value = getState().getDisplayColor();
+    const loc = locale().locale;
+    return `${value.getChannelName(channel, loc)}: ${value.formatChannelValue(channel, loc)}`;
+  };
+  const getAriaValueTextForChannel = (channel: ColorChannel) => {
+    const s = getState();
+    const value = s.getDisplayColor();
+    const loc = locale().locale;
+    if (valueChangedViaInputChangeEvent() || valueChangedViaKeyboard()) {
+      return `${formatChannelValueText(channel)}, ${value.getColorName(loc)}`;
+    }
+
+    const otherChannel = channel === s.yChannel ? s.xChannel : s.yChannel;
+    return (
+      [
+        formatChannelValueText(channel),
+        formatChannelValueText(otherChannel),
+        formatChannelValueText(s.zChannel),
+      ].join(", ") + `, ${value.getColorName(loc)}`
+    );
+  };
+
+  const updateFromInput = (e: Event, axis: "x" | "y") => {
+    const target = e.target as HTMLInputElement;
+    const nextValue = parseFloat(target.value);
+
+    setValueChangedViaInputChangeEvent(true);
+    if (axis === "x") {
+      getState().setXValue(nextValue);
+    } else {
+      getState().setYValue(nextValue);
+    }
+  };
 
   // Calculate position from pointer event
   const getPositionFromEvent = (e: MouseEvent | PointerEvent) => {
@@ -31,7 +82,10 @@ export function createColorArea(
     if (!area) return null;
 
     const rect = area.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    if (rect.width === 0 || rect.height === 0) return null;
+
+    const physicalX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const x = isRTL() ? 1 - physicalX : physicalX;
     const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
 
     return { x, y };
@@ -48,7 +102,7 @@ export function createColorArea(
     getState().setDragging(true);
 
     // Capture pointer for dragging
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
   // Handle pointer move
@@ -65,50 +119,64 @@ export function createColorArea(
   const onPointerUp = (e: PointerEvent) => {
     if (getState().isDragging) {
       getState().setDragging(false);
-      (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+      (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
     }
   };
 
-  // Handle keyboard for X axis
-  const onKeyDownX = (e: KeyboardEvent) => {
+  const onKeyDown = (e: KeyboardEvent) => {
     if (getProps().isDisabled || getState().isDisabled) return;
 
     const s = getState();
+    const xStep =
+      e.shiftKey && s.xChannelPageStep > s.xChannelStep ? s.xChannelPageStep : s.xChannelStep;
+    const yStep =
+      e.shiftKey && s.yChannelPageStep > s.yChannelStep ? s.yChannelPageStep : s.yChannelStep;
+    let focusedAxis: "x" | "y" = "x";
     let handled = true;
 
     switch (e.key) {
       case "ArrowRight":
-        s.incrementX();
+        if (isRTL()) {
+          s.decrementX(xStep);
+        } else {
+          s.incrementX(xStep);
+        }
         break;
       case "ArrowLeft":
-        s.decrementX();
+        if (isRTL()) {
+          s.incrementX(xStep);
+        } else {
+          s.decrementX(xStep);
+        }
         break;
       case "ArrowUp":
-        s.incrementY();
+        s.incrementY(yStep);
+        focusedAxis = "y";
         break;
       case "ArrowDown":
-        s.decrementY();
+        s.decrementY(yStep);
+        focusedAxis = "y";
         break;
       case "PageUp":
         s.incrementY(s.yChannelPageStep);
+        focusedAxis = "y";
         break;
       case "PageDown":
         s.decrementY(s.yChannelPageStep);
+        focusedAxis = "y";
         break;
       case "Home":
-        if (e.ctrlKey) {
-          s.setXValue(0);
-          s.setYValue(100);
+        if (isRTL()) {
+          s.incrementX(s.xChannelPageStep);
         } else {
-          s.setXValue(0);
+          s.decrementX(s.xChannelPageStep);
         }
         break;
       case "End":
-        if (e.ctrlKey) {
-          s.setXValue(100);
-          s.setYValue(0);
+        if (isRTL()) {
+          s.decrementX(s.xChannelPageStep);
         } else {
-          s.setXValue(100);
+          s.incrementX(s.xChannelPageStep);
         }
         break;
       default:
@@ -116,50 +184,21 @@ export function createColorArea(
     }
 
     if (handled) {
+      setFocusedInput(focusedAxis);
+      setValueChangedViaKeyboard(true);
+      s.setDragging(true);
+      s.setDragging(false);
       e.preventDefault();
       e.stopPropagation();
     }
   };
 
-  // Handle keyboard for Y axis
-  const onKeyDownY = (e: KeyboardEvent) => {
-    if (getProps().isDisabled || getState().isDisabled) return;
-
-    const s = getState();
-    let handled = true;
-
-    switch (e.key) {
-      case "ArrowUp":
-        s.incrementY();
-        break;
-      case "ArrowDown":
-        s.decrementY();
-        break;
-      case "ArrowRight":
-        s.incrementX();
-        break;
-      case "ArrowLeft":
-        s.decrementX();
-        break;
-      case "PageUp":
-        s.incrementY(s.yChannelPageStep);
-        break;
-      case "PageDown":
-        s.decrementY(s.yChannelPageStep);
-        break;
-      case "Home":
-        s.setYValue(100);
-        break;
-      case "End":
-        s.setYValue(0);
-        break;
-      default:
-        handled = false;
-    }
-
-    if (handled) {
-      e.preventDefault();
-      e.stopPropagation();
+  const onFocusOut = (e: FocusEvent) => {
+    const currentTarget = e.currentTarget as HTMLElement;
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+      setValueChangedViaKeyboard(false);
+      setValueChangedViaInputChangeEvent(false);
     }
   };
 
@@ -169,31 +208,32 @@ export function createColorArea(
     const p = getProps();
 
     return {
+      id: p.id ?? colorAreaId,
       role: "group" as const,
-      "aria-label": p["aria-label"],
+      "aria-label": colorAreaLabel(),
       "aria-labelledby": p["aria-labelledby"],
-      "aria-describedby": p["aria-describedby"],
-      "aria-disabled": s.isDisabled || p.isDisabled || undefined,
       onPointerDown,
       onPointerMove,
       onPointerUp,
       style: {
         position: "relative" as const,
         "touch-action": "none",
+        "forced-color-adjust": "none" as const,
+        ...generateGradient(),
       },
       "data-disabled": s.isDisabled || p.isDisabled || undefined,
     };
   });
 
   // Generate gradient background for the color area
-  const generateGradient = (): Record<string, string> => {
+  function generateGradient(): Record<string, string> {
     const s = getState();
     const value = s.value;
     const xCh = s.xChannel;
     const yCh = s.yChannel;
     const zCh = s.zChannel;
     const zValue = value.getChannelValue(zCh);
-    const end = "right";
+    const end = isRTL() ? "left" : "right";
 
     const hue = (color: Color) =>
       [0, 60, 120, 180, 240, 300, 360]
@@ -236,8 +276,13 @@ export function createColorArea(
               `linear-gradient(to ${c === xCh ? end : "top"}, ${hslChannels[c]?.(base) ?? ""})`,
           )
           .reverse();
-        if (zCh === "hue") bg.push(base.toString("css"));
-        return { background: bg.join(", ") };
+        if (zCh === "hue") {
+          bg.push(base.toString("css"));
+        }
+
+        return {
+          background: bg.join(", "),
+        };
       }
       case "hsb": {
         const channels = value.getColorChannels();
@@ -249,13 +294,18 @@ export function createColorArea(
               `linear-gradient(to ${c === xCh ? end : "top"}, ${hsbChannels[c]?.(base) ?? ""})`,
           )
           .reverse();
-        if (zCh === "hue") bg.push(base.toString("css"));
-        return { background: bg.join(", ") };
+        if (zCh === "hue") {
+          bg.push(base.toString("css"));
+        }
+
+        return {
+          background: bg.join(", "),
+        };
       }
       default:
         return {};
     }
-  };
+  }
 
   // Gradient props (the visual area)
   const gradientProps = createMemo(() => {
@@ -276,16 +326,20 @@ export function createColorArea(
     const s = getState();
     const p = getProps();
     const pos = s.getThumbPosition();
+    const x = isRTL() ? 1 - pos.x : pos.x;
 
     return {
       role: "presentation" as const,
       style: {
         position: "absolute" as const,
-        left: `${pos.x * 100}%`,
+        left: `${x * 100}%`,
         top: `${pos.y * 100}%`,
         transform: "translate(-50%, -50%)",
         "touch-action": "none",
+        "forced-color-adjust": "none" as const,
       },
+      onKeyDown,
+      onFocusOut,
       "data-dragging": s.isDragging || undefined,
       "data-disabled": s.isDisabled || p.isDisabled || undefined,
     };
@@ -296,29 +350,37 @@ export function createColorArea(
     const s = getState();
     const p = getProps();
     const xRange = s.value.getChannelRange(s.xChannel);
-    const xName = s.value.getChannelName(s.xChannel, "en-US");
 
     return {
       type: "range",
-      id: xInputId,
-      "aria-label": `${xName}`,
-      "aria-valuetext": `${xName}: ${s.getXValue()}`,
+      id: p.id ?? xInputId,
+      "aria-label": colorInputLabel(),
+      "aria-roledescription": "2D slider",
+      "aria-valuetext": getAriaValueTextForChannel(s.xChannel),
+      "aria-orientation": "horizontal" as const,
+      "aria-describedby": p["aria-describedby"],
+      "aria-details": p["aria-details"],
       min: xRange.minValue,
       max: xRange.maxValue,
       step: xRange.step,
       value: s.getXValue(),
+      name: p.xName,
+      form: p.form,
       disabled: s.isDisabled || p.isDisabled,
-      onKeyDown: onKeyDownX,
-      onChange: (e: Event) => {
-        const target = e.target as HTMLInputElement;
-        s.setXValue(parseFloat(target.value));
-      },
+      "aria-hidden":
+        !focusedInput() || focusedInput() === "x" || valueChangedViaKeyboard()
+          ? undefined
+          : ("true" as const),
+      onFocus: () => setFocusedInput("x"),
+      onKeyDown,
+      onInput: (e: Event) => updateFromInput(e, "x"),
+      onChange: (e: Event) => updateFromInput(e, "x"),
       onBlur: () => {
         if (s.isDragging) {
           s.setDragging(false);
         }
       },
-      tabIndex: 0,
+      tabIndex: !focusedInput() || focusedInput() === "x" ? undefined : -1,
       style: {
         position: "absolute" as const,
         width: "1px",
@@ -338,24 +400,30 @@ export function createColorArea(
     const s = getState();
     const p = getProps();
     const yRange = s.value.getChannelRange(s.yChannel);
-    const yName = s.value.getChannelName(s.yChannel, "en-US");
 
     return {
       type: "range",
-      id: yInputId,
-      "aria-label": `${yName}`,
-      "aria-valuetext": `${yName}: ${s.getYValue()}`,
+      id: p.id ?? yInputId,
+      "aria-label": colorInputLabel(),
+      "aria-roledescription": "2D slider",
+      "aria-valuetext": getAriaValueTextForChannel(s.yChannel),
+      "aria-orientation": "vertical" as const,
+      "aria-describedby": p["aria-describedby"],
+      "aria-details": p["aria-details"],
       min: yRange.minValue,
       max: yRange.maxValue,
       step: yRange.step,
       value: s.getYValue(),
+      name: p.yName,
+      form: p.form,
       disabled: s.isDisabled || p.isDisabled,
-      onKeyDown: onKeyDownY,
-      onChange: (e: Event) => {
-        const target = e.target as HTMLInputElement;
-        s.setYValue(parseFloat(target.value));
-      },
-      tabIndex: -1, // Only first input is in tab order
+      "aria-hidden":
+        focusedInput() === "y" || valueChangedViaKeyboard() ? undefined : ("true" as const),
+      onFocus: () => setFocusedInput("y"),
+      onKeyDown,
+      onInput: (e: Event) => updateFromInput(e, "y"),
+      onChange: (e: Event) => updateFromInput(e, "y"),
+      tabIndex: focusedInput() === "y" ? undefined : -1,
       style: {
         position: "absolute" as const,
         width: "1px",

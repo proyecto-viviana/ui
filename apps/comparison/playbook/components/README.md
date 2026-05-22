@@ -17,7 +17,7 @@ implemented/pass notes keep their historical evidence, but they should be
 treated as legacy accepted under the prior playbook until each note is
 normalized to the current gate checklist.
 
-- Current accepted under the full gate model: Calendar, Checkbox.
+- Current accepted under the full gate model: Calendar, Checkbox, ColorArea.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -56,6 +56,7 @@ partial if any gate remains unresolved.
 - [Card/CardView](./card-cardview-validation-notes.md)
 - [Checkbox](./checkbox-validation-notes.md)
 - [CheckboxGroup](./checkboxgroup-validation-notes.md)
+- [ColorArea](./colorarea-validation-notes.md)
 - [ComboBox](./combobox-validation-notes.md)
 - [ContextualHelp](./contextualhelp-validation-notes.md)
 - [Divider](./divider-validation-notes.md)

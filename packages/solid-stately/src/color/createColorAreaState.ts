@@ -4,7 +4,7 @@
  */
 
 import { createSignal, createMemo, type Accessor } from "solid-js";
-import type { Color, ColorChannel, ColorAxes } from "./types";
+import type { Color, ColorChannel, ColorAxes, ColorSpace } from "./types";
 import { normalizeColor } from "./Color";
 
 export interface ColorAreaStateOptions {
@@ -20,6 +20,8 @@ export interface ColorAreaStateOptions {
   xChannel?: ColorChannel;
   /** The color channel for the Y axis. */
   yChannel?: ColorChannel;
+  /** The color space to use for the color area. */
+  colorSpace?: ColorSpace;
   /** Whether the area is disabled. */
   isDisabled?: boolean;
 }
@@ -78,6 +80,12 @@ export interface ColorAreaState {
 export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): ColorAreaState {
   const getOptions = () => options();
 
+  const normalizeValue = (value: Color | string) => {
+    const color = normalizeColor(value);
+    const colorSpace = getOptions().colorSpace;
+    return colorSpace ? color.toFormat(colorSpace) : color;
+  };
+
   // Internal value state
   const [internalValue, setInternalValue] = createSignal<Color | null>(null);
   const [isDragging, setIsDragging] = createSignal(false);
@@ -86,7 +94,7 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
   const initValue = () => {
     const opts = getOptions();
     if (opts.defaultValue) {
-      return normalizeColor(opts.defaultValue);
+      return normalizeValue(opts.defaultValue);
     }
     return null;
   };
@@ -103,9 +111,10 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
   const value = createMemo(() => {
     const opts = getOptions();
     if (opts.value !== undefined) {
-      return normalizeColor(opts.value);
+      return normalizeValue(opts.value);
     }
-    return internalValue() ?? normalizeColor("#ff0000");
+    const fallback = internalValue() ?? normalizeValue("#ff0000");
+    return opts.colorSpace ? fallback.toFormat(opts.colorSpace) : fallback;
   });
 
   const isDisabled = createMemo(() => getOptions().isDisabled ?? false);
@@ -135,16 +144,17 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
   // Update value
   const updateValue = (newColor: Color) => {
     const opts = getOptions();
+    const nextColor = opts.colorSpace ? newColor.toFormat(opts.colorSpace) : newColor;
 
     // Controlled mode
     if (opts.value !== undefined) {
-      opts.onChange?.(newColor);
+      opts.onChange?.(nextColor);
       return;
     }
 
     // Uncontrolled mode
-    setInternalValue(newColor);
-    opts.onChange?.(newColor);
+    setInternalValue(nextColor);
+    opts.onChange?.(nextColor);
   };
 
   // Get X value
