@@ -3,6 +3,13 @@ import {
   accordionDensityOptions,
   accordionSizeOptions,
 } from "./accordion-demo";
+import {
+  disclosureDemoDefaults,
+  disclosureDensityOptions,
+  disclosurePanelRoleOptions,
+  disclosureSizeOptions,
+  disclosureTitleLevelOptions,
+} from "./disclosure-demo";
 import { actionBarDemoDefaults, actionBarSelectedItemCountOptions } from "./actionbar-demo";
 import {
   actionButtonDemoDefaults,
@@ -470,6 +477,84 @@ const accordionControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 Accordion docs and viewer. The route drives size, density, quiet, disabled, and multiple-expansion props into both stacks; controlled expandedKeys and callbacks are asserted in route and package tests rather than exposed as viewer controls.",
+};
+
+const disclosureControls: ComponentControlGroup = {
+  slug: "disclosure",
+  title: "Disclosure",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: disclosureDemoDefaults.size,
+      options: options(disclosureSizeOptions),
+    },
+    {
+      name: "density",
+      label: "density",
+      kind: "radio",
+      defaultValue: disclosureDemoDefaults.density,
+      options: options(disclosureDensityOptions),
+    },
+    {
+      name: "isQuiet",
+      label: "isQuiet",
+      kind: "switch",
+      defaultValue: disclosureDemoDefaults.isQuiet,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: disclosureDemoDefaults.isDisabled,
+    },
+    {
+      name: "isExpanded",
+      label: "isExpanded",
+      kind: "switch",
+      defaultValue: disclosureDemoDefaults.isExpanded,
+    },
+    {
+      name: "withHeaderAction",
+      label: "header action",
+      kind: "switch",
+      defaultValue: disclosureDemoDefaults.withHeaderAction,
+    },
+    {
+      name: "panelRole",
+      label: "panel role",
+      kind: "radio",
+      defaultValue: disclosureDemoDefaults.panelRole,
+      options: options(disclosurePanelRoleOptions),
+    },
+    {
+      name: "titleLevel",
+      label: "title level",
+      kind: "radio",
+      defaultValue: disclosureDemoDefaults.titleLevel,
+      options: options(disclosureTitleLevelOptions),
+    },
+  ],
+  apiProps: [
+    "children",
+    "defaultExpanded",
+    "density",
+    "id",
+    "isDisabled",
+    "isExpanded",
+    "isQuiet",
+    "onExpandedChange",
+    "role",
+    "size",
+    "slot",
+    "styles",
+    "level",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Disclosure docs and viewer. The route drives size, density, quiet, disabled, controlled expansion, panel role, title level, and header content into both stacks; callback and action-button suppression are asserted in the route tests.",
 };
 
 const actionBarControls: ComponentControlGroup = {
@@ -5520,6 +5605,7 @@ const toastControls: ComponentControlGroup = {
 
 export const componentControlGroups = {
   accordion: accordionControls,
+  disclosure: disclosureControls,
   actionbar: actionBarControls,
   actionmenu: actionMenuControls,
   actionbutton: actionButtonControls,

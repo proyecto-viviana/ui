@@ -13,10 +13,18 @@ import {
   type DisclosureGroupRenderProps,
   useDisclosureContext as useHeadlessDisclosureContext,
 } from "@proyecto-viviana/solidaria-components";
-import { createFocusRing, useLocale } from "@proyecto-viviana/solidaria";
+import { createFocusRing, createHover, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
-import { baseColor, centerPadding, focusRing, space, style, type StyleString } from "../s2-style";
+import {
+  baseColor,
+  centerPadding,
+  focusRing,
+  lightDark,
+  space,
+  style,
+  type StyleString,
+} from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { ActionButtonContext } from "../button/context";
 import type { ActionButtonSize } from "../button/group-context";
@@ -134,6 +142,8 @@ type DisclosureButtonStyleProps = {
   density: DisclosureDensity;
   isQuiet?: boolean;
   isDisabled?: boolean;
+  isHovered?: boolean;
+  isPressed?: boolean;
   isFocusVisible?: boolean;
 };
 
@@ -146,6 +156,8 @@ type ChevronStyleProps = {
 type PanelInnerStyleProps = {
   size: DisclosureSize;
 };
+
+const spectrumColor = (value: string) => value as Parameters<typeof lightDark>[0];
 
 const accordionStyles = style({
   display: "flex",
@@ -251,11 +263,26 @@ const buttonStyles = style<DisclosureButtonStyleProps>({
     },
   },
   width: "full",
-  backgroundColor: "transparent",
+  backgroundColor: {
+    default: "transparent",
+    isFocusVisible: lightDark(
+      spectrumColor("transparent-black-100"),
+      spectrumColor("transparent-white-100"),
+    ),
+    isHovered: lightDark(
+      spectrumColor("transparent-black-100"),
+      spectrumColor("transparent-white-100"),
+    ),
+    isPressed: lightDark(
+      spectrumColor("transparent-black-300"),
+      spectrumColor("transparent-white-300"),
+    ),
+  },
   transition: "default",
   borderWidth: 0,
   borderRadius: {
     default: "none",
+    isFocusVisible: "default",
     isQuiet: "default",
   },
   textAlign: "start",
@@ -610,6 +637,12 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
   const chevronIcon = () => chevronIcons[size()];
   const { isFocusVisible, focusProps } = createFocusRing();
   const triggerFocusProps = focusProps as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return isDisabled();
+    },
+  });
+  const isPressed = () => headlessDisclosureContext?.disclosureAria.isPressed() ?? false;
 
   return (
     <Dynamic
@@ -626,6 +659,7 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
       data-level={level()}
     >
       <HeadlessDisclosureTrigger
+        {...hoverProps}
         onFocus={triggerFocusProps.onFocus}
         onBlur={triggerFocusProps.onBlur}
         class={buttonStyles({
@@ -633,12 +667,16 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
           density: density(),
           isQuiet: isQuiet(),
           isDisabled: isDisabled(),
+          isHovered: isHovered(),
+          isPressed: isPressed(),
           isFocusVisible: isFocusVisible(),
         })}
         data-rsp-slot="disclosure-trigger"
         data-size={size()}
         data-density={density()}
         data-quiet={isQuiet() ? "true" : undefined}
+        data-hovered={isHovered() ? "true" : undefined}
+        data-pressed={isPressed() ? "true" : undefined}
       >
         <Show when={!local.hideIcon}>
           <svg
@@ -691,7 +729,7 @@ export type DisclosureTriggerProps = DisclosureTitleProps;
  * the disclosure is expanded.
  */
 export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, [
+  const [local, forwardedProps] = splitProps(props, [
     "children",
     "styles",
     "UNSAFE_className",
@@ -701,6 +739,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
     "slot",
     "ref",
   ] as const);
+  const [, headlessProps] = splitProps(forwardedProps, ["role"] as const);
   const context = getDisclosureContext();
   const size = () => normalizeSize(context.size);
   const getClassName = (_renderProps: DisclosureRenderProps): string =>

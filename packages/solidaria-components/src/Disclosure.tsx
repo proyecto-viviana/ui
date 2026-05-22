@@ -131,6 +131,7 @@ interface DisclosureContextValue {
   disclosureAria: {
     readonly buttonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>;
     readonly panelProps: JSX.HTMLAttributes<HTMLElement>;
+    readonly isPressed: () => boolean;
   };
 }
 
@@ -409,6 +410,7 @@ export function DisclosureTrigger(props: DisclosureTriggerProps): JSX.Element {
       style={local.style}
       data-expanded={dataAttr(isExpanded())}
       data-disabled={dataAttr(isDisabled())}
+      data-pressed={dataAttr(disclosureAria.isPressed())}
       data-focused={dataAttr(isFocused())}
       data-focus-visible={dataAttr(isFocusVisible())}
     >

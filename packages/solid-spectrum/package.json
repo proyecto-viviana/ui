@@ -88,6 +88,12 @@
       "import": "./dist/ColorWheel.js",
       "default": "./dist/ColorWheel.js"
     },
+    "./Disclosure": {
+      "types": "./dist/disclosure-export.d.ts",
+      "solid": "./src/disclosure-export.ts",
+      "import": "./dist/disclosure-export.js",
+      "default": "./dist/disclosure-export.js"
+    },
     "./Card": {
       "types": "./dist/Card.d.ts",
       "solid": "./src/Card.ts",

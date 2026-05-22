@@ -22,6 +22,8 @@ export interface DisclosureAria {
   buttonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>;
   /** Props for the disclosure panel. */
   panelProps: JSX.HTMLAttributes<HTMLElement>;
+  /** Whether the disclosure trigger is currently pressed. */
+  isPressed: () => boolean;
 }
 
 export function getDisclosurePanelHiddenAttribute(
@@ -187,7 +189,7 @@ export function createDisclosure(
   onCleanup(cancelPendingRaf);
 
   // Use createPress for proper interaction handling (matches Select/Menu pattern)
-  const { pressProps } = createPress({
+  const { pressProps, isPressed } = createPress({
     get isDisabled() {
       return getProps().isDisabled;
     },
@@ -204,6 +206,7 @@ export function createDisclosure(
   });
 
   return {
+    isPressed,
     // Button props - merge with pressProps for consistent interaction handling
     // Using getter (not createMemo) to match createSelect pattern
     get buttonProps(): JSX.ButtonHTMLAttributes<HTMLButtonElement> {

@@ -168,6 +168,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Accordion directly; Solid uses @proyecto-viviana/solid-spectrum Accordion with the S2 Disclosure title/header/panel composition and solidaria disclosure state.",
   }),
 
+  disclosure: styledLiveOfficialEntry({
+    slug: "disclosure",
+    title: "Disclosure",
+    category: "Components",
+    summary:
+      "Standalone collapsible section mounted on both stacks with S2 size, density, quiet, disabled, controlled expansion, panel role, title level, and header-action controls.",
+    styledSummary: "React Spectrum Disclosure vs Solid Spectrum Disclosure.",
+    styledNote:
+      "React uses @react-spectrum/s2/Disclosure directly; Solid uses @proyecto-viviana/solid-spectrum Disclosure backed by solidaria disclosure state and S2 title/header/panel styling.",
+  }),
+
   actionbar: styledLiveOfficialEntry({
     slug: "actionbar",
     title: "ActionBar",
