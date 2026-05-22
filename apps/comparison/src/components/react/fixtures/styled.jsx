@@ -88,6 +88,10 @@ import {
   ColorSlider as SpectrumColorSlider,
   parseColor as spectrumParseSliderColor,
 } from "@react-spectrum/s2/ColorSlider";
+import {
+  ColorWheel as SpectrumColorWheel,
+  parseColor as spectrumParseWheelColor,
+} from "@react-spectrum/s2/ColorWheel";
 import { ColorSwatch as SpectrumColorSwatch } from "@react-spectrum/s2/ColorSwatch";
 import {
   ColorSwatchPicker as SpectrumColorSwatchPicker,
@@ -195,6 +199,15 @@ import {
   normalizeColorSliderDemoProps,
   serializeColorSliderDemoProps,
 } from "@comparison/data/colorslider-demo";
+import {
+  colorWheelDemoDefaults,
+  colorWheelDemoPropsFromWindow,
+  colorWheelDemoSizeNumber,
+  comparisonControlsEvent as colorWheelControlsEvent,
+  initialColorWheelDemoValue,
+  normalizeColorWheelDemoProps,
+  serializeColorWheelDemoProps,
+} from "@comparison/data/colorwheel-demo";
 import {
   colorSwatchDemoPropsFromWindow,
   comparisonControlsEvent as colorSwatchControlsEvent,
@@ -560,6 +573,7 @@ export const reactStyledFixtures = {
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   colorarea: () => jsx(ReactColorAreaDemo, {}),
   colorslider: () => jsx(ReactColorSliderDemo, {}),
+  colorwheel: () => jsx(ReactColorWheelDemo, {}),
   colorswatch: () => jsx(ReactColorSwatchDemo, {}),
   colorswatchpicker: () => jsx(ReactColorSwatchPickerDemo, {}),
   colorfield: () => jsx(ReactColorFieldDemo, {}),
@@ -2844,6 +2858,101 @@ function ReactColorSliderDemo() {
           id: demoProps.id || undefined,
           slot: demoProps.slot || undefined,
           orientation: demoProps.orientation,
+          isDisabled: demoProps.isDisabled,
+          onChange: (nextValue) => {
+            setValue(nextValue);
+            setDemoProps((current) =>
+              current.valueSource === "value"
+                ? { ...current, value: colorToCssString(nextValue) }
+                : current,
+            );
+          },
+          onChangeEnd: setFinalValue,
+        },
+        renderKey,
+      ),
+    }),
+    colorScheme,
+    locale,
+  );
+}
+
+function parseSpectrumColorWheelValue(value, fallback = colorWheelDemoDefaults.value) {
+  try {
+    return spectrumParseWheelColor(value || fallback);
+  } catch {
+    return spectrumParseWheelColor(fallback);
+  }
+}
+
+function ReactColorWheelDemo() {
+  const [demoProps, setDemoProps] = useState(colorWheelDemoPropsFromWindow);
+  const [value, setValue] = useState(() =>
+    parseSpectrumColorWheelValue(initialColorWheelDemoValue(demoProps)),
+  );
+  const [finalValue, setFinalValue] = useState(() =>
+    parseSpectrumColorWheelValue(initialColorWheelDemoValue(demoProps)),
+  );
+  const colorScheme = useComparisonResolvedTheme();
+  const locale = buttonDemoLocaleFromWindow();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "colorwheel") {
+        const nextProps = normalizeColorWheelDemoProps(event.detail.props ?? {});
+        const nextValue = parseSpectrumColorWheelValue(initialColorWheelDemoValue(nextProps));
+        setDemoProps(nextProps);
+        setValue(nextValue);
+        setFinalValue(nextValue);
+      }
+    };
+    window.addEventListener(colorWheelControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(colorWheelControlsEvent, handleControlsChange);
+  }, []);
+
+  const valueProps =
+    demoProps.valueSource === "defaultValue"
+      ? {
+          defaultValue: parseSpectrumColorWheelValue(
+            demoProps.defaultValue,
+            colorWheelDemoDefaults.defaultValue,
+          ),
+        }
+      : { value };
+  const renderKey = [
+    demoProps.valueSource,
+    demoProps.valueSource === "defaultValue" ? demoProps.defaultValue : "controlled",
+    demoProps.size,
+    demoProps.ariaLabel,
+    demoProps.ariaLabelledBy,
+    demoProps.ariaDescribedBy,
+    demoProps.ariaDetails,
+    demoProps.id,
+    demoProps.slot,
+    demoProps.name,
+    demoProps.form,
+    demoProps.isDisabled,
+  ].join("|");
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "colorwheel",
+      "data-comparison-control-props": serializeColorWheelDemoProps(demoProps),
+      "data-comparison-value": colorToCssString(value),
+      "data-comparison-final-value": colorToCssString(finalValue),
+      children: jsx(
+        SpectrumColorWheel,
+        {
+          "aria-label": demoProps.ariaLabel || undefined,
+          "aria-labelledby": demoProps.ariaLabelledBy || undefined,
+          "aria-describedby": demoProps.ariaDescribedBy || undefined,
+          "aria-details": demoProps.ariaDetails || undefined,
+          ...valueProps,
+          size: colorWheelDemoSizeNumber(demoProps),
+          name: demoProps.name || undefined,
+          form: demoProps.form || undefined,
+          id: demoProps.id || undefined,
+          slot: demoProps.slot || undefined,
           isDisabled: demoProps.isDisabled,
           onChange: (nextValue) => {
             setValue(nextValue);

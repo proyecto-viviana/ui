@@ -82,6 +82,12 @@
       "import": "./dist/ColorSwatchPicker.js",
       "default": "./dist/ColorSwatchPicker.js"
     },
+    "./ColorWheel": {
+      "types": "./dist/ColorWheel.d.ts",
+      "solid": "./src/ColorWheel.ts",
+      "import": "./dist/ColorWheel.js",
+      "default": "./dist/ColorWheel.js"
+    },
     "./Card": {
       "types": "./dist/Card.d.ts",
       "solid": "./src/Card.ts",

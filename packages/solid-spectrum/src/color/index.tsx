@@ -25,6 +25,7 @@ import {
   ColorWheel as HeadlessColorWheel,
   ColorWheelTrack as HeadlessColorWheelTrack,
   ColorWheelThumb as HeadlessColorWheelThumb,
+  ColorWheelContext as HeadlessColorWheelContext,
   ColorField as HeadlessColorField,
   ColorFieldInput as HeadlessColorFieldInput,
   ColorFieldContext as HeadlessColorFieldContext,
@@ -41,6 +42,7 @@ import {
   type ColorAreaRenderProps,
   type ColorAreaThumbRenderProps,
   type ColorWheelRenderProps,
+  type ColorWheelTrackRenderProps,
   type ColorWheelThumbRenderProps,
   type ColorFieldRenderProps,
   type ColorSwatchRenderProps,
@@ -823,13 +825,83 @@ function ColorAreaLoupe(props: {
   );
 }
 
-export interface ColorWheelProps extends Omit<
-  HeadlessColorWheelProps,
-  "class" | "style" | "children"
-> {
-  /** The size of the color wheel. */
-  size?: ColorSize;
-  /** Additional CSS class name. */
+interface ColorWheelStyleProps extends Partial<ColorWheelRenderProps> {}
+
+const colorWheelRoot = style<ColorWheelStyleProps>(
+  {
+    position: "relative",
+  },
+  getAllowedOverrides(),
+);
+
+const colorWheelTrack = style<ColorWheelTrackRenderProps>({
+  borderRadius: "full",
+  outlineColor: {
+    default: "gray-1000/10" as never,
+    forcedColors: "ButtonBorder",
+  },
+  outlineWidth: 1,
+  outlineOffset: -1,
+  outlineStyle: {
+    default: "solid",
+    isDisabled: "none",
+  },
+  backgroundColor: {
+    isDisabled: "disabled",
+  },
+});
+
+const colorWheelInnerBorder = style<ColorWheelStyleProps>({
+  position: "absolute",
+  inset: 24,
+  pointerEvents: "none",
+  borderRadius: "full",
+  outlineColor: {
+    default: "gray-1000/10" as never,
+    forcedColors: "ButtonBorder",
+  },
+  outlineWidth: 1,
+  outlineStyle: {
+    default: "solid",
+    isDisabled: "none",
+  },
+});
+
+const colorWheelThumb = style<ColorWheelThumbRenderProps>({
+  transition: "[width, height]",
+  size: {
+    default: 16,
+    isFocusVisible: 32,
+  },
+  backgroundColor: {
+    isDisabled: "disabled",
+  },
+  borderRadius: "full",
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderWidth: 2,
+  borderColor: {
+    default: "white",
+    isDisabled: "disabled",
+  },
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: "black/42" as never,
+    forcedColors: "ButtonBorder",
+  },
+});
+
+export interface ColorWheelProps extends Omit<HeadlessColorWheelProps, "class" | "style"> {
+  /** Diameter of the authored Spectrum control in pixels. */
+  size?: number;
+  /** Spectrum-defined generated classes. */
+  styles?: StylesProp;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
 }
 
@@ -847,67 +919,181 @@ export interface ColorWheelProps extends Omit<
  * ```
  */
 export function ColorWheel(props: ColorWheelProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["size", "class"]);
+  const mergedProps = useProviderProps(useFormProps(props));
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "children",
+    "size",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+  ]);
+  const thickness = 24;
+  const authoredSize = () => local.size ?? 192;
+  const outerRadius = () => Math.max(authoredSize(), 175) / 2;
+  const innerRadius = () => outerRadius() - thickness;
 
-  const size = () => local.size ?? "md";
-  const styles = () => sizeStyles[size()];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: ColorWheelRenderProps): string => {
-    const base = `relative ${styles().wheel.container}`;
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50 cursor-not-allowed";
-    }
-    return [base, stateClass, customClass].filter(Boolean).join(" ");
+  const renderChildren = (renderProps: ColorWheelRenderProps) => {
+    const children = local.children;
+    return children ? (
+      typeof children === "function" ? (
+        children(renderProps)
+      ) : (
+        children
+      )
+    ) : (
+      <>
+        <ColorWheelTrack />
+        <div class={colorWheelInnerBorder(renderProps)} />
+        <ColorWheelThumb />
+      </>
+    );
   };
 
-  const contextValue = createMemo(() => ({ size: size() }));
-
   return (
-    <ColorSizeContext.Provider value={contextValue()}>
-      <HeadlessColorWheel {...headlessProps} class={getClassName}>
-        {() => (
-          <>
-            <ColorWheelTrack />
-            <ColorWheelThumb />
-          </>
-        )}
-      </HeadlessColorWheel>
-    </ColorSizeContext.Provider>
+    <HeadlessColorWheel
+      {...headlessProps}
+      outerRadius={outerRadius()}
+      innerRadius={innerRadius()}
+      class={(renderProps: ColorWheelRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          colorWheelRoot(renderProps, mergeStyles(local.styles)),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={() => ({
+        width: `${outerRadius() * 2}px`,
+        height: `${outerRadius() * 2}px`,
+        ...local.UNSAFE_style,
+      })}
+    >
+      {renderChildren}
+    </HeadlessColorWheel>
   );
+}
+
+interface ColorWheelTrackProps {
+  /** Custom track children. */
+  children?: JSX.Element | ((renderProps: ColorWheelTrackRenderProps) => JSX.Element);
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
 }
 
 /**
  * The circular track for a color wheel.
  */
-export function ColorWheelTrack(props: { class?: string }): JSX.Element {
-  const context = useContext(ColorSizeContext);
-  const styles = sizeStyles[context.size];
-  const customClass = props.class ?? "";
+export function ColorWheelTrack(props: ColorWheelTrackProps = {}): JSX.Element {
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+  ]);
 
-  const className = `${styles.wheel.track} ${customClass}`;
+  return (
+    <HeadlessColorWheelTrack
+      {...headlessProps}
+      class={(renderProps: ColorWheelTrackRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          mergeStyles(colorWheelTrack(renderProps), local.styles),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={(renderProps: ColorWheelTrackRenderProps) => ({
+        background:
+          renderProps.isDisabled || !renderProps.defaultStyle.background
+            ? undefined
+            : renderProps.defaultStyle.background,
+        ...local.UNSAFE_style,
+      })}
+    >
+      {local.children}
+    </HeadlessColorWheelTrack>
+  );
+}
 
-  return <HeadlessColorWheelTrack class={className} />;
+interface ColorWheelThumbProps {
+  /** Custom thumb children. Defaults to the Spectrum 2 inner ring and drag loupe. */
+  children?: JSX.Element | ((renderProps: ColorWheelThumbRenderProps) => JSX.Element);
+  /** Ref callback for the thumb element. */
+  ref?: (element: HTMLDivElement) => void;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
 }
 
 /**
  * The thumb component for a color wheel.
  */
-export function ColorWheelThumb(props: { class?: string }): JSX.Element {
-  const context = useContext(ColorSizeContext);
-  const styles = sizeStyles[context.size];
-  const customClass = props.class ?? "";
+export function ColorWheelThumb(props: ColorWheelThumbProps = {}): JSX.Element {
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "ref",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+  ]);
+  let thumbElement: HTMLDivElement | undefined;
 
-  const getClassName = (renderProps: ColorWheelThumbRenderProps): string => {
-    const base = `${styles.wheel.thumb} rounded-full border-2 border-on-color shadow-md cursor-grab`;
-    const dragClass = renderProps.isDragging ? "cursor-grabbing scale-110" : "";
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-accent-300 ring-offset-2" : "";
-    const disabledClass = renderProps.isDisabled ? "cursor-not-allowed" : "";
-    return [base, dragClass, focusClass, disabledClass, customClass].filter(Boolean).join(" ");
-  };
-
-  return <HeadlessColorWheelThumb class={getClassName} />;
+  return (
+    <HeadlessColorWheelThumb
+      {...headlessProps}
+      ref={(element: HTMLDivElement) => {
+        thumbElement = element;
+        local.ref?.(element);
+      }}
+      class={(renderProps: ColorWheelThumbRenderProps) =>
+        [
+          local.UNSAFE_className,
+          local.class,
+          mergeStyles(colorWheelThumb(renderProps), local.styles),
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+      style={(renderProps: ColorWheelThumbRenderProps) => ({
+        background: renderProps.isDisabled
+          ? undefined
+          : `linear-gradient(${renderProps.color.toString("css")}, ${renderProps.color.toString("css")}), repeating-conic-gradient(#E1E1E1 0% 25%, white 0% 50%) 50% / 16px 16px`,
+        "background-color": undefined,
+        ...local.UNSAFE_style,
+      })}
+    >
+      {(renderProps: ColorWheelThumbRenderProps) =>
+        typeof local.children === "function" ? (
+          local.children(renderProps)
+        ) : (
+          <>
+            {local.children ?? <div class={colorAreaThumbRing} />}
+            <ColorAreaLoupe
+              isOpen={renderProps.isDragging}
+              color={renderProps.color}
+              anchor={() => thumbElement}
+            />
+          </>
+        )
+      }
+    </HeadlessColorWheelThumb>
+  );
 }
 
 export type ColorFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
@@ -1603,6 +1789,10 @@ export const ColorSliderContext = HeadlessColorSliderContext as ReturnType<
 >;
 
 export const ColorAreaContext = HeadlessColorAreaContext as ReturnType<
+  typeof createContext<unknown>
+>;
+
+export const ColorWheelContext = HeadlessColorWheelContext as ReturnType<
   typeof createContext<unknown>
 >;
 

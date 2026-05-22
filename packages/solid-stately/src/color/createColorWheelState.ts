@@ -4,8 +4,8 @@
  */
 
 import { createSignal, createMemo, type Accessor } from "solid-js";
-import type { Color, ColorChannel } from "./types";
-import { normalizeColor } from "./Color";
+import type { Color } from "./types";
+import { createHSLColor, normalizeColor } from "./Color";
 
 export interface ColorWheelStateOptions {
   /** The current color value (controlled). */
@@ -23,6 +23,8 @@ export interface ColorWheelStateOptions {
 export interface ColorWheelState {
   /** The current color value. */
   readonly value: Color;
+  /** The initial color value. */
+  readonly defaultValue: Color;
   /** Whether the wheel is being dragged. */
   readonly isDragging: boolean;
   /** Whether the wheel is disabled. */
@@ -34,12 +36,18 @@ export interface ColorWheelState {
 
   /** Get the current hue value (0-360). */
   getHue(): number;
+  /** Set the full color value. */
+  setValue(value: Color | string): void;
   /** Set the hue value. */
   setHue(value: number): void;
   /** Set hue from an angle in radians. */
   setHueFromAngle(angle: number): void;
+  /** Set hue from a point relative to the wheel center. */
+  setHueFromPoint(x: number, y: number, radius: number): void;
   /** Get the thumb angle in radians (0 = right, increases counterclockwise). */
   getThumbAngle(): number;
+  /** Get the thumb position relative to the wheel center. */
+  getThumbPosition(radius: number): { x: number; y: number };
   /** Increment hue value. */
   increment(stepSize?: number): void;
   /** Decrement hue value. */
@@ -55,35 +63,24 @@ export interface ColorWheelState {
  */
 export function createColorWheelState(options: Accessor<ColorWheelStateOptions>): ColorWheelState {
   const getOptions = () => options();
+  const defaultColor = createHSLColor(0, 100, 50);
 
-  // Internal value state
-  const [internalValue, setInternalValue] = createSignal<Color | null>(null);
-  const [isDragging, setIsDragging] = createSignal(false);
-
-  // Initialize internal value
-  const initValue = () => {
-    const opts = getOptions();
-    if (opts.defaultValue) {
-      return normalizeColor(opts.defaultValue);
-    }
-    return null;
+  const normalizeWheelValue = (color: Color | string) => {
+    const value = normalizeColor(color);
+    return value.toFormat(value.getColorSpace() === "hsb" ? "hsb" : "hsl");
   };
 
-  // Set initial value
-  if (internalValue() === null) {
-    const init = initValue();
-    if (init) {
-      setInternalValue(init);
-    }
-  }
+  const initialValue = normalizeWheelValue(getOptions().defaultValue ?? defaultColor);
+  const [internalValue, setInternalValue] = createSignal<Color>(initialValue);
+  const [isDragging, setIsDragging] = createSignal(false);
+  let valueRef = initialValue;
 
   // Controlled vs uncontrolled value
   const value = createMemo(() => {
     const opts = getOptions();
-    if (opts.value !== undefined) {
-      return normalizeColor(opts.value);
-    }
-    return internalValue() ?? normalizeColor("#ff0000");
+    const nextValue = opts.value !== undefined ? normalizeWheelValue(opts.value) : internalValue();
+    valueRef = nextValue;
+    return nextValue;
   });
 
   const isDisabled = createMemo(() => getOptions().isDisabled ?? false);
@@ -96,30 +93,61 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
   // Update value
   const updateValue = (newColor: Color) => {
     const opts = getOptions();
+    const nextColor = normalizeWheelValue(newColor);
+    valueRef = nextColor;
 
     // Controlled mode
     if (opts.value !== undefined) {
-      opts.onChange?.(newColor);
+      opts.onChange?.(nextColor);
       return;
     }
 
     // Uncontrolled mode
-    setInternalValue(newColor);
-    opts.onChange?.(newColor);
+    setInternalValue(nextColor);
+    opts.onChange?.(nextColor);
   };
 
   // Get hue value (0-360)
   const getHue = () => value().getChannelValue("hue");
 
+  const setValue = (newValue: Color | string) => {
+    updateValue(normalizeWheelValue(newValue));
+  };
+
+  const roundToStep = (num: number, stepValue: number) => {
+    const rounded = Math.round(num / stepValue) * stepValue;
+    const precision = `${stepValue}`.split(".")[1]?.length ?? 0;
+    return Number(rounded.toFixed(precision));
+  };
+
+  const roundDown = (num: number) => {
+    const rounded = Math.floor(num);
+    return rounded === num ? num - 1 : rounded;
+  };
+
+  const mod = (n: number, m: number) => ((n % m) + m) % m;
+
+  const radToDeg = (rad: number) => (rad * 180) / Math.PI;
+  const degToRad = (deg: number) => (deg * Math.PI) / 180;
+
+  const cartesianToAngle = (x: number, y: number, radius: number) => {
+    const clampedX = Math.max(-radius, Math.min(radius, x));
+    const clampedY = Math.max(-radius, Math.min(radius, y));
+    return mod(radToDeg(Math.atan2(clampedY, clampedX)), 360);
+  };
+
+  const angleToCartesian = (angle: number, radius: number) => ({
+    x: radius * Math.cos(degToRad(angle)),
+    y: radius * Math.sin(degToRad(angle)),
+  });
+
   // Set hue value
   const setHue = (newValue: number) => {
-    // Wrap hue to 0-360 range
-    let hue = newValue % 360;
-    if (hue < 0) hue += 360;
-
-    // Round to step
+    const currentHue = getHue();
     const range = hueRange();
-    const rounded = Math.round(hue / range.step) * range.step;
+    const hue = newValue > range.maxValue ? range.minValue : newValue;
+    const rounded = roundToStep(mod(hue, range.maxValue), range.step);
+    if (rounded === currentHue) return;
 
     const newColor = value().withChannelValue("hue", rounded);
     updateValue(newColor);
@@ -127,37 +155,43 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
 
   // Set hue from angle (radians, 0 = right, counterclockwise)
   const setHueFromAngle = (angle: number) => {
-    // Convert angle to degrees (0-360)
-    // angle 0 = right (3 o'clock) = hue 0
-    // angle increases counterclockwise
-    let degrees = (angle * 180) / Math.PI;
-    degrees = 360 - degrees; // Convert to clockwise
-    if (degrees < 0) degrees += 360;
-    if (degrees >= 360) degrees -= 360;
+    setHue(mod(360 - radToDeg(angle), 360));
+  };
 
-    setHue(degrees);
+  const setHueFromPoint = (x: number, y: number, radius: number) => {
+    setHue(cartesianToAngle(x, y, radius));
   };
 
   // Get thumb angle in radians
   const getThumbAngle = () => {
-    const hue = getHue();
-    // Convert hue to angle (radians)
-    // hue 0 = angle 0 (right)
-    // hue increases clockwise, angle increases counterclockwise
-    const degrees = 360 - hue;
-    return (degrees * Math.PI) / 180;
+    return degToRad(360 - getHue());
+  };
+
+  const getThumbPosition = (radius: number) => {
+    return angleToCartesian(getHue(), radius);
   };
 
   // Increment hue
   const increment = (stepSize?: number) => {
-    const s = stepSize ?? step();
-    setHue(getHue() + s);
+    const range = hueRange();
+    const s = Math.max(stepSize ?? range.step, range.step);
+    const nextValue = getHue() + s;
+    if (nextValue >= range.maxValue) {
+      setHue(range.minValue);
+      return;
+    }
+    setHue(roundToStep(mod(nextValue, range.maxValue), s));
   };
 
   // Decrement hue
   const decrement = (stepSize?: number) => {
-    const s = stepSize ?? step();
-    setHue(getHue() - s);
+    const range = hueRange();
+    const s = Math.max(stepSize ?? range.step, range.step);
+    if (getHue() === range.minValue) {
+      setHue(roundDown(range.maxValue / s) * s);
+      return;
+    }
+    setHue(roundToStep(mod(getHue() - s, range.maxValue), s));
   };
 
   // Set dragging state
@@ -167,23 +201,25 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
 
     // Call onChangeEnd when dragging ends
     if (wasDragging && !dragging) {
-      getOptions().onChangeEnd?.(value());
+      getOptions().onChangeEnd?.(valueRef);
     }
   };
 
   // Get display color (full saturation and brightness for wheel preview)
   const getDisplayColor = () => {
-    // For display, we want the color at full saturation and brightness
-    // to show the pure hue on the wheel
     return value()
+      .toFormat("hsl")
       .withChannelValue("saturation", 100)
-      .withChannelValue("brightness", 100)
+      .withChannelValue("lightness", 50)
       .withChannelValue("alpha", 1);
   };
 
   return {
     get value() {
       return value();
+    },
+    get defaultValue() {
+      return initialValue;
     },
     get isDragging() {
       return isDragging();
@@ -198,9 +234,12 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
       return pageStep();
     },
     getHue,
+    setValue,
     setHue,
     setHueFromAngle,
+    setHueFromPoint,
     getThumbAngle,
+    getThumbPosition,
     increment,
     decrement,
     setDragging: setDraggingState,

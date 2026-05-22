@@ -598,6 +598,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2/ColorSlider directly; Solid uses @proyecto-viviana/solid-spectrum ColorSlider with the public ColorSlider subpath, S2 root/track/thumb/loupe styling, generated channel gradient, hidden range input forwarding, controlled/default value routing, colorSpace conversion, RTL and vertical geometry, and route controls covering the documented S2 API surface.",
   }),
 
+  colorwheel: styledLiveOfficialEntry({
+    slug: "colorwheel",
+    title: "ColorWheel",
+    category: "Components",
+    summary:
+      "Circular hue control mounted on both stacks with S2 ring geometry, controlled/default value modes, size, form forwarding, ARIA labels, and disabled state.",
+    styledSummary: "React Spectrum ColorWheel vs Solid Spectrum ColorWheel.",
+    styledNote:
+      "React uses @react-spectrum/s2/ColorWheel directly; Solid uses @proyecto-viviana/solid-spectrum ColorWheel with the public ColorWheel subpath, S2 root/track/thumb/loupe styling, ring-only pointer activation, hidden range input forwarding, controlled/default value routing, and route controls covering the documented S2 API surface.",
+  }),
+
   colorswatch: styledLiveOfficialEntry({
     slug: "colorswatch",
     title: "ColorSwatch",

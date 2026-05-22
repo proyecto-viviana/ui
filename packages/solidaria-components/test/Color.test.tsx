@@ -779,6 +779,42 @@ describe("Color Components", () => {
         expect(track).toBeTruthy();
         expect(thumb).toBeTruthy();
       });
+
+      it("should forward form and ARIA details to the hidden hue input", () => {
+        render(() => (
+          <TestColorWheel
+            id="wheel-input"
+            name="accentHue"
+            form="settings-form"
+            aria-label="Hue wheel"
+            aria-details="wheel-details"
+            aria-describedby="wheel-description"
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+          />
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue wheel" });
+        expect(input).toHaveAttribute("id", "wheel-input");
+        expect(input).toHaveAttribute("name", "accentHue");
+        expect(input).toHaveAttribute("form", "settings-form");
+        expect(input).toHaveAttribute("aria-details", "wheel-details");
+        expect(input).toHaveAttribute("aria-describedby", "wheel-description");
+      });
+
+      it("should expose radius-based default track and thumb styles", () => {
+        render(() => (
+          <TestColorWheel defaultValue={parseColor("hsl(0, 100%, 50%)")} aria-label="Hue wheel" />
+        ));
+
+        const track = document.querySelector(".solidaria-ColorWheel-track") as HTMLElement;
+        const thumb = document.querySelector(".solidaria-ColorWheel-thumb") as HTMLElement;
+
+        expect(track.getAttribute("style")).toContain("width: 200px");
+        expect(track.getAttribute("style")).toContain("height: 200px");
+        expect(track.getAttribute("style")).toContain("clip-path:");
+        expect(thumb.style.left).toBe("187px");
+        expect(thumb.style.top).toBe("100px");
+      });
     });
 
     describe("data attributes", () => {
@@ -793,6 +829,68 @@ describe("Color Components", () => {
 
         const wheel = document.querySelector(".solidaria-ColorWheel");
         expect(wheel?.getAttribute("data-disabled")).toBe("true");
+      });
+    });
+
+    describe("interactions", () => {
+      it("should ignore clicks in the center hole and update from the ring", async () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChange={onChange}
+          />
+        ));
+
+        const wheel = document.querySelector(".solidaria-ColorWheel") as HTMLElement;
+        const track = document.querySelector(".solidaria-ColorWheel-track") as HTMLElement;
+        const rect = () =>
+          ({
+            x: 0,
+            y: 0,
+            left: 0,
+            top: 0,
+            right: 200,
+            bottom: 200,
+            width: 200,
+            height: 200,
+            toJSON: () => ({}),
+          }) as DOMRect;
+        wheel.getBoundingClientRect = rect;
+        track.getBoundingClientRect = rect;
+
+        fireEvent.mouseDown(track, { clientX: 100, clientY: 100 });
+        expect(onChange).not.toHaveBeenCalled();
+
+        fireEvent.mouseDown(track, { clientX: 100, clientY: 10 });
+
+        await waitFor(() => {
+          const changedColor = onChange.mock.lastCall?.[0];
+          const movedThumb = document.querySelector(".solidaria-ColorWheel-thumb") as HTMLElement;
+          expect(changedColor.getChannelValue("hue")).toBe(270);
+          expect(parseFloat(movedThumb.style.left)).toBeCloseTo(100, 0);
+          expect(movedThumb.style.top).toBe("13px");
+        });
+      });
+
+      it("should commit keyboard changes through onChangeEnd", async () => {
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue wheel" });
+        fireEvent.keyDown(input, { key: "PageUp" });
+
+        await waitFor(() => {
+          const changedColor = onChangeEnd.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("hue")).toBe(15);
+        });
       });
     });
   });

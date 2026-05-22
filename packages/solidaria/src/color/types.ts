@@ -86,12 +86,26 @@ export interface ColorAreaAria {
 }
 
 export interface AriaColorWheelOptions {
+  /** Element id for the hidden hue range input. */
+  id?: string;
   /** Accessible label for the wheel. */
   "aria-label"?: string;
   /** ID of element that labels the wheel. */
   "aria-labelledby"?: string;
   /** ID of element that describes the wheel. */
   "aria-describedby"?: string;
+  /** ID of element that provides detailed information about the wheel. */
+  "aria-details"?: string;
+  /** ID of element that provides the error message. */
+  "aria-errormessage"?: string;
+  /** Name for the hidden hue range input. */
+  name?: string;
+  /** Associated form owner for the hidden hue range input. */
+  form?: string;
+  /** Outer radius of the circular track in pixels. */
+  outerRadius?: number;
+  /** Inner radius of the circular track in pixels. */
+  innerRadius?: number;
   /** Whether the wheel is disabled. */
   isDisabled?: boolean;
 }

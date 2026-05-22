@@ -59,7 +59,7 @@ import { StatusLight } from "../src/statuslight";
 import { Separator } from "../src/separator";
 
 // ── Color ───────────────────────────────────────────────────────
-import { ColorArea, ColorSlider, ColorWheel, ColorWheelTrack, ColorWheelThumb } from "../src/color";
+import { ColorArea, ColorSlider, ColorWheel } from "../src/color";
 
 // ── Other ───────────────────────────────────────────────────────
 import { Avatar } from "../src/avatar";
@@ -946,13 +946,12 @@ describe("Regression: ColorSlider", () => {
 describe("Regression: ColorWheel", () => {
   it("renders wheel container with circular track, and snapshot", () => {
     const { container } = render(() => (
-      <ColorWheel aria-label="Hue wheel" defaultValue="hsl(0, 100%, 50%)">
-        <ColorWheelTrack />
-        <ColorWheelThumb />
-      </ColorWheel>
+      <ColorWheel aria-label="Hue wheel" defaultValue="hsl(0, 100%, 50%)" />
     ));
 
+    const slider = screen.getByRole("slider", { name: "Hue wheel" });
     expect(container.firstElementChild).toBeInTheDocument();
+    expect(slider).toBeInTheDocument();
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });

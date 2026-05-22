@@ -36,6 +36,7 @@ import {
   ColorArea as SolidSpectrumColorArea,
   ColorField as SolidSpectrumColorField,
   ColorSlider as SolidSpectrumColorSlider,
+  ColorWheel as SolidSpectrumColorWheel,
   ColorSwatch as SolidSpectrumColorSwatch,
   ColorSwatchPicker as SolidSpectrumColorSwatchPicker,
   ComboBox as SolidSpectrumComboBox,
@@ -206,6 +207,15 @@ import {
   serializeColorSliderDemoProps,
   type ColorSliderDemoProps,
 } from "@comparison/data/colorslider-demo";
+import {
+  colorWheelDemoDefaults,
+  colorWheelDemoPropsFromWindow,
+  colorWheelDemoSizeNumber,
+  initialColorWheelDemoValue,
+  normalizeColorWheelDemoProps,
+  serializeColorWheelDemoProps,
+  type ColorWheelDemoProps,
+} from "@comparison/data/colorwheel-demo";
 import {
   colorSwatchDemoPropsFromWindow,
   normalizeColorSwatchDemoProps,
@@ -640,6 +650,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   checkboxgroup: () => h(SolidSpectrumCheckboxGroupDemo, {}),
   colorarea: () => h(SolidSpectrumColorAreaDemo, {}),
   colorslider: () => h(SolidSpectrumColorSliderDemo, {}),
+  colorwheel: () => h(SolidSpectrumColorWheelDemo, {}),
   colorswatch: () => h(SolidSpectrumColorSwatchDemo, {}),
   colorswatchpicker: () => h(SolidSpectrumColorSwatchPickerDemo, {}),
   colorfield: () => h(SolidSpectrumColorFieldDemo, {}),
@@ -5418,6 +5429,148 @@ function SolidSpectrumColorSliderDemo() {
               );
             },
             onChangeEnd: (nextValue: ReturnType<typeof parseSolidColorSliderValue>) => {
+              setFinalValue(nextValue);
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function parseSolidColorWheelValue(value: string, fallback = colorWheelDemoDefaults.value) {
+  try {
+    return parseSolidSpectrumColor(value || fallback);
+  } catch {
+    return parseSolidSpectrumColor(fallback);
+  }
+}
+
+function solidColorWheelToCssString(color: ReturnType<typeof parseSolidColorWheelValue>) {
+  return color.toString("css");
+}
+
+function SolidSpectrumColorWheelDemo() {
+  const [demoProps, setDemoProps] = createSignal<ColorWheelDemoProps>(
+    colorWheelDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(
+    parseSolidColorWheelValue(initialColorWheelDemoValue(demoProps())),
+  );
+  const [finalValue, setFinalValue] = createSignal(
+    parseSolidColorWheelValue(initialColorWheelDemoValue(demoProps())),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  const locale = buttonDemoLocaleFromWindow();
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "colorwheel") {
+        const nextProps = normalizeColorWheelDemoProps(event.detail.props ?? {});
+        const nextValue = parseSolidColorWheelValue(initialColorWheelDemoValue(nextProps));
+        setDemoProps(nextProps);
+        setValue(nextValue);
+        setFinalValue(nextValue);
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeColorWheelDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      locale,
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "colorwheel",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            return solidColorWheelToCssString(value());
+          },
+          get "data-comparison-final-value"() {
+            return solidColorWheelToCssString(finalValue());
+          },
+        },
+        [
+          hc(SolidSpectrumColorWheel, {
+            get "aria-label"() {
+              return demoProps().ariaLabel || undefined;
+            },
+            get "aria-labelledby"() {
+              return demoProps().ariaLabelledBy || undefined;
+            },
+            get "aria-describedby"() {
+              return demoProps().ariaDescribedBy || undefined;
+            },
+            get "aria-details"() {
+              return demoProps().ariaDetails || undefined;
+            },
+            get value() {
+              return demoProps().valueSource === "value" ? value() : undefined;
+            },
+            get defaultValue() {
+              return demoProps().valueSource === "defaultValue"
+                ? parseSolidColorWheelValue(
+                    demoProps().defaultValue,
+                    colorWheelDemoDefaults.defaultValue,
+                  )
+                : undefined;
+            },
+            get size() {
+              return colorWheelDemoSizeNumber(demoProps());
+            },
+            get name() {
+              return demoProps().name || undefined;
+            },
+            get form() {
+              return demoProps().form || undefined;
+            },
+            get id() {
+              return demoProps().id || undefined;
+            },
+            get slot() {
+              return demoProps().slot || undefined;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            onChange: (nextValue: ReturnType<typeof parseSolidColorWheelValue>) => {
+              setValue(nextValue);
+              setDemoProps((current: ColorWheelDemoProps) =>
+                current.valueSource === "value"
+                  ? { ...current, value: solidColorWheelToCssString(nextValue) }
+                  : current,
+              );
+            },
+            onChangeEnd: (nextValue: ReturnType<typeof parseSolidColorWheelValue>) => {
               setFinalValue(nextValue);
             },
           }),

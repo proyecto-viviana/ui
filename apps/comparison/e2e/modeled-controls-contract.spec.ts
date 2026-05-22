@@ -64,6 +64,19 @@ const colorSliderTextControlValues: Record<string, string> = {
   slot: "color",
 };
 
+const colorWheelTextControlValues: Record<string, string> = {
+  ariaLabel: "Contract color wheel",
+  ariaLabelledBy: "colorwheel-labelledby",
+  ariaDescribedBy: "colorwheel-describedby",
+  ariaDetails: "colorwheel-details",
+  value: "hsl(80, 100%, 50%)",
+  defaultValue: "hsl(200, 100%, 50%)",
+  name: "hueWheel",
+  form: "colorForm",
+  id: "contract-colorwheel",
+  slot: "color",
+};
+
 const colorSwatchTextControlValues: Record<string, string> = {
   ariaLabel: "Background color",
   ariaLabelledBy: "colorswatch-labelledby",
@@ -184,6 +197,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "colorslider" && control.name in colorSliderTextControlValues) {
       return colorSliderTextControlValues[control.name];
+    }
+    if (group.slug === "colorwheel" && control.name in colorWheelTextControlValues) {
+      return colorWheelTextControlValues[control.name];
     }
     if (group.slug === "colorswatch" && control.name in colorSwatchTextControlValues) {
       return colorSwatchTextControlValues[control.name];

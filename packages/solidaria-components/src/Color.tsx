@@ -999,6 +999,8 @@ export interface ColorWheelRenderProps {
   hue: number;
   /** The current color. */
   color: Color;
+  /** The default inline styles applied by the color wheel hook. */
+  defaultStyle: JSX.CSSProperties;
 }
 
 export interface ColorWheelProps extends AriaColorWheelOptions, SlotProps {
@@ -1023,6 +1025,8 @@ export interface ColorWheelTrackRenderProps {
   isDisabled: boolean;
   /** Whether the wheel is being dragged. */
   isDragging: boolean;
+  /** The default inline styles applied by the color wheel hook. */
+  defaultStyle: JSX.CSSProperties;
 }
 
 export interface ColorWheelTrackProps extends SlotProps {
@@ -1039,12 +1043,16 @@ export interface ColorWheelThumbRenderProps {
   isDisabled: boolean;
   /** Whether the thumb is being dragged. */
   isDragging: boolean;
+  /** The current display color. */
+  color: Color;
   /** Whether the thumb is focused. */
   isFocused: boolean;
   /** Whether the thumb has keyboard focus. */
   isFocusVisible: boolean;
   /** Whether the thumb is hovered. */
   isHovered: boolean;
+  /** The default inline styles applied by the color wheel hook. */
+  defaultStyle: JSX.CSSProperties;
 }
 
 export interface ColorWheelThumbProps extends SlotProps {
@@ -1054,6 +1062,8 @@ export interface ColorWheelThumbProps extends SlotProps {
   class?: ClassNameOrFunction<ColorWheelThumbRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ColorWheelThumbRenderProps>;
+  /** Ref callback for the thumb element. */
+  ref?: (element: HTMLDivElement) => void;
 }
 
 interface ColorWheelContextValue {
@@ -1076,7 +1086,19 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
     props,
     ["children", "class", "style", "slot"],
     ["value", "defaultValue", "onChange", "onChangeEnd"],
-    ["aria-label", "aria-labelledby", "aria-describedby", "isDisabled"],
+    [
+      "id",
+      "aria-label",
+      "aria-labelledby",
+      "aria-describedby",
+      "aria-details",
+      "aria-errormessage",
+      "isDisabled",
+      "name",
+      "form",
+      "outerRadius",
+      "innerRadius",
+    ],
   );
 
   // Create color wheel state
@@ -1094,12 +1116,19 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
   };
 
   // Create color wheel aria props
-  const { trackProps, thumbProps, inputProps } = createColorWheel(
+  const colorWheelAria = createColorWheel(
     () => ({
+      id: ariaProps.id,
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
+      "aria-details": ariaProps["aria-details"],
+      "aria-errormessage": ariaProps["aria-errormessage"],
       isDisabled: ariaProps.isDisabled,
+      name: ariaProps.name,
+      form: ariaProps.form,
+      outerRadius: ariaProps.outerRadius,
+      innerRadius: ariaProps.innerRadius,
     }),
     () => state,
     () => wheelRef ?? null,
@@ -1110,6 +1139,7 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
     isDragging: state.isDragging,
     hue: state.getHue(),
     color: state.value,
+    defaultStyle: { position: "relative" },
   }));
 
   const renderProps = useRenderProps(
@@ -1130,17 +1160,27 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
     <ColorWheelContext.Provider
       value={{
         state,
-        trackProps,
-        thumbProps,
-        inputProps,
-        wheelRef,
+        get trackProps() {
+          return colorWheelAria.trackProps;
+        },
+        get thumbProps() {
+          return colorWheelAria.thumbProps;
+        },
+        get inputProps() {
+          return colorWheelAria.inputProps;
+        },
+        get wheelRef() {
+          return wheelRef;
+        },
         setWheelRef,
       }}
     >
       <div
+        ref={setWheelRef}
         {...domProps()}
         class={renderProps.class()}
         style={renderProps.style()}
+        slot={local.slot || undefined}
         data-disabled={state.isDisabled || undefined}
         data-dragging={state.isDragging || undefined}
       >
@@ -1161,11 +1201,12 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
     throw new Error("ColorWheelTrack must be used within a ColorWheel");
   }
 
-  const { state, trackProps, setWheelRef } = context;
+  const state = context.state;
 
   const renderValues = createMemo<ColorWheelTrackRenderProps>(() => ({
     isDisabled: state.isDisabled,
     isDragging: state.isDragging,
+    defaultStyle: (context.trackProps as { style?: JSX.CSSProperties }).style ?? {},
   }));
 
   const renderProps = useRenderProps(
@@ -1179,12 +1220,16 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
   );
 
   const cleanTrackProps = () => {
-    const { ref: _ref, style: _trackStyle, ...rest } = trackProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _trackStyle,
+      ...rest
+    } = context.trackProps as Record<string, unknown>;
     return rest;
   };
 
   const mergedStyle = () => {
-    const trackStyle = (trackProps as { style?: Record<string, string> }).style || {};
+    const trackStyle = (context.trackProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...trackStyle, ...renderStyle };
   };
@@ -1192,7 +1237,6 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
   return (
     <div
       {...domProps}
-      ref={setWheelRef}
       {...cleanTrackProps()}
       class={renderProps.class()}
       style={mergedStyle()}
@@ -1208,14 +1252,14 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
  * The thumb element of a color wheel.
  */
 export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children", "ref"]);
 
   const context = useContext(ColorWheelContext);
   if (!context) {
     throw new Error("ColorWheelThumb must be used within a ColorWheel");
   }
 
-  const { state, thumbProps, inputProps } = context;
+  const state = context.state;
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
@@ -1228,9 +1272,11 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
   const renderValues = createMemo<ColorWheelThumbRenderProps>(() => ({
     isDisabled: state.isDisabled,
     isDragging: state.isDragging,
+    color: state.getDisplayColor(),
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
+    defaultStyle: (context.thumbProps as { style?: JSX.CSSProperties }).style ?? {},
   }));
 
   const renderProps = useRenderProps(
@@ -1244,7 +1290,11 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
   );
 
   const cleanThumbProps = () => {
-    const { ref: _ref, style: _thumbStyle, ...rest } = thumbProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _thumbStyle,
+      ...rest
+    } = context.thumbProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -1257,13 +1307,13 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
   };
   const mergedInputProps = () => {
     return mergeProps(
-      inputProps as Record<string, unknown>,
+      context.inputProps as Record<string, unknown>,
       cleanFocusProps(),
     ) as JSX.InputHTMLAttributes<HTMLInputElement>;
   };
 
   const mergedStyle = () => {
-    const thumbStyle = (thumbProps as { style?: Record<string, string> }).style || {};
+    const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
     return { ...thumbStyle, ...renderStyle };
   };
@@ -1271,6 +1321,7 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
   return (
     <div
       {...domProps}
+      ref={local.ref}
       {...cleanThumbProps()}
       {...cleanHoverProps()}
       class={renderProps.class()}

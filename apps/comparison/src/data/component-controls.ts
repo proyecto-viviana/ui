@@ -76,6 +76,11 @@ import {
   colorSliderValueSourceOptions,
 } from "./colorslider-demo";
 import {
+  colorWheelDemoDefaults,
+  colorWheelSizeOptions,
+  colorWheelValueSourceOptions,
+} from "./colorwheel-demo";
+import {
   colorSwatchDemoDefaults,
   colorSwatchRoundingOptions,
   colorSwatchSizeOptions,
@@ -2167,6 +2172,114 @@ const colorSliderControls: ComponentControlGroup = {
     "value",
   ],
   note: "Modeled from the S2 ColorSlider docs, API, and source. The viewer drives controlled/default value, colorSpace, channel, orientation, visible/default label behavior, horizontal output, form name forwarding, ARIA labelling/details, disabled state, id, and slot into both stacks.",
+};
+
+const colorWheelControls: ComponentControlGroup = {
+  slug: "colorwheel",
+  title: "ColorWheel",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.ariaLabel,
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.value,
+    },
+    {
+      name: "valueSource",
+      label: "value source",
+      kind: "radio",
+      defaultValue: colorWheelDemoDefaults.valueSource,
+      options: options(colorWheelValueSourceOptions),
+    },
+    {
+      name: "defaultValue",
+      label: "defaultValue",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.defaultValue,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: colorWheelDemoDefaults.size,
+      options: options(colorWheelSizeOptions),
+    },
+    {
+      name: "name",
+      label: "name",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.name,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.form,
+    },
+    {
+      name: "isDisabled",
+      label: "isDisabled",
+      kind: "switch",
+      defaultValue: colorWheelDemoDefaults.isDisabled,
+    },
+    {
+      name: "ariaLabelledBy",
+      label: "aria-labelledby",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.ariaLabelledBy,
+    },
+    {
+      name: "ariaDescribedBy",
+      label: "aria-describedby",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.ariaDescribedBy,
+    },
+    {
+      name: "ariaDetails",
+      label: "aria-details",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.ariaDetails,
+    },
+    {
+      name: "id",
+      label: "id",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.id,
+    },
+    {
+      name: "slot",
+      label: "slot",
+      kind: "text",
+      defaultValue: colorWheelDemoDefaults.slot,
+    },
+  ],
+  apiProps: [
+    "aria-describedby",
+    "aria-details",
+    "aria-label",
+    "aria-labelledby",
+    "defaultValue",
+    "form",
+    "id",
+    "isDisabled",
+    "name",
+    "onChange",
+    "onChangeEnd",
+    "size",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "value",
+  ],
+  note: "Modeled from the S2 ColorWheel docs, API, and source. The viewer drives controlled/default hue color values, numeric S2 size, hidden range input form forwarding, ARIA labelling/details, disabled state, id, and slot into both stacks.",
 };
 
 const colorSwatchControls: ComponentControlGroup = {
@@ -5422,6 +5535,7 @@ export const componentControlGroups = {
   checkboxgroup: checkboxGroupControls,
   colorarea: colorAreaControls,
   colorslider: colorSliderControls,
+  colorwheel: colorWheelControls,
   colorswatch: colorSwatchControls,
   colorswatchpicker: colorSwatchPickerControls,
   colorfield: colorFieldControls,

@@ -348,7 +348,7 @@ describe("createColorSliderState", () => {
     createRoot((dispose) => {
       const horizontal = createColorSliderState(() => ({
         channel: "hue",
-        defaultValue: "hsl(0, 100%, 50%)",
+        defaultValue: "hsl(180, 100%, 50%)",
       }));
       const vertical = createColorSliderState(() => ({
         channel: "hue",
@@ -599,7 +599,20 @@ describe("createColorWheelState", () => {
       }));
 
       expect(state.value).toBeTruthy();
+      expect(state.value.getColorSpace()).toBe("hsb");
       expect(state.isDragging).toBe(false);
+      dispose();
+    });
+  });
+
+  it("should initialize to the React Stately default color", () => {
+    createRoot((dispose) => {
+      const state = createColorWheelState(() => ({}));
+
+      expect(state.defaultValue.getColorSpace()).toBe("hsl");
+      expect(state.getHue()).toBe(0);
+      expect(state.value.getChannelValue("saturation")).toBe(100);
+      expect(state.value.getChannelValue("lightness")).toBe(50);
       dispose();
     });
   });
@@ -632,7 +645,7 @@ describe("createColorWheelState", () => {
     createRoot((dispose) => {
       let changedColor: Color | null = null;
       const state = createColorWheelState(() => ({
-        defaultValue: "hsl(0, 100%, 50%)",
+        defaultValue: "hsl(180, 100%, 50%)",
         onChange: (color) => {
           changedColor = color;
         },
@@ -645,18 +658,18 @@ describe("createColorWheelState", () => {
     });
   });
 
-  it("should wrap hue value in onChange", () => {
+  it("should normalize hue overflow to the minimum value in onChange", () => {
     createRoot((dispose) => {
       let changedColor: Color | null = null;
       const state = createColorWheelState(() => ({
-        defaultValue: "hsl(0, 100%, 50%)",
+        defaultValue: "hsl(180, 100%, 50%)",
         onChange: (color) => {
           changedColor = color;
         },
       }));
 
       state.setHue(370);
-      expect(changedColor!.getChannelValue("hue")).toBe(10);
+      expect(changedColor!.getChannelValue("hue")).toBe(0);
       dispose();
     });
   });
@@ -678,6 +691,35 @@ describe("createColorWheelState", () => {
     });
   });
 
+  it("should set hue from a point relative to the center", () => {
+    createRoot((dispose) => {
+      let changedColor: Color | null = null;
+      const state = createColorWheelState(() => ({
+        defaultValue: "hsl(0, 100%, 50%)",
+        onChange: (color) => {
+          changedColor = color;
+        },
+      }));
+
+      state.setHueFromPoint(0, 100, 100);
+      expect(changedColor!.getChannelValue("hue")).toBe(90);
+      dispose();
+    });
+  });
+
+  it("should get thumb position from hue and radius", () => {
+    createRoot((dispose) => {
+      const state = createColorWheelState(() => ({
+        defaultValue: "hsl(90, 100%, 50%)",
+      }));
+
+      const position = state.getThumbPosition(50);
+      expect(position.x).toBeCloseTo(0, 1);
+      expect(position.y).toBeCloseTo(50, 1);
+      dispose();
+    });
+  });
+
   it("should call onChange when incrementing hue", () => {
     createRoot((dispose) => {
       let changedColor: Color | null = null;
@@ -690,6 +732,59 @@ describe("createColorWheelState", () => {
 
       state.increment();
       expect(changedColor!.getChannelValue("hue")).toBe(101);
+      dispose();
+    });
+  });
+
+  it("should wrap increment and decrement at the hue bounds", () => {
+    createRoot((dispose) => {
+      let changedColor: Color | null = null;
+      const state = createColorWheelState(() => ({
+        defaultValue: "hsl(359, 100%, 50%)",
+        onChange: (color) => {
+          changedColor = color;
+        },
+      }));
+
+      state.increment();
+      expect(changedColor!.getChannelValue("hue")).toBe(0);
+
+      state.setHue(0);
+      state.decrement();
+      expect(changedColor!.getChannelValue("hue")).toBe(359);
+      dispose();
+    });
+  });
+
+  it("should call onChangeEnd with the latest dragged color", () => {
+    createRoot((dispose) => {
+      let endedColor: Color | null = null;
+      const state = createColorWheelState(() => ({
+        defaultValue: "hsl(0, 100%, 50%)",
+        onChangeEnd: (color) => {
+          endedColor = color;
+        },
+      }));
+
+      state.setDragging(true);
+      state.setHue(180);
+      state.setDragging(false);
+      expect(endedColor!.getChannelValue("hue")).toBe(180);
+      dispose();
+    });
+  });
+
+  it("should expose a full-saturation HSL display color", () => {
+    createRoot((dispose) => {
+      const state = createColorWheelState(() => ({
+        defaultValue: "hsb(240, 40%, 30%)",
+      }));
+
+      const color = state.getDisplayColor();
+      expect(color.getColorSpace()).toBe("hsl");
+      expect(color.getChannelValue("hue")).toBe(240);
+      expect(color.getChannelValue("saturation")).toBe(100);
+      expect(color.getChannelValue("lightness")).toBe(50);
       dispose();
     });
   });

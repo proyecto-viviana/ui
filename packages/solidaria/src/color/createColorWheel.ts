@@ -4,9 +4,11 @@
  * Provides ARIA attributes and keyboard/pointer handling for a circular hue selector.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo, onCleanup, type Accessor } from "solid-js";
 import type { ColorWheelState } from "@proyecto-viviana/solid-stately";
+import { useLocale } from "../i18n";
 import { createId } from "../ssr";
+import { focusWithoutScrolling } from "../utils/focus";
 import type { AriaColorWheelOptions, ColorWheelAria } from "./types";
 
 /**
@@ -19,58 +21,163 @@ export function createColorWheel(
 ): ColorWheelAria {
   const getProps = () => props();
   const getState = () => state();
+  const locale = useLocale();
 
   // Generate IDs
   const inputId = createId();
+  let cleanupPointerDrag: (() => void) | undefined;
+  let cleanupMouseDrag: (() => void) | undefined;
+  let dragElement: HTMLElement | null = null;
 
-  // Calculate angle from pointer position
-  const getAngleFromEvent = (e: MouseEvent | PointerEvent) => {
-    const wheel = wheelRef();
+  const outerRadius = () => getProps().outerRadius ?? 100;
+  const innerRadius = () => getProps().innerRadius ?? 74;
+  const thumbRadius = () => (innerRadius() + outerRadius()) / 2;
+
+  const getInput = () => wheelRef()?.querySelector<HTMLInputElement>('input[type="range"]') ?? null;
+  const focusInput = () => {
+    focusWithoutScrolling(getInput());
+    queueMicrotask(() => focusWithoutScrolling(getInput()));
+  };
+
+  const getPointFromEvent = (clientX: number, clientY: number, element?: HTMLElement | null) => {
+    const wheel = element ?? dragElement ?? wheelRef();
     if (!wheel) return null;
 
     const rect = wheel.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    const dx = e.clientX - centerX;
-    const dy = e.clientY - centerY;
-
-    return Math.atan2(-dy, dx); // Negative dy because Y is inverted in screen coords
+    return {
+      x: clientX - centerX,
+      y: clientY - centerY,
+    };
   };
 
-  // Handle pointer down
-  const onPointerDown = (e: PointerEvent) => {
-    if (getProps().isDisabled || getState().isDisabled) return;
+  const updateFromPoint = (
+    clientX: number,
+    clientY: number,
+    requireTrackHit = false,
+    element?: HTMLElement | null,
+  ) => {
+    if (getProps().isDisabled || getState().isDisabled) return false;
 
-    const angle = getAngleFromEvent(e);
-    if (angle === null) return;
+    const point = getPointFromEvent(clientX, clientY, element);
+    if (!point) return false;
 
-    getState().setHueFromAngle(angle);
-    getState().setDragging(true);
-
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-  };
-
-  // Handle pointer move
-  const onPointerMove = (e: PointerEvent) => {
-    if (!getState().isDragging) return;
-
-    const angle = getAngleFromEvent(e);
-    if (angle === null) return;
-
-    getState().setHueFromAngle(angle);
-  };
-
-  // Handle pointer up
-  const onPointerUp = (e: PointerEvent) => {
-    if (getState().isDragging) {
-      getState().setDragging(false);
-      (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+    const distance = Math.sqrt(point.x ** 2 + point.y ** 2);
+    if (requireTrackHit && (distance <= innerRadius() || distance >= outerRadius())) {
+      return false;
     }
+
+    getState().setHueFromPoint(point.x, point.y, thumbRadius());
+    return true;
+  };
+
+  const endDrag = () => {
+    if (!getState().isDragging) return;
+    getState().setDragging(false);
+    dragElement = null;
+    focusInput();
+  };
+
+  const installPointerDragListeners = () => {
+    if (typeof window === "undefined") return;
+    cleanupPointerDrag?.();
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!getState().isDragging) return;
+      updateFromPoint(e.clientX, e.clientY);
+    };
+    const onPointerEnd = () => {
+      cleanupPointerDrag?.();
+      cleanupPointerDrag = undefined;
+      endDrag();
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerEnd);
+    window.addEventListener("pointercancel", onPointerEnd);
+
+    cleanupPointerDrag = () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerEnd);
+      window.removeEventListener("pointercancel", onPointerEnd);
+    };
+  };
+
+  const installMouseDragListeners = () => {
+    if (typeof window === "undefined") return;
+    cleanupMouseDrag?.();
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!getState().isDragging) return;
+      updateFromPoint(e.clientX, e.clientY);
+    };
+    const onMouseEnd = () => {
+      cleanupMouseDrag?.();
+      cleanupMouseDrag = undefined;
+      endDrag();
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseEnd);
+
+    cleanupMouseDrag = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseEnd);
+    };
+  };
+
+  onCleanup(() => {
+    cleanupPointerDrag?.();
+    cleanupMouseDrag?.();
+  });
+
+  const onTrackPointerDown = (e: PointerEvent) => {
+    dragElement = e.currentTarget as HTMLElement;
+    if (!updateFromPoint(e.clientX, e.clientY, true, dragElement)) {
+      dragElement = null;
+      return;
+    }
+    focusInput();
+    getState().setDragging(true);
+    installPointerDragListeners();
+    e.preventDefault();
+  };
+
+  const onTrackMouseDown = (e: MouseEvent) => {
+    dragElement = e.currentTarget as HTMLElement;
+    if (!updateFromPoint(e.clientX, e.clientY, true, dragElement)) {
+      dragElement = null;
+      return;
+    }
+    focusInput();
+    getState().setDragging(true);
+    installMouseDragListeners();
+    e.preventDefault();
+  };
+
+  const onThumbPointerDown = (e: PointerEvent) => {
+    if (getProps().isDisabled || getState().isDisabled) return;
+    focusInput();
+    getState().setDragging(true);
+    installPointerDragListeners();
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const onThumbMouseDown = (e: MouseEvent) => {
+    if (getProps().isDisabled || getState().isDisabled) return;
+    focusInput();
+    getState().setDragging(true);
+    installMouseDragListeners();
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   // Handle keyboard
   const onKeyDown = (e: KeyboardEvent) => {
+    if (e.defaultPrevented) return;
     if (getProps().isDisabled || getState().isDisabled) return;
 
     const s = getState();
@@ -102,6 +209,8 @@ export function createColorWheel(
     }
 
     if (handled) {
+      s.setDragging(true);
+      s.setDragging(false);
       e.preventDefault();
       e.stopPropagation();
     }
@@ -110,25 +219,33 @@ export function createColorWheel(
   // Hue spectrum conic gradient
   const conicGradient = `conic-gradient(from 90deg, hsl(0, 100%, 50%), hsl(30, 100%, 50%), hsl(60, 100%, 50%), hsl(90, 100%, 50%), hsl(120, 100%, 50%), hsl(150, 100%, 50%), hsl(180, 100%, 50%), hsl(210, 100%, 50%), hsl(240, 100%, 50%), hsl(270, 100%, 50%), hsl(300, 100%, 50%), hsl(330, 100%, 50%), hsl(360, 100%, 50%))`;
 
+  const ringPath = () => {
+    const outer = outerRadius();
+    const inner = innerRadius();
+    const circlePath = (radius: number) =>
+      [
+        `M ${outer}, ${outer} m ${-radius}, 0`,
+        `a ${radius}, ${radius}, 0, 1, 0, ${radius * 2}, 0`,
+        `a ${radius}, ${radius}, 0, 1, 0 ${-radius * 2}, 0`,
+      ].join(" ");
+    return `path(evenodd, "${circlePath(outer)} ${circlePath(inner)}")`;
+  };
+
   // Track props (the wheel container)
   const trackProps = createMemo(() => {
     const s = getState();
     const p = getProps();
 
     return {
-      role: "presentation" as const,
-      onPointerDown,
-      onPointerMove,
-      onPointerUp,
+      onPointerDown: onTrackPointerDown,
+      onMouseDown: onTrackMouseDown,
       style: {
         position: "relative" as const,
         "touch-action": "none",
-        "border-radius": "50%",
+        width: `${outerRadius() * 2}px`,
+        height: `${outerRadius() * 2}px`,
         background: conicGradient,
-        // Use radial-gradient mask to cut out center hole (creates ring shape)
-        // 35% inner radius leaves a nice thick ring
-        "-webkit-mask-image": "radial-gradient(circle, transparent 35%, black 36%)",
-        "mask-image": "radial-gradient(circle, transparent 35%, black 36%)",
+        "clip-path": ringPath(),
         "forced-color-adjust": "none" as const,
       },
       "data-disabled": s.isDisabled || p.isDisabled || undefined,
@@ -139,24 +256,19 @@ export function createColorWheel(
   const thumbProps = createMemo(() => {
     const s = getState();
     const p = getProps();
-    const angle = s.getThumbAngle();
-
-    // Calculate thumb position on the wheel edge
-    // Assumes wheel is circular and thumb is at the outer edge
-    // Angle 0 = right (3 o'clock)
-    const thumbX = Math.cos(angle);
-    const thumbY = -Math.sin(angle); // Negative because CSS Y is inverted
+    const position = s.getThumbPosition(thumbRadius());
 
     return {
-      role: "presentation" as const,
+      onPointerDown: onThumbPointerDown,
+      onMouseDown: onThumbMouseDown,
+      onKeyDown,
       style: {
         position: "absolute" as const,
-        // Position relative to center, scaled to radius
-        // These will be overridden by the component with actual radius
-        left: `calc(50% + ${thumbX * 50}%)`,
-        top: `calc(50% + ${thumbY * 50}%)`,
+        left: `${outerRadius() + position.x}px`,
+        top: `${outerRadius() + position.y}px`,
         transform: "translate(-50%, -50%)",
         "touch-action": "none",
+        "forced-color-adjust": "none" as const,
       },
       "data-dragging": s.isDragging || undefined,
       "data-disabled": s.isDisabled || p.isDisabled || undefined,
@@ -170,17 +282,28 @@ export function createColorWheel(
 
     return {
       type: "range",
-      id: inputId,
+      id: p.id ?? inputId,
       min: 0,
       max: 360,
       step: s.step,
       value: s.getHue(),
+      name: p.name,
+      form: p.form,
       disabled: s.isDisabled || p.isDisabled,
-      "aria-label": p["aria-label"] ?? "Hue",
+      tabIndex: s.isDisabled || p.isDisabled ? undefined : 0,
+      "aria-label":
+        p["aria-label"] ??
+        (p["aria-labelledby"] ? undefined : s.value.getChannelName("hue", locale().locale)),
       "aria-labelledby": p["aria-labelledby"],
       "aria-describedby": p["aria-describedby"],
-      "aria-valuetext": `${s.getHue()}°`,
+      "aria-details": p["aria-details"],
+      "aria-errormessage": p["aria-errormessage"],
+      "aria-valuetext": `${s.value.formatChannelValue("hue", locale().locale)}, ${s.value.getHueName(locale().locale)}`,
       onKeyDown,
+      onInput: (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        s.setHue(parseFloat(target.value));
+      },
       onChange: (e: Event) => {
         const target = e.target as HTMLInputElement;
         s.setHue(parseFloat(target.value));
@@ -192,14 +315,16 @@ export function createColorWheel(
       },
       style: {
         position: "absolute" as const,
-        width: "1px",
-        height: "1px",
+        width: "100%",
+        height: "100%",
+        opacity: "0.0001",
         padding: "0",
-        margin: "-1px",
+        margin: "0",
         overflow: "hidden",
         clip: "rect(0, 0, 0, 0)",
         "white-space": "nowrap",
         border: "0",
+        "pointer-events": "none" as const,
       },
     };
   });
