@@ -76,6 +76,12 @@
       "import": "./dist/ColorSwatch.js",
       "default": "./dist/ColorSwatch.js"
     },
+    "./ColorSwatchPicker": {
+      "types": "./dist/ColorSwatchPicker.d.ts",
+      "solid": "./src/ColorSwatchPicker.ts",
+      "import": "./dist/ColorSwatchPicker.js",
+      "default": "./dist/ColorSwatchPicker.js"
+    },
     "./Card": {
       "types": "./dist/Card.d.ts",
       "solid": "./src/Card.ts",

@@ -75,6 +75,17 @@ const colorSwatchTextControlValues: Record<string, string> = {
   slot: "color",
 };
 
+const colorSwatchPickerTextControlValues: Record<string, string> = {
+  ariaLabel: "Accent color",
+  ariaLabelledBy: "colorswatchpicker-labelledby",
+  ariaDescribedBy: "colorswatchpicker-describedby",
+  ariaDetails: "colorswatchpicker-details",
+  value: "#22c55e",
+  defaultValue: "#3b82f6",
+  id: "contract-colorswatchpicker",
+  slot: "swatches",
+};
+
 const colorFieldTextControlValues: Record<string, string> = {
   ariaLabel: "Contract color field",
   ariaLabelledBy: "colorfield-labelledby",
@@ -176,6 +187,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "colorswatch" && control.name in colorSwatchTextControlValues) {
       return colorSwatchTextControlValues[control.name];
+    }
+    if (group.slug === "colorswatchpicker" && control.name in colorSwatchPickerTextControlValues) {
+      return colorSwatchPickerTextControlValues[control.name];
     }
     if (group.slug === "colorfield" && control.name in colorFieldTextControlValues) {
       return colorFieldTextControlValues[control.name];

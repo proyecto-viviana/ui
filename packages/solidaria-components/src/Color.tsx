@@ -1816,6 +1816,8 @@ export interface ColorSwatchPickerRenderProps {
 }
 
 export interface ColorSwatchPickerProps extends SlotProps {
+  /** The element's unique identifier. */
+  id?: string;
   /** The current color value (controlled). */
   value?: Color | string;
   /** The default color value (uncontrolled). */
@@ -1828,6 +1830,8 @@ export interface ColorSwatchPickerProps extends SlotProps {
   "aria-labelledby"?: string;
   /** ID of element that describes the swatch picker. */
   "aria-describedby"?: string;
+  /** ID of element that provides detailed information about the swatch picker. */
+  "aria-details"?: string;
   /** Whether swatches are arranged as a grid or stack. */
   layout?: "grid" | "stack";
   /** The children (ColorSwatchPickerItem elements). */
@@ -1940,9 +1944,11 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     "value",
     "defaultValue",
     "onChange",
+    "id",
     "aria-label",
     "aria-labelledby",
     "aria-describedby",
+    "aria-details",
     "layout",
     "children",
     "class",
@@ -2030,10 +2036,12 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
 
   const listBoxAria = createListBox(
     () => ({
+      id: local.id,
       "aria-label":
         local["aria-label"] ?? (!local["aria-labelledby"] ? "Color swatch picker" : undefined),
       "aria-labelledby": local["aria-labelledby"],
       "aria-describedby": local["aria-describedby"],
+      "aria-details": local["aria-details"],
       shouldFocusWrap: true,
     }),
     state,
@@ -2261,6 +2269,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
         })}
         class={renderProps.class()}
         style={renderProps.style()}
+        slot={local.slot ?? undefined}
         data-focused={state.isFocused() || undefined}
         data-focus-visible={isFocusVisible() || undefined}
         data-layout={local.layout ?? "grid"}

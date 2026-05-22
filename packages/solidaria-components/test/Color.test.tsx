@@ -1152,6 +1152,31 @@ describe("Color Components", () => {
       expect(listbox.getAttribute("data-layout")).toBe("stack");
     });
 
+    it("should forward DOM, slot, and ARIA description props to the listbox", () => {
+      render(() => (
+        <TestColorSwatchPicker
+          id="palette"
+          slot="swatches"
+          aria-label="Palette"
+          aria-describedby="palette-desc"
+          aria-details="palette-details"
+        />
+      ));
+
+      const listbox = screen.getByRole("listbox", { name: "Palette" });
+      expect(listbox).toHaveAttribute("id", "palette");
+      expect(listbox).toHaveAttribute("slot", "swatches");
+      expect(listbox).toHaveAttribute("aria-describedby", "palette-desc");
+      expect(listbox).toHaveAttribute("aria-details", "palette-details");
+    });
+
+    it("should select the matching defaultValue", () => {
+      render(() => <TestColorSwatchPicker defaultValue="#0000ff" aria-label="Palette" />);
+
+      const options = screen.getAllByRole("option");
+      expect(options[2]).toHaveAttribute("aria-selected", "true");
+    });
+
     it("should call onChange with selected color on click", () => {
       const onChange = vi.fn();
       render(() => <TestColorSwatchPicker onChange={onChange} aria-label="Palette" />);
@@ -1161,6 +1186,55 @@ describe("Color Components", () => {
 
       expect(onChange).toHaveBeenCalledTimes(1);
       expect(onChange.mock.calls[0]?.[0]?.toString("hexa")).toBe("#00ff00ff");
+    });
+
+    it("should keep controlled selection stable until the value changes", async () => {
+      const onChange = vi.fn();
+      const [value, setValue] = createSignal(parseColor("#ff0000"));
+      render(() => (
+        <TestColorSwatchPicker value={value()} onChange={onChange} aria-label="Palette" />
+      ));
+
+      const options = screen.getAllByRole("option");
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.click(options[1]!);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange.mock.calls[0]?.[0]?.toString("hexa")).toBe("#00ff00ff");
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+      setValue(parseColor("#00ff00"));
+
+      await waitFor(() => {
+        expect(options[1]).toHaveAttribute("aria-selected", "true");
+      });
+    });
+
+    it("should expose disabled items and skip them during grid keyboard navigation", () => {
+      const onChange = vi.fn();
+      render(() => (
+        <ColorSwatchPicker onChange={onChange} aria-label="Palette" layout="grid">
+          <ColorSwatchPickerItem color="#ff0000" />
+          <ColorSwatchPickerItem color="#00ff00" isDisabled />
+          <ColorSwatchPickerItem color="#0000ff" />
+        </ColorSwatchPicker>
+      ));
+
+      const options = screen.getAllByRole("option");
+      expect(options[1]).toHaveAttribute("aria-disabled", "true");
+
+      fireEvent.click(options[1]!);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+      const listbox = screen.getByRole("listbox", { name: "Palette" });
+      listbox.focus();
+      fireEvent.keyDown(listbox, { key: "ArrowRight" });
+
+      expect(options[2]).toHaveAttribute("aria-selected", "true");
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange.mock.calls[0]?.[0]?.toString("hexa")).toBe("#0000ffff");
     });
 
     it("should support ArrowRight/ArrowLeft navigation in grid layout", () => {

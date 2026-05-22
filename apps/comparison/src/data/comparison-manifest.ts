@@ -609,6 +609,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2/ColorSwatch directly; Solid uses @proyecto-viviana/solid-spectrum ColorSwatch with the public ColorSwatch subpath, React Aria color naming, transparent/no-color slash rendering, S2 size/rounding/border styles, and route controls covering the documented API surface.",
   }),
 
+  colorswatchpicker: styledLiveOfficialEntry({
+    slug: "colorswatchpicker",
+    title: "ColorSwatchPicker",
+    category: "Components",
+    summary:
+      "Selectable palette of color swatches mounted on both stacks with controlled/default value modes, density, size, rounding, ARIA labels/details, id, and slot controls.",
+    styledSummary: "React Spectrum ColorSwatchPicker vs Solid Spectrum ColorSwatchPicker.",
+    styledNote:
+      "React uses @react-spectrum/s2/ColorSwatchPicker directly with its ColorSwatch child composition; Solid uses @proyecto-viviana/solid-spectrum ColorSwatchPicker with the public ColorSwatchPicker subpath, S2 listbox/item/selection styling, ColorSwatch child wrapping, React Aria selection semantics, and route controls covering the documented picker API surface.",
+  }),
+
   colorfield: styledLiveOfficialEntry({
     slug: "colorfield",
     title: "ColorField",

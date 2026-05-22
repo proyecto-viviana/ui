@@ -37,6 +37,7 @@ import {
   ColorField as SolidSpectrumColorField,
   ColorSlider as SolidSpectrumColorSlider,
   ColorSwatch as SolidSpectrumColorSwatch,
+  ColorSwatchPicker as SolidSpectrumColorSwatchPicker,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
   Content as SolidSpectrumContent,
@@ -211,6 +212,14 @@ import {
   serializeColorSwatchDemoProps,
   type ColorSwatchDemoProps,
 } from "@comparison/data/colorswatch-demo";
+import {
+  colorSwatchPickerDemoPropsFromWindow,
+  colorSwatchPickerPalette,
+  initialColorSwatchPickerDemoValue,
+  normalizeColorSwatchPickerDemoProps,
+  serializeColorSwatchPickerDemoProps,
+  type ColorSwatchPickerDemoProps,
+} from "@comparison/data/colorswatchpicker-demo";
 import {
   colorFieldDemoDefaults,
   colorFieldDemoPropsFromWindow,
@@ -632,6 +641,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   colorarea: () => h(SolidSpectrumColorAreaDemo, {}),
   colorslider: () => h(SolidSpectrumColorSliderDemo, {}),
   colorswatch: () => h(SolidSpectrumColorSwatchDemo, {}),
+  colorswatchpicker: () => h(SolidSpectrumColorSwatchPickerDemo, {}),
   colorfield: () => h(SolidSpectrumColorFieldDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
@@ -5503,6 +5513,134 @@ function SolidSpectrumColorSwatchDemo() {
               return demoProps().slot || undefined;
             },
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+function solidColorSwatchPickerToCssString(
+  color: ReturnType<typeof parseSolidSpectrumColor> | null | undefined,
+) {
+  return (color?.toString("css") ?? "").replace(
+    /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(?:1|1\.0+)\)$/i,
+    "rgb($1, $2, $3)",
+  );
+}
+
+function SolidSpectrumColorSwatchPickerDemo() {
+  const [demoProps, setDemoProps] = createSignal<ColorSwatchPickerDemoProps>(
+    colorSwatchPickerDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(initialColorSwatchPickerDemoValue(demoProps()));
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  const locale = buttonDemoLocaleFromWindow();
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "colorswatchpicker") {
+        const nextProps = normalizeColorSwatchPickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(initialColorSwatchPickerDemoValue(nextProps));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeColorSwatchPickerDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      locale,
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          "data-comparison-control-root": "colorswatchpicker",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            return value();
+          },
+        },
+        [
+          hc(
+            SolidSpectrumColorSwatchPicker,
+            {
+              get value() {
+                return demoProps().valueSource === "value" ? demoProps().value : undefined;
+              },
+              get defaultValue() {
+                return demoProps().valueSource === "defaultValue"
+                  ? demoProps().defaultValue
+                  : undefined;
+              },
+              get density() {
+                return demoProps().density;
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get rounding() {
+                return demoProps().rounding;
+              },
+              get "aria-label"() {
+                return demoProps().ariaLabel || undefined;
+              },
+              get "aria-labelledby"() {
+                return demoProps().ariaLabelledBy || undefined;
+              },
+              get "aria-describedby"() {
+                return demoProps().ariaDescribedBy || undefined;
+              },
+              get "aria-details"() {
+                return demoProps().ariaDetails || undefined;
+              },
+              get id() {
+                return demoProps().id || undefined;
+              },
+              get slot() {
+                return demoProps().slot || undefined;
+              },
+              onChange: (nextValue: ReturnType<typeof parseSolidSpectrumColor>) => {
+                const nextString = solidColorSwatchPickerToCssString(nextValue);
+                setValue(nextString);
+                setDemoProps((current: ColorSwatchPickerDemoProps) =>
+                  current.valueSource === "value" ? { ...current, value: nextString } : current,
+                );
+              },
+            },
+            colorSwatchPickerPalette.map((item) =>
+              hc(SolidSpectrumColorSwatch, {
+                color: item.color,
+                colorName: item.colorName,
+              }),
+            ),
+          ),
         ],
       ),
     ],

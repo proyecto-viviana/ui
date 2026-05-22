@@ -81,6 +81,13 @@ import {
   colorSwatchSizeOptions,
 } from "./colorswatch-demo";
 import {
+  colorSwatchPickerDemoDefaults,
+  colorSwatchPickerDensityOptions,
+  colorSwatchPickerRoundingOptions,
+  colorSwatchPickerSizeOptions,
+  colorSwatchPickerValueSourceOptions,
+} from "./colorswatchpicker-demo";
+import {
   colorFieldChannelOptions,
   colorFieldColorSpaceOptions,
   colorFieldDemoDefaults,
@@ -2246,6 +2253,108 @@ const colorSwatchControls: ComponentControlGroup = {
     "UNSAFE_style",
   ],
   note: "Modeled from the S2 ColorSwatch docs, API, and source. The viewer drives color, colorName, S2 size/rounding, ARIA labelling/details, id, and slot into both stacks, with transparent/no-color slash rendering covered as a route state and styles tracked as an API-only prop.",
+};
+
+const colorSwatchPickerControls: ComponentControlGroup = {
+  slug: "colorswatchpicker",
+  title: "ColorSwatchPicker",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "valueSource",
+      label: "value source",
+      kind: "radio",
+      defaultValue: colorSwatchPickerDemoDefaults.valueSource,
+      options: options(colorSwatchPickerValueSourceOptions),
+    },
+    {
+      name: "value",
+      label: "value",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.value,
+    },
+    {
+      name: "defaultValue",
+      label: "defaultValue",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.defaultValue,
+    },
+    {
+      name: "density",
+      label: "density",
+      kind: "radio",
+      defaultValue: colorSwatchPickerDemoDefaults.density,
+      options: options(colorSwatchPickerDensityOptions),
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: colorSwatchPickerDemoDefaults.size,
+      options: options(colorSwatchPickerSizeOptions),
+    },
+    {
+      name: "rounding",
+      label: "rounding",
+      kind: "radio",
+      defaultValue: colorSwatchPickerDemoDefaults.rounding,
+      options: options(colorSwatchPickerRoundingOptions),
+    },
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.ariaLabel,
+    },
+    {
+      name: "ariaLabelledBy",
+      label: "aria-labelledby",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.ariaLabelledBy,
+    },
+    {
+      name: "ariaDescribedBy",
+      label: "aria-describedby",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.ariaDescribedBy,
+    },
+    {
+      name: "ariaDetails",
+      label: "aria-details",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.ariaDetails,
+    },
+    {
+      name: "id",
+      label: "id",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.id,
+    },
+    {
+      name: "slot",
+      label: "slot",
+      kind: "text",
+      defaultValue: colorSwatchPickerDemoDefaults.slot,
+    },
+  ],
+  apiProps: [
+    "aria-describedby",
+    "aria-details",
+    "aria-label",
+    "aria-labelledby",
+    "children",
+    "defaultValue",
+    "density",
+    "onChange",
+    "rounding",
+    "size",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "value",
+  ],
+  note: "Modeled from the S2 ColorSwatchPicker docs, API, and React Aria listbox contract. The viewer drives controlled/default selection, density, size, rounding, ARIA labelling/details, id, and slot into both stacks, renders the documented ColorSwatch child composition, covers onChange through click interaction, and tracks styles/UNSAFE props as API-only escape hatches.",
 };
 
 const colorFieldControls: ComponentControlGroup = {
@@ -5314,6 +5423,7 @@ export const componentControlGroups = {
   colorarea: colorAreaControls,
   colorslider: colorSliderControls,
   colorswatch: colorSwatchControls,
+  colorswatchpicker: colorSwatchPickerControls,
   colorfield: colorFieldControls,
   combobox: comboBoxControls,
   contextualhelp: contextualHelpControls,

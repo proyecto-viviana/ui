@@ -61,6 +61,7 @@ partial if any gate remains unresolved.
 - [ColorField](./colorfield-validation-notes.md)
 - [ColorSlider](./colorslider-validation-notes.md)
 - [ColorSwatch](./colorswatch-validation-notes.md)
+- [ColorSwatchPicker](./colorswatchpicker-validation-notes.md)
 - [ComboBox](./combobox-validation-notes.md)
 - [ContextualHelp](./contextualhelp-validation-notes.md)
 - [Divider](./divider-validation-notes.md)

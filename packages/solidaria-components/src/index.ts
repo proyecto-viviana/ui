@@ -840,7 +840,9 @@ export {
   type ColorSwatchProps,
   type ColorSwatchRenderProps,
   type ColorSwatchPickerProps,
+  type ColorSwatchPickerRenderProps,
   type ColorSwatchPickerItemProps,
+  type ColorSwatchPickerItemRenderProps,
 } from "./Color";
 
 export {

@@ -53,6 +53,7 @@ import type {
   ColorFormat,
   ColorSpace,
 } from "@proyecto-viviana/solid-stately";
+import { normalizeColor } from "@proyecto-viviana/solid-stately";
 import { baseColor, focusRing, fontRelative, style, type StyleString } from "../s2-style";
 import { keyframes } from "../s2-style/style-macro";
 import { mergeStyles } from "../s2-style/runtime";
@@ -72,6 +73,11 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import {
+  InternalColorSwatchContext,
+  type InternalColorSwatchRounding,
+  type InternalColorSwatchSize,
+} from "./color-swatch-internal";
 
 export type ColorSize = "sm" | "md" | "lg";
 
@@ -1355,8 +1361,8 @@ function ColorFieldError(props: { class?: string; children?: JSX.Element }): JSX
   );
 }
 
-export type ColorSwatchSize = "XS" | "S" | "M" | "L";
-export type ColorSwatchRounding = "default" | "none" | "full";
+export type ColorSwatchSize = InternalColorSwatchSize;
+export type ColorSwatchRounding = InternalColorSwatchRounding;
 
 interface ColorSwatchStyleProps extends Partial<ColorSwatchRenderProps> {
   size?: ColorSwatchSize;
@@ -1428,6 +1434,7 @@ export interface ColorSwatchProps extends Omit<
  * ```
  */
 export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
+  const pickerContext = useContext(InternalColorSwatchContext);
   const [local, headlessProps] = splitProps(props, [
     "size",
     "rounding",
@@ -1435,10 +1442,12 @@ export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
+    "color",
   ]);
 
-  const size = () => local.size ?? "M";
-  const rounding = () => local.rounding ?? "default";
+  const size = () => local.size ?? pickerContext?.size ?? "M";
+  const rounding = () => local.rounding ?? pickerContext?.rounding ?? "default";
+  const color = createMemo(() => normalizeColor(local.color ?? "#fff0"));
 
   const getClassName = (renderProps: ColorSwatchRenderProps): string => {
     return [
@@ -1471,7 +1480,15 @@ export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
     };
   };
 
-  return <HeadlessColorSwatch {...headlessProps} class={getClassName} style={getStyle} />;
+  const swatch = (
+    <HeadlessColorSwatch {...headlessProps} color={color()} class={getClassName} style={getStyle} />
+  );
+
+  if (pickerContext) {
+    return pickerContext.useWrapper(swatch, color, rounding);
+  }
+
+  return swatch;
 }
 
 export const ColorSwatchContext = HeadlessColorSwatchContext;
@@ -1596,10 +1613,17 @@ export { parseColor, getColorChannels } from "@proyecto-viviana/solid-stately";
 export { ColorEditor } from "./ColorEditor";
 export type { ColorEditorProps } from "./ColorEditor";
 
-export { ColorSwatchPicker, ColorSwatchPickerItem } from "./ColorSwatchPicker";
+export {
+  ColorSwatchPicker,
+  ColorSwatchPickerContext,
+  ColorSwatchPickerItem,
+} from "./ColorSwatchPicker";
 export type {
+  ColorSwatchPickerDensity,
   ColorSwatchPickerProps,
   ColorSwatchPickerItemProps,
+  ColorSwatchPickerRounding,
+  ColorSwatchPickerSize,
   SwatchPickerSize,
   SwatchPickerDensity,
   SwatchPickerRounding,

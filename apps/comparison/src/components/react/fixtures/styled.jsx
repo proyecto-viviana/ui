@@ -89,6 +89,10 @@ import {
   parseColor as spectrumParseSliderColor,
 } from "@react-spectrum/s2/ColorSlider";
 import { ColorSwatch as SpectrumColorSwatch } from "@react-spectrum/s2/ColorSwatch";
+import {
+  ColorSwatchPicker as SpectrumColorSwatchPicker,
+  ColorSwatch as SpectrumPickerColorSwatch,
+} from "@react-spectrum/s2/ColorSwatchPicker";
 import { DateField as SpectrumDateField } from "@react-spectrum/s2/DateField";
 import "@react-spectrum/s2/page.css";
 import {
@@ -197,6 +201,13 @@ import {
   normalizeColorSwatchDemoProps,
   serializeColorSwatchDemoProps,
 } from "@comparison/data/colorswatch-demo";
+import {
+  colorSwatchPickerDemoPropsFromWindow,
+  colorSwatchPickerPalette,
+  initialColorSwatchPickerDemoValue,
+  normalizeColorSwatchPickerDemoProps,
+  serializeColorSwatchPickerDemoProps,
+} from "@comparison/data/colorswatchpicker-demo";
 import {
   colorFieldDemoDefaults,
   colorFieldDemoPropsFromWindow,
@@ -550,6 +561,7 @@ export const reactStyledFixtures = {
   colorarea: () => jsx(ReactColorAreaDemo, {}),
   colorslider: () => jsx(ReactColorSliderDemo, {}),
   colorswatch: () => jsx(ReactColorSwatchDemo, {}),
+  colorswatchpicker: () => jsx(ReactColorSwatchPickerDemo, {}),
   colorfield: () => jsx(ReactColorFieldDemo, {}),
   combobox: () => jsx(ReactComboBoxDemo, {}),
   contextualhelp: () => jsx(ReactContextualHelpDemo, {}),
@@ -2630,6 +2642,13 @@ function colorToCssString(color) {
   return color?.toString?.("css") ?? "";
 }
 
+function colorSwatchPickerToCssString(color) {
+  return colorToCssString(color).replace(
+    /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(?:1|1\.0+)\)$/i,
+    "rgb($1, $2, $3)",
+  );
+}
+
 function ReactColorAreaDemo() {
   const [demoProps, setDemoProps] = useState(colorAreaDemoPropsFromWindow);
   const [value, setValue] = useState(() =>
@@ -2889,6 +2908,91 @@ function ReactColorSwatchDemo() {
           "aria-details": demoProps.ariaDetails || undefined,
           id: demoProps.id || undefined,
           slot: demoProps.slot || undefined,
+        },
+        renderKey,
+      ),
+    }),
+    colorScheme,
+    locale,
+  );
+}
+
+function ReactColorSwatchPickerDemo() {
+  const [demoProps, setDemoProps] = useState(colorSwatchPickerDemoPropsFromWindow);
+  const [value, setValue] = useState(() => initialColorSwatchPickerDemoValue(demoProps));
+  const colorScheme = useComparisonResolvedTheme();
+  const locale = buttonDemoLocaleFromWindow();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "colorswatchpicker") {
+        const nextProps = normalizeColorSwatchPickerDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(initialColorSwatchPickerDemoValue(nextProps));
+      }
+    };
+    window.addEventListener(colorSwatchControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(colorSwatchControlsEvent, handleControlsChange);
+  }, []);
+
+  const renderKey = [
+    demoProps.valueSource,
+    demoProps.valueSource === "value" ? demoProps.value : demoProps.defaultValue,
+    demoProps.density,
+    demoProps.size,
+    demoProps.rounding,
+    demoProps.ariaLabel,
+    demoProps.ariaLabelledBy,
+    demoProps.ariaDescribedBy,
+    demoProps.ariaDetails,
+    demoProps.id,
+    demoProps.slot,
+  ].join("|");
+
+  const pickerProps = {
+    density: demoProps.density,
+    size: demoProps.size,
+    rounding: demoProps.rounding,
+    "aria-label": demoProps.ariaLabel || undefined,
+    "aria-labelledby": demoProps.ariaLabelledBy || undefined,
+    "aria-describedby": demoProps.ariaDescribedBy || undefined,
+    "aria-details": demoProps.ariaDetails || undefined,
+    id: demoProps.id || undefined,
+    slot: demoProps.slot || undefined,
+    onChange: (nextValue) => {
+      const nextString = colorSwatchPickerToCssString(nextValue);
+      setValue(nextString);
+      setDemoProps((current) =>
+        current.valueSource === "value" ? { ...current, value: nextString } : current,
+      );
+    },
+  };
+
+  if (demoProps.valueSource === "value") {
+    pickerProps.value = demoProps.value;
+  } else {
+    pickerProps.defaultValue = demoProps.defaultValue;
+  }
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "colorswatchpicker",
+      "data-comparison-control-props": serializeColorSwatchPickerDemoProps(demoProps),
+      "data-comparison-value": value,
+      children: jsx(
+        SpectrumColorSwatchPicker,
+        {
+          ...pickerProps,
+          children: colorSwatchPickerPalette.map((item) =>
+            jsx(
+              SpectrumPickerColorSwatch,
+              {
+                color: item.color,
+                colorName: item.colorName,
+              },
+              item.color,
+            ),
+          ),
         },
         renderKey,
       ),

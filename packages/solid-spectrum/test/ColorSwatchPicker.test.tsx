@@ -1,170 +1,155 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
-import { render } from "@solidjs/testing-library";
-import { ColorSwatchPicker, ColorSwatchPickerItem } from "../src/color/ColorSwatchPicker";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
+import { parseColor } from "@proyecto-viviana/solid-stately";
+import packageJson from "../package.json";
+import { ColorSwatch } from "../src/color";
+import * as colorSwatchPickerSubpath from "../src/ColorSwatchPicker";
+import {
+  ColorSwatchPicker,
+  ColorSwatchPickerContext,
+  ColorSwatchPickerItem,
+} from "../src/color/ColorSwatchPicker";
 
 describe("ColorSwatchPicker (solid-spectrum)", () => {
-  describe("basic rendering", () => {
-    it("renders a grid of swatches", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker>
-          <ColorSwatchPickerItem color="#ff0000" />
-          <ColorSwatchPickerItem color="#00ff00" />
-          <ColorSwatchPickerItem color="#0000ff" />
-        </ColorSwatchPicker>
-      ));
-      expect(container.firstElementChild).toBeInTheDocument();
-      expect(container.firstElementChild!.className).toContain("flex");
-      expect(container.firstElementChild!.className).toContain("flex-wrap");
-    });
+  afterEach(() => {
+    cleanup();
+  });
 
-    it("renders correct number of swatch items", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker>
-          <ColorSwatchPickerItem color="#ff0000" />
-          <ColorSwatchPickerItem color="#00ff00" />
-          <ColorSwatchPickerItem color="#0000ff" />
-        </ColorSwatchPicker>
-      ));
-      const items = container.querySelectorAll(
-        '.solidaria-ColorSwatchPickerItem, [class*="cursor-pointer"]',
-      );
-      expect(items.length).toBeGreaterThanOrEqual(3);
+  it("mirrors public S2 ColorSwatchPicker exports", () => {
+    expect(colorSwatchPickerSubpath.ColorSwatchPicker).toBeTypeOf("function");
+    expect(colorSwatchPickerSubpath.ColorSwatchPickerContext).toBeDefined();
+    expect(colorSwatchPickerSubpath.ColorSwatch).toBeTypeOf("function");
+    expect(colorSwatchPickerSubpath.parseColor).toBeTypeOf("function");
+    expect(colorSwatchPickerSubpath.getColorChannels).toBeTypeOf("function");
+  });
+
+  it("declares the package subpath export", () => {
+    expect(packageJson.exports["./ColorSwatchPicker"]).toMatchObject({
+      types: "./dist/ColorSwatchPicker.d.ts",
+      solid: "./src/ColorSwatchPicker.ts",
+      import: "./dist/ColorSwatchPicker.js",
+      default: "./dist/ColorSwatchPicker.js",
     });
   });
 
-  describe("density variants", () => {
-    it("applies compact density (gap-1)", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker density="compact">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      expect(container.firstElementChild!.className).toContain("gap-1");
-    });
+  it("composes S2-style ColorSwatch children into selectable options", () => {
+    render(() => (
+      <ColorSwatchPicker aria-label="Palette" defaultValue="#00ff00">
+        <ColorSwatch color="#ff0000" />
+        <ColorSwatch color="#00ff00" />
+        <ColorSwatch color="#0000ff" />
+      </ColorSwatchPicker>
+    ));
 
-    it("applies regular density by default (gap-2)", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker>
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      expect(container.firstElementChild!.className).toContain("gap-2");
-    });
+    const listbox = screen.getByRole("listbox", { name: "Palette" });
+    const options = screen.getAllByRole("option");
 
-    it("applies spacious density (gap-4)", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker density="spacious">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      expect(container.firstElementChild!.className).toContain("gap-4");
+    expect(listbox).toHaveAttribute("data-layout", "grid");
+    expect(options).toHaveLength(3);
+    expect(options[1]).toHaveAttribute("aria-selected", "true");
+    expect(options[1]!.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+    expect(screen.getAllByRole("img")).toHaveLength(3);
+  });
+
+  it("selects colors and calls onChange in uncontrolled mode", () => {
+    const onChange = vi.fn();
+
+    render(() => (
+      <ColorSwatchPicker aria-label="Palette" defaultValue="#ff0000" onChange={onChange}>
+        <ColorSwatch color="#ff0000" />
+        <ColorSwatch color="#00ff00" />
+        <ColorSwatch color="#0000ff" />
+      </ColorSwatchPicker>
+    ));
+
+    const options = screen.getAllByRole("option");
+    fireEvent.click(options[2]!);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0]?.[0]?.toString("hexa")).toBe("#0000ffff");
+    expect(options[2]).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("keeps controlled selection stable until the value prop changes", async () => {
+    const onChange = vi.fn();
+    const [value, setValue] = createSignal(parseColor("#ff0000"));
+
+    render(() => (
+      <ColorSwatchPicker aria-label="Palette" value={value()} onChange={onChange}>
+        <ColorSwatch color="#ff0000" />
+        <ColorSwatch color="#00ff00" />
+        <ColorSwatch color="#0000ff" />
+      </ColorSwatchPicker>
+    ));
+
+    const options = screen.getAllByRole("option");
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.click(options[1]!);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0]?.[0]?.toString("hexa")).toBe("#00ff00ff");
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+    setValue(parseColor("#00ff00"));
+
+    await waitFor(() => {
+      expect(options[1]).toHaveAttribute("aria-selected", "true");
     });
   });
 
-  describe("size variants", () => {
-    it("applies xs size to swatches", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker size="xs">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      const swatch = container.querySelector('[class*="w-5"]');
-      expect(swatch).toBeInTheDocument();
-    });
+  it("forwards DOM, ARIA, and escape-hatch styling props to the listbox", () => {
+    render(() => (
+      <ColorSwatchPicker
+        id="palette"
+        slot="swatches"
+        aria-label="Palette"
+        aria-describedby="palette-desc"
+        aria-details="palette-details"
+        UNSAFE_className="unsafe-class"
+        class="legacy-class"
+        UNSAFE_style={{ margin: "3px" }}
+      >
+        <ColorSwatch color="#ff0000" />
+      </ColorSwatchPicker>
+    ));
 
-    it("applies md size by default", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker>
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      const swatch = container.querySelector('[class*="w-8"]');
-      expect(swatch).toBeInTheDocument();
-    });
+    const listbox = screen.getByRole("listbox", { name: "Palette" });
 
-    it("applies lg size to swatches", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker size="lg">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      const swatch = container.querySelector('[class*="w-10"]');
-      expect(swatch).toBeInTheDocument();
-    });
-
-    it("supports Spectrum size aliases (M/L)", () => {
-      const { container: mediumContainer } = render(() => (
-        <ColorSwatchPicker size="M">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      expect(mediumContainer.querySelector('[class*="w-8"]')).toBeInTheDocument();
-
-      const { container: largeContainer } = render(() => (
-        <ColorSwatchPicker size="L">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      expect(largeContainer.querySelector('[class*="w-10"]')).toBeInTheDocument();
-    });
+    expect(listbox).toHaveAttribute("id", "palette");
+    expect(listbox).not.toHaveAttribute("slot");
+    expect(listbox).toHaveAttribute("aria-describedby", "palette-desc");
+    expect(listbox).toHaveAttribute("aria-details", "palette-details");
+    expect(listbox.className).toContain("unsafe-class");
+    expect(listbox.className).toContain("legacy-class");
+    expect(listbox).toHaveStyle({ margin: "3px" });
   });
 
-  describe("rounding variants", () => {
-    it("applies no rounding by default", () => {
-      const { container } = render(() => (
+  it("applies ColorSwatchPickerContext defaults through S2 slots", () => {
+    render(() => (
+      <ColorSwatchPickerContext.Provider value={{ "aria-label": "Context palette" }}>
         <ColorSwatchPicker>
-          <ColorSwatchPickerItem color="#ff0000" />
+          <ColorSwatch color="#ff0000" />
         </ColorSwatchPicker>
-      ));
-      const swatch = container.querySelector('[class*="rounded-none"]');
-      expect(swatch).toBeInTheDocument();
-    });
+      </ColorSwatchPickerContext.Provider>
+    ));
 
-    it("applies default rounding", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker rounding="default">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      // Check that rounded class exists (but not rounded-none or rounded-full)
-      const allElements = container.querySelectorAll("*");
-      let hasDefaultRounding = false;
-      allElements.forEach((el) => {
-        if (
-          el.className &&
-          typeof el.className === "string" &&
-          el.className.includes("rounded") &&
-          !el.className.includes("rounded-none") &&
-          !el.className.includes("rounded-full")
-        ) {
-          hasDefaultRounding = true;
-        }
-      });
-      expect(hasDefaultRounding).toBe(true);
-    });
-
-    it("applies full rounding", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker rounding="full">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      const swatch = container.querySelector('[class*="rounded-full"]');
-      expect(swatch).toBeInTheDocument();
-    });
+    expect(screen.getByRole("listbox", { name: "Context palette" })).toBeInTheDocument();
   });
 
-  describe("custom class", () => {
-    it("applies custom class to container", () => {
-      const { container } = render(() => (
-        <ColorSwatchPicker class="my-custom-class">
-          <ColorSwatchPickerItem color="#ff0000" />
-        </ColorSwatchPicker>
-      ));
-      expect(container.firstElementChild!.className).toContain("my-custom-class");
-    });
+  it("keeps the legacy manual item helper working for existing callers", () => {
+    render(() => (
+      <ColorSwatchPicker aria-label="Palette" defaultValue="#ff0000">
+        <ColorSwatchPickerItem color="#ff0000" />
+        <ColorSwatchPickerItem color="#00ff00" />
+      </ColorSwatchPicker>
+    ));
+
+    expect(screen.getAllByRole("option")).toHaveLength(2);
+    expect(screen.getAllByRole("img")).toHaveLength(2);
   });
 });
