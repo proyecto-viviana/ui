@@ -94,18 +94,44 @@ export interface ColorWheelAria {
 }
 
 export interface AriaColorFieldOptions {
+  /** Element id for the input. */
+  id?: string;
   /** Accessible label for the field. */
   "aria-label"?: string;
   /** ID of element that labels the field. */
   "aria-labelledby"?: string;
   /** ID of element that describes the field. */
   "aria-describedby"?: string;
+  /** ID of element that provides detailed information about the field. */
+  "aria-details"?: string;
+  /** ID of element that provides the error message. */
+  "aria-errormessage"?: string;
+  /** Form field name. */
+  name?: string;
+  /** Associated form owner. */
+  form?: string;
+  /** Whether browser wheel events should be ignored. */
+  isWheelDisabled?: boolean;
   /** Whether the field is disabled. */
   isDisabled?: boolean;
   /** Whether the field is read-only. */
   isReadOnly?: boolean;
+  /** Whether the field is required. */
+  isRequired?: boolean;
+  /** Whether the field is invalid. */
+  isInvalid?: boolean;
+  /** Whether to use native or ARIA validation semantics. */
+  validationBehavior?: "aria" | "native";
+  /** Whether the input should receive focus on mount. */
+  autoFocus?: boolean;
+  /** Whether the input should be excluded from tab order. */
+  excludeFromTabOrder?: boolean;
+  /** Placeholder text. */
+  placeholder?: string;
   /** The color channel being edited (for single channel mode). */
   channel?: ColorChannel;
+  /** Color space used for channel mode. */
+  colorSpace?: ColorSpace;
 }
 
 export interface ColorFieldAria {
@@ -113,6 +139,10 @@ export interface ColorFieldAria {
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   /** Props for the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /** Props for the description element. */
+  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
+  /** Props for the error message element. */
+  errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
 }
 
 export interface AriaColorSwatchOptions {

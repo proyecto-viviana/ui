@@ -58,6 +58,12 @@
       "import": "./dist/ColorArea.js",
       "default": "./dist/ColorArea.js"
     },
+    "./ColorField": {
+      "types": "./dist/ColorField.d.ts",
+      "solid": "./src/ColorField.ts",
+      "import": "./dist/ColorField.js",
+      "default": "./dist/ColorField.js"
+    },
     "./Card": {
       "types": "./dist/Card.d.ts",
       "solid": "./src/Card.ts",

@@ -78,6 +78,7 @@ describe("Color", () => {
     it("should throw for invalid color strings", () => {
       expect(() => parseColor("invalid")).toThrow();
       expect(() => parseColor("")).toThrow();
+      expect(() => parseColor("#zzzzzz")).toThrow();
     });
   });
 
@@ -701,7 +702,7 @@ describe("createColorFieldState", () => {
     });
   });
 
-  it("should mark invalid on bad input", () => {
+  it("should reset bad committed hex input to the current value", () => {
     createRoot((dispose) => {
       const state = createColorFieldState(() => ({
         defaultValue: "#ff0000",
@@ -709,7 +710,27 @@ describe("createColorFieldState", () => {
 
       state.setInputValue("invalid");
       state.commit();
-      expect(state.isInvalid).toBe(true);
+      expect(state.isInvalid).toBe(false);
+      expect(state.inputValue).toBe("#ff0000");
+      dispose();
+    });
+  });
+
+  it("should accept hex input without a leading hash", () => {
+    createRoot((dispose) => {
+      let changedColor: Color | null = null;
+      const state = createColorFieldState(() => ({
+        defaultValue: "#ff0000",
+        onChange: (color) => {
+          changedColor = color;
+        },
+      }));
+
+      state.setInputValue("00ff00");
+      state.commit();
+      expect(changedColor).toBeTruthy();
+      expect(changedColor!.toString("hex")).toBe("#00ff00");
+      expect(state.inputValue).toBe("#00ff00");
       dispose();
     });
   });
@@ -794,9 +815,54 @@ describe("createColorFieldState", () => {
 
       state.setInputValue("#00ff00");
       expect(state.validate()).toBe(true);
+      expect(state.validate("#0a")).toBe(true);
+      expect(state.validate("0a")).toBe(true);
 
       state.setInputValue("invalid");
       expect(state.validate()).toBe(false);
+      expect(state.validate("#zzzzzz")).toBe(false);
+      dispose();
+    });
+  });
+
+  it("should increment and clamp hex values", () => {
+    createRoot((dispose) => {
+      const state = createColorFieldState(() => ({
+        defaultValue: "#000000",
+      }));
+
+      state.increment();
+      expect(state.inputValue).toBe("#000001");
+
+      state.incrementToMax();
+      expect(state.inputValue).toBe("#ffffff");
+
+      state.decrement();
+      expect(state.inputValue).toBe("#fffffe");
+
+      state.decrementToMin();
+      expect(state.inputValue).toBe("#000000");
+      dispose();
+    });
+  });
+
+  it("should normalize percentage channel state like React Stately", () => {
+    createRoot((dispose) => {
+      const state = createColorFieldState(() => ({
+        defaultValue: "hsb(0, 50%, 100%)",
+        channel: "saturation",
+        colorSpace: "hsb",
+      }));
+
+      expect(state.inputValue).toBe("50%");
+      expect(state.numberValue).toBe(0.5);
+      expect(state.minValue).toBe(0);
+      expect(state.maxValue).toBe(1);
+
+      state.setInputValue("25%");
+      state.commit();
+      expect(state.value!.getChannelValue("saturation")).toBe(25);
+      expect(state.inputValue).toBe("25%");
       dispose();
     });
   });

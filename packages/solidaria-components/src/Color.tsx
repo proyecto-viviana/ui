@@ -13,6 +13,7 @@ import {
   createSignal,
   onCleanup,
   splitProps,
+  untrack,
   useContext,
   Show,
 } from "solid-js";
@@ -42,6 +43,7 @@ import {
   type Color,
   type ColorChannel,
   type ColorFormat,
+  type ColorSpace,
   type ColorSliderState,
   type ColorAreaState,
   type ColorWheelState,
@@ -1140,12 +1142,14 @@ export interface ColorFieldRenderProps {
   isDisabled: boolean;
   /** Whether the field is read-only. */
   isReadOnly: boolean;
+  /** Whether the field is required. */
+  isRequired: boolean;
   /** Whether the input value is invalid. */
   isInvalid: boolean;
   /** The current color value (null if invalid). */
   color: Color | null;
-  /** The color channel being edited (if single channel mode). */
-  channel: ColorChannel | undefined;
+  /** The color channel being edited, or "hex" for full color mode. */
+  channel: ColorChannel | "hex";
 }
 
 export interface ColorFieldProps extends AriaColorFieldOptions, SlotProps {
@@ -1157,10 +1161,16 @@ export interface ColorFieldProps extends AriaColorFieldOptions, SlotProps {
   onChange?: (color: Color | null) => void;
   /** The color channel to edit (for single channel mode). */
   channel?: ColorChannel;
+  /** The color space to use for channel mode. */
+  colorSpace?: ColorSpace;
   /** The color format for parsing/displaying. */
   colorFormat?: ColorFormat;
   /** A visible label for the field. */
   label?: JSX.Element;
+  /** Description text for the field. */
+  description?: JSX.Element;
+  /** Error message for the field. */
+  errorMessage?: JSX.Element;
   /** The children of the component. */
   children?: RenderChildren<ColorFieldRenderProps>;
   /** The CSS className for the element. */
@@ -1191,12 +1201,18 @@ export interface ColorFieldInputProps extends SlotProps {
   class?: ClassNameOrFunction<ColorFieldInputRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ColorFieldInputRenderProps>;
+  /** Ref callback for the input element. */
+  ref?: (element: HTMLInputElement) => void;
 }
 
 interface ColorFieldContextValue {
   state: ColorFieldState;
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
+  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
+  errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
+  setInputRef: (el: HTMLInputElement) => void;
+  setLabelElement: (isPresent: boolean) => void;
 }
 
 export const ColorFieldContext = createContext<ColorFieldContextValue | null>(null);
@@ -1208,10 +1224,29 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const pickerContext = useContext(ColorPickerContextInternal);
   const [local, stateProps, ariaProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot", "label"],
-    ["value", "defaultValue", "onChange", "channel", "colorFormat"],
-    ["aria-label", "aria-labelledby", "aria-describedby", "isDisabled", "isReadOnly"],
+    ["children", "class", "style", "slot", "label", "description", "errorMessage"],
+    ["value", "defaultValue", "onChange", "channel", "colorSpace", "colorFormat"],
+    [
+      "id",
+      "aria-label",
+      "aria-labelledby",
+      "aria-describedby",
+      "aria-details",
+      "aria-errormessage",
+      "name",
+      "form",
+      "isWheelDisabled",
+      "isDisabled",
+      "isReadOnly",
+      "isRequired",
+      "isInvalid",
+      "validationBehavior",
+      "autoFocus",
+      "excludeFromTabOrder",
+      "placeholder",
+    ],
   );
+  const [hasRegisteredLabelElement, setHasRegisteredLabelElement] = createSignal(false);
 
   // Create color field state
   const state = createColorFieldState(() => ({
@@ -1225,34 +1260,86 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
         }
       }),
     channel: stateProps.channel,
+    colorSpace: stateProps.colorSpace,
     colorFormat: stateProps.colorFormat,
     isDisabled: ariaProps.isDisabled,
     isReadOnly: ariaProps.isReadOnly,
+    isInvalid: ariaProps.isInvalid,
+    isRequired: ariaProps.isRequired,
   }));
 
   // Input ref
   let inputRef: HTMLInputElement | undefined;
+  const setInputRef = (el: HTMLInputElement) => {
+    inputRef = el;
+  };
 
   // Create color field aria props
-  const { inputProps, labelProps } = createColorField(
+  const colorFieldAria = createColorField(
     () => ({
+      id: ariaProps.id,
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
+      "aria-details": ariaProps["aria-details"],
+      "aria-errormessage": ariaProps["aria-errormessage"],
+      name: ariaProps.name,
+      form: ariaProps.form,
+      isWheelDisabled: ariaProps.isWheelDisabled,
       isDisabled: ariaProps.isDisabled,
       isReadOnly: ariaProps.isReadOnly,
+      isRequired: ariaProps.isRequired,
+      isInvalid: ariaProps.isInvalid,
+      validationBehavior: ariaProps.validationBehavior,
+      autoFocus: ariaProps.autoFocus,
+      excludeFromTabOrder: ariaProps.excludeFromTabOrder,
+      placeholder: ariaProps.placeholder,
       channel: stateProps.channel,
+      colorSpace: stateProps.colorSpace,
     }),
     () => state,
     () => inputRef ?? null,
   );
 
+  const describedBy = () => {
+    const invalid = ariaProps.isInvalid || state.isInvalid;
+    const ids = [
+      ariaProps["aria-describedby"],
+      local.description && !invalid ? colorFieldAria.descriptionProps.id : undefined,
+      invalid && local.errorMessage ? colorFieldAria.errorMessageProps.id : undefined,
+    ];
+    return ids.filter(Boolean).join(" ") || undefined;
+  };
+
+  const fieldInputProps = () => {
+    const labelledBy =
+      ariaProps["aria-labelledby"] ??
+      (!ariaProps["aria-label"] && (local.label || hasRegisteredLabelElement())
+        ? colorFieldAria.labelProps.id
+        : undefined);
+    return {
+      ...colorFieldAria.inputProps,
+      "aria-label": labelledBy ? undefined : colorFieldAria.inputProps["aria-label"],
+      "aria-labelledby": labelledBy,
+      "aria-describedby": describedBy(),
+      "aria-errormessage":
+        (ariaProps.isInvalid || state.isInvalid) && local.errorMessage
+          ? colorFieldAria.errorMessageProps.id
+          : colorFieldAria.inputProps["aria-errormessage"],
+    } as JSX.InputHTMLAttributes<HTMLInputElement>;
+  };
+
+  const hiddenInputValue = createMemo(() =>
+    Number.isNaN(state.numberValue) ? "" : String(state.numberValue),
+  );
+
   const renderValues = createMemo<ColorFieldRenderProps>(() => ({
     isDisabled: state.isDisabled,
     isReadOnly: state.isReadOnly,
+    isRequired: state.isRequired,
     isInvalid: state.isInvalid,
     color: state.value,
-    channel: state.channel,
+    channel: state.channel ?? "hex",
   }));
 
   const renderProps = useRenderProps(
@@ -1265,6 +1352,39 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
     renderValues,
   );
 
+  const childRenderValues: ColorFieldRenderProps = {
+    get isDisabled() {
+      return state.isDisabled;
+    },
+    get isReadOnly() {
+      return state.isReadOnly;
+    },
+    get isRequired() {
+      return state.isRequired;
+    },
+    get isInvalid() {
+      return state.isInvalid;
+    },
+    get color() {
+      return state.value;
+    },
+    get channel() {
+      return state.channel ?? "hex";
+    },
+  };
+
+  let hasRenderedChildren = false;
+  let renderedChildren: JSX.Element;
+  const renderChildren = () => {
+    if (!hasRenderedChildren) {
+      const children = local.children;
+      renderedChildren =
+        typeof children === "function" ? untrack(() => children(childRenderValues)) : children;
+      hasRenderedChildren = true;
+    }
+    return renderedChildren;
+  };
+
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
@@ -1273,24 +1393,49 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
     <ColorFieldContext.Provider
       value={{
         state,
-        inputProps,
-        labelProps,
+        get inputProps() {
+          return fieldInputProps();
+        },
+        get labelProps() {
+          return colorFieldAria.labelProps;
+        },
+        get descriptionProps() {
+          return colorFieldAria.descriptionProps;
+        },
+        get errorMessageProps() {
+          return colorFieldAria.errorMessageProps;
+        },
+        setInputRef,
+        setLabelElement: setHasRegisteredLabelElement,
       }}
     >
-      <div
-        {...domProps()}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        data-disabled={state.isDisabled || undefined}
-        data-readonly={state.isReadOnly || undefined}
-        data-invalid={state.isInvalid || undefined}
-      >
-        <Show when={local.label}>
-          <label {...labelProps}>{local.label}</label>
-        </Show>
+      <>
+        <div
+          {...domProps()}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          slot={local.slot ?? undefined}
+          data-disabled={state.isDisabled || undefined}
+          data-readonly={state.isReadOnly || undefined}
+          data-invalid={state.isInvalid || undefined}
+          data-required={state.isRequired || undefined}
+          data-channel={state.channel ?? "hex"}
+        >
+          <Show when={local.label}>
+            <label {...colorFieldAria.labelProps}>{local.label}</label>
+          </Show>
 
-        {renderProps.renderChildren()}
-      </div>
+          {renderChildren()}
+        </div>
+        <Show when={state.channel && ariaProps.name}>
+          <input
+            type="hidden"
+            name={ariaProps.name}
+            form={ariaProps.form}
+            value={hiddenInputValue()}
+          />
+        </Show>
+      </>
     </ColorFieldContext.Provider>
   );
 }
@@ -1299,14 +1444,15 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
  * The input element of a color field.
  */
 export function ColorFieldInput(props: ColorFieldInputProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children", "ref"]);
 
   const context = useContext(ColorFieldContext);
   if (!context) {
     throw new Error("ColorFieldInput must be used within a ColorField");
   }
 
-  const { state, inputProps } = context;
+  const state = context.state;
+  const inputValue = createMemo(() => state.inputValue);
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
@@ -1336,7 +1482,12 @@ export function ColorFieldInput(props: ColorFieldInputProps): JSX.Element {
   );
 
   const cleanInputProps = () => {
-    const { ref: _ref, style: _inputStyle, ...rest } = inputProps as Record<string, unknown>;
+    const {
+      ref: _ref,
+      style: _inputStyle,
+      value: _value,
+      ...rest
+    } = context.inputProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -1354,8 +1505,13 @@ export function ColorFieldInput(props: ColorFieldInputProps): JSX.Element {
       {...cleanInputProps()}
       {...cleanFocusProps()}
       {...cleanHoverProps()}
+      ref={(el) => {
+        context.setInputRef(el);
+        local.ref?.(el);
+      }}
       class={renderProps.class()}
       style={renderProps.style()}
+      value={inputValue()}
       data-disabled={state.isDisabled || undefined}
       data-readonly={state.isReadOnly || undefined}
       data-invalid={state.isInvalid || undefined}

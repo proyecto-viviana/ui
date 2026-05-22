@@ -587,6 +587,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2/ColorArea directly; Solid uses @proyecto-viviana/solid-spectrum ColorArea with the public ColorArea subpath, S2 root/thumb/loupe styling, generated gradient background, hidden channel range inputs, controlled/default value routing, colorSpace conversion, form name forwarding, RTL channel geometry, and route controls covering the documented S2 API surface.",
   }),
 
+  colorfield: styledLiveOfficialEntry({
+    slug: "colorfield",
+    title: "ColorField",
+    category: "Components",
+    summary:
+      "Hex and channel color input mounted on both stacks with controlled/default color values, S2 field layout, labels/help/error text, validation state, form forwarding, and route controls for the documented API surface.",
+    styledSummary: "React Spectrum ColorField vs Solid Spectrum ColorField.",
+    styledNote:
+      "React uses @react-spectrum/s2/ColorField directly; Solid uses @proyecto-viviana/solid-spectrum ColorField with the public ColorField subpath, S2 field/group/input/help/error styling, React Aria hex and color-channel state, hidden channel form input forwarding, validation behavior, and route controls covering labels, help/error text, size, label alignment, form props, ARIA labelling/details, id, and slot.",
+  }),
+
   combobox: styledLiveOfficialEntry({
     slug: "combobox",
     title: "ComboBox",

@@ -50,6 +50,23 @@ const colorAreaTextControlValues: Record<string, string> = {
   slot: "color",
 };
 
+const colorFieldTextControlValues: Record<string, string> = {
+  ariaLabel: "Contract color field",
+  ariaLabelledBy: "colorfield-labelledby",
+  ariaDescribedBy: "colorfield-describedby",
+  ariaDetails: "colorfield-details",
+  label: "Color field",
+  description: "Contract description",
+  errorMessage: "Contract error",
+  placeholder: "#123456",
+  value: "#80C8FF",
+  defaultValue: "#3366CC",
+  name: "redChannel",
+  form: "colorForm",
+  id: "contract-colorfield",
+  slot: "color",
+};
+
 const meterTextControlValues: Record<string, string> = {
   value: "45",
   minValue: "0",
@@ -128,6 +145,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "colorarea" && control.name in colorAreaTextControlValues) {
       return colorAreaTextControlValues[control.name];
+    }
+    if (group.slug === "colorfield" && control.name in colorFieldTextControlValues) {
+      return colorFieldTextControlValues[control.name];
     }
     if (group.slug === "meter" && control.name in meterTextControlValues) {
       return meterTextControlValues[control.name];

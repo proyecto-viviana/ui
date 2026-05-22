@@ -23,6 +23,7 @@ import {
   ColorWheelThumb as HeadlessColorWheelThumb,
   ColorField as HeadlessColorField,
   ColorFieldInput as HeadlessColorFieldInput,
+  ColorFieldContext as HeadlessColorFieldContext,
   ColorSwatch as HeadlessColorSwatch,
   type ColorSliderProps as HeadlessColorSliderProps,
   type ColorAreaProps as HeadlessColorAreaProps,
@@ -47,14 +48,24 @@ import type {
   ColorFormat,
   ColorSpace,
 } from "@proyecto-viviana/solid-stately";
-import { style, type StyleString } from "../s2-style";
+import { baseColor, focusRing, fontRelative, style, type StyleString } from "../s2-style";
 import { keyframes } from "../s2-style/style-macro";
 import { mergeStyles } from "../s2-style/runtime";
 import {
+  control,
+  controlFont,
+  field,
+  fieldInput,
+  fieldLabel,
   getAllowedOverrides,
   type StylesPropWithHeight,
   type UnsafeClassName,
 } from "../s2-internal/style-utils";
+import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { useProviderProps } from "../provider";
+import { useFormProps, useIsInForm } from "../form";
 
 export type ColorSize = "sm" | "md" | "lg";
 
@@ -661,18 +672,201 @@ export function ColorWheelThumb(props: { class?: string }): JSX.Element {
   return <HeadlessColorWheelThumb class={getClassName} />;
 }
 
+export type ColorFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
+type S2ColorFieldSize = "S" | "M" | "L" | "XL";
+export type ColorFieldLabelPosition = "top" | "side";
+export type ColorFieldLabelAlign = "start" | "end";
+export type ColorFieldNecessityIndicator = "icon" | "label";
+
+interface ColorFieldStyleProps extends Partial<Omit<ColorFieldRenderProps, "color">> {
+  size?: S2ColorFieldSize;
+  labelPosition?: ColorFieldLabelPosition;
+  labelAlign?: ColorFieldLabelAlign;
+  isFocusWithin?: boolean;
+  isStaticColor?: boolean;
+  isInForm?: boolean;
+  isQuiet?: boolean;
+}
+
+function createColorFieldStyles() {
+  return {
+    root: style<ColorFieldStyleProps>(
+      {
+        ...field(),
+      },
+      getAllowedOverrides(),
+    ),
+    labelWrapper: style<ColorFieldStyleProps>({
+      gridArea: "label",
+      display: "inline",
+      textAlign: {
+        labelAlign: {
+          start: "start",
+          end: "end",
+        },
+      },
+      paddingBottom: {
+        labelPosition: {
+          top: "--field-gap",
+        },
+      },
+      contain: {
+        labelPosition: {
+          top: "inline-size",
+        },
+        isQuiet: "none",
+      },
+    }),
+    label: style<ColorFieldStyleProps>({
+      ...fieldLabel(),
+    }),
+    group: style<ColorFieldStyleProps>({
+      ...focusRing(),
+      ...control({ shape: "default" }),
+      ...fieldInput(),
+      borderWidth: 2,
+      borderStyle: "solid",
+      transition: "default",
+      borderColor: {
+        default: baseColor("gray-300" as never),
+        forcedColors: "ButtonBorder",
+        isInvalid: {
+          default: baseColor("negative" as never),
+          forcedColors: "Mark",
+        },
+        isFocusWithin: {
+          default: "gray-900" as never,
+          isInvalid: "negative-1000" as never,
+          forcedColors: "Highlight",
+        },
+        isDisabled: {
+          default: "disabled",
+          forcedColors: "GrayText",
+        },
+      },
+      backgroundColor: {
+        default: "gray-25" as never,
+        forcedColors: "Field",
+      },
+      color: {
+        default: baseColor("neutral" as never),
+        forcedColors: "ButtonText",
+        isDisabled: {
+          default: "disabled",
+          forcedColors: "GrayText",
+        },
+      },
+      cursor: {
+        default: "text",
+        isDisabled: "default",
+      },
+    }),
+    input: style({
+      padding: 0,
+      backgroundColor: "transparent",
+      color: {
+        default: "inherit",
+        "::placeholder": {
+          default: "gray-600" as never,
+          forcedColors: "GrayText",
+        },
+      },
+      fontFamily: "inherit",
+      fontSize: "inherit",
+      fontWeight: "inherit",
+      flexGrow: 1,
+      flexShrink: 1,
+      minWidth: 0,
+      width: "full",
+      outlineStyle: "none",
+      borderStyle: "none",
+      truncate: true,
+    }),
+    helpText: style<ColorFieldStyleProps>({
+      gridArea: "helptext",
+      display: "flex",
+      margin: 0,
+      alignItems: "baseline",
+      gap: "text-to-visual",
+      font: controlFont(),
+      color: {
+        default: "neutral-subdued",
+        isInvalid: {
+          default: "negative",
+          forcedColors: "Mark",
+        },
+        isDisabled: {
+          default: "disabled",
+          forcedColors: "GrayText",
+        },
+      },
+      "--iconPrimary": {
+        type: "fill",
+        value: "currentColor",
+      },
+      contain: "inline-size",
+      paddingTop: "--field-gap",
+      cursor: {
+        default: "text",
+        isDisabled: "default",
+      },
+    }),
+    errorIcon: style({
+      size: fontRelative(20),
+      marginStart: "text-to-visual",
+      marginEnd: fontRelative(-2),
+      flexShrink: 0,
+      "--iconPrimary": {
+        type: "fill",
+        value: {
+          default: "negative",
+          forcedColors: "Mark",
+        },
+      },
+    }),
+    requiredIcon: style({
+      "--iconPrimary": {
+        type: "fill",
+        value: "currentColor",
+      },
+    }),
+    noWrap: style({
+      whiteSpace: "nowrap",
+    }),
+  };
+}
+
+let colorFieldStyles: ReturnType<typeof createColorFieldStyles> | undefined;
+
+function getColorFieldStyles(): ReturnType<typeof createColorFieldStyles> {
+  colorFieldStyles ??= createColorFieldStyles();
+  return colorFieldStyles;
+}
+
 export interface ColorFieldProps extends Omit<
   HeadlessColorFieldProps,
   "class" | "style" | "children"
 > {
   /** The size of the color field. */
-  size?: ColorSize;
-  /** Additional CSS class name. */
+  size?: ColorFieldSize;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
   /** Description text below the input. */
-  description?: string;
+  description?: JSX.Element;
   /** Error message to display. */
-  errorMessage?: string;
+  errorMessage?: JSX.Element;
+  /** Position of the label relative to the input. */
+  labelPosition?: ColorFieldLabelPosition;
+  /** Text alignment for side labels. */
+  labelAlign?: ColorFieldLabelAlign;
+  /** Whether required fields show an icon or text label. */
+  necessityIndicator?: ColorFieldNecessityIndicator;
 }
 
 /**
@@ -690,67 +884,243 @@ export interface ColorFieldProps extends Omit<
  * ```
  */
 export function ColorField(props: ColorFieldProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, [
+  const isInForm = useIsInForm();
+  const mergedProps = useProviderProps(useFormProps(props));
+  const [local, headlessProps] = splitProps(mergedProps, [
     "size",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
+    "label",
     "description",
     "errorMessage",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
   ]);
 
-  const size = () => local.size ?? "md";
-  const styles = () => sizeStyles[size()];
-  const customClass = local.class ?? "";
+  const [isFocusWithin, setIsFocusWithin] = createSignal(false);
 
-  const getClassName = (renderProps: ColorFieldRenderProps): string => {
-    const base = "flex flex-col gap-1.5";
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50";
-    }
-    return [base, stateClass, customClass].filter(Boolean).join(" ");
-  };
+  const size = () => normalizeColorFieldSize(local.size);
+  const labelPosition = () => local.labelPosition ?? "top";
+  const labelAlign = () => local.labelAlign ?? "start";
+  const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const fieldStyles = () => getColorFieldStyles();
 
-  const contextValue = createMemo(() => ({ size: size() }));
+  const rootClassName = (renderProps: ColorFieldRenderProps) =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      fieldStyles().root(
+        {
+          ...renderProps,
+          size: size(),
+          labelPosition: labelPosition(),
+          isInForm,
+        },
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const labelWrapperClass = () =>
+    fieldStyles().labelWrapper({
+      size: size(),
+      labelPosition: labelPosition(),
+      labelAlign: labelAlign(),
+    });
+
+  const labelClass = (renderProps: ColorFieldRenderProps) =>
+    fieldStyles().label({
+      ...renderProps,
+      size: size(),
+      labelPosition: labelPosition(),
+      isStaticColor: false,
+    });
+
+  const groupClass = (renderProps: ColorFieldRenderProps) =>
+    fieldStyles().group({
+      ...renderProps,
+      size: size(),
+      isFocusWithin: isFocusWithin(),
+    });
+
+  const helpClass = (renderProps: ColorFieldRenderProps, isInvalid: boolean) =>
+    fieldStyles().helpText({
+      ...renderProps,
+      size: size(),
+      isInvalid,
+    });
 
   return (
-    <ColorSizeContext.Provider value={contextValue()}>
-      <HeadlessColorField {...headlessProps} class={getClassName}>
-        {() => (
-          <>
-            <Show when={headlessProps.label}>
-              <span class={`text-primary-200 font-medium ${styles().field.label}`}>
-                {headlessProps.label}
-              </span>
+    <HeadlessColorField
+      {...headlessProps}
+      description={local.description}
+      errorMessage={local.errorMessage}
+      class={rootClassName}
+      style={local.UNSAFE_style}
+      children={(renderProps) => (
+        <>
+          <Show when={local.label}>
+            <div class={labelWrapperClass()}>
+              <ColorFieldLabel class={labelClass(renderProps)}>
+                {local.label}
+                <Show when={renderProps.isRequired || necessityIndicator() === "label"}>
+                  <span class={fieldStyles().noWrap}>
+                    &nbsp;
+                    <Show
+                      when={necessityIndicator() === "icon"}
+                      fallback={
+                        <span aria-hidden={renderProps.isRequired ? true : undefined}>
+                          {renderProps.isRequired ? "(required)" : "(optional)"}
+                        </span>
+                      }
+                    >
+                      <AsteriskIcon
+                        size={colorFieldIconSize(size())}
+                        class={fieldStyles().requiredIcon}
+                        style={colorFieldRequiredIconStyle(size())}
+                        aria-hidden="true"
+                      />
+                    </Show>
+                  </span>
+                </Show>
+              </ColorFieldLabel>
+            </div>
+          </Show>
+
+          <div
+            role="presentation"
+            class={groupClass(renderProps)}
+            onPointerDown={(event) => {
+              if (event.pointerType === "mouse") {
+                focusColorFieldInput(event);
+              }
+            }}
+            onTouchEnd={focusColorFieldInput}
+            onFocusIn={() => setIsFocusWithin(true)}
+            onFocusOut={() => setIsFocusWithin(false)}
+            data-focused={isFocusWithin() ? "true" : undefined}
+            data-disabled={renderProps.isDisabled ? "true" : undefined}
+            data-invalid={renderProps.isInvalid ? "true" : undefined}
+          >
+            <HeadlessColorFieldInput class={fieldStyles().input} />
+            <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
+              <CenterBaseline>
+                <AlertTriangleIcon styles={fieldStyles().errorIcon} />
+              </CenterBaseline>
             </Show>
-            <ColorFieldInput isInvalid={!!local.errorMessage} />
-            <Show when={local.description && !local.errorMessage}>
-              <span class="text-primary-400 text-sm">{local.description}</span>
-            </Show>
-            <Show when={local.errorMessage}>
-              <span class="text-danger-400 text-sm">{local.errorMessage}</span>
-            </Show>
-          </>
-        )}
-      </HeadlessColorField>
-    </ColorSizeContext.Provider>
+          </div>
+
+          <Show when={local.description && !renderProps.isInvalid}>
+            <ColorFieldDescription class={helpClass(renderProps, false)}>
+              {local.description}
+            </ColorFieldDescription>
+          </Show>
+
+          <Show when={local.errorMessage && renderProps.isInvalid}>
+            <ColorFieldError class={helpClass(renderProps, true)}>
+              {local.errorMessage}
+            </ColorFieldError>
+          </Show>
+        </>
+      )}
+    />
   );
 }
 
-/**
- * The input component for a color field.
- */
-export function ColorFieldInput(props: { class?: string; isInvalid?: boolean }): JSX.Element {
-  const context = useContext(ColorSizeContext);
-  const styles = sizeStyles[context.size];
-  const customClass = props.class ?? "";
+export const ColorFieldContext = HeadlessColorFieldContext as ReturnType<
+  typeof createContext<unknown>
+>;
 
-  const base = `${styles.field.input} w-full rounded-md border bg-bg-400 text-primary-200 placeholder:text-primary-500 focus:outline-none focus:ring-2 focus:ring-accent-300`;
-  const borderClass = props.isInvalid
-    ? "border-danger-400"
-    : "border-bg-300 focus:border-accent-300";
-  const className = [base, borderClass, customClass].filter(Boolean).join(" ");
+function normalizeColorFieldSize(size: ColorFieldSize | undefined): S2ColorFieldSize {
+  switch (size) {
+    case "sm":
+      return "S";
+    case "md":
+      return "M";
+    case "lg":
+      return "L";
+    case "S":
+    case "M":
+    case "L":
+    case "XL":
+      return size;
+    default:
+      return "M";
+  }
+}
 
-  return <HeadlessColorFieldInput class={className} />;
+function colorFieldIconSize(size: S2ColorFieldSize): "M" | "L" | "XL" {
+  return size === "S" ? "M" : size;
+}
+
+function focusColorFieldInput(event: Event & { currentTarget: HTMLDivElement }) {
+  const target = event.target as Element | null;
+
+  if (target?.closest("button,input,textarea,[role='button']")) {
+    return;
+  }
+
+  event.preventDefault();
+  event.currentTarget.querySelector<HTMLElement>("input")?.focus();
+}
+
+function colorFieldRequiredIconStyle(size: S2ColorFieldSize): JSX.CSSProperties {
+  const pixelSize = size === "L" || size === "XL" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
+function ColorFieldLabel(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
+  const context = useContext(HeadlessColorFieldContext);
+  if (!context) return null;
+  context.setLabelElement(true);
+  onCleanup(() => context.setLabelElement(false));
+  const labelProps = () => {
+    const { ref: _ref, ...rest } = context.labelProps as Record<string, unknown>;
+    return rest;
+  };
+  return (
+    <label {...labelProps()} class={props.class}>
+      {props.children}
+    </label>
+  );
+}
+
+function ColorFieldDescription(props: {
+  class?: string;
+  children?: JSX.Element;
+}): JSX.Element | null {
+  const context = useContext(HeadlessColorFieldContext);
+  if (!context) return null;
+  const descriptionProps = () => {
+    const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
+    return rest;
+  };
+  return (
+    <p {...descriptionProps()} class={props.class}>
+      {props.children}
+    </p>
+  );
+}
+
+function ColorFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
+  const context = useContext(HeadlessColorFieldContext);
+  if (!context) return null;
+  const errorMessageProps = () => {
+    const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
+    return rest;
+  };
+  return (
+    <p {...errorMessageProps()} class={props.class}>
+      {props.children}
+    </p>
+  );
 }
 
 export interface ColorSwatchProps extends Omit<HeadlessColorSwatchProps, "class" | "style"> {
@@ -942,7 +1312,6 @@ ColorSlider.Track = ColorSliderTrack;
 ColorSlider.Thumb = ColorSliderThumb;
 ColorWheel.Track = ColorWheelTrack;
 ColorWheel.Thumb = ColorWheelThumb;
-ColorField.Input = ColorFieldInput;
 
 export const ColorAreaContext = HeadlessColorAreaContext as ReturnType<
   typeof createContext<unknown>

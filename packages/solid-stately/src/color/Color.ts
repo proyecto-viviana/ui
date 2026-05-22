@@ -941,6 +941,9 @@ export function parseColor(value: string): Color {
   // Hex format
   if (trimmed.startsWith("#")) {
     const hex = trimmed.slice(1);
+    if (!/^[0-9a-f]+$/i.test(hex)) {
+      throw new Error(`Invalid hex color: ${value}`);
+    }
     if (hex.length === 3) {
       const r = parseInt(hex[0] + hex[0], 16);
       const g = parseInt(hex[1] + hex[1], 16);

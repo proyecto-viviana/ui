@@ -4,7 +4,7 @@
  * Provides ARIA attributes and keyboard handling for a color input field.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 import type { AriaColorFieldOptions, ColorFieldAria } from "./types";
@@ -15,24 +15,36 @@ import type { AriaColorFieldOptions, ColorFieldAria } from "./types";
 export function createColorField(
   props: Accessor<AriaColorFieldOptions>,
   state: Accessor<ColorFieldState>,
-  _inputRef: Accessor<HTMLInputElement | null>,
+  inputRef: Accessor<HTMLInputElement | null>,
 ): ColorFieldAria {
   const getProps = () => props();
   const getState = () => state();
 
-  // Generate IDs
-  const inputId = createId();
+  const generatedInputId = createId();
   const labelId = createId();
+  const descriptionId = createId();
+  const errorMessageId = createId();
 
-  // Handle keyboard
+  let didAutoFocus = false;
+  createEffect(() => {
+    const input = inputRef();
+    if (!didAutoFocus && getProps().autoFocus && input) {
+      didAutoFocus = true;
+      input.focus();
+    }
+  });
+
+  const isDisabled = () => getProps().isDisabled || getState().isDisabled;
+  const isReadOnly = () => getProps().isReadOnly || getState().isReadOnly;
+  const isInvalid = () => getProps().isInvalid || getState().isInvalid;
+  const validationBehavior = () => getProps().validationBehavior ?? "native";
+
   const onKeyDown = (e: KeyboardEvent) => {
     const s = getState();
-    const p = getProps();
 
-    if (p.isDisabled || s.isDisabled || p.isReadOnly || s.isReadOnly) return;
-
-    // Only handle special keys for channel mode
-    if (!s.channel) return;
+    if (isDisabled() || isReadOnly()) {
+      return;
+    }
 
     let handled = true;
 
@@ -50,18 +62,10 @@ export function createColorField(
         s.decrementToMin();
         break;
       case "Home":
-        if (e.ctrlKey) {
-          s.decrementToMin();
-        } else {
-          handled = false;
-        }
+        s.decrementToMin();
         break;
       case "End":
-        if (e.ctrlKey) {
-          s.incrementToMax();
-        } else {
-          handled = false;
-        }
+        s.incrementToMax();
         break;
       default:
         handled = false;
@@ -72,52 +76,96 @@ export function createColorField(
     }
   };
 
-  // Label props
+  const onWheel = (e: WheelEvent) => {
+    const p = getProps();
+    const s = getState();
+
+    if (
+      p.isWheelDisabled ||
+      isDisabled() ||
+      isReadOnly() ||
+      document.activeElement !== inputRef()
+    ) {
+      return;
+    }
+
+    if (e.deltaY < 0) {
+      s.increment();
+    } else if (e.deltaY > 0) {
+      s.decrement();
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+  };
+
   const labelProps = createMemo(() => {
     return {
       id: labelId,
-      for: inputId,
+      for: getProps().id ?? generatedInputId,
     };
   });
 
-  // Input props
+  const descriptionProps = createMemo(() => ({
+    id: descriptionId,
+  }));
+
+  const errorMessageProps = createMemo(() => ({
+    id: getProps()["aria-errormessage"] ?? errorMessageId,
+  }));
+
   const inputProps = createMemo(() => {
     const s = getState();
     const p = getProps();
-
-    // Get channel name if in channel mode
     const channelLabel =
-      s.channel && s.value ? s.value.getChannelName(s.channel, "en-US") : undefined;
+      s.channel && s.colorValue ? s.colorValue.getChannelName(s.channel, "en-US") : undefined;
+    const required = p.isRequired || s.isRequired;
+    const invalid = isInvalid();
+    const describedBy = p["aria-describedby"];
 
     return {
-      id: inputId,
+      id: p.id ?? generatedInputId,
       type: "text",
       value: s.inputValue,
-      disabled: p.isDisabled || s.isDisabled,
-      readOnly: p.isReadOnly || s.isReadOnly,
+      name: s.channel ? undefined : p.name,
+      form: s.channel ? undefined : p.form,
+      placeholder: p.placeholder,
+      disabled: isDisabled(),
+      readOnly: isReadOnly(),
+      required: validationBehavior() === "native" ? required || undefined : undefined,
+      tabIndex: p.excludeFromTabOrder ? -1 : undefined,
+      autoComplete: "off",
+      autoCorrect: "off",
+      spellCheck: "false",
       "aria-label": p["aria-label"] ?? channelLabel,
       "aria-labelledby": p["aria-labelledby"],
-      "aria-describedby": p["aria-describedby"],
-      "aria-invalid": s.isInvalid || undefined,
-      // For spinbutton role in channel mode
-      role: s.channel ? ("spinbutton" as const) : undefined,
-      "aria-valuenow": s.channel && s.value ? s.value.getChannelValue(s.channel) : undefined,
-      "aria-valuemin":
-        s.channel && s.value ? s.value.getChannelRange(s.channel).minValue : undefined,
-      "aria-valuemax":
-        s.channel && s.value ? s.value.getChannelRange(s.channel).maxValue : undefined,
+      "aria-describedby": describedBy,
+      "aria-details": p["aria-details"],
+      "aria-errormessage": invalid ? (p["aria-errormessage"] ?? errorMessageId) : undefined,
+      "aria-invalid": invalid || undefined,
+      "aria-required": validationBehavior() === "aria" && required ? true : undefined,
+      role: s.channel ? undefined : ("textbox" as const),
+      "aria-valuenow": undefined,
+      "aria-valuemin": undefined,
+      "aria-valuemax": undefined,
+      "aria-valuetext": undefined,
       onInput: (e: InputEvent) => {
         const target = e.target as HTMLInputElement;
-        s.setInputValue(target.value);
+        if (s.validate(target.value)) {
+          s.setInputValue(target.value);
+        } else {
+          target.value = s.inputValue;
+        }
       },
       onChange: () => {
-        // onChange fires on blur or enter
         s.commit();
       },
       onBlur: () => {
         s.commit();
       },
       onKeyDown,
+      onWheel,
     };
   });
 
@@ -127,6 +175,12 @@ export function createColorField(
     },
     get inputProps() {
       return inputProps();
+    },
+    get descriptionProps() {
+      return descriptionProps();
+    },
+    get errorMessageProps() {
+      return errorMessageProps();
     },
   };
 }

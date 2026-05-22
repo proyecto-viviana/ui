@@ -668,6 +668,11 @@ describe("Color Components", () => {
         render(() => <TestColorField defaultValue={parseColor("#ff0000")} label="Color Value" />);
 
         expect(screen.getByText("Color Value")).toBeTruthy();
+        const input = screen.getByRole("textbox", { name: "Color Value" });
+        const label = screen.getByText("Color Value");
+        expect(input).toBeTruthy();
+        expect(input).toHaveAttribute("aria-labelledby", label.id);
+        expect(input).not.toHaveAttribute("aria-label");
       });
     });
 
@@ -689,6 +694,21 @@ describe("Color Components", () => {
         const field = document.querySelector(".solidaria-ColorField");
         expect(field?.getAttribute("data-readonly")).toBe("true");
       });
+
+      it("should expose channel and required data attributes", () => {
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#ff0000")}
+            aria-label="Red"
+            channel="red"
+            isRequired
+          />
+        ));
+
+        const field = document.querySelector(".solidaria-ColorField");
+        expect(field?.getAttribute("data-channel")).toBe("red");
+        expect(field?.getAttribute("data-required")).toBe("true");
+      });
     });
 
     describe("channel mode", () => {
@@ -703,6 +723,106 @@ describe("Color Components", () => {
 
         const field = document.querySelector(".solidaria-ColorField");
         expect(field).toBeTruthy();
+        const input = screen.getByRole("textbox", { name: "Hue" });
+        expect(input).not.toHaveAttribute("role");
+        expect(input).not.toHaveAttribute("aria-valuemin");
+        expect(input).not.toHaveAttribute("aria-valuemax");
+      });
+
+      it("should submit channel mode with a hidden input", () => {
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("rgb(128, 64, 32)")}
+            aria-label="Red"
+            channel="red"
+            name="red"
+            form="color-form"
+          />
+        ));
+
+        const hidden = document.querySelector('input[type="hidden"][name="red"]');
+        expect(hidden).toHaveAttribute("form", "color-form");
+        expect(hidden).toHaveValue("128");
+        expect(
+          document.querySelector(".solidaria-ColorField")?.querySelector('input[type="hidden"]'),
+        ).toBeNull();
+
+        const input = screen.getByRole("textbox", { name: "Red" });
+        expect(input).not.toHaveAttribute("name");
+        expect(input).not.toHaveAttribute("form");
+      });
+
+      it("should update visible and hidden channel values after keyboard increments", () => {
+        let changed = "";
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("rgb(128, 64, 32)")}
+            aria-label="Red"
+            channel="red"
+            name="red"
+            onChange={(color) => {
+              changed = color == null ? "" : String(color.getChannelValue("red"));
+            }}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Red" });
+        fireEvent.keyDown(input, { key: "ArrowUp" });
+
+        expect(changed).toBe("129");
+        expect(input).toHaveValue("129");
+        expect(document.querySelector('input[type="hidden"][name="red"]')).toHaveValue("129");
+      });
+    });
+
+    describe("interactions", () => {
+      it("should filter invalid partial hex input", () => {
+        render(() => <TestColorField defaultValue={parseColor("#ff0000")} aria-label="Color" />);
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        fireEvent.input(input, { target: { value: "#0a" } });
+        expect(input.value).toBe("#0a");
+
+        fireEvent.input(input, { target: { value: "#0az" } });
+        expect(input.value).toBe("#0a");
+      });
+
+      it("should increment hex values with the keyboard", () => {
+        let changed = "";
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#000000")}
+            aria-label="Color"
+            onChange={(color) => {
+              changed = color?.toString("hex") ?? "";
+            }}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" });
+        fireEvent.keyDown(input, { key: "ArrowUp" });
+        expect(changed).toBe("#000001");
+      });
+
+      it("should support native and aria required validation modes", () => {
+        const { unmount } = render(() => (
+          <TestColorField defaultValue={parseColor("#ff0000")} aria-label="Color" isRequired />
+        ));
+        expect(screen.getByRole("textbox", { name: "Color" })).toHaveAttribute("required");
+        unmount();
+
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#ff0000")}
+            aria-label="Color"
+            isRequired
+            validationBehavior="aria"
+          />
+        ));
+        expect(screen.getByRole("textbox", { name: "Color" })).toHaveAttribute(
+          "aria-required",
+          "true",
+        );
       });
     });
   });
