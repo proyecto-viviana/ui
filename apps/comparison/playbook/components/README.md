@@ -18,7 +18,7 @@ treated as legacy accepted under the prior playbook until each note is
 normalized to the current gate checklist.
 
 - Current accepted under the full gate model: Calendar, Checkbox, ColorArea,
-  ColorField, ColorSlider, ColorSwatch.
+  ColorField, ColorSlider, ColorSwatch, ColorSwatchPicker.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
