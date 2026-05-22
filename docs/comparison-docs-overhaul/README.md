@@ -11,21 +11,24 @@ React-vs-Solid side-by-side comparison and porting-parity reporting.
 
 ## Locked decisions
 
-| Decision            | Choice                                                                                                |
-| ------------------- | ----------------------------------------------------------------------------------------------------- |
-| ADR 0001 shell rule | **Superseded** — the app shell itself may use `solid-spectrum`.                                       |
-| Content depth       | **Full content parity** — port upstream prose, anatomy, prop tables, multiple examples per component. |
-| Visual reference    | The unified **`react-spectrum.adobe.com`** site.                                                      |
+| Decision            | Choice                                                                                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ADR 0001 shell rule | **Superseded** — the app shell itself may use `solid-spectrum`.                                                                                                                                                                 |
+| Content depth       | **Full content parity** — port upstream prose, anatomy, prop tables, multiple examples per component.                                                                                                                           |
+| Visual reference    | The unified **`react-spectrum.adobe.com`** site.                                                                                                                                                                                |
+| Host framework      | **Stay on Astro.** The React Spectrum reference panel stays an in-page **island** (not iframe-isolated). Accepts two framework runtimes in one bundle + the existing event-bus bridge; keeps Astro's static-by-default SSG/MDX. |
 
 ## Document index
 
-| Doc                                                | Contents                                                                                                           |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| [`01-findings.md`](01-findings.md)                 | What the reference site is, how its pages are built, what `apps/comparison` does today, the ad-hoc→target mapping. |
-| [`02-style-and-build.md`](02-style-and-build.md)   | The style-system spike (resolved), Astro/Solid SSR model, CSS collection pipeline.                                 |
-| [`03-chrome-spec.md`](03-chrome-spec.md)           | Per-component build spec for the docs chrome (Header, Nav, Toc, Footer, theming).                                  |
-| [`04-content-pipeline.md`](04-content-pipeline.md) | MDX adoption, the custom MDX component set, `ComparisonExample`, `PropTable`, prop-metadata extraction.            |
-| [`05-phasing.md`](05-phasing.md)                   | Phased delivery, risk register, acceptance criteria, open questions.                                               |
+| Doc                                                                  | Contents                                                                                                                                                                 |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`01-findings.md`](01-findings.md)                                   | What the reference site is, how its pages are built, what `apps/comparison` does today, the ad-hoc→target mapping.                                                       |
+| [`02-style-and-build.md`](02-style-and-build.md)                     | The style-system spike (resolved), Astro/Solid SSR model, CSS collection pipeline.                                                                                       |
+| [`03-chrome-spec.md`](03-chrome-spec.md)                             | Per-component build spec for the docs chrome (Header, Nav, Toc, Footer, theming).                                                                                        |
+| [`04-content-pipeline.md`](04-content-pipeline.md)                   | MDX adoption, the custom MDX component set, `ComparisonExample`, `PropTable`, prop-metadata extraction.                                                                  |
+| [`05-phasing.md`](05-phasing.md)                                     | Phased delivery, risk register, acceptance criteria, open questions.                                                                                                     |
+| [`06-solid-spectrum-css-defect.md`](06-solid-spectrum-css-defect.md) | **General `solid-spectrum` bug** (not overhaul-specific): components ship with missing CSS because the macro-era style system was de-macro'd. Root-cause analysis + fix. |
+| [`07-build-time-css-strategy.md`](07-build-time-css-strategy.md)     | Research: the CSS-tooling landscape, why this isn't Tailwind, and the recommended build-time path — `unplugin-parcel-macros` on Vite/tsdown. Performance analysis.       |
 
 ## One-paragraph summary
 

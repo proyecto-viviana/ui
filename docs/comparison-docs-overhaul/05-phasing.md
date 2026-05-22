@@ -106,6 +106,13 @@ Exit: no hand-written S2-surface CSS remains; reports and suites green.
    under one "Porting parity" `Disclosure`? Recommendation: collapsed.
 5. **Homepage** — keep `index.astro` or convert to MDX? Either works; convert
    only if it simplifies the shared layout.
+6. **Build-time CSS strategy** — adopt `unplugin-parcel-macros`
+   ([`07`](07-build-time-css-strategy.md)) or take the zero-dependency
+   barrel-import fallback? Recommendation: adopt the macro; it also resolves the
+   chrome-CSS question and the runtime perf overhead. Spike required.
+7. **Build-tool sequencing** — `solid-spectrum`'s tsup → tsdown migration
+   ([`07`](07-build-time-css-strategy.md) §8) vs. macro adoption: independent,
+   but doing tsdown first/together avoids an interim esbuild-plugin step.
 
 ## Acceptance criteria
 

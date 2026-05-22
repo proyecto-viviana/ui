@@ -52,30 +52,19 @@ comparison app consumes this CSS by importing `solid-spectrum`'s built
 
 ### 2a. Defect found: missing component CSS in the shipped package
 
-This is a **pre-existing bug in `solid-spectrum` itself**, not a docs-tooling
-detail. Verified facts:
+While confirming the runtime model above, the investigation found a
+**pre-existing bug in `solid-spectrum` itself** — unrelated to this overhaul,
+affecting every consumer. In short: `style()` is a vendored copy of React
+Spectrum's build-time **macro** run as a plain runtime function, and the
+prebuilt `s2-generated.css` is collected via a **hand-maintained list of ~18
+modules** that omits `disclosure`, `accordion`, `table`, `card`, and `tabs`.
+Their CSS never ships, so those components render unstyled.
 
-- `disclosure/index.tsx` produces all its styling from 7 runtime `style()`
-  calls and imports **no** static `.css`. `accordion` re-uses `disclosure`.
-- The package ships 4 CSS files, but `theme.css` / `styles.css` /
-  `components.css` are one-line `@import` chains that all resolve to
-  `s2-generated.css` — so that single file is the entire stylesheet.
-- `generate-solid-spectrum-s2-css.ts` imports ~18 modules; its list **excludes**
-  `disclosure`, `accordion`, `table`, `card`, and `tabs`, and none of the 18
-  transitively import them.
+The chrome dogfoods `Disclosure` (nav) and `Table` (prop tables), so the fix is
+a Phase 0 prerequisite ([`05-phasing.md`](05-phasing.md)).
 
-Consequence: those components' CSS never reaches `s2-generated.css`, so any
-consumer importing them with `components.css` gets an **unstyled** component —
-including the comparison app's own `accordion` entry today.
-
-Impact on the overhaul: the chrome dogfoods `Disclosure` (nav) and `Table`
-(prop tables), so this must be fixed regardless. The fix is mechanical — add the
-missing modules to the generator's import list — but the team should **run the
-generator and diff** to confirm there is no transitive pull missed and that the
-collected CSS is complete. This likely also explains part of why
-`CURRENT_STATUS.md` flags Disclosure/Tabs as "missing or blocked" styled
-entries (see [`05-phasing.md`](05-phasing.md) risk register). Confidence: high
-on the omission (directly verified); not yet confirmed by running the generator.
+**Full root-cause analysis, the macro connection, and recommended fixes are in
+[`06-solid-spectrum-css-defect.md`](06-solid-spectrum-css-defect.md).**
 
 ## 3. Recommended CSS pipeline for the chrome
 
