@@ -347,6 +347,11 @@ import {
   serializeDropZoneDemoProps,
 } from "@comparison/data/dropzone-demo";
 import {
+  illustratedMessageDemoPropsFromWindow,
+  normalizeIllustratedMessageDemoProps,
+  serializeIllustratedMessageDemoProps,
+} from "@comparison/data/illustratedmessage-demo";
+import {
   dialogDemoPropsFromWindow,
   normalizeDialogDemoProps,
   serializeDialogDemoProps,
@@ -552,6 +557,33 @@ const ReactDropZoneIllustration = createIllustration((props) =>
   }),
 );
 
+const ReactIllustratedMessageIllustration = createIllustration((props) =>
+  jsxs("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 48 48",
+    ...props,
+    children: [
+      jsx("rect", {
+        x: "7",
+        y: "11",
+        width: "34",
+        height: "28",
+        rx: "6",
+        fill: "var(--iconPrimary, #222)",
+        opacity: "0.14",
+      }),
+      jsx("path", {
+        d: "M16 18h16v4H16v-4Zm0 8h11v4H16v-4Z",
+        fill: "var(--iconPrimary, #222)",
+      }),
+      jsx("path", {
+        d: "M31 29 37 23l3 3-9 9-5-5 3-3 2 2Z",
+        fill: "var(--iconPrimary, #222)",
+      }),
+    ],
+  }),
+);
+
 const radioGroupItems = [
   { value: "starter", label: "Starter" },
   { value: "pro", label: "Pro" },
@@ -625,6 +657,7 @@ export const reactStyledFixtures = {
   contextualhelp: () => jsx(ReactContextualHelpDemo, {}),
   divider: () => jsx(ReactDividerDemo, {}),
   dropzone: () => jsx(ReactDropZoneDemo, {}),
+  illustratedmessage: () => jsx(ReactIllustratedMessageDemo, {}),
   image: () => jsx(ReactImageDemo, {}),
   form: () => jsx(ReactFormDemo, {}),
   link: () => jsx(ReactLinkDemo, {}),
@@ -1936,6 +1969,62 @@ function ReactDropZoneDemo() {
             }),
           ],
         }),
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactIllustratedMessageDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(illustratedMessageDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "illustratedmessage") {
+        setDemoProps(normalizeIllustratedMessageDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-illustrated-message-row",
+      "data-comparison-color-scheme": colorScheme,
+      children: jsxs(SpectrumIllustratedMessage, {
+        "data-comparison-control-root": "illustratedmessage",
+        "data-comparison-control-props": serializeIllustratedMessageDemoProps(demoProps),
+        id: "illustratedmessage-route-root",
+        role: "status",
+        "aria-label": "Asset empty state",
+        "aria-describedby": "illustratedmessage-route-description",
+        "aria-details": "illustratedmessage-route-details",
+        size: demoProps.size,
+        orientation: demoProps.orientation,
+        children: [
+          jsx(ReactIllustratedMessageIllustration, { slot: "illustration" }),
+          jsx(SpectrumHeading, { children: "Create your first asset" }),
+          jsx(SpectrumContent, { children: "Upload or import a file to begin." }),
+          jsx("span", {
+            id: "illustratedmessage-route-description",
+            hidden: true,
+            children: "Illustrated empty-state guidance.",
+          }),
+          jsx("span", {
+            id: "illustratedmessage-route-details",
+            hidden: true,
+            children: "The comparison route covers illustration, heading, content, and actions.",
+          }),
+          demoProps.withActions
+            ? jsxs(SpectrumButtonGroup, {
+                children: [
+                  jsx(SpectrumButton, { variant: "secondary", children: "Import" }),
+                  jsx(SpectrumButton, { variant: "accent", children: "Upload" }),
+                ],
+              })
+            : null,
+        ],
       }),
     }),
     colorScheme,

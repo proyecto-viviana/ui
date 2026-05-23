@@ -1712,6 +1712,21 @@ a {
   min-block-size: 164px;
 }
 
+.comparison-illustrated-message-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 520px;
+  min-block-size: 260px;
+  max-inline-size: 100%;
+  padding: 24px;
+  border-radius: 6px;
+}
+
+.comparison-illustrated-message-row [data-comparison-control-root="illustratedmessage"] {
+  inline-size: min(100%, 472px);
+}
+
 .comparison-meter-row {
   display: block;
   inline-size: 320px;

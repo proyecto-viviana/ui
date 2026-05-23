@@ -1,4 +1,5 @@
 import { type JSX, Show, createContext, mergeProps, splitProps, useContext } from "solid-js";
+import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import { ButtonGroupContext } from "../button";
 import {
   getSlottedContextProps,
@@ -172,36 +173,6 @@ const buttonGroup = style({
   marginTop: 16,
 });
 
-function filterIllustratedMessageDOMProps(
-  props: IllustratedMessageContextProps,
-): JSX.HTMLAttributes<HTMLDivElement> {
-  const domProps: Record<string, unknown> = {};
-
-  for (const key of [
-    "id",
-    "itemProp",
-    "itemScope",
-    "itemType",
-    "itemID",
-    "itemRef",
-    "role",
-  ] as const) {
-    const value = props[key];
-    if (value !== undefined) {
-      domProps[key] = value;
-    }
-  }
-
-  const record = props as Record<string, unknown>;
-  for (const key in record) {
-    if (key.startsWith("data-") || key.startsWith("aria-")) {
-      domProps[key] = record[key];
-    }
-  }
-
-  return domProps as JSX.HTMLAttributes<HTMLDivElement>;
-}
-
 /**
  * An IllustratedMessage displays an illustration and a message, usually for an empty state or error page.
  */
@@ -250,14 +221,13 @@ export function IllustratedMessage(props: IllustratedMessageProps): JSX.Element 
 
   return (
     <div
-      {...filterIllustratedMessageDOMProps(domProps)}
+      {...filterDOMProps(domProps as Record<string, unknown>)}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,
       )}
       class={className()}
       style={mergedUnsafeStyle()}
-      slot={local.slot ?? undefined}
     >
       <HeadingContext.Provider
         value={{ styles: () => heading({ orientation: orientation(), size: size() }) }}

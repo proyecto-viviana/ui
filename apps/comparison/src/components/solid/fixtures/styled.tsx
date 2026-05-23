@@ -370,6 +370,12 @@ import {
   type DropZoneDemoProps,
 } from "@comparison/data/dropzone-demo";
 import {
+  illustratedMessageDemoPropsFromWindow,
+  normalizeIllustratedMessageDemoProps,
+  serializeIllustratedMessageDemoProps,
+  type IllustratedMessageDemoProps,
+} from "@comparison/data/illustratedmessage-demo";
+import {
   dialogDemoPropsFromWindow,
   normalizeDialogDemoProps,
   serializeDialogDemoProps,
@@ -606,6 +612,46 @@ const SolidDropZoneIllustration = createIllustration(
   },
 );
 
+const SolidIllustratedMessageIllustration = createIllustration(
+  (props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
+    const [local, rest] = splitProps(props, ["class"]);
+    return h(
+      "svg",
+      mergeProps(
+        {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 48 48",
+        },
+        rest,
+        {
+          get class() {
+            return local.class;
+          },
+        },
+      ),
+      [
+        h("rect", {
+          x: "7",
+          y: "11",
+          width: "34",
+          height: "28",
+          rx: "6",
+          fill: "var(--iconPrimary, #222)",
+          opacity: "0.14",
+        }),
+        h("path", {
+          d: "M16 18h16v4H16v-4Zm0 8h11v4H16v-4Z",
+          fill: "var(--iconPrimary, #222)",
+        }),
+        h("path", {
+          d: "M31 29 37 23l3 3-9 9-5-5 3-3 2 2Z",
+          fill: "var(--iconPrimary, #222)",
+        }),
+      ],
+    )() as JSX.Element;
+  },
+);
+
 const radioGroupItems = [
   { value: "starter", label: "Starter" },
   { value: "pro", label: "Pro" },
@@ -723,6 +769,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   rangecalendar: () => h(SolidSpectrumRangeCalendarDemo, {}),
   divider: () => h(SolidSpectrumDividerDemo, {}),
   dropzone: () => h(SolidSpectrumDropZoneDemo, {}),
+  illustratedmessage: () => h(SolidSpectrumIllustratedMessageDemo, {}),
   form: () => h(SolidSpectrumFormDemo, {}),
   image: () => h(SolidSpectrumImageDemo, {}),
   link: () => h(SolidSpectrumLinkDemo, {}),
@@ -2187,6 +2234,112 @@ function SolidSpectrumDropZoneDemo() {
           },
         },
         [renderedDropZone],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumIllustratedMessageDemo() {
+  const [demoProps, setDemoProps] = createSignal<IllustratedMessageDemoProps>(
+    illustratedMessageDemoPropsFromWindow(),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "illustratedmessage") {
+        setDemoProps(normalizeIllustratedMessageDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedMessage = createMemo(() =>
+    hc(SolidSpectrumIllustratedMessage, {
+      "data-comparison-control-root": "illustratedmessage",
+      get "data-comparison-control-props"() {
+        return serializeIllustratedMessageDemoProps(demoProps());
+      },
+      id: "illustratedmessage-route-root",
+      role: "status",
+      "aria-label": "Asset empty state",
+      "aria-describedby": "illustratedmessage-route-description",
+      "aria-details": "illustratedmessage-route-details",
+      get size() {
+        return demoProps().size;
+      },
+      get orientation() {
+        return demoProps().orientation;
+      },
+      get children() {
+        const children = [
+          h(SolidIllustratedMessageIllustration, { slot: "illustration" }),
+          h(SolidSpectrumHeading, {}, "Create your first asset"),
+          h(SolidSpectrumContent, {}, "Upload or import a file to begin."),
+          h(
+            "span",
+            {
+              id: "illustratedmessage-route-description",
+              hidden: true,
+            },
+            "Illustrated empty-state guidance.",
+          ),
+          h(
+            "span",
+            {
+              id: "illustratedmessage-route-details",
+              hidden: true,
+            },
+            "The comparison route covers illustration, heading, content, and actions.",
+          ),
+        ];
+
+        if (demoProps().withActions) {
+          children.push(
+            hc(SolidSpectrumButtonGroup, {}, [
+              h(SolidSpectrumButton, { variant: "secondary" }, "Import"),
+              h(SolidSpectrumButton, { variant: "accent" }, "Upload"),
+            ]),
+          );
+        }
+
+        return children;
+      },
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-illustrated-message-row",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [renderedMessage],
       ),
     ],
   );

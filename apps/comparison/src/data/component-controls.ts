@@ -195,6 +195,11 @@ import {
 } from "./divider-demo";
 import { dropZoneDemoDefaults, dropZoneSizeOptions } from "./dropzone-demo";
 import {
+  illustratedMessageDemoDefaults,
+  illustratedMessageOrientationOptions,
+  illustratedMessageSizeOptions,
+} from "./illustratedmessage-demo";
+import {
   formDemoDefaults,
   formLabelAlignOptions,
   formLabelPositionOptions,
@@ -1625,6 +1630,50 @@ const dropZoneControls: ComponentControlGroup = {
     "aria-details",
   ],
   note: "Modeled from the S2 DropZone docs, source, and browser runtime. The route drives S2 size, filled-state replacement messaging, hidden-button accessible labeling, drag-target styling, and drop callback counts into both stacks. Current React S2 runtime does not forward id, aria-describedby, or aria-details to the root, so Solid filters those too while preserving aria-label for the hidden drop button. React Aria render-prop/class/style/isDisabled/hover/global DOM props remain intentionally outside the S2 wrapper boundary.",
+};
+
+const illustratedMessageControls: ComponentControlGroup = {
+  slug: "illustratedmessage",
+  title: "IllustratedMessage",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: illustratedMessageDemoDefaults.size,
+      options: options(illustratedMessageSizeOptions),
+    },
+    {
+      name: "orientation",
+      label: "orientation",
+      kind: "radio",
+      defaultValue: illustratedMessageDemoDefaults.orientation,
+      options: options(illustratedMessageOrientationOptions),
+    },
+    {
+      name: "withActions",
+      label: "ButtonGroup",
+      kind: "switch",
+      defaultValue: illustratedMessageDemoDefaults.withActions,
+    },
+  ],
+  apiProps: [
+    "children",
+    "orientation",
+    "size",
+    "id",
+    "data-*",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "Heading",
+    "Content",
+    "Illustration",
+    "ButtonGroup",
+  ],
+  note: "Modeled from the S2 IllustratedMessage docs, stories, source, and browser runtime. The route drives S2 size, orientation, illustration/heading/content composition, optional ButtonGroup actions, id/data-* forwarding, and React's default filterDOMProps boundary where role, labelable ARIA, and global events are not forwarded. Solid unit tests cover context refs, slots, style escape props, and DropZone-specific illustration accent context.",
 };
 
 const meterControls: ComponentControlGroup = {
@@ -5690,6 +5739,7 @@ export const componentControlGroups = {
   timefield: timeFieldControls,
   divider: dividerControls,
   dropzone: dropZoneControls,
+  illustratedmessage: illustratedMessageControls,
   form: formControls,
   image: imageControls,
   link: linkControls,
