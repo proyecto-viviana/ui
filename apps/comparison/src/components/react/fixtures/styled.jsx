@@ -32,11 +32,13 @@ import {
   Dialog as SpectrumDialog,
   DialogTrigger as SpectrumDialogTrigger,
   Divider as SpectrumDivider,
+  DropZone as SpectrumDropZone,
   Footer as SpectrumFooter,
   Form as SpectrumForm,
   Heading as SpectrumHeading,
   Image as SpectrumImage,
   ImageCoordinator as SpectrumImageCoordinator,
+  IllustratedMessage as SpectrumIllustratedMessage,
   Keyboard as SpectrumKeyboard,
   Link as SpectrumLink,
   LinkButton as SpectrumLinkButton,
@@ -340,6 +342,11 @@ import {
   serializeDividerDemoProps,
 } from "@comparison/data/divider-demo";
 import {
+  dropZoneDemoPropsFromWindow,
+  normalizeDropZoneDemoProps,
+  serializeDropZoneDemoProps,
+} from "@comparison/data/dropzone-demo";
+import {
   dialogDemoPropsFromWindow,
   normalizeDialogDemoProps,
   serializeDialogDemoProps,
@@ -521,6 +528,30 @@ const ReactPlanIllustration = createIllustration((props) =>
   }),
 );
 
+const ReactDropZoneIllustration = createIllustration((props) =>
+  jsxs("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 48 48",
+    ...props,
+    children: [
+      jsx("path", {
+        d: "M24 8 12 20h7v11h10V20h7L24 8Z",
+        fill: "var(--iconPrimary, #222)",
+      }),
+      jsx("path", {
+        d: "M12 34h24v4H12v-4Z",
+        fill: "var(--iconPrimary, #222)",
+        opacity: "0.42",
+      }),
+      jsx("path", {
+        d: "M8 28h6v4H8c-2.2 0-4-1.8-4-4V14c0-2.2 1.8-4 4-4h6v4H8v14Zm26-18h6c2.2 0 4 1.8 4 4v14c0 2.2-1.8 4-4 4h-6v-4h6V14h-6v-4Z",
+        fill: "var(--iconPrimary, #222)",
+        opacity: "0.18",
+      }),
+    ],
+  }),
+);
+
 const radioGroupItems = [
   { value: "starter", label: "Starter" },
   { value: "pro", label: "Pro" },
@@ -593,6 +624,7 @@ export const reactStyledFixtures = {
   combobox: () => jsx(ReactComboBoxDemo, {}),
   contextualhelp: () => jsx(ReactContextualHelpDemo, {}),
   divider: () => jsx(ReactDividerDemo, {}),
+  dropzone: () => jsx(ReactDropZoneDemo, {}),
   image: () => jsx(ReactImageDemo, {}),
   form: () => jsx(ReactFormDemo, {}),
   link: () => jsx(ReactLinkDemo, {}),
@@ -1833,6 +1865,77 @@ function ReactDividerDemo() {
         orientation: demoProps.orientation,
         size: demoProps.size,
         staticColor: demoProps.staticColor,
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactDropZoneDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(dropZoneDemoPropsFromWindow);
+  const [counts, setCounts] = useState({
+    activate: 0,
+    drop: 0,
+    enter: 0,
+    exit: 0,
+    move: 0,
+  });
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "dropzone") {
+        setDemoProps(normalizeDropZoneDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const bump = (key) => {
+    setCounts((current) => ({ ...current, [key]: current[key] + 1 }));
+  };
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-dropzone-row",
+      "data-comparison-color-scheme": colorScheme,
+      children: jsx(SpectrumDropZone, {
+        "data-comparison-control-root": "dropzone",
+        "data-comparison-control-props": serializeDropZoneDemoProps(demoProps),
+        "data-comparison-drop-activate-count": counts.activate,
+        "data-comparison-drop-count": counts.drop,
+        "data-comparison-drop-enter-count": counts.enter,
+        "data-comparison-drop-exit-count": counts.exit,
+        "data-comparison-drop-move-count": counts.move,
+        id: "dropzone-route-root",
+        "aria-label": demoProps.ariaLabel,
+        "aria-describedby": "dropzone-route-description",
+        "aria-details": "dropzone-route-details",
+        size: demoProps.size,
+        isFilled: demoProps.isFilled,
+        replaceMessage: demoProps.replaceMessage || undefined,
+        onDropActivate: () => bump("activate"),
+        onDrop: () => bump("drop"),
+        onDropEnter: () => bump("enter"),
+        onDropExit: () => bump("exit"),
+        onDropMove: () => bump("move"),
+        children: jsxs(SpectrumIllustratedMessage, {
+          children: [
+            jsx(ReactDropZoneIllustration, { slot: "illustration" }),
+            jsx(SpectrumHeading, { children: "Upload assets" }),
+            jsx(SpectrumContent, { children: "Drop a PNG, SVG, or PDF." }),
+            jsx("span", {
+              id: "dropzone-route-description",
+              hidden: true,
+              children: "Drop target accepts project files.",
+            }),
+            jsx("span", {
+              id: "dropzone-route-details",
+              hidden: true,
+              children: "The comparison route records drag and drop callback counts.",
+            }),
+          ],
+        }),
       }),
     }),
     colorScheme,

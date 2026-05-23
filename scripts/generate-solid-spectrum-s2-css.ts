@@ -26,6 +26,8 @@ await import("../packages/solid-spectrum/src/menu/s2-menu-styles");
 await import("../packages/solid-spectrum/src/picker");
 await import("../packages/solid-spectrum/src/combobox");
 await import("../packages/solid-spectrum/src/datepicker");
+await import("../packages/solid-spectrum/src/dropzone");
+await import("../packages/solid-spectrum/src/illustratedmessage");
 await import("../packages/solid-spectrum/src/link");
 await import("../packages/solid-spectrum/src/card/index");
 await import("../packages/solid-spectrum/src/cardview/index");

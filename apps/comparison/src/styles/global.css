@@ -1696,6 +1696,22 @@ a {
   justify-content: center;
 }
 
+.comparison-dropzone-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  inline-size: 360px;
+  min-block-size: 212px;
+  max-inline-size: 100%;
+  padding: 24px;
+  border-radius: 6px;
+}
+
+.comparison-dropzone-row [data-comparison-control-root="dropzone"] {
+  inline-size: 312px;
+  min-block-size: 164px;
+}
+
 .comparison-meter-row {
   display: block;
   inline-size: 320px;

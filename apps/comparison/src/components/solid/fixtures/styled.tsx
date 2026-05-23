@@ -3,9 +3,11 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  mergeProps,
   onCleanup,
   onMount,
   Show,
+  splitProps,
   type JSX,
 } from "solid-js";
 import { createComponent } from "solid-js/web";
@@ -53,11 +55,13 @@ import {
   Dialog as SolidSpectrumDialog,
   DialogTrigger as SolidSpectrumDialogTrigger,
   Divider as SolidSpectrumDivider,
+  DropZone as SolidSpectrumDropZone,
   Footer as SolidSpectrumFooter,
   Form as SolidSpectrumForm,
   Heading as SolidSpectrumHeading,
   Image as SolidSpectrumImage,
   ImageCoordinator as SolidSpectrumImageCoordinator,
+  IllustratedMessage as SolidSpectrumIllustratedMessage,
   Keyboard as SolidSpectrumKeyboard,
   Link as SolidSpectrumLink,
   LinkButton as SolidSpectrumLinkButton,
@@ -360,6 +364,12 @@ import {
   type DividerDemoProps,
 } from "@comparison/data/divider-demo";
 import {
+  dropZoneDemoPropsFromWindow,
+  normalizeDropZoneDemoProps,
+  serializeDropZoneDemoProps,
+  type DropZoneDemoProps,
+} from "@comparison/data/dropzone-demo";
+import {
   dialogDemoPropsFromWindow,
   normalizeDialogDemoProps,
   serializeDialogDemoProps,
@@ -559,6 +569,43 @@ const SolidPlanIllustration = createIllustration((props: JSX.SvgSVGAttributes<SV
   )() as JSX.Element;
 });
 
+const SolidDropZoneIllustration = createIllustration(
+  (props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
+    const [local, rest] = splitProps(props, ["class"]);
+    return h(
+      "svg",
+      mergeProps(
+        {
+          xmlns: "http://www.w3.org/2000/svg",
+          viewBox: "0 0 48 48",
+        },
+        rest,
+        {
+          get class() {
+            return local.class;
+          },
+        },
+      ),
+      [
+        h("path", {
+          d: "M24 8 12 20h7v11h10V20h7L24 8Z",
+          fill: "var(--iconPrimary, #222)",
+        }),
+        h("path", {
+          d: "M12 34h24v4H12v-4Z",
+          fill: "var(--iconPrimary, #222)",
+          opacity: "0.42",
+        }),
+        h("path", {
+          d: "M8 28h6v4H8c-2.2 0-4-1.8-4-4V14c0-2.2 1.8-4 4-4h6v4H8v14Zm26-18h6c2.2 0 4 1.8 4 4v14c0 2.2-1.8 4-4 4h-6v-4h6V14h-6v-4Z",
+          fill: "var(--iconPrimary, #222)",
+          opacity: "0.18",
+        }),
+      ],
+    )() as JSX.Element;
+  },
+);
+
 const radioGroupItems = [
   { value: "starter", label: "Starter" },
   { value: "pro", label: "Pro" },
@@ -675,6 +722,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   dialog: () => h(SolidSpectrumDialogDemo, {}),
   rangecalendar: () => h(SolidSpectrumRangeCalendarDemo, {}),
   divider: () => h(SolidSpectrumDividerDemo, {}),
+  dropzone: () => h(SolidSpectrumDropZoneDemo, {}),
   form: () => h(SolidSpectrumFormDemo, {}),
   image: () => h(SolidSpectrumImageDemo, {}),
   link: () => h(SolidSpectrumLinkDemo, {}),
@@ -2001,6 +2049,144 @@ function SolidSpectrumDividerDemo() {
           },
         },
         [renderedDivider],
+      ),
+    ],
+  );
+}
+
+type DropZoneCountKey = "activate" | "drop" | "enter" | "exit" | "move";
+
+interface DropZoneCounts {
+  activate: number;
+  drop: number;
+  enter: number;
+  exit: number;
+  move: number;
+}
+
+function SolidSpectrumDropZoneDemo() {
+  const [demoProps, setDemoProps] = createSignal<DropZoneDemoProps>(dropZoneDemoPropsFromWindow());
+  const [counts, setCounts] = createSignal<DropZoneCounts>({
+    activate: 0,
+    drop: 0,
+    enter: 0,
+    exit: 0,
+    move: 0,
+  });
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "dropzone") {
+        setDemoProps(normalizeDropZoneDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const bump = (key: DropZoneCountKey) => {
+    setCounts((current) => ({ ...current, [key]: current[key] + 1 }));
+  };
+
+  const renderedDropZone = createMemo(() =>
+    hc(SolidSpectrumDropZone, {
+      "data-comparison-control-root": "dropzone",
+      get "data-comparison-control-props"() {
+        return serializeDropZoneDemoProps(demoProps());
+      },
+      get "data-comparison-drop-activate-count"() {
+        return counts().activate;
+      },
+      get "data-comparison-drop-count"() {
+        return counts().drop;
+      },
+      get "data-comparison-drop-enter-count"() {
+        return counts().enter;
+      },
+      get "data-comparison-drop-exit-count"() {
+        return counts().exit;
+      },
+      get "data-comparison-drop-move-count"() {
+        return counts().move;
+      },
+      id: "dropzone-route-root",
+      get "aria-label"() {
+        return demoProps().ariaLabel;
+      },
+      "aria-describedby": "dropzone-route-description",
+      "aria-details": "dropzone-route-details",
+      get size() {
+        return demoProps().size;
+      },
+      get isFilled() {
+        return demoProps().isFilled;
+      },
+      get replaceMessage() {
+        return demoProps().replaceMessage || undefined;
+      },
+      onDropActivate: () => bump("activate"),
+      onDrop: () => bump("drop"),
+      onDropEnter: () => bump("enter"),
+      onDropExit: () => bump("exit"),
+      onDropMove: () => bump("move"),
+      get children() {
+        return hc(SolidSpectrumIllustratedMessage, {}, [
+          h(SolidDropZoneIllustration, { slot: "illustration" }),
+          h(SolidSpectrumHeading, {}, "Upload assets"),
+          h(SolidSpectrumContent, {}, "Drop a PNG, SVG, or PDF."),
+          h(
+            "span",
+            {
+              id: "dropzone-route-description",
+              hidden: true,
+            },
+            "Drop target accepts project files.",
+          ),
+          h(
+            "span",
+            {
+              id: "dropzone-route-details",
+              hidden: true,
+            },
+            "The comparison route records drag and drop callback counts.",
+          ),
+        ]);
+      },
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-dropzone-row",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+        },
+        [renderedDropZone],
       ),
     ],
   );

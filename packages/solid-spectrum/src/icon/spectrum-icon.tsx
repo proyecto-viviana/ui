@@ -147,6 +147,7 @@ export function createIllustration(Component: Component<JSX.SvgSVGAttributes<SVG
         style={{
           width: `${illustrationSizes[size()]}px`,
           height: `${illustrationSizes[size()]}px`,
+          "flex-shrink": 0,
           ...(typeof local.style === "object" ? local.style : {}),
         }}
       />

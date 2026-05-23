@@ -12,6 +12,7 @@ export interface S2IntlStrings {
   "breadcrumbs.more": string;
   "contextualhelp.help": string;
   "contextualhelp.info": string;
+  "dropzone.replaceMessage": string;
   "menu.moreActions": string;
   "menu.unavailable": string;
   "notificationbadge.indicatorOnly": string;

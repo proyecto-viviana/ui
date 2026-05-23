@@ -306,8 +306,8 @@ export { Divider, DividerContext } from "./divider";
 export type { DividerOrientation, DividerProps, DividerSize, DividerStaticColor } from "./divider";
 
 // DropZone
-export { DropZone } from "./dropzone";
-export type { DropZoneProps } from "./dropzone";
+export { DropZone, DropZoneContext } from "./dropzone";
+export type { DropZoneProps, DropZoneSize } from "./dropzone";
 
 // FileTrigger
 export { FileTrigger } from "./filetrigger";
@@ -329,8 +329,12 @@ export { createIcon, createIllustration, IconContext, IllustrationContext } from
 export type { IconContextValue, SpectrumIconProps, SpectrumIllustrationProps } from "./icon";
 
 // IllustratedMessage
-export { IllustratedMessage } from "./illustratedmessage";
-export type { IllustratedMessageProps } from "./illustratedmessage";
+export { IllustratedMessage, IllustratedMessageContext } from "./illustratedmessage";
+export type {
+  IllustratedMessageOrientation,
+  IllustratedMessageProps,
+  IllustratedMessageSize,
+} from "./illustratedmessage";
 
 // Image
 export { Image, ImageContext, ImageCoordinator } from "./image";

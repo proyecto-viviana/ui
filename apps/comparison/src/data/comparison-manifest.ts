@@ -451,6 +451,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Divider directly; Solid uses @proyecto-viviana/solid-spectrum Divider with S2-derived separator styling and solidaria-components semantics.",
   }),
 
+  dropzone: styledLiveOfficialEntry({
+    slug: "dropzone",
+    title: "DropZone",
+    category: "Components",
+    summary:
+      "Drag-and-drop upload target mounted on both stacks with S2 size, filled-state replacement banner, accessible hidden drop button, and callback-count evidence.",
+    styledSummary: "React Spectrum DropZone vs Solid Spectrum DropZone.",
+    styledNote:
+      "React uses @react-spectrum/s2 DropZone and IllustratedMessage directly; Solid uses @proyecto-viviana/solid-spectrum DropZone with solidaria-components drag/drop behavior, S2-derived root/banner styling, localized replacement text, and IllustratedMessage drop-target context.",
+  }),
+
   image: styledLiveOfficialEntry({
     slug: "image",
     title: "Image",

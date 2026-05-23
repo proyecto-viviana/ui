@@ -5,7 +5,15 @@
  * Parity target: react-aria-components/src/DropZone.tsx
  */
 
-import { type JSX, createContext, createMemo, createSignal, splitProps } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createMemo,
+  createSignal,
+  mergeProps,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   createDrop,
   createFocusRing,
@@ -63,8 +71,10 @@ function isFocusableElement(target: Element): boolean {
  * A drop zone is an area into which one or multiple objects can be dropped.
  */
 export function DropZone(props: DropZoneProps): JSX.Element {
+  const contextProps = useContext(DropZoneContext);
+  const mergedProps = mergeProps(contextProps ?? {}, props);
   const [local, dropProps, hoverEventProps, domProps] = splitProps(
-    props,
+    mergedProps,
     ["children", "class", "style", "slot", "aria-label", "aria-labelledby"],
     [
       "getDropOperation",

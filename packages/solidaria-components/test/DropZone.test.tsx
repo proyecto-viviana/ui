@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { DropZone } from "../src/DropZone";
+import { DropZone, DropZoneContext } from "../src/DropZone";
 
 function createDataTransferStub(): DataTransfer {
   return {
@@ -33,6 +33,22 @@ function createClipboardDataStub(text: string): DataTransfer {
   } as unknown as DataTransfer;
 }
 
+function dispatchDragEvent(
+  element: HTMLElement,
+  type: "dragenter" | "dragover" | "dragleave",
+  dataTransfer: DataTransfer,
+  clientX: number,
+  clientY: number,
+) {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperties(event, {
+    clientX: { value: clientX, configurable: true },
+    clientY: { value: clientY, configurable: true },
+    dataTransfer: { value: dataTransfer, configurable: true },
+  });
+  element.dispatchEvent(event);
+}
+
 describe("DropZone", () => {
   it("renders with default class", () => {
     render(() => <DropZone>Drop files</DropZone>);
@@ -58,6 +74,48 @@ describe("DropZone", () => {
     });
 
     expect(onDrop).toHaveBeenCalled();
+  });
+
+  it("calls drag lifecycle handlers for valid drags", () => {
+    const onDropEnter = vi.fn();
+    const onDropMove = vi.fn();
+    const onDropExit = vi.fn();
+    render(() => (
+      <DropZone onDropEnter={onDropEnter} onDropMove={onDropMove} onDropExit={onDropExit}>
+        Drop files
+      </DropZone>
+    ));
+
+    const zone = document.querySelector(".solidaria-DropZone") as HTMLDivElement;
+    expect(zone).toBeInTheDocument();
+    vi.spyOn(zone, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      top: 0,
+      right: 100,
+      bottom: 100,
+      left: 0,
+      width: 100,
+      height: 100,
+      toJSON: () => ({}),
+    } as DOMRect);
+    const dataTransfer = createDataTransferStub();
+
+    dispatchDragEvent(zone, "dragenter", dataTransfer, 4, 8);
+    expect(onDropEnter).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "dropenter", x: 4, y: 8 }),
+    );
+    expect(zone).toHaveAttribute("data-drop-target");
+
+    dispatchDragEvent(zone, "dragover", dataTransfer, 12, 16);
+    expect(onDropMove).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "dropmove", x: 12, y: 16 }),
+    );
+
+    dispatchDragEvent(zone, "dragleave", dataTransfer, 20, 24);
+    expect(onDropExit).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "dropexit", x: 20, y: 24 }),
+    );
   });
 
   it("sets disabled state attributes", () => {
@@ -90,5 +148,18 @@ describe("DropZone", () => {
   it("uses explicit aria-label for hidden drop button", () => {
     render(() => <DropZone aria-label="Upload area">Drop files</DropZone>);
     expect(screen.getByRole("button", { name: "Upload area" })).toBeInTheDocument();
+  });
+
+  it("merges props from DropZoneContext", () => {
+    render(() => (
+      <DropZoneContext.Provider
+        value={{ "aria-label": "Context upload", class: "context-dropzone" }}
+      >
+        <DropZone>Drop files</DropZone>
+      </DropZoneContext.Provider>
+    ));
+
+    expect(screen.getByRole("button", { name: "Context upload" })).toBeInTheDocument();
+    expect(document.querySelector(".context-dropzone")).toBeInTheDocument();
   });
 });

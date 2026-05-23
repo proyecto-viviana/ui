@@ -193,6 +193,7 @@ import {
   dividerSizeOptions,
   dividerStaticColorOptions,
 } from "./divider-demo";
+import { dropZoneDemoDefaults, dropZoneSizeOptions } from "./dropzone-demo";
 import {
   formDemoDefaults,
   formLabelAlignOptions,
@@ -1569,6 +1570,61 @@ const dividerControls: ComponentControlGroup = {
     "aria-details",
   ],
   note: "Modeled from the S2 Divider docs and source. The viewer drives orientation, size, and optional static color into both stacks; accessibility labels and style escapes are tracked as API coverage.",
+};
+
+const dropZoneControls: ComponentControlGroup = {
+  slug: "dropzone",
+  title: "DropZone",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: dropZoneDemoDefaults.size,
+      options: options(dropZoneSizeOptions),
+    },
+    {
+      name: "isFilled",
+      label: "isFilled",
+      kind: "switch",
+      defaultValue: dropZoneDemoDefaults.isFilled,
+    },
+    {
+      name: "replaceMessage",
+      label: "replaceMessage",
+      kind: "text",
+      defaultValue: dropZoneDemoDefaults.replaceMessage,
+    },
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: dropZoneDemoDefaults.ariaLabel,
+    },
+  ],
+  apiProps: [
+    "children",
+    "getDropOperation",
+    "id",
+    "isFilled",
+    "onDrop",
+    "onDropActivate",
+    "onDropEnter",
+    "onDropExit",
+    "onDropMove",
+    "replaceMessage",
+    "size",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-details",
+  ],
+  note: "Modeled from the S2 DropZone docs, source, and browser runtime. The route drives S2 size, filled-state replacement messaging, hidden-button accessible labeling, drag-target styling, and drop callback counts into both stacks. Current React S2 runtime does not forward id, aria-describedby, or aria-details to the root, so Solid filters those too while preserving aria-label for the hidden drop button. React Aria render-prop/class/style/isDisabled/hover/global DOM props remain intentionally outside the S2 wrapper boundary.",
 };
 
 const meterControls: ComponentControlGroup = {
@@ -5633,6 +5689,7 @@ export const componentControlGroups = {
   dialog: dialogControls,
   timefield: timeFieldControls,
   divider: dividerControls,
+  dropzone: dropZoneControls,
   form: formControls,
   image: imageControls,
   link: linkControls,
