@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
-import { createRoot } from "solid-js";
+import { createRoot, createSignal, For } from "solid-js";
 import { createToast, createToastRegion } from "../src/toast";
 
 describe("createToast", () => {
@@ -130,5 +130,135 @@ describe("createToastRegion", () => {
 
     fireEvent.focusOut(region, { relatedTarget: null });
     expect(resumeAll).toHaveBeenCalled();
+  });
+
+  it("marks the region as a top layer and registers it for F6 landmark navigation", async () => {
+    const pauseAll = vi.fn();
+    const resumeAll = vi.fn();
+
+    render(() =>
+      (() => {
+        const [regionElement, setRegionElement] = createSignal<HTMLElement>();
+        const [toasts] = createSignal([{ key: "toast-1" }]);
+        const aria = createToastRegion({
+          state: { pauseAll, resumeAll, visibleToasts: toasts } as any,
+          ref: regionElement,
+          "aria-label": "Notifications",
+        });
+
+        return (
+          <>
+            <button data-testid="before">Before</button>
+            <div {...aria.regionProps} ref={setRegionElement} data-testid="region">
+              <div role="alertdialog" tabIndex={-1}>
+                Toast
+              </div>
+            </div>
+          </>
+        );
+      })(),
+    );
+
+    await Promise.resolve();
+
+    const before = screen.getByTestId("before");
+    const region = screen.getByTestId("region");
+
+    expect(region).toHaveAttribute("data-solidaria-top-layer", "true");
+
+    before.focus();
+    fireEvent.keyDown(window, { key: "F6" });
+
+    expect(document.activeElement).toBe(region);
+  });
+
+  it("moves focus to the next toast when the focused toast is removed", async () => {
+    const pauseAll = vi.fn();
+    const resumeAll = vi.fn();
+    let removeFirst = () => {};
+
+    render(() =>
+      (() => {
+        const [regionElement, setRegionElement] = createSignal<HTMLElement>();
+        const [toasts, setToasts] = createSignal([{ key: "toast-1" }, { key: "toast-2" }]);
+        removeFirst = () => setToasts([{ key: "toast-2" }]);
+        const aria = createToastRegion({
+          state: { pauseAll, resumeAll, visibleToasts: toasts } as any,
+          ref: regionElement,
+        });
+
+        return (
+          <>
+            <button data-testid="before">Before</button>
+            <div {...aria.regionProps} ref={setRegionElement} data-testid="region">
+              <For each={toasts()}>
+                {(toast) => (
+                  <div role="alertdialog" tabIndex={-1} data-testid={toast.key}>
+                    {toast.key}
+                  </div>
+                )}
+              </For>
+            </div>
+          </>
+        );
+      })(),
+    );
+
+    const before = screen.getByTestId("before");
+    const firstToast = screen.getByTestId("toast-1");
+
+    before.focus();
+    firstToast.focus();
+    fireEvent.focusIn(firstToast, { relatedTarget: before });
+
+    removeFirst();
+    await Promise.resolve();
+
+    expect(document.activeElement).toBe(screen.getByTestId("toast-2"));
+  });
+
+  it("restores focus when the last focused toast is removed", async () => {
+    const pauseAll = vi.fn();
+    const resumeAll = vi.fn();
+    let removeAll = () => {};
+
+    render(() =>
+      (() => {
+        const [regionElement, setRegionElement] = createSignal<HTMLElement>();
+        const [toasts, setToasts] = createSignal([{ key: "toast-1" }]);
+        removeAll = () => setToasts([]);
+        const aria = createToastRegion({
+          state: { pauseAll, resumeAll, visibleToasts: toasts } as any,
+          ref: regionElement,
+        });
+
+        return (
+          <>
+            <button data-testid="before">Before</button>
+            <div {...aria.regionProps} ref={setRegionElement} data-testid="region">
+              <For each={toasts()}>
+                {(toast) => (
+                  <div role="alertdialog" tabIndex={-1} data-testid={toast.key}>
+                    {toast.key}
+                  </div>
+                )}
+              </For>
+            </div>
+          </>
+        );
+      })(),
+    );
+
+    const before = screen.getByTestId("before");
+    const firstToast = screen.getByTestId("toast-1");
+
+    before.focus();
+    firstToast.focus();
+    fireEvent.focusIn(firstToast, { relatedTarget: before });
+
+    removeAll();
+    await Promise.resolve();
+
+    expect(document.activeElement).toBe(before);
   });
 });

@@ -197,7 +197,7 @@ describe("Toast (solid-spectrum)", () => {
       const svg = toastEl?.querySelector("svg");
       expect(svg).toBeInTheDocument();
       expect(svg).toHaveAttribute("viewBox", "0 0 20 20");
-      expect(svg?.querySelectorAll("path")).toHaveLength(3);
+      expect(svg?.querySelectorAll("path")).toHaveLength(2);
     });
 
     it("renders the S2 InfoCircle SVG for info variant and no icon for neutral", () => {

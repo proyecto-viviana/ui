@@ -342,27 +342,40 @@ describe("Toast", () => {
   // ============================================
 
   describe("a11y live regions", () => {
-    it("should have a live region for toast announcements", () => {
+    it("should expose the React Aria toast region landmarks and alertdialog content", () => {
       render(() => (
-        <ToastProvider>
+        <ToastProvider useGlobalQueue>
           <div>App</div>
+          <ToastRegion portal={false}>
+            {(renderProps) => (
+              <For each={renderProps.visibleToasts()}>
+                {(toast) => <DefaultToast toast={toast} />}
+              </For>
+            )}
+          </ToastRegion>
         </ToastProvider>
       ));
 
       addToast({ title: "Hello" });
 
-      // Check that a live region (role=region or aria-live) exists
-      const liveRegions = document.querySelectorAll(
-        '[aria-live], [role="alert"], [role="status"], [role="log"]',
-      );
-      // ToastRegion should inject at least one live region landmark
-      expect(liveRegions.length).toBeGreaterThanOrEqual(0);
+      const region = screen.getByRole("region", { name: "Notifications" });
+      const toast = screen.getByRole("alertdialog", { name: "Hello" });
+
+      expect(region).toHaveAttribute("data-solidaria-top-layer", "true");
+      expect(region).toContainElement(toast);
     });
 
     it("should inject toast content into a live-region-accessible element", () => {
       render(() => (
-        <ToastProvider>
+        <ToastProvider useGlobalQueue>
           <div>App</div>
+          <ToastRegion portal={false}>
+            {(renderProps) => (
+              <For each={renderProps.visibleToasts()}>
+                {(toast) => <DefaultToast toast={toast} />}
+              </For>
+            )}
+          </ToastRegion>
         </ToastProvider>
       ));
 

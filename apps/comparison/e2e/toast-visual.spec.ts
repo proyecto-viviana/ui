@@ -111,6 +111,8 @@ test.describe("Toast comparison route", () => {
       await expect(stack.region).toBeVisible();
       await expect(alertToast(stack.region)).toContainText(toastDemoDefaults.children);
     }
+    await expect(react.region).toHaveAttribute("data-react-aria-top-layer", "true");
+    await expect(solid.region).toHaveAttribute("data-solidaria-top-layer", "true");
 
     const reactStyle = await toastStyleContract(react.region);
     const solidStyle = await toastStyleContract(solid.region);

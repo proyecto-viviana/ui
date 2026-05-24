@@ -2646,7 +2646,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/toast-visual.spec.ts",
-      note: "The route mounts React and Solid ToastContainer/ToastQueue stacks with the S2 default bottom placement, neutral variant, close button, Notifications landmark, and a bounded React-vs-Solid screenshot pair diff.",
+      note: "The route mounts React and Solid ToastContainer/ToastQueue stacks with the S2 default bottom placement, neutral variant, close button, Notifications landmark, top-layer markers, and a bounded React-vs-Solid screenshot pair diff.",
     },
     {
       id: "styled.toast.variants",
@@ -2677,6 +2677,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       pairDiff: "na",
       spec: "e2e/toast-visual.spec.ts; packages/solid-spectrum/test/Toast.test.tsx",
       note: "Multiple queued toasts collapse behind the main toast, expose Show all, expand to reveal all messages, and expose Clear all/Collapse controls on both stacks.",
+    },
+    {
+      id: "styled.toast.landmark-focus",
+      label: "Toast landmark and focus recovery",
+      kind: "keyboard",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "packages/solidaria/test/createToast.test.tsx; packages/solidaria-components/test/Toast.test.tsx; e2e/toast-visual.spec.ts",
+      note: "Solid toast regions register as F6 landmarks, expose data-solidaria-top-layer for overlay/live-region exclusion, pause timers on focus/hover, move focus when a focused toast is removed, and restore prior focus when the last focused toast closes.",
     },
     {
       id: "styled.toast.timeout",

@@ -11,6 +11,7 @@ import {
   createContext,
   createMemo,
   createEffect,
+  createSignal,
   onCleanup,
   splitProps,
   Show,
@@ -222,18 +223,26 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
   ]);
   const portalContext = useUNSAFE_PortalContext();
   const portalContainer = () => portalContext.getContainer?.() ?? undefined;
+  const [regionElement, setRegionElement] = createSignal<HTMLElement>();
 
   const contextState = useContext(ToastContext);
   const state = () => local.state ?? contextState;
 
-  const getRegionAria = () => {
-    const s = state();
-    if (!s) return null;
-    return createToastRegion({
-      state: s,
-      "aria-label": local["aria-label"],
-    });
-  };
+  const regionAria = createToastRegion<ToastContent>({
+    state: {
+      visibleToasts: () => state()?.visibleToasts() ?? [],
+      add: (content, options) => state()?.add(content, options) ?? "",
+      close: (key) => state()?.close(key),
+      remove: (key) => state()?.remove(key),
+      clear: () => state()?.clear(),
+      pauseAll: () => state()?.pauseAll(),
+      resumeAll: () => state()?.resumeAll(),
+    },
+    ref: regionElement,
+    get "aria-label"() {
+      return local["aria-label"];
+    },
+  });
 
   const renderValues = createMemo<ToastRegionRenderProps>(() => ({
     visibleToasts: () => state()?.visibleToasts() ?? [],
@@ -302,8 +311,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
   const hasToasts = () => visibleToasts().length > 0;
 
   const regionContent = () => {
-    const regionAria = getRegionAria();
-    if (!regionAria || !state()) return null;
+    if (!state()) return null;
 
     // Merge styles - placement styles are base, renderProps.style() overrides
     const mergedStyle = () => {
@@ -317,6 +325,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
 
     return (
       <div
+        ref={setRegionElement}
         {...domProps()}
         {...cleanRegionProps}
         class={renderProps.class()}

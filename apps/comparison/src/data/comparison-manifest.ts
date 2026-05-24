@@ -254,7 +254,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     styledSummary:
       "React Spectrum ToastContainer/ToastQueue vs Solid Spectrum ToastContainer/ToastQueue.",
     styledNote:
-      "React uses @react-spectrum/s2 ToastContainer and ToastQueue directly; Solid uses @proyecto-viviana/solid-spectrum ToastContainer and ToastQueue on top of Solidaria/Solid Stately toast primitives with S2 variant mapping, S2-localized Show all/Clear all/Collapse controls, default bottom placement, collapsed/expanded stack controls, the Notifications landmark, DOM option passthrough, clear-without-onClose parity, 5s minimum auto-dismiss, actionable-toast no-auto-dismiss behavior, and bounded default-surface React-vs-Solid pair-diff evidence.",
+      "React uses @react-spectrum/s2 ToastContainer and ToastQueue directly; Solid uses @proyecto-viviana/solid-spectrum ToastContainer and ToastQueue on top of Solidaria/Solid Stately toast primitives with S2 variant mapping, S2-localized Show all/Clear all/Collapse controls, default bottom placement, collapsed/expanded stack controls, the Notifications F6 landmark, Solid top-layer overlay/live-region exclusion marker, focus transfer/restoration on removed toasts, DOM option passthrough, clear-without-onClose parity, 5s minimum auto-dismiss, actionable-toast no-auto-dismiss behavior, and bounded default-surface React-vs-Solid pair-diff evidence.",
   }),
 
   provider: {
