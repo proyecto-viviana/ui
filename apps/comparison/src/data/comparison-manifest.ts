@@ -462,6 +462,28 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 DropZone and IllustratedMessage directly; Solid uses @proyecto-viviana/solid-spectrum DropZone with solidaria-components drag/drop behavior, S2-derived root/banner styling, localized replacement text, and IllustratedMessage drop-target context.",
   }),
 
+  icons: styledLiveOfficialEntry({
+    slug: "icons",
+    title: "Icons",
+    category: "Components",
+    summary:
+      "Icon primitive route mounted on both stacks with labelled, decorative, skeleton, and button-context icon usage.",
+    styledSummary: "React Spectrum createIcon vs Solid Spectrum createIcon.",
+    styledNote:
+      "React uses @react-spectrum/s2 createIcon through the comparison icon primitive; Solid uses @proyecto-viviana/solid-spectrum createIcon with the same accessibility and contextual rendering states.",
+  }),
+
+  illustrations: styledLiveOfficialEntry({
+    slug: "illustrations",
+    title: "Illustrations",
+    category: "Components",
+    summary:
+      "Illustration primitive route mounted on both stacks with labelled, decorative, and skeleton illustration usage.",
+    styledSummary: "React Spectrum createIllustration vs Solid Spectrum createIllustration.",
+    styledNote:
+      "React uses @react-spectrum/s2 createIllustration through comparison illustration primitives; Solid uses @proyecto-viviana/solid-spectrum createIllustration with the same labelled, decorative, and loading-context states.",
+  }),
+
   illustratedmessage: styledLiveOfficialEntry({
     slug: "illustratedmessage",
     title: "IllustratedMessage",

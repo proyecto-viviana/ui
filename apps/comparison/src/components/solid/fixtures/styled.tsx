@@ -730,6 +730,23 @@ function selectedKeysParamFromWindow(fallback: string[]) {
   return new Set(value ? value.split(",").filter(Boolean) : fallback);
 }
 
+function createComparisonResolvedThemeSignal() {
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+  onMount(() => {
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+  });
+  return colorScheme;
+}
+
 function solidSingleButtonFamilyChildren(
   label: string | (() => string),
   iconPlacement: SingleButtonIconPlacement | (() => SingleButtonIconPlacement),
@@ -792,6 +809,8 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   rangecalendar: () => h(SolidSpectrumRangeCalendarDemo, {}),
   divider: () => h(SolidSpectrumDividerDemo, {}),
   dropzone: () => h(SolidSpectrumDropZoneDemo, {}),
+  icons: () => h(SolidSpectrumIconsDemo, {}),
+  illustrations: () => h(SolidSpectrumIllustrationsDemo, {}),
   illustratedmessage: () => h(SolidSpectrumIllustratedMessageDemo, {}),
   inlinealert: () => h(SolidSpectrumInlineAlertDemo, {}),
   form: () => h(SolidSpectrumFormDemo, {}),
@@ -836,6 +855,98 @@ function renderProviderDemo() {
         h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
       ),
     ),
+  );
+}
+
+function SolidSpectrumIconsDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: iconGalleryStyle,
+          "data-comparison-control-root": "icons",
+        },
+        [
+          h(SolidNewIcon, {
+            "aria-label": "Create item",
+            size: "M",
+            "data-comparison-icon": "labelled",
+          }),
+          h(SolidNewIcon, {
+            "aria-hidden": true,
+            size: "S",
+            "data-comparison-icon": "decorative",
+          }),
+          hc(SolidSpectrumSkeleton, { isLoading: true }, [
+            h(SolidNewIcon, {
+              "aria-label": "Loading icon",
+              size: "L",
+              "data-comparison-icon": "skeleton",
+            }),
+          ]),
+          hc(
+            SolidSpectrumButton,
+            {
+              variant: "accent",
+              "data-comparison-icon": "button-context",
+            },
+            [h(SolidNewIcon, { "aria-hidden": true }), "Create"],
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumIllustrationsDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: illustrationGalleryStyle,
+          "data-comparison-control-root": "illustrations",
+        },
+        [
+          h(SolidPlanIllustration, {
+            "aria-label": "Planning illustration",
+            size: "S",
+            "data-comparison-illustration": "labelled",
+          }),
+          h(SolidDropZoneIllustration, {
+            "aria-hidden": true,
+            size: "M",
+            "data-comparison-illustration": "decorative",
+          }),
+          hc(SolidSpectrumSkeleton, { isLoading: true }, [
+            h(SolidIllustratedMessageIllustration, {
+              "aria-label": "Loading illustration",
+              size: "L",
+              "data-comparison-illustration": "skeleton",
+            }),
+          ]),
+        ],
+      ),
+    ],
   );
 }
 
@@ -7927,6 +8038,20 @@ function SolidSpectrumCardDemo() {
 const providerShellStyle = {
   padding: "0",
   background: "transparent",
+};
+
+const iconGalleryStyle = {
+  display: "flex",
+  "align-items": "center",
+  gap: "16px",
+  padding: "12px",
+};
+
+const illustrationGalleryStyle = {
+  display: "flex",
+  "align-items": "center",
+  gap: "24px",
+  padding: "12px",
 };
 
 const cardViewDemoStyle = {

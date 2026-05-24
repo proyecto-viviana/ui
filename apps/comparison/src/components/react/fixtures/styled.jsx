@@ -670,6 +670,8 @@ export const reactStyledFixtures = {
   contextualhelp: () => jsx(ReactContextualHelpDemo, {}),
   divider: () => jsx(ReactDividerDemo, {}),
   dropzone: () => jsx(ReactDropZoneDemo, {}),
+  icons: () => jsx(ReactIconsDemo, {}),
+  illustrations: () => jsx(ReactIllustrationsDemo, {}),
   illustratedmessage: () => jsx(ReactIllustratedMessageDemo, {}),
   inlinealert: () => jsx(ReactInlineAlertDemo, {}),
   image: () => jsx(ReactImageDemo, {}),
@@ -732,6 +734,73 @@ function renderProviderDemo() {
       ],
     }),
   });
+}
+
+function ReactIconsDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsxs("div", {
+      style: iconGalleryStyle,
+      "data-comparison-control-root": "icons",
+      children: [
+        jsx(ReactButtonIcon, {
+          "aria-label": "Create item",
+          size: "M",
+          "data-comparison-icon": "labelled",
+        }),
+        jsx(ReactButtonIcon, {
+          "aria-hidden": true,
+          size: "S",
+          "data-comparison-icon": "decorative",
+        }),
+        jsx(SpectrumSkeleton, {
+          isLoading: true,
+          children: jsx(ReactButtonIcon, {
+            "aria-label": "Loading icon",
+            size: "L",
+            "data-comparison-icon": "skeleton",
+          }),
+        }),
+        jsxs(SpectrumButton, {
+          variant: "accent",
+          "data-comparison-icon": "button-context",
+          children: [jsx(ReactButtonIcon, { "aria-hidden": true }), "Create"],
+        }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactIllustrationsDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsxs("div", {
+      style: illustrationGalleryStyle,
+      "data-comparison-control-root": "illustrations",
+      children: [
+        jsx(ReactPlanIllustration, {
+          "aria-label": "Planning illustration",
+          size: "S",
+          "data-comparison-illustration": "labelled",
+        }),
+        jsx(ReactDropZoneIllustration, {
+          "aria-hidden": true,
+          size: "M",
+          "data-comparison-illustration": "decorative",
+        }),
+        jsx(SpectrumSkeleton, {
+          isLoading: true,
+          children: jsx(ReactIllustratedMessageIllustration, {
+            "aria-label": "Loading illustration",
+            size: "L",
+            "data-comparison-illustration": "skeleton",
+          }),
+        }),
+      ],
+    }),
+    colorScheme,
+  );
 }
 
 function renderReactSpectrumReference(children, colorScheme = "dark", locale = void 0) {
@@ -4663,6 +4732,20 @@ function ReactToastDemo() {
 const providerShellStyle = {
   padding: 0,
   background: "transparent",
+};
+
+const iconGalleryStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 16,
+  padding: 12,
+};
+
+const illustrationGalleryStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 24,
+  padding: 12,
 };
 
 const cardViewDemoStyle = {
