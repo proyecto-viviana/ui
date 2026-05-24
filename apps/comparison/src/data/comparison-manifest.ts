@@ -473,6 +473,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 IllustratedMessage directly; Solid uses @proyecto-viviana/solid-spectrum IllustratedMessage with S2-derived grid, typography, illustration context, and ButtonGroup slot styling.",
   }),
 
+  inlinealert: styledLiveOfficialEntry({
+    slug: "inlinealert",
+    title: "InlineAlert",
+    category: "Components",
+    summary:
+      "Inline alert mounted on both stacks with S2 semantic variants, fill styles, autofocus, localized status icons, heading, and content composition coverage.",
+    styledSummary: "React Spectrum InlineAlert vs Solid Spectrum InlineAlert.",
+    styledNote:
+      "React uses @react-spectrum/s2 InlineAlert directly; Solid uses @proyecto-viviana/solid-spectrum InlineAlert with S2-derived root, icon, heading/content context, focus ring, and localized icon labels.",
+  }),
+
   image: styledLiveOfficialEntry({
     slug: "image",
     title: "Image",

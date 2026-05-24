@@ -13,6 +13,10 @@ export interface S2IntlStrings {
   "contextualhelp.help": string;
   "contextualhelp.info": string;
   "dropzone.replaceMessage": string;
+  "inlinealert.informative": string;
+  "inlinealert.positive": string;
+  "inlinealert.notice": string;
+  "inlinealert.negative": string;
   "menu.moreActions": string;
   "menu.unavailable": string;
   "notificationbadge.indicatorOnly": string;

@@ -11,7 +11,7 @@ import {
 } from "../skeleton";
 
 export interface IconContextValue {
-  slot?: string;
+  slot?: string | null;
   styles?: StyleString | (() => StyleString | undefined);
   render?: (icon: JSX.Element) => JSX.Element;
   size?: "S" | "M" | "L";
@@ -27,6 +27,7 @@ export interface SpectrumIconProps extends JSX.SvgSVGAttributes<SVGSVGElement> {
   style?: JSX.CSSProperties | string;
   "aria-label"?: string;
   "aria-hidden"?: boolean | "false" | "true";
+  UNSAFE_suppressDataSlot?: boolean;
 }
 
 export interface SpectrumIllustrationProps extends SpectrumIconProps {
@@ -52,8 +53,15 @@ export function createIcon(
       "style",
       "aria-label",
       "aria-hidden",
+      "UNSAFE_suppressDataSlot",
     ]);
-    const slot = () => local.slot ?? ctx.slot ?? "icon";
+    const slot = () => {
+      if (local.UNSAFE_suppressDataSlot || ctx.slot === null) {
+        return undefined;
+      }
+
+      return local.slot ?? ctx.slot ?? "icon";
+    };
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
     const isSkeleton = createIsSkeleton();
     const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
@@ -107,8 +115,15 @@ export function createIllustration(Component: Component<JSX.SvgSVGAttributes<SVG
       "aria-label",
       "aria-hidden",
       "size",
+      "UNSAFE_suppressDataSlot",
     ]);
-    const slot = () => local.slot ?? ctx.slot ?? "icon";
+    const slot = () => {
+      if (local.UNSAFE_suppressDataSlot || ctx.slot === null) {
+        return undefined;
+      }
+
+      return local.slot ?? ctx.slot ?? "icon";
+    };
     const size = () => local.size ?? ctx.size ?? "M";
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
     const isSkeleton = createIsSkeleton();

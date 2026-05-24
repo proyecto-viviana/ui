@@ -39,6 +39,7 @@ import {
   Image as SpectrumImage,
   ImageCoordinator as SpectrumImageCoordinator,
   IllustratedMessage as SpectrumIllustratedMessage,
+  InlineAlert as SpectrumInlineAlert,
   Keyboard as SpectrumKeyboard,
   Link as SpectrumLink,
   LinkButton as SpectrumLinkButton,
@@ -352,6 +353,11 @@ import {
   serializeIllustratedMessageDemoProps,
 } from "@comparison/data/illustratedmessage-demo";
 import {
+  inlineAlertDemoPropsFromWindow,
+  normalizeInlineAlertDemoProps,
+  serializeInlineAlertDemoProps,
+} from "@comparison/data/inlinealert-demo";
+import {
   dialogDemoPropsFromWindow,
   normalizeDialogDemoProps,
   serializeDialogDemoProps,
@@ -658,6 +664,7 @@ export const reactStyledFixtures = {
   divider: () => jsx(ReactDividerDemo, {}),
   dropzone: () => jsx(ReactDropZoneDemo, {}),
   illustratedmessage: () => jsx(ReactIllustratedMessageDemo, {}),
+  inlinealert: () => jsx(ReactInlineAlertDemo, {}),
   image: () => jsx(ReactImageDemo, {}),
   form: () => jsx(ReactFormDemo, {}),
   link: () => jsx(ReactLinkDemo, {}),
@@ -2024,6 +2031,61 @@ function ReactIllustratedMessageDemo() {
                 ],
               })
             : null,
+        ],
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactInlineAlertDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(inlineAlertDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "inlinealert") {
+        setDemoProps(normalizeInlineAlertDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const isNegative = demoProps.variant === "negative";
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      className: "comparison-inline-alert-row",
+      "data-comparison-color-scheme": colorScheme,
+      children: jsxs(SpectrumInlineAlert, {
+        "data-comparison-control-root": "inlinealert",
+        "data-comparison-control-props": serializeInlineAlertDemoProps(demoProps),
+        id: "inlinealert-route-root",
+        "aria-label": "Filtered alert label",
+        "aria-describedby": "inlinealert-route-description",
+        "aria-details": "inlinealert-route-details",
+        variant: demoProps.variant,
+        fillStyle: demoProps.fillStyle,
+        autoFocus: demoProps.autoFocus || undefined,
+        children: [
+          jsx(SpectrumHeading, {
+            children: isNegative ? "Payment Error" : "Payment Information",
+          }),
+          jsx(SpectrumContent, {
+            children: isNegative
+              ? "There was an error processing your request. Please try again."
+              : "Enter your billing address, shipping address, and payment method to complete your purchase.",
+          }),
+          jsx("span", {
+            id: "inlinealert-route-description",
+            hidden: true,
+            children: "Inline alert route description.",
+          }),
+          jsx("span", {
+            id: "inlinealert-route-details",
+            hidden: true,
+            children: "The comparison route covers variant, fill style, and autofocus.",
+          }),
         ],
       }),
     }),

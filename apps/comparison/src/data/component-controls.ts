@@ -200,6 +200,11 @@ import {
   illustratedMessageSizeOptions,
 } from "./illustratedmessage-demo";
 import {
+  inlineAlertDemoDefaults,
+  inlineAlertFillStyleOptions,
+  inlineAlertVariantOptions,
+} from "./inlinealert-demo";
+import {
   formDemoDefaults,
   formLabelAlignOptions,
   formLabelPositionOptions,
@@ -1674,6 +1679,49 @@ const illustratedMessageControls: ComponentControlGroup = {
     "ButtonGroup",
   ],
   note: "Modeled from the S2 IllustratedMessage docs, stories, source, and browser runtime. The route drives S2 size, orientation, illustration/heading/content composition, optional ButtonGroup actions, id/data-* forwarding, and React's default filterDOMProps boundary where role, labelable ARIA, and global events are not forwarded. Solid unit tests cover context refs, slots, style escape props, and DropZone-specific illustration accent context.",
+};
+
+const inlineAlertControls: ComponentControlGroup = {
+  slug: "inlinealert",
+  title: "InlineAlert",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "variant",
+      label: "variant",
+      kind: "radio",
+      defaultValue: inlineAlertDemoDefaults.variant,
+      options: options(inlineAlertVariantOptions),
+    },
+    {
+      name: "fillStyle",
+      label: "fillStyle",
+      kind: "radio",
+      defaultValue: inlineAlertDemoDefaults.fillStyle,
+      options: options(inlineAlertFillStyleOptions),
+    },
+    {
+      name: "autoFocus",
+      label: "autoFocus",
+      kind: "switch",
+      defaultValue: inlineAlertDemoDefaults.autoFocus,
+    },
+  ],
+  apiProps: [
+    "autoFocus",
+    "children",
+    "fillStyle",
+    "id",
+    "data-*",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "variant",
+    "Heading",
+    "Content",
+  ],
+  note: "Modeled from the S2 InlineAlert docs, source, and browser runtime. The route drives semantic variant, border/subtle/bold fill style, autoFocus, heading/content composition, role=alert, id/data-* forwarding, localized icon labels, and React's default filterDOMProps boundary where labelable ARIA and global events are not forwarded. Solid unit tests cover context refs, slots, style escape props, autofocus focus transfer, neutral icon suppression, and event filtering.",
 };
 
 const meterControls: ComponentControlGroup = {
@@ -5740,6 +5788,7 @@ export const componentControlGroups = {
   divider: dividerControls,
   dropzone: dropZoneControls,
   illustratedmessage: illustratedMessageControls,
+  inlinealert: inlineAlertControls,
   form: formControls,
   image: imageControls,
   link: linkControls,

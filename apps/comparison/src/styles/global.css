@@ -1727,6 +1727,21 @@ a {
   inline-size: min(100%, 472px);
 }
 
+.comparison-inline-alert-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 520px;
+  min-block-size: 220px;
+  max-inline-size: 100%;
+  padding: 24px;
+  border-radius: 6px;
+}
+
+.comparison-inline-alert-row [data-comparison-control-root="inlinealert"] {
+  inline-size: min(100%, 472px);
+}
+
 .comparison-meter-row {
   display: block;
   inline-size: 320px;

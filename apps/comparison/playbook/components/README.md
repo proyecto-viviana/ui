@@ -19,7 +19,7 @@ normalized to the current gate checklist.
 
 - Current accepted under the full gate model: Calendar, Checkbox, ColorArea,
   ColorField, ColorSlider, ColorWheel, ColorSwatch, ColorSwatchPicker,
-  Disclosure, IllustratedMessage.
+  Disclosure, IllustratedMessage, InlineAlert.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -71,6 +71,7 @@ partial if any gate remains unresolved.
 - [Form](./form-validation-notes.md)
 - [Image](./image-validation-notes.md)
 - [IllustratedMessage](./illustratedmessage-validation-notes.md)
+- [InlineAlert](./inlinealert-validation-notes.md)
 - [Link](./link-validation-notes.md)
 - [Meter](./meter-validation-notes.md)
 - [NotificationBadge](./notificationbadge-validation-notes.md)

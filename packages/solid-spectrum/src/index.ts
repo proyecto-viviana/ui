@@ -341,8 +341,8 @@ export { Image, ImageContext, ImageCoordinator } from "./image";
 export type { ImageCoordinatorProps, ImageProps } from "./image";
 
 // InlineAlert
-export { InlineAlert } from "./inlinealert";
-export type { InlineAlertProps, InlineAlertVariant } from "./inlinealert";
+export { InlineAlert, InlineAlertContext } from "./inlinealert";
+export type { InlineAlertFillStyle, InlineAlertProps, InlineAlertVariant } from "./inlinealert";
 
 // Link
 export { Link, LinkContext } from "./link";
