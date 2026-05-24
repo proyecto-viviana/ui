@@ -223,6 +223,17 @@ export function createTabListState<T = unknown>(
 
     if (currentExists && currentEnabled) return;
 
+    if (
+      p.defaultSelectedKey !== undefined &&
+      coll.getItem(p.defaultSelectedKey) !== null &&
+      !isKeyDisabled(p.defaultSelectedKey)
+    ) {
+      if (p.defaultSelectedKey !== current) {
+        setSelectedKeyInternal(p.defaultSelectedKey);
+      }
+      return;
+    }
+
     const nextKey = findFirstNonDisabledKey();
     if (nextKey !== current) {
       setSelectedKeyInternal(nextKey);

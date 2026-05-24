@@ -515,7 +515,12 @@ describe("Regression: Tabs", () => {
   it("renders tablist, tabs, click → panel changes, and snapshot", async () => {
     const user = setupUser();
     const { container } = render(() => (
-      <Tabs items={tabItems} getKey={(i) => i.id} defaultSelectedKey="tab1">
+      <Tabs
+        aria-label="Regression tabs"
+        items={tabItems}
+        getKey={(i) => i.id}
+        defaultSelectedKey="tab1"
+      >
         <TabList items={tabItems}>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
         <TabPanel id="tab1">Content One</TabPanel>
         <TabPanel id="tab2">Content Two</TabPanel>

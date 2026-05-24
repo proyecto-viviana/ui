@@ -784,29 +784,31 @@ const entryOverrides: Record<string, ComparisonEntry> = {
   }),
 
   tabs: {
-    ...createGapEntry({
+    ...styledLiveOfficialEntry({
       slug: "tabs",
       title: "Tabs",
       category: "Components",
-      docsUrl: `${reactSpectrumCatalogueSource.docsBase}/Tabs`,
+      summary:
+        "Tabbed content with required labeling, collection composition, selection state, orientation, density, label behavior, keyboard activation, and panel mounting.",
+      styledSummary: "React Spectrum Tabs vs Solid Spectrum Tabs.",
+      styledNote:
+        "React uses @react-spectrum/s2 Tabs directly; Solid uses @proyecto-viviana/solid-spectrum Tabs with S2-derived tablist, tab, indicator, Text/Icon slot, and panel styling. Horizontal overflow collapse into the S2 Tabs Picker is still tracked as the remaining styled parity blocker.",
     }),
     componentStatus: "parity",
-    summary:
-      "Strong parity slice because it spans styled and component layers and relies on collection semantics.",
     parity: "partial",
     priority: "live",
     gapSummary: [
-      "React styled tab demo is mounted from @react-spectrum/s2.",
-      "Solid styled tab wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
-      "State matrix and visual baselines still need expansion after Solid wiring returns.",
+      "React and Solid styled tab demos are mounted from their public packages.",
+      "Route controls cover selection, disabled keys, orientation, density, label behavior, keyboard activation, icon/Text composition, force-mounted panels, and static/dynamic collections.",
+      "Solid styled Tabs still need the upstream horizontal overflow collapse branch that swaps the tab row for the S2 Tabs Picker.",
     ],
     layers: {
       styled: layerTrack(
         "Styled Tabs",
         "React Spectrum Tabs vs Solid Spectrum Tabs.",
         "live",
-        "missing",
-        "Solid styled Tabs are not live until the route imports and renders @proyecto-viviana/solid-spectrum Tabs.",
+        "live",
+        "Both styled stacks are live, but the Solid overflow-collapse branch is still pending.",
       ),
       components: layerTrack(
         "Component Tabs",

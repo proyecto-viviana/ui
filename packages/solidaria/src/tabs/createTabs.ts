@@ -66,6 +66,8 @@ export interface AriaTabProps {
   isDisabled?: boolean;
   /** Label for the tab. */
   "aria-label"?: string;
+  /** ID reference for the tab label. */
+  "aria-labelledby"?: string;
 }
 
 export interface TabAria {
@@ -77,6 +79,7 @@ export interface TabAria {
     "aria-disabled": boolean | undefined;
     "aria-controls": string | undefined;
     "aria-label"?: string;
+    "aria-labelledby"?: string;
     tabIndex: number;
     onKeyDown: (e: KeyboardEvent) => void;
     onMouseDown: (e: MouseEvent) => void;
@@ -408,6 +411,7 @@ export function createTab<T>(
         return isSelected() ? tabPanelId : undefined;
       },
       "aria-label": props["aria-label"],
+      "aria-labelledby": props["aria-labelledby"],
       get tabIndex() {
         return isSelected() && !isDisabled() ? 0 : -1;
       },

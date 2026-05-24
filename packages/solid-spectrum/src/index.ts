@@ -488,16 +488,18 @@ export type {
 } from "./table";
 
 // Tabs
-export { Tab, TabList, TabPanel, Tabs } from "./tabs";
+export { Tab, TabList, TabPanel, TabPanels, Tabs, TabsContext } from "./Tabs";
 export type {
-  TabOrientation,
+  KeyboardActivation,
   TabListProps,
+  TabOrientation,
   TabPanelProps,
+  TabPanelsProps,
   TabProps,
+  TabsDensity,
+  TabsLabelBehavior,
   TabsProps,
-  TabsSize,
-  TabsVariant,
-} from "./tabs";
+} from "./Tabs";
 
 // TagGroup
 export { TagGroup } from "./tag-group";

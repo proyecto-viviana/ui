@@ -40,6 +40,7 @@ export function Text(props: TextProps): JSX.Element {
   const isSkeleton = createIsSkeleton();
   const inertRef = useInertAttribute(isSkeleton);
   const unsafeStyle = () => mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const id = () => props.id ?? contextProps?.id;
   const [children, skeletonStyle] = useSkeletonText(() => local.children, unsafeStyle);
   const className = () =>
     [
@@ -56,6 +57,7 @@ export function Text(props: TextProps): JSX.Element {
   return (
     <span
       {...getContentDomProps(merged)}
+      id={id()}
       ref={mergeContextRefs(contextProps?.ref, props.ref, inertRef)}
       class={className()}
       style={skeletonStyle()}

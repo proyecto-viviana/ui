@@ -24,17 +24,17 @@ export const comparisonTabItems = [
   {
     id: "overview",
     label: "Overview",
-    content: "Overlay dismissal now respects the local portal scope.",
+    content: "Tabs organize related sections behind one labelled tab list.",
   },
   {
     id: "parity",
     label: "Parity",
-    content: "Collection composition is the main remaining styled-layer nuance.",
+    content: "Static and dynamic collection composition now share one route contract.",
   },
   {
     id: "testing",
     label: "Testing",
-    content: "This page is intended to become a Playwright and axe target.",
+    content: "The page is a Playwright target for selection, keyboard, and style contracts.",
   },
 ] as const;
 
@@ -57,6 +57,7 @@ const nativeSolidSpectrumStyledSlugs = new Set<ComparisonSlug>([
   "actionbuttongroup",
   "buttongroup",
   "togglebutton",
+  "tabs",
 ]);
 
 export function getComparisonReferenceKind(

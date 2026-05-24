@@ -30,7 +30,7 @@ normalized to the current gate checklist.
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
   Link, Meter, NotificationBadge, RangeCalendar, SegmentedControl,
   SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
-- Active current-gate pass: none.
+- Active current-gate pass: Tabs.
 - Comparison-live with explicit release-hardening backfill gaps: Card/CardView.
 - Pre-pass only: none.
 
@@ -81,6 +81,7 @@ partial if any gate remains unresolved.
 - [SelectBoxGroup](./selectboxgroup-validation-notes.md)
 - [Slider](./slider-validation-notes.md)
 - [StatusLight](./statuslight-validation-notes.md)
+- [Tabs](./tabs-validation-notes.md)
 - [Text](./text-validation-notes.md)
 - [Toast](./toast-validation-notes.md)
 - [ToggleButton](./togglebutton-validation-notes.md)

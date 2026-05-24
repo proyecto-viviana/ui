@@ -163,6 +163,77 @@ describe("Tabs", () => {
     });
   });
 
+  describe("collection composition", () => {
+    it("supports static TabList children without Tabs items", async () => {
+      render(() => (
+        <Tabs defaultSelectedKey="tab2">
+          <TabList aria-label="Static tabs">
+            <Tab id="tab1">Tab 1</Tab>
+            <Tab id="tab2">Tab 2</Tab>
+            <Tab id="tab3">Tab 3</Tab>
+          </TabList>
+          <TabPanel id="tab1">Content 1</TabPanel>
+          <TabPanel id="tab2">Content 2</TabPanel>
+          <TabPanel id="tab3">Content 3</TabPanel>
+        </Tabs>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("tabpanel")).toHaveTextContent("Content 2");
+      });
+
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(3);
+      expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("supports collection items on TabList without Tabs items", async () => {
+      render(() => (
+        <Tabs defaultSelectedKey="tab3">
+          <TabList items={testTabs} aria-label="Dynamic tabs">
+            {(item) => <Tab id={item.id}>{item.label}</Tab>}
+          </TabList>
+          {testTabs.map((tab) => (
+            <TabPanel id={tab.id}>{tab.content}</TabPanel>
+          ))}
+        </Tabs>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("tabpanel")).toHaveTextContent("Content 3");
+      });
+
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs[2]).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("uses static tab disabled state for collection navigation", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <Tabs defaultSelectedKey="tab1" onSelectionChange={onSelectionChange}>
+          <TabList aria-label="Static tabs">
+            <Tab id="tab1">Tab 1</Tab>
+            <Tab id="tab2" isDisabled>
+              Tab 2
+            </Tab>
+            <Tab id="tab3">Tab 3</Tab>
+          </TabList>
+          <TabPanel id="tab1">Content 1</TabPanel>
+          <TabPanel id="tab2">Content 2</TabPanel>
+          <TabPanel id="tab3">Content 3</TabPanel>
+        </Tabs>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getAllByRole("tab")[1]).toHaveAttribute("aria-disabled", "true");
+      });
+
+      await user.click(screen.getAllByRole("tab")[1]);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(screen.getByRole("tabpanel")).toHaveTextContent("Content 1");
+    });
+  });
+
   // ============================================
   // SELECTION
   // ============================================

@@ -112,6 +112,12 @@
       "import": "./dist/RangeCalendar.js",
       "default": "./dist/RangeCalendar.js"
     },
+    "./Tabs": {
+      "types": "./dist/Tabs.d.ts",
+      "solid": "./src/Tabs.ts",
+      "import": "./dist/Tabs.js",
+      "default": "./dist/Tabs.js"
+    },
     "./Menu": {
       "types": "./dist/Menu.d.ts",
       "solid": "./src/Menu.ts",

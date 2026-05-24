@@ -16,6 +16,7 @@ import {
   useContext,
   For,
   Show,
+  onCleanup,
 } from "solid-js";
 import {
   createTabList,
@@ -92,6 +93,8 @@ export interface TabsProps<T> extends SlotProps {
   class?: ClassNameOrFunction<TabsRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<TabsRenderProps>;
+  /** Ref for the root tabs element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface TabListRenderProps {
@@ -106,8 +109,10 @@ export interface TabListRenderProps {
 }
 
 export interface TabListProps<T> extends Omit<AriaTabListProps, "children">, SlotProps {
-  /** The children of the tab list - render function for each item. */
-  children: (item: T) => JSX.Element;
+  /** Items to render in the tab list. */
+  items?: T[];
+  /** The children of the tab list - static tabs or a render function for each item. */
+  children?: JSX.Element | ((item: T) => JSX.Element);
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<TabListRenderProps>;
   /** The inline style for the element. */
@@ -180,10 +185,51 @@ export interface TabPanelsProps extends SlotProps {
 interface TabsContextValue<T> {
   state: TabListState<T>;
   items: Accessor<T[]>;
+  setTabListItems(items: T[] | undefined): void;
+  registerTab(tab: RegisteredTab): void;
+  unregisterTab(id: Key): void;
+}
+
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, element: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(element);
+  } else if (typeof ref === "object" && "current" in ref) {
+    ref.current = element;
+  }
 }
 
 export const TabsContext = createContext<TabsContextValue<unknown> | null>(null);
 export const TabsStateContext = createContext<TabListState<unknown> | null>(null);
+
+interface RegisteredTab {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+}
+
+interface CollectionItemLike {
+  id?: Key;
+  key?: Key;
+  label?: string;
+  textValue?: string;
+  isDisabled?: boolean;
+}
+
+function collectionItemKey<T>(item: T): Key {
+  const tab = item as CollectionItemLike;
+  const key = tab.id ?? tab.key;
+  if (key == null) {
+    throw new Error("Tabs collection items require an id or key.");
+  }
+  return key;
+}
+
+function staticTabText(tab: RegisteredTab): string {
+  return tab.textValue ?? String(tab.id);
+}
 
 /**
  * Tabs provide a way to organize content into multiple sections, with only one section visible at a time.
@@ -191,7 +237,7 @@ export const TabsStateContext = createContext<TabListState<unknown> | null>(null
 export function Tabs<T>(props: TabsProps<T>): JSX.Element {
   const [local, stateProps, rest] = splitProps(
     props,
-    ["class", "style", "slot"],
+    ["class", "style", "slot", "ref"],
     [
       "items",
       "getKey",
@@ -207,19 +253,39 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     ],
   );
 
+  const [tabListItems, setTabListItems] = createSignal<T[] | undefined>(undefined);
+  const [registeredTabs, setRegisteredTabs] = createSignal<RegisteredTab[]>([]);
+  const effectiveItems = createMemo<T[]>(() => {
+    if (stateProps.items) return stateProps.items;
+    if (tabListItems()) return tabListItems() ?? [];
+    return registeredTabs() as T[];
+  });
+
   // Create tab list state
   const state = createTabListState<T>({
     get items() {
-      return stateProps.items;
+      return effectiveItems();
     },
     get getKey() {
-      return stateProps.getKey;
+      return stateProps.getKey ?? collectionItemKey;
     },
     get getTextValue() {
-      return stateProps.getTextValue;
+      return (
+        stateProps.getTextValue ??
+        ((item: T) => {
+          const tab = item as RegisteredTab & CollectionItemLike;
+          return tab.textValue ?? tab.label ?? staticTabText(tab);
+        })
+      );
     },
     get getDisabled() {
-      return stateProps.getDisabled;
+      return (
+        stateProps.getDisabled ??
+        ((item: T) => {
+          const tab = item as RegisteredTab & CollectionItemLike;
+          return tab.isDisabled ?? false;
+        })
+      );
     },
     get disabledKeys() {
       return stateProps.disabledKeys;
@@ -263,11 +329,30 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
 
+  const contextValue: TabsContextValue<T> = {
+    state,
+    items: effectiveItems,
+    setTabListItems(items) {
+      setTabListItems(() => items);
+    },
+    registerTab(tab) {
+      setRegisteredTabs((current) => {
+        const next = current.filter((item) => item.id !== tab.id);
+        next.push(tab);
+        return next;
+      });
+    },
+    unregisterTab(id) {
+      setRegisteredTabs((current) => current.filter((item) => item.id !== id));
+    },
+  };
+
   return (
-    <TabsContext.Provider value={{ state, items: () => stateProps.items ?? [] }}>
+    <TabsContext.Provider value={contextValue as TabsContextValue<unknown>}>
       <TabsStateContext.Provider value={state}>
         <div
           {...domProps()}
+          ref={(element) => assignRef(local.ref, element)}
           class={renderProps.class()}
           style={renderProps.style()}
           data-orientation={state.orientation()}
@@ -284,7 +369,11 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
  * A TabList contains Tab elements that represent the available tabs.
  */
 export function TabList<T>(props: TabListProps<T>): JSX.Element {
-  const [local, ariaProps] = splitProps(props, ["class", "style", "slot"]);
+  const [local, collectionProps, ariaProps] = splitProps(
+    props,
+    ["class", "style", "slot"],
+    ["items"],
+  );
 
   const context = useContext(TabsContext);
 
@@ -294,6 +383,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
         <TabListInner
           context={ctx()}
           local={local}
+          items={collectionProps.items}
           ariaProps={ariaProps}
           children={props.children}
         />
@@ -310,11 +400,39 @@ function TabListInner<T>(props: {
     style?: StyleOrFunction<TabListRenderProps>;
     slot?: string;
   };
-  ariaProps: Omit<TabListProps<T>, "children" | "class" | "style" | "slot">;
-  children?: (item: T) => JSX.Element;
+  ariaProps: Omit<TabListProps<T>, "children" | "class" | "style" | "slot" | "items">;
+  items?: T[];
+  children?: JSX.Element | ((item: T) => JSX.Element);
 }): JSX.Element {
   const state = props.context.state as TabListState<T>;
   const items = props.context.items as Accessor<T[]>;
+  const renderItem = createMemo(() => {
+    if (typeof props.children !== "function") {
+      return undefined;
+    }
+
+    const child = props.children as (...args: unknown[]) => JSX.Element;
+    if (child.length === 0 && props.items === undefined) {
+      return undefined;
+    }
+
+    return props.children as (item: T) => JSX.Element;
+  });
+  const renderedChildren = createMemo(() => {
+    if (renderItem() || typeof props.children !== "function") {
+      return props.children as JSX.Element;
+    }
+
+    return (props.children as () => JSX.Element)();
+  });
+
+  createEffect(() => {
+    props.context.setTabListItems(props.items as unknown[] | undefined);
+  });
+
+  onCleanup(() => {
+    props.context.setTabListItems(undefined);
+  });
 
   // Create tab list aria props
   const { tabListProps } = createTabList<T>(props.ariaProps as AriaTabListProps, state);
@@ -392,9 +510,13 @@ function TabListInner<T>(props: {
       data-orientation={state.orientation()}
       data-disabled={state.isDisabled() || undefined}
     >
-      <SharedElementTransition>
-        <For each={items()}>{(item) => props.children?.(item)}</For>
-      </SharedElementTransition>
+      {renderItem() ? (
+        <SharedElementTransition>
+          <For each={(props.items ?? items()) as T[]}>{(item) => renderItem()?.(item)}</For>
+        </SharedElementTransition>
+      ) : (
+        renderedChildren()
+      )}
     </div>
   );
 }
@@ -406,11 +528,18 @@ export function Tab(props: TabProps): JSX.Element {
   const [local, ariaProps] = splitProps(props, ["class", "style", "slot", "id"]);
 
   const context = useContext(TabsStateContext);
+  const tabsContext = useContext(TabsContext);
 
   return (
     <Show when={context} fallback={<div class="solidaria-Tab" role="tab" />}>
       {(state) => (
-        <TabInner state={state()} local={local} ariaProps={ariaProps} children={props.children} />
+        <TabInner
+          state={state()}
+          tabsContext={tabsContext}
+          local={local}
+          ariaProps={ariaProps}
+          children={props.children}
+        />
       )}
     </Show>
   );
@@ -419,6 +548,7 @@ export function Tab(props: TabProps): JSX.Element {
 /** Inner Tab component that has access to context */
 function TabInner(props: {
   state: TabListState<unknown>;
+  tabsContext: TabsContextValue<unknown> | null;
   local: {
     class?: ClassNameOrFunction<TabRenderProps>;
     style?: StyleOrFunction<TabRenderProps>;
@@ -429,6 +559,22 @@ function TabInner(props: {
   children?: RenderChildren<TabRenderProps>;
 }): JSX.Element {
   let tabRef: HTMLDivElement | undefined;
+  const textValue = () => {
+    if (props.ariaProps["aria-label"]) return props.ariaProps["aria-label"];
+    return typeof props.children === "string" ? props.children : undefined;
+  };
+
+  createEffect(() => {
+    props.tabsContext?.registerTab({
+      id: props.local.id,
+      textValue: textValue(),
+      isDisabled: props.ariaProps.isDisabled,
+    });
+  });
+
+  onCleanup(() => {
+    props.tabsContext?.unregisterTab(props.local.id);
+  });
 
   // Create tab aria props
   const tabAria = createTab<unknown>(
@@ -439,6 +585,9 @@ function TabInner(props: {
       },
       get "aria-label"() {
         return props.ariaProps["aria-label"];
+      },
+      get "aria-labelledby"() {
+        return props.ariaProps["aria-labelledby"];
       },
     },
     props.state,
@@ -484,6 +633,7 @@ function TabInner(props: {
         aria-disabled={tabAria.isDisabled() || undefined}
         aria-controls={tabAria.isSelected() ? tabAria.tabProps["aria-controls"] : undefined}
         aria-label={tabAria.tabProps["aria-label"]}
+        aria-labelledby={tabAria.tabProps["aria-labelledby"]}
         tabIndex={tabAria.isSelected() && !tabAria.isDisabled() ? 0 : -1}
         class={renderProps.class()}
         style={renderProps.style()}
