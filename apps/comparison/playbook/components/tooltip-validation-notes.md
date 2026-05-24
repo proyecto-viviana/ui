@@ -1,41 +1,95 @@
 # Tooltip Validation Notes
 
-Updated: 2026-05-20
+Updated: 2026-05-24
 
-## Gate Matrix
+## Status
 
-| Gate                                     | Status  | Evidence                                                                                                                                                           | Notes                                                                                                                                                                                                                                                                                                                                                      |
-| ---------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Official Docs And Viewer Parity          | passing | S2 MCP `Tooltip` API sections, `apps/comparison/src/data/component-controls.ts`, `apps/comparison/src/data/tooltip-demo.ts`.                                       | Route controls cover the documented S2 trigger surface: content, placement, `trigger`, `delay`, `isOpen`, `isDisabled`, `shouldFlip`, and `shouldCloseOnPress`. React Aria's documented touch caveat is covered by explicit no-display assertions plus the ContextualHelp Popover substitution route.                                                      |
-| External Authority And Standards         | passing | React Aria MCP `Tooltip` API and Interactions sections.                                                                                                            | Tooltip is a descriptive, non-interactive overlay shown from hover or focus; touch interactions are intentionally not modeled as a tooltip activation path.                                                                                                                                                                                                |
-| Upstream React Source Parity             | partial | `packages/solidaria/src/tooltip/createTooltipTrigger.ts`, `packages/solidaria-components/src/Tooltip.tsx`, `packages/solid-spectrum/src/tooltip/index.tsx`.        | Solid now carries the documented trigger props, controlled/uncontrolled state, disabled suppression, placement resolution, flip/clamp geometry, trigger ARIA, S2 arrow, and S2 surface tokens. Standalone React Aria advanced props such as custom `triggerRef`, `offset`, `arrowBoundaryOffset`, and render override remain outside this S2 styled slice. |
-| Solid Idiomatic Implementation           | passing | `TooltipTrigger` context, forwarded trigger element listeners, cleanup, and reactive tooltip props in `packages/solidaria-components/src/Tooltip.tsx`.             | The display-contents wrapper no longer owns the accessible description; `aria-describedby` and interaction listeners are forwarded to the actual trigger element while positioning uses the visible child ref. Listener cleanup is covered.                                                                                                                |
-| Accessibility And I18n                   | passing | Package tests and `apps/comparison/e2e/tooltip-visual.spec.ts`.                                                                                                    | Browser tests assert `role="tooltip"`, trigger `aria-describedby`, disabled removal, Escape cleanup, focus-trigger open, `dir`, `lang`, and placement. Start/end resolve through document direction.                                                                                                                                                       |
-| Behavior State Machine                   | passing | `packages/solid-stately/test/createTooltipTriggerState.test.ts`, `packages/solidaria/test/createTooltip.test.tsx`, package Tooltip tests, Tooltip Playwright spec. | Covered paths include warmup state, controlled open, hover trigger, focus trigger, touch pointer no-display, disabled suppression, Escape, close-on-press, and cleanup.                                                                                                                                                                                    |
-| Style Source-To-Computed Parity          | passing | `packages/solid-spectrum/src/tooltip/index.tsx`, `packages/solid-spectrum/src/s2-generated.css`, Tooltip visual spec screenshot and computed style assertions.     | Solid uses generated S2 classes for the surface and arrow, with computed checks for background, text color, radius, font size, max width, min height, and arrow SVG contract.                                                                                                                                                                              |
-| React-Vs-Solid Comparison Harness Parity | passing | React and Solid styled fixtures plus `apps/comparison/e2e/modeled-controls-contract.spec.ts`.                                                                      | Both fixtures receive the same normalized route/form props and expose serialized `data-comparison-control-props`; controlled-open routing is guarded so the viewer stays stable while assertions run. ContextualHelp owns the touch-essential help route.                                                                                                  |
-| Evidence And Handoff                     | passing | Commands listed below.                                                                                                                                             | Tooltip is accepted for this S2 styled slice with the advanced standalone geometry/rendering caveat recorded.                                                                                                                                                                                                                                              |
+Accepted under the current gate model for the React Spectrum S2 styled Tooltip
+slice.
 
-## Covered States
+## Acceptance Gate Checklist
 
-- Default S2 tooltip composition with icon-only `ActionButton` trigger and visible arrow.
-- Controlled open state through route and side-panel controls, including serialized prop assertions on both stacks.
-- Placement axes: `top`, `bottom`, `left`, `right`, `start`, and `end`.
-- Interaction modes: hover trigger, focus trigger, Escape dismissal, and press cleanup.
-- Touch pointer hover does not show a tooltip and does not add trigger `aria-describedby`.
-- Disabled suppression: tooltip stays unmounted and trigger has no `aria-describedby`.
-- S2 surface contract: token-backed surface class, text styling, arrow slot, arrow path/viewBox, and bounded React/Solid visual comparison.
+| Gate                     | Status  | Evidence                                                                                                                                                                                                                  | Notes                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Source/API audit         | passing | React Spectrum S2 Tooltip source, React Aria overlay source, `mcp__react_spectrum_s2__get_s2_page`, `mcp__react_aria__get_react_aria_page`                                                                                | S2 `TooltipTrigger` exposes `containerPadding`, `crossOffset`, `defaultOpen`, `delay`, `isDisabled`, `isOpen`, `onOpenChange`, `placement`, `shouldCloseOnPress`, `shouldFlip`, and `trigger`. S2 Tooltip passes RAC Tooltip `offset={9}` and an arrow boundary offset based on the token radius. React Aria clamps cross-axis geometry but lets the main axis overflow when `shouldFlip=false`. |
+| Props/controls           | passing | `apps/comparison/src/data/component-controls.ts`, `apps/comparison/src/data/tooltip-demo.ts`, `apps/comparison/e2e/modeled-controls-contract.spec.ts`                                                                     | The viewer routes and serializes content, action label, placement, trigger mode, delay, `containerPadding`, `crossOffset`, `defaultOpen`, `isOpen` undefined/true/false, `isDisabled`, `shouldFlip`, and `shouldCloseOnPress`.                                                                                                                                                                   |
+| React reference          | passing | `apps/comparison/src/components/react/fixtures/styled.jsx`                                                                                                                                                                | The React stack mounts `@react-spectrum/s2` `TooltipTrigger`, icon-only `ActionButton`, and S2 `Tooltip`, receives the same normalized controls, avoids controlled/uncontrolled warnings, and coerces disabled controlled-open routes closed.                                                                                                                                                    |
+| Solid implementation     | passing | `packages/solidaria/src/tooltip/createTooltipTrigger.ts`, `packages/solidaria-components/src/Tooltip.tsx`, `packages/solid-spectrum/src/tooltip/index.tsx`                                                                | Solid now supports explicit tooltip ids, trigger-level geometry controls, S2 offset and arrow-boundary defaults, absolute document positioning, close-on-scroll, disabled suppression, cross-axis viewport padding, React Aria style arrow-boundary clamp, and main-axis no-flip overflow parity.                                                                                                |
+| Component/headless/state | passing | `packages/solid-stately/test/createTooltipTriggerState.test.ts`, `packages/solidaria/test/createTooltip.test.tsx`, `packages/solidaria-components/test/Tooltip.test.tsx`, `packages/solid-spectrum/test/Tooltip.test.tsx` | Focused package coverage includes state warmup, controlled open, id/ARIA merge, trigger cleanup, scroll close, close-on-press, styled id merge, and S2 arrow rendering.                                                                                                                                                                                                                          |
+| Behavior state machine   | passing | `apps/comparison/e2e/tooltip-visual.spec.ts`, package tests                                                                                                                                                               | Hover, focus, Escape, close-on-press, disabled suppression, default open, controlled open, scroll close, placement, flip, touch no-display, and cleanup are covered.                                                                                                                                                                                                                             |
+| Accessibility/i18n       | passing | `apps/comparison/e2e/tooltip-visual.spec.ts`, package tests                                                                                                                                                               | Assertions cover `role="tooltip"`, trigger `aria-describedby`, explicit id preservation, disabled removal, Escape cleanup, `dir`, `lang`, and start/end placement resolution.                                                                                                                                                                                                                    |
+| Styling/visual           | passing | `apps/comparison/e2e/tooltip-visual.spec.ts`, `packages/solid-spectrum/src/tooltip/index.tsx`, `packages/solid-spectrum/src/s2-generated.css`                                                                             | Browser coverage asserts S2 surface tokens, radius, typography, max width, min height, arrow path/viewBox, open-surface screenshot parity, cross-axis offset, flip geometry, viewport padding clamp, arrow-boundary clamp, and no-flip main-axis overflow.                                                                                                                                       |
+| Reports/docs             | passing | `apps/comparison/src/data/comparison-manifest.ts`, this note, `apps/comparison/playbook/components/README.md`                                                                                                             | The manifest and playbook now record Tooltip as current-gate accepted with remaining caveats listed below.                                                                                                                                                                                                                                                                                       |
+| Known defects/regression | passing | This note and focused regression tests                                                                                                                                                                                    | No in-scope blocking defects remain for the S2 styled Tooltip slice. Remaining gaps are non-blocking and tracked below.                                                                                                                                                                                                                                                                          |
+
+## Agent Workflow
+
+- Source audit came first. The S2 Tooltip and React Aria overlay behavior were
+  checked before code changes, including the React Aria cross-axis clamp and
+  no-flip main-axis overflow behavior.
+- Package tests and component builds ran before browser comparison assertions.
+- Browser routes were checked through focused Playwright specs, and the dev
+  server log was checked for React controlledness/key warnings.
+- Generated S2 CSS churn is not part of this component pass and is restored
+  before commit.
+
+## Behavior State Machine
+
+- Open paths: hover trigger, focus trigger, `defaultOpen`, and controlled
+  `isOpen=true`.
+- Close paths: pointer leave, blur, Escape, close-on-press, scroll close, and
+  controlled `isOpen=false`.
+- Suppression paths: disabled trigger stays closed and touch hover does not
+  show a tooltip or attach `aria-describedby`.
+- Geometry paths: top/bottom/left/right/start/end placement, flip near the
+  viewport edge, no-flip main-axis overflow, cross-axis offset, viewport
+  padding clamp, and arrow-boundary clamp.
+
+## Accessibility And I18n
+
+- `createTooltipTrigger` now forwards stable or explicit tooltip ids through
+  `aria-describedby` and `tooltipProps.id`.
+- The displayed tooltip carries `role="tooltip"` and preserves explicit ids
+  supplied by styled/component callers.
+- Start/end placement resolution follows document direction, and viewer routes
+  cover `lang` and `dir` propagation.
+- Live screen-reader transcript evidence is still a broader tooling gap; DOM
+  ARIA and lifecycle assertions are in place for this pass.
+
+## Style Source-To-Computed
+
+- Styled Tooltip uses the S2 neutral surface, radius, typography, minimum
+  height, max width, and SVG arrow contract.
+- The Solid styled wrapper passes S2 defaults equivalent to React S2:
+  `offset=9`, `arrowSize=10`, and `arrowBoundaryOffset=8`.
+- Positioning follows React Aria's split behavior: cross-axis geometry is
+  clamped to keep the overlay/arrow associated with the trigger and inside
+  viewport padding, while the main axis can overflow when flipping is disabled.
+
+## Known Defects And Regression Protection
+
+- No blocking defects remain in the current S2 styled Tooltip slice.
+- Standalone RAC-only rendering escape hatches such as custom `triggerRef`,
+  render override functions, className/style render props, and custom portal
+  containers are tracked outside this styled comparison route.
+- Live screen-reader transcript evidence remains tracked beyond the current DOM
+  ARIA assertions.
 
 ## Commands
 
-- `vp test run packages/solidaria-components/test/Tooltip.test.tsx packages/solid-spectrum/test/Tooltip.test.tsx`
-- `vp test run packages/solid-stately/test/createTooltipTriggerState.test.ts packages/solidaria/test/createTooltip.test.tsx packages/solidaria-components/test/Tooltip.test.tsx packages/solid-spectrum/test/Tooltip.test.tsx`
-- `vp test run packages/solidaria/test/createTooltip.test.tsx packages/solidaria-components/test/Tooltip.test.tsx packages/solidaria-components/test/Popover.test.tsx packages/solid-spectrum/test/Tooltip.test.tsx packages/solid-spectrum/test/ContextualHelpTrigger.test.tsx`
-- `vp run --filter @proyecto-viviana/comparison typecheck`
-- `vp run --filter @proyecto-viviana/comparison build`
-- `vp exec --filter @proyecto-viviana/comparison playwright test e2e/tooltip-visual.spec.ts e2e/contextualhelp-visual.spec.ts --reporter=line`
-- `vp exec --filter @proyecto-viviana/comparison playwright test e2e/modeled-controls-contract.spec.ts --grep "Tooltip|ContextualHelp" --reporter=line`
+- `vp test run packages/solidaria/test/createTooltip.test.tsx packages/solidaria-components/test/Tooltip.test.tsx packages/solid-spectrum/test/Tooltip.test.tsx packages/solid-stately/test/createTooltipTriggerState.test.ts`
+- `vp run build:components`
+- `vp run build:solid-spectrum`
+- `COMPARISON_BASE_URL=http://127.0.0.1:4321 vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/tooltip-visual.spec.ts e2e/modeled-controls-contract.spec.ts --grep "Tooltip" --reporter=line --workers=1`
+- `vp run comparison:typecheck`
+- `vp run comparison:report:gaps`
+- `vp run comparison:report:exports`
+- `vp run check`
+- `git diff --check`
 
 ## Remaining Gaps
 
-- Advanced standalone React Aria geometry/rendering props are not part of the current S2 styled route slice and should be validated only if the public Solid API expands to expose them.
+- Standalone RAC-only rendering escape hatches are not routed in the S2 styled
+  viewer.
+- Live screen-reader transcript evidence is still tracked as a cross-component
+  evidence gap beyond DOM ARIA assertions.

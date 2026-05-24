@@ -123,6 +123,8 @@ const meterTextControlValues: Record<string, string> = {
 };
 
 const tooltipTextControlValues: Record<string, string> = {
+  containerPadding: "18",
+  crossOffset: "14",
   delay: "250",
 };
 
@@ -269,8 +271,11 @@ function expectedSerializedValue(
   if (group.slug === "meter" && control.name in meterTextControlValues) {
     return Number(value);
   }
-  if (group.slug === "tooltip" && control.name === "delay") {
+  if (group.slug === "tooltip" && control.name in tooltipTextControlValues) {
     return Number(value);
+  }
+  if (group.slug === "tooltip" && control.name === "isOpen") {
+    return value === "true" ? true : value === "false" ? false : undefined;
   }
   if (group.slug === "toast" && control.name in toastTextControlValues) {
     return Number(value);

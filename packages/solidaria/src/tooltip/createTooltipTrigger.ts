@@ -26,13 +26,18 @@ export interface TooltipTriggerProps {
    * @default true
    */
   shouldCloseOnPress?: boolean;
+  /**
+   * ID of the tooltip element.
+   * @internal Used by component wrappers to merge explicit tooltip ids with trigger aria-describedby.
+   */
+  tooltipId?: string;
 }
 
 export interface TooltipTriggerAria {
   /** Props to spread on the trigger element. */
   triggerProps: JSX.HTMLAttributes<HTMLElement>;
   /** Props to spread on the tooltip element (id for accessibility). */
-  tooltipProps: { id: string };
+  tooltipProps: { readonly id: string };
 }
 
 type Modality = "keyboard" | "pointer" | "virtual";
@@ -106,7 +111,8 @@ export function createTooltipTrigger(
   const trigger = () => props.trigger ?? "hover";
   const shouldCloseOnPress = () => props.shouldCloseOnPress ?? true;
 
-  const tooltipId = createId();
+  const generatedTooltipId = createId();
+  const tooltipId = () => props.tooltipId ?? generatedTooltipId;
 
   // Track hover and focus state
   let isHovered = false;
@@ -213,7 +219,7 @@ export function createTooltipTrigger(
     ...focusableProps,
     ...hoverProps,
     get "aria-describedby"() {
-      return !isDisabled() && state.isOpen() ? tooltipId : undefined;
+      return !isDisabled() && state.isOpen() ? tooltipId() : undefined;
     },
     onPointerDown: closeOnPress,
     onKeyDown: onKeyDownPress,
@@ -224,7 +230,9 @@ export function createTooltipTrigger(
   return {
     triggerProps: triggerProps as JSX.HTMLAttributes<HTMLElement>,
     tooltipProps: {
-      id: tooltipId,
+      get id() {
+        return tooltipId();
+      },
     },
   };
 }

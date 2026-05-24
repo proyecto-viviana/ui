@@ -4,6 +4,7 @@ export { comparisonControlsEvent };
 
 export const tooltipPlacementOptions = ["top", "bottom", "left", "right", "start", "end"] as const;
 export const tooltipTriggerOptions = ["hover", "focus"] as const;
+export const tooltipIsOpenOptions = ["", "true", "false"] as const;
 
 export type TooltipDemoPlacement = (typeof tooltipPlacementOptions)[number];
 export type TooltipDemoTrigger = (typeof tooltipTriggerOptions)[number];
@@ -14,7 +15,10 @@ export interface TooltipDemoProps {
   placement: TooltipDemoPlacement;
   trigger: TooltipDemoTrigger;
   delay: number;
-  isOpen: boolean;
+  containerPadding: number;
+  crossOffset: number;
+  defaultOpen: boolean;
+  isOpen: boolean | undefined;
   isDisabled: boolean;
   shouldFlip: boolean;
   shouldCloseOnPress: boolean;
@@ -25,12 +29,35 @@ export const tooltipDemoDefaults: TooltipDemoProps = {
   children: "Tooltip content",
   placement: "top",
   trigger: "hover",
-  delay: 0,
-  isOpen: false,
+  delay: 1500,
+  containerPadding: 12,
+  crossOffset: 0,
+  defaultOpen: false,
+  isOpen: undefined,
   isDisabled: false,
   shouldFlip: true,
   shouldCloseOnPress: true,
 };
+
+const tooltipSearchParamKeys = [
+  "actionLabel",
+  "children",
+  "placement",
+  "trigger",
+  "delay",
+  "containerPadding",
+  "crossOffset",
+  "defaultOpen",
+  "isOpen",
+  "isDisabled",
+  "shouldFlip",
+  "shouldCloseOnPress",
+] as const satisfies readonly (keyof TooltipDemoProps)[];
+
+function hasTooltipSearchParams(search: string) {
+  const params = new URLSearchParams(search);
+  return tooltipSearchParamKeys.some((key) => params.has(key));
+}
 
 function isOneOf<T extends readonly string[]>(
   value: string | null | undefined,
@@ -41,6 +68,14 @@ function isOneOf<T extends readonly string[]>(
 
 function booleanParam(value: string | boolean | number | null | undefined) {
   return value === true || value === "true" || value === "on" || value === "1" || value === 1;
+}
+
+function optionalBooleanParam(value: string | boolean | number | null | undefined) {
+  if (value == null || value === "" || value === "undefined") {
+    return undefined;
+  }
+
+  return booleanParam(value);
 }
 
 function numberParam(value: string | number | null | undefined, fallback: number) {
@@ -75,7 +110,16 @@ export function normalizeTooltipDemoProps(
       props.delay as string | number | null | undefined,
       tooltipDemoDefaults.delay,
     ),
-    isOpen: booleanParam(props.isOpen as string | boolean | number | null | undefined),
+    containerPadding: numberParam(
+      props.containerPadding as string | number | null | undefined,
+      tooltipDemoDefaults.containerPadding,
+    ),
+    crossOffset: numberParam(
+      props.crossOffset as string | number | null | undefined,
+      tooltipDemoDefaults.crossOffset,
+    ),
+    defaultOpen: booleanParam(props.defaultOpen as string | boolean | number | null | undefined),
+    isOpen: optionalBooleanParam(props.isOpen as string | boolean | number | null | undefined),
     isDisabled: booleanParam(props.isDisabled as string | boolean | number | null | undefined),
     shouldFlip:
       props.shouldFlip == null
@@ -97,6 +141,9 @@ export function tooltipDemoPropsFromSearch(search: string): TooltipDemoProps {
     placement: params.get("placement") ?? undefined,
     trigger: params.get("trigger") ?? undefined,
     delay: params.get("delay") ?? undefined,
+    containerPadding: params.get("containerPadding") ?? undefined,
+    crossOffset: params.get("crossOffset") ?? undefined,
+    defaultOpen: params.get("defaultOpen") ?? undefined,
     isOpen: params.get("isOpen") ?? undefined,
     isDisabled: params.get("isDisabled") ?? undefined,
     shouldFlip: params.has("shouldFlip")
@@ -125,7 +172,10 @@ export function tooltipDemoPropsFromDocument(): TooltipDemoProps | null {
     placement: data.get("placement") ?? tooltipDemoDefaults.placement,
     trigger: data.get("trigger") ?? tooltipDemoDefaults.trigger,
     delay: data.get("delay") ?? tooltipDemoDefaults.delay,
-    isOpen: data.get("isOpen") === "on",
+    containerPadding: data.get("containerPadding") ?? tooltipDemoDefaults.containerPadding,
+    crossOffset: data.get("crossOffset") ?? tooltipDemoDefaults.crossOffset,
+    defaultOpen: data.get("defaultOpen") === "on",
+    isOpen: data.get("isOpen") ?? undefined,
     isDisabled: data.get("isDisabled") === "on",
     shouldFlip: data.get("shouldFlip") === "on",
     shouldCloseOnPress: data.get("shouldCloseOnPress") === "on",
@@ -138,6 +188,9 @@ export function isTooltipOpenControlChecked() {
   }
 
   return (
+    document.querySelector<HTMLSelectElement>(
+      '[data-comparison-controls="tooltip"] select[name="isOpen"]',
+    )?.value === "true" ||
     document.querySelector<HTMLInputElement>(
       '[data-comparison-controls="tooltip"] input[name="isOpen"]',
     )?.checked === true
@@ -149,12 +202,16 @@ export function tooltipDemoPropsFromWindow(): TooltipDemoProps {
     return tooltipDemoDefaults;
   }
 
+  if (hasTooltipSearchParams(window.location.search)) {
+    return tooltipDemoPropsFromSearch(window.location.search);
+  }
+
   const formProps = tooltipDemoPropsFromDocument();
   if (formProps) {
     return formProps;
   }
 
-  return tooltipDemoPropsFromSearch(window.location.search);
+  return tooltipDemoDefaults;
 }
 
 export function serializeTooltipDemoProps(props: TooltipDemoProps) {
@@ -164,6 +221,9 @@ export function serializeTooltipDemoProps(props: TooltipDemoProps) {
     placement: props.placement,
     trigger: props.trigger,
     delay: props.delay,
+    containerPadding: props.containerPadding,
+    crossOffset: props.crossOffset,
+    defaultOpen: props.defaultOpen,
     isOpen: props.isOpen,
     isDisabled: props.isDisabled,
     shouldFlip: props.shouldFlip,

@@ -85,6 +85,36 @@ describe("createTooltipTrigger", () => {
     expect(tooltip.id.length).toBeGreaterThan(0);
   });
 
+  it("should link aria-describedby to an explicit tooltip id", () => {
+    function TestComponent() {
+      let ref: HTMLButtonElement | undefined;
+      const state = createTooltipTriggerState({ isOpen: true });
+      const { triggerProps, tooltipProps } = createTooltipTrigger(
+        { tooltipId: "custom-tooltip-id" },
+        state,
+        () => ref,
+      );
+
+      return (
+        <>
+          <button ref={ref} {...triggerProps} data-testid="trigger">
+            Hover me
+          </button>
+          <div {...tooltipProps} data-testid="tooltip">
+            Tooltip content
+          </div>
+        </>
+      );
+    }
+
+    render(() => <TestComponent />);
+    const trigger = screen.getByTestId("trigger");
+    const tooltip = screen.getByTestId("tooltip");
+
+    expect(tooltip.id).toBe("custom-tooltip-id");
+    expect(trigger.getAttribute("aria-describedby")).toBe("custom-tooltip-id");
+  });
+
   it("should close tooltip on Escape key when open", async () => {
     function TestComponent() {
       let ref: HTMLButtonElement | undefined;

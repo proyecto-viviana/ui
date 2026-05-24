@@ -4781,6 +4781,15 @@ function SolidSpectrumTooltipDemo() {
           hc(
             SolidSpectrumTooltipTrigger,
             {
+              get containerPadding() {
+                return demoProps().containerPadding;
+              },
+              get crossOffset() {
+                return demoProps().crossOffset;
+              },
+              get defaultOpen() {
+                return demoProps().defaultOpen;
+              },
               get delay() {
                 return demoProps().delay;
               },

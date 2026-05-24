@@ -61,6 +61,54 @@ describe("TooltipTrigger", () => {
     vi.useFakeTimers();
   });
 
+  it("should merge an explicit Tooltip id into the trigger description", async () => {
+    vi.useRealTimers();
+
+    render(() => (
+      <TooltipTrigger isOpen>
+        <Button data-testid="trigger">Hover me</Button>
+        <Tooltip id="custom-tooltip-id" data-testid="tooltip">
+          Tooltip content
+        </Tooltip>
+      </TooltipTrigger>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("tooltip")).toHaveAttribute("id", "custom-tooltip-id");
+      expect(screen.getByTestId("trigger")).toHaveAttribute(
+        "aria-describedby",
+        "custom-tooltip-id",
+      );
+    });
+
+    vi.useFakeTimers();
+  });
+
+  it("should close an uncontrolled tooltip when an ancestor scrolls", async () => {
+    vi.useRealTimers();
+
+    render(() => (
+      <TooltipTrigger defaultOpen>
+        <Button data-testid="trigger">Hover me</Button>
+        <Tooltip data-testid="tooltip">Tooltip content</Tooltip>
+      </TooltipTrigger>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("tooltip")).toBeInTheDocument();
+      expect(screen.getByTestId("trigger")).toHaveAttribute("aria-describedby");
+    });
+
+    window.dispatchEvent(new Event("scroll", { bubbles: true }));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("tooltip")).not.toBeInTheDocument();
+      expect(screen.getByTestId("trigger")).not.toHaveAttribute("aria-describedby");
+    });
+
+    vi.useFakeTimers();
+  });
+
   it("should hide tooltip when isOpen is false", () => {
     render(() => (
       <TooltipTrigger isOpen={false}>

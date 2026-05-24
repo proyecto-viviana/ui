@@ -168,6 +168,9 @@ export function Tooltip(props: TooltipProps): JSX.Element {
   return (
     <HeadlessTooltip
       {...rest}
+      arrowBoundaryOffset={8}
+      arrowSize={10}
+      offset={9}
       class={(renderProps: TooltipRenderProps) =>
         [
           local.UNSAFE_className,
@@ -213,22 +216,18 @@ export function Tooltip(props: TooltipProps): JSX.Element {
 function arrowFrameStyle(placement: TooltipResolvedPlacement): JSX.CSSProperties {
   const base: JSX.CSSProperties = {
     position: "absolute",
-    width: "10px",
-    height: "5px",
-    "line-height": 0,
-    "pointer-events": "none",
   };
 
   switch (placement) {
     case "bottom":
-      return { ...base, top: "-5px", left: "50%", transform: "translateX(-50%)" };
+      return { ...base, bottom: "100%", left: "50%", transform: "translateX(-50%)" };
     case "left":
-      return { ...base, right: "-7.5px", top: "50%", transform: "translateY(-50%)" };
+      return { ...base, left: "100%", top: "50%", transform: "translateY(-50%)" };
     case "right":
-      return { ...base, left: "-7.5px", top: "50%", transform: "translateY(-50%)" };
+      return { ...base, right: "100%", top: "50%", transform: "translateY(-50%)" };
     case "top":
     default:
-      return { ...base, bottom: "-5px", left: "50%", transform: "translateX(-50%)" };
+      return { ...base, top: "100%", left: "50%", transform: "translateX(-50%)" };
   }
 }
 

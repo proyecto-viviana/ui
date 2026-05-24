@@ -869,7 +869,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                     : title === "ContextualHelp"
                       ? "ContextualHelp has a live comparison island with S2 icon ActionButton trigger composition, routed heading/content/footer, variant, trigger size, controlled open, placement, React-pinned offset geometry, container padding, flip, and press/touch popover behavior coverage."
                       : title === "Tooltip"
-                        ? "Tooltip has a live comparison island with S2 ActionButton trigger composition, routed content, placement, trigger, delay, disabled, controlled open, flip, close-on-press controls, S2 arrow styling, and hover/focus lifecycle coverage."
+                        ? "Tooltip has a live comparison island with S2 ActionButton trigger composition, routed content, placement, trigger mode, 1500ms delay default, containerPadding, crossOffset, defaultOpen, controlled true/false/undefined open state, disabled suppression, flip, close-on-press controls, S2 arrow styling, and hover/focus/Escape/scroll lifecycle coverage."
                         : `${title} has an initial live comparison island. Exhaustive states remain open.`,
         parity: "partial",
         priority: "live",
@@ -879,7 +879,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
             : title === "ContextualHelp"
               ? "React styled ContextualHelp is mounted from @react-spectrum/s2 with Heading, Content, and Footer children."
               : title === "Tooltip"
-                ? "React styled Tooltip is mounted from @react-spectrum/s2 with TooltipTrigger, icon-only ActionButton trigger, and S2 Tooltip content."
+                ? "React styled Tooltip is mounted from @react-spectrum/s2 with TooltipTrigger, icon-only ActionButton trigger, S2 Tooltip content, S2 default delay/padding/cross-axis geometry, arrow-boundary clamp, and React Aria close-on-scroll behavior."
                 : "React styled island remains mounted from @react-spectrum/s2.",
           title === "DateRangePicker"
             ? "Solid styled DateRangePicker is mounted from @proyecto-viviana/solid-spectrum and reuses the S2 RangeCalendar popover with routed picker state."
@@ -894,7 +894,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                     : title === "ContextualHelp"
                       ? "Solid styled ContextualHelp is mounted from @proyecto-viviana/solid-spectrum with a press-open Popover trigger instead of Tooltip."
                       : title === "Tooltip"
-                        ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 token styling, S2 arrow path, trigger-level placement, disabled suppression, and hover/focus behavior."
+                        ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 token styling, S2 arrow path, trigger-level placement/containerPadding/crossOffset/defaultOpen routing, explicit id merge, disabled suppression, close-on-scroll, cross-axis padding and arrow-boundary geometry, no-flip main-axis overflow parity, and hover/focus behavior."
                         : "Solid styled wiring was removed from the comparison app until it renders the real solid-spectrum component again.",
           title === "DateRangePicker"
             ? "Assistive-technology transcript rows remain tracked after the route, time, locale, and custom-calendar parity pass."
@@ -909,7 +909,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                     : title === "ContextualHelp"
                       ? "Assistive-technology transcript rows remain tracked after the strict open-popover visual pair-diff, press/touch substitution, controlled route, and modeled-controls pass."
                       : title === "Tooltip"
-                        ? "Advanced standalone geometry/rendering props remain tracked after route, behavior, visual parity, touch non-display, and ContextualHelp substitution coverage."
+                        ? "Standalone RAC-only rendering escape hatches such as triggerRef, render overrides, and portal container remain tracked outside the S2 styled slice; live SR transcript evidence remains tracked beyond DOM ARIA assertions."
                         : "Detailed state matrices and strict visual assertions remain incomplete.",
         ],
         layers: {
@@ -939,7 +939,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
                       : title === "ContextualHelp"
                         ? "Solid styled ContextualHelp is mounted from @proyecto-viviana/solid-spectrum with S2 ActionButton trigger, Popover surface, Heading/Content/Footer slots, variant icons, controlled open state, placement routing, React-pinned offset geometry, menu-helper submenu defaults, and press/touch activation."
                         : title === "Tooltip"
-                          ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 neutral surface styling, always-on arrow by default, trigger-level placement/start/end routing, disabled suppression, controlled open state, hover/focus behavior, Escape cleanup, and modeled viewer controls."
+                          ? "Solid styled Tooltip is mounted from @proyecto-viviana/solid-spectrum with S2 neutral surface styling, always-on arrow by default, trigger-level placement/start/end routing, routed containerPadding/crossOffset/defaultOpen/open-state controls, disabled suppression, close-on-scroll, cross-axis padding and arrow-boundary clamp geometry, no-flip main-axis overflow parity, hover/focus behavior, Escape cleanup, and modeled viewer controls."
                           : `Solid styled ${title} is not live until the route imports and renders the real solid-spectrum component.`,
           ),
           components: layerTrack(

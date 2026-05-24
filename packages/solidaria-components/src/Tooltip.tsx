@@ -63,6 +63,16 @@ export interface TooltipTriggerComponentProps extends StateProps, AriaProps {
 }
 
 export interface TooltipProps extends SlotProps {
+  /** The element id. */
+  id?: string;
+  /** Custom aria-label for the tooltip. */
+  "aria-label"?: string;
+  /** ID of an element that labels the tooltip. */
+  "aria-labelledby"?: string;
+  /** ID of an element that describes the tooltip. */
+  "aria-describedby"?: string;
+  /** ID of an element that provides details for the tooltip. */
+  "aria-details"?: string;
   /** The children of the tooltip. A function may be provided to receive render props. */
   children?: RenderChildren<TooltipRenderProps>;
   /** The CSS className for the element. */
@@ -81,6 +91,12 @@ export interface TooltipProps extends SlotProps {
   crossOffset?: number;
   /** Whether the tooltip should flip when there is insufficient room. */
   shouldFlip?: boolean;
+  /** The offset between the tooltip and trigger. */
+  offset?: number;
+  /** The arrow size used to keep the arrow overlapping the trigger. */
+  arrowSize?: number;
+  /** The padding between the arrow and tooltip edge. */
+  arrowBoundaryOffset?: number;
   /** Whether the tooltip should be disabled. */
   isDisabled?: boolean;
   /** The element language. */
@@ -91,7 +107,8 @@ export interface TooltipProps extends SlotProps {
 
 interface TooltipTriggerContextValue {
   state: TooltipTriggerState;
-  tooltipProps: { id: string };
+  tooltipProps: { readonly id: string };
+  setTooltipId: (id: string | undefined) => void;
   triggerRef: () => HTMLElement | null | undefined;
   placement: () => TooltipPlacement | undefined;
   containerPadding: () => number | undefined;
@@ -119,6 +136,7 @@ export const TooltipTriggerStateContext = createContext<TooltipTriggerState | nu
  */
 export const TooltipTrigger: ParentComponent<TooltipTriggerComponentProps> = (props) => {
   let triggerRef: HTMLElement | null = null;
+  const [tooltipId, setTooltipId] = createSignal<string | undefined>();
 
   const state = createTooltipTriggerState({
     get delay() {
@@ -149,6 +167,9 @@ export const TooltipTrigger: ParentComponent<TooltipTriggerComponentProps> = (pr
       get shouldCloseOnPress() {
         return props.shouldCloseOnPress;
       },
+      get tooltipId() {
+        return tooltipId();
+      },
     },
     state,
     () => triggerRef,
@@ -157,6 +178,7 @@ export const TooltipTrigger: ParentComponent<TooltipTriggerComponentProps> = (pr
   const context: TooltipTriggerContextValue = {
     state,
     tooltipProps,
+    setTooltipId,
     triggerRef: () => triggerRef,
     placement: () => props.placement,
     containerPadding: () => props.containerPadding,
@@ -327,6 +349,13 @@ const TriggerWrapper: ParentComponent<{
 export function Tooltip(props: TooltipProps): JSX.Element {
   const context = useContext(TooltipTriggerContext);
 
+  createEffect(() => {
+    context?.setTooltipId(props.id);
+    onCleanup(() => {
+      context?.setTooltipId(undefined);
+    });
+  });
+
   const localState = createTooltipTriggerState({
     get isOpen() {
       return props.isOpen;
@@ -341,6 +370,9 @@ export function Tooltip(props: TooltipProps): JSX.Element {
   const containerPadding = () => props.containerPadding ?? context?.containerPadding() ?? 12;
   const crossOffset = () => props.crossOffset ?? context?.crossOffset() ?? 0;
   const shouldFlip = () => props.shouldFlip ?? context?.shouldFlip() ?? true;
+  const offset = () => props.offset ?? 9;
+  const arrowSize = () => props.arrowSize ?? 0;
+  const arrowBoundaryOffset = () => props.arrowBoundaryOffset ?? 0;
   const isDisabled = () => props.isDisabled ?? context?.isDisabled() ?? false;
 
   const isOpen = () => !isDisabled() && state().isOpen();
@@ -403,6 +435,9 @@ export function Tooltip(props: TooltipProps): JSX.Element {
         containerPadding={containerPadding()}
         crossOffset={crossOffset()}
         shouldFlip={shouldFlip()}
+        offset={offset()}
+        arrowSize={arrowSize()}
+        arrowBoundaryOffset={arrowBoundaryOffset()}
         triggerRef={context?.triggerRef ?? (() => null)}
         isExiting={isExiting()}
         onTooltipRef={setTooltipEl}
@@ -417,11 +452,14 @@ export function Tooltip(props: TooltipProps): JSX.Element {
 function TooltipContent(
   props: TooltipProps & {
     state: TooltipTriggerState;
-    contextTooltipProps: { id?: string };
+    contextTooltipProps: { readonly id?: string };
     placement: TooltipPlacement;
     containerPadding: number;
     crossOffset: number;
     shouldFlip: boolean;
+    offset: number;
+    arrowSize: number;
+    arrowBoundaryOffset: number;
     triggerRef: () => HTMLElement | null | undefined;
     isExiting: boolean;
     onTooltipRef: (el: HTMLDivElement | null) => void;
@@ -497,7 +535,8 @@ function TooltipContent(
     values,
   );
 
-  // Using position: fixed so we use viewport coordinates directly from getBoundingClientRect
+  // Position the overlay in document coordinates, matching React Aria's
+  // absolute overlay positioning when the portal container is the document.
   // Returns true if position was successfully updated, false if we need to retry
   const updatePosition = (): boolean => {
     const triggerEl = props.triggerRef();
@@ -514,7 +553,6 @@ function TooltipContent(
     // when the element might be positioned off-screen initially
     const tooltipWidth = tooltipRef.offsetWidth;
     const tooltipHeight = tooltipRef.offsetHeight;
-    const offset = 9;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const containerPadding = props.containerPadding;
@@ -527,7 +565,7 @@ function TooltipContent(
       viewportWidth,
       viewportHeight,
       containerPadding,
-      offset,
+      props.offset,
       props.shouldFlip,
     );
 
@@ -536,40 +574,60 @@ function TooltipContent(
 
     switch (placement) {
       case "top":
-        top = triggerRect.top - tooltipHeight - offset;
+        top = triggerRect.top - tooltipHeight - props.offset;
         left = triggerRect.left + (triggerRect.width - tooltipWidth) / 2 + crossOffset;
         break;
       case "bottom":
-        top = triggerRect.bottom + offset;
+        top = triggerRect.bottom + props.offset;
         left = triggerRect.left + (triggerRect.width - tooltipWidth) / 2 + crossOffset;
         break;
       case "left":
         top = triggerRect.top + (triggerRect.height - tooltipHeight) / 2 + crossOffset;
-        left = triggerRect.left - tooltipWidth - offset;
+        left = triggerRect.left - tooltipWidth - props.offset;
         break;
       case "right":
         top = triggerRect.top + (triggerRect.height - tooltipHeight) / 2 + crossOffset;
-        left = triggerRect.right + offset;
+        left = triggerRect.right + props.offset;
         break;
     }
 
-    left = clamp(left, containerPadding, viewportWidth - tooltipWidth - containerPadding);
-    top = clamp(top, containerPadding, viewportHeight - tooltipHeight - containerPadding);
+    if (placement === "top" || placement === "bottom") {
+      left = clamp(
+        left,
+        triggerRect.left - tooltipWidth + props.arrowSize + props.arrowBoundaryOffset,
+        triggerRect.left + triggerRect.width - props.arrowSize - props.arrowBoundaryOffset,
+      );
+      left = clamp(left, containerPadding, viewportWidth - tooltipWidth - containerPadding);
+    } else {
+      top = clamp(
+        top,
+        triggerRect.top - tooltipHeight + props.arrowSize + props.arrowBoundaryOffset,
+        triggerRect.top + triggerRect.height - props.arrowSize - props.arrowBoundaryOffset,
+      );
+      top = clamp(top, containerPadding, viewportHeight - tooltipHeight - containerPadding);
+    }
     setRenderedPlacement(placement);
     setPositionStyles({
-      top: `${top}px`,
-      left: `${left}px`,
+      top: `${Math.floor(top + window.scrollY)}px`,
+      left: `${Math.floor(left + window.scrollX)}px`,
       visibility: "visible",
     });
 
     return true;
   };
 
-  // Set up positioning effect - runs when trigger ref is available.
-  // Tracks pending rAF/setTimeout IDs so they can be canceled on cleanup.
+  // Set up positioning and scroll-close effects. Positioning retries while the
+  // trigger ref resolves, and pending rAF/setTimeout IDs are canceled on cleanup.
   createEffect(() => {
-    const trigger = props.triggerRef();
-    if (!trigger) return;
+    // Track positioning inputs synchronously so updates from controlled route
+    // props reschedule measurement even though layout reads happen in rAF.
+    props.placement;
+    props.containerPadding;
+    props.crossOffset;
+    props.shouldFlip;
+    props.offset;
+    props.arrowSize;
+    props.arrowBoundaryOffset;
 
     let retryCount = 0;
     const maxRetries = 5;
@@ -588,18 +646,32 @@ function TooltipContent(
 
     pendingRaf = requestAnimationFrame(tryUpdatePosition);
 
-    window.addEventListener("scroll", updatePosition, true);
+    const closeOnScroll = (event: Event) => {
+      const trigger = props.triggerRef();
+      const target = event.target;
+      if (!trigger || (target instanceof Node && !target.contains(trigger))) {
+        return;
+      }
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      props.state.close(true);
+    };
+
+    window.addEventListener("scroll", closeOnScroll, true);
     window.addEventListener("resize", updatePosition);
 
     onCleanup(() => {
       if (pendingRaf) cancelAnimationFrame(pendingRaf);
       if (pendingTimeout) clearTimeout(pendingTimeout);
-      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("scroll", closeOnScroll, true);
       window.removeEventListener("resize", updatePosition);
     });
   });
 
   const domProps = filterDOMProps(props, { global: true });
+  const tooltipId = () => props.contextTooltipProps.id ?? (domProps as { id?: string }).id;
 
   // Extract ref from ariaTooltipProps to avoid type conflicts (SolidJS ref types are element-specific)
   const { ref: _ariaRef, ...cleanAriaProps } = ariaTooltipProps as Record<string, unknown>;
@@ -627,13 +699,13 @@ function TooltipContent(
     <OverlayContainer>
       <div
         {...domProps}
-        {...props.contextTooltipProps}
         {...cleanAriaProps}
+        id={tooltipId()}
         role="tooltip"
         ref={setRef}
         class={renderProps.class()}
         style={{
-          position: "fixed",
+          position: "absolute",
           "z-index": 100000,
           ...positionStyles(),
           ...renderProps.style(),

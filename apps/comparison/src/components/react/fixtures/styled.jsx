@@ -4532,7 +4532,33 @@ function ReactTooltipDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
-  const isRenderedOpen = demoProps.isDisabled ? false : demoProps.isOpen;
+  const isRenderedOpen =
+    demoProps.isOpen === undefined ? undefined : demoProps.isDisabled ? false : demoProps.isOpen;
+  const tooltipTriggerProps = {
+    containerPadding: demoProps.containerPadding,
+    crossOffset: demoProps.crossOffset,
+    defaultOpen: demoProps.defaultOpen,
+    delay: demoProps.delay,
+    isDisabled: demoProps.isDisabled,
+    onOpenChange: (nextOpen) => {
+      setDemoProps((current) =>
+        current.isOpen && !nextOpen && isTooltipOpenControlChecked()
+          ? current
+          : normalizeTooltipDemoProps({
+              ...current,
+              isOpen: nextOpen,
+            }),
+      );
+    },
+    placement: demoProps.placement,
+    shouldCloseOnPress: demoProps.shouldCloseOnPress,
+    shouldFlip: demoProps.shouldFlip,
+    trigger: demoProps.trigger,
+  };
+
+  if (isRenderedOpen !== undefined) {
+    tooltipTriggerProps.isOpen = isRenderedOpen;
+  }
 
   return renderReactSpectrumReference(
     jsx("div", {
@@ -4540,32 +4566,20 @@ function ReactTooltipDemo() {
       "data-comparison-control-root": "tooltip",
       "data-comparison-control-props": serializeTooltipDemoProps(demoProps),
       "data-comparison-tooltip-props": serializeTooltipDemoProps(demoProps),
-      children: jsxs(SpectrumTooltipTrigger, {
-        delay: demoProps.delay,
-        isDisabled: demoProps.isDisabled,
-        isOpen: isRenderedOpen,
-        onOpenChange: (nextOpen) => {
-          setDemoProps((current) =>
-            current.isOpen && !nextOpen && isTooltipOpenControlChecked()
-              ? current
-              : normalizeTooltipDemoProps({
-                  ...current,
-                  isOpen: nextOpen,
-                }),
-          );
+      children: jsxs(
+        SpectrumTooltipTrigger,
+        {
+          ...tooltipTriggerProps,
+          children: [
+            jsx(SpectrumActionButton, {
+              "aria-label": demoProps.actionLabel,
+              children: jsx(ReactButtonIcon, {}),
+            }),
+            jsx(SpectrumTooltip, { children: demoProps.children }),
+          ],
         },
-        placement: demoProps.placement,
-        shouldCloseOnPress: demoProps.shouldCloseOnPress,
-        shouldFlip: demoProps.shouldFlip,
-        trigger: demoProps.trigger,
-        children: [
-          jsx(SpectrumActionButton, {
-            "aria-label": demoProps.actionLabel,
-            children: jsx(ReactButtonIcon, {}),
-          }),
-          jsx(SpectrumTooltip, { children: demoProps.children }),
-        ],
-      }),
+        isRenderedOpen === undefined ? "tooltip-uncontrolled" : "tooltip-controlled",
+      ),
     }),
     colorScheme,
   );

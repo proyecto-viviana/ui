@@ -281,6 +281,7 @@ import {
 import { switchDemoDefaults, switchSizeOptions } from "./switch-demo";
 import {
   tooltipDemoDefaults,
+  tooltipIsOpenOptions,
   tooltipPlacementOptions,
   tooltipTriggerOptions,
 } from "./tooltip-demo";
@@ -5757,10 +5758,29 @@ const tooltipControls: ComponentControlGroup = {
       defaultValue: tooltipDemoDefaults.delay,
     },
     {
+      name: "containerPadding",
+      label: "containerPadding",
+      kind: "text",
+      defaultValue: tooltipDemoDefaults.containerPadding,
+    },
+    {
+      name: "crossOffset",
+      label: "crossOffset",
+      kind: "text",
+      defaultValue: tooltipDemoDefaults.crossOffset,
+    },
+    {
+      name: "defaultOpen",
+      label: "defaultOpen",
+      kind: "switch",
+      defaultValue: tooltipDemoDefaults.defaultOpen,
+    },
+    {
       name: "isOpen",
       label: "isOpen",
-      kind: "switch",
-      defaultValue: tooltipDemoDefaults.isOpen,
+      kind: "select",
+      defaultValue: "",
+      options: tooltipIsOpenOptions.map((value) => ({ value, label: value || "undefined" })),
     },
     {
       name: "isDisabled",
@@ -5800,7 +5820,7 @@ const tooltipControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 Tooltip docs/API viewer. The route drives icon-only ActionButton trigger composition, content, placement, trigger mode, delay, disabled suppression, controlled open, flip, and close-on-press into both stacks; non-interactive/disabled-button help remains ContextualHelp coverage.",
+  note: "Modeled from the S2 Tooltip docs/API viewer. The route drives icon-only ActionButton trigger composition, content, placement, trigger mode, delay, containerPadding, crossOffset, defaultOpen, controlled open/undefined selection, disabled suppression, flip, and close-on-press into both stacks; non-interactive/disabled-button help remains ContextualHelp coverage.",
 };
 
 const toastControls: ComponentControlGroup = {

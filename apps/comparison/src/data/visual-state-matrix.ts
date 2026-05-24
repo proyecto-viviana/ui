@@ -2654,7 +2654,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts + e2e/tooltip-visual.spec.ts",
-      note: "The docs-style prop controls drive trigger label, content, placement, trigger mode, delay, open state, disabled state, flip, and close-on-press into both stacks.",
+      note: "The docs-style prop controls drive trigger label, content, placement, trigger mode, delay, containerPadding, crossOffset, defaultOpen, controlled true/false/undefined open state, disabled state, flip, and close-on-press into both stacks.",
     },
   ],
   toast: [
