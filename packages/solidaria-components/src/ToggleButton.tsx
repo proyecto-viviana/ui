@@ -81,6 +81,11 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   ]);
   const groupState = useToggleButtonGroupStateContext();
   const groupKey = local.id ?? local.toggleKey;
+  const standaloneAriaProps = mergeProps<AriaToggleButtonProps>(ariaProps, {
+    get id() {
+      return local.id;
+    },
+  });
 
   const toggleAria =
     groupState && groupKey != null
@@ -91,7 +96,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
           },
           groupState,
         )
-      : createToggleButton(ariaProps);
+      : createToggleButton(standaloneAriaProps);
 
   const isDisabled = () => resolveDisabledValue(ariaProps.isDisabled) || !!groupState?.isDisabled;
 

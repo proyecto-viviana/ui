@@ -349,10 +349,14 @@ test.describe("comparison single button-derived visual parity", () => {
 
     const form = page.locator('[data-comparison-controls="togglebutton"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
+    await form.locator('input[name="children"]').fill("Track");
     await form.locator('input[name="size"][value="XL"]').check();
+    await form.locator('input[name="staticColor"][value="white"]').check();
     await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await form.locator('input[name="isQuiet"]').check();
     await form.locator('input[name="isEmphasized"]').check();
     await form.locator('input[name="isSelected"]').check();
+    await form.locator('input[name="isDisabled"]').check();
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -369,24 +373,30 @@ test.describe("comparison single button-derived visual parity", () => {
       "true",
     );
     expect(await controlProps(reactRoot)).toMatchObject({
+      children: "Track",
       size: "XL",
+      staticColor: "white",
       iconPlacement: "start",
+      isQuiet: true,
       isEmphasized: true,
       isSelected: true,
+      isDisabled: true,
     });
     expect(await controlProps(solidRoot)).toMatchObject({
+      children: "Track",
       size: "XL",
+      staticColor: "white",
       iconPlacement: "start",
+      isQuiet: true,
       isEmphasized: true,
       isSelected: true,
+      isDisabled: true,
     });
-    await expect(reactPanel.getByRole("button", { name: "Pin" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    await expect(solidPanel.getByRole("button", { name: "Pin" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    const reactButton = reactPanel.getByRole("button", { name: "Track" });
+    const solidButton = solidPanel.getByRole("button", { name: "Track" });
+    await expect(reactButton).toHaveAttribute("aria-pressed", "true");
+    await expect(solidButton).toHaveAttribute("aria-pressed", "true");
+    await expect(reactButton).toBeDisabled();
+    await expect(solidButton).toBeDisabled();
   });
 });

@@ -1485,6 +1485,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/single-button-controls-visual.spec.ts",
       note: "Root DOM assertions compare React Spectrum and Solid ToggleButton visual-prop data markers and prevent Solid-only size/staticColor/quiet/emphasized attributes from leaking onto the root.",
     },
+    {
+      id: "styled.docs-api-contract",
+      label: "Documented API semantics",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "packages/solidaria/test/createButton.test.tsx + packages/solidaria-components/test/ToggleButton.test.tsx + packages/solid-spectrum/test/ToggleButton.test.tsx",
+      note: "Regression tests lock React Aria's standalone id-as-DOM-id behavior, grouped id-as-selection-key behavior, aria-controls/expanded/haspopup pass-through, excludeFromTabOrder, selected state, disabled state, and S2 Icon/Text composition.",
+    },
   ],
   linkbutton: [
     visualDefaultState({

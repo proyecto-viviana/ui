@@ -19,7 +19,7 @@ normalized to the current gate checklist.
 
 - Current accepted under the full gate model: Calendar, Checkbox, ColorArea,
   ColorField, ColorSlider, ColorWheel, ColorSwatch, ColorSwatchPicker,
-  Disclosure, IllustratedMessage, InlineAlert, Toast.
+  Disclosure, IllustratedMessage, InlineAlert, Toast, ToggleButton.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -30,7 +30,7 @@ normalized to the current gate checklist.
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
   Link, Meter, NotificationBadge, RangeCalendar, SegmentedControl,
   SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
-- Active current-gate pass: ToggleButton.
+- Active current-gate pass: ToggleButtonGroup.
 - Comparison-live with explicit release-hardening backfill gaps: Card/CardView.
 - Pre-pass only: none.
 

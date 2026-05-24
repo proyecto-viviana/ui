@@ -544,7 +544,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     summary: "Selectable action button mounted on both stacks with controlled selected-state data.",
     styledSummary: "React Spectrum ToggleButton vs Solid Spectrum ToggleButton.",
     styledNote:
-      "React uses @react-spectrum/s2 ToggleButton directly; Solid uses @proyecto-viviana/solid-spectrum ToggleButton with S2-derived styles.",
+      "React uses @react-spectrum/s2 ToggleButton directly; Solid uses @proyecto-viviana/solid-spectrum ToggleButton with S2-derived styles, React Aria standalone-id/group-key semantics, and controlled aria-pressed selection.",
   }),
 
   togglebuttongroup: styledLiveOfficialEntry({

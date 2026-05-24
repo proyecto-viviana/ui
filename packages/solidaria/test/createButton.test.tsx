@@ -681,6 +681,14 @@ describe("createButton", () => {
 
 describe("createToggleButton", () => {
   describe("uncontrolled mode", () => {
+    it("passes standalone id through to the button props", () => {
+      const { buttonProps } = createToggleButton({ id: "pin-toggle" });
+
+      render(() => <button {...buttonProps}>Toggle</button>);
+
+      expect(screen.getByRole("button")).toHaveAttribute("id", "pin-toggle");
+    });
+
     it("toggles selection state on press", async () => {
       const user = setupUser();
       const onChange = vi.fn();

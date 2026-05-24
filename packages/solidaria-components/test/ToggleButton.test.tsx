@@ -23,6 +23,28 @@ describe("ToggleButton", () => {
     expect(screen.getByRole("button")).toHaveClass("solidaria-ToggleButton");
   });
 
+  it("passes standalone id and documented ARIA button props to the DOM button", () => {
+    render(() => (
+      <ToggleButton
+        id="pin-toggle"
+        aria-label="Pin"
+        aria-controls="pin-panel"
+        aria-expanded={true}
+        aria-haspopup="menu"
+        excludeFromTabOrder
+      >
+        Pin
+      </ToggleButton>
+    ));
+
+    const button = screen.getByRole("button", { name: "Pin" });
+    expect(button).toHaveAttribute("id", "pin-toggle");
+    expect(button).toHaveAttribute("aria-controls", "pin-panel");
+    expect(button).toHaveAttribute("aria-expanded", "true");
+    expect(button).toHaveAttribute("aria-haspopup", "menu");
+    expect(button).toHaveAttribute("tabindex", "-1");
+  });
+
   it("toggles selected state when clicked", async () => {
     render(() => <ToggleButton aria-label="Pin">Pin</ToggleButton>);
     const button = screen.getByRole("button");
@@ -70,6 +92,26 @@ describe("ToggleButton", () => {
     expect(button).toHaveAttribute("aria-pressed", "false");
     expect(onChange).not.toHaveBeenCalled();
     expect(button).toHaveAttribute("data-disabled");
+  });
+
+  it("uses grouped id as the selection key without leaking it as a DOM id", () => {
+    render(() => (
+      <ToggleButtonGroup
+        selectionMode="single"
+        defaultSelectedKeys={["pin"]}
+        aria-label="Formatting"
+      >
+        {() => (
+          <ToggleButton id="pin" aria-label="Pin">
+            Pin
+          </ToggleButton>
+        )}
+      </ToggleButtonGroup>
+    ));
+
+    const button = screen.getByRole("radio", { name: "Pin" });
+    expect(button).toHaveAttribute("aria-checked", "true");
+    expect(button).not.toHaveAttribute("id", "pin");
   });
 
   it("supports render props", () => {
