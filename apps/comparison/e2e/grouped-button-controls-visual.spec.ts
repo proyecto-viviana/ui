@@ -132,6 +132,8 @@ const groupedControlCases: GroupedControlCase[] = [
     controlRole: "radio",
     controlName: "Center",
     expectedProps: {
+      selectionMode: "single",
+      selectedKeys: "center",
       disallowEmptySelection: true,
       size: "XL",
       density: "compact",
@@ -439,14 +441,18 @@ test.describe("comparison grouped button controls visual parity", () => {
 
     const form = page.locator('[data-comparison-controls="togglebuttongroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
-    await form.locator('input[name="selectedKeys"]').fill("center");
+    await form.locator('input[name="selectionMode"][value="multiple"]').check();
+    await form.locator('input[name="selectedKeys"]').fill("left,center");
     await form.locator('input[name="size"][value="XL"]').check();
     await form.locator('input[name="density"][value="compact"]').check();
     await form.locator('input[name="orientation"][value="vertical"]').check();
+    await form.locator('input[name="staticColor"][value="white"]').check();
     await form.locator('input[name="iconPlacement"][value="start"]').check();
     await form.locator('input[name="disallowEmptySelection"]').check();
+    await form.locator('input[name="isQuiet"]').check();
     await form.locator('input[name="isEmphasized"]').check();
     await form.locator('input[name="isJustified"]').check();
+    await form.locator('input[name="isDisabled"]').check();
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -459,26 +465,41 @@ test.describe("comparison grouped button controls visual parity", () => {
       .first();
 
     const expected = {
-      selectionMode: "single",
-      selectedKeys: "center",
+      selectionMode: "multiple",
+      selectedKeys: "left,center",
       disallowEmptySelection: true,
       size: "XL",
       density: "compact",
       orientation: "vertical",
+      staticColor: "white",
       iconPlacement: "start",
+      isQuiet: true,
       isEmphasized: true,
       isJustified: true,
+      isDisabled: true,
     };
     await expect(reactPanel.locator("[data-comparison-selected-keys]").first()).toHaveAttribute(
       "data-comparison-selected-keys",
-      "center",
+      "left,center",
     );
     await expect(solidPanel.locator("[data-comparison-selected-keys]").first()).toHaveAttribute(
       "data-comparison-selected-keys",
-      "center",
+      "left,center",
     );
     expect(await controlProps(reactRoot)).toMatchObject(expected);
     expect(await controlProps(solidRoot)).toMatchObject(expected);
+    await expect(reactRoot).toHaveAttribute("role", "toolbar");
+    await expect(solidRoot).toHaveAttribute("role", "toolbar");
+    await expect(reactPanel.getByRole("button", { name: "Left" }).first()).toBeDisabled();
+    await expect(solidPanel.getByRole("button", { name: "Left" }).first()).toBeDisabled();
+    await expect(reactPanel.getByRole("button", { name: "Left" }).first()).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(solidPanel.getByRole("button", { name: "Left" }).first()).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     await expect.poll(async () => (await groupLayout(reactRoot)).flexDirection).toBe("column");
     await expect.poll(async () => (await groupLayout(solidRoot)).flexDirection).toBe("column");
   });

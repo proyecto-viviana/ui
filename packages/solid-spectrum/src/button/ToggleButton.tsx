@@ -88,25 +88,26 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   const defaultProps: Partial<ToggleButtonProps> = {
     size: "M",
   };
+  const standaloneProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const groupProps: Partial<ToggleButtonProps> & {
     density?: ActionButtonDensity;
     orientation?: ActionButtonOrientation;
     isJustified?: boolean;
   } = {
     get size() {
-      return groupContext?.size;
+      return groupContext?.size ?? standaloneProps.size;
     },
     get staticColor() {
-      return groupContext?.staticColor;
+      return groupContext?.staticColor ?? standaloneProps.staticColor;
     },
     get isQuiet() {
-      return groupContext?.isQuiet;
+      return groupContext?.isQuiet ?? standaloneProps.isQuiet;
     },
     get isEmphasized() {
-      return groupContext?.isEmphasized;
+      return groupContext?.isEmphasized ?? standaloneProps.isEmphasized;
     },
     get isDisabled() {
-      return groupContext?.isDisabled;
+      return groupContext?.isDisabled ?? standaloneProps.isDisabled;
     },
     get density() {
       return groupContext?.density;
@@ -119,13 +120,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     },
   };
 
-  const mergedProps = mergeProps(
-    defaultProps,
-    providerProps,
-    contextProps ?? {},
-    props,
-    groupProps,
-  );
+  const mergedProps = mergeProps(standaloneProps, groupProps);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "staticColor",

@@ -1591,6 +1591,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       spec: "e2e/grouped-button-controls-visual.spec.ts",
       note: "Root DOM assertions keep ToggleButtonGroup aligned with React Aria group output: orientation and disabled state are retained, while Solid-only density markers are absent.",
     },
+    {
+      id: "styled.child-prop-fallback",
+      label: "Child prop fallback",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "packages/solid-spectrum/test/ToggleButtonGroup.test.tsx",
+      note: "Child ToggleButton disabled and visual props survive when group props are omitted, matching React S2 context fallback instead of masking children with group defaults.",
+    },
   ],
   segmentedcontrol: [
     assertedDefaultState({

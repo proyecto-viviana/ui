@@ -61,6 +61,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
     size: "M",
     orientation: "horizontal",
   };
+  const providedContextProps = mergeProps(providerProps, contextProps ?? {}, props);
   const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
@@ -106,28 +107,43 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
 
   const contextValue = {
     get size() {
-      return size();
+      return providedContextProps.size;
     },
     get density() {
-      return density();
+      return providedContextProps.density;
     },
     get orientation() {
-      return orientation();
+      return providedContextProps.orientation;
     },
     get isQuiet() {
-      return local.isQuiet;
+      return providedContextProps.isQuiet;
     },
     get isJustified() {
-      return local.isJustified;
+      return providedContextProps.isJustified;
     },
     get isEmphasized() {
-      return local.isEmphasized;
+      return providedContextProps.isEmphasized;
     },
     get staticColor() {
-      return local.staticColor;
+      return providedContextProps.staticColor;
     },
     get isDisabled() {
-      return local.isDisabled;
+      return providedContextProps.isDisabled;
+    },
+    get selectionMode() {
+      return providedContextProps.selectionMode;
+    },
+    get disallowEmptySelection() {
+      return providedContextProps.disallowEmptySelection;
+    },
+    get selectedKeys() {
+      return providedContextProps.selectedKeys;
+    },
+    get defaultSelectedKeys() {
+      return providedContextProps.defaultSelectedKeys;
+    },
+    get onSelectionChange() {
+      return providedContextProps.onSelectionChange;
     },
   };
 

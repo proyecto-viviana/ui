@@ -10,7 +10,12 @@ import { ToggleButtonGroup } from "../src/ToggleButtonGroup";
 describe("ToggleButtonGroup", () => {
   it("renders single mode as radiogroup with default class", () => {
     render(() => (
-      <ToggleButtonGroup aria-label="Text align">
+      <ToggleButtonGroup
+        id="alignment-group"
+        aria-label="Text align"
+        aria-describedby="alignment-help"
+        aria-details="alignment-details"
+      >
         {() => (
           <ToggleButton id="a" aria-label="A">
             A
@@ -21,6 +26,9 @@ describe("ToggleButtonGroup", () => {
 
     const group = screen.getByRole("radiogroup", { name: "Text align" });
     expect(group).toHaveClass("solidaria-ToggleButtonGroup");
+    expect(group).toHaveAttribute("id", "alignment-group");
+    expect(group).toHaveAttribute("aria-describedby", "alignment-help");
+    expect(group).toHaveAttribute("aria-details", "alignment-details");
     expect(group).toHaveAttribute("data-orientation", "horizontal");
   });
 
@@ -143,6 +151,35 @@ describe("ToggleButtonGroup", () => {
 
     expect(radios[0]).toHaveAttribute("aria-checked", "true");
     expect(onSelectionChange).not.toHaveBeenCalledWith(new Set());
+  });
+
+  it("preserves per-item disabled state inside an enabled group", async () => {
+    const user = setupUser();
+    const onPress = vi.fn();
+    render(() => (
+      <ToggleButtonGroup selectionMode="single" aria-label="Formatting">
+        {() => (
+          <>
+            <ToggleButton id="a" aria-label="A" isDisabled onPress={onPress}>
+              A
+            </ToggleButton>
+            <ToggleButton id="b" aria-label="B">
+              B
+            </ToggleButton>
+          </>
+        )}
+      </ToggleButtonGroup>
+    ));
+
+    const first = screen.getByRole("radio", { name: "A" });
+    const second = screen.getByRole("radio", { name: "B" });
+    expect(first).toBeDisabled();
+    expect(second).not.toBeDisabled();
+
+    await user.click(first);
+
+    expect(onPress).not.toHaveBeenCalled();
+    expect(first).toHaveAttribute("aria-checked", "false");
   });
 
   it("uses keyboard arrow navigation between items", () => {

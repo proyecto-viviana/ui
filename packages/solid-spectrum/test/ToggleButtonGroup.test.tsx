@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, within } from "@solidjs/testing-library";
 import { ToggleButton, ToggleButtonGroup } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
@@ -86,6 +86,46 @@ describe("ToggleButtonGroup (solid-spectrum)", () => {
 
     expect(left).toHaveAttribute("aria-checked", "true");
     expect(onSelectionChange).not.toHaveBeenCalledWith(new Set());
+  });
+
+  it("preserves child ToggleButton props when group props are omitted", async () => {
+    const user = setupUser();
+    const onPress = vi.fn();
+    render(() => (
+      <>
+        <ToggleButtonGroup aria-label="Text style">
+          <ToggleButton
+            id="bold"
+            isDisabled
+            size="XL"
+            staticColor="white"
+            isQuiet
+            isEmphasized
+            onPress={onPress}
+          >
+            Bold
+          </ToggleButton>
+          <ToggleButton id="italic">Italic</ToggleButton>
+        </ToggleButtonGroup>
+        <ToggleButtonGroup aria-label="Plain style">
+          <ToggleButton id="plain-bold">Bold</ToggleButton>
+          <ToggleButton id="plain-italic">Italic</ToggleButton>
+        </ToggleButtonGroup>
+      </>
+    ));
+
+    const textStyleGroup = screen.getByRole("radiogroup", { name: "Text style" });
+    const plainStyleGroup = screen.getByRole("radiogroup", { name: "Plain style" });
+    const bold = within(textStyleGroup).getByRole("radio", { name: "Bold" });
+    const italic = within(textStyleGroup).getByRole("radio", { name: "Italic" });
+    const plainBold = within(plainStyleGroup).getByRole("radio", { name: "Bold" });
+    expect(bold).toBeDisabled();
+    expect(italic).not.toBeDisabled();
+    expect(bold.className).not.toBe(plainBold.className);
+
+    await user.click(bold);
+
+    expect(onPress).not.toHaveBeenCalled();
   });
 
   it("passes S2 group styling props and disabled state to child ToggleButtons", async () => {
