@@ -14,11 +14,16 @@ import {
   createIllustration,
 } from "../src";
 
-const TestIllustration = createIllustration((props: JSX.SvgSVGAttributes<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" {...props}>
-    <path d="M8 12h32v24H8z" fill="var(--iconPrimary, #222)" />
-  </svg>
-));
+const TestIllustration = createIllustration(
+  (props: JSX.SvgSVGAttributes<SVGSVGElement> & { size?: "S" | "M" | "L" }) => {
+    const { size: _size, ...svgProps } = props;
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" {...svgProps}>
+        <path d="M8 12h32v24H8z" fill="var(--iconPrimary, #222)" />
+      </svg>
+    );
+  },
+);
 
 function root(): HTMLDivElement {
   return screen.getByTestId("message-root") as HTMLDivElement;
@@ -66,7 +71,9 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     const illustration = screen.getByTestId("message-illustration");
     expect(illustration).toHaveAttribute("data-slot", "illustration");
     expect(illustration).toHaveAttribute("aria-hidden", "true");
-    expect(illustration).toHaveStyle({ width: "160px", height: "160px" });
+    expect(illustration).not.toHaveAttribute("size");
+    expect(illustration.className.baseVal).toContain("Zq13");
+    expect(illustration.className.baseVal).toContain("Fr13");
     expect(illustration.className.baseVal).not.toBe("");
 
     const heading = screen.getByTestId("message-heading");
@@ -121,10 +128,9 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     expect(contextRef).toBe(root());
     expect(localRef).toBe(root());
 
-    expect(screen.getByTestId("message-illustration")).toHaveStyle({
-      width: "96px",
-      height: "96px",
-    });
+    const illustration = screen.getByTestId("message-illustration");
+    expect(illustration.className.baseVal).toContain("ZH13");
+    expect(illustration.className.baseVal).toContain("FB13");
   });
 
   it("inherits DropZone target context and filters arbitrary DOM event props", () => {
@@ -141,7 +147,8 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     ));
 
     const illustration = screen.getByTestId("message-illustration");
-    expect(illustration).toHaveStyle({ width: "160px", height: "160px" });
+    expect(illustration.className.baseVal).toContain("Zq13");
+    expect(illustration.className.baseVal).toContain("Fr13");
     expect(illustration.className.baseVal).not.toBe("");
 
     fireEvent.click(root());

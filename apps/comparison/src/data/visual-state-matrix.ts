@@ -944,6 +944,44 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Browser dispatches cover drag enter, drag move, drag exit, drop, and hidden-button activation callbacks with route-level count attributes. Synthetic DataTransfer pins effectAllowed because Chromium does not honor assignment outside a real dragstart.",
     },
   ],
+  icons: [
+    visualDefaultState({
+      slug: "icons",
+      label: "Labelled, decorative, skeleton, and button-context icons",
+      pairDiff: "strict",
+      spec: "e2e/icon-illustration-visual.spec.ts",
+      note: "The comparison route mounts createIcon output in standalone labelled, decorative, Skeleton loading, and Button IconContext states; the gallery root is compared with zero pixel tolerance.",
+    }),
+    {
+      id: "styled.icon-dom-contract",
+      label: "Icon accessibility and context contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/icon-illustration-visual.spec.ts",
+      note: "Browser assertions compare role, aria-label/aria-hidden behavior, data-slot routing, focusable=false SVG output, sizing, flex-shrink, and Button context rendering against React Spectrum.",
+    },
+  ],
+  illustrations: [
+    visualDefaultState({
+      slug: "illustrations",
+      label: "Labelled, decorative, and skeleton illustrations",
+      pairDiff: "strict",
+      spec: "e2e/icon-illustration-visual.spec.ts",
+      note: "The comparison route mounts createIllustration output in standalone labelled, decorative, and Skeleton loading states; the gallery root is compared with zero pixel tolerance.",
+    }),
+    {
+      id: "styled.illustration-dom-contract",
+      label: "Illustration accessibility and size contract",
+      kind: "static",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/icon-illustration-visual.spec.ts",
+      note: "Browser assertions compare role, aria-label/aria-hidden behavior, data-slot routing, focusable=false SVG output, S/M/L size propagation, computed dimensions, and flex-shrink against React Spectrum.",
+    },
+  ],
   illustratedmessage: [
     visualDefaultState({
       slug: "illustratedmessage",

@@ -571,8 +571,12 @@ const SolidNewIcon = createIcon((props: JSX.SvgSVGAttributes<SVGSVGElement>) => 
   )() as JSX.Element;
 });
 
-const SolidPlanIllustration = createIllustration((props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
-  const { class: className, ...rest } = props;
+type SolidIllustrationSvgProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
+  size?: "S" | "M" | "L";
+};
+
+const SolidPlanIllustration = createIllustration((props: SolidIllustrationSvgProps) => {
+  const { class: className, size: _size, ...rest } = props;
   return h(
     "svg",
     {
@@ -611,46 +615,44 @@ const SolidPlanIllustration = createIllustration((props: JSX.SvgSVGAttributes<SV
   )() as JSX.Element;
 });
 
-const SolidDropZoneIllustration = createIllustration(
-  (props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
-    const [local, rest] = splitProps(props, ["class"]);
-    return h(
-      "svg",
-      mergeProps(
-        {
-          xmlns: "http://www.w3.org/2000/svg",
-          viewBox: "0 0 48 48",
+const SolidDropZoneIllustration = createIllustration((props: SolidIllustrationSvgProps) => {
+  const [local, rest] = splitProps(props, ["class", "size"]);
+  return h(
+    "svg",
+    mergeProps(
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 48 48",
+      },
+      rest,
+      {
+        get class() {
+          return local.class;
         },
-        rest,
-        {
-          get class() {
-            return local.class;
-          },
-        },
-      ),
-      [
-        h("path", {
-          d: "M24 8 12 20h7v11h10V20h7L24 8Z",
-          fill: "var(--iconPrimary, #222)",
-        }),
-        h("path", {
-          d: "M12 34h24v4H12v-4Z",
-          fill: "var(--iconPrimary, #222)",
-          opacity: "0.42",
-        }),
-        h("path", {
-          d: "M8 28h6v4H8c-2.2 0-4-1.8-4-4V14c0-2.2 1.8-4 4-4h6v4H8v14Zm26-18h6c2.2 0 4 1.8 4 4v14c0 2.2-1.8 4-4 4h-6v-4h6V14h-6v-4Z",
-          fill: "var(--iconPrimary, #222)",
-          opacity: "0.18",
-        }),
-      ],
-    )() as JSX.Element;
-  },
-);
+      },
+    ),
+    [
+      h("path", {
+        d: "M24 8 12 20h7v11h10V20h7L24 8Z",
+        fill: "var(--iconPrimary, #222)",
+      }),
+      h("path", {
+        d: "M12 34h24v4H12v-4Z",
+        fill: "var(--iconPrimary, #222)",
+        opacity: "0.42",
+      }),
+      h("path", {
+        d: "M8 28h6v4H8c-2.2 0-4-1.8-4-4V14c0-2.2 1.8-4 4-4h6v4H8v14Zm26-18h6c2.2 0 4 1.8 4 4v14c0 2.2-1.8 4-4 4h-6v-4h6V14h-6v-4Z",
+        fill: "var(--iconPrimary, #222)",
+        opacity: "0.18",
+      }),
+    ],
+  )() as JSX.Element;
+});
 
 const SolidIllustratedMessageIllustration = createIllustration(
-  (props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
-    const [local, rest] = splitProps(props, ["class"]);
+  (props: SolidIllustrationSvgProps) => {
+    const [local, rest] = splitProps(props, ["class", "size"]);
     return h(
       "svg",
       mergeProps(
@@ -957,18 +959,15 @@ function SolidSpectrumIconsDemo() {
         [
           h(SolidNewIcon, {
             "aria-label": "Create item",
-            size: "M",
             "data-comparison-icon": "labelled",
           }),
           h(SolidNewIcon, {
             "aria-hidden": true,
-            size: "S",
             "data-comparison-icon": "decorative",
           }),
           hc(SolidSpectrumSkeleton, { isLoading: true }, [
             h(SolidNewIcon, {
               "aria-label": "Loading icon",
-              size: "L",
               "data-comparison-icon": "skeleton",
             }),
           ]),

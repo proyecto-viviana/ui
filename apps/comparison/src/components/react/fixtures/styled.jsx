@@ -793,19 +793,16 @@ function ReactIconsDemo() {
       children: [
         jsx(ReactButtonIcon, {
           "aria-label": "Create item",
-          size: "M",
           "data-comparison-icon": "labelled",
         }),
         jsx(ReactButtonIcon, {
           "aria-hidden": true,
-          size: "S",
           "data-comparison-icon": "decorative",
         }),
         jsx(SpectrumSkeleton, {
           isLoading: true,
           children: jsx(ReactButtonIcon, {
             "aria-label": "Loading icon",
-            size: "L",
             "data-comparison-icon": "skeleton",
           }),
         }),

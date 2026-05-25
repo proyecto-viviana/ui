@@ -1,5 +1,5 @@
 import { type Component, type JSX, createContext, splitProps, useContext } from "solid-js";
-import { iconStyle, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../s2-style";
 import { mergeStyles } from "../s2-style/runtime";
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import {
@@ -34,16 +34,66 @@ export interface SpectrumIllustrationProps extends SpectrumIconProps {
   size?: "S" | "M" | "L";
 }
 
+type SpectrumSvgComponentProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
+  focusable?: boolean | "false" | "true";
+  size?: "S" | "M" | "L";
+};
+
 const illustrationSizes = {
   S: 48,
   M: 96,
   L: 160,
 } as const;
 
-export function createIcon(
-  Component: Component<JSX.SvgSVGAttributes<SVGSVGElement>>,
-  context = IconContext,
-) {
+const iconAllowedOverrides = [
+  "margin",
+  "marginStart",
+  "marginEnd",
+  "marginTop",
+  "marginBottom",
+  "marginX",
+  "marginY",
+  "justifySelf",
+  "alignSelf",
+  "order",
+  "gridArea",
+  "gridRowStart",
+  "gridRowEnd",
+  "gridColumnStart",
+  "gridColumnEnd",
+  "position",
+  "zIndex",
+  "top",
+  "bottom",
+  "inset",
+  "insetX",
+  "insetY",
+  "insetStart",
+  "insetEnd",
+  "rotate",
+  "--iconPrimary",
+  "size",
+] as const;
+
+const iconBaseStyles = style(
+  {
+    size: 20,
+    flexShrink: 0,
+  },
+  iconAllowedOverrides,
+);
+
+const illustrationBaseStyles = style(
+  {
+    size: {
+      size: illustrationSizes,
+    },
+    flexShrink: 0,
+  },
+  iconAllowedOverrides,
+);
+
+export function createIcon(Component: Component<SpectrumSvgComponentProps>, context = IconContext) {
   return (props: SpectrumIconProps): JSX.Element => {
     const ctx = useContext(context);
     const [local, rest] = splitProps(props, [
@@ -54,20 +104,21 @@ export function createIcon(
       "aria-label",
       "aria-hidden",
       "UNSAFE_suppressDataSlot",
+      "size" as keyof SpectrumIconProps,
     ]);
     const slot = () => {
-      if (local.UNSAFE_suppressDataSlot || ctx.slot === null) {
+      if (local.UNSAFE_suppressDataSlot) {
         return undefined;
       }
 
-      return local.slot ?? ctx.slot ?? "icon";
+      return local.slot;
     };
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
     const isSkeleton = createIsSkeleton();
     const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
     const inertRef = useInertAttribute(isSkeleton);
     const skeletonStyles = useSkeletonIcon(() =>
-      mergeStyles(iconStyle({ size: "M" }), contextStyles(), local.styles),
+      mergeStyles(iconBaseStyles(null, local.styles), contextStyles()),
     );
     const skeletonRef = (element: SVGSVGElement) => {
       skeletonAnimationRef(element);
@@ -91,6 +142,7 @@ export function createIcon(
       <Component
         {...rest}
         ref={mergeContextRefs((rest as { ref?: RefLike<SVGSVGElement> }).ref, skeletonRef)}
+        focusable={false}
         role="img"
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
@@ -104,7 +156,7 @@ export function createIcon(
   };
 }
 
-export function createIllustration(Component: Component<JSX.SvgSVGAttributes<SVGSVGElement>>) {
+export function createIllustration(Component: Component<SpectrumSvgComponentProps>) {
   return (props: SpectrumIllustrationProps): JSX.Element => {
     const ctx = useContext(IllustrationContext);
     const [local, rest] = splitProps(props, [
@@ -118,27 +170,20 @@ export function createIllustration(Component: Component<JSX.SvgSVGAttributes<SVG
       "UNSAFE_suppressDataSlot",
     ]);
     const slot = () => {
-      if (local.UNSAFE_suppressDataSlot || ctx.slot === null) {
+      if (local.UNSAFE_suppressDataSlot) {
         return undefined;
       }
 
-      return local.slot ?? ctx.slot ?? "icon";
+      return local.slot;
     };
     const size = () => local.size ?? ctx.size ?? "M";
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
-    const isSkeleton = createIsSkeleton();
-    const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
-    const inertRef = useInertAttribute(isSkeleton);
-    const skeletonStyles = useSkeletonIcon(() =>
-      mergeStyles(iconStyle({ size: "M" }), contextStyles(), local.styles),
-    );
-    const skeletonRef = (element: SVGSVGElement) => {
-      skeletonAnimationRef(element);
-      inertRef(element);
-    };
 
     const mergedClass = () =>
-      [local.class, skeletonStyles(), isSkeleton() ? loadingStyle : undefined]
+      [
+        local.class,
+        mergeStyles(illustrationBaseStyles({ size: size() }, local.styles), contextStyles()),
+      ]
         .filter(Boolean)
         .join(" ");
 
@@ -153,18 +198,14 @@ export function createIllustration(Component: Component<JSX.SvgSVGAttributes<SVG
     const svg = (
       <Component
         {...rest}
-        ref={mergeContextRefs((rest as { ref?: RefLike<SVGSVGElement> }).ref, skeletonRef)}
+        size={size()}
+        focusable={false}
         role="img"
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
         data-slot={slot()}
         class={mergedClass()}
-        style={{
-          width: `${illustrationSizes[size()]}px`,
-          height: `${illustrationSizes[size()]}px`,
-          "flex-shrink": 0,
-          ...(typeof local.style === "object" ? local.style : {}),
-        }}
+        style={local.style}
       />
     );
 

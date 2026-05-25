@@ -173,6 +173,54 @@
   }
 }
 
+@layer _.a;
+
+@layer _.a {
+  .Zm13 {
+    width: calc(1.25rem * var(--s2-scale));
+  }
+
+  .Fn13 {
+    height: calc(1.25rem * var(--s2-scale));
+  }
+
+  ._va13 {
+    flex-shrink: 0;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  .ZF13 {
+    width: calc(3rem * var(--s2-scale));
+  }
+
+  .ZH13 {
+    width: calc(6rem * var(--s2-scale));
+  }
+
+  .Zq13 {
+    width: calc(10rem * var(--s2-scale));
+  }
+
+  .Fz13 {
+    height: calc(3rem * var(--s2-scale));
+  }
+
+  .FB13 {
+    height: calc(6rem * var(--s2-scale));
+  }
+
+  .Fr13 {
+    height: calc(10rem * var(--s2-scale));
+  }
+
+  ._va13 {
+    flex-shrink: 0;
+  }
+}
+
 @layer _.a, _.b, _.c, _.d, _.e, _.f, _.g, _.h, _.i;
 
 @layer _.a {
