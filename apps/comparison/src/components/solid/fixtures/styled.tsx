@@ -33,6 +33,7 @@ import {
   Card as SolidSpectrumCard,
   CardPreview as SolidSpectrumCardPreview,
   CardView as SolidSpectrumCardView,
+  Cell as SolidSpectrumCell,
   Checkbox as SolidSpectrumCheckbox,
   CheckboxGroup as SolidSpectrumCheckboxGroup,
   ColorArea as SolidSpectrumColorArea,
@@ -43,6 +44,7 @@ import {
   ColorSwatchPicker as SolidSpectrumColorSwatchPicker,
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
+  Column as SolidSpectrumColumn,
   Content as SolidSpectrumContent,
   ContextualHelp as SolidSpectrumContextualHelp,
   DateField as SolidSpectrumDateField,
@@ -81,6 +83,7 @@ import {
   RadioGroup as SolidSpectrumRadioGroup,
   RangeCalendar as SolidSpectrumRangeCalendar,
   RangeSlider as SolidSpectrumRangeSlider,
+  Row as SolidSpectrumRow,
   SearchField as SolidSpectrumSearchField,
   Skeleton as SolidSpectrumSkeleton,
   Slider as SolidSpectrumSlider,
@@ -93,7 +96,11 @@ import {
   Tab as SolidSpectrumTab,
   TabList as SolidSpectrumTabList,
   TabPanel as SolidSpectrumTabPanel,
+  TableBody as SolidSpectrumTableBody,
+  TableHeader as SolidSpectrumTableHeader,
+  TableView as SolidSpectrumTableView,
   Tabs as SolidSpectrumTabs,
+  TagGroup as SolidSpectrumTagGroup,
   TextArea as SolidSpectrumTextArea,
   TextField as SolidSpectrumTextField,
   Text as SolidSpectrumText,
@@ -104,6 +111,8 @@ import {
   ToastQueue as SolidSpectrumToastQueue,
   ToggleButton as SolidSpectrumToggleButton,
   ToggleButtonGroup as SolidSpectrumToggleButtonGroup,
+  TreeView as SolidSpectrumTreeView,
+  TreeViewItem as SolidSpectrumTreeViewItem,
   createIcon,
   createIllustration,
   parseColor as parseSolidSpectrumColor,
@@ -704,6 +713,63 @@ const actionBarItems = [
   { id: "delete", label: "Delete" },
 ];
 
+const collectionDocuments = [
+  { id: "project-brief", name: "Project brief.pdf", description: "PDF document" },
+  { id: "quarterly-report", name: "Quarterly report.docx", description: "Document" },
+  { id: "budget", name: "Budget.xlsx", description: "Spreadsheet" },
+];
+
+const collectionTableColumns = [
+  { key: "name", id: "name", name: "Name", isRowHeader: true },
+  { key: "type", id: "type", name: "Type" },
+  { key: "owner", id: "owner", name: "Owner" },
+  { key: "status", id: "status", name: "Status" },
+];
+
+const collectionTableRows = [
+  { id: "project-brief", name: "Project brief.pdf", type: "PDF", owner: "Maya", status: "Ready" },
+  {
+    id: "quarterly-report",
+    name: "Quarterly report.docx",
+    type: "Document",
+    owner: "Noah",
+    status: "Review",
+  },
+  { id: "budget", name: "Budget.xlsx", type: "Spreadsheet", owner: "Iris", status: "Draft" },
+];
+
+const collectionTags = [
+  { id: "landscape", name: "Landscape" },
+  { id: "portrait", name: "Portrait" },
+  { id: "night", name: "Night" },
+  { id: "golden-hour", name: "Golden Hour" },
+];
+
+const collectionTreeItems = [
+  {
+    key: "documents",
+    textValue: "Documents",
+    value: { name: "Documents" },
+    children: [
+      {
+        key: "project",
+        textValue: "Project",
+        value: { name: "Project" },
+        children: [
+          { key: "weekly-report", textValue: "Weekly Report", value: { name: "Weekly Report" } },
+          { key: "budget", textValue: "Budget", value: { name: "Budget" } },
+        ],
+      },
+    ],
+  },
+  {
+    key: "photos",
+    textValue: "Photos",
+    value: { name: "Photos" },
+    children: [{ key: "image-1", textValue: "Image 1", value: { name: "Image 1" } }],
+  },
+];
+
 type SingleButtonIconPlacement = "none" | "start" | "end" | "only";
 
 function explicitStaticColor(staticColor: string | undefined | null) {
@@ -819,6 +885,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   form: () => h(SolidSpectrumFormDemo, {}),
   image: () => h(SolidSpectrumImageDemo, {}),
   link: () => h(SolidSpectrumLinkDemo, {}),
+  listview: () => h(SolidSpectrumListViewDemo, {}),
   menu: () => h(SolidSpectrumMenuDemo, {}),
   meter: () => h(SolidSpectrumMeterDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
@@ -837,12 +904,15 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   statuslight: () => h(SolidSpectrumStatusLightDemo, {}),
   switch: () => h(SolidSpectrumSwitchDemo, {}),
   tabs: () => h(SolidSpectrumTabsDemo, {}),
+  tableview: () => h(SolidSpectrumTableViewDemo, {}),
+  taggroup: () => h(SolidSpectrumTagGroupDemo, {}),
   textarea: () => h(SolidSpectrumTextAreaDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
   tooltip: () => h(SolidSpectrumTooltipDemo, {}),
   toast: () => h(SolidSpectrumToastDemo, {}),
   togglebutton: () => h(SolidSpectrumToggleButtonDemo, {}),
   togglebuttongroup: () => h(SolidSpectrumToggleButtonGroupDemo, {}),
+  treeview: () => h(SolidSpectrumTreeViewDemo, {}),
 };
 
 function renderProviderDemo() {
@@ -1087,6 +1157,185 @@ function SolidSpectrumRangeSliderDemo() {
             isDisabled: true,
             "data-comparison-rangeslider": "disabled",
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumListViewDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: collectionFixtureStyle,
+          "data-comparison-control-root": "listview",
+        },
+        [
+          hc(
+            SolidSpectrumListView,
+            {
+              "aria-label": "Documents",
+              items: collectionDocuments,
+              getKey: (item: (typeof collectionDocuments)[number]) => item.id,
+              getTextValue: (item: (typeof collectionDocuments)[number]) => item.name,
+              selectionMode: "multiple",
+              defaultSelectedKeys: ["project-brief"],
+            },
+            renderProp((item: (typeof collectionDocuments)[number]) =>
+              hc(SolidSpectrumListViewItem, { id: item.id, description: item.description }, [
+                item.name,
+              ]),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumTableViewDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: collectionFixtureStyle,
+          "data-comparison-control-root": "tableview",
+        },
+        [
+          hc(
+            SolidSpectrumTableView,
+            {
+              "aria-label": "Project documents",
+              items: collectionTableRows,
+              columns: collectionTableColumns,
+              getKey: (row: (typeof collectionTableRows)[number]) => row.id,
+              selectionMode: "multiple",
+              defaultSelectedKeys: ["project-brief"],
+            },
+            renderProp(() => [
+              hc(SolidSpectrumTableHeader, {}, [
+                hc(SolidSpectrumColumn, { id: "name", isRowHeader: true }, ["Name"]),
+                hc(SolidSpectrumColumn, { id: "type" }, ["Type"]),
+                hc(SolidSpectrumColumn, { id: "owner" }, ["Owner"]),
+                hc(SolidSpectrumColumn, { id: "status" }, ["Status"]),
+              ]),
+              hc(
+                SolidSpectrumTableBody,
+                {},
+                renderProp((row: (typeof collectionTableRows)[number]) =>
+                  hc(
+                    SolidSpectrumRow,
+                    { id: row.id, item: row },
+                    renderProp(() => [
+                      hc(SolidSpectrumCell, {}, [row.name]),
+                      hc(SolidSpectrumCell, {}, [row.type]),
+                      hc(SolidSpectrumCell, {}, [row.owner]),
+                      hc(SolidSpectrumCell, {}, [row.status]),
+                    ]),
+                  ),
+                ),
+              ),
+            ]),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumTagGroupDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  const [tags, setTags] = createSignal(collectionTags);
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: collectionFixtureStyle,
+          "data-comparison-control-root": "taggroup",
+        },
+        [
+          hc(
+            SolidSpectrumTagGroup,
+            {
+              label: "Photo categories",
+              get items() {
+                return tags();
+              },
+              selectionMode: "multiple",
+              defaultSelectedKeys: ["landscape"],
+              onRemove: (keys: Set<string | number>) =>
+                setTags((currentTags) => currentTags.filter((item) => !keys.has(item.id))),
+            },
+            renderProp((item: (typeof collectionTags)[number]) => item.name),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumTreeViewDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: collectionFixtureStyle,
+          "data-comparison-control-root": "treeview",
+        },
+        [
+          hc(
+            SolidSpectrumTreeView,
+            {
+              "aria-label": "Files",
+              items: collectionTreeItems,
+              selectionMode: "multiple",
+              defaultExpandedKeys: ["documents", "project"],
+              defaultSelectedKeys: ["weekly-report"],
+            },
+            renderProp((item: { key: string; textValue: string }) =>
+              hc(SolidSpectrumTreeViewItem, { id: item.key }, [item.textValue]),
+            ),
+          ),
         ],
       ),
     ],
@@ -8217,6 +8466,11 @@ const rangeSliderStackStyle = {
   "flex-direction": "column",
   gap: "28px",
   width: "420px",
+  padding: "12px",
+};
+
+const collectionFixtureStyle = {
+  width: "440px",
   padding: "12px",
 };
 

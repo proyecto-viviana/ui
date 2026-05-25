@@ -528,6 +528,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Link directly; Solid uses @proyecto-viviana/solid-spectrum Link with S2-derived text, focus, static color, and skeleton handling.",
   }),
 
+  listview: styledLiveOfficialEntry({
+    slug: "listview",
+    title: "ListView",
+    category: "Components",
+    summary:
+      "Interactive list collection mounted on both stacks with item text values, descriptions, multiple selection, and default selected-key coverage.",
+    styledSummary: "React Spectrum ListView vs Solid Spectrum ListView.",
+    styledNote:
+      "React uses @react-spectrum/s2 ListView and ListViewItem directly with the official collection item slots; Solid uses @proyecto-viviana/solid-spectrum ListView and ListViewItem with items/getKey/getTextValue collection wiring and equivalent selection state.",
+  }),
+
   skeleton: styledLiveOfficialEntry({
     slug: "skeleton",
     title: "Skeleton",
@@ -794,6 +805,39 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     styledSummary: "React Spectrum Slider vs Solid Spectrum Slider.",
     styledNote:
       "React uses @react-spectrum/s2 Slider directly; Solid uses @proyecto-viviana/solid-spectrum Slider with S2-derived label/output, track, filled track, thumb hit area, and thumb styling.",
+  }),
+
+  tableview: styledLiveOfficialEntry({
+    slug: "tableview",
+    title: "TableView",
+    category: "Components",
+    summary:
+      "Tabular collection mounted on both stacks with row headers, typed cells, multiple selection, and default selected-row coverage.",
+    styledSummary: "React Spectrum TableView vs Solid Spectrum TableView.",
+    styledNote:
+      "React uses @react-spectrum/s2 TableView, TableHeader, Column, TableBody, Row, and Cell directly; Solid uses @proyecto-viviana/solid-spectrum TableView with explicit columns/items/getKey collection wiring plus the public TableHeader/Column/TableBody/Row/Cell aliases.",
+  }),
+
+  taggroup: styledLiveOfficialEntry({
+    slug: "taggroup",
+    title: "TagGroup",
+    category: "Components",
+    summary:
+      "Categorization tag collection mounted on both stacks with labels, dynamic items, removable tags, multiple selection, and default selected-key coverage.",
+    styledSummary: "React Spectrum TagGroup vs Solid Spectrum TagGroup.",
+    styledNote:
+      "React uses @react-spectrum/s2 TagGroup and Tag directly; Solid uses @proyecto-viviana/solid-spectrum TagGroup, whose current public API renders tags from items plus a render function rather than exporting a separate Tag component.",
+  }),
+
+  treeview: styledLiveOfficialEntry({
+    slug: "treeview",
+    title: "TreeView",
+    category: "Components",
+    summary:
+      "Hierarchical collection mounted on both stacks with nested folders, expanded-key defaults, multiple selection, and selected child coverage.",
+    styledSummary: "React Spectrum TreeView vs Solid Spectrum TreeView.",
+    styledNote:
+      "React uses @react-spectrum/s2 TreeView, TreeViewItem, and TreeViewItemContent directly; Solid uses @proyecto-viviana/solid-spectrum TreeView and TreeViewItem over the Solid tree collection API with equivalent items, expansion, and selection state.",
   }),
 
   textfield: styledLiveOfficialEntry({

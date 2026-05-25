@@ -21,10 +21,12 @@ import {
   Card as SpectrumCard,
   CardPreview as SpectrumCardPreview,
   CardView as SpectrumCardView,
+  Cell as SpectrumCell,
   Checkbox as SpectrumCheckbox,
   CheckboxGroup as SpectrumCheckboxGroup,
   ComboBox as SpectrumComboBox,
   ComboBoxItem as SpectrumComboBoxItem,
+  Column as SpectrumColumn,
   ContextualHelp as SpectrumContextualHelp,
   Content as SpectrumContent,
   DateRangePicker as SpectrumDateRangePicker,
@@ -59,6 +61,7 @@ import {
   RadioGroup as SpectrumRadioGroup,
   RangeCalendar as SpectrumRangeCalendar,
   RangeSlider as SpectrumRangeSlider,
+  Row as SpectrumRow,
   SearchField as SpectrumSearchField,
   Skeleton as SpectrumSkeleton,
   Slider as SpectrumSlider,
@@ -71,7 +74,12 @@ import {
   Tab as SpectrumTab,
   TabList as SpectrumTabList,
   TabPanel as SpectrumTabPanel,
+  TableBody as SpectrumTableBody,
+  TableHeader as SpectrumTableHeader,
+  TableView as SpectrumTableView,
   Tabs as SpectrumTabs,
+  Tag as SpectrumTag,
+  TagGroup as SpectrumTagGroup,
   Text as SpectrumText,
   TextArea as SpectrumTextArea,
   TextField as SpectrumTextField,
@@ -82,6 +90,9 @@ import {
   ToastQueue as SpectrumToastQueue,
   ToggleButton as SpectrumToggleButton,
   ToggleButtonGroup as SpectrumToggleButtonGroup,
+  TreeView as SpectrumTreeView,
+  TreeViewItem as SpectrumTreeViewItem,
+  TreeViewItemContent as SpectrumTreeViewItemContent,
   createIcon,
   createIllustration,
 } from "@react-spectrum/s2";
@@ -626,6 +637,31 @@ const actionBarItems = [
   { id: "delete", label: "Delete" },
 ];
 
+const collectionDocuments = [
+  { id: "project-brief", name: "Project brief.pdf", description: "PDF document" },
+  { id: "quarterly-report", name: "Quarterly report.docx", description: "Document" },
+  { id: "budget", name: "Budget.xlsx", description: "Spreadsheet" },
+];
+
+const collectionTableRows = [
+  { id: "project-brief", name: "Project brief.pdf", type: "PDF", owner: "Maya", status: "Ready" },
+  {
+    id: "quarterly-report",
+    name: "Quarterly report.docx",
+    type: "Document",
+    owner: "Noah",
+    status: "Review",
+  },
+  { id: "budget", name: "Budget.xlsx", type: "Spreadsheet", owner: "Iris", status: "Draft" },
+];
+
+const collectionTags = [
+  { id: "landscape", name: "Landscape" },
+  { id: "portrait", name: "Portrait" },
+  { id: "night", name: "Night" },
+  { id: "golden-hour", name: "Golden Hour" },
+];
+
 function queryParamFromWindow(name) {
   if (typeof window === "undefined") {
     return null;
@@ -680,6 +716,7 @@ export const reactStyledFixtures = {
   image: () => jsx(ReactImageDemo, {}),
   form: () => jsx(ReactFormDemo, {}),
   link: () => jsx(ReactLinkDemo, {}),
+  listview: () => jsx(ReactListViewDemo, {}),
   meter: () => jsx(ReactMeterDemo, {}),
   menu: () => jsx(ReactMenuDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
@@ -702,8 +739,11 @@ export const reactStyledFixtures = {
   segmentedcontrol: () => jsx(ReactSegmentedControlDemo, {}),
   selectboxgroup: () => jsx(ReactSelectBoxGroupDemo, {}),
   slider: () => jsx(ReactSliderDemo, {}),
+  tableview: () => jsx(ReactTableViewDemo, {}),
+  taggroup: () => jsx(ReactTagGroupDemo, {}),
   tooltip: () => jsx(ReactTooltipDemo, {}),
   toast: () => jsx(ReactToastDemo, {}),
+  treeview: () => jsx(ReactTreeViewDemo, {}),
 };
 
 function renderProviderDemo() {
@@ -905,6 +945,161 @@ function ReactRangeSliderDemo() {
           "data-comparison-rangeslider": "disabled",
         }),
       ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactListViewDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsx("div", {
+      style: collectionFixtureStyle,
+      "data-comparison-control-root": "listview",
+      children: jsx(SpectrumListView, {
+        "aria-label": "Documents",
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["project-brief"],
+        UNSAFE_style: collectionListStyle,
+        children: collectionDocuments.map((item) =>
+          jsx(
+            SpectrumListViewItem,
+            {
+              id: item.id,
+              textValue: item.name,
+              children: jsxs(Fragment, {
+                children: [
+                  jsx(SpectrumText, { children: item.name }),
+                  jsx(SpectrumText, { slot: "description", children: item.description }),
+                ],
+              }),
+            },
+            item.id,
+          ),
+        ),
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactTableViewDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsx("div", {
+      style: collectionFixtureStyle,
+      "data-comparison-control-root": "tableview",
+      children: jsxs(SpectrumTableView, {
+        "aria-label": "Project documents",
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["project-brief"],
+        UNSAFE_style: collectionTableStyle,
+        children: [
+          jsxs(SpectrumTableHeader, {
+            children: [
+              jsx(SpectrumColumn, { id: "name", isRowHeader: true, children: "Name" }),
+              jsx(SpectrumColumn, { id: "type", children: "Type" }),
+              jsx(SpectrumColumn, { id: "owner", children: "Owner" }),
+              jsx(SpectrumColumn, { id: "status", children: "Status" }),
+            ],
+          }),
+          jsx(SpectrumTableBody, {
+            children: collectionTableRows.map((row) =>
+              jsxs(
+                SpectrumRow,
+                {
+                  id: row.id,
+                  children: [
+                    jsx(SpectrumCell, { children: row.name }),
+                    jsx(SpectrumCell, { children: row.type }),
+                    jsx(SpectrumCell, { children: row.owner }),
+                    jsx(SpectrumCell, { children: row.status }),
+                  ],
+                },
+                row.id,
+              ),
+            ),
+          }),
+        ],
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactTagGroupDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  const [tags, setTags] = useState(collectionTags);
+  return renderReactSpectrumReference(
+    jsx("div", {
+      style: collectionFixtureStyle,
+      "data-comparison-control-root": "taggroup",
+      children: jsx(SpectrumTagGroup, {
+        label: "Photo categories",
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["landscape"],
+        items: tags,
+        onRemove: (keys) =>
+          setTags((currentTags) => currentTags.filter((item) => !keys.has(item.id))),
+        UNSAFE_style: collectionTagGroupStyle,
+        children: (item) => jsx(SpectrumTag, { children: item.name }),
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactTreeViewDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsx("div", {
+      style: collectionFixtureStyle,
+      "data-comparison-control-root": "treeview",
+      children: jsxs(SpectrumTreeView, {
+        "aria-label": "Files",
+        selectionMode: "multiple",
+        defaultExpandedKeys: ["documents", "project"],
+        defaultSelectedKeys: ["weekly-report"],
+        UNSAFE_style: collectionTreeStyle,
+        children: [
+          jsxs(SpectrumTreeViewItem, {
+            id: "documents",
+            textValue: "Documents",
+            children: [
+              jsx(SpectrumTreeViewItemContent, { children: "Documents" }),
+              jsxs(SpectrumTreeViewItem, {
+                id: "project",
+                textValue: "Project",
+                children: [
+                  jsx(SpectrumTreeViewItemContent, { children: "Project" }),
+                  jsx(SpectrumTreeViewItem, {
+                    id: "weekly-report",
+                    textValue: "Weekly Report",
+                    children: jsx(SpectrumTreeViewItemContent, { children: "Weekly Report" }),
+                  }),
+                  jsx(SpectrumTreeViewItem, {
+                    id: "budget",
+                    textValue: "Budget",
+                    children: jsx(SpectrumTreeViewItemContent, { children: "Budget" }),
+                  }),
+                ],
+              }),
+            ],
+          }),
+          jsxs(SpectrumTreeViewItem, {
+            id: "photos",
+            textValue: "Photos",
+            children: [
+              jsx(SpectrumTreeViewItemContent, { children: "Photos" }),
+              jsx(SpectrumTreeViewItem, {
+                id: "image-1",
+                textValue: "Image 1",
+                children: jsx(SpectrumTreeViewItemContent, { children: "Image 1" }),
+              }),
+            ],
+          }),
+        ],
+      }),
     }),
     colorScheme,
   );
@@ -4876,6 +5071,29 @@ const rangeSliderStackStyle = {
   gap: 28,
   width: 420,
   padding: 12,
+};
+
+const collectionFixtureStyle = {
+  width: 440,
+  padding: 12,
+};
+
+const collectionListStyle = {
+  width: "100%",
+  height: 220,
+};
+
+const collectionTableStyle = {
+  width: "100%",
+};
+
+const collectionTagGroupStyle = {
+  maxWidth: 320,
+};
+
+const collectionTreeStyle = {
+  width: "100%",
+  maxHeight: 280,
 };
 
 const cardViewDemoStyle = {
