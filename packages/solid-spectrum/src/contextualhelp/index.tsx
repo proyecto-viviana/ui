@@ -42,7 +42,7 @@ export interface ContextualHelpProps extends Omit<
   | "isOpen"
   | "onOpenChange"
   | "padding"
-  | "showArrow"
+  | "hideArrow"
   | "size"
   | "slot"
   | "trigger"
@@ -81,7 +81,7 @@ export interface ContextualHelpProps extends Omit<
 
 export interface ContextualHelpPopoverProps extends Omit<
   PopoverProps,
-  "children" | "class" | "padding" | "showArrow" | "size"
+  "children" | "class" | "padding" | "hideArrow" | "size"
 > {
   /** Contextual help popover content. */
   children: JSX.Element;

@@ -92,8 +92,9 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
   let triggerRef: HTMLElement | null = null;
   const triggerId = createUniqueId();
 
-  // Create overlay trigger props (used via context, not directly applied)
-  createOverlayTrigger({ type: "dialog" }, state, () => triggerRef);
+  // Create overlay trigger props so registered trigger components can expose
+  // the same expanded/controls relationship as React Aria DialogTrigger.
+  const triggerAria = createOverlayTrigger({ type: "dialog" }, state, () => triggerRef);
 
   const restoreFocusToTrigger = () => {
     const trigger = triggerRef;
@@ -144,6 +145,8 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
     triggerRef: () => triggerRef,
     setTriggerRef,
     triggerId,
+    triggerProps: triggerAria.triggerProps,
+    overlayProps: triggerAria.overlayProps,
   }));
 
   // In SolidJS, we simply render children directly within the provider

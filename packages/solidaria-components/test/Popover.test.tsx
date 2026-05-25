@@ -6,7 +6,8 @@ import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
 import { UNSAFE_PortalProvider } from "@proyecto-viviana/solidaria";
 import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";
 import { Button } from "../src/Button";
-import { createSignal } from "solid-js";
+import { DialogTrigger } from "../src/Dialog";
+import { createSignal, onMount } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser is consolidated in solidaria-test-utils.
@@ -67,6 +68,28 @@ describe("Popover", () => {
   });
 
   describe("Popover component", () => {
+    it("supports DialogTrigger composition used by React Spectrum Popover docs", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <DialogTrigger>
+          <Button>Feedback</Button>
+          <Popover aria-label="Feedback">Popover content here</Popover>
+        </DialogTrigger>
+      ));
+
+      const button = screen.getByRole("button", { name: "Feedback" });
+      expect(screen.queryByRole("dialog", { name: "Feedback" })).not.toBeInTheDocument();
+
+      await user.click(button);
+
+      const dialog = screen.getByRole("dialog", { name: "Feedback" });
+      expect(dialog).toBeInTheDocument();
+      expect(button).not.toHaveAttribute("aria-haspopup");
+      expect(button).toHaveAttribute("aria-expanded", "true");
+      expect(button).toHaveAttribute("aria-controls", dialog.id);
+    });
+
     it("should render popover content when open", async () => {
       const user = setupUser();
 
@@ -88,6 +111,74 @@ describe("Popover", () => {
 
       // Now popover should be visible
       expect(screen.getByTestId("popover-content")).toBeInTheDocument();
+    });
+
+    it("should render React Aria-compatible dismiss buttons and modal underlay", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover>
+            <div data-testid="popover-content">Content</div>
+          </Popover>
+        </PopoverTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+
+      expect(screen.getByTestId("underlay")).toBeInTheDocument();
+      const dismissButtons = screen.getAllByLabelText("Dismiss");
+      expect(dismissButtons).toHaveLength(2);
+
+      dismissButtons[0].click();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should only render the trailing dismiss button for non-modal popovers", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover isNonModal>
+            <div data-testid="popover-content">Content</div>
+          </Popover>
+        </PopoverTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+
+      expect(screen.queryByTestId("underlay")).not.toBeInTheDocument();
+      expect(screen.getAllByLabelText("Dismiss")).toHaveLength(1);
+    });
+
+    it("should preserve descendant focus when content focuses on mount", async () => {
+      const user = setupUser();
+
+      function FocusedInput() {
+        let input!: HTMLInputElement;
+        onMount(() => window.setTimeout(() => input.focus(), 0));
+        return <input ref={input} aria-label="Focused field" />;
+      }
+
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover aria-label="Focus test">
+            <FocusedInput />
+          </Popover>
+        </PopoverTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("textbox", { name: "Focused field" })).toHaveFocus();
+      });
     });
 
     it("should expose trigger aria-expanded and aria-controls while open", async () => {

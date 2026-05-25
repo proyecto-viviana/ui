@@ -2643,6 +2643,38 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "The docs-style prop controls drive trigger label, heading, content, footer, variant, ActionButton size, placement, crossOffset, containerPadding, open state, and flip into both stacks. Offset is serialized for API visibility while the rendered main popover follows React S2's offset={8}.",
     },
   ],
+  popover: [
+    {
+      id: "styled.trigger.dialog",
+      label: "DialogTrigger composition",
+      kind: "overlay",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts + packages/solidaria-components/test/Popover.test.tsx + packages/solid-spectrum/test/regression.test.tsx",
+      note: "Default Popover coverage uses the S2 documented DialogTrigger composition in both stacks. Solid Popover consumes DialogTriggerContext, and the registered Button gets dialog trigger aria-expanded/controls wiring.",
+    },
+    {
+      id: "styled.custom-anchor",
+      label: "Custom anchor mode",
+      kind: "overlay",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts",
+      note: "The documented triggerRef/isOpen custom-anchor mode remains routed in the comparison viewer, with matching controlled open state and placement props.",
+    },
+    {
+      id: "styled.props.controls",
+      label: "Interactive prop controls",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/modeled-controls-contract.spec.ts",
+      note: "The docs-style prop controls drive trigger mode, trigger label, accessible label, body text, placement, fit/S/M/L size, offset, crossOffset, containerPadding, maxHeight, controlled open state, flip, arrow visibility, and form content into both stacks.",
+    },
+  ],
   tooltip: [
     {
       id: "styled.trigger.default",

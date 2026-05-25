@@ -541,6 +541,13 @@ import {
   type ContextualHelpDemoProps,
 } from "@comparison/data/contextualhelp-demo";
 import {
+  isPopoverOpenControlChecked,
+  normalizePopoverDemoProps,
+  popoverDemoPropsFromWindow,
+  serializePopoverDemoProps,
+  type PopoverDemoProps,
+} from "@comparison/data/popover-demo";
+import {
   isTooltipOpenControlChecked,
   normalizeTooltipDemoProps,
   serializeTooltipDemoProps,
@@ -1268,9 +1275,162 @@ function SolidSpectrumRangeSliderDemo() {
 }
 
 function SolidSpectrumPopoverDemo() {
-  const [isOpen, setIsOpen] = createSignal(true);
+  const [demoProps, setDemoProps] = createSignal<PopoverDemoProps>(popoverDemoPropsFromWindow());
   const colorScheme = createComparisonResolvedThemeSignal();
   let anchorElement: HTMLDivElement | null = null;
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "popover") {
+        setDemoProps(normalizePopoverDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
+  const updateOpen = (nextOpen: boolean) => {
+    setDemoProps((current) =>
+      current.isOpen && !nextOpen && isPopoverOpenControlChecked()
+        ? current
+        : normalizePopoverDemoProps({ ...current, isOpen: nextOpen }),
+    );
+  };
+  const popoverMaxHeight = () => (demoProps().maxHeight === "" ? undefined : demoProps().maxHeight);
+  const popoverSize = () => (demoProps().size === "fit" ? undefined : demoProps().size);
+  const popoverForm = () =>
+    demoProps().showForm
+      ? hc(SolidSpectrumForm, {}, [
+          hc(SolidSpectrumTextField, {
+            label: "Subject",
+            placeholder: "Enter a summary",
+          }),
+          hc(SolidSpectrumTextField, {
+            label: "Description",
+            isRequired: true,
+            placeholder: "Enter your feedback",
+          }),
+          hc(SolidSpectrumSwitch, {}, [
+            "Adobe can contact me for further questions concerning this feedback",
+          ]),
+          hc(SolidSpectrumButton, { variant: "accent" }, ["Submit"]),
+        ])
+      : null;
+  const popoverContent = () =>
+    hc("div", { style: popoverContentStyle }, [
+      hc("p", { style: popoverBodyTextStyle }, [() => demoProps().bodyText]),
+      popoverForm,
+    ]);
+  const popoverProps = {
+    get placement() {
+      return demoProps().placement;
+    },
+    get offset() {
+      return demoProps().offset;
+    },
+    get crossOffset() {
+      return demoProps().crossOffset;
+    },
+    get containerPadding() {
+      return demoProps().containerPadding;
+    },
+    get shouldFlip() {
+      return demoProps().shouldFlip;
+    },
+    get hideArrow() {
+      return demoProps().hideArrow;
+    },
+    get maxHeight() {
+      return popoverMaxHeight();
+    },
+    get size() {
+      return popoverSize();
+    },
+    padding: "none",
+    get "aria-label"() {
+      return demoProps().ariaLabel;
+    },
+  };
+  const dialogTriggerContent = () =>
+    hc(
+      SolidSpectrumDialogTrigger,
+      {
+        get isOpen() {
+          return demoProps().isOpen;
+        },
+        onOpenChange: updateOpen,
+      },
+      [
+        hc(SolidSpectrumButton, { variant: "secondary" }, [() => demoProps().triggerLabel]),
+        hc(SolidSpectrumPopover, popoverProps, [popoverContent]),
+      ],
+    );
+  const customAnchorContent = () => [
+    hc(
+      SolidSpectrumButton,
+      {
+        variant: "secondary",
+        onPress: () => updateOpen(!demoProps().isOpen),
+      },
+      [
+        () =>
+          demoProps().isOpen
+            ? `Close ${demoProps().triggerLabel}`
+            : `Open ${demoProps().triggerLabel}`,
+      ],
+    ),
+    hc(
+      "div",
+      {
+        ref: (element: HTMLDivElement) => {
+          anchorElement = element;
+        },
+        style: popoverAnchorStyle,
+      },
+      ["Popover anchor"],
+    ),
+    hc(
+      SolidSpectrumPopover,
+      {
+        get placement() {
+          return demoProps().placement;
+        },
+        get offset() {
+          return demoProps().offset;
+        },
+        get crossOffset() {
+          return demoProps().crossOffset;
+        },
+        get containerPadding() {
+          return demoProps().containerPadding;
+        },
+        get shouldFlip() {
+          return demoProps().shouldFlip;
+        },
+        get hideArrow() {
+          return demoProps().hideArrow;
+        },
+        get maxHeight() {
+          return popoverMaxHeight();
+        },
+        get size() {
+          return popoverSize();
+        },
+        padding: "none",
+        get "aria-label"() {
+          return demoProps().ariaLabel;
+        },
+        get isOpen() {
+          return demoProps().isOpen;
+        },
+        onOpenChange: updateOpen,
+        triggerRef: () => anchorElement,
+      },
+      [popoverContent],
+    ),
+  ];
+  const routedPopoverContent = () =>
+    demoProps().triggerMode === "dialogTrigger" ? dialogTriggerContent() : customAnchorContent();
 
   return hc(
     SolidSpectrumProvider,
@@ -1287,68 +1447,17 @@ function SolidSpectrumPopoverDemo() {
         {
           style: popoverFixtureStyle,
           "data-comparison-control-root": "popover",
+          get "data-comparison-control-props"() {
+            return serializePopoverDemoProps(demoProps());
+          },
           get "data-comparison-open"() {
-            return String(isOpen());
+            return String(demoProps().isOpen);
+          },
+          get "data-comparison-popover-trigger-mode"() {
+            return demoProps().triggerMode;
           },
         },
-        [
-          hc(
-            SolidSpectrumButton,
-            {
-              variant: "secondary",
-              onPress: () => setIsOpen((open) => !open),
-            },
-            [() => (isOpen() ? "Close feedback" : "Open feedback")],
-          ),
-          hc(
-            "div",
-            {
-              ref: (element: HTMLDivElement) => {
-                anchorElement = element;
-              },
-              style: popoverAnchorStyle,
-            },
-            ["Popover anchor"],
-          ),
-          hc(
-            SolidSpectrumPopover,
-            {
-              get isOpen() {
-                return isOpen();
-              },
-              onOpenChange: setIsOpen,
-              triggerRef: () => anchorElement,
-              placement: "bottom start",
-              offset: 8,
-              containerPadding: 12,
-              showArrow: true,
-              padding: "none",
-              "aria-label": "Feedback",
-            },
-            [
-              hc("div", { style: popoverContentStyle }, [
-                hc("p", { style: popoverBodyTextStyle }, [
-                  "How are we doing? Share your feedback here.",
-                ]),
-                hc(SolidSpectrumForm, {}, [
-                  hc(SolidSpectrumTextField, {
-                    label: "Subject",
-                    placeholder: "Enter a summary",
-                  }),
-                  hc(SolidSpectrumTextField, {
-                    label: "Description",
-                    isRequired: true,
-                    placeholder: "Enter your feedback",
-                  }),
-                  hc(SolidSpectrumSwitch, {}, [
-                    "Adobe can contact me for further questions concerning this feedback",
-                  ]),
-                  hc(SolidSpectrumButton, { variant: "accent" }, ["Submit"]),
-                ]),
-              ]),
-            ],
-          ),
-        ],
+        [routedPopoverContent],
       ),
     ],
   );

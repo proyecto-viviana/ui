@@ -5,7 +5,7 @@ import {
   type ComponentControlGroup,
 } from "../src/data/component-controls";
 import { comparisonEntries } from "../src/data/comparison-manifest";
-import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
+import { frameworkPanel, waitForComparisonRouteReady } from "./comparison-page";
 
 const modeledControlGroups = Object.values(componentControlGroups)
   .filter((group) => group.coverage === "modeled")
@@ -153,6 +153,16 @@ const contextualHelpTextControlValues: Record<string, string> = {
   containerPadding: "14",
 };
 
+const popoverTextControlValues: Record<string, string> = {
+  triggerLabel: "Contract feedback",
+  ariaLabel: "Contract feedback",
+  bodyText: "Contract feedback copy",
+  offset: "10",
+  crossOffset: "4",
+  containerPadding: "16",
+  maxHeight: "240",
+};
+
 const dateRangePickerTextControlValues: Record<string, string> = {
   startValue: "2025-02-03T08:45:00",
   endValue: "2025-02-14T17:30:00",
@@ -244,6 +254,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (group.slug === "contextualhelp" && control.name in contextualHelpTextControlValues) {
       return contextualHelpTextControlValues[control.name];
     }
+    if (group.slug === "popover" && control.name in popoverTextControlValues) {
+      return popoverTextControlValues[control.name];
+    }
     if (group.slug === "daterangepicker" && control.name in dateRangePickerTextControlValues) {
       return dateRangePickerTextControlValues[control.name];
     }
@@ -301,6 +314,12 @@ function expectedSerializedValue(
     return Number(value);
   }
   if (group.slug === "contextualhelp" && control.name in contextualHelpTextControlValues) {
+    return Number(value);
+  }
+  if (
+    group.slug === "popover" &&
+    ["offset", "crossOffset", "containerPadding", "maxHeight"].includes(control.name)
+  ) {
     return Number(value);
   }
   if (group.slug === "actionbar" && control.name === "selectedItemCount" && value !== "all") {
@@ -364,6 +383,16 @@ async function setControlValue(form: Locator, control: ComponentControl, value: 
   if (control.kind === "switch") {
     const checkbox = form.locator(`input[type="checkbox"][name="${control.name}"]`);
     await expect(checkbox).toHaveCount(1);
+    if (control.name === "isOpen") {
+      await checkbox.evaluate((element, checked) => {
+        const input = element as HTMLInputElement;
+        input.checked = checked;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }, Boolean(value));
+      await expect(checkbox).toBeChecked({ checked: Boolean(value) });
+      return;
+    }
     if (value) {
       await checkbox.check();
     } else {
@@ -433,7 +462,10 @@ test.describe("modeled comparison controls contract", () => {
         await setControlValue(form, control, value);
       }
 
-      const section = await styledSection(page);
+      const section = page.locator("#example").filter({
+        has: page.locator("h2", { hasText: "Example" }),
+      });
+      await expect(section).toHaveCount(1);
       const reactPanel = await frameworkPanel(section, "React Spectrum stack");
       const solidPanel = await frameworkPanel(section, "Solidaria stack");
       const reactRoot = reactPanel.locator(`[data-comparison-control-root="${group.slug}"]`);

@@ -369,7 +369,18 @@ export function Button(props: ButtonProps): JSX.Element {
           | "submit"
           | "reset"
           | undefined);
-  const popoverTriggerAriaProps = () => {
+  const triggerAriaProps = () => {
+    const dialogTriggerProps = dialogTriggerContext?.triggerProps;
+    if (dialogTriggerProps && isDialogTrigger()) {
+      const next: Record<string, unknown> = {};
+      for (const name of ["aria-haspopup", "aria-expanded", "aria-controls"]) {
+        if (dialogTriggerProps[name] != null) {
+          next[name] = dialogTriggerProps[name];
+        }
+      }
+      return next;
+    }
+
     const triggerProps = popoverTriggerContext?.triggerProps;
     if (!triggerProps || !isPopoverTrigger()) {
       return {};
@@ -422,7 +433,7 @@ export function Button(props: ButtonProps): JSX.Element {
     ({
       ...domProps(),
       ...disablePendingInteractions(cleanButtonProps()),
-      ...popoverTriggerAriaProps(),
+      ...triggerAriaProps(),
       ...cleanFocusProps(),
       ...cleanHoverProps(),
       type: buttonType(),

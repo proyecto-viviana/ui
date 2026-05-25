@@ -23,6 +23,7 @@ import {
   createPopover,
   FocusScope,
   useUNSAFE_PortalContext,
+  visuallyHiddenStyles,
   type Placement,
   type PlacementAxis,
 } from "@proyecto-viviana/solidaria";
@@ -36,7 +37,7 @@ import {
   filterDOMProps,
   dataAttr,
 } from "./utils";
-import { PopoverTriggerContext } from "./contexts";
+import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
 
 export interface PopoverRenderProps {
   /**
@@ -102,6 +103,22 @@ export interface PopoverProps extends SlotProps {
    */
   shouldFlip?: boolean;
   /**
+   * The max height of the popover.
+   */
+  maxHeight?: number;
+  /**
+   * A boundary element for placement calculations.
+   */
+  boundaryElement?: Element;
+  /**
+   * A ref for the popover arrow element.
+   */
+  arrowRef?: () => Element | null;
+  /**
+   * A ref for the scrollable popover element.
+   */
+  scrollRef?: () => Element | null;
+  /**
    * Whether the popover is non-modal (allows interaction outside).
    */
   isNonModal?: boolean;
@@ -154,6 +171,18 @@ interface PopoverContextValue {
 
 export const PopoverContext = createContext<PopoverContextValue | null>(null);
 const PopoverGroupContext = createContext<(() => HTMLElement | null) | null>(null);
+
+function PopoverDismissButton(props: { onDismiss: () => void }): JSX.Element {
+  return (
+    <button
+      type="button"
+      aria-label="Dismiss"
+      tabIndex={-1}
+      onClick={props.onDismiss}
+      style={visuallyHiddenStyles}
+    />
+  );
+}
 
 /**
  * A PopoverTrigger opens a popover when a trigger element is pressed.
@@ -223,6 +252,10 @@ export function Popover(props: PopoverProps): JSX.Element {
     "offset",
     "crossOffset",
     "shouldFlip",
+    "maxHeight",
+    "boundaryElement",
+    "arrowRef",
+    "scrollRef",
     "isNonModal",
     "isKeyboardDismissDisabled",
     "shouldCloseOnInteractOutside",
@@ -238,8 +271,12 @@ export function Popover(props: PopoverProps): JSX.Element {
   const [groupRef, setGroupRef] = createSignal<HTMLDivElement | null>(null);
 
   const triggerContext = useContext(PopoverTriggerContext);
+  const dialogTriggerContext = useContext(DialogTriggerContext);
   const popoverGroupContext = useContext(PopoverGroupContext);
-  const resolvedTrigger = () => local.trigger ?? triggerContext?.trigger;
+  const resolvedTrigger = () =>
+    local.trigger ??
+    triggerContext?.trigger ??
+    (dialogTriggerContext ? "DialogTrigger" : undefined);
   const isSubPopover = () => resolvedTrigger() === "SubmenuTrigger" && popoverGroupContext != null;
 
   const [internalOpen, setInternalOpen] = createSignal(local.defaultOpen ?? false);
@@ -248,6 +285,9 @@ export function Popover(props: PopoverProps): JSX.Element {
     if (local.isOpen !== undefined) return local.isOpen;
     if (triggerContext) {
       return triggerContext.state.isOpen();
+    }
+    if (dialogTriggerContext) {
+      return dialogTriggerContext.state.isOpen();
     }
     return internalOpen();
   };
@@ -258,6 +298,9 @@ export function Popover(props: PopoverProps): JSX.Element {
     } else if (triggerContext) {
       triggerContext.state.close();
       local.onOpenChange?.(false);
+    } else if (dialogTriggerContext) {
+      dialogTriggerContext.state.close();
+      local.onOpenChange?.(false);
     } else {
       setInternalOpen(false);
       local.onOpenChange?.(false);
@@ -267,6 +310,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   const getTriggerRef = () => {
     if (local.triggerRef) return local.triggerRef();
     if (triggerContext) return triggerContext.triggerRef();
+    if (dialogTriggerContext) return dialogTriggerContext.triggerRef();
     return null;
   };
 
@@ -290,6 +334,18 @@ export function Popover(props: PopoverProps): JSX.Element {
       get shouldFlip() {
         return local.shouldFlip;
       },
+      get maxHeight() {
+        return local.maxHeight;
+      },
+      get boundaryElement() {
+        return local.boundaryElement;
+      },
+      get arrowRef() {
+        return local.arrowRef;
+      },
+      get scrollRef() {
+        return local.scrollRef;
+      },
       get isNonModal() {
         return local.isNonModal;
       },
@@ -311,6 +367,9 @@ export function Popover(props: PopoverProps): JSX.Element {
         } else if (triggerContext) {
           triggerContext.state.open();
           local.onOpenChange?.(true);
+        } else if (dialogTriggerContext) {
+          dialogTriggerContext.state.open();
+          local.onOpenChange?.(true);
         } else {
           setInternalOpen(true);
           local.onOpenChange?.(true);
@@ -323,6 +382,8 @@ export function Popover(props: PopoverProps): JSX.Element {
           local.onOpenChange?.(true);
         } else if (triggerContext) {
           triggerContext.state.toggle();
+        } else if (dialogTriggerContext) {
+          dialogTriggerContext.state.toggle();
         } else {
           setInternalOpen(true);
           local.onOpenChange?.(true);
@@ -375,7 +436,11 @@ export function Popover(props: PopoverProps): JSX.Element {
   );
   const overlayId = () => {
     const restId = (rest as Record<string, unknown>).id as string | undefined;
-    return restId ?? (triggerContext?.overlayProps?.id as string | undefined);
+    return (
+      restId ??
+      (triggerContext?.overlayProps?.id as string | undefined) ??
+      (dialogTriggerContext?.overlayProps?.id as string | undefined)
+    );
   };
 
   const cleanPopoverProps = () => {
@@ -408,15 +473,44 @@ export function Popover(props: PopoverProps): JSX.Element {
     return portalContext.getContainer?.() ?? undefined;
   };
 
-  // Ensure Escape handling works even when popover content has no focusable children.
+  // Match React Aria Components: focus the popover container only when no
+  // descendant has already moved focus during mount.
   createEffect(() => {
     if (!isOpen() || !shouldBeDialog()) return;
     if ((local.autoFocus ?? true) === false) return;
     if (!popoverRef) return;
     if (resolvedTrigger() === "SubmenuTrigger") return;
-    if (document.activeElement !== popoverRef) {
+
+    let timeout: number | undefined;
+    let frame: number | undefined;
+
+    const focusIfNeeded = () => {
+      if (!isOpen() || !shouldBeDialog()) return;
+      if (!popoverRef || resolvedTrigger() === "SubmenuTrigger") return;
+      if (document.activeElement === popoverRef || popoverRef.contains(document.activeElement)) {
+        return;
+      }
       popoverRef.focus();
+    };
+
+    const scheduleFocus = () => {
+      timeout = window.setTimeout(focusIfNeeded, 0);
+    };
+
+    if (typeof window.requestAnimationFrame === "function") {
+      frame = window.requestAnimationFrame(scheduleFocus);
+    } else {
+      scheduleFocus();
     }
+
+    onCleanup(() => {
+      if (frame !== undefined) {
+        window.cancelAnimationFrame(frame);
+      }
+      if (timeout !== undefined) {
+        window.clearTimeout(timeout);
+      }
+    });
   });
 
   // Fallback Escape handling for environments where focus is not moved into the popover.
@@ -438,7 +532,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     <PopoverContext.Provider
       value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
     >
-      <FocusScope contain={shouldBeDialog()} restoreFocus autoFocus={local.autoFocus ?? true}>
+      <FocusScope contain={shouldBeDialog()} restoreFocus>
         <div
           {...domProps()}
           {...cleanPopoverProps()}
@@ -453,15 +547,28 @@ export function Popover(props: PopoverProps): JSX.Element {
           data-entering={dataAttr(local.isEntering)}
           data-exiting={dataAttr(local.isExiting)}
         >
+          <Show when={!local.isNonModal}>
+            <PopoverDismissButton onDismiss={close} />
+          </Show>
           {renderProps.renderChildren()}
+          <PopoverDismissButton onDismiss={close} />
         </div>
       </FocusScope>
     </PopoverContext.Provider>
   );
 
+  const underlay = () => (
+    <div
+      data-testid="underlay"
+      {...(popoverAria.underlayProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
+      style={{ position: "fixed", inset: 0 }}
+    />
+  );
+
   return (
     <Show when={isOpen() || local.isExiting}>
       <Portal mount={portalContainer()}>
+        <Show when={!local.isNonModal && !isSubPopover() && isOpen()}>{underlay()}</Show>
         <Show
           when={isSubPopover()}
           fallback={
@@ -481,7 +588,9 @@ export function Popover(props: PopoverProps): JSX.Element {
 
 export interface OverlayArrowProps {
   /** The children - should be an SVG or element for the arrow. */
-  children?: JSX.Element | ((placement: PlacementAxis | null) => JSX.Element);
+  children?: JSX.Element;
+  /** Render function used when Solid children accessors would be ambiguous. */
+  render?: () => JSX.Element;
   /** The CSS className. */
   class?: string;
   /** The inline style. */
@@ -495,40 +604,38 @@ export function OverlayArrow(props: OverlayArrowProps): JSX.Element {
   const popoverContext = useContext(PopoverContext);
   const placement = () => popoverContext?.placement() ?? null;
 
-  const cleanArrowProps = () => {
-    const contextArrowProps = popoverContext?.arrowProps() as Record<string, unknown> | undefined;
-    if (!contextArrowProps) return {};
-    const { style: _style, ref: _ref, ...rest } = contextArrowProps;
-    return rest;
-  };
-
   const mergedStyle = () => {
     const contextStyle = (popoverContext?.arrowProps() as Record<string, unknown> | undefined)
-      ?.style as JSX.CSSProperties | undefined;
-    return {
-      ...contextStyle,
-      ...props.style,
-    };
-  };
-
-  const resolveChildren = () => {
-    const children = props.children;
-    if (typeof children === "function") {
-      return children(placement());
+      ?.style as (JSX.CSSProperties & Record<string, unknown>) | undefined;
+    const style: JSX.CSSProperties = {};
+    if (typeof contextStyle?.left === "string") {
+      style.left = contextStyle.left;
     }
-    return children;
+    if (typeof contextStyle?.top === "string") {
+      style.top = contextStyle.top;
+    }
+
+    const localStyle =
+      props.style &&
+      !(typeof CSSStyleDeclaration !== "undefined" && props.style instanceof CSSStyleDeclaration)
+        ? props.style
+        : undefined;
+
+    return {
+      ...style,
+      ...localStyle,
+    };
   };
 
   return (
     <div
-      {...cleanArrowProps()}
       class={props.class}
       style={mergedStyle()}
       data-placement={placement()}
       aria-hidden="true"
       role="presentation"
     >
-      {resolveChildren()}
+      {props.render ? props.render() : props.children}
     </div>
   );
 }

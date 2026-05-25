@@ -594,6 +594,22 @@ describe("Regression: AlertDialog", () => {
 });
 
 describe("Regression: Popover", () => {
+  it("supports DialogTrigger composition from S2 Popover docs", async () => {
+    const user = setupUser();
+    render(() => (
+      <DialogTrigger>
+        <Button>Feedback</Button>
+        <Popover>
+          <p>Feedback form</p>
+        </Popover>
+      </DialogTrigger>
+    ));
+
+    await user.click(screen.getByRole("button", { name: "Feedback" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Feedback form")).toBeInTheDocument();
+  });
+
   it("trigger click → dialog content", async () => {
     const user = setupUser();
     render(() => (

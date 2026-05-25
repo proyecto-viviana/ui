@@ -7,11 +7,16 @@ import {
   type PopoverTriggerProps as HeadlessPopoverTriggerProps,
   type PopoverRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import type { StyleString } from "../style";
+import { lightDark, setColorScheme, style } from "../style" with { type: "macro" };
+import { mergeStyles } from "../style/runtime";
+import { useTheme, type ColorScheme } from "../provider";
 
 export type PopoverPlacement = NonNullable<HeadlessPopoverProps["placement"]>;
 export type Placement = PopoverPlacement;
 export type PlacementAxis = NonNullable<PopoverRenderProps["placement"]>;
-export type PopoverSize = "sm" | "md" | "lg";
+export type PopoverSize = "S" | "M" | "L";
+export type PopoverPadding = "none" | "sm" | "md" | "lg";
 
 export interface PopoverTriggerProps extends HeadlessPopoverTriggerProps {
   /** The children of the popover trigger (trigger element and popover). */
@@ -35,56 +40,133 @@ export interface PopoverProps extends Omit<HeadlessPopoverProps, "class" | "styl
   size?: PopoverSize;
   /** Additional CSS class name. */
   class?: string;
-  /** Whether to show an arrow pointing to the trigger. */
-  showArrow?: boolean;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Whether to hide the arrow pointing to the trigger. */
+  hideArrow?: boolean;
   /** Custom padding inside the popover. */
-  padding?: "none" | "sm" | "md" | "lg";
+  padding?: PopoverPadding;
 }
 
-const baseStyles = [
-  "bg-bg-300",
-  "rounded-lg",
-  "shadow-xl",
-  "border border-primary-700",
-  "text-primary-200",
-  "outline-none",
-  "animate-in fade-in-0 zoom-in-95",
-  "data-[placement=top]:slide-in-from-bottom-2",
-  "data-[placement=bottom]:slide-in-from-top-2",
-  "data-[placement=left]:slide-in-from-right-2",
-  "data-[placement=right]:slide-in-from-left-2",
-  "data-[exiting]:animate-out data-[exiting]:fade-out-0 data-[exiting]:zoom-out-95",
-].join(" ");
-
-const sizeStyles: Record<PopoverSize, string> = {
-  sm: "max-w-xs",
-  md: "max-w-sm",
-  lg: "max-w-lg",
-};
-
-const paddingStyles: Record<string, string> = {
-  none: "",
-  sm: "p-2",
-  md: "p-4",
-  lg: "p-6",
-};
-
-const arrowBaseStyles = ["fill-bg-300", "stroke-primary-700", "stroke-1"].join(" ");
-
-const getArrowRotation = (placement: PlacementAxis | null): string => {
-  switch (placement) {
-    case "top":
-      return "rotate-180";
-    case "bottom":
-      return "";
-    case "left":
-      return "rotate-90";
-    case "right":
-      return "-rotate-90";
-    default:
-      return "";
+const popoverStyles = style<
+  PopoverRenderProps & {
+    colorScheme: ColorScheme | null;
+    isArrowShown: boolean;
+    isSubmenu: boolean;
+    size?: PopoverSize;
   }
+>({
+  ...setColorScheme(),
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: {
+      default: "layer-2",
+      forcedColors: "Background",
+    },
+  },
+  backgroundColor: "--s2-container-bg",
+  borderRadius: "lg",
+  filter: {
+    isArrowShown: "elevated",
+  },
+  boxShadow: {
+    default: "elevated",
+    isArrowShown: "none",
+  },
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: {
+    default: lightDark("transparent-white-25", "gray-200"),
+    forcedColors: "ButtonBorder",
+  },
+  width: {
+    size: {
+      S: 336,
+      M: 416,
+      L: 576,
+    },
+  },
+  maxWidth: "calc(100vw - 24px)",
+  boxSizing: "border-box",
+  display: "flex",
+  opacity: {
+    isEntering: 0,
+    isExiting: 0,
+  },
+  translateY: {
+    placement: {
+      top: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      bottom: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+    isSubmenu: 0,
+  },
+  translateX: {
+    placement: {
+      left: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      right: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+    isSubmenu: 0,
+  },
+  transition: "[opacity, translate]",
+  transitionDuration: 200,
+  transitionTimingFunction: {
+    isExiting: "in",
+  },
+  isolation: "isolate",
+  pointerEvents: {
+    isExiting: "none",
+  },
+});
+
+const paddingStyles: Record<PopoverPadding, StyleString> = {
+  none: style({ padding: 0 }),
+  sm: style({ padding: 8 }),
+  md: style({ padding: 16 }),
+  lg: style({ padding: 24 }),
 };
+
+const arrowStyles = style<PopoverRenderProps>({
+  display: "block",
+  fill: "--s2-container-bg",
+  width: 18,
+  height: 9,
+  rotate: {
+    default: 180,
+    placement: {
+      top: 0,
+      bottom: 180,
+      left: -90,
+      right: 90,
+    },
+  },
+  translateX: {
+    placement: {
+      left: "-25%",
+      right: "25%",
+    },
+  },
+  strokeWidth: 1,
+  stroke: {
+    default: lightDark("transparent-white-25", "gray-200"),
+    forcedColors: "ButtonBorder",
+  },
+});
 
 /**
  * PopoverTrigger wraps around a trigger element and a Popover.
@@ -112,7 +194,7 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
  * ```tsx
  * <PopoverTrigger>
  *   <Button>Settings</Button>
- *   <Popover placement="bottom" size="md">
+ *   <Popover placement="bottom" size="M">
  *     <h3>Settings</h3>
  *     <p>Configure your preferences here.</p>
  *   </Popover>
@@ -120,32 +202,61 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
  * ```
  */
 export function Popover(props: PopoverProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["placement", "size", "class", "showArrow", "padding"]);
+  const theme = useTheme();
+  let arrowElement: SVGSVGElement | null = null;
+  const [local, rest] = splitProps(props, [
+    "placement",
+    "size",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "hideArrow",
+    "padding",
+    "offset",
+    "arrowRef",
+  ]);
 
   const placement = () => local.placement ?? "bottom";
-  const size = () => local.size ?? "md";
   const padding = () => local.padding ?? "md";
+  const offset = () => (local.offset ?? 8) + (local.hideArrow ? 0 : 8);
+  const setArrowElement = (element: SVGSVGElement | null) => {
+    arrowElement = element;
+  };
+  const arrowRef = () => (local.hideArrow ? (local.arrowRef?.() ?? null) : arrowElement);
 
   return (
     <HeadlessPopover
       {...rest}
       placement={placement()}
-      class={(_renderProps: PopoverRenderProps) => {
-        const classes = [
-          baseStyles,
-          sizeStyles[size()],
-          paddingStyles[padding()],
+      offset={offset()}
+      arrowRef={arrowRef}
+      class={(renderProps: PopoverRenderProps) => {
+        return [
+          local.UNSAFE_className,
           local.class ?? "",
+          mergeStyles(
+            popoverStyles({
+              ...renderProps,
+              colorScheme: theme.colorScheme,
+              isArrowShown: !local.hideArrow,
+              isSubmenu: renderProps.trigger === "SubmenuTrigger",
+              size: local.size,
+              trigger: renderProps.trigger,
+            }),
+            paddingStyles[padding()],
+            local.styles,
+          ),
         ]
           .filter(Boolean)
           .join(" ");
-        return classes;
       }}
+      style={local.UNSAFE_style}
     >
       {(renderProps: PopoverRenderProps) => (
         <>
-          <Show when={local.showArrow}>
-            <PopoverArrow placement={renderProps.placement} />
+          <Show when={!local.hideArrow}>
+            <PopoverArrow placement={renderProps.placement} setArrowElement={setArrowElement} />
           </Show>
           {props.children}
         </>
@@ -161,46 +272,43 @@ export function Popover(props: PopoverProps): JSX.Element {
 interface PopoverArrowProps {
   /** The current placement axis. */
   placement: PlacementAxis | null;
+  /** Sets the arrow element for positioning measurements. */
+  setArrowElement: (element: SVGSVGElement | null) => void;
   /** Additional CSS class. */
   class?: string;
 }
 
 function PopoverArrow(props: PopoverArrowProps): JSX.Element {
+  const placement = () => props.placement ?? "bottom";
+
   return (
     <HeadlessOverlayArrow
-      class="absolute block"
-      style={{
-        ...(props.placement === "top" && {
-          bottom: "100%",
-          left: "50%",
-          transform: "translateX(-50%)",
-        }),
-        ...(props.placement === "bottom" && {
-          top: "-8px",
-          left: "50%",
-          transform: "translateX(-50%)",
-        }),
-        ...(props.placement === "left" && {
-          right: "100%",
-          top: "50%",
-          transform: "translateY(-50%)",
-        }),
-        ...(props.placement === "right" && {
-          left: "-8px",
-          top: "50%",
-          transform: "translateY(-50%)",
-        }),
-      }}
-    >
-      <svg
-        width="12"
-        height="12"
-        viewBox="0 0 12 12"
-        class={`${arrowBaseStyles} ${getArrowRotation(props.placement)} ${props.class ?? ""}`}
-      >
-        <path d="M0 0 L6 6 L12 0" />
-      </svg>
-    </HeadlessOverlayArrow>
+      class="absolute block data-[placement=bottom]:bottom-full data-[placement=top]:top-full data-[placement=left]:left-full data-[placement=right]:right-full"
+      render={() => (
+        <svg
+          ref={props.setArrowElement}
+          width="18"
+          height="9"
+          viewBox="0 0 18 10"
+          class={[
+            arrowStyles({
+              trigger: null,
+              placement: placement(),
+              isEntering: false,
+              isExiting: false,
+            }),
+            props.class ?? "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <path
+            transform="translate(0 -1)"
+            d="M1 1L7.93799 8.52588C8.07224 8.67448 8.23607 8.79362 8.41895 8.87524C8.60182 8.95687 8.79973 8.9993 9 9C9.19984 8.99882 9.39724 8.95606 9.57959 8.87427C9.76193 8.79248 9.9253 8.67336 10.0591 8.5249L17 1"
+          />
+        </svg>
+      )}
+    />
   );
 }
 

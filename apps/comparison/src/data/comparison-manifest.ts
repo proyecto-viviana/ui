@@ -768,10 +768,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "Popover",
     category: "Components",
     summary:
-      "Custom-anchored overlay mounted on both stacks with controlled open state, placement, offset, container padding, arrow visibility, and form content coverage.",
+      "DialogTrigger and custom-anchored overlays mounted on both stacks with controlled open state, placement, offset, container padding, S/M/L sizing, arrow visibility, max-height, and form content coverage.",
     styledSummary: "React Spectrum Popover vs Solid Spectrum Popover.",
     styledNote:
-      "React uses @react-spectrum/s2 Popover with the documented triggerRef/isOpen custom-anchor pattern; Solid uses @proyecto-viviana/solid-spectrum Popover with the same controlled anchor, placement, offset, container padding, and visible arrow. Solid's public root export currently exposes Popover but not PopoverTrigger, so this comparison intentionally uses the documented custom-anchor path.",
+      "React uses @react-spectrum/s2 Popover with the documented DialogTrigger composition by default and the documented triggerRef/isOpen custom-anchor path as a routed mode. Solid uses @proyecto-viviana/solid-spectrum DialogTrigger, Button, and Popover with matching controlled open state, trigger ARIA wiring, placement, offset, crossOffset, container padding, fit/S/M/L size behavior, maxHeight, flip, and hideArrow controls.",
   }),
 
   progressbar: styledLiveOfficialEntry({

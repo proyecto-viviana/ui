@@ -29,6 +29,8 @@ export interface DialogTriggerContextValue {
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (el: HTMLElement | null) => void;
   triggerId: string;
+  triggerProps?: Record<string, unknown>;
+  overlayProps?: Record<string, unknown>;
 }
 
 export const DialogTriggerContext = createContext<DialogTriggerContextValue | null>(null);

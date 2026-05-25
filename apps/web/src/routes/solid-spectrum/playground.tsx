@@ -590,7 +590,7 @@ function Playground() {
                     <Button variant="primary" data-testid="popover-actions-trigger">
                       Open with Actions
                     </Button>
-                    <Popover placement="bottom" size="md" data-testid="popover-actions">
+                    <Popover placement="bottom" size="M" data-testid="popover-actions">
                       <PopoverHeader
                         title="Confirm Action"
                         description="Are you sure you want to proceed with this action?"
@@ -614,7 +614,7 @@ function Playground() {
                       <Button variant="secondary" buttonStyle="outline">
                         Small
                       </Button>
-                      <Popover placement="bottom" size="sm">
+                      <Popover placement="bottom" size="S">
                         <p class="text-sm">Small popover content.</p>
                       </Popover>
                     </PopoverTrigger>
@@ -622,7 +622,7 @@ function Playground() {
                       <Button variant="secondary" buttonStyle="outline">
                         Medium
                       </Button>
-                      <Popover placement="bottom" size="md">
+                      <Popover placement="bottom" size="M">
                         <p class="text-sm">Medium popover content with more room for details.</p>
                       </Popover>
                     </PopoverTrigger>
@@ -630,7 +630,7 @@ function Playground() {
                       <Button variant="secondary" buttonStyle="outline">
                         Large
                       </Button>
-                      <Popover placement="bottom" size="lg">
+                      <Popover placement="bottom" size="L">
                         <p class="text-sm">
                           Large popover content with maximum width for longer content sections.
                         </p>

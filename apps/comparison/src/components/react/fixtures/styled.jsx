@@ -490,6 +490,12 @@ import {
   serializeContextualHelpDemoProps,
 } from "@comparison/data/contextualhelp-demo";
 import {
+  isPopoverOpenControlChecked,
+  normalizePopoverDemoProps,
+  popoverDemoPropsFromWindow,
+  serializePopoverDemoProps,
+} from "@comparison/data/popover-demo";
+import {
   isTooltipOpenControlChecked,
   normalizeTooltipDemoProps,
   serializeTooltipDemoProps,
@@ -1061,65 +1067,117 @@ function ReactRangeSliderDemo() {
 }
 
 function ReactPopoverDemo() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [demoProps, setDemoProps] = useState(popoverDemoPropsFromWindow);
   const anchorRef = useRef(null);
   const colorScheme = useComparisonResolvedTheme();
 
-  return renderReactSpectrumReference(
-    jsxs("div", {
-      style: popoverFixtureStyle,
-      "data-comparison-control-root": "popover",
-      "data-comparison-open": String(isOpen),
-      children: [
-        jsx(SpectrumButton, {
-          variant: "secondary",
-          onPress: () => setIsOpen((open) => !open),
-          children: isOpen ? "Close feedback" : "Open feedback",
-        }),
-        jsx("div", {
-          ref: anchorRef,
-          style: popoverAnchorStyle,
-          children: "Popover anchor",
-        }),
-        jsx(SpectrumPopover, {
-          triggerRef: anchorRef,
-          isOpen,
-          onOpenChange: setIsOpen,
-          placement: "bottom start",
-          offset: 8,
-          containerPadding: 12,
-          "aria-label": "Feedback",
-          children: jsxs("div", {
-            style: popoverContentStyle,
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "popover") {
+        setDemoProps(normalizePopoverDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const updateOpen = (nextOpen) => {
+    setDemoProps((current) =>
+      current.isOpen && !nextOpen && isPopoverOpenControlChecked()
+        ? current
+        : normalizePopoverDemoProps({ ...current, isOpen: nextOpen }),
+    );
+  };
+  const popoverProps = {
+    placement: demoProps.placement,
+    offset: demoProps.offset,
+    crossOffset: demoProps.crossOffset,
+    containerPadding: demoProps.containerPadding,
+    shouldFlip: demoProps.shouldFlip,
+    hideArrow: demoProps.hideArrow,
+    maxHeight: demoProps.maxHeight === "" ? undefined : demoProps.maxHeight,
+    size: demoProps.size === "fit" ? undefined : demoProps.size,
+    "aria-label": demoProps.ariaLabel,
+  };
+  const popoverContent = jsxs("div", {
+    style: popoverContentStyle,
+    children: [
+      jsx("p", {
+        style: popoverBodyTextStyle,
+        children: demoProps.bodyText,
+      }),
+      demoProps.showForm
+        ? jsxs(SpectrumForm, {
             children: [
-              jsx("p", {
-                style: popoverBodyTextStyle,
-                children: "How are we doing? Share your feedback here.",
+              jsx(SpectrumTextField, {
+                label: "Subject",
+                placeholder: "Enter a summary",
               }),
-              jsxs(SpectrumForm, {
-                children: [
-                  jsx(SpectrumTextField, {
-                    label: "Subject",
-                    placeholder: "Enter a summary",
-                  }),
-                  jsx(SpectrumTextField, {
-                    label: "Description",
-                    isRequired: true,
-                    placeholder: "Enter your feedback",
-                  }),
-                  jsx(SpectrumSwitch, {
-                    children: "Adobe can contact me for further questions concerning this feedback",
-                  }),
-                  jsx(SpectrumButton, {
-                    variant: "accent",
-                    children: "Submit",
-                  }),
-                ],
+              jsx(SpectrumTextField, {
+                label: "Description",
+                isRequired: true,
+                placeholder: "Enter your feedback",
+              }),
+              jsx(SpectrumSwitch, {
+                children: "Adobe can contact me for further questions concerning this feedback",
+              }),
+              jsx(SpectrumButton, {
+                variant: "accent",
+                children: "Submit",
               }),
             ],
-          }),
-        }),
-      ],
+          })
+        : null,
+    ],
+  });
+  const triggerContent =
+    demoProps.triggerMode === "dialogTrigger"
+      ? jsx(SpectrumDialogTrigger, {
+          isOpen: demoProps.isOpen,
+          onOpenChange: updateOpen,
+          children: [
+            jsx(SpectrumButton, {
+              variant: "secondary",
+              children: demoProps.triggerLabel,
+            }),
+            jsx(SpectrumPopover, {
+              ...popoverProps,
+              children: popoverContent,
+            }),
+          ],
+        })
+      : jsxs(Fragment, {
+          children: [
+            jsx(SpectrumButton, {
+              variant: "secondary",
+              onPress: () => updateOpen(!demoProps.isOpen),
+              children: demoProps.isOpen
+                ? `Close ${demoProps.triggerLabel}`
+                : `Open ${demoProps.triggerLabel}`,
+            }),
+            jsx("div", {
+              ref: anchorRef,
+              style: popoverAnchorStyle,
+              children: "Popover anchor",
+            }),
+            jsx(SpectrumPopover, {
+              ...popoverProps,
+              triggerRef: anchorRef,
+              isOpen: demoProps.isOpen,
+              onOpenChange: updateOpen,
+              children: popoverContent,
+            }),
+          ],
+        });
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      style: popoverFixtureStyle,
+      "data-comparison-control-root": "popover",
+      "data-comparison-control-props": serializePopoverDemoProps(demoProps),
+      "data-comparison-open": String(demoProps.isOpen),
+      "data-comparison-popover-trigger-mode": demoProps.triggerMode,
+      children: triggerContent,
     }),
     colorScheme,
   );
