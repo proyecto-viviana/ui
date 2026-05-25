@@ -78,6 +78,12 @@ export function createTagGroup<T>(
     const p = getProps();
     return !p.label && !p["aria-label"] && !p["aria-labelledby"] ? "Tag list" : undefined;
   };
+  const sharedData: TagGroupData = {
+    id,
+    get onRemove() {
+      return getProps().onRemove;
+    },
+  };
 
   // Filter DOM props
   const domProps = () =>
@@ -97,16 +103,17 @@ export function createTagGroup<T>(
     labelElementType: "span",
   });
 
-  // Share data with child tags
+  // Share data with child tags before they create their aria state.
+  tagGroupData.set(state, sharedData);
+
+  // Clean up the shared state when the tag group owner is disposed.
   createEffect(() => {
-    const p = getProps();
-    tagGroupData.set(state, {
-      id,
-      onRemove: p.onRemove,
-    });
+    tagGroupData.set(state, sharedData);
 
     onCleanup(() => {
-      tagGroupData.delete(state);
+      if (tagGroupData.get(state) === sharedData) {
+        tagGroupData.delete(state);
+      }
     });
   });
 
@@ -133,7 +140,7 @@ export function createTagGroup<T>(
 
       return mergeProps(domProps(), fieldProps as Record<string, unknown>, {
         id,
-        role: hasItems ? "listbox" : "group",
+        role: hasItems ? "grid" : "group",
         "aria-multiselectable": hasItems && state.selectionMode() === "multiple" ? true : undefined,
         "aria-atomic": false,
         "aria-relevant": "additions",

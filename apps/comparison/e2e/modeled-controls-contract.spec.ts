@@ -78,6 +78,13 @@ const cardViewTextControlValues: Record<string, string> = {
   disabledKeys: "zephyr",
 };
 
+const tagGroupTextControlValues: Record<string, string> = {
+  label: "Contract tags",
+  selectedKeys: "landscape",
+  defaultSelectedKeys: "travel",
+  disabledKeys: "portrait",
+};
+
 const colorSliderTextControlValues: Record<string, string> = {
   ariaLabel: "Contract color slider",
   ariaLabelledBy: "colorslider-labelledby",
@@ -240,6 +247,10 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     return !control.defaultValue;
   }
 
+  if (group.slug === "taggroup" && control.name === "selectionMode") {
+    return "single";
+  }
+
   if (control.kind === "text") {
     if (group.slug === "numberfield" && control.name in numberFieldTextControlValues) {
       return numberFieldTextControlValues[control.name];
@@ -258,6 +269,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "cardview" && control.name in cardViewTextControlValues) {
       return cardViewTextControlValues[control.name];
+    }
+    if (group.slug === "taggroup" && control.name in tagGroupTextControlValues) {
+      return tagGroupTextControlValues[control.name];
     }
     if (group.slug === "colorslider" && control.name in colorSliderTextControlValues) {
       return colorSliderTextControlValues[control.name];

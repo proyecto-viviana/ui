@@ -20,7 +20,7 @@ normalized to the current gate checklist.
 - Current accepted under the full gate model: Calendar, Checkbox, ColorArea,
   ColorField, ColorSlider, ColorWheel, ColorSwatch, ColorSwatchPicker,
   Disclosure, Icons, Illustrations, IllustratedMessage, InlineAlert, Popover,
-  Toast, ToggleButton, ToggleButtonGroup, Tooltip.
+  TagGroup, Toast, ToggleButton, ToggleButtonGroup, Tooltip.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -57,13 +57,13 @@ notes, and current visual/asserted evidence.
 Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
-- Modeled viewer controls: 65/69 entries. Missing control groups: Provider,
-  TableView, TagGroup, and TreeView.
-- Validation notes: 56/69 entries. Missing notes: DropZone, ListView,
+- Modeled viewer controls: 66/69 entries. Missing control groups: Provider,
+  TableView, and TreeView.
+- Validation notes: 57/69 entries. Missing notes: DropZone, ListView,
   NumberField, Picker, Provider, RadioGroup, SearchField, Switch, TableView,
-  TagGroup, TextArea, TextField, and TreeView.
-- Current visual/asserted evidence: 65/69 entries. Missing evidence: ListView,
-  TableView, TagGroup, and TreeView.
+  TextArea, TextField, and TreeView.
+- Current visual/asserted evidence: 66/69 entries. Missing evidence: ListView,
+  TableView, and TreeView.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
 `icons`. Icons and Illustrations now have modeled controls and strict primitive
@@ -112,6 +112,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [Slider](./slider-validation-notes.md)
 - [StatusLight](./statuslight-validation-notes.md)
 - [Tabs](./tabs-validation-notes.md)
+- [TagGroup](./taggroup-validation-notes.md)
 - [Text](./text-validation-notes.md)
 - [Toast](./toast-validation-notes.md)
 - [ToggleButton](./togglebutton-validation-notes.md)

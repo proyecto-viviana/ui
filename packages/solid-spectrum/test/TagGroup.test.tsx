@@ -4,7 +4,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { TagGroup } from "../src/tag-group";
+import { Tag, TagGroup } from "../src/tag-group";
 
 interface TagItem {
   id: string;
@@ -30,16 +30,16 @@ describe("TagGroup (solid-spectrum)", () => {
     renderTagGroup();
 
     const label = screen.getByText("Topics");
-    const listbox = screen.getByRole("listbox", { name: "Topics" });
+    const grid = screen.getByRole("grid", { name: "Topics" });
     expect(label.id).toBeTruthy();
-    expect(listbox.getAttribute("aria-labelledby")).toContain(label.id);
+    expect(grid.getAttribute("aria-labelledby")).toContain(label.id);
   });
 
   it("supports defaultSelectedKeys passthrough", () => {
     renderTagGroup({ defaultSelectedKeys: ["2"] });
 
-    expect(screen.getByRole("option", { name: "Travel" })).toHaveAttribute("data-selected");
-    expect(screen.getByRole("option", { name: "News" })).not.toHaveAttribute("data-selected");
+    expect(screen.getByRole("row", { name: "Travel" })).toHaveAttribute("data-selected");
+    expect(screen.getByRole("row", { name: "News" })).not.toHaveAttribute("data-selected");
   });
 
   it("does not allow selection when TagGroup is disabled", async () => {
@@ -51,12 +51,12 @@ describe("TagGroup (solid-spectrum)", () => {
       onSelectionChange,
     });
 
-    const options = screen.getAllByRole("option");
-    for (const option of options) {
-      expect(option).toHaveAttribute("aria-disabled", "true");
+    const rows = screen.getAllByRole("row");
+    for (const row of rows) {
+      expect(row).toHaveAttribute("aria-disabled", "true");
     }
 
-    await user.click(options[0]);
+    await user.click(rows[0]);
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
@@ -64,12 +64,95 @@ describe("TagGroup (solid-spectrum)", () => {
     const user = setupUser();
     renderTagGroup();
 
-    const news = screen.getByRole("option", { name: "News" });
-    const travel = screen.getByRole("option", { name: "Travel" });
+    const news = screen.getByRole("row", { name: "News" });
+    const travel = screen.getByRole("row", { name: "Travel" });
 
     news.focus();
     await user.keyboard("{ArrowRight}");
 
     expect(travel).toHaveFocus();
+  });
+
+  it("supports explicit Tag composition", () => {
+    render(() => (
+      <TagGroup<TagItem> items={items} label="Topics" selectionMode="multiple">
+        {(item) => <Tag id={item.id}>{item.name}</Tag>}
+      </TagGroup>
+    ));
+
+    expect(screen.getByRole("row", { name: "News" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "Travel" })).toBeInTheDocument();
+  });
+
+  it("wires description and invalid error text to the grid description", () => {
+    const { unmount } = render(() => (
+      <TagGroup<TagItem>
+        items={items}
+        label="Topics"
+        selectionMode="multiple"
+        description="Choose one or more topics."
+      >
+        {(item) => item.name}
+      </TagGroup>
+    ));
+
+    expect(screen.getByRole("grid", { name: "Topics" })).toHaveAccessibleDescription(
+      "Choose one or more topics.",
+    );
+
+    unmount();
+
+    render(() => (
+      <TagGroup<TagItem>
+        items={items}
+        label="Topics"
+        selectionMode="multiple"
+        isInvalid
+        errorMessage="Choose at least one topic."
+      >
+        {(item) => item.name}
+      </TagGroup>
+    ));
+
+    expect(screen.getByRole("grid", { name: "Topics" })).toHaveAccessibleDescription(
+      "Choose at least one topic.",
+    );
+  });
+
+  it("forwards disabledKeys to implicit tags", () => {
+    renderTagGroup({ disabledKeys: ["2"] });
+
+    expect(screen.getByRole("row", { name: "Travel" })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("row", { name: "News" })).not.toHaveAttribute("aria-disabled");
+  });
+
+  it("calls onRemove from the tag remove button", async () => {
+    const user = setupUser();
+    const onRemove = vi.fn();
+    renderTagGroup({ onRemove });
+
+    await user.click(screen.getByRole("button", { name: "Remove News" }));
+
+    expect(onRemove).toHaveBeenCalledWith(new Set(["1"]));
+  });
+
+  it("calls onAction when a tag is activated", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    renderTagGroup({ onAction });
+
+    await user.click(screen.getByRole("row", { name: "News" }));
+
+    expect(onAction).toHaveBeenCalledWith("1");
+  });
+
+  it("renders and calls the group action", async () => {
+    const user = setupUser();
+    const onGroupAction = vi.fn();
+    renderTagGroup({ groupActionLabel: "Add tag", onGroupAction });
+
+    await user.click(screen.getByRole("button", { name: "Add tag" }));
+
+    expect(onGroupAction).toHaveBeenCalledTimes(1);
   });
 });

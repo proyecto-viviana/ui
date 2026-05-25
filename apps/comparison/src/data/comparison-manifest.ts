@@ -837,7 +837,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "Categorization tag collection mounted on both stacks with labels, dynamic items, removable tags, multiple selection, and default selected-key coverage.",
     styledSummary: "React Spectrum TagGroup vs Solid Spectrum TagGroup.",
     styledNote:
-      "React uses @react-spectrum/s2 TagGroup and Tag directly; Solid uses @proyecto-viviana/solid-spectrum TagGroup, whose current public API renders tags from items plus a render function rather than exporting a separate Tag component.",
+      "React uses @react-spectrum/s2 TagGroup and Tag directly; Solid uses @proyecto-viviana/solid-spectrum TagGroup and Tag with matching dynamic collections, removable tags, selection state, label/help/error wiring, and group action fixtures.",
   }),
 
   treeview: styledLiveOfficialEntry({

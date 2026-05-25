@@ -140,6 +140,8 @@ export interface TagProps extends SlotProps {
   class?: ClassNameOrFunction<TagRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<TagRenderProps>;
+  /** Handler called when the tag is activated. */
+  onAction?: (key: Key) => void;
 }
 
 interface TagGroupContextValue {
@@ -348,6 +350,7 @@ export function Tag(props: TagProps): JSX.Element {
     "slot",
     "isDisabled",
     "textValue",
+    "onAction",
   ]);
 
   const state = useContext(TagListStateContext);
@@ -432,6 +435,16 @@ export function Tag(props: TagProps): JSX.Element {
           {...tagAria.rowProps}
           class={renderProps.class()}
           style={renderProps.style()}
+          onClick={(event) => {
+            const rowClick = tagAria.rowProps.onClick;
+            if (typeof rowClick === "function") {
+              (rowClick as JSX.EventHandler<HTMLDivElement, MouseEvent>)(event);
+            }
+
+            if (!tagAria.isDisabled && !(event.target as Element | null)?.closest("button")) {
+              local.onAction?.(local.id);
+            }
+          }}
           data-selected={dataAttr(tagAria.isSelected)}
           data-disabled={dataAttr(tagAria.isDisabled)}
           data-focused={dataAttr(tagAria.isFocused)}
@@ -481,6 +494,9 @@ export function TagRemoveButton(props: TagRemoveButtonProps): JSX.Element {
       (handler as () => void)();
     }
   };
+  const stopRowPress: JSX.EventHandler<HTMLButtonElement, PointerEvent> = (event) => {
+    event.stopPropagation();
+  };
 
   return (
     <button
@@ -492,6 +508,7 @@ export function TagRemoveButton(props: TagRemoveButtonProps): JSX.Element {
       aria-labelledby={ariaLabelledBy}
       disabled={getIsDisabled()}
       data-allows-removing={dataAttr(tagContext?.allowsRemoving ?? false)}
+      onPointerDown={stopRowPress}
       onClick={handleClick}
     >
       {props.children ?? "×"}

@@ -50,12 +50,12 @@ function normalizeCallbackProps(component: ComponentLike, props?: Props | null) 
   }
 
   // `solid-js/h` treats zero-argument function props on components as dynamic
-  // accessors. Preserve `on*` props as callbacks so reading them does not fire.
+  // accessors. Preserve callback-shaped props so reading them does not fire.
   let normalized: Props | undefined;
   const descriptors = Object.getOwnPropertyDescriptors(props);
 
   for (const [key, descriptor] of Object.entries(descriptors)) {
-    if (!key.startsWith("on") || typeof descriptor.value !== "function") {
+    if (!isCallbackProp(key) || typeof descriptor.value !== "function") {
       continue;
     }
 
@@ -69,4 +69,8 @@ function normalizeCallbackProps(component: ComponentLike, props?: Props | null) 
   }
 
   return normalized ?? props;
+}
+
+function isCallbackProp(key: string) {
+  return key.startsWith("on") || key.startsWith("render");
 }

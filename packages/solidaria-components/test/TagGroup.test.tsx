@@ -266,7 +266,7 @@ describe("TagGroup", () => {
         />
       ));
 
-      const tags = screen.getAllByRole("option");
+      const tags = screen.getAllByRole("row");
       for (const tag of tags) {
         expect(tag).toHaveAttribute("aria-disabled", "true");
       }
@@ -381,8 +381,8 @@ describe("TagGroup", () => {
         </TagGroup>
       ));
 
-      const listbox = screen.getByRole("listbox");
-      expect(listbox).toHaveAttribute("aria-label", "Tag list");
+      const grid = screen.getByRole("grid");
+      expect(grid).toHaveAttribute("aria-label", "Tag list");
     });
 
     it("treats label prop as accessible name when no aria-label is provided", () => {
@@ -394,22 +394,22 @@ describe("TagGroup", () => {
         </TagGroup>
       ));
 
-      const listbox = screen.getByRole("listbox");
-      expect(listbox).toHaveAttribute("aria-label", "Topics");
+      const grid = screen.getByRole("grid");
+      expect(grid).toHaveAttribute("aria-label", "Topics");
     });
 
-    it("should have listbox role", () => {
+    it("should have grid role", () => {
       render(() => <TestTagGroup />);
 
-      const listbox = screen.getByRole("listbox");
-      expect(listbox).toBeInTheDocument();
+      const grid = screen.getByRole("grid");
+      expect(grid).toBeInTheDocument();
     });
 
-    it("should have option role on tags", () => {
+    it("should have row role on tags", () => {
       render(() => <TestTagGroup />);
 
-      const options = screen.getAllByRole("option");
-      expect(options.length).toBe(4);
+      const rows = screen.getAllByRole("row");
+      expect(rows.length).toBe(4);
     });
   });
 
@@ -487,9 +487,9 @@ describe("TagGroup", () => {
     it("uses a single roving tab stop when no tag is focused", () => {
       render(() => <TestTagGroup tagListProps={{ disabledKeys: ["1"] }} />);
 
-      const newsTag = screen.getByRole("option", { name: "News" });
-      const travelTag = screen.getByRole("option", { name: "Travel" });
-      const gamingTag = screen.getByRole("option", { name: "Gaming" });
+      const newsTag = screen.getByRole("row", { name: "News" });
+      const travelTag = screen.getByRole("row", { name: "Travel" });
+      const gamingTag = screen.getByRole("row", { name: "Gaming" });
 
       expect(newsTag).toHaveAttribute("tabindex", "-1");
       expect(travelTag).toHaveAttribute("tabindex", "0");
@@ -499,8 +499,8 @@ describe("TagGroup", () => {
     it("supports Arrow/Home/End keyboard navigation between tags", async () => {
       render(() => <TestTagGroup tagListProps={{ disabledKeys: ["2"] }} />);
 
-      const newsTag = screen.getByRole("option", { name: "News" });
-      const gamingTag = screen.getByRole("option", { name: "Gaming" });
+      const newsTag = screen.getByRole("row", { name: "News" });
+      const gamingTag = screen.getByRole("row", { name: "Gaming" });
 
       newsTag.focus();
       await user.keyboard("{ArrowRight}");
@@ -510,7 +510,7 @@ describe("TagGroup", () => {
       expect(newsTag).toHaveFocus();
 
       await user.keyboard("{End}");
-      expect(screen.getByRole("option", { name: "Shopping" })).toHaveFocus();
+      expect(screen.getByRole("row", { name: "Shopping" })).toHaveFocus();
     });
   });
 });

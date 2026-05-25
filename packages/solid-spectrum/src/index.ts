@@ -515,7 +515,7 @@ export type {
 } from "./Tabs";
 
 // TagGroup
-export { TagGroup } from "./tag-group";
+export { Tag, TagGroup } from "./tag-group";
 export type {
   SelectionMode,
   TagGroupProps,

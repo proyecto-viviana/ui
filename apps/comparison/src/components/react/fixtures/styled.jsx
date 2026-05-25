@@ -304,6 +304,17 @@ import {
   serializeListViewKeys,
 } from "@comparison/data/listview-demo";
 import {
+  disabledTagGroupKeys,
+  initialTagGroupSelectedKeys,
+  normalizeTagGroupDemoProps,
+  serializeTagGroupDemoProps,
+  serializeTagGroupKeys,
+  tagGroupDemoPropsFromWindow,
+  tagGroupInitialItems,
+  tagGroupItems,
+  tagGroupKeysFromValue,
+} from "@comparison/data/taggroup-demo";
+import {
   normalizeNumberFieldDemoProps,
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
@@ -704,13 +715,6 @@ const collectionTableRows = [
     status: "Review",
   },
   { id: "budget", name: "Budget.xlsx", type: "Spreadsheet", owner: "Iris", status: "Draft" },
-];
-
-const collectionTags = [
-  { id: "landscape", name: "Landscape" },
-  { id: "portrait", name: "Portrait" },
-  { id: "night", name: "Night" },
-  { id: "golden-hour", name: "Golden Hour" },
 ];
 
 function queryParamFromWindow(name) {
@@ -1415,20 +1419,123 @@ function ReactTableViewDemo() {
 
 function ReactTagGroupDemo() {
   const colorScheme = useComparisonResolvedTheme();
-  const [tags, setTags] = useState(collectionTags);
+  const [demoProps, setDemoProps] = useState(tagGroupDemoPropsFromWindow);
+  const [tags, setTags] = useState(() => tagGroupInitialItems(demoProps));
+  const [selectedKeys, setSelectedKeys] = useState(() => initialTagGroupSelectedKeys(demoProps));
+  const [actionCount, setActionCount] = useState(0);
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "taggroup") {
+        setDemoProps((current) => {
+          const nextProps = normalizeTagGroupDemoProps({ ...current, ...event.detail.props });
+          setTags(tagGroupInitialItems(nextProps));
+          setSelectedKeys(initialTagGroupSelectedKeys(nextProps));
+          setActionCount(0);
+          return nextProps;
+        });
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const selectionProps =
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? {
+          defaultSelectedKeys: tagGroupKeysFromValue(
+            demoProps.defaultSelectedKeys,
+            ["landscape"],
+            demoProps.selectionMode,
+          ),
+        }
+      : { selectedKeys };
+  const selectedValue = serializeTagGroupKeys(selectedKeys);
+  const renderKey = [
+    demoProps.size,
+    demoProps.labelPosition,
+    demoProps.labelAlign,
+    demoProps.selectionMode,
+    demoProps.selectionBehavior,
+    demoProps.selectionSource,
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? demoProps.defaultSelectedKeys
+      : demoProps.selectedKeys,
+    demoProps.disabledKeys,
+    demoProps.disabledItem,
+    demoProps.itemCount,
+    demoProps.contentMode,
+    demoProps.isEmphasized,
+    demoProps.isInvalid,
+    demoProps.isDisabled,
+    demoProps.showDescription,
+    demoProps.showErrorMessage,
+    demoProps.allowsRemoving,
+    demoProps.withGroupAction,
+  ].join("|");
+
   return renderReactSpectrumReference(
     jsx("div", {
       style: collectionFixtureStyle,
       "data-comparison-control-root": "taggroup",
+      "data-comparison-control-props": serializeTagGroupDemoProps(demoProps),
+      "data-comparison-selected-keys": selectedValue,
+      "data-comparison-tag-count": String(tags.length),
+      "data-comparison-action-count": String(actionCount),
       children: jsx(SpectrumTagGroup, {
-        label: "Photo categories",
-        selectionMode: "multiple",
-        defaultSelectedKeys: ["landscape"],
+        key: renderKey,
+        label: demoProps.label,
+        size: demoProps.size,
+        labelPosition: demoProps.labelPosition,
+        labelAlign: demoProps.labelAlign,
+        selectionMode: demoProps.selectionMode,
+        selectionBehavior: demoProps.selectionBehavior,
+        isEmphasized: demoProps.isEmphasized,
+        isInvalid: demoProps.isInvalid,
+        isDisabled: demoProps.isDisabled,
+        description: demoProps.showDescription ? "Use tags to organize photo metadata." : undefined,
+        errorMessage:
+          demoProps.isInvalid && demoProps.showErrorMessage
+            ? "Choose at least one usable tag."
+            : undefined,
+        renderEmptyState: () => "No categories",
+        disabledKeys: disabledTagGroupKeys(demoProps),
         items: tags,
-        onRemove: (keys) =>
-          setTags((currentTags) => currentTags.filter((item) => !keys.has(item.id))),
+        ...selectionProps,
+        onSelectionChange: (keys) =>
+          setSelectedKeys(
+            keys === "all" ? new Set(tagGroupItems.map((item) => item.id)) : new Set(keys),
+          ),
+        onRemove: demoProps.allowsRemoving
+          ? (keys) => {
+              setTags((currentTags) => currentTags.filter((item) => !keys.has(item.id)));
+              setSelectedKeys((currentKeys) => {
+                const nextKeys = new Set(currentKeys);
+                for (const key of keys) {
+                  nextKeys.delete(key);
+                }
+                return nextKeys;
+              });
+            }
+          : undefined,
+        onAction: () => setActionCount((count) => count + 1),
+        groupActionLabel: demoProps.withGroupAction ? "Add tag" : undefined,
+        onGroupAction: demoProps.withGroupAction
+          ? () => setActionCount((count) => count + 1)
+          : undefined,
         UNSAFE_style: collectionTagGroupStyle,
-        children: (item) => jsx(SpectrumTag, { children: item.name }),
+        children: (item) =>
+          jsx(SpectrumTag, {
+            children:
+              demoProps.contentMode === "icon"
+                ? jsxs(Fragment, {
+                    children: [
+                      jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+                      jsx(SpectrumText, { children: item.name }),
+                    ],
+                  })
+                : item.name,
+          }),
       }),
     }),
     colorScheme,

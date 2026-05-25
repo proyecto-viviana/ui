@@ -149,7 +149,7 @@ export function createTag<T>(
       return;
     }
 
-    const nextTag = Array.from(tagList.querySelectorAll<HTMLElement>('[role="option"]')).find(
+    const nextTag = Array.from(tagList.querySelectorAll<HTMLElement>('[role="row"]')).find(
       (el) => el.getAttribute("data-key") === String(nextKey),
     );
 
@@ -276,7 +276,7 @@ export function createTag<T>(
         pressProps as Record<string, unknown>,
         {
           id: rowId,
-          role: "option",
+          role: "row",
           tabIndex: tabIndex(),
           "data-key": String(key()),
           "aria-selected": isSelectable() ? isSelected() : undefined,
@@ -288,7 +288,7 @@ export function createTag<T>(
     get gridCellProps() {
       return {
         id: cellId,
-        role: "presentation",
+        role: "gridcell",
         "aria-describedby": allowsRemoving() ? removeButtonId : undefined,
       };
     },
