@@ -8,11 +8,9 @@ const centerBaselineClass = style({
   display: "flex",
   alignItems: "center",
 });
-export const centerBaselineBefore = css(`&::before {
-  content: "\\00a0";
-  width: 0px;
-  visibility: hidden;
-}`) as StyleString;
+export const centerBaselineBefore = css(
+  '&::before { content: "\u00a0"; width: 0; visibility: hidden }',
+) as StyleString;
 
 export interface CenterBaselineProps {
   style?: JSX.CSSProperties;

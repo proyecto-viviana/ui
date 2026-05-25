@@ -122,6 +122,12 @@ export default defineConfig({
       dts: false,
       fixedExtension: false,
       hash: false,
+      outputOptions(options) {
+        return {
+          ...options,
+          chunkFileNames: "[name].ssr.js",
+        };
+      },
       plugins: [s2Macros(), solid({ solid: { generate: "ssr" } })],
       deps,
     },

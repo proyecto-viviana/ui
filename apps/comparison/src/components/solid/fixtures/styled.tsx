@@ -407,6 +407,18 @@ import {
   type IllustratedMessageDemoProps,
 } from "@comparison/data/illustratedmessage-demo";
 import {
+  iconsDemoPropsFromWindow,
+  normalizeIconsDemoProps,
+  serializeIconsDemoProps,
+  type IconsDemoProps,
+} from "@comparison/data/icons-demo";
+import {
+  illustrationsDemoPropsFromWindow,
+  normalizeIllustrationsDemoProps,
+  serializeIllustrationsDemoProps,
+  type IllustrationsDemoProps,
+} from "@comparison/data/illustrations-demo";
+import {
   inlineAlertDemoPropsFromWindow,
   normalizeInlineAlertDemoProps,
   serializeInlineAlertDemoProps,
@@ -950,6 +962,62 @@ function renderProviderDemo() {
 
 function SolidSpectrumIconsDemo() {
   const colorScheme = createComparisonResolvedThemeSignal();
+  const [demoProps, setDemoProps] = createSignal<IconsDemoProps>(iconsDemoPropsFromWindow());
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "icons") {
+        setDemoProps(normalizeIconsDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
+  const renderedIcons = createMemo(() => {
+    const props = demoProps();
+    const labelledIconProps = {
+      "aria-label": props.ariaLabel,
+      "data-comparison-icon": "labelled",
+      ...(props.ariaHidden ? { "aria-hidden": true } : {}),
+      ...(props.slot ? { slot: props.slot } : {}),
+    };
+    const icons = [h(SolidNewIcon, labelledIconProps)];
+
+    if (props.showDecorative) {
+      icons.push(
+        h(SolidNewIcon, {
+          "aria-hidden": true,
+          "data-comparison-icon": "decorative",
+        }),
+      );
+    }
+    if (props.showSkeleton) {
+      icons.push(
+        hc(SolidSpectrumSkeleton, { isLoading: true }, [
+          h(SolidNewIcon, {
+            "aria-label": "Loading icon",
+            "data-comparison-icon": "skeleton",
+          }),
+        ]),
+      );
+    }
+    if (props.showButtonContext) {
+      icons.push(
+        hc(
+          SolidSpectrumButton,
+          {
+            variant: "accent",
+            "data-comparison-icon": "button-context",
+          },
+          [h(SolidNewIcon, { "aria-hidden": true }), h(SolidSpectrumText, {}, props.buttonLabel)],
+        ),
+      );
+    }
+
+    return icons;
+  });
+
   return hc(
     SolidSpectrumProvider,
     {
@@ -965,31 +1033,11 @@ function SolidSpectrumIconsDemo() {
         {
           style: iconGalleryStyle,
           "data-comparison-control-root": "icons",
+          get "data-comparison-control-props"() {
+            return serializeIconsDemoProps(demoProps());
+          },
         },
-        [
-          h(SolidNewIcon, {
-            "aria-label": "Create item",
-            "data-comparison-icon": "labelled",
-          }),
-          h(SolidNewIcon, {
-            "aria-hidden": true,
-            "data-comparison-icon": "decorative",
-          }),
-          hc(SolidSpectrumSkeleton, { isLoading: true }, [
-            h(SolidNewIcon, {
-              "aria-label": "Loading icon",
-              "data-comparison-icon": "skeleton",
-            }),
-          ]),
-          hc(
-            SolidSpectrumButton,
-            {
-              variant: "accent",
-              "data-comparison-icon": "button-context",
-            },
-            [h(SolidNewIcon, { "aria-hidden": true }), "Create"],
-          ),
-        ],
+        [renderedIcons],
       ),
     ],
   );
@@ -997,6 +1045,55 @@ function SolidSpectrumIconsDemo() {
 
 function SolidSpectrumIllustrationsDemo() {
   const colorScheme = createComparisonResolvedThemeSignal();
+  const [demoProps, setDemoProps] = createSignal<IllustrationsDemoProps>(
+    illustrationsDemoPropsFromWindow(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "illustrations") {
+        setDemoProps(normalizeIllustrationsDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
+  const renderedIllustrations = createMemo(() => {
+    const props = demoProps();
+    const labelledIllustrationProps = {
+      "aria-label": props.ariaLabel,
+      size: props.size,
+      "data-comparison-illustration": "labelled",
+      ...(props.ariaHidden ? { "aria-hidden": true } : {}),
+      ...(props.slot ? { slot: props.slot } : {}),
+    };
+    const illustrations = [h(SolidPlanIllustration, labelledIllustrationProps)];
+
+    if (props.showDecorative) {
+      illustrations.push(
+        h(SolidDropZoneIllustration, {
+          "aria-hidden": true,
+          size: props.decorativeSize,
+          "data-comparison-illustration": "decorative",
+        }),
+      );
+    }
+    if (props.showSkeleton) {
+      illustrations.push(
+        hc(SolidSpectrumSkeleton, { isLoading: true }, [
+          h(SolidIllustratedMessageIllustration, {
+            "aria-label": "Loading illustration",
+            size: props.skeletonSize,
+            "data-comparison-illustration": "skeleton",
+          }),
+        ]),
+      );
+    }
+
+    return illustrations;
+  });
+
   return hc(
     SolidSpectrumProvider,
     {
@@ -1012,26 +1109,11 @@ function SolidSpectrumIllustrationsDemo() {
         {
           style: illustrationGalleryStyle,
           "data-comparison-control-root": "illustrations",
+          get "data-comparison-control-props"() {
+            return serializeIllustrationsDemoProps(demoProps());
+          },
         },
-        [
-          h(SolidPlanIllustration, {
-            "aria-label": "Planning illustration",
-            size: "S",
-            "data-comparison-illustration": "labelled",
-          }),
-          h(SolidDropZoneIllustration, {
-            "aria-hidden": true,
-            size: "M",
-            "data-comparison-illustration": "decorative",
-          }),
-          hc(SolidSpectrumSkeleton, { isLoading: true }, [
-            h(SolidIllustratedMessageIllustration, {
-              "aria-label": "Loading illustration",
-              size: "L",
-              "data-comparison-illustration": "skeleton",
-            }),
-          ]),
-        ],
+        [renderedIllustrations],
       ),
     ],
   );
@@ -8708,6 +8790,11 @@ const popoverBodyTextStyle = {
 const collectionFixtureStyle = {
   width: "440px",
   padding: "12px",
+};
+
+const collectionListStyle = {
+  width: "100%",
+  height: "220px",
 };
 
 const cardViewDemoStyle = {

@@ -377,6 +377,16 @@ import {
   serializeIllustratedMessageDemoProps,
 } from "@comparison/data/illustratedmessage-demo";
 import {
+  iconsDemoPropsFromWindow,
+  normalizeIconsDemoProps,
+  serializeIconsDemoProps,
+} from "@comparison/data/icons-demo";
+import {
+  illustrationsDemoPropsFromWindow,
+  normalizeIllustrationsDemoProps,
+  serializeIllustrationsDemoProps,
+} from "@comparison/data/illustrations-demo";
+import {
   inlineAlertDemoPropsFromWindow,
   normalizeInlineAlertDemoProps,
   serializeInlineAlertDemoProps,
@@ -795,32 +805,79 @@ function renderProviderDemo() {
 
 function ReactIconsDemo() {
   const colorScheme = useComparisonResolvedTheme();
-  return renderReactSpectrumReference(
-    jsxs("div", {
-      style: iconGalleryStyle,
-      "data-comparison-control-root": "icons",
-      children: [
-        jsx(ReactButtonIcon, {
-          "aria-label": "Create item",
-          "data-comparison-icon": "labelled",
-        }),
-        jsx(ReactButtonIcon, {
+  const [demoProps, setDemoProps] = useState(iconsDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "icons") {
+        setDemoProps(normalizeIconsDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const labelledIconProps = {
+    "aria-label": demoProps.ariaLabel,
+    "data-comparison-icon": "labelled",
+  };
+  if (demoProps.ariaHidden) {
+    labelledIconProps["aria-hidden"] = true;
+  }
+  if (demoProps.slot) {
+    labelledIconProps.slot = demoProps.slot;
+  }
+
+  const children = [jsx(ReactButtonIcon, labelledIconProps, "labelled")];
+  if (demoProps.showDecorative) {
+    children.push(
+      jsx(
+        ReactButtonIcon,
+        {
           "aria-hidden": true,
           "data-comparison-icon": "decorative",
-        }),
-        jsx(SpectrumSkeleton, {
+        },
+        "decorative",
+      ),
+    );
+  }
+  if (demoProps.showSkeleton) {
+    children.push(
+      jsx(
+        SpectrumSkeleton,
+        {
           isLoading: true,
           children: jsx(ReactButtonIcon, {
             "aria-label": "Loading icon",
             "data-comparison-icon": "skeleton",
           }),
-        }),
-        jsxs(SpectrumButton, {
+        },
+        "skeleton",
+      ),
+    );
+  }
+  if (demoProps.showButtonContext) {
+    children.push(
+      jsxs(
+        SpectrumButton,
+        {
           variant: "accent",
           "data-comparison-icon": "button-context",
-          children: [jsx(ReactButtonIcon, { "aria-hidden": true }), "Create"],
-        }),
-      ],
+          children: [
+            jsx(ReactButtonIcon, { "aria-hidden": true }, "icon"),
+            jsx(SpectrumText, { children: demoProps.buttonLabel }, "text"),
+          ],
+        },
+        "button-context",
+      ),
+    );
+  }
+
+  return renderReactSpectrumReference(
+    jsxs("div", {
+      style: iconGalleryStyle,
+      "data-comparison-control-root": "icons",
+      "data-comparison-control-props": serializeIconsDemoProps(demoProps),
+      children,
     }),
     colorScheme,
   );
@@ -828,30 +885,66 @@ function ReactIconsDemo() {
 
 function ReactIllustrationsDemo() {
   const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(illustrationsDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "illustrations") {
+        setDemoProps(normalizeIllustrationsDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const labelledIllustrationProps = {
+    "aria-label": demoProps.ariaLabel,
+    size: demoProps.size,
+    "data-comparison-illustration": "labelled",
+  };
+  if (demoProps.ariaHidden) {
+    labelledIllustrationProps["aria-hidden"] = true;
+  }
+  if (demoProps.slot) {
+    labelledIllustrationProps.slot = demoProps.slot;
+  }
+
+  const children = [jsx(ReactPlanIllustration, labelledIllustrationProps, "labelled")];
+  if (demoProps.showDecorative) {
+    children.push(
+      jsx(
+        ReactDropZoneIllustration,
+        {
+          "aria-hidden": true,
+          size: demoProps.decorativeSize,
+          "data-comparison-illustration": "decorative",
+        },
+        "decorative",
+      ),
+    );
+  }
+  if (demoProps.showSkeleton) {
+    children.push(
+      jsx(
+        SpectrumSkeleton,
+        {
+          isLoading: true,
+          children: jsx(ReactIllustratedMessageIllustration, {
+            "aria-label": "Loading illustration",
+            size: demoProps.skeletonSize,
+            "data-comparison-illustration": "skeleton",
+          }),
+        },
+        "skeleton",
+      ),
+    );
+  }
+
   return renderReactSpectrumReference(
     jsxs("div", {
       style: illustrationGalleryStyle,
       "data-comparison-control-root": "illustrations",
-      children: [
-        jsx(ReactPlanIllustration, {
-          "aria-label": "Planning illustration",
-          size: "S",
-          "data-comparison-illustration": "labelled",
-        }),
-        jsx(ReactDropZoneIllustration, {
-          "aria-hidden": true,
-          size: "M",
-          "data-comparison-illustration": "decorative",
-        }),
-        jsx(SpectrumSkeleton, {
-          isLoading: true,
-          children: jsx(ReactIllustratedMessageIllustration, {
-            "aria-label": "Loading illustration",
-            size: "L",
-            "data-comparison-illustration": "skeleton",
-          }),
-        }),
-      ],
+      "data-comparison-control-props": serializeIllustrationsDemoProps(demoProps),
+      children,
     }),
     colorScheme,
   );

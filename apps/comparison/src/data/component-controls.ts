@@ -199,6 +199,7 @@ import {
   illustratedMessageOrientationOptions,
   illustratedMessageSizeOptions,
 } from "./illustratedmessage-demo";
+import { illustrationPrimitiveSizeOptions, illustrationsDemoDefaults } from "./illustrations-demo";
 import {
   inlineAlertDemoDefaults,
   inlineAlertFillStyleOptions,
@@ -212,6 +213,7 @@ import {
   formSizeOptions,
   formValidationBehaviorOptions,
 } from "./form-demo";
+import { iconsDemoDefaults } from "./icons-demo";
 import { imageDemoDefaults, imageObjectFitOptions, imageSourceModeOptions } from "./image-demo";
 import { linkDemoDefaults, linkStaticColorOptions, linkVariantOptions } from "./link-demo";
 import {
@@ -1824,6 +1826,145 @@ const illustratedMessageControls: ComponentControlGroup = {
     "ButtonGroup",
   ],
   note: "Modeled from the S2 IllustratedMessage docs, stories, source, and browser runtime. The route drives S2 size, orientation, illustration/heading/content composition, optional ButtonGroup actions, id/data-* forwarding, and React's default filterDOMProps boundary where role, labelable ARIA, and global events are not forwarded. Solid unit tests cover context refs, slots, style escape props, and DropZone-specific illustration accent context.",
+};
+
+const iconsControls: ComponentControlGroup = {
+  slug: "icons",
+  title: "Icons",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: iconsDemoDefaults.ariaLabel,
+    },
+    {
+      name: "ariaHidden",
+      label: "aria-hidden",
+      kind: "switch",
+      defaultValue: iconsDemoDefaults.ariaHidden,
+    },
+    {
+      name: "slot",
+      label: "slot",
+      kind: "text",
+      defaultValue: iconsDemoDefaults.slot,
+    },
+    {
+      name: "showDecorative",
+      label: "decorative example",
+      kind: "switch",
+      defaultValue: iconsDemoDefaults.showDecorative,
+    },
+    {
+      name: "showSkeleton",
+      label: "Skeleton example",
+      kind: "switch",
+      defaultValue: iconsDemoDefaults.showSkeleton,
+    },
+    {
+      name: "showButtonContext",
+      label: "Button context",
+      kind: "switch",
+      defaultValue: iconsDemoDefaults.showButtonContext,
+    },
+    {
+      name: "buttonLabel",
+      label: "Button label",
+      kind: "text",
+      defaultValue: iconsDemoDefaults.buttonLabel,
+    },
+  ],
+  apiProps: [
+    "createIcon",
+    "IconContext",
+    "IconContext.render",
+    "IconContext.styles",
+    "aria-label",
+    "aria-hidden",
+    "id",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Icons route plus installed React S2 createIcon source. The route drives accessible name, hidden state, explicit slot DOM forwarding, decorative output, Skeleton composition, and Button/IconContext composition into both stacks. Style escapes and IconContext render/styles remain tracked as API inventory because the visual route already asserts their context geometry and DOM contract.",
+};
+
+const illustrationsControls: ComponentControlGroup = {
+  slug: "illustrations",
+  title: "Illustrations",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: illustrationsDemoDefaults.ariaLabel,
+    },
+    {
+      name: "ariaHidden",
+      label: "aria-hidden",
+      kind: "switch",
+      defaultValue: illustrationsDemoDefaults.ariaHidden,
+    },
+    {
+      name: "slot",
+      label: "slot",
+      kind: "text",
+      defaultValue: illustrationsDemoDefaults.slot,
+    },
+    {
+      name: "size",
+      label: "size",
+      kind: "radio",
+      defaultValue: illustrationsDemoDefaults.size,
+      options: options(illustrationPrimitiveSizeOptions),
+    },
+    {
+      name: "showDecorative",
+      label: "decorative example",
+      kind: "switch",
+      defaultValue: illustrationsDemoDefaults.showDecorative,
+    },
+    {
+      name: "decorativeSize",
+      label: "decorative size",
+      kind: "radio",
+      defaultValue: illustrationsDemoDefaults.decorativeSize,
+      options: options(illustrationPrimitiveSizeOptions),
+    },
+    {
+      name: "showSkeleton",
+      label: "Skeleton example",
+      kind: "switch",
+      defaultValue: illustrationsDemoDefaults.showSkeleton,
+    },
+    {
+      name: "skeletonSize",
+      label: "Skeleton size",
+      kind: "radio",
+      defaultValue: illustrationsDemoDefaults.skeletonSize,
+      options: options(illustrationPrimitiveSizeOptions),
+    },
+  ],
+  apiProps: [
+    "createIllustration",
+    "IllustrationContext",
+    "IllustrationContext.render",
+    "IllustrationContext.size",
+    "IllustrationContext.styles",
+    "aria-label",
+    "aria-hidden",
+    "id",
+    "size",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Illustrations route plus installed React S2 createIllustration source. The route drives accessible name, hidden state, explicit slot DOM forwarding, S/M/L size classes, decorative output, and Skeleton composition into both stacks. Style escapes and IllustrationContext render/styles/size remain tracked as API inventory while strict visual and DOM specs assert the computed geometry.",
 };
 
 const inlineAlertControls: ComponentControlGroup = {
@@ -6069,6 +6210,8 @@ export const componentControlGroups = {
   timefield: timeFieldControls,
   divider: dividerControls,
   dropzone: dropZoneControls,
+  icons: iconsControls,
+  illustrations: illustrationsControls,
   illustratedmessage: illustratedMessageControls,
   inlinealert: inlineAlertControls,
   form: formControls,

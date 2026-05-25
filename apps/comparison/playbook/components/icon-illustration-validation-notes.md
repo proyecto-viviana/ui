@@ -17,30 +17,31 @@ Status: accepted
 
 ## Task Status
 
-| Task                   | Status   | Evidence                                                                                         |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------ |
-| 0 Research             | complete | S2 docs references and installed React Spectrum S2 icon runtime source checked.                  |
-| 1 Baseline             | complete | `comparison:report:gaps` refreshed with 69/69 official entries live and no catalogue gaps.       |
-| 2 Route harness        | complete | Existing Icons/Illustrations routes now have strict primitive DOM and visual evidence.           |
-| 3 Source map/API       | complete | React `Icon.mjs`, `Skeleton.mjs`, and `useSpectrumContextProps.mjs` mapped to Solid owners.      |
-| 4 Cross-layer audit    | complete | SVG props, slot data attributes, skeleton wrapping, style classes, and context branches mapped.  |
-| 5 Transitions          | complete | Static labelled/decorative/skeleton/button-context states are covered.                           |
-| 6 State                | n/a      | No standalone state primitive; context and skeleton state are composition-owned.                 |
-| 7 ARIA hooks           | n/a      | No component-specific React Aria hook; SVG ARIA attributes are source-owned.                     |
-| 8 Headless             | n/a      | No separate headless component exists upstream.                                                  |
-| 9 Styled S2            | complete | Generated S2 icon/illustration size and flex-shrink classes match React-computed output.         |
-| 10 Runtime lifecycle   | complete | Icon skeleton inert/loading refs remain active; Illustration intentionally has no skeleton wrap. |
-| 11 Harness integrity   | complete | React imports installed S2; Solid imports package public APIs; fixtures use matching SVGs.       |
-| 12 Comparison evidence | complete | Focused unit tests, strict Playwright pair diffs, typecheck/build, report, and check passed.     |
-| 13 Acceptance          | complete | No Icon/Illustration-owned blockers remain.                                                      |
+| Task                   | Status   | Evidence                                                                                                               |
+| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 0 Research             | complete | S2 docs references and installed React Spectrum S2 icon runtime source checked.                                        |
+| 1 Baseline             | complete | `comparison:report:gaps` refreshed with 69/69 official entries live and no catalogue gaps.                             |
+| 2 Route harness        | complete | Existing Icons/Illustrations routes now have modeled controls plus strict primitive DOM and visual evidence.           |
+| 3 Source map/API       | complete | React `Icon.mjs`, `Skeleton.mjs`, and `useSpectrumContextProps.mjs` mapped to Solid owners.                            |
+| 4 Cross-layer audit    | complete | SVG props, slot data attributes, skeleton wrapping, style classes, and context branches mapped.                        |
+| 5 Transitions          | complete | Static labelled/decorative/skeleton/button-context states are covered.                                                 |
+| 6 State                | n/a      | No standalone state primitive; context and skeleton state are composition-owned.                                       |
+| 7 ARIA hooks           | n/a      | No component-specific React Aria hook; SVG ARIA attributes are source-owned.                                           |
+| 8 Headless             | n/a      | No separate headless component exists upstream.                                                                        |
+| 9 Styled S2            | complete | Generated S2 icon/illustration size and flex-shrink classes match React-computed output.                               |
+| 10 Runtime lifecycle   | complete | Icon skeleton inert/loading refs remain active; Illustration intentionally has no skeleton wrap.                       |
+| 11 Harness integrity   | complete | React imports installed S2; Solid imports package public APIs; fixtures use matching SVGs.                             |
+| 12 Comparison evidence | complete | Focused unit tests, strict Playwright pair diffs, modeled-control contract, typecheck/build, report, and check passed. |
+| 13 Acceptance          | complete | No Icon/Illustration-owned blockers remain.                                                                            |
 
 ## Agent Workflow
 
 No subagents were used for this component family pass.
 
-| Agent role | Files read                                                                                       | Files changed                                                                                                                                                                                                   | Evidence added                                                                                         | Commands run                                                                                | Blockers | Next owner |
-| ---------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | -------- | ---------- |
-| main       | S2 docs refs, installed `Icon.mjs`, `Skeleton.mjs`, `useSpectrumContextProps.mjs`, Solid owners. | `packages/solid-spectrum/src/icon/spectrum-icon.tsx`, generated S2 CSS, Icon and IllustratedMessage tests, React/Solid styled fixtures, visual-state matrix, `icon-illustration-visual.spec.ts`, and this note. | SVG semantic contract, size/style classes, skeleton branch parity, DOM `size` filtering, strict diffs. | Focused package tests, Playwright, comparison build/typecheck/report, `vp run check`, diff. | none     | none       |
+| Agent role | Files read                                                                                       | Files changed                                                                                                                                                                                                                                                                                                                                                                   | Evidence added                                                                                                           | Commands run                                                                                | Blockers | Next owner |
+| ---------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | -------- | ---------- |
+| main       | S2 docs refs, installed `Icon.mjs`, `Skeleton.mjs`, `useSpectrumContextProps.mjs`, Solid owners. | `packages/solid-spectrum/src/icon/spectrum-icon.tsx`, generated S2 CSS, Icon and IllustratedMessage tests, React/Solid styled fixtures, visual-state matrix, `icon-illustration-visual.spec.ts`, and this note.                                                                                                                                                                 | SVG semantic contract, size/style classes, skeleton branch parity, DOM `size` filtering, strict diffs.                   | Focused package tests, Playwright, comparison build/typecheck/report, `vp run check`, diff. | none     | none       |
+| main       | React S2 Button icon children pattern and Solid packaging output.                                | `apps/comparison/src/data/icons-demo.ts`, `apps/comparison/src/data/illustrations-demo.ts`, `apps/comparison/src/data/component-controls.ts`, React/Solid styled fixtures, `packages/solid-spectrum/vite.config.ts`, `packages/solid-spectrum/src/components.css`, `packages/solid-spectrum/src/icon/center-baseline.tsx`, and `packages/solid-spectrum/src/button/Button.tsx`. | Modeled side-panel controls, Button-context icon DOM parity, package CSS import coverage, browser/SSR output separation. | Solid package build, comparison build/typecheck/report, focused Playwright specs, diff.     | none     | none       |
 
 ## Acceptance Gate Checklist
 
@@ -57,18 +58,18 @@ No subagents were used for this component family pass.
 
 ## Gate Outcome Summary
 
-| Gate                                     | Outcome  | Evidence                                                                                                                                                                  | Blockers/owner |
-| ---------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| Official Docs And Viewer Parity          | complete | S2 Icons and Illustrations docs references checked; comparison routes expose labelled, decorative, loading, and context examples matching the documented primitive roles. | none           |
-| External Authority And Standards         | complete | SVG accessibility obligations are role/name/hidden/focusable semantics; no separate APG widget pattern applies.                                                           | none           |
-| Upstream React Source Parity             | complete | Installed React S2 source proved `createIcon` wraps `SkeletonWrapper`, `createIllustration` does not, and default context slots do not become default `data-slot`.        | none           |
-| Solid Idiomatic Implementation           | complete | Context values remain accessor-backed; SVG refs compose through Solid; custom illustration `size` is passed to the component without leaking as a DOM attribute.          | none           |
-| Accessibility And I18n                   | complete | Browser and unit assertions cover `role=img`, `aria-label`, decorative `aria-hidden`, `focusable=false`, and absence/presence of explicit `data-slot`.                    | none           |
-| Behavior State Machine                   | complete | Labelled, decorative, explicit slot, skeleton icon, non-skeleton illustration, S/M/L illustration sizing, and Button context branches are covered.                        | none           |
-| Style Source-To-Computed Parity          | complete | Generated S2 classes now cover icon 20px sizing, illustration S/M/L sizing, and `flex-shrink: 0`; Playwright compares computed geometry exactly.                          | none           |
-| React-Vs-Solid Comparison Harness Parity | complete | React and Solid fixtures use equivalent custom SVG components and remove unsupported icon `size` fixture props; strict pair diffs compare both primitive galleries.       | none           |
-| Known Defects And Regression Protection  | complete | Fixed and covered: missing icon/illustration size classes, leaked SVG `size`, wrong default `data-slot`, and incorrect illustration skeleton behavior.                    | none           |
-| Evidence And Handoff                     | complete | Focused tests, strict Playwright spec, comparison build/typecheck/report, `vp run check`, and `git diff --check` passed.                                                  | none           |
+| Gate                                     | Outcome  | Evidence                                                                                                                                                                                                                                                                  | Blockers/owner |
+| ---------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Official Docs And Viewer Parity          | complete | S2 Icons and Illustrations docs references checked; comparison routes expose labelled, decorative, loading, context, and size controls with serialized side-panel state.                                                                                                  | none           |
+| External Authority And Standards         | complete | SVG accessibility obligations are role/name/hidden/focusable semantics; no separate APG widget pattern applies.                                                                                                                                                           | none           |
+| Upstream React Source Parity             | complete | Installed React S2 source proved `createIcon` wraps `SkeletonWrapper`, `createIllustration` does not, and default context slots do not become default `data-slot`.                                                                                                        | none           |
+| Solid Idiomatic Implementation           | complete | Context values remain accessor-backed; SVG refs compose through Solid; custom illustration `size` is passed to the component without leaking as a DOM attribute.                                                                                                          | none           |
+| Accessibility And I18n                   | complete | Browser and unit assertions cover `role=img`, `aria-label`, decorative `aria-hidden`, `focusable=false`, and absence/presence of explicit `data-slot`.                                                                                                                    | none           |
+| Behavior State Machine                   | complete | Labelled, decorative, explicit slot, skeleton icon, non-skeleton illustration, S/M/L illustration sizing, and Button context branches are covered.                                                                                                                        | none           |
+| Style Source-To-Computed Parity          | complete | Generated S2 classes now cover icon 20px sizing, illustration S/M/L sizing, and `flex-shrink: 0`; Playwright compares computed geometry exactly.                                                                                                                          | none           |
+| React-Vs-Solid Comparison Harness Parity | complete | React and Solid fixtures use equivalent custom SVG components, modeled controls, and matching Button icon child composition; strict pair diffs compare both primitive galleries.                                                                                          | none           |
+| Known Defects And Regression Protection  | complete | Fixed and covered: missing icon/illustration size classes, leaked SVG `size`, wrong default `data-slot`, incorrect illustration skeleton behavior, stale viewer controls, package CSS import, browser/SSR output collision, and Button context slot/visibility placement. | none           |
+| Evidence And Handoff                     | complete | Focused tests, strict Playwright specs, comparison build/typecheck/report, Solid package build, and `git diff --check` passed.                                                                                                                                            | none           |
 
 ## Research
 
@@ -88,12 +89,12 @@ No subagents were used for this component family pass.
 
 ## Official Docs And Viewer Parity
 
-| Docs item      | Official setting/example                                       | Route/control                                                           | Status  |
-| -------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------- | ------- |
-| Icons          | `createIcon` output used as labelled, decorative, and loading. | Icons route renders labelled, decorative, skeleton, and Button-context. | passing |
-| Illustrations  | `createIllustration` output with `size` S/M/L.                 | Illustrations route renders labelled S, decorative M, and skeleton L.   | passing |
-| SVG semantics  | `role=img`, label or hidden, and `focusable=false`.            | Browser contract compares React and Solid attributes exactly.           | passing |
-| Style geometry | Icon 20px, Illustration S/M/L, `flex-shrink: 0`.               | Browser contract compares computed width/height/box geometry exactly.   | passing |
+| Docs item      | Official setting/example                                       | Route/control                                                                                             | Status  |
+| -------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------- |
+| Icons          | `createIcon` output used as labelled, decorative, and loading. | Icons route and controls render labelled, decorative, skeleton, and Button-context.                       | passing |
+| Illustrations  | `createIllustration` output with `size` S/M/L.                 | Illustrations route and controls render labelled S, decorative M, skeleton L, and selectable S/M/L sizes. | passing |
+| SVG semantics  | `role=img`, label or hidden, and `focusable=false`.            | Browser contract compares React and Solid attributes exactly.                                             | passing |
+| Style geometry | Icon 20px, Illustration S/M/L, `flex-shrink: 0`.               | Browser contract compares computed width/height/box geometry exactly.                                     | passing |
 
 ## Source Map And Public Contract
 
@@ -153,13 +154,19 @@ No subagents were used for this component family pass.
 
 ## Known Defects And Regression Protection
 
-| Finding source | Defect or risk                                                                | Class    | Blocking? | Regression evidence or owner                                                    |
-| -------------- | ----------------------------------------------------------------------------- | -------- | --------- | ------------------------------------------------------------------------------- |
-| Current pass   | `createIcon` used legacy `iconStyle` and lacked React S2 base classes.        | port bug | no        | Generated CSS and browser computed contracts cover width/height/flex.           |
-| Current pass   | Solid defaulted `data-slot` to `icon`; React only emits explicit `slot`.      | port bug | no        | Unit tests assert no default `data-slot` and explicit slot output.              |
-| Current pass   | Illustration leaked `size` as an SVG DOM attribute in Solid fixtures/tests.   | port bug | no        | Unit and browser contracts assert no DOM `size` while custom component sees it. |
-| Current pass   | Solid wrapped illustrations in skeleton loading styling; React S2 does not.   | port bug | no        | Browser skeleton illustration contract and strict pair diff cover this branch.  |
-| Current pass   | Icons fixture used unsupported `size` props, masking true React/Solid parity. | harness  | no        | React and Solid fixtures remove unsupported icon `size` props.                  |
+| Finding source | Defect or risk                                                                | Class    | Blocking? | Regression evidence or owner                                                      |
+| -------------- | ----------------------------------------------------------------------------- | -------- | --------- | --------------------------------------------------------------------------------- |
+| Current pass   | `createIcon` used legacy `iconStyle` and lacked React S2 base classes.        | port bug | no        | Generated CSS and browser computed contracts cover width/height/flex.             |
+| Current pass   | Solid defaulted `data-slot` to `icon`; React only emits explicit `slot`.      | port bug | no        | Unit tests assert no default `data-slot` and explicit slot output.                |
+| Current pass   | Illustration leaked `size` as an SVG DOM attribute in Solid fixtures/tests.   | port bug | no        | Unit and browser contracts assert no DOM `size` while custom component sees it.   |
+| Current pass   | Solid wrapped illustrations in skeleton loading styling; React S2 does not.   | port bug | no        | Browser skeleton illustration contract and strict pair diff cover this branch.    |
+| Current pass   | Icons fixture used unsupported `size` props, masking true React/Solid parity. | harness  | no        | React and Solid fixtures remove unsupported icon `size` props.                    |
+| Follow-up pass | Icons and Illustrations had accepted visuals but no modeled control groups.   | harness  | no        | Component controls and modeled-controls-contract cover both routes.               |
+| Follow-up pass | Solid Spectrum browser and SSR package chunks used colliding shared names.    | package  | no        | SSR chunks now use `.ssr.js`; package and comparison builds cover import aliases. |
+| Follow-up pass | Macro-generated `style.css` was not imported through `components.css`.        | package  | no        | `components.css` imports `style.css`; strict visual output covers centerBaseline. |
+| Follow-up pass | `centerBaseline` macro string escaped NBSP incorrectly when ported.           | port bug | no        | Source now matches upstream string call form and generated CSS emits a real NBSP. |
+| Follow-up pass | Button icon context hid the wrapper instead of the icon during pending state. | port bug | no        | Visibility moved to icon styles to match React S2 Button source.                  |
+| Follow-up pass | Button icon context applied `data-slot=icon` to the inner SVG.                | port bug | no        | Browser semantic contract asserts React only slots the center-baseline wrapper.   |
 
 Canonical scenario smoke:
 
@@ -183,12 +190,16 @@ Composition smoke:
   - `13` focused tests passed.
 - `vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/icon-illustration-visual.spec.ts --reporter=line`
   - `2` browser tests passed.
+- `vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/modeled-controls-contract.spec.ts --grep "Icons|Illustrations" --reporter=line`
+  - `2` modeled-control browser tests passed.
+- `vp run --filter @proyecto-viviana/solid-spectrum build`
+  - package build passed after CSS import, centerBaseline, Button context, and SSR output fixes.
 - `vp run --filter @proyecto-viviana/comparison build`
   - comparison build passed and generated all 70 static pages.
-- `vp run comparison:report:gaps`
-  - `69` official S2 entries, `69` entries in comparison app, `69` live on both sides, `0` missing/gap.
+- `vp run comparison:report:parity`
+  - `69` official S2 entries, `69` entries in comparison app, `69` sidebar entries, and `59` modeled-control entries. Remaining modeled-control gaps: Card, CardView, Popover, ProgressBar, ProgressCircle, Provider, RangeSlider, TableView, TagGroup, and TreeView.
 - `vp run comparison:typecheck`
-  - Astro check passed with `0` errors, `0` warnings, `0` hints.
+  - Astro check passed with `0` errors, `0` warnings, and `2` existing unused-collection hints.
 - `vp run check`
   - formatting, lint, and root typecheck passed.
 - `git diff --check`
