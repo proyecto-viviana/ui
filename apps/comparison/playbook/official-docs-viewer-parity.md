@@ -39,7 +39,29 @@ Record:
 - every documented limitation or caveat.
 
 If the page has no interactive viewer, record `interactive viewer: none found`
-and inventory the static examples instead.
+and inventory the static examples instead. Do this only after checking the live
+official docs page; MCP snapshots can expose page sections without exposing the
+interactive viewer controls.
+
+## Control Surfaces Are Distinct
+
+Do not collapse the docs viewer surface into the component API surface.
+
+- `official-viewer`: a visible control on the official S2 docs page. It must be
+  mirrored by the route or recorded as `route-gap`/`port-gap`.
+- `api-extra`: a comparison control added because the public API or installed
+  source has a user-observable branch that the official viewer does not expose.
+- `regression-extra`: a comparison control added to protect a fixed bug or known
+  fragile behavior.
+- `internal-sentinel`: a route-only value such as an empty string used to omit
+  an optional prop. It must not be counted as an official option unless the
+  official viewer exposes that value.
+
+A component is not accepted just because API-derived modeled controls are
+comprehensive. The official viewer controls must be inventoried separately,
+including the explicit `interactive viewer: none found` case. Extra controls are
+allowed, but the component note must classify them and explain why they belong
+in the route.
 
 ## How To Compare
 
@@ -90,6 +112,15 @@ Add a compact section like this to component validation notes:
 | Docs item          | Official setting/example                 | Route/control             | Status  | Evidence                        |
 | ------------------ | ---------------------------------------- | ------------------------- | ------- | ------------------------------- |
 | Interactive viewer | `size`: `S`, `M`, `L`, `XL`; default `M` | side-panel `size` control | covered | control spec + size visual rows |
+```
+
+Classify every route control surface separately from the official viewer:
+
+```md
+| Route control | Source surface   | Official values | Route values  | Status  | Evidence        |
+| ------------- | ---------------- | --------------- | ------------- | ------- | --------------- |
+| `size`        | official-viewer  | `S`, `M`, `L`   | `S`, `M`, `L` | covered | control spec    |
+| `debugMode`   | regression-extra | none            | `on`, `off`   | covered | regression test |
 ```
 
 For controls with optional props, include the default-state distinction:

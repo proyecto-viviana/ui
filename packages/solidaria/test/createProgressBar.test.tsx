@@ -11,6 +11,7 @@ function TestProgressBar(props: {
   minValue?: number;
   maxValue?: number;
   valueLabel?: string;
+  formatOptions?: Intl.NumberFormatOptions;
   isIndeterminate?: boolean;
   label?: string;
   "aria-label"?: string;
@@ -27,6 +28,9 @@ function TestProgressBar(props: {
     },
     get valueLabel() {
       return props.valueLabel;
+    },
+    get formatOptions() {
+      return props.formatOptions;
     },
     get isIndeterminate() {
       return props.isIndeterminate;
@@ -82,6 +86,12 @@ describe("createProgressBar", () => {
     render(() => <TestProgressBar value={25} valueLabel="Step 1 of 4" />);
     const progressbar = screen.getByRole("progressbar");
     expect(progressbar).toHaveAttribute("aria-valuetext", "Step 1 of 4");
+  });
+
+  it("should support non-percent formatOptions", () => {
+    render(() => <TestProgressBar value={42} formatOptions={{ style: "decimal" }} />);
+    const progressbar = screen.getByRole("progressbar");
+    expect(progressbar).toHaveAttribute("aria-valuetext", "42");
   });
 
   it("should clamp value between min and max", () => {

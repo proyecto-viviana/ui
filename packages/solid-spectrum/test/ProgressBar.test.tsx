@@ -51,6 +51,14 @@ describe("ProgressBar (solid-spectrum)", () => {
     expect(screen.getByText("Step 1 of 4")).toBeInTheDocument();
   });
 
+  it("uses formatOptions for generated value text", () => {
+    render(() => <ProgressBar value={42} formatOptions={{ style: "decimal" }} label="Progress" />);
+    const progressbar = screen.getByRole("progressbar");
+
+    expect(progressbar).toHaveAttribute("aria-valuetext", "42");
+    expect(screen.getByText("42")).toBeInTheDocument();
+  });
+
   it("supports S2 size, labelPosition, and staticColor props", () => {
     render(() => (
       <ProgressBar

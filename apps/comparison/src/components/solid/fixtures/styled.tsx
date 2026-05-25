@@ -491,6 +491,7 @@ import {
   type MeterDemoProps,
 } from "@comparison/data/meter-demo";
 import {
+  progressBarFormatOptionsForPreset,
   normalizeProgressBarDemoProps,
   normalizeProgressCircleDemoProps,
   progressBarDemoPropsFromWindow,
@@ -1204,6 +1205,9 @@ function SolidSpectrumProgressBarDemo() {
             },
             get valueLabel() {
               return demoProps().valueLabel || undefined;
+            },
+            get formatOptions() {
+              return progressBarFormatOptionsForPreset(demoProps().formatOptions);
             },
             get size() {
               return demoProps().size;

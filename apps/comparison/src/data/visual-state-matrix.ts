@@ -1192,7 +1192,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "The docs-style prop controls drive label text, value range, value label, indeterminate state, S2 size, static color, and label position into both stacks.",
+      note: "The docs-style prop controls drive label text, value range, value label, format preset, indeterminate state, S2 size, static color, and label position into both stacks.",
     },
     {
       id: "styled.root-dom-contract",

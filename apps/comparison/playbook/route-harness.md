@@ -29,6 +29,10 @@ rg --files apps/comparison/e2e | rg '<slug>.*\.spec\.ts$'
 - Side-panel controls use public S2 prop names.
 - Side-panel controls cover every behavior/style/a11y-affecting setting from
   the official S2 interactive viewer, or record a route gap.
+- Each side-panel control is classified in the component note as
+  `official-viewer`, `api-extra`, `regression-extra`, or `internal-sentinel`.
+- API/source and regression extras must not be presented as official viewer
+  parity. They need their own source, docs, or regression evidence.
 - Side-panel controls match the official viewer's visible option labels, option
   order, and selected/default state. Internal route sentinels used to represent
   omitted props must not be exposed as public options.

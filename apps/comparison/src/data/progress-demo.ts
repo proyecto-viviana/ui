@@ -1,13 +1,15 @@
 export const progressBarSizeOptions = ["S", "M", "L", "XL"] as const;
 export const progressBarStaticColorOptions = ["", "white", "black", "auto"] as const;
 export const progressBarLabelPositionOptions = ["top", "side"] as const;
+export const progressBarFormatOptions = ["decimal", "percent", "currency", "unit"] as const;
 
 export const progressCircleSizeOptions = ["S", "M", "L"] as const;
-export const progressCircleStaticColorOptions = ["", "white", "black", "auto"] as const;
+export const progressCircleStaticColorOptions = ["", "black", "white", "auto"] as const;
 
 export type ProgressBarDemoSize = (typeof progressBarSizeOptions)[number];
 export type ProgressBarDemoStaticColor = (typeof progressBarStaticColorOptions)[number];
 export type ProgressBarDemoLabelPosition = (typeof progressBarLabelPositionOptions)[number];
+export type ProgressBarDemoFormatOptions = (typeof progressBarFormatOptions)[number];
 
 export type ProgressCircleDemoSize = (typeof progressCircleSizeOptions)[number];
 export type ProgressCircleDemoStaticColor = (typeof progressCircleStaticColorOptions)[number];
@@ -21,6 +23,7 @@ export interface ProgressBarDemoProps {
   size: ProgressBarDemoSize;
   staticColor: ProgressBarDemoStaticColor;
   labelPosition: ProgressBarDemoLabelPosition;
+  formatOptions: ProgressBarDemoFormatOptions;
   isIndeterminate: boolean;
 }
 
@@ -35,20 +38,21 @@ export interface ProgressCircleDemoProps {
 }
 
 export const progressBarDemoDefaults: ProgressBarDemoProps = {
-  label: "Transcoding assets",
-  value: 64,
+  label: "Loading…",
+  value: 50,
   minValue: 0,
   maxValue: 100,
   valueLabel: "",
   size: "M",
   staticColor: "",
   labelPosition: "top",
+  formatOptions: "percent",
   isIndeterminate: false,
 };
 
 export const progressCircleDemoDefaults: ProgressCircleDemoProps = {
-  ariaLabel: "Syncing files",
-  value: 72,
+  ariaLabel: "Loading…",
+  value: 50,
   minValue: 0,
   maxValue: 100,
   size: "M",
@@ -118,6 +122,9 @@ export function normalizeProgressBarDemoProps(
     labelPosition: isOneOf(props.labelPosition, progressBarLabelPositionOptions)
       ? props.labelPosition
       : progressBarDemoDefaults.labelPosition,
+    formatOptions: isOneOf(props.formatOptions, progressBarFormatOptions)
+      ? props.formatOptions
+      : progressBarDemoDefaults.formatOptions,
     isIndeterminate: booleanProp(props.isIndeterminate, progressBarDemoDefaults.isIndeterminate),
   };
 }
@@ -148,6 +155,7 @@ export function progressBarDemoPropsFromSearch(search: string): ProgressBarDemoP
   const size = params.get("size");
   const staticColor = params.get("staticColor");
   const labelPosition = params.get("labelPosition");
+  const formatOptions = params.get("formatOptions");
 
   return normalizeProgressBarDemoProps({
     label: params.get("label") || progressBarDemoDefaults.label,
@@ -162,6 +170,9 @@ export function progressBarDemoPropsFromSearch(search: string): ProgressBarDemoP
     labelPosition: isOneOf(labelPosition, progressBarLabelPositionOptions)
       ? labelPosition
       : progressBarDemoDefaults.labelPosition,
+    formatOptions: isOneOf(formatOptions, progressBarFormatOptions)
+      ? formatOptions
+      : progressBarDemoDefaults.formatOptions,
     isIndeterminate: params.has("isIndeterminate")
       ? booleanParam(params.get("isIndeterminate"))
       : progressBarDemoDefaults.isIndeterminate,
@@ -210,4 +221,19 @@ export function serializeProgressBarDemoProps(props: ProgressBarDemoProps): stri
 
 export function serializeProgressCircleDemoProps(props: ProgressCircleDemoProps): string {
   return JSON.stringify(normalizeProgressCircleDemoProps(props));
+}
+
+export function progressBarFormatOptionsForPreset(
+  preset: ProgressBarDemoFormatOptions,
+): Intl.NumberFormatOptions {
+  switch (preset) {
+    case "currency":
+      return { style: "currency", currency: "USD", maximumFractionDigits: 0 };
+    case "unit":
+      return { style: "unit", unit: "kilometer", maximumFractionDigits: 0 };
+    case "decimal":
+      return { style: "decimal" };
+    case "percent":
+      return { style: "percent" };
+  }
 }

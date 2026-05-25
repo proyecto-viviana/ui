@@ -26,7 +26,9 @@ for the component to be marked accepted.
 - Official docs/viewer parity: every official S2 docs example and interactive
   viewer setting is covered by route controls, examples, source branch rows, and
   evidence, or recorded as `docs-drift`, `not-applicable`, `route-gap`, or
-  `port-gap`.
+  `port-gap`. API/source extras, regression extras, and internal sentinels are
+  classified separately and are not substitute evidence for official viewer
+  parity.
 - External authority: relevant React Aria/S2 docs, testing docs, release notes,
   specs, APG/WCAG/ARIA-AT/evaluation guidance, platform explainers, and
   articles are checked or recorded as `none found`; disagreements name the

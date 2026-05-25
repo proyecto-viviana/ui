@@ -78,9 +78,12 @@ of scope.
       viewer canvas conditions inventoried:
 - [ ] Interactive viewer controls inventoried with labels, values, order,
       defaults, reset behavior, and omitted-prop behavior:
+- [ ] Official viewer controls, API/source extra controls, regression extra
+      controls, and internal omitted-prop sentinels classified separately:
 - [ ] Comparison route default matches official example or deviation recorded:
 - [ ] Side-panel controls match official viewer controls and selection
       semantics:
+- [ ] Non-viewer side-panel controls have API/source or regression rationale:
 - [ ] Route tests assert visible defaults/options and mounted DOM changes:
 
 ### 2. External Authority And Standards
@@ -220,6 +223,10 @@ long prose.
 | Docs item | Official setting/example | Route/control | Status | Evidence |
 | --------- | ------------------------ | ------------- | ------ | -------- |
 |           |                          |               |        |          |
+
+| Route control | Source surface | Official values | Route values | Status | Evidence |
+| ------------- | -------------- | --------------- | ------------ | ------ | -------- |
+|               |                |                 |              |        |          |
 
 ## Incoming Cross-Component Findings
 

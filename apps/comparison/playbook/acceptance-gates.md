@@ -63,10 +63,15 @@ to individual rows inside a gate, not to the whole gate.
 - [ ] Every interactive viewer control recorded with prop name, labels, option
       values, option order, selected default, reset behavior, and omitted-prop
       behavior.
+- [ ] Official viewer controls, API/source extra controls, regression extra
+      controls, and internal omitted-prop sentinels recorded separately.
 - [ ] Comparison route default matches the official example, or the deviation is
       recorded as `docs-drift`, `route-gap`, or `not-applicable`.
 - [ ] Side-panel controls match the official viewer's public controls and
       selection semantics.
+- [ ] Every side-panel control not present in the official viewer has an
+      API/source or regression rationale and is not used as substitute evidence
+      for official viewer parity.
 - [ ] Route tests assert the visible defaults and option surface, not only
       serialized props.
 

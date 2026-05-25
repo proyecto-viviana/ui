@@ -9,10 +9,14 @@ Status: accepted
       `value`, `minValue`, `maxValue`, `isIndeterminate`, `size`,
       `staticColor`, ARIA label and description props, `slot`, `styles`, unsafe
       props, `id`, and `ref`.
+- [x] Official docs/viewer surface is recorded separately from API/source extra
+      controls; the live 2026-05-25 S2 docs page exposes interactive viewer
+      controls for `value`, `isIndeterminate`, `size`, and `staticColor`.
 - [x] Styled public boundary excludes legacy sizes, raw `style`, and the Solid
       `class` alias.
 - [x] Comparison viewer controls model the visual S2 prop branches: accessible
-      label, value range, indeterminate state, size, and static color.
+      label, value range, indeterminate state, size, and static color, with
+      official viewer controls separated from API/source extras.
 - [x] Accessibility behavior is delegated to Solidaria `createProgressBar`, with
       determinate and indeterminate ARIA behavior covered by focused tests.
 - [x] Style source-to-computed mapping ports the S2 wrapper sizing, square aspect
@@ -32,6 +36,25 @@ Status: accepted
 | Harness                 | done   | Demo data, side-panel controls, React/Solid fixtures, matrix |
 | Verification            | done   | Focused unit, comparison, parity, and check commands         |
 | Handoff                 | done   | README status and this note                                  |
+
+## Official Docs And Viewer Parity
+
+| Docs item                   | Official setting/example                                                                                                           | Route/control                                                                                                                          | Status  | Evidence                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------- |
+| Page sections               | `Value`, `API`                                                                                                                     | validation note and API prop inventory                                                                                                 | covered | S2 MCP page info checked 2026-05-25                                       |
+| Interactive viewer controls | `value`, `isIndeterminate`, `size`, `staticColor`                                                                                  | side-panel controls with matching defaults and public option surface                                                                   | covered | live S2 docs page checked 2026-05-25; control spec + mounted DOM contract |
+| Value section examples      | value range defaults to 0-100 and can be customized with `minValue`/`maxValue`                                                     | `minValue` and `maxValue` route controls                                                                                               | covered | live S2 docs page checked 2026-05-25; focused package tests               |
+| API surface                 | `value`, `minValue`, `maxValue`, `isIndeterminate`, `size`, `staticColor`, ARIA props, `id`, `slot`, `styles`, unsafe props, `ref` | API/source inventory, route controls for visual branches, focused package tests for forwarded slot/unsafe props and progress semantics | covered | component controls, source map, focused tests                             |
+
+| Route control     | Source surface  | Official values                                     | Route values                                       | Status  | Evidence                                     |
+| ----------------- | --------------- | --------------------------------------------------- | -------------------------------------------------- | ------- | -------------------------------------------- |
+| `value`           | official-viewer | numeric; default `50`                               | numeric text input; default `50`                   | covered | control spec + SVG dash/ARIA tests           |
+| `isIndeterminate` | official-viewer | boolean; default off                                | switch; default off                                | covered | focused package tests + visual-state matrix  |
+| `size`            | official-viewer | `S`, `M`, `L`; default `M`                          | `S`, `M`, `L`; default `M`                         | covered | visual-state matrix + control spec           |
+| `staticColor`     | official-viewer | `black`, `white`, `auto`; default omit              | `black`, `white`, `auto`; reset/default omits prop | covered | static-color regression tests + control spec |
+| `minValue`        | api-extra       | Value-section example prop; default `0`             | numeric text input; default `0`                    | covered | focused package tests                        |
+| `maxValue`        | api-extra       | Value-section example prop; default `100`           | numeric text input; default `100`                  | covered | focused package tests                        |
+| `aria-label`      | api-extra       | code-example accessibility prop; default `Loading…` | text; default `Loading…`                           | covered | control spec + mounted DOM contract          |
 
 ## Behavior State Machine
 

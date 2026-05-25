@@ -448,6 +448,7 @@ import {
   serializeMeterDemoProps,
 } from "@comparison/data/meter-demo";
 import {
+  progressBarFormatOptionsForPreset,
   normalizeProgressBarDemoProps,
   normalizeProgressCircleDemoProps,
   progressBarDemoPropsFromWindow,
@@ -998,6 +999,7 @@ function ReactProgressBarDemo() {
         minValue: demoProps.minValue,
         maxValue: demoProps.maxValue,
         valueLabel: demoProps.valueLabel || undefined,
+        formatOptions: progressBarFormatOptionsForPreset(demoProps.formatOptions),
         size: demoProps.size,
         staticColor: demoProps.staticColor || undefined,
         labelPosition: demoProps.labelPosition,

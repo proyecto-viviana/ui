@@ -256,6 +256,7 @@ import {
 } from "./meter-demo";
 import {
   progressBarDemoDefaults,
+  progressBarFormatOptions,
   progressBarLabelPositionOptions,
   progressBarSizeOptions,
   progressBarStaticColorOptions,
@@ -2263,22 +2264,10 @@ const progressBarControls: ComponentControlGroup = {
       defaultValue: progressBarDemoDefaults.value,
     },
     {
-      name: "minValue",
-      label: "minValue",
-      kind: "text",
-      defaultValue: progressBarDemoDefaults.minValue,
-    },
-    {
-      name: "maxValue",
-      label: "maxValue",
-      kind: "text",
-      defaultValue: progressBarDemoDefaults.maxValue,
-    },
-    {
-      name: "valueLabel",
-      label: "valueLabel",
-      kind: "text",
-      defaultValue: progressBarDemoDefaults.valueLabel,
+      name: "isIndeterminate",
+      label: "isIndeterminate",
+      kind: "switch",
+      defaultValue: progressBarDemoDefaults.isIndeterminate,
     },
     {
       name: "size",
@@ -2293,7 +2282,6 @@ const progressBarControls: ComponentControlGroup = {
       kind: "radio",
       defaultValue: progressBarDemoDefaults.staticColor,
       options: [
-        { value: progressBarStaticColorOptions[0], label: "default" },
         { value: progressBarStaticColorOptions[1], label: progressBarStaticColorOptions[1] },
         { value: progressBarStaticColorOptions[2], label: progressBarStaticColorOptions[2] },
         { value: progressBarStaticColorOptions[3], label: progressBarStaticColorOptions[3] },
@@ -2307,10 +2295,34 @@ const progressBarControls: ComponentControlGroup = {
       options: options(progressBarLabelPositionOptions),
     },
     {
-      name: "isIndeterminate",
-      label: "isIndeterminate",
-      kind: "switch",
-      defaultValue: progressBarDemoDefaults.isIndeterminate,
+      name: "formatOptions",
+      label: "formatOptions",
+      kind: "radio",
+      defaultValue: progressBarDemoDefaults.formatOptions,
+      options: [
+        { value: progressBarFormatOptions[0], label: "Decimal" },
+        { value: progressBarFormatOptions[1], label: "Percent" },
+        { value: progressBarFormatOptions[2], label: "Currency" },
+        { value: progressBarFormatOptions[3], label: "Unit" },
+      ],
+    },
+    {
+      name: "valueLabel",
+      label: "valueLabel",
+      kind: "text",
+      defaultValue: progressBarDemoDefaults.valueLabel,
+    },
+    {
+      name: "minValue",
+      label: "minValue",
+      kind: "text",
+      defaultValue: progressBarDemoDefaults.minValue,
+    },
+    {
+      name: "maxValue",
+      label: "maxValue",
+      kind: "text",
+      defaultValue: progressBarDemoDefaults.maxValue,
     },
   ],
   apiProps: [
@@ -2334,7 +2346,7 @@ const progressBarControls: ComponentControlGroup = {
     "aria-describedby",
     "aria-details",
   ],
-  note: "Modeled from the S2 ProgressBar docs and source. The viewer drives label text, value range, value label, indeterminate state, S2 size, static color, and label position into both stacks.",
+  note: "Modeled from the live S2 ProgressBar docs viewer and source. Official viewer controls drive label text, value, indeterminate state, S2 size, static color, label position, format preset, and value label; Value-section extras expose minValue and maxValue.",
 };
 
 const progressCircleControls: ComponentControlGroup = {
@@ -2343,28 +2355,16 @@ const progressCircleControls: ComponentControlGroup = {
   coverage: "modeled",
   controls: [
     {
-      name: "ariaLabel",
-      label: "aria-label",
-      kind: "text",
-      defaultValue: progressCircleDemoDefaults.ariaLabel,
-    },
-    {
       name: "value",
       label: "value",
       kind: "text",
       defaultValue: progressCircleDemoDefaults.value,
     },
     {
-      name: "minValue",
-      label: "minValue",
-      kind: "text",
-      defaultValue: progressCircleDemoDefaults.minValue,
-    },
-    {
-      name: "maxValue",
-      label: "maxValue",
-      kind: "text",
-      defaultValue: progressCircleDemoDefaults.maxValue,
+      name: "isIndeterminate",
+      label: "isIndeterminate",
+      kind: "switch",
+      defaultValue: progressCircleDemoDefaults.isIndeterminate,
     },
     {
       name: "size",
@@ -2379,17 +2379,28 @@ const progressCircleControls: ComponentControlGroup = {
       kind: "radio",
       defaultValue: progressCircleDemoDefaults.staticColor,
       options: [
-        { value: progressCircleStaticColorOptions[0], label: "default" },
         { value: progressCircleStaticColorOptions[1], label: progressCircleStaticColorOptions[1] },
         { value: progressCircleStaticColorOptions[2], label: progressCircleStaticColorOptions[2] },
         { value: progressCircleStaticColorOptions[3], label: progressCircleStaticColorOptions[3] },
       ],
     },
     {
-      name: "isIndeterminate",
-      label: "isIndeterminate",
-      kind: "switch",
-      defaultValue: progressCircleDemoDefaults.isIndeterminate,
+      name: "minValue",
+      label: "minValue",
+      kind: "text",
+      defaultValue: progressCircleDemoDefaults.minValue,
+    },
+    {
+      name: "maxValue",
+      label: "maxValue",
+      kind: "text",
+      defaultValue: progressCircleDemoDefaults.maxValue,
+    },
+    {
+      name: "ariaLabel",
+      label: "aria-label",
+      kind: "text",
+      defaultValue: progressCircleDemoDefaults.ariaLabel,
     },
   ],
   apiProps: [
@@ -2409,7 +2420,7 @@ const progressCircleControls: ComponentControlGroup = {
     "aria-describedby",
     "aria-details",
   ],
-  note: "Modeled from the S2 ProgressCircle docs and source. The viewer drives accessible label, value range, indeterminate state, S2 size, and static color into both stacks.",
+  note: "Modeled from the live S2 ProgressCircle docs viewer and source. Official viewer controls drive value, indeterminate state, S2 size, and static color; Value/API extras expose minValue, maxValue, and aria-label.",
 };
 
 const formControls: ComponentControlGroup = {
