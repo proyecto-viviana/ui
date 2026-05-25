@@ -349,11 +349,14 @@ export { Link, LinkContext } from "./link";
 export type { LinkProps } from "./link";
 
 // ListView
-export { ListView, ListViewItem } from "./list";
+export { ListView, ListViewContext, ListViewItem } from "./list";
 export type {
   ListViewItemProps,
   ListViewLayout,
+  ListViewLoadingState,
+  ListViewOverflowMode,
   ListViewProps,
+  ListViewSelectionStyle,
   ListViewSize,
   ListViewVariant,
 } from "./list";

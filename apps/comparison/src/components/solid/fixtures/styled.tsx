@@ -301,6 +301,16 @@ import {
   type SelectBoxGroupDemoProps,
 } from "@comparison/data/selectboxgroup-demo";
 import {
+  initialListViewSelectedKeys,
+  listViewDemoPropsFromWindow,
+  listViewItems,
+  listViewKeysFromValue,
+  normalizeListViewDemoProps,
+  serializeListViewDemoProps,
+  serializeListViewKeys,
+  type ListViewDemoProps,
+} from "@comparison/data/listview-demo";
+import {
   normalizeNumberFieldDemoProps,
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
@@ -1252,7 +1262,38 @@ function SolidSpectrumPopoverDemo() {
 }
 
 function SolidSpectrumListViewDemo() {
+  const [demoProps, setDemoProps] = createSignal<ListViewDemoProps>(listViewDemoPropsFromWindow());
+  const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
+    initialListViewSelectedKeys(demoProps()),
+  );
   const colorScheme = createComparisonResolvedThemeSignal();
+  const selectedKeyText = createMemo(() => serializeListViewKeys(selectedKeys()));
+  let listViewRoot: HTMLElement | undefined;
+
+  createEffect(() => {
+    listViewRoot?.setAttribute(
+      "data-comparison-control-props",
+      serializeListViewDemoProps(demoProps()),
+    );
+  });
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "listview") {
+        setDemoProps((current) => {
+          const nextProps = normalizeListViewDemoProps({
+            ...current,
+            ...(event.detail.props ?? {}),
+          });
+          setSelectedKeys(initialListViewSelectedKeys(nextProps));
+          return nextProps;
+        });
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
   return hc(
     SolidSpectrumProvider,
     {
@@ -1267,23 +1308,103 @@ function SolidSpectrumListViewDemo() {
         "div",
         {
           style: collectionFixtureStyle,
-          "data-comparison-control-root": "listview",
+          get "data-comparison-selected-keys"() {
+            return selectedKeyText();
+          },
         },
         [
           hc(
             SolidSpectrumListView,
             {
               "aria-label": "Documents",
-              items: collectionDocuments,
-              getKey: (item: (typeof collectionDocuments)[number]) => item.id,
-              getTextValue: (item: (typeof collectionDocuments)[number]) => item.name,
-              selectionMode: "multiple",
-              defaultSelectedKeys: ["project-brief"],
+              "data-comparison-control-root": "listview",
+              ref: (element: HTMLElement) => {
+                listViewRoot = element;
+              },
+              get "data-comparison-control-props"() {
+                return serializeListViewDemoProps(demoProps());
+              },
+              get items() {
+                return listViewItems;
+              },
+              getKey: (item: (typeof listViewItems)[number]) => item.id,
+              getTextValue: (item: (typeof listViewItems)[number]) => item.name,
+              get selectionMode() {
+                return demoProps().selectionMode;
+              },
+              get selectionStyle() {
+                return demoProps().selectionStyle;
+              },
+              get overflowMode() {
+                return demoProps().overflowMode;
+              },
+              get isQuiet() {
+                return demoProps().isQuiet;
+              },
+              get hideLinkOutIcon() {
+                return demoProps().hideLinkOutIcon;
+              },
+              get disabledKeys() {
+                return listViewKeysFromValue(demoProps().disabledKeys, [], "multiple");
+              },
+              get selectedKeys() {
+                return demoProps().selectionSource === "selectedKeys" ? selectedKeys() : undefined;
+              },
+              get defaultSelectedKeys() {
+                return demoProps().selectionSource === "defaultSelectedKeys"
+                  ? listViewKeysFromValue(
+                      demoProps().defaultSelectedKeys,
+                      ["project-brief"],
+                      demoProps().selectionMode,
+                    )
+                  : undefined;
+              },
+              onSelectionChange: (keys: "all" | Set<string | number>) =>
+                setSelectedKeys(
+                  keys === "all"
+                    ? new Set(listViewItems.map((item) => item.id))
+                    : new Set<string>(Array.from(keys, String)),
+                ),
+              UNSAFE_style: collectionListStyle,
             },
-            renderProp((item: (typeof collectionDocuments)[number]) =>
-              hc(SolidSpectrumListViewItem, { id: item.id, description: item.description }, [
-                item.name,
-              ]),
+            renderProp((item: (typeof listViewItems)[number]) =>
+              hc(
+                SolidSpectrumListViewItem,
+                {
+                  id: item.id,
+                  textValue: item.name,
+                  get isDisabled() {
+                    return demoProps().disabledItem === item.id;
+                  },
+                  get href() {
+                    return demoProps().trailingIcon === "linkOut" && item.id === "project-brief"
+                      ? "https://example.com/project-brief"
+                      : undefined;
+                  },
+                  get target() {
+                    return demoProps().trailingIcon === "linkOut" && item.id === "project-brief"
+                      ? "_blank"
+                      : undefined;
+                  },
+                  get hasChildItems() {
+                    return demoProps().trailingIcon === "child" && item.id === "project-brief"
+                      ? true
+                      : undefined;
+                  },
+                },
+                [
+                  hc(SolidSpectrumText, { slot: "label" }, [item.name]),
+                  hc(
+                    Show,
+                    {
+                      get when() {
+                        return demoProps().showDescriptions;
+                      },
+                    },
+                    [hc(SolidSpectrumText, { slot: "description" }, [item.description])],
+                  ),
+                ],
+              ),
             ),
           ),
         ],

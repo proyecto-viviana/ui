@@ -259,6 +259,15 @@ import {
   selectBoxGroupSelectionModeOptions,
   selectBoxGroupSelectionSourceOptions,
 } from "./selectboxgroup-demo";
+import {
+  listViewDemoDefaults,
+  listViewDisabledItemOptions,
+  listViewOverflowModeOptions,
+  listViewSelectionModeOptions,
+  listViewSelectionSourceOptions,
+  listViewSelectionStyleOptions,
+  listViewTrailingIconOptions,
+} from "./listview-demo";
 import { numberFieldDemoDefaults, numberFieldSizeOptions } from "./numberfield-demo";
 import { pickerDemoDefaults, pickerKeyOptions, pickerSizeOptions } from "./picker-demo";
 import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
@@ -5622,6 +5631,124 @@ const selectBoxGroupControls: ComponentControlGroup = {
   note: "Modeled from the S2 SelectBoxGroup docs control surface. The viewer drives orientation, selection mode, controlled/default selection, disabledKeys, item isDisabled, group disabled state, and illustration slot composition into both stacks.",
 };
 
+const listViewControls: ComponentControlGroup = {
+  slug: "listview",
+  title: "ListView",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "selectionMode",
+      label: "selectionMode",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.selectionMode,
+      options: options(listViewSelectionModeOptions),
+    },
+    {
+      name: "selectionStyle",
+      label: "selectionStyle",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.selectionStyle,
+      options: options(listViewSelectionStyleOptions),
+    },
+    {
+      name: "overflowMode",
+      label: "overflowMode",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.overflowMode,
+      options: options(listViewOverflowModeOptions),
+    },
+    {
+      name: "selectionSource",
+      label: "selection source",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.selectionSource,
+      options: options(listViewSelectionSourceOptions),
+    },
+    {
+      name: "selectedKeys",
+      label: "selectedKeys",
+      kind: "text",
+      defaultValue: listViewDemoDefaults.selectedKeys,
+    },
+    {
+      name: "defaultSelectedKeys",
+      label: "defaultSelectedKeys",
+      kind: "text",
+      defaultValue: listViewDemoDefaults.defaultSelectedKeys,
+    },
+    {
+      name: "disabledKeys",
+      label: "disabledKeys",
+      kind: "text",
+      defaultValue: listViewDemoDefaults.disabledKeys,
+    },
+    {
+      name: "disabledItem",
+      label: "item isDisabled",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.disabledItem,
+      options: options(listViewDisabledItemOptions),
+    },
+    {
+      name: "isQuiet",
+      label: "isQuiet",
+      kind: "switch",
+      defaultValue: listViewDemoDefaults.isQuiet,
+    },
+    {
+      name: "showDescriptions",
+      label: "descriptions",
+      kind: "switch",
+      defaultValue: listViewDemoDefaults.showDescriptions,
+    },
+    {
+      name: "trailingIcon",
+      label: "trailing icon",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.trailingIcon,
+      options: options(listViewTrailingIconOptions),
+    },
+    {
+      name: "hideLinkOutIcon",
+      label: "hideLinkOutIcon",
+      kind: "switch",
+      defaultValue: listViewDemoDefaults.hideLinkOutIcon,
+    },
+  ],
+  apiProps: [
+    "children",
+    "items",
+    "selectionMode",
+    "selectionStyle",
+    "overflowMode",
+    "selectedKeys",
+    "defaultSelectedKeys",
+    "disabledKeys",
+    "ListViewItem.isDisabled",
+    "onSelectionChange",
+    "disallowEmptySelection",
+    "escapeKeyBehavior",
+    "shouldSelectOnPressUp",
+    "isQuiet",
+    "hideLinkOutIcon",
+    "renderActionBar",
+    "renderEmptyState",
+    "loadingState",
+    "onLoadMore",
+    "ListViewItem.href",
+    "ListViewItem.target",
+    "ListViewItem.hasChildItems",
+    "slot",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+  ],
+  note: "Modeled from the S2 ListView docs/API surface. The viewer drives selection mode, checkbox/highlight selection style, wrap/truncate overflow, controlled/default selected keys, disabledKeys, item isDisabled, quiet chrome, label/description slot composition, link-out hiding, and child/link trailing indicators into both stacks.",
+};
+
 const contextualHelpControls: ComponentControlGroup = {
   slug: "contextualhelp",
   title: "ContextualHelp",
@@ -5948,6 +6075,7 @@ export const componentControlGroups = {
   image: imageControls,
   link: linkControls,
   linkbutton: linkButtonControls,
+  listview: listViewControls,
   menu: menuControls,
   meter: meterControls,
   numberfield: numberFieldControls,

@@ -281,6 +281,15 @@ import {
   serializeSelectBoxGroupKeys,
 } from "@comparison/data/selectboxgroup-demo";
 import {
+  initialListViewSelectedKeys,
+  listViewDemoPropsFromWindow,
+  listViewItems,
+  listViewKeysFromValue,
+  normalizeListViewDemoProps,
+  serializeListViewDemoProps,
+  serializeListViewKeys,
+} from "@comparison/data/listview-demo";
+import {
   normalizeNumberFieldDemoProps,
   numberFieldDemoPropsFromWindow,
   serializeNumberFieldDemoProps,
@@ -1015,33 +1024,104 @@ function ReactPopoverDemo() {
 }
 
 function ReactListViewDemo() {
+  const [demoProps, setDemoProps] = useState(listViewDemoPropsFromWindow);
+  const [selectedKeys, setSelectedKeys] = useState(() => initialListViewSelectedKeys(demoProps));
   const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "listview") {
+        setDemoProps((current) => {
+          const nextProps = normalizeListViewDemoProps({ ...current, ...event.detail.props });
+          setSelectedKeys(initialListViewSelectedKeys(nextProps));
+          return nextProps;
+        });
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const disabledKeys = listViewKeysFromValue(demoProps.disabledKeys, [], "multiple");
+  const selectionProps =
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? {
+          defaultSelectedKeys: listViewKeysFromValue(
+            demoProps.defaultSelectedKeys,
+            ["project-brief"],
+            demoProps.selectionMode,
+          ),
+        }
+      : { selectedKeys };
+  const renderKey = [
+    demoProps.selectionMode,
+    demoProps.selectionStyle,
+    demoProps.overflowMode,
+    demoProps.selectionSource,
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? demoProps.defaultSelectedKeys
+      : demoProps.selectedKeys,
+    demoProps.disabledKeys,
+    demoProps.disabledItem,
+    demoProps.isQuiet,
+    demoProps.showDescriptions,
+    demoProps.hideLinkOutIcon,
+    demoProps.trailingIcon,
+  ].join("|");
+
   return renderReactSpectrumReference(
     jsx("div", {
       style: collectionFixtureStyle,
-      "data-comparison-control-root": "listview",
-      children: jsx(SpectrumListView, {
-        "aria-label": "Documents",
-        selectionMode: "multiple",
-        defaultSelectedKeys: ["project-brief"],
-        UNSAFE_style: collectionListStyle,
-        children: collectionDocuments.map((item) =>
-          jsx(
-            SpectrumListViewItem,
-            {
-              id: item.id,
-              textValue: item.name,
-              children: jsxs(Fragment, {
+      "data-comparison-selected-keys": serializeListViewKeys(selectedKeys),
+      children: jsx(
+        SpectrumListView,
+        {
+          "aria-label": "Documents",
+          "data-comparison-control-root": "listview",
+          "data-comparison-control-props": serializeListViewDemoProps(demoProps),
+          selectionMode: demoProps.selectionMode,
+          selectionStyle: demoProps.selectionStyle,
+          overflowMode: demoProps.overflowMode,
+          isQuiet: demoProps.isQuiet,
+          hideLinkOutIcon: demoProps.hideLinkOutIcon,
+          disabledKeys,
+          ...selectionProps,
+          UNSAFE_style: collectionListStyle,
+          onSelectionChange: (keys) =>
+            setSelectedKeys(
+              keys === "all" ? new Set(listViewItems.map((item) => item.id)) : new Set(keys),
+            ),
+          children: listViewItems.map((item) =>
+            jsxs(
+              SpectrumListViewItem,
+              {
+                id: item.id,
+                textValue: item.name,
+                isDisabled: demoProps.disabledItem === item.id,
+                href:
+                  demoProps.trailingIcon === "linkOut" && item.id === "project-brief"
+                    ? "https://example.com/project-brief"
+                    : undefined,
+                target:
+                  demoProps.trailingIcon === "linkOut" && item.id === "project-brief"
+                    ? "_blank"
+                    : undefined,
+                hasChildItems:
+                  demoProps.trailingIcon === "child" && item.id === "project-brief"
+                    ? true
+                    : undefined,
                 children: [
-                  jsx(SpectrumText, { children: item.name }),
-                  jsx(SpectrumText, { slot: "description", children: item.description }),
+                  jsx(SpectrumText, { slot: "label", children: item.name }),
+                  demoProps.showDescriptions
+                    ? jsx(SpectrumText, { slot: "description", children: item.description })
+                    : null,
                 ],
-              }),
-            },
-            item.id,
+              },
+              item.id,
+            ),
           ),
-        ),
-      }),
+        },
+        renderKey,
+      ),
     }),
     colorScheme,
   );

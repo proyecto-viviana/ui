@@ -31,6 +31,7 @@ await import("../packages/solid-spectrum/src/illustratedmessage");
 await import("../packages/solid-spectrum/src/link");
 await import("../packages/solid-spectrum/src/card/index");
 await import("../packages/solid-spectrum/src/cardview/index");
+await import("../packages/solid-spectrum/src/list");
 
 const css = [
   "/* Generated from vendored Adobe Spectrum 2 style declarations. Do not edit by hand. */",

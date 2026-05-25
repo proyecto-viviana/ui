@@ -1,354 +1,999 @@
-import { type JSX, splitProps, createContext, createMemo, useContext, Show } from "solid-js";
+// @ts-nocheck
+import {
+  children as resolveChildren,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  mergeProps,
+  onCleanup,
+  splitProps,
+  useContext,
+  type JSX,
+} from "solid-js";
 import {
   GridList as HeadlessGridList,
   GridListItem as HeadlessGridListItem,
   GridListSelectionCheckbox as HeadlessGridListSelectionCheckbox,
-  type GridListProps as HeadlessGridListProps,
+  GridListStateContext as HeadlessGridListStateContext,
   type GridListItemProps as HeadlessGridListItemProps,
-  type GridListRenderProps,
   type GridListItemRenderProps,
+  type GridListProps as HeadlessGridListProps,
+  type GridListRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
+import { ActionButtonGroupContext } from "../button/group-context";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
+import { Image, ImageContext, ImageCoordinator } from "../image";
+import { IconContext } from "../icon";
+import Checkmark from "../icon/ui-icons/Checkmark";
+import Chevron from "../icon/ui-icons/Chevron";
+import LinkOut from "../icon/ui-icons/LinkOut";
+import { ActionMenuContext } from "../menu/ActionMenu";
+import { useProviderProps } from "../provider";
+import { baseColor, focusRing, fontRelative, space, style, type StyleString } from "../s2-style";
+import { mergeStyles } from "../s2-style/runtime";
+import { edgeToText } from "../s2-style/spectrum-theme";
+import { controlFont, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
+import { Text, TextContext } from "../text";
 
 export type GridListSize = "sm" | "md" | "lg";
 export type GridListVariant = "default" | "cards" | "bordered";
 export type GridListLayout = "list" | "grid";
-
-interface GridListContextValue {
-  size: GridListSize;
-  variant: GridListVariant;
-  layout: GridListLayout;
-}
-
-const GridListSizeContext = createContext<GridListContextValue>({
-  size: "md",
-  variant: "default",
-  layout: "list",
-});
+export type GridListSelectionStyle = "checkbox" | "highlight";
+export type GridListOverflowMode = "truncate" | "wrap";
+export type GridListLoadingState =
+  | "idle"
+  | "loading"
+  | "loadingMore"
+  | "sorting"
+  | "filtering"
+  | "error";
 
 export interface GridListProps<T extends object> extends Omit<
   HeadlessGridListProps<T>,
-  "class" | "style"
+  "class" | "style" | "children" | "items" | "selectionBehavior" | "isLoading" | "slot" | "ref"
 > {
-  /** The size of the grid list. */
-  size?: GridListSize;
-  /** The visual variant of the grid list. */
-  variant?: GridListVariant;
-  /** The layout of the grid list. */
-  layout?: GridListLayout;
-  /** Number of columns for grid layout (default: auto-fit). */
-  columns?: number | "auto";
-  /** Additional CSS class name. */
+  /** The ListView items. Use static ListViewItem children or a render function with `items`. */
+  children: JSX.Element | ((item: T) => JSX.Element);
+  /** The items to render for dynamic collections. */
+  items?: T[];
+  /** Whether the ListView should draw without the default container chrome. */
+  isQuiet?: boolean;
+  /** How selection is visualized. @default 'checkbox' */
+  selectionStyle?: GridListSelectionStyle;
+  /** Whether labels and descriptions truncate or wrap. @default 'truncate' */
+  overflowMode?: GridListOverflowMode;
+  /** Hides the external-link trailing icon on link items. */
+  hideLinkOutIcon?: boolean;
+  /** Loading state forwarded to load-more behavior. */
+  loadingState?: GridListLoadingState;
+  /** Provides an action bar when items are selected. */
+  renderActionBar?: (selectedKeys: "all" | Set<Key>) => JSX.Element;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
-  /** Label for the grid list. */
-  label?: string;
-  /** Description for the grid list. */
-  description?: string;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the grid list root element. */
+  ref?: RefLike<HTMLDivElement>;
+  /** Legacy GridList size alias retained for compatibility. */
+  size?: GridListSize;
+  /** Legacy GridList variant alias retained for compatibility. */
+  variant?: GridListVariant;
+  /** Legacy GridList layout alias retained for compatibility. */
+  layout?: GridListLayout;
+  /** Legacy GridList columns alias retained for compatibility. */
+  columns?: number | "auto";
+  /** Legacy label helper. Prefer aria-label or aria-labelledby. */
+  label?: JSX.Element;
+  /** Legacy description helper. */
+  description?: JSX.Element;
 }
 
 export interface GridListItemProps<T extends object> extends Omit<
   HeadlessGridListItemProps<T>,
-  "class" | "style"
+  "class" | "style" | "children" | "ref"
 > {
-  /** Additional CSS class name. */
-  class?: string;
-  /** Optional description text. */
-  description?: string;
-  /**
-   * Optional icon to display before the content.
-   * Use a function returning JSX for SSR compatibility: `icon={() => <MyIcon />}`
-   */
+  /** The unique id of the ListViewItem. */
+  id: Key;
+  /** The contents of the item. */
+  children?: JSX.Element | ((renderProps: GridListItemRenderProps) => JSX.Element);
+  /** Whether this item is disabled. Static collections support this directly; dynamic collections can also use `getDisabled`. */
+  isDisabled?: boolean;
+  /** Whether this item navigates into child content. */
+  hasChildItems?: boolean;
+  /** Link target metadata for visual parity with React Spectrum's link-out affordance. */
+  href?: string;
+  target?: string;
+  download?: boolean | string;
+  rel?: string;
+  hrefLang?: string;
+  ping?: string;
+  referrerPolicy?: string;
+  routerOptions?: unknown;
+  /** Optional description text. Prefer `<Text slot="description">`. */
+  description?: JSX.Element;
+  /** Optional icon helper retained from the older GridList API. */
   icon?: () => JSX.Element;
-  /**
-   * Optional image to display in the item.
-   */
+  /** Optional image helper retained from the older GridList API. */
   image?: string;
-  /** Alt text for the image. */
+  /** Alt text for the image helper. */
   imageAlt?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
+  /** Ref for the rendered row element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
-const sizeStyles = {
-  sm: {
-    list: "gap-1 p-1",
-    item: "text-sm py-2 px-3 gap-2",
-    icon: "h-4 w-4",
-    image: "h-10 w-10",
-    label: "text-sm",
-    description: "text-xs",
-    checkbox: "w-4 h-4",
-  },
-  md: {
-    list: "gap-2 p-2",
-    item: "text-base py-3 px-4 gap-3",
-    icon: "h-5 w-5",
-    image: "h-12 w-12",
-    label: "text-base",
-    description: "text-sm",
-    checkbox: "w-5 h-5",
-  },
-  lg: {
-    list: "gap-3 p-3",
-    item: "text-lg py-4 px-5 gap-4",
-    icon: "h-6 w-6",
-    image: "h-16 w-16",
-    label: "text-lg",
-    description: "text-base",
-    checkbox: "w-6 h-6",
-  },
+type StaticGridListItem = {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+  props: GridListItemProps<object>;
 };
 
-const variantStyles = {
-  default: {
-    list: "bg-bg-400 rounded-lg border border-bg-300",
-    item: "rounded-md",
-    itemHover: "hover:bg-bg-200/50",
-    itemSelected: "bg-accent/10 text-accent",
-  },
-  cards: {
-    list: "bg-transparent",
-    item: "bg-bg-400 rounded-lg border border-bg-300 shadow-sm",
-    itemHover: "hover:shadow-md hover:border-bg-200",
-    itemSelected: "border-accent bg-accent/5 shadow-accent/20",
-  },
-  bordered: {
-    list: "bg-bg-400 rounded-lg border-2 border-bg-400",
-    item: "border-b border-bg-300 last:border-b-0 rounded-none",
-    itemHover: "hover:bg-bg-200/50",
-    itemSelected: "bg-accent/10",
-  },
+type ItemRegistration = {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+  props?: GridListItemProps<object>;
 };
 
-/**
- * A grid list displays a list of interactive items, with support for
- * keyboard navigation, single or multiple selection, and row actions.
- *
- *
- * @example
- * ```tsx
- * const items = [
- *   { id: '1', name: 'Item 1', description: 'Description 1' },
- *   { id: '2', name: 'Item 2', description: 'Description 2' },
- * ]
- *
- * <GridList
- *   items={items}
- *   getKey={(item) => item.id}
- *   selectionMode="multiple"
- * >
- *   {(item) => (
- *     <GridListItem id={item.id} description={item.description}>
- *       {item.name}
- *     </GridListItem>
- *   )}
- * </GridList>
- * ```
- */
+interface StaticCollectionContextValue {
+  mode: "static" | "dynamic";
+  registerItem(item: ItemRegistration): void;
+  unregisterItem(id: Key): void;
+}
+
+interface ListViewContextValue {
+  isQuiet: boolean;
+  selectionStyle: GridListSelectionStyle;
+  overflowMode: GridListOverflowMode;
+  hideLinkOutIcon: boolean;
+}
+
+export const GridListContext = createContext<SpectrumContextValue<GridListProps<unknown>>>(null);
+const InternalListViewContext = createContext<ListViewContextValue>({
+  isQuiet: false,
+  selectionStyle: "checkbox",
+  overflowMode: "truncate",
+  hideLinkOutIcon: false,
+});
+const StaticGridListCollectionContext = createContext<StaticCollectionContextValue | null>(null);
+
+const listViewWrapper = style(
+  {
+    minHeight: 0,
+    minWidth: 200,
+    display: "flex",
+    flexDirection: "column",
+    isolation: "isolate",
+    position: "relative",
+    overflow: "clip",
+  },
+  getAllowedOverrides({ height: true }),
+);
+
+const listView = style<GridListRenderProps & { isQuiet?: boolean; isActionBar?: boolean }>(
+  {
+    ...focusRing(),
+    outlineOffset: {
+      default: -2,
+      isQuiet: -1,
+    },
+    outlineStyle: "none",
+    userSelect: "none",
+    minHeight: 0,
+    minWidth: 0,
+    width: "full",
+    height: {
+      isActionBar: "full",
+    },
+    boxSizing: "border-box",
+    overflow: "auto",
+    font: controlFont(),
+    backgroundColor: {
+      default: "layer-1",
+      isQuiet: "transparent",
+    },
+    borderRadius: {
+      default: "lg",
+      isQuiet: "none",
+    },
+    borderColor: "gray-300",
+    borderWidth: {
+      default: 1,
+      isQuiet: 0,
+    },
+    borderStyle: "solid",
+    disableTapHighlight: true,
+  },
+  getAllowedOverrides({ height: true }),
+);
+
+const legacyLabel = style({
+  font: controlFont(),
+  fontWeight: "medium",
+  color: baseColor("neutral"),
+  marginBottom: 4,
+});
+
+const legacyDescription = style({
+  font: "body-sm",
+  color: baseColor("neutral-subdued"),
+  marginTop: 4,
+});
+
+const emptyState = style({
+  minHeight: 112,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "neutral-subdued",
+  font: "body-sm",
+});
+
+const listViewItem = style<
+  GridListItemRenderProps & {
+    isQuiet?: boolean;
+    selectionStyle?: GridListSelectionStyle;
+    overflowMode?: GridListOverflowMode;
+    hasTrailingIcon?: boolean;
+  }
+>({
+  ...focusRing(),
+  outlineOffset: -2,
+  position: "relative",
+  display: "grid",
+  gridTemplateAreas: [
+    ". checkmark icon label actions actionmenu trailing-icon .",
+    ". . . description actions actionmenu trailing-icon .",
+  ],
+  gridTemplateColumns: [
+    edgeToText(40),
+    "auto",
+    "auto",
+    "minmax(0,1fr)",
+    "auto",
+    "auto",
+    "var(--listview-trailing-icon-width, auto)",
+    edgeToText(40),
+  ],
+  gridTemplateRows: "auto minmax(0, min-content)",
+  alignItems: "baseline",
+  rowGap: space(1),
+  columnGap: 0,
+  minHeight: 40,
+  paddingY: 8,
+  boxSizing: "border-box",
+  textDecoration: "none",
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: "disabled",
+  },
+  backgroundColor: {
+    default: "transparent",
+    isHovered: "gray-50",
+    isPressed: "gray-100",
+    isSelected: {
+      selectionStyle: {
+        highlight: "blue-200",
+      },
+    },
+    isDisabled: "transparent",
+  },
+  borderBottomStyle: "solid",
+  borderBottomWidth: 1,
+  borderBottomColor: {
+    default: "gray-200",
+    isQuiet: "transparent",
+  },
+  cursor: {
+    default: "default",
+    isDisabled: "not-allowed",
+  },
+  transition: "default",
+  "--listview-trailing-icon-width": {
+    type: "width",
+    value: {
+      default: 0,
+      hasTrailingIcon: fontRelative(20),
+    },
+  },
+});
+
+const listViewItemCell = style({
+  display: "contents",
+});
+
+const listViewCheckbox = style<GridListItemRenderProps>({
+  gridArea: "checkmark",
+  alignSelf: "center",
+  justifySelf: "center",
+  position: "relative",
+  width: 16,
+  height: 16,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+});
+
+const listViewCheckboxInput = style({
+  position: "absolute",
+  inset: 0,
+  margin: 0,
+  opacity: 0,
+  cursor: "inherit",
+});
+
+const listViewCheckboxBox = style<GridListItemRenderProps>({
+  ...focusRing(),
+  size: 16,
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderRadius: "sm",
+  boxSizing: "border-box",
+  backgroundColor: {
+    default: "gray-25",
+    isSelected: baseColor("neutral"),
+    isDisabled: "disabled",
+  },
+  borderColor: {
+    default: baseColor("gray-800"),
+    isSelected: "transparent",
+    isDisabled: "disabled",
+  },
+});
+
+const listViewCheckboxIcon = style({
+  pointerEvents: "none",
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "gray-25",
+      forcedColors: "HighlightText",
+    },
+  },
+});
+
+const listViewSlotIcon = style<GridListItemRenderProps>({
+  gridArea: "icon",
+  alignSelf: "center",
+  marginEnd: "text-to-visual",
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const listViewImage = style({
+  gridArea: "icon",
+  alignSelf: "center",
+  justifySelf: "center",
+  size: 32,
+  borderRadius: "sm",
+  objectFit: "cover",
+  marginEnd: "text-to-visual",
+});
+
+const listViewLabel = style<GridListItemRenderProps & { overflowMode?: GridListOverflowMode }>({
+  gridArea: "label",
+  minWidth: 0,
+  alignSelf: "end",
+  font: controlFont(),
+  fontWeight: "medium",
+  color: "inherit",
+  overflow: "hidden",
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+const listViewDescription = style<
+  GridListItemRenderProps & { overflowMode?: GridListOverflowMode }
+>({
+  gridArea: "description",
+  minWidth: 0,
+  alignSelf: "start",
+  font: "body-sm",
+  color: {
+    default: "neutral-subdued",
+    isDisabled: "disabled",
+  },
+  overflow: "hidden",
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+const listViewActions = style({
+  gridArea: "actions",
+  alignSelf: "center",
+  justifySelf: "end",
+  marginStart: "text-to-control",
+});
+
+const listViewActionMenu = style({
+  gridArea: "actionmenu",
+  alignSelf: "center",
+  justifySelf: "end",
+  marginStart: "text-to-control",
+});
+
+const listViewTrailingIcon = style<GridListItemRenderProps>({
+  gridArea: "trailing-icon",
+  alignSelf: "center",
+  justifySelf: "end",
+  marginStart: "text-to-visual",
+  color: {
+    default: "neutral-subdued",
+    isDisabled: "disabled",
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+function selectedKeySet(keys: "all" | Iterable<Key> | undefined): "all" | Set<Key> {
+  if (keys === "all") {
+    return "all";
+  }
+
+  return new Set(keys ?? []);
+}
+
+function keyFromItem<T extends object>(
+  item: T,
+  getKey: ((item: T) => Key) | undefined,
+  index: number,
+): Key {
+  return (
+    getKey?.(item) ?? (item as { id?: Key; key?: Key }).id ?? (item as { key?: Key }).key ?? index
+  );
+}
+
+function isTextOnlyChildren(value: unknown): boolean {
+  if (typeof value === "string" || typeof value === "number") {
+    return true;
+  }
+
+  return Array.isArray(value) && value.every(isTextOnlyChildren);
+}
+
+function replaceManagedClass(element: Element, dataAttribute: string, nextClass: string): void {
+  const previousClass = element.getAttribute(dataAttribute);
+  for (const className of previousClass?.split(/\s+/).filter(Boolean) ?? []) {
+    element.classList.remove(className);
+  }
+
+  for (const className of nextClass.split(/\s+/).filter(Boolean)) {
+    element.classList.add(className);
+  }
+
+  element.setAttribute(dataAttribute, nextClass);
+}
+
+function applyItemSlotClasses(
+  root: HTMLElement | undefined,
+  renderProps: GridListItemRenderProps,
+  context: ListViewContextValue,
+): void {
+  if (!root) {
+    return;
+  }
+
+  const state = {
+    ...renderProps,
+    overflowMode: context.overflowMode,
+  };
+
+  const gridCell = root.querySelector('[role="gridcell"]');
+  if (gridCell) {
+    replaceManagedClass(gridCell, "data-s2-listview-cell-class", listViewItemCell);
+  }
+
+  for (const element of Array.from(
+    root.querySelectorAll('[slot="label"], [data-slot="label"], [data-rsp-slot="label"]'),
+  )) {
+    replaceManagedClass(element, "data-s2-listview-slot-class", listViewLabel(state));
+    element.setAttribute("data-rsp-slot", "label");
+  }
+
+  for (const element of Array.from(
+    root.querySelectorAll(
+      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
+    ),
+  )) {
+    replaceManagedClass(element, "data-s2-listview-slot-class", listViewDescription(state));
+    element.setAttribute("data-rsp-slot", "description");
+  }
+
+  for (const element of Array.from(root.querySelectorAll('[slot="icon"], [data-slot="icon"]'))) {
+    replaceManagedClass(element, "data-s2-listview-slot-class", listViewSlotIcon);
+    element.setAttribute("data-rsp-slot", "icon");
+  }
+
+  for (const element of Array.from(root.querySelectorAll('[slot="actions"]'))) {
+    replaceManagedClass(element, "data-s2-listview-slot-class", listViewActions);
+    element.setAttribute("data-rsp-slot", "actions");
+  }
+
+  for (const element of Array.from(root.querySelectorAll('[slot="actionmenu"]'))) {
+    replaceManagedClass(element, "data-s2-listview-slot-class", listViewActionMenu);
+    element.setAttribute("data-rsp-slot", "actionmenu");
+  }
+}
+
 export function GridList<T extends object>(props: GridListProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, [
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(
+    useContext(GridListContext) as SpectrumContextValue<GridListProps<T>>,
+    props.slot,
+  );
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "children",
+    "items",
+    "isQuiet",
+    "selectionStyle",
+    "overflowMode",
+    "hideLinkOutIcon",
+    "loadingState",
+    "renderActionBar",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "slot",
+    "ref",
     "size",
     "variant",
     "layout",
     "columns",
-    "class",
     "label",
     "description",
+    "isLoading",
+    "hasMore",
+    "onLoadMore",
   ]);
-
-  const size = () => local.size ?? "md";
-  const variant = () => local.variant ?? "default";
-  const layout = () => local.layout ?? "list";
-  const styles = () => sizeStyles[size()];
-  const variantStyle = () => variantStyles[variant()];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: GridListRenderProps): string => {
-    const base = "overflow-auto focus:outline-none";
-    const sizeClass = styles().list;
-    const variantClass = variantStyle().list;
-
-    let layoutClass = "";
-    if (layout() === "grid") {
-      if (local.columns === "auto" || local.columns === undefined) {
-        layoutClass = "grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]";
-      } else {
-        layoutClass = `grid grid-cols-${local.columns}`;
+  const isQuiet = () => !!local.isQuiet;
+  const selectionStyle = (): GridListSelectionStyle => local.selectionStyle ?? "checkbox";
+  const overflowMode = (): GridListOverflowMode => local.overflowMode ?? "truncate";
+  const isLoading = () =>
+    local.isLoading || local.loadingState === "loading" || local.loadingState === "loadingMore";
+  const [staticItems, setStaticItems] = createSignal<StaticGridListItem[]>([]);
+  const [registrationVersion, setRegistrationVersion] = createSignal(0);
+  const registeredItems = new Map<Key, ItemRegistration>();
+  const usesStaticChildren = () => local.items == null;
+  const syncRegisteredItems = () => {
+    setStaticItems(
+      Array.from(registeredItems.values())
+        .filter((item) => item.props)
+        .map((item) => ({
+          id: item.id,
+          textValue: item.textValue,
+          isDisabled: item.isDisabled,
+          props: item.props!,
+        })),
+    );
+    setRegistrationVersion((version) => version + 1);
+  };
+  const registrationContext: StaticCollectionContextValue = {
+    get mode() {
+      return usesStaticChildren() ? "static" : "dynamic";
+    },
+    registerItem(item) {
+      const previous = registeredItems.get(item.id);
+      if (
+        previous &&
+        previous.textValue === item.textValue &&
+        previous.isDisabled === item.isDisabled &&
+        previous.props === item.props
+      ) {
+        return;
       }
-    } else {
-      layoutClass = "flex flex-col";
+
+      registeredItems.set(item.id, item);
+      syncRegisteredItems();
+    },
+    unregisterItem(id) {
+      if (registeredItems.delete(id)) {
+        syncRegisteredItems();
+      }
+    },
+  };
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
+  const collectionItems = createMemo(() =>
+    usesStaticChildren() ? (staticItems() as unknown as T[]) : (local.items ?? []),
+  );
+  const getKey = createMemo(() =>
+    usesStaticChildren()
+      ? (item: T) => (item as unknown as StaticGridListItem).id
+      : headlessProps.getKey,
+  );
+  const getTextValue = createMemo(() =>
+    usesStaticChildren()
+      ? (item: T) =>
+          (item as unknown as StaticGridListItem).textValue ??
+          String((item as unknown as StaticGridListItem).id)
+      : headlessProps.getTextValue,
+  );
+  const getDisabled = createMemo(() => {
+    if (usesStaticChildren()) {
+      return (item: T) => Boolean((item as unknown as StaticGridListItem).isDisabled);
     }
 
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-
-    return [base, sizeClass, variantClass, layoutClass, stateClass, focusClass, customClass]
+    return (item: T) => {
+      registrationVersion();
+      const key = keyFromItem(item, headlessProps.getKey, local.items?.indexOf(item) ?? 0);
+      return (
+        Boolean(registeredItems.get(key)?.isDisabled) ||
+        Boolean(headlessProps.getDisabled?.(item)) ||
+        Boolean((item as { isDisabled?: boolean }).isDisabled)
+      );
+    };
+  });
+  const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
+    selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+  );
+  createEffect(() => {
+    setActionSelectedKeys(
+      selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    );
+  });
+  const onSelectionChange = (keys: "all" | Set<Key>) => {
+    setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
+    headlessProps.onSelectionChange?.(keys);
+  };
+  const listViewContext = createMemo<ListViewContextValue>(() => ({
+    isQuiet: isQuiet(),
+    selectionStyle: selectionStyle(),
+    overflowMode: overflowMode(),
+    hideLinkOutIcon: !!local.hideLinkOutIcon,
+  }));
+  const className = (renderProps: GridListRenderProps): string =>
+    [
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
+      mergeStyles(
+        listView({
+          ...renderProps,
+          isQuiet: isQuiet(),
+          isActionBar: !!local.renderActionBar,
+        }),
+        mergedStyles(),
+      ),
+    ]
       .filter(Boolean)
       .join(" ");
+  const defaultEmptyState = () => <div class={emptyState}>No items</div>;
+  const renderItem = (item: T) =>
+    usesStaticChildren() ? (
+      <GridListItem {...((item as unknown as StaticGridListItem).props as GridListItemProps<T>)} />
+    ) : typeof local.children === "function" ? (
+      local.children(item)
+    ) : null;
+  const registrationChildren = () => {
+    if (usesStaticChildren()) {
+      const resolved = resolveChildren(() => local.children as JSX.Element);
+      return resolved();
+    }
+
+    if (typeof local.children !== "function") {
+      return null;
+    }
+
+    return (local.items ?? []).map((item) => local.children(item));
   };
 
-  const defaultEmptyState = () => (
-    <div class="py-8 text-center text-primary-400">
-      <div class="flex flex-col items-center gap-2">
-        <EmptyIcon class="w-12 h-12 text-primary-500" />
-        <span>No items</span>
-      </div>
+  const collection = (
+    <InternalListViewContext.Provider value={listViewContext()}>
+      <StaticGridListCollectionContext.Provider value={registrationContext}>
+        {registrationChildren()}
+      </StaticGridListCollectionContext.Provider>
+      <ImageCoordinator>
+        <HeadlessGridList
+          {...headlessProps}
+          ref={(element: HTMLDivElement) => assignRootRef(element)}
+          items={collectionItems() ?? []}
+          getKey={getKey()}
+          getTextValue={getTextValue()}
+          getDisabled={getDisabled()}
+          selectionBehavior={selectionStyle() === "highlight" ? "replace" : "toggle"}
+          onSelectionChange={onSelectionChange}
+          isLoading={isLoading()}
+          hasMore={local.hasMore ?? !!local.onLoadMore}
+          onLoadMore={local.onLoadMore}
+          renderEmptyState={headlessProps.renderEmptyState ?? defaultEmptyState}
+          slot={local.slot ?? undefined}
+          class={className}
+          style={mergedUnsafeStyle()}
+          data-list-view=""
+          data-quiet={isQuiet() || undefined}
+          data-selection-style={selectionStyle()}
+          data-overflow-mode={overflowMode()}
+          data-loading-state={local.loadingState ?? undefined}
+        >
+          {(item: T) => renderItem(item)}
+        </HeadlessGridList>
+      </ImageCoordinator>
+    </InternalListViewContext.Provider>
+  );
+
+  const framed = (
+    <div class={listViewWrapper({}, mergedStyles())} style={mergedUnsafeStyle()}>
+      {local.label ? <div class={legacyLabel}>{local.label}</div> : null}
+      {collection}
+      {local.description ? <div class={legacyDescription}>{local.description}</div> : null}
+      {local.renderActionBar ? local.renderActionBar(actionSelectedKeys()) : null}
     </div>
   );
 
-  const contextValue = createMemo(() => ({ size: size(), variant: variant(), layout: layout() }));
-
-  return (
-    <GridListSizeContext.Provider value={contextValue()}>
-      <div class="flex flex-col gap-2">
-        <Show when={local.label}>
-          <label class={`text-primary-200 font-medium ${styles().label}`}>{local.label}</label>
-        </Show>
-        <HeadlessGridList
-          {...headlessProps}
-          class={getClassName}
-          renderEmptyState={headlessProps.renderEmptyState ?? defaultEmptyState}
-        />
-        <Show when={local.description}>
-          <span class="text-primary-400 text-sm">{local.description}</span>
-        </Show>
-      </div>
-    </GridListSizeContext.Provider>
-  );
+  return local.label || local.description || local.renderActionBar ? framed : collection;
 }
 
-/**
- * An item in a grid list.
- */
 export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX.Element {
+  const context = useContext(InternalListViewContext);
+  const staticCollection = useContext(StaticGridListCollectionContext);
   const [local, headlessProps] = splitProps(props, [
-    "class",
+    "children",
+    "isDisabled",
+    "hasChildItems",
+    "href",
+    "target",
+    "download",
+    "rel",
+    "hrefLang",
+    "ping",
+    "referrerPolicy",
+    "routerOptions",
     "description",
     "icon",
     "image",
     "imageAlt",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "ref",
   ]);
 
-  const context = useContext(GridListSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const variantStyle = variantStyles[context.variant];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: GridListItemRenderProps): string => {
-    const base = "flex items-center cursor-pointer transition-all duration-150 outline-none";
-    const sizeClass = sizeStyle.item;
-    const variantClass = variantStyle.item;
-
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50 cursor-not-allowed";
-    } else if (renderProps.isSelected) {
-      stateClass = variantStyle.itemSelected;
-    } else if (renderProps.isHovered) {
-      stateClass = variantStyle.itemHover;
+  createEffect(() => {
+    if (!staticCollection) {
+      return;
     }
 
-    let textClass = "";
-    if (!renderProps.isDisabled && !renderProps.isSelected) {
-      textClass = "text-primary-200";
-    }
+    staticCollection.registerItem({
+      id: props.id,
+      textValue: headlessProps.textValue ?? headlessProps["aria-label"],
+      isDisabled: !!local.isDisabled,
+      props: staticCollection.mode === "static" ? (props as GridListItemProps<object>) : undefined,
+    });
+  });
 
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
+  onCleanup(() => {
+    staticCollection?.unregisterItem(props.id);
+  });
 
-    const pressedClass = renderProps.isPressed ? "scale-[0.98]" : "";
+  if (staticCollection) {
+    return null;
+  }
 
-    return [
-      base,
-      sizeClass,
-      variantClass,
-      stateClass,
-      textClass,
-      focusClass,
-      pressedClass,
-      customClass,
+  let itemElement: HTMLDivElement | undefined;
+  const assignItemRef = mergeContextRefs(local.ref, (element: HTMLDivElement) => {
+    itemElement = element;
+  });
+  const isExternalLink = () => !!local.href && local.target === "_blank";
+  const hasTrailingIcon = () =>
+    (isExternalLink() && !context.hideLinkOutIcon) || Boolean(local.hasChildItems);
+  const getClassName = (renderProps: GridListItemRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        listViewItem({
+          ...renderProps,
+          isQuiet: context.isQuiet,
+          selectionStyle: context.selectionStyle,
+          overflowMode: context.overflowMode,
+          hasTrailingIcon: hasTrailingIcon(),
+        }),
+        local.styles,
+      ),
     ]
       .filter(Boolean)
       .join(" ");
-  };
+  const getStyle = (): JSX.CSSProperties | undefined => ({
+    ...local.UNSAFE_style,
+  });
+  const textContext = createMemo(() => ({
+    slots: {
+      default: { slot: "label" },
+      label: { slot: "label" },
+      description: { slot: "description" },
+    },
+  }));
+
+  function ItemChildren(renderProps: GridListItemRenderProps) {
+    createEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
+    const resolvedChildren = resolveChildren(() =>
+      typeof local.children === "function" ? local.children(renderProps) : local.children,
+    );
+    const childrenValue = () => resolvedChildren();
+    const isTextOnly = () => isTextOnlyChildren(childrenValue());
+
+    return (
+      <TextContext.Provider value={textContext() as SpectrumContextValue<any>}>
+        <IconContext.Provider
+          value={{
+            slot: "icon",
+            styles: listViewSlotIcon,
+          }}
+        >
+          <ImageContext.Provider
+            value={{
+              slot: "image",
+              styles: listViewImage,
+            }}
+          >
+            <ActionButtonGroupContext.Provider
+              value={{
+                slot: "actions",
+                styles: listViewActions,
+              }}
+            >
+              <ActionMenuContext.Provider
+                value={{
+                  slot: "actionmenu",
+                  styles: listViewActionMenu,
+                }}
+              >
+                {renderProps.selectionMode !== "none" &&
+                renderProps.selectionBehavior === "toggle" &&
+                !renderProps.isDisabled ? (
+                  <GridListSelectionCheckbox
+                    itemKey={props.id}
+                    renderProps={renderProps}
+                    excludeFromTabOrder
+                  />
+                ) : null}
+                {local.image ? (
+                  <Image src={local.image} alt={local.imageAlt ?? ""} styles={listViewImage} />
+                ) : null}
+                {local.icon ? (
+                  <span slot="icon" class={listViewSlotIcon} data-rsp-slot="icon">
+                    {local.icon()}
+                  </span>
+                ) : null}
+                {isTextOnly() ? <Text slot="label">{childrenValue()}</Text> : childrenValue()}
+                {local.description ? <Text slot="description">{local.description}</Text> : null}
+                {isExternalLink() && !context.hideLinkOutIcon ? (
+                  <LinkOut
+                    size="M"
+                    class={listViewTrailingIcon(renderProps)}
+                    data-rsp-slot="trailing-icon"
+                    aria-hidden="true"
+                  />
+                ) : local.hasChildItems ? (
+                  <Chevron
+                    size="M"
+                    class={listViewTrailingIcon(renderProps)}
+                    data-rsp-slot="trailing-icon"
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </ActionMenuContext.Provider>
+            </ActionButtonGroupContext.Provider>
+          </ImageContext.Provider>
+        </IconContext.Provider>
+      </TextContext.Provider>
+    );
+  }
 
   return (
-    <HeadlessGridListItem {...headlessProps} class={getClassName}>
-      {(renderProps: GridListItemRenderProps) => (
-        <>
-          <Show when={local.image}>
-            <img
-              src={local.image}
-              alt={local.imageAlt ?? ""}
-              class={`${sizeStyle.image} rounded object-cover shrink-0`}
-            />
-          </Show>
-
-          <Show when={local.icon}>
-            <span class={`shrink-0 ${sizeStyle.icon}`}>{local.icon!()}</span>
-          </Show>
-
-          <Show when={renderProps.isSelected}>
-            <CheckIcon class={`shrink-0 ${sizeStyle.icon} text-accent`} />
-          </Show>
-
-          <div class="flex flex-col flex-1 min-w-0">
-            <span class="truncate">
-              {typeof props.children === "function" ? props.children(renderProps) : props.children}
-            </span>
-            <Show when={local.description}>
-              <span class={`text-primary-400 truncate ${sizeStyle.description}`}>
-                {local.description}
-              </span>
-            </Show>
-          </div>
-        </>
-      )}
+    <HeadlessGridListItem
+      {...headlessProps}
+      ref={(element) => assignItemRef(element)}
+      class={getClassName}
+      style={getStyle}
+      data-list-view-item=""
+      data-disabled={local.isDisabled || undefined}
+      data-href={local.href || undefined}
+      data-target={local.target || undefined}
+      data-has-child-items={local.hasChildItems || undefined}
+      data-has-trailing-icon={hasTrailingIcon() || undefined}
+    >
+      {(renderProps: GridListItemRenderProps) => <ItemChildren {...renderProps} />}
     </HeadlessGridListItem>
   );
 }
 
-/**
- * A styled checkbox for item selection in a grid list.
- */
-export function GridListSelectionCheckbox(props: { itemKey: Key; class?: string }): JSX.Element {
-  const context = useContext(GridListSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const className = `${sizeStyle.checkbox} rounded border-2 border-primary-500 bg-bg-400 text-accent cursor-pointer checked:bg-accent checked:border-accent focus:ring-2 focus:ring-accent-300 focus:ring-offset-1 focus:ring-offset-bg-400 ${props.class ?? ""}`;
+export function GridListSelectionCheckbox(props: {
+  itemKey: Key;
+  renderProps?: GridListItemRenderProps;
+  class?: string;
+  style?: JSX.CSSProperties;
+  excludeFromTabOrder?: boolean;
+  "aria-label"?: string;
+}): JSX.Element {
+  const state = useContext(HeadlessGridListStateContext);
+  const isSelected = () => Boolean(state?.isSelected?.(props.itemKey));
+  const renderProps = createMemo<GridListItemRenderProps>(() => ({
+    isSelected: props.renderProps?.isSelected ?? isSelected(),
+    isFocused: props.renderProps?.isFocused ?? false,
+    isFocusVisible: props.renderProps?.isFocusVisible ?? false,
+    isPressed: props.renderProps?.isPressed ?? false,
+    isHovered: props.renderProps?.isHovered ?? false,
+    isDisabled: props.renderProps?.isDisabled ?? false,
+    selectionMode: props.renderProps?.selectionMode ?? "multiple",
+    selectionBehavior: props.renderProps?.selectionBehavior ?? "toggle",
+  }));
 
   return (
-    <span class={className}>
-      <HeadlessGridListSelectionCheckbox itemKey={props.itemKey} />
-    </span>
-  );
-}
-
-function CheckIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg class={props.class} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-function EmptyIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg
-      class={props.class}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="1.5"
+    <span
+      class={[listViewCheckbox, props.class].filter(Boolean).join(" ")}
+      style={props.style}
+      data-rsp-slot="selection-indicator"
     >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+      <HeadlessGridListSelectionCheckbox
+        itemKey={props.itemKey}
+        class={listViewCheckboxInput}
+        excludeFromTabOrder={props.excludeFromTabOrder}
+        aria-label={props["aria-label"] ?? "Select"}
       />
-    </svg>
+      <span class={listViewCheckboxBox(renderProps())} aria-hidden="true">
+        {renderProps().isSelected ? (
+          <Checkmark size="XS" class={listViewCheckboxIcon} aria-hidden="true" />
+        ) : null}
+      </span>
+    </span>
   );
 }
 
