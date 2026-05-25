@@ -54,8 +54,18 @@ test.describe("comparison Card and CardView contracts", () => {
   }) => {
     const panels = await fixturePanels(page, "card");
 
-    await expectCardContent(panels.react, "React Spectrum stack");
-    await expectCardContent(panels.solid, "Solidaria stack");
+    for (const [panel, framework] of [
+      [panels.react, "React Spectrum stack"],
+      [panels.solid, "Solidaria stack"],
+    ] as const) {
+      const root = panel.locator('[data-comparison-control-root="card"]');
+      await expect(root).toHaveCount(1);
+      await expect(root).toHaveAttribute(
+        "data-comparison-control-props",
+        /"size":"M".*"density":"regular".*"variant":"primary"/,
+      );
+      await expectCardContent(panel, framework);
+    }
   });
 
   test("CardView route uses grid rows and controlled highlight selection on both stacks", async ({
@@ -66,6 +76,13 @@ test.describe("comparison Card and CardView contracts", () => {
     for (const panel of [panels.react, panels.solid]) {
       const root = panel.locator("[data-comparison-selected-keys]").first();
       await expect(root).toHaveAttribute("data-comparison-selected-keys", "apollo");
+
+      const controlRoot = panel.locator('[data-comparison-control-root="cardview"]');
+      await expect(controlRoot).toHaveCount(1);
+      await expect(controlRoot).toHaveAttribute(
+        "data-comparison-control-props",
+        /"layout":"grid".*"size":"S".*"density":"compact".*"variant":"secondary"/,
+      );
 
       const grid = panel.getByRole("grid", { name: "Projects" });
       await expect(grid).toBeVisible();

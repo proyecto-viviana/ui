@@ -50,6 +50,20 @@ const colorAreaTextControlValues: Record<string, string> = {
   slot: "color",
 };
 
+const cardTextControlValues: Record<string, string> = {
+  title: "Contract Apollo",
+  description: "Contract active state",
+  href: "https://example.com/card",
+  textValue: "Contract Apollo",
+};
+
+const cardViewTextControlValues: Record<string, string> = {
+  ariaLabel: "Contract projects",
+  selectedKeys: "apollo,zephyr",
+  defaultSelectedKeys: "zephyr",
+  disabledKeys: "zephyr",
+};
+
 const colorSliderTextControlValues: Record<string, string> = {
   ariaLabel: "Contract color slider",
   ariaLabelledBy: "colorslider-labelledby",
@@ -196,6 +210,12 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "colorarea" && control.name in colorAreaTextControlValues) {
       return colorAreaTextControlValues[control.name];
+    }
+    if (group.slug === "card" && control.name in cardTextControlValues) {
+      return cardTextControlValues[control.name];
+    }
+    if (group.slug === "cardview" && control.name in cardViewTextControlValues) {
+      return cardViewTextControlValues[control.name];
     }
     if (group.slug === "colorslider" && control.name in colorSliderTextControlValues) {
       return colorSliderTextControlValues[control.name];

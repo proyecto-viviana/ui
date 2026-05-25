@@ -191,6 +191,20 @@ import {
   serializeCalendarDemoProps,
 } from "@comparison/data/calendar-demo";
 import {
+  cardDemoPropsFromWindow,
+  normalizeCardDemoProps,
+  serializeCardDemoProps,
+} from "@comparison/data/card-demo";
+import {
+  cardViewDemoPropsFromWindow,
+  cardViewItems,
+  cardViewKeysFromValue,
+  initialCardViewSelectedKeys,
+  normalizeCardViewDemoProps,
+  serializeCardViewDemoProps,
+  serializeCardViewKeys,
+} from "@comparison/data/cardview-demo";
+import {
   comparisonActionItems as actionItems,
   comparisonTabItems as tabItems,
 } from "@comparison/data/comparison-contract";
@@ -641,11 +655,6 @@ const checkboxGroupItems = [
   { value: "email", label: "Email" },
   { value: "sms", label: "SMS" },
   { value: "push", label: "Push" },
-];
-
-const cardItems = [
-  { id: "apollo", title: "Apollo", status: "Active" },
-  { id: "zephyr", title: "Zephyr", status: "Queued" },
 ];
 
 const cardPreviewImageSrc =
@@ -3071,58 +3080,158 @@ function ReactSelectBoxGroupDemo() {
 }
 
 function ReactCardViewDemo() {
-  const [selectedKeys, setSelectedKeys] = useState(() => new Set(["apollo"]));
+  const [demoProps, setDemoProps] = useState(cardViewDemoPropsFromWindow);
+  const [selectedKeys, setSelectedKeys] = useState(() => initialCardViewSelectedKeys(demoProps));
   const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "cardview") {
+        setDemoProps((current) => {
+          const nextProps = normalizeCardViewDemoProps({ ...current, ...event.detail.props });
+          setSelectedKeys(initialCardViewSelectedKeys(nextProps));
+          return nextProps;
+        });
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const disabledKeys = cardViewKeysFromValue(demoProps.disabledKeys, [], "multiple");
+  const selectionProps =
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? {
+          defaultSelectedKeys: cardViewKeysFromValue(
+            demoProps.defaultSelectedKeys,
+            ["apollo"],
+            demoProps.selectionMode,
+          ),
+        }
+      : { selectedKeys };
+  const renderKey = [
+    demoProps.ariaLabel,
+    demoProps.layout,
+    demoProps.size,
+    demoProps.density,
+    demoProps.variant,
+    demoProps.selectionMode,
+    demoProps.selectionStyle,
+    demoProps.selectionSource,
+    demoProps.selectionSource === "defaultSelectedKeys"
+      ? demoProps.defaultSelectedKeys
+      : demoProps.selectedKeys,
+    demoProps.disabledKeys,
+    demoProps.disabledItem,
+    demoProps.showDescriptions,
+    demoProps.showActionBar,
+  ].join("|");
+  const actionBar = (keys) =>
+    jsx(SpectrumActionBar, {
+      selectedItemCount: keys === "all" ? cardViewItems.length : keys.size,
+      "data-comparison-cardview-actionbar": "true",
+      onClearSelection: () => setSelectedKeys(new Set()),
+      children: jsx(SpectrumActionButton, {
+        children: jsx(SpectrumText, { children: "Archive" }),
+      }),
+    });
+
   return renderReactSpectrumReference(
     jsx("div", {
-      "data-comparison-selected-keys": Array.from(selectedKeys).join(","),
-      children: jsx(SpectrumCardView, {
-        "aria-label": "Projects",
-        items: cardItems,
-        size: "S",
-        density: "compact",
-        variant: "secondary",
-        selectionMode: "single",
-        selectionStyle: "highlight",
-        UNSAFE_style: cardViewDemoStyle,
-        selectedKeys,
-        onSelectionChange: (keys) => setSelectedKeys(keys === "all" ? new Set() : new Set(keys)),
-        children: (item) =>
-          jsx(SpectrumCard, {
-            id: item.id,
-            textValue: item.title,
-            children: jsxs(SpectrumContent, {
-              children: [
-                jsx(SpectrumText, { slot: "title", children: item.title }),
-                jsx(SpectrumText, { slot: "description", children: item.status }),
-              ],
+      "data-comparison-selected-keys": serializeCardViewKeys(selectedKeys),
+      children: jsx(
+        SpectrumCardView,
+        {
+          "aria-label": demoProps.ariaLabel,
+          "data-comparison-control-root": "cardview",
+          "data-comparison-control-props": serializeCardViewDemoProps(demoProps),
+          items: cardViewItems,
+          layout: demoProps.layout,
+          size: demoProps.size,
+          density: demoProps.density,
+          variant: demoProps.variant,
+          selectionMode: demoProps.selectionMode,
+          selectionStyle: demoProps.selectionStyle,
+          disabledKeys,
+          UNSAFE_style: cardViewDemoStyle,
+          ...selectionProps,
+          onSelectionChange: (keys) =>
+            setSelectedKeys(
+              keys === "all" ? new Set(cardViewItems.map((item) => item.id)) : new Set(keys),
+            ),
+          renderActionBar: demoProps.showActionBar ? actionBar : undefined,
+          children: (item) =>
+            jsx(SpectrumCard, {
+              id: item.id,
+              textValue: `${item.title} ${item.status}`,
+              isDisabled: demoProps.disabledItem === item.id,
+              children: jsxs(SpectrumContent, {
+                children: [
+                  jsx(SpectrumText, { slot: "title", children: item.title }),
+                  demoProps.showDescriptions
+                    ? jsx(SpectrumText, { slot: "description", children: item.status })
+                    : null,
+                ],
+              }),
             }),
-          }),
-      }),
+        },
+        renderKey,
+      ),
     }),
     colorScheme,
   );
 }
 
 function ReactCardDemo() {
+  const [demoProps, setDemoProps] = useState(cardDemoPropsFromWindow);
   const colorScheme = useComparisonResolvedTheme();
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "card") {
+        setDemoProps((current) => normalizeCardDemoProps({ ...current, ...event.detail.props }));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const card = jsx(SpectrumCard, {
+    size: demoProps.size,
+    density: demoProps.density,
+    variant: demoProps.variant,
+    href: demoProps.href || undefined,
+    target: demoProps.href ? "_blank" : undefined,
+    rel: demoProps.href ? "noreferrer" : undefined,
+    isDisabled: demoProps.isDisabled,
+    textValue: demoProps.textValue,
+    UNSAFE_style: { width: 240 },
+    children: [
+      demoProps.showPreview
+        ? jsx(SpectrumCardPreview, {
+            children: jsx(SpectrumImage, { src: cardPreviewImageSrc, alt: "" }),
+          })
+        : null,
+      jsxs(SpectrumContent, {
+        children: [
+          jsx(SpectrumText, { slot: "title", children: demoProps.title }),
+          jsx(SpectrumText, { slot: "description", children: demoProps.description }),
+        ],
+      }),
+      demoProps.showFooter
+        ? jsx(SpectrumFooter, {
+            children: jsx(SpectrumStatusLight, { variant: "positive", children: "Synced" }),
+          })
+        : null,
+    ],
+  });
+
   return renderReactSpectrumReference(
-    jsx(SpectrumCard, {
-      size: "M",
-      density: "regular",
-      variant: "primary",
-      UNSAFE_style: { width: 240 },
-      children: [
-        jsx(SpectrumCardPreview, {
-          children: jsx(SpectrumImage, { src: cardPreviewImageSrc, alt: "" }),
-        }),
-        jsxs(SpectrumContent, {
-          children: [
-            jsx(SpectrumText, { slot: "title", children: "Apollo" }),
-            jsx(SpectrumText, { slot: "description", children: "Active" }),
-          ],
-        }),
-      ],
+    jsx("div", {
+      "data-comparison-control-root": "card",
+      "data-comparison-control-props": serializeCardDemoProps(demoProps),
+      children: jsx(SpectrumSkeleton, {
+        isLoading: demoProps.skeleton,
+        children: card,
+      }),
     }),
     colorScheme,
   );

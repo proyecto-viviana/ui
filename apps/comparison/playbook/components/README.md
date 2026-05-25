@@ -55,9 +55,9 @@ notes, and current visual/asserted evidence.
 Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
-- Modeled viewer controls: 59/69 entries. Missing control groups: Card,
-  CardView, Popover, ProgressBar, ProgressCircle, Provider, RangeSlider,
-  TableView, TagGroup, and TreeView.
+- Modeled viewer controls: 61/69 entries. Missing control groups: Popover,
+  ProgressBar, ProgressCircle, Provider, RangeSlider, TableView, TagGroup, and
+  TreeView.
 - Validation notes: 52/69 entries. Missing notes: DropZone, ListView,
   NumberField, Picker, Popover, ProgressBar, ProgressCircle, Provider,
   RadioGroup, RangeSlider, SearchField, Switch, TableView, TagGroup, TextArea,

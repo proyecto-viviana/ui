@@ -206,6 +206,22 @@ import {
   type CalendarDemoProps,
 } from "@comparison/data/calendar-demo";
 import {
+  cardDemoPropsFromWindow,
+  normalizeCardDemoProps,
+  serializeCardDemoProps,
+  type CardDemoProps,
+} from "@comparison/data/card-demo";
+import {
+  cardViewDemoPropsFromWindow,
+  cardViewItems,
+  cardViewKeysFromValue,
+  initialCardViewSelectedKeys,
+  normalizeCardViewDemoProps,
+  serializeCardViewDemoProps,
+  serializeCardViewKeys,
+  type CardViewDemoProps,
+} from "@comparison/data/cardview-demo";
+import {
   buttonDemoLocaleFromWindow,
   buttonDemoPropsFromWindow,
   comparisonControlsEvent,
@@ -722,11 +738,6 @@ const checkboxGroupItems = [
   { value: "email", label: "Email" },
   { value: "sms", label: "SMS" },
   { value: "push", label: "Push" },
-];
-
-const cardItems = [
-  { id: "apollo", title: "Apollo", status: "Active" },
-  { id: "zephyr", title: "Zephyr", status: "Queued" },
 ];
 
 const cardPreviewImageSrc =
@@ -8586,21 +8597,36 @@ function SolidSpectrumSelectBoxGroupDemo() {
 }
 
 function SolidSpectrumCardViewDemo() {
-  const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set(["apollo"]));
-  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
-    getComparisonResolvedThemeFromDocument(),
+  const [demoProps, setDemoProps] = createSignal<CardViewDemoProps>(cardViewDemoPropsFromWindow());
+  const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
+    initialCardViewSelectedKeys(demoProps()),
   );
-  const selectedKeyText = createMemo(() => Array.from(selectedKeys()).join(","));
+  const colorScheme = createComparisonResolvedThemeSignal();
+  const selectedKeyText = createMemo(() => serializeCardViewKeys(selectedKeys()));
+  let cardViewRoot: HTMLElement | undefined;
+
+  createEffect(() => {
+    cardViewRoot?.setAttribute(
+      "data-comparison-control-props",
+      serializeCardViewDemoProps(demoProps()),
+    );
+  });
 
   onMount(() => {
-    const handleThemeChange = (event: Event) => {
-      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
-        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "cardview") {
+        setDemoProps((current) => {
+          const nextProps = normalizeCardViewDemoProps({
+            ...current,
+            ...(event.detail.props ?? {}),
+          });
+          setSelectedKeys(initialCardViewSelectedKeys(nextProps));
+          return nextProps;
+        });
       }
     };
-    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
   });
 
   return hc(
@@ -8627,31 +8653,103 @@ function SolidSpectrumCardViewDemo() {
           hc(
             SolidSpectrumCardView,
             {
-              "aria-label": "Projects",
-              items: cardItems,
-              getKey: (item: (typeof cardItems)[number]) => item.id,
-              getTextValue: (item: (typeof cardItems)[number]) => item.title,
-              size: "S",
-              density: "compact",
-              variant: "secondary",
-              selectionMode: "single",
-              selectionStyle: "highlight",
+              get "aria-label"() {
+                return demoProps().ariaLabel;
+              },
+              "data-comparison-control-root": "cardview",
+              ref: (element: HTMLElement) => {
+                cardViewRoot = element;
+              },
+              get "data-comparison-control-props"() {
+                return serializeCardViewDemoProps(demoProps());
+              },
+              items: cardViewItems,
+              getKey: (item: (typeof cardViewItems)[number]) => item.id,
+              getTextValue: (item: (typeof cardViewItems)[number]) => item.title,
+              get layout() {
+                return demoProps().layout;
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get density() {
+                return demoProps().density;
+              },
+              get variant() {
+                return demoProps().variant;
+              },
+              get selectionMode() {
+                return demoProps().selectionMode;
+              },
+              get selectionStyle() {
+                return demoProps().selectionStyle;
+              },
+              get disabledKeys() {
+                return cardViewKeysFromValue(demoProps().disabledKeys, [], "multiple");
+              },
               UNSAFE_style: cardViewDemoStyle,
               get selectedKeys() {
-                return selectedKeys();
+                return demoProps().selectionSource === "selectedKeys" ? selectedKeys() : undefined;
+              },
+              get defaultSelectedKeys() {
+                return demoProps().selectionSource === "defaultSelectedKeys"
+                  ? cardViewKeysFromValue(
+                      demoProps().defaultSelectedKeys,
+                      ["apollo"],
+                      demoProps().selectionMode,
+                    )
+                  : undefined;
+              },
+              get renderActionBar() {
+                return demoProps().showActionBar
+                  ? (keys: "all" | Set<string | number>) =>
+                      hc(
+                        SolidSpectrumActionBar,
+                        {
+                          selectedItemCount: keys === "all" ? cardViewItems.length : keys.size,
+                          "data-comparison-cardview-actionbar": "true",
+                          onClearSelection: () => setSelectedKeys(new Set<string>()),
+                        },
+                        [
+                          hc(SolidSpectrumActionButton, {}, [
+                            hc(SolidSpectrumText, {}, ["Archive"]),
+                          ]),
+                        ],
+                      )
+                  : undefined;
               },
               onSelectionChange: (keys: "all" | Set<string | number>) =>
                 setSelectedKeys(
-                  keys === "all" ? new Set<string>() : new Set<string>(Array.from(keys, String)),
+                  keys === "all"
+                    ? new Set(cardViewItems.map((item) => item.id))
+                    : new Set<string>(Array.from(keys, String)),
                 ),
             },
-            renderProp((item: (typeof cardItems)[number]) =>
-              hc(SolidSpectrumCard, { id: item.id, textValue: item.title }, [
-                hc(SolidSpectrumContent, {}, [
-                  hc(SolidSpectrumText, { slot: "title" }, [item.title]),
-                  hc(SolidSpectrumText, { slot: "description" }, [item.status]),
-                ]),
-              ]),
+            renderProp((item: (typeof cardViewItems)[number]) =>
+              hc(
+                SolidSpectrumCard,
+                {
+                  id: item.id,
+                  textValue: `${item.title} ${item.status}`,
+                  get isDisabled() {
+                    return demoProps().disabledItem === item.id;
+                  },
+                },
+                [
+                  hc(SolidSpectrumContent, {}, [
+                    hc(SolidSpectrumText, { slot: "title" }, [item.title]),
+                    hc(
+                      Show,
+                      {
+                        get when() {
+                          return demoProps().showDescriptions;
+                        },
+                      },
+                      [hc(SolidSpectrumText, { slot: "description" }, [item.status])],
+                    ),
+                  ]),
+                ],
+              ),
             ),
           ),
         ],
@@ -8661,19 +8759,19 @@ function SolidSpectrumCardViewDemo() {
 }
 
 function SolidSpectrumCardDemo() {
-  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
-    getComparisonResolvedThemeFromDocument(),
-  );
+  const [demoProps, setDemoProps] = createSignal<CardDemoProps>(cardDemoPropsFromWindow());
+  const colorScheme = createComparisonResolvedThemeSignal();
 
   onMount(() => {
-    const handleThemeChange = (event: Event) => {
-      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
-        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "card") {
+        setDemoProps((current) =>
+          normalizeCardDemoProps({ ...current, ...(event.detail.props ?? {}) }),
+        );
       }
     };
-    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
   });
 
   return hc(
@@ -8692,24 +8790,74 @@ function SolidSpectrumCardDemo() {
           get "data-comparison-color-scheme"() {
             return colorScheme();
           },
+          "data-comparison-control-root": "card",
+          get "data-comparison-control-props"() {
+            return serializeCardDemoProps(demoProps());
+          },
         },
         [
           hc(
-            SolidSpectrumCard,
+            SolidSpectrumSkeleton,
             {
-              size: "M",
-              density: "regular",
-              variant: "primary",
-              UNSAFE_style: { width: "240px" },
+              get isLoading() {
+                return demoProps().skeleton;
+              },
             },
             [
-              hc(SolidSpectrumCardPreview, {}, [
-                hc(SolidSpectrumImage, { src: cardPreviewImageSrc, alt: "" }),
-              ]),
-              hc(SolidSpectrumContent, {}, [
-                hc(SolidSpectrumText, { slot: "title" }, ["Apollo"]),
-                hc(SolidSpectrumText, { slot: "description" }, ["Active"]),
-              ]),
+              hc(
+                SolidSpectrumCard,
+                {
+                  get size() {
+                    return demoProps().size;
+                  },
+                  get density() {
+                    return demoProps().density;
+                  },
+                  get variant() {
+                    return demoProps().variant;
+                  },
+                  get href() {
+                    return demoProps().href || undefined;
+                  },
+                  get target() {
+                    return demoProps().href ? "_blank" : undefined;
+                  },
+                  get rel() {
+                    return demoProps().href ? "noreferrer" : undefined;
+                  },
+                  get isDisabled() {
+                    return demoProps().isDisabled;
+                  },
+                  get textValue() {
+                    return demoProps().textValue;
+                  },
+                  UNSAFE_style: { width: "240px" },
+                },
+                [
+                  () => [
+                    ...(demoProps().showPreview
+                      ? [
+                          hc(SolidSpectrumCardPreview, {}, [
+                            hc(SolidSpectrumImage, { src: cardPreviewImageSrc, alt: "" }),
+                          ]),
+                        ]
+                      : []),
+                    hc(SolidSpectrumContent, {}, [
+                      hc(SolidSpectrumText, { slot: "title" }, [() => demoProps().title]),
+                      hc(SolidSpectrumText, { slot: "description" }, [
+                        () => demoProps().description,
+                      ]),
+                    ]),
+                    ...(demoProps().showFooter
+                      ? [
+                          hc(SolidSpectrumFooter, {}, [
+                            hc(SolidSpectrumStatusLight, { variant: "positive" }, ["Synced"]),
+                          ]),
+                        ]
+                      : []),
+                  ],
+                ],
+              ),
             ],
           ),
         ],

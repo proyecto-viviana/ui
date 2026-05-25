@@ -1,6 +1,6 @@
 # Card And CardView Validation Notes
 
-Updated: 2026-05-21
+Updated: 2026-05-25
 
 ## Target
 
@@ -18,37 +18,37 @@ Updated: 2026-05-21
 
 ## Task Status
 
-| Task                   | Status  | Evidence                                                                                                                                  | Blocker or next action                                                        |
-| ---------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 0 Research             | done    | S2 MCP Card/CardView docs; React Aria MCP GridList docs; installed `@react-spectrum/s2@1.3.0` Card/CardView source/export surface.        | None.                                                                         |
-| 1 Baseline             | done    | Before pass Card was in the missing/gap list; after pass reports list `48` live entries and `21` missing/gap entries.                     | None.                                                                         |
-| 2 Route harness        | done    | React/Solid styled fixtures, manifest entries, visual-state rows, and `card-cardview-contract.spec.ts`.                                   | None.                                                                         |
-| 3 Source map/API       | partial | Public root exports and core props mapped. Full support API/type diff remains manual.                                                     | Add automated API diff.                                                       |
-| 4 Cross-layer audit    | partial | Card/CardView, GridList, generated S2 CSS, comparison fixtures, and row selection behavior audited.                                       | Finish upstream branches below.                                               |
-| 5 Transitions          | partial | Pointer press re-render regression fixed through GridList pointer-up activation.                                                          | Broaden hover/focus/pressed strict state coverage.                            |
-| 6 State                | partial | Controlled CardView single highlight selection covered in browser and package tests.                                                      | Waterfall, loading, drag/drop, empty, and checkbox-selection branches remain. |
-| 7 ARIA hooks           | partial | Grid row roles, accessible names, selected state, and press activation covered.                                                           | Full GridList keyboard matrix remains component debt.                         |
-| 8 Headless             | partial | `GridListItem` pointer activation now survives pressed re-render and de-dupes click fallback.                                             | ListView/TableView consumers still need later regression checks.              |
-| 9 Styled S2            | partial | Source-backed S2 classes and generated CSS cover default Card/CardView route and visual rows.                                             | Strict pair-diff for non-default states remains.                              |
-| 10 Runtime lifecycle   | partial | ResizeObserver cleanup path and controlled selection refresh checked in source/tests.                                                     | Virtualizer/loading observer paths are not fully ported.                      |
-| 11 Harness integrity   | done    | React fixture imports upstream S2; Solid fixture imports public package API; route image assertion no longer hard-codes transformed size. | None.                                                                         |
-| 12 Comparison evidence | done    | Focused package tests, comparison build, focused Playwright, and refreshed reports listed below.                                          | None.                                                                         |
-| 13 Acceptance          | partial | Card/CardView are live and gated for the current route slice, but not accepted under the full gate model.                                 | Resolve remaining gaps before acceptance.                                     |
+| Task                   | Status  | Evidence                                                                                                                                                                        | Blocker or next action                                                                        |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 0 Research             | done    | S2 MCP Card/CardView docs; React Aria MCP GridList docs; installed `@react-spectrum/s2@1.3.0` Card/CardView source/export surface.                                              | None.                                                                                         |
+| 1 Baseline             | done    | Before pass Card was in the missing/gap list; after pass reports list `48` live entries and `21` missing/gap entries.                                                           | None.                                                                                         |
+| 2 Route harness        | done    | React/Solid styled fixtures, manifest entries, modeled side-panel controls, visual-state rows, and `card-cardview-contract.spec.ts`.                                            | None.                                                                                         |
+| 3 Source map/API       | partial | Public root exports and core props mapped. Full support API/type diff remains manual.                                                                                           | Add automated API diff.                                                                       |
+| 4 Cross-layer audit    | partial | Card/CardView, GridList, generated S2 CSS, comparison fixtures, and row selection behavior audited.                                                                             | Finish upstream branches below.                                                               |
+| 5 Transitions          | partial | Pointer press re-render regression fixed through GridList pointer-up activation.                                                                                                | Broaden hover/focus/pressed strict state coverage.                                            |
+| 6 State                | partial | Controlled CardView highlight selection is covered in browser/package tests; selection mode/style/source, disabled keys, and action bar now propagate through modeled controls. | Waterfall, loading, drag/drop, empty, and deeper checkbox/multiple-selection behavior remain. |
+| 7 ARIA hooks           | partial | Grid row roles, accessible names, selected state, and press activation covered.                                                                                                 | Full GridList keyboard matrix remains component debt.                                         |
+| 8 Headless             | partial | `GridListItem` pointer activation now survives pressed re-render and de-dupes click fallback.                                                                                   | ListView/TableView consumers still need later regression checks.                              |
+| 9 Styled S2            | partial | Source-backed S2 classes and generated CSS cover default Card/CardView route and visual rows.                                                                                   | Strict pair-diff for non-default states remains.                                              |
+| 10 Runtime lifecycle   | partial | ResizeObserver cleanup path and controlled selection refresh checked in source/tests.                                                                                           | Virtualizer/loading observer paths are not fully ported.                                      |
+| 11 Harness integrity   | done    | React fixture imports upstream S2; Solid fixture imports public package API; route image assertion no longer hard-codes transformed size.                                       | None.                                                                                         |
+| 12 Comparison evidence | done    | Focused package tests, comparison build, focused Playwright, and refreshed reports listed below.                                                                                | None.                                                                                         |
+| 13 Acceptance          | partial | Card/CardView are live and gated for the current route slice, but not accepted under the full gate model.                                                                       | Resolve remaining gaps before acceptance.                                                     |
 
 ## Gate Outcome Summary
 
-| Gate                                     | Outcome | Evidence                                                                                                                                       | Blockers/owner                                                                                                          |
-| ---------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Official Docs And Viewer Parity          | partial | Docs identify Card as selectable/navigable and CardView as selectable collection with bulk actions; default route examples live.               | Interactive viewer controls and all docs examples are not fully mirrored.                                               |
-| External Authority And Standards         | partial | React Aria GridList docs/source behavior drive row roles, names, selected state, and keyboard/press expectations.                              | Complete GridList keyboard and drag/drop standards mapping remains.                                                     |
-| Upstream React Source Parity             | partial | Installed S2 Card/CardView source mapped for layout options, size/density/variant defaults, Card contexts, preview slots, and selection style. | Waterfall/virtualized layout, loading skeletons, drag/drop hooks, action bar, link rows, and full support props remain. |
-| Solid Idiomatic Implementation           | partial | Context props remain reactive, CardView size responds to ResizeObserver, and GridList pointer activation handles Solid child re-rendering.     | Remove `@ts-nocheck` and finish typed API parity.                                                                       |
-| Accessibility And I18n                   | partial | Grid role/name, row role/name, controlled `aria-selected`, visible image/content slots, and keyboard Space/Enter unit coverage are present.    | Full keyboard navigation, checkbox selection affordance parity, link navigation, and AT transcript evidence remain.     |
-| Behavior State Machine                   | partial | Controlled highlight selection now updates React and Solid from `apollo` to `zephyr`; pointer-up regression is covered.                        | Loading, empty, multiple selection, checkbox selection, action bar, drag/drop, and link/action precedence remain.       |
-| Style Source-To-Computed Parity          | partial | S2 macros/generation cover Card/CardView core size/density/variant branches; live visual rows pass asserted thresholds.                        | Strict pair-diff and computed geometry for hover/focus/pressed/selected/disabled/loading/waterfall remain.              |
-| React-Vs-Solid Comparison Harness Parity | passing | Both fixtures use current package imports, identical data, provider/theme conditions, public Solid API, and focused route tests.               | None for the current route slice.                                                                                       |
-| Known Defects And Regression Protection  | partial | Fixed known CardView row click bug caused by pressed re-render suppressing browser `click`; added focused e2e regression.                      | Remaining known gaps below block full acceptance.                                                                       |
-| Evidence And Handoff                     | passing | Commands and refreshed report numbers are recorded below.                                                                                      | None for handoff.                                                                                                       |
+| Gate                                     | Outcome | Evidence                                                                                                                                                                      | Blockers/owner                                                                                                       |
+| ---------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Official Docs And Viewer Parity          | partial | Docs identify Card as selectable/navigable and CardView as selectable collection with bulk actions; current Card/CardView route slices now have modeled controls.             | Loading/load-more, empty, drag/drop, navigable CardView cards, and strict waterfall examples are not fully mirrored. |
+| External Authority And Standards         | partial | React Aria GridList docs/source behavior drive row roles, names, selected state, and keyboard/press expectations.                                                             | Complete GridList keyboard and drag/drop standards mapping remains.                                                  |
+| Upstream React Source Parity             | partial | Installed S2 Card/CardView source mapped for layout options, size/density/variant defaults, Card contexts, preview slots, selection style, and `renderActionBar`.             | Waterfall/virtualized layout, loading skeletons, drag/drop hooks, link rows, and full support props remain.          |
+| Solid Idiomatic Implementation           | partial | Context props remain reactive, CardView size responds to ResizeObserver, and GridList pointer activation handles Solid child re-rendering.                                    | Remove `@ts-nocheck` and finish typed API parity.                                                                    |
+| Accessibility And I18n                   | partial | Grid role/name, row role/name, controlled `aria-selected`, visible image/content slots, and keyboard Space/Enter unit coverage are present.                                   | Full keyboard navigation, checkbox selection affordance parity, link navigation, and AT transcript evidence remain.  |
+| Behavior State Machine                   | partial | Controlled highlight selection now updates React and Solid from `apollo` to `zephyr`; modeled controls drive multiple/default selection, disabled keys, and action-bar props. | Loading, empty, deeper multiple/checkbox behavior, drag/drop, and link/action precedence remain.                     |
+| Style Source-To-Computed Parity          | partial | S2 macros/generation cover Card/CardView core size/density/variant branches; live visual rows pass asserted thresholds.                                                       | Strict pair-diff and computed geometry for hover/focus/pressed/selected/disabled/loading/waterfall remain.           |
+| React-Vs-Solid Comparison Harness Parity | passing | Both fixtures use current package imports, identical data, provider/theme conditions, public Solid API, and focused route tests.                                              | None for the current route slice.                                                                                    |
+| Known Defects And Regression Protection  | partial | Fixed known CardView row click bug caused by pressed re-render suppressing browser `click`; added focused e2e regression.                                                     | Remaining known gaps below block full acceptance.                                                                    |
+| Evidence And Handoff                     | passing | Commands and refreshed report numbers are recorded below.                                                                                                                     | None for handoff.                                                                                                    |
 
 ## Acceptance Gate Checklist
 
@@ -63,10 +63,16 @@ Updated: 2026-05-21
       variant `primary`; CardView layout `grid`; CardView selectionStyle
       `checkbox`.
 - [x] Route defaults mounted on both React and Solid stacks.
-- [ ] Full interactive viewer controls, order, omitted-prop behavior, and every
-      docs example mirrored in the comparison side panel.
-- [ ] Bulk action bar, loading, waterfall, empty, drag/drop, and navigable card
-      examples mirrored.
+- [x] Modeled controls added for the current Card route slice: title,
+      description, size, density, variant, preview slot, footer slot,
+      disabled state, href, textValue, and Skeleton loading wrapper.
+- [x] Modeled controls added for the current CardView route slice: aria-label,
+      layout, size, density, variant, selection mode/style/source,
+      selected/default keys, disabled keys/item, description slot, and
+      `renderActionBar`.
+- [ ] Loading/load-more, empty, drag/drop, navigable CardView cards, strict
+      waterfall, omitted-prop behavior, and every remaining docs example
+      mirrored in the comparison side panel.
 
 ### 2. External Authority And Standards
 
@@ -96,8 +102,7 @@ Updated: 2026-05-21
       inside CardView, and full link/action precedence parity.
 - [ ] CardView `layout="waterfall"`, Virtualizer integration,
       `loadingState`, `onLoadMore`, skeleton collection behavior,
-      `renderActionBar`, `renderEmptyState`, `disabledKeys`, and
-      `dragAndDropHooks` parity.
+      `renderEmptyState`, and `dragAndDropHooks` parity.
 
 ### 4. Solid Idiomatic Implementation
 
@@ -128,9 +133,12 @@ Updated: 2026-05-21
       row `aria-selected`.
 - [x] Pointer press state no longer loses activation when Card children re-render.
 - [x] Space toggles selection in package coverage.
-- [ ] Multiple selection, checkbox selection, disabled keys, empty state,
-      loading state, load more, action bar, Card action, link navigation, and
-      drag/drop state machines.
+- [x] Modeled controls drive multiple selection mode, checkbox selection style,
+      default-selected keys, disabled keys/item, and `renderActionBar` props
+      into both stacks.
+- [ ] Behavior assertions for multiple selection, checkbox affordance,
+      disabled-key suppression, empty state, loading state, load more, Card
+      action, link navigation, and drag/drop state machines.
 
 ### 7. Style Source-To-Computed Parity
 
@@ -151,6 +159,8 @@ Updated: 2026-05-21
 - [x] Both fixtures use identical card data and provider/theme conditions.
 - [x] Focused e2e proves route-mounted React and Solid DOM update for default
       Card and controlled CardView selection.
+- [x] Modeled-control contract now covers Card and CardView prop serialization
+      through both stacks.
 - [x] Image contract checks loaded dimensions/aspect instead of hard-coding a
       transformed upstream natural size.
 
@@ -204,19 +214,23 @@ Updated: 2026-05-21
     extra Solid exports, and `0` missing catalogue root exports.
   - `guard:rac-export-gap`: `0` missing `solidaria-components` named exports,
     `166` extra exports.
+- After modeled-control backfill on 2026-05-25:
+  - `comparison:report:parity`: `61/69` official entries have modeled controls.
+    Remaining missing control groups are Popover, ProgressBar, ProgressCircle,
+    Provider, RangeSlider, TableView, TagGroup, and TreeView.
 
 ## Known Remaining Gaps
 
-| Gap                                                                                                            | Owner area                                                    | Blocks                        |
-| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------- |
-| Full official viewer control parity for Card/CardView examples.                                                | comparison route                                              | full docs/viewer gate         |
-| Automated upstream-vs-Solid Card/CardView prop/type diff.                                                      | comparison API tooling                                        | full public API gate          |
-| Card link support inside CardView plus `hrefLang`, `ping`, `referrerPolicy`, and `routerOptions`.              | `solid-spectrum` Card/GridList integration                    | navigable Card parity         |
-| CardView `waterfall` layout and Virtualizer integration.                                                       | `solid-spectrum` CardView, `solidaria-components` Virtualizer | layout parity                 |
-| CardView loading, load-more, skeleton collection, empty state, action bar, disabled keys, and drag/drop hooks. | `solid-spectrum` CardView/GridList                            | behavior/accessibility parity |
-| Strict visual pair-diff and computed-style coverage for non-default Card/CardView states.                      | comparison e2e                                                | style parity acceptance       |
-| Full GridList keyboard/focus/AT coverage for CardView selection modes.                                         | `solidaria`/`solidaria-components`                            | accessibility acceptance      |
-| Remove `@ts-nocheck` once public API types are complete.                                                       | `solid-spectrum` Card/CardView                                | typed implementation quality  |
+| Gap                                                                                                                                                             | Owner area                                                    | Blocks                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------- |
+| Remaining official Card/CardView examples beyond the modeled route slices: loading/load-more, empty, drag/drop, navigable CardView cards, and strict waterfall. | comparison route                                              | full docs/viewer gate         |
+| Automated upstream-vs-Solid Card/CardView prop/type diff.                                                                                                       | comparison API tooling                                        | full public API gate          |
+| Card link support inside CardView plus `hrefLang`, `ping`, `referrerPolicy`, and `routerOptions`.                                                               | `solid-spectrum` Card/GridList integration                    | navigable Card parity         |
+| CardView `waterfall` layout and Virtualizer integration.                                                                                                        | `solid-spectrum` CardView, `solidaria-components` Virtualizer | layout parity                 |
+| CardView loading, load-more, skeleton collection, empty state, full action-bar behavior, disabled-key behavior, and drag/drop hooks.                            | `solid-spectrum` CardView/GridList                            | behavior/accessibility parity |
+| Strict visual pair-diff and computed-style coverage for non-default Card/CardView states.                                                                       | comparison e2e                                                | style parity acceptance       |
+| Full GridList keyboard/focus/AT coverage for CardView selection modes.                                                                                          | `solidaria`/`solidaria-components`                            | accessibility acceptance      |
+| Remove `@ts-nocheck` once public API types are complete.                                                                                                        | `solid-spectrum` Card/CardView                                | typed implementation quality  |
 
 ## Commands
 
@@ -227,22 +241,31 @@ Updated: 2026-05-21
     `/components/cardview`.
 - `vp exec --filter @proyecto-viviana/comparison playwright test e2e/card-cardview-contract.spec.ts e2e/live-styled-visual.spec.ts -g "Card|CardView" --reporter=line`
   - `4` browser tests passed.
+- `vp exec --filter @proyecto-viviana/comparison playwright test e2e/card-cardview-contract.spec.ts e2e/modeled-controls-contract.spec.ts --grep "Card|CardView" --reporter=line`
+  - `4` browser tests passed for route contracts and modeled side-panel
+    controls.
 - `vp run comparison:report:gaps`
   - `69` official entries tracked, `48` live on both sides, `21` missing/gap,
     `77` visual-evidence states, `46` strict pair-diff states.
+- `vp run comparison:report:parity`
+  - `61/69` official entries have modeled controls; the remaining missing
+    groups are Popover, ProgressBar, ProgressCircle, Provider, RangeSlider,
+    TableView, TagGroup, and TreeView.
 - `vp run comparison:report:exports`
   - `39` missing non-root/support S2 exports, `5` extra Solid exports, `0`
     missing catalogue root exports.
 - `vp run guard:rac-export-gap`
   - `0` missing, `166` extra.
+- `vp run comparison:typecheck`
+  - `0` errors, `0` warnings, and `2` existing hints for unused collection
+    helpers in React/Solid fixtures.
 - `vp run check`
-  - formatting, lint, and typecheck passed after `vp run check:fix` formatted
-    regenerated CSS and Markdown.
+  - formatting, lint, and root typecheck passed.
 
 ## Final Status
 
 Partial. Card and CardView are now live in the comparison app with focused
-default Card, controlled CardView selection, export, build, report, and browser
-evidence. They are not accepted under the full gate model until the remaining
-upstream CardView behavior, API, accessibility, and strict style gaps above are
-closed.
+default Card, controlled CardView selection, modeled side-panel controls,
+export, build, report, typecheck, and browser evidence. They are not accepted
+under the full gate model until the remaining upstream CardView behavior, API,
+accessibility, and strict style gaps above are closed.
