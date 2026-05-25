@@ -56,9 +56,9 @@ import type {
   ColorSpace,
 } from "@proyecto-viviana/solid-stately";
 import { normalizeColor } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, fontRelative, style, type StyleString } from "../s2-style";
-import { keyframes } from "../s2-style/style-macro";
-import { mergeStyles } from "../s2-style/runtime";
+import { baseColor, focusRing, fontRelative, style, type StyleString } from "../style";
+import { keyframes } from "../style/style-macro";
+import { mergeStyles } from "../style/runtime";
 import {
   control,
   controlFont,

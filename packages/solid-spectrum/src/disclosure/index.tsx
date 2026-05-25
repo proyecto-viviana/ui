@@ -24,8 +24,8 @@ import {
   space,
   style,
   type StyleString,
-} from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+} from "../style";
+import { mergeStyles } from "../style/runtime";
 import { ActionButtonContext } from "../button/context";
 import type { ActionButtonSize } from "../button/group-context";
 import {

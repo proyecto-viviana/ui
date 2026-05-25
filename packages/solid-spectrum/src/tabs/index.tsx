@@ -24,9 +24,9 @@ import {
   type TabsRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, KeyboardActivation, TabOrientation } from "@proyecto-viviana/solid-stately";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, fontRelative, style } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { useProviderProps } from "../provider";

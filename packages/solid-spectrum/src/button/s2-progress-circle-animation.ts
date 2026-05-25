@@ -1,4 +1,4 @@
-import { keyframes } from "../s2-style/style-macro";
+import { keyframes } from "../style/style-macro";
 
 const progressCircleRotationAnimation = keyframes(`
   0% {

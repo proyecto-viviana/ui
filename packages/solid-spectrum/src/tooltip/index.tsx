@@ -8,8 +8,8 @@ import {
   type TooltipRenderProps,
   type TooltipResolvedPlacement,
 } from "@proyecto-viviana/solidaria-components";
-import { centerPadding, setColorScheme, style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import { centerPadding, setColorScheme, style, type StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { useTheme, type ColorScheme } from "../provider";
 
 export type { TooltipPlacement };

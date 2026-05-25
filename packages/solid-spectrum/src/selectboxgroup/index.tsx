@@ -20,9 +20,9 @@ import {
   type ListBoxRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, style } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, style } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";
 import { pressScale } from "../pressScale";

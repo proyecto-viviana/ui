@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
-import { fontRelative, lightDark, style, type StyleString } from "../s2-style";
+import { fontRelative, lightDark, style, type StyleString } from "../style";
 import { centerBaseline } from "../icon/center-baseline";
 import { IconContext } from "../icon/spectrum-icon";
 import { control, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";

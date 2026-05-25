@@ -12,8 +12,8 @@ import {
   untrack,
   useContext,
 } from "solid-js";
-import { style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import { style, type StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getSlottedContextProps,

@@ -8,8 +8,8 @@ import {
   type TextFieldProps as HeadlessTextFieldProps,
   type TextFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, fontRelative, style } from "../s2-style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style";
 import {
   control,
   controlFont,

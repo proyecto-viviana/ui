@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
-import { mergeStyles } from "../s2-style/runtime";
-import type { StyleString } from "../s2-style";
+import { mergeStyles } from "../style/runtime";
+import type { StyleString } from "../style";
 
 const DEFAULT_SLOT = "default";
 

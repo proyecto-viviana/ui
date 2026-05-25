@@ -1,6 +1,6 @@
 import { createContext, mergeProps, splitProps, type JSX, useContext } from "solid-js";
 import { createLabel, filterDOMProps } from "@proyecto-viviana/solidaria";
-import { style, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../style";
 import { getAllowedOverrides } from "../s2-internal/style-utils";
 import {
   getSlottedContextProps,

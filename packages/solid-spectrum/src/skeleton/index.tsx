@@ -9,10 +9,10 @@ import {
   useContext,
 } from "solid-js";
 import { createLeafComponent } from "@proyecto-viviana/solidaria-components";
-import { css } from "../s2-style/style-macro";
-import { style, type StyleString } from "../s2-style";
-import { color } from "../s2-style/spectrum-theme";
-import { mergeStyles } from "../s2-style/runtime";
+import { css } from "../style/style-macro";
+import { style, type StyleString } from "../style";
+import { color } from "../style/spectrum-theme";
+import { mergeStyles } from "../style/runtime";
 
 export type SkeletonContextValue = boolean | null | Accessor<boolean | null | undefined>;
 

@@ -27,8 +27,8 @@ import { Image, ImageContext, ImageCoordinator } from "../image";
 import { SkeletonContext, SkeletonWrapper, useInertAttribute, useIsSkeleton } from "../skeleton";
 import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
-import { color, focusRing, lightDark, space, style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import { color, focusRing, lightDark, space, style, type StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getSlottedContextProps,

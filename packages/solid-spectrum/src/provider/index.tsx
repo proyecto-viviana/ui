@@ -15,9 +15,9 @@ import {
   useModalProvider,
   type Direction,
 } from "@proyecto-viviana/solidaria";
-import { mergeStyles } from "../s2-style/runtime";
-import { setColorScheme, style as s2Style } from "../s2-style";
-import type { StyleString } from "../s2-style";
+import { mergeStyles } from "../style/runtime";
+import { setColorScheme, style as s2Style } from "../style";
+import type { StyleString } from "../style";
 import { generateDefaultColorSchemeStyles } from "../s2-internal/page.macro";
 
 export type ColorScheme = "light" | "dark" | "light dark";

@@ -1,6 +1,6 @@
 import { type Component, type JSX, createContext, splitProps, useContext } from "solid-js";
-import { style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import { style, type StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import {
   createIsSkeleton,

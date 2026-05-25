@@ -6,9 +6,9 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { useProviderProps } from "../provider";
 import type { StaticColor } from "./types";
-import type { StyleString } from "../s2-style";
-import { fontRelative, style } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { fontRelative, style } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";
 import { TextContext } from "../text";

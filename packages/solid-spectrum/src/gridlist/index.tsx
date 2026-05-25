@@ -38,9 +38,9 @@ import Chevron from "../icon/ui-icons/Chevron";
 import LinkOut from "../icon/ui-icons/LinkOut";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { useProviderProps } from "../provider";
-import { baseColor, focusRing, fontRelative, space, style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
-import { edgeToText } from "../s2-style/spectrum-theme";
+import { baseColor, focusRing, fontRelative, space, style, type StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
+import { edgeToText } from "../style/spectrum-theme";
 import { controlFont, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
 import { Text, TextContext } from "../text";
 

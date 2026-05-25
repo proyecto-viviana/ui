@@ -16,7 +16,7 @@ import {
   type StylesPropWithHeight,
   type UnsafeClassName,
 } from "../s2-internal/style-utils";
-import { style, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../style";
 import { ContentContext, HeadingContext } from "../text";
 
 export type IllustratedMessageSize = "S" | "M" | "L";

@@ -1,4 +1,4 @@
-import { baseColor, focusRing, size as s2Size, style } from "../s2-style";
+import { baseColor, focusRing, size as s2Size, style } from "../style";
 import { controlFont, controlSize, getAllowedOverrides } from "../s2-internal/style-utils";
 
 export type S2BreadcrumbsSize = "M" | "L";

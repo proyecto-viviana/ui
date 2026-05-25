@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { style } from "../s2-style";
+import { style } from "../style";
 import { centerPadding, controlSize } from "../s2-internal/style-utils";
 
 export const textAreaFieldGroupStyles = style({

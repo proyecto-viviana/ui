@@ -20,8 +20,8 @@ import {
   type ToggleSwitchRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createToggleState } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, fontRelative, style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import { baseColor, focusRing, fontRelative, style, type StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { controlFont, controlSize, getAllowedOverrides } from "../s2-internal/style-utils";
 import { useProviderProps } from "../provider";
 

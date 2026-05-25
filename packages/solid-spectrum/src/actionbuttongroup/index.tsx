@@ -1,6 +1,6 @@
 import { type JSX, mergeProps, splitProps } from "solid-js";
 import { Toolbar as HeadlessToolbar } from "@proyecto-viviana/solidaria-components";
-import type { StyleString } from "../s2-style";
+import type { StyleString } from "../style";
 import {
   ActionButtonGroupContext,
   type ActionButtonDensity,

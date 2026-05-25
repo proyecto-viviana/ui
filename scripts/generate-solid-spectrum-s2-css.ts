@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { clearS2CssAssets, getS2CssAssets } from "../packages/solid-spectrum/src/s2-style";
+import { clearS2CssAssets, getS2CssAssets } from "../packages/solid-spectrum/src/style";
 import { generatePageStyles } from "../packages/solid-spectrum/src/s2-internal/page.macro";
 
 process.env.NODE_ENV = "production";

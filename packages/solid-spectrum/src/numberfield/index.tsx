@@ -13,8 +13,8 @@ import {
   type NumberFieldInputRenderProps,
   type NumberFieldButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, fontRelative, space, style } from "../s2-style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, space, style } from "../style";
 import {
   control,
   controlBorderRadius,

@@ -10,7 +10,7 @@ import {
 import { createMeter } from "@proyecto-viviana/solidaria";
 import { SkeletonWrapper } from "../skeleton";
 import { Text } from "../text";
-import { lightDark, style, type StyleString } from "../s2-style";
+import { lightDark, style, type StyleString } from "../style";
 import {
   centerPadding,
   controlSize,

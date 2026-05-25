@@ -17,7 +17,7 @@ import {
   type SelectOptionRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import type { StyleString } from "../s2-style";
+import type { StyleString } from "../style";
 import {
   baseColor,
   focusRing,
@@ -26,8 +26,8 @@ import {
   setColorScheme,
   space,
   style,
-} from "../s2-style";
-import { edgeToText } from "../s2-style/spectrum-theme";
+} from "../style";
+import { edgeToText } from "../style/spectrum-theme";
 import {
   control,
   controlBorderRadius,

@@ -5,7 +5,7 @@ import {
   type FormProps as HeadlessFormProps,
   type FieldErrorProps as HeadlessFieldErrorProps,
 } from "@proyecto-viviana/solidaria-components";
-import { style, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../style";
 import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
 import { createIsSkeleton } from "../skeleton";
 import { assignRef } from "../button/spectrum-context";

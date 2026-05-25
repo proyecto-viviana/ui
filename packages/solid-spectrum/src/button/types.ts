@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import type { ButtonProps as HeadlessButtonProps } from "@proyecto-viviana/solidaria-components";
-import type { StyleString } from "../s2-style";
+import type { StyleString } from "../style";
 
 export type ButtonVariant = "primary" | "secondary" | "accent" | "negative" | "premium" | "genai";
 export type ButtonFillStyle = "fill" | "outline";

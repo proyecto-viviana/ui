@@ -14,8 +14,8 @@ import {
   type TimeValue,
 } from "@proyecto-viviana/solidaria-components";
 import { useLocale } from "@proyecto-viviana/solidaria";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, fontRelative, style } from "../s2-style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style";
 import {
   control,
   controlFont,

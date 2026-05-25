@@ -143,16 +143,16 @@
       "default": "./src/components.css"
     },
     "./style": {
-      "types": "./dist/s2-style/index.d.ts",
-      "solid": "./src/s2-style/index.ts",
-      "import": "./dist/s2-style/index.js",
-      "default": "./dist/s2-style/index.js"
+      "types": "./dist/style/index.d.ts",
+      "solid": "./src/style/index.ts",
+      "import": "./dist/style/index.js",
+      "default": "./dist/style/index.js"
     },
     "./style/runtime": {
-      "types": "./dist/s2-style/runtime.d.ts",
-      "solid": "./src/s2-style/runtime.ts",
-      "import": "./dist/s2-style/runtime.js",
-      "default": "./dist/s2-style/runtime.js"
+      "types": "./dist/style/runtime.d.ts",
+      "solid": "./src/style/runtime.ts",
+      "import": "./dist/style/runtime.js",
+      "default": "./dist/style/runtime.js"
     }
   },
   "publishConfig": {

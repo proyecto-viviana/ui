@@ -34,7 +34,7 @@ import {
   type StyleProps,
   type UnsafeClassName,
 } from "../s2-internal/style-utils";
-import { focusRing, style, type StyleString } from "../s2-style";
+import { focusRing, style, type StyleString } from "../style";
 import { ContentContext, HeadingContext } from "../text";
 
 export type InlineAlertVariant = "informative" | "positive" | "notice" | "negative" | "neutral";

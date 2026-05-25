@@ -12,8 +12,8 @@
  */
 
 import tokens from "@adobe/spectrum-tokens/dist/json/variables.json";
-import type { MacroContext } from "../s2-style/style-macro";
-import { addS2CssAsset } from "../s2-style/style-macro";
+import type { MacroContext } from "../style/style-macro";
+import { addS2CssAsset } from "../style/style-macro";
 
 function colorToken(token: (typeof tokens)["gray-25"]) {
   return `light-dark(${token.sets.light.value}, ${token.sets.dark.value})`;

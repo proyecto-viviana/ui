@@ -4,7 +4,7 @@ import { ButtonGroup } from "../buttongroup";
 import AlertDiamondIcon from "../icon/s2wf-icons/AlertDiamondIcon";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import { Content, Heading } from "../text";
-import { style } from "../s2-style";
+import { style } from "../style";
 import { Dialog, DialogTrigger, type DialogRenderProps, type DialogSize } from "./Dialog";
 
 export type AlertDialogVariant =

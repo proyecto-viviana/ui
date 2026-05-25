@@ -120,7 +120,7 @@ the `Disclosure` family, `Divider`, `Picker`, `Button`, `Link`, `Table*`,
 `ToastContainer`, `pressScale`, plus `Badge`, `Meter`,
 `ProgressBar`/`ProgressCircle`, `StatusLight`, `SearchField`, `Switch`,
 `TextField`, `Radio`/`RadioGroup`, `Card`, `Tabs`, `Accordion`. The styling
-function lives at the `./style` export (`src/s2-style/`).
+function lives at the `./style` export (`src/style/`).
 
 Known gaps from `docs/CURRENT_STATUS.md` affect _content_ (what renders inside
 the comparison panels) — Disclosure, Tabs, Popover, ProgressBar, TableView,

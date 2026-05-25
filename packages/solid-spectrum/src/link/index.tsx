@@ -4,7 +4,7 @@ import {
   type LinkProps as HeadlessLinkProps,
   type LinkRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { baseColor, focusRing, style, type StyleString } from "../s2-style";
+import { baseColor, focusRing, style, type StyleString } from "../style";
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import {
   getSlottedContextProps,

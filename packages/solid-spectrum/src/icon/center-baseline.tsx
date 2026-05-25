@@ -1,7 +1,7 @@
 import { type JSX } from "solid-js";
-import { mergeStyles } from "../s2-style/runtime";
-import { addS2CssAsset, css } from "../s2-style/style-macro";
-import type { StyleString } from "../s2-style";
+import { mergeStyles } from "../style/runtime";
+import { addS2CssAsset, css } from "../style/style-macro";
+import type { StyleString } from "../style";
 
 const centerBaselineClass = css("display: flex; align-items: center;");
 export const centerBaselineBefore = centerBaselineClass as StyleString;

@@ -1,7 +1,7 @@
 import type { JSX } from "solid-js";
 import type { RefLike } from "../button/spectrum-context";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
-import type { StyleString } from "../s2-style";
+import type { StyleString } from "../style";
 
 export interface BaseContentProps<T extends HTMLElement = HTMLElement> {
   children?: JSX.Element;

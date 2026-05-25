@@ -3,7 +3,7 @@ import {
   ToggleButtonGroup as HeadlessToggleButtonGroup,
   type ToggleButtonGroupProps as HeadlessToggleButtonGroupProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { StyleString } from "../s2-style";
+import type { StyleString } from "../style";
 import { useProviderProps } from "../provider";
 import {
   type ActionButtonDensity,

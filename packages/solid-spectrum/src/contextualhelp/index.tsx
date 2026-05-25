@@ -11,7 +11,7 @@ import { createStringFormatter, filterDOMProps } from "@proyecto-viviana/solidar
 import { Popover, type PopoverProps, type PopoverTriggerProps } from "../popover";
 import { PopoverTrigger } from "../popover";
 import { ActionButton, type ActionButtonSize } from "../button/ActionButton";
-import { style, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../style";
 import { ContentContext, FooterContext, HeadingContext, TextContext } from "../text";
 import { HelpCircleIcon } from "../icon/s2wf-icons/HelpCircleIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseColor, style } from "../src/s2-style";
+import { baseColor, style } from "../src/style";
 
 describe("S2 style color states", () => {
   it("advances semantic 900 color stops to their 1000 hover/press states", () => {

@@ -32,8 +32,8 @@ import {
 import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
 import { useProviderProps, useTheme } from "../provider";
-import type { StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { pressScale } from "../pressScale";
 import { centerBaseline } from "../icon/center-baseline";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";

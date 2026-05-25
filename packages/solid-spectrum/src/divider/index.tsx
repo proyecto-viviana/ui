@@ -3,7 +3,7 @@ import {
   Separator as HeadlessSeparator,
   type SeparatorProps as HeadlessSeparatorProps,
 } from "@proyecto-viviana/solidaria-components";
-import { style, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../style";
 import { getAllowedOverrides, staticColor, type UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getSlottedContextProps,

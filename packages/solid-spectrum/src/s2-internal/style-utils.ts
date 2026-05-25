@@ -12,8 +12,8 @@
  */
 
 import type { JSX } from "solid-js";
-import { fontRelative as internalFontRelative } from "../s2-style/spectrum-theme";
-import { StyleString } from "../s2-style/types";
+import { fontRelative as internalFontRelative } from "../style/spectrum-theme";
+import { StyleString } from "../style/types";
 
 type CSSProperties = JSX.CSSProperties;
 

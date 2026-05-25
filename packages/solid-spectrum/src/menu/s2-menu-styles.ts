@@ -12,9 +12,9 @@ import {
   setColorScheme,
   space,
   style,
-} from "../s2-style";
+} from "../style";
 import { control, controlBorderRadius, controlFont, controlSize } from "../s2-internal/style-utils";
-import { edgeToText } from "../s2-style/spectrum-theme";
+import { edgeToText } from "../style/spectrum-theme";
 
 export type S2MenuSize = "S" | "M" | "L" | "XL";
 

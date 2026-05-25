@@ -22,8 +22,8 @@ import {
   type SliderTrackRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { type SliderOrientation } from "@proyecto-viviana/solid-stately";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, style } from "../s2-style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, style } from "../style";
 import {
   controlFont,
   field,

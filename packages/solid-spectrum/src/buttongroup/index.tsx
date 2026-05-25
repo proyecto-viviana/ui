@@ -7,8 +7,8 @@ import {
   type JSX,
   splitProps,
 } from "solid-js";
-import type { StyleString } from "../s2-style";
-import { style } from "../s2-style";
+import type { StyleString } from "../style";
+import { style } from "../style";
 import { ButtonContext, LinkButtonContext } from "../button/context";
 import { useButtonGroupContext } from "../button/group-context";
 import { s2ButtonGroup } from "../button/s2-action-button-styles";

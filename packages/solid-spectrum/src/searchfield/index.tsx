@@ -10,9 +10,9 @@ import {
   type SearchFieldRenderProps,
   type SearchFieldClearButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, fontRelative, style } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style";
+import { mergeStyles } from "../style/runtime";
 import {
   control,
   controlFont,

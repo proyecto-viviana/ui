@@ -10,7 +10,7 @@ import {
   type ColorSwatchPickerRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Color } from "@proyecto-viviana/solid-stately";
-import { focusRing, space, style } from "../s2-style";
+import { focusRing, space, style } from "../style";
 import {
   getAllowedOverrides,
   type StylesProp,

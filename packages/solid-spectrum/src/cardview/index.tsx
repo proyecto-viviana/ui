@@ -19,9 +19,9 @@ import {
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { CardContext, InternalCardViewContext } from "../card/index";
 import { ImageCoordinator } from "../image";
-import type { StyleString } from "../s2-style";
-import { focusRing, style } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { focusRing, style } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
 import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
 import type { RefLike, SpectrumContextValue } from "../button/spectrum-context";

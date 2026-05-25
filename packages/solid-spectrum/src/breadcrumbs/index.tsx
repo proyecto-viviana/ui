@@ -24,8 +24,8 @@ import {
   type BreadcrumbsRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
-import type { StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
 import {
   getSlottedContextProps,

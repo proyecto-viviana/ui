@@ -14,14 +14,14 @@ destination: move back to upstream-style build-time macro compilation through
 Upstream React Spectrum imports the style macro with
 `import {style} from '@react-spectrum/s2/style' with {type: 'macro'}` — a
 Parcel/Babel compile-time transform. `solid-spectrum` did **not** port the
-macro. Instead (`packages/solid-spectrum/src/s2-style/`):
+macro. Instead (`packages/solid-spectrum/src/style/`):
 
 - `spectrum-theme.ts:715` — `export const style = createTheme(...)`. `style()`
   is an ordinary runtime function: call it with a style object, get back a
   class-name string.
 - `style-macro.ts` — when `style()` (or `css()`) runs, it appends the generated
   CSS text to an in-memory `Set`, `assetRegistry`, via `addS2CssAsset()`.
-- `s2-style/index.ts` re-exports the registry accessors:
+- `style/index.ts` re-exports the registry accessors:
   `getS2CssAssets()` → `string[]` of all collected CSS, and
   `clearS2CssAssets()` → reset.
 

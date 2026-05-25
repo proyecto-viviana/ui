@@ -24,7 +24,7 @@ import {
   type HeaderProps,
   type HeadingProps,
 } from "../text";
-import { baseColor, focusRing, setColorScheme, style, type StyleString } from "../s2-style";
+import { baseColor, focusRing, setColorScheme, style, type StyleString } from "../style";
 
 export type DialogSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "fullscreen";
 export type CustomDialogSize = "S" | "M" | "L" | "fullscreen" | "fullscreenTakeover";

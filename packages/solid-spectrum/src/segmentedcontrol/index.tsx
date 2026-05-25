@@ -18,9 +18,9 @@ import {
   type ToggleButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import type { StyleString } from "../s2-style";
-import { baseColor, fontRelative, focusRing, style } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { baseColor, fontRelative, focusRing, style } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { control } from "../s2-internal/style-utils";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";

@@ -17,8 +17,8 @@ import {
   type TextFieldProps as HeadlessTextFieldProps,
   type TextFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { StyleString } from "../s2-style";
-import { baseColor, focusRing, fontRelative, style } from "../s2-style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style";
 import {
   control,
   controlFont,
@@ -27,7 +27,7 @@ import {
   fieldLabel,
   getAllowedOverrides,
 } from "../s2-internal/style-utils";
-import { mergeStyles } from "../s2-style/runtime";
+import { mergeStyles } from "../style/runtime";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";

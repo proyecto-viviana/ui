@@ -14,7 +14,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { ButtonFillStyle, ButtonProps, ButtonSize, ButtonVariant } from "./types";
-import { fontRelative, style } from "../s2-style";
+import { fontRelative, style } from "../style";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { pressScale } from "../pressScale";

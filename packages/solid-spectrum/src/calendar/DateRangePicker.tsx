@@ -24,7 +24,7 @@ import {
 } from "@proyecto-viviana/solid-stately";
 import { RangeCalendar } from "./RangeCalendar";
 import { TimeField } from "../datepicker";
-import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../s2-style";
+import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../style";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";

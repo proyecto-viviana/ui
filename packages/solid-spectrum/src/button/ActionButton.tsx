@@ -17,12 +17,12 @@ import {
   PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
-import { fontRelative, style } from "../s2-style";
+import { fontRelative, style } from "../style";
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
 import type { StaticColor } from "./types";
-import type { StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import type { StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import {
   s2ActionButton,
   s2ActionButtonPendingIndicator,

@@ -20,8 +20,8 @@ const entry = [
   "src/RangeCalendar.ts",
   "src/Menu.ts",
   "src/Tabs.ts",
-  "src/s2-style/index.ts",
-  "src/s2-style/runtime.ts",
+  "src/style/index.ts",
+  "src/style/runtime.ts",
 ];
 
 const ssrEntry = Object.fromEntries(

@@ -1,7 +1,7 @@
 import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import { CenterBaseline } from "../icon/center-baseline";
-import { style, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../style";
 import { controlFont, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
 import { useIsSkeleton } from "../skeleton";
 import { Text, TextContext } from "../text";

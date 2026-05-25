@@ -56,7 +56,7 @@ runtime at all — it has been compiled away.
 
 ## What `solid-spectrum` did
 
-Per `packages/solid-spectrum/src/s2-style/UPSTREAM.md`, the entire `s2-style/`
+Per `packages/solid-spectrum/src/style/UPSTREAM.md`, the entire `style/`
 directory is a **verbatim vendored copy** of `@react-spectrum/s2@1.3.0`'s
 `style/` folder — `style-macro.ts`, `spectrum-theme.ts`, `tokens.ts`, etc. The
 `style()` function (`createTheme()` in `style-macro.ts:314`) is byte-for-byte

@@ -11,7 +11,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { baseColor, focusRing, fontRelative, lightDark, style } from "../s2-style";
+import { baseColor, focusRing, fontRelative, lightDark, style } from "../style";
 import { control, getAllowedOverrides, staticColor } from "../s2-internal/style-utils";
 import type {
   ActionButtonDensity,

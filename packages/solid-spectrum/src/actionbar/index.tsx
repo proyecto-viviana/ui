@@ -21,8 +21,8 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { FocusScope, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, lightDark, style, type StyleString } from "../s2-style";
-import { mergeStyles } from "../s2-style/runtime";
+import { baseColor, focusRing, lightDark, style, type StyleString } from "../style";
+import { mergeStyles } from "../style/runtime";
 import { controlSize, staticColor } from "../s2-internal/style-utils";
 import { ActionButtonGroup } from "../actionbuttongroup";
 import { s2IntlStrings } from "../intl";

@@ -1,6 +1,6 @@
 import { createContext, useContext, type JSX } from "solid-js";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import type { StyleString } from "../s2-style";
+import type { StyleString } from "../style";
 import type { ButtonSize, StaticColor } from "./types";
 import type { RefLike, SpectrumContextValue } from "./spectrum-context";
 

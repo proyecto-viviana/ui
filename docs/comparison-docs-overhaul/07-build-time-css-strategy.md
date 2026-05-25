@@ -135,7 +135,7 @@ for foreground/background-style color properties, but not for `borderColor`.
 
 ### Why this fits `solid-spectrum` with near-zero rewrite
 
-`solid-spectrum`'s `s2-style/` is a verbatim copy of `@react-spectrum/s2`'s
+`solid-spectrum`'s `style/` is a verbatim copy of `@react-spectrum/s2`'s
 style folder ([`06`](06-solid-spectrum-css-defect.md) §"What solid-spectrum
 did"). The `style()` function is already a Parcel macro — it was _built_ to run
 under exactly this plugin. Adopting `unplugin-parcel-macros` means:
@@ -143,7 +143,7 @@ under exactly this plugin. Adopting `unplugin-parcel-macros` means:
 - **No rewrite of `style-macro.ts`.** Use it as the macro it always was.
 - **Delete the local divergence:** the `addS2CssAsset` registry, `getS2CssAssets`,
   `clearS2CssAssets`, and `scripts/generate-solid-spectrum-s2-css.ts` all go
-  away. `s2-style/` reverts to pure upstream.
+  away. `style/` reverts to pure upstream.
 - The prebuilt `s2-generated.css` is no longer needed — the macro emits CSS per
   build, exhaustively, because the bundler traverses every module.
 
@@ -189,7 +189,7 @@ that source.
      `with {type: 'macro'}` and the emitted package CSS is diffed.
    - Destination: drop `addS2CssAsset`/`getS2CssAssets`/`clearS2CssAssets`, the
      generation script, and the committed `s2-generated.css`. Revert
-     `s2-style/` to upstream.
+     `style/` to upstream.
 2. **Comparison app (Astro)**
    - Add `macros.vite()` to `astro.config.mjs`'s `vite.plugins`, ordered before
      `@astrojs/solid-js` / `@astrojs/react`.
@@ -301,7 +301,7 @@ The sequencing decision is now fixed:
 
 1. Move `solid-spectrum` package JS/CSS bundling to Vite Plus `vp pack`, keeping
    `tsc` declarations unchanged.
-2. Convert `s2-style` imports from the runtime bridge to upstream macro import
+2. Convert `style` imports from the runtime bridge to upstream macro import
    attributes.
 3. Wire the comparison app's Vite/Astro pipeline to run `macros.vite()` over
    source exports.

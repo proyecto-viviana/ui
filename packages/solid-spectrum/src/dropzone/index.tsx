@@ -13,7 +13,7 @@ import {
   type DropZoneRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
-import { style, type StyleString } from "../s2-style";
+import { style, type StyleString } from "../style";
 import {
   getAllowedOverrides,
   type StylesPropWithHeight,

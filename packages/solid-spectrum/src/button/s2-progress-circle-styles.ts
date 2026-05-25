@@ -11,7 +11,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { style } from "../s2-style";
+import { style } from "../style";
 import { staticColor } from "../s2-internal/style-utils";
 import type { StaticColor } from "./types";
 import type { ActionButtonSize } from "./group-context";
