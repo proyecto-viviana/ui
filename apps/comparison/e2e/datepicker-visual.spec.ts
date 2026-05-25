@@ -1,6 +1,11 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { frameworkPanel, styledSection, waitForComparisonRouteReady } from "./comparison-page";
-import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
+import {
+  clearPointer,
+  compareScreenshots,
+  expectScreenshotPair,
+  pinComparisonTheme,
+} from "./visual-diff";
 
 type ElementGeometry = {
   x: number;
@@ -11,16 +16,22 @@ type ElementGeometry = {
   visibleInViewport: boolean;
 };
 
-const strictPairDiff = {
-  maxMismatchRatio: 0,
-  maxDimensionDelta: 0,
-  pixelThreshold: 0,
-};
-
 const datePickerFieldPairDiff = {
   maxMismatchRatio: 0,
   maxDimensionDelta: 0,
   pixelThreshold: 1,
+};
+
+const datePickerOpenPopoverPairDiff = {
+  maxMismatchRatio: 0,
+  maxDimensionDelta: 0,
+  pixelThreshold: 32,
+};
+
+const datePickerInteractionFieldPairDiff = {
+  maxMismatchRatio: 0.75,
+  maxDimensionDelta: 240,
+  pixelThreshold: 128,
 };
 
 async function frameworkCard(
@@ -77,85 +88,24 @@ async function clickOutsidePopup(page: Page, popup: Locator) {
   await page.mouse.click(x, y);
 }
 
-async function compareScreenshots(
-  page: Page,
-  reactPng: Buffer,
-  solidPng: Buffer,
-  label: string,
-  maxMismatchRatio: number = strictPairDiff.maxMismatchRatio,
-  maxDimensionDelta: number = strictPairDiff.maxDimensionDelta,
-  pixelThreshold: number = strictPairDiff.pixelThreshold,
-) {
-  const result = await page.evaluate(
-    async ({ reactBase64, solidBase64, pixelThreshold }) => {
-      async function loadImage(base64: string) {
-        const response = await fetch(`data:image/png;base64,${base64}`);
-        return createImageBitmap(await response.blob());
-      }
+async function openCalendar(card: Locator, options: { normalizePlacement?: boolean } = {}) {
+  const normalizePlacement = options.normalizePlacement ?? true;
+  const root = card.locator('[data-comparison-control-root="datepicker"]').first();
+  if (normalizePlacement && (await root.count()) > 0) {
+    await root.evaluate(async (element) => {
+      element.scrollIntoView({ block: "center", inline: "nearest" });
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+      const rect = element.getBoundingClientRect();
+      const targetTop = Math.min(Math.max(window.innerHeight * 0.24, 128), 180);
+      window.scrollBy({ top: rect.top - targetTop, left: 0, behavior: "instant" });
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+    });
+  } else if ((await root.count()) === 0) {
+    await card.scrollIntoViewIfNeeded();
+  }
 
-      const [reactImage, solidImage] = await Promise.all([
-        loadImage(reactBase64),
-        loadImage(solidBase64),
-      ]);
-
-      const width = Math.min(reactImage.width, solidImage.width);
-      const height = Math.min(reactImage.height, solidImage.height);
-      const canvas = document.createElement("canvas");
-      canvas.width = width * 2;
-      canvas.height = height;
-      const context = canvas.getContext("2d", { willReadFrequently: true });
-      if (!context) {
-        throw new Error("Could not create canvas context for screenshot comparison");
-      }
-
-      context.drawImage(reactImage, 0, 0, width, height);
-      context.drawImage(solidImage, width, 0, width, height);
-
-      const reactPixels = context.getImageData(0, 0, width, height).data;
-      const solidPixels = context.getImageData(width, 0, width, height).data;
-      let mismatched = 0;
-
-      for (let i = 0; i < reactPixels.length; i += 4) {
-        const r = Math.abs(reactPixels[i] - solidPixels[i]);
-        const g = Math.abs(reactPixels[i + 1] - solidPixels[i + 1]);
-        const b = Math.abs(reactPixels[i + 2] - solidPixels[i + 2]);
-        const a = Math.abs(reactPixels[i + 3] - solidPixels[i + 3]);
-        const delta = Math.max(r, g, b, a);
-        if (delta > pixelThreshold) {
-          mismatched += 1;
-        }
-      }
-
-      return {
-        width: reactImage.width,
-        height: reactImage.height,
-        comparedWidth: solidImage.width,
-        comparedHeight: solidImage.height,
-        mismatchRatio: mismatched / (width * height),
-      };
-    },
-    {
-      reactBase64: reactPng.toString("base64"),
-      solidBase64: solidPng.toString("base64"),
-      pixelThreshold,
-    },
-  );
-
-  expect(Math.abs(result.width - result.comparedWidth), `${label} width delta`).toBeLessThanOrEqual(
-    maxDimensionDelta,
-  );
-  expect(
-    Math.abs(result.height - result.comparedHeight),
-    `${label} height delta`,
-  ).toBeLessThanOrEqual(maxDimensionDelta);
-  expect(
-    result.mismatchRatio,
-    `${label} screenshot mismatch ratio ${result.mismatchRatio} exceeded ${maxMismatchRatio}`,
-  ).toBeLessThanOrEqual(maxMismatchRatio);
-}
-
-async function openCalendar(card: Locator) {
-  await card.scrollIntoViewIfNeeded();
   const trigger = card.getByRole("button", { name: /calendar|choose date/i });
   await expect(trigger).toBeVisible();
   await trigger.click();
@@ -221,6 +171,125 @@ async function calendarSurface(page: Page) {
     .first();
   await expect(surface).toBeVisible();
   return surface;
+}
+
+async function datePickerPopoverTokens(surface: Locator) {
+  return surface.evaluate((element) => {
+    const pick = (node: Element, properties: string[]) => {
+      const style = getComputedStyle(node);
+      return Object.fromEntries(
+        properties.map((property) => [property, style.getPropertyValue(property)]),
+      );
+    };
+    const inner = Array.from(element.children).find((node) => node.querySelector('[role="grid"]'));
+    const frame = Array.from(element.querySelectorAll("div")).find((node) => {
+      const style = getComputedStyle(node);
+      return (
+        node.querySelector('[role="grid"]') &&
+        style.paddingTop === "24px" &&
+        style.paddingLeft === "16px"
+      );
+    });
+    const calendar = element.querySelector('[role="group"]');
+
+    return {
+      surface: pick(element, [
+        "background-color",
+        "border-radius",
+        "box-shadow",
+        "box-sizing",
+        "display",
+        "height",
+        "isolation",
+        "max-width",
+        "outline-color",
+        "outline-style",
+        "outline-width",
+        "overflow",
+        "padding",
+        "width",
+      ]),
+      inner: inner
+        ? pick(inner, [
+            "border-radius",
+            "box-sizing",
+            "max-height",
+            "max-width",
+            "outline-style",
+            "overflow",
+            "padding",
+            "position",
+            "width",
+          ])
+        : null,
+      frame: frame
+        ? pick(frame, [
+            "box-sizing",
+            "display",
+            "flex-direction",
+            "gap",
+            "height",
+            "min-width",
+            "overflow",
+            "padding-bottom",
+            "padding-left",
+            "padding-right",
+            "padding-top",
+            "width",
+          ])
+        : null,
+      calendar: calendar
+        ? pick(calendar, ["display", "flex-direction", "gap", "height", "max-width", "width"])
+        : null,
+    };
+  });
+}
+
+async function fixedSizePopoverScreenshot(target: Locator) {
+  const previousStyle = await target.evaluate(async (element) => {
+    if ("fonts" in document) {
+      await document.fonts.ready;
+    }
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+
+    const htmlElement = element as HTMLElement;
+    const rect = htmlElement.getBoundingClientRect();
+    const style = htmlElement.getAttribute("style");
+
+    htmlElement.style.position = "fixed";
+    htmlElement.style.inset = "auto";
+    htmlElement.style.top = "64px";
+    htmlElement.style.left = "64px";
+    htmlElement.style.right = "auto";
+    htmlElement.style.bottom = "auto";
+    htmlElement.style.width = `${rect.width}px`;
+    htmlElement.style.height = `${rect.height}px`;
+    htmlElement.style.maxWidth = `${rect.width}px`;
+    htmlElement.style.maxHeight = `${rect.height}px`;
+    htmlElement.style.margin = "0";
+    htmlElement.style.transform = "none";
+    htmlElement.style.zIndex = "2147483647";
+
+    return style;
+  });
+
+  try {
+    await target.evaluate(async () => {
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+    });
+    return target.screenshot({ animations: "disabled" });
+  } finally {
+    await target.evaluate((element, style) => {
+      const htmlElement = element as HTMLElement;
+      if (style === null) {
+        htmlElement.removeAttribute("style");
+      } else {
+        htmlElement.setAttribute("style", style);
+      }
+    }, previousStyle);
+  }
 }
 
 async function expectNoCalendarPopup(page: Page) {
@@ -686,9 +755,7 @@ test.describe("comparison DatePicker visual parity", () => {
       reactFieldPng,
       solidFieldPng,
       "DatePicker field",
-      0.75,
-      240,
-      128,
+      datePickerInteractionFieldPairDiff,
     );
 
     await openCalendar(reactCard);
@@ -698,8 +765,9 @@ test.describe("comparison DatePicker visual parity", () => {
     await page.waitForTimeout(250);
     const reactPopoverGeometry = await geometry(reactSurface);
     assertVisiblePopoverGeometry(reactPopoverGeometry);
+    const reactPopoverTokens = await datePickerPopoverTokens(reactSurface);
     await page.mouse.move(4, 4);
-    const reactSurfacePng = await reactSurface.screenshot({ animations: "disabled" });
+    const reactSurfacePng = await fixedSizePopoverScreenshot(reactSurface);
 
     await page.keyboard.press("Escape");
     await expectNoCalendarPopup(page);
@@ -713,8 +781,9 @@ test.describe("comparison DatePicker visual parity", () => {
     const solidPopoverGeometry = await geometry(solidSurface);
     assertVisiblePopoverGeometry(solidPopoverGeometry);
     expect(solidPopoverGeometry.position).not.toBe("static");
+    const solidPopoverTokens = await datePickerPopoverTokens(solidSurface);
     await page.mouse.move(4, 4);
-    const solidSurfacePng = await solidSurface.screenshot({ animations: "disabled" });
+    const solidSurfacePng = await fixedSizePopoverScreenshot(solidSurface);
 
     expect(Math.abs(solidPopoverGeometry.width - reactPopoverGeometry.width)).toBeLessThanOrEqual(
       48,
@@ -722,21 +791,20 @@ test.describe("comparison DatePicker visual parity", () => {
     expect(Math.abs(solidPopoverGeometry.height - reactPopoverGeometry.height)).toBeLessThanOrEqual(
       48,
     );
+    expect(solidPopoverTokens).toEqual(reactPopoverTokens);
     await compareScreenshots(
       page,
       reactSurfacePng,
       solidSurfacePng,
       "DatePicker popup surface",
-      0.16,
-      2,
-      16,
+      datePickerOpenPopoverPairDiff,
     );
 
     await page.keyboard.press("Escape");
     await expectNoCalendarPopup(page);
     await expect(solidCard.getByRole("button", { name: /calendar|choose date/i })).toBeFocused();
 
-    await openCalendar(solidCard);
+    await openCalendar(solidCard, { normalizePlacement: false });
     const solidDialogForSelect = await calendarPopup(page);
     await pickFirstEnabledDate(solidDialogForSelect);
     await expectNoCalendarPopup(page);
@@ -1031,9 +1099,14 @@ test.describe("comparison DatePicker visual parity", () => {
 
     const section = await styledSection(page);
     const solidCard = await frameworkPanel(section, "Solidaria stack");
+    await solidCard
+      .locator('[data-comparison-control-root="datepicker"]')
+      .first()
+      .scrollIntoViewIfNeeded();
+    await expect(solidCard.getByRole("button", { name: /calendar|choose date/i })).toBeVisible();
     const beforeScrollY = await page.evaluate(() => window.scrollY);
 
-    await openCalendar(solidCard);
+    await openCalendar(solidCard, { normalizePlacement: false });
     await expect(await calendarPopup(page)).toBeVisible();
     const afterScrollY = await page.evaluate(() => window.scrollY);
 

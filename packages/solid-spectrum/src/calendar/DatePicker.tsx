@@ -125,7 +125,7 @@ function datePickerFieldGroupStyle(size: NormalizedDatePickerSize): JSX.CSSPrope
 
 const popoverEnterStyle: JSX.CSSProperties = {
   animation: "s2-datepicker-popover-in 200ms cubic-bezier(0.45, 0, 0.4, 1)",
-  "max-height": "none",
+  "max-width": "calc(100vw - 24px)",
 };
 
 const datePickerRoot = style(
@@ -383,6 +383,17 @@ const datePickerPopover = style<{ colorScheme: "light" | "dark" | "light dark" }
   },
 });
 
+const datePickerPopoverInner = style({
+  padding: 0,
+  boxSizing: "border-box",
+  outlineStyle: "none",
+  borderRadius: "inherit",
+  overflow: "auto",
+  position: "relative",
+  width: "full",
+  maxSize: "[inherit]",
+});
+
 const datePickerPopoverFrame = style({
   paddingX: 16,
   paddingY: 24,
@@ -390,8 +401,8 @@ const datePickerPopoverFrame = style({
   display: "flex",
   flexDirection: "column",
   gap: 16,
-  boxSizing: "content-box",
-  width: "[max-content]",
+  boxSizing: "border-box",
+  size: "full",
 });
 
 const datePickerCalendarPopoverStyle: JSX.CSSProperties = {
@@ -498,6 +509,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       </Show>
 
       <div
+        role="presentation"
         class={datePickerFieldGroup({
           size: size(),
           isInvalid: isInvalid(),
@@ -600,28 +612,30 @@ function DatePickerPopup(props: {
       class={datePickerPopover({ colorScheme: theme.colorScheme })}
       style={popoverEnterStyle}
     >
-      <div class={datePickerPopoverFrame} style={{ "min-width": "240px" }}>
-        <Calendar
-          size="md"
-          visibleMonths={props.maxVisibleMonths}
-          UNSAFE_style={datePickerCalendarPopoverStyle}
-          {...(props.calendarProps ?? {})}
-        />
-        <Show when={props.hasTime}>
-          <TimeField
+      <div class={datePickerPopoverInner}>
+        <div class={datePickerPopoverFrame}>
+          <Calendar
             size="md"
-            label="Time"
-            value={datePicker.datePickerState.timeValue() ?? undefined}
-            granularity={timeGranularity()}
-            hourCycle={props.hourCycle}
-            shouldForceLeadingZeros={props.shouldForceLeadingZeros}
-            onChange={(nextValue) => {
-              if (nextValue) {
-                datePicker.datePickerState.setTimeValue(nextValue);
-              }
-            }}
+            visibleMonths={props.maxVisibleMonths}
+            UNSAFE_style={datePickerCalendarPopoverStyle}
+            {...(props.calendarProps ?? {})}
           />
-        </Show>
+          <Show when={props.hasTime}>
+            <TimeField
+              size="md"
+              label="Time"
+              value={datePicker.datePickerState.timeValue() ?? undefined}
+              granularity={timeGranularity()}
+              hourCycle={props.hourCycle}
+              shouldForceLeadingZeros={props.shouldForceLeadingZeros}
+              onChange={(nextValue) => {
+                if (nextValue) {
+                  datePicker.datePickerState.setTimeValue(nextValue);
+                }
+              }}
+            />
+          </Show>
+        </div>
       </div>
     </DatePickerContent>
   );

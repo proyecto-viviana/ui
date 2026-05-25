@@ -3042,9 +3042,9 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       kind: "overlay",
       react: "visual",
       solid: "visual",
-      pairDiff: "planned",
+      pairDiff: "asserted",
       spec: "e2e/datepicker-visual.spec.ts",
-      note: "Covers settled open calendar geometry with current visual evidence for both sides. The Solid popover surface keeps React S2 DatePicker's medium calendar geometry across field sizes, preserves seven weekday columns with no extra blank day column, routes two visible months, first-day, min/max, unavailable, and paging state through the headless DatePicker calendar state, reads hover paint from the inner Calendar cell, and uses generated S2 styling with theme-reactive colors; strict React-vs-Solid visual parity remains planned.",
+      note: "Covers settled open calendar geometry with exact-dimension React-vs-Solid pair-diff evidence after antialias/corner tolerance plus computed surface, inner, frame, and calendar token equality. The gate normalizes each root before opening so React's z-index-auto popover is not obscured by the comparison app topbar. Solid mirrors React S2's inner popover wrapper, keeps medium Calendar geometry across field sizes, preserves seven weekday columns with no extra blank day column, routes two visible months, first-day, min/max, unavailable, and paging state through the headless DatePicker calendar state, reads hover paint from the inner Calendar cell, and uses generated S2 styling with theme-reactive colors.",
     },
     {
       id: "styled.calendar.select-date",

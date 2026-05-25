@@ -21885,6 +21885,74 @@
 @layer _.a;
 
 @layer _.a {
+  .Td13 {
+    padding-top: 0px;
+  }
+
+  .Qd13 {
+    padding-bottom: 0px;
+  }
+
+  .Sd13 {
+    padding-inline-start: 0px;
+  }
+
+  .Rd13 {
+    padding-inline-end: 0px;
+  }
+
+  ._oa13 {
+    box-sizing: border-box;
+  }
+
+  ._Le13 {
+    outline-style: none;
+  }
+
+  .oi13 {
+    border-start-start-radius: inherit;
+  }
+
+  .ni13 {
+    border-start-end-radius: inherit;
+  }
+
+  .ki13 {
+    border-end-start-radius: inherit;
+  }
+
+  .ji13 {
+    border-end-end-radius: inherit;
+  }
+
+  ._Na13 {
+    overflow-x: auto;
+  }
+
+  .Pa13 {
+    overflow-y: auto;
+  }
+
+  ._Pc13 {
+    position: relative;
+  }
+
+  .Za13 {
+    width: 100%;
+  }
+
+  .L40ub4c13 {
+    max-width: inherit;
+  }
+
+  .K40ub4c13 {
+    max-height: inherit;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
   .Sf13 {
     padding-inline-start: 16px;
   }
@@ -21925,12 +21993,16 @@
     column-gap: 1rem;
   }
 
-  ._ob13 {
-    box-sizing: content-box;
+  ._oa13 {
+    box-sizing: border-box;
   }
 
-  .ZK13 {
-    width: max-content;
+  .Za13 {
+    width: 100%;
+  }
+
+  .Fb13 {
+    height: 100%;
   }
 }
 
@@ -23439,6 +23511,58 @@
 
   ._Cb13 {
     justify-content: end;
+  }
+}
+
+@layer _.a;
+
+@layer _.a {
+  .Sf13 {
+    padding-inline-start: 16px;
+  }
+
+  .Rf13 {
+    padding-inline-end: 16px;
+  }
+
+  .Th13 {
+    padding-top: 24px;
+  }
+
+  .Qh13 {
+    padding-bottom: 24px;
+  }
+
+  ._Na13 {
+    overflow-x: auto;
+  }
+
+  .Pa13 {
+    overflow-y: auto;
+  }
+
+  .sd13 {
+    display: flex;
+  }
+
+  ._ta13 {
+    flex-direction: column;
+  }
+
+  .Ul13 {
+    row-gap: 1rem;
+  }
+
+  .ql13 {
+    column-gap: 1rem;
+  }
+
+  ._ob13 {
+    box-sizing: content-box;
+  }
+
+  .ZK13 {
+    width: max-content;
   }
 }
 
