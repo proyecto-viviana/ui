@@ -26,6 +26,8 @@
     "comparison:preview": "vp run --filter @proyecto-viviana/comparison preview",
     "comparison:report:gaps": "vp run --filter @proyecto-viviana/comparison report:gaps",
     "comparison:report:exports": "vp run --filter @proyecto-viviana/comparison report:exports",
+    "comparison:report:parity": "vp run --filter @proyecto-viviana/comparison report:parity",
+    "comparison:report:parity:strict": "vp run --filter @proyecto-viviana/comparison report:parity:strict",
     "comparison:test:button": "vp run --filter @proyecto-viviana/comparison test:button",
     "comparison:test:buttons": "vp run --filter @proyecto-viviana/comparison test:buttons",
     "comparison:test:catalogue": "vp run --filter @proyecto-viviana/comparison test:catalogue",

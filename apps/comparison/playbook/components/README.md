@@ -45,6 +45,32 @@ Future component passes should not need a legacy-normalization section. Run the
 playbook in order, close in-scope gates before moving on, and mark a component
 partial if any gate remains unresolved.
 
+## Strict Component Parity Audit
+
+Run `vp run comparison:report:parity` before claiming catalogue parity. The
+audit checks official S2 catalogue coverage against the comparison manifest,
+sidebar grouping, live styled fixtures, modeled viewer controls, validation
+notes, and current visual/asserted evidence.
+
+Current snapshot:
+
+- Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
+- Modeled viewer controls: 57/69 entries. Missing control groups: Card,
+  CardView, Icons, Illustrations, Popover, ProgressBar, ProgressCircle,
+  Provider, RangeSlider, TableView, TagGroup, and TreeView.
+- Validation notes: 52/69 entries. Missing notes: DropZone, ListView,
+  NumberField, Picker, Popover, ProgressBar, ProgressCircle, Provider,
+  RadioGroup, RangeSlider, SearchField, Switch, TableView, TagGroup, TextArea,
+  TextField, and TreeView.
+- Current visual/asserted evidence: 61/69 entries. Missing evidence: ListView,
+  Popover, ProgressBar, ProgressCircle, RangeSlider, TableView, TagGroup, and
+  TreeView.
+
+React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
+`icons`. That route and its strict visual spec exist, but the interactive viewer
+still needs a modeled control group before it can count as complete catalogue
+parity.
+
 ## Files
 
 - [Accordion](./accordion-validation-notes.md)
