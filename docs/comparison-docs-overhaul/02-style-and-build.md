@@ -1,156 +1,65 @@
 # 02 · Style System & Build Model
 
-The original plan flagged the upstream compile-time `style` macro as the top
-risk. The first investigation resolved the current-state question:
-`solid-spectrum` was running the vendored macro as a runtime function with a
-manual CSS registry. The follow-up research in
-[`07-build-time-css-strategy.md`](07-build-time-css-strategy.md) supersedes the
-destination: move back to upstream-style build-time macro compilation through
-`unplugin-parcel-macros`, with `solid-spectrum` packaged by Vite Plus
-`vp pack`/tsdown instead of tsup.
+The style-system decision is now settled: `solid-spectrum` should follow the
+React Spectrum S2 build-time macro model. Component sources import S2 style
+helpers with `with {type: "macro"}`; the bundler executes those calls, inlines
+the returned class strings, and emits CSS assets.
 
-## 1. `solid-spectrum`'s `style()` is a runtime function
+This supersedes the old runtime bridge described in earlier notes. The local
+CSS registry, manual generator script, and prebuilt generated stylesheet were
+removed because they were incomplete, slow, and easy to drift from the
+component set.
 
-Upstream React Spectrum imports the style macro with
-`import {style} from '@react-spectrum/s2/style' with {type: 'macro'}` — a
-Parcel/Babel compile-time transform. `solid-spectrum` did **not** port the
-macro. Instead (`packages/solid-spectrum/src/style/`):
+## 1. Source Of Truth
 
-- `spectrum-theme.ts:715` — `export const style = createTheme(...)`. `style()`
-  is an ordinary runtime function: call it with a style object, get back a
-  class-name string.
-- `style-macro.ts` — when `style()` (or `css()`) runs, it appends the generated
-  CSS text to an in-memory `Set`, `assetRegistry`, via `addS2CssAsset()`.
-- `style/index.ts` re-exports the registry accessors:
-  `getS2CssAssets()` → `string[]` of all collected CSS, and
-  `clearS2CssAssets()` → reset.
+- Upstream React Spectrum S2 style declarations remain the source for tokens,
+  conditions, forced-colors branches, and atomic class output.
+- Solid ports may adapt JSX, owner state, ARIA wiring, and import paths, but
+  style declarations should stay structurally copied from S2.
+- Token values should type-check directly. Component-side token casts are a
+  style-system bug unless they are proven to be a non-style Solid adapter.
 
-So the current package state is a **runtime bridge**, not the desired endpoint.
-Authoring chrome layout with `style({...})` works only if the manual registry
-collects and ships the CSS it registers. The destination is to restore
-build-time macro compilation and remove this registry path.
+## 2. Package Build
 
-## 2. How `solid-spectrum` ships CSS today
+`packages/solid-spectrum` uses Vite Plus package builds for the JS/CSS output:
 
-`packages/solid-spectrum/src/s2-generated.css` is a **prebuilt, committed**
-stylesheet (~23.7k lines). It is produced by
-`scripts/generate-solid-spectrum-s2-css.ts`, run as the first step of the
-package `build` script:
-
-```
-clearS2CssAssets();
-generatePageStyles();
-await import('.../src/provider');
-await import('.../src/divider');
-await import('.../src/picker');
-await import('.../src/link');
-await import('.../src/button/s2-button-styles');
-// …≈18 component modules…
-writeFile('s2-generated.css', getS2CssAssets().join('\n\n'));
+```bash
+vp run --filter @proyecto-viviana/solid-spectrum build
 ```
 
-Importing a component module evaluates its top-level `style()` calls, which
-populate the registry; the script then flushes the registry to disk. The
-comparison app consumes this CSS by importing `solid-spectrum`'s built
-`dist/*.css` artifacts.
+The package build runs `vp pack` with the Parcel macro plugin through
+Rolldown. `tsc -p tsconfig.build.json` still owns declarations for this
+checkpoint. The package Vite config contains a small adapter around
+`macros.rolldown()` because upstream S2 packages with Parcel, while this repo
+packages with Vite Plus/Rolldown.
 
-### 2a. Defect found: missing component CSS in the shipped package
+That adapter is allowed build glue, not component-source divergence. Component
+style imports should still look like upstream S2 macro imports.
 
-While confirming the runtime model above, the investigation found a
-**pre-existing bug in `solid-spectrum` itself** — unrelated to this overhaul,
-affecting every consumer. In short: `style()` is a vendored copy of React
-Spectrum's build-time **macro** run as a plain runtime function, and the
-prebuilt `s2-generated.css` is collected via a **hand-maintained list of ~18
-modules** that omits `disclosure`, `accordion`, `table`, `card`, and `tabs`.
-Their CSS never ships, so those components render unstyled.
+## 3. Comparison App Build
 
-The chrome dogfoods `Disclosure` (nav) and `Table` (prop tables), so the fix is
-a Phase 0 prerequisite ([`05-phasing.md`](05-phasing.md)).
+The comparison app should run the macro over source where source components are
+compiled by the app. Root Vite config includes `macros.vite()` so new app-side
+S2 style calls can compile instead of relying on package-time side effects.
 
-**Full root-cause analysis, the macro connection, and recommended fixes are in
-[`06-solid-spectrum-css-defect.md`](06-solid-spectrum-css-defect.md).**
+Remaining app work is tracked in the phasing docs: wire source-condition
+consumption and CSS chunking for the comparison app, then prove the same macro
+path through visual and computed-style gates.
 
-## 3. CSS pipeline for the chrome
+## 4. Gates
 
-The chrome introduces _new_ `style()` calls that no existing generation step
-covers. The old deterministic generator approach below remains a fallback while
-the macro migration is incomplete; the recommended endpoint is now the
-`unplugin-parcel-macros` path in [`07`](07-build-time-css-strategy.md).
+Every component pass that touches S2 styling must leave evidence for:
 
-### (A) Build-time generation — deterministic _(recommended)_
+- upstream style declaration located and linked in the component note,
+- Solid owner style declaration identified,
+- token-sensitive states covered by computed style, geometry, or visual proof,
+- package build passing,
+- no leaked virtual macro CSS imports in built JS,
+- no reintroduced manual CSS registry or generated stylesheet path.
 
-Add a comparison-app build step modelled exactly on
-`generate-solid-spectrum-s2-css.ts`:
+Useful checks:
 
-1. Author all chrome `style()` calls in plain modules under
-   `apps/comparison/src/chrome/` (or similar).
-2. A `scripts/generate-comparison-chrome-css.ts` does `clearS2CssAssets()`,
-   imports every chrome module **and** the missing component modules
-   (`disclosure`, `table`, `card`), then writes `comparison-chrome.css`.
-3. The Astro pages import that CSS file statically.
-
-Pros: deterministic output, no SSR ordering concerns, cacheable, diffable.
-Cons: a generation step to keep in sync (mitigated — it just imports modules).
-
-### (B) SSR-time flush
-
-Astro server-renders the Solid chrome. Wrap the render: `clearS2CssAssets()` →
-render → `getS2CssAssets()` → inject a `<style>` into `<head>`. Hydration reuses
-the same classes.
-
-Pros: no separate build artifact. Cons: must guarantee every `style()` call has
-run before the flush (lazy/client-only branches can miss); registry is process
--global, so concurrent SSR renders can interleave — needs care.
-
-### Decision input needed
-
-Use the macro path from [`07`](07-build-time-css-strategy.md) when possible.
-Keep approach A only as a fallback/bridge, and only until package and comparison
-app builds prove exhaustive macro CSS emission. Either way, the existing
-`s2-generated.css` (component CSS) is still imported for the components rendered
-_inside_ comparison panels until the registry path is deleted.
-
-## 4. Astro + Solid SSR model
-
-From `apps/comparison/astro.config.mjs`:
-
-- Integrations: `@astrojs/react` scoped to `src/components/react/**`,
-  `@astrojs/solid-js` scoped to `src/components/solid/**`. The two are kept
-  strictly partitioned by directory.
-- `@proyecto-viviana/*` packages are aliased to their built `dist/index.js`.
-- Today the chrome is `.astro` + raw HTML; React/Solid only appear inside
-  panels, hydrated by hand-written scripts (`src/scripts/solid-mount.tsx`),
-  not Astro `client:*` directives. `ComparisonIsland.tsx` even uses
-  `solid-js/h` hyperscript rather than JSX.
-
-### What the overhaul needs
-
-The chrome becomes Solid components built from `solid-spectrum`. Required
-changes:
-
-- Place chrome components under `src/components/solid/**` so the existing
-  `@astrojs/solid-js` `include` picks them up (or widen the `include`).
-- Decide hydration per region:
-  - **Static** (footer, brand, most nav links) — server-rendered, no JS.
-  - **Interactive** (nav `Disclosure` expand/collapse, `ColorSchemeToggle`,
-    search trigger, mobile `Picker` ToC) — hydrated, `client:load` or
-    `client:idle`/`client:visible`.
-- A Solid `Provider` wraps each page for color scheme; see
-  [`03-chrome-spec.md`](03-chrome-spec.md) §5.
-
-### Open question — JSX vs hyperscript
-
-`ComparisonIsland` uses `solid-js/h`. Confirm whether the chrome may use normal
-Solid JSX (preferred for readability) under `@astrojs/solid-js`, or whether the
-hyperscript pattern exists for a reason (e.g. mixing with React tooling). This
-is a Phase 0 spike — see [`05-phasing.md`](05-phasing.md).
-
-## 5. Summary of resolved vs open
-
-| Item                                                            | Status                                                                                                                                    |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Compile-time `style` macro needed?                              | **Endpoint — yes.** Current package is a runtime bridge; [`07`](07-build-time-css-strategy.md) restores upstream-style macro compilation. |
-| Chrome CSS collection                                           | **Endpoint — macro.** Approach A remains a bridge/fallback only.                                                                          |
-| `Disclosure`/`Table`/`Card` CSS missing from `s2-generated.css` | **Identified** — extend the import list.                                                                                                  |
-| Solid SSR in Astro for the chrome                               | Low risk — integration already present; needs directory placement + hydration decisions.                                                  |
-| JSX vs `solid-js/h` for chrome                                  | **Open** — Phase 0 spike.                                                                                                                 |
+```bash
+vp run --filter @proyecto-viviana/solid-spectrum build
+rg -n "macro-[a-f0-9]+\\.css" packages/solid-spectrum/dist -g '*.{js,css,d.ts}'
+```

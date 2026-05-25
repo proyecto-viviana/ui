@@ -16,6 +16,7 @@ import {
 import { createFocusRing, createHover, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
+import type { StyleString } from "../style";
 import {
   baseColor,
   centerPadding,
@@ -23,8 +24,7 @@ import {
   lightDark,
   space,
   style,
-  type StyleString,
-} from "../style";
+} from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { ActionButtonContext } from "../button/context";
 import type { ActionButtonSize } from "../button/group-context";
@@ -157,8 +157,6 @@ type PanelInnerStyleProps = {
   size: DisclosureSize;
 };
 
-const spectrumColor = (value: string) => value as Parameters<typeof lightDark>[0];
-
 const accordionStyles = style({
   display: "flex",
   flexDirection: "column",
@@ -184,7 +182,7 @@ const disclosureRootStyles = style<DisclosureRootStyleProps>({
   borderStartWidth: 0,
   borderEndWidth: 0,
   borderStyle: "solid",
-  borderColor: "gray-200" as never,
+  borderColor: "gray-200",
   minWidth: 200,
 });
 
@@ -265,18 +263,9 @@ const buttonStyles = style<DisclosureButtonStyleProps>({
   width: "full",
   backgroundColor: {
     default: "transparent",
-    isFocusVisible: lightDark(
-      spectrumColor("transparent-black-100"),
-      spectrumColor("transparent-white-100"),
-    ),
-    isHovered: lightDark(
-      spectrumColor("transparent-black-100"),
-      spectrumColor("transparent-white-100"),
-    ),
-    isPressed: lightDark(
-      spectrumColor("transparent-black-300"),
-      spectrumColor("transparent-white-300"),
-    ),
+    isFocusVisible: lightDark("transparent-black-100", "transparent-white-100"),
+    isHovered: lightDark("transparent-black-100", "transparent-white-100"),
+    isPressed: lightDark("transparent-black-300", "transparent-white-300"),
   },
   transition: "default",
   borderWidth: 0,

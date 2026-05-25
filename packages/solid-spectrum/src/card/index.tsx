@@ -27,9 +27,11 @@ import { Image, ImageContext, ImageCoordinator } from "../image";
 import { SkeletonContext, SkeletonWrapper, useInertAttribute, useIsSkeleton } from "../skeleton";
 import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
-import { color, focusRing, lightDark, space, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { color, focusRing, lightDark, space, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -143,9 +145,9 @@ const card = style<CardStyleState>(
       forcedColors: "[0 0 0 1px var(--hcm-buttonborder, ButtonBorder)]",
       variant: {
         tertiary: {
-          default: `[0 0 0 2px ${color("gray-100" as never)}]`,
-          isHovered: `[0 0 0 2px ${color("gray-200" as never)}]`,
-          isFocusVisible: `[0 0 0 2px ${color("gray-200" as never)}]`,
+          default: `[0 0 0 2px ${color("gray-100")}]`,
+          isHovered: `[0 0 0 2px ${color("gray-200")}]`,
+          isFocusVisible: `[0 0 0 2px ${color("gray-200")}]`,
           isSelected: "none",
           forcedColors: "[0 0 0 2px var(--hcm-buttonborder, ButtonBorder)]",
         },

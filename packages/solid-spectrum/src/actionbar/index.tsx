@@ -21,9 +21,10 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { FocusScope, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, lightDark, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { controlSize, staticColor } from "../s2-internal/style-utils";
+import { controlSize, staticColor } from "../s2-internal/style-utils" with { type: "macro" };
 import { ActionButtonGroup } from "../actionbuttongroup";
 import { s2IntlStrings } from "../intl";
 import {
@@ -66,7 +67,7 @@ const actionBarStyles = style<ActionBarAnimationState>({
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: {
-    default: lightDark("transparent-white-25" as never, "gray-200" as never),
+    default: lightDark("transparent-white-25", "gray-200"),
     isEmphasized: "transparent",
     forcedColors: "ButtonBorder",
   },
@@ -115,13 +116,13 @@ const selectionCountStyles = style<{ isEmphasized?: boolean }>({
   font: "ui",
   color: {
     default: "neutral",
-    isEmphasized: "gray-25" as never,
+    isEmphasized: "gray-25",
   },
 });
 
 const closeButtonHoverBackground = {
-  default: "gray-200" as never,
-  isStaticColor: "transparent-overlay-200" as never,
+  default: "gray-200",
+  isStaticColor: "transparent-overlay-200",
 } as const;
 
 const closeButtonStyles = style<ActionBarCloseButtonState>({

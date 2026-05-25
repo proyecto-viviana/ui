@@ -7,10 +7,12 @@ import {
   useContext,
 } from "solid-js";
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
-import { fontRelative, lightDark, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { fontRelative, lightDark, style } from "../style" with { type: "macro" };
 import { centerBaseline } from "../icon/center-baseline";
 import { IconContext } from "../icon/spectrum-icon";
-import { control, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import { control, getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { SkeletonWrapper } from "../skeleton";
 import { Text, TextContext } from "../text";
 import {
@@ -114,8 +116,8 @@ const badgeStyles = style<{
             celery: "black",
           },
         },
-        subtle: "gray-1000" as never,
-        outline: "gray-1000" as never,
+        subtle: "gray-1000",
+        outline: "gray-1000",
       },
     },
     backgroundColor: {
@@ -188,12 +190,12 @@ const badgeStyles = style<{
       fillStyle: {
         outline: {
           variant: {
-            accent: lightDark("accent-800" as never, "accent-900" as never),
-            informative: lightDark("informative-800" as never, "informative-900" as never),
-            neutral: lightDark("gray-500" as never, "gray-600" as never),
-            positive: lightDark("positive-800" as never, "positive-900" as never),
-            notice: lightDark("notice-800" as never, "notice-900" as never),
-            negative: lightDark("negative-800" as never, "negative-900" as never),
+            accent: lightDark("accent-800", "accent-900"),
+            informative: lightDark("informative-800", "informative-900"),
+            neutral: lightDark("gray-500", "gray-600"),
+            positive: lightDark("positive-800", "positive-900"),
+            notice: lightDark("notice-800", "notice-900"),
+            negative: lightDark("negative-800", "negative-900"),
           },
         },
       },

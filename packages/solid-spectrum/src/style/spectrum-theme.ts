@@ -50,6 +50,69 @@ interface MacroContext {
 
 const env = typeof process !== "undefined" ? process.env : {};
 
+type GrayColorStop = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000;
+type ColorStop =
+  | 100
+  | 200
+  | 300
+  | 400
+  | 500
+  | 600
+  | 700
+  | 800
+  | 900
+  | 1000
+  | 1100
+  | 1200
+  | 1300
+  | 1400
+  | 1500
+  | 1600;
+type ColorScale =
+  | "blue"
+  | "red"
+  | "orange"
+  | "yellow"
+  | "chartreuse"
+  | "celery"
+  | "green"
+  | "seafoam"
+  | "cyan"
+  | "indigo"
+  | "purple"
+  | "fuchsia"
+  | "magenta"
+  | "pink"
+  | "turquoise"
+  | "brown"
+  | "silver"
+  | "cinnamon"
+  | "accent"
+  | "informative"
+  | "negative"
+  | "notice"
+  | "positive";
+type TransparentScale = "transparent-white" | "transparent-black" | "transparent-overlay";
+type HighContrastColor =
+  | "Background"
+  | "ButtonBorder"
+  | "ButtonFace"
+  | "ButtonText"
+  | "Field"
+  | "Highlight"
+  | "HighlightText"
+  | "GrayText"
+  | "Mark"
+  | "LinkText";
+type BaseColor =
+  | "transparent"
+  | "black"
+  | "white"
+  | HighContrastColor
+  | `gray-${GrayColorStop}`
+  | `${ColorScale}-${ColorStop}`
+  | `${TransparentScale}-${GrayColorStop}`;
+
 function pxToRem(px: string | number) {
   if (typeof px === "string") {
     px = parseFloat(px);
@@ -72,7 +135,7 @@ function hcmColor(color: string) {
   return color;
 }
 
-const baseColors = {
+const baseColors: Record<BaseColor, string | ColorToken | ColorRef> = {
   transparent: "transparent",
   black: "black",
   white: "white",
@@ -119,7 +182,7 @@ const baseColors = {
   GrayText: hcmColor("GrayText"),
   Mark: hcmColor("Mark"),
   LinkText: hcmColor("LinkText"),
-};
+} as Record<BaseColor, string | ColorToken | ColorRef>;
 
 // Resolves a color to its most basic form, following all aliases.
 function resolveColorToken(token: string | ColorToken | ColorRef): ColorToken {
@@ -234,8 +297,6 @@ class SpectrumColorProperty<C extends string> extends ArbitraryProperty<C> {
     return result;
   }
 }
-
-type BaseColor = keyof typeof baseColors;
 
 /**
  * Returns a set of stateful color token references for the default, hovered, focus-visible,

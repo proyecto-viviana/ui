@@ -20,9 +20,14 @@ import {
   type ToggleSwitchRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createToggleState } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, fontRelative, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { controlFont, controlSize, getAllowedOverrides } from "../s2-internal/style-utils";
+import {
+  controlFont,
+  controlSize,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { useProviderProps } from "../provider";
 
 export type SwitchSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";

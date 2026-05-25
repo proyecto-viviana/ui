@@ -46,7 +46,7 @@ import { ChevronDownIcon } from "../icon/s2wf-icons/ChevronDownIcon";
 import { CloseIcon } from "../icon/s2wf-icons/CloseIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 import { s2IntlStrings } from "../intl";
-import { focusRing, style } from "../style";
+import { focusRing, style } from "../style" with { type: "macro" };
 
 export type ToastPlacement = "top" | "top end" | "bottom" | "bottom end";
 export type ToastVariant = "positive" | "negative" | "info" | "neutral";

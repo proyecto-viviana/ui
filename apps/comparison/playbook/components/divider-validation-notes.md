@@ -176,7 +176,7 @@ Separator role nuance, root DOM contract coverage, and refreshed Divider gates.
 | State               | none                                                    | none                                                                                                     | n/a     |
 | ARIA hooks          | none dedicated                                          | none dedicated                                                                                           | n/a     |
 | Headless components | `react-aria-components/src/Separator.tsx`               | `packages/solidaria-components/src/Separator.tsx`, `packages/solidaria/src/separator/createSeparator.ts` | matched |
-| Styled S2           | `@react-spectrum/s2/src/Divider.tsx`                    | `packages/solid-spectrum/src/divider/index.tsx`, `packages/solid-spectrum/src/s2-generated.css`          | matched |
+| Styled S2           | `@react-spectrum/s2/src/Divider.tsx`                    | `packages/solid-spectrum/src/divider/index.tsx`, `macro-emitted package CSS`                             | matched |
 | Comparison route    | S2 docs/viewer and React fixture mounted from S2 source | `apps/comparison/src/data/divider-demo.ts`, fixtures, controls, matrix, e2e spec                         | matched |
 
 - Public props/defaults:

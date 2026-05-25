@@ -1,5 +1,6 @@
 import { type Component, type JSX, createContext, splitProps, useContext } from "solid-js";
-import { style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import {

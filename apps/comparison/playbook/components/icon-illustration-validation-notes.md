@@ -97,12 +97,12 @@ No subagents were used for this component family pass.
 
 ## Source Map And Public Contract
 
-| Layer               | Upstream files                                         | Solid files                                                                 | Status                                                             |
-| ------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| State               | `Skeleton.mjs` loading context for `createIcon` only   | `src/icon/spectrum-icon.tsx`, `src/skeleton` helpers                        | Matched icon skeleton loading/inert behavior; illustration is n/a. |
-| ARIA hooks          | none                                                   | none                                                                        | Not applicable.                                                    |
-| Headless components | none                                                   | none                                                                        | Not applicable.                                                    |
-| Styled S2           | `icons/Icon.mjs`, S2 generated class output at runtime | `src/icon/spectrum-icon.tsx`, `src/s2-generated.css`, fixtures, visual spec | Matched size/flex classes and SVG DOM attributes.                  |
+| Layer               | Upstream files                                         | Solid files                                                                      | Status                                                             |
+| ------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| State               | `Skeleton.mjs` loading context for `createIcon` only   | `src/icon/spectrum-icon.tsx`, `src/skeleton` helpers                             | Matched icon skeleton loading/inert behavior; illustration is n/a. |
+| ARIA hooks          | none                                                   | none                                                                             | Not applicable.                                                    |
+| Headless components | none                                                   | none                                                                             | Not applicable.                                                    |
+| Styled S2           | `icons/Icon.mjs`, S2 generated class output at runtime | `src/icon/spectrum-icon.tsx`, `macro-emitted package CSS`, fixtures, visual spec | Matched size/flex classes and SVG DOM attributes.                  |
 
 - Public props/defaults: `aria-label`, `aria-hidden`, explicit `slot`,
   `UNSAFE_suppressDataSlot`, `styles`, `UNSAFE_className`, `UNSAFE_style`, and

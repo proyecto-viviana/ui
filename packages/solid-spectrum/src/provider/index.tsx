@@ -16,9 +16,9 @@ import {
   type Direction,
 } from "@proyecto-viviana/solidaria";
 import { mergeStyles } from "../style/runtime";
-import { setColorScheme, style as s2Style } from "../style";
+import { setColorScheme, style as s2Style } from "../style" with { type: "macro" };
 import type { StyleString } from "../style";
-import { generateDefaultColorSchemeStyles } from "../s2-internal/page.macro";
+import { generateDefaultColorSchemeStyles } from "../s2-internal/page.macro" with { type: "macro" };
 
 export type ColorScheme = "light" | "dark" | "light dark";
 export type Scale = "medium" | "large";

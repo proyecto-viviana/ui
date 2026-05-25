@@ -19,9 +19,9 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, fontRelative, focusRing, style } from "../style";
+import { baseColor, fontRelative, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { control } from "../s2-internal/style-utils";
+import { control } from "../s2-internal/style-utils" with { type: "macro" };
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { useProviderProps } from "../provider";

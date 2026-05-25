@@ -56,9 +56,11 @@ import type {
   ColorSpace,
 } from "@proyecto-viviana/solid-stately";
 import { normalizeColor } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, fontRelative, style, type StyleString } from "../style";
-import { keyframes } from "../style/style-macro";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
+import { keyframes } from "../style/style-macro" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
+import type { StylesProp, StylesPropWithHeight, UnsafeClassName } from "../s2-internal/style-utils";
 import {
   control,
   controlFont,
@@ -66,10 +68,7 @@ import {
   fieldInput,
   fieldLabel,
   getAllowedOverrides,
-  type StylesProp,
-  type StylesPropWithHeight,
-  type UnsafeClassName,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
@@ -221,7 +220,7 @@ const colorSliderTrack = style<ColorSliderTrackRenderProps>({
   },
   borderRadius: "default",
   outlineColor: {
-    default: "gray-1000/10" as never,
+    default: "gray-1000/10",
     forcedColors: "ButtonBorder",
   },
   outlineWidth: 1,
@@ -255,7 +254,7 @@ const colorSliderThumb = style<ColorSliderThumbRenderProps>({
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: {
-    default: "black/42" as never,
+    default: "black/42",
     forcedColors: "ButtonBorder",
   },
 });
@@ -515,7 +514,7 @@ const colorAreaRoot = style<ColorAreaRenderProps>(
     minSize: 64,
     borderRadius: "default",
     outlineColor: {
-      default: "gray-1000/10" as never,
+      default: "gray-1000/10",
       forcedColors: "ButtonBorder",
     },
     outlineWidth: 1,
@@ -551,7 +550,7 @@ const colorAreaThumb = style<ColorAreaThumbRenderProps>({
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: {
-    default: "black/42" as never,
+    default: "black/42",
     forcedColors: "ButtonBorder",
   },
 });
@@ -563,7 +562,7 @@ const colorAreaThumbRing = style({
   borderStyle: "solid",
   borderWidth: 1,
   borderColor: {
-    default: "black/42" as never,
+    default: "black/42",
     forcedColors: "ButtonBorder",
   },
 });
@@ -837,7 +836,7 @@ const colorWheelRoot = style<ColorWheelStyleProps>(
 const colorWheelTrack = style<ColorWheelTrackRenderProps>({
   borderRadius: "full",
   outlineColor: {
-    default: "gray-1000/10" as never,
+    default: "gray-1000/10",
     forcedColors: "ButtonBorder",
   },
   outlineWidth: 1,
@@ -857,7 +856,7 @@ const colorWheelInnerBorder = style<ColorWheelStyleProps>({
   pointerEvents: "none",
   borderRadius: "full",
   outlineColor: {
-    default: "gray-1000/10" as never,
+    default: "gray-1000/10",
     forcedColors: "ButtonBorder",
   },
   outlineWidth: 1,
@@ -887,7 +886,7 @@ const colorWheelThumb = style<ColorWheelThumbRenderProps>({
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: {
-    default: "black/42" as never,
+    default: "black/42",
     forcedColors: "ButtonBorder",
   },
 });
@@ -1152,15 +1151,15 @@ function createColorFieldStyles() {
       borderStyle: "solid",
       transition: "default",
       borderColor: {
-        default: baseColor("gray-300" as never),
+        default: baseColor("gray-300"),
         forcedColors: "ButtonBorder",
         isInvalid: {
-          default: baseColor("negative" as never),
+          default: baseColor("negative"),
           forcedColors: "Mark",
         },
         isFocusWithin: {
-          default: "gray-900" as never,
-          isInvalid: "negative-1000" as never,
+          default: "gray-900",
+          isInvalid: "negative-1000",
           forcedColors: "Highlight",
         },
         isDisabled: {
@@ -1169,11 +1168,11 @@ function createColorFieldStyles() {
         },
       },
       backgroundColor: {
-        default: "gray-25" as never,
+        default: "gray-25",
         forcedColors: "Field",
       },
       color: {
-        default: baseColor("neutral" as never),
+        default: baseColor("neutral"),
         forcedColors: "ButtonText",
         isDisabled: {
           default: "disabled",
@@ -1191,7 +1190,7 @@ function createColorFieldStyles() {
       color: {
         default: "inherit",
         "::placeholder": {
-          default: "gray-600" as never,
+          default: "gray-600",
           forcedColors: "GrayText",
         },
       },
@@ -1580,14 +1579,14 @@ const colorSwatchRoot = style<ColorSwatchStyleProps>(
         full: "full",
       },
     },
-    borderColor: "gray-1000/42" as never,
+    borderColor: "gray-1000/42",
     borderWidth: 1,
     borderStyle: "solid",
     boxSizing: "border-box",
     forcedColorAdjust: "none",
     "--slash-color": {
       type: "color",
-      value: "red-900" as never,
+      value: "red-900",
     },
   },
   getAllowedOverrides({ height: true }),

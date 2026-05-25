@@ -13,12 +13,10 @@ import {
   type DropZoneRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
-import { style, type StyleString } from "../style";
-import {
-  getAllowedOverrides,
-  type StylesPropWithHeight,
-  type UnsafeClassName,
-} from "../s2-internal/style-utils";
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
+import type { StylesPropWithHeight, UnsafeClassName } from "../s2-internal/style-utils";
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -77,19 +75,19 @@ const dropzone = style<DropZoneRenderProps>(
     alignItems: "center",
     position: "relative",
     fontFamily: "sans",
-    color: "gray-900" as never,
+    color: "gray-900",
     borderStyle: {
       default: "dashed",
       isDropTarget: "solid",
     },
     backgroundColor: {
-      isDropTarget: "blue-200" as never,
+      isDropTarget: "blue-200",
     },
     borderWidth: 2,
     borderColor: {
-      default: "gray-300" as never,
-      isDropTarget: "blue-800" as never,
-      isFocusVisible: "blue-800" as never,
+      default: "gray-300",
+      isDropTarget: "blue-800",
+      isFocusVisible: "blue-800",
     },
     borderRadius: "lg",
     padding: 24,

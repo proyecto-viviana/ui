@@ -11,7 +11,8 @@ attribute, or CSS-variable assertions for branch-sensitive styling.
 ## Checks
 
 - React S2 style declarations are located before writing Solid styles.
-- Solid uses `packages/solid-spectrum/src/style` and generated classes.
+- Solid uses `packages/solid-spectrum/src/style` macro imports and
+  macro-emitted classes.
 - Component CSS is not added to the comparison app to patch component behavior,
   state, geometry, or token output.
 - Size, variant, static color, density, label position, alignment, and field
@@ -19,7 +20,8 @@ attribute, or CSS-variable assertions for branch-sensitive styling.
 - Icons and illustrations use vendored S2 assets or generated S2-compatible
   wrappers.
 - Forced-colors branches are ported when upstream has them.
-- Generated classes exist in `s2-generated.css`.
+- Generated classes are present in package/app CSS output, and virtual
+  `macro-*.css` asset ids do not leak into built JS.
 - `UNSAFE_className` and `UNSAFE_style` are passed only where the public S2 API
   supports them.
 - Viewer canvas conditions such as background, width, density, direction, theme,
@@ -38,10 +40,11 @@ attribute, or CSS-variable assertions for branch-sensitive styling.
 ## Commands
 
 ```bash
-rg -n "style\\(|with \\{type: 'macro'\\}|className=|styles=" \
+rg -n "style\\(|with \\{ ?type: ['\\\"]macro['\\\"] ?\\}|className=|styles=" \
   apps/comparison/node_modules/@react-spectrum/s2/src/<Component>.tsx
-rg -n "style\\(|with \\{type: 'macro'\\}|s2-generated|UNSAFE_" \
+rg -n "style\\(|with \\{ ?type: ['\\\"]macro['\\\"] ?\\}|UNSAFE_" \
   packages/solid-spectrum/src/<area>
+rg -n "macro-[a-f0-9]+\\.css" packages/solid-spectrum/dist -g '*.{js,css,d.ts}'
 ```
 
 ## Evidence

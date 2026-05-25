@@ -124,7 +124,7 @@
   `packages/solid-spectrum/vite.config.ts`,
   `packages/solid-spectrum/src/intl/en-US.json`,
   `packages/solid-spectrum/src/intl/es-ES.json`,
-  `packages/solid-spectrum/src/s2-generated.css`.
+  `macro-emitted package CSS`.
 - Headless and aria source:
   `packages/solidaria-components/src/Breadcrumbs.tsx`,
   `packages/solidaria/src/breadcrumbs/createBreadcrumbs.ts`,

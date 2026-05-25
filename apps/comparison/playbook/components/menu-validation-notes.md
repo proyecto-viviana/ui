@@ -202,7 +202,7 @@
   `packages/solid-spectrum/src/index.ts`,
   `packages/solid-spectrum/package.json`,
   `packages/solid-spectrum/vite.config.ts`,
-  `packages/solid-spectrum/src/s2-generated.css`.
+  `macro-emitted package CSS`.
 - Package tests:
   `packages/solid-spectrum/test/Menu.test.tsx`,
   `packages/solid-spectrum/test/ActionMenu.test.tsx`,

@@ -1,7 +1,9 @@
 import { type JSX, createContext, createMemo, mergeProps, splitProps, useContext } from "solid-js";
 import { createStringFormatter, filterDOMProps, useLocale } from "@proyecto-viviana/solidaria";
-import { fontRelative, style, type StyleString } from "../style";
-import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
+import type { StyleString } from "../style";
+import { fontRelative, style } from "../style" with { type: "macro" };
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,

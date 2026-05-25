@@ -8,7 +8,8 @@ import {
   type TooltipRenderProps,
   type TooltipResolvedPlacement,
 } from "@proyecto-viviana/solidaria-components";
-import { centerPadding, setColorScheme, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { centerPadding, setColorScheme, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { useTheme, type ColorScheme } from "../provider";
 
@@ -48,7 +49,7 @@ const tooltip = style<TooltipRenderProps & { colorScheme: ColorScheme | null }>(
   boxSizing: "border-box",
   font: "ui-sm",
   color: {
-    default: "gray-25" as never,
+    default: "gray-25",
     forcedColors: "ButtonText",
   },
   borderWidth: {
@@ -104,7 +105,7 @@ const tooltip = style<TooltipRenderProps & { colorScheme: ColorScheme | null }>(
 
 const arrowStyles = style<TooltipRenderProps>({
   display: "block",
-  fill: "gray-800" as never,
+  fill: "gray-800",
   width: 10,
   height: 5,
   rotate: {

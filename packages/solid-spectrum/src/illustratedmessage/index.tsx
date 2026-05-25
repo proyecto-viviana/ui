@@ -10,13 +10,13 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { IllustrationContext } from "../icon";
+import type { StylesPropWithHeight, UnsafeClassName } from "../s2-internal/style-utils";
 import {
   controlFont,
   getAllowedOverrides,
-  type StylesPropWithHeight,
-  type UnsafeClassName,
-} from "../s2-internal/style-utils";
-import { style, type StyleString } from "../style";
+} from "../s2-internal/style-utils" with { type: "macro" };
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
 import { ContentContext, HeadingContext } from "../text";
 
 export type IllustratedMessageSize = "S" | "M" | "L";

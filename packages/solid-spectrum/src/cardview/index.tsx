@@ -20,10 +20,11 @@ import type { Key } from "@proyecto-viviana/solid-stately";
 import { CardContext, InternalCardViewContext } from "../card/index";
 import { ImageCoordinator } from "../image";
 import type { StyleString } from "../style";
-import { focusRing, style } from "../style";
+import { focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
-import { getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import type { RefLike, SpectrumContextValue } from "../button/spectrum-context";
 import { mergeContextRefs } from "../button/spectrum-context";
 

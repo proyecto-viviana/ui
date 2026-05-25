@@ -537,7 +537,7 @@ below is checked with direct evidence.
   - `vp run comparison:report:exports`
   - `vp run comparison:report:gaps`
   - `vp run comparison:build`
-  - `vp fmt packages/solid-spectrum/src/s2-generated.css --write`
+  - `vp run --filter @proyecto-viviana/solid-spectrum build`
   - `COMPARISON_BASE_URL=http://127.0.0.1:4324 vp exec --filter @proyecto-viviana/comparison playwright test e2e/actionmenu-contract.spec.ts --reporter=line`
 
 ## Current After Behavior/A11y Slice
@@ -607,7 +607,7 @@ below is checked with direct evidence.
     passed `2` tests.
   - `vp run comparison:build` built `70` pages and
     `/components/actionmenu/index.html`.
-  - `vp fmt packages/solid-spectrum/src/s2-generated.css --write` passed.
+  - Package macro build passed.
 - Remaining gaps:
   - `align`, `direction`, and `shouldFlip` now have overlay placement parity
     evidence in `e2e/actionmenu-visual.spec.ts`.
@@ -915,7 +915,7 @@ below is checked with direct evidence.
 | State               | `src/ActionMenu.tsx` via `MenuTrigger` state                                                                                | `packages/solid-stately/src/collections/createMenuState.ts`, `packages/solidaria-components/src/Menu.tsx`                                                                                                           | done                    |
 | ARIA hooks          | `MenuTrigger`, `Menu`, `ActionButton`, labelable DOM props                                                                  | `packages/solidaria/src/menu/createMenuTrigger.ts`, `packages/solidaria/src/overlays/createOverlay.ts`, `packages/solidaria-components/src/Menu.tsx`                                                                | done                    |
 | Headless components | React Aria Components slots/context through S2 Menu                                                                         | `packages/solidaria-components/src/Menu.tsx`, `packages/solidaria-components/src/Popover.tsx`, `packages/solidaria/src/popover/createPopover.ts`                                                                    | done                    |
-| Styled S2           | `src/ActionMenu.tsx`, `src/ActionButton.tsx`, `src/Menu.tsx`, `src/Popover.tsx`, content primitives, generated style output | `packages/solid-spectrum/src/menu/ActionMenu.tsx`, `packages/solid-spectrum/src/menu/index.tsx`, `packages/solid-spectrum/src/menu/s2-menu-styles.ts`, `packages/solid-spectrum/src/s2-generated.css`               | done                    |
+| Styled S2           | `src/ActionMenu.tsx`, `src/ActionButton.tsx`, `src/Menu.tsx`, `src/Popover.tsx`, content primitives, generated style output | `packages/solid-spectrum/src/menu/ActionMenu.tsx`, `packages/solid-spectrum/src/menu/index.tsx`, `packages/solid-spectrum/src/menu/s2-menu-styles.ts`, `macro-emitted package CSS`                                  | done                    |
 | Exports             | `exports/ActionMenu.ts`                                                                                                     | `packages/solid-spectrum/src/ActionMenu.ts`, `packages/solid-spectrum/src/index.ts`, `packages/solid-spectrum/src/menu/index.tsx`, `packages/solid-spectrum/package.json`, `packages/solid-spectrum/vite.config.ts` | ActionMenu subpath done |
 
 - Public props/defaults to map:

@@ -7,7 +7,7 @@ import {
 import { useProviderProps } from "../provider";
 import type { StaticColor } from "./types";
 import type { StyleString } from "../style";
-import { fontRelative, style } from "../style";
+import { fontRelative, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";

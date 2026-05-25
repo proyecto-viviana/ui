@@ -13,7 +13,8 @@ import {
   type LinkProps as HeadlessLinkProps,
   type LinkRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { fontRelative, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { fontRelative, style } from "../style" with { type: "macro" };
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";

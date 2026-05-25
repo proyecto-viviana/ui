@@ -10,7 +10,9 @@ import {
 import { createMeter } from "@proyecto-viviana/solidaria";
 import { SkeletonWrapper } from "../skeleton";
 import { Text } from "../text";
-import { lightDark, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { lightDark, style } from "../style" with { type: "macro" };
+import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   centerPadding,
   controlSize,
@@ -18,8 +20,7 @@ import {
   fieldLabel,
   getAllowedOverrides,
   staticColor as staticColorStyles,
-  type UnsafeClassName,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -156,8 +157,8 @@ const trackStyles = style<MeterStyleState>({
   overflow: "hidden",
   borderRadius: "full",
   backgroundColor: {
-    default: "gray-300" as never,
-    isStaticColor: "transparent-overlay-300" as never,
+    default: "gray-300",
+    isStaticColor: "transparent-overlay-300",
     forcedColors: "ButtonFace",
   },
   outlineWidth: {
@@ -189,11 +190,11 @@ const fillStyles = style<MeterStyleState>({
   borderStyle: "none",
   borderRadius: "full",
   backgroundColor: {
-    default: lightDark("informative-800" as never, "informative-900" as never),
+    default: lightDark("informative-800", "informative-900"),
     variant: {
-      positive: lightDark("positive-800" as never, "positive-900" as never),
-      notice: lightDark("notice-800" as never, "notice-900" as never),
-      negative: lightDark("negative-800" as never, "negative-900" as never),
+      positive: lightDark("positive-800", "positive-900"),
+      notice: lightDark("notice-800", "notice-900"),
+      negative: lightDark("negative-800", "negative-900"),
     },
     isStaticColor: "transparent-overlay-900",
     forcedColors: "ButtonText",

@@ -2,6 +2,58 @@ import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
 import macros from "unplugin-parcel-macros";
 
+const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
+
+function s2Macros() {
+  const plugin = macros.rolldown();
+  const macroCssCache = new Map<string, unknown>();
+
+  return {
+    ...plugin,
+    async transform(this: unknown, code: string, id: string) {
+      const result = await plugin.transform?.call(this, code, id);
+      const transformedCode =
+        typeof result === "string"
+          ? result
+          : result && typeof result === "object" && "code" in result
+            ? String(result.code)
+            : "";
+
+      for (const match of transformedCode.matchAll(/import\s+["'](macro-[a-f0-9]+\.css)["'];/g)) {
+        const content = await plugin.load?.call(this, match[1]);
+        if (content != null) {
+          macroCssCache.set(match[1], content);
+        }
+      }
+
+      return result;
+    },
+    async resolveId(this: unknown, id: string, importer?: string, options?: object) {
+      const resolved = await plugin.resolveId?.call(this, id, importer, options);
+      if (resolved) {
+        return resolved;
+      }
+      if (macroCssIdPattern.test(id) && macroCssCache.has(id)) {
+        return id;
+      }
+      return resolved;
+    },
+    loadInclude(id: string) {
+      return macroCssCache.has(id) || (plugin.loadInclude?.(id) ?? false);
+    },
+    async load(this: unknown, id: string) {
+      if (plugin.loadInclude?.(id)) {
+        const content = await plugin.load?.call(this, id);
+        if (content != null) {
+          macroCssCache.set(id, content);
+          return content;
+        }
+      }
+      return macroCssCache.get(id);
+    },
+  };
+}
+
 const entry = [
   "src/index.ts",
   "src/ActionMenu.ts",
@@ -55,7 +107,7 @@ export default defineConfig({
       dts: false,
       fixedExtension: false,
       hash: false,
-      plugins: [macros.rolldown(), solid({ solid: { generate: "dom", hydratable: true } })],
+      plugins: [s2Macros(), solid({ solid: { generate: "dom", hydratable: true } })],
       deps,
       copy: [{ from: "src/*.css", to: "dist", flatten: true }],
     },
@@ -70,7 +122,7 @@ export default defineConfig({
       dts: false,
       fixedExtension: false,
       hash: false,
-      plugins: [macros.rolldown(), solid({ solid: { generate: "ssr" } })],
+      plugins: [s2Macros(), solid({ solid: { generate: "ssr" } })],
       deps,
     },
   ],

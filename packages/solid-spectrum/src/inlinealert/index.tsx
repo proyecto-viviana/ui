@@ -29,12 +29,10 @@ import { AlertTriangleIcon } from "../icon/s2wf-icons/AlertTriangleIcon";
 import { CheckmarkCircleIcon } from "../icon/s2wf-icons/CheckmarkCircleIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 import { s2IntlStrings, type S2IntlStrings } from "../intl";
-import {
-  getAllowedOverrides,
-  type StyleProps,
-  type UnsafeClassName,
-} from "../s2-internal/style-utils";
-import { focusRing, style, type StyleString } from "../style";
+import type { StyleProps, UnsafeClassName } from "../s2-internal/style-utils";
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
+import type { StyleString } from "../style";
+import { focusRing, style } from "../style" with { type: "macro" };
 import { ContentContext, HeadingContext } from "../text";
 
 export type InlineAlertVariant = "informative" | "positive" | "notice" | "negative" | "neutral";
@@ -89,11 +87,11 @@ const inlineAlert = style<InlineAlertStyleProps & { isFocusVisible?: boolean }>(
       fillStyle: {
         border: {
           variant: {
-            informative: "informative-800" as never,
-            positive: "positive-700" as never,
-            notice: "notice-700" as never,
-            negative: "negative-800" as never,
-            neutral: "gray-700" as never,
+            informative: "informative-800",
+            positive: "positive-700",
+            notice: "notice-700",
+            negative: "negative-800",
+            neutral: "gray-700",
           },
         },
         subtleFill: "transparent",
@@ -104,35 +102,35 @@ const inlineAlert = style<InlineAlertStyleProps & { isFocusVisible?: boolean }>(
       variant: {
         informative: {
           fillStyle: {
-            border: "gray-25" as never,
+            border: "gray-25",
             subtleFill: "informative-subtle",
             boldFill: "informative",
           },
         },
         positive: {
           fillStyle: {
-            border: "gray-25" as never,
+            border: "gray-25",
             subtleFill: "positive-subtle",
             boldFill: "positive",
           },
         },
         notice: {
           fillStyle: {
-            border: "gray-25" as never,
+            border: "gray-25",
             subtleFill: "notice-subtle",
             boldFill: "notice",
           },
         },
         negative: {
           fillStyle: {
-            border: "gray-25" as never,
+            border: "gray-25",
             subtleFill: "negative-subtle",
             boldFill: "negative",
           },
         },
         neutral: {
           fillStyle: {
-            border: "gray-25" as never,
+            border: "gray-25",
             subtleFill: "neutral-subtle",
             boldFill: "neutral-subdued",
           },

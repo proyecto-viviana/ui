@@ -1,8 +1,13 @@
 import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import { CenterBaseline } from "../icon/center-baseline";
-import { style, type StyleString } from "../style";
-import { controlFont, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import {
+  controlFont,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { useIsSkeleton } from "../skeleton";
 import { Text, TextContext } from "../text";
 import {
@@ -82,7 +87,7 @@ const wrapperStyles = style<{
     color: {
       default: "neutral",
       variant: {
-        neutral: "gray-600" as never,
+        neutral: "gray-600",
       },
     },
     disableTapHighlight: true,
@@ -125,7 +130,7 @@ const lightStyles = style<{
       brown: "brown",
       silver: "silver",
     },
-    isSkeleton: "gray-200" as never,
+    isSkeleton: "gray-200",
   },
   overflow: "visible",
 });

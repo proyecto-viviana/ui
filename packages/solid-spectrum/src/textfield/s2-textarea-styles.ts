@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { style } from "../style";
-import { centerPadding, controlSize } from "../s2-internal/style-utils";
+import { style } from "../style" with { type: "macro" };
+import { centerPadding, controlSize } from "../s2-internal/style-utils" with { type: "macro" };
 
 export const textAreaFieldGroupStyles = style({
   alignItems: "baseline",

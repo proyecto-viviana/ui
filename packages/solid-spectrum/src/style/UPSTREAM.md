@@ -19,8 +19,14 @@ Copied files:
 
 Local changes:
 
-- Parcel macro asset emission is mirrored into a local CSS asset registry.
-- React CSS property types were replaced with Solid-compatible types.
+- Parcel macro asset emission is preserved through `unplugin-parcel-macros`.
+  The previous local CSS asset registry was removed; CSS must be emitted by the
+  bundler macro pass.
+- Package builds use Vite Plus/Rolldown macro glue in
+  `packages/solid-spectrum/vite.config.ts` because upstream S2 is packaged by
+  Parcel and this package is not.
+- React CSS property types were replaced with Solid-compatible types, and JSON
+  token imports are normalized for Vite test/build interop.
 - Internal import paths were rewritten for `solid-spectrum`.
 - Component wrappers are ported to Solid, but style declarations should stay
   structurally copied from S2.

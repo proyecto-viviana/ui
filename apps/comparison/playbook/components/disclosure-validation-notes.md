@@ -115,7 +115,7 @@ No subagents were used for this component pass.
 | State               | React Stately/RAC Disclosure state              | `packages/solid-stately/src/disclosure/*`                                                                         | matched |
 | ARIA hooks          | React Aria disclosure behavior                  | `packages/solidaria/src/disclosure/createDisclosure.ts`                                                           | matched |
 | Headless components | `react-aria-components` Disclosure components   | `packages/solidaria-components/src/Disclosure.tsx`                                                                | matched |
-| Styled S2           | `@react-spectrum/s2/src/Disclosure.tsx`         | `packages/solid-spectrum/src/disclosure/index.tsx`, `src/disclosure-export.ts`, `src/s2-generated.css`            | matched |
+| Styled S2           | `@react-spectrum/s2/src/Disclosure.tsx`         | `packages/solid-spectrum/src/disclosure/index.tsx`, `src/disclosure-export.ts`, `macro-emitted package CSS`       | matched |
 | Comparison route    | S2 docs/viewer and React fixture from S2 source | `apps/comparison/src/data/disclosure-demo.ts`, fixtures, controls, visual matrix, `e2e/disclosure-visual.spec.ts` | matched |
 
 ## Behavior State Machine

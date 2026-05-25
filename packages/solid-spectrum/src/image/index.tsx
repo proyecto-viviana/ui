@@ -12,7 +12,8 @@ import {
   untrack,
   useContext,
 } from "solid-js";
-import { style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
@@ -103,7 +104,7 @@ export const DefaultImageGroup = createImageGroup();
 type ImageState = "loading" | "loaded" | "revealed" | "error";
 
 const imageWrapperStyles = style({
-  backgroundColor: "gray-100" as never,
+  backgroundColor: "gray-100",
   overflow: "hidden",
 });
 

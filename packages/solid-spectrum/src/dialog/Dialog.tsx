@@ -24,7 +24,8 @@ import {
   type HeaderProps,
   type HeadingProps,
 } from "../text";
-import { baseColor, focusRing, setColorScheme, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, setColorScheme, style } from "../style" with { type: "macro" };
 
 export type DialogSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "fullscreen";
 export type CustomDialogSize = "S" | "M" | "L" | "fullscreen" | "fullscreenTakeover";
@@ -409,7 +410,7 @@ const dialogFooter = style({
   paddingTop: 16,
   borderTopStyle: "solid",
   borderTopWidth: 1,
-  borderColor: "gray-200" as never,
+  borderColor: "gray-200",
 });
 
 const dialogButtonGroup = style({
@@ -434,7 +435,7 @@ const fullscreenDialogHeader = style({
   paddingY: 24,
   borderBottomStyle: "solid",
   borderBottomWidth: 1,
-  borderColor: "gray-200" as never,
+  borderColor: "gray-200",
 });
 
 const fullscreenDialogContent = style({

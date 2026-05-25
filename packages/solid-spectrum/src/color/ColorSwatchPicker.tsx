@@ -10,12 +10,9 @@ import {
   type ColorSwatchPickerRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Color } from "@proyecto-viviana/solid-stately";
-import { focusRing, space, style } from "../style";
-import {
-  getAllowedOverrides,
-  type StylesProp,
-  type UnsafeClassName,
-} from "../s2-internal/style-utils";
+import { focusRing, space, style } from "../style" with { type: "macro" };
+import type { StylesProp, UnsafeClassName } from "../s2-internal/style-utils";
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import {
   getSlottedContextProps,
@@ -124,10 +121,10 @@ const colorSwatchPickerSelectedOverlay = style({
   pointerEvents: "none",
   inset: 0,
   boxSizing: "border-box",
-  borderColor: "gray-900" as never,
+  borderColor: "gray-900",
   borderStyle: "solid",
   borderWidth: 2,
-  outlineColor: "gray-25" as never,
+  outlineColor: "gray-25",
   outlineStyle: "solid",
   outlineWidth: 2,
   outlineOffset: -4,
@@ -160,14 +157,14 @@ const pickerColorSwatchRoot = style<PickerColorSwatchStyleProps>(
         full: "full",
       },
     },
-    borderColor: "gray-1000/42" as never,
+    borderColor: "gray-1000/42",
     borderWidth: 1,
     borderStyle: "solid",
     boxSizing: "border-box",
     forcedColorAdjust: "none",
     "--slash-color": {
       type: "color",
-      value: "red-900" as never,
+      value: "red-900",
     },
   },
   getAllowedOverrides({ height: true }),

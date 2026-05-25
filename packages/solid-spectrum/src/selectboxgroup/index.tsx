@@ -21,7 +21,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, style } from "../style";
+import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";

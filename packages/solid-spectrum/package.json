@@ -159,12 +159,13 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsx ../../scripts/generate-solid-spectrum-s2-css.ts && vp fmt src/s2-generated.css --write && vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
     "dev": "vp pack --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },
   "dependencies": {
     "@adobe/spectrum-tokens": "^14.5.0",
+    "@parcel/macros": "^2.16.4",
     "@proyecto-viviana/solid-stately": "workspace:*",
     "@proyecto-viviana/solidaria": "workspace:*",
     "@proyecto-viviana/solidaria-components": "workspace:*",

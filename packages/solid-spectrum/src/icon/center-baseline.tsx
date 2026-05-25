@@ -1,18 +1,18 @@
 import { type JSX } from "solid-js";
 import { mergeStyles } from "../style/runtime";
-import { addS2CssAsset, css } from "../style/style-macro";
+import { style } from "../style" with { type: "macro" };
+import { css } from "../style/style-macro" with { type: "macro" };
 import type { StyleString } from "../style";
 
-const centerBaselineClass = css("display: flex; align-items: center;");
-export const centerBaselineBefore = centerBaselineClass as StyleString;
-
-addS2CssAsset(`@layer _.a {
-  .${centerBaselineClass}::before {
-    content: "\\00a0";
-    width: 0px;
-    visibility: hidden;
-  }
-}`);
+const centerBaselineClass = style({
+  display: "flex",
+  alignItems: "center",
+});
+export const centerBaselineBefore = css(`&::before {
+  content: "\\00a0";
+  width: 0px;
+  visibility: hidden;
+}`) as StyleString;
 
 export interface CenterBaselineProps {
   style?: JSX.CSSProperties;
@@ -28,7 +28,7 @@ export function CenterBaseline(props: CenterBaselineProps): JSX.Element {
     <div
       slot={props.slot}
       style={props.style}
-      class={mergeStyles(centerBaselineClass as StyleString, styles())}
+      class={mergeStyles(centerBaselineClass, styles()) + " " + centerBaselineBefore}
     >
       {props.children}
     </div>

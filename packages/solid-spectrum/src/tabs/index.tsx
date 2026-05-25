@@ -25,7 +25,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, KeyboardActivation, TabOrientation } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, fontRelative, style } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
@@ -355,7 +355,7 @@ const tabPanels = style({
 
 const tabPanel = style<TabsStyleState>({
   ...focusRing(),
-  color: "gray-800" as never,
+  color: "gray-800",
   outlineStyle: "none",
   minWidth: 0,
   minHeight: 0,

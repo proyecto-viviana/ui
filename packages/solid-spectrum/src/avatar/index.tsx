@@ -1,7 +1,8 @@
 import { createContext, mergeProps, splitProps, type JSX, useContext } from "solid-js";
 import { createLabel, filterDOMProps } from "@proyecto-viviana/solidaria";
-import { style, type StyleString } from "../style";
-import { getAllowedOverrides } from "../s2-internal/style-utils";
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -72,7 +73,7 @@ const legacySizeMap = {
 
 const avatarRoot = style(
   {
-    backgroundColor: "gray-100" as never,
+    backgroundColor: "gray-100",
     overflow: "hidden",
     display: "flex",
     alignItems: "center",

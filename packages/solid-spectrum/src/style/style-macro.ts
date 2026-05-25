@@ -34,20 +34,6 @@ const env = typeof process !== "undefined" ? process.env : {};
 // Postfix all class names with version for now.
 const POSTFIX = "13";
 
-const assetRegistry = new Set<string>();
-
-export function addS2CssAsset(content: string): void {
-  assetRegistry.add(content);
-}
-
-export function getS2CssAssets(): string[] {
-  return [...assetRegistry];
-}
-
-export function clearS2CssAssets(): void {
-  assetRegistry.clear();
-}
-
 export class ArbitraryProperty<T extends Value> implements Property<T> {
   property: string;
   toCSS: (value: T) => CSSValue;
@@ -478,7 +464,6 @@ export function createTheme<T extends Theme>(
       className += ` -macro-static-${id}`;
     }
 
-    addS2CssAsset(css);
     if (this && typeof this.addAsset === "function") {
       this.addAsset({
         type: "css",
@@ -1120,7 +1105,6 @@ export function css(this: MacroContext | void, content: string, layer = "_.a"): 
     content = `@layer _, ${layer};\n` + content;
   }
 
-  addS2CssAsset(content);
   if (this && typeof this.addAsset === "function") {
     this.addAsset({
       type: "css",
@@ -1140,7 +1124,6 @@ export function keyframes(this: MacroContext | void, css: string): string {
   css = `@keyframes ${name} {
   ${css}
 }`;
-  addS2CssAsset(css);
   if (this && typeof this.addAsset === "function") {
     this.addAsset({
       type: "css",

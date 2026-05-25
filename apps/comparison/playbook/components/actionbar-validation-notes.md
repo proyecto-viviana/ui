@@ -123,7 +123,7 @@
   macro classes for the root container, wrapper order, selection text, close
   button, and ActionButtonGroup composition.
 - The CSS generator now imports `packages/solid-spectrum/src/actionbar` so
-  ActionBar's `style()` macro output is included in `s2-generated.css`.
+  ActionBar's `style()` macro output is included in `macro-emitted package CSS`.
 - Package proof:
   - `vp test run packages/solidaria-components/test/ActionBar.test.tsx packages/solid-spectrum/test/ActionBar.test.tsx`
   - `2` files, `43` tests passed.

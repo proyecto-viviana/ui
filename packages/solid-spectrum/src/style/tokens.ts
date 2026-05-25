@@ -14,7 +14,8 @@
 // eslint-disable-next-line rulesdir/imports
 import * as originalTokens from "@adobe/spectrum-tokens/dist/json/variables.json";
 
-// This forces TSC to inline the token keys instead of leaving a dependency on it.
+// Vite's test runner exposes JSON imports as `{default: ...}` while the library
+// build inlines the object. Normalize once so token helpers are environment-safe.
 function keys<T extends Record<string, any>>(v: T): Record<keyof T, any> {
   return v;
 }

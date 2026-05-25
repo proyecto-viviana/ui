@@ -26,8 +26,8 @@ import {
   setColorScheme,
   space,
   style,
-} from "../style";
-import { edgeToText } from "../style/spectrum-theme";
+} from "../style" with { type: "macro" };
+import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import {
   control,
   controlBorderRadius,
@@ -37,7 +37,7 @@ import {
   fieldInput,
   fieldLabel,
   getAllowedOverrides,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";

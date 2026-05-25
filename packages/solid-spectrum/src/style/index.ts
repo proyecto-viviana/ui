@@ -20,10 +20,10 @@ import {
   style,
 } from "./spectrum-theme";
 import { StyleString } from "./types";
-import type { MacroContext } from "./style-macro";
+import type { MacroContext } from "@parcel/macros";
 
 export { baseColor, color, lightDark, colorMix, size, style } from "./spectrum-theme";
-export { css, clearS2CssAssets, getS2CssAssets } from "./style-macro";
+export { css } from "./style-macro";
 export { centerPadding, setColorScheme } from "../s2-internal/style-utils";
 export type { StyleString } from "./types";
 

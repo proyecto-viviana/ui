@@ -3,8 +3,13 @@ import {
   Separator as HeadlessSeparator,
   type SeparatorProps as HeadlessSeparatorProps,
 } from "@proyecto-viviana/solidaria-components";
-import { style, type StyleString } from "../style";
-import { getAllowedOverrides, staticColor, type UnsafeClassName } from "../s2-internal/style-utils";
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import {
+  getAllowedOverrides,
+  staticColor,
+} from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -56,9 +61,9 @@ const dividerStyles = style<{
     ...staticColor(),
     alignSelf: "stretch",
     backgroundColor: {
-      default: "gray-200" as never,
+      default: "gray-200",
       size: {
-        L: "gray-800" as never,
+        L: "gray-800",
       },
       isStaticColor: {
         default: "transparent-overlay-200",

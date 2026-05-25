@@ -11,7 +11,7 @@ import {
   type SearchFieldClearButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, fontRelative, style } from "../style";
+import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import {
   control,
@@ -21,7 +21,7 @@ import {
   fieldInput,
   fieldLabel,
   getAllowedOverrides,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
 import SearchIcon from "../icon/s2wf-icons/SearchIcon";
 import CrossIcon from "../icon/ui-icons/Cross";

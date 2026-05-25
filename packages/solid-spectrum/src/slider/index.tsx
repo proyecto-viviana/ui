@@ -23,14 +23,14 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { type SliderOrientation } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, style } from "../style";
+import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import {
   controlFont,
   field,
   fieldInput,
   fieldLabel,
   getAllowedOverrides,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import {

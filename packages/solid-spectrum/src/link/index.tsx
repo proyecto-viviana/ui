@@ -4,7 +4,8 @@ import {
   type LinkProps as HeadlessLinkProps,
   type LinkRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { baseColor, focusRing, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import {
   getSlottedContextProps,
@@ -12,11 +13,11 @@ import {
   mergeContextUnsafeStyle,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getAllowedOverrides,
   staticColor as staticColorStyle,
-  type UnsafeClassName,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { createIsSkeleton, useInertAttribute, useSkeletonText } from "../skeleton";
 
 type LinkVariant = "primary" | "secondary";

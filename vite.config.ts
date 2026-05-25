@@ -1,4 +1,5 @@
 import { defineConfig } from "vite-plus";
+import macros from "unplugin-parcel-macros";
 
 const ignoredPaths = [
   ".git/**",
@@ -14,6 +15,7 @@ const ignoredPaths = [
 ];
 
 export default defineConfig({
+  plugins: [macros.vite()],
   fmt: {
     ignorePatterns: ignoredPaths,
     semi: true,

@@ -1,5 +1,9 @@
-import { baseColor, focusRing, size as s2Size, style } from "../style";
-import { controlFont, controlSize, getAllowedOverrides } from "../s2-internal/style-utils";
+import { baseColor, focusRing, size as s2Size, style } from "../style" with { type: "macro" };
+import {
+  controlFont,
+  controlSize,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils" with { type: "macro" };
 
 export type S2BreadcrumbsSize = "M" | "L";
 

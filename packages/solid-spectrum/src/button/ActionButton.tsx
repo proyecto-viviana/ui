@@ -17,7 +17,7 @@ import {
   PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
-import { fontRelative, style } from "../style";
+import { fontRelative, style } from "../style" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
 import type { StaticColor } from "./types";

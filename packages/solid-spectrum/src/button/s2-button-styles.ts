@@ -11,9 +11,13 @@
  * governing permissions and limitations under the License.
  */
 
-import { baseColor, focusRing, lightDark, style } from "../style";
-import { linearGradient } from "../style/spectrum-theme";
-import { control, getAllowedOverrides, staticColor } from "../s2-internal/style-utils";
+import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };
+import { linearGradient } from "../style/spectrum-theme" with { type: "macro" };
+import {
+  control,
+  getAllowedOverrides,
+  staticColor,
+} from "../s2-internal/style-utils" with { type: "macro" };
 import type { ButtonFillStyle, ButtonSize, ButtonVariant, StaticColor } from "./types";
 
 export interface S2ButtonRenderState {

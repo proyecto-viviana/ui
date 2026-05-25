@@ -102,12 +102,12 @@ No subagents were used for this component pass.
 
 ## Source Map And Public Contract
 
-| Layer               | Upstream files                                     | Solid files                                                                                       | Status                                                                 |
-| ------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| State               | none                                               | none                                                                                              | Not applicable beyond prop-driven branches and mount autofocus.        |
-| ARIA hooks          | `filterDOMProps`, `useFocusRing`                   | Solid `filterDOMProps`, `createFocusRing`, `focusSafely`                                          | Matched role, tab index, focus-visible inputs, and DOM filtering.      |
-| Headless components | none                                               | none                                                                                              | Not applicable; no headless layer.                                     |
-| Styled S2           | `@react-spectrum/s2/src/InlineAlert.tsx`, S2 icons | `src/inlinealert/index.tsx`, `s2-generated.css`, S2 icon assets, fixtures, demo data, visual spec | Matched root styles, child contexts, semantic icon branch, and tokens. |
+| Layer               | Upstream files                                     | Solid files                                                                                                | Status                                                                 |
+| ------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| State               | none                                               | none                                                                                                       | Not applicable beyond prop-driven branches and mount autofocus.        |
+| ARIA hooks          | `filterDOMProps`, `useFocusRing`                   | Solid `filterDOMProps`, `createFocusRing`, `focusSafely`                                                   | Matched role, tab index, focus-visible inputs, and DOM filtering.      |
+| Headless components | none                                               | none                                                                                                       | Not applicable; no headless layer.                                     |
+| Styled S2           | `@react-spectrum/s2/src/InlineAlert.tsx`, S2 icons | `src/inlinealert/index.tsx`, `macro-emitted package CSS`, S2 icon assets, fixtures, demo data, visual spec | Matched root styles, child contexts, semantic icon branch, and tokens. |
 
 - Public props/defaults: `children`, `autoFocus`, `variant='neutral'`,
   `fillStyle='border'`, `styles`, `UNSAFE_className`, `UNSAFE_style`, `id`,

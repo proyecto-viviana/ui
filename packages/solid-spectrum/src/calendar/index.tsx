@@ -22,7 +22,14 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { useLocale } from "@proyecto-viviana/solidaria";
 import { DateFormatter, type CalendarStateProps } from "@proyecto-viviana/solid-stately";
-import { baseColor, focusRing, lightDark, setColorScheme, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import {
+  baseColor,
+  focusRing,
+  lightDark,
+  setColorScheme,
+  style,
+} from "../style" with { type: "macro" };
 import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
 import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { pressScale } from "../pressScale";

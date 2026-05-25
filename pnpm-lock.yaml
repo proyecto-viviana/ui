@@ -210,6 +210,9 @@ importers:
       '@adobe/spectrum-tokens':
         specifier: ^14.5.0
         version: 14.5.0
+      '@parcel/macros':
+        specifier: ^2.16.4
+        version: 2.16.4
       '@proyecto-viviana/solid-stately':
         specifier: workspace:*
         version: link:../solid-stately

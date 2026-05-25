@@ -9,9 +9,10 @@ import {
   useContext,
 } from "solid-js";
 import { createLeafComponent } from "@proyecto-viviana/solidaria-components";
-import { css } from "../style/style-macro";
-import { style, type StyleString } from "../style";
-import { color } from "../style/spectrum-theme";
+import { css } from "../style/style-macro" with { type: "macro" };
+import type { StyleString } from "../style";
+import { style } from "../style" with { type: "macro" };
+import { color } from "../style/spectrum-theme" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 
 export type SkeletonContextValue = boolean | null | Accessor<boolean | null | undefined>;
@@ -42,9 +43,9 @@ export function useIsSkeleton(): Accessor<boolean> {
 
 export const loadingStyle = css(
   `
-  background-image: linear-gradient(to right, ${color("gray-100" as never)} 33%, light-dark(${color(
-    "gray-25" as never,
-  )}, ${color("gray-300" as never)}), ${color("gray-100" as never)} 66%);
+  background-image: linear-gradient(to right, ${color("gray-100")} 33%, light-dark(${color(
+    "gray-25",
+  )}, ${color("gray-300")}), ${color("gray-100")} 66%);
   background-size: 300%;
   * {
     visibility: hidden;

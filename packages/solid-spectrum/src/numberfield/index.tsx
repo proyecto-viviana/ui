@@ -14,7 +14,7 @@ import {
   type NumberFieldButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, fontRelative, space, style } from "../style";
+import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import {
   control,
   controlBorderRadius,
@@ -22,7 +22,7 @@ import {
   fieldInput,
   fieldLabel,
   getAllowedOverrides,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import AddIcon from "../icon/ui-icons/Add";

@@ -24,7 +24,14 @@ import {
 } from "@proyecto-viviana/solid-stately";
 import { RangeCalendar } from "./RangeCalendar";
 import { TimeField } from "../datepicker";
-import { baseColor, focusRing, fontRelative, lightDark, setColorScheme, style } from "../style";
+import {
+  baseColor,
+  focusRing,
+  fontRelative,
+  lightDark,
+  setColorScheme,
+  style,
+} from "../style" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
@@ -38,7 +45,7 @@ import {
   fieldInput,
   fieldLabel,
   getAllowedOverrides,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 
 export type DateRangePickerSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type NormalizedDateRangePickerSize = "S" | "M" | "L" | "XL";

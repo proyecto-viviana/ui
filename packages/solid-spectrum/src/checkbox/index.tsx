@@ -18,7 +18,7 @@ import {
   type CheckboxGroupRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, space, style } from "../style";
+import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
 import {
   controlBorderRadius,
   controlFont,
@@ -26,7 +26,7 @@ import {
   field,
   fieldLabel,
   getAllowedOverrides,
-} from "../s2-internal/style-utils";
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";

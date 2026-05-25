@@ -38,10 +38,15 @@ import Chevron from "../icon/ui-icons/Chevron";
 import LinkOut from "../icon/ui-icons/LinkOut";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { useProviderProps } from "../provider";
-import { baseColor, focusRing, fontRelative, space, style, type StyleString } from "../style";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { edgeToText } from "../style/spectrum-theme";
-import { controlFont, getAllowedOverrides, type UnsafeClassName } from "../s2-internal/style-utils";
+import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import {
+  controlFont,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { Text, TextContext } from "../text";
 
 export type GridListSize = "sm" | "md" | "lg";
