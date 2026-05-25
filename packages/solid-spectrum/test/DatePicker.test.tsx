@@ -228,10 +228,15 @@ describe("DatePicker (solid-spectrum)", () => {
     const dialog = await waitFor(() => screen.getByRole("dialog"));
     const frame = dialog.firstElementChild as HTMLElement;
 
-    expect(frame.style.minWidth).toBe("240px");
+    expect(frame.className).not.toBe("");
     await waitFor(() => {
       expect(screen.getAllByRole("grid")).toHaveLength(1);
     });
+
+    const grid = screen.getByRole("grid");
+    const calendar = grid.parentElement?.parentElement as HTMLElement;
+    expect(calendar.style.width).toBe("272px");
+    expect(grid).toHaveStyle({ width: "224px" });
   });
 
   it("field group click focuses the last non-placeholder segment", async () => {

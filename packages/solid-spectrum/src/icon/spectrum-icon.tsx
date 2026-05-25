@@ -111,7 +111,7 @@ export function createIcon(Component: Component<SpectrumSvgComponentProps>, cont
         return undefined;
       }
 
-      return local.slot;
+      return local.slot ?? ctx.slot ?? undefined;
     };
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
     const isSkeleton = createIsSkeleton();
@@ -174,7 +174,7 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
         return undefined;
       }
 
-      return local.slot;
+      return local.slot ?? ctx.slot ?? undefined;
     };
     const size = () => local.size ?? ctx.size ?? "M";
     const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);

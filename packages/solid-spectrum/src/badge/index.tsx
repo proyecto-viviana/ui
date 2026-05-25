@@ -322,6 +322,7 @@ export function Badge(props: BadgeProps): JSX.Element {
     >
       <IconContext.Provider
         value={{
+          slot: "icon",
           render: centerBaseline({ slot: "icon", styles: iconCenterStyles }),
           styles: iconStyles,
         }}

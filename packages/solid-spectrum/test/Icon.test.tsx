@@ -4,7 +4,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { Icon, createIcon, createIllustration } from "../src/icon";
+import {
+  Icon,
+  IconContext,
+  IllustrationContext,
+  createIcon,
+  createIllustration,
+} from "../src/icon";
 import { GitHubIcon } from "../src/icon/icons/GitHubIcon";
 import CrossIcon from "../src/icon/ui-icons/Cross";
 import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";
@@ -113,6 +119,16 @@ describe("Icon (solid-spectrum)", () => {
     expect(slotted).toHaveAttribute("data-slot", "icon");
   });
 
+  it("createIcon inherits slot context used by component compositions", () => {
+    const { container } = render(() => (
+      <IconContext.Provider value={{ slot: "icon" }}>
+        <TestCreatedIcon />
+      </IconContext.Provider>
+    ));
+
+    expect(container.querySelector("svg")).toHaveAttribute("data-slot", "icon");
+  });
+
   it("createIllustration mirrors React Spectrum SVG size and accessibility attributes", () => {
     const { container } = render(() => (
       <>
@@ -142,5 +158,15 @@ describe("Icon (solid-spectrum)", () => {
     expect(decorative).toHaveAttribute("data-size-prop", "S");
 
     expect(slotted).toHaveAttribute("data-slot", "icon");
+  });
+
+  it("createIllustration inherits slot context used by component compositions", () => {
+    const { container } = render(() => (
+      <IllustrationContext.Provider value={{ slot: "illustration" }}>
+        <TestCreatedIllustration />
+      </IllustrationContext.Provider>
+    ));
+
+    expect(container.querySelector("svg")).toHaveAttribute("data-slot", "illustration");
   });
 });

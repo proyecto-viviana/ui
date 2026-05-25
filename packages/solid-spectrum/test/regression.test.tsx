@@ -615,7 +615,7 @@ describe("Regression: Popover", () => {
 });
 
 describe("Regression: Tooltip", () => {
-  it("renders tooltip with role=tooltip when open", () => {
+  it("renders tooltip with role=tooltip when open", async () => {
     const { container } = render(() => (
       <TooltipTrigger isOpen>
         <Button>Hover me</Button>
@@ -623,10 +623,14 @@ describe("Regression: Tooltip", () => {
       </TooltipTrigger>
     ));
 
-    expect(screen.getByRole("tooltip")).toBeInTheDocument();
+    const tooltip = screen.getByRole("tooltip");
+    const trigger = screen.getByRole("button", { name: "Hover me" });
+
+    expect(tooltip).toBeInTheDocument();
     expect(screen.getByText("Helpful tip")).toBeInTheDocument();
-    expect(container.querySelector("[aria-describedby]")).toBeInTheDocument();
-    expectS2Button(screen.getByRole("button", { name: "Hover me" }), "Hover me");
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-describedby", tooltip.id));
+    expect(container.querySelector("[aria-describedby]")).toBe(trigger);
+    expectS2Button(trigger, "Hover me");
   });
 });
 

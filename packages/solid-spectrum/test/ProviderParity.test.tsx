@@ -163,7 +163,9 @@ describe("Provider parity", () => {
     await user.click(button);
 
     expect(onPress).not.toHaveBeenCalled();
-    expect(screen.getByText("*")).toBeInTheDocument();
+    expect(
+      screen.getByText("Name").closest("label")?.querySelector('svg[aria-hidden="true"]'),
+    ).toBeInTheDocument();
     expect(screen.getByRole("textbox")).toHaveAttribute("aria-required", "true");
   });
 });

@@ -37,28 +37,29 @@ function renderSelect(props: Partial<Parameters<typeof Select<AnimalItem>>[0]> =
 }
 
 describe("Select (solid-spectrum)", () => {
-  it("wires visible label to trigger via aria-labelledby", () => {
+  it("wires visible label to trigger button via aria-labelledby", () => {
     renderSelect();
-    const trigger = screen.getByRole("combobox", { name: "Animals" });
+    const trigger = screen.getByRole("button", { name: "Animals" });
     expect(trigger).toHaveAttribute("aria-labelledby");
+    expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
   });
 
-  it("wires description text to aria-describedby", () => {
+  it("wires description text to trigger button aria-describedby", () => {
     renderSelect({ description: "Pick one option." });
 
-    const trigger = screen.getByRole("combobox", { name: "Animals" });
+    const trigger = screen.getByRole("button", { name: "Animals" });
     const description = screen.getByText("Pick one option.");
     expect(trigger.getAttribute("aria-describedby")).toContain(description.id);
   });
 
-  it("wires error text to aria-describedby when invalid", () => {
+  it("wires error text to trigger button aria-describedby when invalid", () => {
     renderSelect({
       description: "Pick one option.",
       isInvalid: true,
       errorMessage: "Selection is required.",
     });
 
-    const trigger = screen.getByRole("combobox", { name: "Animals" });
+    const trigger = screen.getByRole("button", { name: "Animals" });
     const error = screen.getByText("Selection is required.");
     expect(trigger.getAttribute("aria-describedby")).toContain(error.id);
     expect(screen.queryByText("Pick one option.")).not.toBeInTheDocument();
