@@ -491,6 +491,16 @@ import {
   type MeterDemoProps,
 } from "@comparison/data/meter-demo";
 import {
+  normalizeProgressBarDemoProps,
+  normalizeProgressCircleDemoProps,
+  progressBarDemoPropsFromWindow,
+  progressCircleDemoPropsFromWindow,
+  serializeProgressBarDemoProps,
+  serializeProgressCircleDemoProps,
+  type ProgressBarDemoProps,
+  type ProgressCircleDemoProps,
+} from "@comparison/data/progress-demo";
+import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
   textFieldDemoPropsFromWindow,
@@ -1139,6 +1149,20 @@ function SolidSpectrumIllustrationsDemo() {
 
 function SolidSpectrumProgressBarDemo() {
   const colorScheme = createComparisonResolvedThemeSignal();
+  const [demoProps, setDemoProps] = createSignal<ProgressBarDemoProps>(
+    progressBarDemoPropsFromWindow(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "progressbar") {
+        setDemoProps(normalizeProgressBarDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
   return hc(
     SolidSpectrumProvider,
     {
@@ -1152,30 +1176,48 @@ function SolidSpectrumProgressBarDemo() {
       hc(
         "div",
         {
+          get class() {
+            return staticColorBackdropClass(demoProps().staticColor, "comparison-progressbar-row");
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
           style: progressFixtureStackStyle,
           "data-comparison-control-root": "progressbar",
+          get "data-comparison-control-props"() {
+            return serializeProgressBarDemoProps(demoProps());
+          },
         },
         [
           h(SolidSpectrumProgressBar, {
-            label: "Transcoding assets",
-            value: 64,
-            size: "md",
-            "data-comparison-progressbar": "determinate",
-          }),
-          h(SolidSpectrumProgressBar, {
-            label: "Uploading package",
-            isIndeterminate: true,
-            size: "lg",
-            "data-comparison-progressbar": "indeterminate",
-          }),
-          h(SolidSpectrumProgressBar, {
-            label: "Reviews complete",
-            minValue: 0,
-            maxValue: 8,
-            value: 5,
-            valueLabel: "5 of 8",
-            size: "sm",
-            "data-comparison-progressbar": "custom-scale",
+            get label() {
+              return demoProps().label;
+            },
+            get value() {
+              return demoProps().value;
+            },
+            get minValue() {
+              return demoProps().minValue;
+            },
+            get maxValue() {
+              return demoProps().maxValue;
+            },
+            get valueLabel() {
+              return demoProps().valueLabel || undefined;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get staticColor() {
+              return demoProps().staticColor || undefined;
+            },
+            get labelPosition() {
+              return demoProps().labelPosition;
+            },
+            get isIndeterminate() {
+              return demoProps().isIndeterminate;
+            },
+            "data-comparison-progressbar": "controlled",
           }),
         ],
       ),
@@ -1185,6 +1227,20 @@ function SolidSpectrumProgressBarDemo() {
 
 function SolidSpectrumProgressCircleDemo() {
   const colorScheme = createComparisonResolvedThemeSignal();
+  const [demoProps, setDemoProps] = createSignal<ProgressCircleDemoProps>(
+    progressCircleDemoPropsFromWindow(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "progresscircle") {
+        setDemoProps(normalizeProgressCircleDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
   return hc(
     SolidSpectrumProvider,
     {
@@ -1198,27 +1254,45 @@ function SolidSpectrumProgressCircleDemo() {
       hc(
         "div",
         {
+          get class() {
+            return staticColorBackdropClass(
+              demoProps().staticColor,
+              "comparison-progresscircle-row",
+            );
+          },
+          get "data-comparison-static-color"() {
+            return staticColorBackdropValue(demoProps().staticColor);
+          },
           style: progressCircleRowStyle,
           "data-comparison-control-root": "progresscircle",
+          get "data-comparison-control-props"() {
+            return serializeProgressCircleDemoProps(demoProps());
+          },
         },
         [
           h(SolidSpectrumProgressCircle, {
-            "aria-label": "Indexing files",
-            value: 38,
-            size: "sm",
-            "data-comparison-progresscircle": "small",
-          }),
-          h(SolidSpectrumProgressCircle, {
-            "aria-label": "Syncing files",
-            value: 72,
-            size: "md",
-            "data-comparison-progresscircle": "medium",
-          }),
-          h(SolidSpectrumProgressCircle, {
-            "aria-label": "Processing request",
-            isIndeterminate: true,
-            size: "lg",
-            "data-comparison-progresscircle": "indeterminate",
+            get "aria-label"() {
+              return demoProps().ariaLabel;
+            },
+            get value() {
+              return demoProps().value;
+            },
+            get minValue() {
+              return demoProps().minValue;
+            },
+            get maxValue() {
+              return demoProps().maxValue;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get staticColor() {
+              return demoProps().staticColor || undefined;
+            },
+            get isIndeterminate() {
+              return demoProps().isIndeterminate;
+            },
+            "data-comparison-progresscircle": "controlled",
           }),
         ],
       ),

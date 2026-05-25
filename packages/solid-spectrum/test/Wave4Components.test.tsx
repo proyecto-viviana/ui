@@ -108,10 +108,10 @@ describe("Wave 4 UI Components", () => {
 
     it("renders with different sizes", () => {
       const { container } = render(() => (
-        <ProgressCircle value={50} size="lg" aria-label="Loading" />
+        <ProgressCircle value={50} size="L" aria-label="Loading" />
       ));
       const svg = container.querySelector("svg");
-      expect(svg!.getAttribute("width")).toBe("48");
+      expect(svg!.getAttribute("width")).toBe("100%");
     });
   });
 

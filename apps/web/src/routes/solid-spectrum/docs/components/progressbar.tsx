@@ -55,36 +55,30 @@ function ProgressBarPage() {
       </Example>
 
       <Example
-        title="Variants"
-        description="Progress bars come in different visual variants to communicate meaning."
-        code={`<ProgressBar label="Default" value={60} />
-<ProgressBar label="Accent" value={45} variant="accent" />
-<ProgressBar label="Success" value={80} variant="success" />
-<ProgressBar label="Warning" value={35} variant="warning" />
-<ProgressBar label="Danger" value={20} variant="danger" />`}
+        title="Sizes"
+        description="Progress bars are available in S2 sizes from S through XL."
+        code={`<ProgressBar label="Small" value={40} size="S" />
+<ProgressBar label="Medium" value={60} size="M" />
+<ProgressBar label="Large" value={75} size="L" />
+<ProgressBar label="Extra Large" value={90} size="XL" />`}
       >
         <div class="space-y-4 max-w-md">
-          <ProgressBar label="Default" value={60} />
-          <ProgressBar label="Accent" value={45} variant="accent" />
-          <ProgressBar label="Success" value={80} variant="success" />
-          <ProgressBar label="Warning" value={35} variant="warning" />
-          <ProgressBar label="Danger" value={20} variant="danger" />
+          <ProgressBar label="Small" value={40} size="S" />
+          <ProgressBar label="Medium" value={60} size="M" />
+          <ProgressBar label="Large" value={75} size="L" />
+          <ProgressBar label="Extra Large" value={90} size="XL" />
         </div>
       </Example>
 
       <Example
-        title="Sizes"
-        description="Progress bars are available in multiple sizes."
-        code={`<ProgressBar label="Small" value={40} size="sm" />
-<ProgressBar label="Medium" value={60} size="md" />
-<ProgressBar label="Large" value={75} size="lg" />
-<ProgressBar label="Extra Large" value={90} size="lg" />`}
+        title="Label Position"
+        description="Place the label/value row above the bar or inline beside it."
+        code={`<ProgressBar label="Top label" value={60} labelPosition="top" />
+<ProgressBar label="Side label" value={60} labelPosition="side" />`}
       >
         <div class="space-y-4 max-w-md">
-          <ProgressBar label="Small" value={40} size="sm" />
-          <ProgressBar label="Medium" value={60} size="md" />
-          <ProgressBar label="Large" value={75} size="lg" />
-          <ProgressBar label="Large (alt)" value={90} size="lg" />
+          <ProgressBar label="Top label" value={60} labelPosition="top" />
+          <ProgressBar label="Side label" value={60} labelPosition="side" />
         </div>
       </Example>
 
@@ -92,25 +86,23 @@ function ProgressBarPage() {
         title="Indeterminate"
         description="When the progress amount is unknown, use indeterminate mode to show an animated indicator."
         code={`<ProgressBar label="Loading data..." isIndeterminate />
-<ProgressBar label="Processing..." isIndeterminate variant="accent" />`}
+<ProgressBar label="Processing..." isIndeterminate size="L" />`}
       >
         <div class="space-y-4 max-w-md">
           <ProgressBar label="Loading data..." isIndeterminate />
-          <ProgressBar label="Processing..." isIndeterminate variant="accent" />
+          <ProgressBar label="Processing..." isIndeterminate size="L" />
         </div>
       </Example>
 
       <Example
         title="Custom Value Label"
-        description="Customize how the value is displayed using a custom value label or by hiding it."
+        description="Customize how the value is displayed using a custom value label."
         code={`<ProgressBar label="Storage" value={75} valueLabel="750 MB of 1 GB" />
-<ProgressBar label="Disk usage" value={90} valueLabel="9 / 10 TB" />
-<ProgressBar label="Clean progress" value={65} showValueLabel={false} />`}
+<ProgressBar label="Disk usage" value={90} valueLabel="9 / 10 TB" />`}
       >
         <div class="space-y-4 max-w-md">
           <ProgressBar label="Storage" value={75} valueLabel="750 MB of 1 GB" />
-          <ProgressBar label="Disk usage" value={90} valueLabel="9 / 10 TB" variant="danger" />
-          <ProgressBar label="Clean progress (no value label)" value={65} showValueLabel={false} />
+          <ProgressBar label="Disk usage" value={90} valueLabel="9 / 10 TB" />
         </div>
       </Example>
 
@@ -132,6 +124,22 @@ function ProgressBarPage() {
         </div>
       </Example>
 
+      <Example
+        title="Static Color"
+        description="Use static color when the progress bar appears on a colored background."
+        code={`<ProgressBar label="On dark" value={56} staticColor="white" />
+<ProgressBar label="On light" value={56} staticColor="black" />`}
+      >
+        <div class="space-y-4 max-w-md">
+          <div class="rounded-md bg-slate-900 p-4">
+            <ProgressBar label="On dark" value={56} staticColor="white" />
+          </div>
+          <div class="rounded-md bg-slate-100 p-4">
+            <ProgressBar label="On light" value={56} staticColor="black" />
+          </div>
+        </div>
+      </Example>
+
       <PropsTable
         props={[
           {
@@ -143,12 +151,6 @@ function ProgressBarPage() {
             name: "label",
             type: "string",
             description: "Text label displayed above the bar",
-          },
-          {
-            name: "variant",
-            type: "'primary' | 'accent' | 'success' | 'warning' | 'danger'",
-            default: "'primary'",
-            description: "Visual style variant to convey semantic meaning",
           },
           {
             name: "size",
@@ -180,15 +182,40 @@ function ProgressBarPage() {
             description: "Custom text to display as the value (overrides percentage)",
           },
           {
-            name: "showValueLabel",
-            type: "boolean",
-            default: "true",
-            description: "Whether to show the value label",
+            name: "labelPosition",
+            type: "'top' | 'side'",
+            default: "'top'",
+            description: "Position of the label and value relative to the bar",
+          },
+          {
+            name: "staticColor",
+            type: "'white' | 'black' | 'auto'",
+            description: "Static color branch for use on colored backgrounds",
+          },
+          {
+            name: "formatOptions",
+            type: "Intl.NumberFormatOptions",
+            description: "Options used to format the generated value label",
           },
           {
             name: "aria-label",
             type: "string",
             description: "Accessible label (alternative to visible label)",
+          },
+          {
+            name: "styles",
+            type: "StyleString",
+            description: "S2 style macro overrides for supported layout properties",
+          },
+          {
+            name: "UNSAFE_className",
+            type: "string",
+            description: "Escape hatch class name",
+          },
+          {
+            name: "UNSAFE_style",
+            type: "JSX.CSSProperties",
+            description: "Escape hatch inline styles",
           },
         ]}
       />

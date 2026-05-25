@@ -385,13 +385,18 @@ export type { PopoverPlacement, PopoverProps, PopoverRenderProps, PopoverSize } 
 // Progress
 export { NotificationBadge, NotificationBadgeContext } from "./notificationbadge";
 export type { NotificationBadgeProps } from "./notificationbadge";
-export { ProgressBar } from "./progress-bar";
-export type { ProgressBarProps, ProgressBarSize, ProgressBarVariant } from "./progress-bar";
-export { ProgressCircle } from "./progress/ProgressCircle";
+export { ProgressBar, ProgressBarContext } from "./progress-bar";
+export type {
+  ProgressBarLabelPosition,
+  ProgressBarProps,
+  ProgressBarSize,
+  ProgressBarStaticColor,
+} from "./progress-bar";
+export { ProgressCircle, ProgressCircleContext } from "./progress/ProgressCircle";
 export type {
   ProgressCircleProps,
   ProgressCircleSize,
-  ProgressCircleVariant,
+  ProgressCircleStaticColor,
 } from "./progress/ProgressCircle";
 
 // RadioGroup

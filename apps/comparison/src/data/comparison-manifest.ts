@@ -779,10 +779,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "ProgressBar",
     category: "Components",
     summary:
-      "Linear progress indicator mounted on both stacks with determinate, indeterminate, size, custom range, and value-label coverage.",
+      "Linear progress indicator mounted on both stacks with S2 value range, label/value placement, indeterminate state, static color, size, and value-label coverage.",
     styledSummary: "React Spectrum ProgressBar vs Solid Spectrum ProgressBar.",
     styledNote:
-      "React uses @react-spectrum/s2 ProgressBar directly; Solid uses @proyecto-viviana/solid-spectrum ProgressBar with equivalent determinate, indeterminate, size, value range, and value-label states over the Solid progress primitive.",
+      "React uses @react-spectrum/s2 ProgressBar directly; Solid uses @proyecto-viviana/solid-spectrum ProgressBar with S2-derived wrapper grid, label/value text, track/fill, static color, size, label position, and indeterminate animation over the Solid progress primitive.",
   }),
 
   progresscircle: styledLiveOfficialEntry({
@@ -790,10 +790,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "ProgressCircle",
     category: "Components",
     summary:
-      "Circular progress indicator mounted on both stacks with determinate, indeterminate, and size coverage.",
+      "Circular progress indicator mounted on both stacks with S2 determinate, indeterminate, static color, accessible label, and size coverage.",
     styledSummary: "React Spectrum ProgressCircle vs Solid Spectrum ProgressCircle.",
     styledNote:
-      "React uses @react-spectrum/s2 ProgressCircle directly; Solid uses @proyecto-viviana/solid-spectrum ProgressCircle with equivalent determinate, indeterminate, accessible label, and size states over the Solid progress primitive.",
+      "React uses @react-spectrum/s2 ProgressCircle directly; Solid uses @proyecto-viviana/solid-spectrum ProgressCircle with S2-derived wrapper sizing, SVG track/fill strokes, static color, and indeterminate animation over the Solid progress primitive.",
   }),
 
   rangeslider: styledLiveOfficialEntry({

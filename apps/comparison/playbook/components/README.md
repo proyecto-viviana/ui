@@ -24,13 +24,13 @@ normalized to the current gate checklist.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
-  Link, Meter, NotificationBadge, RangeCalendar, SegmentedControl,
-  SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
+  Link, Meter, NotificationBadge, ProgressBar, ProgressCircle, RangeCalendar,
+  SegmentedControl, SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
 - Accepted prior to the current known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
-  Link, Meter, NotificationBadge, RangeCalendar, SegmentedControl,
-  SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
+  Link, Meter, NotificationBadge, ProgressBar, ProgressCircle, RangeCalendar,
+  SegmentedControl, SelectBoxGroup, Skeleton, Slider, StatusLight, and Text.
 - Active current-gate pass: none selected.
 - Comparison-live with explicit release-hardening backfill gaps: Card/CardView.
 - Pre-pass only: none.
@@ -55,14 +55,13 @@ notes, and current visual/asserted evidence.
 Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
-- Modeled viewer controls: 62/69 entries. Missing control groups: ProgressBar,
-  ProgressCircle, Provider, RangeSlider, TableView, TagGroup, and TreeView.
-- Validation notes: 53/69 entries. Missing notes: DropZone, ListView,
-  NumberField, Picker, ProgressBar, ProgressCircle, Provider, RadioGroup,
-  RangeSlider, SearchField, Switch, TableView, TagGroup, TextArea, TextField,
-  and TreeView.
-- Current visual/asserted evidence: 62/69 entries. Missing evidence: ListView,
-  ProgressBar, ProgressCircle, RangeSlider, TableView, TagGroup, and TreeView.
+- Modeled viewer controls: 64/69 entries. Missing control groups: Provider,
+  RangeSlider, TableView, TagGroup, and TreeView.
+- Validation notes: 55/69 entries. Missing notes: DropZone, ListView,
+  NumberField, Picker, Provider, RadioGroup, RangeSlider, SearchField, Switch,
+  TableView, TagGroup, TextArea, TextField, and TreeView.
+- Current visual/asserted evidence: 64/69 entries. Missing evidence: ListView,
+  RangeSlider, TableView, TagGroup, and TreeView.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
 `icons`. Icons and Illustrations now have modeled controls and strict primitive
@@ -101,6 +100,8 @@ visual/contract coverage; remaining gaps are listed above.
 - [Meter](./meter-validation-notes.md)
 - [NotificationBadge](./notificationbadge-validation-notes.md)
 - [Popover](./popover-validation-notes.md)
+- [ProgressBar](./progressbar-validation-notes.md)
+- [ProgressCircle](./progresscircle-validation-notes.md)
 - [RangeCalendar](./rangecalendar-validation-notes.md)
 - [Skeleton](./skeleton-validation-notes.md)
 - [SegmentedControl](./segmentedcontrol-validation-notes.md)

@@ -1,10 +1,14 @@
-export { ProgressBar } from "../progress-bar";
-export { ProgressBar as ProgressBarBase } from "../progress-bar";
-export type { ProgressBarProps, ProgressBarSize, ProgressBarVariant } from "../progress-bar";
+export { ProgressBar, ProgressBarContext } from "../progress-bar";
+export type {
+  ProgressBarLabelPosition,
+  ProgressBarProps,
+  ProgressBarSize,
+  ProgressBarStaticColor,
+} from "../progress-bar";
 
-export { ProgressCircle } from "./ProgressCircle";
+export { ProgressCircle, ProgressCircleContext } from "./ProgressCircle";
 export type {
   ProgressCircleProps,
   ProgressCircleSize,
-  ProgressCircleVariant,
+  ProgressCircleStaticColor,
 } from "./ProgressCircle";

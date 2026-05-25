@@ -136,6 +136,21 @@ const meterTextControlValues: Record<string, string> = {
   maxValue: "120",
 };
 
+const progressBarTextControlValues: Record<string, string> = {
+  label: "Contract progress",
+  value: "45",
+  minValue: "0",
+  maxValue: "120",
+  valueLabel: "45 of 120",
+};
+
+const progressCircleTextControlValues: Record<string, string> = {
+  ariaLabel: "Contract progress circle",
+  value: "36",
+  minValue: "0",
+  maxValue: "90",
+};
+
 const tooltipTextControlValues: Record<string, string> = {
   containerPadding: "18",
   crossOffset: "14",
@@ -245,6 +260,12 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (group.slug === "meter" && control.name in meterTextControlValues) {
       return meterTextControlValues[control.name];
     }
+    if (group.slug === "progressbar" && control.name in progressBarTextControlValues) {
+      return progressBarTextControlValues[control.name];
+    }
+    if (group.slug === "progresscircle" && control.name in progressCircleTextControlValues) {
+      return progressCircleTextControlValues[control.name];
+    }
     if (group.slug === "tooltip" && control.name in tooltipTextControlValues) {
       return tooltipTextControlValues[control.name];
     }
@@ -302,6 +323,12 @@ function expectedSerializedValue(
     return Number(value);
   }
   if (group.slug === "meter" && control.name in meterTextControlValues) {
+    return Number(value);
+  }
+  if (group.slug === "progressbar" && ["value", "minValue", "maxValue"].includes(control.name)) {
+    return Number(value);
+  }
+  if (group.slug === "progresscircle" && ["value", "minValue", "maxValue"].includes(control.name)) {
     return Number(value);
   }
   if (group.slug === "tooltip" && control.name in tooltipTextControlValues) {

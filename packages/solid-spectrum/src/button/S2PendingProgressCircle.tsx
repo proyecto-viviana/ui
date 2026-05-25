@@ -2,7 +2,7 @@ import { type JSX } from "solid-js";
 import { ProgressBar } from "@proyecto-viviana/solidaria-components";
 import type { StaticColor } from "./types";
 import type { ActionButtonSize } from "./group-context";
-import { s2ProgressCircleIndeterminateAnimation } from "./s2-progress-circle-animation";
+import { s2ProgressCircleIndeterminateAnimation } from "../progress/progress-circle-animation";
 import {
   s2PendingProgressCircle,
   s2PendingProgressCircleFill,

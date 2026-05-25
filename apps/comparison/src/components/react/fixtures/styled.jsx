@@ -448,6 +448,14 @@ import {
   serializeMeterDemoProps,
 } from "@comparison/data/meter-demo";
 import {
+  normalizeProgressBarDemoProps,
+  normalizeProgressCircleDemoProps,
+  progressBarDemoPropsFromWindow,
+  progressCircleDemoPropsFromWindow,
+  serializeProgressBarDemoProps,
+  serializeProgressCircleDemoProps,
+} from "@comparison/data/progress-demo";
+import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
   textFieldDemoPropsFromWindow,
@@ -967,33 +975,35 @@ function ReactIllustrationsDemo() {
 
 function ReactProgressBarDemo() {
   const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(progressBarDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "progressbar") {
+        setDemoProps(normalizeProgressBarDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
-    jsxs("div", {
+    jsx("div", {
+      ...staticColorBackdropProps(demoProps.staticColor, "comparison-progressbar-row"),
       style: progressFixtureStackStyle,
       "data-comparison-control-root": "progressbar",
-      children: [
-        jsx(SpectrumProgressBar, {
-          label: "Transcoding assets",
-          value: 64,
-          size: "M",
-          "data-comparison-progressbar": "determinate",
-        }),
-        jsx(SpectrumProgressBar, {
-          label: "Uploading package",
-          isIndeterminate: true,
-          size: "L",
-          "data-comparison-progressbar": "indeterminate",
-        }),
-        jsx(SpectrumProgressBar, {
-          label: "Reviews complete",
-          minValue: 0,
-          maxValue: 8,
-          value: 5,
-          valueLabel: "5 of 8",
-          size: "S",
-          "data-comparison-progressbar": "custom-scale",
-        }),
-      ],
+      "data-comparison-control-props": serializeProgressBarDemoProps(demoProps),
+      children: jsx(SpectrumProgressBar, {
+        label: demoProps.label,
+        value: demoProps.value,
+        minValue: demoProps.minValue,
+        maxValue: demoProps.maxValue,
+        valueLabel: demoProps.valueLabel || undefined,
+        size: demoProps.size,
+        staticColor: demoProps.staticColor || undefined,
+        labelPosition: demoProps.labelPosition,
+        isIndeterminate: demoProps.isIndeterminate,
+        "data-comparison-progressbar": "controlled",
+      }),
     }),
     colorScheme,
   );
@@ -1001,30 +1011,33 @@ function ReactProgressBarDemo() {
 
 function ReactProgressCircleDemo() {
   const colorScheme = useComparisonResolvedTheme();
+  const [demoProps, setDemoProps] = useState(progressCircleDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "progresscircle") {
+        setDemoProps(normalizeProgressCircleDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return renderReactSpectrumReference(
-    jsxs("div", {
+    jsx("div", {
+      ...staticColorBackdropProps(demoProps.staticColor, "comparison-progresscircle-row"),
       style: progressCircleRowStyle,
       "data-comparison-control-root": "progresscircle",
-      children: [
-        jsx(SpectrumProgressCircle, {
-          "aria-label": "Indexing files",
-          value: 38,
-          size: "S",
-          "data-comparison-progresscircle": "small",
-        }),
-        jsx(SpectrumProgressCircle, {
-          "aria-label": "Syncing files",
-          value: 72,
-          size: "M",
-          "data-comparison-progresscircle": "medium",
-        }),
-        jsx(SpectrumProgressCircle, {
-          "aria-label": "Processing request",
-          isIndeterminate: true,
-          size: "L",
-          "data-comparison-progresscircle": "indeterminate",
-        }),
-      ],
+      "data-comparison-control-props": serializeProgressCircleDemoProps(demoProps),
+      children: jsx(SpectrumProgressCircle, {
+        "aria-label": demoProps.ariaLabel,
+        value: demoProps.value,
+        minValue: demoProps.minValue,
+        maxValue: demoProps.maxValue,
+        size: demoProps.size,
+        staticColor: demoProps.staticColor || undefined,
+        isIndeterminate: demoProps.isIndeterminate,
+        "data-comparison-progresscircle": "controlled",
+      }),
     }),
     colorScheme,
   );

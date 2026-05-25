@@ -806,9 +806,9 @@ function Playground() {
               <div class="space-y-6">
                 <div class="space-y-4">
                   <ProgressBar value={25} label="Uploading..." />
-                  <ProgressBar value={50} label="Processing" variant="accent" />
-                  <ProgressBar value={75} label="Almost done" variant="success" />
-                  <ProgressBar value={100} label="Complete" variant="success" />
+                  <ProgressBar value={50} label="Processing" />
+                  <ProgressBar value={75} label="Almost done" />
+                  <ProgressBar value={100} label="Complete" />
                 </div>
                 <div class="space-y-4">
                   <span class="text-sm text-primary-300 block">Indeterminate:</span>
@@ -816,17 +816,15 @@ function Playground() {
                 </div>
                 <div class="space-y-4">
                   <span class="text-sm text-primary-300 block">Sizes:</span>
-                  <ProgressBar value={60} size="sm" label="Small" />
-                  <ProgressBar value={60} size="md" label="Medium" />
-                  <ProgressBar value={60} size="lg" label="Large" />
+                  <ProgressBar value={60} size="S" label="Small" />
+                  <ProgressBar value={60} size="M" label="Medium" />
+                  <ProgressBar value={60} size="L" label="Large" />
+                  <ProgressBar value={60} size="XL" label="Extra large" />
                 </div>
                 <div class="space-y-4">
-                  <span class="text-sm text-primary-300 block">Variants:</span>
-                  <ProgressBar value={40} variant="primary" aria-label="Primary progress" />
-                  <ProgressBar value={40} variant="accent" aria-label="Accent progress" />
-                  <ProgressBar value={40} variant="success" aria-label="Success progress" />
-                  <ProgressBar value={40} variant="warning" aria-label="Warning progress" />
-                  <ProgressBar value={40} variant="danger" aria-label="Danger progress" />
+                  <span class="text-sm text-primary-300 block">Label position:</span>
+                  <ProgressBar value={40} label="Top label" labelPosition="top" />
+                  <ProgressBar value={40} label="Side label" labelPosition="side" />
                 </div>
                 <div>
                   <span class="text-sm text-primary-300 block mb-2">Custom value label:</span>
@@ -837,6 +835,14 @@ function Playground() {
                     valueLabel="Step 2 of 5"
                     label="Setup Progress"
                   />
+                </div>
+                <div class="grid gap-3 md:grid-cols-2">
+                  <div class="rounded-md bg-slate-900 p-4">
+                    <ProgressBar value={56} label="Static white" staticColor="white" />
+                  </div>
+                  <div class="rounded-md bg-slate-100 p-4">
+                    <ProgressBar value={56} label="Static black" staticColor="black" />
+                  </div>
                 </div>
               </div>
             </Section>

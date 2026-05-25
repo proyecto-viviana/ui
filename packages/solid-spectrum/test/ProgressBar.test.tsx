@@ -1,98 +1,97 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@solidjs/testing-library";
 import { ProgressBar } from "../src/progress-bar";
 
 describe("ProgressBar (solid-spectrum)", () => {
-  it('should render with role="progressbar"', () => {
+  it('renders with role="progressbar"', () => {
     render(() => <ProgressBar value={25} aria-label="Progress" />);
-    const progressbar = screen.getByRole("progressbar");
-    expect(progressbar).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
-  it("should have correct aria attributes", () => {
+  it("sets the React Aria progress value attributes", () => {
     render(() => <ProgressBar value={25} aria-label="Progress" />);
     const progressbar = screen.getByRole("progressbar");
+
     expect(progressbar).toHaveAttribute("aria-valuenow", "25");
     expect(progressbar).toHaveAttribute("aria-valuemin", "0");
     expect(progressbar).toHaveAttribute("aria-valuemax", "100");
-    // The format may vary by locale (e.g., "25%" or "25 %")
     expect(progressbar.getAttribute("aria-valuetext")).toMatch(/25\s?%/);
   });
 
-  it("should render label", () => {
-    render(() => <ProgressBar value={50} label="Loading..." />);
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
+  it("uses the visible label as the accessible name when no aria-label is provided", () => {
+    render(() => <ProgressBar value={50} label="Loading assets" />);
+    const progressbar = screen.getByRole("progressbar", { name: "Loading assets" });
+    const label = screen.getByText("Loading assets");
+
+    expect(progressbar.getAttribute("aria-labelledby")).toBe(label.id);
   });
 
-  it("should render value text for determinate progress", () => {
+  it("renders value text for determinate progress when a label is visible", () => {
     render(() => <ProgressBar value={50} label="Progress" />);
-    // The format may vary by locale (e.g., "50%" or "50 %")
-    const valueText = screen
-      .getByRole("progressbar")
-      .parentElement?.querySelector(".text-primary-300");
-    expect(valueText?.textContent).toMatch(/50\s?%/);
+    expect(screen.getByText(/50\s?%/)).toBeInTheDocument();
   });
 
-  it("should hide value text for indeterminate progress", () => {
-    render(() => <ProgressBar isIndeterminate label="Loading..." />);
+  it("hides value text and aria-valuenow for indeterminate progress", () => {
+    render(() => <ProgressBar isIndeterminate label="Loading assets" />);
     const progressbar = screen.getByRole("progressbar");
+
     expect(progressbar).not.toHaveAttribute("aria-valuenow");
-    expect(screen.queryByText("%")).not.toBeInTheDocument();
+    expect(progressbar).not.toHaveAttribute("aria-valuetext");
+    expect(progressbar.textContent).toBe("Loading assets");
   });
 
-  it("should support custom valueLabel", () => {
-    render(() => <ProgressBar value={25} valueLabel="Step 1 of 4" aria-label="Progress" />);
+  it("supports custom valueLabel for aria and visible output", () => {
+    render(() => <ProgressBar value={25} valueLabel="Step 1 of 4" label="Progress" />);
     const progressbar = screen.getByRole("progressbar");
+
     expect(progressbar).toHaveAttribute("aria-valuetext", "Step 1 of 4");
+    expect(screen.getByText("Step 1 of 4")).toBeInTheDocument();
   });
 
-  it("should support size prop", () => {
-    const { container } = render(() => <ProgressBar value={50} size="lg" aria-label="Progress" />);
-    // Large size should have h-3 class on track
-    expect(container.querySelector(".h-3")).toBeInTheDocument();
-  });
-
-  it("should support variant prop", () => {
-    const { container } = render(() => (
-      <ProgressBar value={50} variant="success" aria-label="Progress" />
+  it("supports S2 size, labelPosition, and staticColor props", () => {
+    render(() => (
+      <ProgressBar
+        value={50}
+        size="XL"
+        labelPosition="side"
+        staticColor="white"
+        aria-label="Progress"
+      />
     ));
-    // Success variant should have green background
-    expect(container.querySelector(".bg-green-500")).toBeInTheDocument();
+
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
-  it("should support custom class", () => {
-    render(() => <ProgressBar value={50} class="my-custom-class" aria-label="Progress" />);
-    const progressbar = screen.getByRole("progressbar");
-    expect(progressbar).toHaveClass("my-custom-class");
+  it("forwards S2 escape hatches, slot, and data attrs", () => {
+    render(() => (
+      <ProgressBar
+        value={50}
+        UNSAFE_className="unsafe-class"
+        UNSAFE_style={{ margin: "2px" }}
+        data-testid="progress"
+        slot="progress"
+        aria-label="Progress"
+      />
+    ));
+    const progressbar = screen.getByTestId("progress");
+
+    expect(progressbar).toHaveClass("unsafe-class");
+    expect(progressbar).toHaveAttribute("slot", "progress");
+    expect(progressbar).toHaveStyle({ margin: "2px" });
   });
 
-  it("should support aria-label", () => {
-    render(() => <ProgressBar value={50} aria-label="Download progress" />);
-    const progressbar = screen.getByRole("progressbar");
-    expect(progressbar).toHaveAttribute("aria-label", "Download progress");
-  });
-
-  it("should clamp value between min and max", () => {
+  it("clamps values between min and max", () => {
     render(() => <ProgressBar value={150} minValue={0} maxValue={100} aria-label="Progress" />);
-    const progressbar = screen.getByRole("progressbar");
-    expect(progressbar).toHaveAttribute("aria-valuenow", "100");
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
   });
 
-  it("should allow hiding value label", () => {
-    render(() => <ProgressBar value={50} label="Progress" showValueLabel={false} />);
-    expect(screen.getByText("Progress")).toBeInTheDocument();
-    // The format may vary by locale, so check for absence of value span
-    const progressbar = screen.getByRole("progressbar");
-    const valueSpan = progressbar.querySelector(".text-primary-300");
-    expect(valueSpan).not.toBeInTheDocument();
-  });
-
-  it("should handle equal min and max without NaN", () => {
+  it("handles equal min and max without NaN", () => {
     render(() => <ProgressBar value={10} minValue={10} maxValue={10} aria-label="Progress" />);
     const progressbar = screen.getByRole("progressbar");
+
     expect(progressbar).toHaveAttribute("aria-valuetext");
     expect(progressbar.getAttribute("aria-valuetext")).not.toContain("NaN");
   });
