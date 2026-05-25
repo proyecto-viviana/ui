@@ -76,6 +76,7 @@ import {
   Meter as SolidSpectrumMeter,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
+  Popover as SolidSpectrumPopover,
   ProgressBar as SolidSpectrumProgressBar,
   ProgressCircle as SolidSpectrumProgressCircle,
   Provider as SolidSpectrumProvider,
@@ -890,6 +891,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   meter: () => h(SolidSpectrumMeterDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
   picker: () => h(SolidSpectrumPickerDemo, {}),
+  popover: () => h(SolidSpectrumPopoverDemo, {}),
   progressbar: () => h(SolidSpectrumProgressBarDemo, {}),
   progresscircle: () => h(SolidSpectrumProgressCircleDemo, {}),
   radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
@@ -1157,6 +1159,93 @@ function SolidSpectrumRangeSliderDemo() {
             isDisabled: true,
             "data-comparison-rangeslider": "disabled",
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumPopoverDemo() {
+  const [isOpen, setIsOpen] = createSignal(true);
+  const colorScheme = createComparisonResolvedThemeSignal();
+  let anchorElement: HTMLDivElement | null = null;
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: popoverFixtureStyle,
+          "data-comparison-control-root": "popover",
+          get "data-comparison-open"() {
+            return String(isOpen());
+          },
+        },
+        [
+          hc(
+            SolidSpectrumButton,
+            {
+              variant: "secondary",
+              onPress: () => setIsOpen((open) => !open),
+            },
+            [() => (isOpen() ? "Close feedback" : "Open feedback")],
+          ),
+          hc(
+            "div",
+            {
+              ref: (element: HTMLDivElement) => {
+                anchorElement = element;
+              },
+              style: popoverAnchorStyle,
+            },
+            ["Popover anchor"],
+          ),
+          hc(
+            SolidSpectrumPopover,
+            {
+              get isOpen() {
+                return isOpen();
+              },
+              onOpenChange: setIsOpen,
+              triggerRef: () => anchorElement,
+              placement: "bottom start",
+              offset: 8,
+              containerPadding: 12,
+              showArrow: true,
+              padding: "none",
+              "aria-label": "Feedback",
+            },
+            [
+              hc("div", { style: popoverContentStyle }, [
+                hc("p", { style: popoverBodyTextStyle }, [
+                  "How are we doing? Share your feedback here.",
+                ]),
+                hc(SolidSpectrumForm, {}, [
+                  hc(SolidSpectrumTextField, {
+                    label: "Subject",
+                    placeholder: "Enter a summary",
+                  }),
+                  hc(SolidSpectrumTextField, {
+                    label: "Description",
+                    isRequired: true,
+                    placeholder: "Enter your feedback",
+                  }),
+                  hc(SolidSpectrumSwitch, {}, [
+                    "Adobe can contact me for further questions concerning this feedback",
+                  ]),
+                  hc(SolidSpectrumButton, { variant: "accent" }, ["Submit"]),
+                ]),
+              ]),
+            ],
+          ),
         ],
       ),
     ],
@@ -8467,6 +8556,33 @@ const rangeSliderStackStyle = {
   gap: "28px",
   width: "420px",
   padding: "12px",
+};
+
+const popoverFixtureStyle = {
+  display: "flex",
+  "flex-direction": "column",
+  "align-items": "center",
+  gap: "16px",
+  "min-height": "360px",
+  width: "420px",
+  padding: "12px",
+};
+
+const popoverAnchorStyle = {
+  padding: "8px",
+  "border-radius": "8px",
+  background: "color-mix(in srgb, CanvasText 8%, Canvas)",
+  font: "13px system-ui, sans-serif",
+};
+
+const popoverContentStyle = {
+  width: "300px",
+  padding: "12px",
+};
+
+const popoverBodyTextStyle = {
+  margin: "0 0 12px",
+  font: "14px system-ui, sans-serif",
 };
 
 const collectionFixtureStyle = {

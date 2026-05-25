@@ -54,6 +54,7 @@ import {
   NumberField as SpectrumNumberField,
   Picker as SpectrumPicker,
   PickerItem as SpectrumPickerItem,
+  Popover as SpectrumPopover,
   ProgressBar as SpectrumProgressBar,
   ProgressCircle as SpectrumProgressCircle,
   Provider as SpectrumProvider,
@@ -721,6 +722,7 @@ export const reactStyledFixtures = {
   menu: () => jsx(ReactMenuDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
   picker: () => jsx(ReactPickerDemo, {}),
+  popover: () => jsx(ReactPopoverDemo, {}),
   progressbar: () => jsx(ReactProgressBarDemo, {}),
   progresscircle: () => jsx(ReactProgressCircleDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
@@ -943,6 +945,71 @@ function ReactRangeSliderDemo() {
           size: "S",
           isDisabled: true,
           "data-comparison-rangeslider": "disabled",
+        }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactPopoverDemo() {
+  const [isOpen, setIsOpen] = useState(true);
+  const anchorRef = useRef(null);
+  const colorScheme = useComparisonResolvedTheme();
+
+  return renderReactSpectrumReference(
+    jsxs("div", {
+      style: popoverFixtureStyle,
+      "data-comparison-control-root": "popover",
+      "data-comparison-open": String(isOpen),
+      children: [
+        jsx(SpectrumButton, {
+          variant: "secondary",
+          onPress: () => setIsOpen((open) => !open),
+          children: isOpen ? "Close feedback" : "Open feedback",
+        }),
+        jsx("div", {
+          ref: anchorRef,
+          style: popoverAnchorStyle,
+          children: "Popover anchor",
+        }),
+        jsx(SpectrumPopover, {
+          triggerRef: anchorRef,
+          isOpen,
+          onOpenChange: setIsOpen,
+          placement: "bottom start",
+          offset: 8,
+          containerPadding: 12,
+          "aria-label": "Feedback",
+          children: jsxs("div", {
+            style: popoverContentStyle,
+            children: [
+              jsx("p", {
+                style: popoverBodyTextStyle,
+                children: "How are we doing? Share your feedback here.",
+              }),
+              jsxs(SpectrumForm, {
+                children: [
+                  jsx(SpectrumTextField, {
+                    label: "Subject",
+                    placeholder: "Enter a summary",
+                  }),
+                  jsx(SpectrumTextField, {
+                    label: "Description",
+                    isRequired: true,
+                    placeholder: "Enter your feedback",
+                  }),
+                  jsx(SpectrumSwitch, {
+                    children: "Adobe can contact me for further questions concerning this feedback",
+                  }),
+                  jsx(SpectrumButton, {
+                    variant: "accent",
+                    children: "Submit",
+                  }),
+                ],
+              }),
+            ],
+          }),
         }),
       ],
     }),
@@ -5071,6 +5138,33 @@ const rangeSliderStackStyle = {
   gap: 28,
   width: 420,
   padding: 12,
+};
+
+const popoverFixtureStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 16,
+  minHeight: 360,
+  width: 420,
+  padding: 12,
+};
+
+const popoverAnchorStyle = {
+  padding: 8,
+  borderRadius: 8,
+  background: "color-mix(in srgb, CanvasText 8%, Canvas)",
+  font: "13px system-ui, sans-serif",
+};
+
+const popoverContentStyle = {
+  width: 300,
+  padding: 12,
+};
+
+const popoverBodyTextStyle = {
+  margin: "0 0 12px",
+  font: "14px system-ui, sans-serif",
 };
 
 const collectionFixtureStyle = {

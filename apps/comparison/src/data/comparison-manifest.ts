@@ -763,6 +763,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Picker directly; Solid uses @proyecto-viviana/solid-spectrum Picker with S2-derived field layout, trigger, selected value, icons, help text, and validation styling over the Solid Select primitive.",
   }),
 
+  popover: styledLiveOfficialEntry({
+    slug: "popover",
+    title: "Popover",
+    category: "Components",
+    summary:
+      "Custom-anchored overlay mounted on both stacks with controlled open state, placement, offset, container padding, arrow visibility, and form content coverage.",
+    styledSummary: "React Spectrum Popover vs Solid Spectrum Popover.",
+    styledNote:
+      "React uses @react-spectrum/s2 Popover with the documented triggerRef/isOpen custom-anchor pattern; Solid uses @proyecto-viviana/solid-spectrum Popover with the same controlled anchor, placement, offset, container padding, and visible arrow. Solid's public root export currently exposes Popover but not PopoverTrigger, so this comparison intentionally uses the documented custom-anchor path.",
+  }),
+
   progressbar: styledLiveOfficialEntry({
     slug: "progressbar",
     title: "ProgressBar",
