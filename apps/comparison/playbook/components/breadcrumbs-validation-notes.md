@@ -121,7 +121,7 @@
   `packages/solid-spectrum/src/Breadcrumbs.ts`,
   `packages/solid-spectrum/src/index.ts`,
   `packages/solid-spectrum/package.json`,
-  `packages/solid-spectrum/tsup.config.ts`,
+  `packages/solid-spectrum/vite.config.ts`,
   `packages/solid-spectrum/src/intl/en-US.json`,
   `packages/solid-spectrum/src/intl/es-ES.json`,
   `packages/solid-spectrum/src/s2-generated.css`.

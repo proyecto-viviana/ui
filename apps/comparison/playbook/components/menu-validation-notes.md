@@ -89,7 +89,7 @@
       `packages/solid-spectrum/src/menu/menu-context.ts`,
       `packages/solid-spectrum/src/button/ActionButton.tsx`,
       `packages/solid-spectrum/src/Menu.ts`, root export barrel,
-      `package.json`, and `tsup.config.ts`.
+      `package.json`, and `vite.config.ts`.
 - [x] Public values mapped:
       `Menu`, `MenuContext`, `MenuItem`, `MenuSection`, `MenuTrigger`,
       `SubmenuTrigger`, `UnavailableMenuItemTrigger`, `Collection`,
@@ -201,7 +201,7 @@
   `packages/solid-spectrum/src/ActionMenu.ts`,
   `packages/solid-spectrum/src/index.ts`,
   `packages/solid-spectrum/package.json`,
-  `packages/solid-spectrum/tsup.config.ts`,
+  `packages/solid-spectrum/vite.config.ts`,
   `packages/solid-spectrum/src/s2-generated.css`.
 - Package tests:
   `packages/solid-spectrum/test/Menu.test.tsx`,

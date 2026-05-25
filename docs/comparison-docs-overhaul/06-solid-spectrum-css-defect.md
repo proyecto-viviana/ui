@@ -78,8 +78,8 @@ if (this && typeof this.addAsset === "function") {
 `addS2CssAsset` pushes the CSS string into an in-memory `Set` (`assetRegistry`);
 `getS2CssAssets()` reads it, `clearS2CssAssets()` resets it.
 
-But `solid-spectrum` is built with **tsup/esbuild** and consumed by
-**Vite/Astro** — none of which support Parcel macros. So:
+But `solid-spectrum` was built with **tsup/esbuild** and consumed by
+**Vite/Astro** without the Parcel macro plugin configured. So:
 
 - `style()` is **never** called as a macro. `this` is always `void`; the
   `this.addAsset` branch never runs. Only `addS2CssAsset(css)` runs.
@@ -164,12 +164,14 @@ Tiered; do at least #1.
 2. **Regression guard.** Add a check (test or CI step) that fails if a
    component's class names appear in built JS but not in `s2-generated.css`.
    Cheaper proxy: assert the generated CSS covers every `src/*/index.tsx`.
-3. **Address the runtime cost (larger, optional).** Decide the long-term model:
-   either (a) a genuine build-time transform for Vite/tsup so `style()` is
-   compiled away like the upstream macro, or (b) keep runtime evaluation but
-   make it intentional — a real SSR/runtime flush of `getS2CssAssets()` — and
-   stop shipping a prebuilt file. The current state (ship a prebuilt file _and_
-   keep the runtime registry running and unread) is the worst of both.
+3. **Address the runtime cost (larger, required endpoint).** The follow-up
+   research in [`07`](07-build-time-css-strategy.md) verified the genuine
+   build-time path: `unplugin-parcel-macros` through Vite Plus `vp pack`/tsdown
+   for package output, and `macros.vite()` for the comparison app. The tsup
+   package path was rejected by local evidence because it failed on the macro's
+   virtual CSS asset. Until the macro migration is complete, the current state
+   (ship a prebuilt file _and_ keep the runtime registry running and unread) is
+   the worst of both.
 
 ## Relationship to the comparison-docs overhaul
 
@@ -177,7 +179,9 @@ The overhaul's chrome dogfoods `Disclosure` (sidebar nav) and `Table` (prop
 tables), so fix #1 is a **prerequisite** — it is listed in Phase 0 of
 [`05-phasing.md`](05-phasing.md). The overhaul also adds _new_ chrome `style()`
 calls; [`02-style-and-build.md`](02-style-and-build.md) §3 covers collecting
-those. Both are the same underlying concern: with the macro gone, every
+those; [`07`](07-build-time-css-strategy.md) supersedes that with the
+build-time macro endpoint. Both are the same underlying concern: with the macro
+gone, every
 `style()` call needs a deliberate collection path.
 
 ## Verification status

@@ -3,15 +3,22 @@
 Research into how to compile `solid-spectrum`'s `style()` system properly,
 prompted by the defect in [`06`](06-solid-spectrum-css-defect.md). Question
 asked: how do other systems do this, is it like Tailwind, and is there a
-Vite/tsup-viable path? Performance is a stated priority.
+Vite/Vite Plus-viable path? Performance is a stated priority.
 
 **Headline answer:** there is an official, verified path —
 **`unplugin-parcel-macros`** — by the same author as both Parcel and React
 Spectrum. It runs the exact `style()` macro `solid-spectrum` already vendored,
-at build time, on Vite, esbuild (→ tsup), Rollup, and webpack. It is strictly
-faster than the current runtime model and, adopted in the comparison app, it
-fixes the [`06`](06-solid-spectrum-css-defect.md) defect _and_ the chrome-CSS
-question from [`02`](02-style-and-build.md) in one move.
+at build time, on Vite/Rollup, Rolldown/tsdown, esbuild, and webpack. It is
+strictly faster than the current runtime model and, adopted in the comparison
+app, it fixes the [`06`](06-solid-spectrum-css-defect.md) defect _and_ the
+chrome-CSS question from [`02`](02-style-and-build.md) in one move.
+
+Important correction from the package spike: **tsup is not the package path for
+this repo.** Direct esbuild macro use is real, but `solid-spectrum`'s tsup
+pipeline rejected the macro's virtual CSS asset. Vite Plus packaging
+(`vp pack`, powered by tsdown/Rolldown) accepted the same macro path with
+`macros.rolldown()` and `@tsdown/css`, so package migration to Vite Plus is now
+part of the macro work, not an unrelated later cleanup.
 
 ## 1. The CSS-tooling landscape — three families
 
@@ -100,9 +107,31 @@ vendored `style()` already calls (`style-macro.ts:482`, the
 `this.addAsset({type:'css'})` branch that currently never fires).
 
 The esbuild starter uses `macros.esbuild()` in the esbuild `plugins` array; the
-Rollup starter uses `macros.rollup()` "before babel". **tsup is esbuild-based**
-and accepts esbuild plugins via its `esbuildPlugins` option — so
-`solid-spectrum`'s own build can run the macro too.
+Rollup starter uses `macros.rollup()` "before babel". The current package spike
+confirmed the esbuild plugin reaches the S2 macro, including token validation,
+but it also confirmed that the tsup/PostCSS pipeline then attempts to read the
+macro's virtual `macro-*.css` asset from disk and fails.
+
+The accepted package path is Vite Plus:
+
+- Vite Plus documents `vp pack` as its library packaging command, backed by
+  tsdown, and keeps package config in `vite.config.ts`.
+- tsdown documents migration from tsup to Rolldown/unplugin plugins, with
+  `external` becoming `deps.neverBundle`.
+- tsdown CSS extraction is provided by `@tsdown/css`; with that package
+  installed, macro CSS assets are emitted through the bundler instead of the
+  old runtime registry.
+
+Local spike evidence:
+
+```bash
+vp pack # in packages/solid-spectrum, with macros.rolldown() and @tsdown/css
+```
+
+That build completed for the browser and SSR package entries. A separate
+negative smoke with `borderColor: "neutral"` failed at build time with the S2
+macro's upstream token error, which is the desired behavior: `neutral` is valid
+for foreground/background-style color properties, but not for `borderColor`.
 
 ### Why this fits `solid-spectrum` with near-zero rewrite
 
@@ -153,13 +182,14 @@ that source.
    - Keep `style()` calls in components; ensure imports use
      `with {type: 'macro'}` (they are the upstream form already).
    - Run the macro in the package build for the `dist` outputs (the
-     `import`/`default` conditions, for non-Solid/Node consumers). With the
-     current tsup build that is `macros.esbuild()` in `esbuildPlugins`; after
-     the planned tsup → tsdown migration it is the unplugin entry in tsdown's
-     `plugins` (see §8).
-   - Drop `addS2CssAsset`/`getS2CssAssets`/`clearS2CssAssets`, the generation
-     script, and the committed `s2-generated.css`. Revert `s2-style/` to
-     upstream.
+     `import`/`default` conditions, for non-Solid/Node consumers) through Vite
+     Plus `vp pack`, `macros.rolldown()`, and `@tsdown/css`.
+   - Current bridge checkpoint: keep the generation script and committed
+     `s2-generated.css` until source imports are migrated to
+     `with {type: 'macro'}` and the emitted package CSS is diffed.
+   - Destination: drop `addS2CssAsset`/`getS2CssAssets`/`clearS2CssAssets`, the
+     generation script, and the committed `s2-generated.css`. Revert
+     `s2-style/` to upstream.
 2. **Comparison app (Astro)**
    - Add `macros.vite()` to `astro.config.mjs`'s `vite.plugins`, ordered before
      `@astrojs/solid-js` / `@astrojs/react`.
@@ -179,10 +209,13 @@ This single change resolves three things at once:
 
 ## 6. Caveats & risks
 
-- **Maturity.** `unplugin-parcel-macros` is published at `0.0.x` versions.
+- **Maturity.** `unplugin-parcel-macros` is still young (`0.x` versions).
   Mitigant: it is authored by the Parcel/React-Spectrum author and is the
   documented production path; Adobe ships docs telling every S2 user to use it.
   Still — pin the version and prove it in the spike.
+- **tsdown CSS maturity.** tsdown documents CSS support as experimental. Treat
+  `@tsdown/css` updates as gated: package build, CSS asset presence, export
+  surface, and visual smoke before upgrading.
 - **Astro pipeline.** Astro is Vite-based, so `macros.vite()` should slot in,
   but Astro injects integration plugins itself; **plugin ordering** (macros
   before the Solid/React JSX transform) must be verified. Likely needs the
@@ -201,9 +234,10 @@ This single change resolves three things at once:
 ## 7. Migration outline & fallback
 
 **Primary (recommended):** wire `unplugin-parcel-macros` per §5. Sequence:
-spike in a branch (one component + the comparison app) → measure bundle diff →
-roll out to `solid-spectrum` → update the comparison app → delete the
-generation script and `s2-generated.css`.
+Vite Plus package build checkpoint → migrate `solid-spectrum` style imports to
+the macro form → measure package JS/CSS diff → update the comparison app to run
+the macro over source exports → delete the generation script and
+`s2-generated.css`.
 
 **Fallback** (if the spike rejects the plugin on maturity/Astro grounds): the
 zero-dependency correctness fix from [`06`](06-solid-spectrum-css-defect.md) §"
@@ -211,19 +245,23 @@ Recommended fixes" #1 — make the generation script import the package barrel s
 collection is exhaustive. This fixes correctness **only**; all the runtime
 performance costs in §4 remain. Treat it as a stopgap, not the destination.
 
-## 8. Related: `solid-spectrum` build tool — tsup → tsdown
+## 8. `solid-spectrum` build tool — tsup → Vite Plus/tsdown
 
-A planned, separate change is moving `solid-spectrum`'s package build from
-**tsup** to **tsdown** (via Vite+'s `vp pack`). This is complementary to the
-macro strategy and slightly _improves_ it:
+The package build now moves from **tsup** to **Vite Plus `vp pack`** (tsdown).
+This is no longer just complementary to the macro strategy; it is the verified
+package route for macro CSS assets in this repo:
 
 - **tsdown** is the "spiritual successor to tsup, powered by Rolldown instead of
   esbuild." It is built for library bundling (`.d.ts`, multi-format, etc.).
 - It **supports unplugin plugins** natively, plus most Rollup/Rolldown plugins.
   `unplugin-parcel-macros` is an unplugin → it plugs into tsdown's `plugins`
-  array directly, cleaner than the esbuild-plugin route tsup needs.
-- The repo is already in the Vite+ ecosystem (`vp run …` task runner), so
-  `vp pack` adoption is low-friction.
+  array directly through `macros.rolldown()`.
+- The repo is already in the Vite Plus ecosystem (`vp run …` task runner), so
+  `vp pack` keeps package builds inside the same command layer.
+- Declarations stay on the existing `tsc -p tsconfig.build.json` path for the
+  first checkpoint (`dts: false` in the pack config). tsdown auto-enables
+  declarations when a package has a `types` field, but the initial migration
+  should not change JS bundling and declaration bundling at the same time.
 
 ### 8a. "Vite is moving to Rolldown" — is that a blocker? No.
 
@@ -247,8 +285,8 @@ until Astro ships a Vite 8-based release.
 2. tsdown is Rolldown-based and works today, independent of Vite's version.
 3. In the consumer-runs-macro model (§5), the comparison app's own Vite
    compiles `solid-spectrum`'s **source** with its own macro plugin —
-   `solid-spectrum`'s build tool (tsup or tsdown) never enters the comparison
-   app's pipeline. The two engines are fully decoupled; a mixed state
+   `solid-spectrum`'s build tool never enters the comparison app's pipeline.
+   The two engines are fully decoupled; a mixed state
    (comparison app on Rollup, `solid-spectrum` on Rolldown) has no interaction
    surface.
 
@@ -259,20 +297,28 @@ nothing because the macro is engine-agnostic.
 
 ### 8b. Sequencing
 
-The macro adoption (§5–§7) does **not** wait for the tsup → tsdown migration —
-`macros.esbuild()` works under tsup today. If both are on the roadmap, doing
-tsdown _first_ (or together) wires the macro once, the tsdown way, with no
-interim esbuild-plugin step to unpick. Either order is valid; flag it as a
-Phase 0 sequencing decision in [`05-phasing.md`](05-phasing.md).
+The sequencing decision is now fixed:
 
-Caveat: tsdown / `vp pack` is newer than tsup and described as alpha-stage —
-treat that migration as its own spike with its own rollback path, independent
-of the CSS work.
+1. Move `solid-spectrum` package JS/CSS bundling to Vite Plus `vp pack`, keeping
+   `tsc` declarations unchanged.
+2. Convert `s2-style` imports from the runtime bridge to upstream macro import
+   attributes.
+3. Wire the comparison app's Vite/Astro pipeline to run `macros.vite()` over
+   source exports.
+4. Delete the manual CSS registry and generated CSS once package and comparison
+   app builds prove exhaustive CSS emission.
+
+Caveat: tsdown / `vp pack` is newer than tsup and tsdown CSS is explicitly
+experimental. Keep the migration at package scope first, with an easy rollback
+until the macro source migration and visual gates pass.
 
 ## Sources
 
 - [`unplugin-parcel-macros`](https://github.com/devongovett/unplugin-parcel-macros)
-- [tsdown](https://tsdown.dev/) · [Vite+ `pack`](https://viteplus.dev/guide/pack)
+- [Vite Plus `pack`](https://viteplus.dev/guide/pack)
+- [tsdown migration from tsup](https://tsdown.dev/guide/migrate-from-tsup),
+  [CSS support](https://tsdown.dev/options/css), and
+  [declaration files](https://tsdown.dev/options/dts)
 - [React Spectrum — Styling](https://react-spectrum.adobe.com/styling)
 - Vendored `react-spectrum/examples/s2-vite-project`, `s2-esbuild-starter-app`,
   `s2-rollup-starter-app` (primary source — verified configs).

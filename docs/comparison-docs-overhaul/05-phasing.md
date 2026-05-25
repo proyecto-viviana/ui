@@ -110,9 +110,11 @@ Exit: no hand-written S2-surface CSS remains; reports and suites green.
    ([`07`](07-build-time-css-strategy.md)) or take the zero-dependency
    barrel-import fallback? Recommendation: adopt the macro; it also resolves the
    chrome-CSS question and the runtime perf overhead. Spike required.
-7. **Build-tool sequencing** — `solid-spectrum`'s tsup → tsdown migration
-   ([`07`](07-build-time-css-strategy.md) §8) vs. macro adoption: independent,
-   but doing tsdown first/together avoids an interim esbuild-plugin step.
+7. **Build-tool sequencing** — `solid-spectrum`'s tsup → Vite Plus/tsdown
+   migration ([`07`](07-build-time-css-strategy.md) §8) now goes first. The
+   local spike rejected the tsup macro-CSS path and accepted `vp pack` with
+   `macros.rolldown()`/`@tsdown/css`, while keeping declarations on `tsc` for
+   the first checkpoint.
 
 ## Acceptance criteria
 

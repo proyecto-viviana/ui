@@ -1,9 +1,13 @@
 # 02 · Style System & Build Model
 
 The original plan flagged the upstream compile-time `style` macro as the top
-risk. Investigation **resolves it**: `solid-spectrum` does not use a macro at
-all. This document records how its styling actually works and how the chrome's
-CSS gets onto the page.
+risk. The first investigation resolved the current-state question:
+`solid-spectrum` was running the vendored macro as a runtime function with a
+manual CSS registry. The follow-up research in
+[`07-build-time-css-strategy.md`](07-build-time-css-strategy.md) supersedes the
+destination: move back to upstream-style build-time macro compilation through
+`unplugin-parcel-macros`, with `solid-spectrum` packaged by Vite Plus
+`vp pack`/tsdown instead of tsup.
 
 ## 1. `solid-spectrum`'s `style()` is a runtime function
 
@@ -21,10 +25,10 @@ macro. Instead (`packages/solid-spectrum/src/s2-style/`):
   `getS2CssAssets()` → `string[]` of all collected CSS, and
   `clearS2CssAssets()` → reset.
 
-So there is **no build-time macro to reproduce**. Authoring chrome layout with
-`style({...})` (the analogues of upstream `libraryStyles`, `articleStyles`,
-`colorSchemeToggleStyles`) works at runtime — the only question is collecting
-and shipping the CSS it registers.
+So the current package state is a **runtime bridge**, not the desired endpoint.
+Authoring chrome layout with `style({...})` works only if the manual registry
+collects and ships the CSS it registers. The destination is to restore
+build-time macro compilation and remove this registry path.
 
 ## 2. How `solid-spectrum` ships CSS today
 
@@ -66,10 +70,12 @@ a Phase 0 prerequisite ([`05-phasing.md`](05-phasing.md)).
 **Full root-cause analysis, the macro connection, and recommended fixes are in
 [`06-solid-spectrum-css-defect.md`](06-solid-spectrum-css-defect.md).**
 
-## 3. Recommended CSS pipeline for the chrome
+## 3. CSS pipeline for the chrome
 
 The chrome introduces _new_ `style()` calls that no existing generation step
-covers. Two viable approaches; **(A) is recommended**.
+covers. The old deterministic generator approach below remains a fallback while
+the macro migration is incomplete; the recommended endpoint is now the
+`unplugin-parcel-macros` path in [`07`](07-build-time-css-strategy.md).
 
 ### (A) Build-time generation — deterministic _(recommended)_
 
@@ -98,9 +104,11 @@ run before the flush (lazy/client-only branches can miss); registry is process
 
 ### Decision input needed
 
-Approach A unless the team wants zero build artifacts. Either way, the existing
+Use the macro path from [`07`](07-build-time-css-strategy.md) when possible.
+Keep approach A only as a fallback/bridge, and only until package and comparison
+app builds prove exhaustive macro CSS emission. Either way, the existing
 `s2-generated.css` (component CSS) is still imported for the components rendered
-_inside_ comparison panels.
+_inside_ comparison panels until the registry path is deleted.
 
 ## 4. Astro + Solid SSR model
 
@@ -139,10 +147,10 @@ is a Phase 0 spike — see [`05-phasing.md`](05-phasing.md).
 
 ## 5. Summary of resolved vs open
 
-| Item                                                            | Status                                                                                   |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Compile-time `style` macro needed?                              | **Resolved — no.** `style()` is runtime.                                                 |
-| Chrome CSS collection                                           | **Resolved — approach A** (extend the generation-script pattern).                        |
-| `Disclosure`/`Table`/`Card` CSS missing from `s2-generated.css` | **Identified** — extend the import list.                                                 |
-| Solid SSR in Astro for the chrome                               | Low risk — integration already present; needs directory placement + hydration decisions. |
-| JSX vs `solid-js/h` for chrome                                  | **Open** — Phase 0 spike.                                                                |
+| Item                                                            | Status                                                                                                                                    |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Compile-time `style` macro needed?                              | **Endpoint — yes.** Current package is a runtime bridge; [`07`](07-build-time-css-strategy.md) restores upstream-style macro compilation. |
+| Chrome CSS collection                                           | **Endpoint — macro.** Approach A remains a bridge/fallback only.                                                                          |
+| `Disclosure`/`Table`/`Card` CSS missing from `s2-generated.css` | **Identified** — extend the import list.                                                                                                  |
+| Solid SSR in Astro for the chrome                               | Low risk — integration already present; needs directory placement + hydration decisions.                                                  |
+| JSX vs `solid-js/h` for chrome                                  | **Open** — Phase 0 spike.                                                                                                                 |

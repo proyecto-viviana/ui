@@ -103,13 +103,19 @@ claude mcp list
 Both should show `✓ Connected`. If not, check that Node.js is available in the
 shell (`node --version`).
 
-## Future Package Build Migration
+## Package Build Migration
 
-Package builds intentionally stay on the existing `tsup` + `tsc` pipeline for
-now. Migrating them to a native Vite Plus package build should be a separate
-change after we validate one package end to end.
+Package builds should move to native Vite Plus packaging one package at a time.
+The first package is `@proyecto-viviana/solid-spectrum`, whose JS/CSS package
+build now uses `vp pack`/tsdown from `packages/solid-spectrum/vite.config.ts`.
+Its declaration files intentionally stay on the existing
+`tsc -p tsconfig.build.json` path for the first migration checkpoint.
 
-That migration should compare generated `dist` files, type declarations,
+For each package migration, compare generated `dist` files, type declarations,
 declaration maps, package exports, and packed npm contents before rolling the
-pattern across all packages. Do not mix that migration into comparison app or
-component parity work.
+pattern forward. Do not migrate all packages in one change; keep each package
+as its own reversible checkpoint.
+
+`tsup` remains in the workspace while other packages still use it. Remove it
+only after `rg "tsup" package.json packages -g package.json` shows no remaining
+package build scripts depend on it.

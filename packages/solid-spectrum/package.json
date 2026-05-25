@@ -159,8 +159,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsx ../../scripts/generate-solid-spectrum-s2-css.ts && tsup && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
-    "dev": "tsup --watch",
+    "build": "tsx ../../scripts/generate-solid-spectrum-s2-css.ts && vp fmt src/s2-generated.css --write && vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "dev": "vp pack --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },
   "dependencies": {
