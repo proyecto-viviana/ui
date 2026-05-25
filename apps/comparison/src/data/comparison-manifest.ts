@@ -801,10 +801,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "RangeSlider",
     category: "Components",
     summary:
-      "Dual-thumb range input mounted on both stacks with default, formatted custom-scale, and disabled states.",
+      "Dual-thumb range input mounted on both stacks with controlled/default values, S2 size, track/thumb styles, formatting, label layout, contextual help, form names, emphasis, and disabled coverage.",
     styledSummary: "React Spectrum RangeSlider vs Solid Spectrum RangeSlider.",
     styledNote:
-      "React uses @react-spectrum/s2 RangeSlider directly; Solid uses @proyecto-viviana/solid-spectrum RangeSlider with equivalent default value, range, step, formatted output, and disabled states.",
+      "React uses @react-spectrum/s2 RangeSlider directly; Solid uses @proyecto-viviana/solid-spectrum RangeSlider with S2-derived label/output, track, filled range, dual thumb hit areas, start/end form forwarding, and matching control-surface fixtures.",
   }),
 
   slider: styledLiveOfficialEntry({

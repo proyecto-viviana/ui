@@ -453,10 +453,15 @@ export type {
 } from "./text";
 
 // Slider
-export { RangeSlider, Slider, SliderContext } from "./slider";
+export { RangeSlider, RangeSliderContext, Slider, SliderContext } from "./slider";
 export type {
+  RangeSliderLabelAlign,
+  RangeSliderLabelPosition,
   RangeSliderProps,
   RangeSliderSize,
+  RangeSliderThumbStyle,
+  RangeSliderTrackStyle,
+  RangeSliderVariant,
   SliderOrientation,
   SliderProps,
   SliderSize,

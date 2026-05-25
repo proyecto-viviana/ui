@@ -675,5 +675,13 @@ export function Slider(props: SliderProps): JSX.Element {
 
 export type { SliderState, SliderOrientation } from "@proyecto-viviana/solid-stately";
 
-export { RangeSlider } from "./RangeSlider";
-export type { RangeSliderProps, RangeSliderSize } from "./RangeSlider";
+export { RangeSlider, RangeSliderContext } from "./RangeSlider";
+export type {
+  RangeSliderLabelAlign,
+  RangeSliderLabelPosition,
+  RangeSliderProps,
+  RangeSliderSize,
+  RangeSliderThumbStyle,
+  RangeSliderTrackStyle,
+  RangeSliderVariant,
+} from "./RangeSlider";

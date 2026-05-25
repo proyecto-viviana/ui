@@ -36,6 +36,20 @@ const sliderTextControlValues: Record<string, string> = {
   form: "audioForm",
 };
 
+const rangeSliderTextControlValues: Record<string, string> = {
+  label: "Contract range",
+  startValue: "20",
+  endValue: "80",
+  defaultStartValue: "25",
+  defaultEndValue: "75",
+  minValue: "0",
+  maxValue: "100",
+  step: "5",
+  startName: "minimum",
+  endName: "maximum",
+  form: "rangeForm",
+};
+
 const colorAreaTextControlValues: Record<string, string> = {
   ariaLabel: "Contract color",
   ariaLabelledBy: "colorarea-labelledby",
@@ -233,6 +247,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     if (group.slug === "slider" && control.name in sliderTextControlValues) {
       return sliderTextControlValues[control.name];
     }
+    if (group.slug === "rangeslider" && control.name in rangeSliderTextControlValues) {
+      return rangeSliderTextControlValues[control.name];
+    }
     if (group.slug === "colorarea" && control.name in colorAreaTextControlValues) {
       return colorAreaTextControlValues[control.name];
     }
@@ -319,6 +336,20 @@ function expectedSerializedValue(
   if (
     group.slug === "slider" &&
     ["value", "defaultValue", "minValue", "maxValue", "step", "fillOffset"].includes(control.name)
+  ) {
+    return Number(value);
+  }
+  if (
+    group.slug === "rangeslider" &&
+    [
+      "startValue",
+      "endValue",
+      "defaultStartValue",
+      "defaultEndValue",
+      "minValue",
+      "maxValue",
+      "step",
+    ].includes(control.name)
   ) {
     return Number(value);
   }

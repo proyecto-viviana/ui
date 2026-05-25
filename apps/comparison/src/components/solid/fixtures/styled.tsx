@@ -520,6 +520,14 @@ import {
   type SearchFieldDemoProps,
 } from "@comparison/data/searchfield-demo";
 import {
+  initialRangeSliderDemoValue,
+  normalizeRangeSliderDemoProps,
+  rangeSliderDemoPropsFromWindow,
+  rangeSliderFormatOptionsForPreset,
+  serializeRangeSliderDemoProps,
+  type RangeSliderDemoProps,
+} from "@comparison/data/rangeslider-demo";
+import {
   initialSliderDemoValue,
   normalizeSliderDemoProps,
   serializeSliderDemoProps,
@@ -1305,7 +1313,38 @@ function SolidSpectrumProgressCircleDemo() {
 }
 
 function SolidSpectrumRangeSliderDemo() {
-  const colorScheme = createComparisonResolvedThemeSignal();
+  const [demoProps, setDemoProps] = createSignal<RangeSliderDemoProps>(
+    rangeSliderDemoPropsFromWindow(),
+  );
+  const [value, setValue] = createSignal(initialRangeSliderDemoValue(demoProps()));
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "rangeslider") {
+        const nextProps = normalizeRangeSliderDemoProps(event.detail.props ?? {});
+        setDemoProps(nextProps);
+        setValue(initialRangeSliderDemoValue(nextProps));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeRangeSliderDemoProps(demoProps()));
+
   return hc(
     SolidSpectrumProvider,
     {
@@ -1321,30 +1360,96 @@ function SolidSpectrumRangeSliderDemo() {
         {
           style: rangeSliderStackStyle,
           "data-comparison-control-root": "rangeslider",
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+          get "data-comparison-value"() {
+            const currentValue = value();
+            return `${currentValue.start}:${currentValue.end}`;
+          },
         },
         [
-          h(SolidSpectrumRangeSlider, {
-            label: "Delivery window",
-            defaultValue: { start: 25, end: 75 },
-            size: "md",
-            "data-comparison-rangeslider": "default",
-          }),
-          h(SolidSpectrumRangeSlider, {
-            label: "Budget range",
-            defaultValue: { start: 200, end: 650 },
-            minValue: 0,
-            maxValue: 1000,
-            step: 50,
-            size: "lg",
-            formatOptions: { style: "currency", currency: "USD", maximumFractionDigits: 0 },
-            "data-comparison-rangeslider": "formatted",
-          }),
-          h(SolidSpectrumRangeSlider, {
-            "aria-label": "Locked range",
-            defaultValue: { start: 30, end: 60 },
-            size: "sm",
-            isDisabled: true,
-            "data-comparison-rangeslider": "disabled",
+          hc(SolidSpectrumRangeSlider, {
+            get label() {
+              return demoProps().label;
+            },
+            get value() {
+              return demoProps().valueSource === "value" ? value() : undefined;
+            },
+            get defaultValue() {
+              return demoProps().valueSource === "defaultValue"
+                ? {
+                    start: demoProps().defaultStartValue,
+                    end: demoProps().defaultEndValue,
+                  }
+                : undefined;
+            },
+            get minValue() {
+              return demoProps().minValue;
+            },
+            get maxValue() {
+              return demoProps().maxValue;
+            },
+            get step() {
+              return demoProps().step;
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get trackStyle() {
+              return demoProps().trackStyle;
+            },
+            get thumbStyle() {
+              return demoProps().thumbStyle;
+            },
+            get labelPosition() {
+              return demoProps().labelPosition;
+            },
+            get labelAlign() {
+              return demoProps().labelAlign;
+            },
+            get formatOptions() {
+              return rangeSliderFormatOptionsForPreset(demoProps().formatOptions);
+            },
+            get contextualHelp() {
+              return demoProps().withContextualHelp
+                ? hc(SolidSpectrumContextualHelp, {}, [
+                    hc(SolidSpectrumHeading, { slot: "title" }, ["Range help"]),
+                    hc(SolidSpectrumText, {}, ["Choose minimum and maximum values."]),
+                  ])
+                : undefined;
+            },
+            get startName() {
+              return demoProps().startName || undefined;
+            },
+            get endName() {
+              return demoProps().endName || undefined;
+            },
+            get form() {
+              return demoProps().form || undefined;
+            },
+            get isEmphasized() {
+              return demoProps().isEmphasized;
+            },
+            get isDisabled() {
+              return demoProps().isDisabled;
+            },
+            onChange: (nextValue: { start: number; end: number }) => {
+              setValue(nextValue);
+              setDemoProps((current: RangeSliderDemoProps) =>
+                current.valueSource === "value"
+                  ? normalizeRangeSliderDemoProps({
+                      ...current,
+                      startValue: nextValue.start,
+                      endValue: nextValue.end,
+                    })
+                  : current,
+              );
+            },
+            "data-comparison-rangeslider": "modeled",
           }),
         ],
       ),

@@ -986,7 +986,7 @@ describe("Regression: ColorWheel", () => {
 // ═══════════════════════════════════════════════════════════════
 
 describe("Regression: RangeSlider", () => {
-  it("renders 2 sliders with start/end labels and aria-values, and snapshot", () => {
+  it("renders 2 sliders with S2 thumb labels and aria-values, and snapshot", () => {
     const { container } = render(() => (
       <RangeSlider
         label="Price"
@@ -1001,8 +1001,8 @@ describe("Regression: RangeSlider", () => {
 
     const startSlider = sliders[0];
     const endSlider = sliders[1];
-    expect(startSlider).toHaveAttribute("aria-label", "Price start");
-    expect(endSlider).toHaveAttribute("aria-label", "Price end");
+    expect(startSlider).toHaveAttribute("aria-label", "Minimum");
+    expect(endSlider).toHaveAttribute("aria-label", "Maximum");
     expect(startSlider).toHaveAttribute("aria-valuenow", "20");
     expect(endSlider).toHaveAttribute("aria-valuenow", "80");
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
