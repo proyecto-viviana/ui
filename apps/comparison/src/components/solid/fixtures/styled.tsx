@@ -74,10 +74,13 @@ import {
   Meter as SolidSpectrumMeter,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
+  ProgressBar as SolidSpectrumProgressBar,
+  ProgressCircle as SolidSpectrumProgressCircle,
   Provider as SolidSpectrumProvider,
   Radio as SolidSpectrumRadio,
   RadioGroup as SolidSpectrumRadioGroup,
   RangeCalendar as SolidSpectrumRangeCalendar,
+  RangeSlider as SolidSpectrumRangeSlider,
   SearchField as SolidSpectrumSearchField,
   Skeleton as SolidSpectrumSkeleton,
   Slider as SolidSpectrumSlider,
@@ -820,12 +823,15 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   meter: () => h(SolidSpectrumMeterDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
   picker: () => h(SolidSpectrumPickerDemo, {}),
+  progressbar: () => h(SolidSpectrumProgressBarDemo, {}),
+  progresscircle: () => h(SolidSpectrumProgressCircleDemo, {}),
   radiogroup: () => h(SolidSpectrumRadioGroupDemo, {}),
   linkbutton: () => h(SolidSpectrumLinkButtonDemo, {}),
   cardview: () => h(SolidSpectrumCardViewDemo, {}),
   segmentedcontrol: () => h(SolidSpectrumSegmentedControlDemo, {}),
   selectboxgroup: () => h(SolidSpectrumSelectBoxGroupDemo, {}),
   searchfield: () => h(SolidSpectrumSearchFieldDemo, {}),
+  rangeslider: () => h(SolidSpectrumRangeSliderDemo, {}),
   skeleton: () => h(SolidSpectrumSkeletonDemo, {}),
   slider: () => h(SolidSpectrumSliderDemo, {}),
   statuslight: () => h(SolidSpectrumStatusLightDemo, {}),
@@ -944,6 +950,143 @@ function SolidSpectrumIllustrationsDemo() {
               "data-comparison-illustration": "skeleton",
             }),
           ]),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumProgressBarDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: progressFixtureStackStyle,
+          "data-comparison-control-root": "progressbar",
+        },
+        [
+          h(SolidSpectrumProgressBar, {
+            label: "Transcoding assets",
+            value: 64,
+            size: "md",
+            "data-comparison-progressbar": "determinate",
+          }),
+          h(SolidSpectrumProgressBar, {
+            label: "Uploading package",
+            isIndeterminate: true,
+            size: "lg",
+            "data-comparison-progressbar": "indeterminate",
+          }),
+          h(SolidSpectrumProgressBar, {
+            label: "Reviews complete",
+            minValue: 0,
+            maxValue: 8,
+            value: 5,
+            valueLabel: "5 of 8",
+            size: "sm",
+            "data-comparison-progressbar": "custom-scale",
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumProgressCircleDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: progressCircleRowStyle,
+          "data-comparison-control-root": "progresscircle",
+        },
+        [
+          h(SolidSpectrumProgressCircle, {
+            "aria-label": "Indexing files",
+            value: 38,
+            size: "sm",
+            "data-comparison-progresscircle": "small",
+          }),
+          h(SolidSpectrumProgressCircle, {
+            "aria-label": "Syncing files",
+            value: 72,
+            size: "md",
+            "data-comparison-progresscircle": "medium",
+          }),
+          h(SolidSpectrumProgressCircle, {
+            "aria-label": "Processing request",
+            isIndeterminate: true,
+            size: "lg",
+            "data-comparison-progresscircle": "indeterminate",
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumRangeSliderDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          style: rangeSliderStackStyle,
+          "data-comparison-control-root": "rangeslider",
+        },
+        [
+          h(SolidSpectrumRangeSlider, {
+            label: "Delivery window",
+            defaultValue: { start: 25, end: 75 },
+            size: "md",
+            "data-comparison-rangeslider": "default",
+          }),
+          h(SolidSpectrumRangeSlider, {
+            label: "Budget range",
+            defaultValue: { start: 200, end: 650 },
+            minValue: 0,
+            maxValue: 1000,
+            step: 50,
+            size: "lg",
+            formatOptions: { style: "currency", currency: "USD", maximumFractionDigits: 0 },
+            "data-comparison-rangeslider": "formatted",
+          }),
+          h(SolidSpectrumRangeSlider, {
+            "aria-label": "Locked range",
+            defaultValue: { start: 30, end: 60 },
+            size: "sm",
+            isDisabled: true,
+            "data-comparison-rangeslider": "disabled",
+          }),
         ],
       ),
     ],
@@ -8051,6 +8194,29 @@ const illustrationGalleryStyle = {
   display: "flex",
   "align-items": "center",
   gap: "24px",
+  padding: "12px",
+};
+
+const progressFixtureStackStyle = {
+  display: "flex",
+  "flex-direction": "column",
+  gap: "24px",
+  width: "360px",
+  padding: "12px",
+};
+
+const progressCircleRowStyle = {
+  display: "flex",
+  "align-items": "center",
+  gap: "24px",
+  padding: "12px",
+};
+
+const rangeSliderStackStyle = {
+  display: "flex",
+  "flex-direction": "column",
+  gap: "28px",
+  width: "420px",
   padding: "12px",
 };
 

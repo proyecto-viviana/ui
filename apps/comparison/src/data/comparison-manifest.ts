@@ -752,6 +752,39 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 Picker directly; Solid uses @proyecto-viviana/solid-spectrum Picker with S2-derived field layout, trigger, selected value, icons, help text, and validation styling over the Solid Select primitive.",
   }),
 
+  progressbar: styledLiveOfficialEntry({
+    slug: "progressbar",
+    title: "ProgressBar",
+    category: "Components",
+    summary:
+      "Linear progress indicator mounted on both stacks with determinate, indeterminate, size, custom range, and value-label coverage.",
+    styledSummary: "React Spectrum ProgressBar vs Solid Spectrum ProgressBar.",
+    styledNote:
+      "React uses @react-spectrum/s2 ProgressBar directly; Solid uses @proyecto-viviana/solid-spectrum ProgressBar with equivalent determinate, indeterminate, size, value range, and value-label states over the Solid progress primitive.",
+  }),
+
+  progresscircle: styledLiveOfficialEntry({
+    slug: "progresscircle",
+    title: "ProgressCircle",
+    category: "Components",
+    summary:
+      "Circular progress indicator mounted on both stacks with determinate, indeterminate, and size coverage.",
+    styledSummary: "React Spectrum ProgressCircle vs Solid Spectrum ProgressCircle.",
+    styledNote:
+      "React uses @react-spectrum/s2 ProgressCircle directly; Solid uses @proyecto-viviana/solid-spectrum ProgressCircle with equivalent determinate, indeterminate, accessible label, and size states over the Solid progress primitive.",
+  }),
+
+  rangeslider: styledLiveOfficialEntry({
+    slug: "rangeslider",
+    title: "RangeSlider",
+    category: "Components",
+    summary:
+      "Dual-thumb range input mounted on both stacks with default, formatted custom-scale, and disabled states.",
+    styledSummary: "React Spectrum RangeSlider vs Solid Spectrum RangeSlider.",
+    styledNote:
+      "React uses @react-spectrum/s2 RangeSlider directly; Solid uses @proyecto-viviana/solid-spectrum RangeSlider with equivalent default value, range, step, formatted output, and disabled states.",
+  }),
+
   slider: styledLiveOfficialEntry({
     slug: "slider",
     title: "Slider",

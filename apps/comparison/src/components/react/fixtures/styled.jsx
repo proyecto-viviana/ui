@@ -52,10 +52,13 @@ import {
   NumberField as SpectrumNumberField,
   Picker as SpectrumPicker,
   PickerItem as SpectrumPickerItem,
+  ProgressBar as SpectrumProgressBar,
+  ProgressCircle as SpectrumProgressCircle,
   Provider as SpectrumProvider,
   Radio as SpectrumRadio,
   RadioGroup as SpectrumRadioGroup,
   RangeCalendar as SpectrumRangeCalendar,
+  RangeSlider as SpectrumRangeSlider,
   SearchField as SpectrumSearchField,
   Skeleton as SpectrumSkeleton,
   Slider as SpectrumSlider,
@@ -681,6 +684,8 @@ export const reactStyledFixtures = {
   menu: () => jsx(ReactMenuDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
   picker: () => jsx(ReactPickerDemo, {}),
+  progressbar: () => jsx(ReactProgressBarDemo, {}),
+  progresscircle: () => jsx(ReactProgressCircleDemo, {}),
   radiogroup: () => jsx(ReactRadioGroupDemo, {}),
   dialog: () => jsx(ReactDialogDemo, {}),
   datefield: () => jsx(ReactDateFieldDemo, {}),
@@ -688,6 +693,7 @@ export const reactStyledFixtures = {
   daterangepicker: () => jsx(ReactDateRangePickerDemo, {}),
   datepicker: () => jsx(ReactDatePickerDemo, {}),
   rangecalendar: () => jsx(ReactRangeCalendarDemo, {}),
+  rangeslider: () => jsx(ReactRangeSliderDemo, {}),
   searchfield: () => jsx(ReactSearchFieldDemo, {}),
   skeleton: () => jsx(ReactSkeletonDemo, {}),
   switch: () => jsx(ReactSwitchDemo, {}),
@@ -796,6 +802,107 @@ function ReactIllustrationsDemo() {
             size: "L",
             "data-comparison-illustration": "skeleton",
           }),
+        }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactProgressBarDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsxs("div", {
+      style: progressFixtureStackStyle,
+      "data-comparison-control-root": "progressbar",
+      children: [
+        jsx(SpectrumProgressBar, {
+          label: "Transcoding assets",
+          value: 64,
+          size: "M",
+          "data-comparison-progressbar": "determinate",
+        }),
+        jsx(SpectrumProgressBar, {
+          label: "Uploading package",
+          isIndeterminate: true,
+          size: "L",
+          "data-comparison-progressbar": "indeterminate",
+        }),
+        jsx(SpectrumProgressBar, {
+          label: "Reviews complete",
+          minValue: 0,
+          maxValue: 8,
+          value: 5,
+          valueLabel: "5 of 8",
+          size: "S",
+          "data-comparison-progressbar": "custom-scale",
+        }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactProgressCircleDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsxs("div", {
+      style: progressCircleRowStyle,
+      "data-comparison-control-root": "progresscircle",
+      children: [
+        jsx(SpectrumProgressCircle, {
+          "aria-label": "Indexing files",
+          value: 38,
+          size: "S",
+          "data-comparison-progresscircle": "small",
+        }),
+        jsx(SpectrumProgressCircle, {
+          "aria-label": "Syncing files",
+          value: 72,
+          size: "M",
+          "data-comparison-progresscircle": "medium",
+        }),
+        jsx(SpectrumProgressCircle, {
+          "aria-label": "Processing request",
+          isIndeterminate: true,
+          size: "L",
+          "data-comparison-progresscircle": "indeterminate",
+        }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactRangeSliderDemo() {
+  const colorScheme = useComparisonResolvedTheme();
+  return renderReactSpectrumReference(
+    jsxs("div", {
+      style: rangeSliderStackStyle,
+      "data-comparison-control-root": "rangeslider",
+      children: [
+        jsx(SpectrumRangeSlider, {
+          label: "Delivery window",
+          defaultValue: { start: 25, end: 75 },
+          size: "M",
+          "data-comparison-rangeslider": "default",
+        }),
+        jsx(SpectrumRangeSlider, {
+          label: "Budget range",
+          defaultValue: { start: 200, end: 650 },
+          minValue: 0,
+          maxValue: 1000,
+          step: 50,
+          size: "L",
+          formatOptions: { style: "currency", currency: "USD", maximumFractionDigits: 0 },
+          "data-comparison-rangeslider": "formatted",
+        }),
+        jsx(SpectrumRangeSlider, {
+          "aria-label": "Locked range",
+          defaultValue: { start: 30, end: 60 },
+          size: "S",
+          isDisabled: true,
+          "data-comparison-rangeslider": "disabled",
         }),
       ],
     }),
@@ -4745,6 +4852,29 @@ const illustrationGalleryStyle = {
   display: "flex",
   alignItems: "center",
   gap: 24,
+  padding: 12,
+};
+
+const progressFixtureStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 24,
+  width: 360,
+  padding: 12,
+};
+
+const progressCircleRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 24,
+  padding: 12,
+};
+
+const rangeSliderStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 28,
+  width: 420,
   padding: 12,
 };
 
