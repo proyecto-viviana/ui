@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { ActionButton, Keyboard, Provider } from "@proyecto-viviana/solid-spectrum";
+import { ActionButton, Keyboard, Provider, Text } from "@proyecto-viviana/solid-spectrum";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
 export interface DocsTopBarProps {
@@ -32,12 +32,10 @@ export default function DocsTopBar(props: DocsTopBarProps) {
         {
           type: "button",
           size: "M",
-          isQuiet: true,
           "aria-label": "Search Solid Spectrum",
         },
-        "Search Solid Spectrum",
+        [h(Text, {}, "Search Solid Spectrum"), h(Keyboard, {}, "/")],
       ),
-      h(Keyboard, {}, "/"),
     ),
     h("nav", { class: "s2-topnav", "aria-label": "Top navigation" }, [
       h("a", { href: "/" }, "Docs"),

@@ -103,14 +103,17 @@ body.s2-docs[data-theme="dark"] {
 
 .s2-search {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
   min-width: 0;
 }
 
 .s2-search > button {
+  display: inline-flex;
+  align-items: center;
   width: 100%;
+  gap: 12px;
+  justify-content: space-between;
 }
 
 .s2-shell-action {
@@ -269,7 +272,7 @@ body.s2-docs[data-theme="dark"] {
   white-space: nowrap;
 }
 
-.s2-nav-group summary span:last-child {
+.s2-nav-group summary span:last-child:not(.s2-status-badge) {
   min-width: 24px;
   padding: 1px 6px;
   border: 1px solid var(--s2-border);
