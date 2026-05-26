@@ -1,8 +1,9 @@
 import { render } from "solid-js/web";
-import ComponentExamplePreview from "@comparison/components/solid/ComponentExamplePreview";
+import ComponentExampleSection from "@comparison/components/solid/ComponentExampleSection";
+import { initializeComparisonControls } from "@comparison/scripts/component-controls";
 
 for (const mountNode of document.querySelectorAll<HTMLElement>(
-  ".js-component-example-preview-mount",
+  ".js-component-example-section-mount",
 )) {
   if (mountNode.dataset.mounted) {
     continue;
@@ -15,7 +16,10 @@ for (const mountNode of document.querySelectorAll<HTMLElement>(
   }
 
   mountNode.replaceChildren();
-  render(() => ComponentExamplePreview({ slug }), mountNode);
+  render(() => ComponentExampleSection({ slug }), mountNode);
+  initializeComparisonControls(mountNode);
+  window.dispatchEvent(new CustomEvent("comparison:theme-controls-mounted"));
+  mountNode.dataset.controlsMounted = "true";
   mountNode.dataset.mounted = "true";
 
   void Promise.all([import("./react-mount"), import("./solid-mount")]).then(

@@ -1,0 +1,17 @@
+---
+import ComponentExampleSectionFallback from "./ComponentExampleSectionFallback.astro";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+---
+
+<div class="js-component-example-section-mount" data-component-slug={entry.slug}>
+  <ComponentExampleSectionFallback entry={entry} />
+</div>
+<script>
+  import "../scripts/component-example-section-mount.tsx";
+</script>

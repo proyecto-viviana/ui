@@ -1,0 +1,21 @@
+---
+import ComponentExampleControlsFallback from "./ComponentExampleControlsFallback.astro";
+import ComponentExamplePreviewFallback from "./ComponentExamplePreviewFallback.astro";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+---
+
+<section class="s2-example" id="example" aria-labelledby="example-title">
+  <div class="s2-example-preview">
+    <ComponentExamplePreviewFallback entry={entry} />
+  </div>
+
+  <div class="s2-example-controls">
+    <ComponentExampleControlsFallback entry={entry} />
+  </div>
+</section>

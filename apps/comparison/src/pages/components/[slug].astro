@@ -1,6 +1,5 @@
 ---
-import ComponentExampleControlsMount from "@comparison/components/ComponentExampleControlsMount.astro";
-import ComponentExamplePreviewMount from "@comparison/components/ComponentExamplePreviewMount.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
 import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
 import { comparisonEntries, type ComparisonEntry } from "@comparison/data/comparison-manifest";
 import ComponentDetailMetaMount from "@comparison/components/ComponentDetailMetaMount.astro";
@@ -42,15 +41,7 @@ const { entry } = Astro.props as { entry: ComparisonEntry };
       <main class="s2-main">
         <ComponentDetailHeroMount entry={entry} />
 
-        <section class="s2-example" id="example" aria-labelledby="example-title">
-          <div class="s2-example-preview">
-            <ComponentExamplePreviewMount entry={entry} />
-          </div>
-
-          <div class="s2-example-controls">
-            <ComponentExampleControlsMount entry={entry} />
-          </div>
-        </section>
+        <ComponentExampleSectionMount entry={entry} />
 
         <ComponentDetailMetaMount entry={entry} />
       </main>
@@ -67,7 +58,6 @@ const { entry } = Astro.props as { entry: ComparisonEntry };
 
     <script>
       import "@comparison/scripts/docs-theme";
-      import "@comparison/scripts/component-controls";
     </script>
   </body>
 </html>
