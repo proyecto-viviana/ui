@@ -1,4 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function selectPickerOption(page: Page, label: string, option: string) {
+  await page.getByLabel(label).click();
+  await page.getByRole("option", { name: option }).click();
+}
 
 test.describe("comparison catalogue controls", () => {
   test("filters by search text and reports visible count", async ({ page }) => {
@@ -15,7 +20,7 @@ test.describe("comparison catalogue controls", () => {
   test("sorts visible entries by component name", async ({ page }) => {
     await page.goto("/");
 
-    await page.getByLabel("Sort").selectOption("name");
+    await selectPickerOption(page, "Sort", "Name");
 
     const titles = await page
       .locator("[data-entry-card]:not([hidden]) .s2-component-name")

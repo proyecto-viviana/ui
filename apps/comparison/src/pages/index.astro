@@ -9,6 +9,7 @@ import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
 import { officialVisualStateSummary } from "@comparison/data/visual-state-matrix";
+import CatalogueControlsMount from "@comparison/components/CatalogueControlsMount.astro";
 import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import "@comparison/styles/global.css";
 
@@ -92,38 +93,7 @@ const overallCoverage = Math.round(
           </div>
           <div class="s2-example-controls">
             <h2 id="coverage-title">Catalogue controls</h2>
-            <form class="s2-control-grid" data-catalogue-controls>
-              <label class="s2-field">
-                <span>Search</span>
-                <input name="query" type="search" placeholder="Button, Dialog, Picker" />
-              </label>
-              <label class="s2-field">
-                <span>Parity</span>
-                <select name="parity">
-                  <option value="all">All</option>
-                  <option value="matched">Matched</option>
-                  <option value="partial">Partial</option>
-                  <option value="gap">Gap</option>
-                </select>
-              </label>
-              <label class="s2-field">
-                <span>Status</span>
-                <select name="status">
-                  <option value="all">All</option>
-                  <option value="live">Live</option>
-                  <option value="tracked">Tracked</option>
-                </select>
-              </label>
-              <label class="s2-field">
-                <span>Sort</span>
-                <select name="sort">
-                  <option value="docs">Docs order</option>
-                  <option value="name">Name</option>
-                  <option value="coverage">Coverage</option>
-                  <option value="parity">Parity</option>
-                </select>
-              </label>
-            </form>
+            <CatalogueControlsMount />
           </div>
         </section>
 
@@ -171,72 +141,6 @@ const overallCoverage = Math.round(
 
     <script>
       import "@comparison/scripts/docs-theme";
-    </script>
-    <script is:inline>
-      const controls = document.querySelector("[data-catalogue-controls]");
-      const list = document.querySelector("[data-entry-list]");
-      const count = document.querySelector("[data-result-count]");
-      const cards = Array.from(document.querySelectorAll("[data-entry-card]"));
-
-      function normalize(value) {
-        return String(value || "").toLowerCase();
-      }
-
-      function applyCatalogueControls() {
-        if (!(controls instanceof HTMLFormElement) || !(list instanceof HTMLElement)) {
-          return;
-        }
-
-        const data = new FormData(controls);
-        const query = normalize(data.get("query"));
-        const parity = String(data.get("parity") || "all");
-        const status = String(data.get("status") || "all");
-        const sort = String(data.get("sort") || "docs");
-        const visible = [];
-
-        for (const card of cards) {
-          if (!(card instanceof HTMLElement)) {
-            continue;
-          }
-
-          const searchable = normalize(`${card.dataset.title} ${card.dataset.summary}`);
-          const matches =
-            (!query || searchable.includes(query)) &&
-            (parity === "all" || card.dataset.parity === parity) &&
-            (status === "all" || card.dataset.status === status);
-
-          card.hidden = !matches;
-          if (matches) {
-            visible.push(card);
-          }
-        }
-
-        const sorted = [...visible].sort((a, b) => {
-          if (sort === "name") {
-            return String(a.dataset.title).localeCompare(String(b.dataset.title));
-          }
-          if (sort === "coverage") {
-            return Number(b.dataset.coverage) - Number(a.dataset.coverage);
-          }
-          if (sort === "parity") {
-            return String(a.dataset.parity).localeCompare(String(b.dataset.parity)) ||
-              Number(a.dataset.index) - Number(b.dataset.index);
-          }
-          return Number(a.dataset.index) - Number(b.dataset.index);
-        });
-
-        for (const card of sorted) {
-          list.append(card);
-        }
-
-        if (count) {
-          count.textContent = `${visible.length} component${visible.length === 1 ? "" : "s"}`;
-        }
-      }
-
-      controls?.addEventListener("input", applyCatalogueControls);
-      controls?.addEventListener("change", applyCatalogueControls);
-      applyCatalogueControls();
     </script>
   </body>
 </html>

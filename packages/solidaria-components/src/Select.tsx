@@ -272,6 +272,13 @@ export const SelectContext = createContext<SelectContextValue<unknown> | null>(n
 export const SelectStateContext = createContext<SelectState<unknown> | null>(null);
 export const SelectValueContext = SelectContext;
 
+const selectRootLabelProps = new Set([
+  "aria-label",
+  "aria-labelledby",
+  "aria-describedby",
+  "aria-details",
+]);
+
 /**
  * A select displays a collapsible list of options and allows a user to select one of them.
  */
@@ -434,6 +441,9 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
+    for (const key of selectRootLabelProps) {
+      delete filtered[key];
+    }
     return filtered;
   });
 

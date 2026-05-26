@@ -25,12 +25,12 @@ describe("createSelect", () => {
   };
 
   describe("triggerProps", () => {
-    it('returns role="combobox"', () => {
+    it("does not force an explicit ARIA role on the native button trigger", () => {
       createRoot((dispose) => {
         const state = createTestState();
         const { triggerProps } = createSelect({}, state);
 
-        expect(triggerProps.role).toBe("combobox");
+        expect(triggerProps.role).toBeUndefined();
         dispose();
       });
     });
@@ -201,7 +201,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Closed");
 
       fireEvent.keyDown(trigger, { key: "Enter" });
@@ -218,7 +218,7 @@ describe("createSelect", () => {
         return <button {...triggerProps}>{isOpen() ? "Open" : "Closed"}</button>;
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       fireEvent.keyDown(trigger, { key: " " });
       expect(trigger.textContent).toBe("Open");
 
@@ -233,7 +233,7 @@ describe("createSelect", () => {
         return <button {...triggerProps}>{isOpen() ? "Open" : "Closed"}</button>;
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       fireEvent.keyDown(trigger, { key: "ArrowDown" });
       expect(trigger.textContent).toBe("Open");
 
@@ -248,7 +248,7 @@ describe("createSelect", () => {
         return <button {...triggerProps}>{isOpen() ? "Open" : "Closed"}</button>;
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Open");
 
       fireEvent.keyDown(trigger, { key: "Escape" });
@@ -269,7 +269,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Apple");
 
       fireEvent.keyDown(trigger, { key: "ArrowRight" });
@@ -290,7 +290,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Cherry");
 
       fireEvent.keyDown(trigger, { key: "ArrowLeft" });
@@ -311,7 +311,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Cherry");
 
       fireEvent.keyDown(trigger, { key: "Home" });
@@ -332,7 +332,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Apple");
 
       fireEvent.keyDown(trigger, { key: "End" });
@@ -356,7 +356,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Apple");
 
       // ArrowRight should skip 'b' (Banana is disabled) and go to 'c'
@@ -376,7 +376,7 @@ describe("createSelect", () => {
         return <button {...triggerProps}>{selectedItem()?.value?.label || "None"}</button>;
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       fireEvent.keyDown(trigger, { key: "ArrowRight" });
       expect(trigger.textContent).toBe("Banana");
 
@@ -395,7 +395,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       fireEvent.keyDown(trigger, { key: "ArrowDown" });
       expect(trigger.textContent).toBe("open:b");
 
@@ -414,7 +414,7 @@ describe("createSelect", () => {
         );
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
       fireEvent.keyDown(trigger, { key: "c" });
       expect(trigger.textContent).toBe("None");
 
@@ -433,7 +433,7 @@ describe("createSelect", () => {
         return <button {...triggerProps}>Trigger</button>;
       });
 
-      const trigger = getByRole("combobox");
+      const trigger = getByRole("button");
 
       fireEvent.focus(trigger);
       expect(onFocusChange).toHaveBeenCalledWith(true);

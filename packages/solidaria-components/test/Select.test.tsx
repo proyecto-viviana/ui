@@ -86,8 +86,7 @@ describe("Select", () => {
     it("should render trigger with default class", () => {
       render(() => <TestSelect />);
 
-      // Select trigger uses combobox role, not button
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button", { name: "Test Select" });
       expect(trigger).toHaveClass("solidaria-Select-trigger");
     });
 
@@ -104,12 +103,12 @@ describe("Select", () => {
       expect(screen.getByText("Select an option")).toBeInTheDocument();
     });
 
-    it("should have combobox role on trigger", () => {
+    it("should expose the trigger as a button with a listbox popup", () => {
       render(() => <TestSelect />);
 
-      // Select trigger uses combobox role per ARIA spec
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toBeInTheDocument();
+      expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
     });
 
     it("should wire visible label via aria-labelledby", () => {
@@ -129,16 +128,26 @@ describe("Select", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("combobox", { name: "Animals" });
+      const trigger = screen.getByRole("button", { name: "Animals" });
       const label = screen.getByText("Animals");
       expect(trigger.getAttribute("aria-labelledby")).toContain(label.id);
+    });
+
+    it("should apply accessible labels to the trigger without duplicating them on the root", () => {
+      render(() => <TestSelect />);
+
+      const root = document.querySelector(".solidaria-Select");
+      const trigger = screen.getByRole("button", { name: "Test Select" });
+      expect(root).not.toHaveAttribute("aria-label");
+      expect(root).not.toHaveAttribute("aria-labelledby");
+      expect(trigger).toHaveAttribute("aria-label", "Test Select");
     });
 
     it("provides slots", async () => {
       render(() => <TestSelect selectProps={{ "data-testid": "select", "data-foo": "bar" }} />);
 
       const wrapper = screen.getByTestId("select");
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Select an option");
       expect(wrapper).toHaveAttribute("data-foo", "bar");
       expect(trigger).toHaveClass("solidaria-Select-trigger");
@@ -156,7 +165,7 @@ describe("Select", () => {
     it("should support slot", () => {
       render(() => <TestSelect selectProps={{ slot: "test", "aria-label": "test" }} />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger.closest(".solidaria-Select")).toHaveAttribute("slot", "test");
       expect(trigger).toHaveAttribute("aria-label", "test");
     });
@@ -191,7 +200,7 @@ describe("Select", () => {
           </SelectListBox>
         </Select>
       ));
-      expect(screen.getByRole("combobox")).toHaveTextContent("Select an animal");
+      expect(screen.getByRole("button")).toHaveTextContent("Select an animal");
     });
 
     it("should support empty state", async () => {
@@ -212,7 +221,7 @@ describe("Select", () => {
         </Select>
       ));
 
-      await user.click(screen.getByRole("combobox"));
+      await user.click(screen.getByRole("button"));
       expect(screen.getByRole("listbox")).toHaveAttribute("data-empty", "true");
       expect(screen.getByRole("option")).toHaveTextContent("No results");
     });
@@ -234,7 +243,7 @@ describe("Select", () => {
     it("should open listbox on trigger click", async () => {
       render(() => <TestSelect />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       await user.click(trigger);
 
       expect(screen.getByRole("listbox")).toBeInTheDocument();
@@ -243,7 +252,7 @@ describe("Select", () => {
     it("should focus the selected option when opening from trigger click", async () => {
       render(() => <TestSelect selectProps={{ defaultSelectedKey: "dog" }} />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       await user.click(trigger);
 
       const selectedOption = screen.getByRole("option", { name: "Dog" });
@@ -253,7 +262,7 @@ describe("Select", () => {
     it("should open listbox on Enter", async () => {
       render(() => <TestSelect />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       fireEvent.keyDown(trigger, { key: "Enter" });
 
       expect(screen.getByRole("listbox")).toBeInTheDocument();
@@ -262,7 +271,7 @@ describe("Select", () => {
     it("should open listbox on Space", async () => {
       render(() => <TestSelect />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       fireEvent.keyDown(trigger, { key: " " });
 
       expect(screen.getByRole("listbox")).toBeInTheDocument();
@@ -271,8 +280,8 @@ describe("Select", () => {
     it("should display selected value in trigger", async () => {
       render(() => <TestSelect selectProps={{ defaultSelectedKey: "cat" }} />);
 
-      const trigger = screen.getByRole("combobox");
-      expect(screen.getByRole("combobox")).toHaveTextContent("Cat");
+      const trigger = screen.getByRole("button");
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
     });
 
     it("should not render listbox initially", () => {
@@ -290,7 +299,7 @@ describe("Select", () => {
     it("should support autoFocus", () => {
       render(() => <TestSelect selectProps={{ autoFocus: true }} />);
 
-      expect(document.activeElement).toBe(screen.getByRole("combobox"));
+      expect(document.activeElement).toBe(screen.getByRole("button"));
     });
   });
 
@@ -306,7 +315,7 @@ describe("Select", () => {
       await user.click(options[1]);
 
       // Check that the value is displayed in trigger
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Dog");
     });
 
@@ -324,7 +333,7 @@ describe("Select", () => {
       render(() => <TestSelect selectProps={{ selectedKey: "dog" }} />);
 
       // The trigger should show the selected value
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Dog");
     });
 
@@ -332,7 +341,7 @@ describe("Select", () => {
       render(() => <TestSelect selectProps={{ defaultSelectedKey: "kangaroo" }} />);
 
       // The trigger should show the selected value
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Kangaroo");
     });
 
@@ -363,7 +372,7 @@ describe("Select", () => {
         </Select>
       ));
 
-      expect(screen.getByRole("combobox")).toHaveTextContent("1 - Cat");
+      expect(screen.getByRole("button")).toHaveTextContent("1 - Cat");
     });
 
     it("updates SelectValue for controlled selection when composed with solid-js/h", async () => {
@@ -395,12 +404,12 @@ describe("Select", () => {
 
       render(() => h(HSelectValueDemo, {})());
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button", { name: "Test Select" });
       expect(trigger).toHaveTextContent("Dog");
 
       await user.click(screen.getByRole("button", { name: "Set Cat" }));
 
-      expect(screen.getByRole("combobox")).toHaveTextContent("Cat");
+      expect(screen.getByRole("button", { name: "Test Select" })).toHaveTextContent("Cat");
     });
 
     it("updates SelectValue for uncontrolled option selection when composed with solid-js/h", async () => {
@@ -428,14 +437,14 @@ describe("Select", () => {
 
       render(() => h(HSelectValueDemo, {})());
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Dog");
 
       await user.click(trigger);
       await user.click(screen.getByRole("option", { name: "Cat" }));
 
       expect(document.body.dataset.hUncontrolledChangeKey).toBe("cat");
-      expect(screen.getByRole("combobox")).toHaveTextContent("Cat");
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
     });
 
     it("should support falsy (0) as a valid default value", async () => {
@@ -456,10 +465,10 @@ describe("Select", () => {
         </Select>
       ));
 
-      await user.click(screen.getByRole("combobox"));
+      await user.click(screen.getByRole("button"));
       await user.click(screen.getByRole("option", { name: "0" }));
 
-      expect(screen.getByRole("combobox")).toHaveTextContent("0");
+      expect(screen.getByRole("button")).toHaveTextContent("0");
     });
 
     it("should close on selection", async () => {
@@ -505,7 +514,7 @@ describe("Select", () => {
       const dogOption = options.find((o) => o.textContent === "Dog")!;
       await user.click(dogOption);
 
-      expect(screen.getByRole("combobox")).toHaveTextContent("Cat and Dog");
+      expect(screen.getByRole("button")).toHaveTextContent("Cat and Dog");
       expect(screen.getByRole("listbox")).toBeInTheDocument();
       expect(onSelectionChangeKeys).toHaveBeenCalled();
     });
@@ -538,7 +547,7 @@ describe("Select", () => {
         </form>
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button", { name: "Select" });
       expect(trigger).toHaveTextContent("Select an item");
 
       await user.click(screen.getByTestId("submit"));
@@ -574,7 +583,7 @@ describe("Select", () => {
         />
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Dog and Kangaroo");
 
       const options = screen.getAllByRole("option");
@@ -613,7 +622,7 @@ describe("Select", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Cat");
 
       await user.click(trigger);
@@ -677,7 +686,7 @@ describe("Select", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("close");
     });
 
@@ -721,13 +730,14 @@ describe("Select", () => {
 
       await user.tab();
       await user.tab();
-      expect(document.activeElement).toBe(screen.getByRole("combobox"));
+      const trigger = screen.getByRole("button", { name: "Test Select" });
+      expect(document.activeElement).toBe(trigger);
       await user.tab();
       expect(document.activeElement).toBe(screen.getByTestId("clear"));
       await user.tab();
       expect(document.activeElement).toBe(screen.getByTestId("after"));
 
-      await user.click(screen.getByRole("combobox"));
+      await user.click(trigger);
       await user.click(screen.getByRole("option", { name: "Dog" }));
       expect(onSelectionChange).toHaveBeenLastCalledWith("dog");
 
@@ -737,7 +747,7 @@ describe("Select", () => {
 
     it("has a value immediately after rendering", () => {
       render(() => <TestSelect selectProps={{ defaultSelectedKey: "cat" }} />);
-      expect(screen.getByRole("combobox")).toHaveTextContent("Cat");
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
     });
   });
 
@@ -784,7 +794,7 @@ describe("Select", () => {
     it("select can select an option via keyboard", async () => {
       render(() => <TestSelect />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button", { name: "Test Select" });
       expect(trigger).toHaveTextContent("Select an option");
 
       await user.tab();
@@ -805,7 +815,7 @@ describe("Select", () => {
       ];
       render(() => <TestSelect items={items} />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       await user.tab();
       await user.keyboard("Northern Terr");
 
@@ -816,7 +826,7 @@ describe("Select", () => {
     it("shouldn't allow the user to open the select if there are no items", async () => {
       render(() => <TestSelect items={[]} />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       await user.click(trigger);
       expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
 
@@ -871,7 +881,7 @@ describe("Select", () => {
     it("should support isDisabled on Select", () => {
       render(() => <TestSelect selectProps={{ isDisabled: true }} />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveAttribute("data-disabled");
     });
 
@@ -917,7 +927,7 @@ describe("Select", () => {
       const onOpenChange = vi.fn();
       render(() => <TestSelect selectProps={{ onOpenChange }} />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       await user.click(trigger);
 
       expect(onOpenChange).toHaveBeenCalledWith(true);
@@ -926,7 +936,7 @@ describe("Select", () => {
     it("should set data-open when open", async () => {
       render(() => <TestSelect />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       await user.click(trigger);
 
       expect(trigger).toHaveAttribute("data-open");
@@ -949,7 +959,7 @@ describe("Select", () => {
 
       await user.tab();
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveAttribute("data-focused");
     });
 
@@ -958,7 +968,7 @@ describe("Select", () => {
 
       await user.tab();
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       expect(trigger).toHaveAttribute("data-focus-visible");
     });
 
@@ -1057,7 +1067,7 @@ describe("Select", () => {
 
       render(() => <Test />);
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button", { name: "Test Select" });
       const submit = screen.getByTestId("submit");
       const form = submit.closest("form") as HTMLFormElement;
       expect(trigger).toHaveTextContent("Select an option");
@@ -1102,7 +1112,7 @@ describe("Select", () => {
       ));
 
       const select = screen.getByTestId("test-select");
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
       const input = document.querySelector("[name=select]") as HTMLSelectElement;
       expect(input).toHaveAttribute("required");
       expect(trigger).not.toHaveAttribute("aria-describedby");

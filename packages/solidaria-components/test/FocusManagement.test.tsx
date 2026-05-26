@@ -148,7 +148,7 @@ describe("Select Focus Management", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
 
       // Open dropdown with keyboard (keep focus on trigger)
       trigger.focus();
@@ -189,7 +189,7 @@ describe("Select Focus Management", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
 
       // Open dropdown
       await user.click(trigger);
@@ -228,7 +228,7 @@ describe("Select Focus Management", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
 
       // Open dropdown
       await user.click(trigger);
@@ -262,7 +262,7 @@ describe("Select Focus Management", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("combobox");
+      const trigger = screen.getByRole("button");
 
       // Open dropdown with keyboard
       await user.tab();
