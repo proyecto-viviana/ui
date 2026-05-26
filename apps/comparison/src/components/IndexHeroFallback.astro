@@ -1,0 +1,31 @@
+---
+import {
+  comparisonEntries,
+  missingOfficialComparisonEntries,
+  officialComparisonEntries,
+} from "@comparison/data/comparison-manifest";
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import { getComponentCoverage } from "@comparison/data/coverage";
+
+const liveCount = comparisonEntries.filter((entry) => entry.priority === "live").length;
+const overallCoverage = Math.round(
+  comparisonEntries.reduce(
+    (sum, entry) => sum + getComponentCoverage(entry, getComponentControlGroup(entry)).overall,
+    0,
+  ) / comparisonEntries.length,
+);
+---
+
+<section class="s2-hero" aria-labelledby="page-title">
+  <h1 id="page-title">Solid Spectrum</h1>
+  <p>
+    A component-by-component parity harness for React Spectrum S2 and
+    @proyecto-viviana/solid-spectrum.
+  </p>
+  <div class="s2-hero-meta">
+    <span class="s2-pill">{officialComparisonEntries.length} official S2 components</span>
+    <span class="s2-pill s2-pill--live">{liveCount} live routes</span>
+    <span class="s2-pill s2-pill--partial">{missingOfficialComparisonEntries.length} gaps</span>
+    <span class="s2-pill">{overallCoverage}% coverage</span>
+  </div>
+</section>

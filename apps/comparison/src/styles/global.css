@@ -297,6 +297,8 @@ body.s2-docs[data-theme="dark"] {
   min-width: 0;
 }
 
+.js-index-hero-mount,
+.s2-index-hero,
 .js-component-detail-hero-mount,
 .s2-component-detail-hero {
   min-width: 0;

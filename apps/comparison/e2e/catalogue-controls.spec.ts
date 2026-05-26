@@ -9,6 +9,9 @@ test.describe("comparison catalogue controls", () => {
   test("filters by search text and reports visible count", async ({ page }) => {
     await page.goto("/");
 
+    await expect(page.locator(".js-index-hero-mount[data-mounted='true']")).toHaveCount(1);
+    await expect(page.getByRole("heading", { level: 1, name: "Solid Spectrum" })).toBeVisible();
+
     await page.getByRole("searchbox", { name: "Search" }).fill("Accordion");
 
     const visibleCards = page.locator("[data-entry-card]:not([hidden])");
