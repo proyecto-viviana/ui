@@ -19,8 +19,8 @@ normalized to the current gate checklist.
 
 - Current accepted under the full gate model: Calendar, Checkbox, ColorArea,
   ColorField, ColorSlider, ColorWheel, ColorSwatch, ColorSwatchPicker,
-  Disclosure, Icons, Illustrations, IllustratedMessage, InlineAlert, Popover,
-  TagGroup, Toast, ToggleButton, ToggleButtonGroup, Tooltip.
+  Disclosure, Icons, Illustrations, IllustratedMessage, InlineAlert, ListView,
+  Popover, TagGroup, Toast, ToggleButton, ToggleButtonGroup, Tooltip.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -59,11 +59,11 @@ Current snapshot:
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
 - Modeled viewer controls: 66/69 entries. Missing control groups: Provider,
   TableView, and TreeView.
-- Validation notes: 57/69 entries. Missing notes: DropZone, ListView,
-  NumberField, Picker, Provider, RadioGroup, SearchField, Switch, TableView,
-  TextArea, TextField, and TreeView.
-- Current visual/asserted evidence: 66/69 entries. Missing evidence: ListView,
-  TableView, and TreeView.
+- Validation notes: 58/69 entries. Missing notes: DropZone, NumberField,
+  Picker, Provider, RadioGroup, SearchField, Switch, TableView, TextArea,
+  TextField, and TreeView.
+- Current visual/asserted evidence: 67/69 entries. Missing evidence: TableView
+  and TreeView.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
 `icons`. Icons and Illustrations now have modeled controls and strict primitive
@@ -99,6 +99,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [IllustratedMessage](./illustratedmessage-validation-notes.md)
 - [InlineAlert](./inlinealert-validation-notes.md)
 - [Link](./link-validation-notes.md)
+- [ListView](./listview-validation-notes.md)
 - [Meter](./meter-validation-notes.md)
 - [NotificationBadge](./notificationbadge-validation-notes.md)
 - [Popover](./popover-validation-notes.md)

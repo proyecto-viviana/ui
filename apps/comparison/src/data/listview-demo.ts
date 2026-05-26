@@ -7,12 +7,16 @@ export const listViewSelectionStyleOptions = ["checkbox", "highlight"] as const;
 export const listViewOverflowModeOptions = ["truncate", "wrap"] as const;
 export const listViewSelectionSourceOptions = ["selectedKeys", "defaultSelectedKeys"] as const;
 export const listViewTrailingIconOptions = ["none", "linkOut", "child"] as const;
+export const listViewItemCountOptions = ["3", "2", "0"] as const;
+export const listViewItemActionSlotOptions = ["none", "buttonGroup", "actionMenu"] as const;
 
 export type ListViewSelectionMode = (typeof listViewSelectionModeOptions)[number];
 export type ListViewSelectionStyle = (typeof listViewSelectionStyleOptions)[number];
 export type ListViewOverflowMode = (typeof listViewOverflowModeOptions)[number];
 export type ListViewSelectionSource = (typeof listViewSelectionSourceOptions)[number];
 export type ListViewTrailingIcon = (typeof listViewTrailingIconOptions)[number];
+export type ListViewItemCount = (typeof listViewItemCountOptions)[number];
+export type ListViewItemActionSlot = (typeof listViewItemActionSlotOptions)[number];
 
 export interface ListViewDemoItem {
   id: string;
@@ -37,12 +41,16 @@ export interface ListViewDemoProps {
   selectionStyle: ListViewSelectionStyle;
   overflowMode: ListViewOverflowMode;
   selectionSource: ListViewSelectionSource;
+  itemCount: ListViewItemCount;
   selectedKeys: string;
   defaultSelectedKeys: string;
   disabledKeys: string;
   disabledItem: ListViewDisabledItem;
   isQuiet: boolean;
   showDescriptions: boolean;
+  showIcons: boolean;
+  showActionBar: boolean;
+  itemActionSlot: ListViewItemActionSlot;
   hideLinkOutIcon: boolean;
   trailingIcon: ListViewTrailingIcon;
 }
@@ -52,12 +60,16 @@ export const listViewDemoDefaults: ListViewDemoProps = {
   selectionStyle: "checkbox",
   overflowMode: "truncate",
   selectionSource: "defaultSelectedKeys",
+  itemCount: "3",
   selectedKeys: "project-brief",
   defaultSelectedKeys: "project-brief",
   disabledKeys: "",
   disabledItem: "none",
   isQuiet: false,
   showDescriptions: true,
+  showIcons: false,
+  showActionBar: false,
+  itemActionSlot: "none",
   hideLinkOutIcon: false,
   trailingIcon: "none",
 };
@@ -81,15 +93,19 @@ export function listViewKeysFromValue(
   value: string | undefined,
   fallback: string[],
   selectionMode: ListViewSelectionMode,
+  allowedKeys: readonly string[] = listViewKeyOptions,
 ) {
   if (selectionMode === "none") {
     return new Set<string>();
   }
 
+  const allowedKeySet = new Set(allowedKeys);
   const keys = String(value || fallback.join(","))
     .split(",")
     .map((key) => key.trim())
-    .filter((key): key is ListViewKey => isOneOf(key, listViewKeyOptions));
+    .filter(
+      (key): key is ListViewKey => isOneOf(key, listViewKeyOptions) && allowedKeySet.has(key),
+    );
   return new Set(selectionMode === "single" ? keys.slice(0, 1) : keys);
 }
 
@@ -98,13 +114,19 @@ export function serializeListViewKeys(keys: Set<string | number>) {
 }
 
 export function initialListViewSelectedKeys(props: ListViewDemoProps) {
+  const itemKeys = listViewDemoItems(props).map((item) => item.id);
   return listViewKeysFromValue(
     props.selectionSource === "defaultSelectedKeys"
       ? props.defaultSelectedKeys
       : props.selectedKeys,
-    [listViewDemoDefaults.selectedKeys],
+    itemKeys.includes(listViewDemoDefaults.selectedKeys) ? [listViewDemoDefaults.selectedKeys] : [],
     props.selectionMode,
+    itemKeys,
   );
+}
+
+export function listViewDemoItems(props: Pick<ListViewDemoProps, "itemCount">) {
+  return listViewItems.slice(0, Number(props.itemCount));
 }
 
 export function normalizeListViewDemoProps(
@@ -113,6 +135,13 @@ export function normalizeListViewDemoProps(
   const selectionMode = isOneOf(props.selectionMode, listViewSelectionModeOptions)
     ? props.selectionMode
     : listViewDemoDefaults.selectionMode;
+  const itemCount = isOneOf(props.itemCount, listViewItemCountOptions)
+    ? props.itemCount
+    : listViewDemoDefaults.itemCount;
+  const itemKeys = listViewDemoItems({ itemCount }).map((item) => item.id);
+  const defaultKeyFallback = itemKeys.includes(listViewDemoDefaults.selectedKeys)
+    ? [listViewDemoDefaults.selectedKeys]
+    : [];
   return {
     selectionMode,
     selectionStyle: isOneOf(props.selectionStyle, listViewSelectionStyleOptions)
@@ -124,27 +153,53 @@ export function normalizeListViewDemoProps(
     selectionSource: isOneOf(props.selectionSource, listViewSelectionSourceOptions)
       ? props.selectionSource
       : listViewDemoDefaults.selectionSource,
+    itemCount,
     selectedKeys:
       typeof props.selectedKeys === "string" && props.selectedKeys.trim()
-        ? serializeListViewKeys(listViewKeysFromValue(props.selectedKeys, [], selectionMode))
+        ? serializeListViewKeys(
+            listViewKeysFromValue(props.selectedKeys, [], selectionMode, itemKeys),
+          )
         : selectionMode === "none"
           ? ""
-          : listViewDemoDefaults.selectedKeys,
+          : serializeListViewKeys(
+              listViewKeysFromValue(
+                listViewDemoDefaults.selectedKeys,
+                defaultKeyFallback,
+                selectionMode,
+                itemKeys,
+              ),
+            ),
     defaultSelectedKeys:
       typeof props.defaultSelectedKeys === "string" && props.defaultSelectedKeys.trim()
-        ? serializeListViewKeys(listViewKeysFromValue(props.defaultSelectedKeys, [], selectionMode))
+        ? serializeListViewKeys(
+            listViewKeysFromValue(props.defaultSelectedKeys, [], selectionMode, itemKeys),
+          )
         : selectionMode === "none"
           ? ""
-          : listViewDemoDefaults.defaultSelectedKeys,
+          : serializeListViewKeys(
+              listViewKeysFromValue(
+                listViewDemoDefaults.defaultSelectedKeys,
+                defaultKeyFallback,
+                selectionMode,
+                itemKeys,
+              ),
+            ),
     disabledKeys:
       typeof props.disabledKeys === "string" && props.disabledKeys.trim()
-        ? serializeListViewKeys(listViewKeysFromValue(props.disabledKeys, [], "multiple"))
+        ? serializeListViewKeys(listViewKeysFromValue(props.disabledKeys, [], "multiple", itemKeys))
         : listViewDemoDefaults.disabledKeys,
     disabledItem: isOneOf(props.disabledItem, listViewDisabledItemOptions)
-      ? props.disabledItem
+      ? itemKeys.includes(props.disabledItem)
+        ? props.disabledItem
+        : "none"
       : listViewDemoDefaults.disabledItem,
     isQuiet: props.isQuiet === true,
     showDescriptions: props.showDescriptions !== false,
+    showIcons: props.showIcons === true,
+    showActionBar: props.showActionBar === true,
+    itemActionSlot: isOneOf(props.itemActionSlot, listViewItemActionSlotOptions)
+      ? props.itemActionSlot
+      : listViewDemoDefaults.itemActionSlot,
     hideLinkOutIcon: props.hideLinkOutIcon === true,
     trailingIcon: isOneOf(props.trailingIcon, listViewTrailingIconOptions)
       ? props.trailingIcon
@@ -157,6 +212,8 @@ export function listViewDemoPropsFromSearch(search: string): ListViewDemoProps {
   const selectionMode = params.get("selectionMode");
   const disabledItem = params.get("disabledItem");
   const trailingIcon = params.get("trailingIcon");
+  const itemCount = params.get("itemCount");
+  const itemActionSlot = params.get("itemActionSlot");
 
   return normalizeListViewDemoProps({
     selectionMode: isOneOf(selectionMode, listViewSelectionModeOptions)
@@ -171,6 +228,9 @@ export function listViewDemoPropsFromSearch(search: string): ListViewDemoProps {
     selectionSource: isOneOf(params.get("selectionSource"), listViewSelectionSourceOptions)
       ? (params.get("selectionSource") as ListViewSelectionSource)
       : listViewDemoDefaults.selectionSource,
+    itemCount: isOneOf(itemCount, listViewItemCountOptions)
+      ? itemCount
+      : listViewDemoDefaults.itemCount,
     selectedKeys: params.get("selectedKeys") ?? listViewDemoDefaults.selectedKeys,
     defaultSelectedKeys:
       params.get("defaultSelectedKeys") ?? listViewDemoDefaults.defaultSelectedKeys,
@@ -180,6 +240,11 @@ export function listViewDemoPropsFromSearch(search: string): ListViewDemoProps {
       : listViewDemoDefaults.disabledItem,
     isQuiet: booleanParam(params.get("isQuiet")),
     showDescriptions: booleanParam(params.get("showDescriptions"), true),
+    showIcons: booleanParam(params.get("showIcons")),
+    showActionBar: booleanParam(params.get("showActionBar")),
+    itemActionSlot: isOneOf(itemActionSlot, listViewItemActionSlotOptions)
+      ? itemActionSlot
+      : listViewDemoDefaults.itemActionSlot,
     hideLinkOutIcon: booleanParam(params.get("hideLinkOutIcon")),
     trailingIcon: isOneOf(trailingIcon, listViewTrailingIconOptions)
       ? trailingIcon
@@ -201,12 +266,16 @@ export function serializeListViewDemoProps(props: ListViewDemoProps) {
     selectionStyle: props.selectionStyle,
     overflowMode: props.overflowMode,
     selectionSource: props.selectionSource,
+    itemCount: props.itemCount,
     selectedKeys: props.selectedKeys,
     defaultSelectedKeys: props.defaultSelectedKeys,
     disabledKeys: props.disabledKeys,
     disabledItem: props.disabledItem,
     isQuiet: props.isQuiet,
     showDescriptions: props.showDescriptions,
+    showIcons: props.showIcons,
+    showActionBar: props.showActionBar,
+    itemActionSlot: props.itemActionSlot,
     hideLinkOutIcon: props.hideLinkOutIcon,
     trailingIcon: props.trailingIcon,
   });

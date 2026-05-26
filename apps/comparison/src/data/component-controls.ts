@@ -297,6 +297,8 @@ import {
 import {
   listViewDemoDefaults,
   listViewDisabledItemOptions,
+  listViewItemActionSlotOptions,
+  listViewItemCountOptions,
   listViewOverflowModeOptions,
   listViewSelectionModeOptions,
   listViewSelectionSourceOptions,
@@ -6489,6 +6491,13 @@ const listViewControls: ComponentControlGroup = {
       options: options(listViewSelectionSourceOptions),
     },
     {
+      name: "itemCount",
+      label: "items",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.itemCount,
+      options: options(listViewItemCountOptions),
+    },
+    {
       name: "selectedKeys",
       label: "selectedKeys",
       kind: "text",
@@ -6526,6 +6535,25 @@ const listViewControls: ComponentControlGroup = {
       defaultValue: listViewDemoDefaults.showDescriptions,
     },
     {
+      name: "showIcons",
+      label: "icons",
+      kind: "switch",
+      defaultValue: listViewDemoDefaults.showIcons,
+    },
+    {
+      name: "itemActionSlot",
+      label: "item actions",
+      kind: "radio",
+      defaultValue: listViewDemoDefaults.itemActionSlot,
+      options: options(listViewItemActionSlotOptions),
+    },
+    {
+      name: "showActionBar",
+      label: "renderActionBar",
+      kind: "switch",
+      defaultValue: listViewDemoDefaults.showActionBar,
+    },
+    {
       name: "trailingIcon",
       label: "trailing icon",
       kind: "radio",
@@ -6550,6 +6578,7 @@ const listViewControls: ComponentControlGroup = {
     "disabledKeys",
     "ListViewItem.isDisabled",
     "onSelectionChange",
+    "onAction",
     "disallowEmptySelection",
     "escapeKeyBehavior",
     "shouldSelectOnPressUp",
@@ -6562,6 +6591,10 @@ const listViewControls: ComponentControlGroup = {
     "ListViewItem.href",
     "ListViewItem.target",
     "ListViewItem.hasChildItems",
+    "ListViewItem.Text",
+    "ListViewItem.Icon",
+    "ListViewItem.ActionButtonGroup",
+    "ListViewItem.ActionMenu",
     "slot",
     "styles",
     "UNSAFE_className",
@@ -6570,7 +6603,7 @@ const listViewControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 ListView docs/API surface. The viewer drives selection mode, checkbox/highlight selection style, wrap/truncate overflow, controlled/default selected keys, disabledKeys, item isDisabled, quiet chrome, label/description slot composition, link-out hiding, and child/link trailing indicators into both stacks.",
+  note: "Modeled from the S2 ListView docs/API surface. The viewer drives selection mode, checkbox/highlight selection style, wrap/truncate overflow, controlled/default selected keys, disabledKeys, item isDisabled, empty state, quiet chrome, label/description/icon/action slot composition, link-out hiding, child/link trailing indicators, onAction, and renderActionBar into both stacks.",
 };
 
 const cardViewControls: ComponentControlGroup = {

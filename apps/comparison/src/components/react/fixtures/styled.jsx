@@ -295,9 +295,9 @@ import {
   serializeSelectBoxGroupKeys,
 } from "@comparison/data/selectboxgroup-demo";
 import {
+  listViewDemoItems,
   initialListViewSelectedKeys,
   listViewDemoPropsFromWindow,
-  listViewItems,
   listViewKeysFromValue,
   normalizeListViewDemoProps,
   serializeListViewDemoProps,
@@ -1272,6 +1272,7 @@ function ReactPopoverDemo() {
 function ReactListViewDemo() {
   const [demoProps, setDemoProps] = useState(listViewDemoPropsFromWindow);
   const [selectedKeys, setSelectedKeys] = useState(() => initialListViewSelectedKeys(demoProps));
+  const [actionKey, setActionKey] = useState("");
   const colorScheme = useComparisonResolvedTheme();
   useEffect(() => {
     const handleControlsChange = (event) => {
@@ -1279,6 +1280,7 @@ function ReactListViewDemo() {
         setDemoProps((current) => {
           const nextProps = normalizeListViewDemoProps({ ...current, ...event.detail.props });
           setSelectedKeys(initialListViewSelectedKeys(nextProps));
+          setActionKey("");
           return nextProps;
         });
       }
@@ -1287,22 +1289,59 @@ function ReactListViewDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
-  const disabledKeys = listViewKeysFromValue(demoProps.disabledKeys, [], "multiple");
+  const items = listViewDemoItems(demoProps);
+  const itemKeys = items.map((item) => item.id);
+  const disabledKeys = listViewKeysFromValue(demoProps.disabledKeys, [], "multiple", itemKeys);
   const selectionProps =
     demoProps.selectionSource === "defaultSelectedKeys"
       ? {
           defaultSelectedKeys: listViewKeysFromValue(
             demoProps.defaultSelectedKeys,
-            ["project-brief"],
+            itemKeys.includes("project-brief") ? ["project-brief"] : [],
             demoProps.selectionMode,
+            itemKeys,
           ),
         }
       : { selectedKeys };
+  const itemActions = (item) => {
+    if (demoProps.itemActionSlot === "buttonGroup") {
+      return jsx(SpectrumActionButtonGroup, {
+        "aria-label": `${item.name} actions`,
+        children: jsx(SpectrumActionButton, {
+          "aria-label": `Archive ${item.name}`,
+          children: jsx(SpectrumText, { children: "Archive" }),
+        }),
+      });
+    }
+
+    if (demoProps.itemActionSlot === "actionMenu") {
+      return jsx(SpectrumActionMenu, {
+        "aria-label": `${item.name} menu`,
+        children: jsx(SpectrumMenuItem, {
+          id: `${item.id}-copy`,
+          textValue: "Copy",
+          children: jsx(SpectrumText, { children: "Copy" }),
+        }),
+      });
+    }
+
+    return null;
+  };
+  const actionBar = (keys) =>
+    jsx(SpectrumActionBar, {
+      selectedItemCount: keys === "all" ? items.length : keys.size,
+      "data-comparison-listview-actionbar": "true",
+      onClearSelection: () => setSelectedKeys(new Set()),
+      children: jsx(SpectrumActionButton, {
+        children: jsx(SpectrumText, { children: "Archive" }),
+      }),
+    });
   const renderKey = [
     demoProps.selectionMode,
     demoProps.selectionStyle,
     demoProps.overflowMode,
     demoProps.selectionSource,
+    demoProps.itemCount,
     demoProps.selectionSource === "defaultSelectedKeys"
       ? demoProps.defaultSelectedKeys
       : demoProps.selectedKeys,
@@ -1310,6 +1349,9 @@ function ReactListViewDemo() {
     demoProps.disabledItem,
     demoProps.isQuiet,
     demoProps.showDescriptions,
+    demoProps.showIcons,
+    demoProps.showActionBar,
+    demoProps.itemActionSlot,
     demoProps.hideLinkOutIcon,
     demoProps.trailingIcon,
   ].join("|");
@@ -1318,6 +1360,7 @@ function ReactListViewDemo() {
     jsx("div", {
       style: collectionFixtureStyle,
       "data-comparison-selected-keys": serializeListViewKeys(selectedKeys),
+      "data-comparison-action-key": actionKey,
       children: jsx(
         SpectrumListView,
         {
@@ -1330,13 +1373,21 @@ function ReactListViewDemo() {
           isQuiet: demoProps.isQuiet,
           hideLinkOutIcon: demoProps.hideLinkOutIcon,
           disabledKeys,
+          items,
           ...selectionProps,
           UNSAFE_style: collectionListStyle,
+          renderEmptyState: () =>
+            jsxs(SpectrumIllustratedMessage, {
+              children: [
+                jsx(SpectrumHeading, { children: "No documents" }),
+                jsx(SpectrumContent, { children: "Create or upload a file to continue." }),
+              ],
+            }),
+          renderActionBar: demoProps.showActionBar ? actionBar : undefined,
+          onAction: (key) => setActionKey(String(key)),
           onSelectionChange: (keys) =>
-            setSelectedKeys(
-              keys === "all" ? new Set(listViewItems.map((item) => item.id)) : new Set(keys),
-            ),
-          children: listViewItems.map((item) =>
+            setSelectedKeys(keys === "all" ? new Set(items.map((item) => item.id)) : new Set(keys)),
+          children: (item) =>
             jsxs(
               SpectrumListViewItem,
               {
@@ -1356,15 +1407,16 @@ function ReactListViewDemo() {
                     ? true
                     : undefined,
                 children: [
+                  demoProps.showIcons ? jsx(ReactButtonIcon, { "aria-hidden": "true" }) : null,
                   jsx(SpectrumText, { slot: "label", children: item.name }),
                   demoProps.showDescriptions
                     ? jsx(SpectrumText, { slot: "description", children: item.description })
                     : null,
+                  itemActions(item),
                 ],
               },
               item.id,
             ),
-          ),
         },
         renderKey,
       ),

@@ -318,13 +318,14 @@ import {
   type SelectBoxGroupDemoProps,
 } from "@comparison/data/selectboxgroup-demo";
 import {
+  listViewDemoItems,
   initialListViewSelectedKeys,
   listViewDemoPropsFromWindow,
-  listViewItems,
   listViewKeysFromValue,
   normalizeListViewDemoProps,
   serializeListViewDemoProps,
   serializeListViewKeys,
+  type ListViewDemoItem,
   type ListViewDemoProps,
 } from "@comparison/data/listview-demo";
 import {
@@ -1657,7 +1658,10 @@ function SolidSpectrumListViewDemo() {
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(
     initialListViewSelectedKeys(demoProps()),
   );
+  const [actionKey, setActionKey] = createSignal("");
   const colorScheme = createComparisonResolvedThemeSignal();
+  const items = createMemo(() => listViewDemoItems(demoProps()));
+  const itemKeys = createMemo(() => items().map((item) => item.id));
   const selectedKeyText = createMemo(() => serializeListViewKeys(selectedKeys()));
   let listViewRoot: HTMLElement | undefined;
 
@@ -1677,6 +1681,7 @@ function SolidSpectrumListViewDemo() {
             ...(event.detail.props ?? {}),
           });
           setSelectedKeys(initialListViewSelectedKeys(nextProps));
+          setActionKey("");
           return nextProps;
         });
       }
@@ -1702,6 +1707,9 @@ function SolidSpectrumListViewDemo() {
           get "data-comparison-selected-keys"() {
             return selectedKeyText();
           },
+          get "data-comparison-action-key"() {
+            return actionKey();
+          },
         },
         [
           hc(
@@ -1716,10 +1724,10 @@ function SolidSpectrumListViewDemo() {
                 return serializeListViewDemoProps(demoProps());
               },
               get items() {
-                return listViewItems;
+                return items();
               },
-              getKey: (item: (typeof listViewItems)[number]) => item.id,
-              getTextValue: (item: (typeof listViewItems)[number]) => item.name,
+              getKey: (item: ListViewDemoItem) => item.id,
+              getTextValue: (item: ListViewDemoItem) => item.name,
               get selectionMode() {
                 return demoProps().selectionMode;
               },
@@ -1736,7 +1744,7 @@ function SolidSpectrumListViewDemo() {
                 return demoProps().hideLinkOutIcon;
               },
               get disabledKeys() {
-                return listViewKeysFromValue(demoProps().disabledKeys, [], "multiple");
+                return listViewKeysFromValue(demoProps().disabledKeys, [], "multiple", itemKeys());
               },
               get selectedKeys() {
                 return demoProps().selectionSource === "selectedKeys" ? selectedKeys() : undefined;
@@ -1745,20 +1753,45 @@ function SolidSpectrumListViewDemo() {
                 return demoProps().selectionSource === "defaultSelectedKeys"
                   ? listViewKeysFromValue(
                       demoProps().defaultSelectedKeys,
-                      ["project-brief"],
+                      itemKeys().includes("project-brief") ? ["project-brief"] : [],
                       demoProps().selectionMode,
+                      itemKeys(),
                     )
                   : undefined;
               },
+              renderEmptyState: () =>
+                hc(SolidSpectrumIllustratedMessage, {}, [
+                  hc(SolidSpectrumHeading, {}, ["No documents"]),
+                  hc(SolidSpectrumContent, {}, ["Create or upload a file to continue."]),
+                ]),
+              get renderActionBar() {
+                return demoProps().showActionBar
+                  ? (keys: "all" | Set<string | number>) =>
+                      hc(
+                        SolidSpectrumActionBar,
+                        {
+                          selectedItemCount: keys === "all" ? items().length : keys.size,
+                          "data-comparison-listview-actionbar": "true",
+                          onClearSelection: () => setSelectedKeys(new Set<string>()),
+                        },
+                        [
+                          hc(SolidSpectrumActionButton, {}, [
+                            hc(SolidSpectrumText, {}, ["Archive"]),
+                          ]),
+                        ],
+                      )
+                  : undefined;
+              },
+              onAction: (key: string | number) => setActionKey(String(key)),
               onSelectionChange: (keys: "all" | Set<string | number>) =>
                 setSelectedKeys(
                   keys === "all"
-                    ? new Set(listViewItems.map((item) => item.id))
+                    ? new Set(items().map((item) => item.id))
                     : new Set<string>(Array.from(keys, String)),
                 ),
               UNSAFE_style: collectionListStyle,
             },
-            renderProp((item: (typeof listViewItems)[number]) =>
+            renderProp((item: ListViewDemoItem) =>
               hc(
                 SolidSpectrumListViewItem,
                 {
@@ -1784,6 +1817,7 @@ function SolidSpectrumListViewDemo() {
                   },
                 },
                 [
+                  () => (demoProps().showIcons ? h(SolidNewIcon, { "aria-hidden": "true" }) : null),
                   hc(SolidSpectrumText, { slot: "label" }, [item.name]),
                   hc(
                     Show,
@@ -1794,6 +1828,35 @@ function SolidSpectrumListViewDemo() {
                     },
                     [hc(SolidSpectrumText, { slot: "description" }, [item.description])],
                   ),
+                  () => {
+                    const actionSlot = demoProps().itemActionSlot;
+                    if (actionSlot === "buttonGroup") {
+                      return hc(
+                        SolidSpectrumActionButtonGroup,
+                        { "aria-label": `${item.name} actions` },
+                        [
+                          hc(SolidSpectrumActionButton, { "aria-label": `Archive ${item.name}` }, [
+                            hc(SolidSpectrumText, {}, ["Archive"]),
+                          ]),
+                        ],
+                      );
+                    }
+
+                    if (actionSlot === "actionMenu") {
+                      return hc(SolidSpectrumActionMenu, { "aria-label": `${item.name} menu` }, [
+                        hc(
+                          SolidSpectrumMenuItem,
+                          {
+                            id: `${item.id}-copy`,
+                            textValue: "Copy",
+                          },
+                          [hc(SolidSpectrumText, {}, ["Copy"])],
+                        ),
+                      ]);
+                    }
+
+                    return null;
+                  },
                 ],
               ),
             ),

@@ -39,7 +39,14 @@ import LinkOut from "../icon/ui-icons/LinkOut";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
+import {
+  baseColor,
+  colorMix,
+  focusRing,
+  fontRelative,
+  space,
+  style,
+} from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
@@ -215,13 +222,13 @@ const listView = style<GridListRenderProps & { isQuiet?: boolean; isActionBar?: 
     },
     boxSizing: "border-box",
     overflow: "auto",
-    font: controlFont(),
+    fontSize: controlFont(),
     backgroundColor: {
-      default: "layer-1",
+      default: "gray-25",
       isQuiet: "transparent",
     },
     borderRadius: {
-      default: "lg",
+      default: "default",
       isQuiet: "none",
     },
     borderColor: "gray-300",
@@ -253,21 +260,36 @@ const emptyState = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  color: "neutral-subdued",
+  color: "neutral",
   font: "body-sm",
 });
 
-const listViewItem = style<
-  GridListItemRenderProps & {
-    isQuiet?: boolean;
-    selectionStyle?: GridListSelectionStyle;
-    overflowMode?: GridListOverflowMode;
-    hasTrailingIcon?: boolean;
-  }
->({
-  ...focusRing(),
-  outlineOffset: -2,
+const emptyStateRow = style({
+  display: "contents",
+});
+
+const selectedBackground = colorMix("gray-25", "gray-900", 7);
+const selectedActiveBackground = colorMix("gray-25", "gray-900", 10);
+
+type ListViewRowLayerProps = GridListItemRenderProps & {
+  isQuiet?: boolean;
+  isLink?: boolean;
+  isFirstItem?: boolean;
+  isLastItem?: boolean;
+  isNextSelected?: boolean;
+  isPrevSelected?: boolean;
+  isPrevNotSelected?: boolean;
+  isNextNotSelected?: boolean;
+  selectionStyle?: GridListSelectionStyle;
+  overflowMode?: GridListOverflowMode;
+  hasTrailingIcon?: boolean;
+};
+
+const listViewItem = style<ListViewRowLayerProps>({
+  outlineStyle: "none",
   position: "relative",
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
   display: "grid",
   gridTemplateAreas: [
     ". checkmark icon label actions actionmenu trailing-icon .",
@@ -283,40 +305,63 @@ const listViewItem = style<
     "var(--listview-trailing-icon-width, auto)",
     edgeToText(40),
   ],
-  gridTemplateRows: "auto minmax(0, min-content)",
+  gridTemplateRows: "1fr auto",
   alignItems: "baseline",
-  rowGap: space(1),
+  rowGap: {
+    ":has([slot=description])": space(1),
+  },
   columnGap: 0,
+  paddingX: 0,
   minHeight: 40,
   paddingY: 8,
   boxSizing: "border-box",
   textDecoration: "none",
   color: {
-    default: baseColor("neutral"),
+    default: baseColor("neutral-subdued"),
+    isSelected: baseColor("neutral"),
     isDisabled: "disabled",
   },
-  backgroundColor: {
-    default: "transparent",
-    isHovered: "gray-50",
-    isPressed: "gray-100",
-    isSelected: {
-      selectionStyle: {
-        highlight: "blue-200",
+  backgroundColor: "transparent",
+  "--borderColor": {
+    type: "borderColor",
+    value: {
+      default: "gray-300",
+      isSelected: {
+        selectionStyle: {
+          highlight: "blue-900",
+          checkbox: "gray-300",
+        },
       },
+      forcedColors: "ButtonBorder",
     },
-    isDisabled: "transparent",
   },
+  borderTopWidth: 0,
+  borderStartWidth: 0,
+  borderEndWidth: 0,
   borderBottomStyle: "solid",
-  borderBottomWidth: 1,
-  borderBottomColor: {
-    default: "gray-200",
-    isQuiet: "transparent",
+  borderBottomWidth: {
+    default: 1,
+    isLastItem: {
+      default: 1,
+      isQuiet: 0,
+    },
+  },
+  borderColor: {
+    default: "--borderColor",
+    isNextSelected: "transparent",
+    isSelected: "transparent",
+    forcedColors: "ButtonBorder",
   },
   cursor: {
     default: "default",
+    isLink: "pointer",
     isDisabled: "not-allowed",
   },
   transition: "default",
+  "--radius": {
+    type: "borderTopStartRadius",
+    value: "default",
+  },
   "--listview-trailing-icon-width": {
     type: "width",
     value: {
@@ -324,6 +369,203 @@ const listViewItem = style<
       hasTrailingIcon: fontRelative(20),
     },
   },
+  forcedColorAdjust: "none",
+});
+
+const insetBorderRadius = "calc(var(--radius) - 1px)";
+
+const listViewRowBackground = style<ListViewRowLayerProps>({
+  position: "absolute",
+  zIndex: -1,
+  top: {
+    default: 0,
+    isSelected: "[-1px]",
+    isPrevSelected: 0,
+    isFirstItem: 0,
+    forcedColors: 0,
+  },
+  left: 0,
+  right: 0,
+  bottom: {
+    default: 0,
+    isSelected: "[-1px]",
+  },
+  backgroundColor: {
+    default: "transparent",
+    isHovered: {
+      default: "gray-900/5",
+      selectionStyle: {
+        checkbox: selectedBackground,
+      },
+    },
+    isPressed: {
+      default: "gray-900/10",
+      selectionStyle: {
+        checkbox: selectedActiveBackground,
+      },
+    },
+    isSelected: {
+      selectionStyle: {
+        checkbox: {
+          default: selectedBackground,
+          isHovered: selectedActiveBackground,
+          isPressed: selectedActiveBackground,
+          isFocusVisible: selectedActiveBackground,
+        },
+        highlight: {
+          default: colorMix("gray-25", "blue-900", 10),
+          isHovered: colorMix("gray-25", "blue-900", 15),
+          isPressed: colorMix("gray-25", "blue-900", 15),
+        },
+      },
+    },
+    forcedColors: {
+      default: "Background",
+      selectionStyle: {
+        highlight: {
+          isSelected: "Highlight",
+        },
+      },
+    },
+  },
+  borderTopStartRadius: {
+    isQuiet: "default",
+    isSelected: "none",
+    isPrevNotSelected: {
+      isSelected: {
+        selectionStyle: {
+          checkbox: "none",
+          highlight: `[${insetBorderRadius}]`,
+        },
+      },
+      isQuiet: "default",
+    },
+  },
+  borderTopEndRadius: {
+    isQuiet: "default",
+    isSelected: "none",
+    isPrevNotSelected: {
+      isSelected: {
+        selectionStyle: {
+          checkbox: "none",
+          highlight: `[${insetBorderRadius}]`,
+        },
+      },
+      isQuiet: "default",
+    },
+  },
+  borderBottomStartRadius: {
+    isQuiet: "default",
+    isSelected: "none",
+    isNextNotSelected: {
+      isSelected: {
+        selectionStyle: {
+          checkbox: "none",
+          highlight: `[${insetBorderRadius}]`,
+        },
+      },
+      isQuiet: "default",
+    },
+  },
+  borderBottomEndRadius: {
+    isQuiet: "default",
+    isSelected: "none",
+    isNextNotSelected: {
+      isSelected: {
+        selectionStyle: {
+          checkbox: "none",
+          highlight: `[${insetBorderRadius}]`,
+        },
+      },
+      isQuiet: "default",
+    },
+  },
+  borderTopWidth: {
+    default: {
+      selectionStyle: {
+        checkbox: 0,
+        highlight: 1,
+      },
+    },
+    isPrevSelected: 0,
+  },
+  borderBottomWidth: {
+    default: {
+      selectionStyle: {
+        checkbox: 0,
+        highlight: 1,
+      },
+    },
+    isNextSelected: 0,
+  },
+  borderStartWidth: {
+    default: {
+      selectionStyle: {
+        checkbox: 0,
+        highlight: 1,
+      },
+    },
+  },
+  borderEndWidth: {
+    default: {
+      selectionStyle: {
+        checkbox: 0,
+        highlight: 1,
+      },
+    },
+  },
+  borderStyle: "solid",
+  borderColor: {
+    default: "transparent",
+    isSelected: {
+      selectionStyle: {
+        checkbox: "transparent",
+        highlight: "--borderColor",
+      },
+    },
+  },
+});
+
+const listViewRowFocusRing = style<ListViewRowLayerProps>({
+  ...focusRing(),
+  outlineOffset: {
+    default: -2,
+    forcedColors: -3,
+  },
+  outlineWidth: {
+    default: 2,
+    forcedColors: "[3px]",
+  },
+  outlineColor: {
+    default: "focus-ring",
+    forcedColors: {
+      default: "Highlight",
+      selectionStyle: {
+        highlight: "ButtonBorder",
+      },
+    },
+  },
+  position: "absolute",
+  inset: 0,
+  top: {
+    default: "[-1px]",
+    isFirstItem: 0,
+  },
+  bottom: {
+    selectionStyle: {
+      checkbox: {
+        default: "[-1px]",
+        isNextSelected: 0,
+      },
+      highlight: "[-1px]",
+    },
+  },
+  borderRadius: {
+    default: `[${insetBorderRadius}]`,
+    isQuiet: "default",
+  },
+  zIndex: 1,
+  pointerEvents: "none",
 });
 
 const listViewItemCell = style({
@@ -332,8 +574,10 @@ const listViewItemCell = style({
 
 const listViewCheckbox = style<GridListItemRenderProps>({
   gridArea: "checkmark",
+  gridRowEnd: "span 2",
   alignSelf: "center",
   justifySelf: "center",
+  marginEnd: 8,
   position: "relative",
   width: 16,
   height: 16,
@@ -386,6 +630,9 @@ const listViewCheckboxIcon = style({
 
 const listViewSlotIcon = style<GridListItemRenderProps>({
   gridArea: "icon",
+  gridRowEnd: "span 2",
+  display: "block",
+  size: fontRelative(20),
   alignSelf: "center",
   marginEnd: "text-to-visual",
   "--iconPrimary": {
@@ -396,6 +643,7 @@ const listViewSlotIcon = style<GridListItemRenderProps>({
 
 const listViewImage = style({
   gridArea: "icon",
+  gridRowEnd: "span 2",
   alignSelf: "center",
   justifySelf: "center",
   size: 32,
@@ -407,9 +655,8 @@ const listViewImage = style({
 const listViewLabel = style<GridListItemRenderProps & { overflowMode?: GridListOverflowMode }>({
   gridArea: "label",
   minWidth: 0,
-  alignSelf: "end",
+  alignSelf: "center",
   font: controlFont(),
-  fontWeight: "medium",
   color: "inherit",
   overflow: "hidden",
   textOverflow: {
@@ -430,10 +677,10 @@ const listViewDescription = style<
 >({
   gridArea: "description",
   minWidth: 0,
-  alignSelf: "start",
-  font: "body-sm",
+  alignSelf: "center",
+  font: "ui-sm",
   color: {
-    default: "neutral-subdued",
+    default: baseColor("neutral-subdued"),
     isDisabled: "disabled",
   },
   overflow: "hidden",
@@ -452,21 +699,24 @@ const listViewDescription = style<
 
 const listViewActions = style({
   gridArea: "actions",
+  gridRowEnd: "span 2",
   alignSelf: "center",
   justifySelf: "end",
-  marginStart: "text-to-control",
+  marginStart: "text-to-visual",
 });
 
 const listViewActionMenu = style({
   gridArea: "actionmenu",
+  gridRowEnd: "span 2",
   alignSelf: "center",
-  justifySelf: "end",
-  marginStart: "text-to-control",
 });
 
 const listViewTrailingIcon = style<GridListItemRenderProps>({
   gridArea: "trailing-icon",
+  gridRowEnd: "span 2",
   alignSelf: "center",
+  display: "flex",
+  alignItems: "center",
   justifySelf: "end",
   marginStart: "text-to-visual",
   color: {
@@ -718,7 +968,13 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     ]
       .filter(Boolean)
       .join(" ");
-  const defaultEmptyState = () => <div class={emptyState}>No items</div>;
+  const renderEmptyState = () => (
+    <div role="row" class={emptyStateRow}>
+      <div role="gridcell" aria-colindex="1" class={emptyState}>
+        {headlessProps.renderEmptyState?.() ?? "No items"}
+      </div>
+    </div>
+  );
   const renderItem = (item: T) =>
     usesStaticChildren() ? (
       <GridListItem {...((item as unknown as StaticGridListItem).props as GridListItemProps<T>)} />
@@ -756,7 +1012,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
           isLoading={isLoading()}
           hasMore={local.hasMore ?? !!local.onLoadMore}
           onLoadMore={local.onLoadMore}
-          renderEmptyState={headlessProps.renderEmptyState ?? defaultEmptyState}
+          renderEmptyState={renderEmptyState}
           slot={local.slot ?? undefined}
           class={className}
           style={mergedUnsafeStyle()}
@@ -831,6 +1087,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     return null;
   }
 
+  const collectionState = useContext(HeadlessGridListStateContext);
   let itemElement: HTMLDivElement | undefined;
   const assignItemRef = mergeContextRefs(local.ref, (element: HTMLDivElement) => {
     itemElement = element;
@@ -844,11 +1101,8 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       local.class,
       mergeStyles(
         listViewItem({
-          ...renderProps,
-          isQuiet: context.isQuiet,
-          selectionStyle: context.selectionStyle,
-          overflowMode: context.overflowMode,
-          hasTrailingIcon: hasTrailingIcon(),
+          ...getRowLayerProps(renderProps),
+          isLink: !!local.href,
         }),
         local.styles,
       ),
@@ -858,6 +1112,27 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   const getStyle = (): JSX.CSSProperties | undefined => ({
     ...local.UNSAFE_style,
   });
+  const isSelectedKey = (key: Key | null | undefined) =>
+    key != null && Boolean(collectionState?.isSelected?.(key));
+  const getRowLayerProps = (renderProps: GridListItemRenderProps): ListViewRowLayerProps => {
+    const collection = collectionState?.collection;
+    const previousKey = collection?.getKeyBefore?.(props.id) ?? null;
+    const nextKey = collection?.getKeyAfter?.(props.id) ?? null;
+
+    return {
+      ...renderProps,
+      isQuiet: context.isQuiet,
+      selectionStyle: context.selectionStyle,
+      overflowMode: context.overflowMode,
+      hasTrailingIcon: hasTrailingIcon(),
+      isPrevSelected: isSelectedKey(previousKey),
+      isNextSelected: isSelectedKey(nextKey),
+      isPrevNotSelected: !isSelectedKey(previousKey),
+      isNextNotSelected: !isSelectedKey(nextKey),
+      isFirstItem: collection?.getFirstKey?.() === props.id,
+      isLastItem: collection?.getLastKey?.() === props.id,
+    };
+  };
   const textContext = createMemo(() => ({
     slots: {
       default: { slot: "label" },
@@ -868,11 +1143,21 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
 
   function ItemChildren(renderProps: GridListItemRenderProps) {
     createEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
-    const resolvedChildren = resolveChildren(() =>
-      typeof local.children === "function" ? local.children(renderProps) : local.children,
-    );
-    const childrenValue = () => resolvedChildren();
-    const isTextOnly = () => isTextOnlyChildren(childrenValue());
+
+    function ResolvedItemContent() {
+      const resolvedChildren = resolveChildren(() =>
+        typeof local.children === "function" ? local.children(renderProps) : local.children,
+      );
+      const childrenValue = () => resolvedChildren();
+      const isTextOnly = () => isTextOnlyChildren(childrenValue());
+
+      return (
+        <>
+          {isTextOnly() ? <Text slot="label">{childrenValue()}</Text> : childrenValue()}
+          {local.description ? <Text slot="description">{local.description}</Text> : null}
+        </>
+      );
+    }
 
     return (
       <TextContext.Provider value={textContext() as SpectrumContextValue<any>}>
@@ -891,12 +1176,15 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
             <ActionButtonGroupContext.Provider
               value={{
                 slot: "actions",
+                size: "S",
                 styles: listViewActions,
               }}
             >
               <ActionMenuContext.Provider
                 value={{
                   slot: "actionmenu",
+                  size: "S",
+                  menuSize: "S",
                   styles: listViewActionMenu,
                 }}
               >
@@ -909,6 +1197,16 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
                     excludeFromTabOrder
                   />
                 ) : null}
+                <div
+                  class={listViewRowBackground(getRowLayerProps(renderProps))}
+                  aria-hidden="true"
+                />
+                {renderProps.isFocusVisible ? (
+                  <div
+                    class={listViewRowFocusRing(getRowLayerProps(renderProps))}
+                    aria-hidden="true"
+                  />
+                ) : null}
                 {local.image ? (
                   <Image src={local.image} alt={local.imageAlt ?? ""} styles={listViewImage} />
                 ) : null}
@@ -917,8 +1215,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
                     {local.icon()}
                   </span>
                 ) : null}
-                {isTextOnly() ? <Text slot="label">{childrenValue()}</Text> : childrenValue()}
-                {local.description ? <Text slot="description">{local.description}</Text> : null}
+                <ResolvedItemContent />
                 {isExternalLink() && !context.hideLinkOutIcon ? (
                   <LinkOut
                     size="M"
