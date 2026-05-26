@@ -1,0 +1,99 @@
+---
+import type { ComponentControlGroup } from "@comparison/data/component-controls";
+import type { ComponentCoverage } from "@comparison/data/coverage";
+import type {
+  ComparisonEntry,
+  ComparisonLayerId,
+} from "@comparison/data/comparison-manifest";
+import type { VisualStateTarget } from "@comparison/data/visual-state-matrix";
+
+interface Props {
+  entry: ComparisonEntry;
+  controlGroup: ComponentControlGroup;
+  coverage: ComponentCoverage;
+  supportingLayers: ComparisonLayerId[];
+  visualStates: readonly VisualStateTarget[];
+}
+
+const { entry, controlGroup, coverage, supportingLayers, visualStates } = Astro.props as Props;
+
+const layerTitles: Record<ComparisonLayerId, string> = {
+  styled: "Styled Layer",
+  components: "Component Layer",
+  headless: "Headless Layer",
+  state: "State Layer",
+};
+---
+
+<section class="s2-section" id="coverage" aria-labelledby="coverage-title">
+  <div class="s2-section-heading">
+    <h2 id="coverage-title">Coverage</h2>
+    <span>{coverage.overall}%</span>
+  </div>
+  <div class="s2-coverage-list">
+    {coverage.metrics.map((item) => (
+      <div class="s2-coverage-row">
+        <span>{item.label}</span>
+        <div class="s2-meter"><span style={`width: ${item.value}%`}></span></div>
+        <strong>{item.value}%</strong>
+      </div>
+    ))}
+  </div>
+</section>
+
+<section class="s2-section" id="visual-state-coverage" aria-labelledby="visual-title">
+  <div class="s2-section-heading">
+    <h2 id="visual-title">Visual State Coverage</h2>
+    <span>{visualStates.length} states</span>
+  </div>
+  <div class="s2-state-list">
+    {visualStates.map((state) => (
+      <article class="s2-state-row">
+        <div>
+          <span>{state.kind}</span>
+          <h3>{state.label}</h3>
+          <p>{state.note}</p>
+        </div>
+        <div>
+          <span class={`s2-pill s2-pill--${state.react}`}>React {state.react}</span>
+          <span class={`s2-pill s2-pill--${state.solid}`}>Solid {state.solid}</span>
+          <span class={`s2-pill s2-pill--${state.pairDiff}`}>{state.pairDiff}</span>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<section class="s2-section" id="api" aria-labelledby="api-title">
+  <div class="s2-section-heading">
+    <h2 id="api-title">API</h2>
+    <span>{controlGroup.apiProps.length || "missing"}</span>
+  </div>
+  {controlGroup.apiProps.length > 0 ? (
+    <div class="s2-api-table" role="table" aria-label={`${entry.title} API props`}>
+      {controlGroup.apiProps.map((prop) => (
+        <div role="row">
+          <code role="cell">{prop}</code>
+          <span role="cell">tracked</span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="s2-empty-state">API prop metadata has not been imported yet.</div>
+  )}
+</section>
+
+{supportingLayers.map((layer) => {
+  const track = entry.layers[layer];
+
+  return (
+    <section class="s2-section" id={layer} aria-labelledby={`${layer}-title`}>
+      <div class="s2-section-heading">
+        <h2 id={`${layer}-title`}>{layerTitles[layer]}</h2>
+        <span>{track.solid}</span>
+      </div>
+      <p>{track.summary}</p>
+      <p>{track.note}</p>
+    </section>
+  );
+})}

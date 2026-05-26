@@ -284,7 +284,9 @@ body.s2-docs[data-theme="dark"] {
 }
 
 .js-catalogue-overview-mount,
-.s2-catalogue-overview {
+.s2-catalogue-overview,
+.js-component-detail-meta-mount,
+.s2-component-detail-meta {
   display: grid;
   gap: 34px;
   min-width: 0;
@@ -672,6 +674,16 @@ body.s2-docs[data-theme="dark"] {
 
 .s2-api-table code {
   color: var(--s2-text);
+}
+
+.s2-coverage-meter,
+.s2-api-status,
+.s2-status-badge {
+  min-width: 0;
+}
+
+.s2-status-badge {
+  display: inline-flex;
 }
 
 .s2-empty-state {

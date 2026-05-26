@@ -1,0 +1,35 @@
+---
+import ComponentDetailMetaFallback from "./ComponentDetailMetaFallback.astro";
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import { getComponentCoverage } from "@comparison/data/coverage";
+import {
+  layerOrder,
+  type ComparisonEntry,
+  type ComparisonLayerId,
+} from "@comparison/data/comparison-manifest";
+import { getVisualStateTargets } from "@comparison/data/visual-state-matrix";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+const controlGroup = getComponentControlGroup(entry);
+const coverage = getComponentCoverage(entry, controlGroup);
+const visualStates = getVisualStateTargets(entry);
+const playgroundLayer: ComparisonLayerId = "styled";
+const supportingLayers = layerOrder.filter((layer) => layer !== playgroundLayer);
+---
+
+<div class="js-component-detail-meta-mount" data-component-slug={entry.slug}>
+  <ComponentDetailMetaFallback
+    entry={entry}
+    controlGroup={controlGroup}
+    coverage={coverage}
+    supportingLayers={supportingLayers}
+    visualStates={visualStates}
+  />
+</div>
+<script>
+  import "../scripts/component-detail-meta-mount.tsx";
+</script>
