@@ -1,8 +1,8 @@
 ---
 import ReactMount from "../../components/ReactMount.astro";
 import SolidMount from "../../components/SolidMount.astro";
+import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
-import { getComponentCoverage } from "@comparison/data/coverage";
 import {
   getComparisonEntryGroupId,
   groupComparisonEntries,
@@ -29,7 +29,6 @@ const controlGroup = getComponentControlGroup(entry);
 const controlDefaults = Object.fromEntries(
   controlGroup.controls.map((control) => [control.name, control.defaultValue]),
 );
-const coverage = getComponentCoverage(entry, controlGroup);
 const playgroundLayer: ComparisonLayerId = "styled";
 const playgroundTrack = entry.layers[playgroundLayer];
 const supportingLayers = layerOrder.filter((layer) => layer !== playgroundLayer);
@@ -87,15 +86,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
       </aside>
 
       <main class="s2-main">
-        <section class="s2-hero" aria-labelledby="page-title">
-          <h1 id="page-title">{entry.title}</h1>
-          <p>{entry.summary}</p>
-          <div class="s2-hero-meta">
-            <span class={`s2-pill s2-pill--${entry.parity}`}>{entry.parity}</span>
-            <span class={`s2-pill s2-pill--${entry.componentStatus}`}>{entry.componentStatus}</span>
-            <span class="s2-pill">{coverage.overall}% coverage</span>
-          </div>
-        </section>
+        <ComponentDetailHeroMount entry={entry} />
 
         <section class="s2-example" id="example" aria-labelledby="example-title">
           <div class="s2-example-preview">

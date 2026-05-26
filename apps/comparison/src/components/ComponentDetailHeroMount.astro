@@ -1,0 +1,20 @@
+---
+import ComponentDetailHeroFallback from "./ComponentDetailHeroFallback.astro";
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import { getComponentCoverage } from "@comparison/data/coverage";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+const coverage = getComponentCoverage(entry, getComponentControlGroup(entry));
+---
+
+<div class="js-component-detail-hero-mount" data-component-slug={entry.slug}>
+  <ComponentDetailHeroFallback entry={entry} coverage={coverage} />
+</div>
+<script>
+  import "../scripts/component-detail-hero-mount.tsx";
+</script>

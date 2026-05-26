@@ -283,6 +283,11 @@ body.s2-docs[data-theme="dark"] {
   min-width: 0;
 }
 
+.js-component-detail-hero-mount,
+.s2-component-detail-hero {
+  min-width: 0;
+}
+
 .js-catalogue-overview-mount,
 .s2-catalogue-overview,
 .js-component-detail-meta-mount,
@@ -316,6 +321,12 @@ body.s2-docs[data-theme="dark"] {
 }
 
 .s2-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.s2-hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
