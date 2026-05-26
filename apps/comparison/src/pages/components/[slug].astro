@@ -1,10 +1,8 @@
 ---
-import ReactMount from "../../components/ReactMount.astro";
-import SolidMount from "../../components/SolidMount.astro";
 import ComponentExampleControlsMount from "@comparison/components/ComponentExampleControlsMount.astro";
+import ComponentExamplePreviewMount from "@comparison/components/ComponentExamplePreviewMount.astro";
 import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
-import { getComponentControlGroup } from "@comparison/data/component-controls";
-import { comparisonEntries, type ComparisonEntry, type ComparisonLayerId } from "@comparison/data/comparison-manifest";
+import { comparisonEntries, type ComparisonEntry } from "@comparison/data/comparison-manifest";
 import ComponentDetailMetaMount from "@comparison/components/ComponentDetailMetaMount.astro";
 import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
 import DocsTocMount from "@comparison/components/DocsTocMount.astro";
@@ -19,9 +17,6 @@ export function getStaticPaths() {
 }
 
 const { entry } = Astro.props as { entry: ComparisonEntry };
-const controlGroup = getComponentControlGroup(entry);
-const playgroundLayer: ComparisonLayerId = "styled";
-const playgroundTrack = entry.layers[playgroundLayer];
 ---
 
 <html lang="en">
@@ -49,42 +44,7 @@ const playgroundTrack = entry.layers[playgroundLayer];
 
         <section class="s2-example" id="example" aria-labelledby="example-title">
           <div class="s2-example-preview">
-            <div class="s2-comparison-frame">
-              <article class="s2-framework-panel" data-framework="react">
-                <header>
-                  <span>React</span>
-                  <strong>React Spectrum S2</strong>
-                  <em>{playgroundTrack.react}</em>
-                </header>
-                {playgroundTrack.react === "live" ? (
-                  <ReactMount componentSlug={entry.slug} layer={playgroundLayer} />
-                ) : (
-                  <div class="s2-empty-state">
-                    {playgroundTrack.react === "missing"
-                      ? "React reference is missing."
-                      : "React reference is tracked but not wired yet."}
-                  </div>
-                )}
-              </article>
-
-              <article class="s2-framework-panel" data-framework="solid">
-                <header>
-                  <span>Solid</span>
-                  <strong>solid-spectrum</strong>
-                  <em>{playgroundTrack.solid}</em>
-                </header>
-                {playgroundTrack.solid === "live" ? (
-                  <SolidMount componentSlug={entry.slug} layer={playgroundLayer} />
-                ) : (
-                  <div class="s2-empty-state">
-                    {playgroundTrack.solid === "missing"
-                      ? "Solid implementation is missing."
-                      : "Solid implementation is tracked but not wired yet."}
-                  </div>
-                )}
-              </article>
-            </div>
-            <p class="s2-example-note">{controlGroup.note}</p>
+            <ComponentExamplePreviewMount entry={entry} />
           </div>
 
           <div class="s2-example-controls">

@@ -1,0 +1,60 @@
+---
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import type { ComparisonEntry, ComparisonLayerId } from "@comparison/data/comparison-manifest";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+const playgroundLayer: ComparisonLayerId = "styled";
+const playgroundTrack = entry.layers[playgroundLayer];
+const controlGroup = getComponentControlGroup(entry);
+---
+
+<div class="s2-component-example-preview-fallback">
+  <div class="s2-comparison-frame">
+    <article class="s2-framework-panel" data-framework="react">
+      <header>
+        <span>React</span>
+        <strong>React Spectrum S2</strong>
+        <em>{playgroundTrack.react}</em>
+      </header>
+      {playgroundTrack.react === "live" ? (
+        <div
+          class="comparison-island js-react-mount"
+          data-component-slug={entry.slug}
+          data-layer={playgroundLayer}
+        />
+      ) : (
+        <div class="s2-empty-state">
+          {playgroundTrack.react === "missing"
+            ? "React reference is missing."
+            : "React reference is tracked but not wired yet."}
+        </div>
+      )}
+    </article>
+
+    <article class="s2-framework-panel" data-framework="solid">
+      <header>
+        <span>Solid</span>
+        <strong>solid-spectrum</strong>
+        <em>{playgroundTrack.solid}</em>
+      </header>
+      {playgroundTrack.solid === "live" ? (
+        <div
+          class="comparison-island js-solid-mount"
+          data-component-slug={entry.slug}
+          data-layer={playgroundLayer}
+        />
+      ) : (
+        <div class="s2-empty-state">
+          {playgroundTrack.solid === "missing"
+            ? "Solid implementation is missing."
+            : "Solid implementation is tracked but not wired yet."}
+        </div>
+      )}
+    </article>
+  </div>
+  <p class="s2-example-note">{controlGroup.note}</p>
+</div>

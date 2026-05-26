@@ -302,6 +302,16 @@ body.s2-docs[data-theme="dark"] {
   min-width: 0;
 }
 
+.js-component-example-preview-mount,
+.s2-component-example-preview {
+  min-width: 0;
+}
+
+.s2-component-example-preview {
+  display: grid;
+  gap: 14px;
+}
+
 .js-component-example-controls-mount,
 .s2-component-example-controls {
   min-width: 0;
