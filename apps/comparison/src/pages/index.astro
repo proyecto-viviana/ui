@@ -4,12 +4,13 @@ import {
   missingOfficialComparisonEntries,
   officialComparisonEntries,
 } from "@comparison/data/comparison-manifest";
-import { groupComparisonEntries } from "@comparison/data/component-groups";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
 import { officialVisualStateSummary } from "@comparison/data/visual-state-matrix";
 import CatalogueOverviewMount from "@comparison/components/CatalogueOverviewMount.astro";
+import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
+import DocsTocMount from "@comparison/components/DocsTocMount.astro";
 import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import "@comparison/styles/global.css";
 
@@ -23,7 +24,6 @@ const entriesWithCoverage = comparisonEntries.map((entry) => ({
   entry,
   coverage: getComponentCoverage(entry, getComponentControlGroup(entry)),
 }));
-const sidebarGroups = groupComparisonEntries(comparisonEntries);
 
 const overallCoverage = Math.round(
   entriesWithCoverage.reduce((sum, item) => sum + item.coverage.overall, 0) /
@@ -43,29 +43,11 @@ const overallCoverage = Math.round(
 
     <div class="s2-layout">
       <aside class="s2-sidebar">
-        <nav class="s2-nav s2-nav--grouped" aria-label="Documentation">
-          <p>Overview</p>
-          <a href="/" aria-current="page">Getting started</a>
-          <p>Components</p>
-          {sidebarGroups.map((group) => (
-            <details class="s2-nav-group" open>
-              <summary>
-                <span>{group.title}</span>
-                <span>{group.entries.length}</span>
-              </summary>
-              <div>
-                {group.entries.map((item) => (
-                  <a href={`/components/${item.slug}`}>{item.title}</a>
-                ))}
-              </div>
-            </details>
-          ))}
-          <p>Guides</p>
-          <a href="/components/button">Visual parity</a>
-          <a href="/components/button#api">API coverage</a>
-          <p>Reference</p>
-          <a href={reactSpectrumCatalogueSource.url}>S2 catalogue</a>
-        </nav>
+        <DocsSidebarMount
+          navigationLabel="Documentation"
+          referenceLabel="S2 catalogue"
+          referenceUrl={reactSpectrumCatalogueSource.url}
+        />
       </aside>
 
       <main class="s2-main">
@@ -89,13 +71,11 @@ const overallCoverage = Math.round(
       </main>
 
       <aside class="s2-toc" aria-label="On this page">
-        <p>On this page</p>
-        <a href="#page-title">Solid Spectrum</a>
-        <a href="#coverage-title">Catalogue controls</a>
-        <a href="#components-title">Components</a>
-        <div class="s2-toc-actions">
-          <a href={reactSpectrumCatalogueSource.url}>S2 source</a>
-        </div>
+        <DocsTocMount
+          sourceLabel="S2 source"
+          sourceUrl={reactSpectrumCatalogueSource.url}
+          variant="index"
+        />
       </aside>
     </div>
 

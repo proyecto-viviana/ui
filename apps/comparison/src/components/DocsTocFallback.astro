@@ -1,0 +1,51 @@
+---
+import { layerOrder, type ComparisonEntry, type ComparisonLayerId } from "@comparison/data/comparison-manifest";
+
+type DocsTocVariant = "index" | "component";
+
+export interface Props {
+  entry?: ComparisonEntry;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  variant: DocsTocVariant;
+}
+
+const { entry, sourceLabel, sourceUrl, variant } = Astro.props;
+
+const layerTitles: Record<ComparisonLayerId, string> = {
+  styled: "Styled Layer",
+  components: "Component Layer",
+  headless: "Headless Layer",
+  state: "State Layer",
+};
+
+const items =
+  variant === "component" && entry
+    ? [
+        { href: "#page-title", label: entry.title },
+        { href: "#example", label: "Example" },
+        { href: "#coverage", label: "Coverage" },
+        { href: "#visual-state-coverage", label: "Visual State Coverage" },
+        { href: "#api", label: "API" },
+        ...layerOrder
+          .filter((layer) => layer !== "styled")
+          .map((layer) => ({ href: `#${layer}`, label: layerTitles[layer] })),
+      ]
+    : [
+        { href: "#page-title", label: "Solid Spectrum" },
+        { href: "#coverage-title", label: "Catalogue controls" },
+        { href: "#components-title", label: "Components" },
+      ];
+---
+
+<nav class="s2-toc-nav" aria-label="On this page">
+  <p>On this page</p>
+  {items.map((item) => (
+    <a href={item.href}>{item.label}</a>
+  ))}
+  {sourceUrl ? (
+    <div class="s2-toc-actions">
+      <a href={sourceUrl}>{sourceLabel ?? "S2 source"}</a>
+    </div>
+  ) : null}
+</nav>

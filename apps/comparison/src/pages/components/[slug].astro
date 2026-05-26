@@ -3,17 +3,10 @@ import ReactMount from "../../components/ReactMount.astro";
 import SolidMount from "../../components/SolidMount.astro";
 import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
-import {
-  getComparisonEntryGroupId,
-  groupComparisonEntries,
-} from "@comparison/data/component-groups";
-import {
-  comparisonEntries,
-  layerOrder,
-  type ComparisonEntry,
-  type ComparisonLayerId,
-} from "@comparison/data/comparison-manifest";
+import { comparisonEntries, type ComparisonEntry, type ComparisonLayerId } from "@comparison/data/comparison-manifest";
 import ComponentDetailMetaMount from "@comparison/components/ComponentDetailMetaMount.astro";
+import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
+import DocsTocMount from "@comparison/components/DocsTocMount.astro";
 import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import "@comparison/styles/global.css";
 
@@ -31,16 +24,6 @@ const controlDefaults = Object.fromEntries(
 );
 const playgroundLayer: ComparisonLayerId = "styled";
 const playgroundTrack = entry.layers[playgroundLayer];
-const supportingLayers = layerOrder.filter((layer) => layer !== playgroundLayer);
-const sidebarGroups = groupComparisonEntries(comparisonEntries);
-const activeGroupId = getComparisonEntryGroupId(entry.slug);
-
-const layerTitles: Record<ComparisonLayerId, string> = {
-  styled: "Styled Layer",
-  components: "Component Layer",
-  headless: "Headless Layer",
-  state: "State Layer",
-};
 ---
 
 <html lang="en">
@@ -55,34 +38,12 @@ const layerTitles: Record<ComparisonLayerId, string> = {
 
     <div class="s2-layout">
       <aside class="s2-sidebar">
-        <nav class="s2-nav s2-nav--grouped" aria-label="Components">
-          <p>Overview</p>
-          <a href="/">Getting started</a>
-          <p>Components</p>
-          {sidebarGroups.map((group) => (
-            <details class="s2-nav-group" open={group.id === activeGroupId}>
-              <summary>
-                <span>{group.title}</span>
-                <span>{group.entries.length}</span>
-              </summary>
-              <div>
-                {group.entries.map((componentEntry) => (
-                  <a
-                    href={`/components/${componentEntry.slug}`}
-                    aria-current={componentEntry.slug === entry.slug ? "page" : undefined}
-                  >
-                    {componentEntry.title}
-                  </a>
-                ))}
-              </div>
-            </details>
-          ))}
-          <p>Guides</p>
-          <a href="#visual-state-coverage">Visual parity</a>
-          <a href="#api">API coverage</a>
-          <p>Reference</p>
-          {entry.docsUrl ? <a href={entry.docsUrl}>S2 docs</a> : null}
-        </nav>
+        <DocsSidebarMount
+          activeSlug={entry.slug}
+          navigationLabel="Components"
+          referenceLabel="S2 docs"
+          referenceUrl={entry.docsUrl}
+        />
       </aside>
 
       <main class="s2-main">
@@ -214,18 +175,12 @@ const layerTitles: Record<ComparisonLayerId, string> = {
       </main>
 
       <aside class="s2-toc" aria-label="On this page">
-        <p>On this page</p>
-        <a href="#page-title">{entry.title}</a>
-        <a href="#example">Example</a>
-        <a href="#coverage">Coverage</a>
-        <a href="#visual-state-coverage">Visual State Coverage</a>
-        <a href="#api">API</a>
-        {supportingLayers.map((layer) => (
-          <a href={`#${layer}`}>{layerTitles[layer]}</a>
-        ))}
-        <div class="s2-toc-actions">
-          {entry.docsUrl ? <a href={entry.docsUrl}>S2 source</a> : null}
-        </div>
+        <DocsTocMount
+          entry={entry}
+          sourceLabel="S2 source"
+          sourceUrl={entry.docsUrl}
+          variant="component"
+        />
       </aside>
     </div>
 

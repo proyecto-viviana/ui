@@ -1,0 +1,55 @@
+---
+import {
+  getComparisonEntryGroupId,
+  groupComparisonEntries,
+} from "@comparison/data/component-groups";
+import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
+
+export interface Props {
+  activeSlug?: string;
+  navigationLabel?: string;
+  referenceLabel?: string;
+  referenceUrl?: string;
+}
+
+const { activeSlug, navigationLabel, referenceLabel, referenceUrl } = Astro.props;
+const sidebarGroups = groupComparisonEntries(comparisonEntries);
+const normalizedActiveSlug = comparisonEntries.some((entry) => entry.slug === activeSlug)
+  ? (activeSlug as ComparisonSlug)
+  : undefined;
+const activeGroupId = normalizedActiveSlug
+  ? getComparisonEntryGroupId(normalizedActiveSlug)
+  : undefined;
+const isIndexPage = normalizedActiveSlug == null;
+const visualParityHref = normalizedActiveSlug ? "#visual-state-coverage" : "/components/button";
+const apiCoverageHref = normalizedActiveSlug ? "#api" : "/components/button#api";
+---
+
+<nav class="s2-nav s2-nav--grouped" aria-label={navigationLabel ?? "Documentation"}>
+  <p>Overview</p>
+  <a href="/" aria-current={isIndexPage ? "page" : undefined}>Getting started</a>
+  <p>Components</p>
+  {sidebarGroups.map((group) => (
+    <details class="s2-nav-group" open={isIndexPage || group.id === activeGroupId}>
+      <summary>
+        <span>{group.title}</span>
+        <span class="s2-nav-count">{group.entries.length}</span>
+      </summary>
+      <div>
+        {group.entries.map((item) => (
+          <a
+            href={`/components/${item.slug}`}
+            aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
+          >
+            {item.title}
+          </a>
+        ))}
+      </div>
+    </details>
+  ))}
+  <p>Guides</p>
+  <a href={visualParityHref}>Visual parity</a>
+  <a href={apiCoverageHref}>API coverage</a>
+  <p>Reference</p>
+  {referenceUrl ? <a href={referenceUrl}>{referenceLabel ?? "S2 docs"}</a> : null}
+</nav>

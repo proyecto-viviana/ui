@@ -1,0 +1,30 @@
+---
+import DocsSidebarFallback from "./DocsSidebarFallback.astro";
+
+export interface Props {
+  activeSlug?: string;
+  navigationLabel?: string;
+  referenceLabel?: string;
+  referenceUrl?: string;
+}
+
+const { activeSlug, navigationLabel, referenceLabel, referenceUrl } = Astro.props;
+---
+
+<div
+  class="js-docs-sidebar-mount"
+  data-active-slug={activeSlug ?? ""}
+  data-navigation-label={navigationLabel ?? "Documentation"}
+  data-reference-label={referenceLabel ?? "S2 docs"}
+  data-reference-url={referenceUrl ?? ""}
+>
+  <DocsSidebarFallback
+    activeSlug={activeSlug}
+    navigationLabel={navigationLabel}
+    referenceLabel={referenceLabel}
+    referenceUrl={referenceUrl}
+  />
+</div>
+<script>
+  import "../scripts/docs-sidebar-mount.tsx";
+</script>

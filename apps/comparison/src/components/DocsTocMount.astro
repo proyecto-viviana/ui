@@ -1,0 +1,28 @@
+---
+import DocsTocFallback from "./DocsTocFallback.astro";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+
+type DocsTocVariant = "index" | "component";
+
+export interface Props {
+  entry?: ComparisonEntry;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  variant: DocsTocVariant;
+}
+
+const { entry, sourceLabel, sourceUrl, variant } = Astro.props;
+---
+
+<div
+  class="js-docs-toc-mount"
+  data-component-slug={entry?.slug ?? ""}
+  data-source-label={sourceLabel ?? "S2 source"}
+  data-source-url={sourceUrl ?? ""}
+  data-variant={variant}
+>
+  <DocsTocFallback entry={entry} sourceLabel={sourceLabel} sourceUrl={sourceUrl} variant={variant} />
+</div>
+<script>
+  import "../scripts/docs-toc-mount.tsx";
+</script>

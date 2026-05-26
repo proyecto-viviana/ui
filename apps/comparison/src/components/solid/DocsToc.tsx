@@ -1,0 +1,95 @@
+import h from "solid-js/h";
+import { LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
+import {
+  getComparisonEntry,
+  layerOrder,
+  type ComparisonLayerId,
+} from "@comparison/data/comparison-manifest";
+import { hc } from "./solid-h";
+import { createComparisonColorScheme } from "./useComparisonColorScheme";
+
+type DocsTocVariant = "index" | "component";
+
+interface DocsTocItem {
+  href: string;
+  label: string;
+}
+
+export interface DocsTocProps {
+  sourceLabel?: string;
+  sourceUrl?: string;
+  slug?: string;
+  variant: DocsTocVariant;
+}
+
+const layerTitles: Record<ComparisonLayerId, string> = {
+  styled: "Styled Layer",
+  components: "Component Layer",
+  headless: "Headless Layer",
+  state: "State Layer",
+};
+
+export default function DocsToc(props: DocsTocProps) {
+  const { resolvedTheme } = createComparisonColorScheme();
+  const items = getTocItems(props);
+
+  return hc(
+    Provider,
+    {
+      class: "s2-docs-toc",
+      get colorScheme() {
+        return resolvedTheme();
+      },
+      background: "base",
+    },
+    [
+      h("nav", { class: "s2-toc-nav", "aria-label": "On this page" }, [
+        h("p", {}, "On this page"),
+        ...items.map((item) => h("a", { href: item.href }, item.label)),
+        props.sourceUrl
+          ? h(
+              "div",
+              { class: "s2-toc-actions" },
+              hc(
+                LinkButton,
+                {
+                  href: props.sourceUrl,
+                  size: "S",
+                  variant: "secondary",
+                  fillStyle: "outline",
+                },
+                [props.sourceLabel ?? "S2 source"],
+              ),
+            )
+          : undefined,
+      ]),
+    ],
+  )();
+}
+
+function getTocItems(props: DocsTocProps): DocsTocItem[] {
+  if (props.variant !== "component") {
+    return [
+      { href: "#page-title", label: "Solid Spectrum" },
+      { href: "#coverage-title", label: "Catalogue controls" },
+      { href: "#components-title", label: "Components" },
+    ];
+  }
+
+  const entry = props.slug ? getComparisonEntry(props.slug) : undefined;
+
+  if (!entry) {
+    return [{ href: "#page-title", label: "Component" }];
+  }
+
+  return [
+    { href: "#page-title", label: entry.title },
+    { href: "#example", label: "Example" },
+    { href: "#coverage", label: "Coverage" },
+    { href: "#visual-state-coverage", label: "Visual State Coverage" },
+    { href: "#api", label: "API" },
+    ...layerOrder
+      .filter((layer) => layer !== "styled")
+      .map((layer) => ({ href: `#${layer}`, label: layerTitles[layer] })),
+  ];
+}
