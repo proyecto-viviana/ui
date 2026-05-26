@@ -283,6 +283,13 @@ body.s2-docs[data-theme="dark"] {
   min-width: 0;
 }
 
+.js-catalogue-overview-mount,
+.s2-catalogue-overview {
+  display: grid;
+  gap: 34px;
+  min-width: 0;
+}
+
 .s2-hero {
   display: grid;
   gap: 14px;
@@ -350,6 +357,16 @@ body.s2-docs[data-theme="dark"] {
   color: var(--s2-text-muted);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.s2-overall-coverage {
+  display: grid;
+  width: min(520px, 100%);
+  margin: 0 auto 24px;
+  padding: 24px;
+  border: 1px solid var(--s2-border);
+  border-radius: 8px;
+  background: var(--s2-bg);
 }
 
 .s2-comparison-frame {
@@ -544,6 +561,16 @@ body.s2-docs[data-theme="dark"] {
 
 .s2-component-summary {
   color: var(--s2-text-muted);
+}
+
+.s2-component-coverage {
+  width: 110px;
+  max-width: 110px;
+}
+
+.s2-component-parity {
+  justify-self: end;
+  text-transform: capitalize;
 }
 
 .s2-meter {
@@ -777,6 +804,15 @@ body.s2-docs[data-theme="dark"] {
   .s2-coverage-row,
   .s2-state-row {
     grid-template-columns: 1fr;
+  }
+
+  .s2-component-coverage {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .s2-component-parity {
+    justify-self: start;
   }
 }
 

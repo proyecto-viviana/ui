@@ -1,0 +1,29 @@
+---
+import CatalogueOverviewFallback from "./CatalogueOverviewFallback.astro";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import type { ComponentCoverage } from "@comparison/data/coverage";
+
+interface EntryWithCoverage {
+  entry: ComparisonEntry;
+  coverage: ComponentCoverage;
+}
+
+interface Props {
+  entriesWithCoverage: EntryWithCoverage[];
+  missingOfficialCount: number;
+  officialCount: number;
+  overallCoverage: number;
+  strictStateCount: number;
+  visualEvidenceStateCount: number;
+  liveCount: number;
+}
+
+const props = Astro.props as Props;
+---
+
+<div class="js-catalogue-overview-mount">
+  <CatalogueOverviewFallback {...props} />
+</div>
+<script>
+  import "../scripts/catalogue-overview-mount.tsx";
+</script>

@@ -1,0 +1,80 @@
+---
+import CatalogueControlsFallback from "./CatalogueControlsFallback.astro";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import type { ComponentCoverage } from "@comparison/data/coverage";
+
+interface EntryWithCoverage {
+  entry: ComparisonEntry;
+  coverage: ComponentCoverage;
+}
+
+interface Props {
+  entriesWithCoverage: EntryWithCoverage[];
+  missingOfficialCount: number;
+  officialCount: number;
+  overallCoverage: number;
+  strictStateCount: number;
+  visualEvidenceStateCount: number;
+  liveCount: number;
+}
+
+const {
+  entriesWithCoverage,
+  missingOfficialCount,
+  officialCount,
+  overallCoverage,
+  strictStateCount,
+  visualEvidenceStateCount,
+  liveCount,
+} = Astro.props as Props;
+---
+
+<section class="s2-example" aria-labelledby="coverage-title">
+  <div class="s2-example-preview">
+    <div class="s2-coverage-ring" style={`--value: ${overallCoverage}%`}>
+      <strong>{overallCoverage}%</strong>
+      <span>overall coverage</span>
+    </div>
+    <div class="s2-stat-grid">
+      <div><span>Official S2</span><strong>{officialCount}</strong></div>
+      <div><span>Live routes</span><strong>{liveCount}</strong></div>
+      <div><span>Gaps</span><strong>{missingOfficialCount}</strong></div>
+      <div><span>Visual evidence</span><strong>{visualEvidenceStateCount}</strong></div>
+      <div><span>Strict pairs</span><strong>{strictStateCount}</strong></div>
+    </div>
+  </div>
+  <div class="s2-example-controls">
+    <h2 id="coverage-title">Catalogue controls</h2>
+    <CatalogueControlsFallback />
+  </div>
+</section>
+
+<section class="s2-section" aria-labelledby="components-title">
+  <div class="s2-section-heading">
+    <h2 id="components-title">Components</h2>
+    <span data-result-count>{entriesWithCoverage.length} components</span>
+  </div>
+  <div class="s2-component-list" data-entry-list>
+    {entriesWithCoverage.map(({ entry, coverage }, index) => (
+      <a
+        href={`/components/${entry.slug}`}
+        class="s2-component-row"
+        data-entry-card
+        data-index={index}
+        data-title={entry.title}
+        data-summary={entry.summary}
+        data-parity={entry.parity}
+        data-status={entry.priority}
+        data-source={entry.catalogueSource}
+        data-coverage={coverage.overall}
+      >
+        <span class="s2-component-name">{entry.title}</span>
+        <span class="s2-component-summary">{entry.summary}</span>
+        <span class="s2-meter" aria-label={`${coverage.overall}% coverage`}>
+          <span style={`width: ${coverage.overall}%`}></span>
+        </span>
+        <span class={`s2-pill s2-pill--${entry.parity}`}>{entry.parity}</span>
+      </a>
+    ))}
+  </div>
+</section>
