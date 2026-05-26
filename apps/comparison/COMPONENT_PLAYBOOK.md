@@ -144,10 +144,16 @@ Output:
 Validate:
 
 ```bash
+vp run comparison:report:parity
 vp run comparison:report:gaps
 vp run comparison:report:exports
 vp run guard:rac-export-gap
 ```
+
+Also run `vp run comparison:report:parity:strict` when the pass changes
+catalogue status, modeled controls, validation notes, or visual evidence. The
+strict report may fail on unrelated global gaps; record those separately and
+treat any in-scope strict failure as a blocker.
 
 Stop: the target and measurable report lines are recorded.
 
@@ -529,10 +535,15 @@ Validate:
 ```bash
 vp run --filter @proyecto-viviana/solid-spectrum build
 vp run --filter @proyecto-viviana/comparison build
+vp run comparison:report:parity
 vp run comparison:report:gaps
 vp run comparison:report:exports
 vp run check
 ```
+
+If the pass claims a component is current-gate complete, also run
+`vp run comparison:report:parity:strict` and document any unrelated global
+strict failures. Do not accept the component with an in-scope strict audit gap.
 
 Also run focused package tests and the focused Playwright spec for the target.
 

@@ -242,6 +242,8 @@ inbound composition contract to validate during its own pass.
 
 - `comparison:report:gaps` lines:
 - `comparison:report:exports` lines:
+- `comparison:report:parity` lines:
+- `comparison:report:parity:strict` result if status/evidence changed:
 - `guard:rac-export-gap` result:
 - Improvement target:
 

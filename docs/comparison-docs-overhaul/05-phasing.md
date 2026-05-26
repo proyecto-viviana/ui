@@ -6,14 +6,12 @@ Each phase is independently shippable and leaves the app working.
 
 ### Phase 0 — Spikes & governance
 
-- Resolve the open questions below (style-CSS approach, JSX vs hyperscript,
-  prop-metadata extractor choice).
-- Update `docs/adr/0001-s2-styling-source-of-truth.md`: record that the
-  comparison app **shell** may use `solid-spectrum`; the boundary becomes
-  "no hand-written CSS re-implementing S2 surfaces", not "no styled components
-  in the shell".
-- Loosen the CSS-boundary wording in `apps/comparison/README.md` and
-  `docs/CURRENT_STATUS.md` to match.
+- Resolve the remaining open questions below (app-side macro wiring, JSX vs
+  hyperscript, prop-metadata extractor choice).
+- Keep `docs/adr/0001-s2-styling-source-of-truth.md`,
+  `apps/comparison/README.md`, and `docs/CURRENT_STATUS.md` aligned on the CSS
+  boundary: the comparison app **shell** may use `solid-spectrum`; the boundary
+  is "no hand-written CSS re-implementing S2 component surfaces".
 - Prototype one chrome `style()` call end-to-end through the S2 macro plugin
   (author → macro-emitted CSS → render in Astro) to confirm the app-side path in
   [`02`](02-style-and-build.md).
@@ -64,7 +62,7 @@ Exit: prop tables show real types/defaults/descriptions + the parity column.
 
 Run the migration script across all 69 tracked catalogue entries; hand-tune
 prose, examples, anatomy, `StateTable`s. Append the parity sections. Track with
-`vp run comparison:report:gaps`.
+`vp run comparison:report:parity` and `vp run comparison:report:gaps`.
 
 Exit: all catalogue components have MDX pages at content parity.
 
@@ -79,17 +77,17 @@ Exit: no hand-written S2-surface CSS remains; reports and suites green.
 
 ## Risk register
 
-| Risk                                                                                                    | Severity | Mitigation                                                                                                                                    |
-| ------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chrome `style()` CSS not collected / FOUC                                                               | Med      | App-side `macros.vite()` + source-condition compile path ([`02`](02-style-and-build.md)); prove in Phase 0.                                   |
-| **`solid-spectrum` macro regression:** component classes compile without matching CSS                   | High     | Treat as package macro/build failure, not an app patch. Gate on package build, macro CSS leak checks, and component computed/visual evidence. |
-| Chrome depends on Disclosure/Table, which `CURRENT_STATUS.md` flags as not-yet-parity styled components | Med      | Pre-existing tracked WIP; chrome fidelity is gated on those components reaching parity. Dogfooding will surface their bugs early.             |
-| Prop-metadata extraction larger than expected                                                           | High     | Isolated as Phase 4; `PropTable` degrades gracefully to `apiProps`.                                                                           |
-| Solid SSR + selective hydration friction in Astro                                                       | Med      | Integration already present; per-region `client:*` decisions in Phase 1.                                                                      |
-| Upstream MDX uses RSC-only constructs (`docs:` import, server components)                               | Med      | Migration script strips/replaces them; pilot in Phase 2 surfaces edge cases early.                                                            |
-| Two component libraries (React + Solid) bundled — build weight                                          | Low      | Already the case today; `astro.config` warning policy tuned.                                                                                  |
-| Visual drift from upstream over time                                                                    | Low      | Keep upstream `s2-docs` vendored; periodic diff.                                                                                              |
-| e2e/visual specs assert on `.s2-*` selectors                                                            | Med      | Phase 6 selector migration; inventory specs before deleting CSS.                                                                              |
+| Risk                                                                                  | Severity | Mitigation                                                                                                                                    |
+| ------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chrome `style()` CSS not collected / FOUC                                             | Med      | App-side `macros.vite()` + source-condition compile path ([`02`](02-style-and-build.md)); prove in Phase 0.                                   |
+| **`solid-spectrum` macro regression:** component classes compile without matching CSS | High     | Treat as package macro/build failure, not an app patch. Gate on package build, macro CSS leak checks, and component computed/visual evidence. |
+| Chrome dogfooding exposes release-hardening gaps in comparison-live components        | Med      | Treat failures as component bugs, not app CSS patch work. Gate fixes through component validation notes and current reports.                  |
+| Prop-metadata extraction larger than expected                                         | High     | Isolated as Phase 4; `PropTable` degrades gracefully to `apiProps`.                                                                           |
+| Solid SSR + selective hydration friction in Astro                                     | Med      | Integration already present; per-region `client:*` decisions in Phase 1.                                                                      |
+| Upstream MDX uses RSC-only constructs (`docs:` import, server components)             | Med      | Migration script strips/replaces them; pilot in Phase 2 surfaces edge cases early.                                                            |
+| Two component libraries (React + Solid) bundled — build weight                        | Low      | Already the case today; `astro.config` warning policy tuned.                                                                                  |
+| Visual drift from upstream over time                                                  | Low      | Keep upstream `s2-docs` vendored; periodic diff.                                                                                              |
+| e2e/visual specs assert on `.s2-*` selectors                                          | Med      | Phase 6 selector migration; inventory specs before deleting CSS.                                                                              |
 
 ## Open questions (Phase 0)
 
@@ -123,6 +121,8 @@ Exit: no hand-written S2-surface CSS remains; reports and suites green.
   **plus** the React-vs-Solid comparison and porting-parity reporting.
 - `apps/comparison/src/styles/global.css` no longer styles S2 surfaces; only
   harness chrome remains.
-- `vp run comparison:report:gaps` / `:exports` and the e2e/visual suites pass
-  against the new markup.
+- `vp run comparison:report:parity`, `comparison:report:gaps`,
+  `comparison:report:exports`, and the e2e/visual suites pass against the new
+  markup. `comparison:report:parity:strict` must be green before claiming
+  100% current-gate component parity.
 - ADR 0001 and the steering docs reflect the superseded boundary.

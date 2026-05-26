@@ -63,6 +63,7 @@ rg --files apps/comparison/e2e | rg '<slug>.*\.spec\.ts$'
 Record before/after lines from:
 
 ```bash
+vp run comparison:report:parity
 vp run comparison:report:gaps
 vp run comparison:report:exports
 ```

@@ -92,10 +92,15 @@ including known-defect/regression protection, is complete.
 ```bash
 vp run --filter @proyecto-viviana/solid-spectrum build
 vp run --filter @proyecto-viviana/comparison build
+vp run comparison:report:parity
 vp run comparison:report:gaps
 vp run comparison:report:exports
 vp run check
 ```
+
+Run `vp run comparison:report:parity:strict` before claiming current-gate
+component parity. It may fail on unrelated global gaps; in-scope strict gaps are
+blockers and unrelated gaps must be recorded in the handoff.
 
 Also run the focused package tests and focused Playwright spec for the
 component. Record any browser sandbox escalation needed on this host.

@@ -90,9 +90,12 @@ Matching agent skills (`react-aria`, `react-spectrum-s2`) are installed in
 automatically when working on component parity in Claude Code.
 
 See [`apps/comparison/COMPONENT_PLAYBOOK.md`](../apps/comparison/COMPONENT_PLAYBOOK.md)
-for the specific MCP tool calls to make at each phase of a component audit.
-The quick reference table is in the **MCP Quick Reference** section of that
-file.
+for the component audit sequence. Use
+[`apps/comparison/playbook/source-index.md`](../apps/comparison/playbook/source-index.md)
+and
+[`apps/comparison/playbook/component-research.md`](../apps/comparison/playbook/component-research.md)
+for the specific source hierarchy and MCP/documentation sources to use during a
+component audit.
 
 To verify the servers are connected:
 

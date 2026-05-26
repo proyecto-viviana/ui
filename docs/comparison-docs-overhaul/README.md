@@ -5,9 +5,10 @@ exactly like the live `react-spectrum.adobe.com` (Spectrum 2) docs — built wit
 `solid-spectrum` instead of React Spectrum — while keeping our extra layer: the
 React-vs-Solid side-by-side comparison and porting-parity reporting.
 
-> Status: **planning only**. No changes to `apps/comparison` yet. These
-> documents capture investigation and design so implementation can start from a
-> settled plan.
+> Status: **planning only for the comparison app chrome/content overhaul**. The
+> `solid-spectrum` package macro/build checkpoint has started separately, but
+> the comparison app still needs its own source-condition and CSS emission proof
+> before the docs shell is rebuilt.
 
 ## Locked decisions
 
@@ -37,7 +38,7 @@ The live docs site's source is already vendored in this repo at
 hand-authored component pages (`pages/s2/*.mdx`). The overhaul replaces the
 comparison app's faked docs shell (~2200 lines of `s2-` CSS over raw HTML) with
 real `solid-spectrum` chrome, and replaces its single generated `[slug].astro`
-template with per-component MDX adapted from the upstream pages. The previously
-feared blocker — the compile-time `style` macro — does not exist for us:
-`solid-spectrum`'s `style()` is a runtime function with a build-time CSS
-collection step we can extend. See [`02-style-and-build.md`](02-style-and-build.md).
+template with per-component MDX adapted from the upstream pages. The style path
+is the upstream macro model: package output now uses the Vite Plus/tsdown macro
+route, and the remaining app-side proof is source-condition wiring plus CSS
+chunk emission in Astro. See [`02-style-and-build.md`](02-style-and-build.md).

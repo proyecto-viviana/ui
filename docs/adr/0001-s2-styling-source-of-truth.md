@@ -20,10 +20,18 @@ Generated classes are build output. They are not the architecture.
 - Do not tune handwritten colors, padding, radius, or state CSS to make
   screenshots pass.
 - Do not add new `.comparison-spectrum-*` component-internal styling.
-- Comparison CSS may style the docs shell, controls, panels, and screenshot
-  frame only.
-- Components not migrated to the S2-compatible style system must be marked
-  missing/gap.
+- The comparison app shell may use `solid-spectrum` components and the S2 style
+  macro. Hand-written comparison CSS is limited to harness layout, controls,
+  panels, screenshot frames, and temporary migration scaffolding.
+- App CSS must not implement component-internal S2 surfaces: colors, padding,
+  radius, layout slots, focus rings, animations, or visual states.
+- Components that still depend on app-local fallback CSS for their S2 surface
+  must be marked partial or missing/gap until the implementation lives in the
+  S2-compatible style system.
+
+This supersedes the older shorthand that the comparison shell could not use
+styled components. The actual boundary is no hand-written S2 component-surface
+CSS in the app.
 
 ## Context Recovery
 

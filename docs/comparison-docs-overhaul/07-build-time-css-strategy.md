@@ -267,23 +267,20 @@ package route for macro CSS assets in this repo:
 
 ### 8a. "Vite is moving to Rolldown" — is that a blocker? No.
 
-Current state (verified May 2026): **Vite 8** shipped stable in March 2026 with
-**Rolldown as the default** bundler; **Rolldown 1.0** is stable (May 2026,
-semver-locked); the temporary `rolldown-vite` opt-in package was archived
-because it merged into mainline. So Vite _is_ "there" — Rolldown is the default.
-
-But the comparison app does not ride Vite directly — it rides **Astro**.
-`apps/comparison` resolves **Astro 5.18.1 → Vite 6.4.1**, and Vite 6 is still
-**Rollup**-based. So the comparison app specifically will not be on Rolldown
-until Astro ships a Vite 8-based release.
+Current local baseline (2026-05-26): the comparison app does not ride Vite
+directly — it rides **Astro**. `apps/comparison` resolves **Astro 5.18.1 →
+Vite 6.4.1**, and Vite 6 is still **Rollup**-based. The package-build path uses
+Vite Plus/tsdown/Rolldown, and the current lockfile still resolves Rolldown RC
+builds in that toolchain. Do not make the comparison app depend on future Vite
+or Rolldown release state; verify any external release claim against primary
+release notes before updating this section.
 
 **This blocks nothing**, for three reasons:
 
 1. `unplugin-parcel-macros` is an **unplugin** — bundler-agnostic by design. It
-   runs on Vite 6 / Rollup (the comparison app today), Vite 8 / Rolldown
-   (later), and tsdown / Rolldown. The verified Adobe `s2-vite-project` example
-   runs on Vite 5 / Rollup. The macro works on the comparison app's _current_
-   Vite 6 now.
+   can run on Vite/Rollup, Vite/Rolldown, and tsdown/Rolldown. The verified
+   Adobe `s2-vite-project` example runs on Vite 5 / Rollup, so the macro route
+   does not require the comparison app to be on Rolldown.
 2. tsdown is Rolldown-based and works today, independent of Vite's version.
 3. In the consumer-runs-macro model (§5), the comparison app's own Vite
    compiles `solid-spectrum`'s **source** with its own macro plugin —
@@ -292,9 +289,8 @@ until Astro ships a Vite 8-based release.
    (comparison app on Rollup, `solid-spectrum` on Rolldown) has no interaction
    surface.
 
-So engine "convergence" is **automatic and free** — it arrives whenever Astro
-bumps to Vite 8 — and is **not a precondition**. Do **not** force Vite 8 under
-Astro 5.18: Astro pins Vite 6, overriding it is unsupported, and it buys
+So engine convergence is **not a precondition**. Do **not** force a newer Vite
+under Astro 5.18: Astro pins Vite 6, overriding it is unsupported, and it buys
 nothing because the macro is engine-agnostic.
 
 ### 8b. Sequencing

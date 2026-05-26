@@ -11,6 +11,10 @@ The controlling decision is
 declaration system. The comparison app verifies parity; it does not implement
 component styling.
 
+The comparison app shell may dogfood `solid-spectrum` components and the S2
+style macro. That does not change the component boundary: component-internal S2
+surfaces must be implemented in `packages/solid-spectrum`, not in app CSS.
+
 ## Component Process
 
 For each component, first review the React Spectrum S2 source. Decide what S2 is
@@ -40,8 +44,12 @@ Before accepting a component, write its state plan:
 
 ## Current Migration State
 
-- The existing app-local Spectrum skin is legacy.
-- Components still depending on it are missing/gap, not valid styled parity.
+- The existing app-local Spectrum skin is legacy for component surfaces.
+- Current catalogue route coverage is complete (`69/69` live on both stacks);
+  remaining S2 work is strict evidence, validation notes, support exports, and
+  release-hardening.
+- Components still depending on app-local component-surface CSS are partial or
+  missing/gap, not valid styled parity.
 - Start each component from the headless Solid component plus copied/ported S2
   style declarations.
 - Do not use the fallback skin as implementation scaffolding for new parity

@@ -5,8 +5,9 @@ Side-by-side parity harness for Adobe React Spectrum S2 and
 
 ## Boundary
 
-The comparison app verifies S2 parity. It must not implement S2 component
-styling.
+The comparison app verifies S2 parity. It may use `solid-spectrum` for the docs
+shell/chrome, but it must not implement or patch S2 component-internal styling
+with app CSS.
 
 Read
 [`docs/adr/0001-s2-styling-source-of-truth.md`](../../docs/adr/0001-s2-styling-source-of-truth.md)
@@ -18,7 +19,10 @@ before adding styled component work.
 vp run comparison:dev
 vp run comparison:build
 vp run comparison:typecheck
+vp run comparison:report:parity
+vp run comparison:report:parity:strict
 vp run comparison:report:gaps
+vp run comparison:report:exports
 vp run comparison:test:default
 vp run comparison:test:button
 ```
@@ -35,31 +39,42 @@ focused.
 Routes are generated from the official React Spectrum S2 catalogue. Missing
 Solid implementations stay visible as gaps.
 
-Current local report snapshot (2026-05-15): `69` official entries tracked,
-`33` live on both stacks, `36` still missing or blocked, `172` visual states
-tracked, `49` with current visual evidence, and `32` with strict pair-diff
-tests.
+Current local report snapshot (2026-05-26): `69` official entries tracked,
+`69` live on both stacks, `0` missing/gap catalogue entries, `346` visual
+states tracked, `105` with current visual evidence, and `56` with strict
+pair-diff tests.
+
+The strict parity report currently fails until Provider gets modeled viewer
+controls and DropZone, NumberField, Picker, Provider, RadioGroup, SearchField,
+Switch, TextArea, and TextField get validation notes.
 
 Use the reports as the current roadmap:
 
 ```bash
+vp run comparison:report:parity
+vp run comparison:report:parity:strict
 vp run comparison:report:gaps
 vp run comparison:report:exports
 ```
 
 ## CSS Boundary
 
-Allowed comparison CSS:
+Allowed hand-written comparison CSS:
 
-- page shell
-- controls
-- panels
+- harness layout and framing
+- comparison controls
+- parity/status panels
 - screenshot frames
+- temporary docs-shell scaffolding during the solid-spectrum chrome migration
 
 Not allowed:
 
-- component colors
-- component padding
-- component radius
+- component-internal colors
+- component-internal padding
+- component-internal radius
 - component visual states
 - new `.comparison-spectrum-*` component-internal rules
+
+Preferred docs-shell styling is `solid-spectrum` plus the S2 style macro. If a
+route needs component visual parity, fix `packages/solid-spectrum`; do not fake
+the component from `apps/comparison/src/styles/global.css`.

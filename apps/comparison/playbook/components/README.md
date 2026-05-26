@@ -49,10 +49,11 @@ partial if any gate remains unresolved.
 
 ## Strict Component Parity Audit
 
-Run `vp run comparison:report:parity` before claiming catalogue parity. The
-audit checks official S2 catalogue coverage against the comparison manifest,
-sidebar grouping, live styled fixtures, modeled viewer controls, validation
-notes, and current visual/asserted evidence.
+Run `vp run comparison:report:parity` before claiming catalogue parity, and
+run `vp run comparison:report:parity:strict` before claiming 100% current-gate
+component parity. The audit checks official S2 catalogue coverage against the
+comparison manifest, sidebar grouping, live styled fixtures, modeled viewer
+controls, validation notes, and current visual/asserted evidence.
 
 Current snapshot:
 
@@ -74,6 +75,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [Avatar](./avatar-validation-notes.md)
 - [AvatarGroup](./avatargroup-validation-notes.md)
 - [Badge](./badge-validation-notes.md)
+- [Breadcrumbs](./breadcrumbs-validation-notes.md)
 - [Button](./button-validation-notes.md)
 - [Button family](./button-family-validation-notes.md)
 - [Calendar](./calendar-validation-notes.md)
@@ -111,6 +113,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [StatusLight](./statuslight-validation-notes.md)
 - [Tabs](./tabs-validation-notes.md)
 - [TagGroup](./taggroup-validation-notes.md)
+- [TableView](./tableview-validation-notes.md)
 - [Text](./text-validation-notes.md)
 - [Toast](./toast-validation-notes.md)
 - [ToggleButton](./togglebutton-validation-notes.md)
