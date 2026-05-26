@@ -107,23 +107,25 @@ export class TableCollection<T = unknown> implements ITableCollection<T> {
   }
 
   private buildColumnNode(col: ColumnDefinition<T>, index: number): GridNode<T> {
+    const key = col.key ?? (col as ColumnDefinition<T> & { id?: Key }).id ?? index;
     const node: GridNode<T> = {
       type: "column" as GridNodeType,
-      key: col.key,
+      key,
       index,
       column: index,
       level: 0,
       hasChildNodes: (col.children?.length ?? 0) > 0,
       childNodes: [],
       value: null,
-      textValue: col.textValue ?? col.name ?? String(col.key),
+      props: { columnDefinition: { ...col, key } },
+      textValue: col.textValue ?? col.name ?? String(key),
     };
 
     if (col.children && col.children.length > 0) {
       let childIndex = 0;
       for (const child of col.children) {
         const childNode = this.buildColumnNode(child, childIndex);
-        childNode.parentKey = col.key;
+        childNode.parentKey = key;
         childNode.level = 1;
         node.childNodes.push(childNode);
         childIndex++;
@@ -135,7 +137,19 @@ export class TableCollection<T = unknown> implements ITableCollection<T> {
   }
 
   private getDefaultRowHeaderColumnKeys(): Set<Key> {
-    // Default to first non-selection column as row header
+    const explicitRowHeaderKeys = this._columns
+      .filter((col) => col.key !== "__selection__")
+      .filter((col) => {
+        const definition = col.props?.columnDefinition as ColumnDefinition<T> | undefined;
+        return !!definition?.isRowHeader;
+      })
+      .map((col) => col.key);
+
+    if (explicitRowHeaderKeys.length > 0) {
+      return new Set(explicitRowHeaderKeys);
+    }
+
+    // Default to first non-selection column as row header.
     for (const col of this._columns) {
       if (col.key !== "__selection__") {
         return new Set([col.key]);
@@ -202,11 +216,14 @@ export class TableCollection<T = unknown> implements ITableCollection<T> {
 
       const cells: GridNode<T>[] = this._columns.map((col, colIndex) => {
         const cellKey = `${key}-${col.key}`;
+        const columnDefinition =
+          (col.props?.columnDefinition as ColumnDefinition<T> | undefined) ??
+          ({ key: col.key } as ColumnDefinition<T>);
         const cellTextValue =
           col.key === "__selection__"
             ? "Selection"
             : getTextValue
-              ? getTextValue(value, { key: col.key } as ColumnDefinition<T>)
+              ? getTextValue(value, columnDefinition)
               : String((value as Record<string, unknown>)?.[String(col.key)] ?? "");
 
         const cell: GridNode<T> = {

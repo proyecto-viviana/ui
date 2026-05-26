@@ -2625,6 +2625,56 @@ describe("Table", () => {
       );
     });
 
+    it("updates aria-sort from pointer activation", () => {
+      render(() => {
+        const [sortDescriptor, setSortDescriptor] = createSignal<
+          { column: string | number; direction: "ascending" | "descending" } | undefined
+        >({ column: "name", direction: "ascending" });
+
+        return (
+          <Table
+            items={testData}
+            columns={testColumns}
+            getKey={(item: any) => item.id}
+            aria-label="Pokemon"
+            sortDescriptor={sortDescriptor() as any}
+            onSortChange={(descriptor) =>
+              setSortDescriptor(
+                descriptor as { column: string | number; direction: "ascending" | "descending" },
+              )
+            }
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name" allowsSorting>
+                    {() => <>Name</>}
+                  </TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        );
+      });
+
+      const nameColumn = screen.getByRole("columnheader", { name: "Name" });
+      fireEvent.pointerDown(nameColumn, { button: 0 });
+      fireEvent.pointerUp(nameColumn, { button: 0 });
+      fireEvent.click(nameColumn);
+
+      expect(screen.getByRole("columnheader", { name: "Name" })).toHaveAttribute(
+        "aria-sort",
+        "descending",
+      );
+    });
+
     it("should support sorting", () => {
       const onSortChange = vi.fn();
       render(() => (
@@ -2868,6 +2918,57 @@ describe("Table", () => {
       expect(cells[0]).toHaveAttribute("data-column-index", "0");
       expect(cells[1]).toHaveAttribute("data-column-index", "1");
       expect(cells[2]).toHaveAttribute("data-column-index", "2");
+    });
+
+    it("should infer implicit cell ids from id-based column definitions", () => {
+      const getTextValue = vi.fn(
+        (item: (typeof testData)[number], column: { id?: keyof (typeof testData)[number] }) =>
+          column.id ? String(item[column.id] ?? "") : "",
+      );
+
+      render(() => (
+        <Table
+          items={[testData[0]]}
+          columns={[
+            { id: "name", name: "Name", isRowHeader: true },
+            { id: "type", name: "Type" },
+          ]}
+          getKey={(item: any) => item.id}
+          getTextValue={getTextValue}
+          aria-label="Pokemon"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                <TableColumn id="type">{() => <>Type</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell>{() => <>{item.name}</>}</TableCell>
+                        <TableCell>{() => <>{item.type}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      expect(screen.getByRole("rowheader", { name: "Pikachu" })).toHaveAttribute(
+        "data-column-index",
+        "0",
+      );
+      expect(screen.getByRole("gridcell", { name: "Electric" })).toHaveAttribute(
+        "data-column-index",
+        "1",
+      );
+      expect(getTextValue.mock.calls[0][1]).toMatchObject({ id: "name", key: "name" });
     });
 
     it("should support row render function and not call it with state", () => {
@@ -3260,6 +3361,44 @@ describe("Table", () => {
       fireEvent.click(row);
       expect(row).not.toHaveAttribute("data-pressed");
       expect(row).not.toHaveClass("pressed");
+      expect(onRowAction).toHaveBeenCalledWith(2);
+    });
+
+    it("should support row actions on press up when shouldSelectOnPressUp is true", () => {
+      const onRowAction = vi.fn();
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="none"
+          shouldSelectOnPressUp
+          onRowAction={onRowAction}
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const row = screen.getByText("Charizard").closest('[role="row"]')!;
+
+      fireEvent.pointerUp(row, { pointerType: "mouse" });
+      fireEvent.click(row);
+
+      expect(onRowAction).toHaveBeenCalledTimes(1);
       expect(onRowAction).toHaveBeenCalledWith(2);
     });
 
@@ -3753,13 +3892,13 @@ describe("Table", () => {
       expect(table).toBeInTheDocument();
     });
 
-    it("ColumnResizer renders with correct ARIA attributes", () => {
+    it("ColumnResizer keeps the visible handle presentational", () => {
       render(() => <ResizableTestTable />);
-      const resizers = screen.getAllByRole("separator");
+      const resizers = document.querySelectorAll(".solidaria-Table-columnResizer");
       expect(resizers.length).toBeGreaterThanOrEqual(2);
-      // Each separator should have vertical orientation
       for (const resizer of resizers) {
-        expect(resizer.getAttribute("aria-orientation")).toBe("vertical");
+        expect(resizer.getAttribute("role")).toBe("presentation");
+        expect(resizer.getAttribute("aria-orientation")).toBeNull();
       }
     });
 
@@ -3899,7 +4038,7 @@ describe("Table", () => {
       expect(min).toBeGreaterThanOrEqual(75);
     });
 
-    it("ColumnResizer falls back to static separator without ResizableTableContainer", () => {
+    it("ColumnResizer falls back to a presentational handle without ResizableTableContainer", () => {
       render(() => (
         <Table
           items={testData}
@@ -3939,9 +4078,10 @@ describe("Table", () => {
         </Table>
       ));
 
-      // Should still render a separator element
-      const separators = screen.getAllByRole("separator");
-      expect(separators.length).toBeGreaterThanOrEqual(1);
+      const resizers = document.querySelectorAll(".solidaria-Table-columnResizer");
+      expect(resizers.length).toBeGreaterThanOrEqual(1);
+      expect(resizers[0].getAttribute("role")).toBe("presentation");
+      expect(document.querySelector('input[type="range"]')).toBeNull();
     });
   });
 });

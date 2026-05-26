@@ -17,7 +17,9 @@ export function createTableColumnHeader<T extends object>(
   state: Accessor<TableState<T, TableCollection<T>>>,
   _ref: Accessor<HTMLTableCellElement | null>,
 ): TableColumnHeaderAria {
-  const [_isPressed, setIsPressed] = createSignal(false);
+  const [isPressed, setIsPressed] = createSignal(false);
+  let ignoreNextClick = false;
+  let ignoreNextClickTimeout: ReturnType<typeof setTimeout> | undefined;
 
   const isFocused = createMemo(() => {
     const s = state();
@@ -25,8 +27,7 @@ export function createTableColumnHeader<T extends object>(
     return s.focusedKey === p.node.key;
   });
 
-  // Handle click for sorting
-  const onClick = () => {
+  const sortColumn = () => {
     const s = state();
     const p = props();
 
@@ -35,16 +36,44 @@ export function createTableColumnHeader<T extends object>(
     }
   };
 
+  const clearPendingClickIgnore = () => {
+    if (ignoreNextClickTimeout != null) {
+      clearTimeout(ignoreNextClickTimeout);
+      ignoreNextClickTimeout = undefined;
+    }
+  };
+
+  const ignorePointerGeneratedClick = () => {
+    clearPendingClickIgnore();
+    ignoreNextClick = true;
+    ignoreNextClickTimeout = setTimeout(() => {
+      ignoreNextClick = false;
+      ignoreNextClickTimeout = undefined;
+    }, 0);
+  };
+
+  // Handle click for sorting. Pointer activation is handled on pointerup because
+  // focusing the table header can re-render its child content before a native
+  // click is dispatched.
+  const onClick = () => {
+    if (ignoreNextClick) {
+      ignoreNextClick = false;
+      clearPendingClickIgnore();
+      return;
+    }
+
+    sortColumn();
+  };
+
   const onKeyDown = (e: KeyboardEvent) => {
     const p = props();
-    const s = state();
 
     if (
       p.allowsSorting &&
       (e.key === "Enter" || e.key === " " || e.key === "Space" || e.key === "Spacebar")
     ) {
       e.preventDefault();
-      s.sort(p.node.key);
+      sortColumn();
     }
   };
 
@@ -54,11 +83,24 @@ export function createTableColumnHeader<T extends object>(
     s.setFocusedKey(p.node.key);
   };
 
-  const onPointerDown = () => {
+  const onPointerDown = (e: PointerEvent) => {
+    if (e.button !== 0) {
+      return;
+    }
+
     setIsPressed(true);
   };
 
   const onPointerUp = () => {
+    if (isPressed()) {
+      ignorePointerGeneratedClick();
+      sortColumn();
+    }
+
+    setIsPressed(false);
+  };
+
+  const onPointerCancel = () => {
     setIsPressed(false);
   };
 
@@ -93,6 +135,8 @@ export function createTableColumnHeader<T extends object>(
       baseProps.onKeyDown = onKeyDown;
       baseProps.onPointerDown = onPointerDown;
       baseProps.onPointerUp = onPointerUp;
+      baseProps.onPointerCancel = onPointerCancel;
+      baseProps.onPointerLeave = onPointerCancel;
       baseProps.style = { cursor: "pointer" };
     }
 

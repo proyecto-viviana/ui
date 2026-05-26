@@ -60,6 +60,7 @@ export function createTableSelectAllCheckbox<T extends object>(
     // The component using this should handle this separately
     if (isIndeterminate()) {
       baseProps["data-indeterminate"] = "true";
+      baseProps["aria-checked"] = "mixed";
     }
 
     return baseProps as JSX.InputHTMLAttributes<HTMLInputElement>;

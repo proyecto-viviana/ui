@@ -1,545 +1,1107 @@
-import { type JSX, splitProps, createContext, createMemo, useContext, Show } from "solid-js";
 import {
-  Table as HeadlessTable,
-  TableHeader as HeadlessTableHeader,
-  TableColumn as HeadlessTableColumn,
-  TableBody as HeadlessTableBody,
-  TableFooter as HeadlessTableFooter,
-  TableRow as HeadlessTableRow,
-  TableCell as HeadlessTableCell,
-  TableSelectionCheckbox as HeadlessTableSelectionCheckbox,
-  TableSelectAllCheckbox as HeadlessTableSelectAllCheckbox,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  mergeProps,
+  splitProps,
+  useContext,
+  type JSX,
+} from "solid-js";
+import {
   ColumnResizer as HeadlessColumnResizer,
   ResizableTableContainer as HeadlessResizableTableContainer,
-  type TableProps as HeadlessTableProps,
-  type TableHeaderProps as HeadlessTableHeaderProps,
-  type TableColumnProps as HeadlessTableColumnProps,
-  type TableBodyProps as HeadlessTableBodyProps,
-  type TableFooterProps as HeadlessTableFooterProps,
-  type TableRowProps as HeadlessTableRowProps,
-  type TableCellProps as HeadlessTableCellProps,
+  Table as HeadlessTable,
+  TableBody as HeadlessTableBody,
+  TableCell as HeadlessTableCell,
+  TableColumn as HeadlessTableColumn,
+  TableFooter as HeadlessTableFooter,
+  TableHeader as HeadlessTableHeader,
+  TableRow as HeadlessTableRow,
+  TableSelectAllCheckbox as HeadlessTableSelectAllCheckbox,
+  TableColumnResizeStateContext as HeadlessTableColumnResizeStateContext,
+  TableSelectionCheckbox as HeadlessTableSelectionCheckbox,
+  TableStateContext as HeadlessTableStateContext,
   type ColumnResizerProps as HeadlessColumnResizerProps,
-  type ResizableTableContainerProps as HeadlessResizableTableContainerProps,
   type ColumnResizerRenderProps,
-  type TableRenderProps,
-  type TableColumnRenderProps,
-  type TableFooterRenderProps,
-  type TableRowRenderProps,
+  type ResizableTableContainerProps as HeadlessResizableTableContainerProps,
+  type TableBodyProps as HeadlessTableBodyProps,
+  type TableCellProps as HeadlessTableCellProps,
   type TableCellRenderProps,
+  type TableColumnProps as HeadlessTableColumnProps,
+  type TableColumnRenderProps,
+  type TableFooterProps as HeadlessTableFooterProps,
+  type TableFooterRenderProps,
+  type TableHeaderProps as HeadlessTableHeaderProps,
+  type TableProps as HeadlessTableProps,
+  type TableRenderProps,
+  type TableRowProps as HeadlessTableRowProps,
+  type TableRowRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { Key, SortDescriptor, ColumnDefinition } from "@proyecto-viviana/solid-stately";
+import type {
+  ColumnDefinition,
+  Key,
+  LoadingState,
+  SortDescriptor,
+} from "@proyecto-viviana/solid-stately";
+import Arrow from "../icon/ui-icons/Arrow";
+import Checkmark from "../icon/ui-icons/Checkmark";
+import Dash from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
+import type { StyleString } from "../style";
+import { baseColor, colorMix, focusRing, style } from "../style" with { type: "macro" };
+import { mergeStyles } from "../style/runtime";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import {
+  controlFont,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils" with { type: "macro" };
 
 export type TableSize = "sm" | "md" | "lg";
 export type TableVariant = "default" | "striped" | "bordered";
+export type TableDensity = "compact" | "regular" | "spacious";
+export type TableOverflowMode = "truncate" | "wrap";
+export type TableAlign = "start" | "center" | "end" | "left" | "right";
 
 interface TableContextValue {
-  size: TableSize;
-  variant: TableVariant;
+  density: TableDensity;
+  isQuiet: boolean;
+  overflowMode: TableOverflowMode;
+  showSelectionCheckboxes: boolean;
+  loadingState?: LoadingState;
+  onLoadMore?: () => void | Promise<void>;
 }
 
-const TableSizeContext = createContext<TableContextValue>({ size: "md", variant: "default" });
+const TableContext = createContext<TableContextValue>({
+  density: "regular",
+  isQuiet: false,
+  overflowMode: "truncate",
+  showSelectionCheckboxes: false,
+});
 
 export interface TableProps<T extends object> extends Omit<
   HeadlessTableProps<T>,
-  "class" | "style" | "children"
+  | "class"
+  | "style"
+  | "children"
+  | "selectionBehavior"
+  | "onSelectionChange"
+  | "showSelectionCheckboxes"
 > {
-  /** The size of the table. */
-  size?: TableSize;
-  /** The visual variant of the table. */
-  variant?: TableVariant;
-  /** Additional CSS class name. */
-  class?: string;
-  /** Title for the table. */
-  title?: string;
-  /** Description for the table. */
-  description?: string;
   /** Children components (TableHeader, TableBody). */
   children?: JSX.Element | (() => JSX.Element);
+  /** Density of rows and headers. */
+  density?: TableDensity;
+  /** Whether the TableView should draw without the default container chrome. */
+  isQuiet?: boolean;
+  /** Whether labels and cell content truncate or wrap. */
+  overflowMode?: TableOverflowMode;
+  /** Provides an action bar when rows are selected. */
+  renderActionBar?: (selectedKeys: "all" | Set<Key>) => JSX.Element;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
+  /** Backward-compatible inline style alias. Prefer styles or UNSAFE_style. */
+  style?: JSX.CSSProperties;
+  /** Title for the table. Prefer aria-label/aria-labelledby for new code. */
+  title?: JSX.Element;
+  /** Description for the table. */
+  description?: JSX.Element;
+  /** Legacy size alias retained for compatibility. */
+  size?: TableSize;
+  /** Legacy variant alias retained for compatibility. */
+  variant?: TableVariant;
+  /** Overrides the default S2 selection checkbox behavior. */
+  showSelectionCheckboxes?: boolean;
+  /** S2 row action alias. */
+  onAction?: (key: Key) => void;
+  /** S2 asynchronous loading state. */
+  loadingState?: LoadingState;
+  /** S2 asynchronous load-more callback. */
+  onLoadMore?: () => void | Promise<void>;
+  /** Called when a column resize starts. */
+  onResizeStart?: (widths: Map<Key, number>) => void;
+  /** Called during column resize. */
+  onResize?: (widths: Map<Key, number>) => void;
+  /** Called when a column resize ends. */
+  onResizeEnd?: (widths: Map<Key, number>) => void;
+  /** Selection behavior forwarded to the headless table. S2 defaults to toggle. */
+  selectionBehavior?: HeadlessTableProps<T>["selectionBehavior"];
+  /** Selection callback mirrored for the optional action bar. */
+  onSelectionChange?: HeadlessTableProps<T>["onSelectionChange"];
 }
 
 export interface TableHeaderProps extends Omit<HeadlessTableHeaderProps, "class" | "style"> {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
 }
 
 export interface TableColumnProps extends Omit<HeadlessTableColumnProps, "class" | "style"> {
-  /** Additional CSS class name. */
-  class?: string;
   /** Text alignment for the column. */
-  align?: "left" | "center" | "right";
-  /** Width of the column (CSS value). */
-  width?: string;
+  align?: TableAlign;
+  /** Whether to draw an end divider. */
+  showDivider?: boolean;
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
 }
 
 export interface TableBodyProps<T> extends Omit<HeadlessTableBodyProps<T>, "class" | "style"> {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
 }
 
 export interface TableFooterProps<T> extends Omit<HeadlessTableFooterProps<T>, "class" | "style"> {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
 }
 
 export interface TableRowProps<T> extends Omit<HeadlessTableRowProps<T>, "class" | "style"> {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
 }
 
 export interface TableCellProps extends Omit<HeadlessTableCellProps, "class" | "style"> {
-  /** Additional CSS class name. */
-  class?: string;
   /** Text alignment for the cell. */
-  align?: "left" | "center" | "right";
+  align?: TableAlign;
+  /** Whether to draw an end divider. */
+  showDivider?: boolean;
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
 }
 
-const sizeStyles = {
-  sm: {
-    table: "text-sm",
-    headerCell: "px-3 py-2",
-    cell: "px-3 py-2",
-    checkbox: "w-4 h-4",
+const tableWrapper = style(
+  {
+    minHeight: 0,
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    isolation: "isolate",
+    position: "relative",
+    overflow: "clip",
   },
-  md: {
-    table: "text-base",
-    headerCell: "px-4 py-3",
-    cell: "px-4 py-3",
-    checkbox: "w-5 h-5",
-  },
-  lg: {
-    table: "text-lg",
-    headerCell: "px-5 py-4",
-    cell: "px-5 py-4",
-    checkbox: "w-6 h-6",
-  },
-};
+  getAllowedOverrides({ height: true }),
+);
 
-const variantStyles = {
-  default: {
-    wrapper: "rounded-lg border border-bg-300 overflow-hidden",
-    header: "bg-bg-300 border-b border-bg-400",
-    row: "",
-    rowHover: "hover:bg-bg-200/50",
-    rowSelected: "bg-accent/10",
+const tableShell = style<{ isQuiet?: boolean }>({
+  minHeight: 0,
+  minWidth: 0,
+  width: "full",
+  flexGrow: 1,
+  boxSizing: "border-box",
+  overflow: "auto",
+  backgroundColor: {
+    default: "gray-25",
+    isQuiet: "transparent",
   },
-  striped: {
-    wrapper: "rounded-lg border border-bg-300 overflow-hidden",
-    header: "bg-bg-300 border-b border-bg-400",
-    row: "even:bg-bg-200/30",
-    rowHover: "hover:bg-bg-200/50",
-    rowSelected: "bg-accent/10",
+  borderColor: "gray-300",
+  borderWidth: {
+    default: 1,
+    isQuiet: 0,
   },
-  bordered: {
-    wrapper: "rounded-lg border-2 border-bg-400 overflow-hidden",
-    header: "bg-bg-300 border-b-2 border-bg-400",
-    row: "border-b border-bg-300 last:border-b-0",
-    rowHover: "hover:bg-bg-200/50",
-    rowSelected: "bg-accent/10",
+  borderStyle: "solid",
+  borderRadius: {
+    default: "[6px]",
+    isQuiet: "none",
   },
-};
+  scrollPaddingTop: 32,
+});
 
-const alignStyles = {
-  left: "text-left",
-  center: "text-center",
-  right: "text-right",
-};
+const table = style<TableRenderProps & { isQuiet?: boolean; hasActionBar?: boolean }>({
+  ...focusRing(),
+  outlineOffset: -1,
+  outlineStyle: "none",
+  userSelect: "none",
+  minWidth: "full",
+  width: "full",
+  fontSize: controlFont(),
+  fontFamily: "sans",
+  fontWeight: "normal",
+  borderWidth: 0,
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "fixed",
+  disableTapHighlight: true,
+});
 
-/**
- * A table displays data in rows and columns and enables a user to navigate its contents
- * via directional navigation keys, and optionally supports row selection and sorting.
- *
- *
- * @example
- * ```tsx
- * const columns = [
- *   { key: 'name', name: 'Name' },
- *   { key: 'role', name: 'Role' },
- *   { key: 'status', name: 'Status' },
- * ]
- *
- * const rows = [
- *   { id: '1', name: 'John', role: 'Developer', status: 'Active' },
- *   { id: '2', name: 'Jane', role: 'Designer', status: 'Active' },
- * ]
- *
- * <Table items={rows} columns={columns} selectionMode="multiple">
- *   {() => (
- *     <>
- *       <TableHeader>
- *         {() => (
- *           <For each={columns}>
- *             {(col) => <TableColumn id={col.key}>{col.name}</TableColumn>}
- *           </For>
- *         )}
- *       </TableHeader>
- *       <TableBody>
- *         {(row) => (
- *           <TableRow id={row.id}>
- *             {() => (
- *               <>
- *                 <TableCell>{row.name}</TableCell>
- *                 <TableCell>{row.role}</TableCell>
- *                 <TableCell>{row.status}</TableCell>
- *               </>
- *             )}
- *           </TableRow>
- *         )}
- *       </TableBody>
- *     </>
- *   )}
- * </Table>
- * ```
- */
+const legacyLabel = style({
+  font: controlFont(),
+  fontWeight: "medium",
+  color: baseColor("neutral"),
+  marginBottom: 4,
+});
+
+const legacyDescription = style({
+  font: "body-sm",
+  color: baseColor("neutral-subdued"),
+  marginTop: 4,
+});
+
+const tableHeader = style({
+  backgroundColor: "gray-75",
+});
+
+const headerHeight = {
+  compact: 32,
+  regular: 32,
+  spacious: 40,
+} as const;
+
+const rowHeight = {
+  compact: 32,
+  regular: 40,
+  spacious: 48,
+} as const;
+
+const tableColumn = style<
+  TableColumnRenderProps & {
+    align?: "start" | "center" | "end";
+    density?: TableDensity;
+    showDivider?: boolean;
+  }
+>({
+  outlineStyle: "none",
+  position: "relative",
+  height: {
+    density: headerHeight,
+  },
+  minHeight: {
+    density: headerHeight,
+  },
+  paddingX: 16,
+  paddingY: 0,
+  color: baseColor("neutral"),
+  fontSize: controlFont(),
+  fontFamily: "sans",
+  fontWeight: "bold",
+  textAlign: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  verticalAlign: "middle",
+  backgroundColor: "gray-75",
+  borderWidth: 0,
+  borderBottomWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  borderEndWidth: {
+    showDivider: 1,
+  },
+  cursor: {
+    isSortable: "pointer",
+  },
+  whiteSpace: "nowrap",
+});
+
+const tableColumnContent = style<{
+  align?: "start" | "center" | "end";
+  overflowMode?: TableOverflowMode;
+}>({
+  display: "flex",
+  alignItems: "center",
+  gap: "text-to-visual",
+  justifyContent: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  minWidth: 0,
+  width: "full",
+  overflow: "hidden",
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+const tableSortIcon = style({
+  flexShrink: 0,
+  size: 10,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const rowHoverBackground = colorMix("gray-25", "gray-900", 5);
+const rowPressedBackground = colorMix("gray-25", "gray-900", 8);
+const rowSelectedBackground = colorMix("gray-25", "gray-900", 7);
+
+const tableRow = style<TableRowRenderProps & { density?: TableDensity }>({
+  outlineStyle: "none",
+  position: "relative",
+  minHeight: {
+    density: rowHeight,
+  },
+  backgroundColor: {
+    default: "transparent",
+    isHovered: rowHoverBackground,
+    isPressed: rowPressedBackground,
+    isSelected: rowSelectedBackground,
+  },
+  cursor: {
+    isDisabled: "default",
+  },
+  color: {
+    default: baseColor("neutral-subdued"),
+    isSelected: baseColor("neutral"),
+    isDisabled: "disabled",
+  },
+});
+
+const tableCell = style<
+  TableCellRenderProps & {
+    align?: "start" | "center" | "end";
+    density?: TableDensity;
+    overflowMode?: TableOverflowMode;
+    showDivider?: boolean;
+  }
+>({
+  ...focusRing(),
+  outlineOffset: -2,
+  outlineStyle: "none",
+  position: "relative",
+  color: "inherit",
+  paddingX: 16,
+  paddingY: 0,
+  minHeight: {
+    density: rowHeight,
+  },
+  height: {
+    density: rowHeight,
+  },
+  textAlign: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  verticalAlign: "middle",
+  borderWidth: 0,
+  borderBottomWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  borderEndWidth: {
+    showDivider: 1,
+  },
+});
+
+const tableCellContent = style<{
+  align?: "start" | "center" | "end";
+  overflowMode?: TableOverflowMode;
+}>({
+  minWidth: 0,
+  overflow: {
+    overflowMode: {
+      truncate: "hidden",
+      wrap: "visible",
+    },
+  },
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+const emptyState = style({
+  minHeight: 112,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "neutral",
+  font: "body-sm",
+});
+
+const selectionColumn = style({
+  width: 40,
+  minWidth: 40,
+  paddingX: 0,
+  textAlign: "center",
+});
+
+const selectionCell = style<TableCellRenderProps & { density?: TableDensity }>({
+  width: 40,
+  minWidth: 40,
+  paddingX: 0,
+  paddingY: 0,
+  height: {
+    density: rowHeight,
+  },
+  borderWidth: 0,
+  borderBottomWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  textAlign: "center",
+  verticalAlign: "middle",
+});
+
+const selectionCheckbox = style({
+  position: "relative",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 16,
+  height: 16,
+});
+
+const selectionCheckboxInput = style({
+  position: "absolute",
+  inset: 0,
+  margin: 0,
+  opacity: 0,
+  cursor: "inherit",
+});
+
+const selectionCheckboxBox = style<{ isSelected?: boolean; isDisabled?: boolean }>({
+  ...focusRing(),
+  size: 16,
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderRadius: "sm",
+  boxSizing: "border-box",
+  backgroundColor: {
+    default: "gray-25",
+    isSelected: baseColor("neutral"),
+    isDisabled: "disabled",
+  },
+  borderColor: {
+    default: baseColor("gray-800"),
+    isSelected: "transparent",
+    isDisabled: "disabled",
+  },
+});
+
+const selectionCheckboxIcon = style({
+  pointerEvents: "none",
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "gray-25",
+      forcedColors: "HighlightText",
+    },
+  },
+});
+
+const tableFooter = style({
+  backgroundColor: "gray-75",
+  borderWidth: 0,
+  borderTopWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+});
+
+const actionBarContainer = style({
+  position: "absolute",
+  insetInline: 0,
+  bottom: 12,
+  display: "flex",
+  justifyContent: "center",
+  pointerEvents: "none",
+  zIndex: 2,
+});
+
+const actionBarContent = style({
+  pointerEvents: "auto",
+});
+
+const resizer = style<ColumnResizerRenderProps>({
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  insetEnd: 0,
+  width: 6,
+  cursor: "col-resize",
+  touchAction: "none",
+  userSelect: "none",
+  backgroundColor: {
+    default: "transparent",
+    isHovered: "accent-400",
+    isResizing: "accent-900",
+  },
+});
+
+const resizableTableContainer = style({
+  position: "relative",
+  width: "full",
+});
+
+function selectedKeySet(keys: "all" | Iterable<Key> | undefined): "all" | Set<Key> {
+  if (keys === "all") {
+    return "all";
+  }
+
+  return new Set(keys ?? []);
+}
+
+function hasSelection(keys: "all" | Set<Key>): boolean {
+  return keys === "all" || keys.size > 0;
+}
+
+function densityFromProps(size: TableSize | undefined, density: TableDensity | undefined) {
+  if (density) {
+    return density;
+  }
+
+  switch (size) {
+    case "sm":
+      return "compact";
+    case "lg":
+      return "spacious";
+    default:
+      return "regular";
+  }
+}
+
+function normalizeAlign(align: TableAlign | undefined): "start" | "center" | "end" {
+  if (align === "right") {
+    return "end";
+  }
+
+  if (align === "left") {
+    return "start";
+  }
+
+  return align ?? "start";
+}
+
+function keyFromRowProps<T extends object>(props: HeadlessTableRowProps<T>): Key | undefined {
+  return props.id ?? (props.item as { id?: Key; key?: Key } | undefined)?.id;
+}
+
+function inlineStyle(
+  styleProp: JSX.CSSProperties | undefined,
+  unsafeStyle: JSX.CSSProperties | undefined,
+): JSX.CSSProperties | undefined {
+  if (!styleProp && !unsafeStyle) {
+    return undefined;
+  }
+
+  return {
+    ...styleProp,
+    ...unsafeStyle,
+  };
+}
+
 export function Table<T extends object>(props: TableProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const mergedProps = mergeProps(providerProps, props);
   const [local, headlessProps] = splitProps(mergedProps, [
-    "size",
-    "variant",
+    "children",
+    "density",
+    "isQuiet",
+    "overflowMode",
+    "renderActionBar",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
     "class",
+    "style",
     "title",
     "description",
-    "children",
+    "size",
+    "variant",
+    "showSelectionCheckboxes",
+    "selectionBehavior",
+    "onSelectionChange",
+    "onAction",
+    "onRowAction",
+    "loadingState",
+    "onLoadMore",
+    "onResizeStart",
+    "onResize",
+    "onResizeEnd",
   ]);
-
-  const size = () => local.size ?? "md";
-  const variant = () => local.variant ?? "default";
-  const styles = () => sizeStyles[size()];
-  const variantStyle = () => variantStyles[variant()];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: TableRenderProps): string => {
-    const base = "w-full bg-bg-400";
-    const sizeClass = styles().table;
-
-    let stateClass = "";
-    if (renderProps.isEmpty) {
-      stateClass = "";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-
-    return [base, sizeClass, stateClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
-
-  const contextValue = createMemo(() => ({ size: size(), variant: variant() }));
-
-  return (
-    <TableSizeContext.Provider value={contextValue()}>
-      <div class="flex flex-col gap-2">
-        <Show when={local.title}>
-          <h3 class="text-lg font-semibold text-primary-100">{local.title}</h3>
-        </Show>
-        <Show when={local.description}>
-          <p class="text-sm text-primary-400">{local.description}</p>
-        </Show>
-        <div class={variantStyle().wrapper}>
-          <HeadlessTable {...headlessProps} class={getClassName}>
-            {props.children}
-          </HeadlessTable>
-        </div>
-      </div>
-    </TableSizeContext.Provider>
+  const externalResizeContext = useContext(HeadlessTableColumnResizeStateContext);
+  const density = () => densityFromProps(local.size, local.density);
+  const isQuiet = () => !!local.isQuiet;
+  const overflowMode = () => local.overflowMode ?? "truncate";
+  const showSelectionCheckboxes = () =>
+    local.showSelectionCheckboxes ?? headlessProps.selectionMode !== "none";
+  const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
+    selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
   );
+
+  createEffect(() => {
+    setActionSelectedKeys(
+      selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    );
+  });
+
+  const onSelectionChange = (keys: "all" | Set<Key>) => {
+    setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
+    local.onSelectionChange?.(keys);
+  };
+  const className = (renderProps: TableRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        table({
+          ...renderProps,
+          isQuiet: isQuiet(),
+        }),
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const context = createMemo<TableContextValue>(() => ({
+    density: density(),
+    isQuiet: isQuiet(),
+    overflowMode: overflowMode(),
+    showSelectionCheckboxes: showSelectionCheckboxes(),
+    loadingState: local.loadingState,
+    onLoadMore: local.onLoadMore,
+  }));
+  const renderTable = () => (
+    <HeadlessTable
+      {...headlessProps}
+      selectionBehavior={local.selectionBehavior ?? "toggle"}
+      shouldSelectOnPressUp={headlessProps.shouldSelectOnPressUp ?? true}
+      showSelectionCheckboxes={showSelectionCheckboxes()}
+      onRowAction={local.onAction ?? local.onRowAction}
+      onSelectionChange={onSelectionChange}
+      class={className}
+      data-table-view=""
+      data-density={density()}
+      data-quiet={isQuiet() || undefined}
+      data-overflow-mode={overflowMode()}
+    >
+      {local.children}
+    </HeadlessTable>
+  );
+  const renderResizableTable = () =>
+    externalResizeContext ? (
+      renderTable()
+    ) : (
+      <HeadlessResizableTableContainer
+        class={resizableTableContainer}
+        onResizeStart={local.onResizeStart}
+        onResize={local.onResize}
+        onResizeEnd={local.onResizeEnd}
+      >
+        {renderTable()}
+      </HeadlessResizableTableContainer>
+    );
+
+  const renderFramed = () => (
+    <div
+      class={tableWrapper(null, local.styles)}
+      style={inlineStyle(local.style, local.UNSAFE_style)}
+    >
+      {local.title ? <div class={legacyLabel({})}>{local.title}</div> : null}
+      <div class={tableShell({ isQuiet: isQuiet() })} data-table-view-shell="">
+        {renderResizableTable()}
+      </div>
+      {local.description ? <div class={legacyDescription({})}>{local.description}</div> : null}
+      {local.renderActionBar && hasSelection(actionSelectedKeys()) ? (
+        <div class={actionBarContainer}>
+          <div class={actionBarContent}>{local.renderActionBar(actionSelectedKeys())}</div>
+        </div>
+      ) : null}
+    </div>
+  );
+
+  return <TableContext.Provider value={context()}>{renderFramed()}</TableContext.Provider>;
 }
 
-/**
- * A header row in a table containing column headers.
- */
 export function TableHeader(props: TableHeaderProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
-  const context = useContext(TableSizeContext);
-  const variantStyle = variantStyles[context.variant];
-  const customClass = local.class ?? "";
-
-  const className = [variantStyle.header, customClass].filter(Boolean).join(" ");
+  const context = useContext(TableContext);
+  const [local, headlessProps] = splitProps(props, ["class", "styles", "UNSAFE_className"]);
+  const className = () =>
+    [local.UNSAFE_className, local.class, mergeStyles(tableHeader, local.styles)]
+      .filter(Boolean)
+      .join(" ");
 
   return (
-    <HeadlessTableHeader {...headlessProps} class={className}>
+    <HeadlessTableHeader {...headlessProps} class={className()}>
+      {context.showSelectionCheckboxes ? <TableSelectAllCheckbox /> : null}
       {props.children}
     </HeadlessTableHeader>
   );
 }
 
-/**
- * A column header in a table.
- */
 export function TableColumn(props: TableColumnProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class", "align", "width"]);
-  const context = useContext(TableSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: TableColumnRenderProps): string => {
-    const base = "font-semibold text-primary-200 select-none";
-    const sizeClass = sizeStyle.headerCell;
-    const alignClass = alignStyles[local.align ?? "left"];
-
-    let sortClass = "";
-    if (renderProps.isSortable) {
-      sortClass = "cursor-pointer";
-      if (renderProps.isHovered) {
-        sortClass += " text-primary-100";
-      }
-    }
-
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    return [base, sizeClass, alignClass, sortClass, focusClass, customClass]
+  const context = useContext(TableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "align",
+    "showDivider",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const align = () => normalizeAlign(local.align);
+  const className = (renderProps: TableColumnRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        tableColumn({
+          ...renderProps,
+          align: align(),
+          density: context.density,
+          showDivider: !!local.showDivider,
+        }),
+        local.styles,
+      ),
+    ]
       .filter(Boolean)
       .join(" ");
-  };
-
-  const getStyle = (): JSX.CSSProperties | undefined => {
-    if (local.width) {
-      return { width: local.width };
-    }
-    return undefined;
-  };
 
   return (
-    <HeadlessTableColumn {...headlessProps} class={getClassName} style={getStyle()}>
+    <HeadlessTableColumn {...headlessProps} class={className} style={local.UNSAFE_style}>
       {(renderProps: TableColumnRenderProps) => (
-        <div class="flex items-center gap-2">
-          <span class="flex-1">
-            {typeof props.children === "function" ? props.children(renderProps) : props.children}
+        <span class={tableColumnContent({ align: align(), overflowMode: context.overflowMode })}>
+          {renderProps.isSortable && renderProps.sortDirection ? (
+            <SortIcon direction={renderProps.sortDirection} />
+          ) : null}
+          <span>
+            {typeof local.children === "function" ? local.children(renderProps) : local.children}
           </span>
-          <Show when={renderProps.isSortable && renderProps.sortDirection}>
-            <SortIcon direction={renderProps.sortDirection!} class="w-4 h-4" />
-          </Show>
-        </div>
+          {renderProps.allowsResizing && props.id != null ? (
+            <ColumnResizer column={{ key: props.id }} />
+          ) : null}
+        </span>
       )}
     </HeadlessTableColumn>
   );
 }
 
-/**
- * The body of a table containing data rows.
- */
 export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class", "renderEmptyState"]);
-  const customClass = local.class ?? "";
-
-  const defaultEmptyState = () => (
-    <tr>
-      <td colSpan={100} class="py-8 text-center text-primary-400">
-        <div class="flex flex-col items-center gap-2">
-          <EmptyIcon class="w-12 h-12 text-primary-500" />
-          <span>No data available</span>
-        </div>
-      </td>
-    </tr>
+  const context = useContext(TableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "renderEmptyState",
+    "hasMore",
+    "isLoading",
+    "onLoadMore",
+  ]);
+  const className = () =>
+    [local.UNSAFE_className, local.class, mergeStyles(local.styles)].filter(Boolean).join(" ");
+  const renderEmptyState = () => (
+    <div class={emptyState}>{local.renderEmptyState?.() ?? "No data available"}</div>
   );
+  const rootIsLoading = () => {
+    const loadingState = context.loadingState;
+    return (
+      loadingState === "loading" ||
+      loadingState === "loadingMore" ||
+      loadingState === "sorting" ||
+      loadingState === "filtering"
+    );
+  };
 
   return (
     <HeadlessTableBody
       {...headlessProps}
-      class={customClass}
-      renderEmptyState={local.renderEmptyState ?? defaultEmptyState}
+      hasMore={local.hasMore ?? !!context.onLoadMore}
+      isLoading={local.isLoading ?? rootIsLoading()}
+      onLoadMore={local.onLoadMore ?? context.onLoadMore}
+      class={className()}
+      renderEmptyState={renderEmptyState}
     >
       {props.children}
     </HeadlessTableBody>
   );
 }
 
-/**
- * The footer of a table containing summary rows.
- */
 export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
-  const context = useContext(TableSizeContext);
-  const variantStyle = variantStyles[context.variant];
-  const customClass = local.class ?? "";
-
-  const getClassName = (_renderProps: TableFooterRenderProps): string => {
-    return [variantStyle.header, customClass].filter(Boolean).join(" ");
-  };
+  const [local, headlessProps] = splitProps(props, ["class", "styles", "UNSAFE_className"]);
+  const className = (_renderProps: TableFooterRenderProps): string =>
+    [local.UNSAFE_className, local.class, mergeStyles(tableFooter, local.styles)]
+      .filter(Boolean)
+      .join(" ");
 
   return (
-    <HeadlessTableFooter {...headlessProps} class={getClassName}>
+    <HeadlessTableFooter {...headlessProps} class={className}>
       {props.children}
     </HeadlessTableFooter>
   );
 }
 
-/**
- * A row in a table.
- */
 export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
-  const context = useContext(TableSizeContext);
-  const variantStyle = variantStyles[context.variant];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: TableRowRenderProps): string => {
-    const base = "transition-colors duration-150 outline-none";
-    const variantClass = variantStyle.row;
-
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50 cursor-not-allowed";
-    } else if (renderProps.isSelected) {
-      stateClass = variantStyle.rowSelected;
-    } else if (renderProps.isHovered) {
-      stateClass = variantStyle.rowHover;
-    }
-
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    const pressedClass = renderProps.isPressed ? "bg-bg-200/70" : "";
-
-    return [base, variantClass, stateClass, focusClass, pressedClass, customClass]
+  const context = useContext(TableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const rowKey = () => keyFromRowProps(headlessProps);
+  const className = (renderProps: TableRowRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(tableRow({ ...renderProps, density: context.density }), local.styles),
+    ]
       .filter(Boolean)
       .join(" ");
-  };
 
   return (
-    <HeadlessTableRow {...headlessProps} class={getClassName}>
-      {props.children}
+    <HeadlessTableRow {...headlessProps} class={className} style={local.UNSAFE_style}>
+      {(renderProps: TableRowRenderProps) => (
+        <>
+          {context.showSelectionCheckboxes && rowKey() != null ? (
+            <TableSelectionCheckbox
+              rowKey={rowKey()!}
+              isSelected={renderProps.isSelected}
+              isDisabled={renderProps.isDisabled}
+            />
+          ) : null}
+          {typeof local.children === "function"
+            ? (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderProps)
+            : local.children}
+        </>
+      )}
     </HeadlessTableRow>
   );
 }
 
-/**
- * A cell in a table row.
- */
 export function TableCell(props: TableCellProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class", "align"]);
-  const context = useContext(TableSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: TableCellRenderProps): string => {
-    const base = "text-primary-200";
-    const sizeClass = sizeStyle.cell;
-    const alignClass = alignStyles[local.align ?? "left"];
-
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    return [base, sizeClass, alignClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
+  const context = useContext(TableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "align",
+    "showDivider",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const align = () => normalizeAlign(local.align);
+  const className = (renderProps: TableCellRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        tableCell({
+          ...renderProps,
+          align: align(),
+          density: context.density,
+          overflowMode: context.overflowMode,
+          showDivider: !!local.showDivider,
+        }),
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   return (
-    <HeadlessTableCell {...headlessProps} class={getClassName}>
-      {props.children}
+    <HeadlessTableCell {...headlessProps} class={className} style={local.UNSAFE_style}>
+      {(renderProps: TableCellRenderProps) => (
+        <div class={tableCellContent({ align: align(), overflowMode: context.overflowMode })}>
+          {typeof local.children === "function" ? local.children(renderProps) : local.children}
+        </div>
+      )}
     </HeadlessTableCell>
   );
 }
 
-/**
- * A styled checkbox cell for row selection.
- */
-export function TableSelectionCheckbox(props: { rowKey: Key }): JSX.Element {
-  const context = useContext(TableSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const checkboxClass = `${sizeStyle.checkbox} rounded border-2 border-primary-500 bg-bg-400 text-accent cursor-pointer checked:bg-accent checked:border-accent focus:ring-2 focus:ring-accent-300 focus:ring-offset-1 focus:ring-offset-bg-400`;
+export function TableSelectionCheckbox(props: {
+  rowKey: Key;
+  isSelected?: boolean;
+  isDisabled?: boolean;
+}): JSX.Element {
+  const context = useContext(TableContext);
 
   return (
-    <td class={`${sizeStyle.cell} w-px`}>
-      <span class={checkboxClass}>
-        <HeadlessTableSelectionCheckbox rowKey={props.rowKey} />
+    <HeadlessTableCell
+      id="__selection__"
+      class={(renderProps: TableCellRenderProps) =>
+        selectionCell({ ...renderProps, density: context.density })
+      }
+    >
+      <span class={selectionCheckbox} data-rsp-slot="selection-indicator">
+        <HeadlessTableSelectionCheckbox rowKey={props.rowKey} class={selectionCheckboxInput} />
+        <span
+          class={selectionCheckboxBox({
+            isSelected: !!props.isSelected,
+            isDisabled: !!props.isDisabled,
+          })}
+          aria-hidden="true"
+        >
+          {props.isSelected ? (
+            <Checkmark size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
+          ) : null}
+        </span>
       </span>
-    </td>
+    </HeadlessTableCell>
   );
 }
 
-/**
- * A styled checkbox for select-all functionality.
- */
 export function TableSelectAllCheckbox(): JSX.Element {
-  const context = useContext(TableSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const checkboxClass = `${sizeStyle.checkbox} rounded border-2 border-primary-500 bg-bg-400 text-accent cursor-pointer checked:bg-accent checked:border-accent focus:ring-2 focus:ring-accent-300 focus:ring-offset-1 focus:ring-offset-bg-400`;
+  const context = useContext(TableContext);
+  const state = useContext(HeadlessTableStateContext);
+  const isSelected = () => state?.selectedKeys === "all";
+  const isIndeterminate = () => {
+    const keys = state?.selectedKeys;
+    if (!state || keys === "all" || keys == null || keys.size === 0) {
+      return false;
+    }
+
+    return keys.size < state.collection.size;
+  };
+  const isDisabled = () =>
+    !state || state.selectionMode !== "multiple" || state.collection.size === 0;
+  const className = (renderProps: TableColumnRenderProps): string =>
+    mergeStyles(
+      tableColumn({
+        ...renderProps,
+        align: "center",
+        density: context.density,
+      }),
+      selectionColumn,
+    );
 
   return (
-    <th class={`${sizeStyle.headerCell} w-px`}>
-      <span class={checkboxClass}>
-        <HeadlessTableSelectAllCheckbox />
+    <HeadlessTableColumn id="__selection__" class={className}>
+      <span class={selectionCheckbox} data-rsp-slot="select-all-indicator">
+        <HeadlessTableSelectAllCheckbox class={selectionCheckboxInput} />
+        <span
+          class={selectionCheckboxBox({
+            isSelected: isSelected() || isIndeterminate(),
+            isDisabled: isDisabled(),
+          })}
+          aria-hidden="true"
+        >
+          {isSelected() ? (
+            <Checkmark size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
+          ) : isIndeterminate() ? (
+            <Dash size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
+          ) : null}
+        </span>
       </span>
-    </th>
+    </HeadlessTableColumn>
   );
 }
 
 export interface ColumnResizerProps extends Omit<HeadlessColumnResizerProps, "class" | "style"> {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
 }
 
-/**
- * A styled column resize handle. Place inside a TableColumn that has allowsResizing.
- */
 export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
-  const customClass = local.class ?? "";
+  const [local, headlessProps] = splitProps(props, ["class", "styles", "UNSAFE_className"]);
+  const className = (renderProps: ColumnResizerRenderProps): string =>
+    [local.UNSAFE_className, local.class, mergeStyles(resizer(renderProps), local.styles)]
+      .filter(Boolean)
+      .join(" ");
 
-  const getClassName = (renderProps: ColumnResizerRenderProps): string => {
-    const base = "absolute right-0 top-0 bottom-0 w-[3px] cursor-col-resize select-none";
-    const idle = "bg-transparent";
-    const hovered = "bg-accent/50";
-    const resizing = "bg-accent";
-
-    let stateClass = idle;
-    if (renderProps.isResizing) {
-      stateClass = resizing;
-    } else if (renderProps.isHovered) {
-      stateClass = hovered;
-    }
-
-    return [base, stateClass, customClass].filter(Boolean).join(" ");
-  };
-
-  return <HeadlessColumnResizer {...headlessProps} class={getClassName} />;
+  return <HeadlessColumnResizer {...headlessProps} class={className} />;
 }
 
 export interface ResizableTableContainerProps extends Omit<
   HeadlessResizableTableContainerProps,
   "class" | "style"
 > {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
 }
 
-/**
- * A styled wrapper that enables column resizing for its child Table.
- */
 export function ResizableTableContainer(props: ResizableTableContainerProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
-  const customClass = local.class ?? "";
+  const [local, headlessProps] = splitProps(props, [
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const className = () =>
+    [local.UNSAFE_className, local.class, mergeStyles(resizableTableContainer, local.styles)]
+      .filter(Boolean)
+      .join(" ");
 
-  const className = ["relative overflow-auto", customClass].filter(Boolean).join(" ");
-
-  return <HeadlessResizableTableContainer {...headlessProps} class={className} />;
-}
-
-function SortIcon(props: { direction: "ascending" | "descending"; class?: string }): JSX.Element {
   return (
-    <svg class={props.class} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      {props.direction === "ascending" ? (
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-      ) : (
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-      )}
-    </svg>
+    <HeadlessResizableTableContainer
+      {...headlessProps}
+      class={className()}
+      style={local.UNSAFE_style}
+    />
   );
 }
 
-function EmptyIcon(props: { class?: string }): JSX.Element {
+function SortIcon(props: { direction: "ascending" | "descending" }): JSX.Element {
   return (
-    <svg
-      class={props.class}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="1.5"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-      />
-    </svg>
+    <Arrow
+      size="M"
+      class={tableSortIcon}
+      aria-hidden="true"
+      style={{
+        transform: props.direction === "ascending" ? "rotate(-90deg)" : "rotate(90deg)",
+      }}
+    />
   );
 }
 
@@ -559,4 +1121,4 @@ export const Footer = TableFooter;
 export const Row = TableRow;
 export const Cell = TableCell;
 
-export type { Key, SortDescriptor, ColumnDefinition };
+export type { ColumnDefinition, Key, SortDescriptor };

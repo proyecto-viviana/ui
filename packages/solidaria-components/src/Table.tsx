@@ -92,6 +92,12 @@ export interface TableRenderProps {
 }
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+export type TableColumnDefinition<T = unknown> = Omit<ColumnDefinition<T>, "key" | "children"> & {
+  /** React Spectrum-style alias for the column key. */
+  id?: Key;
+  key?: Key;
+  children?: TableColumnDefinition<T>[];
+};
 
 function assignRef<T>(ref: RefLike<T>, el: T): void {
   if (!ref) return;
@@ -99,15 +105,54 @@ function assignRef<T>(ref: RefLike<T>, el: T): void {
   else ref.current = el;
 }
 
+function normalizeColumnDefinitions<T>(
+  columns: TableColumnDefinition<T>[],
+  parentKey?: Key,
+): (ColumnDefinition<T> & { id?: Key })[] {
+  return columns.map((column, index) => {
+    const key = column.key ?? column.id ?? (parentKey == null ? index : `${parentKey}-${index}`);
+    const id = column.id ?? column.key;
+
+    return {
+      ...column,
+      key,
+      id,
+      children: column.children ? normalizeColumnDefinitions(column.children, key) : undefined,
+    } as ColumnDefinition<T> & { id?: Key };
+  });
+}
+
+function getRowHeaderColumnKeys<T>(columns: (ColumnDefinition<T> & { id?: Key })[]): Set<Key> {
+  const keys = new Set<Key>();
+
+  for (const column of columns) {
+    if (column.isRowHeader) {
+      keys.add(column.key);
+    }
+
+    if (column.children) {
+      for (const key of getRowHeaderColumnKeys(
+        column.children as (ColumnDefinition<T> & {
+          id?: Key;
+        })[],
+      )) {
+        keys.add(key);
+      }
+    }
+  }
+
+  return keys;
+}
+
 export interface TableProps<T extends object> extends Omit<AriaTableProps, "children">, SlotProps {
   /** The data items to render in the table. */
   items: T[];
   /** The column definitions. */
-  columns: ColumnDefinition<T>[];
+  columns: TableColumnDefinition<T>[];
   /** Function to get the key from an item. */
   getKey?: (item: T) => Key;
   /** Function to get the text value from an item for a column. */
-  getTextValue?: (item: T, column: ColumnDefinition<T>) => string;
+  getTextValue?: (item: T, column: TableColumnDefinition<T>) => string;
   /** The selection mode. */
   selectionMode?: "none" | "single" | "multiple";
   /** The selection behavior (toggle vs replace). */
@@ -287,14 +332,14 @@ export interface TableRowProps<T> extends SlotProps {
   /** The item value. */
   item?: T;
   /** Columns to render when children is a column render function. */
-  columns?: ColumnDefinition<T>[];
+  columns?: TableColumnDefinition<T>[];
   /** Whether the row is disabled. */
   isDisabled?: boolean;
   /** The children of the row (usually TableCell components). */
   children?:
     | JSX.Element
     | RenderChildren<TableRowRenderProps>
-    | ((column: ColumnDefinition<T>) => JSX.Element);
+    | ((column: TableColumnDefinition<T>) => JSX.Element);
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<TableRowRenderProps>;
   /** The inline style for the element. */
@@ -372,7 +417,7 @@ interface TableContextValue<T extends object> {
   state: TableState<T, TableCollection<T>>;
   collection: TableCollection<T>;
   items: T[];
-  columns: ColumnDefinition<T>[];
+  columns: (ColumnDefinition<T> & { id?: Key })[];
   isDisabled: boolean;
   showSelectionCheckboxes: boolean;
   dragAndDropHooks?: DragAndDropHooks<T>;
@@ -388,11 +433,17 @@ export const TableStateContext = createContext<TableState<object, TableCollectio
 /** The resize context carries a getter for the resize state. The getter may return null before columns register. */
 export const TableColumnResizeStateContext = createContext<{
   getState: () => TableColumnResizeState | null;
+  getCallbacks?: () => {
+    onResizeStart?: (widths: Map<Key, number>) => void;
+    onResize?: (widths: Map<Key, number>) => void;
+    onResizeEnd?: (widths: Map<Key, number>) => void;
+  };
 } | null>(null);
 
 interface TableRowContextValue {
   rowKey: Key;
   rowNode: GridNode<unknown>;
+  getCellColumnKey(cellId: string, explicitId?: Key): Key | undefined;
 }
 
 export const TableRowContext = createContext<TableRowContextValue | null>(null);
@@ -425,14 +476,19 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   );
 
   const [ref, setRef] = createSignal<HTMLTableElement | null>(null);
+  const normalizedColumns = createMemo(() => normalizeColumnDefinitions(stateProps.columns));
+  const rowHeaderColumnKeys = createMemo(() => getRowHeaderColumnKeys(normalizedColumns()));
 
   const collection = createMemo(() =>
     createTableCollection<T>({
-      columns: stateProps.columns,
+      columns: normalizedColumns(),
       rows: stateProps.items,
       getKey: stateProps.getKey,
-      getTextValue: stateProps.getTextValue,
+      getTextValue: stateProps.getTextValue as
+        | ((item: T, column: ColumnDefinition<T>) => string)
+        | undefined,
       showSelectionCheckboxes: stateProps.showSelectionCheckboxes ?? false,
+      rowHeaderColumnKeys: rowHeaderColumnKeys().size > 0 ? rowHeaderColumnKeys() : undefined,
     }),
   );
 
@@ -625,7 +681,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
       return stateProps.items;
     },
     get columns() {
-      return stateProps.columns;
+      return normalizedColumns();
     },
     isDisabled: false,
     get showSelectionCheckboxes() {
@@ -1124,7 +1180,7 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
             </>
           }
         >
-          <tr data-empty-state>
+          <tr role="row" data-empty-state>
             <th role="rowheader" colSpan={spacerColSpan()}>
               {local.renderEmptyState?.()}
             </th>
@@ -1209,7 +1265,7 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
             </>
           }
         >
-          <tr data-empty-state>
+          <tr role="row" data-empty-state>
             <th role="rowheader" colSpan={spacerColSpan()}>
               {local.renderEmptyState?.()}
             </th>
@@ -1381,6 +1437,7 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   }
   const { state, collection } = context;
   const tableContext = context as unknown as TableContextValue<T>;
+  const registeredCellIds: string[] = [];
   const generatedId = createUniqueId();
   const rowKey = () => local.id ?? generatedId;
   const router = useRouter();
@@ -1527,6 +1584,19 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   const rowContextValue: TableRowContextValue = {
     rowKey: rowKey(),
     rowNode: rowNode(),
+    getCellColumnKey(cellId, explicitId) {
+      if (explicitId === "__selection__") {
+        return explicitId;
+      }
+
+      let index = registeredCellIds.indexOf(cellId);
+      if (index < 0) {
+        index = registeredCellIds.length;
+        registeredCellIds.push(cellId);
+      }
+
+      return explicitId ?? tableContext.columns[index]?.key;
+    },
   };
   const dragButtonProps = createMemo<ButtonProps>(() => {
     const props = (draggableItem()?.dragButtonProps as ButtonProps | undefined) ?? {};
@@ -1552,7 +1622,9 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
       {typeof local.children === "function" ? (
         local.columns ? (
           <For each={local.columns}>
-            {(column) => (local.children as (column: ColumnDefinition<T>) => JSX.Element)(column)}
+            {(column) =>
+              (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(column)
+            }
           </For>
         ) : (
           (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderValues())
@@ -1638,17 +1710,20 @@ export function TableCell(props: TableCellProps): JSX.Element {
   const { rowKey, rowNode } = rowContext;
 
   const [ref, setRef] = createSignal<HTMLTableCellElement | null>(null);
+  const cellId = createUniqueId();
+  const columnKey = createMemo(() => rowContext.getCellColumnKey(cellId, local.id));
 
   const cellNode = createMemo(() => {
-    if (local.id != null) {
-      const cellKey = `${rowKey}-${local.id}`;
+    const key = columnKey();
+    if (key != null) {
+      const cellKey = `${rowKey}-${key}`;
       const node = collection.getItem(cellKey);
       if (node) return node;
     }
 
     return {
       type: "cell" as const,
-      key: local.id ?? `${rowKey}-cell`,
+      key: key ?? `${rowKey}-cell`,
       value: rowNode.value,
       textValue: "",
       level: 1,
@@ -1659,8 +1734,9 @@ export function TableCell(props: TableCellProps): JSX.Element {
     } as GridNode<unknown>;
   });
   const cellColumnIndex = createMemo(() => {
-    if (local.id == null) return undefined;
-    const cellKey = `${rowKey}-${local.id}`;
+    const key = columnKey();
+    if (key == null) return undefined;
+    const cellKey = `${rowKey}-${key}`;
     return collection.getItem(cellKey) ? (cellNode().index ?? 0) : undefined;
   });
 
@@ -1757,10 +1833,18 @@ export function TableCell(props: TableCellProps): JSX.Element {
   );
 }
 
+export interface TableSelectionCheckboxProps {
+  rowKey: Key;
+  class?: string;
+  style?: JSX.CSSProperties;
+  excludeFromTabOrder?: boolean;
+  "aria-label"?: string;
+}
+
 /**
  * A checkbox cell for row selection.
  */
-export function TableSelectionCheckbox(props: { rowKey: Key }): JSX.Element {
+export function TableSelectionCheckbox(props: TableSelectionCheckboxProps): JSX.Element {
   const context = useContext(TableContext);
   if (!context) {
     throw new Error("TableSelectionCheckbox must be used within a Table");
@@ -1773,13 +1857,27 @@ export function TableSelectionCheckbox(props: { rowKey: Key }): JSX.Element {
     () => state as TableState<object, TableCollection<object>>,
   );
 
-  return <input {...selectionCheckboxAria.checkboxProps} />;
+  return (
+    <input
+      {...selectionCheckboxAria.checkboxProps}
+      class={props.class}
+      style={props.style}
+      tabIndex={props.excludeFromTabOrder ? -1 : selectionCheckboxAria.checkboxProps.tabIndex}
+      aria-label={props["aria-label"] ?? selectionCheckboxAria.checkboxProps["aria-label"]}
+    />
+  );
+}
+
+export interface TableSelectAllCheckboxProps {
+  class?: string;
+  style?: JSX.CSSProperties;
+  "aria-label"?: string;
 }
 
 /**
  * A checkbox for select-all functionality.
  */
-export function TableSelectAllCheckbox(): JSX.Element {
+export function TableSelectAllCheckbox(props: TableSelectAllCheckboxProps = {}): JSX.Element {
   const context = useContext(TableContext);
   if (!context) {
     throw new Error("TableSelectAllCheckbox must be used within a Table");
@@ -1791,7 +1889,14 @@ export function TableSelectAllCheckbox(): JSX.Element {
     () => state as TableState<object, TableCollection<object>>,
   );
 
-  return <input {...selectAllCheckboxAria.checkboxProps} />;
+  return (
+    <input
+      {...selectAllCheckboxAria.checkboxProps}
+      class={props.class}
+      style={props.style}
+      aria-label={props["aria-label"] ?? selectAllCheckboxAria.checkboxProps["aria-label"]}
+    />
+  );
 }
 
 Table.Header = TableHeader;
@@ -1885,11 +1990,20 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
   const columnResize = createTableColumnResize(
     () => ({
       column: local.column,
-      "aria-label": local["aria-label"] ?? `Resize column ${String(local.column.key)}`,
+      "aria-label": local["aria-label"] ?? "Resizer",
       isDisabled: local.isDisabled,
-      onResizeStart: local.onResizeStart,
-      onResize: local.onResize,
-      onResizeEnd: local.onResizeEnd,
+      onResizeStart: (widths) => {
+        resizeCtx?.getCallbacks?.().onResizeStart?.(widths);
+        local.onResizeStart?.(widths);
+      },
+      onResize: (widths) => {
+        resizeCtx?.getCallbacks?.().onResize?.(widths);
+        local.onResize?.(widths);
+      },
+      onResizeEnd: (widths) => {
+        resizeCtx?.getCallbacks?.().onResizeEnd?.(widths);
+        local.onResizeEnd?.(widths);
+      },
     }),
     () => resizeCtx?.getState() ?? noopResizeState,
   );
@@ -2030,7 +2144,14 @@ export function ResizableTableContainer(props: ResizableTableContainerProps): JS
   });
 
   // Provide a stable context object with a reactive getter
-  const contextValue = { getState: () => resizeState() };
+  const contextValue = {
+    getState: () => resizeState(),
+    getCallbacks: () => ({
+      onResizeStart: local.onResizeStart,
+      onResize: local.onResize,
+      onResizeEnd: local.onResizeEnd,
+    }),
+  };
 
   return (
     <ResizableTableRegisterContext.Provider value={registerColumn}>

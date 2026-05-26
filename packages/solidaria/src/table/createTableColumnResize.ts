@@ -192,10 +192,10 @@ export function createTableColumnResize(
     getProps().onResizeEnd?.(getState().columnWidths());
   };
 
-  // Resizer div props
+  // Visible resize handle props. The accessible resize control is the hidden
+  // range input below, matching React Aria's ColumnResizer structure.
   const resizerProps: JSX.HTMLAttributes<HTMLDivElement> = {
-    role: "separator",
-    "aria-orientation": "vertical" as const,
+    role: "presentation",
     tabIndex: -1,
     style: {
       "touch-action": "none",

@@ -95,6 +95,45 @@ describe("TableCollection", () => {
 
       expect(collection.rowHeaderColumnKeys.has("name")).toBe(true);
     });
+
+    it("uses explicit row header columns even when they are not first", () => {
+      const collection = createTableCollection({
+        columns: [
+          { key: "email", name: "Email" },
+          { key: "name", name: "Name", isRowHeader: true },
+          { key: "role", name: "Role" },
+        ],
+        rows: testData,
+        getKey: (item) => item.id,
+      });
+
+      const firstRow = collection.body.childNodes[0];
+      expect(collection.rowHeaderColumnKeys.has("name")).toBe(true);
+      expect(firstRow.childNodes[0].type).toBe("cell");
+      expect(firstRow.childNodes[1].type).toBe("rowheader");
+    });
+
+    it("preserves id aliases in getTextValue column metadata", () => {
+      const getTextValue = vi.fn((item: Person, column: ColumnDefinition<Person> & { id?: Key }) =>
+        column.id ? String(item[column.id as keyof Person] ?? "") : "",
+      );
+      const collection = createTableCollection({
+        columns: [
+          { id: "name", name: "Name", isRowHeader: true } as ColumnDefinition<Person> & {
+            id: Key;
+          },
+          { id: "email", name: "Email" } as ColumnDefinition<Person> & { id: Key },
+        ],
+        rows: testData,
+        getKey: (item) => item.id,
+        getTextValue,
+      });
+
+      expect(collection.columns[0].key).toBe("name");
+      expect(collection.getItem("1-name")?.type).toBe("rowheader");
+      expect(collection.getItem("1-name")?.textValue).toBe("Alice");
+      expect(getTextValue.mock.calls[0][1]).toMatchObject({ id: "name", key: "name" });
+    });
   });
 
   describe("getItem", () => {

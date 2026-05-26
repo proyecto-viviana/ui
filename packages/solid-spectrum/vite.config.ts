@@ -3,10 +3,42 @@ import solid from "vite-plugin-solid";
 import macros from "unplugin-parcel-macros";
 
 const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
+const macroCssImportPattern = /import\s+["']macro-[a-f0-9]+\.css["'];\n?/g;
+
+function getMacroCssFileName(id: string) {
+  const fileName = id.split("/").pop();
+  return fileName && macroCssIdPattern.test(fileName) ? fileName : null;
+}
+
+function removeMacroCssImports(code: string) {
+  return code.replace(macroCssImportPattern, "");
+}
+
+function getMacroCssContent(content: unknown) {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (content && typeof content === "object" && "code" in content) {
+    const code = (content as { code: unknown }).code;
+    return typeof code === "string" ? code : null;
+  }
+
+  return null;
+}
 
 function s2Macros() {
   const plugin = macros.rolldown();
-  const macroCssCache = new Map<string, unknown>();
+  const macroCssCache = new Map<string, string>();
+
+  const cacheMacroCss = (id: string, content: unknown) => {
+    const fileName = getMacroCssFileName(id);
+    const css = getMacroCssContent(content);
+    if (fileName && css != null) {
+      macroCssCache.set(fileName, css);
+    }
+    return css;
+  };
 
   return {
     ...plugin,
@@ -21,9 +53,7 @@ function s2Macros() {
 
       for (const match of transformedCode.matchAll(/import\s+["'](macro-[a-f0-9]+\.css)["'];/g)) {
         const content = await plugin.load?.call(this, match[1]);
-        if (content != null) {
-          macroCssCache.set(match[1], content);
-        }
+        cacheMacroCss(match[1], content);
       }
 
       return result;
@@ -33,23 +63,35 @@ function s2Macros() {
       if (resolved) {
         return resolved;
       }
-      if (macroCssIdPattern.test(id) && macroCssCache.has(id)) {
-        return id;
+      const fileName = getMacroCssFileName(id);
+      if (fileName && macroCssCache.has(fileName)) {
+        return fileName;
       }
       return resolved;
     },
     loadInclude(id: string) {
-      return macroCssCache.has(id) || (plugin.loadInclude?.(id) ?? false);
+      const fileName = getMacroCssFileName(id);
+      return (
+        (fileName != null && macroCssCache.has(fileName)) || (plugin.loadInclude?.(id) ?? false)
+      );
     },
     async load(this: unknown, id: string) {
       if (plugin.loadInclude?.(id)) {
         const content = await plugin.load?.call(this, id);
-        if (content != null) {
-          macroCssCache.set(id, content);
-          return content;
+        const css = cacheMacroCss(id, content);
+        if (css != null) {
+          return css;
         }
+        return content;
       }
-      return macroCssCache.get(id);
+      const fileName = getMacroCssFileName(id);
+      if (fileName) {
+        return macroCssCache.get(fileName);
+      }
+      return null;
+    },
+    renderChunk(code: string) {
+      return removeMacroCssImports(code);
     },
   };
 }
@@ -94,6 +136,13 @@ const deps = {
   onlyBundle: [/^@adobe\/spectrum-tokens$/],
 };
 
+const css = {
+  fileName: "style.css",
+  splitting: false,
+  inject: false,
+  minify: true,
+};
+
 export default defineConfig({
   pack: [
     {
@@ -107,6 +156,7 @@ export default defineConfig({
       dts: false,
       fixedExtension: false,
       hash: false,
+      css,
       plugins: [s2Macros(), solid({ solid: { generate: "dom", hydratable: true } })],
       deps,
       copy: [{ from: "src/*.css", to: "dist", flatten: true }],
@@ -122,6 +172,7 @@ export default defineConfig({
       dts: false,
       fixedExtension: false,
       hash: false,
+      css,
       outputOptions(options) {
         return {
           ...options,

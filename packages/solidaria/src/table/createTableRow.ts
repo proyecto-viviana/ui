@@ -5,7 +5,7 @@
 
 import { createMemo, createSignal, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
-import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
+import type { Key, TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTableRowProps, TableRowAria } from "./types";
 import { getTableData } from "./createTable";
 
@@ -19,6 +19,7 @@ export function createTableRow<T extends object>(
 ): TableRowAria {
   const [isPressed, setIsPressed] = createSignal(false);
   let didSelectOnPointer = false;
+  let didActionOnPointer = false;
 
   const isSelected = createMemo(() => {
     const s = state();
@@ -69,6 +70,16 @@ export function createTableRow<T extends object>(
     props().onLinkAction?.(e);
   };
 
+  const runRowAction = (p: AriaTableRowProps, onRowAction: ((key: Key) => void) | undefined) => {
+    if (onRowAction) {
+      onRowAction(p.node.key);
+    }
+
+    if (p.onAction) {
+      p.onAction();
+    }
+  };
+
   const isFromInteractiveElement = (e: Event) => {
     const target = e.target;
     if (!(target instanceof Element)) return false;
@@ -90,6 +101,7 @@ export function createTableRow<T extends object>(
 
     if (isFromInteractiveElement(e)) {
       didSelectOnPointer = false;
+      didActionOnPointer = false;
       return;
     }
 
@@ -98,10 +110,11 @@ export function createTableRow<T extends object>(
         if (!didSelectOnPointer) {
           selectRow(e, true);
         }
-      } else {
+      } else if (!didActionOnPointer) {
         activateLink(e);
       }
       didSelectOnPointer = false;
+      didActionOnPointer = false;
       return;
     }
 
@@ -110,14 +123,10 @@ export function createTableRow<T extends object>(
     }
     didSelectOnPointer = false;
 
-    // Call action handler
-    if (onRowAction) {
-      onRowAction(p.node.key);
+    if (!didActionOnPointer) {
+      runRowAction(p, onRowAction);
     }
-
-    if (p.onAction) {
-      p.onAction();
-    }
+    didActionOnPointer = false;
   };
 
   const onDblClick = (e: MouseEvent) => {
@@ -201,10 +210,24 @@ export function createTableRow<T extends object>(
 
   const onPointerUp = (e: PointerEvent) => {
     const s = state();
+    const p = props();
     const tableData = getTableData(s);
     if (s.selectionMode !== "none" && tableData?.shouldSelectOnPressUp && !isDisabled()) {
       selectRow(e);
       didSelectOnPointer = true;
+    }
+    if (
+      s.selectionMode === "none" &&
+      tableData?.shouldSelectOnPressUp &&
+      !isDisabled() &&
+      !isFromInteractiveElement(e)
+    ) {
+      if (p.href) {
+        activateLink(e);
+      } else {
+        runRowAction(p, tableData?.actions.onRowAction);
+      }
+      didActionOnPointer = true;
     }
     setIsPressed(false);
   };
