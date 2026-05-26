@@ -69,6 +69,24 @@ import {
   useCollectionRenderer,
 } from "./Collection";
 import { useVirtualizerContext } from "./Virtualizer";
+import {
+  handleLinkClick,
+  type LinkDOMProps,
+  type RouterOptions,
+  useLinkProps,
+  useRouter,
+} from "./RouterProvider";
+
+type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
+
+function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(el);
+  } else {
+    ref.current = el;
+  }
+}
 
 export interface TreeRenderProps {
   /** Whether the tree has focus. */
@@ -83,7 +101,7 @@ export interface TreeRenderProps {
 
 export interface TreeProps<T extends object> extends Omit<AriaTreeProps, "children">, SlotProps {
   /** The hierarchical items to render in the tree. */
-  items: CollectionEntry<TreeItemData<T>>[];
+  items?: CollectionEntry<TreeItemData<T>>[];
   /** The selection mode. */
   selectionMode?: "none" | "single" | "multiple";
   /** The selection behavior (toggle vs replace). */
@@ -116,10 +134,20 @@ export interface TreeProps<T extends object> extends Omit<AriaTreeProps, "childr
   hasMore?: boolean;
   /** Whether additional items are currently loading. */
   isLoading?: boolean;
+  /** Loading state for async collection parity. */
+  loadingState?: "idle" | "loading" | "loadingMore" | "sorting" | "filtering" | "error";
   /** Called when the load more sentinel becomes visible. */
   onLoadMore?: () => void | Promise<void>;
+  /** Renders the load-more sentinel content. */
+  renderLoadMoreItem?: (state: { isLoading: boolean }) => JSX.Element;
+  /** CSS className for the load-more sentinel. */
+  loadMoreClass?: ClassNameOrFunction<{ isLoading: boolean }>;
+  /** Inline style for the load-more sentinel. */
+  loadMoreStyle?: StyleOrFunction<{ isLoading: boolean }>;
   /** Drag and drop hooks from `useDragAndDrop`. */
   dragAndDropHooks?: DragAndDropHooks<T>;
+  /** Ref for the rendered tree element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface TreeRenderItemState {
@@ -150,12 +178,16 @@ export interface TreeItemRenderProps {
   isExpandable: boolean;
   /** The nesting level (0 = root). */
   level: number;
+  /** The selection mode active on the tree. */
+  selectionMode: "none" | "single" | "multiple";
+  /** The selection behavior active on the tree. */
+  selectionBehavior: "toggle" | "replace";
 }
 
 export interface TreeItemProps<T extends object>
   extends
     SlotProps,
-    Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children" | "id"> {
+    Omit<JSX.HTMLAttributes<HTMLElement>, "class" | "style" | "children" | "id" | "ref"> {
   /** The unique key for the item. */
   id: Key;
   /** The item value. */
@@ -170,6 +202,21 @@ export interface TreeItemProps<T extends object>
   textValue?: string;
   /** Handler called when the item is activated. */
   onAction?: () => void;
+  /** Whether this item has children that may not be loaded yet. */
+  hasChildItems?: boolean;
+  /** Whether this item is disabled. */
+  isDisabled?: boolean;
+  /** Link target metadata. */
+  href?: string;
+  target?: LinkDOMProps["target"];
+  download?: LinkDOMProps["download"];
+  rel?: LinkDOMProps["rel"];
+  hrefLang?: string;
+  ping?: LinkDOMProps["ping"];
+  referrerPolicy?: LinkDOMProps["referrerPolicy"];
+  routerOptions?: RouterOptions;
+  /** Ref for the rendered row element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 export interface TreeExpandButtonProps {
@@ -179,11 +226,14 @@ export interface TreeExpandButtonProps {
   style?: JSX.CSSProperties;
   /** Children to render inside the button. */
   children?: JSX.Element | ((props: { isExpanded: boolean }) => JSX.Element);
+  [key: `data-${string}`]: string | undefined;
 }
 
 export interface TreeLoadMoreItemProps extends SlotProps {
   onLoadMore: () => void | Promise<void>;
   isLoading?: boolean;
+  loadingState?: "idle" | "loading" | "loadingMore" | "sorting" | "filtering" | "error";
+  level?: number;
   /** Scroll offset multiplier for early loading trigger (default: 1 = 100% of viewport height). */
   scrollOffset?: number;
   children?: JSX.Element;
@@ -734,6 +784,28 @@ export const TreeStateContext = createContext<TreeState<object, TreeCollection<o
 export const TreeItemContext = createContext<TreeItemContextValue<object> | null>(null);
 const TreeItemContentContext = createContext<TreeItemRenderProps | null>(null);
 
+function isTreeItemRecord(value: unknown): value is Record<PropertyKey, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function treeItemDataFromNode<T extends object>(node: TreeNode<T>): TreeItemData<T> {
+  const value = node.value;
+  const item: Record<PropertyKey, unknown> = isTreeItemRecord(value) ? value : {};
+  return {
+    ...item,
+    key: node.key,
+    id: (item.id as Key | undefined) ?? node.key,
+    value: (value ?? undefined) as T | undefined,
+    textValue: node.textValue,
+    isDisabled: node.isDisabled,
+    hasChildItems: node.hasChildNodes,
+    children:
+      node.childNodes.length > 0
+        ? node.childNodes.map((child) => treeItemDataFromNode(child))
+        : undefined,
+  };
+}
+
 /**
  * A tree displays hierarchical data with expandable/collapsible nodes,
  * supporting keyboard navigation and selection.
@@ -748,8 +820,13 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       "renderEmptyState",
       "hasMore",
       "isLoading",
+      "loadingState",
       "onLoadMore",
+      "renderLoadMoreItem",
+      "loadMoreClass",
+      "loadMoreStyle",
       "dragAndDropHooks",
+      "ref",
     ],
     [
       "items",
@@ -767,9 +844,11 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   );
 
   const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
-  const flatItems = createMemo<TreeItemData<T>[]>(() => flattenCollectionEntries(stateProps.items));
+  const flatItems = createMemo<TreeItemData<T>[]>(() =>
+    flattenCollectionEntries(stateProps.items ?? []),
+  );
   const hasSections = createMemo(() =>
-    stateProps.items.some((entry) => isCollectionSection(entry)),
+    (stateProps.items ?? []).some((entry) => isCollectionSection(entry)),
   );
 
   const state = createTreeState<T, TreeCollection<T>>(() => ({
@@ -1196,7 +1275,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     if (!hasSections()) return null;
     const rootMap = rootKeyByNodeKey();
     const rows = renderableRows();
-    return stateProps.items.map((entry) => {
+    return (stateProps.items ?? []).map((entry) => {
       if (!isCollectionSection(entry)) {
         const matching = rows.filter((row) => rootMap.get(row.node.key) === entry.key);
         return {
@@ -1221,18 +1300,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     const beforeIndicator = () => collectionRenderer().renderDropIndicator?.(itemIndex, "before");
     const onIndicator = () => collectionRenderer().renderDropIndicator?.(itemIndex, "on");
     const afterIndicatorIndexes = () => getAfterIndicatorIndexes(itemIndex, renderRange());
-    const itemData: TreeItemData<T> = {
-      key: node.key,
-      value: node.value as T,
-      textValue: node.textValue,
-      children: node.hasChildNodes
-        ? node.childNodes.map((child) => ({
-            key: child.key,
-            value: child.value as T,
-            textValue: child.textValue,
-          }))
-        : undefined,
-    };
+    const itemData = treeItemDataFromNode(node);
     const itemState: TreeRenderItemState = {
       isExpanded: node.isExpanded ?? false,
       isExpandable: node.isExpandable ?? false,
@@ -1257,7 +1325,10 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       >
         <CollectionRendererContext.Provider value={collectionRenderer()}>
           <div
-            ref={setRef}
+            ref={(element) => {
+              setRef(element);
+              assignRef(local.ref, element);
+            }}
             {...mergeProps(
               domProps(),
               cleanTreeProps(),
@@ -1337,7 +1408,20 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
               )}
             </SharedElementTransition>
             {local.hasMore && local.onLoadMore && (
-              <TreeLoadMoreItem onLoadMore={local.onLoadMore} isLoading={local.isLoading} />
+              <TreeLoadMoreItem
+                onLoadMore={local.onLoadMore}
+                isLoading={local.isLoading}
+                loadingState={local.loadingState}
+                class={local.loadMoreClass}
+                style={local.loadMoreStyle}
+              >
+                {local.renderLoadMoreItem?.({
+                  isLoading:
+                    !!local.isLoading ||
+                    local.loadingState === "loading" ||
+                    local.loadingState === "loadingMore",
+                })}
+              </TreeLoadMoreItem>
             )}
           </div>
         </CollectionRendererContext.Provider>
@@ -1358,6 +1442,17 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     "item",
     "textValue",
     "onAction",
+    "hasChildItems",
+    "isDisabled",
+    "href",
+    "target",
+    "download",
+    "rel",
+    "hrefLang",
+    "ping",
+    "referrerPolicy",
+    "routerOptions",
+    "ref",
     "children",
   ]);
 
@@ -1367,8 +1462,23 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   }
   const state = context as TreeState<T, TreeCollection<T>>;
   const treeContext = useContext(TreeContext) as TreeContextValue<T> | null;
+  const router = useRouter();
+  const linkProps = createMemo(() =>
+    useLinkProps({
+      href: local.href,
+      target: local.target,
+      rel: local.rel,
+      download: local.download,
+      ping: local.ping,
+      referrerPolicy: local.referrerPolicy,
+    }),
+  );
 
-  const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+  const [ref, setRef] = createSignal<HTMLElement | null>(null);
+  const setItemRef = (element: HTMLElement) => {
+    setRef(element);
+    assignRef(local.ref, element);
+  };
 
   const itemNode = createMemo(() => {
     const node = state.collection.getItem(local.id);
@@ -1380,9 +1490,10 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
         textValue: local.textValue ?? String(local.id),
         level: 0,
         index: 0,
-        hasChildNodes: false,
+        hasChildNodes: !!local.hasChildItems,
         childNodes: [],
-        isExpandable: false,
+        isDisabled: local.isDisabled,
+        isExpandable: !!local.hasChildItems,
         isExpanded: false,
       } as TreeNode<T>;
     }
@@ -1392,7 +1503,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   const treeItemAria = createTreeItem<T, TreeCollection<T>>(
     () => ({
       node: itemNode(),
+      selectionBehavior: state.selectionBehavior,
       onAction: local.onAction,
+      isDisabled: local.isDisabled,
       textValue: local.textValue,
     }),
     () => state,
@@ -1446,6 +1559,8 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     isExpanded: isExpanded(),
     isExpandable: isExpandable(),
     level: level(),
+    selectionMode: state.selectionMode,
+    selectionBehavior: state.selectionBehavior,
   }));
 
   const renderProps = useRenderProps(
@@ -1478,26 +1593,66 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     level: level(),
   }));
 
+  const rowStyle = () => ({
+    "--tree-item-level": String(level()),
+    ...((typeof renderProps.style() === "object" ? renderProps.style() : {}) as Record<
+      string,
+      string
+    >),
+  });
+
+  const rowContent = () => (
+    <TreeItemContentContext.Provider value={renderValues()}>
+      <div {...treeItemAria.gridCellProps} class="solidaria-Tree-item-content">
+        {renderProps.renderChildren()}
+      </div>
+    </TreeItemContentContext.Provider>
+  );
+
+  const mergedRowProps = () =>
+    mergeProps(
+      cleanRowProps(),
+      cleanHoverProps(),
+      cleanFocusProps(),
+      (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
+      (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
+    );
+
+  const onLinkedRowClick = (event: MouseEvent) => {
+    const onClick = (mergedRowProps() as { onClick?: (event: MouseEvent) => void }).onClick;
+    onClick?.(event);
+    handleLinkClick(event, router, local.href, local.routerOptions);
+  };
+
+  const downloadAttr = () => {
+    const download = linkProps().download;
+    return typeof download === "boolean" ? (download ? "" : undefined) : download;
+  };
+
+  const referrerPolicyAttr = () => linkProps().referrerPolicy || undefined;
+  const linkedRowDomProps = () =>
+    local.href
+      ? {
+          onClick: onLinkedRowClick,
+          "data-href": linkProps().href,
+          "data-target": linkProps().target,
+          "data-download": downloadAttr(),
+          "data-rel": linkProps().rel,
+          "data-hreflang": local.hrefLang,
+          "data-ping": linkProps().ping,
+          "data-referrer-policy": referrerPolicyAttr(),
+        }
+      : {};
+
   return (
     <TreeItemContext.Provider value={itemContextValue() as unknown as TreeItemContextValue<object>}>
       <div
-        ref={setRef}
+        ref={setItemRef}
         {...domProps}
-        {...mergeProps(
-          cleanRowProps(),
-          cleanHoverProps(),
-          cleanFocusProps(),
-          (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
-          (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
-        )}
+        {...mergedRowProps()}
+        {...linkedRowDomProps()}
         class={renderProps.class()}
-        style={{
-          "--tree-item-level": String(level()),
-          ...((typeof renderProps.style() === "object" ? renderProps.style() : {}) as Record<
-            string,
-            string
-          >),
-        }}
+        style={rowStyle()}
         data-selected={isSelected() || undefined}
         data-focused={isFocused() || undefined}
         data-focus-visible={(isFocusVisible() && isFocused()) || undefined}
@@ -1514,11 +1669,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
         data-dragging={draggableItem()?.isDragging || undefined}
         data-drop-target={droppableItem()?.isDropTarget || undefined}
       >
-        <TreeItemContentContext.Provider value={renderValues()}>
-          <div {...treeItemAria.gridCellProps} class="solidaria-Tree-item-content">
-            {renderProps.renderChildren()}
-          </div>
-        </TreeItemContentContext.Provider>
+        {rowContent()}
       </div>
     </TreeItemContext.Provider>
   );
@@ -1550,6 +1701,15 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
     const { ref: _ref, ...rest } = treeItemAria.expandButtonProps as Record<string, unknown>;
     return rest;
   };
+  const dataProps = () => {
+    const result: Record<string, string | undefined> = {};
+    for (const key in props) {
+      if (key.startsWith("data-")) {
+        result[key] = props[key as `data-${string}`];
+      }
+    }
+    return result;
+  };
 
   const isExpanded = createMemo(() => state.isExpanded(itemContext.node.key));
 
@@ -1564,6 +1724,7 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
     <Show when={itemContext.isExpandable}>
       <button
         {...cleanExpandProps()}
+        {...dataProps()}
         class={props.class ?? "solidaria-Tree-expand-button"}
         style={props.style}
         data-expanded={isExpanded() || undefined}
@@ -1577,7 +1738,13 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
 /**
  * A checkbox for item selection in a tree.
  */
-export function TreeSelectionCheckbox(props: { itemKey: Key }): JSX.Element {
+export function TreeSelectionCheckbox(props: {
+  itemKey: Key;
+  class?: string;
+  style?: JSX.CSSProperties;
+  excludeFromTabOrder?: boolean;
+  "aria-label"?: string;
+}): JSX.Element {
   const context = useContext(TreeStateContext);
   if (!context) {
     throw new Error("TreeSelectionCheckbox must be used within a Tree");
@@ -1590,13 +1757,25 @@ export function TreeSelectionCheckbox(props: { itemKey: Key }): JSX.Element {
     () => state,
   );
 
-  return <input {...treeSelectionCheckboxAria.checkboxProps} class="solidaria-Tree-checkbox" />;
+  return (
+    <input
+      {...treeSelectionCheckboxAria.checkboxProps}
+      class={props.class ?? "solidaria-Tree-checkbox"}
+      style={props.style}
+      tabIndex={props.excludeFromTabOrder ? -1 : undefined}
+      aria-label={props["aria-label"] ?? treeSelectionCheckboxAria.checkboxProps["aria-label"]}
+    />
+  );
 }
 
 export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
   let sentinelRef: HTMLDivElement | undefined;
   const [isPending, setIsPending] = createSignal(false);
-  const isLoading = () => !!props.isLoading || isPending();
+  const isLoading = () =>
+    !!props.isLoading ||
+    props.loadingState === "loading" ||
+    props.loadingState === "loadingMore" ||
+    isPending();
 
   const triggerLoadMore = async () => {
     if (isLoading()) return;
@@ -1640,17 +1819,27 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
         <div ref={sentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
       </div>
       <div
-        role="treeitem"
-        tabIndex={0}
-        aria-disabled={true}
+        role="row"
+        aria-level={props.level ?? 1}
         onFocus={() => {
+          void triggerLoadMore();
+        }}
+        onFocusIn={() => {
           void triggerLoadMore();
         }}
         class={renderProps.class()}
         style={renderProps.style()}
         data-loading={isLoading() || undefined}
+        data-level={props.level ?? 1}
       >
-        {renderProps.renderChildren()}
+        <div
+          role="gridcell"
+          onFocus={() => {
+            void triggerLoadMore();
+          }}
+        >
+          {renderProps.renderChildren()}
+        </div>
       </div>
     </>
   );

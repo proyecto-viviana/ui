@@ -9,6 +9,14 @@
 import type { Key } from "../collections/types";
 import type { TreeCollection as ITreeCollection, TreeNode, TreeItemData } from "./types";
 
+function getItemKey<T>(item: TreeItemData<T>): Key {
+  const key = item.key ?? item.id;
+  if (key == null) {
+    throw new Error("Tree items must define either a key or id.");
+  }
+  return key;
+}
+
 /**
  * Creates a TreeCollection from hierarchical data.
  * The collection is flattened based on expanded keys.
@@ -33,23 +41,25 @@ export class TreeCollection<T> implements ITreeCollection<T> {
       parentKey: Key | null,
       indexInParent: number,
     ): TreeNode<T> => {
-      const hasChildren = item.children && item.children.length > 0;
-      const isExpanded = hasChildren && expandedKeys.has(item.key);
+      const key = getItemKey(item);
+      const hasLoadedChildren = Boolean(item.children && item.children.length > 0);
+      const hasChildren = hasLoadedChildren || !!item.hasChildItems;
+      const isExpanded = hasChildren && expandedKeys.has(key);
 
       // Build child nodes first (even if not visible, for the map)
       const childNodes: TreeNode<T>[] = [];
-      if (hasChildren && item.children) {
+      if (hasLoadedChildren && item.children) {
         for (let i = 0; i < item.children.length; i++) {
-          const childNode = visit(item.children[i], level + 1, item.key, i);
+          const childNode = visit(item.children[i], level + 1, key, i);
           childNodes.push(childNode);
         }
       }
 
       const node: TreeNode<T> = {
         type: "item",
-        key: item.key,
-        value: item.value,
-        textValue: item.textValue || String(item.key),
+        key,
+        value: (item.value ?? item) as T,
+        textValue: item.textValue || String(key),
         level,
         index: indexInParent,
         parentKey,
@@ -61,7 +71,7 @@ export class TreeCollection<T> implements ITreeCollection<T> {
       };
 
       // Always add to keyMap (for getItem lookups)
-      this.keyMap.set(item.key, node);
+      this.keyMap.set(key, node);
 
       return node;
     };

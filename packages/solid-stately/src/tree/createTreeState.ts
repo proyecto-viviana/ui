@@ -138,7 +138,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   };
 
   const isDisabled = (key: Key): boolean => {
-    return disabledKeys().has(key);
+    return disabledKeys().has(key) || collection().getItem(key)?.isDisabled === true;
   };
 
   const isExpanded = (key: Key): boolean => {
@@ -347,6 +347,9 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
     },
     get selectionMode() {
       return selectionMode();
+    },
+    get selectionBehavior() {
+      return selectionBehavior();
     },
     get selectedKeys() {
       return selectedKeys();

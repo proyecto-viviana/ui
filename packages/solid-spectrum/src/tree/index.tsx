@@ -1,10 +1,24 @@
-import { type JSX, splitProps, createContext, createMemo, useContext, Show } from "solid-js";
+import {
+  children as resolveChildren,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  mergeProps,
+  onCleanup,
+  splitProps,
+  useContext,
+  type JSX,
+} from "solid-js";
 import {
   Tree as HeadlessTree,
   TreeItem as HeadlessTreeItem,
   TreeItemContent as HeadlessTreeItemContent,
   TreeExpandButton as HeadlessTreeExpandButton,
   TreeSelectionCheckbox as HeadlessTreeSelectionCheckbox,
+  TreeLoadMoreItem as HeadlessTreeLoadMoreItem,
+  TreeStateContext as HeadlessTreeStateContext,
+  TreeItemContext as HeadlessTreeItemContext,
   type TreeProps as HeadlessTreeProps,
   type TreeItemProps as HeadlessTreeItemProps,
   type TreeItemContentProps as HeadlessTreeItemContentProps,
@@ -15,451 +29,1235 @@ import {
   type TreeRenderItemState,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
+import { ActionButtonGroupContext } from "../button/group-context";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
+import { IconContext } from "../icon";
+import Checkmark from "../icon/ui-icons/Checkmark";
+import Chevron from "../icon/ui-icons/Chevron";
+import { ActionMenuContext } from "../menu/ActionMenu";
+import { ProgressCircle } from "../progress/ProgressCircle";
 import { useProviderProps } from "../provider";
+import type { StyleString } from "../style";
+import {
+  baseColor,
+  colorMix,
+  focusRing,
+  fontRelative,
+  space,
+  style,
+} from "../style" with { type: "macro" };
+import { mergeStyles } from "../style/runtime";
+import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import {
+  controlFont,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils" with { type: "macro" };
+import { Text, TextContext } from "../text";
 
-export type TreeSize = "sm" | "md" | "lg";
-export type TreeVariant = "default" | "bordered" | "quiet";
+export type TreeSelectionStyle = "checkbox" | "highlight";
+export type TreeOverflowMode = "truncate" | "wrap";
+export type TreeLoadingState =
+  | "idle"
+  | "loading"
+  | "loadingMore"
+  | "sorting"
+  | "filtering"
+  | "error";
 
-interface TreeContextValue {
-  size: TreeSize;
-  variant: TreeVariant;
-}
-
-const TreeSizeContext = createContext<TreeContextValue>({ size: "md", variant: "default" });
-
-export interface TreeProps<T extends object> extends Omit<HeadlessTreeProps<T>, "class" | "style"> {
-  /** The size of the tree. */
-  size?: TreeSize;
-  /** The visual variant of the tree. */
-  variant?: TreeVariant;
-  /** Additional CSS class name. */
+export interface TreeProps<T extends object> extends Omit<
+  HeadlessTreeProps<T>,
+  "class" | "style" | "children" | "items" | "selectionBehavior" | "isLoading" | "slot" | "ref"
+> {
+  /** TreeView content. Use a render function with `items` for S2 dynamic collections. */
+  children: JSX.Element | ((item: TreeItemData<T>, state: TreeRenderItemState) => JSX.Element);
+  /** Dynamic hierarchical items. Supports either `id` or `key`, matching React Spectrum examples. */
+  items?: TreeItemData<T>[];
+  /** Whether selection is shown with checkboxes or highlighted rows. @default 'checkbox' */
+  selectionStyle?: TreeSelectionStyle;
+  /** Whether labels/descriptions truncate or wrap. @default 'truncate' */
+  overflowMode?: TreeOverflowMode;
+  /** Loading state forwarded to load-more behavior. */
+  loadingState?: TreeLoadingState;
+  /** Provides an action bar when items are selected. */
+  renderActionBar?: (selectedKeys: "all" | Set<Key>) => JSX.Element;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
   class?: string;
-  /** Label for the tree. */
-  label?: string;
-  /** Description for the tree. */
-  description?: string;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the tree root element. */
+  ref?: RefLike<HTMLDivElement>;
+  /** Legacy label helper. Prefer aria-label or aria-labelledby. */
+  label?: JSX.Element;
+  /** Legacy description helper. */
+  description?: JSX.Element;
 }
 
 export interface TreeItemProps<T extends object> extends Omit<
   HeadlessTreeItemProps<T>,
-  "class" | "style"
+  "class" | "style" | "children" | "ref"
 > {
-  /** Additional CSS class name. */
-  class?: string;
-  /** Optional description text. */
-  description?: string;
-  /**
-   * Optional icon to display before the content.
-   * Use a function returning JSX for SSR compatibility: `icon={() => <FolderIcon />}`
-   */
+  /** The unique id of the TreeViewItem. */
+  id: Key;
+  /** TreeViewItem content. Text-only children are wrapped in the S2 label slot. */
+  children?: JSX.Element | ((renderProps: TreeItemRenderProps) => JSX.Element);
+  /** Whether this item is disabled. Dynamic collections should prefer item data `isDisabled`. */
+  isDisabled?: boolean;
+  /** Whether this item has children that may not be loaded yet. */
+  hasChildItems?: boolean;
+  /** Link target metadata. */
+  href?: HeadlessTreeItemProps<T>["href"];
+  target?: HeadlessTreeItemProps<T>["target"];
+  download?: HeadlessTreeItemProps<T>["download"];
+  rel?: HeadlessTreeItemProps<T>["rel"];
+  hrefLang?: HeadlessTreeItemProps<T>["hrefLang"];
+  ping?: HeadlessTreeItemProps<T>["ping"];
+  referrerPolicy?: HeadlessTreeItemProps<T>["referrerPolicy"];
+  routerOptions?: HeadlessTreeItemProps<T>["routerOptions"];
+  /** Optional description text. Prefer `<Text slot="description">`. */
+  description?: JSX.Element;
+  /** Optional icon helper retained from the older Tree API. Prefer an icon child. */
   icon?: () => JSX.Element;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
+  /** Ref for the rendered row element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 export interface TreeExpandButtonProps extends Omit<
   HeadlessTreeExpandButtonProps,
   "class" | "style"
 > {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  style?: JSX.CSSProperties;
 }
 
 export interface TreeItemContentProps extends Omit<
   HeadlessTreeItemContentProps,
   "class" | "style"
 > {
-  /** Additional CSS class name. */
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
+  /** Additional inline styles. Use only as a last resort. */
+  style?: JSX.CSSProperties;
 }
 
-const sizeStyles = {
-  sm: {
-    tree: "text-sm",
-    item: "py-1 px-2 gap-1",
-    indent: 16,
-    icon: "h-4 w-4",
-    expandButton: "h-4 w-4",
-    label: "text-sm",
-    description: "text-xs",
-    checkbox: "w-4 h-4",
-  },
-  md: {
-    tree: "text-base",
-    item: "py-1.5 px-3 gap-2",
-    indent: 20,
-    icon: "h-5 w-5",
-    expandButton: "h-5 w-5",
-    label: "text-base",
-    description: "text-sm",
-    checkbox: "w-5 h-5",
-  },
-  lg: {
-    tree: "text-lg",
-    item: "py-2 px-4 gap-2",
-    indent: 24,
-    icon: "h-6 w-6",
-    expandButton: "h-6 w-6",
-    label: "text-lg",
-    description: "text-base",
-    checkbox: "w-6 h-6",
-  },
+export interface TreeLoadMoreItemProps {
+  onLoadMore: () => void | Promise<void>;
+  isLoading?: boolean;
+  loadingState?: TreeLoadingState;
+  level?: number;
+  children?: JSX.Element;
+  class?: string;
+  style?: JSX.CSSProperties;
+}
+
+type StaticTreeItem = {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+  hasChildItems?: boolean;
+  props: TreeItemProps<object>;
 };
 
-const variantStyles = {
-  default: {
-    tree: "bg-bg-400 rounded-lg border border-bg-300 p-2",
-    item: "rounded-md",
-    itemHover: "hover:bg-bg-200/50",
-    itemSelected: "bg-accent/10 text-accent",
-  },
-  bordered: {
-    tree: "bg-bg-400 rounded-lg border-2 border-bg-400 p-2",
-    item: "border-b border-bg-300/30 last:border-b-0",
-    itemHover: "hover:bg-bg-200/50",
-    itemSelected: "bg-accent/10 text-accent",
-  },
-  quiet: {
-    tree: "bg-transparent",
-    item: "rounded-md",
-    itemHover: "hover:bg-bg-300/50",
-    itemSelected: "bg-accent/10 text-accent",
-  },
+type ItemRegistration = {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+  hasChildItems?: boolean;
+  props?: TreeItemProps<object>;
 };
 
-/**
- * A tree displays hierarchical data with expandable/collapsible nodes,
- * supporting keyboard navigation and selection.
- *
- *
- * @example
- * ```tsx
- * const items = [
- *   {
- *     key: 'documents',
- *     value: { name: 'Documents' },
- *     children: [
- *       { key: 'doc1', value: { name: 'Report.pdf' } },
- *       { key: 'doc2', value: { name: 'Notes.txt' } },
- *     ],
- *   },
- *   {
- *     key: 'images',
- *     value: { name: 'Images' },
- *     children: [
- *       { key: 'img1', value: { name: 'Photo.jpg' } },
- *     ],
- *   },
- * ]
- *
- * <Tree items={items} defaultExpandedKeys={['documents']}>
- *   {(item, state) => (
- *     <TreeItem id={item.key} icon={() => <FolderIcon />}>
- *       {item.value.name}
- *     </TreeItem>
- *   )}
- * </Tree>
- * ```
- */
-export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, [
-    "size",
-    "variant",
-    "class",
-    "label",
-    "description",
-  ]);
+interface StaticCollectionContextValue {
+  mode: "static" | "dynamic";
+  registerItem(item: ItemRegistration): void;
+  unregisterItem(id: Key): void;
+}
 
-  const size = () => local.size ?? "md";
-  const variant = () => local.variant ?? "default";
-  const styles = () => sizeStyles[size()];
-  const variantStyle = () => variantStyles[variant()];
-  const customClass = local.class ?? "";
+interface TreeViewContextValue {
+  selectionStyle: TreeSelectionStyle;
+  overflowMode: TreeOverflowMode;
+}
 
-  const getClassName = (renderProps: TreeRenderProps): string => {
-    const base = "overflow-auto focus:outline-none";
-    const sizeClass = styles().tree;
-    const variantClass = variantStyle().tree;
+export const TreeViewContext = createContext<SpectrumContextValue<TreeProps<object>>>(null);
+const InternalTreeViewContext = createContext<TreeViewContextValue>({
+  selectionStyle: "checkbox",
+  overflowMode: "truncate",
+});
+const StaticTreeCollectionContext = createContext<StaticCollectionContextValue | null>(null);
 
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50";
-    }
+const treeViewWrapper = style(
+  {
+    minHeight: 0,
+    minWidth: 200,
+    display: "flex",
+    flexDirection: "column",
+    isolation: "isolate",
+    position: "relative",
+    overflow: "clip",
+  },
+  getAllowedOverrides({ height: true }),
+);
 
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
+const treeView = style<TreeRenderProps & { isActionBar?: boolean }>(
+  {
+    ...focusRing(),
+    outlineOffset: -2,
+    outlineStyle: "none",
+    userSelect: "none",
+    minHeight: 0,
+    minWidth: 0,
+    width: "full",
+    height: {
+      isActionBar: "full",
+    },
+    boxSizing: "border-box",
+    overflow: "auto",
+    fontSize: controlFont(),
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    disableTapHighlight: true,
+  },
+  getAllowedOverrides({ height: true }),
+);
 
-    return [base, sizeClass, variantClass, stateClass, focusClass, customClass]
-      .filter(Boolean)
-      .join(" ");
+const legacyLabel = style({
+  font: controlFont(),
+  fontWeight: "medium",
+  color: baseColor("neutral"),
+  marginBottom: 4,
+});
+
+const legacyDescription = style({
+  font: "body-sm",
+  color: baseColor("neutral-subdued"),
+  marginTop: 4,
+});
+
+const emptyState = style({
+  minHeight: 112,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "neutral",
+  font: "body-sm",
+});
+
+const selectedBackground = colorMix("gray-25", "gray-900", 7);
+const selectedActiveBackground = colorMix("gray-25", "gray-900", 10);
+
+type TreeRowLayerProps = Partial<TreeItemRenderProps> & {
+  isLink?: boolean;
+  selectionStyle?: TreeSelectionStyle;
+  overflowMode?: TreeOverflowMode;
+};
+
+const treeViewItem = style<TreeRowLayerProps>({
+  outlineStyle: "none",
+  position: "relative",
+  borderRadius: "sm",
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
+  display: "grid",
+  gridTemplateAreas: [
+    ". checkbox level-padding expand-button icon label actions actionmenu",
+    ". checkbox level-padding expand-button icon description actions actionmenu",
+  ],
+  gridTemplateColumns: [
+    edgeToText(40),
+    "auto",
+    "auto",
+    "auto",
+    "auto",
+    "minmax(0,1fr)",
+    "minmax(0,auto)",
+    "auto",
+  ],
+  gridTemplateRows: "1fr auto",
+  alignItems: "baseline",
+  rowGap: {
+    ":has([slot=description])": space(1),
+  },
+  columnGap: 0,
+  paddingX: 0,
+  minHeight: 40,
+  paddingY: 0,
+  boxSizing: "border-box",
+  textDecoration: "none",
+  color: {
+    default: baseColor("neutral-subdued"),
+    isSelected: baseColor("neutral"),
+  },
+  backgroundColor: "transparent",
+  cursor: {
+    default: "default",
+    isLink: "pointer",
+    isDisabled: "not-allowed",
+  },
+  transition: "default",
+  forcedColorAdjust: "none",
+});
+
+const treeViewRowBackground = style<TreeRowLayerProps>({
+  position: "absolute",
+  zIndex: -1,
+  inset: 0,
+  backgroundColor: {
+    default: "gray-25",
+    isHovered: {
+      default: "gray-900/5",
+      selectionStyle: {
+        checkbox: selectedBackground,
+      },
+    },
+    isPressed: {
+      default: "gray-900/10",
+      selectionStyle: {
+        checkbox: selectedActiveBackground,
+      },
+    },
+    isSelected: {
+      selectionStyle: {
+        checkbox: {
+          default: selectedBackground,
+          isHovered: selectedActiveBackground,
+          isPressed: selectedActiveBackground,
+          isFocusVisible: selectedActiveBackground,
+        },
+        highlight: {
+          default: colorMix("gray-25", "blue-900", 10),
+          isHovered: colorMix("gray-25", "blue-900", 15),
+          isPressed: colorMix("gray-25", "blue-900", 15),
+        },
+      },
+    },
+    forcedColors: {
+      default: "Background",
+      selectionStyle: {
+        highlight: {
+          isSelected: "Highlight",
+        },
+      },
+    },
+  },
+  borderRadius: "sm",
+});
+
+const treeViewRowFocusRing = style<TreeRowLayerProps>({
+  ...focusRing(),
+  outlineOffset: -2,
+  outlineWidth: {
+    default: 2,
+    forcedColors: "[3px]",
+  },
+  outlineColor: {
+    default: "focus-ring",
+    forcedColors: {
+      default: "Highlight",
+      selectionStyle: {
+        highlight: "ButtonBorder",
+      },
+    },
+  },
+  position: "absolute",
+  inset: 0,
+  borderRadius: "default",
+  zIndex: 1,
+  pointerEvents: "none",
+});
+
+const treeViewItemCell = style({
+  display: "contents",
+});
+
+const treeLevelPadding = style({
+  gridArea: "level-padding",
+  alignSelf: "stretch",
+  width: "[calc(var(--tree-item-level, 0) * var(--tree-indent, 16px))]",
+});
+
+const treeExpandButton = style<TreeRowLayerProps>({
+  gridArea: "expand-button",
+  alignSelf: "center",
+  justifySelf: "center",
+  size: 40,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 0,
+  backgroundColor: "transparent",
+  color: {
+    default: "neutral-subdued",
+    isDisabled: "disabled",
+  },
+  borderRadius: "default",
+  visibility: {
+    default: "hidden",
+    isExpandable: "visible",
+  },
+  cursor: {
+    default: "default",
+    isDisabled: "not-allowed",
+  },
+  disableTapHighlight: true,
+});
+
+const treeExpandIcon = style<TreeRowLayerProps>({
+  rotate: {
+    isExpanded: 90,
+  },
+  transition: "default",
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const treeCheckbox = style({
+  gridArea: "checkbox",
+  gridRowEnd: "span 2",
+  alignSelf: "center",
+  justifySelf: "center",
+  marginEnd: 8,
+  position: "relative",
+  width: 16,
+  height: 16,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+});
+
+const treeCheckboxInput = style({
+  position: "absolute",
+  inset: 0,
+  margin: 0,
+  opacity: 0,
+  cursor: "inherit",
+});
+
+const treeCheckboxBox = style<TreeRowLayerProps>({
+  ...focusRing(),
+  size: 16,
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderRadius: "sm",
+  boxSizing: "border-box",
+  backgroundColor: {
+    default: "gray-25",
+    isSelected: baseColor("neutral"),
+    isDisabled: "disabled",
+  },
+  borderColor: {
+    default: baseColor("gray-800"),
+    isSelected: "transparent",
+    isDisabled: "disabled",
+  },
+});
+
+const treeCheckboxIcon = style({
+  pointerEvents: "none",
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "gray-25",
+      forcedColors: "HighlightText",
+    },
+  },
+});
+
+const treeSlotIcon = style({
+  gridArea: "icon",
+  gridRowEnd: "span 2",
+  display: "block",
+  size: fontRelative(20),
+  alignSelf: "center",
+  marginEnd: "text-to-visual",
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const treeLabel = style<TreeRowLayerProps>({
+  gridArea: "label",
+  minWidth: 0,
+  alignSelf: "center",
+  font: controlFont(),
+  color: "inherit",
+  overflow: "hidden",
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+const treeDescription = style<TreeRowLayerProps>({
+  gridArea: "description",
+  minWidth: 0,
+  alignSelf: "center",
+  font: "ui-sm",
+  color: {
+    default: baseColor("neutral-subdued"),
+    isDisabled: "disabled",
+  },
+  overflow: "hidden",
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+const treeActions = style({
+  gridArea: "actions",
+  gridRowEnd: "span 2",
+  alignSelf: "center",
+  justifySelf: "end",
+  marginStart: "text-to-visual",
+});
+
+const treeActionMenu = style({
+  gridArea: "actionmenu",
+  gridRowEnd: "span 2",
+  alignSelf: "center",
+});
+
+const treeLoadMore = style({
+  minHeight: 32,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "neutral-subdued",
+});
+
+function replaceManagedClass(element: Element, dataAttribute: string, nextClass: string): void {
+  const previousClass = element.getAttribute(dataAttribute);
+
+  for (const className of previousClass?.split(/\s+/).filter(Boolean) ?? []) {
+    element.classList.remove(className);
+  }
+
+  for (const className of nextClass.split(/\s+/).filter(Boolean)) {
+    element.classList.add(className);
+  }
+
+  element.setAttribute(dataAttribute, nextClass);
+}
+
+function applyItemSlotClasses(
+  root: HTMLElement | undefined,
+  renderProps: TreeItemRenderProps,
+  context: TreeViewContextValue,
+): void {
+  if (!root) {
+    return;
+  }
+
+  const state = {
+    ...renderProps,
+    selectionStyle: context.selectionStyle,
+    overflowMode: context.overflowMode,
   };
 
-  const defaultEmptyState = () => (
-    <div class="py-8 text-center text-primary-400">
-      <div class="flex flex-col items-center gap-2">
-        <EmptyTreeIcon class="w-12 h-12 text-primary-500" />
-        <span>No items</span>
-      </div>
-    </div>
-  );
+  const gridCell = root.querySelector('[role="gridcell"]');
+  if (gridCell) {
+    replaceManagedClass(gridCell, "data-s2-treeview-cell-class", treeViewItemCell);
+  }
 
-  const contextValue = createMemo(() => ({ size: size(), variant: variant() }));
+  for (const element of Array.from(
+    root.querySelectorAll('[slot="label"], [data-slot="label"], [data-rsp-slot="label"]'),
+  )) {
+    replaceManagedClass(element, "data-s2-treeview-slot-class", treeLabel(state));
+    element.setAttribute("data-rsp-slot", "label");
+  }
 
-  return (
-    <TreeSizeContext.Provider value={contextValue()}>
-      <div class="flex flex-col gap-2 h-full min-h-0">
-        <Show when={local.label}>
-          <label class={`text-primary-200 font-medium ${styles().label}`}>{local.label}</label>
-        </Show>
-        <HeadlessTree
-          {...headlessProps}
-          class={getClassName}
-          renderEmptyState={headlessProps.renderEmptyState ?? defaultEmptyState}
-        />
-        <Show when={local.description}>
-          <span class="text-primary-400 text-sm">{local.description}</span>
-        </Show>
-      </div>
-    </TreeSizeContext.Provider>
-  );
+  for (const element of Array.from(
+    root.querySelectorAll(
+      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
+    ),
+  )) {
+    replaceManagedClass(element, "data-s2-treeview-slot-class", treeDescription(state));
+    element.setAttribute("data-rsp-slot", "description");
+  }
+
+  for (const element of Array.from(root.querySelectorAll('[slot="icon"], [data-slot="icon"]'))) {
+    replaceManagedClass(element, "data-s2-treeview-slot-class", treeSlotIcon);
+    element.setAttribute("data-rsp-slot", "icon");
+  }
+
+  for (const element of Array.from(root.querySelectorAll('[slot="actions"]'))) {
+    replaceManagedClass(element, "data-s2-treeview-slot-class", treeActions);
+    element.setAttribute("data-rsp-slot", "actions");
+  }
+
+  for (const element of Array.from(root.querySelectorAll('[slot="actionmenu"]'))) {
+    replaceManagedClass(element, "data-s2-treeview-slot-class", treeActionMenu);
+    element.setAttribute("data-rsp-slot", "actionmenu");
+  }
 }
 
-/**
- * An item in a tree.
- */
-export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class", "description", "icon"]);
+function selectedKeySet(keys: "all" | Iterable<Key> | undefined): "all" | Set<Key> {
+  if (keys === "all") {
+    return "all";
+  }
 
-  const context = useContext(TreeSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const variantStyle = variantStyles[context.variant];
-  const customClass = local.class ?? "";
+  return new Set(keys ?? []);
+}
 
-  const getClassName = (renderProps: TreeItemRenderProps): string => {
-    const base = "flex items-center cursor-pointer transition-all duration-150 outline-none";
-    const sizeClass = sizeStyle.item;
-    const variantClass = variantStyle.item;
+function getItemKey<T extends object>(item: TreeItemData<T>, index: number): Key {
+  return item.id ?? item.key ?? index;
+}
 
-    let stateClass = "";
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50 cursor-not-allowed";
-    } else if (renderProps.isSelected) {
-      stateClass = variantStyle.itemSelected;
-    } else if (renderProps.isHovered) {
-      stateClass = variantStyle.itemHover;
+function isTextOnlyChildren(value: unknown): boolean {
+  if (typeof value === "string" || typeof value === "number") {
+    return true;
+  }
+
+  return Array.isArray(value) && value.every(isTextOnlyChildren);
+}
+
+function treeItemFromStatic(item: StaticTreeItem): TreeItemData<object> {
+  return {
+    id: item.id,
+    key: item.id,
+    value: item.props as object,
+    textValue: item.textValue ?? String(item.id),
+    isDisabled: item.isDisabled,
+    hasChildItems: item.hasChildItems,
+  };
+}
+
+function mergeRegisteredTreeItems<T extends object>(
+  items: TreeItemData<T>[],
+  registeredItems: Map<Key, ItemRegistration>,
+): TreeItemData<T>[] {
+  return items.map((item, index) => {
+    const key = getItemKey(item, index);
+    const registered = registeredItems.get(key);
+    const children = item.children
+      ? mergeRegisteredTreeItems(item.children as TreeItemData<T>[], registeredItems)
+      : item.children;
+
+    if (!registered) {
+      return children === item.children ? item : { ...item, children };
     }
 
-    let textClass = "";
-    if (!renderProps.isDisabled && !renderProps.isSelected) {
-      textClass = "text-primary-200";
+    return {
+      ...item,
+      id: item.id ?? key,
+      key: item.key ?? key,
+      isDisabled: item.isDisabled ?? registered.isDisabled,
+      hasChildItems: item.hasChildItems ?? registered.hasChildItems,
+      children,
+    };
+  });
+}
+
+export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(
+    useContext(TreeViewContext) as SpectrumContextValue<TreeProps<T>>,
+    props.slot,
+  );
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props) as TreeProps<T>;
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "children",
+    "items",
+    "selectionStyle",
+    "overflowMode",
+    "loadingState",
+    "renderActionBar",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "slot",
+    "ref",
+    "label",
+    "description",
+    "hasMore",
+    "onLoadMore",
+  ]);
+  const selectionStyle = (): TreeSelectionStyle => local.selectionStyle ?? "checkbox";
+  const overflowMode = (): TreeOverflowMode => local.overflowMode ?? "truncate";
+  const isLoading = () => local.loadingState === "loading" || local.loadingState === "loadingMore";
+  const [staticItems, setStaticItems] = createSignal<StaticTreeItem[]>([]);
+  const [registrationVersion, setRegistrationVersion] = createSignal(0);
+  const registeredItems = new Map<Key, ItemRegistration>();
+  const usesStaticChildren = () => local.items == null;
+  const syncRegisteredItems = () => {
+    setStaticItems(
+      Array.from(registeredItems.values())
+        .filter((item) => item.props)
+        .map((item) => ({
+          id: item.id,
+          textValue: item.textValue,
+          isDisabled: item.isDisabled,
+          hasChildItems: item.hasChildItems,
+          props: item.props!,
+        })),
+    );
+    setRegistrationVersion((version) => version + 1);
+  };
+  const registrationContext: StaticCollectionContextValue = {
+    get mode() {
+      return usesStaticChildren() ? "static" : "dynamic";
+    },
+    registerItem(item) {
+      const previous = registeredItems.get(item.id);
+      if (
+        previous &&
+        previous.textValue === item.textValue &&
+        previous.isDisabled === item.isDisabled &&
+        previous.hasChildItems === item.hasChildItems &&
+        previous.props === item.props
+      ) {
+        return;
+      }
+
+      registeredItems.set(item.id, item);
+      syncRegisteredItems();
+    },
+    unregisterItem(id) {
+      if (registeredItems.delete(id)) {
+        syncRegisteredItems();
+      }
+    },
+  };
+  const treeContext = createMemo<TreeViewContextValue>(() => ({
+    selectionStyle: selectionStyle(),
+    overflowMode: overflowMode(),
+  }));
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
+  const collectionItems = createMemo(() => {
+    registrationVersion();
+    if (usesStaticChildren()) {
+      return staticItems().map(treeItemFromStatic) as TreeItemData<T>[];
     }
 
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    const pressedClass = renderProps.isPressed ? "scale-[0.99]" : "";
-
-    return [
-      base,
-      sizeClass,
-      variantClass,
-      stateClass,
-      textClass,
-      focusClass,
-      pressedClass,
-      customClass,
+    return (local.items ?? []) as TreeItemData<T>[];
+  });
+  const collectionItemsWithDisabled = createMemo(() =>
+    mergeRegisteredTreeItems(collectionItems(), registeredItems),
+  );
+  const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
+    selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+  );
+  createEffect(() => {
+    setActionSelectedKeys(
+      selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    );
+  });
+  const onSelectionChange = (keys: "all" | Set<Key>) => {
+    setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
+    headlessProps.onSelectionChange?.(keys);
+  };
+  const className = (renderProps: TreeRenderProps): string =>
+    [
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
+      mergeStyles(
+        treeView({ ...renderProps, isActionBar: !!local.renderActionBar }),
+        mergedStyles(),
+      ),
     ]
       .filter(Boolean)
       .join(" ");
-  };
+  const renderEmptyState = () => (
+    <div class={emptyState}>{headlessProps.renderEmptyState?.() ?? "No items"}</div>
+  );
+  const renderItem = (item: TreeItemData<T>, state: TreeRenderItemState) =>
+    usesStaticChildren() ? (
+      <TreeItem {...((item.value ?? item) as TreeItemProps<T>)} />
+    ) : typeof local.children === "function" ? (
+      local.children(item, state)
+    ) : null;
+  const renderRegistrationItems = (items: TreeItemData<T>[], level = 0): JSX.Element[] => {
+    const rendered: JSX.Element[] = [];
+    const renderChild = local.children;
 
-  const getStyle = (renderProps: TreeItemRenderProps): JSX.CSSProperties => ({
-    "padding-left": `${renderProps.level * sizeStyle.indent + 8}px`,
+    if (typeof renderChild !== "function") {
+      return rendered;
+    }
+
+    for (const item of items) {
+      const isExpandable = Boolean(item.children?.length || item.hasChildItems);
+      rendered.push(
+        renderChild(item, {
+          isExpanded: false,
+          isExpandable,
+          level,
+        }),
+      );
+
+      if (item.children?.length) {
+        rendered.push(...renderRegistrationItems(item.children as TreeItemData<T>[], level + 1));
+      }
+    }
+
+    return rendered;
+  };
+  const registrationChildren = () => {
+    if (usesStaticChildren()) {
+      const resolved = resolveChildren(() => local.children as JSX.Element);
+      return resolved();
+    }
+
+    if (typeof local.children !== "function") {
+      return null;
+    }
+
+    return renderRegistrationItems(local.items ?? []);
+  };
+  const loadMoreContent = () => (
+    <div class={treeLoadMore} data-rsp-slot="load-more">
+      {isLoading() ? <ProgressCircle isIndeterminate size="S" aria-label="Loading more" /> : null}
+    </div>
+  );
+
+  const collection = (
+    <InternalTreeViewContext.Provider value={treeContext()}>
+      <div hidden inert aria-hidden="true" style={{ display: "none" }}>
+        <StaticTreeCollectionContext.Provider value={registrationContext}>
+          {registrationChildren()}
+        </StaticTreeCollectionContext.Provider>
+      </div>
+      <HeadlessTree
+        {...headlessProps}
+        ref={(element: HTMLDivElement) => assignRootRef(element)}
+        items={collectionItemsWithDisabled() ?? []}
+        selectionBehavior={selectionStyle() === "highlight" ? "replace" : "toggle"}
+        onSelectionChange={onSelectionChange}
+        isLoading={isLoading()}
+        hasMore={local.hasMore ?? !!local.onLoadMore}
+        onLoadMore={local.onLoadMore}
+        loadingState={local.loadingState}
+        renderLoadMoreItem={loadMoreContent}
+        renderEmptyState={renderEmptyState}
+        slot={local.slot ?? undefined}
+        class={className}
+        style={mergedUnsafeStyle()}
+        data-tree-view=""
+        data-selection-style={selectionStyle()}
+        data-overflow-mode={overflowMode()}
+        data-loading-state={local.loadingState ?? undefined}
+      >
+        {(item: TreeItemData<T>, state: TreeRenderItemState) => renderItem(item, state)}
+      </HeadlessTree>
+    </InternalTreeViewContext.Provider>
+  );
+
+  const framed = (
+    <div class={treeViewWrapper(null, mergedStyles())} style={mergedUnsafeStyle()}>
+      {local.label ? <div class={legacyLabel({})}>{local.label}</div> : null}
+      {collection}
+      {local.description ? <div class={legacyDescription({})}>{local.description}</div> : null}
+      {local.renderActionBar ? local.renderActionBar(actionSelectedKeys()) : null}
+    </div>
+  );
+
+  return local.label || local.description || local.renderActionBar ? framed : collection;
+}
+
+export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element {
+  const context = useContext(InternalTreeViewContext);
+  const staticCollection = useContext(StaticTreeCollectionContext);
+  const collectionState = useContext(HeadlessTreeStateContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "isDisabled",
+    "hasChildItems",
+    "href",
+    "target",
+    "download",
+    "rel",
+    "hrefLang",
+    "ping",
+    "referrerPolicy",
+    "routerOptions",
+    "description",
+    "icon",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "ref",
+  ]);
+
+  createEffect(() => {
+    if (!staticCollection) {
+      return;
+    }
+
+    staticCollection.registerItem({
+      id: props.id,
+      textValue: headlessProps.textValue ?? headlessProps["aria-label"],
+      isDisabled: !!local.isDisabled,
+      hasChildItems: !!local.hasChildItems,
+      props: staticCollection.mode === "static" ? (props as TreeItemProps<object>) : undefined,
+    });
   });
 
-  return (
-    <HeadlessTreeItem {...headlessProps} class={getClassName} style={getStyle}>
-      {(renderProps: TreeItemRenderProps) => (
+  onCleanup(() => {
+    staticCollection?.unregisterItem(props.id);
+  });
+
+  if (staticCollection) {
+    return null;
+  }
+
+  let itemElement: HTMLElement | undefined;
+  const assignItemRef = mergeContextRefs(local.ref, (element: HTMLElement) => {
+    itemElement = element;
+  });
+  const getRowLayerProps = (renderProps: TreeItemRenderProps): TreeRowLayerProps => ({
+    ...renderProps,
+    selectionStyle: context.selectionStyle,
+    overflowMode: context.overflowMode,
+    isLink: !!local.href,
+  });
+  const getClassName = (renderProps: TreeItemRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        treeViewItem({
+          ...getRowLayerProps(renderProps),
+          isLink: !!local.href,
+        }),
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const getStyle = (renderProps: TreeItemRenderProps): JSX.CSSProperties => ({
+    "--tree-item-level": String(renderProps.level),
+    "--tree-indent": "16px",
+    ...local.UNSAFE_style,
+  });
+  const textContext = (renderProps: TreeItemRenderProps) => ({
+    slots: {
+      default: {
+        slot: "label",
+        styles: () => treeLabel(getRowLayerProps(renderProps)),
+      },
+      label: {
+        slot: "label",
+        styles: () => treeLabel(getRowLayerProps(renderProps)),
+      },
+      description: {
+        slot: "description",
+        styles: () => treeDescription(getRowLayerProps(renderProps)),
+      },
+    },
+  });
+  const shouldShowCheckbox = (renderProps: TreeItemRenderProps) =>
+    renderProps.selectionMode !== "none" &&
+    renderProps.selectionBehavior === "toggle" &&
+    !renderProps.isDisabled;
+
+  function ItemChildren(renderProps: TreeItemRenderProps) {
+    createEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
+
+    function ResolvedItemContent() {
+      const resolvedChildren = resolveChildren(() =>
+        typeof local.children === "function" ? local.children(renderProps) : local.children,
+      );
+      const childrenValue = () => resolvedChildren();
+      const isTextOnly = () => isTextOnlyChildren(childrenValue());
+
+      return (
         <>
-          {/* Expand button */}
-          <TreeExpandButton class={`${sizeStyle.expandButton} shrink-0`} />
-
-          {/* Icon */}
-          <Show when={local.icon}>
-            <span class={`shrink-0 ${sizeStyle.icon}`}>{local.icon!()}</span>
-          </Show>
-
-          {/* Default folder/file icon if no custom icon */}
-          <Show when={!local.icon}>
-            {renderProps.isExpandable ? (
-              <FolderIcon
-                class={`shrink-0 ${sizeStyle.icon} text-accent-300`}
-                isOpen={renderProps.isExpanded}
-              />
-            ) : (
-              <FileIcon class={`shrink-0 ${sizeStyle.icon} text-primary-400`} />
-            )}
-          </Show>
-
-          {/* Content */}
-          <div class="flex flex-col flex-1 min-w-0">
-            <span class="truncate">
-              {typeof props.children === "function" ? props.children(renderProps) : props.children}
-            </span>
-            <Show when={local.description}>
-              <span class={`text-primary-400 truncate ${sizeStyle.description}`}>
-                {local.description}
-              </span>
-            </Show>
-          </div>
-
-          {/* Selection indicator */}
-          <Show when={renderProps.isSelected}>
-            <CheckIcon class={`shrink-0 ${sizeStyle.icon} text-accent`} />
-          </Show>
+          {isTextOnly() ? (
+            <TreeItemContent>
+              <Text slot="label">{childrenValue()}</Text>
+              {local.description ? <Text slot="description">{local.description}</Text> : null}
+            </TreeItemContent>
+          ) : (
+            childrenValue()
+          )}
+          {!isTextOnly() && local.description ? (
+            <Text slot="description">{local.description}</Text>
+          ) : null}
         </>
-      )}
+      );
+    }
+
+    return (
+      <TextContext.Provider value={textContext(renderProps) as SpectrumContextValue<any>}>
+        <IconContext.Provider
+          value={{
+            slot: "icon",
+            styles: treeSlotIcon,
+          }}
+        >
+          <ActionButtonGroupContext.Provider
+            value={{
+              slot: "actions",
+              size: "S",
+              styles: treeActions,
+            }}
+          >
+            <ActionMenuContext.Provider
+              value={{
+                slot: "actionmenu",
+                size: "S",
+                menuSize: "S",
+                styles: treeActionMenu,
+              }}
+            >
+              {shouldShowCheckbox(renderProps) ? (
+                <TreeSelectionCheckbox
+                  itemKey={props.id}
+                  renderProps={renderProps}
+                  excludeFromTabOrder
+                />
+              ) : null}
+              <div
+                class={treeViewRowBackground(getRowLayerProps(renderProps))}
+                aria-hidden="true"
+              />
+              {renderProps.isFocusVisible ? (
+                <div
+                  class={treeViewRowFocusRing(getRowLayerProps(renderProps))}
+                  aria-hidden="true"
+                />
+              ) : null}
+              <span class={treeLevelPadding} aria-hidden="true" />
+              <TreeExpandButton renderProps={renderProps} />
+              {local.icon ? (
+                <span slot="icon" class={treeSlotIcon} data-rsp-slot="icon">
+                  {local.icon()}
+                </span>
+              ) : null}
+              <ResolvedItemContent />
+            </ActionMenuContext.Provider>
+          </ActionButtonGroupContext.Provider>
+        </IconContext.Provider>
+      </TextContext.Provider>
+    );
+  }
+
+  return (
+    <HeadlessTreeItem
+      {...headlessProps}
+      ref={(element) => assignItemRef(element)}
+      hasChildItems={local.hasChildItems}
+      isDisabled={local.isDisabled}
+      href={local.href}
+      target={local.target}
+      download={local.download}
+      rel={local.rel}
+      hrefLang={local.hrefLang}
+      ping={local.ping}
+      referrerPolicy={local.referrerPolicy}
+      routerOptions={local.routerOptions}
+      class={getClassName}
+      style={getStyle}
+      data-tree-view-item=""
+      data-disabled={local.isDisabled || undefined}
+      data-href={local.href || undefined}
+      data-target={local.target || undefined}
+      data-has-child-items={local.hasChildItems || undefined}
+    >
+      {(renderProps: TreeItemRenderProps) => <ItemChildren {...renderProps} />}
     </HeadlessTreeItem>
   );
 }
 
-/**
- * A button to expand/collapse a tree item.
- */
-export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
-  const context = useContext(TreeSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const customClass = local.class ?? "";
-
-  const className = [
-    "flex items-center justify-center transition-transform duration-150 text-primary-400 hover:text-primary-200",
-    customClass,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <HeadlessTreeExpandButton {...headlessProps} class={className}>
-      {props.children ??
-        (({ isExpanded }: { isExpanded: boolean }) => (
-          <ChevronIcon
-            class={`${sizeStyle.expandButton} transition-transform duration-150 ${
-              isExpanded ? "rotate-90" : ""
-            }`}
-          />
-        ))}
-    </HeadlessTreeExpandButton>
-  );
-}
-
-/**
- * A content slot for TreeItem rows.
- */
 export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
-  const customClass = local.class ?? "";
+  const [local, headlessProps] = splitProps(props, ["children", "class", "style"]);
 
   return (
     <HeadlessTreeItemContent {...headlessProps}>
       {(renderProps: HeadlessTreeItemContentRenderProps) => (
-        <span class={["flex-1 min-w-0", customClass].filter(Boolean).join(" ")}>
-          {typeof props.children === "function" ? props.children(renderProps) : props.children}
+        <span class={[treeViewItemCell, local.class].filter(Boolean).join(" ")} style={local.style}>
+          {typeof local.children === "function" ? local.children(renderProps) : local.children}
         </span>
       )}
     </HeadlessTreeItemContent>
   );
 }
 
-/**
- * A styled checkbox for item selection in a tree.
- */
-export function TreeSelectionCheckbox(props: { itemKey: Key; class?: string }): JSX.Element {
-  const context = useContext(TreeSizeContext);
-  const sizeStyle = sizeStyles[context.size];
-  const className = `${sizeStyle.checkbox} rounded border-2 border-primary-500 bg-bg-400 text-accent cursor-pointer checked:bg-accent checked:border-accent focus:ring-2 focus:ring-accent-300 focus:ring-offset-1 focus:ring-offset-bg-400 ${props.class ?? ""}`;
+export function TreeExpandButton(
+  props: TreeExpandButtonProps & { renderProps?: TreeItemRenderProps },
+): JSX.Element {
+  const [local, headlessProps] = splitProps(props, ["class", "style", "children", "renderProps"]);
+  const itemContext = useContext(HeadlessTreeItemContext);
+  const isExpandable = () => Boolean(itemContext?.isExpandable ?? local.renderProps?.isExpandable);
+  const renderState = () => ({
+    ...(local.renderProps ?? {}),
+    isExpandable: isExpandable(),
+    isExpanded: Boolean(itemContext?.isExpanded ?? local.renderProps?.isExpanded),
+  });
+  const className = () => [treeExpandButton(renderState()), local.class].filter(Boolean).join(" ");
+  const stopPlaceholderExpansion = (event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  if (!isExpandable()) {
+    return (
+      <button
+        {...headlessProps}
+        type="button"
+        tabIndex={-1}
+        class={className()}
+        style={local.style}
+        aria-label="Expand"
+        onClick={stopPlaceholderExpansion}
+        onPointerDown={stopPlaceholderExpansion}
+        onPointerUp={stopPlaceholderExpansion}
+        onMouseDown={stopPlaceholderExpansion}
+        onMouseUp={stopPlaceholderExpansion}
+        data-rsp-slot="expand-button"
+      >
+        {typeof local.children === "function"
+          ? local.children(renderState())
+          : (local.children ?? (
+              <Chevron
+                size="S"
+                class={treeExpandIcon({ ...renderState(), isExpanded: false })}
+                aria-hidden="true"
+              />
+            ))}
+      </button>
+    );
+  }
 
   return (
-    <span class={className}>
-      <HeadlessTreeSelectionCheckbox itemKey={props.itemKey} />
+    <HeadlessTreeExpandButton
+      {...headlessProps}
+      class={className()}
+      style={local.style}
+      data-rsp-slot="expand-button"
+    >
+      {local.children ??
+        (({ isExpanded }: { isExpanded: boolean }) => (
+          <Chevron
+            size="S"
+            class={treeExpandIcon({ ...renderState(), isExpanded })}
+            aria-hidden="true"
+          />
+        ))}
+    </HeadlessTreeExpandButton>
+  );
+}
+
+export function TreeSelectionCheckbox(props: {
+  itemKey: Key;
+  renderProps?: TreeItemRenderProps;
+  class?: string;
+  style?: JSX.CSSProperties;
+  excludeFromTabOrder?: boolean;
+  "aria-label"?: string;
+}): JSX.Element {
+  const state = useContext(HeadlessTreeStateContext);
+  const isSelected = () => Boolean(state?.isSelected?.(props.itemKey));
+  const renderProps = createMemo<TreeRowLayerProps>(() => ({
+    isSelected: props.renderProps?.isSelected ?? isSelected(),
+    isFocused: props.renderProps?.isFocused ?? false,
+    isFocusVisible: props.renderProps?.isFocusVisible ?? false,
+    isPressed: props.renderProps?.isPressed ?? false,
+    isHovered: props.renderProps?.isHovered ?? false,
+    isDisabled: props.renderProps?.isDisabled ?? false,
+    isExpanded: props.renderProps?.isExpanded ?? false,
+    isExpandable: props.renderProps?.isExpandable ?? false,
+    level: props.renderProps?.level ?? 0,
+    selectionStyle: "checkbox",
+  }));
+
+  return (
+    <span
+      class={[treeCheckbox, props.class].filter(Boolean).join(" ")}
+      style={props.style}
+      data-rsp-slot="selection-indicator"
+    >
+      <HeadlessTreeSelectionCheckbox
+        itemKey={props.itemKey}
+        class={treeCheckboxInput}
+        excludeFromTabOrder={props.excludeFromTabOrder}
+        aria-label={props["aria-label"] ?? "Select"}
+      />
+      <span class={treeCheckboxBox(renderProps())} aria-hidden="true">
+        {renderProps().isSelected ? (
+          <Checkmark size="XS" class={treeCheckboxIcon} aria-hidden="true" />
+        ) : null}
+      </span>
     </span>
   );
 }
 
-function ChevronIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg class={props.class} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
-  );
-}
+export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
+  const staticCollection = useContext(StaticTreeCollectionContext);
+  const isLoading = () =>
+    props.isLoading || props.loadingState === "loading" || props.loadingState === "loadingMore";
 
-function FolderIcon(props: { class?: string; isOpen?: boolean }): JSX.Element {
+  if (staticCollection) {
+    return null;
+  }
+
   return (
-    <svg
-      class={props.class}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="1.5"
+    <HeadlessTreeLoadMoreItem
+      onLoadMore={props.onLoadMore}
+      isLoading={isLoading()}
+      loadingState={props.loadingState}
+      level={props.level}
+      class={["", props.class].filter(Boolean).join(" ")}
+      style={props.style}
     >
-      {props.isOpen ? (
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
-        />
-      ) : (
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-        />
-      )}
-    </svg>
-  );
-}
-
-function FileIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg
-      class={props.class}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="1.5"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-      />
-    </svg>
-  );
-}
-
-function CheckIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg class={props.class} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-function EmptyTreeIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg
-      class={props.class}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="1.5"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z"
-      />
-    </svg>
+      <div class={treeLoadMore} data-rsp-slot="load-more">
+        {props.children ??
+          (isLoading() ? (
+            <ProgressCircle isIndeterminate size="S" aria-label="Loading more" />
+          ) : null)}
+      </div>
+    </HeadlessTreeLoadMoreItem>
   );
 }
 
@@ -467,10 +1265,13 @@ Tree.Item = TreeItem;
 Tree.Content = TreeItemContent;
 Tree.ExpandButton = TreeExpandButton;
 Tree.SelectionCheckbox = TreeSelectionCheckbox;
+Tree.LoadMoreItem = TreeLoadMoreItem;
 
 export const TreeView = Tree;
 export const TreeViewItem = TreeItem;
 export const TreeViewItemContent = TreeItemContent;
+export const TreeViewLoadMoreItem = TreeLoadMoreItem;
 export { Collection } from "@proyecto-viviana/solidaria-components";
+export { Text } from "../text";
 
 export type { Key, TreeItemData, TreeRenderItemState };

@@ -78,6 +78,8 @@ export interface TreeState<T, C extends TreeCollection<T> = TreeCollection<T>> {
   readonly isFocused: boolean;
   /** The selection mode. */
   readonly selectionMode: "none" | "single" | "multiple";
+  /** How selection behaves when pressing an item. */
+  readonly selectionBehavior: "toggle" | "replace";
   /** The currently selected keys. */
   readonly selectedKeys: "all" | Set<Key>;
   /** Check if a key is selected. */

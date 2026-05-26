@@ -111,6 +111,7 @@ const entry = [
   "src/Card.ts",
   "src/CardView.ts",
   "src/ListView.ts",
+  "src/TreeView.ts",
   "src/RangeCalendar.ts",
   "src/Menu.ts",
   "src/Tabs.ts",

@@ -44,8 +44,12 @@ export interface AriaTreeItemProps<T = unknown> {
   node: TreeNode<T>;
   /** Whether the item is rendered in a virtualized list. */
   isVirtualized?: boolean;
+  /** How selection should behave when pressing an item. */
+  selectionBehavior?: "replace" | "toggle";
   /** Handler called when this item's action is triggered. */
   onAction?: () => void;
+  /** Whether this item is disabled. */
+  isDisabled?: boolean;
   /** The text value for the item (used for aria-label on the row). */
   textValue?: string;
 }

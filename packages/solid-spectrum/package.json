@@ -112,6 +112,12 @@
       "import": "./dist/ListView.js",
       "default": "./dist/ListView.js"
     },
+    "./TreeView": {
+      "types": "./dist/TreeView.d.ts",
+      "solid": "./src/TreeView.ts",
+      "import": "./dist/TreeView.js",
+      "default": "./dist/TreeView.js"
+    },
     "./RangeCalendar": {
       "types": "./dist/RangeCalendar.d.ts",
       "solid": "./src/RangeCalendar.ts",

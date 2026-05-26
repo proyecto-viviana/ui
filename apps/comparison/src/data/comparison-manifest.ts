@@ -845,10 +845,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "TreeView",
     category: "Components",
     summary:
-      "Hierarchical collection mounted on both stacks with nested folders, expanded-key defaults, multiple selection, and selected child coverage.",
+      "Hierarchical collection mounted on both stacks with nested folders, expanded-key defaults, multiple selection, slots, links, and load-more coverage.",
     styledSummary: "React Spectrum TreeView vs Solid Spectrum TreeView.",
     styledNote:
-      "React uses @react-spectrum/s2 TreeView, TreeViewItem, and TreeViewItemContent directly; Solid uses @proyecto-viviana/solid-spectrum TreeView and TreeViewItem over the Solid tree collection API with equivalent items, expansion, and selection state.",
+      "React uses @react-spectrum/s2 TreeView, Collection, TreeViewItem, TreeViewItemContent, and TreeViewLoadMoreItem directly; Solid uses @proyecto-viviana/solid-spectrum TreeView, TreeViewItem, and TreeViewItemContent over the Solid tree collection API with equivalent items, expansion, selection, slots, links, empty state, ActionBar, and load-more state.",
   }),
 
   textfield: styledLiveOfficialEntry({

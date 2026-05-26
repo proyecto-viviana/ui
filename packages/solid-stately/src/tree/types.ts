@@ -93,6 +93,8 @@ export interface TreeState<T, C extends TreeCollection<T> = TreeCollection<T>> {
   readonly isFocused: boolean;
   /** The selection mode. */
   readonly selectionMode: "none" | "single" | "multiple";
+  /** How selection behaves when pressing an item. */
+  readonly selectionBehavior: "toggle" | "replace";
   /** The currently selected keys. */
   readonly selectedKeys: "all" | Set<Key>;
 
@@ -165,13 +167,17 @@ export interface TreeStateOptions<T, C extends TreeCollection<T> = TreeCollectio
  */
 export interface TreeItemData<T = unknown> {
   /** Unique key for this item. */
-  key: Key;
+  key?: Key;
+  /** S2/React Aria-compatible unique id alias. */
+  id?: Key;
   /** The data value for this item. */
-  value: T;
+  value?: T;
   /** Text content for accessibility and search. */
   textValue?: string;
   /** Child items (makes this item expandable). */
   children?: TreeItemData<T>[];
+  /** Whether this item has children that may not be loaded yet. */
+  hasChildItems?: boolean;
   /** Whether this item is disabled. */
   isDisabled?: boolean;
 }

@@ -1117,6 +1117,32 @@ describe("Tree", () => {
       expect(rows[0]).toHaveAttribute("aria-disabled", "true");
       expect(rows[1]).not.toHaveAttribute("aria-disabled");
     });
+
+    it("should support disabled TreeItem props from render functions", async () => {
+      const user = setupUser();
+      const onSelectionChange = vi.fn();
+
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <TreeItem id={item.key} isDisabled={item.key === "item-1"}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const disabledRow = screen.getByRole("row", { name: "Item 1" });
+      expect(disabledRow).toHaveAttribute("aria-disabled", "true");
+
+      await user.click(disabledRow);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
   });
 
   describe("keyboard navigation", () => {

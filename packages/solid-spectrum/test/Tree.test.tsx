@@ -1,325 +1,464 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@solidjs/testing-library";
-import { Tree, TreeItem } from "../src/tree";
-import type { TreeItemData } from "@proyecto-viviana/solid-stately";
+import { createSignal } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import {
+  Text,
+  TreeView,
+  TreeViewContext,
+  TreeViewItem,
+  TreeViewItemContent,
+  TreeViewLoadMoreItem,
+  type TreeItemData,
+  type TreeSelectionStyle,
+} from "../src";
+import * as treeViewSubpath from "../src/TreeView";
+import packageJson from "../package.json";
 
-interface TestItem {
-  name: string;
-}
-
-function createTestItems(): TreeItemData<TestItem>[] {
-  return [
-    {
-      key: "folder-1",
-      value: { name: "Documents" },
-      textValue: "Documents",
-      children: [
-        { key: "file-1", value: { name: "Report.pdf" }, textValue: "Report.pdf" },
-        { key: "file-2", value: { name: "Notes.txt" }, textValue: "Notes.txt" },
-      ],
-    },
-    {
-      key: "folder-2",
-      value: { name: "Images" },
-      textValue: "Images",
-      children: [{ key: "file-3", value: { name: "Photo.jpg" }, textValue: "Photo.jpg" }],
-    },
-    {
-      key: "file-4",
-      value: { name: "readme.md" },
-      textValue: "readme.md",
-    },
-  ];
-}
-
-function TestTree(props: {
-  size?: "sm" | "md" | "lg";
-  variant?: "default" | "bordered" | "quiet";
-  label?: string;
+interface FileItem {
+  id: string;
+  label: string;
   description?: string;
+}
+
+const files: TreeItemData<FileItem>[] = [
+  {
+    id: "projects",
+    value: { id: "projects", label: "Projects", description: "Pinned work" },
+    textValue: "Projects",
+    children: [
+      {
+        id: "brief",
+        value: { id: "brief", label: "Project brief", description: "Planning notes" },
+        textValue: "Project brief",
+      },
+      {
+        id: "report",
+        value: { id: "report", label: "Quarterly report", description: "Finance packet" },
+        textValue: "Quarterly report",
+      },
+    ],
+  },
+  {
+    id: "archive",
+    value: { id: "archive", label: "Archive", description: "Closed work" },
+    textValue: "Archive",
+  },
+];
+
+function normalizeKeys(keys: "all" | Set<unknown>) {
+  return keys === "all"
+    ? new Set(["projects", "brief", "report", "archive"])
+    : new Set(Array.from(keys, String));
+}
+
+function itemKey(item: TreeItemData<FileItem>) {
+  return String(item.id ?? item.key);
+}
+
+function FileTree(props: {
   defaultExpandedKeys?: string[];
   selectionMode?: "none" | "single" | "multiple";
+  selectionStyle?: TreeSelectionStyle;
   defaultSelectedKeys?: string[];
   disabledKeys?: string[];
-  items?: TreeItemData<TestItem>[];
 }) {
-  const items = props.items ?? createTestItems();
   return (
-    <Tree
-      items={items}
-      aria-label="Test tree"
-      size={props.size}
-      variant={props.variant}
-      label={props.label}
-      description={props.description}
+    <TreeView
+      aria-label="Files"
+      items={files}
       defaultExpandedKeys={props.defaultExpandedKeys}
       selectionMode={props.selectionMode}
+      selectionStyle={props.selectionStyle}
       defaultSelectedKeys={props.defaultSelectedKeys}
       disabledKeys={props.disabledKeys}
     >
-      {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
-    </Tree>
+      {(item) => (
+        <TreeViewItem id={itemKey(item)} textValue={item.textValue}>
+          <TreeViewItemContent>
+            <Text slot="label">{item.value?.label ?? item.textValue}</Text>
+            {item.value?.description ? (
+              <Text slot="description">{item.value.description}</Text>
+            ) : null}
+          </TreeViewItemContent>
+        </TreeViewItem>
+      )}
+    </TreeView>
   );
 }
 
-describe("Tree (solid-spectrum)", () => {
+describe("TreeView (solid-spectrum)", () => {
   afterEach(() => cleanup());
 
-  describe("variant styles", () => {
-    it("renders treegrid rows with gridcells", () => {
-      render(() => <TestTree defaultExpandedKeys={["folder-1"]} />);
-      const tree = screen.getByRole("treegrid");
-      const rows = screen.getAllByRole("row");
-
-      expect(tree).toBeInTheDocument();
-      expect(rows.length).toBeGreaterThan(0);
-      for (const row of rows) {
-        expect(row.querySelector('[role="gridcell"]')).toBeInTheDocument();
-      }
-    });
-
-    it("applies default variant classes", () => {
-      render(() => <TestTree />);
-      const tree = screen.getByRole("treegrid");
-      // default: 'bg-bg-400 rounded-lg border border-bg-300 p-2'
-      expect(tree.className).toContain("bg-bg-400");
-      expect(tree.className).toContain("rounded-lg");
-      expect(tree.className).toContain("border");
-    });
-
-    it("applies bordered variant classes", () => {
-      render(() => <TestTree variant="bordered" />);
-      const tree = screen.getByRole("treegrid");
-      // bordered: 'bg-bg-400 rounded-lg border-2 border-bg-400 p-2'
-      expect(tree.className).toContain("border-2");
-      expect(tree.className).toContain("rounded-lg");
-    });
-
-    it("applies quiet variant classes", () => {
-      render(() => <TestTree variant="quiet" />);
-      const tree = screen.getByRole("treegrid");
-      // quiet: 'bg-transparent'
-      expect(tree.className).toContain("bg-transparent");
+  it("exports the public TreeView surface and package subpath", () => {
+    expect(treeViewSubpath.TreeView).toBe(TreeView);
+    expect(treeViewSubpath.TreeViewItem).toBe(TreeViewItem);
+    expect(treeViewSubpath.TreeViewItemContent).toBe(TreeViewItemContent);
+    expect(treeViewSubpath.TreeViewLoadMoreItem).toBe(TreeViewLoadMoreItem);
+    expect(treeViewSubpath.TreeViewContext).toBe(TreeViewContext);
+    expect(packageJson.exports["./TreeView"]).toMatchObject({
+      types: "./dist/TreeView.d.ts",
+      solid: "./src/TreeView.ts",
+      import: "./dist/TreeView.js",
+      default: "./dist/TreeView.js",
     });
   });
 
-  describe("size variants", () => {
-    it("applies sm size classes to tree", () => {
-      render(() => <TestTree size="sm" />);
-      const tree = screen.getByRole("treegrid");
-      // sm tree: 'text-sm'
-      expect(tree.className).toContain("text-sm");
-    });
+  it("renders dynamic id-based items with S2 treegrid semantics and slots", () => {
+    render(() => (
+      <FileTree
+        defaultExpandedKeys={["projects"]}
+        selectionMode="multiple"
+        defaultSelectedKeys={["brief"]}
+      />
+    ));
 
-    it("applies md size classes to tree by default", () => {
-      render(() => <TestTree />);
-      const tree = screen.getByRole("treegrid");
-      // md tree: 'text-base'
-      expect(tree.className).toContain("text-base");
-    });
+    const tree = screen.getByRole("treegrid", { name: "Files" });
+    expect(tree).toHaveAttribute("data-tree-view");
+    expect(tree).toHaveAttribute("data-selection-style", "checkbox");
+    expect(tree).toHaveAttribute("data-overflow-mode", "truncate");
+    expect(tree.getAttribute("class")).not.toContain("bg-bg-400");
+    expect(tree.getAttribute("class")).not.toContain("rounded-lg");
 
-    it("applies lg size classes to tree", () => {
-      render(() => <TestTree size="lg" />);
-      const tree = screen.getByRole("treegrid");
-      // lg tree: 'text-lg'
-      expect(tree.className).toContain("text-lg");
-    });
+    const projects = screen.getByRole("row", { name: /Projects/ });
+    expect(projects).toHaveAttribute("aria-expanded", "true");
+    expect(projects.querySelector('button[data-rsp-slot="expand-button"]')).toBeInTheDocument();
 
-    it("applies sm item classes", () => {
-      render(() => <TestTree size="sm" />);
-      const rows = screen.getAllByRole("row");
-      // sm item: 'py-1 px-2 gap-1'
-      expect(rows[0].className).toContain("py-1");
-      expect(rows[0].className).toContain("px-2");
-    });
+    const projectBrief = screen.getByRole("row", { name: /Project brief/ });
+    expect(projectBrief).toHaveAttribute("data-selected", "true");
+    expect(within(projectBrief).getByRole("checkbox", { name: "Select" })).toBeChecked();
+    expect(screen.getByText("Project brief")).toHaveAttribute("data-rsp-slot", "label");
+    expect(screen.getByText("Planning notes")).toHaveAttribute("data-rsp-slot", "description");
 
-    it("applies lg item classes", () => {
-      render(() => <TestTree size="lg" />);
-      const rows = screen.getAllByRole("row");
-      // lg item: 'py-2 px-4 gap-2'
-      expect(rows[0].className).toContain("py-2");
-      expect(rows[0].className).toContain("px-4");
-    });
+    const archive = screen.getByRole("row", { name: /Archive/ });
+    expect(
+      archive.querySelector('button[data-rsp-slot="expand-button"][aria-label="Expand"]'),
+    ).toBeInTheDocument();
   });
 
-  describe("indent levels", () => {
-    it("root items have padding-left based on level 0", () => {
-      render(() => <TestTree defaultExpandedKeys={["folder-1"]} />);
-      const rows = screen.getAllByRole("row");
-      const rootRow = rows.find((r) => r.textContent?.includes("Documents"));
-      // level 0: padding-left = 0 * 20 + 8 = 8px (md indent=20)
-      expect(rootRow?.style.paddingLeft).toBe("8px");
-    });
+  it("passes direct item fields to dynamic render functions", () => {
+    const directItems = [
+      {
+        id: "docs",
+        label: "Documents",
+        description: "Direct collection item",
+        textValue: "Documents",
+        children: [
+          {
+            id: "api",
+            label: "API reference",
+            description: "Nested direct item",
+            textValue: "API reference",
+          },
+        ],
+      },
+    ] as any;
 
-    it("child items have increased padding-left", () => {
-      render(() => <TestTree defaultExpandedKeys={["folder-1"]} />);
-      const rows = screen.getAllByRole("row");
-      const childRow = rows.find((r) => r.textContent?.includes("Report.pdf"));
-      // level 1: padding-left = 1 * 20 + 8 = 28px (md indent=20)
-      expect(childRow?.style.paddingLeft).toBe("28px");
-    });
+    render(() => (
+      <TreeView aria-label="Direct files" items={directItems} defaultExpandedKeys={["docs"]}>
+        {(item: any) => (
+          <TreeViewItem id={item.id} textValue={item.textValue}>
+            <TreeViewItemContent>
+              <Text slot="label">{item.label}</Text>
+              <Text slot="description">{item.description}</Text>
+            </TreeViewItemContent>
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
 
-    it("sm indent is 16px per level", () => {
-      render(() => <TestTree size="sm" defaultExpandedKeys={["folder-1"]} />);
-      const rows = screen.getAllByRole("row");
-      const childRow = rows.find((r) => r.textContent?.includes("Report.pdf"));
-      // level 1: padding-left = 1 * 16 + 8 = 24px
-      expect(childRow?.style.paddingLeft).toBe("24px");
-    });
-
-    it("lg indent is 24px per level", () => {
-      render(() => <TestTree size="lg" defaultExpandedKeys={["folder-1"]} />);
-      const rows = screen.getAllByRole("row");
-      const childRow = rows.find((r) => r.textContent?.includes("Report.pdf"));
-      // level 1: padding-left = 1 * 24 + 8 = 32px
-      expect(childRow?.style.paddingLeft).toBe("32px");
-    });
+    expect(screen.getByRole("row", { name: /Documents/ })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("Direct collection item")).toHaveAttribute(
+      "data-rsp-slot",
+      "description",
+    );
+    expect(screen.getByRole("row", { name: /API reference/ })).toBeInTheDocument();
   });
 
-  describe("default icons", () => {
-    it("renders FolderIcon for expandable items", () => {
-      render(() => <TestTree />);
-      const rows = screen.getAllByRole("row");
-      const folderRow = rows.find((r) => r.textContent?.includes("Documents"));
-      // FolderIcon has a path with folder shape
-      const svgs = folderRow?.querySelectorAll("svg");
-      expect(svgs!.length).toBeGreaterThan(0);
-    });
+  it("supports controlled highlight selection with replace behavior", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
 
-    it("renders FileIcon for leaf items", () => {
-      render(() => <TestTree />);
-      const rows = screen.getAllByRole("row");
-      const fileRow = rows.find((r) => r.textContent?.includes("readme.md"));
-      // FileIcon has a path with file shape
-      const svgs = fileRow?.querySelectorAll("svg");
-      expect(svgs!.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe("custom icon", () => {
-    it("overrides default icon when provided", () => {
-      render(() => (
-        <Tree items={createTestItems()} aria-label="Custom tree">
-          {(item) => (
-            <TreeItem id={item.key} icon={() => <svg data-testid="custom-icon" />}>
-              {item.textValue}
-            </TreeItem>
-          )}
-        </Tree>
-      ));
-
-      const customIcons = screen.getAllByTestId("custom-icon");
-      expect(customIcons.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe("expand/collapse", () => {
-    it("expand button chevron has rotate-90 when expanded", () => {
-      render(() => <TestTree defaultExpandedKeys={["folder-1"]} />);
-      const rows = screen.getAllByRole("row");
-      const expandedRow = rows.find((r) => r.textContent?.includes("Documents"));
-      // The chevron SVG in expanded state should have rotate-90
-      const svgs = expandedRow?.querySelectorAll("svg");
-      const chevronSvg = Array.from(svgs || []).find(
-        (svg) =>
-          svg.className.baseVal?.includes("rotate-90") ||
-          svg.getAttribute("class")?.includes("rotate-90"),
+    function Demo() {
+      const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set(["brief"]));
+      return (
+        <TreeView
+          aria-label="Files"
+          items={files}
+          defaultExpandedKeys={["projects"]}
+          selectionMode="single"
+          selectionStyle="highlight"
+          selectedKeys={selectedKeys()}
+          onSelectionChange={(keys) => {
+            const nextKeys = normalizeKeys(keys);
+            setSelectedKeys(new Set(Array.from(nextKeys, String)));
+            onSelectionChange(keys);
+          }}
+        >
+          {(item) => <TreeViewItem id={itemKey(item)}>{item.value?.label}</TreeViewItem>}
+        </TreeView>
       );
-      expect(chevronSvg).toBeTruthy();
-    });
+    }
 
-    it("expand button chevron does NOT have rotate-90 when collapsed", () => {
-      render(() => <TestTree />);
-      const rows = screen.getAllByRole("row");
-      const collapsedRow = rows.find((r) => r.textContent?.includes("Documents"));
-      // The first SVG (chevron) should not have rotate-90 when collapsed
-      const svgs = collapsedRow?.querySelectorAll("svg");
-      const rotatedSvg = Array.from(svgs || []).find(
-        (svg) =>
-          svg.className.baseVal?.includes("rotate-90") ||
-          svg.getAttribute("class")?.includes("rotate-90"),
+    render(() => <Demo />);
+
+    const tree = screen.getByRole("treegrid", { name: "Files" });
+    expect(tree).toHaveAttribute("data-selection-style", "highlight");
+
+    const projectBrief = screen.getByRole("row", { name: /Project brief/ });
+    const quarterlyReport = screen.getByRole("row", { name: /Quarterly report/ });
+    expect(projectBrief).toHaveAttribute("data-selected", "true");
+    expect(within(projectBrief).queryByRole("checkbox", { name: "Select" })).toBeNull();
+
+    await user.click(quarterlyReport);
+
+    await waitFor(() => {
+      expect(screen.getByRole("row", { name: /Project brief/ })).not.toHaveAttribute(
+        "data-selected",
       );
-      expect(rotatedSvg).toBeFalsy();
+      expect(screen.getByRole("row", { name: /Quarterly report/ })).toHaveAttribute(
+        "data-selected",
+        "true",
+      );
     });
+    expect(onSelectionChange).toHaveBeenCalledWith(new Set(["report"]));
   });
 
-  describe("selection", () => {
-    it("selected item gets variant itemSelected class", () => {
-      render(() => <TestTree selectionMode="single" defaultSelectedKeys={["file-4"]} />);
-      const rows = screen.getAllByRole("row");
-      const selectedRow = rows.find((r) => r.textContent?.includes("readme.md"));
-      // itemSelected: 'bg-accent/10 text-accent'
-      expect(selectedRow?.className).toContain("bg-accent/10");
-      expect(selectedRow?.className).toContain("text-accent");
-    });
+  it("supports checkbox selection with toggle behavior", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
 
-    it("selected item renders CheckIcon", () => {
-      render(() => <TestTree selectionMode="single" defaultSelectedKeys={["file-4"]} />);
-      const rows = screen.getAllByRole("row");
-      const selectedRow = rows.find((r) => r.textContent?.includes("readme.md"));
-      // CheckIcon has path with "M5 13l4 4L19 7"
-      const svgs = selectedRow?.querySelectorAll("svg");
-      const checkIcon = Array.from(svgs || []).find((svg) => {
-        const path = svg.querySelector("path");
-        return path?.getAttribute("d")?.includes("M5 13l4 4L19 7");
-      });
-      expect(checkIcon).toBeTruthy();
+    function Demo(props: { selectionStyle: TreeSelectionStyle }) {
+      const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set(["brief"]));
+      return (
+        <TreeView
+          aria-label="Files"
+          items={files}
+          defaultExpandedKeys={["projects"]}
+          selectionMode="multiple"
+          selectionStyle={props.selectionStyle}
+          selectedKeys={selectedKeys()}
+          onSelectionChange={(keys) => {
+            const nextKeys = normalizeKeys(keys);
+            setSelectedKeys(new Set(Array.from(nextKeys, String)));
+            onSelectionChange(keys);
+          }}
+        >
+          {(item) => <TreeViewItem id={itemKey(item)}>{item.value?.label}</TreeViewItem>}
+        </TreeView>
+      );
+    }
+
+    render(() => <Demo selectionStyle="checkbox" />);
+
+    const projectBrief = screen.getByRole("row", { name: /Project brief/ });
+    const quarterlyReport = screen.getByRole("row", { name: /Quarterly report/ });
+    expect(projectBrief).toHaveAttribute("data-selected", "true");
+    expect(within(projectBrief).getByRole("checkbox", { name: "Select" })).toBeChecked();
+
+    await user.click(quarterlyReport);
+
+    await waitFor(() => {
+      expect(screen.getByRole("row", { name: /Project brief/ })).toHaveAttribute(
+        "data-selected",
+        "true",
+      );
+      expect(screen.getByRole("row", { name: /Quarterly report/ })).toHaveAttribute(
+        "data-selected",
+        "true",
+      );
     });
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["brief", "report"]));
   });
 
-  describe("disabled items", () => {
-    it("disabled item gets opacity-50 cursor-not-allowed", () => {
-      render(() => <TestTree disabledKeys={["file-4"]} />);
-      const rows = screen.getAllByRole("row");
-      const disabledRow = rows.find((r) => r.textContent?.includes("readme.md"));
-      expect(disabledRow?.className).toContain("opacity-50");
-      expect(disabledRow?.className).toContain("cursor-not-allowed");
-    });
+  it("supports disabledKeys without rendering a selectable checkbox", () => {
+    render(() => (
+      <FileTree
+        defaultExpandedKeys={["projects"]}
+        selectionMode="multiple"
+        disabledKeys={["archive"]}
+      />
+    ));
+
+    const archive = screen.getByRole("row", { name: /Archive/ });
+    expect(archive).toHaveAttribute("aria-disabled", "true");
+    expect(within(archive).queryByRole("checkbox", { name: "Select" })).toBeNull();
   });
 
-  describe("label and description", () => {
-    it("renders label above tree", () => {
-      render(() => <TestTree label="File Browser" />);
-      expect(screen.getByText("File Browser")).toBeInTheDocument();
-    });
+  it("supports dynamic TreeViewItem isDisabled props", () => {
+    render(() => (
+      <TreeView
+        aria-label="Files"
+        items={files}
+        defaultExpandedKeys={["projects"]}
+        selectionMode="multiple"
+      >
+        {(item) => (
+          <TreeViewItem
+            id={itemKey(item)}
+            textValue={item.textValue}
+            isDisabled={itemKey(item) === "report"}
+          >
+            {item.value?.label}
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
 
-    it("renders description below tree", () => {
-      render(() => <TestTree description="Browse your files" />);
-      expect(screen.getByText("Browse your files")).toBeInTheDocument();
-    });
+    const report = screen.getByRole("row", { name: /Quarterly report/ });
+    expect(report).toHaveAttribute("aria-disabled", "true");
+    expect(within(report).queryByRole("checkbox", { name: "Select" })).toBeNull();
   });
 
-  describe("empty state", () => {
-    it('renders "No items" text', () => {
-      render(() => <TestTree items={[]} />);
-      expect(screen.getByText("No items")).toBeInTheDocument();
-    });
+  it("renders link items as data-href rows", () => {
+    render(() => (
+      <TreeView aria-label="Links" items={[{ id: "docs", textValue: "Documentation" }]}>
+        {() => (
+          <TreeViewItem
+            id="docs"
+            textValue="Documentation"
+            href="https://example.com/docs"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Documentation
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
 
-    it("renders EmptyTreeIcon SVG", () => {
-      const { container } = render(() => <TestTree items={[]} />);
-      // EmptyTreeIcon has w-12 h-12 classes
-      const icon = container.querySelector("svg.w-12.h-12");
-      expect(icon).toBeInTheDocument();
-    });
+    const docs = screen.getByRole("row", { name: "Documentation" });
+    expect(docs.tagName).toBe("DIV");
+    expect(docs).not.toHaveAttribute("href");
+    expect(docs).toHaveAttribute("data-target", "_blank");
+    expect(docs).toHaveAttribute("data-href", "https://example.com/docs");
   });
 
-  describe("size context propagation", () => {
-    it("propagates sm size from Tree to TreeItem", () => {
-      render(() => <TestTree size="sm" />);
-      const rows = screen.getAllByRole("row");
-      // sm item: 'py-1 px-2 gap-1'
-      expect(rows[0].className).toContain("py-1");
-    });
+  it("supports static TreeViewItem children", () => {
+    render(() => (
+      <TreeView aria-label="Static files" selectionMode="single" defaultSelectedKeys={["archive"]}>
+        <TreeViewItem id="projects" textValue="Projects">
+          Projects
+        </TreeViewItem>
+        <TreeViewItem id="archive" textValue="Archive">
+          Archive
+        </TreeViewItem>
+      </TreeView>
+    ));
 
-    it("propagates lg size from Tree to TreeItem", () => {
-      render(() => <TestTree size="lg" />);
-      const rows = screen.getAllByRole("row");
-      // lg item: 'py-2 px-4 gap-2'
-      expect(rows[0].className).toContain("py-2");
-      expect(rows[0].className).toContain("px-4");
-    });
+    expect(screen.getByRole("row", { name: "Projects" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "Archive" })).toHaveAttribute("data-selected", "true");
+  });
+
+  it("normalizes icon, actions, and action menu slots inside item content", () => {
+    render(() => (
+      <TreeView aria-label="Slotted files" items={[files[0]]}>
+        {(item) => (
+          <TreeViewItem id={itemKey(item)} textValue="Projects">
+            <TreeViewItemContent>
+              <svg slot="icon" aria-hidden="true" data-testid="project-icon" />
+              <Text slot="label">Projects</Text>
+              <Text slot="description">Pinned work</Text>
+              <span slot="actions">
+                <button type="button">Archive</button>
+              </span>
+              <span slot="actionmenu">
+                <button type="button">More</button>
+              </span>
+            </TreeViewItemContent>
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
+
+    const projects = screen.getByRole("row", { name: /Projects/ });
+    expect(projects.querySelector('[data-rsp-slot="icon"]')).toBeInTheDocument();
+    expect(projects.querySelector('[data-rsp-slot="actions"]')).toBeInTheDocument();
+    expect(projects.querySelector('[data-rsp-slot="actionmenu"]')).toBeInTheDocument();
+    expect(screen.getByText("Projects")).toHaveAttribute("data-rsp-slot", "label");
+    expect(screen.getByText("Pinned work")).toHaveAttribute("data-rsp-slot", "description");
+  });
+
+  it("renders empty state content in the treegrid", () => {
+    render(() => (
+      <TreeView aria-label="Empty files" items={[]} renderEmptyState={() => "No files"}>
+        {() => null}
+      </TreeView>
+    ));
+
+    expect(screen.getByRole("treegrid", { name: "Empty files" })).toHaveAttribute(
+      "data-empty",
+      "true",
+    );
+    expect(screen.getByText("No files")).toBeInTheDocument();
+  });
+
+  it("renders the S2 load-more progress indicator for loading collections", () => {
+    const onLoadMore = vi.fn();
+
+    render(() => (
+      <TreeView
+        aria-label="Loading files"
+        items={files}
+        hasMore
+        onLoadMore={onLoadMore}
+        loadingState="loadingMore"
+      >
+        {(item) => <TreeViewItem id={itemKey(item)}>{item.value?.label}</TreeViewItem>}
+      </TreeView>
+    ));
+
+    expect(screen.getByRole("treegrid", { name: "Loading files" })).toHaveAttribute(
+      "data-loading-state",
+      "loadingMore",
+    );
+    expect(screen.getByRole("progressbar", { name: "Loading more" })).toBeInTheDocument();
+  });
+
+  it("passes selected keys to renderActionBar", () => {
+    render(() => (
+      <TreeView
+        aria-label="Files"
+        items={files}
+        selectionMode="multiple"
+        defaultSelectedKeys={["projects", "archive"]}
+        renderActionBar={(keys) => (
+          <output data-testid="selection-count">
+            {keys === "all" ? "all" : `${keys.size} selected`}
+          </output>
+        )}
+      >
+        {(item) => <TreeViewItem id={itemKey(item)}>{item.value?.label}</TreeViewItem>}
+      </TreeView>
+    ));
+
+    expect(screen.getByTestId("selection-count")).toHaveTextContent("2 selected");
+  });
+
+  it("merges TreeViewContext props", () => {
+    const ref = vi.fn();
+
+    render(() => (
+      <TreeViewContext.Provider
+        value={{
+          "aria-label": "Context files",
+          selectionStyle: "highlight",
+          overflowMode: "wrap",
+          ref,
+        }}
+      >
+        <TreeView items={files}>
+          {(item) => <TreeViewItem id={itemKey(item)}>{item.value?.label}</TreeViewItem>}
+        </TreeView>
+      </TreeViewContext.Provider>
+    ));
+
+    const tree = screen.getByRole("treegrid", { name: "Context files" });
+    expect(tree).toHaveAttribute("data-selection-style", "highlight");
+    expect(tree).toHaveAttribute("data-overflow-mode", "wrap");
+    expect(ref).toHaveBeenCalledWith(tree);
   });
 });

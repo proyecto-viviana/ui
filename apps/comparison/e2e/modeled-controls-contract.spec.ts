@@ -97,6 +97,14 @@ const tableViewTextControlValues: Record<string, string> = {
   disabledKeys: "quarterly-report",
 };
 
+const treeViewTextControlValues: Record<string, string> = {
+  selectedKeys: "weekly-report",
+  defaultSelectedKeys: "budget",
+  expandedKeys: "documents,photos",
+  defaultExpandedKeys: "documents,project",
+  disabledKeys: "budget",
+};
+
 const colorSliderTextControlValues: Record<string, string> = {
   ariaLabel: "Contract color slider",
   ariaLabelledBy: "colorslider-labelledby",
@@ -271,6 +279,10 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     return "single";
   }
 
+  if (group.slug === "treeview" && control.name === "selectionMode") {
+    return "single";
+  }
+
   if (control.kind === "text") {
     if (group.slug === "numberfield" && control.name in numberFieldTextControlValues) {
       return numberFieldTextControlValues[control.name];
@@ -298,6 +310,9 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
     }
     if (group.slug === "tableview" && control.name in tableViewTextControlValues) {
       return tableViewTextControlValues[control.name];
+    }
+    if (group.slug === "treeview" && control.name in treeViewTextControlValues) {
+      return treeViewTextControlValues[control.name];
     }
     if (group.slug === "colorslider" && control.name in colorSliderTextControlValues) {
       return colorSliderTextControlValues[control.name];

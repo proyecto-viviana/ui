@@ -550,13 +550,22 @@ export type {
 } from "./tooltip";
 
 // TreeView
-export { TreeView, TreeViewItem, TreeViewItemContent } from "./tree";
+export {
+  Collection as TreeViewCollection,
+  TreeView,
+  TreeViewContext,
+  TreeViewItem,
+  TreeViewItemContent,
+  TreeViewLoadMoreItem,
+} from "./tree";
 export type {
   TreeItemData,
   TreeItemContentProps as TreeViewItemContentProps,
   TreeItemProps as TreeViewItemProps,
+  TreeLoadMoreItemProps as TreeViewLoadMoreItemProps,
+  TreeLoadingState,
+  TreeOverflowMode,
   TreeProps as TreeViewProps,
   TreeRenderItemState,
-  TreeSize,
-  TreeVariant,
+  TreeSelectionStyle,
 } from "./tree";

@@ -16,7 +16,7 @@ import { getTreeData } from "./createTree";
 export function createTreeItem<T extends object, C extends TreeCollection<T> = TreeCollection<T>>(
   props: Accessor<AriaTreeItemProps<T>>,
   state: Accessor<TreeState<T, C>>,
-  _ref: Accessor<HTMLDivElement | null>,
+  _ref: Accessor<HTMLElement | null>,
 ): TreeItemAria {
   const [isPressed, setIsPressed] = createSignal(false);
   const rowId = createId();
@@ -31,7 +31,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
   const isDisabled = createMemo(() => {
     const s = state();
     const p = props();
-    return s.isDisabled(p.node.key);
+    return p.isDisabled === true || s.isDisabled(p.node.key);
   });
 
   const isFocused = createMemo(() => {
@@ -71,7 +71,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     if (s.selectionMode !== "none") {
       if (e.shiftKey && s.selectionMode === "multiple") {
         s.extendSelection(p.node.key);
-      } else if (e.ctrlKey || e.metaKey) {
+      } else if (p.selectionBehavior === "toggle" || e.ctrlKey || e.metaKey) {
         s.toggleSelection(p.node.key);
       } else {
         // Replace selection or toggle if already selected
