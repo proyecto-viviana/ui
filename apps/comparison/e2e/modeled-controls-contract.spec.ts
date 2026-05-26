@@ -78,6 +78,12 @@ const cardViewTextControlValues: Record<string, string> = {
   disabledKeys: "zephyr",
 };
 
+const selectBoxGroupTextControlValues: Record<string, string> = {
+  selectedKeys: "starter,pro",
+  defaultSelectedKeys: "pro",
+  disabledKeys: "pro",
+};
+
 const tagGroupTextControlValues: Record<string, string> = {
   label: "Contract tags",
   selectedKeys: "landscape",
@@ -363,7 +369,10 @@ function testValueForControl(group: ComponentControlGroup, control: ComponentCon
       return timeFieldTextControlValues[control.name];
     }
     if (control.name === "selectedKeys" && group.slug === "selectboxgroup") {
-      return "starter,pro";
+      return selectBoxGroupTextControlValues.selectedKeys;
+    }
+    if (group.slug === "selectboxgroup" && control.name in selectBoxGroupTextControlValues) {
+      return selectBoxGroupTextControlValues[control.name];
     }
     if (control.name === "selectedValues" && group.slug === "checkboxgroup") {
       return "email,sms";
@@ -573,6 +582,13 @@ test.describe("modeled comparison controls contract", () => {
         const value = testValueForControl(group, control);
         expectedProps[control.name] = expectedSerializedValue(group, control, value);
         await setControlValue(form, control, value);
+      }
+      if (
+        group.slug === "tabs" &&
+        expectedProps.selectionSource === "defaultSelectedKey" &&
+        typeof expectedProps.defaultSelectedKey === "string"
+      ) {
+        expectedProps.selectedKey = expectedProps.defaultSelectedKey;
       }
 
       const section = page.locator("#example").filter({

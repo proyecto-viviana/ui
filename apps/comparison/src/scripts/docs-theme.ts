@@ -5,7 +5,6 @@ import {
 } from "@comparison/data/theme";
 
 const root = document.body;
-const themeControls = document.querySelectorAll<HTMLInputElement>('[name="comparisonTheme"]');
 const savedTheme =
   (window.localStorage.getItem("solid-spectrum-theme") as ComparisonThemeChoice | null) ?? "system";
 const themeOrder: ComparisonThemeChoice[] = ["system", "light", "dark"];
@@ -17,16 +16,19 @@ function updateThemeIcons(theme: ComparisonThemeChoice) {
   }
 }
 
+function syncThemeControls(theme: ComparisonThemeChoice) {
+  for (const control of document.querySelectorAll<HTMLInputElement>('[name="comparisonTheme"]')) {
+    control.checked = control.value === theme;
+  }
+}
+
 function applyTheme(theme: ComparisonThemeChoice) {
   const resolvedTheme = resolveComparisonThemeChoice(theme);
   root.dataset.theme = theme;
   root.dataset.resolvedTheme = resolvedTheme;
 
   updateThemeIcons(theme);
-
-  for (const control of themeControls) {
-    control.checked = control.value === theme;
-  }
+  syncThemeControls(theme);
 
   window.localStorage.setItem("solid-spectrum-theme", theme);
   window.dispatchEvent(
@@ -46,13 +48,21 @@ document.addEventListener("click", (event) => {
   applyTheme(nextTheme);
 });
 
-for (const control of themeControls) {
-  control.addEventListener("change", () => {
-    if (control.checked) {
-      applyTheme(control.value as ComparisonThemeChoice);
-    }
-  });
-}
+document.addEventListener("change", (event) => {
+  const control = event.target;
+
+  if (
+    control instanceof HTMLInputElement &&
+    control.name === "comparisonTheme" &&
+    control.checked
+  ) {
+    applyTheme(control.value as ComparisonThemeChoice);
+  }
+});
+
+window.addEventListener("comparison:theme-controls-mounted", () => {
+  syncThemeControls((root.dataset.theme as ComparisonThemeChoice | undefined) ?? savedTheme);
+});
 
 mediaQuery?.addEventListener("change", () => {
   if (root.dataset.theme === "system") {

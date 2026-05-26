@@ -1,6 +1,7 @@
 ---
 import ReactMount from "../../components/ReactMount.astro";
 import SolidMount from "../../components/SolidMount.astro";
+import ComponentExampleControlsMount from "@comparison/components/ComponentExampleControlsMount.astro";
 import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { comparisonEntries, type ComparisonEntry, type ComparisonLayerId } from "@comparison/data/comparison-manifest";
@@ -19,9 +20,6 @@ export function getStaticPaths() {
 
 const { entry } = Astro.props as { entry: ComparisonEntry };
 const controlGroup = getComponentControlGroup(entry);
-const controlDefaults = Object.fromEntries(
-  controlGroup.controls.map((control) => [control.name, control.defaultValue]),
-);
 const playgroundLayer: ComparisonLayerId = "styled";
 const playgroundTrack = entry.layers[playgroundLayer];
 ---
@@ -90,84 +88,7 @@ const playgroundTrack = entry.layers[playgroundLayer];
           </div>
 
           <div class="s2-example-controls">
-            <h2 id="example-title">Example</h2>
-            <fieldset class="s2-radio-group s2-theme-control">
-              <legend>Color scheme</legend>
-              <div>
-                <label>
-                  <input type="radio" name="comparisonTheme" value="system" checked />
-                  <span>system</span>
-                </label>
-                <label>
-                  <input type="radio" name="comparisonTheme" value="light" />
-                  <span>light</span>
-                </label>
-                <label>
-                  <input type="radio" name="comparisonTheme" value="dark" />
-                  <span>dark</span>
-                </label>
-              </div>
-            </fieldset>
-            {controlGroup.controls.length > 0 ? (
-              <form
-                class="s2-prop-controls"
-                data-comparison-controls={entry.slug}
-                data-control-coverage={controlGroup.coverage}
-                data-control-defaults={JSON.stringify(controlDefaults)}
-              >
-                {controlGroup.controls.map((control) => (
-                  <div class="s2-prop-control">
-                    {control.kind === "text" ? (
-                      <label class="s2-field">
-                        <span>{control.label}</span>
-                        <input name={control.name} value={String(control.defaultValue)} />
-                      </label>
-                    ) : control.kind === "select" ? (
-                      <label class="s2-field">
-                        <span>{control.label}</span>
-                        <select name={control.name}>
-                          {control.options?.map((option) => (
-                            <option
-                              value={option.value}
-                              selected={option.value === control.defaultValue}
-                            >
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ) : control.kind === "radio" ? (
-                      <fieldset class="s2-radio-group">
-                        <legend>{control.label}</legend>
-                        <div>
-                          {control.options?.map((option) => (
-                            <label>
-                              <input
-                                type="radio"
-                                name={control.name}
-                                value={option.value}
-                                checked={option.value === control.defaultValue}
-                              />
-                              <span>{option.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </fieldset>
-                    ) : (
-                      <label class="s2-switch">
-                        <input name={control.name} type="checkbox" />
-                        <span>{control.label}</span>
-                      </label>
-                    )}
-                  </div>
-                ))}
-                <button type="button" class="s2-reset" data-reset-controls>Reset</button>
-              </form>
-            ) : (
-              <div class="s2-empty-state">
-                Interactive S2 prop controls are missing for this component.
-              </div>
-            )}
+            <ComponentExampleControlsMount entry={entry} />
           </div>
         </section>
 
@@ -186,110 +107,7 @@ const playgroundTrack = entry.layers[playgroundLayer];
 
     <script>
       import "@comparison/scripts/docs-theme";
-    </script>
-    <script is:inline>
-      const panel = document.querySelector("[data-comparison-controls]");
-      const form = panel instanceof HTMLFormElement ? panel : null;
-      const resetButton = form?.querySelector("[data-reset-controls]");
-      const component = form?.dataset.comparisonControls;
-      let defaults = {};
-      try {
-        defaults = form?.dataset.controlDefaults ? JSON.parse(form.dataset.controlDefaults) : {};
-      } catch {
-        defaults = {};
-      }
-
-      function readControls() {
-        if (!form) {
-          return defaults;
-        }
-
-        const data = new FormData(form);
-        const values = {};
-        for (const [key, defaultValue] of Object.entries(defaults)) {
-          const hasControl = Array.from(form.elements).some((field) => field.name === key);
-          if (!hasControl) {
-            values[key] = defaultValue;
-            continue;
-          }
-
-          values[key] =
-            typeof defaultValue === "boolean"
-              ? data.get(key) === "on"
-              : String(data.get(key) || defaultValue);
-        }
-        return values;
-      }
-
-      function writeControls(values) {
-        if (!form) {
-          return;
-        }
-
-        for (const [key, value] of Object.entries(values)) {
-          const fields = Array.from(form.elements).filter((field) => field.name === key);
-          for (const field of fields) {
-            if (field instanceof HTMLInputElement && field.type === "checkbox") {
-              field.checked = Boolean(value);
-            } else if (field instanceof HTMLInputElement && field.type === "radio") {
-              field.checked = field.value === String(value);
-            } else if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
-              field.value = String(value ?? "");
-            }
-          }
-        }
-      }
-
-      function toProps(values) {
-        const props = {};
-        for (const [key, value] of Object.entries(values)) {
-          props[key] = key === "staticColor" && (value === "none" || value === "")
-            ? undefined
-            : value;
-        }
-        return props;
-      }
-
-      function dispatchControls(values, updateUrl = true) {
-        if (updateUrl) {
-          const url = new URL(window.location.href);
-          for (const [key, value] of Object.entries(values)) {
-            if (value === defaults[key] || value === "") {
-              url.searchParams.delete(key);
-            } else {
-              url.searchParams.set(key, String(value));
-            }
-          }
-          window.history.replaceState(null, "", url);
-        }
-
-        window.dispatchEvent(new CustomEvent("comparison:controls-change", {
-          detail: { component, props: toProps(values) },
-        }));
-      }
-
-      if (form && component) {
-        const params = new URLSearchParams(window.location.search);
-        const initial = { ...defaults };
-        for (const [key, defaultValue] of Object.entries(defaults)) {
-          const hasParam = params.has(key);
-          initial[key] =
-            typeof defaultValue === "boolean"
-              ? hasParam
-                ? params.get(key) === "true"
-                : defaultValue
-              : params.get(key) || defaultValue;
-        }
-        writeControls(initial);
-        dispatchControls(initial, false);
-        form.addEventListener("input", () => dispatchControls(readControls()));
-        form.addEventListener("change", () => dispatchControls(readControls()));
-      }
-
-      resetButton?.addEventListener("click", () => {
-        writeControls(defaults);
-        dispatchControls(defaults);
-      });
+      import "@comparison/scripts/component-controls";
     </script>
   </body>
 </html>

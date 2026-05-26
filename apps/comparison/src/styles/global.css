@@ -302,6 +302,11 @@ body.s2-docs[data-theme="dark"] {
   min-width: 0;
 }
 
+.js-component-example-controls-mount,
+.s2-component-example-controls {
+  min-width: 0;
+}
+
 .js-catalogue-overview-mount,
 .s2-catalogue-overview,
 .js-component-detail-meta-mount,

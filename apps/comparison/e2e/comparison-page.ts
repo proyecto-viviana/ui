@@ -15,6 +15,9 @@ export async function waitForComparisonRouteReady(page: Page) {
   await expect(
     section.locator('.s2-framework-panel[data-framework="solid"] .comparison-reference-canvas'),
   ).toBeVisible();
+  await expect(
+    section.locator('.js-component-example-controls-mount[data-mounted="true"]'),
+  ).toHaveCount(1);
 
   await page.evaluate(async () => {
     if ("fonts" in document) {

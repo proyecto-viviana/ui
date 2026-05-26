@@ -1,0 +1,94 @@
+---
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+const controlGroup = getComponentControlGroup(entry);
+const controlDefaults = Object.fromEntries(
+  controlGroup.controls.map((control) => [control.name, control.defaultValue]),
+);
+---
+
+<div class="s2-component-example-controls-fallback">
+  <h2 id="example-title">Example</h2>
+  <fieldset class="s2-radio-group s2-theme-control">
+    <legend>Color scheme</legend>
+    <div>
+      <label>
+        <input type="radio" name="comparisonTheme" value="system" checked />
+        <span>system</span>
+      </label>
+      <label>
+        <input type="radio" name="comparisonTheme" value="light" />
+        <span>light</span>
+      </label>
+      <label>
+        <input type="radio" name="comparisonTheme" value="dark" />
+        <span>dark</span>
+      </label>
+    </div>
+  </fieldset>
+  {controlGroup.controls.length > 0 ? (
+    <form
+      class="s2-prop-controls"
+      data-comparison-controls={entry.slug}
+      data-control-coverage={controlGroup.coverage}
+      data-control-defaults={JSON.stringify(controlDefaults)}
+    >
+      {controlGroup.controls.map((control) => (
+        <div class="s2-prop-control">
+          {control.kind === "text" ? (
+            <label class="s2-field">
+              <span>{control.label}</span>
+              <input name={control.name} value={String(control.defaultValue)} />
+            </label>
+          ) : control.kind === "select" ? (
+            <label class="s2-field">
+              <span>{control.label}</span>
+              <select name={control.name}>
+                {control.options?.map((option) => (
+                  <option value={option.value} selected={option.value === control.defaultValue}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : control.kind === "radio" ? (
+            <fieldset class="s2-radio-group">
+              <legend>{control.label}</legend>
+              <div>
+                {control.options?.map((option) => (
+                  <label>
+                    <input
+                      type="radio"
+                      name={control.name}
+                      value={option.value}
+                      checked={option.value === control.defaultValue}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ) : (
+            <label class="s2-switch">
+              <input
+                name={control.name}
+                type="checkbox"
+                checked={control.defaultValue === true}
+              />
+              <span>{control.label}</span>
+            </label>
+          )}
+        </div>
+      ))}
+      <button type="button" class="s2-reset" data-reset-controls>Reset</button>
+    </form>
+  ) : (
+    <div class="s2-empty-state">Interactive S2 prop controls are missing for this component.</div>
+  )}
+</div>

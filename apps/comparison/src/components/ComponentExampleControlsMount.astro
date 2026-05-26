@@ -1,0 +1,17 @@
+---
+import ComponentExampleControlsFallback from "./ComponentExampleControlsFallback.astro";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+---
+
+<div class="js-component-example-controls-mount" data-component-slug={entry.slug}>
+  <ComponentExampleControlsFallback entry={entry} />
+</div>
+<script>
+  import "../scripts/component-example-controls-mount.tsx";
+</script>

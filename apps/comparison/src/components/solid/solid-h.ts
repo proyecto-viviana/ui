@@ -31,9 +31,14 @@ export function hc(
     throw new TypeError("Use child arrays, or renderProp(fn) for intentional render props.");
   }
 
-  return children === undefined
-    ? h(component as never, normalizedProps ?? {})
-    : h(component as never, normalizedProps ?? {}, [...children]);
+  if (children === undefined) {
+    return h(component as never, normalizedProps ?? {});
+  }
+
+  const propsWithChildren =
+    typeof component === "string" ? (normalizedProps ?? {}) : cloneProps(normalizedProps);
+
+  return h(component as never, propsWithChildren, [...children]);
 }
 
 export function renderProp<T>(fn: (item: T) => unknown) {
@@ -73,4 +78,10 @@ function normalizeCallbackProps(component: ComponentLike, props?: Props | null) 
 
 function isCallbackProp(key: string) {
   return key.startsWith("on") || key.startsWith("render");
+}
+
+function cloneProps(props?: Props | null) {
+  return props == null
+    ? {}
+    : (Object.defineProperties({}, Object.getOwnPropertyDescriptors(props)) as Props);
 }
