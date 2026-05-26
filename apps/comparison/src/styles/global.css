@@ -102,36 +102,53 @@ body.s2-docs[data-theme="dark"] {
 }
 
 .s2-search {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
-  height: 40px;
+}
+
+.s2-search > button {
+  width: 100%;
+}
+
+.s2-shell-action {
+  min-width: 0;
+  min-height: 32px;
   padding: 0 12px;
-  border: 1px solid var(--s2-border);
-  border-radius: 20px;
-  background: var(--s2-bg-raised);
-  color: var(--s2-text-muted);
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--s2-text);
   font: inherit;
-  text-align: left;
   cursor: pointer;
 }
 
-.s2-search:hover,
-.s2-theme-toggle:hover,
-.s2-reset:hover {
-  border-color: var(--s2-text-muted);
+.s2-shell-action:hover {
   background: var(--s2-bg-muted);
 }
 
+.s2-shell-theme-toggle {
+  font-size: 12px;
+}
+
 .s2-search kbd {
+  display: inline-grid;
+  place-items: center;
   min-width: 22px;
+  min-height: 22px;
   padding: 1px 6px;
   border: 1px solid var(--s2-border);
   border-radius: 5px;
   background: var(--s2-bg);
   color: var(--s2-text-muted);
   font-size: 12px;
+}
+
+.s2-reset:hover {
+  border-color: var(--s2-text-muted);
+  background: var(--s2-bg-muted);
 }
 
 .s2-topnav {
@@ -147,18 +164,6 @@ body.s2-docs[data-theme="dark"] {
 .s2-toc a:hover,
 .s2-nav a[aria-current="page"] {
   color: var(--s2-accent);
-}
-
-.s2-theme-toggle {
-  min-width: 54px;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--s2-border);
-  border-radius: 18px;
-  background: var(--s2-bg);
-  color: var(--s2-text);
-  font-size: 12px;
-  cursor: pointer;
 }
 
 .s2-layout {

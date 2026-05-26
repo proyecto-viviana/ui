@@ -9,6 +9,7 @@ import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
 import { officialVisualStateSummary } from "@comparison/data/visual-state-matrix";
+import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import "@comparison/styles/global.css";
 
 const liveCount = comparisonEntries.filter((entry) => entry.priority === "live").length;
@@ -37,24 +38,7 @@ const overallCoverage = Math.round(
     <title>Solid Spectrum</title>
   </head>
   <body class="comparison-app s2-docs" data-theme="system" data-resolved-theme="light">
-    <div class="s2-topbar">
-      <a href="/" class="s2-brand" aria-label="Solid Spectrum home">
-        <span class="s2-brand-mark" aria-hidden="true">S</span>
-        <span>Solid Spectrum</span>
-      </a>
-      <button class="s2-search" type="button">
-        <span>Search Solid Spectrum</span>
-        <kbd>/</kbd>
-      </button>
-      <nav class="s2-topnav" aria-label="Top navigation">
-        <a href="/">Docs</a>
-        <a href={reactSpectrumCatalogueSource.url}>React Spectrum</a>
-        <a href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
-      </nav>
-      <button class="s2-theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme">
-        <span data-theme-toggle-icon>system</span>
-      </button>
-    </div>
+    <DocsTopBarMount reactSpectrumUrl={reactSpectrumCatalogueSource.url} />
 
     <div class="s2-layout">
       <aside class="s2-sidebar">

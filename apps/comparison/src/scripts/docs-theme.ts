@@ -5,22 +5,24 @@ import {
 } from "@comparison/data/theme";
 
 const root = document.body;
-const themeToggle = document.querySelector("[data-theme-toggle]");
-const themeIcon = document.querySelector("[data-theme-toggle-icon]");
 const themeControls = document.querySelectorAll<HTMLInputElement>('[name="comparisonTheme"]');
 const savedTheme =
   (window.localStorage.getItem("solid-spectrum-theme") as ComparisonThemeChoice | null) ?? "system";
 const themeOrder: ComparisonThemeChoice[] = ["system", "light", "dark"];
 const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
 
+function updateThemeIcons(theme: ComparisonThemeChoice) {
+  for (const themeIcon of document.querySelectorAll("[data-theme-toggle-icon]")) {
+    themeIcon.textContent = theme;
+  }
+}
+
 function applyTheme(theme: ComparisonThemeChoice) {
   const resolvedTheme = resolveComparisonThemeChoice(theme);
   root.dataset.theme = theme;
   root.dataset.resolvedTheme = resolvedTheme;
 
-  if (themeIcon) {
-    themeIcon.textContent = theme;
-  }
+  updateThemeIcons(theme);
 
   for (const control of themeControls) {
     control.checked = control.value === theme;
@@ -34,7 +36,11 @@ function applyTheme(theme: ComparisonThemeChoice) {
   );
 }
 
-themeToggle?.addEventListener("click", () => {
+document.addEventListener("click", (event) => {
+  if (!(event.target instanceof Element) || !event.target.closest("[data-theme-toggle]")) {
+    return;
+  }
+
   const current = (root.dataset.theme as ComparisonThemeChoice | undefined) ?? "system";
   const nextTheme = themeOrder[(themeOrder.indexOf(current) + 1) % themeOrder.length] ?? "system";
   applyTheme(nextTheme);

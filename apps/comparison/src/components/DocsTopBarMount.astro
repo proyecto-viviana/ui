@@ -1,0 +1,17 @@
+---
+import DocsTopBarFallback from "./DocsTopBarFallback.astro";
+
+export interface Props {
+  reactSpectrumUrl?: string;
+}
+
+const { reactSpectrumUrl } = Astro.props;
+const normalizedReactSpectrumUrl = typeof reactSpectrumUrl === "string" ? reactSpectrumUrl : "";
+---
+
+<div class="js-docs-topbar-mount" data-react-spectrum-url={normalizedReactSpectrumUrl}>
+  <DocsTopBarFallback reactSpectrumUrl={reactSpectrumUrl} />
+</div>
+<script>
+  import "../scripts/docs-topbar-mount.tsx";
+</script>

@@ -144,7 +144,7 @@ const comparisonBuildWarningPolicy = () => ({
   },
 });
 
-export default defineConfig(() => ({
+export default defineConfig(({ command }) => ({
   integrations: [
     react({
       include: ["src/components/react/**/*"],

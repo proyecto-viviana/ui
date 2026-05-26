@@ -1,0 +1,28 @@
+---
+export interface Props {
+  reactSpectrumUrl?: string;
+}
+
+const { reactSpectrumUrl } = Astro.props;
+---
+
+<div class="s2-topbar" data-docs-topbar-fallback>
+  <a href="/" class="s2-brand" aria-label="Solid Spectrum home">
+    <span class="s2-brand-mark" aria-hidden="true">S</span>
+    <span>Solid Spectrum</span>
+  </a>
+  <div class="s2-search">
+    <button class="s2-shell-action" type="button" aria-label="Search Solid Spectrum">
+      Search Solid Spectrum
+    </button>
+    <kbd>/</kbd>
+  </div>
+  <nav class="s2-topnav" aria-label="Top navigation">
+    <a href="/">Docs</a>
+    {reactSpectrumUrl ? <a href={reactSpectrumUrl}>React Spectrum</a> : null}
+    <a href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
+  </nav>
+  <button class="s2-shell-action s2-shell-theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme">
+    <span data-theme-toggle-icon>system</span>
+  </button>
+</div>
