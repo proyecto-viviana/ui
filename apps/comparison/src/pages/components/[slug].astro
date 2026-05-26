@@ -3,10 +3,7 @@ import ComponentExampleSectionMount from "@comparison/components/ComponentExampl
 import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
 import { comparisonEntries, type ComparisonEntry } from "@comparison/data/comparison-manifest";
 import ComponentDetailMetaMount from "@comparison/components/ComponentDetailMetaMount.astro";
-import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
-import DocsTocMount from "@comparison/components/DocsTocMount.astro";
-import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
-import "@comparison/styles/global.css";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
 
 export function getStaticPaths() {
   return comparisonEntries.map((entry) => ({
@@ -18,46 +15,21 @@ export function getStaticPaths() {
 const { entry } = Astro.props as { entry: ComparisonEntry };
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{entry.title} | Solid Spectrum</title>
-  </head>
-  <body class="comparison-app s2-docs" data-theme="system" data-resolved-theme="light">
-    <DocsTopBarMount reactSpectrumUrl={entry.docsUrl} />
+<DocsPageLayout
+  reactSpectrumUrl={entry.docsUrl}
+  sidebarActiveSlug={entry.slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry.docsUrl}
+  title={`${entry.title} | Solid Spectrum`}
+  tocEntry={entry}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry.docsUrl}
+  tocVariant="component"
+>
+  <ComponentDetailHeroMount entry={entry} />
 
-    <div class="s2-layout">
-      <aside class="s2-sidebar">
-        <DocsSidebarMount
-          activeSlug={entry.slug}
-          navigationLabel="Components"
-          referenceLabel="S2 docs"
-          referenceUrl={entry.docsUrl}
-        />
-      </aside>
+  <ComponentExampleSectionMount entry={entry} />
 
-      <main class="s2-main">
-        <ComponentDetailHeroMount entry={entry} />
-
-        <ComponentExampleSectionMount entry={entry} />
-
-        <ComponentDetailMetaMount entry={entry} />
-      </main>
-
-      <aside class="s2-toc" aria-label="On this page">
-        <DocsTocMount
-          entry={entry}
-          sourceLabel="S2 source"
-          sourceUrl={entry.docsUrl}
-          variant="component"
-        />
-      </aside>
-    </div>
-
-    <script>
-      import "@comparison/scripts/docs-theme";
-    </script>
-  </body>
-</html>
+  <ComponentDetailMetaMount entry={entry} />
+</DocsPageLayout>

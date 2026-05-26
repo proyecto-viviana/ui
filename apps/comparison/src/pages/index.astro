@@ -9,11 +9,8 @@ import { getComponentCoverage } from "@comparison/data/coverage";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
 import { officialVisualStateSummary } from "@comparison/data/visual-state-matrix";
 import CatalogueOverviewMount from "@comparison/components/CatalogueOverviewMount.astro";
-import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
-import DocsTocMount from "@comparison/components/DocsTocMount.astro";
-import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import IndexHeroMount from "@comparison/components/IndexHeroMount.astro";
-import "@comparison/styles/global.css";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
 
 const liveCount = comparisonEntries.filter((entry) => entry.priority === "live").length;
 const officialCount = officialComparisonEntries.length;
@@ -32,50 +29,25 @@ const overallCoverage = Math.round(
 );
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Solid Spectrum</title>
-  </head>
-  <body class="comparison-app s2-docs" data-theme="system" data-resolved-theme="light">
-    <DocsTopBarMount reactSpectrumUrl={reactSpectrumCatalogueSource.url} />
+<DocsPageLayout
+  reactSpectrumUrl={reactSpectrumCatalogueSource.url}
+  sidebarNavigationLabel="Documentation"
+  sidebarReferenceLabel="S2 catalogue"
+  sidebarReferenceUrl={reactSpectrumCatalogueSource.url}
+  title="Solid Spectrum"
+  tocSourceLabel="S2 source"
+  tocSourceUrl={reactSpectrumCatalogueSource.url}
+  tocVariant="index"
+>
+  <IndexHeroMount />
 
-    <div class="s2-layout">
-      <aside class="s2-sidebar">
-        <DocsSidebarMount
-          navigationLabel="Documentation"
-          referenceLabel="S2 catalogue"
-          referenceUrl={reactSpectrumCatalogueSource.url}
-        />
-      </aside>
-
-      <main class="s2-main">
-        <IndexHeroMount />
-
-        <CatalogueOverviewMount
-          entriesWithCoverage={entriesWithCoverage}
-          missingOfficialCount={missingOfficialCount}
-          officialCount={officialCount}
-          overallCoverage={overallCoverage}
-          strictStateCount={strictStateCount}
-          visualEvidenceStateCount={visualEvidenceStateCount}
-          liveCount={liveCount}
-        />
-      </main>
-
-      <aside class="s2-toc" aria-label="On this page">
-        <DocsTocMount
-          sourceLabel="S2 source"
-          sourceUrl={reactSpectrumCatalogueSource.url}
-          variant="index"
-        />
-      </aside>
-    </div>
-
-    <script>
-      import "@comparison/scripts/docs-theme";
-    </script>
-  </body>
-</html>
+  <CatalogueOverviewMount
+    entriesWithCoverage={entriesWithCoverage}
+    missingOfficialCount={missingOfficialCount}
+    officialCount={officialCount}
+    overallCoverage={overallCoverage}
+    strictStateCount={strictStateCount}
+    visualEvidenceStateCount={visualEvidenceStateCount}
+    liveCount={liveCount}
+  />
+</DocsPageLayout>

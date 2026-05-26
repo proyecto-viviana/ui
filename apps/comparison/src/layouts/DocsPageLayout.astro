@@ -1,0 +1,75 @@
+---
+import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
+import DocsTocMount from "@comparison/components/DocsTocMount.astro";
+import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import "@comparison/styles/global.css";
+
+type DocsTocVariant = "index" | "component";
+
+export interface Props {
+  reactSpectrumUrl?: string;
+  sidebarActiveSlug?: string;
+  sidebarNavigationLabel?: string;
+  sidebarReferenceLabel?: string;
+  sidebarReferenceUrl?: string;
+  title: string;
+  tocEntry?: ComparisonEntry;
+  tocSourceLabel?: string;
+  tocSourceUrl?: string;
+  tocVariant: DocsTocVariant;
+}
+
+const {
+  reactSpectrumUrl,
+  sidebarActiveSlug,
+  sidebarNavigationLabel,
+  sidebarReferenceLabel,
+  sidebarReferenceUrl,
+  title,
+  tocEntry,
+  tocSourceLabel,
+  tocSourceUrl,
+  tocVariant,
+} = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body class="comparison-app s2-docs" data-theme="system" data-resolved-theme="light">
+    <DocsTopBarMount reactSpectrumUrl={reactSpectrumUrl} />
+
+    <div class="s2-layout">
+      <aside class="s2-sidebar">
+        <DocsSidebarMount
+          activeSlug={sidebarActiveSlug}
+          navigationLabel={sidebarNavigationLabel}
+          referenceLabel={sidebarReferenceLabel}
+          referenceUrl={sidebarReferenceUrl}
+        />
+      </aside>
+
+      <main class="s2-main">
+        <slot />
+      </main>
+
+      <aside class="s2-toc" aria-label="On this page">
+        <DocsTocMount
+          entry={tocEntry}
+          sourceLabel={tocSourceLabel}
+          sourceUrl={tocSourceUrl}
+          variant={tocVariant}
+        />
+      </aside>
+    </div>
+
+    <script>
+      import "@comparison/scripts/docs-theme";
+    </script>
+  </body>
+</html>
