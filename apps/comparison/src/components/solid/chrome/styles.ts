@@ -21,7 +21,7 @@ export const docsTopBarRoot = style({
   top: 0,
   zIndex: 50,
   display: "grid",
-  gridTemplateColumns: "[1fr minmax(240px, 500px) 1fr auto]",
+  gridTemplateColumns: "[1fr minmax(240px, 500px) 1fr]",
   alignItems: "center",
   gap: 12,
   width: "[calc(100% - 24px)]",
@@ -29,9 +29,9 @@ export const docsTopBarRoot = style({
   minHeight: 48,
   marginX: "auto",
   marginTop: 12,
-  paddingX: 12,
+  paddingX: 0,
   borderBottomWidth: 0,
-  backgroundColor: "layer-1",
+  backgroundColor: "transparent",
   isolation: "isolate",
   "@media (max-width: 860px)": {
     gridTemplateColumns: "[1fr auto auto]",
@@ -46,9 +46,17 @@ export const docsTopBarRoot = style({
 export const docsBrandLink = style({
   display: "inline-flex",
   alignItems: "center",
+  justifySelf: "start",
   gap: "[10px]",
+  minHeight: 48,
   minWidth: 0,
   marginStart: "[26px]",
+  paddingX: 12,
+  borderRadius: "[10px]",
+  backgroundColor: {
+    default: "transparent",
+    ":hover": "gray-100",
+  },
   color: "neutral",
   font: "ui-lg",
   fontWeight: "bold",
@@ -86,7 +94,11 @@ export const docsSearchRoot = style({
 
 export const docsSearchButton = style({
   width: "full",
+  minHeight: 40,
+  paddingStart: "[20px]",
+  paddingEnd: 8,
   gridTemplateColumns: "[minmax(0, 1fr) auto]",
+  borderRadius: "pill",
   justifyItems: "start",
   justifyContent: "space-between",
 });
@@ -116,6 +128,7 @@ export const docsShellThemeToggle = style({
   height: 32,
   minWidth: 32,
   paddingX: 0,
+  borderRadius: "[10px]",
   font: "ui-sm",
 });
 
@@ -138,8 +151,9 @@ export const docsSearchKeyboard = style({
 
 export const docsTopNavRoot = style({
   display: "flex",
+  alignItems: "center",
   justifyContent: "end",
-  gap: 24,
+  gap: 4,
   color: "neutral-subdued",
   font: "ui",
   "@media (max-width: 860px)": {
@@ -150,10 +164,26 @@ export const docsTopNavRoot = style({
 export const docsTopNavLink = style({
   display: "inline-flex",
   alignItems: "center",
+  minHeight: 32,
+  paddingX: 12,
+  borderRadius: "[10px]",
+  textDecoration: "none",
+  backgroundColor: {
+    default: "transparent",
+    ":hover": "gray-100",
+  },
   color: {
     default: "neutral-subdued",
-    ":hover": "accent",
+    ":hover": "neutral",
   },
+});
+
+export const docsTopActionsRoot = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "end",
+  gap: 4,
+  minWidth: 0,
 });
 
 export const docsMobileNavButton = style({

@@ -14,6 +14,7 @@ import {
   docsSearchKeyboard,
   docsSearchRoot,
   docsShellThemeToggle,
+  docsTopActionsRoot,
   docsTopBarRoot,
   docsTopNavLink,
   docsTopNavRoot,
@@ -43,6 +44,7 @@ const searchButtonClass = staticClassName(docsSearchButton);
 const searchKeyboardClass = staticClassName(docsSearchKeyboard);
 const searchRootClass = staticClassName(docsSearchRoot);
 const shellThemeToggleClass = staticClassName(docsShellThemeToggle);
+const topActionsRootClass = staticClassName(docsTopActionsRoot);
 const topNavRootClass = staticClassName(docsTopNavRoot);
 const topNavLinkClass = staticClassName(docsTopNavLink);
 const mobileNavDialogId = "comparison-mobile-navigation";
@@ -93,7 +95,6 @@ export default function DocsTopBar(props: DocsTopBarProps) {
       get colorScheme() {
         return resolvedTheme();
       },
-      background: "layer-1",
     },
     [
       hc(
@@ -103,7 +104,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           variant: "secondary",
           isStandalone: true,
           isQuiet: true,
-          UNSAFE_className: brandLinkClass,
+          UNSAFE_className: classNames("s2-brand", brandLinkClass),
           "aria-label": "Solid Spectrum home",
         },
         [
@@ -124,36 +125,40 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           },
           [
             hc(Text, {}, ["Search Solid Spectrum"]),
-            hc(Keyboard, { styles: searchKeyboardClass }, ["/"]),
+            hc(Keyboard, { styles: searchKeyboardClass }, ["\u2318K"]),
           ],
         ),
       ),
-      h(
-        "nav",
-        { class: classNames("s2-topnav", topNavRootClass), "aria-label": "Top navigation" },
-        [
-          topNavLink("/", "Docs"),
-          props.reactSpectrumUrl ? topNavLink(props.reactSpectrumUrl, "React Spectrum") : undefined,
-          topNavLink("https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum", "npm"),
-        ],
-      ),
-      hc(
-        ActionButton,
-        {
-          type: "button",
-          size: "M",
-          isQuiet: true,
-          UNSAFE_className: "s2-shell-theme-toggle",
-          styles: shellThemeToggleClass,
-          "data-theme-toggle": "",
-          "aria-label": "Switch color theme",
-        },
-        [
-          h("span", { class: "s2-theme-icon", "data-theme-toggle-icon": "" }, () =>
-            getComparisonThemeChoiceLabel(themeChoice()),
-          ),
-        ],
-      ),
+      h("div", { class: classNames("s2-top-actions", topActionsRootClass) }, [
+        h(
+          "nav",
+          { class: classNames("s2-topnav", topNavRootClass), "aria-label": "Top navigation" },
+          [
+            topNavLink("/", "Docs"),
+            props.reactSpectrumUrl
+              ? topNavLink(props.reactSpectrumUrl, "React Spectrum")
+              : undefined,
+            topNavLink("https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum", "npm"),
+          ],
+        ),
+        hc(
+          ActionButton,
+          {
+            type: "button",
+            size: "M",
+            isQuiet: true,
+            UNSAFE_className: "s2-shell-theme-toggle",
+            styles: shellThemeToggleClass,
+            "data-theme-toggle": "",
+            "aria-label": "Switch color theme",
+          },
+          [
+            h("span", { class: "s2-theme-icon", "data-theme-toggle-icon": "" }, () =>
+              getComparisonThemeChoiceLabel(themeChoice()),
+            ),
+          ],
+        ),
+      ]),
       hc(
         ActionButton,
         {

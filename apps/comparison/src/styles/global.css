@@ -80,28 +80,36 @@ body.s2-docs[data-theme="dark"] {
   top: 0;
   z-index: 50;
   display: grid;
-  grid-template-columns: 1fr minmax(240px, 500px) 1fr auto;
+  grid-template-columns: 1fr minmax(240px, 500px) 1fr;
   align-items: center;
   gap: 12px;
   width: calc(100% - 24px);
   max-width: 1416px;
   min-height: 48px;
   margin: 12px auto 0;
-  padding: 0 12px;
+  padding: 0;
   border-bottom: 0;
-  background: var(--s2-bg-raised);
+  background: transparent;
 }
 
 .s2-brand {
   display: inline-flex;
   align-items: center;
+  justify-self: start;
   gap: 10px;
+  min-height: 48px;
   min-width: 0;
   margin-left: 26px;
+  padding: 0 12px;
+  border-radius: 10px;
   color: var(--s2-text);
   font-size: 17px;
   font-weight: 700;
   text-decoration: none;
+}
+
+.s2-brand:hover {
+  background: var(--s2-bg-muted);
 }
 
 .s2-brand-mark {
@@ -131,7 +139,10 @@ body.s2-docs[data-theme="dark"] {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
+  min-height: 40px;
+  padding: 0 8px 0 20px;
   gap: 12px;
+  border-radius: 999px;
   justify-content: space-between;
   justify-items: start;
 }
@@ -160,6 +171,7 @@ body.s2-docs[data-theme="dark"] {
   min-width: 32px;
   height: 32px;
   padding: 0;
+  border-radius: 10px;
   font-size: 12px;
 }
 
@@ -210,10 +222,19 @@ body.s2-docs[data-theme="dark"] {
   background: var(--s2-bg-muted);
 }
 
+.s2-top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: 4px;
+}
+
 .s2-topnav {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 24px;
+  gap: 4px;
   color: var(--s2-text-muted);
   font-size: 14px;
 }
@@ -221,9 +242,17 @@ body.s2-docs[data-theme="dark"] {
 .s2-topnav a {
   display: inline-flex;
   align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  text-decoration: none;
 }
 
-.s2-topnav a:hover,
+.s2-topnav a:hover {
+  background: var(--s2-bg-muted);
+  color: var(--s2-text);
+}
+
 .s2-nav a:hover,
 .s2-toc a:hover,
 .s2-nav a[aria-current="page"] {

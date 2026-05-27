@@ -7,6 +7,7 @@ import {
   docsSearchRoot,
   docsShellAction,
   docsShellThemeToggle,
+  docsTopActionsRoot,
   docsTopBarRoot,
   docsTopNavLink,
   docsTopNavRoot,
@@ -26,6 +27,7 @@ const searchRootClass = staticClassName(docsSearchRoot);
 const shellActionClass = staticClassName(docsShellAction);
 const shellThemeToggleClass = staticClassName(docsShellThemeToggle);
 const searchKeyboardClass = staticClassName(docsSearchKeyboard);
+const topActionsRootClass = staticClassName(docsTopActionsRoot);
 const topNavRootClass = staticClassName(docsTopNavRoot);
 const topNavLinkClass = staticClassName(docsTopNavLink);
 ---
@@ -38,22 +40,24 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
   <div class:list={["s2-search", searchRootClass]}>
     <button class:list={["s2-shell-action", shellActionClass]} type="button" aria-label="Search Solid Spectrum">
       <span>Search Solid Spectrum</span>
-      <kbd class={searchKeyboardClass}>/</kbd>
+      <kbd class={searchKeyboardClass}>&#8984;K</kbd>
     </button>
   </div>
-  <nav class:list={["s2-topnav", topNavRootClass]} aria-label="Top navigation">
-    <a href="/" class={topNavLinkClass}>Docs</a>
-    {reactSpectrumUrl ? <a href={reactSpectrumUrl} class={topNavLinkClass}>React Spectrum</a> : null}
-    <a class={topNavLinkClass} href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
-  </nav>
-  <button
-    class:list={["s2-shell-action s2-shell-theme-toggle", shellActionClass, shellThemeToggleClass]}
-    type="button"
-    data-theme-toggle
-    aria-label="Switch color theme"
-  >
-    <span class="s2-theme-icon" data-theme-toggle-icon>System</span>
-  </button>
+  <div class:list={["s2-top-actions", topActionsRootClass]}>
+    <nav class:list={["s2-topnav", topNavRootClass]} aria-label="Top navigation">
+      <a href="/" class={topNavLinkClass}>Docs</a>
+      {reactSpectrumUrl ? <a href={reactSpectrumUrl} class={topNavLinkClass}>React Spectrum</a> : null}
+      <a class={topNavLinkClass} href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
+    </nav>
+    <button
+      class:list={["s2-shell-action s2-shell-theme-toggle", shellActionClass, shellThemeToggleClass]}
+      type="button"
+      data-theme-toggle
+      aria-label="Switch color theme"
+    >
+      <span class="s2-theme-icon" data-theme-toggle-icon>System</span>
+    </button>
+  </div>
   <button
     class:list={["s2-shell-action s2-mobile-nav-button", shellActionClass, mobileNavButtonClass]}
     type="button"
