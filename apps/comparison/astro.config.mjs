@@ -2,8 +2,9 @@ import path from "node:path";
 import { stripVTControlCharacters } from "node:util";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
+import { getContainerRenderer } from "@astrojs/react";
 import solid from "@astrojs/solid-js";
+import reactVitePlugin from "@vitejs/plugin-react";
 import macros from "unplugin-parcel-macros";
 
 const oneLineWarningFilters = ["`transformWithEsbuild` is deprecated"];
@@ -118,6 +119,13 @@ const localSolidPackages = [
   "@proyecto-viviana/solidaria-components",
   "@proyecto-viviana/solid-spectrum",
 ];
+const reactNoExternalPackages = [
+  "@mui/material",
+  "@mui/base",
+  "@babel/runtime",
+  "use-immer",
+  "@material-tailwind/react",
+];
 
 const stripViteRequestSuffix = (id) => id.split(/[?#]/, 1)[0];
 const macroImportPattern = /with[\s\n]*\{\s*type:[\s\n]*["']macro["'][\s\n]*\}/;
@@ -128,6 +136,144 @@ const getMacroCssFileName = (id) => {
   const fileName = stripViteRequestSuffix(id).split("/").pop();
   return fileName && macroCssIdPattern.test(fileName) ? fileName : null;
 };
+
+const comparisonReactOptionsPlugin = ({
+  experimentalReactChildren = false,
+  experimentalDisableStreaming = false,
+}) => {
+  const virtualModule = "astro:react:opts";
+  const virtualModuleId = `\0${virtualModule}`;
+
+  return {
+    name: "@astrojs/react:opts",
+    resolveId(id) {
+      return id === virtualModule ? virtualModuleId : undefined;
+    },
+    load(id) {
+      if (id !== virtualModuleId) {
+        return undefined;
+      }
+
+      return {
+        code: `export default {
+  experimentalReactChildren: ${JSON.stringify(experimentalReactChildren)},
+  experimentalDisableStreaming: ${JSON.stringify(experimentalDisableStreaming)}
+}`,
+      };
+    },
+  };
+};
+
+const isObject = (value) => value != null && typeof value === "object" && !Array.isArray(value);
+
+const normalizeReactBabelConfigForVitePlus = (config, options) => {
+  if (!isObject(config)) {
+    return config;
+  }
+
+  const { esbuild, optimizeDeps, oxc, ...rest } = config;
+  const normalizedConfig = { ...rest };
+
+  if (isObject(esbuild)) {
+    normalizedConfig.oxc = {
+      ...(isObject(oxc) ? oxc : {}),
+      jsx: {
+        ...(isObject(oxc?.jsx) ? oxc.jsx : {}),
+        runtime: options.jsxRuntime ?? "automatic",
+        ...(options.jsxImportSource ? { importSource: options.jsxImportSource } : {}),
+      },
+    };
+  } else if (oxc !== undefined) {
+    normalizedConfig.oxc = oxc;
+  }
+
+  if (isObject(optimizeDeps)) {
+    const { esbuildOptions, rollupOptions, ...normalizedOptimizeDeps } = optimizeDeps;
+    if (Object.keys(normalizedOptimizeDeps).length > 0) {
+      normalizedConfig.optimizeDeps = normalizedOptimizeDeps;
+    }
+  }
+
+  return normalizedConfig;
+};
+
+const patchReactVitePluginForVitePlus = (plugin, options) => {
+  if (plugin.name !== "vite:react-babel" || typeof plugin.config !== "function") {
+    return plugin;
+  }
+
+  return {
+    ...plugin,
+    async config(...args) {
+      const config = await plugin.config.apply(this, args);
+      return normalizeReactBabelConfigForVitePlus(config, options);
+    },
+  };
+};
+
+const getComparisonReactVitePlugins = (options) => {
+  const plugins = reactVitePlugin({
+    ...options,
+    disableOxcRecommendation: true,
+  });
+
+  return (Array.isArray(plugins) ? plugins : [plugins]).map((plugin) =>
+    patchReactVitePluginForVitePlus(plugin, options),
+  );
+};
+
+const comparisonReact = ({
+  include,
+  exclude,
+  babel,
+  experimentalReactChildren,
+  experimentalDisableStreaming,
+} = {}) => ({
+  name: "@astrojs/react",
+  hooks: {
+    "astro:config:setup": ({ command, addRenderer, updateConfig, injectScript }) => {
+      const renderer = getContainerRenderer();
+      const reactPluginOptions = { include, exclude, babel };
+
+      addRenderer(renderer);
+      updateConfig({
+        vite: {
+          optimizeDeps: {
+            include: [renderer.clientEntrypoint],
+            exclude: [renderer.serverEntrypoint],
+          },
+          plugins: [
+            ...getComparisonReactVitePlugins(reactPluginOptions),
+            comparisonReactOptionsPlugin({
+              experimentalReactChildren: Boolean(experimentalReactChildren),
+              experimentalDisableStreaming: Boolean(experimentalDisableStreaming),
+            }),
+          ],
+          ssr: {
+            noExternal: reactNoExternalPackages,
+          },
+        },
+      });
+
+      if (command === "dev") {
+        const preamble = reactVitePlugin.preambleCode.replace("__BASE__", "/");
+        injectScript("before-hydration", preamble);
+      }
+    },
+    "astro:config:done": ({ logger, config }) => {
+      const jsxRendererNames = ["@astrojs/react", "@astrojs/preact", "@astrojs/solid-js"];
+      const enabledJsxRenderers = config.integrations.filter((renderer) =>
+        jsxRendererNames.includes(renderer.name),
+      );
+
+      if (enabledJsxRenderers.length > 1 && !include && !exclude) {
+        logger.warn(
+          "More than one JSX renderer is enabled. Set the `include` or `exclude` option to avoid unexpected behavior.",
+        );
+      }
+    },
+  },
+});
 
 const getMacroCssContent = (content) => {
   if (typeof content === "string") {
@@ -219,7 +365,7 @@ const comparisonS2Macros = () => {
 
 export default defineConfig({
   integrations: [
-    react({
+    comparisonReact({
       include: ["src/components/react/**/*"],
       exclude: [
         "src/components/solid/**/*",
