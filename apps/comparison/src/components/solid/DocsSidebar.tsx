@@ -1,10 +1,21 @@
 import h from "solid-js/h";
-import { Link, Provider } from "@proyecto-viviana/solid-spectrum";
+import {
+  Disclosure,
+  DisclosurePanel,
+  DisclosureTitle,
+  Link,
+  Provider,
+} from "@proyecto-viviana/solid-spectrum";
+import { groupComparisonEntries } from "@comparison/data/component-groups";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
 import {
+  docsNavGroup,
+  docsNavGroupLinks,
   docsNavGroupLink,
+  docsNavGroupPanel,
   docsNavHeading,
   docsNavLink,
+  docsNavLinkCurrent,
   docsNavRoot,
   docsSidebarRoot,
   staticClassName,
@@ -21,9 +32,14 @@ export interface DocsSidebarProps {
 
 const sidebarRootClass = staticClassName(docsSidebarRoot);
 const navRootClass = staticClassName(docsNavRoot);
+const navGroupClass = staticClassName(docsNavGroup);
+const navGroupPanelClass = staticClassName(docsNavGroupPanel);
+const navGroupLinksClass = staticClassName(docsNavGroupLinks);
 const navHeadingClass = staticClassName(docsNavHeading);
 const navLinkClass = staticClassName(docsNavLink);
+const navLinkCurrentClass = staticClassName(docsNavLinkCurrent);
 const navGroupLinkClass = staticClassName(docsNavGroupLink);
+const componentGroups = groupComparisonEntries(comparisonEntries);
 
 export default function DocsSidebar(props: DocsSidebarProps) {
   const { resolvedTheme } = createComparisonColorScheme();
@@ -43,23 +59,32 @@ export default function DocsSidebar(props: DocsSidebarProps) {
       background: "layer-1",
     },
     [
-      h("nav", { class: cx("s2-nav", navRootClass), "aria-label": props.navigationLabel }, [
-        navHeading("Overview"),
-        navLink("/", "Getting started", isIndexPage),
-        navHeading("Components"),
-        ...comparisonEntries.map((item) =>
-          navLink(`/components/${item.slug}`, item.title, item.slug === activeSlug, {
-            className: navGroupLinkClass,
-          }),
-        ),
-        navHeading("Guides"),
-        navLink(visualParityHref, "Visual parity", false),
-        navLink(apiCoverageHref, "API coverage", false),
-        navHeading("Reference"),
-        props.referenceUrl
-          ? navLink(props.referenceUrl, props.referenceLabel ?? "S2 docs", false)
-          : undefined,
-      ]),
+      h(
+        "nav",
+        {
+          class: cx("s2-nav", "s2-nav--grouped", navRootClass),
+          "aria-label": props.navigationLabel,
+        },
+        [
+          navHeading("Overview"),
+          navLink("/", "Getting started", isIndexPage),
+          navHeading("Components"),
+          ...componentGroups.map((group, index) =>
+            navDisclosureGroup(
+              group,
+              activeSlug,
+              isIndexPage ? index === 0 : group.entries.some((entry) => entry.slug === activeSlug),
+            ),
+          ),
+          navHeading("Guides"),
+          navLink(visualParityHref, "Visual parity", false),
+          navLink(apiCoverageHref, "API coverage", false),
+          navHeading("Reference"),
+          props.referenceUrl
+            ? navLink(props.referenceUrl, props.referenceLabel ?? "S2 docs", false)
+            : undefined,
+        ],
+      ),
     ],
   )();
 }
@@ -72,6 +97,45 @@ function normalizeActiveSlug(slug?: string): ComparisonSlug | undefined {
 
 function navHeading(label: string) {
   return h("p", { class: navHeadingClass }, label);
+}
+
+function navDisclosureGroup(
+  group: (typeof componentGroups)[number],
+  activeSlug: ComparisonSlug | undefined,
+  defaultExpanded: boolean,
+) {
+  return hc(
+    Disclosure,
+    {
+      id: group.id,
+      isQuiet: true,
+      density: "spacious",
+      defaultExpanded,
+      styles: navGroupClass,
+      UNSAFE_className: "s2-nav-group",
+    },
+    [
+      hc(DisclosureTitle, { level: 3 }, [group.title]),
+      hc(
+        DisclosurePanel,
+        {
+          styles: navGroupPanelClass,
+          UNSAFE_className: "s2-nav-group-panel",
+        },
+        [
+          h(
+            "div",
+            { class: cx("s2-nav-group-links", navGroupLinksClass) },
+            group.entries.map((item) =>
+              navLink(`/components/${item.slug}`, item.title, item.slug === activeSlug, {
+                className: navGroupLinkClass,
+              }),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
 }
 
 function navLink(
@@ -87,7 +151,7 @@ function navLink(
       variant: isCurrent ? "primary" : "secondary",
       isStandalone: true,
       isQuiet: true,
-      UNSAFE_className: cx(navLinkClass, options.className),
+      UNSAFE_className: cx(navLinkClass, isCurrent && navLinkCurrentClass, options.className),
       "aria-current": isCurrent ? "page" : undefined,
     },
     [label],

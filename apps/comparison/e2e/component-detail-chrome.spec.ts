@@ -10,10 +10,11 @@ test.describe("comparison component detail chrome", () => {
     await expect(heroMount).toHaveAttribute("data-mounted", "true");
     await expect(heroMount.locator("[data-component-detail-hero-fallback]")).toHaveCount(0);
     await expect(heroMount.getByRole("heading", { level: 1, name: "Accordion" })).toBeVisible();
-    await expect(heroMount.getByRole("link", { name: "React Spectrum docs" })).toHaveAttribute(
-      "href",
-      /react-spectrum/,
-    );
+    await expect(
+      page
+        .getByRole("navigation", { name: "Top navigation" })
+        .getByRole("link", { name: "React Spectrum" }),
+    ).toHaveAttribute("href", /react-spectrum/);
 
     const exampleMount = page.locator(".js-component-example-section-mount");
     await expect(exampleMount).toHaveAttribute("data-mounted", "true");
@@ -23,7 +24,9 @@ test.describe("comparison component detail chrome", () => {
     await expect(exampleMount.locator("[data-component-example-controls-fallback]")).toHaveCount(0);
     await expect(exampleMount.locator("[data-component-example-preview-fallback]")).toHaveCount(0);
     await expect(exampleMount.getByRole("heading", { level: 2, name: "Example" })).toBeVisible();
-    await expect(exampleMount.getByRole("radiogroup", { name: "Color scheme" })).toBeVisible();
+    await expect(exampleMount.locator('form[data-comparison-controls="accordion"]')).toBeVisible();
+    await expect(exampleMount.getByRole("radiogroup", { name: "size" })).toBeVisible();
+    await expect(exampleMount.getByRole("switch", { name: "isQuiet" })).toBeVisible();
 
     const metaMount = page.locator(".js-component-detail-meta-mount");
     await expect(metaMount).toHaveAttribute("data-mounted", "true");

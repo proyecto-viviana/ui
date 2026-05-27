@@ -1,7 +1,11 @@
 ---
+import { groupComparisonEntries } from "@comparison/data/component-groups";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
 import {
+  docsNavGroup,
+  docsNavGroupFallbackLinks,
   docsNavGroupLink,
+  docsNavGroupSummary,
   docsNavHeading,
   docsNavLink,
   docsNavLinkCurrent,
@@ -23,7 +27,11 @@ const normalizedActiveSlug = comparisonEntries.some((entry) => entry.slug === ac
 const isIndexPage = normalizedActiveSlug == null;
 const visualParityHref = normalizedActiveSlug ? "#visual-state-coverage" : "/components/button";
 const apiCoverageHref = normalizedActiveSlug ? "#api" : "/components/button#api";
+const componentGroups = groupComparisonEntries(comparisonEntries);
 const navRootClass = staticClassName(docsNavRoot);
+const navGroupClass = staticClassName(docsNavGroup);
+const navGroupSummaryClass = staticClassName(docsNavGroupSummary);
+const navGroupFallbackLinksClass = staticClassName(docsNavGroupFallbackLinks);
 const navHeadingClass = staticClassName(docsNavHeading);
 const navLinkClass = staticClassName(docsNavLink);
 const navLinkCurrentClass = staticClassName(docsNavLinkCurrent);
@@ -40,18 +48,30 @@ const navGroupLinkClass = staticClassName(docsNavGroupLink);
     Getting started
   </a>
   <p class={navHeadingClass}>Components</p>
-  {comparisonEntries.map((item) => (
-    <a
-      href={`/components/${item.slug}`}
-      class:list={[
-        navLinkClass,
-        navGroupLinkClass,
-        item.slug === normalizedActiveSlug && navLinkCurrentClass,
-      ]}
-      aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
+  {componentGroups.map((group, index) => (
+    <details
+      class:list={["s2-nav-group", navGroupClass]}
+      open={isIndexPage ? index === 0 : group.entries.some((item) => item.slug === normalizedActiveSlug)}
     >
-      {item.title}
-    </a>
+      <summary class={navGroupSummaryClass}>
+        <span>{group.title}</span>
+      </summary>
+      <div class:list={["s2-nav-group-links", navGroupFallbackLinksClass]}>
+        {group.entries.map((item) => (
+          <a
+            href={`/components/${item.slug}`}
+            class:list={[
+              navLinkClass,
+              navGroupLinkClass,
+              item.slug === normalizedActiveSlug && navLinkCurrentClass,
+            ]}
+            aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
+          >
+            {item.title}
+          </a>
+        ))}
+      </div>
+    </details>
   ))}
   <p class={navHeadingClass}>Guides</p>
   <a href={visualParityHref} class={navLinkClass}>Visual parity</a>

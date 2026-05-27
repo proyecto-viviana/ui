@@ -33,6 +33,14 @@ into the remaining gates below.
   the top viewer. The local TableView route now keeps those as the visible
   controls and retains the remaining docs/API states as hidden query-harness
   controls.
+- Accordion docs shell, local preview: the left navigation is mounted through
+  Solid Spectrum `Disclosure`, `DisclosureTitle`, and `DisclosurePanel`
+  components. The active component's family opens by default, the index route
+  opens the first family, and the server fallback keeps the same grouping with
+  native `<details>` elements.
+- Accordion docs shell, live React Spectrum S2: upstream uses a quiet,
+  spacious S2 Disclosure navigation for the component list, with a top-level
+  `Components` disclosure and current-page link styling.
 
 ## Landed In This Checkpoint
 
@@ -53,6 +61,11 @@ into the remaining gates below.
   control column. Hidden fields still preserve route/test coverage for dynamic
   rows, visible columns, keys, disabled rows, empty state, sorting, resizing,
   dividers, row links, row actions, and ActionBar.
+- The comparison left sidebar now uses S2 Disclosure primitives instead of a
+  long flat link list. This intentionally keeps the local component-family
+  groups rather than copying the upstream single flat `Components` disclosure,
+  because the comparison app needs to expose parity taxonomy and component
+  coverage progress.
 
 ## Remaining Gates
 
@@ -68,6 +81,9 @@ into the remaining gates below.
 - Re-run light and dark visual captures after the component-control pass.
 - Revisit the landing page separately; it is still not shaped like the
   upstream Spectrum 2 landing page.
+- Continue page-chrome porting against upstream `Layout`, `Header`, `Nav`, and
+  `VisualExample`: header/search behavior, page body spacing, right-side ToC,
+  and footer still need the same source-backed audit.
 
 ## Process Note
 
