@@ -540,11 +540,16 @@ details.s2-nav-group > div {
 }
 
 .js-catalogue-overview-mount,
-.s2-catalogue-overview,
+.s2-catalogue-overview {
+  display: grid;
+  gap: 34px;
+  min-width: 0;
+}
+
 .js-component-detail-meta-mount,
 .s2-component-detail-meta {
   display: grid;
-  gap: 34px;
+  gap: 0;
   min-width: 0;
 }
 
@@ -569,6 +574,24 @@ details.s2-nav-group > div {
   color: var(--s2-text-muted);
   font-size: 20px;
   line-height: 1.45;
+}
+
+.s2-component-detail-hero .s2-hero,
+.s2-hero[data-component-detail-hero-fallback] {
+  display: block;
+  padding-bottom: 0;
+}
+
+.s2-component-detail-hero .s2-hero h1,
+.s2-hero[data-component-detail-hero-fallback] h1 {
+  line-height: 1.14;
+}
+
+.s2-component-detail-hero .s2-hero p,
+.s2-hero[data-component-detail-hero-fallback] p {
+  margin: 8px 0 24px;
+  color: var(--s2-text);
+  line-height: 1.5;
 }
 
 .s2-hero-meta {
@@ -654,20 +677,28 @@ details.s2-nav-group > div {
 .s2-comparison-frame {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 18px;
+  gap: 0;
   align-items: stretch;
-  min-height: 348px;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--s2-bg);
+  box-shadow: var(--s2-docs-example-note-shadow);
 }
 
 .s2-framework-panel {
   display: grid;
-  grid-template-rows: auto minmax(136px, 1fr);
-  gap: 10px;
+  grid-template-rows: auto minmax(112px, 1fr);
+  gap: 0;
   min-width: 0;
   overflow: visible;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0;
   background: transparent;
+}
+
+.s2-framework-panel + .s2-framework-panel {
+  border-top: 1px solid var(--s2-docs-example-divider);
 }
 
 .s2-framework-panel header {
@@ -675,9 +706,9 @@ details.s2-nav-group > div {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  min-height: 24px;
-  padding: 0;
-  border-bottom: 0;
+  min-height: 34px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--s2-docs-example-divider);
   color: var(--s2-text-muted);
   font-size: 12px;
 }
@@ -695,10 +726,10 @@ details.s2-nav-group > div {
 .s2-framework-panel > .comparison-island {
   display: grid;
   place-items: center;
-  min-height: 136px;
-  padding: 12px;
+  min-height: 112px;
+  padding: 16px;
   overflow: auto;
-  border-top: 1px solid var(--s2-docs-example-divider);
+  border-top: 0;
 }
 
 .s2-framework-panel > .comparison-island > .comparison-island {
@@ -922,6 +953,25 @@ details.s2-nav-group > div {
 .s2-section h3 {
   margin: 0;
   letter-spacing: 0;
+}
+
+.s2-component-detail-meta .s2-section {
+  gap: 24px;
+  margin-top: 48px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.js-component-detail-meta-mount > .s2-section:first-child,
+.s2-component-detail-meta .s2-section:first-child {
+  margin-top: 14px;
+}
+
+.s2-component-detail-meta .s2-section h2 {
+  color: var(--s2-text);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 32px;
 }
 
 .s2-section p {

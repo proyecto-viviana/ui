@@ -1,21 +1,14 @@
 ---
-import type { ComponentCoverage } from "@comparison/data/coverage";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
 
 interface Props {
-  coverage: ComponentCoverage;
   entry: ComparisonEntry;
 }
 
-const { coverage, entry } = Astro.props as Props;
+const { entry } = Astro.props as Props;
 ---
 
 <section class="s2-hero" aria-labelledby="page-title" data-component-detail-hero-fallback>
   <h1 id="page-title">{entry.title}</h1>
   <p>{entry.summary}</p>
-  <div class="s2-hero-meta">
-    <span class={`s2-pill s2-pill--${entry.parity}`}>{entry.parity}</span>
-    <span class={`s2-pill s2-pill--${entry.componentStatus}`}>{entry.componentStatus}</span>
-    <span class="s2-pill">{coverage.overall}% coverage</span>
-  </div>
 </section>
