@@ -163,26 +163,4 @@ document.addEventListener("change", (event) => {
   }
 });
 
-document.addEventListener("click", (event) => {
-  if (!(event.target instanceof Element)) {
-    return;
-  }
-
-  const resetButton = event.target.closest("[data-reset-controls]");
-
-  if (!resetButton) {
-    return;
-  }
-
-  const form = resetButton.closest("[data-comparison-controls]");
-
-  if (!(form instanceof HTMLFormElement)) {
-    return;
-  }
-
-  const defaults = readDefaults(form);
-  writeControls(form, defaults);
-  dispatchControls(form, defaults, defaults);
-});
-
 initializeComparisonControls();

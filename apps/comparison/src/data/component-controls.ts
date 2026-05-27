@@ -407,6 +407,7 @@ export interface ComponentControl {
   kind: ComponentControlKind;
   defaultValue: string | boolean | number;
   options?: readonly ComponentControlOption[];
+  isHidden?: boolean;
 }
 
 export interface ComponentControlGroup {
@@ -470,6 +471,7 @@ const buttonControls: ComponentControlGroup = {
       label: "iconPlacement",
       kind: "radio",
       defaultValue: buttonDemoDefaults.iconPlacement,
+      isHidden: true,
       options: [
         { value: "none", label: "none" },
         { value: "start", label: "start" },

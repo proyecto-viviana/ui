@@ -217,11 +217,6 @@ body.s2-docs[data-theme="dark"] {
   font-size: 12px;
 }
 
-.s2-reset:hover {
-  border-color: var(--s2-text-muted);
-  background: var(--s2-bg-muted);
-}
-
 .s2-top-actions {
   display: flex;
   align-items: center;
@@ -806,6 +801,36 @@ details.s2-nav-group > div {
   min-width: 0;
 }
 
+.s2-inline-control-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: end;
+  min-width: 0;
+}
+
+.s2-inline-control-text {
+  min-width: 0;
+}
+
+.s2-icon-choice-button {
+  align-self: end;
+  min-width: 74px;
+  white-space: nowrap;
+}
+
+.s2-fallback-icon-choice-button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--s2-border);
+  border-radius: 8px;
+  background: var(--s2-docs-example-control-bg);
+  color: var(--s2-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .s2-prop-control[data-control-kind="select"] > div {
   position: relative;
   display: grid;
@@ -957,18 +982,6 @@ details.s2-nav-group > div {
   gap: 12px;
   min-height: 36px;
   color: var(--s2-text);
-}
-
-.s2-reset {
-  width: fit-content;
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid var(--s2-border);
-  border-radius: 17px;
-  background: var(--s2-bg-raised);
-  color: var(--s2-text);
-  font: inherit;
-  cursor: pointer;
 }
 
 .s2-section {

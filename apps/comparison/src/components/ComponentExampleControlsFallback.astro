@@ -8,6 +8,8 @@ interface Props {
 
 const { entry } = Astro.props as Props;
 const controlGroup = getComponentControlGroup(entry);
+const visibleControls = controlGroup.controls.filter((control) => !control.isHidden);
+const hiddenControls = controlGroup.controls.filter((control) => control.isHidden);
 const controlDefaults = Object.fromEntries(
   controlGroup.controls.map((control) => [control.name, control.defaultValue]),
 );
@@ -39,13 +41,30 @@ const controlDefaults = Object.fromEntries(
       data-control-coverage={controlGroup.coverage}
       data-control-defaults={JSON.stringify(controlDefaults)}
     >
-      {controlGroup.controls.map((control) => (
+      {hiddenControls.map((control) => (
+        <input type="hidden" name={control.name} value={String(control.defaultValue)} />
+      ))}
+      {visibleControls.map((control) => (
         <div
           class="s2-prop-control"
           data-control-kind={control.kind}
           data-control-name={control.name}
         >
-          {control.kind === "text" ? (
+          {entry.slug === "button" && control.name === "children" ? (
+            <div class="s2-inline-control-row">
+              <label class="s2-field">
+                <span>{control.label}</span>
+                <input name={control.name} value={String(control.defaultValue)} />
+              </label>
+              <button
+                type="button"
+                class="s2-icon-choice-button s2-fallback-icon-choice-button"
+                data-button-icon-control
+              >
+                No icon
+              </button>
+            </div>
+          ) : control.kind === "text" ? (
             <label class="s2-field">
               <span>{control.label}</span>
               <input name={control.name} value={String(control.defaultValue)} />
@@ -90,7 +109,6 @@ const controlDefaults = Object.fromEntries(
           )}
         </div>
       ))}
-      <button type="button" class="s2-reset" data-reset-controls>Reset</button>
     </form>
   ) : (
     <div class="s2-empty-state">Interactive S2 prop controls are missing for this component.</div>

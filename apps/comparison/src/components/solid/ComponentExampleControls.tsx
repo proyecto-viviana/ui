@@ -35,6 +35,8 @@ export default function ComponentExampleControls(props: ComponentExampleControls
   }
 
   const controlGroup = getComponentControlGroup(entry);
+  const visibleControls = controlGroup.controls.filter((control) => !control.isHidden);
+  const hiddenControls = controlGroup.controls.filter((control) => control.isHidden);
   const controlDefaults = Object.fromEntries(
     controlGroup.controls.map((control) => [control.name, control.defaultValue]),
   ) as Record<string, ControlValue>;
@@ -55,9 +57,6 @@ export default function ComponentExampleControls(props: ComponentExampleControls
         formElement?.dispatchEvent(new Event("change", { bubbles: true }));
       });
     }
-  };
-  const resetControlValues = () => {
-    setControlValues({ ...controlDefaults });
   };
 
   return hc(
@@ -83,37 +82,24 @@ export default function ComponentExampleControls(props: ComponentExampleControls
               "data-comparison-controls": entry.slug,
               "data-control-coverage": controlGroup.coverage,
               "data-control-defaults": JSON.stringify(controlDefaults),
-              onClick: (event: MouseEvent) => {
-                if (
-                  event.target instanceof Element &&
-                  event.target.closest("[data-reset-controls]")
-                ) {
-                  resetControlValues();
-                }
-              },
             },
-            controlGroup.controls.map((control) =>
-              h(
-                "div",
-                {
-                  class: "s2-prop-control",
-                  "data-control-kind": control.kind,
-                  "data-control-name": control.name,
-                },
-                controlField(control, currentValue, updateControlValue),
+            [
+              ...hiddenControls.map((control) => hiddenControlField(control, currentValue)),
+              ...visibleControls.map((control) =>
+                h(
+                  "div",
+                  {
+                    class: "s2-prop-control",
+                    "data-control-kind": control.kind,
+                    "data-control-name": control.name,
+                  },
+                  controlField(control, currentValue, updateControlValue, {
+                    slug: entry.slug,
+                    currentNamedValue: (name, fallback) => controlValues()[name] ?? fallback,
+                  }),
+                ),
               ),
-            ),
-            hc(
-              ActionButton,
-              {
-                type: "button",
-                size: "M",
-                variant: "secondary",
-                fillStyle: "outline",
-                "data-reset-controls": "",
-              },
-              ["Reset"],
-            ),
+            ],
           )
         : h(
             "div",
@@ -173,11 +159,72 @@ function themeOption(value: ComparisonThemeChoice) {
   return hc(Radio, { value }, [value]);
 }
 
+function hiddenControlField(
+  control: ComponentControl,
+  currentValue: (control: ComponentControl) => ControlValue | undefined,
+) {
+  return h("input", {
+    type: "hidden",
+    name: control.name,
+    get value() {
+      return String(currentValue(control) ?? "");
+    },
+  });
+}
+
+interface ControlRenderContext {
+  slug: string;
+  currentNamedValue: (name: string, fallback: ControlValue) => ControlValue;
+}
+
 function controlField(
   control: ComponentControl,
   currentValue: (control: ComponentControl) => ControlValue | undefined,
   updateControlValue: (name: string, value: ControlValue, notifyForm?: boolean) => void,
+  context: ControlRenderContext,
 ) {
+  if (context.slug === "button" && control.name === "children") {
+    const iconPlacement = () => String(context.currentNamedValue("iconPlacement", "none"));
+    const iconPlacementLabel = () => buttonIconPlacementLabel(iconPlacement());
+
+    return h(
+      "div",
+      { class: "s2-inline-control-row" },
+      hc(TextField, {
+        label: control.label,
+        name: control.name,
+        size: "M",
+        UNSAFE_className: "s2-inline-control-text",
+        get value() {
+          return String(currentValue(control) ?? "");
+        },
+        onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+          updateControlValue(control.name, event.currentTarget.value, true),
+        onChange: (value: string) => updateControlValue(control.name, value, true),
+      }),
+      hc(
+        ActionButton,
+        {
+          type: "button",
+          size: "M",
+          UNSAFE_className: "s2-icon-choice-button",
+          "data-button-icon-control": "",
+          onPress: () => {
+            updateControlValue("iconPlacement", nextButtonIconPlacement(iconPlacement()), true);
+          },
+        },
+        [
+          h("span", {
+            class: "s2-icon-choice-button-label",
+            get textContent() {
+              return iconPlacementLabel();
+            },
+          }),
+        ],
+      ),
+    );
+  }
+
   if (control.kind === "text") {
     return hc(TextField, {
       label: control.label,
@@ -244,6 +291,30 @@ function controlField(
     },
     [control.label],
   );
+}
+
+function buttonIconPlacementLabel(value: string): string {
+  if (value === "start") {
+    return "Start icon";
+  }
+
+  if (value === "only") {
+    return "Only icon";
+  }
+
+  return "No icon";
+}
+
+function nextButtonIconPlacement(value: string): string {
+  if (value === "none") {
+    return "start";
+  }
+
+  if (value === "start") {
+    return "only";
+  }
+
+  return "none";
 }
 
 function selectBridge(
