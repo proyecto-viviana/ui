@@ -38,7 +38,7 @@ const items =
       ];
 ---
 
-<nav class="s2-toc-nav" aria-label="On this page">
+<nav class="s2-toc-nav" aria-label="On this page" data-docs-toc-fallback>
   <p>On this page</p>
   {items.map((item) => (
     <a href={item.href}>{item.label}</a>

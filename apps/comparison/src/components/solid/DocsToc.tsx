@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
+import { Link, LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
 import {
   getComparisonEntry,
   layerOrder,
@@ -45,7 +45,18 @@ export default function DocsToc(props: DocsTocProps) {
     [
       h("nav", { class: "s2-toc-nav", "aria-label": "On this page" }, [
         h("p", {}, "On this page"),
-        ...items.map((item) => h("a", { href: item.href }, item.label)),
+        ...items.map((item) =>
+          hc(
+            Link,
+            {
+              href: item.href,
+              variant: "secondary",
+              isStandalone: true,
+              isQuiet: true,
+            },
+            [item.label],
+          ),
+        ),
         props.sourceUrl
           ? h(
               "div",

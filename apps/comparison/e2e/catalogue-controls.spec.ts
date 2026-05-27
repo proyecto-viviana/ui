@@ -27,6 +27,33 @@ test.describe("comparison catalogue controls", () => {
     );
   });
 
+  test("hydrates the table of contents chrome", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const tocMount = page.locator(".js-docs-toc-mount");
+    await expect(tocMount).toHaveAttribute("data-mounted", "true");
+    await expect(tocMount.locator("[data-docs-toc-fallback]")).toHaveCount(0);
+
+    const toc = page.getByRole("navigation", { name: "On this page" });
+    await expect(toc.getByRole("link", { name: "Solid Spectrum" })).toHaveAttribute(
+      "href",
+      "#page-title",
+    );
+    await expect(toc.getByRole("link", { name: "Catalogue controls" })).toHaveAttribute(
+      "href",
+      "#coverage-title",
+    );
+    await expect(toc.getByRole("link", { name: "Components" })).toHaveAttribute(
+      "href",
+      "#components-title",
+    );
+    await expect(toc.getByRole("link", { name: "S2 source" })).toHaveAttribute(
+      "href",
+      /react-spectrum/,
+    );
+  });
+
   test("filters by search text and reports visible count", async ({ page }) => {
     await page.goto("/");
 
