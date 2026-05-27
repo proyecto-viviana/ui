@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import solid from "@astrojs/solid-js";
+import macros from "unplugin-parcel-macros";
 
 const oneLineWarningFilters = ["`transformWithEsbuild` is deprecated"];
 
@@ -118,33 +119,105 @@ const localSolidPackages = [
   "@proyecto-viviana/solid-spectrum",
 ];
 
-const shouldSuppressComparisonBuildLog = (level, log) => {
-  if (level !== "warn") {
-    return false;
-  }
+const stripViteRequestSuffix = (id) => id.split(/[?#]/, 1)[0];
+const macroImportPattern = /with[\s\n]*\{\s*type:[\s\n]*["']macro["'][\s\n]*\}/;
+const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
+const macroCssImportPattern = /import\s+["'](macro-[a-f0-9]+\.css)["'];/g;
 
-  const message = String(log?.message ?? log);
-  return log?.code === "PLUGIN_TIMINGS" || shouldSuppressComparisonWarning(message);
+const getMacroCssFileName = (id) => {
+  const fileName = stripViteRequestSuffix(id).split("/").pop();
+  return fileName && macroCssIdPattern.test(fileName) ? fileName : null;
 };
 
-const comparisonBuildWarningPolicy = () => ({
-  chunkSizeWarningLimit: 2200,
-  rollupOptions: {
-    onLog(level, log, defaultHandler) {
-      if (shouldSuppressComparisonBuildLog(level, log)) {
-        return;
-      }
-      defaultHandler(level, log);
-    },
-  },
-  rolldownOptions: {
-    checks: {
-      pluginTimings: false,
-    },
-  },
-});
+const getMacroCssContent = (content) => {
+  if (typeof content === "string") {
+    return content;
+  }
 
-export default defineConfig(({ command }) => ({
+  if (content && typeof content === "object" && "code" in content) {
+    return typeof content.code === "string" ? content.code : null;
+  }
+
+  return null;
+};
+
+const comparisonS2Macros = () => {
+  const plugin = macros.raw();
+  const macroCssCache = new Map();
+
+  const cacheMacroCss = (id, content) => {
+    const fileName = getMacroCssFileName(id);
+    const css = getMacroCssContent(content);
+    if (fileName && css != null) {
+      macroCssCache.set(fileName, css);
+    }
+    return css;
+  };
+
+  return {
+    name: `${plugin.name}-comparison`,
+    enforce: plugin.enforce,
+    // Astro can pass query-suffixed client script ids to Vite. The macro
+    // plugin's include check expects the original .ts/.tsx path.
+    async transform(code, id) {
+      if (!macroImportPattern.test(code)) {
+        return null;
+      }
+
+      const filePath = stripViteRequestSuffix(id);
+      const result = await plugin.transform?.call(this, code, filePath);
+      const transformedCode =
+        typeof result === "string"
+          ? result
+          : result && typeof result === "object" && "code" in result
+            ? String(result.code)
+            : "";
+
+      for (const match of transformedCode.matchAll(macroCssImportPattern)) {
+        const content = await plugin.load?.call(this, match[1]);
+        cacheMacroCss(match[1], content);
+      }
+
+      return result;
+    },
+    async resolveId(id, importer, options) {
+      const resolved = await plugin.resolveId?.call(this, id, importer, options);
+      if (resolved) {
+        return resolved;
+      }
+
+      const fileName = getMacroCssFileName(id);
+      if (fileName && macroCssCache.has(fileName)) {
+        return fileName;
+      }
+
+      return null;
+    },
+    loadInclude(id) {
+      const fileName = getMacroCssFileName(id);
+      return (
+        (fileName != null && macroCssCache.has(fileName)) ||
+        (plugin.loadInclude?.(stripViteRequestSuffix(id)) ?? false)
+      );
+    },
+    async load(id) {
+      const normalizedId = stripViteRequestSuffix(id);
+      if (plugin.loadInclude?.(normalizedId)) {
+        const content = await plugin.load?.call(this, normalizedId);
+        const css = cacheMacroCss(normalizedId, content);
+        return css ?? content;
+      }
+
+      const fileName = getMacroCssFileName(id);
+      return fileName ? (macroCssCache.get(fileName) ?? null) : null;
+    },
+    watchChange(id, change) {
+      plugin.watchChange?.call(this, stripViteRequestSuffix(id), change);
+    },
+  };
+};
+
+export default defineConfig({
   integrations: [
     react({
       include: ["src/components/react/**/*"],
@@ -162,25 +235,23 @@ export default defineConfig(({ command }) => ({
     }),
   ],
   vite: {
-    // The comparison app intentionally bundles both reference React S2 and
-    // Solid implementations. Keep build output focused on actionable warnings.
+    plugins: [comparisonS2Macros()],
     build: {
       assetsInlineLimit: 0,
-      ...comparisonBuildWarningPolicy(),
-    },
-    environments: {
-      client: {
-        build: comparisonBuildWarningPolicy(),
-      },
-      ssr: {
-        build: comparisonBuildWarningPolicy(),
-      },
     },
     resolve: {
       alias: [
         {
           find: "@comparison",
           replacement: path.resolve(appRoot, "src"),
+        },
+        {
+          find: /^@proyecto-viviana\/solid-spectrum\/style$/,
+          replacement: path.resolve(repoRoot, "packages/solid-spectrum/src/style/index.ts"),
+        },
+        {
+          find: /^@proyecto-viviana\/solid-spectrum\/style\/runtime$/,
+          replacement: path.resolve(repoRoot, "packages/solid-spectrum/src/style/runtime.ts"),
         },
         {
           find: /^@proyecto-viviana\/solid-stately$/,
@@ -217,7 +288,7 @@ export default defineConfig(({ command }) => ({
       ],
     },
     ssr: {
-      noExternal: command === "build" ? true : localSolidPackages,
+      noExternal: localSolidPackages,
     },
   },
-}));
+});

@@ -13,6 +13,16 @@ test.describe("comparison catalogue controls", () => {
     await expect(topbarMount).toHaveAttribute("data-mounted", "true");
     await expect(topbarMount.locator("[data-docs-topbar-fallback]")).toHaveCount(0);
 
+    const macroStyledTopbar = topbarMount.locator(".s2-topbar");
+    await expect(macroStyledTopbar).toHaveCount(1);
+    await expect
+      .poll(() =>
+        macroStyledTopbar.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-topbar-macro").trim(),
+        ),
+      )
+      .toBe("1");
+
     await expect(page.getByRole("link", { name: "Solid Spectrum home" })).toHaveAttribute(
       "href",
       "/",

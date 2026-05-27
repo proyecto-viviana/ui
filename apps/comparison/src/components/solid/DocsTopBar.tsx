@@ -1,6 +1,7 @@
 import h from "solid-js/h";
 import { ActionButton, Keyboard, Link, Provider, Text } from "@proyecto-viviana/solid-spectrum";
 import { getComparisonThemeChoiceLabel } from "@comparison/data/theme";
+import { docsTopBarRoot } from "./chrome/styles";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
@@ -15,6 +16,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     Provider,
     {
       class: "s2-topbar",
+      styles: docsTopBarRoot,
       get colorScheme() {
         return resolvedTheme();
       },
