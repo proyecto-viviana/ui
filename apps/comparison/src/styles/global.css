@@ -560,6 +560,7 @@ details.s2-nav-group > div {
 .s2-component-example-preview {
   display: grid;
   gap: 14px;
+  background: transparent;
 }
 
 .s2-component-example-controls,
@@ -653,7 +654,7 @@ details.s2-nav-group > div {
 .s2-example-preview {
   grid-area: preview;
   display: grid;
-  gap: 24px;
+  gap: 14px;
   min-width: 0;
   padding: 0;
   background: transparent;
@@ -686,12 +687,12 @@ details.s2-nav-group > div {
 
 .s2-example-note {
   margin: 0;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: var(--s2-docs-example-note-bg);
-  box-shadow: var(--s2-docs-example-note-shadow);
+  padding: 0 0 0 12px;
+  border-left: 2px solid var(--s2-docs-example-divider);
+  background: transparent;
+  box-shadow: none;
   color: var(--s2-text-muted);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -711,15 +712,16 @@ details.s2-nav-group > div {
   gap: 0;
   align-items: stretch;
   min-height: 0;
-  overflow: hidden;
-  border-radius: 10px;
-  background: var(--s2-bg);
-  box-shadow: var(--s2-docs-example-note-shadow);
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .s2-framework-panel {
+  position: relative;
   display: grid;
-  grid-template-rows: auto minmax(112px, 1fr);
+  grid-template-rows: minmax(156px, 1fr);
   gap: 0;
   min-width: 0;
   overflow: visible;
@@ -733,20 +735,25 @@ details.s2-nav-group > div {
 }
 
 .s2-framework-panel header {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 10px;
+  inset-inline: 16px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  min-height: 34px;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--s2-docs-example-divider);
+  min-height: 24px;
+  padding: 0;
+  border: 0;
   color: var(--s2-text-muted);
   font-size: 12px;
+  pointer-events: none;
 }
 
 .s2-framework-panel strong {
   color: var(--s2-text);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .s2-framework-panel em {
@@ -754,11 +761,20 @@ details.s2-nav-group > div {
   font-style: normal;
 }
 
-.s2-framework-panel > .comparison-island {
+.s2-framework-status,
+.s2-framework-panel em {
+  color: var(--s2-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.s2-framework-panel > .comparison-island,
+.s2-framework-panel > .s2-empty-state {
   display: grid;
   place-items: center;
-  min-height: 112px;
-  padding: 16px;
+  min-height: 156px;
+  padding: 44px 16px 26px;
   overflow: auto;
   border-top: 0;
 }

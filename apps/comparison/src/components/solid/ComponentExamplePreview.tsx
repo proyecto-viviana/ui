@@ -1,5 +1,4 @@
 import h from "solid-js/h";
-import { Badge, Provider } from "@proyecto-viviana/solid-spectrum";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import {
   getComparisonEntry,
@@ -7,8 +6,6 @@ import {
   type ComparisonSlug,
   type LayerTrack,
 } from "@comparison/data/comparison-manifest";
-import { hc } from "./solid-h";
-import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
 export interface ComponentExamplePreviewProps {
   slug: string;
@@ -19,7 +16,6 @@ type FrameworkId = "react" | "solid";
 const playgroundLayer: ComparisonLayerId = "styled";
 
 export default function ComponentExamplePreview(props: ComponentExamplePreviewProps) {
-  const { resolvedTheme } = createComparisonColorScheme();
   const entry = getComparisonEntry(props.slug);
 
   if (!entry) {
@@ -29,37 +25,27 @@ export default function ComponentExamplePreview(props: ComponentExamplePreviewPr
   const controlGroup = getComponentControlGroup(entry);
   const playgroundTrack = entry.layers[playgroundLayer];
 
-  return hc(
-    Provider,
-    {
-      class: "s2-component-example-preview",
-      get colorScheme() {
-        return resolvedTheme();
-      },
-      background: "base",
-    },
-    [
-      h(
-        "div",
-        { class: "s2-comparison-frame" },
-        frameworkPanel({
-          framework: "react",
-          label: "React",
-          product: "React Spectrum S2",
-          slug: entry.slug,
-          status: playgroundTrack.react,
-        }),
-        frameworkPanel({
-          framework: "solid",
-          label: "Solid",
-          product: "solid-spectrum",
-          slug: entry.slug,
-          status: playgroundTrack.solid,
-        }),
-      ),
-      h("p", { class: "s2-example-note" }, controlGroup.note),
-    ],
-  )();
+  return h("div", { class: "s2-component-example-preview" }, [
+    h(
+      "div",
+      { class: "s2-comparison-frame" },
+      frameworkPanel({
+        framework: "react",
+        label: "React",
+        product: "React Spectrum S2",
+        slug: entry.slug,
+        status: playgroundTrack.react,
+      }),
+      frameworkPanel({
+        framework: "solid",
+        label: "Solid",
+        product: "solid-spectrum",
+        slug: entry.slug,
+        status: playgroundTrack.solid,
+      }),
+    ),
+    h("p", { class: "s2-example-note" }, controlGroup.note),
+  ])();
 }
 
 interface FrameworkPanelOptions {
@@ -108,26 +94,12 @@ function emptyStateLabel(framework: FrameworkId, status: FrameworkPanelOptions["
 }
 
 function statusBadge(status: FrameworkPanelOptions["status"]) {
-  return hc(
-    Badge,
+  return h(
+    "span",
     {
-      variant: statusVariant(status),
-      fillStyle: "subtle",
-      size: "S",
+      class: "s2-framework-status",
+      "data-status": status,
     },
-    [status],
+    status,
   );
-}
-
-function statusVariant(status: FrameworkPanelOptions["status"]) {
-  if (status === "live") {
-    return "positive";
-  }
-  if (status === "tracked") {
-    return "notice";
-  }
-  if (status === "missing") {
-    return "negative";
-  }
-  return "neutral";
 }
