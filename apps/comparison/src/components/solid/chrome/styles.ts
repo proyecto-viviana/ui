@@ -20,26 +20,36 @@ export const docsTopBarRoot = style({
   top: 0,
   zIndex: 50,
   display: "grid",
-  gridTemplateColumns: "[1fr auto 1fr]",
+  gridTemplateColumns: {
+    default: "[1fr auto 1fr]",
+    "@media (max-width: 860px)": "[1fr auto auto]",
+  },
   alignItems: "center",
   gap: 12,
-  width: "[calc(100% - 24px)]",
+  width: {
+    default: "[calc(100% - 24px)]",
+    "@media (max-width: 860px)": "full",
+  },
   maxWidth: "[1416px]",
-  minHeight: 48,
+  height: {
+    "@media (max-width: 860px)": "auto",
+  },
+  minHeight: {
+    default: 48,
+    "@media (max-width: 860px)": 56,
+  },
   marginX: "auto",
-  marginTop: 12,
+  marginTop: {
+    default: 12,
+    "@media (max-width: 860px)": 0,
+  },
   paddingX: 0,
+  padding: {
+    "@media (max-width: 860px)": 12,
+  },
   borderBottomWidth: 0,
   backgroundColor: "transparent",
   isolation: "isolate",
-  "@media (max-width: 860px)": {
-    gridTemplateColumns: "[1fr auto auto]",
-    height: "auto",
-    minHeight: 56,
-    marginTop: 0,
-    paddingX: "[18px]",
-    paddingY: 8,
-  },
 });
 
 export const docsBrandLink = style({
@@ -49,7 +59,10 @@ export const docsBrandLink = style({
   gap: "[10px]",
   minHeight: 48,
   minWidth: 0,
-  marginStart: "[26px]",
+  marginStart: {
+    default: "[26px]",
+    "@media (max-width: 860px)": 0,
+  },
   paddingX: 12,
   borderRadius: "[10px]",
   backgroundColor: {
@@ -60,9 +73,6 @@ export const docsBrandLink = style({
   font: "ui-lg",
   fontWeight: "bold",
   textDecoration: "none",
-  "@media (max-width: 860px)": {
-    marginStart: 0,
-  },
 });
 
 export const docsBrandMark = style({
@@ -78,21 +88,31 @@ export const docsBrandMark = style({
   fontWeight: "black",
 });
 
+export const docsBrandText = style({
+  display: {
+    default: "inline",
+    "@media (max-width: 860px)": "none",
+  },
+});
+
 export const docsSearchRoot = style({
-  display: "grid",
+  display: {
+    default: "grid",
+    "@media (max-width: 860px)": "none",
+  },
   gridTemplateColumns: "[minmax(0, 1fr)]",
   alignItems: "center",
   justifySelf: "center",
   width: "[min(500px, 36vw)]",
   maxWidth: "[500px]",
   minWidth: "[240px]",
-  "@media (max-width: 860px)": {
-    display: "none",
-  },
 });
 
 export const docsSearchButton = style({
-  display: "flex",
+  display: {
+    default: "flex",
+    "@media (max-width: 860px)": "none",
+  },
   alignItems: "center",
   gap: "text-to-visual",
   width: "full",
@@ -191,9 +211,6 @@ export const docsTopNavRoot = style({
   gap: 4,
   color: "neutral-subdued",
   font: "ui",
-  "@media (max-width: 860px)": {
-    display: "none",
-  },
 });
 
 export const docsTopNavLink = style({
@@ -226,8 +243,8 @@ export const docsTopDivider = style({
   height: 20,
   marginX: 4,
   backgroundColor: "gray-300",
-  "@media (max-width: 860px)": {
-    display: "none",
+  display: {
+    "@media (max-width: 860px)": "none",
   },
 });
 
@@ -238,20 +255,28 @@ export const docsSearchOverlay = style({
   display: "grid",
   justifyItems: "center",
   alignItems: "start",
-  paddingX: 16,
-  paddingTop: "[96px]",
-  backgroundColor: "transparent-overlay-500",
-  "@media (max-width: 860px)": {
-    paddingX: 12,
-    paddingTop: 72,
+  paddingX: {
+    default: 16,
+    "@media (max-width: 860px)": 12,
   },
+  paddingTop: {
+    default: "[96px]",
+    "@media (max-width: 860px)": "[72px]",
+  },
+  backgroundColor: "transparent-overlay-500",
 });
 
 export const docsSearchDialog = style({
   display: "grid",
   gap: 12,
-  width: "[min(640px, calc(100vw - 32px))]",
-  maxHeight: "[calc(100dvh - 128px)]",
+  width: {
+    default: "[min(640px, calc(100vw - 32px))]",
+    "@media (max-width: 860px)": "[calc(100vw - 24px)]",
+  },
+  maxHeight: {
+    default: "[calc(100dvh - 128px)]",
+    "@media (max-width: 860px)": "[calc(100dvh - 96px)]",
+  },
   padding: 12,
   borderWidth: 1,
   borderStyle: "solid",
@@ -261,10 +286,6 @@ export const docsSearchDialog = style({
   boxShadow: "emphasized",
   color: "neutral",
   overflow: "hidden",
-  "@media (max-width: 860px)": {
-    width: "[calc(100vw - 24px)]",
-    maxHeight: "[calc(100dvh - 96px)]",
-  },
 });
 
 export const docsSearchDialogHeader = style({
@@ -330,16 +351,51 @@ export const docsSearchEmpty = style({
 });
 
 export const docsMobileNavButton = style({
-  display: "none",
-  "@media (max-width: 860px)": {
-    display: "inline-flex",
+  display: {
+    default: "none",
+    "@media (max-width: 860px)": "inline-flex",
   },
+});
+
+export const docsMobileTocRoot = style({
+  "--comparison-docs-mobile-toc-macro": {
+    type: "opacity",
+    value: 1,
+  },
+  position: {
+    "@media (max-width: 860px)": "absolute",
+  },
+  left: {
+    "@media (max-width: 860px)": "[50%]",
+  },
+  zIndex: {
+    "@media (max-width: 860px)": 1,
+  },
+  display: {
+    default: "none",
+    "@media (max-width: 860px)": "block",
+  },
+  width: {
+    "@media (max-width: 860px)": "[min(210px, calc(100vw - 176px))]",
+  },
+  minWidth: {
+    "@media (max-width: 860px)": 0,
+  },
+  transform: {
+    "@media (max-width: 860px)": "translateX(-50%)",
+  },
+});
+
+export const docsMobileTocPicker = style({
+  width: "full",
+  minWidth: 0,
 });
 
 export const docsMobileNavOverlay = style({
   position: "fixed",
   inset: 0,
   zIndex: 100,
+  backgroundColor: "transparent-overlay-500",
 });
 
 export const docsMobileNavPanel = style({
@@ -376,41 +432,60 @@ export const docsLayoutRoot = style({
     type: "opacity",
     value: 1,
   },
-  display: "flex",
+  display: {
+    default: "flex",
+    "@media (max-width: 860px)": "grid",
+  },
   alignItems: "stretch",
-  gap: 0,
+  gridTemplateColumns: {
+    "@media (max-width: 860px)": "[1fr]",
+  },
+  gap: {
+    default: 0,
+    "@media (max-width: 860px)": 12,
+  },
   width: "[min(1440px, 100%)]",
   marginX: "auto",
-  marginTop: 12,
-  paddingX: 12,
-  paddingBottom: 0,
-  "@media (max-width: 860px)": {
-    display: "grid",
-    gridTemplateColumns: "[1fr]",
-    gap: 12,
-    marginTop: 0,
-    paddingX: 0,
-    paddingBottom: 0,
+  marginTop: {
+    default: 12,
+    "@media (max-width: 860px)": 0,
   },
+  paddingX: {
+    default: 12,
+    "@media (max-width: 860px)": 0,
+  },
+  paddingBottom: 0,
 });
 
 export const docsSidebarRail = style({
+  display: {
+    default: "block",
+    "@media (max-width: 860px)": "none",
+  },
   flexShrink: 0,
-  width: "[224px]",
-  position: "sticky",
+  width: {
+    default: "[224px]",
+    "@media (max-width: 860px)": "auto",
+  },
+  position: {
+    default: "sticky",
+    "@media (max-width: 860px)": "static",
+  },
   top: 40,
   alignSelf: "start",
-  maxHeight: "[calc(100vh - 72px)]",
-  paddingX: 12,
+  maxHeight: {
+    default: "[calc(100vh - 72px)]",
+    "@media (max-width: 860px)": "none",
+  },
+  paddingX: {
+    default: 12,
+    "@media (max-width: 860px)": "[18px]",
+  },
+  paddingY: {
+    "@media (max-width: 860px)": 12,
+  },
   boxSizing: "border-box",
   overflow: "auto",
-  "@media (max-width: 860px)": {
-    position: "static",
-    width: "auto",
-    maxHeight: "none",
-    paddingX: "[18px]",
-    paddingY: 12,
-  },
 });
 
 export const docsTocRail = style({
@@ -422,7 +497,10 @@ export const docsTocRail = style({
   width: "[180px]",
   position: "sticky",
   top: 0,
-  display: "flex",
+  display: {
+    default: "flex",
+    "@media (max-width: 1180px)": "none",
+  },
   flexDirection: "column",
   boxSizing: "border-box",
   alignContent: "start",
@@ -431,34 +509,45 @@ export const docsTocRail = style({
   paddingTop: 32,
   overflow: "hidden",
   color: "neutral-subdued",
-  "@media (max-width: 1180px)": {
-    display: "none",
-  },
 });
 
 export const docsMainContent = style({
-  display: "flex",
+  "--comparison-docs-main-macro": {
+    type: "opacity",
+    value: 1,
+  },
+  display: {
+    default: "flex",
+    "@media (max-width: 860px)": "grid",
+  },
   justifyContent: "space-between",
   columnGap: 40,
   flexGrow: 1,
   minWidth: 0,
-  height: "[calc(100vh - 72px)]",
-  padding: 40,
+  height: {
+    default: "[calc(100vh - 72px)]",
+    "@media (max-width: 860px)": "auto",
+  },
+  minHeight: {
+    "@media (max-width: 860px)": "[calc(100vh - 56px)]",
+  },
+  padding: {
+    default: 40,
+    "@media (max-width: 860px)": 12,
+  },
   position: "relative",
   overflow: "auto",
   backgroundColor: "base",
-  borderRadius: "xl",
-  borderBottomRadius: "none",
-  boxShadow: "emphasized",
-  scrollPaddingTop: 32,
-  "@media (max-width: 860px)": {
-    display: "grid",
-    height: "auto",
-    minHeight: "[calc(100vh - 56px)]",
-    padding: 18,
-    borderRadius: "none",
-    boxShadow: "none",
+  borderRadius: {
+    default: "xl",
+    "@media (max-width: 860px)": "none",
   },
+  borderBottomRadius: "none",
+  boxShadow: {
+    default: "emphasized",
+    "@media (max-width: 860px)": "none",
+  },
+  scrollPaddingTop: 32,
 });
 
 export const docsArticleColumn = style({
@@ -545,11 +634,17 @@ export const docsNavRoot = style({
   display: "grid",
   gap: 0,
   font: "ui",
-  "@media (max-width: 860px)": {
-    gridAutoFlow: "row",
-    gridAutoColumns: "auto",
-    maxHeight: 280,
-    overflow: "auto",
+  gridAutoFlow: {
+    "@media (max-width: 860px)": "row",
+  },
+  gridAutoColumns: {
+    "@media (max-width: 860px)": "auto",
+  },
+  maxHeight: {
+    "@media (max-width: 860px)": 280,
+  },
+  overflow: {
+    "@media (max-width: 860px)": "auto",
   },
 });
 

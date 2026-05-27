@@ -3,6 +3,7 @@ import { waitForComparisonRouteReady } from "./comparison-page";
 
 test.describe("comparison component detail chrome", () => {
   test("hydrates the detail page Solid Spectrum surfaces", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/components/accordion/");
     await waitForComparisonRouteReady(page);
 
@@ -15,6 +16,28 @@ test.describe("comparison component detail chrome", () => {
         .getByRole("navigation", { name: "Top navigation" })
         .getByRole("link", { name: "React Spectrum" }),
     ).toHaveAttribute("href", /react-spectrum/);
+    await expect(page.locator(".s2-brand-text")).toBeVisible();
+
+    const main = page.locator(".s2-main");
+    await expect
+      .poll(() =>
+        main.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-main-macro").trim(),
+        ),
+      )
+      .toBe("1");
+    await expect
+      .poll(() =>
+        main.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            columnGap: style.columnGap,
+            height: Math.round(element.getBoundingClientRect().height),
+            paddingTop: style.paddingTop,
+          };
+        }),
+      )
+      .toEqual({ columnGap: "40px", height: 648, paddingTop: "40px" });
 
     const tocRail = page.locator(".s2-docs-toc-rail");
     await expect(tocRail).toBeVisible();
@@ -52,6 +75,29 @@ test.describe("comparison component detail chrome", () => {
     await expect(exampleMount.locator('form[data-comparison-controls="accordion"]')).toBeVisible();
     await expect(exampleMount.getByRole("radiogroup", { name: "size" })).toBeVisible();
     await expect(exampleMount.getByRole("switch", { name: "isQuiet" })).toBeVisible();
+    await expect
+      .poll(() =>
+        exampleMount
+          .locator('[data-control-name="allowsMultipleExpanded"] .s2-control-label')
+          .evaluate((label) => {
+            const text = label.querySelector(".s2-control-label-text")?.getBoundingClientRect();
+            const help = label
+              .querySelector(".s2-control-contextual-help")
+              ?.getBoundingClientRect();
+
+            if (!text || !help) {
+              return false;
+            }
+
+            return (
+              text.right <= help.left ||
+              text.left >= help.right ||
+              text.bottom <= help.top ||
+              text.top >= help.bottom
+            );
+          }),
+      )
+      .toBe(true);
 
     const metaMount = page.locator(".js-component-detail-meta-mount");
     await expect(metaMount).toHaveAttribute("data-mounted", "true");
@@ -63,5 +109,59 @@ test.describe("comparison component detail chrome", () => {
       metaMount.getByRole("heading", { level: 2, name: "Visual State Coverage" }),
     ).toBeVisible();
     await expect(metaMount.getByRole("table", { name: "Accordion API props" })).toBeVisible();
+  });
+
+  test("matches the upstream mobile header and body chrome", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/components/accordion/");
+    await waitForComparisonRouteReady(page);
+
+    await expect(page.locator(".s2-sidebar")).toBeHidden();
+    await expect(page.locator(".s2-docs-toc-rail")).toBeHidden();
+
+    const main = page.locator(".s2-main");
+    await expect
+      .poll(() =>
+        main.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            boxShadow: style.boxShadow,
+            display: style.display,
+            paddingTop: style.paddingTop,
+            radius: style.borderTopLeftRadius,
+          };
+        }),
+      )
+      .toEqual({
+        boxShadow: "none",
+        display: "grid",
+        paddingTop: "12px",
+        radius: "0px",
+      });
+
+    const mobileToc = page.locator("[data-mobile-docs-toc]");
+    await expect(mobileToc).toBeVisible();
+    await expect(page.locator(".s2-brand-text")).toBeHidden();
+    await expect(mobileToc.getByRole("button", { name: "Table of contents" })).toContainText(
+      "Accordion",
+    );
+    await expect
+      .poll(() =>
+        mobileToc.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-mobile-toc-macro").trim(),
+        ),
+      )
+      .toBe("1");
+
+    const tocButton = mobileToc.getByRole("button", { name: "Table of contents" });
+    await expect(tocButton).toBeVisible();
+    await tocButton.click();
+
+    const listbox = page.getByRole("listbox");
+    await expect(listbox).toBeVisible();
+    await expect(listbox.getByRole("option", { name: "Accordion" })).toBeVisible();
+    await expect(listbox.getByRole("option", { name: "API" })).toBeVisible();
+    await listbox.getByRole("option", { name: "API" }).click();
+    await expect(page).toHaveURL(/#api$/);
   });
 });

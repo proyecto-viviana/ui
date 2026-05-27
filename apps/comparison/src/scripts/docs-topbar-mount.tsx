@@ -12,6 +12,8 @@ for (const mountNode of document.querySelectorAll<HTMLElement>(".js-docs-topbar-
   const reactSpectrumUrl = mountNode.dataset.reactSpectrumUrl || undefined;
   const referenceLabel = mountNode.dataset.referenceLabel || undefined;
   const referenceUrl = mountNode.dataset.referenceUrl || undefined;
+  const tocSlug = mountNode.dataset.tocSlug || undefined;
+  const tocVariant = mountNode.dataset.tocVariant === "component" ? "component" : "index";
   mountNode.replaceChildren();
 
   render(
@@ -22,6 +24,8 @@ for (const mountNode of document.querySelectorAll<HTMLElement>(".js-docs-topbar-
         reactSpectrumUrl,
         referenceLabel,
         referenceUrl,
+        tocSlug,
+        tocVariant,
       }),
     mountNode,
   );

@@ -653,10 +653,15 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       return local.children(item);
     }
 
+    const propsRecord = headlessProps as Record<string, unknown>;
+    const getKey = propsRecord.getKey as ((item: T) => Key) | undefined;
+    const getTextValue = propsRecord.getTextValue as ((item: T) => string) | undefined;
     const itemRecord = item as Record<string, unknown>;
-    const key = (itemRecord.key ?? itemRecord.id ?? String(item)) as Key;
-    const label = (itemRecord.label ?? itemRecord.textValue ?? String(item)) as JSX.Element;
-    const textValue = String(itemRecord.textValue ?? itemRecord.label ?? item);
+    const key = (getKey?.(item) ?? itemRecord.key ?? itemRecord.id ?? String(item)) as Key;
+    const textValue = String(
+      getTextValue?.(item) ?? itemRecord.textValue ?? itemRecord.label ?? item,
+    );
+    const label = (itemRecord.label ?? textValue) as JSX.Element;
     return (
       <PickerItem id={key} item={item} textValue={textValue}>
         {label}

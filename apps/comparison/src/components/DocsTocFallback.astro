@@ -1,5 +1,6 @@
 ---
-import { layerOrder, type ComparisonEntry, type ComparisonLayerId } from "@comparison/data/comparison-manifest";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import { getDocsTocItems, type DocsTocVariant } from "@comparison/data/docs-toc";
 import {
   docsTocActions,
   docsTocDivider,
@@ -13,8 +14,6 @@ import {
   docsTocScroller,
   staticClassName,
 } from "./solid/chrome/styles";
-
-type DocsTocVariant = "index" | "component";
 
 export interface Props {
   entry?: ComparisonEntry;
@@ -35,30 +34,7 @@ const tocActionsClass = staticClassName(docsTocActions);
 const tocDividerClass = staticClassName(docsTocDivider);
 const tocScrollerClass = staticClassName(docsTocScroller);
 
-const layerTitles: Record<ComparisonLayerId, string> = {
-  styled: "Styled Layer",
-  components: "Component Layer",
-  headless: "Headless Layer",
-  state: "State Layer",
-};
-
-const items =
-  variant === "component" && entry
-    ? [
-        { href: "#page-title", label: entry.title },
-        { href: "#example", label: "Example" },
-        { href: "#coverage", label: "Coverage" },
-        { href: "#visual-state-coverage", label: "Visual State Coverage" },
-        { href: "#api", label: "API" },
-        ...layerOrder
-          .filter((layer) => layer !== "styled")
-          .map((layer) => ({ href: `#${layer}`, label: layerTitles[layer] })),
-      ]
-    : [
-        { href: "#page-title", label: "Solid Spectrum" },
-        { href: "#coverage-title", label: "Catalogue controls" },
-        { href: "#components-title", label: "Components" },
-      ];
+const items = getDocsTocItems({ entry, variant });
 ---
 
 <div data-docs-toc-fallback>

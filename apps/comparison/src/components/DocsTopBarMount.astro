@@ -1,5 +1,6 @@
 ---
 import DocsTopBarFallback from "./DocsTopBarFallback.astro";
+import type { DocsTocVariant } from "@comparison/data/docs-toc";
 
 export interface Props {
   activeSlug?: string;
@@ -7,9 +8,19 @@ export interface Props {
   reactSpectrumUrl?: string;
   referenceLabel?: string;
   referenceUrl?: string;
+  tocSlug?: string;
+  tocVariant?: DocsTocVariant;
 }
 
-const { activeSlug, navigationLabel, reactSpectrumUrl, referenceLabel, referenceUrl } = Astro.props;
+const {
+  activeSlug,
+  navigationLabel,
+  reactSpectrumUrl,
+  referenceLabel,
+  referenceUrl,
+  tocSlug,
+  tocVariant,
+} = Astro.props;
 const normalizedReactSpectrumUrl = typeof reactSpectrumUrl === "string" ? reactSpectrumUrl : "";
 ---
 
@@ -20,6 +31,8 @@ const normalizedReactSpectrumUrl = typeof reactSpectrumUrl === "string" ? reactS
   data-react-spectrum-url={normalizedReactSpectrumUrl}
   data-reference-label={referenceLabel ?? "S2 docs"}
   data-reference-url={referenceUrl ?? ""}
+  data-toc-slug={tocSlug ?? ""}
+  data-toc-variant={tocVariant ?? "index"}
 >
   <DocsTopBarFallback reactSpectrumUrl={reactSpectrumUrl} />
 </div>

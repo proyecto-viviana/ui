@@ -60,6 +60,16 @@ into the remaining gates below.
   Spectrum divider and right-aligned `body-2xs` project links, matching the
   upstream footer structure while swapping Adobe legal links for local project
   destinations.
+- Accordion docs shell, live React Spectrum S2: upstream page chrome is split
+  across `Layout`, `Header`, `MobileHeader`, `MobileOnPageNav`, and page content
+  wrappers. Mobile hides the left nav and desktop ToC, then moves the current
+  page's ToC picker into the header.
+- Accordion docs shell, local comparison preview: desktop body spacing, sticky
+  right rail, mobile sidebar/ToC hiding, mobile header ToC picker, mobile card
+  radius/shadow removal, and mobile `#api` section selection are covered by
+  `e2e/component-detail-chrome.spec.ts`.
+- Accordion control column, local comparison preview: long prop-control labels
+  wrap beside contextual help without overlapping.
 
 ## Landed In This Checkpoint
 
@@ -101,6 +111,18 @@ into the remaining gates below.
 - The comparison footer no longer depends on legacy global `.s2-docs-footer`
   styles. Solid and fallback footers use the same divider and small link-row
   structure.
+- The page ToC is now source-backed from one shared helper used by the Solid
+  rail, Astro fallback rail, and mobile header picker.
+- Component detail page body layout, desktop ToC rail, and mobile header/body
+  chrome moved out of stale global layout CSS and into Solid Spectrum macro
+  styles with explicit browser-contract sentinels.
+- Mobile component pages now expose an S2 Picker for the current page's ToC in
+  the header. The brand wordmark is hidden at the mobile breakpoint so the
+  picker and action icons do not collide.
+- Picker object-backed items now honor `getKey`/`getTextValue`; this fixes the
+  mobile ToC picker using `#section` keys rather than `[object Object]`.
+- Prop-control labels now use a bounded grid layout so long option names and
+  contextual-help icons can wrap without visual overlap.
 
 ## Remaining Gates
 
@@ -117,8 +139,9 @@ into the remaining gates below.
 - Revisit the landing page separately; it is still not shaped like the
   upstream Spectrum 2 landing page.
 - Continue page-chrome porting against upstream `Layout`, `Header`, `Nav`, and
-  `VisualExample`: page body spacing and mobile ToC/header behavior still need
-  the same source-backed audit.
+  `VisualExample`: mobile ToC/header behavior has a first browser gate, but the
+  content pipeline, route-specific body sections, search menu richness, and
+  link taxonomy still need source-backed decisions.
 - Decide how far the local search should follow upstream `SearchMenuTrigger`.
   Current behavior covers the comparison-app component catalogue, but upstream
   search includes richer site-wide result content and keyboard/menu behavior.
@@ -126,6 +149,8 @@ into the remaining gates below.
   information architecture changes. Upstream exposes `Docs`, `Releases`,
   `Blog`, `GitHub`, and `npm`; the comparison app currently exposes `Docs`,
   `React Spectrum`, and `npm`.
+- Remove the remaining mobile-nav-panel descendant CSS once the off-canvas
+  sidebar panel itself is fully ported to macro-owned styles.
 
 ## Process Note
 
@@ -138,4 +163,6 @@ render". It must also record:
 - light/dark theme behavior,
 - generated/source-code behavior,
 - React/Solid mount status,
+- source-backed upstream files checked for the page/component structure,
+- contract selectors or macro sentinels that protect each ported surface,
 - any accepted divergence from upstream and why it remains necessary.

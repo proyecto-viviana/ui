@@ -1,11 +1,8 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { Divider, Link, Provider } from "@proyecto-viviana/solid-spectrum";
-import {
-  getComparisonEntry,
-  layerOrder,
-  type ComparisonLayerId,
-} from "@comparison/data/comparison-manifest";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import { getDocsTocItems, type DocsTocItem, type DocsTocVariant } from "@comparison/data/docs-toc";
 import {
   docsTocActions,
   docsTocDivider,
@@ -25,13 +22,6 @@ import {
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
-type DocsTocVariant = "index" | "component";
-
-interface DocsTocItem {
-  href: string;
-  label: string;
-}
-
 export interface DocsTocProps {
   sourceLabel?: string;
   sourceUrl?: string;
@@ -39,12 +29,6 @@ export interface DocsTocProps {
   variant: DocsTocVariant;
 }
 
-const layerTitles: Record<ComparisonLayerId, string> = {
-  styled: "Styled Layer",
-  components: "Component Layer",
-  headless: "Headless Layer",
-  state: "State Layer",
-};
 const tocRootClass = staticClassName(docsTocRoot);
 const tocActionsClass = staticClassName(docsTocActions);
 const tocDividerClass = staticClassName(docsTocDivider);
@@ -239,30 +223,10 @@ function createCurrentHref(items: DocsTocItem[]) {
 }
 
 function getTocItems(props: DocsTocProps): DocsTocItem[] {
-  if (props.variant !== "component") {
-    return [
-      { href: "#page-title", label: "Solid Spectrum" },
-      { href: "#coverage-title", label: "Catalogue controls" },
-      { href: "#components-title", label: "Components" },
-    ];
-  }
-
-  const entry = props.slug ? getComparisonEntry(props.slug) : undefined;
-
-  if (!entry) {
-    return [{ href: "#page-title", label: "Component" }];
-  }
-
-  return [
-    { href: "#page-title", label: entry.title },
-    { href: "#example", label: "Example" },
-    { href: "#coverage", label: "Coverage" },
-    { href: "#visual-state-coverage", label: "Visual State Coverage" },
-    { href: "#api", label: "API" },
-    ...layerOrder
-      .filter((layer) => layer !== "styled")
-      .map((layer) => ({ href: `#${layer}`, label: layerTitles[layer] })),
-  ];
+  return getDocsTocItems({
+    entry: props.slug ? getComparisonEntry(props.slug) : undefined,
+    variant: props.variant,
+  });
 }
 
 function cx(...classNames: Array<string | null | undefined | false>): string {

@@ -9,20 +9,29 @@ import {
   LightenIcon,
   Link,
   MenuHamburgerIcon,
+  Picker,
   Provider,
   SearchField,
   SearchIcon,
 } from "@proyecto-viviana/solid-spectrum";
-import { comparisonEntries, type ComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  comparisonEntries,
+  getComparisonEntry,
+  type ComparisonEntry,
+} from "@comparison/data/comparison-manifest";
+import { getDocsTocItems, type DocsTocItem, type DocsTocVariant } from "@comparison/data/docs-toc";
 import { getComparisonThemeChoiceLabel } from "@comparison/data/theme";
 import {
   docsBrandLink,
   docsBrandMark,
+  docsBrandText,
   docsMobileNavButton,
   docsMobileNavHeader,
   docsMobileNavOverlay,
   docsMobileNavPanel,
   docsMobileNavTitle,
+  docsMobileTocPicker,
+  docsMobileTocRoot,
   docsSearchButton,
   docsSearchDialog,
   docsSearchDialogField,
@@ -56,16 +65,21 @@ export interface DocsTopBarProps {
   reactSpectrumUrl?: string;
   referenceLabel?: string;
   referenceUrl?: string;
+  tocSlug?: string;
+  tocVariant?: DocsTocVariant;
 }
 
 const topBarRootClass = staticClassName(docsTopBarRoot);
 const brandLinkClass = staticClassName(docsBrandLink);
 const brandMarkClass = staticClassName(docsBrandMark);
+const brandTextClass = staticClassName(docsBrandText);
 const mobileNavButtonClass = staticClassName(docsMobileNavButton);
 const mobileNavOverlayClass = staticClassName(docsMobileNavOverlay);
 const mobileNavPanelClass = staticClassName(docsMobileNavPanel);
 const mobileNavHeaderClass = staticClassName(docsMobileNavHeader);
 const mobileNavTitleClass = staticClassName(docsMobileNavTitle);
+const mobileTocPickerClass = staticClassName(docsMobileTocPicker);
+const mobileTocRootClass = staticClassName(docsMobileTocRoot);
 const searchButtonClass = staticClassName(docsSearchButton);
 const searchDialogClass = staticClassName(docsSearchDialog);
 const searchDialogFieldClass = staticClassName(docsSearchDialogField);
@@ -101,6 +115,13 @@ export default function DocsTopBar(props: DocsTopBarProps) {
   const [searchQuery, setSearchQuery] = createSignal("");
   const [mobileNavTrigger, setMobileNavTrigger] = createSignal<HTMLButtonElement | null>(null);
   const [searchTrigger, setSearchTrigger] = createSignal<HTMLButtonElement | null>(null);
+  const mobileTocItems = createMemo(() =>
+    getDocsTocItems({
+      entry: props.tocSlug ? getComparisonEntry(props.tocSlug) : undefined,
+      variant: props.tocVariant ?? "index",
+    }),
+  );
+  const [mobileCurrentHref, setMobileCurrentHref] = createMobileCurrentHref(mobileTocItems);
   let searchDialogElement: HTMLDivElement | undefined;
 
   const closeMobileNav = () => setMobileNavOpen(false);
@@ -135,6 +156,19 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     const choice = themeChoice();
     const mode = choice === "system" ? `system ${resolvedTheme()}` : choice;
     return `Using ${mode} mode (press to switch)`;
+  };
+  const navigateToMobileTocHref = (key: unknown) => {
+    const href = String(key ?? "");
+    if (!href) {
+      return;
+    }
+
+    setMobileCurrentHref(href);
+    const anchor = document.getElementById(href.slice(1));
+    if (anchor) {
+      anchor.scrollIntoView({ block: "start" });
+      window.history.replaceState(null, "", href);
+    }
   };
   const searchResults = createMemo(() => {
     const normalizedQuery = normalizeSearchValue(searchQuery());
@@ -236,9 +270,34 @@ export default function DocsTopBar(props: DocsTopBarProps) {
         },
         [
           h("span", { class: brandMarkClass, "aria-hidden": "true" }, "S"),
-          h("span", {}, "Solid Spectrum"),
+          h("span", { class: classNames("s2-brand-text", brandTextClass) }, "Solid Spectrum"),
         ],
       ),
+      () =>
+        mobileTocItems().length > 1
+          ? h(
+              "div",
+              {
+                class: mobileTocRootClass,
+                "data-mobile-docs-toc": "",
+              },
+              hc(Picker, {
+                "aria-label": "Table of contents",
+                isQuiet: true,
+                size: "L",
+                styles: mobileTocPickerClass,
+                get items() {
+                  return mobileTocItems();
+                },
+                getKey: (item: DocsTocItem) => item.href,
+                getTextValue: (item: DocsTocItem) => item.label,
+                get selectedKey() {
+                  return mobileCurrentHref();
+                },
+                onSelectionChange: navigateToMobileTocHref,
+              }),
+            )
+          : undefined,
       h(
         "div",
         { class: classNames("s2-search", searchRootClass) },
@@ -463,6 +522,68 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           : undefined,
     ],
   )();
+}
+
+function createMobileCurrentHref(
+  items: () => DocsTocItem[],
+): [() => string, (href: string) => void] {
+  const [currentHref, setCurrentHref] = createSignal(items()[0]?.href ?? "");
+
+  createEffect(() => {
+    const nextItems = items();
+    setCurrentHref((current) =>
+      nextItems.some((item) => item.href === current) ? current : (nextItems[0]?.href ?? ""),
+    );
+  });
+
+  onMount(() => {
+    const hash = window.location.hash;
+    if (hash && items().some((item) => item.href === hash)) {
+      setCurrentHref(hash);
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      return;
+    }
+
+    const anchors = items()
+      .map((item) => document.getElementById(item.href.slice(1)))
+      .filter((element): element is HTMLElement => element != null);
+    if (!anchors.length) {
+      return;
+    }
+
+    const visible = new Set<Element>();
+    const anchorsByDocumentPosition = [...anchors].reverse();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            visible.add(entry.target);
+          } else {
+            visible.delete(entry.target);
+          }
+        }
+
+        const currentAnchor = anchorsByDocumentPosition.find((element) => visible.has(element));
+        if (currentAnchor?.id) {
+          setCurrentHref(`#${currentAnchor.id}`);
+        }
+      },
+      {
+        rootMargin: "9999999px 0px -100% 0px",
+        threshold: 0.5,
+      },
+    );
+
+    for (const anchor of anchors) {
+      observer.observe(anchor);
+    }
+
+    onCleanup(() => observer.disconnect());
+  });
+
+  return [currentHref, setCurrentHref];
 }
 
 function searchResult(entry: ComparisonEntry) {
