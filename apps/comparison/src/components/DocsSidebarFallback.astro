@@ -1,16 +1,7 @@
 ---
-import {
-  getComparisonEntryGroupId,
-  groupComparisonEntries,
-} from "@comparison/data/component-groups";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
 import {
-  docsNavCountFallback,
-  docsNavGroup,
-  docsNavGroupFallbackLinks,
-  docsNavGroupLabel,
   docsNavGroupLink,
-  docsNavGroupSummary,
   docsNavHeading,
   docsNavLink,
   docsNavLinkCurrent,
@@ -26,12 +17,8 @@ export interface Props {
 }
 
 const { activeSlug, navigationLabel, referenceLabel, referenceUrl } = Astro.props;
-const sidebarGroups = groupComparisonEntries(comparisonEntries);
 const normalizedActiveSlug = comparisonEntries.some((entry) => entry.slug === activeSlug)
   ? (activeSlug as ComparisonSlug)
-  : undefined;
-const activeGroupId = normalizedActiveSlug
-  ? getComparisonEntryGroupId(normalizedActiveSlug)
   : undefined;
 const isIndexPage = normalizedActiveSlug == null;
 const visualParityHref = normalizedActiveSlug ? "#visual-state-coverage" : "/components/button";
@@ -40,12 +27,7 @@ const navRootClass = staticClassName(docsNavRoot);
 const navHeadingClass = staticClassName(docsNavHeading);
 const navLinkClass = staticClassName(docsNavLink);
 const navLinkCurrentClass = staticClassName(docsNavLinkCurrent);
-const navGroupClass = staticClassName(docsNavGroup);
-const navGroupFallbackLinksClass = staticClassName(docsNavGroupFallbackLinks);
-const navGroupLabelClass = staticClassName(docsNavGroupLabel);
 const navGroupLinkClass = staticClassName(docsNavGroupLink);
-const navGroupSummaryClass = staticClassName(docsNavGroupSummary);
-const navCountFallbackClass = staticClassName(docsNavCountFallback);
 ---
 
 <nav class:list={["s2-nav s2-nav--grouped", navRootClass]} aria-label={navigationLabel ?? "Documentation"}>
@@ -58,28 +40,18 @@ const navCountFallbackClass = staticClassName(docsNavCountFallback);
     Getting started
   </a>
   <p class={navHeadingClass}>Components</p>
-  {sidebarGroups.map((group) => (
-    <details class:list={["s2-nav-group", navGroupClass]} open={isIndexPage || group.id === activeGroupId}>
-      <summary class={navGroupSummaryClass}>
-        <span class={navGroupLabelClass}>{group.title}</span>
-        <span class:list={["s2-nav-count", navCountFallbackClass]}>{group.entries.length}</span>
-      </summary>
-      <div class={navGroupFallbackLinksClass}>
-        {group.entries.map((item) => (
-          <a
-            href={`/components/${item.slug}`}
-            class:list={[
-              navLinkClass,
-              navGroupLinkClass,
-              item.slug === normalizedActiveSlug && navLinkCurrentClass,
-            ]}
-            aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
-          >
-            {item.title}
-          </a>
-        ))}
-      </div>
-    </details>
+  {comparisonEntries.map((item) => (
+    <a
+      href={`/components/${item.slug}`}
+      class:list={[
+        navLinkClass,
+        navGroupLinkClass,
+        item.slug === normalizedActiveSlug && navLinkCurrentClass,
+      ]}
+      aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
+    >
+      {item.title}
+    </a>
   ))}
   <p class={navHeadingClass}>Guides</p>
   <a href={visualParityHref} class={navLinkClass}>Visual parity</a>

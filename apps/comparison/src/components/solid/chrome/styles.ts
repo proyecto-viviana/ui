@@ -380,7 +380,7 @@ export const docsSidebarRoot = style({
 
 export const docsNavRoot = style({
   display: "grid",
-  gap: 8,
+  gap: 0,
   font: "ui",
   "@media (max-width: 860px)": {
     gridAutoFlow: "row",
@@ -397,7 +397,7 @@ export const docsNavHeading = style({
   },
   marginBottom: 8,
   color: "neutral",
-  font: "detail",
+  font: "title",
 });
 
 export const docsNavLink = style({
@@ -406,14 +406,15 @@ export const docsNavLink = style({
   minHeight: 32,
   paddingX: 4,
   color: {
-    default: "neutral-subdued",
-    ":hover": "accent",
+    default: "neutral",
+    ":hover": "neutral",
   },
   textDecoration: "none",
 });
 
 export const docsNavLinkCurrent = style({
-  color: "accent",
+  color: "neutral",
+  fontWeight: "bold",
 });
 
 export const docsNavGroup = style({
@@ -452,7 +453,7 @@ export const docsNavGroupLinks = style({
 });
 
 export const docsNavGroupLink = style({
-  paddingStart: 8,
+  paddingStart: 4,
 });
 
 export const docsNavGroupSummary = style({

@@ -1,27 +1,8 @@
 import h from "solid-js/h";
-import {
-  Badge,
-  Disclosure,
-  DisclosureHeader,
-  DisclosurePanel,
-  DisclosureTitle,
-  Link,
-  Provider,
-} from "@proyecto-viviana/solid-spectrum";
-import {
-  getComparisonEntryGroupId,
-  groupComparisonEntries,
-} from "@comparison/data/component-groups";
+import { Link, Provider } from "@proyecto-viviana/solid-spectrum";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
 import {
-  docsNavCount,
-  docsNavGroup,
-  docsNavGroupHeader,
-  docsNavGroupLabel,
   docsNavGroupLink,
-  docsNavGroupLinks,
-  docsNavGroupPanel,
-  docsNavGroupTitle,
   docsNavHeading,
   docsNavLink,
   docsNavRoot,
@@ -38,24 +19,15 @@ export interface DocsSidebarProps {
   referenceUrl?: string;
 }
 
-const sidebarGroups = groupComparisonEntries(comparisonEntries);
 const sidebarRootClass = staticClassName(docsSidebarRoot);
 const navRootClass = staticClassName(docsNavRoot);
 const navHeadingClass = staticClassName(docsNavHeading);
 const navLinkClass = staticClassName(docsNavLink);
-const navCountClass = staticClassName(docsNavCount);
-const navGroupClass = staticClassName(docsNavGroup);
-const navGroupHeaderClass = staticClassName(docsNavGroupHeader);
-const navGroupLabelClass = staticClassName(docsNavGroupLabel);
 const navGroupLinkClass = staticClassName(docsNavGroupLink);
-const navGroupLinksClass = staticClassName(docsNavGroupLinks);
-const navGroupPanelClass = staticClassName(docsNavGroupPanel);
-const navGroupTitleClass = staticClassName(docsNavGroupTitle);
 
 export default function DocsSidebar(props: DocsSidebarProps) {
   const { resolvedTheme } = createComparisonColorScheme();
   const activeSlug = normalizeActiveSlug(props.activeSlug);
-  const activeGroupId = activeSlug ? getComparisonEntryGroupId(activeSlug) : undefined;
   const isIndexPage = activeSlug == null;
   const visualParityHref = activeSlug ? "#visual-state-coverage" : "/components/button";
   const apiCoverageHref = activeSlug ? "#api" : "/components/button#api";
@@ -75,56 +47,10 @@ export default function DocsSidebar(props: DocsSidebarProps) {
         navHeading("Overview"),
         navLink("/", "Getting started", isIndexPage),
         navHeading("Components"),
-        ...sidebarGroups.map((group) =>
-          hc(
-            Disclosure,
-            {
-              id: group.id,
-              defaultExpanded: isIndexPage || group.id === activeGroupId,
-              isQuiet: true,
-              size: "S",
-              density: "spacious",
-              UNSAFE_className: "s2-nav-group",
-              styles: navGroupClass,
-            },
-            [
-              hc(
-                DisclosureHeader,
-                { UNSAFE_className: "s2-nav-group-header", styles: navGroupHeaderClass },
-                [
-                  hc(
-                    DisclosureTitle,
-                    {
-                      level: 3,
-                      UNSAFE_className: "s2-nav-group-title",
-                      styles: navGroupTitleClass,
-                    },
-                    [h("span", { class: navGroupLabelClass }, group.title)],
-                  ),
-                  h("span", { class: cx("s2-nav-count s2-status-badge", navCountClass) }, [
-                    hc(Badge, { variant: "neutral", fillStyle: "subtle", size: "S" }, [
-                      String(group.entries.length),
-                    ]),
-                  ]),
-                ],
-              ),
-              hc(
-                DisclosurePanel,
-                { UNSAFE_className: "s2-nav-group-panel", styles: navGroupPanelClass },
-                [
-                  h(
-                    "div",
-                    { class: navGroupLinksClass },
-                    group.entries.map((item) =>
-                      navLink(`/components/${item.slug}`, item.title, item.slug === activeSlug, {
-                        className: navGroupLinkClass,
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        ...comparisonEntries.map((item) =>
+          navLink(`/components/${item.slug}`, item.title, item.slug === activeSlug, {
+            className: navGroupLinkClass,
+          }),
         ),
         navHeading("Guides"),
         navLink(visualParityHref, "Visual parity", false),
