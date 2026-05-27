@@ -2,6 +2,7 @@
 import {
   docsBrandLink,
   docsBrandMark,
+  docsMobileNavButton,
   docsSearchKeyboard,
   docsSearchRoot,
   docsShellAction,
@@ -20,6 +21,7 @@ const { reactSpectrumUrl } = Astro.props;
 const topBarRootClass = staticClassName(docsTopBarRoot);
 const brandLinkClass = staticClassName(docsBrandLink);
 const brandMarkClass = staticClassName(docsBrandMark);
+const mobileNavButtonClass = staticClassName(docsMobileNavButton);
 const searchRootClass = staticClassName(docsSearchRoot);
 const shellActionClass = staticClassName(docsShellAction);
 const shellThemeToggleClass = staticClassName(docsShellThemeToggle);
@@ -50,6 +52,13 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
     data-theme-toggle
     aria-label="Switch color theme"
   >
-    <span data-theme-toggle-icon>System</span>
+    <span class="s2-theme-icon" data-theme-toggle-icon>System</span>
+  </button>
+  <button
+    class:list={["s2-shell-action s2-mobile-nav-button", shellActionClass, mobileNavButtonClass]}
+    type="button"
+    aria-label="Navigation"
+  >
+    <span class="s2-menu-icon" aria-hidden="true"></span>
   </button>
 </div>

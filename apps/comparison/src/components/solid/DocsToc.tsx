@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { Link, LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
+import { Divider, Link, Provider } from "@proyecto-viviana/solid-spectrum";
 import {
   getComparisonEntry,
   layerOrder,
@@ -73,20 +73,20 @@ export default function DocsToc(props: DocsTocProps) {
           ),
         ),
         props.sourceUrl
-          ? h(
-              "div",
-              { class: tocActionsClass },
+          ? h("div", { class: tocActionsClass }, [
+              hc(Divider, { size: "S" }),
               hc(
-                LinkButton,
+                Link,
                 {
                   href: props.sourceUrl,
-                  size: "S",
                   variant: "secondary",
-                  fillStyle: "outline",
+                  isStandalone: true,
+                  isQuiet: true,
+                  UNSAFE_className: tocLinkClass,
                 },
                 [props.sourceLabel ?? "S2 source"],
               ),
-            )
+            ])
           : undefined,
       ]),
     ],

@@ -21,21 +21,25 @@ export const docsTopBarRoot = style({
   top: 0,
   zIndex: 50,
   display: "grid",
-  gridTemplateColumns: "[240px minmax(180px, 420px) 1fr auto]",
+  gridTemplateColumns: "[1fr minmax(240px, 500px) 1fr auto]",
   alignItems: "center",
-  gap: 24,
-  height: 64,
-  paddingX: 32,
-  borderBottomWidth: 1,
-  borderStyle: "solid",
-  borderColor: lightDark("gray-300", "gray-800"),
-  backgroundColor: "base",
+  gap: 12,
+  width: "[calc(100% - 24px)]",
+  maxWidth: "[1416px]",
+  minHeight: 48,
+  marginX: "auto",
+  marginTop: 12,
+  paddingX: 12,
+  borderBottomWidth: 0,
+  backgroundColor: "layer-1",
   isolation: "isolate",
   "@media (max-width: 860px)": {
-    gridTemplateColumns: "[1fr auto]",
+    gridTemplateColumns: "[1fr auto auto]",
     height: "auto",
-    paddingX: 18,
-    paddingY: 14,
+    minHeight: 56,
+    marginTop: 0,
+    paddingX: "[18px]",
+    paddingY: 8,
   },
 });
 
@@ -44,10 +48,14 @@ export const docsBrandLink = style({
   alignItems: "center",
   gap: "[10px]",
   minWidth: 0,
+  marginStart: "[26px]",
   color: "neutral",
   font: "ui-lg",
   fontWeight: "bold",
   textDecoration: "none",
+  "@media (max-width: 860px)": {
+    marginStart: 0,
+  },
 });
 
 export const docsBrandMark = style({
@@ -67,6 +75,9 @@ export const docsSearchRoot = style({
   display: "grid",
   gridTemplateColumns: "[minmax(0, 1fr)]",
   alignItems: "center",
+  justifySelf: "center",
+  width: "full",
+  maxWidth: "[500px]",
   minWidth: 0,
   "@media (max-width: 860px)": {
     display: "none",
@@ -75,6 +86,8 @@ export const docsSearchRoot = style({
 
 export const docsSearchButton = style({
   width: "full",
+  gridTemplateColumns: "[minmax(0, 1fr) auto]",
+  justifyItems: "start",
   justifyContent: "space-between",
 });
 
@@ -96,6 +109,13 @@ export const docsShellAction = style({
 });
 
 export const docsShellThemeToggle = style({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 32,
+  height: 32,
+  minWidth: 32,
+  paddingX: 0,
   font: "ui-sm",
 });
 
@@ -119,7 +139,7 @@ export const docsSearchKeyboard = style({
 export const docsTopNavRoot = style({
   display: "flex",
   justifyContent: "end",
-  gap: "[22px]",
+  gap: 24,
   color: "neutral-subdued",
   font: "ui",
   "@media (max-width: 860px)": {
@@ -136,49 +156,102 @@ export const docsTopNavLink = style({
   },
 });
 
+export const docsMobileNavButton = style({
+  display: "none",
+  "@media (max-width: 860px)": {
+    display: "inline-flex",
+  },
+});
+
+export const docsMobileNavOverlay = style({
+  position: "fixed",
+  inset: 0,
+  zIndex: 100,
+});
+
+export const docsMobileNavPanel = style({
+  position: "fixed",
+  top: 0,
+  insetEnd: 0,
+  width: "[min(340px, calc(100vw - 24px))]",
+  height: "[100dvh]",
+  paddingX: "[18px]",
+  paddingBottom: "[18px]",
+  overflow: "auto",
+  backgroundColor: "layer-1",
+  boxShadow: "emphasized",
+});
+
+export const docsMobileNavHeader = style({
+  position: "sticky",
+  top: 0,
+  zIndex: 1,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 56,
+  backgroundColor: "layer-1",
+});
+
+export const docsMobileNavTitle = style({
+  color: "neutral",
+  font: "title",
+});
+
 export const docsLayoutRoot = style({
   "--comparison-docs-layout-macro": {
     type: "opacity",
     value: 1,
   },
-  display: "grid",
-  gridTemplateColumns: "[220px minmax(0, 1fr) 168px]",
-  gap: 32,
-  width: "[min(1680px, 100%)]",
+  display: "flex",
+  alignItems: "stretch",
+  gap: 0,
+  width: "[min(1440px, 100%)]",
   marginX: "auto",
-  paddingTop: 36,
-  paddingBottom: "[88px]",
-  paddingX: 28,
-  "@media (max-width: 1320px)": {
-    gridTemplateColumns: "[210px minmax(0, 1fr)]",
-  },
+  marginTop: 12,
+  paddingX: 12,
+  paddingBottom: 0,
   "@media (max-width: 860px)": {
+    display: "grid",
     gridTemplateColumns: "[1fr]",
-    gap: 24,
-    paddingTop: 24,
-    paddingBottom: 72,
-    paddingX: 18,
+    gap: 12,
+    marginTop: 0,
+    paddingX: 0,
+    paddingBottom: 0,
   },
 });
 
 export const docsSidebarRail = style({
+  flexShrink: 0,
+  width: "[224px]",
   position: "sticky",
-  top: "[88px]",
-  maxHeight: "[calc(100vh - 104px)]",
+  top: 40,
+  alignSelf: "start",
+  maxHeight: "[calc(100vh - 72px)]",
+  paddingX: 12,
+  boxSizing: "border-box",
   overflow: "auto",
   "@media (max-width: 860px)": {
     position: "static",
+    width: "auto",
     maxHeight: "none",
+    paddingX: "[18px]",
+    paddingY: 12,
   },
 });
 
 export const docsTocRail = style({
+  flexShrink: 0,
+  width: "[180px]",
   position: "sticky",
-  top: "[88px]",
-  display: "grid",
+  top: 0,
+  display: "flex",
+  flexDirection: "column",
   alignContent: "start",
   gap: 8,
-  maxHeight: "[calc(100vh - 104px)]",
+  maxHeight: "[calc(100vh - 72px)]",
+  marginBottom: "[-40px]",
+  paddingTop: 32,
   overflow: "auto",
   color: "neutral-subdued",
   font: "ui-sm",
@@ -188,8 +261,79 @@ export const docsTocRail = style({
 });
 
 export const docsMainContent = style({
+  display: "flex",
+  justifyContent: "space-between",
+  columnGap: 40,
+  flexGrow: 1,
+  minWidth: 0,
+  height: "[calc(100vh - 72px)]",
+  padding: 40,
+  position: "relative",
+  overflow: "auto",
+  backgroundColor: "base",
+  borderRadius: "xl",
+  borderBottomRadius: "none",
+  boxShadow: "emphasized",
+  scrollPaddingTop: 32,
+  "@media (max-width: 860px)": {
+    display: "grid",
+    height: "auto",
+    minHeight: "[calc(100vh - 56px)]",
+    padding: 18,
+    borderRadius: "none",
+    boxShadow: "none",
+  },
+});
+
+export const docsArticleColumn = style({
+  display: "flex",
+  flexDirection: "column",
+  flexGrow: 1,
+  minWidth: 0,
+  width: "full",
+});
+
+export const docsArticleContent = style({
+  "--text-width": {
+    type: "length",
+    value: "768px",
+  },
   display: "grid",
   gap: "[34px]",
+  flexGrow: 1,
+  width: "full",
+  maxWidth: "[768px]",
+  marginX: "auto",
+});
+
+export const docsFooterRoot = style({
+  display: "grid",
+  gap: 16,
+  width: "full",
+  maxWidth: "[768px]",
+  marginX: "auto",
+  marginTop: 32,
+  paddingY: 12,
+  color: "neutral-subdued",
+  font: "ui-sm",
+});
+
+export const docsFooterList = style({
+  display: "flex",
+  justifyContent: "end",
+  flexWrap: "wrap",
+  gap: 12,
+  paddingX: 12,
+  margin: 0,
+  listStyleType: "none",
+});
+
+export const docsFooterLink = style({
+  color: {
+    default: "neutral-subdued",
+    ":hover": "accent",
+  },
+  textDecoration: "none",
 });
 
 export const docsChromeMount = style({
@@ -206,8 +350,7 @@ export const docsSidebarRoot = style({
 
 export const docsNavRoot = style({
   display: "grid",
-  gap: 2,
-  paddingEnd: 12,
+  gap: 8,
   font: "ui",
   "@media (max-width: 860px)": {
     gridAutoFlow: "row",
@@ -219,7 +362,7 @@ export const docsNavRoot = style({
 
 export const docsNavHeading = style({
   marginTop: {
-    default: "[22px]",
+    default: 24,
     ":first-child": 0,
   },
   marginBottom: 8,
@@ -230,7 +373,8 @@ export const docsNavHeading = style({
 export const docsNavLink = style({
   display: "inline-flex",
   alignItems: "center",
-  minHeight: 28,
+  minHeight: 32,
+  paddingX: 4,
   color: {
     default: "neutral-subdued",
     ":hover": "accent",
@@ -286,8 +430,9 @@ export const docsNavGroupSummary = style({
   gridTemplateColumns: "[minmax(0, 1fr) auto 12px]",
   alignItems: "center",
   gap: 8,
-  minHeight: 30,
+  minHeight: 32,
   paddingY: 4,
+  paddingX: 4,
   color: "neutral",
   font: "detail",
   cursor: "pointer",
@@ -336,15 +481,18 @@ export const docsTocNav = style({
 
 export const docsTocHeading = style({
   marginTop: 0,
-  marginBottom: 8,
+  marginBottom: 0,
+  minHeight: 32,
+  paddingX: 12,
   color: "neutral",
-  font: "detail",
+  font: "title",
 });
 
 export const docsTocLink = style({
   display: "inline-flex",
   alignItems: "center",
-  minHeight: 28,
+  minHeight: 32,
+  paddingX: 4,
   color: {
     default: "neutral-subdued",
     ":hover": "accent",
@@ -355,9 +503,5 @@ export const docsTocLink = style({
 export const docsTocActions = style({
   display: "grid",
   gap: 8,
-  marginTop: 20,
-  paddingTop: 16,
-  borderTopWidth: 1,
-  borderStyle: "solid",
-  borderColor: lightDark("gray-300", "gray-800"),
+  marginTop: 12,
 });

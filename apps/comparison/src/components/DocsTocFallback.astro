@@ -56,6 +56,7 @@ const items =
   ))}
   {sourceUrl ? (
     <div class:list={["s2-toc-actions", tocActionsClass]}>
+      <hr />
       <a href={sourceUrl} class={tocLinkClass}>{sourceLabel ?? "S2 source"}</a>
     </div>
   ) : null}

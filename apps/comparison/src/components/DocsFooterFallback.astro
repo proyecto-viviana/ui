@@ -1,0 +1,27 @@
+---
+import {
+  docsFooterLink,
+  docsFooterList,
+  docsFooterRoot,
+  staticClassName,
+} from "./solid/chrome/styles";
+
+const footerRootClass = staticClassName(docsFooterRoot);
+const footerListClass = staticClassName(docsFooterList);
+const footerLinkClass = staticClassName(docsFooterLink);
+
+const footerLinks = [
+  { href: "/", label: "Solid Spectrum" },
+  { href: "https://react-spectrum.adobe.com/", label: "React Spectrum" },
+  { href: "https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum", label: "npm" },
+] as const;
+---
+
+<footer class:list={["s2-docs-footer", footerRootClass]} data-docs-footer-fallback>
+  <hr />
+  <ul class={footerListClass}>
+    {footerLinks.map((item) => (
+      <li><a href={item.href} class={footerLinkClass}>{item.label}</a></li>
+    ))}
+  </ul>
+</footer>

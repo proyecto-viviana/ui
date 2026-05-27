@@ -2,14 +2,25 @@
 import DocsTopBarFallback from "./DocsTopBarFallback.astro";
 
 export interface Props {
+  activeSlug?: string;
+  navigationLabel?: string;
   reactSpectrumUrl?: string;
+  referenceLabel?: string;
+  referenceUrl?: string;
 }
 
-const { reactSpectrumUrl } = Astro.props;
+const { activeSlug, navigationLabel, reactSpectrumUrl, referenceLabel, referenceUrl } = Astro.props;
 const normalizedReactSpectrumUrl = typeof reactSpectrumUrl === "string" ? reactSpectrumUrl : "";
 ---
 
-<div class="js-docs-topbar-mount" data-react-spectrum-url={normalizedReactSpectrumUrl}>
+<div
+  class="js-docs-topbar-mount"
+  data-active-slug={activeSlug ?? ""}
+  data-navigation-label={navigationLabel ?? "Documentation"}
+  data-react-spectrum-url={normalizedReactSpectrumUrl}
+  data-reference-label={referenceLabel ?? "S2 docs"}
+  data-reference-url={referenceUrl ?? ""}
+>
   <DocsTopBarFallback reactSpectrumUrl={reactSpectrumUrl} />
 </div>
 <script>

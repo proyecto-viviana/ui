@@ -1,9 +1,12 @@
 ---
+import DocsFooterMount from "@comparison/components/DocsFooterMount.astro";
 import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
 import DocsTocMount from "@comparison/components/DocsTocMount.astro";
 import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
 import {
+  docsArticleColumn,
+  docsArticleContent,
   docsLayoutRoot,
   docsMainContent,
   docsSidebarRail,
@@ -42,6 +45,8 @@ const {
 const layoutRootClass = staticClassName(docsLayoutRoot);
 const sidebarRailClass = staticClassName(docsSidebarRail);
 const mainContentClass = staticClassName(docsMainContent);
+const articleColumnClass = staticClassName(docsArticleColumn);
+const articleContentClass = staticClassName(docsArticleContent);
 const tocRailClass = staticClassName(docsTocRail);
 ---
 
@@ -53,7 +58,13 @@ const tocRailClass = staticClassName(docsTocRail);
     <title>{title}</title>
   </head>
   <body class="comparison-app s2-docs" data-theme="system" data-resolved-theme="light">
-    <DocsTopBarMount reactSpectrumUrl={reactSpectrumUrl} />
+    <DocsTopBarMount
+      activeSlug={sidebarActiveSlug}
+      navigationLabel={sidebarNavigationLabel}
+      reactSpectrumUrl={reactSpectrumUrl}
+      referenceLabel={sidebarReferenceLabel}
+      referenceUrl={sidebarReferenceUrl}
+    />
 
     <div class:list={["s2-layout", layoutRootClass]}>
       <aside class:list={["s2-sidebar", sidebarRailClass]}>
@@ -66,17 +77,22 @@ const tocRailClass = staticClassName(docsTocRail);
       </aside>
 
       <main class:list={["s2-main", mainContentClass]}>
-        <slot />
-      </main>
+        <div class:list={["s2-article-column", articleColumnClass]}>
+          <article class:list={["s2-article", articleContentClass]}>
+            <slot />
+          </article>
+          <DocsFooterMount />
+        </div>
 
-      <aside class:list={["s2-toc", tocRailClass]} aria-label="On this page">
-        <DocsTocMount
-          entry={tocEntry}
-          sourceLabel={tocSourceLabel}
-          sourceUrl={tocSourceUrl}
-          variant={tocVariant}
-        />
-      </aside>
+        <aside class:list={["s2-toc", tocRailClass]} aria-label="On this page">
+          <DocsTocMount
+            entry={tocEntry}
+            sourceLabel={tocSourceLabel}
+            sourceUrl={tocSourceUrl}
+            variant={tocVariant}
+          />
+        </aside>
+      </main>
     </div>
 
     <script>

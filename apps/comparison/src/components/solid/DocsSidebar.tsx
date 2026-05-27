@@ -68,10 +68,10 @@ export default function DocsSidebar(props: DocsSidebarProps) {
       get colorScheme() {
         return resolvedTheme();
       },
-      background: "base",
+      background: "layer-1",
     },
     [
-      h("nav", { class: navRootClass, "aria-label": props.navigationLabel }, [
+      h("nav", { class: cx("s2-nav", navRootClass), "aria-label": props.navigationLabel }, [
         navHeading("Overview"),
         navLink("/", "Getting started", isIndexPage),
         navHeading("Components"),
