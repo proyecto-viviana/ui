@@ -30,6 +30,17 @@ export function resolveComparisonThemeChoice(
   return "light";
 }
 
+export function getComparisonThemeChoiceLabel(theme: ComparisonThemeChoice) {
+  switch (theme) {
+    case "light":
+      return "Light";
+    case "dark":
+      return "Dark";
+    default:
+      return "System";
+  }
+}
+
 export function getComparisonResolvedThemeFromDocument(): ComparisonResolvedTheme {
   if (typeof document === "undefined") {
     return "light";

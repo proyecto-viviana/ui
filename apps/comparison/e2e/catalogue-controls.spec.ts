@@ -6,6 +6,27 @@ async function selectPickerOption(page: Page, label: string, option: string) {
 }
 
 test.describe("comparison catalogue controls", () => {
+  test("hydrates the topbar chrome", async ({ page }) => {
+    await page.goto("/");
+
+    const topbarMount = page.locator(".js-docs-topbar-mount");
+    await expect(topbarMount).toHaveAttribute("data-mounted", "true");
+    await expect(topbarMount.locator("[data-docs-topbar-fallback]")).toHaveCount(0);
+
+    await expect(page.getByRole("link", { name: "Solid Spectrum home" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+    await expect(page.getByRole("button", { name: "Search Solid Spectrum" })).toBeVisible();
+
+    const topnav = page.getByRole("navigation", { name: "Top navigation" });
+    await expect(topnav.getByRole("link", { name: "Docs" })).toHaveAttribute("href", "/");
+    await expect(topnav.getByRole("link", { name: "npm" })).toHaveAttribute(
+      "href",
+      "https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum",
+    );
+  });
+
   test("filters by search text and reports visible count", async ({ page }) => {
     await page.goto("/");
 
@@ -39,9 +60,12 @@ test.describe("comparison catalogue controls", () => {
     await page.goto("/");
 
     await expect(page.locator("body")).toHaveAttribute("data-theme", "system");
+    await expect(page.locator("[data-theme-toggle-icon]")).toHaveText("System");
     await page.getByRole("button", { name: "Switch color theme" }).click();
     await expect(page.locator("body")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("[data-theme-toggle-icon]")).toHaveText("Light");
     await page.getByRole("button", { name: "Switch color theme" }).click();
     await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("[data-theme-toggle-icon]")).toHaveText("Dark");
   });
 });

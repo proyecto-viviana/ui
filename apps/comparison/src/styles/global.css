@@ -87,6 +87,7 @@ body.s2-docs[data-theme="dark"] {
   color: var(--s2-text);
   font-size: 17px;
   font-weight: 700;
+  text-decoration: none;
 }
 
 .s2-brand-mark {
@@ -160,6 +161,11 @@ body.s2-docs[data-theme="dark"] {
   gap: 22px;
   color: var(--s2-text-muted);
   font-size: 14px;
+}
+
+.s2-topnav a {
+  display: inline-flex;
+  align-items: center;
 }
 
 .s2-topnav a:hover,

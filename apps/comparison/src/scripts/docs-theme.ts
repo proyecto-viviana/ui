@@ -1,6 +1,7 @@
 import {
   comparisonThemeChangeEvent,
   comparisonThemeRequestEvent,
+  getComparisonThemeChoiceLabel,
   resolveComparisonThemeChoice,
   type ComparisonThemeChoice,
 } from "@comparison/data/theme";
@@ -17,7 +18,7 @@ function isComparisonThemeChoice(value: unknown): value is ComparisonThemeChoice
 
 function updateThemeIcons(theme: ComparisonThemeChoice) {
   for (const themeIcon of document.querySelectorAll("[data-theme-toggle-icon]")) {
-    themeIcon.textContent = theme;
+    themeIcon.textContent = getComparisonThemeChoiceLabel(theme);
   }
 }
 
