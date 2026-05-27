@@ -1,6 +1,13 @@
 import h from "solid-js/h";
 import { For, createMemo, createSignal } from "solid-js";
-import { Badge, Meter, Picker, Provider, SearchField } from "@proyecto-viviana/solid-spectrum";
+import {
+  Badge,
+  Link,
+  Meter,
+  Picker,
+  Provider,
+  SearchField,
+} from "@proyecto-viviana/solid-spectrum";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import {
   comparisonEntries,
@@ -266,11 +273,14 @@ function statItem(label: string, value: number) {
 }
 
 function componentRow({ entry, coverage, index }: CatalogueEntryView) {
-  return h(
-    "a",
+  return hc(
+    Link,
     {
       href: `/components/${entry.slug}`,
-      class: "s2-component-row",
+      UNSAFE_className: "s2-component-row",
+      variant: "secondary",
+      isStandalone: true,
+      isQuiet: true,
       "data-entry-card": "",
       "data-index": index,
       "data-title": entry.title,
@@ -280,29 +290,31 @@ function componentRow({ entry, coverage, index }: CatalogueEntryView) {
       "data-source": entry.catalogueSource,
       "data-coverage": coverage.overall,
     },
-    h("span", { class: "s2-component-name" }, entry.title),
-    h("span", { class: "s2-component-summary" }, entry.summary),
-    h(
-      "span",
-      { class: "s2-component-coverage" },
-      h(Meter, {
-        "aria-label": `${entry.title} coverage`,
-        value: coverage.overall,
-        size: "S",
-      }),
-    ),
-    h(
-      "span",
-      { class: "s2-component-parity" },
-      hc(
-        Badge,
-        {
-          variant: parityVariant(entry.parity),
-          fillStyle: "subtle",
+    [
+      h("span", { class: "s2-component-name" }, entry.title),
+      h("span", { class: "s2-component-summary" }, entry.summary),
+      h(
+        "span",
+        { class: "s2-component-coverage" },
+        h(Meter, {
+          "aria-label": `${entry.title} coverage`,
+          value: coverage.overall,
           size: "S",
-        },
-        [entry.parity],
+        }),
       ),
-    ),
+      h(
+        "span",
+        { class: "s2-component-parity" },
+        hc(
+          Badge,
+          {
+            variant: parityVariant(entry.parity),
+            fillStyle: "subtle",
+            size: "S",
+          },
+          [entry.parity],
+        ),
+      ),
+    ],
   );
 }

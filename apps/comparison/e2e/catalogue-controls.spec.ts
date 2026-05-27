@@ -54,6 +54,22 @@ test.describe("comparison catalogue controls", () => {
     );
   });
 
+  test("hydrates the catalogue overview chrome", async ({ page }) => {
+    await page.goto("/");
+
+    const overviewMount = page.locator(".js-catalogue-overview-mount");
+    await expect(overviewMount).toHaveAttribute("data-mounted", "true");
+    await expect(overviewMount.locator("[data-catalogue-overview-fallback]")).toHaveCount(0);
+
+    const accordionRow = overviewMount.locator("[data-entry-card][data-title='Accordion']");
+    await expect(accordionRow).toBeVisible();
+    await expect(accordionRow).toHaveAttribute("href", "/components/accordion");
+    await expect(overviewMount.getByRole("searchbox", { name: "Search" })).toBeVisible();
+    await expect(overviewMount.getByRole("button", { name: "All Parity" })).toBeVisible();
+    await expect(overviewMount.getByRole("button", { name: "All Status" })).toBeVisible();
+    await expect(overviewMount.getByRole("button", { name: "Docs order Sort" })).toBeVisible();
+  });
+
   test("filters by search text and reports visible count", async ({ page }) => {
     await page.goto("/");
 
