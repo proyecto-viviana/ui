@@ -2,9 +2,15 @@
 import { layerOrder, type ComparisonEntry, type ComparisonLayerId } from "@comparison/data/comparison-manifest";
 import {
   docsTocActions,
+  docsTocDivider,
   docsTocHeading,
+  docsTocIndicator,
   docsTocLink,
+  docsTocLinkText,
+  docsTocList,
+  docsTocListItem,
   docsTocNav,
+  docsTocScroller,
   staticClassName,
 } from "./solid/chrome/styles";
 
@@ -21,7 +27,13 @@ const { entry, sourceLabel, sourceUrl, variant } = Astro.props;
 const tocNavClass = staticClassName(docsTocNav);
 const tocHeadingClass = staticClassName(docsTocHeading);
 const tocLinkClass = staticClassName(docsTocLink);
+const tocIndicatorClass = staticClassName(docsTocIndicator);
+const tocLinkTextClass = staticClassName(docsTocLinkText);
+const tocListClass = staticClassName(docsTocList);
+const tocListItemClass = staticClassName(docsTocListItem);
 const tocActionsClass = staticClassName(docsTocActions);
+const tocDividerClass = staticClassName(docsTocDivider);
+const tocScrollerClass = staticClassName(docsTocScroller);
 
 const layerTitles: Record<ComparisonLayerId, string> = {
   styled: "Styled Layer",
@@ -49,15 +61,29 @@ const items =
       ];
 ---
 
-<nav class:list={["s2-toc-nav", tocNavClass]} aria-label="On this page" data-docs-toc-fallback>
-  <p class={tocHeadingClass}>On this page</p>
-  {items.map((item) => (
-    <a href={item.href} class={tocLinkClass}>{item.label}</a>
-  ))}
+<div data-docs-toc-fallback>
+  <div class={tocHeadingClass}>On this page</div>
+  <div class={tocScrollerClass}>
+    <nav class={tocNavClass} aria-label="On this page">
+      <ul class={tocListClass}>
+        {items.map((item) => (
+          <li class={tocListItemClass}>
+            <a href={item.href} class={tocLinkClass}>
+              <span aria-hidden="true" class={tocIndicatorClass}></span>
+              <span class={tocLinkTextClass}>{item.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
   {sourceUrl ? (
-    <div class:list={["s2-toc-actions", tocActionsClass]}>
-      <hr />
-      <a href={sourceUrl} class={tocLinkClass}>{sourceLabel ?? "S2 source"}</a>
+    <div class={tocActionsClass}>
+      <hr class={tocDividerClass} />
+      <a href={sourceUrl} class={tocLinkClass}>
+        <span aria-hidden="true" class={tocIndicatorClass}></span>
+        <span class={tocLinkTextClass}>{sourceLabel ?? "S2 source"}</span>
+      </a>
     </div>
   ) : null}
-</nav>
+</div>

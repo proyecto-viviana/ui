@@ -1,11 +1,13 @@
 ---
 import {
+  docsFooterDivider,
   docsFooterLink,
   docsFooterList,
   docsFooterRoot,
   staticClassName,
 } from "./solid/chrome/styles";
 
+const footerDividerClass = staticClassName(docsFooterDivider);
 const footerRootClass = staticClassName(docsFooterRoot);
 const footerListClass = staticClassName(docsFooterList);
 const footerLinkClass = staticClassName(docsFooterLink);
@@ -13,12 +15,14 @@ const footerLinkClass = staticClassName(docsFooterLink);
 const footerLinks = [
   { href: "/", label: "Solid Spectrum" },
   { href: "https://react-spectrum.adobe.com/", label: "React Spectrum" },
+  { href: "https://github.com/proyecto-viviana/viviana-ui", label: "GitHub" },
+  { href: "https://github.com/proyecto-viviana/viviana-ui/blob/main/LICENSE", label: "License" },
   { href: "https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum", label: "npm" },
 ] as const;
 ---
 
 <footer class:list={["s2-docs-footer", footerRootClass]} data-docs-footer-fallback>
-  <hr />
+  <hr class={footerDividerClass} />
   <ul class={footerListClass}>
     {footerLinks.map((item) => (
       <li><a href={item.href} class={footerLinkClass}>{item.label}</a></li>

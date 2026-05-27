@@ -16,6 +16,31 @@ test.describe("comparison component detail chrome", () => {
         .getByRole("link", { name: "React Spectrum" }),
     ).toHaveAttribute("href", /react-spectrum/);
 
+    const tocRail = page.locator(".s2-docs-toc-rail");
+    await expect(tocRail).toBeVisible();
+    await expect
+      .poll(() =>
+        tocRail.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-toc-rail-macro").trim(),
+        ),
+      )
+      .toBe("1");
+    const toc = page.getByRole("navigation", { name: "On this page" });
+    await expect(toc.getByRole("listitem")).toHaveCount(8);
+    await expect(toc.getByRole("link", { name: "Accordion" })).toHaveAttribute(
+      "href",
+      "#page-title",
+    );
+    await expect(toc.getByRole("link", { name: "Accordion" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(toc.getByRole("link", { name: "Example" })).toHaveAttribute("href", "#example");
+    await expect(tocRail.getByRole("link", { name: "S2 source" })).toHaveAttribute(
+      "href",
+      /react-spectrum/,
+    );
+
     const exampleMount = page.locator(".js-component-example-section-mount");
     await expect(exampleMount).toHaveAttribute("data-mounted", "true");
     await expect(exampleMount).toHaveAttribute("data-controls-mounted", "true");

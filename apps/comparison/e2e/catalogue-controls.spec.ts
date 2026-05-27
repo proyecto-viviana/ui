@@ -70,6 +70,16 @@ test.describe("comparison catalogue controls", () => {
     await expect(tocMount).toHaveAttribute("data-mounted", "true");
     await expect(tocMount.locator("[data-docs-toc-fallback]")).toHaveCount(0);
 
+    const tocRail = page.locator(".s2-docs-toc-rail");
+    await expect(tocRail).toBeVisible();
+    await expect
+      .poll(() =>
+        tocRail.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-toc-rail-macro").trim(),
+        ),
+      )
+      .toBe("1");
+
     const macroStyledToc = tocMount.locator(".s2-docs-toc");
     await expect(macroStyledToc).toHaveCount(1);
     await expect
@@ -81,9 +91,14 @@ test.describe("comparison catalogue controls", () => {
       .toBe("1");
 
     const toc = page.getByRole("navigation", { name: "On this page" });
+    await expect(toc.getByRole("listitem")).toHaveCount(3);
     await expect(toc.getByRole("link", { name: "Solid Spectrum" })).toHaveAttribute(
       "href",
       "#page-title",
+    );
+    await expect(toc.getByRole("link", { name: "Solid Spectrum" })).toHaveAttribute(
+      "aria-current",
+      "page",
     );
     await expect(toc.getByRole("link", { name: "Catalogue controls" })).toHaveAttribute(
       "href",
@@ -93,7 +108,7 @@ test.describe("comparison catalogue controls", () => {
       "href",
       "#components-title",
     );
-    await expect(toc.getByRole("link", { name: "S2 source" })).toHaveAttribute(
+    await expect(tocRail.getByRole("link", { name: "S2 source" })).toHaveAttribute(
       "href",
       /react-spectrum/,
     );

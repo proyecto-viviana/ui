@@ -11,6 +11,8 @@ const footerLinkClass = staticClassName(docsFooterLink);
 const footerLinks = [
   { href: "/", label: "Solid Spectrum" },
   { href: "https://react-spectrum.adobe.com/", label: "React Spectrum" },
+  { href: "https://github.com/proyecto-viviana/viviana-ui", label: "GitHub" },
+  { href: "https://github.com/proyecto-viviana/viviana-ui/blob/main/LICENSE", label: "License" },
   { href: "https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum", label: "npm" },
 ] as const;
 

@@ -414,20 +414,23 @@ export const docsSidebarRail = style({
 });
 
 export const docsTocRail = style({
+  "--comparison-docs-toc-rail-macro": {
+    type: "opacity",
+    value: 1,
+  },
   flexShrink: 0,
   width: "[180px]",
   position: "sticky",
   top: 0,
   display: "flex",
   flexDirection: "column",
+  boxSizing: "border-box",
   alignContent: "start",
-  gap: 8,
   maxHeight: "[calc(100vh - 72px)]",
   marginBottom: "[-40px]",
   paddingTop: 32,
-  overflow: "auto",
+  overflow: "hidden",
   color: "neutral-subdued",
-  font: "ui-sm",
   "@media (max-width: 1180px)": {
     display: "none",
   },
@@ -488,7 +491,16 @@ export const docsFooterRoot = style({
   marginTop: 32,
   paddingY: 12,
   color: "neutral-subdued",
-  font: "ui-sm",
+  font: "body-2xs",
+});
+
+export const docsFooterDivider = style({
+  width: "full",
+  height: 1,
+  margin: 0,
+  borderWidth: 0,
+  borderRadius: "full",
+  backgroundColor: "gray-300",
 });
 
 export const docsFooterList = style({
@@ -511,6 +523,14 @@ export const docsFooterLink = style({
 
 export const docsChromeMount = style({
   minWidth: 0,
+});
+
+export const docsTocMount = style({
+  display: "flex",
+  flexDirection: "column",
+  minHeight: 0,
+  maxHeight: "full",
+  height: "full",
 });
 
 export const docsSidebarRoot = style({
@@ -642,40 +662,97 @@ export const docsTocRoot = style({
     type: "opacity",
     value: 1,
   },
+  display: "flex",
+  flexDirection: "column",
   minWidth: 0,
+  minHeight: 0,
+  maxHeight: "full",
 });
 
 export const docsTocNav = style({
-  display: "grid",
-  alignContent: "start",
+  minWidth: 0,
+});
+
+export const docsTocScroller = style({
+  minHeight: 0,
+  maxHeight: "full",
+  overflowY: "auto",
+  flexShrink: 1,
+});
+
+export const docsTocList = style({
+  display: "flex",
+  flexDirection: "column",
   gap: 8,
-  color: "neutral-subdued",
-  font: "ui-sm",
+  width: "full",
+  boxSizing: "border-box",
+  padding: 0,
+  margin: 0,
+  listStyleType: "none",
+});
+
+export const docsTocListItem = style({
+  minWidth: 0,
 });
 
 export const docsTocHeading = style({
-  marginTop: 0,
-  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  flexShrink: 0,
   minHeight: 32,
   paddingX: 12,
+  marginBottom: 4,
   color: "neutral",
   font: "title",
 });
 
 export const docsTocLink = style({
-  display: "inline-flex",
+  display: "flex",
   alignItems: "center",
+  gap: "[6px]",
+  width: "full",
+  boxSizing: "border-box",
   minHeight: 32,
   paddingX: 4,
+  borderRadius: "default",
   color: {
     default: "neutral-subdued",
-    ":hover": "accent",
+    ":hover": "neutral",
   },
+  font: "ui",
   textDecoration: "none",
+  scrollMarginTop: 64,
+});
+
+export const docsTocLinkCurrent = style({
+  color: "neutral",
+  fontWeight: "bold",
+});
+
+export const docsTocLinkText = style({
+  minWidth: 0,
+  overflowWrap: "break-word",
+  wordBreak: "break-word",
+});
+
+export const docsTocIndicator = style({
+  width: 2,
+  height: "[1lh]",
+  flexShrink: 0,
+  borderRadius: "full",
+  backgroundColor: "transparent",
+});
+
+export const docsTocIndicatorCurrent = style({
+  backgroundColor: "gray-800",
 });
 
 export const docsTocActions = style({
   display: "grid",
-  gap: 8,
-  marginTop: 12,
+  gap: 0,
+  flexShrink: 0,
+});
+
+export const docsTocDivider = style({
+  marginY: 12,
 });

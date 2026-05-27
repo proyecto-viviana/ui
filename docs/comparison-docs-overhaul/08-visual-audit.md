@@ -52,6 +52,14 @@ into the remaining gates below.
   a dialog backed by Solid Spectrum `SearchField`, filters component catalogue
   entries, exposes result links, updates `aria-expanded`, and closes with
   Escape.
+- Accordion docs shell, local comparison preview: the right rail is the
+  upstream-shaped desktop ToC rail (`180px`, sticky, overflow-hidden wrapper)
+  with an `On this page` title, scrollable `nav` list, current-section indicator,
+  divider, and source link action outside the nav.
+- Accordion docs shell, local comparison preview: the footer now uses a
+  Spectrum divider and right-aligned `body-2xs` project links, matching the
+  upstream footer structure while swapping Adobe legal links for local project
+  destinations.
 
 ## Landed In This Checkpoint
 
@@ -86,6 +94,13 @@ into the remaining gates below.
 - Theme and navigation chrome use exported Solid Spectrum workflow icons rather
   than CSS pseudo-icons, and the theme toggle now updates its accessible label
   whenever the resolved color scheme changes.
+- The comparison ToC no longer depends on legacy global `.s2-toc` styles. Solid
+  and Astro fallback markup now share the source-backed ToC structure, and the
+  hydrated ToC uses an `IntersectionObserver` scroll-spy to mark the current
+  section.
+- The comparison footer no longer depends on legacy global `.s2-docs-footer`
+  styles. Solid and fallback footers use the same divider and small link-row
+  structure.
 
 ## Remaining Gates
 
@@ -95,15 +110,15 @@ into the remaining gates below.
 - Replace generated source snippets with the content-pipeline source model:
   syntax highlighting, copy/open actions, and hand-authored example code from
   the upstream MDX where applicable.
-- Drive page body, ToC, and section order from adapted upstream MDX instead of
-  the current parity-shaped sections.
+- Drive page body and section order from adapted upstream MDX instead of the
+  current parity-shaped sections.
 - Replace the current API list with upstream-style grouped prop tables.
 - Re-run light and dark visual captures after the component-control pass.
 - Revisit the landing page separately; it is still not shaped like the
   upstream Spectrum 2 landing page.
 - Continue page-chrome porting against upstream `Layout`, `Header`, `Nav`, and
-  `VisualExample`: page body spacing, right-side ToC, and footer still need the
-  same source-backed audit.
+  `VisualExample`: page body spacing and mobile ToC/header behavior still need
+  the same source-backed audit.
 - Decide how far the local search should follow upstream `SearchMenuTrigger`.
   Current behavior covers the comparison-app component catalogue, but upstream
   search includes richer site-wide result content and keyboard/menu behavior.
