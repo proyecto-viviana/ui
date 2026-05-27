@@ -24,11 +24,19 @@ export default function ComponentExampleSection(props: ComponentExampleSectionPr
     [
       h(
         "section",
-        { class: "s2-example", id: "example", "aria-labelledby": "example-title" },
-        h("div", { class: "s2-example-preview" }, h(ComponentExamplePreview, { slug: props.slug })),
+        {
+          class: "s2-example",
+          id: "example",
+          "aria-labelledby": "example-title",
+        },
         h(
           "div",
-          { class: "s2-example-controls" },
+          { class: "s2-example-preview", role: "group", "aria-label": "Rendered comparison" },
+          h(ComponentExamplePreview, { slug: props.slug }),
+        ),
+        h(
+          "div",
+          { class: "s2-example-controls", role: "group", "aria-label": "Controls" },
           h(ComponentExampleControls, { slug: props.slug }),
         ),
       ),

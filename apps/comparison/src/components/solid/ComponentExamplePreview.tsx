@@ -73,7 +73,11 @@ interface FrameworkPanelOptions {
 function frameworkPanel(options: FrameworkPanelOptions) {
   return h(
     "article",
-    { class: "s2-framework-panel", "data-framework": options.framework },
+    {
+      class: "s2-framework-panel",
+      "data-framework": options.framework,
+      "aria-label": `${options.label} ${options.product}`,
+    },
     h(
       "header",
       {},

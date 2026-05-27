@@ -16,11 +16,11 @@ const { entry } = Astro.props as Props;
   aria-labelledby="example-title"
   data-component-example-section-fallback
 >
-  <div class="s2-example-preview">
+  <div class="s2-example-preview" role="group" aria-label="Rendered comparison">
     <ComponentExamplePreviewFallback entry={entry} />
   </div>
 
-  <div class="s2-example-controls">
+  <div class="s2-example-controls" role="group" aria-label="Controls">
     <ComponentExampleControlsFallback entry={entry} />
   </div>
 </section>

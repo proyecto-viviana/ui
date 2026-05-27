@@ -71,7 +71,7 @@ export default function ComponentExampleControls(props: ComponentExampleControls
     },
     [
       h("h2", { id: "example-title" }, "Example"),
-      themeControls(themeChoice),
+      h("div", { class: "s2-theme-control" }, themeControls(themeChoice)),
       controlGroup.controls.length > 0
         ? h(
             "form",

@@ -34,6 +34,13 @@ body.s2-docs {
   --s2-positive: #12805c;
   --s2-warning: #8a6500;
   --s2-critical: #c9252d;
+  --s2-docs-example-bg: var(--s2-bg-raised);
+  --s2-docs-example-control-bg: var(--s2-border-soft);
+  --s2-docs-example-control-selected-bg: var(--s2-text);
+  --s2-docs-example-control-selected-text: var(--s2-bg);
+  --s2-docs-example-divider: color-mix(in srgb, var(--s2-border-soft) 72%, transparent);
+  --s2-docs-example-note-bg: var(--s2-bg);
+  --s2-docs-example-note-shadow: 0 1px 2px color-mix(in srgb, var(--s2-text) 8%, transparent);
   --s2-docs-overlay: rgb(0 0 0 / 24%);
   --s2-docs-shadow-emphasized:
     0 2px 8px rgb(0 0 0 / 8%), 0 1px 4px rgb(0 0 0 / 4%), 0 0 1px rgb(0 0 0 / 8%);
@@ -495,8 +502,12 @@ details.s2-nav-group > div {
   gap: 14px;
 }
 
-.s2-component-example-controls {
+.s2-component-example-controls,
+.s2-component-example-controls-fallback {
+  display: grid;
+  gap: 16px;
   min-width: 0;
+  background: transparent;
 }
 
 .js-catalogue-overview-mount,
@@ -545,39 +556,57 @@ details.s2-nav-group > div {
 
 .s2-example {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 240px);
-  overflow: hidden;
-  border: 1px solid var(--s2-border);
-  border-radius: 8px;
-  background: var(--s2-bg);
+  grid-template-columns: minmax(0, 1fr) minmax(164px, 176px);
+  grid-template-areas: "preview controls";
+  gap: 24px;
+  align-items: start;
+  padding: 24px;
+  overflow: visible;
+  border: 0;
+  border-radius: 16px;
+  background: var(--s2-docs-example-bg);
 }
 
 .s2-example-preview {
+  grid-area: preview;
   display: grid;
-  gap: 14px;
+  gap: 24px;
   min-width: 0;
-  padding: 20px;
-  background: var(--s2-bg-raised);
+  padding: 0;
+  background: transparent;
 }
 
 .s2-example-controls {
+  position: relative;
+  grid-area: controls;
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
-  padding: 18px;
-  border-left: 1px solid var(--s2-border);
-  background: var(--s2-bg);
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .s2-example-controls h2 {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .s2-example-note {
   margin: 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--s2-docs-example-note-bg);
+  box-shadow: var(--s2-docs-example-note-shadow);
   color: var(--s2-text-muted);
   font-size: 13px;
   line-height: 1.45;
@@ -596,27 +625,30 @@ details.s2-nav-group > div {
 .s2-comparison-frame {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
+  gap: 18px;
   align-items: stretch;
+  min-height: 348px;
 }
 
 .s2-framework-panel {
   display: grid;
-  grid-template-rows: auto minmax(140px, 1fr);
-  overflow: auto;
-  border: 1px solid var(--s2-border);
-  border-radius: 8px;
-  background: var(--s2-bg);
+  grid-template-rows: auto minmax(136px, 1fr);
+  gap: 10px;
+  min-width: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
 }
 
 .s2-framework-panel header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  min-height: 44px;
-  padding: 0 14px;
-  border-bottom: 1px solid var(--s2-border-soft);
+  min-height: 24px;
+  padding: 0;
+  border-bottom: 0;
   color: var(--s2-text-muted);
   font-size: 12px;
 }
@@ -627,15 +659,24 @@ details.s2-nav-group > div {
 }
 
 .s2-framework-panel em {
+  margin-left: auto;
   font-style: normal;
 }
 
-.s2-framework-panel .comparison-island {
+.s2-framework-panel > .comparison-island {
   display: grid;
   place-items: center;
-  min-height: 150px;
-  padding: 16px;
+  min-height: 136px;
+  padding: 12px;
   overflow: auto;
+  border-top: 1px solid var(--s2-docs-example-divider);
+}
+
+.s2-framework-panel > .comparison-island > .comparison-island {
+  min-height: auto;
+  padding: 0;
+  overflow: visible;
+  border-top: 0;
 }
 
 .s2-framework-panel .comparison-reference-frame {
@@ -648,16 +689,31 @@ details.s2-nav-group > div {
 
 .s2-framework-panel .comparison-reference-canvas {
   inline-size: max-content;
-  max-inline-size: none;
+  max-inline-size: 100%;
   justify-self: center;
+  align-content: center;
   place-items: center;
   min-height: auto;
+}
+
+.s2-theme-control {
+  min-width: 0;
 }
 
 .s2-control-grid,
 .s2-prop-controls {
   display: grid;
   gap: 16px;
+}
+
+.s2-prop-control {
+  min-width: 0;
+}
+
+.s2-prop-control[data-control-kind="select"] > div {
+  position: relative;
+  display: grid;
+  min-width: 0;
 }
 
 .s2-field {
@@ -728,6 +784,74 @@ details.s2-nav-group > div {
   background: var(--s2-bg-raised);
   color: var(--s2-text);
   font-size: 13px;
+}
+
+.s2-theme-control [role="radiogroup"],
+.s2-prop-control[data-control-kind="radio"] [role="radiogroup"] {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.s2-theme-control [role="radiogroup"] > :last-child,
+.s2-prop-control[data-control-kind="radio"] [role="radiogroup"] > :last-child,
+.s2-theme-control.s2-radio-group > div,
+.s2-prop-control[data-control-kind="radio"] .s2-radio-group > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--s2-docs-example-control-bg);
+}
+
+.s2-theme-control [role="radiogroup"] label[data-solidaria-pressable],
+.s2-prop-control[data-control-kind="radio"] [role="radiogroup"] label[data-solidaria-pressable],
+.s2-theme-control.s2-radio-group label,
+.s2-prop-control[data-control-kind="radio"] .s2-radio-group label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--s2-text);
+  font-size: 13px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.s2-theme-control [role="radiogroup"] label[data-solidaria-pressable][data-selected="true"],
+.s2-prop-control[data-control-kind="radio"]
+  [role="radiogroup"]
+  label[data-solidaria-pressable][data-selected="true"],
+.s2-theme-control.s2-radio-group label:has(input:checked),
+.s2-prop-control[data-control-kind="radio"] .s2-radio-group label:has(input:checked) {
+  background: var(--s2-docs-example-control-selected-bg);
+  color: var(--s2-docs-example-control-selected-text);
+}
+
+.s2-theme-control [role="radiogroup"] label[data-solidaria-pressable] > div:first-of-type,
+.s2-prop-control[data-control-kind="radio"]
+  [role="radiogroup"]
+  label[data-solidaria-pressable]
+  > div:first-of-type {
+  display: none;
+}
+
+.s2-theme-control.s2-radio-group input[type="radio"],
+.s2-prop-control[data-control-kind="radio"] .s2-radio-group input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .s2-switch {
@@ -1106,14 +1230,41 @@ details.s2-nav-group > div {
     display: block;
   }
 
-  .s2-example,
+  .s2-example {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "preview"
+      "controls";
+    gap: 22px;
+    padding: 18px;
+  }
+
   .s2-comparison-frame {
     grid-template-columns: 1fr;
+    min-height: auto;
   }
 
   .s2-example-controls {
-    border-top: 1px solid var(--s2-border);
-    border-left: 0;
+    border: 0;
+  }
+
+  .s2-prop-controls {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 156px), 1fr));
+    align-items: start;
+  }
+
+  .s2-theme-control [role="radiogroup"] > :last-child,
+  .s2-prop-control[data-control-kind="radio"] [role="radiogroup"] > :last-child,
+  .s2-theme-control.s2-radio-group > div,
+  .s2-prop-control[data-control-kind="radio"] .s2-radio-group > div {
+    width: 100%;
+  }
+
+  .s2-theme-control [role="radiogroup"] label[data-solidaria-pressable],
+  .s2-prop-control[data-control-kind="radio"] [role="radiogroup"] label[data-solidaria-pressable],
+  .s2-theme-control.s2-radio-group label,
+  .s2-prop-control[data-control-kind="radio"] .s2-radio-group label {
+    flex: 1 1 auto;
   }
 
   .s2-stat-grid,
