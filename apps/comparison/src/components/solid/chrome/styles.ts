@@ -1,5 +1,4 @@
 import {
-  lightDark,
   style,
   type StyleString,
 } from "@proyecto-viviana/solid-spectrum/style" with { type: "macro" };
@@ -105,14 +104,14 @@ export const docsSearchButton = style({
   borderWidth: 2,
   borderStyle: "solid",
   borderColor: {
-    default: lightDark("gray-300", "gray-600"),
-    ":hover": lightDark("gray-400", "gray-500"),
-    ":focus-visible": lightDark("gray-900", "gray-25"),
+    default: "gray-300",
+    ":hover": "gray-400",
+    ":focus-visible": "gray-900",
   },
   borderRadius: "pill",
   backgroundColor: {
-    default: lightDark("gray-25", "gray-900"),
-    ":hover": lightDark("gray-50", "gray-800"),
+    default: "gray-25",
+    ":hover": "gray-50",
   },
   color: "neutral-subdued",
   font: "ui-lg",
@@ -177,7 +176,7 @@ export const docsSearchKeyboard = style({
   paddingY: 2,
   borderWidth: 1,
   borderStyle: "solid",
-  borderColor: lightDark("gray-300", "gray-700"),
+  borderColor: "gray-300",
   borderRadius: "xl",
   backgroundColor: "layer-1",
   color: "neutral-subdued",
@@ -226,7 +225,7 @@ export const docsTopDivider = style({
   alignSelf: "center",
   height: 20,
   marginX: 4,
-  backgroundColor: lightDark("gray-300", "gray-700"),
+  backgroundColor: "gray-300",
   "@media (max-width: 860px)": {
     display: "none",
   },
@@ -256,7 +255,7 @@ export const docsSearchDialog = style({
   padding: 12,
   borderWidth: 1,
   borderStyle: "solid",
-  borderColor: lightDark("gray-200", "gray-700"),
+  borderColor: "gray-200",
   borderRadius: "xl",
   backgroundColor: "layer-1",
   boxShadow: "emphasized",
@@ -588,7 +587,7 @@ export const docsNavCount = style({
 export const docsNavGroupPanel = style({
   borderStartWidth: 1,
   borderStyle: "solid",
-  borderColor: lightDark("gray-300", "gray-800"),
+  borderColor: "gray-300",
 });
 
 export const docsNavGroupLinks = style({
@@ -621,7 +620,7 @@ export const docsNavGroupFallbackLinks = style({
   paddingBottom: 8,
   borderStartWidth: 1,
   borderStyle: "solid",
-  borderColor: lightDark("gray-300", "gray-800"),
+  borderColor: "gray-300",
 });
 
 export const docsNavCountFallback = style({
@@ -630,7 +629,7 @@ export const docsNavCountFallback = style({
   paddingY: "[1px]",
   borderWidth: 1,
   borderStyle: "solid",
-  borderColor: lightDark("gray-300", "gray-800"),
+  borderColor: "gray-300",
   borderRadius: "full",
   color: "neutral-subdued",
   font: "ui-sm",
