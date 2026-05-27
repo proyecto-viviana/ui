@@ -2,11 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { reactSpectrumCatalogue } from "../src/data/react-spectrum-catalogue";
 
 async function setThemeFromControl(page: Page, theme: "light" | "dark") {
-  await page.locator(`input[name="comparisonTheme"][value="${theme}"]`).evaluate((node) => {
-    const input = node as HTMLInputElement;
-    input.checked = true;
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  });
+  await page
+    .getByRole("radiogroup", { name: "Color scheme" })
+    .locator("label", { hasText: theme })
+    .click();
 }
 
 test.describe("comparison component theme contract", () => {
@@ -19,7 +18,7 @@ test.describe("comparison component theme contract", () => {
       const body = page.locator("body");
       const solidThemeRoots = page.locator("[data-comparison-color-scheme]");
 
-      await expect(page.getByRole("group", { name: "Color scheme" })).toBeVisible();
+      await expect(page.getByRole("radiogroup", { name: "Color scheme" })).toBeVisible();
 
       await setThemeFromControl(page, "light");
       await expect(body).toHaveAttribute("data-theme", "light");

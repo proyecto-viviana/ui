@@ -40,7 +40,11 @@ const controlDefaults = Object.fromEntries(
       data-control-defaults={JSON.stringify(controlDefaults)}
     >
       {controlGroup.controls.map((control) => (
-        <div class="s2-prop-control">
+        <div
+          class="s2-prop-control"
+          data-control-kind={control.kind}
+          data-control-name={control.name}
+        >
           {control.kind === "text" ? (
             <label class="s2-field">
               <span>{control.label}</span>

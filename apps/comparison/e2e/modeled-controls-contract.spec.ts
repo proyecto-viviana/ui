@@ -469,77 +469,95 @@ async function controlDefaultsFromForm(form: Locator) {
 }
 
 async function expectControlDefault(form: Locator, control: ComponentControl) {
+  const controlRoot = form.locator(`[data-control-name="${control.name}"]`);
+  await expect(controlRoot).toHaveCount(1);
+  await expect(controlRoot).toHaveAttribute("data-control-kind", control.kind);
+  await expect(controlRoot.getByText(control.label, { exact: true })).toBeVisible();
+
   if (control.kind === "switch") {
-    await expect(form.locator(`input[type="checkbox"][name="${control.name}"]`)).toBeChecked({
-      checked: Boolean(control.defaultValue),
-    });
+    await expect(controlRoot.getByRole("switch", { name: control.label })).toBeVisible();
+    await expect(controlRoot.locator(`input[type="checkbox"][name="${control.name}"]`)).toBeChecked(
+      {
+        checked: Boolean(control.defaultValue),
+      },
+    );
     return;
   }
 
   if (control.kind === "text") {
     const expectedValue = String(control.defaultValue).replace(/\r?\n/g, "");
-    await expect(form.locator(`input[name="${control.name}"]`)).toHaveValue(expectedValue);
+    await expect(controlRoot.getByRole("textbox", { name: control.label })).toBeVisible();
+    await expect(controlRoot.locator(`input[name="${control.name}"]`)).toHaveValue(expectedValue);
     return;
   }
 
   if (control.kind === "select") {
-    await expect(form.locator(`select[name="${control.name}"]`)).toHaveValue(
+    await expect(controlRoot.getByRole("button").first()).toBeVisible();
+    await expect(controlRoot.locator(`select[name="${control.name}"]`)).toHaveValue(
       String(control.defaultValue),
     );
     return;
   }
 
+  await expect(controlRoot.getByRole("radiogroup", { name: control.label })).toBeVisible();
   const expectedValue = String(control.defaultValue);
   if (control.options?.some((option) => option.value === expectedValue)) {
-    await expect(form.locator(`input[type="radio"][name="${control.name}"]:checked`)).toHaveValue(
-      expectedValue,
-    );
+    await expect(
+      controlRoot.locator(`input[type="radio"][name="${control.name}"]:checked`),
+    ).toHaveValue(expectedValue);
   } else {
-    await expect(form.locator(`input[type="radio"][name="${control.name}"]:checked`)).toHaveCount(
-      0,
-    );
+    await expect(
+      controlRoot.locator(`input[type="radio"][name="${control.name}"]:checked`),
+    ).toHaveCount(0);
   }
 }
 
 async function setControlValue(form: Locator, control: ComponentControl, value: string | boolean) {
+  const controlRoot = form.locator(`[data-control-name="${control.name}"]`);
+  await expect(controlRoot).toHaveCount(1);
+
   if (control.kind === "switch") {
-    const checkbox = form.locator(`input[type="checkbox"][name="${control.name}"]`);
+    const checkbox = controlRoot.locator(`input[type="checkbox"][name="${control.name}"]`);
     await expect(checkbox).toHaveCount(1);
-    if (control.name === "isOpen") {
-      await checkbox.evaluate((element, checked) => {
-        const input = element as HTMLInputElement;
-        input.checked = checked;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      }, Boolean(value));
-      await expect(checkbox).toBeChecked({ checked: Boolean(value) });
-      return;
+    if ((await checkbox.isChecked()) !== Boolean(value)) {
+      await controlRoot.locator("label", { hasText: control.label }).click();
     }
-    if (value) {
-      await checkbox.check();
-    } else {
-      await checkbox.uncheck();
-    }
+    await expect(checkbox).toBeChecked({ checked: Boolean(value) });
     return;
   }
 
   if (control.kind === "text") {
-    const input = form.locator(`input[name="${control.name}"]`);
+    const input = controlRoot.locator(`input[name="${control.name}"]`);
     await expect(input).toHaveCount(1);
     await input.fill(String(value));
     return;
   }
 
   if (control.kind === "select") {
-    const select = form.locator(`select[name="${control.name}"]`);
+    const select = controlRoot.locator(`select[name="${control.name}"]`);
     await expect(select).toHaveCount(1);
-    await select.selectOption(String(value));
+    await select.evaluate((element, nextValue) => {
+      const selectElement = element as HTMLSelectElement;
+      selectElement.value = nextValue;
+      selectElement.dispatchEvent(new Event("input", { bubbles: true }));
+      selectElement.dispatchEvent(new Event("change", { bubbles: true }));
+    }, String(value));
+    await expect(select).toHaveValue(String(value));
     return;
   }
 
-  const radio = form.locator(`input[type="radio"][name="${control.name}"][value="${value}"]`);
+  const option = control.options?.find((item) => item.value === String(value));
+  if (!option) {
+    throw new Error(`No option configured for ${control.name}=${String(value)}`);
+  }
+  const radio = controlRoot.locator(
+    `input[type="radio"][name="${control.name}"][value="${value}"]`,
+  );
   await expect(radio).toHaveCount(1);
-  await radio.check();
+  const radioLabel = radio.locator("xpath=ancestor::label[1]");
+  await expect(radioLabel).toHaveCount(1);
+  await radioLabel.click();
+  await expect(radio).toBeChecked();
 }
 
 async function serializedControlProps(root: Locator) {

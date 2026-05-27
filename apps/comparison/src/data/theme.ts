@@ -2,10 +2,15 @@ export type ComparisonThemeChoice = "system" | "light" | "dark";
 export type ComparisonResolvedTheme = "light" | "dark";
 
 export const comparisonThemeChangeEvent = "comparison:theme-change";
+export const comparisonThemeRequestEvent = "comparison:theme-request";
 
 export interface ComparisonThemeChangeDetail {
   theme: ComparisonThemeChoice;
   resolvedTheme: ComparisonResolvedTheme;
+}
+
+export interface ComparisonThemeRequestDetail {
+  theme: ComparisonThemeChoice;
 }
 
 export function resolveComparisonThemeChoice(

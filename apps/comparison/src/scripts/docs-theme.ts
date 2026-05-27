@@ -1,5 +1,6 @@
 import {
   comparisonThemeChangeEvent,
+  comparisonThemeRequestEvent,
   resolveComparisonThemeChoice,
   type ComparisonThemeChoice,
 } from "@comparison/data/theme";
@@ -9,6 +10,10 @@ const savedTheme =
   (window.localStorage.getItem("solid-spectrum-theme") as ComparisonThemeChoice | null) ?? "system";
 const themeOrder: ComparisonThemeChoice[] = ["system", "light", "dark"];
 const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+
+function isComparisonThemeChoice(value: unknown): value is ComparisonThemeChoice {
+  return value === "system" || value === "light" || value === "dark";
+}
 
 function updateThemeIcons(theme: ComparisonThemeChoice) {
   for (const themeIcon of document.querySelectorAll("[data-theme-toggle-icon]")) {
@@ -58,6 +63,14 @@ document.addEventListener("change", (event) => {
   ) {
     applyTheme(control.value as ComparisonThemeChoice);
   }
+});
+
+window.addEventListener(comparisonThemeRequestEvent, (event) => {
+  if (!(event instanceof CustomEvent) || !isComparisonThemeChoice(event.detail?.theme)) {
+    return;
+  }
+
+  applyTheme(event.detail.theme);
 });
 
 window.addEventListener("comparison:theme-controls-mounted", () => {
