@@ -6,14 +6,22 @@ import {
   type ComparisonThemeChoice,
 } from "@comparison/data/theme";
 
+const documentRoot = document.documentElement;
 const root = document.body;
-const savedTheme =
-  (window.localStorage.getItem("solid-spectrum-theme") as ComparisonThemeChoice | null) ?? "system";
 const themeOrder: ComparisonThemeChoice[] = ["system", "light", "dark"];
 const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
 
 function isComparisonThemeChoice(value: unknown): value is ComparisonThemeChoice {
   return value === "system" || value === "light" || value === "dark";
+}
+
+function readSavedTheme(): ComparisonThemeChoice {
+  try {
+    const savedTheme = window.localStorage.getItem("solid-spectrum-theme");
+    return isComparisonThemeChoice(savedTheme) ? savedTheme : "system";
+  } catch {
+    return "system";
+  }
 }
 
 function getThemeToggleAriaLabel(theme: ComparisonThemeChoice, resolvedTheme: "light" | "dark") {
@@ -39,13 +47,19 @@ function syncThemeControls(theme: ComparisonThemeChoice) {
 
 function applyTheme(theme: ComparisonThemeChoice) {
   const resolvedTheme = resolveComparisonThemeChoice(theme);
+  documentRoot.dataset.theme = theme;
+  documentRoot.dataset.resolvedTheme = resolvedTheme;
   root.dataset.theme = theme;
   root.dataset.resolvedTheme = resolvedTheme;
 
   updateThemeToggles(theme, resolvedTheme);
   syncThemeControls(theme);
 
-  window.localStorage.setItem("solid-spectrum-theme", theme);
+  try {
+    window.localStorage.setItem("solid-spectrum-theme", theme);
+  } catch {
+    // Theme selection still applies for the current page when storage is unavailable.
+  }
   window.dispatchEvent(
     new CustomEvent(comparisonThemeChangeEvent, {
       detail: { theme, resolvedTheme },
@@ -84,7 +98,8 @@ window.addEventListener(comparisonThemeRequestEvent, (event) => {
 });
 
 window.addEventListener("comparison:theme-controls-mounted", () => {
-  syncThemeControls((root.dataset.theme as ComparisonThemeChoice | undefined) ?? savedTheme);
+  const theme = isComparisonThemeChoice(root.dataset.theme) ? root.dataset.theme : readSavedTheme();
+  syncThemeControls(theme);
 });
 
 mediaQuery?.addEventListener("change", () => {
@@ -93,4 +108,4 @@ mediaQuery?.addEventListener("change", () => {
   }
 });
 
-applyTheme(savedTheme);
+applyTheme(readSavedTheme());

@@ -50,14 +50,54 @@ const articleContentClass = staticClassName(docsArticleContent);
 const tocRailClass = staticClassName(docsTocRail);
 ---
 
-<html lang="en">
+<html lang="en" data-theme="system" data-resolved-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        const storageKey = "solid-spectrum-theme";
+        const isThemeChoice = (value) =>
+          value === "system" || value === "light" || value === "dark";
+
+        let theme = "system";
+
+        try {
+          const savedTheme = window.localStorage.getItem(storageKey);
+
+          if (isThemeChoice(savedTheme)) {
+            theme = savedTheme;
+          }
+        } catch {
+          theme = "system";
+        }
+
+        const resolvedTheme =
+          theme === "light" || theme === "dark"
+            ? theme
+            : window.matchMedia?.("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+
+        root.dataset.theme = theme;
+        root.dataset.resolvedTheme = resolvedTheme;
+      })();
+    </script>
     <title>{title}</title>
   </head>
   <body class="comparison-app s2-docs" data-theme="system" data-resolved-theme="light">
+    <script is:inline>
+      (() => {
+        const root = document.body;
+        const theme = document.documentElement.dataset.theme || "system";
+        const resolvedTheme = document.documentElement.dataset.resolvedTheme || "light";
+        root.dataset.theme = theme;
+        root.dataset.resolvedTheme = resolvedTheme;
+      })();
+    </script>
+
     <DocsTopBarMount
       activeSlug={sidebarActiveSlug}
       navigationLabel={sidebarNavigationLabel}

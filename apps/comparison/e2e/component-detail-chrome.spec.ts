@@ -1,6 +1,30 @@
 import { expect, test } from "@playwright/test";
 import { waitForComparisonRouteReady } from "./comparison-page";
 
+interface RenderSample {
+  body: boolean;
+  bodyBackground?: string;
+  bodyColorScheme?: string;
+  documentResolvedTheme?: string;
+  documentTheme?: string;
+  label: string;
+  mainBackground?: string;
+  resolvedTheme?: string;
+  theme?: string;
+}
+
+interface LayoutShiftSample {
+  hadRecentInput: boolean;
+  value: number;
+}
+
+declare global {
+  interface Window {
+    __comparisonLayoutShifts?: LayoutShiftSample[];
+    __comparisonRenderSamples?: RenderSample[];
+  }
+}
+
 test.describe("comparison component detail chrome", () => {
   test("hydrates the detail page Solid Spectrum surfaces", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -192,5 +216,95 @@ test.describe("comparison component detail chrome", () => {
         bodyResolvedTheme: "dark",
         mainBackground: "rgb(17, 17, 17)",
       });
+  });
+
+  test("applies the saved theme before first render and keeps examples stable", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.addInitScript(() => {
+      window.localStorage.setItem("solid-spectrum-theme", "dark");
+      window.__comparisonRenderSamples = [];
+      window.__comparisonLayoutShifts = [];
+
+      const sample = (label: string) => {
+        const body = document.body;
+
+        if (!body) {
+          window.__comparisonRenderSamples?.push({ body: false, label });
+          return;
+        }
+
+        const main = document.querySelector(".s2-main");
+        const bodyStyle = getComputedStyle(body);
+        const mainStyle = main ? getComputedStyle(main) : undefined;
+
+        window.__comparisonRenderSamples?.push({
+          body: true,
+          bodyBackground: bodyStyle.backgroundColor,
+          bodyColorScheme: bodyStyle.colorScheme,
+          documentResolvedTheme: document.documentElement.dataset.resolvedTheme,
+          documentTheme: document.documentElement.dataset.theme,
+          label,
+          mainBackground: mainStyle?.backgroundColor,
+          resolvedTheme: body.dataset.resolvedTheme,
+          theme: body.dataset.theme,
+        });
+      };
+
+      try {
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            const layoutShift = entry as PerformanceEntry & {
+              hadRecentInput: boolean;
+              value: number;
+            };
+            window.__comparisonLayoutShifts?.push({
+              hadRecentInput: layoutShift.hadRecentInput,
+              value: layoutShift.value,
+            });
+          }
+        }).observe({ buffered: true, type: "layout-shift" });
+      } catch {
+        // The first-render theme assertion still covers browsers without Layout Instability API.
+      }
+
+      sample("init");
+      document.addEventListener("DOMContentLoaded", () => sample("domcontentloaded"), {
+        once: true,
+      });
+      window.addEventListener("load", () => sample("load"), { once: true });
+      requestAnimationFrame(() => {
+        sample("raf1");
+        requestAnimationFrame(() => {
+          sample("raf2");
+          setTimeout(() => sample("timeout250"), 250);
+        });
+      });
+    });
+    await page.goto("/components/accordion/", { waitUntil: "load" });
+    await page.waitForTimeout(350);
+
+    const renderState = await page.evaluate(() => ({
+      layoutShifts: window.__comparisonLayoutShifts ?? [],
+      samples: window.__comparisonRenderSamples ?? [],
+    }));
+    const firstBodySample = renderState.samples.find((sample) => sample.body);
+    const firstMainSample = renderState.samples.find(
+      (sample) => sample.body && sample.mainBackground,
+    );
+
+    expect(firstBodySample).toMatchObject({
+      bodyBackground: "rgb(27, 27, 27)",
+      bodyColorScheme: "dark",
+      documentResolvedTheme: "dark",
+      documentTheme: "dark",
+    });
+    expect(firstMainSample).toMatchObject({
+      mainBackground: "rgb(17, 17, 17)",
+    });
+    expect(
+      renderState.layoutShifts.filter((shift) => !shift.hadRecentInput && shift.value > 0),
+    ).toEqual([]);
   });
 });

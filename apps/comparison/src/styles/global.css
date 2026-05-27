@@ -45,21 +45,25 @@ body.s2-docs {
   --s2-docs-shadow-emphasized:
     0 2px 8px rgb(0 0 0 / 8%), 0 1px 4px rgb(0 0 0 / 4%), 0 0 1px rgb(0 0 0 / 8%);
   --s2-docs-shadow-takeover: 0 8px 24px rgb(0 0 0 / 18%), 0 2px 8px rgb(0 0 0 / 14%);
+  display: flow-root;
   min-height: 100vh;
   background: var(--s2-bg-raised);
   color: var(--s2-text);
   font-family: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
 }
 
-body.s2-docs[data-resolved-theme="light"] {
+body.s2-docs[data-resolved-theme="light"],
+html[data-resolved-theme="light"] body.s2-docs {
   color-scheme: light;
 }
 
-body.s2-docs[data-resolved-theme="dark"] {
+body.s2-docs[data-resolved-theme="dark"],
+html[data-resolved-theme="dark"] body.s2-docs {
   color-scheme: dark;
 }
 
-body.s2-docs[data-theme="dark"] {
+body.s2-docs[data-theme="dark"],
+html[data-theme="dark"] body.s2-docs {
   --s2-bg: #111111;
   --s2-bg-raised: #1b1b1b;
   --s2-bg-muted: #2c2c2c;
@@ -71,7 +75,7 @@ body.s2-docs[data-theme="dark"] {
 }
 
 @media (prefers-color-scheme: dark) {
-  body.s2-docs[data-theme="system"] {
+  html[data-theme="system"] body.s2-docs {
     --s2-bg: #111111;
     --s2-bg-raised: #1b1b1b;
     --s2-bg-muted: #2c2c2c;
@@ -665,6 +669,7 @@ details.s2-nav-group > div {
 }
 
 .s2-example {
+  --s2-example-preview-min-height: 300px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(164px, 176px);
   grid-template-areas:
@@ -816,7 +821,7 @@ details.s2-nav-group > div {
 .s2-framework-panel {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(156px, 1fr);
+  grid-template-rows: minmax(var(--s2-example-preview-min-height), 1fr);
   gap: 0;
   min-width: 0;
   overflow: visible;
@@ -878,7 +883,7 @@ details.s2-nav-group > div {
   display: grid;
   place-items: center;
   height: 100%;
-  min-height: 156px;
+  min-height: var(--s2-example-preview-min-height);
   padding: 44px 16px 26px;
   overflow: auto;
   border-top: 0;
