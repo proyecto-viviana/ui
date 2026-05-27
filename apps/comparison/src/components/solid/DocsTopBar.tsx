@@ -1,6 +1,12 @@
 import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
 import h from "solid-js/h";
-import { ActionButton, Keyboard, Link, Provider, Text } from "@proyecto-viviana/solid-spectrum";
+import {
+  ActionButton,
+  Keyboard,
+  Link,
+  Provider,
+  SearchIcon,
+} from "@proyecto-viviana/solid-spectrum";
 import { getComparisonThemeChoiceLabel } from "@comparison/data/theme";
 import {
   docsBrandLink,
@@ -11,6 +17,7 @@ import {
   docsMobileNavPanel,
   docsMobileNavTitle,
   docsSearchButton,
+  docsSearchIcon,
   docsSearchKeyboard,
   docsSearchRoot,
   docsShellThemeToggle,
@@ -41,6 +48,7 @@ const mobileNavPanelClass = staticClassName(docsMobileNavPanel);
 const mobileNavHeaderClass = staticClassName(docsMobileNavHeader);
 const mobileNavTitleClass = staticClassName(docsMobileNavTitle);
 const searchButtonClass = staticClassName(docsSearchButton);
+const searchIconClass = staticClassName(docsSearchIcon);
 const searchKeyboardClass = staticClassName(docsSearchKeyboard);
 const searchRootClass = staticClassName(docsSearchRoot);
 const shellThemeToggleClass = staticClassName(docsShellThemeToggle);
@@ -115,17 +123,19 @@ export default function DocsTopBar(props: DocsTopBarProps) {
       h(
         "div",
         { class: classNames("s2-search", searchRootClass) },
-        hc(
-          ActionButton,
+        h(
+          "button",
           {
             type: "button",
-            size: "M",
-            styles: searchButtonClass,
+            class: classNames("s2-search-trigger", searchButtonClass),
             "aria-label": "Search Solid Spectrum",
           },
           [
-            hc(Text, {}, ["Search Solid Spectrum"]),
-            hc(Keyboard, { styles: searchKeyboardClass }, ["\u2318K"]),
+            h(SearchIcon, { styles: searchIconClass, "aria-hidden": "true" }),
+            h("span", { class: "s2-search-label" }, "Search Solid Spectrum"),
+            hc(Keyboard, { styles: searchKeyboardClass, UNSAFE_className: "s2-search-shortcut" }, [
+              "\u2318K",
+            ]),
           ],
         ),
       ),

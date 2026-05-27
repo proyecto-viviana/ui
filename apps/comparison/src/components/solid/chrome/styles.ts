@@ -93,14 +93,40 @@ export const docsSearchRoot = style({
 });
 
 export const docsSearchButton = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "text-to-visual",
   width: "full",
+  height: 40,
   minHeight: 40,
-  paddingStart: "[20px]",
+  boxSizing: "border-box",
+  paddingStart: "pill",
   paddingEnd: 8,
-  gridTemplateColumns: "[minmax(0, 1fr) auto]",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderColor: {
+    default: lightDark("gray-300", "gray-600"),
+    ":hover": lightDark("gray-400", "gray-500"),
+    ":focus-visible": lightDark("gray-900", "gray-25"),
+  },
   borderRadius: "pill",
-  justifyItems: "start",
-  justifyContent: "space-between",
+  backgroundColor: {
+    default: lightDark("gray-25", "gray-900"),
+    ":hover": lightDark("gray-50", "gray-800"),
+  },
+  color: "neutral-subdued",
+  font: "ui-lg",
+  cursor: "text",
+  justifyContent: "start",
+});
+
+export const docsSearchIcon = style({
+  size: 20,
+  marginStart: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
 });
 
 export const docsShellAction = style({
@@ -136,17 +162,19 @@ export const docsSearchKeyboard = style({
   display: "inline-grid",
   alignItems: "center",
   justifyItems: "center",
-  minWidth: 22,
-  minHeight: 22,
-  paddingX: "[6px]",
-  paddingY: "[1px]",
+  minWidth: 40,
+  minHeight: 24,
+  marginStart: "auto",
+  paddingX: 8,
+  paddingY: 2,
   borderWidth: 1,
   borderStyle: "solid",
   borderColor: lightDark("gray-300", "gray-700"),
-  borderRadius: "sm",
-  backgroundColor: "base",
+  borderRadius: "xl",
+  backgroundColor: "layer-1",
   color: "neutral-subdued",
-  font: "ui-sm",
+  font: "detail",
+  pointerEvents: "none",
 });
 
 export const docsTopNavRoot = style({

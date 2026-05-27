@@ -135,16 +135,48 @@ body.s2-docs[data-theme="dark"] {
 }
 
 .s2-search > button {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
   width: 100%;
+  height: 40px;
   min-height: 40px;
-  padding: 0 8px 0 20px;
-  gap: 12px;
+  box-sizing: border-box;
+  padding: 0 8px 0 18px;
+  gap: 6px;
+  border: 2px solid var(--s2-border);
   border-radius: 999px;
-  justify-content: space-between;
-  justify-items: start;
+  background: var(--s2-bg);
+  color: var(--s2-text-muted);
+  font-size: 16px;
+  cursor: text;
+}
+
+.s2-search > button:hover {
+  border-color: var(--s2-border);
+  background: var(--s2-bg-muted);
+}
+
+.s2-search > button:focus-visible {
+  border-color: var(--s2-text);
+  outline: 2px solid color-mix(in srgb, var(--s2-accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.s2-search-icon,
+.s2-search svg[data-rsp-slot="icon"] {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+  --iconPrimary: currentColor;
+}
+
+.s2-search-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--s2-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .s2-shell-action {
@@ -207,14 +239,16 @@ body.s2-docs[data-theme="dark"] {
 .s2-search kbd {
   display: inline-grid;
   place-items: center;
-  min-width: 22px;
-  min-height: 22px;
-  padding: 1px 6px;
+  min-width: 40px;
+  min-height: 24px;
+  margin-left: auto;
+  padding: 2px 8px;
   border: 1px solid var(--s2-border);
-  border-radius: 5px;
+  border-radius: 12px;
   background: var(--s2-bg);
   color: var(--s2-text-muted);
-  font-size: 12px;
+  font-size: 11px;
+  pointer-events: none;
 }
 
 .s2-top-actions {
