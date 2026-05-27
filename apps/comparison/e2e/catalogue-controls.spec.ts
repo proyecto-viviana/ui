@@ -13,6 +13,16 @@ test.describe("comparison catalogue controls", () => {
     await expect(topbarMount).toHaveAttribute("data-mounted", "true");
     await expect(topbarMount.locator("[data-docs-topbar-fallback]")).toHaveCount(0);
 
+    const docsLayout = page.locator(".s2-layout");
+    await expect(docsLayout).toHaveCount(1);
+    await expect
+      .poll(() =>
+        docsLayout.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-layout-macro").trim(),
+        ),
+      )
+      .toBe("1");
+
     const macroStyledTopbar = topbarMount.locator(".s2-topbar");
     await expect(macroStyledTopbar).toHaveCount(1);
     await expect
@@ -44,6 +54,16 @@ test.describe("comparison catalogue controls", () => {
     const tocMount = page.locator(".js-docs-toc-mount");
     await expect(tocMount).toHaveAttribute("data-mounted", "true");
     await expect(tocMount.locator("[data-docs-toc-fallback]")).toHaveCount(0);
+
+    const macroStyledToc = tocMount.locator(".s2-docs-toc");
+    await expect(macroStyledToc).toHaveCount(1);
+    await expect
+      .poll(() =>
+        macroStyledToc.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-toc-macro").trim(),
+        ),
+      )
+      .toBe("1");
 
     const toc = page.getByRole("navigation", { name: "On this page" });
     await expect(toc.getByRole("link", { name: "Solid Spectrum" })).toHaveAttribute(

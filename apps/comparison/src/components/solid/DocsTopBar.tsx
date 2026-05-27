@@ -1,13 +1,30 @@
 import h from "solid-js/h";
 import { ActionButton, Keyboard, Link, Provider, Text } from "@proyecto-viviana/solid-spectrum";
 import { getComparisonThemeChoiceLabel } from "@comparison/data/theme";
-import { docsTopBarRoot } from "./chrome/styles";
+import {
+  docsBrandLink,
+  docsBrandMark,
+  docsSearchButton,
+  docsSearchRoot,
+  docsTopBarRoot,
+  docsTopNavLink,
+  docsTopNavRoot,
+  staticClassName,
+} from "./chrome/styles";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
 export interface DocsTopBarProps {
   reactSpectrumUrl?: string;
 }
+
+const topBarRootClass = staticClassName(docsTopBarRoot);
+const brandLinkClass = staticClassName(docsBrandLink);
+const brandMarkClass = staticClassName(docsBrandMark);
+const searchButtonClass = staticClassName(docsSearchButton);
+const searchRootClass = staticClassName(docsSearchRoot);
+const topNavRootClass = staticClassName(docsTopNavRoot);
+const topNavLinkClass = staticClassName(docsTopNavLink);
 
 export default function DocsTopBar(props: DocsTopBarProps) {
   const { resolvedTheme, themeChoice } = createComparisonColorScheme();
@@ -16,7 +33,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     Provider,
     {
       class: "s2-topbar",
-      styles: docsTopBarRoot,
+      styles: topBarRootClass,
       get colorScheme() {
         return resolvedTheme();
       },
@@ -30,28 +47,29 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           variant: "secondary",
           isStandalone: true,
           isQuiet: true,
-          UNSAFE_className: "s2-brand",
+          UNSAFE_className: brandLinkClass,
           "aria-label": "Solid Spectrum home",
         },
         [
-          h("span", { class: "s2-brand-mark", "aria-hidden": "true" }, "S"),
+          h("span", { class: brandMarkClass, "aria-hidden": "true" }, "S"),
           h("span", {}, "Solid Spectrum"),
         ],
       ),
       h(
         "div",
-        { class: "s2-search" },
+        { class: searchRootClass },
         hc(
           ActionButton,
           {
             type: "button",
             size: "M",
+            styles: searchButtonClass,
             "aria-label": "Search Solid Spectrum",
           },
           [hc(Text, {}, ["Search Solid Spectrum"]), hc(Keyboard, {}, ["/"])],
         ),
       ),
-      h("nav", { class: "s2-topnav", "aria-label": "Top navigation" }, [
+      h("nav", { class: topNavRootClass, "aria-label": "Top navigation" }, [
         topNavLink("/", "Docs"),
         props.reactSpectrumUrl ? topNavLink(props.reactSpectrumUrl, "React Spectrum") : undefined,
         topNavLink("https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum", "npm"),
@@ -83,6 +101,7 @@ function topNavLink(href: string, label: string) {
       variant: "secondary",
       isStandalone: true,
       isQuiet: true,
+      UNSAFE_className: topNavLinkClass,
     },
     [label],
   );

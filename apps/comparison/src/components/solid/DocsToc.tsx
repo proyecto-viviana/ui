@@ -5,6 +5,14 @@ import {
   layerOrder,
   type ComparisonLayerId,
 } from "@comparison/data/comparison-manifest";
+import {
+  docsTocActions,
+  docsTocHeading,
+  docsTocLink,
+  docsTocNav,
+  docsTocRoot,
+  staticClassName,
+} from "./chrome/styles";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
@@ -28,6 +36,11 @@ const layerTitles: Record<ComparisonLayerId, string> = {
   headless: "Headless Layer",
   state: "State Layer",
 };
+const tocRootClass = staticClassName(docsTocRoot);
+const tocActionsClass = staticClassName(docsTocActions);
+const tocHeadingClass = staticClassName(docsTocHeading);
+const tocLinkClass = staticClassName(docsTocLink);
+const tocNavClass = staticClassName(docsTocNav);
 
 export default function DocsToc(props: DocsTocProps) {
   const { resolvedTheme } = createComparisonColorScheme();
@@ -37,14 +50,15 @@ export default function DocsToc(props: DocsTocProps) {
     Provider,
     {
       class: "s2-docs-toc",
+      styles: tocRootClass,
       get colorScheme() {
         return resolvedTheme();
       },
       background: "base",
     },
     [
-      h("nav", { class: "s2-toc-nav", "aria-label": "On this page" }, [
-        h("p", {}, "On this page"),
+      h("nav", { class: tocNavClass, "aria-label": "On this page" }, [
+        h("p", { class: tocHeadingClass }, "On this page"),
         ...items.map((item) =>
           hc(
             Link,
@@ -53,6 +67,7 @@ export default function DocsToc(props: DocsTocProps) {
               variant: "secondary",
               isStandalone: true,
               isQuiet: true,
+              UNSAFE_className: tocLinkClass,
             },
             [item.label],
           ),
@@ -60,7 +75,7 @@ export default function DocsToc(props: DocsTocProps) {
         props.sourceUrl
           ? h(
               "div",
-              { class: "s2-toc-actions" },
+              { class: tocActionsClass },
               hc(
                 LinkButton,
                 {

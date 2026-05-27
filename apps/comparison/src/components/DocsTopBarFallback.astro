@@ -1,28 +1,55 @@
 ---
+import {
+  docsBrandLink,
+  docsBrandMark,
+  docsSearchKeyboard,
+  docsSearchRoot,
+  docsShellAction,
+  docsShellThemeToggle,
+  docsTopBarRoot,
+  docsTopNavLink,
+  docsTopNavRoot,
+  staticClassName,
+} from "./solid/chrome/styles";
+
 export interface Props {
   reactSpectrumUrl?: string;
 }
 
 const { reactSpectrumUrl } = Astro.props;
+const topBarRootClass = staticClassName(docsTopBarRoot);
+const brandLinkClass = staticClassName(docsBrandLink);
+const brandMarkClass = staticClassName(docsBrandMark);
+const searchRootClass = staticClassName(docsSearchRoot);
+const shellActionClass = staticClassName(docsShellAction);
+const shellThemeToggleClass = staticClassName(docsShellThemeToggle);
+const searchKeyboardClass = staticClassName(docsSearchKeyboard);
+const topNavRootClass = staticClassName(docsTopNavRoot);
+const topNavLinkClass = staticClassName(docsTopNavLink);
 ---
 
-<div class="s2-topbar" data-docs-topbar-fallback>
-  <a href="/" class="s2-brand" aria-label="Solid Spectrum home">
-    <span class="s2-brand-mark" aria-hidden="true">S</span>
+<div class:list={["s2-topbar", topBarRootClass]} data-docs-topbar-fallback>
+  <a href="/" class:list={["s2-brand", brandLinkClass]} aria-label="Solid Spectrum home">
+    <span class:list={["s2-brand-mark", brandMarkClass]} aria-hidden="true">S</span>
     <span>Solid Spectrum</span>
   </a>
-  <div class="s2-search">
-    <button class="s2-shell-action" type="button" aria-label="Search Solid Spectrum">
+  <div class:list={["s2-search", searchRootClass]}>
+    <button class:list={["s2-shell-action", shellActionClass]} type="button" aria-label="Search Solid Spectrum">
       <span>Search Solid Spectrum</span>
-      <kbd>/</kbd>
+      <kbd class={searchKeyboardClass}>/</kbd>
     </button>
   </div>
-  <nav class="s2-topnav" aria-label="Top navigation">
-    <a href="/">Docs</a>
-    {reactSpectrumUrl ? <a href={reactSpectrumUrl}>React Spectrum</a> : null}
-    <a href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
+  <nav class:list={["s2-topnav", topNavRootClass]} aria-label="Top navigation">
+    <a href="/" class={topNavLinkClass}>Docs</a>
+    {reactSpectrumUrl ? <a href={reactSpectrumUrl} class={topNavLinkClass}>React Spectrum</a> : null}
+    <a class={topNavLinkClass} href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
   </nav>
-  <button class="s2-shell-action s2-shell-theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme">
+  <button
+    class:list={["s2-shell-action s2-shell-theme-toggle", shellActionClass, shellThemeToggleClass]}
+    type="button"
+    data-theme-toggle
+    aria-label="Switch color theme"
+  >
     <span data-theme-toggle-icon>System</span>
   </button>
 </div>

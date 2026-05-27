@@ -4,6 +4,19 @@ import {
   groupComparisonEntries,
 } from "@comparison/data/component-groups";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
+import {
+  docsNavCountFallback,
+  docsNavGroup,
+  docsNavGroupFallbackLinks,
+  docsNavGroupLabel,
+  docsNavGroupLink,
+  docsNavGroupSummary,
+  docsNavHeading,
+  docsNavLink,
+  docsNavLinkCurrent,
+  docsNavRoot,
+  staticClassName,
+} from "./solid/chrome/styles";
 
 export interface Props {
   activeSlug?: string;
@@ -23,22 +36,43 @@ const activeGroupId = normalizedActiveSlug
 const isIndexPage = normalizedActiveSlug == null;
 const visualParityHref = normalizedActiveSlug ? "#visual-state-coverage" : "/components/button";
 const apiCoverageHref = normalizedActiveSlug ? "#api" : "/components/button#api";
+const navRootClass = staticClassName(docsNavRoot);
+const navHeadingClass = staticClassName(docsNavHeading);
+const navLinkClass = staticClassName(docsNavLink);
+const navLinkCurrentClass = staticClassName(docsNavLinkCurrent);
+const navGroupClass = staticClassName(docsNavGroup);
+const navGroupFallbackLinksClass = staticClassName(docsNavGroupFallbackLinks);
+const navGroupLabelClass = staticClassName(docsNavGroupLabel);
+const navGroupLinkClass = staticClassName(docsNavGroupLink);
+const navGroupSummaryClass = staticClassName(docsNavGroupSummary);
+const navCountFallbackClass = staticClassName(docsNavCountFallback);
 ---
 
-<nav class="s2-nav s2-nav--grouped" aria-label={navigationLabel ?? "Documentation"}>
-  <p>Overview</p>
-  <a href="/" aria-current={isIndexPage ? "page" : undefined}>Getting started</a>
-  <p>Components</p>
+<nav class:list={["s2-nav s2-nav--grouped", navRootClass]} aria-label={navigationLabel ?? "Documentation"}>
+  <p class={navHeadingClass}>Overview</p>
+  <a
+    href="/"
+    class:list={[navLinkClass, isIndexPage && navLinkCurrentClass]}
+    aria-current={isIndexPage ? "page" : undefined}
+  >
+    Getting started
+  </a>
+  <p class={navHeadingClass}>Components</p>
   {sidebarGroups.map((group) => (
-    <details class="s2-nav-group" open={isIndexPage || group.id === activeGroupId}>
-      <summary>
-        <span>{group.title}</span>
-        <span class="s2-nav-count">{group.entries.length}</span>
+    <details class:list={["s2-nav-group", navGroupClass]} open={isIndexPage || group.id === activeGroupId}>
+      <summary class={navGroupSummaryClass}>
+        <span class={navGroupLabelClass}>{group.title}</span>
+        <span class:list={["s2-nav-count", navCountFallbackClass]}>{group.entries.length}</span>
       </summary>
-      <div>
+      <div class={navGroupFallbackLinksClass}>
         {group.entries.map((item) => (
           <a
             href={`/components/${item.slug}`}
+            class:list={[
+              navLinkClass,
+              navGroupLinkClass,
+              item.slug === normalizedActiveSlug && navLinkCurrentClass,
+            ]}
             aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
           >
             {item.title}
@@ -47,9 +81,9 @@ const apiCoverageHref = normalizedActiveSlug ? "#api" : "/components/button#api"
       </div>
     </details>
   ))}
-  <p>Guides</p>
-  <a href={visualParityHref}>Visual parity</a>
-  <a href={apiCoverageHref}>API coverage</a>
-  <p>Reference</p>
-  {referenceUrl ? <a href={referenceUrl}>{referenceLabel ?? "S2 docs"}</a> : null}
+  <p class={navHeadingClass}>Guides</p>
+  <a href={visualParityHref} class={navLinkClass}>Visual parity</a>
+  <a href={apiCoverageHref} class={navLinkClass}>API coverage</a>
+  <p class={navHeadingClass}>Reference</p>
+  {referenceUrl ? <a href={referenceUrl} class={navLinkClass}>{referenceLabel ?? "S2 docs"}</a> : null}
 </nav>

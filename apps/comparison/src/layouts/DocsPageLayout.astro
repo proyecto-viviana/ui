@@ -3,6 +3,13 @@ import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
 import DocsTocMount from "@comparison/components/DocsTocMount.astro";
 import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsLayoutRoot,
+  docsMainContent,
+  docsSidebarRail,
+  docsTocRail,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
 import "@comparison/styles/global.css";
 
 type DocsTocVariant = "index" | "component";
@@ -32,6 +39,10 @@ const {
   tocSourceUrl,
   tocVariant,
 } = Astro.props;
+const layoutRootClass = staticClassName(docsLayoutRoot);
+const sidebarRailClass = staticClassName(docsSidebarRail);
+const mainContentClass = staticClassName(docsMainContent);
+const tocRailClass = staticClassName(docsTocRail);
 ---
 
 <html lang="en">
@@ -44,8 +55,8 @@ const {
   <body class="comparison-app s2-docs" data-theme="system" data-resolved-theme="light">
     <DocsTopBarMount reactSpectrumUrl={reactSpectrumUrl} />
 
-    <div class="s2-layout">
-      <aside class="s2-sidebar">
+    <div class:list={["s2-layout", layoutRootClass]}>
+      <aside class:list={["s2-sidebar", sidebarRailClass]}>
         <DocsSidebarMount
           activeSlug={sidebarActiveSlug}
           navigationLabel={sidebarNavigationLabel}
@@ -54,11 +65,11 @@ const {
         />
       </aside>
 
-      <main class="s2-main">
+      <main class:list={["s2-main", mainContentClass]}>
         <slot />
       </main>
 
-      <aside class="s2-toc" aria-label="On this page">
+      <aside class:list={["s2-toc", tocRailClass]} aria-label="On this page">
         <DocsTocMount
           entry={tocEntry}
           sourceLabel={tocSourceLabel}

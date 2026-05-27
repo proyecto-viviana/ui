@@ -1,5 +1,6 @@
 ---
 import DocsSidebarFallback from "./DocsSidebarFallback.astro";
+import { docsChromeMount, staticClassName } from "./solid/chrome/styles";
 
 export interface Props {
   activeSlug?: string;
@@ -9,10 +10,11 @@ export interface Props {
 }
 
 const { activeSlug, navigationLabel, referenceLabel, referenceUrl } = Astro.props;
+const chromeMountClass = staticClassName(docsChromeMount);
 ---
 
 <div
-  class="js-docs-sidebar-mount"
+  class:list={["js-docs-sidebar-mount", chromeMountClass]}
   data-active-slug={activeSlug ?? ""}
   data-navigation-label={navigationLabel ?? "Documentation"}
   data-reference-label={referenceLabel ?? "S2 docs"}

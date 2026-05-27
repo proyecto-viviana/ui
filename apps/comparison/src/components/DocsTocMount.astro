@@ -1,6 +1,7 @@
 ---
 import DocsTocFallback from "./DocsTocFallback.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import { docsChromeMount, staticClassName } from "./solid/chrome/styles";
 
 type DocsTocVariant = "index" | "component";
 
@@ -12,10 +13,11 @@ export interface Props {
 }
 
 const { entry, sourceLabel, sourceUrl, variant } = Astro.props;
+const chromeMountClass = staticClassName(docsChromeMount);
 ---
 
 <div
-  class="js-docs-toc-mount"
+  class:list={["js-docs-toc-mount", chromeMountClass]}
   data-component-slug={entry?.slug ?? ""}
   data-source-label={sourceLabel ?? "S2 source"}
   data-source-url={sourceUrl ?? ""}

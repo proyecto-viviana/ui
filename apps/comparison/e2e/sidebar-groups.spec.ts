@@ -10,6 +10,17 @@ test.describe("comparison sidebar groups", () => {
   test("component groups can be collapsed on the index page", async ({ page }) => {
     await page.goto("/");
 
+    const sidebarMount = page.locator(".js-docs-sidebar-mount");
+    const macroStyledSidebar = sidebarMount.locator(".s2-docs-sidebar");
+    await expect(macroStyledSidebar).toHaveCount(1);
+    await expect
+      .poll(() =>
+        macroStyledSidebar.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--comparison-docs-sidebar-macro").trim(),
+        ),
+      )
+      .toBe("1");
+
     const buttonGroup = componentGroup(page, "Button Family");
     const trigger = buttonGroup.getByRole("button", { name: "Button Family", exact: true });
 

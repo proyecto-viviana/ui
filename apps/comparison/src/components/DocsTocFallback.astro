@@ -1,5 +1,12 @@
 ---
 import { layerOrder, type ComparisonEntry, type ComparisonLayerId } from "@comparison/data/comparison-manifest";
+import {
+  docsTocActions,
+  docsTocHeading,
+  docsTocLink,
+  docsTocNav,
+  staticClassName,
+} from "./solid/chrome/styles";
 
 type DocsTocVariant = "index" | "component";
 
@@ -11,6 +18,10 @@ export interface Props {
 }
 
 const { entry, sourceLabel, sourceUrl, variant } = Astro.props;
+const tocNavClass = staticClassName(docsTocNav);
+const tocHeadingClass = staticClassName(docsTocHeading);
+const tocLinkClass = staticClassName(docsTocLink);
+const tocActionsClass = staticClassName(docsTocActions);
 
 const layerTitles: Record<ComparisonLayerId, string> = {
   styled: "Styled Layer",
@@ -38,14 +49,14 @@ const items =
       ];
 ---
 
-<nav class="s2-toc-nav" aria-label="On this page" data-docs-toc-fallback>
-  <p>On this page</p>
+<nav class:list={["s2-toc-nav", tocNavClass]} aria-label="On this page" data-docs-toc-fallback>
+  <p class={tocHeadingClass}>On this page</p>
   {items.map((item) => (
-    <a href={item.href}>{item.label}</a>
+    <a href={item.href} class={tocLinkClass}>{item.label}</a>
   ))}
   {sourceUrl ? (
-    <div class="s2-toc-actions">
-      <a href={sourceUrl}>{sourceLabel ?? "S2 source"}</a>
+    <div class:list={["s2-toc-actions", tocActionsClass]}>
+      <a href={sourceUrl} class={tocLinkClass}>{sourceLabel ?? "S2 source"}</a>
     </div>
   ) : null}
 </nav>
