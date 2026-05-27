@@ -1507,7 +1507,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "The docs/API controls drive dynamic columns/add-row data, density, quiet style, overflow mode, selection/default/disabled keys, empty rows, sorting, resizing, dividers, links, ActionBar, and row actions into both stacks.",
+      note: "The visible docs-viewer controls match the live S2 TableView surface: selectionMode, overflowMode, density, and isQuiet. Hidden harness controls still drive dynamic columns/add-row data, selection/default/disabled keys, empty rows, sorting, resizing, dividers, links, ActionBar, and row actions into both stacks.",
     },
   ],
   treeview: [

@@ -54,6 +54,7 @@ export function generateSolidExampleSource(
   const children = values.children;
   const props = group.controls
     .filter((control) => control.name !== "children")
+    .filter((control) => !control.isHidden || values[control.name] !== defaults[control.name])
     .map((control) => propSource(control, values[control.name], defaults[control.name]))
     .filter((prop): prop is string => Boolean(prop));
   const importLine = `import {${componentName}} from '@proyecto-viviana/solid-spectrum';`;

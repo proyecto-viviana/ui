@@ -28,6 +28,11 @@ into the remaining gates below.
 - TableView desktop, `1280 x 720`: the width-sensitive preview uses stacked
   React/Solid panels so each demo keeps the full preview width instead of being
   squeezed into half-width columns.
+- TableView docs-viewer controls, `1280 x 900`: the live React Spectrum S2
+  route exposes `selectionMode`, `overflowMode`, `density`, and `isQuiet` in
+  the top viewer. The local TableView route now keeps those as the visible
+  controls and retains the remaining docs/API states as hidden query-harness
+  controls.
 
 ## Landed In This Checkpoint
 
@@ -44,15 +49,16 @@ into the remaining gates below.
 - Compact examples keep the split React/Solid preview; width-sensitive
   collection/date/form examples use stacked panels to preserve component
   geometry.
+- TableView no longer exposes every harness branch in the official-looking
+  control column. Hidden fields still preserve route/test coverage for dynamic
+  rows, visible columns, keys, disabled rows, empty state, sorting, resizing,
+  dividers, row links, row actions, and ActionBar.
 
 ## Remaining Gates
 
 - Compare every component route's interactive controls against the official
   React Spectrum docs viewer controls. Extra harness controls must be grouped
   separately or moved out of the official-looking control column.
-- TableView still proves this gap: its example becomes very tall because our
-  local controls expose more options than the upstream viewer. That is a
-  component-controls parity task, not a shell-layout task.
 - Replace generated source snippets with the content-pipeline source model:
   syntax highlighting, copy/open actions, and hand-authored example code from
   the upstream MDX where applicable.

@@ -1,14 +1,14 @@
 # TableView Validation Notes
 
-Date: 2026-05-25
+Date: 2026-05-27
 Status: accepted with tracked S2 API backlog
 
 ## Current-Gate Closeout
 
 - Scope: styled S2 `TableView`, `TableHeader`, `Column`, `TableBody`, `Row`,
   `Cell`, selection/action behavior, sorting, resizing, empty state, ActionBar
-  integration, comparison route controls, visual-state evidence, and focused
-  package/browser tests.
+  integration, official docs-viewer controls, hidden query-harness controls,
+  visual-state evidence, and focused package/browser tests.
 - Sources rechecked: React Spectrum S2 TableView docs/API via MCP, installed S2
   behavior through the React comparison reference, Solid styled TableView
   source, headless Table internals, comparison fixtures, controls, visual
@@ -23,10 +23,13 @@ Status: accepted with tracked S2 API backlog
 ## Acceptance Gate Checklist
 
 - [x] Official docs and viewer parity: S2 docs/API examples were checked. The
-      comparison route covers documented static/dynamic collections, visible
-      columns, add-row data, density, quiet chrome, wrap/truncate overflow,
+      live docs top viewer exposes `selectionMode`, `overflowMode`, `density`,
+      and `isQuiet`; the comparison route exposes only those controls in the
+      official-looking side column. The remaining documented static/dynamic
+      collections, visible columns, add-row data, controlled/default keys,
       selection/actions, sorting, column resizing, empty state, links, cell
-      alignment/dividers, and ActionBar branches.
+      alignment/dividers, and ActionBar branches stay covered by hidden
+      query-harness controls.
 - [x] External authority and standards: S2 docs/source behavior and React Aria
       table semantics are the authorities for grid roles, keyboard navigation,
       selection, disabled state, row actions, sorting, loading, resizing, and
@@ -53,8 +56,8 @@ Status: accepted with tracked S2 API backlog
       heights, checkbox/link/resizer counts, and quiet/wrap/divider geometry.
 - [x] React-vs-Solid comparison harness parity: React and Solid fixtures share
       `tableview-demo.ts` defaults, route props, visible columns, item data,
-      event channel, serialized markers, side-panel controls, and visual-state
-      rows.
+      event channel, serialized markers, visible side-panel controls, hidden
+      harness controls, and visual-state rows.
 - [x] Known defects and regression protection: fixed missing modeled controls
       and visual evidence, added dynamic collection route coverage, fixed
       select-all indeterminate ARIA, kept table render context live for
@@ -66,19 +69,24 @@ Status: accepted with tracked S2 API backlog
 
 ## Source Packet
 
-| Source             | Files or docs                                                                                                 | Finding                                                                                                                                       |
-| ------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| S2 docs MCP        | `TableView` page/API                                                                                          | Public docs cover content, dynamic visible columns/add rows, selection/actions, sorting, column resizing, async loading, links, and empty UI. |
-| React/S2 behavior  | Live comparison reference                                                                                     | TableView renders a labelled grid with headers, rows, checkbox selection, optional empty content, sorting, resizers, and ActionBar.           |
-| Solid styled       | `packages/solid-spectrum/src/table/index.tsx`                                                                 | TableView now owns the S2 wrapper, style macro classes, aliases, selection cells, ActionBar, sorting, resizing, loading, and empty state.     |
-| Headless internals | `packages/solidaria-components/src/Table.tsx`, `packages/solidaria/src/table/createTableSelectAllCheckbox.ts` | Select-all indeterminate ARIA and resize callback propagation match the styled wrapper needs.                                                 |
-| Comparison harness | fixtures, `tableview-demo.ts`, controls, visual matrix, `tableview-visual.spec.ts`                            | Both stacks receive identical normalized props and have DOM, ARIA, style, visual, and interaction assertions.                                 |
+| Source             | Files or docs                                                                                                 | Finding                                                                                                                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S2 docs MCP        | `TableView` page/API                                                                                          | Public docs cover content, dynamic visible columns/add rows, selection/actions, sorting, column resizing, async loading, links, and empty UI.                                                                   |
+| Live S2 docs       | `react-spectrum.adobe.com/TableView.html`                                                                     | The top docs viewer control column exposes `selectionMode`, `overflowMode`, `density`, and `isQuiet`; content-specific controls such as show columns/add row are in-preview controls, not prop-viewer controls. |
+| React/S2 behavior  | Live comparison reference                                                                                     | TableView renders a labelled grid with headers, rows, checkbox selection, optional empty content, sorting, resizers, and ActionBar.                                                                             |
+| Solid styled       | `packages/solid-spectrum/src/table/index.tsx`                                                                 | TableView now owns the S2 wrapper, style macro classes, aliases, selection cells, ActionBar, sorting, resizing, loading, and empty state.                                                                       |
+| Headless internals | `packages/solidaria-components/src/Table.tsx`, `packages/solidaria/src/table/createTableSelectAllCheckbox.ts` | Select-all indeterminate ARIA and resize callback propagation match the styled wrapper needs.                                                                                                                   |
+| Comparison harness | fixtures, `tableview-demo.ts`, controls, visual matrix, `tableview-visual.spec.ts`                            | Both stacks receive identical normalized props and have DOM, ARIA, style, visual, and interaction assertions.                                                                                                   |
 
 ## Behavior State Machine
 
 - Stable states: default checkbox collection, quiet table chrome,
   truncated/wrapped content, visible column subsets, added row data, cell
   alignment, cell dividers, disabled rows, linked rows, and empty collections.
+- Viewer control states: only `selectionMode`, `overflowMode`, `density`, and
+  `isQuiet` are visible controls because they match the live React Spectrum
+  docs viewer. All other state-machine branches are hidden controls that can be
+  driven through route query parameters and e2e harness updates.
 - Selection states: uncontrolled default keys initialize both stacks; controlled
   keys update when rows are clicked; visible item changes normalize stale keys
   out of serialized route state.
@@ -120,7 +128,9 @@ Status: accepted with tracked S2 API backlog
   action callbacks, sort descriptor updates, computed colors, border radii, row
   heights, checkbox counts, link counts, and resizer counts.
 - Comparison fixtures only set shared collection canvas dimensions; visible
-  row/header/cell styling comes from React Spectrum or the Solid package.
+  row/header/cell styling comes from React Spectrum or the Solid package. The
+  side-panel height now follows the upstream top viewer surface instead of the
+  full harness surface.
 
 ## Tracked S2 API Backlog
 
@@ -154,6 +164,16 @@ rg -l "webkit-search-cancel-button" packages/solid-spectrum/dist -g '*.css'
 
 Results:
 
+- 2026-05-27 docs-viewer controls checkpoint: live React Spectrum TableView was
+  inspected in browser, and the top viewer exposed only `selectionMode`,
+  `overflowMode`, `density`, and `isQuiet`.
+- `vp check --fix`: formatting completed and found no warnings or lint errors
+  across 1605 files.
+- `vp run comparison:build`: passed; rebuilt the package chain and generated 70
+  comparison pages.
+- Focused TableView Playwright after the controls update: 5 tests passed for
+  default parity, modeled controls, quiet/wrap/sort/resize/cell options, empty
+  state/ActionBar, and controlled selection/actions/sorting/links.
 - `vp test run packages/solid-spectrum/test/Table.test.tsx`: 1 file passed,
   14 tests passed.
 - `vp test run packages/solidaria-components/test/Table.test.tsx`: 1 file
@@ -181,7 +201,7 @@ Results:
 ## Handoff
 
 - Current-gate status: TableView is accepted for the implemented public surface
-  as of 2026-05-25.
+  as of 2026-05-27.
 - Closed comparison audit gaps: modeled controls, validation note, current
   visual/asserted evidence, dynamic collection coverage, resize callback
   bridge, root loading bridge, select-all indeterminate ARIA, and render

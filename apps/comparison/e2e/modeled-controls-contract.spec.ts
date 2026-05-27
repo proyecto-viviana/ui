@@ -470,6 +470,15 @@ async function controlDefaultsFromForm(form: Locator) {
 
 async function expectControlDefault(form: Locator, control: ComponentControl) {
   const controlRoot = form.locator(`[data-control-name="${control.name}"]`);
+
+  if (control.isHidden) {
+    const hiddenControl = form.locator(`input[type="hidden"][name="${control.name}"]`);
+    await expect(controlRoot).toHaveCount(0);
+    await expect(hiddenControl).toHaveCount(1);
+    await expect(hiddenControl).toHaveValue(String(control.defaultValue));
+    return;
+  }
+
   await expect(controlRoot).toHaveCount(1);
   await expect(controlRoot).toHaveAttribute("data-control-kind", control.kind);
   await expect(controlRoot.getByText(control.label, { exact: true })).toBeVisible();
@@ -514,13 +523,32 @@ async function expectControlDefault(form: Locator, control: ComponentControl) {
 
 async function setControlValue(form: Locator, control: ComponentControl, value: string | boolean) {
   const controlRoot = form.locator(`[data-control-name="${control.name}"]`);
+
+  if (control.isHidden) {
+    const hiddenControl = form.locator(`input[type="hidden"][name="${control.name}"]`);
+    await expect(controlRoot).toHaveCount(0);
+    await expect(hiddenControl).toHaveCount(1);
+    await hiddenControl.evaluate((element, nextValue) => {
+      const input = element as HTMLInputElement;
+      input.value = String(nextValue);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }, value);
+    await expect(hiddenControl).toHaveValue(String(value));
+    return;
+  }
+
   await expect(controlRoot).toHaveCount(1);
 
   if (control.kind === "switch") {
     const checkbox = controlRoot.locator(`input[type="checkbox"][name="${control.name}"]`);
+    const switchControl = controlRoot.getByRole("switch", { name: control.label });
     await expect(checkbox).toHaveCount(1);
-    if ((await checkbox.isChecked()) !== Boolean(value)) {
-      await controlRoot.locator("label", { hasText: control.label }).click();
+    await expect(switchControl).toHaveCount(1);
+    if (value) {
+      await checkbox.check({ force: true });
+    } else {
+      await checkbox.uncheck({ force: true });
     }
     await expect(checkbox).toBeChecked({ checked: Boolean(value) });
     return;

@@ -68,10 +68,11 @@ function readControls(form: HTMLFormElement, defaults: ControlDefaults): Control
       continue;
     }
 
+    const submittedValue = data.get(key);
     values[key] =
       typeof defaultValue === "boolean"
-        ? data.get(key) === "on"
-        : String(data.get(key) || defaultValue);
+        ? submittedValue === "on" || submittedValue === "true"
+        : String(submittedValue || defaultValue);
   }
 
   return values;
