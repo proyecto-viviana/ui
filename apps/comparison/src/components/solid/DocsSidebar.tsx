@@ -1,5 +1,13 @@
 import h from "solid-js/h";
-import { Badge, Provider } from "@proyecto-viviana/solid-spectrum";
+import {
+  Badge,
+  Disclosure,
+  DisclosureHeader,
+  DisclosurePanel,
+  DisclosureTitle,
+  Link,
+  Provider,
+} from "@proyecto-viviana/solid-spectrum";
 import {
   getComparisonEntryGroupId,
   groupComparisonEntries,
@@ -40,23 +48,38 @@ export default function DocsSidebar(props: DocsSidebarProps) {
         navLink("/", "Getting started", isIndexPage),
         navHeading("Components"),
         ...sidebarGroups.map((group) =>
-          h("details", { class: "s2-nav-group", open: isIndexPage || group.id === activeGroupId }, [
-            h("summary", {}, [
-              h("span", {}, group.title),
-              h("span", { class: "s2-nav-count s2-status-badge" }, [
-                hc(Badge, { variant: "neutral", fillStyle: "subtle", size: "S" }, [
-                  String(group.entries.length),
+          hc(
+            Disclosure,
+            {
+              id: group.id,
+              defaultExpanded: isIndexPage || group.id === activeGroupId,
+              isQuiet: true,
+              size: "S",
+              density: "spacious",
+              UNSAFE_className: "s2-nav-group",
+            },
+            [
+              hc(DisclosureHeader, { UNSAFE_className: "s2-nav-group-header" }, [
+                hc(DisclosureTitle, { level: 3, UNSAFE_className: "s2-nav-group-title" }, [
+                  h("span", { class: "s2-nav-group-label" }, group.title),
+                ]),
+                h("span", { class: "s2-nav-count s2-status-badge" }, [
+                  hc(Badge, { variant: "neutral", fillStyle: "subtle", size: "S" }, [
+                    String(group.entries.length),
+                  ]),
                 ]),
               ]),
-            ]),
-            h(
-              "div",
-              {},
-              group.entries.map((item) =>
-                navLink(`/components/${item.slug}`, item.title, item.slug === activeSlug),
-              ),
-            ),
-          ]),
+              hc(DisclosurePanel, { UNSAFE_className: "s2-nav-group-panel" }, [
+                h(
+                  "div",
+                  { class: "s2-nav-group-links" },
+                  group.entries.map((item) =>
+                    navLink(`/components/${item.slug}`, item.title, item.slug === activeSlug),
+                  ),
+                ),
+              ]),
+            ],
+          ),
         ),
         navHeading("Guides"),
         navLink(visualParityHref, "Visual parity", false),
@@ -81,12 +104,15 @@ function navHeading(label: string) {
 }
 
 function navLink(href: string, label: string, isCurrent: boolean) {
-  return h(
-    "a",
+  return hc(
+    Link,
     {
       href,
+      variant: "secondary",
+      isStandalone: true,
+      isQuiet: true,
       "aria-current": isCurrent ? "page" : undefined,
     },
-    label,
+    [label],
   );
 }

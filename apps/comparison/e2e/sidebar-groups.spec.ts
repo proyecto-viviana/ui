@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 function componentGroup(page: Page, name: string): Locator {
-  return page.locator("details.s2-nav-group").filter({
-    has: page.locator("summary", { hasText: name }),
+  return page.locator('[data-rsp-component="Disclosure"].s2-nav-group').filter({
+    has: page.getByRole("button", { name, exact: true }),
   });
 }
 
@@ -11,12 +11,16 @@ test.describe("comparison sidebar groups", () => {
     await page.goto("/");
 
     const buttonGroup = componentGroup(page, "Button Family");
+    const trigger = buttonGroup.getByRole("button", { name: "Button Family", exact: true });
+
+    await expect(page.locator(".js-docs-sidebar-mount details.s2-nav-group")).toHaveCount(0);
     await expect(buttonGroup).toBeVisible();
-    await expect(buttonGroup).toHaveAttribute("open", "");
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
     await expect(buttonGroup.getByRole("link", { name: "Button", exact: true })).toBeVisible();
 
-    await buttonGroup.locator("summary").click();
+    await trigger.click();
 
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
     await expect(buttonGroup.getByRole("link", { name: "Button", exact: true })).toBeHidden();
   });
 
@@ -25,12 +29,19 @@ test.describe("comparison sidebar groups", () => {
 
     const activeGroup = componentGroup(page, "Form & Input");
     const inactiveGroup = componentGroup(page, "Button Family");
+    const activeTrigger = activeGroup.getByRole("button", { name: "Form & Input", exact: true });
+    const inactiveTrigger = inactiveGroup.getByRole("button", {
+      name: "Button Family",
+      exact: true,
+    });
 
-    await expect(activeGroup).toHaveAttribute("open", "");
+    await expect(page.locator(".js-docs-sidebar-mount details.s2-nav-group")).toHaveCount(0);
+    await expect(activeTrigger).toHaveAttribute("aria-expanded", "true");
     await expect(activeGroup.getByRole("link", { name: "TextField" })).toHaveAttribute(
       "aria-current",
       "page",
     );
+    await expect(inactiveTrigger).toHaveAttribute("aria-expanded", "false");
     await expect(inactiveGroup.getByRole("link", { name: "Button", exact: true })).toBeHidden();
   });
 });

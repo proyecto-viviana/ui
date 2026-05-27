@@ -283,14 +283,39 @@ body.s2-docs[data-theme="dark"] {
   text-align: center;
 }
 
-.s2-nav-group div {
+details.s2-nav-group > div,
+.s2-nav-group-links {
   display: grid;
   gap: 1px;
-  padding: 0 0 8px 10px;
   border-left: 1px solid var(--s2-border);
 }
 
-.s2-nav-group a {
+details.s2-nav-group > div {
+  padding: 0 0 8px 10px;
+}
+
+.s2-nav-group-header {
+  min-width: 0;
+  gap: 8px;
+}
+
+.s2-nav-group-title {
+  min-width: 0;
+}
+
+.s2-nav-group-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s2-nav-group-panel > [data-rsp-slot="disclosure-panel-content"] {
+  padding: 0 0 8px 10px;
+}
+
+.s2-nav-group a,
+.s2-nav-group-links a {
   padding-left: 8px;
 }
 
