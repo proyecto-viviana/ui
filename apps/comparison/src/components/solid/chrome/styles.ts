@@ -255,7 +255,7 @@ export const docsTocRail = style({
   overflow: "auto",
   color: "neutral-subdued",
   font: "ui-sm",
-  "@media (max-width: 1320px)": {
+  "@media (max-width: 1180px)": {
     display: "none",
   },
 });

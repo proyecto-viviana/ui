@@ -1156,7 +1156,7 @@ details.s2-nav-group > div {
   color: var(--s2-accent);
 }
 
-@media (max-width: 1320px) {
+@media (max-width: 1180px) {
   .s2-toc {
     display: none;
   }
