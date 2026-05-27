@@ -37,7 +37,22 @@ test.describe("comparison catalogue controls", () => {
       "href",
       "/",
     );
-    await expect(page.getByRole("button", { name: "Search Solid Spectrum" })).toBeVisible();
+    const searchButton = page.getByRole("button", { name: "Search Solid Spectrum" });
+    await expect(searchButton).toBeVisible();
+    await expect(searchButton).toHaveAttribute("aria-expanded", "false");
+    await searchButton.click();
+
+    const searchDialog = page.getByRole("dialog", { name: "Search" });
+    await expect(searchDialog).toBeVisible();
+    await expect(searchButton).toHaveAttribute("aria-expanded", "true");
+    const chromeSearch = searchDialog.getByRole("searchbox", { name: "Search components" });
+    await chromeSearch.fill("Accordion");
+    await expect(searchDialog.getByRole("link", { name: /Accordion/ })).toHaveAttribute(
+      "href",
+      "/components/accordion",
+    );
+    await page.keyboard.press("Escape");
+    await expect(searchDialog).toHaveCount(0);
 
     const topnav = page.getByRole("navigation", { name: "Top navigation" });
     await expect(topnav.getByRole("link", { name: "Docs" })).toHaveAttribute("href", "/");
@@ -134,11 +149,15 @@ test.describe("comparison catalogue controls", () => {
 
     await expect(page.locator("body")).toHaveAttribute("data-theme", "system");
     await expect(page.locator("[data-theme-toggle-icon]")).toHaveText("System");
-    await page.getByRole("button", { name: "Switch color theme" }).click();
+    const themeToggle = page.locator("[data-theme-toggle]");
+    await expect(themeToggle).toHaveAttribute("aria-label", /Using system (light|dark) mode/);
+    await themeToggle.click();
     await expect(page.locator("body")).toHaveAttribute("data-theme", "light");
     await expect(page.locator("[data-theme-toggle-icon]")).toHaveText("Light");
-    await page.getByRole("button", { name: "Switch color theme" }).click();
+    await expect(themeToggle).toHaveAttribute("aria-label", "Using light mode (press to switch)");
+    await themeToggle.click();
     await expect(page.locator("body")).toHaveAttribute("data-theme", "dark");
     await expect(page.locator("[data-theme-toggle-icon]")).toHaveText("Dark");
+    await expect(themeToggle).toHaveAttribute("aria-label", "Using dark mode (press to switch)");
   });
 });

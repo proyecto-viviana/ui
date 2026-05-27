@@ -41,6 +41,17 @@ into the remaining gates below.
 - Accordion docs shell, live React Spectrum S2: upstream uses a quiet,
   spacious S2 Disclosure navigation for the component list, with a top-level
   `Components` disclosure and current-page link styling.
+- Docs top bar, live React Spectrum S2: upstream uses a `banner` landmark with
+  a three-column layout, centered search trigger, top navigation links, a
+  divider before the color-scheme control, and a dynamic theme-toggle label.
+- Docs top bar, local comparison preview: the Solid top bar and Astro fallback
+  now expose a `banner` landmark, centered component search trigger, top links,
+  divider, real workflow icons, dynamic theme-toggle label, and a mobile layout
+  that keeps brand/theme/menu controls without an empty divider column.
+- Component search, local comparison preview: clicking the search trigger opens
+  a dialog backed by Solid Spectrum `SearchField`, filters component catalogue
+  entries, exposes result links, updates `aria-expanded`, and closes with
+  Escape.
 
 ## Landed In This Checkpoint
 
@@ -66,6 +77,15 @@ into the remaining gates below.
   groups rather than copying the upstream single flat `Components` disclosure,
   because the comparison app needs to expose parity taxonomy and component
   coverage progress.
+- The comparison top bar now follows the upstream docs header geometry: brand on
+  the left, centered search trigger on desktop, top actions on the right, and a
+  compact mobile header with no blank trailing grid column.
+- The search trigger is functional instead of decorative. It opens a modal
+  component-search dialog, filters the local component catalogue, and links to
+  component routes.
+- Theme and navigation chrome use exported Solid Spectrum workflow icons rather
+  than CSS pseudo-icons, and the theme toggle now updates its accessible label
+  whenever the resolved color scheme changes.
 
 ## Remaining Gates
 
@@ -82,8 +102,15 @@ into the remaining gates below.
 - Revisit the landing page separately; it is still not shaped like the
   upstream Spectrum 2 landing page.
 - Continue page-chrome porting against upstream `Layout`, `Header`, `Nav`, and
-  `VisualExample`: header/search behavior, page body spacing, right-side ToC,
-  and footer still need the same source-backed audit.
+  `VisualExample`: page body spacing, right-side ToC, and footer still need the
+  same source-backed audit.
+- Decide how far the local search should follow upstream `SearchMenuTrigger`.
+  Current behavior covers the comparison-app component catalogue, but upstream
+  search includes richer site-wide result content and keyboard/menu behavior.
+- Keep the local top links intentionally comparison-specific unless the
+  information architecture changes. Upstream exposes `Docs`, `Releases`,
+  `Blog`, `GitHub`, and `npm`; the comparison app currently exposes `Docs`,
+  `React Spectrum`, and `npm`.
 
 ## Process Note
 

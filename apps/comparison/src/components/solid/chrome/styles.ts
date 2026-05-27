@@ -21,7 +21,7 @@ export const docsTopBarRoot = style({
   top: 0,
   zIndex: 50,
   display: "grid",
-  gridTemplateColumns: "[1fr minmax(240px, 500px) 1fr]",
+  gridTemplateColumns: "[1fr auto 1fr]",
   alignItems: "center",
   gap: 12,
   width: "[calc(100% - 24px)]",
@@ -84,9 +84,9 @@ export const docsSearchRoot = style({
   gridTemplateColumns: "[minmax(0, 1fr)]",
   alignItems: "center",
   justifySelf: "center",
-  width: "full",
+  width: "[min(500px, 36vw)]",
   maxWidth: "[500px]",
-  minWidth: 0,
+  minWidth: "[240px]",
   "@media (max-width: 860px)": {
     display: "none",
   },
@@ -158,6 +158,14 @@ export const docsShellThemeToggle = style({
   font: "ui-sm",
 });
 
+export const docsShellIcon = style({
+  size: 20,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
 export const docsSearchKeyboard = style({
   display: "inline-grid",
   alignItems: "center",
@@ -212,6 +220,114 @@ export const docsTopActionsRoot = style({
   justifyContent: "end",
   gap: 4,
   minWidth: 0,
+});
+
+export const docsTopDivider = style({
+  alignSelf: "center",
+  height: 20,
+  marginX: 4,
+  backgroundColor: lightDark("gray-300", "gray-700"),
+  "@media (max-width: 860px)": {
+    display: "none",
+  },
+});
+
+export const docsSearchOverlay = style({
+  position: "fixed",
+  inset: 0,
+  zIndex: 120,
+  display: "grid",
+  justifyItems: "center",
+  alignItems: "start",
+  paddingX: 16,
+  paddingTop: "[96px]",
+  backgroundColor: "transparent-overlay-500",
+  "@media (max-width: 860px)": {
+    paddingX: 12,
+    paddingTop: 72,
+  },
+});
+
+export const docsSearchDialog = style({
+  display: "grid",
+  gap: 12,
+  width: "[min(640px, calc(100vw - 32px))]",
+  maxHeight: "[calc(100dvh - 128px)]",
+  padding: 12,
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: lightDark("gray-200", "gray-700"),
+  borderRadius: "xl",
+  backgroundColor: "layer-1",
+  boxShadow: "emphasized",
+  color: "neutral",
+  overflow: "hidden",
+  "@media (max-width: 860px)": {
+    width: "[calc(100vw - 24px)]",
+    maxHeight: "[calc(100dvh - 96px)]",
+  },
+});
+
+export const docsSearchDialogHeader = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  paddingX: 4,
+});
+
+export const docsSearchDialogTitle = style({
+  margin: 0,
+  color: "neutral",
+  font: "title",
+});
+
+export const docsSearchDialogField = style({
+  width: "full",
+});
+
+export const docsSearchResults = style({
+  display: "grid",
+  gap: 4,
+  maxHeight: "[min(52vh, 420px)]",
+  overflow: "auto",
+  paddingTop: 4,
+  paddingBottom: 4,
+});
+
+export const docsSearchResultLink = style({
+  display: "grid",
+  gap: 2,
+  paddingX: 12,
+  paddingY: "[10px]",
+  borderRadius: "lg",
+  backgroundColor: {
+    default: "transparent",
+    ":hover": "gray-100",
+    ":focus-visible": "gray-100",
+  },
+  color: "neutral",
+  textDecoration: "none",
+  outlineOffset: 2,
+});
+
+export const docsSearchResultTitle = style({
+  color: "neutral",
+  font: "ui",
+  fontWeight: "bold",
+});
+
+export const docsSearchResultMeta = style({
+  color: "neutral-subdued",
+  font: "detail",
+});
+
+export const docsSearchEmpty = style({
+  margin: 0,
+  paddingX: 12,
+  paddingY: "[18px]",
+  color: "neutral-subdued",
+  font: "ui",
 });
 
 export const docsMobileNavButton = style({

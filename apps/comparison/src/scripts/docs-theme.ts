@@ -16,9 +16,18 @@ function isComparisonThemeChoice(value: unknown): value is ComparisonThemeChoice
   return value === "system" || value === "light" || value === "dark";
 }
 
-function updateThemeIcons(theme: ComparisonThemeChoice) {
+function getThemeToggleAriaLabel(theme: ComparisonThemeChoice, resolvedTheme: "light" | "dark") {
+  const mode = theme === "system" ? `system ${resolvedTheme}` : theme;
+  return `Using ${mode} mode (press to switch)`;
+}
+
+function updateThemeToggles(theme: ComparisonThemeChoice, resolvedTheme: "light" | "dark") {
   for (const themeIcon of document.querySelectorAll("[data-theme-toggle-icon]")) {
     themeIcon.textContent = getComparisonThemeChoiceLabel(theme);
+  }
+
+  for (const themeToggle of document.querySelectorAll("[data-theme-toggle]")) {
+    themeToggle.setAttribute("aria-label", getThemeToggleAriaLabel(theme, resolvedTheme));
   }
 }
 
@@ -33,7 +42,7 @@ function applyTheme(theme: ComparisonThemeChoice) {
   root.dataset.theme = theme;
   root.dataset.resolvedTheme = resolvedTheme;
 
-  updateThemeIcons(theme);
+  updateThemeToggles(theme, resolvedTheme);
   syncThemeControls(theme);
 
   window.localStorage.setItem("solid-spectrum-theme", theme);

@@ -1,12 +1,19 @@
-import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { For, createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import h from "solid-js/h";
 import {
   ActionButton,
+  CloseIcon,
+  ContrastIcon,
+  Divider,
   Keyboard,
+  LightenIcon,
   Link,
+  MenuHamburgerIcon,
   Provider,
+  SearchField,
   SearchIcon,
 } from "@proyecto-viviana/solid-spectrum";
+import { comparisonEntries, type ComparisonEntry } from "@comparison/data/comparison-manifest";
 import { getComparisonThemeChoiceLabel } from "@comparison/data/theme";
 import {
   docsBrandLink,
@@ -17,18 +24,30 @@ import {
   docsMobileNavPanel,
   docsMobileNavTitle,
   docsSearchButton,
+  docsSearchDialog,
+  docsSearchDialogField,
+  docsSearchDialogHeader,
+  docsSearchDialogTitle,
+  docsSearchEmpty,
   docsSearchIcon,
   docsSearchKeyboard,
+  docsSearchOverlay,
+  docsSearchResultLink,
+  docsSearchResultMeta,
+  docsSearchResultTitle,
+  docsSearchResults,
   docsSearchRoot,
+  docsShellIcon,
   docsShellThemeToggle,
   docsTopActionsRoot,
   docsTopBarRoot,
+  docsTopDivider,
   docsTopNavLink,
   docsTopNavRoot,
   staticClassName,
 } from "./chrome/styles";
 import DocsSidebar from "./DocsSidebar";
-import { hc } from "./solid-h";
+import { hc, renderProp } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
 export interface DocsTopBarProps {
@@ -48,24 +67,114 @@ const mobileNavPanelClass = staticClassName(docsMobileNavPanel);
 const mobileNavHeaderClass = staticClassName(docsMobileNavHeader);
 const mobileNavTitleClass = staticClassName(docsMobileNavTitle);
 const searchButtonClass = staticClassName(docsSearchButton);
+const searchDialogClass = staticClassName(docsSearchDialog);
+const searchDialogFieldClass = staticClassName(docsSearchDialogField);
+const searchDialogHeaderClass = staticClassName(docsSearchDialogHeader);
+const searchDialogTitleClass = staticClassName(docsSearchDialogTitle);
+const searchEmptyClass = staticClassName(docsSearchEmpty);
 const searchIconClass = staticClassName(docsSearchIcon);
 const searchKeyboardClass = staticClassName(docsSearchKeyboard);
+const searchOverlayClass = staticClassName(docsSearchOverlay);
+const searchResultLinkClass = staticClassName(docsSearchResultLink);
+const searchResultMetaClass = staticClassName(docsSearchResultMeta);
+const searchResultTitleClass = staticClassName(docsSearchResultTitle);
+const searchResultsClass = staticClassName(docsSearchResults);
 const searchRootClass = staticClassName(docsSearchRoot);
+const shellIconClass = staticClassName(docsShellIcon);
 const shellThemeToggleClass = staticClassName(docsShellThemeToggle);
 const topActionsRootClass = staticClassName(docsTopActionsRoot);
 const topNavRootClass = staticClassName(docsTopNavRoot);
 const topNavLinkClass = staticClassName(docsTopNavLink);
+const topDividerClass = staticClassName(docsTopDivider);
 const mobileNavDialogId = "comparison-mobile-navigation";
+const searchDialogId = "comparison-docs-search-dialog";
+const searchTitleId = "comparison-docs-search-title";
+
+function normalizeSearchValue(value: unknown) {
+  return String(value || "").toLowerCase();
+}
 
 export default function DocsTopBar(props: DocsTopBarProps) {
   const { resolvedTheme, themeChoice } = createComparisonColorScheme();
   const [isMobileNavOpen, setMobileNavOpen] = createSignal(false);
+  const [isSearchOpen, setSearchOpen] = createSignal(false);
+  const [searchQuery, setSearchQuery] = createSignal("");
   const [mobileNavTrigger, setMobileNavTrigger] = createSignal<HTMLButtonElement | null>(null);
+  const [searchTrigger, setSearchTrigger] = createSignal<HTMLButtonElement | null>(null);
+  let searchDialogElement: HTMLDivElement | undefined;
+
   const closeMobileNav = () => setMobileNavOpen(false);
+  const closeSearch = (restoreFocus = false) => {
+    setSearchOpen(false);
+    if (restoreFocus) {
+      window.requestAnimationFrame(() => searchTrigger()?.focus());
+    }
+  };
+  const closeSearchFromKeyboard = (event: KeyboardEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeSearch(true);
+  };
+  const setSearchDialogRef = (element: HTMLDivElement) => {
+    searchDialogElement = element;
+    const handleSearchDialogKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeSearchFromKeyboard(event);
+      }
+    };
+    element.addEventListener("keydown", handleSearchDialogKey, true);
+    element.addEventListener("keyup", handleSearchDialogKey, true);
+  };
+  const openSearch = () => {
+    setSearchOpen(true);
+    window.requestAnimationFrame(() => {
+      searchDialogElement?.querySelector<HTMLInputElement>("input")?.focus();
+    });
+  };
+  const themeToggleLabel = () => {
+    const choice = themeChoice();
+    const mode = choice === "system" ? `system ${resolvedTheme()}` : choice;
+    return `Using ${mode} mode (press to switch)`;
+  };
+  const searchResults = createMemo(() => {
+    const normalizedQuery = normalizeSearchValue(searchQuery());
+    const entries = normalizedQuery
+      ? comparisonEntries.filter((entry) =>
+          normalizeSearchValue(`${entry.title} ${entry.summary} ${entry.category}`).includes(
+            normalizedQuery,
+          ),
+        )
+      : comparisonEntries;
+
+    return entries.slice(0, 8);
+  });
 
   onMount(() => {
     const desktopQuery = window.matchMedia("(min-width: 861px)");
     const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      const target = event.target;
+      const isTextEntry =
+        target instanceof HTMLElement &&
+        !!target.closest("input, textarea, select, [contenteditable='true']");
+
+      if ((event.metaKey || event.ctrlKey) && key === "k") {
+        event.preventDefault();
+        openSearch();
+        return;
+      }
+
+      if (!isTextEntry && !event.metaKey && !event.ctrlKey && !event.altKey && event.key === "/") {
+        event.preventDefault();
+        openSearch();
+        return;
+      }
+
+      if (isSearchOpen() && event.key === "Escape") {
+        closeSearchFromKeyboard(event);
+        return;
+      }
+
       if (isMobileNavOpen() && event.key === "Escape") {
         closeMobileNav();
       }
@@ -76,12 +185,12 @@ export default function DocsTopBar(props: DocsTopBarProps) {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, true);
     desktopQuery.addEventListener("change", handleDesktopChange);
     handleDesktopChange();
 
     onCleanup(() => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown, true);
       desktopQuery.removeEventListener("change", handleDesktopChange);
     });
   });
@@ -95,9 +204,19 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     trigger.setAttribute("aria-expanded", isMobileNavOpen() ? "true" : "false");
   });
 
+  createEffect(() => {
+    const trigger = searchTrigger();
+    if (!trigger) {
+      return;
+    }
+
+    trigger.setAttribute("aria-expanded", isSearchOpen() ? "true" : "false");
+  });
+
   return hc(
     Provider,
     {
+      role: "banner",
       class: "s2-topbar",
       styles: topBarRootClass,
       get colorScheme() {
@@ -129,6 +248,11 @@ export default function DocsTopBar(props: DocsTopBarProps) {
             type: "button",
             class: classNames("s2-search-trigger", searchButtonClass),
             "aria-label": "Search Solid Spectrum",
+            "aria-haspopup": "dialog",
+            "aria-controls": searchDialogId,
+            "aria-expanded": "false",
+            ref: setSearchTrigger,
+            onClick: openSearch,
           },
           [
             h(SearchIcon, { styles: searchIconClass, "aria-hidden": "true" }),
@@ -151,6 +275,13 @@ export default function DocsTopBar(props: DocsTopBarProps) {
             topNavLink("https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum", "npm"),
           ],
         ),
+        hc(Divider, {
+          orientation: "vertical",
+          size: "S",
+          styles: topDividerClass,
+          UNSAFE_className: "s2-top-actions-divider",
+          "aria-hidden": "true",
+        }),
         hc(
           ActionButton,
           {
@@ -160,10 +291,17 @@ export default function DocsTopBar(props: DocsTopBarProps) {
             UNSAFE_className: "s2-shell-theme-toggle",
             styles: shellThemeToggleClass,
             "data-theme-toggle": "",
-            "aria-label": "Switch color theme",
+            get "aria-label"() {
+              return themeToggleLabel();
+            },
           },
           [
-            h("span", { class: "s2-theme-icon", "data-theme-toggle-icon": "" }, () =>
+            h("span", { class: "s2-theme-icon", "aria-hidden": "true" }, () =>
+              resolvedTheme() === "dark"
+                ? h(LightenIcon, { styles: shellIconClass })
+                : h(ContrastIcon, { styles: shellIconClass }),
+            ),
+            h("span", { class: "s2-visually-hidden", "data-theme-toggle-icon": "" }, () =>
               getComparisonThemeChoiceLabel(themeChoice()),
             ),
           ],
@@ -183,8 +321,103 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           ref: setMobileNavTrigger,
           onPress: () => setMobileNavOpen(true),
         },
-        [h("span", { class: "s2-menu-icon", "aria-hidden": "true" })],
+        [
+          h("span", { class: "s2-menu-icon", "aria-hidden": "true" }, [
+            h(MenuHamburgerIcon, { styles: shellIconClass }),
+          ]),
+        ],
       ),
+      () =>
+        isSearchOpen()
+          ? h(
+              "div",
+              {
+                class: classNames("s2-search-overlay", searchOverlayClass),
+                onClick: () => closeSearch(true),
+              },
+              h(
+                "div",
+                {
+                  id: searchDialogId,
+                  class: classNames("s2-search-dialog", searchDialogClass),
+                  role: "dialog",
+                  "aria-modal": "true",
+                  "aria-labelledby": searchTitleId,
+                  ref: setSearchDialogRef,
+                  onClick: (event: MouseEvent) => event.stopPropagation(),
+                },
+                [
+                  h(
+                    "div",
+                    {
+                      class: classNames("s2-search-dialog-header", searchDialogHeaderClass),
+                    },
+                    [
+                      h(
+                        "h2",
+                        {
+                          id: searchTitleId,
+                          class: classNames("s2-search-dialog-title", searchDialogTitleClass),
+                        },
+                        "Search",
+                      ),
+                      hc(
+                        ActionButton,
+                        {
+                          type: "button",
+                          size: "M",
+                          isQuiet: true,
+                          "aria-label": "Close search",
+                          onPress: () => closeSearch(true),
+                        },
+                        [h(CloseIcon, { styles: shellIconClass, "aria-hidden": "true" })],
+                      ),
+                    ],
+                  ),
+                  hc(SearchField, {
+                    label: "Search components",
+                    size: "M",
+                    placeholder: "Button, Dialog, Picker",
+                    UNSAFE_className: classNames("s2-search-dialog-field", searchDialogFieldClass),
+                    get value() {
+                      return searchQuery();
+                    },
+                    onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+                      setSearchQuery(event.currentTarget.value),
+                    onChange: setSearchQuery,
+                    onClear: () => setSearchQuery(""),
+                  }),
+                  h(
+                    "div",
+                    {
+                      class: classNames("s2-search-results", searchResultsClass),
+                      "data-docs-search-results": "",
+                      "aria-live": "polite",
+                    },
+                    [
+                      hc(
+                        For as never,
+                        {
+                          get each() {
+                            return searchResults();
+                          },
+                        },
+                        renderProp((entry: ComparisonEntry) => searchResult(entry)),
+                      ),
+                      () =>
+                        searchResults().length === 0
+                          ? h(
+                              "p",
+                              { class: classNames("s2-search-empty", searchEmptyClass) },
+                              "No matching components.",
+                            )
+                          : undefined,
+                    ],
+                  ),
+                ],
+              ),
+            )
+          : undefined,
       () =>
         isMobileNavOpen()
           ? h(
@@ -215,7 +448,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
                         "aria-label": "Close navigation",
                         onPress: closeMobileNav,
                       },
-                      ["Close"],
+                      [h(CloseIcon, { styles: shellIconClass, "aria-hidden": "true" })],
                     ),
                   ]),
                   h(DocsSidebar, {
@@ -230,6 +463,28 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           : undefined,
     ],
   )();
+}
+
+function searchResult(entry: ComparisonEntry) {
+  return h(
+    "a",
+    {
+      href: `/components/${entry.slug}`,
+      class: classNames("s2-search-result", searchResultLinkClass),
+    },
+    [
+      h(
+        "span",
+        { class: classNames("s2-search-result-title", searchResultTitleClass) },
+        entry.title,
+      ),
+      h(
+        "span",
+        { class: classNames("s2-search-result-meta", searchResultMetaClass) },
+        `${entry.category} / ${entry.parity}`,
+      ),
+    ],
+  );
 }
 
 function topNavLink(href: string, label: string) {

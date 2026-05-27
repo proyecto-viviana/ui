@@ -10,6 +10,7 @@ import {
   docsShellThemeToggle,
   docsTopActionsRoot,
   docsTopBarRoot,
+  docsTopDivider,
   docsTopNavLink,
   docsTopNavRoot,
   staticClassName,
@@ -30,17 +31,24 @@ const shellActionClass = staticClassName(docsShellAction);
 const shellThemeToggleClass = staticClassName(docsShellThemeToggle);
 const searchKeyboardClass = staticClassName(docsSearchKeyboard);
 const topActionsRootClass = staticClassName(docsTopActionsRoot);
+const topDividerClass = staticClassName(docsTopDivider);
 const topNavRootClass = staticClassName(docsTopNavRoot);
 const topNavLinkClass = staticClassName(docsTopNavLink);
 ---
 
-<div class:list={["s2-topbar", topBarRootClass]} data-docs-topbar-fallback>
+<div class:list={["s2-topbar", topBarRootClass]} data-docs-topbar-fallback role="banner">
   <a href="/" class:list={["s2-brand", brandLinkClass]} aria-label="Solid Spectrum home">
     <span class:list={["s2-brand-mark", brandMarkClass]} aria-hidden="true">S</span>
     <span>Solid Spectrum</span>
   </a>
   <div class:list={["s2-search", searchRootClass]}>
-    <button class:list={["s2-search-trigger", searchButtonClass]} type="button" aria-label="Search Solid Spectrum">
+    <button
+      class:list={["s2-search-trigger", searchButtonClass]}
+      type="button"
+      aria-label="Search Solid Spectrum"
+      aria-haspopup="dialog"
+      aria-expanded="false"
+    >
       <svg class="s2-search-icon" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
         <path d="m18.53027,17.46973l-5.08325-5.08325c.96936-1.20142,1.55298-2.72644,1.55298-4.38647,0-3.85938-3.14062-7-7-7S1,4.14062,1,8s3.14062,7,7,7c1.66003,0,3.18506-.58362,4.38647-1.55298l5.08325,5.08325c.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973c.29297-.29297.29297-.76758,0-1.06055Zm-10.53027-3.96973c-3.03223,0-5.5-2.46777-5.5-5.5s2.46777-5.5,5.5-5.5,5.5,2.46777,5.5,5.5-2.46777,5.5-5.5,5.5Z" fill="var(--iconPrimary, currentColor)"></path>
       </svg>
@@ -54,13 +62,20 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
       {reactSpectrumUrl ? <a href={reactSpectrumUrl} class={topNavLinkClass}>React Spectrum</a> : null}
       <a class={topNavLinkClass} href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
     </nav>
+    <div class:list={["s2-top-actions-divider", topDividerClass]} aria-hidden="true"></div>
     <button
       class:list={["s2-shell-action s2-shell-theme-toggle", shellActionClass, shellThemeToggleClass]}
       type="button"
       data-theme-toggle
-      aria-label="Switch color theme"
+      aria-label="Using system light mode (press to switch)"
     >
-      <span class="s2-theme-icon" data-theme-toggle-icon>System</span>
+      <span class="s2-theme-icon" aria-hidden="true">
+        <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+          <path d="m10,18.7793c-4.8252,0-8.75-3.9248-8.75-8.75S5.1748,1.2793,10,1.2793s8.75,3.9248,8.75,8.75-3.9248,8.75-8.75,8.75Zm0-16c-3.99805,0-7.25,3.25195-7.25,7.25s3.25195,7.25,7.25,7.25,7.25-3.25195,7.25-7.25-3.25195-7.25-7.25-7.25Z" fill="var(--iconPrimary, currentColor)"></path>
+          <path d="m10.00001,14.38357c0,.65333.61464,1.12149,1.25098.97349,2.43486-.5663,4.24901-2.74982,4.24901-5.35705s-1.81415-4.79075-4.24901-5.35705c-.63635-.148-1.25098.32016-1.25098.97349v8.76713Z" fill="var(--iconPrimary, currentColor)"></path>
+        </svg>
+      </span>
+      <span class="s2-visually-hidden" data-theme-toggle-icon>System</span>
     </button>
   </div>
   <button
@@ -68,6 +83,12 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
     type="button"
     aria-label="Navigation"
   >
-    <span class="s2-menu-icon" aria-hidden="true"></span>
+    <span class="s2-menu-icon" aria-hidden="true">
+      <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+        <path d="M17.25,5.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z" fill="var(--iconPrimary, currentColor)"></path>
+        <path d="M17.25,10.75H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z" fill="var(--iconPrimary, currentColor)"></path>
+        <path d="M17.25,16H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z" fill="var(--iconPrimary, currentColor)"></path>
+      </svg>
+    </span>
   </button>
 </div>
