@@ -1,5 +1,5 @@
 ---
-import { getComponentControlGroup } from "@comparison/data/component-controls";
+import { getComponentControlGroup, type ComponentControl } from "@comparison/data/component-controls";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
 
 interface Props {
@@ -13,6 +13,18 @@ const hiddenControls = controlGroup.controls.filter((control) => control.isHidde
 const controlDefaults = Object.fromEntries(
   controlGroup.controls.map((control) => [control.name, control.defaultValue]),
 );
+
+function controlHelpText(control: ComponentControl): string {
+  if (control.kind === "switch") {
+    return `Toggles the ${control.name} boolean prop in both rendered examples.`;
+  }
+
+  if (control.kind === "text") {
+    return `Controls the ${control.name} prop value in both rendered examples.`;
+  }
+
+  return `Selects the ${control.name} prop value in both rendered examples.`;
+}
 ---
 
 <div class="s2-component-example-controls-fallback" data-component-example-controls-fallback>
@@ -52,10 +64,25 @@ const controlDefaults = Object.fromEntries(
         >
           {entry.slug === "button" && control.name === "children" ? (
             <div class="s2-inline-control-row">
-              <label class="s2-field">
-                <span>{control.label}</span>
-                <input name={control.name} value={String(control.defaultValue)} />
-              </label>
+              <div class="s2-field s2-inline-control-text">
+                <span class="s2-control-label">
+                  <span class="s2-control-label-text">{control.label}</span>
+                  <button
+                    type="button"
+                    class="s2-control-help-button"
+                    aria-label="Information"
+                    title={controlHelpText(control)}
+                    disabled
+                  >
+                    <span aria-hidden="true">i</span>
+                  </button>
+                </span>
+                <input
+                  aria-label={control.label}
+                  name={control.name}
+                  value={String(control.defaultValue)}
+                />
+              </div>
               <button
                 type="button"
                 class="s2-icon-choice-button s2-fallback-icon-choice-button"
@@ -65,24 +92,63 @@ const controlDefaults = Object.fromEntries(
               </button>
             </div>
           ) : control.kind === "text" ? (
-            <label class="s2-field">
-              <span>{control.label}</span>
-              <input name={control.name} value={String(control.defaultValue)} />
-            </label>
+            <div class="s2-field">
+              <span class="s2-control-label">
+                <span class="s2-control-label-text">{control.label}</span>
+                <button
+                  type="button"
+                  class="s2-control-help-button"
+                  aria-label="Information"
+                  title={controlHelpText(control)}
+                  disabled
+                >
+                  <span aria-hidden="true">i</span>
+                </button>
+              </span>
+              <input
+                aria-label={control.label}
+                name={control.name}
+                value={String(control.defaultValue)}
+              />
+            </div>
           ) : control.kind === "select" ? (
-            <label class="s2-field">
-              <span>{control.label}</span>
-              <select name={control.name}>
+            <div class="s2-field">
+              <span class="s2-control-label">
+                <span class="s2-control-label-text">{control.label}</span>
+                <button
+                  type="button"
+                  class="s2-control-help-button"
+                  aria-label="Information"
+                  title={controlHelpText(control)}
+                  disabled
+                >
+                  <span aria-hidden="true">i</span>
+                </button>
+              </span>
+              <select aria-label={control.label} name={control.name}>
                 {control.options?.map((option) => (
                   <option value={option.value} selected={option.value === control.defaultValue}>
                     {option.label}
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
           ) : control.kind === "radio" ? (
             <fieldset class="s2-radio-group">
-              <legend>{control.label}</legend>
+              <legend>
+                <span class="s2-control-label">
+                  <span class="s2-control-label-text">{control.label}</span>
+                  <button
+                    type="button"
+                    class="s2-control-help-button"
+                    aria-label="Information"
+                    title={controlHelpText(control)}
+                    disabled
+                  >
+                    <span aria-hidden="true">i</span>
+                  </button>
+                </span>
+              </legend>
               <div>
                 {control.options?.map((option) => (
                   <label>
@@ -98,14 +164,28 @@ const controlDefaults = Object.fromEntries(
               </div>
             </fieldset>
           ) : (
-            <label class="s2-switch">
-              <input
-                name={control.name}
-                type="checkbox"
-                checked={control.defaultValue === true}
-              />
-              <span>{control.label}</span>
-            </label>
+            <div class="s2-switch-control-stack">
+              <span class="s2-control-label">
+                <span class="s2-control-label-text">{control.label}</span>
+                <button
+                  type="button"
+                  class="s2-control-help-button"
+                  aria-label="Information"
+                  title={controlHelpText(control)}
+                  disabled
+                >
+                  <span aria-hidden="true">i</span>
+                </button>
+              </span>
+              <label class="s2-switch s2-fallback-switch-control">
+                <input
+                  aria-label={control.label}
+                  name={control.name}
+                  type="checkbox"
+                  checked={control.defaultValue === true}
+                />
+              </label>
+            </div>
           )}
         </div>
       ))}

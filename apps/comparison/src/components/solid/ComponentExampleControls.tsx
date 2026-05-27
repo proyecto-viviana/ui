@@ -1,7 +1,10 @@
 import h from "solid-js/h";
-import { createSignal, type Accessor } from "solid-js";
+import { createSignal, type Accessor, type JSX } from "solid-js";
 import {
   ActionButton,
+  Content,
+  ContextualHelp,
+  Heading,
   Picker,
   Provider,
   Radio,
@@ -190,18 +193,21 @@ function controlField(
     return h(
       "div",
       { class: "s2-inline-control-row" },
-      hc(TextField, {
-        label: control.label,
-        name: control.name,
-        size: "M",
-        UNSAFE_className: "s2-inline-control-text",
-        get value() {
-          return String(currentValue(control) ?? "");
-        },
-        onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
-          updateControlValue(control.name, event.currentTarget.value, true),
-        onChange: (value: string) => updateControlValue(control.name, value, true),
-      }),
+      controlStack(
+        control,
+        hc(TextField, {
+          "aria-label": control.label,
+          name: control.name,
+          size: "M",
+          get value() {
+            return String(currentValue(control) ?? "");
+          },
+          onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+            updateControlValue(control.name, event.currentTarget.value, true),
+          onChange: (value: string) => updateControlValue(control.name, value, true),
+        }),
+        "s2-inline-control-text",
+      ),
       hc(
         ActionButton,
         {
@@ -226,71 +232,113 @@ function controlField(
   }
 
   if (control.kind === "text") {
-    return hc(TextField, {
-      label: control.label,
-      name: control.name,
-      size: "M",
-      get value() {
-        return String(currentValue(control) ?? "");
-      },
-      onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
-        updateControlValue(control.name, event.currentTarget.value, true),
-      onChange: (value: string) => updateControlValue(control.name, value, true),
-    });
-  }
-
-  if (control.kind === "select") {
-    return h(
-      "div",
-      {},
-      selectBridge(control, currentValue, updateControlValue),
-      hc(Picker, {
-        label: control.label,
-        size: "M",
-        get items() {
-          return control.options ?? [];
-        },
-        getKey: (item: ComponentControlOption) => item.value,
-        getTextValue: (item: ComponentControlOption) => item.label,
-        get selectedKey() {
-          return String(currentValue(control) ?? "");
-        },
-        onSelectionChange: (key: unknown) => {
-          updateControlValue(control.name, String(key ?? ""), true);
-        },
-      }),
-    );
-  }
-
-  if (control.kind === "radio") {
-    return hc(
-      RadioGroup,
-      {
-        label: control.label,
+    return controlStack(
+      control,
+      hc(TextField, {
+        "aria-label": control.label,
         name: control.name,
-        orientation: "horizontal",
         size: "M",
         get value() {
           return String(currentValue(control) ?? "");
         },
+        onInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+          updateControlValue(control.name, event.currentTarget.value, true),
         onChange: (value: string) => updateControlValue(control.name, value, true),
-      },
-      (control.options ?? []).map((option) => hc(Radio, { value: option.value }, [option.label])),
+      }),
     );
   }
 
-  return hc(
-    Switch,
-    {
+  if (control.kind === "select") {
+    return controlStack(
+      control,
+      h(
+        "div",
+        {},
+        selectBridge(control, currentValue, updateControlValue),
+        hc(Picker, {
+          "aria-label": control.label,
+          size: "M",
+          get items() {
+            return control.options ?? [];
+          },
+          getKey: (item: ComponentControlOption) => item.value,
+          getTextValue: (item: ComponentControlOption) => item.label,
+          get selectedKey() {
+            return String(currentValue(control) ?? "");
+          },
+          onSelectionChange: (key: unknown) => {
+            updateControlValue(control.name, String(key ?? ""), true);
+          },
+        }),
+      ),
+    );
+  }
+
+  if (control.kind === "radio") {
+    return controlStack(
+      control,
+      hc(
+        RadioGroup,
+        {
+          "aria-label": control.label,
+          name: control.name,
+          orientation: "horizontal",
+          size: "M",
+          get value() {
+            return String(currentValue(control) ?? "");
+          },
+          onChange: (value: string) => updateControlValue(control.name, value, true),
+        },
+        (control.options ?? []).map((option) => hc(Radio, { value: option.value }, [option.label])),
+      ),
+    );
+  }
+
+  return controlStack(
+    control,
+    hc(Switch, {
       name: control.name,
       size: "M",
+      "aria-label": control.label,
       get isSelected() {
         return currentValue(control) === true;
       },
       onChange: (isSelected: boolean) => updateControlValue(control.name, isSelected, true),
-    },
-    [control.label],
+    }),
+    "s2-switch-control-stack",
   );
+}
+
+function controlStack(control: ComponentControl, field: JSX.Element, className?: string) {
+  const classes = ["s2-control-field-stack", className].filter(Boolean).join(" ");
+  return h("div", { class: classes }, [controlLabel(control), field]);
+}
+
+function controlLabel(control: ComponentControl) {
+  return h("span", { class: "s2-control-label" }, [
+    h("span", { class: "s2-control-label-text" }, control.label),
+    hc(
+      ContextualHelp,
+      {
+        variant: "info",
+        size: "XS",
+        UNSAFE_className: "s2-control-contextual-help",
+      },
+      [hc(Heading, {}, [control.label]), hc(Content, {}, [h("p", {}, controlHelpText(control))])],
+    ),
+  ]);
+}
+
+function controlHelpText(control: ComponentControl): string {
+  if (control.kind === "switch") {
+    return `Toggles the ${control.name} boolean prop in both rendered examples.`;
+  }
+
+  if (control.kind === "text") {
+    return `Controls the ${control.name} prop value in both rendered examples.`;
+  }
+
+  return `Selects the ${control.name} prop value in both rendered examples.`;
 }
 
 function buttonIconPlacementLabel(value: string): string {

@@ -853,16 +853,53 @@ details.s2-nav-group > div {
   min-width: 0;
 }
 
+.s2-control-field-stack,
 .s2-field {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
-.s2-field span,
+.s2-control-label,
+.s2-field > span,
 .s2-radio-group legend {
   color: var(--s2-text-muted);
   font-size: 13px;
   font-weight: 700;
+}
+
+.s2-control-label {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+  line-height: 18px;
+}
+
+.s2-control-label-text {
+  min-width: 0;
+}
+
+.s2-control-contextual-help,
+.s2-control-help-button {
+  flex: 0 0 auto;
+}
+
+.s2-control-help-button {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin: -1px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--s2-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .s2-field input,
@@ -998,6 +1035,17 @@ details.s2-nav-group > div {
   gap: 12px;
   min-height: 36px;
   color: var(--s2-text);
+}
+
+.s2-switch-control-stack {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.s2-fallback-switch-control {
+  justify-content: flex-start;
+  min-height: 18px;
 }
 
 .s2-section {
