@@ -10,7 +10,7 @@ interface Props {
 const { coverage, entry } = Astro.props as Props;
 ---
 
-<section class="s2-hero" aria-labelledby="page-title">
+<section class="s2-hero" aria-labelledby="page-title" data-component-detail-hero-fallback>
   <h1 id="page-title">{entry.title}</h1>
   <p>{entry.summary}</p>
   <div class="s2-hero-meta">

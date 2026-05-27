@@ -10,7 +10,12 @@ interface Props {
 const { entry } = Astro.props as Props;
 ---
 
-<section class="s2-example" id="example" aria-labelledby="example-title">
+<section
+  class="s2-example"
+  id="example"
+  aria-labelledby="example-title"
+  data-component-example-section-fallback
+>
   <div class="s2-example-preview">
     <ComponentExamplePreviewFallback entry={entry} />
   </div>
