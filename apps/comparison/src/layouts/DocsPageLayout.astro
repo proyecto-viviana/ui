@@ -48,6 +48,8 @@ const mainContentClass = staticClassName(docsMainContent);
 const articleColumnClass = staticClassName(docsArticleColumn);
 const articleContentClass = staticClassName(docsArticleContent);
 const tocRailClass = staticClassName(docsTocRail);
+const s2PrimaryFontPreloadUrl =
+  "https://use.typekit.net/af/ca4cba/0000000000000000775c55a1/31/l?primer=f592e0a4b9356877842506ce344308576437e4f677d7c9b78ca2162e6cad991a&fvd=n1&v=3";
 ---
 
 <html lang="en" data-theme="system" data-resolved-theme="light">
@@ -55,6 +57,14 @@ const tocRailClass = staticClassName(docsTocRail);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://use.typekit.net" crossorigin />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href={s2PrimaryFontPreloadUrl}
+    />
     <script is:inline>
       (() => {
         const root = document.documentElement;

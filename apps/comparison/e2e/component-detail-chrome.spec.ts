@@ -1,10 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { waitForComparisonRouteReady } from "./comparison-page";
 
+const S2_PRIMARY_FONT_PRELOAD_URL =
+  "https://use.typekit.net/af/ca4cba/0000000000000000775c55a1/31/l?primer=f592e0a4b9356877842506ce344308576437e4f677d7c9b78ca2162e6cad991a&fvd=n1&v=3";
+
 interface RenderSample {
   body: boolean;
   bodyBackground?: string;
   bodyColorScheme?: string;
+  bodyFontFamily?: string;
   documentResolvedTheme?: string;
   documentTheme?: string;
   label: string;
@@ -243,6 +247,7 @@ test.describe("comparison component detail chrome", () => {
           body: true,
           bodyBackground: bodyStyle.backgroundColor,
           bodyColorScheme: bodyStyle.colorScheme,
+          bodyFontFamily: bodyStyle.fontFamily,
           documentResolvedTheme: document.documentElement.dataset.resolvedTheme,
           documentTheme: document.documentElement.dataset.theme,
           label,
@@ -285,6 +290,20 @@ test.describe("comparison component detail chrome", () => {
     await page.goto("/components/accordion/", { waitUntil: "load" });
     await page.waitForTimeout(350);
 
+    const primaryFontPreload = await page.evaluate((href) => {
+      const links = Array.from(
+        document.head.querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="font"]'),
+      );
+      const match = links.find((link) => link.href === href);
+
+      return match
+        ? {
+            crossorigin: match.getAttribute("crossorigin"),
+            href: match.href,
+            type: match.type,
+          }
+        : null;
+    }, S2_PRIMARY_FONT_PRELOAD_URL);
     const renderState = await page.evaluate(() => ({
       layoutShifts: window.__comparisonLayoutShifts ?? [],
       samples: window.__comparisonRenderSamples ?? [],
@@ -297,8 +316,15 @@ test.describe("comparison component detail chrome", () => {
     expect(firstBodySample).toMatchObject({
       bodyBackground: "rgb(27, 27, 27)",
       bodyColorScheme: "dark",
+      bodyFontFamily:
+        "adobe-clean-spectrum-vf, adobe-clean-variable, adobe-clean, ui-sans-serif, system-ui, sans-serif",
       documentResolvedTheme: "dark",
       documentTheme: "dark",
+    });
+    expect(primaryFontPreload).toEqual({
+      crossorigin: "",
+      href: S2_PRIMARY_FONT_PRELOAD_URL,
+      type: "font/woff2",
     });
     expect(firstMainSample).toMatchObject({
       mainBackground: "rgb(17, 17, 17)",

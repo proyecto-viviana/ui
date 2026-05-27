@@ -18,8 +18,11 @@
   --cmp-warning: #8a6500;
   --cmp-danger: #c9252d;
   --cmp-mono: "SFMono-Regular", "Roboto Mono", Consolas, monospace;
-  --cmp-title: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
-  --cmp-body: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
+  --cmp-font-sans:
+    var(--s2-font-family-sans, adobe-clean-spectrum-vf), adobe-clean-variable, adobe-clean,
+    ui-sans-serif, system-ui, sans-serif;
+  --cmp-title: var(--cmp-font-sans);
+  --cmp-body: var(--cmp-font-sans);
 }
 
 body.s2-docs {
@@ -49,7 +52,7 @@ body.s2-docs {
   min-height: 100vh;
   background: var(--s2-bg-raised);
   color: var(--s2-text);
-  font-family: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
+  font-family: var(--cmp-body);
 }
 
 body.s2-docs[data-resolved-theme="light"],
@@ -2200,7 +2203,7 @@ a {
   border-radius: 6px;
   background: #1f1f1f;
   color: #f5f5f5;
-  font-family: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
+  font-family: var(--cmp-body);
   isolation: isolate;
 }
 
@@ -2818,7 +2821,7 @@ body.comparison-app [class*="spectrum-Modal-wrapper"] {
 .comparison-dialog-surface h2 {
   margin: 0;
   color: #f5f5f5;
-  font-family: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
+  font-family: var(--cmp-title);
   font-size: 18px;
   font-weight: 700;
   line-height: 1.25;
@@ -2829,7 +2832,7 @@ body.comparison-app [class*="spectrum-Modal-wrapper"] {
 .comparison-dialog-surface > div:last-child {
   margin: 0;
   color: #d6d6d6;
-  font-family: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
+  font-family: var(--cmp-body);
   font-size: 14px;
   line-height: 1.5;
 }
