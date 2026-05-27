@@ -1,11 +1,11 @@
 import h from "solid-js/h";
-import { getComponentControlGroup } from "@comparison/data/component-controls";
 import {
   getComparisonEntry,
   type ComparisonLayerId,
   type ComparisonSlug,
   type LayerTrack,
 } from "@comparison/data/comparison-manifest";
+import { getExamplePreviewLayout } from "@comparison/data/example-layout";
 
 export interface ComponentExamplePreviewProps {
   slug: string;
@@ -22,13 +22,14 @@ export default function ComponentExamplePreview(props: ComponentExamplePreviewPr
     return h("div", { class: "s2-empty-state" }, "Example preview is unavailable.")();
   }
 
-  const controlGroup = getComponentControlGroup(entry);
   const playgroundTrack = entry.layers[playgroundLayer];
 
-  return h("div", { class: "s2-component-example-preview" }, [
+  return h(
+    "div",
+    { class: "s2-component-example-preview" },
     h(
       "div",
-      { class: "s2-comparison-frame" },
+      { class: "s2-comparison-frame", "data-preview-layout": getExamplePreviewLayout(entry.slug) },
       frameworkPanel({
         framework: "react",
         label: "React",
@@ -44,8 +45,7 @@ export default function ComponentExamplePreview(props: ComponentExamplePreviewPr
         status: playgroundTrack.solid,
       }),
     ),
-    h("p", { class: "s2-example-note" }, controlGroup.note),
-  ])();
+  )();
 }
 
 interface FrameworkPanelOptions {

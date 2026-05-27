@@ -1,6 +1,6 @@
 ---
-import { getComponentControlGroup } from "@comparison/data/component-controls";
 import type { ComparisonEntry, ComparisonLayerId } from "@comparison/data/comparison-manifest";
+import { getExamplePreviewLayout } from "@comparison/data/example-layout";
 
 interface Props {
   entry: ComparisonEntry;
@@ -9,11 +9,11 @@ interface Props {
 const { entry } = Astro.props as Props;
 const playgroundLayer: ComparisonLayerId = "styled";
 const playgroundTrack = entry.layers[playgroundLayer];
-const controlGroup = getComponentControlGroup(entry);
+const previewLayout = getExamplePreviewLayout(entry.slug);
 ---
 
 <div class="s2-component-example-preview-fallback" data-component-example-preview-fallback>
-  <div class="s2-comparison-frame">
+  <div class="s2-comparison-frame" data-preview-layout={previewLayout}>
     <article class="s2-framework-panel" data-framework="react" aria-label="React React Spectrum S2">
       <header>
         <span>React</span>
@@ -56,5 +56,4 @@ const controlGroup = getComponentControlGroup(entry);
       )}
     </article>
   </div>
-  <p class="s2-example-note">{controlGroup.note}</p>
 </div>

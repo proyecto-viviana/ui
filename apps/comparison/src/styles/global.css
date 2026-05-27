@@ -587,13 +587,17 @@ details.s2-nav-group > div {
 
 .js-component-example-section-mount,
 .s2-component-example-section,
-.s2-component-example-preview {
+.s2-component-example-preview,
+.s2-component-example-preview-fallback,
+.s2-example-files,
+.s2-example-files-content {
   min-width: 0;
 }
 
-.s2-component-example-preview {
+.s2-component-example-preview,
+.s2-component-example-preview-fallback {
   display: grid;
-  gap: 14px;
+  height: 100%;
   background: transparent;
 }
 
@@ -675,9 +679,12 @@ details.s2-nav-group > div {
 .s2-example {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(164px, 176px);
-  grid-template-areas: "preview controls";
+  grid-template-areas:
+    "preview controls"
+    "files controls";
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
   padding: 24px;
   overflow: visible;
   border: 0;
@@ -692,6 +699,58 @@ details.s2-nav-group > div {
   min-width: 0;
   padding: 0;
   background: transparent;
+}
+
+.s2-example-files {
+  grid-area: files;
+  display: grid;
+  overflow: hidden;
+}
+
+.s2-example-files-content {
+  display: grid;
+  gap: 12px;
+}
+
+.s2-example-code-card {
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--s2-bg);
+}
+
+.s2-example-code-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--s2-docs-example-divider);
+  color: var(--s2-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.s2-example-code-label strong {
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--s2-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s2-example-code {
+  max-height: 180px;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  color: var(--s2-text);
+  font-family: var(--cmp-mono);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .s2-example-controls {
@@ -720,14 +779,28 @@ details.s2-nav-group > div {
 }
 
 .s2-example-note {
+  display: grid;
+  gap: 8px;
   margin: 0;
-  padding: 0 0 0 12px;
-  border-left: 2px solid var(--s2-docs-example-divider);
-  background: transparent;
+  padding: 10px 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: var(--s2-bg);
   box-shadow: none;
   color: var(--s2-text-muted);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.s2-example-note summary {
+  color: var(--s2-text);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.s2-example-note p {
+  margin: 0;
 }
 
 .s2-overall-coverage {
@@ -742,10 +815,10 @@ details.s2-nav-group > div {
 
 .s2-comparison-frame {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   align-items: stretch;
-  min-height: 0;
+  min-height: 100%;
   overflow: visible;
   border-radius: 0;
   background: transparent;
@@ -765,7 +838,16 @@ details.s2-nav-group > div {
 }
 
 .s2-framework-panel + .s2-framework-panel {
+  border-left: 1px solid var(--s2-docs-example-divider);
+}
+
+.s2-comparison-frame[data-preview-layout="stacked"] {
+  grid-template-columns: 1fr;
+}
+
+.s2-comparison-frame[data-preview-layout="stacked"] .s2-framework-panel + .s2-framework-panel {
   border-top: 1px solid var(--s2-docs-example-divider);
+  border-left: 0;
 }
 
 .s2-framework-panel header {
@@ -807,6 +889,7 @@ details.s2-nav-group > div {
 .s2-framework-panel > .s2-empty-state {
   display: grid;
   place-items: center;
+  height: 100%;
   min-height: 156px;
   padding: 44px 16px 26px;
   overflow: auto;
@@ -1460,9 +1543,11 @@ details.s2-nav-group > div {
     grid-template-columns: 1fr;
     grid-template-areas:
       "preview"
-      "controls";
-    gap: 22px;
-    padding: 18px;
+      "controls"
+      "files";
+    grid-template-rows: auto;
+    gap: 12px;
+    padding: 12px;
   }
 
   .s2-comparison-frame {
@@ -1470,8 +1555,14 @@ details.s2-nav-group > div {
     min-height: auto;
   }
 
+  .s2-framework-panel + .s2-framework-panel {
+    border-top: 1px solid var(--s2-docs-example-divider);
+    border-left: 0;
+  }
+
   .s2-example-controls {
-    border: 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--s2-docs-example-divider);
   }
 
   .s2-prop-controls {

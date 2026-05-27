@@ -5,10 +5,10 @@ exactly like the live `react-spectrum.adobe.com` (Spectrum 2) docs — built wit
 `solid-spectrum` instead of React Spectrum — while keeping our extra layer: the
 React-vs-Solid side-by-side comparison and porting-parity reporting.
 
-> Status: **planning only for the comparison app chrome/content overhaul**. The
-> `solid-spectrum` package macro/build checkpoint has started separately, but
-> the comparison app still needs its own source-condition and CSS emission proof
-> before the docs shell is rebuilt.
+> Status: **implementation in progress for the comparison app chrome/content
+> overhaul**. The shell and example surface are being ported toward the live S2
+> docs structure, while component-by-component content, controls, prop tables,
+> and app-side source/CSS emission proof remain tracked gates.
 
 ## Locked decisions
 
@@ -30,6 +30,7 @@ React-vs-Solid side-by-side comparison and porting-parity reporting.
 | [`05-phasing.md`](05-phasing.md)                                     | Phased delivery, risk register, acceptance criteria, open questions.                                                                                                     |
 | [`06-solid-spectrum-css-defect.md`](06-solid-spectrum-css-defect.md) | **General `solid-spectrum` bug** (not overhaul-specific): components ship with missing CSS because the macro-era style system was de-macro'd. Root-cause analysis + fix. |
 | [`07-build-time-css-strategy.md`](07-build-time-css-strategy.md)     | Research: the CSS-tooling landscape, why this isn't Tailwind, and the recommended build-time path — `unplugin-parcel-macros` on Vite/tsdown. Performance analysis.       |
+| [`08-visual-audit.md`](08-visual-audit.md)                           | Current visual-audit checkpoint for the docs-page surface, including landed example-card changes and remaining gates for component-control parity.                       |
 
 ## One-paragraph summary
 

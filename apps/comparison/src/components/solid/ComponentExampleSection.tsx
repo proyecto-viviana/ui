@@ -1,6 +1,7 @@
 import h from "solid-js/h";
 import { Provider } from "@proyecto-viviana/solid-spectrum";
 import ComponentExampleControls from "./ComponentExampleControls";
+import ComponentExampleFiles from "./ComponentExampleFiles";
 import ComponentExamplePreview from "./ComponentExamplePreview";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
@@ -27,6 +28,7 @@ export default function ComponentExampleSection(props: ComponentExampleSectionPr
         {
           class: "s2-example",
           id: "example",
+          role: "group",
           "aria-labelledby": "example-title",
         },
         h(
@@ -38,6 +40,11 @@ export default function ComponentExampleSection(props: ComponentExampleSectionPr
           "div",
           { class: "s2-example-controls", role: "group", "aria-label": "Controls" },
           h(ComponentExampleControls, { slug: props.slug }),
+        ),
+        h(
+          "div",
+          { class: "s2-example-files", role: "group", "aria-label": "Generated source" },
+          h(ComponentExampleFiles, { slug: props.slug }),
         ),
       ),
     ],

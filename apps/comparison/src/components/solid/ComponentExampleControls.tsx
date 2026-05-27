@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { createSignal, type Accessor, type JSX } from "solid-js";
+import { createSignal, type JSX } from "solid-js";
 import {
   ActionButton,
   Content,
@@ -18,7 +18,6 @@ import {
   type ComponentControlOption,
 } from "@comparison/data/component-controls";
 import { getComparisonEntry } from "@comparison/data/comparison-manifest";
-import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "@comparison/data/theme";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
@@ -30,7 +29,7 @@ type ControlValue = ComponentControl["defaultValue"];
 type ControlValues = Record<string, ControlValue | undefined>;
 
 export default function ComponentExampleControls(props: ComponentExampleControlsProps) {
-  const { resolvedTheme, themeChoice } = createComparisonColorScheme();
+  const { resolvedTheme } = createComparisonColorScheme();
   const entry = getComparisonEntry(props.slug);
 
   if (!entry) {
@@ -73,7 +72,6 @@ export default function ComponentExampleControls(props: ComponentExampleControls
     },
     [
       h("h2", { id: "example-title" }, "Example"),
-      h("div", { class: "s2-theme-control" }, themeControls(themeChoice)),
       controlGroup.controls.length > 0
         ? h(
             "form",
@@ -129,37 +127,6 @@ function initialControlValues(defaults: Record<string, ControlValue>): ControlVa
   }
 
   return values;
-}
-
-function requestComparisonThemeChange(theme: ComparisonThemeChoice) {
-  window.dispatchEvent(
-    new CustomEvent(comparisonThemeRequestEvent, {
-      detail: { theme },
-    }),
-  );
-}
-
-function themeControls(themeChoice: Accessor<ComparisonThemeChoice>) {
-  return hc(
-    RadioGroup,
-    {
-      label: "Color scheme",
-      name: "comparisonTheme",
-      orientation: "horizontal",
-      size: "M",
-      get value() {
-        return themeChoice();
-      },
-      onChange: (value: string) => {
-        requestComparisonThemeChange(value as ComparisonThemeChoice);
-      },
-    },
-    [themeOption("system"), themeOption("light"), themeOption("dark")],
-  );
-}
-
-function themeOption(value: ComparisonThemeChoice) {
-  return hc(Radio, { value }, [value]);
 }
 
 function hiddenControlField(

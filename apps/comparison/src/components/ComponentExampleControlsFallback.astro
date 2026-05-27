@@ -29,23 +29,6 @@ function controlHelpText(control: ComponentControl): string {
 
 <div class="s2-component-example-controls-fallback" data-component-example-controls-fallback>
   <h2 id="example-title">Example</h2>
-  <fieldset class="s2-radio-group s2-theme-control">
-    <legend>Color scheme</legend>
-    <div>
-      <label>
-        <input type="radio" name="comparisonTheme" value="system" checked />
-        <span>system</span>
-      </label>
-      <label>
-        <input type="radio" name="comparisonTheme" value="light" />
-        <span>light</span>
-      </label>
-      <label>
-        <input type="radio" name="comparisonTheme" value="dark" />
-        <span>dark</span>
-      </label>
-    </div>
-  </fieldset>
   {controlGroup.controls.length > 0 ? (
     <form
       class="s2-prop-controls"

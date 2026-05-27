@@ -1,0 +1,30 @@
+---
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import {
+  defaultExampleSourceValues,
+  generateSolidExampleSource,
+} from "@comparison/data/example-source";
+import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+
+interface Props {
+  entry: ComparisonEntry;
+}
+
+const { entry } = Astro.props as Props;
+const controlGroup = getComponentControlGroup(entry);
+const source = generateSolidExampleSource(controlGroup, defaultExampleSourceValues(controlGroup));
+---
+
+<div class="s2-example-files-content" data-component-example-files-fallback>
+  <div class="s2-example-code-card">
+    <div class="s2-example-code-label">
+      <span>Generated source</span>
+      <strong>solid-spectrum route</strong>
+    </div>
+    <pre class="s2-example-code"><code>{source}</code></pre>
+  </div>
+  <details class="s2-example-note">
+    <summary>Porting note</summary>
+    <p>{controlGroup.note}</p>
+  </details>
+</div>

@@ -1,5 +1,6 @@
 ---
 import ComponentExampleControlsFallback from "./ComponentExampleControlsFallback.astro";
+import ComponentExampleFilesFallback from "./ComponentExampleFilesFallback.astro";
 import ComponentExamplePreviewFallback from "./ComponentExamplePreviewFallback.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
 
@@ -13,6 +14,7 @@ const { entry } = Astro.props as Props;
 <section
   class="s2-example"
   id="example"
+  role="group"
   aria-labelledby="example-title"
   data-component-example-section-fallback
 >
@@ -22,5 +24,9 @@ const { entry } = Astro.props as Props;
 
   <div class="s2-example-controls" role="group" aria-label="Controls">
     <ComponentExampleControlsFallback entry={entry} />
+  </div>
+
+  <div class="s2-example-files" role="group" aria-label="Generated source">
+    <ComponentExampleFilesFallback entry={entry} />
   </div>
 </section>

@@ -18,7 +18,6 @@ for (const mountNode of document.querySelectorAll<HTMLElement>(
   mountNode.replaceChildren();
   render(() => ComponentExampleSection({ slug }), mountNode);
   initializeComparisonControls(mountNode);
-  window.dispatchEvent(new CustomEvent("comparison:theme-controls-mounted"));
   mountNode.dataset.controlsMounted = "true";
   mountNode.dataset.mounted = "true";
 
