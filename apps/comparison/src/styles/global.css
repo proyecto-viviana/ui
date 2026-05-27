@@ -51,6 +51,14 @@ body.s2-docs {
   font-family: adobe-clean, "Source Sans Pro", system-ui, sans-serif;
 }
 
+body.s2-docs[data-resolved-theme="light"] {
+  color-scheme: light;
+}
+
+body.s2-docs[data-resolved-theme="dark"] {
+  color-scheme: dark;
+}
+
 body.s2-docs[data-theme="dark"] {
   --s2-bg: #111111;
   --s2-bg-raised: #1b1b1b;
@@ -72,6 +80,7 @@ body.s2-docs[data-theme="dark"] {
     --s2-text: #dbdbdb;
     --s2-text-muted: #afafaf;
     --s2-accent: #4069fd;
+    color-scheme: dark;
   }
 }
 

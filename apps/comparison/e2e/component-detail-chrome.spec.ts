@@ -164,4 +164,33 @@ test.describe("comparison component detail chrome", () => {
     await listbox.getByRole("option", { name: "API" }).click();
     await expect(page).toHaveURL(/#api$/);
   });
+
+  test("resolves macro-owned page chrome against the dark color scheme", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.addInitScript(() => {
+      window.localStorage.setItem("solid-spectrum-theme", "dark");
+    });
+    await page.goto("/components/accordion/");
+    await waitForComparisonRouteReady(page);
+
+    const main = page.locator(".s2-main");
+    await expect
+      .poll(() =>
+        main.evaluate((element) => {
+          const bodyStyle = getComputedStyle(document.body);
+          const mainStyle = getComputedStyle(element);
+
+          return {
+            bodyColorScheme: bodyStyle.colorScheme,
+            bodyResolvedTheme: document.body.dataset.resolvedTheme,
+            mainBackground: mainStyle.backgroundColor,
+          };
+        }),
+      )
+      .toEqual({
+        bodyColorScheme: "dark",
+        bodyResolvedTheme: "dark",
+        mainBackground: "rgb(17, 17, 17)",
+      });
+  });
 });
