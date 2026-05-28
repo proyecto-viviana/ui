@@ -18,9 +18,16 @@ function TestSearchField(props: {
   onClear?: () => void;
   isDisabled?: boolean;
   isReadOnly?: boolean;
+  isRequired?: boolean;
+  validationBehavior?: "aria" | "native";
   "aria-label"?: string;
   label?: string;
+  type?: string;
+  name?: string;
+  form?: string;
   placeholder?: string;
+  enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
+  excludeFromTabOrder?: boolean;
   onKeyDown?: (e: KeyboardEvent) => void;
 }) {
   let inputRef: HTMLInputElement | null = null;
@@ -38,6 +45,13 @@ function TestSearchField(props: {
       placeholder: props.placeholder,
       isDisabled: props.isDisabled,
       isReadOnly: props.isReadOnly,
+      isRequired: props.isRequired,
+      validationBehavior: props.validationBehavior,
+      type: props.type,
+      name: props.name,
+      form: props.form,
+      enterKeyHint: props.enterKeyHint,
+      excludeFromTabOrder: props.excludeFromTabOrder,
       onSubmit: props.onSubmit,
       onClear: props.onClear,
       onKeyDown: props.onKeyDown as any,
@@ -76,6 +90,43 @@ describe("createSearchField", () => {
       render(() => <TestSearchField aria-label="Search" />);
       const input = screen.getByTestId("search-input");
       expect(input).toHaveAttribute("type", "search");
+    });
+
+    it("should allow type override", () => {
+      render(() => <TestSearchField aria-label="Search" type="text" />);
+      const input = screen.getByTestId("search-input");
+      expect(input).toHaveAttribute("type", "text");
+    });
+
+    it("should default required state to native validation", () => {
+      render(() => <TestSearchField aria-label="Search" isRequired />);
+      const input = screen.getByTestId("search-input");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("should support aria validation behavior", () => {
+      render(() => <TestSearchField aria-label="Search" isRequired validationBehavior="aria" />);
+      const input = screen.getByTestId("search-input");
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+
+    it("should forward form DOM props and focus exclusion", () => {
+      render(() => (
+        <TestSearchField
+          aria-label="Search"
+          name="query"
+          form="searchForm"
+          enterKeyHint="search"
+          excludeFromTabOrder
+        />
+      ));
+      const input = screen.getByTestId("search-input");
+      expect(input).toHaveAttribute("name", "query");
+      expect(input).toHaveAttribute("form", "searchForm");
+      expect(input).toHaveAttribute("enterkeyhint", "search");
+      expect(input).toHaveAttribute("tabindex", "-1");
     });
 
     it("should support aria-label", () => {

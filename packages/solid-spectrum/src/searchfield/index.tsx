@@ -1,17 +1,26 @@
 // @ts-nocheck
-import { type JSX, createSignal, splitProps, Show, useContext } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createSignal,
+  mergeProps,
+  splitProps,
+  Show,
+  useContext,
+} from "solid-js";
 import {
   SearchField as HeadlessSearchField,
   SearchFieldLabel as HeadlessSearchFieldLabel,
   SearchFieldInput as HeadlessSearchFieldInput,
   SearchFieldClearButton as HeadlessSearchFieldClearButton,
-  SearchFieldContext,
+  SearchFieldContext as HeadlessSearchFieldContext,
   type SearchFieldProps as HeadlessSearchFieldProps,
   type SearchFieldRenderProps,
   type SearchFieldClearButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
+import { css } from "../style/style-macro" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import {
   control,
@@ -23,11 +32,20 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import SearchIcon from "../icon/s2wf-icons/SearchIcon";
 import CrossIcon from "../icon/ui-icons/Cross";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
-import { hideWebkitSearchCancelButton } from "./s2-searchfield-styles";
+import { useFormProps, useIsInForm } from "../form";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type SearchFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2SearchFieldSize = "S" | "M" | "L" | "XL";
@@ -38,7 +56,7 @@ export type SearchFieldNecessityIndicator = "icon" | "label";
 
 export interface SearchFieldProps extends Omit<
   HeadlessSearchFieldProps,
-  "class" | "style" | "children" | "label"
+  "class" | "style" | "children" | "label" | "slot" | "ref"
 > {
   /** The size of the search field. */
   size?: SearchFieldSize;
@@ -64,6 +82,12 @@ export interface SearchFieldProps extends Omit<
   labelAlign?: SearchFieldLabelAlign;
   /** Whether required fields show an icon or text label. */
   necessityIndicator?: SearchFieldNecessityIndicator;
+  /** A contextual help element to place next to the label. */
+  contextualHelp?: JSX.Element;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the search field root element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
 interface SearchFieldStyleProps extends SearchFieldRenderProps {
@@ -81,6 +105,12 @@ interface ClearButtonStyleProps extends SearchFieldClearButtonRenderProps {
   isFocusVisible?: boolean;
   isStaticColor?: boolean;
 }
+
+export const SearchFieldContext = createContext<SpectrumContextValue<SearchFieldProps>>(null);
+
+const hideNativeSearchCancelButton = css(
+  "&::-webkit-search-cancel-button { display: none }",
+) as StyleString;
 
 const searchFieldRoot = style<SearchFieldStyleProps>(
   {
@@ -265,6 +295,20 @@ const helpTextStyles = style<SearchFieldStyleProps>({
   },
 });
 
+const fieldErrorIcon = style({
+  size: fontRelative(20),
+  marginStart: "text-to-visual",
+  marginEnd: fontRelative(-2),
+  flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+  },
+});
+
 const requiredIcon = style({
   "--iconPrimary": {
     type: "fill",
@@ -280,8 +324,8 @@ function SearchFieldDescription(props: {
   class?: string;
   children?: JSX.Element;
 }): JSX.Element | null {
-  const context = useContext(SearchFieldContext);
-  if (!context) return null;
+  const context = useContext(HeadlessSearchFieldContext);
+  if (!context?.descriptionProps) return null;
   const descriptionProps = () => {
     const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
     return rest;
@@ -294,8 +338,8 @@ function SearchFieldDescription(props: {
 }
 
 function SearchFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(SearchFieldContext);
-  if (!context) return null;
+  const context = useContext(HeadlessSearchFieldContext);
+  if (!context?.errorMessageProps) return null;
   const errorMessageProps = () => {
     const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
     return rest;
@@ -353,7 +397,15 @@ function clearIconStyle(size: S2SearchFieldSize): JSX.CSSProperties {
 }
 
 export function SearchField(props: SearchFieldProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const isInForm = useIsInForm();
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(SearchFieldContext), props.slot);
+  const defaultProps: Partial<SearchFieldProps> = {
+    labelPosition: "top",
+    labelAlign: "start",
+    necessityIndicator: "icon",
+  };
+  const mergedProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",
@@ -367,6 +419,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "contextualHelp",
+    "slot",
+    "ref",
   ]);
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
 
@@ -374,19 +429,27 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
 
   const rootClassName = (renderProps: SearchFieldRenderProps) =>
     [
-      local.UNSAFE_className,
-      local.class,
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
       searchFieldRoot(
         {
           ...renderProps,
           size: size(),
           labelPosition: labelPosition(),
-          isInForm: false,
+          isInForm,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -417,7 +480,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       searchFieldGroupPillPadding,
     );
 
-  const inputClass = () => [searchFieldInput, hideWebkitSearchCancelButton].join(" ");
+  const inputClass = () => [searchFieldInput, hideNativeSearchCancelButton].join(" ");
 
   const clearButtonClass = (renderProps: SearchFieldClearButtonRenderProps) =>
     clearButton({
@@ -439,8 +502,11 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}
+      ref={(element) => assignRootRef(element)}
+      slot={local.slot ?? undefined}
       class={rootClassName}
-      style={local.UNSAFE_style}
+      style={mergedUnsafeStyle()}
+      data-size={size()}
       children={(renderProps: SearchFieldRenderProps) => (
         <>
           <Show when={local.label}>
@@ -468,6 +534,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
                   </span>
                 </Show>
               </HeadlessSearchFieldLabel>
+              <Show when={local.contextualHelp}>
+                <span data-slot="contextualHelp">{local.contextualHelp}</span>
+              </Show>
             </div>
           </Show>
 
@@ -493,9 +562,11 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
               <SearchIcon styles={searchIcon} />
             </CenterBaseline>
             <HeadlessSearchFieldInput class={inputClass()} />
-            <HeadlessSearchFieldClearButton class={clearButtonClass}>
-              <CrossIcon size={size()} style={clearIconStyle(size())} />
-            </HeadlessSearchFieldClearButton>
+            <Show when={!renderProps.isReadOnly}>
+              <HeadlessSearchFieldClearButton class={clearButtonClass}>
+                <CrossIcon size={size()} style={clearIconStyle(size())} />
+              </HeadlessSearchFieldClearButton>
+            </Show>
           </div>
 
           <Show when={local.description && !renderProps.isInvalid}>
@@ -506,7 +577,10 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
 
           <Show when={local.errorMessage && renderProps.isInvalid}>
             <SearchFieldError class={helpClass(renderProps, true)}>
-              {local.errorMessage}
+              <CenterBaseline>
+                <AlertTriangleIcon aria-hidden="true" styles={fieldErrorIcon} />
+              </CenterBaseline>
+              <span>{local.errorMessage}</span>
             </SearchFieldError>
           </Show>
         </>

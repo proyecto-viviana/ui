@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { SearchField } from "../src/searchfield";
+import { Content, ContextualHelp, Form, Heading, SearchField, SearchFieldContext } from "../src";
 
 describe("SearchField (solid-spectrum)", () => {
   describe("basic rendering", () => {
@@ -58,6 +58,11 @@ describe("SearchField (solid-spectrum)", () => {
       fireEvent.click(clearButton);
       expect(onChangeSpy).toHaveBeenCalledWith("");
       expect(input).toHaveValue("");
+    });
+
+    it("hides clear button when read-only", () => {
+      render(() => <SearchField aria-label="Search" defaultValue="test" isReadOnly />);
+      expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
   });
 
@@ -120,6 +125,92 @@ describe("SearchField (solid-spectrum)", () => {
       const { container } = render(() => <SearchField label="Search" isRequired />);
       const requiredIcon = container.querySelector("label svg[aria-hidden='true']");
       expect(requiredIcon).toBeInTheDocument();
+    });
+
+    it("supports S2 label placement, required text, and contextual help", () => {
+      const { container } = render(() => (
+        <SearchField
+          label="Search"
+          labelPosition="side"
+          labelAlign="end"
+          necessityIndicator="label"
+          isRequired
+          contextualHelp={
+            <ContextualHelp>
+              <Heading>Search syntax</Heading>
+              <Content>Use project names, owners, or status keywords.</Content>
+            </ContextualHelp>
+          }
+        />
+      ));
+      expect(screen.getByText("(required)")).toBeInTheDocument();
+      expect(container.querySelector('[data-slot="contextualHelp"]')).toBeInTheDocument();
+      expect(screen.getByRole("searchbox", { name: /Search/ })).toBeInTheDocument();
+    });
+  });
+
+  describe("validation and form props", () => {
+    it("uses native validation for required fields by default", () => {
+      render(() => <SearchField label="Search" isRequired />);
+      const input = screen.getByRole("searchbox");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("uses aria required state when validationBehavior is aria", () => {
+      render(() => <SearchField label="Search" isRequired validationBehavior="aria" />);
+      const input = screen.getByRole("searchbox");
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+
+    it("inherits field props from Form", () => {
+      render(() => (
+        <Form
+          size="XL"
+          labelPosition="side"
+          labelAlign="end"
+          necessityIndicator="label"
+          isRequired
+          validationBehavior="aria"
+        >
+          <SearchField label="Search" />
+        </Form>
+      ));
+      const input = screen.getByRole("searchbox", { name: /Search/ });
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+      expect(screen.getByText("(required)")).toBeInTheDocument();
+    });
+
+    it("forwards form, name, type, and enterKeyHint", () => {
+      render(() => (
+        <SearchField
+          label="Search"
+          type="text"
+          name="projectSearch"
+          form="projectSearchForm"
+          enterKeyHint="search"
+        />
+      ));
+      const input = screen.getByRole("textbox", { name: "Search" });
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("name", "projectSearch");
+      expect(input).toHaveAttribute("form", "projectSearchForm");
+      expect(input).toHaveAttribute("enterkeyhint", "search");
+    });
+
+    it("merges public SearchFieldContext props", () => {
+      render(() => (
+        <SearchFieldContext.Provider
+          value={{ "aria-label": "Context search", defaultValue: "context value", size: "XL" }}
+        >
+          <SearchField />
+        </SearchFieldContext.Provider>
+      ));
+      expect(screen.getByRole("searchbox", { name: "Context search" })).toHaveValue(
+        "context value",
+      );
     });
   });
 

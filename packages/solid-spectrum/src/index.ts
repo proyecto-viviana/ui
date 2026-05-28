@@ -409,8 +409,11 @@ export { Radio, RadioGroup } from "./radio";
 export type { RadioGroupOrientation, RadioGroupProps, RadioGroupSize, RadioProps } from "./radio";
 
 // SearchField
-export { SearchField } from "./searchfield";
+export { SearchField, SearchFieldContext } from "./searchfield";
 export type {
+  SearchFieldLabelAlign,
+  SearchFieldLabelPosition,
+  SearchFieldNecessityIndicator,
   SearchFieldProps,
   SearchFieldSize,
   SearchFieldState,

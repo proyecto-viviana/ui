@@ -8,11 +8,11 @@
 
 import { JSX } from "solid-js";
 import { createField, type AriaFieldProps, type FieldAria } from "../label";
-import { createFocusable, type FocusableProps } from "../interactions";
+import { createFocusable, type FocusableDOMProps, type FocusableProps } from "../interactions";
 import { mergeProps, filterDOMProps } from "../utils";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 
-export interface AriaTextFieldProps extends AriaFieldProps, FocusableProps {
+export interface AriaTextFieldProps extends AriaFieldProps, FocusableProps, FocusableDOMProps {
   /** The current value (controlled). */
   value?: string;
   /** The default value (uncontrolled). */
@@ -31,6 +31,8 @@ export interface AriaTextFieldProps extends AriaFieldProps, FocusableProps {
   type?: "text" | "search" | "url" | "tel" | "email" | "password" | string;
   /** The input mode hint for virtual keyboards. */
   inputMode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
+  /** Hint for the enter key action on virtual keyboards. */
+  enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
   /** The name of the input element, used when submitting an HTML form. */
   name?: string;
   /** Associates the input with a form element by id. */
@@ -121,6 +123,9 @@ export function createTextField<
       get autoFocus() {
         return getProps().autoFocus;
       },
+      get excludeFromTabOrder() {
+        return getProps().excludeFromTabOrder;
+      },
       onFocus: getProps().onFocus,
       onBlur: getProps().onBlur,
       onFocusChange: getProps().onFocusChange,
@@ -159,6 +164,7 @@ export function createTextField<
         // Don't include type and pattern for textarea elements
         type: isTextarea ? undefined : (p.type ?? "text"),
         inputMode: p.inputMode,
+        enterKeyHint: p.enterKeyHint,
         name: p.name,
         form: p.form,
         pattern: isTextarea ? undefined : p.pattern,

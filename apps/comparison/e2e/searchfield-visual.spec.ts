@@ -53,7 +53,7 @@ async function searchFieldGeometry(root: Locator) {
           };
 
     const rootRect = element.getBoundingClientRect();
-    const input = element.querySelector<HTMLInputElement>("input[type='search']");
+    const input = element.querySelector<HTMLInputElement>("input[type='search'], input");
     const fieldGroup = input?.parentElement ?? null;
     const label = element.querySelector("label");
     const helpTextLeaf = Array.from(element.querySelectorAll<HTMLElement>("*")).find(
@@ -87,6 +87,9 @@ async function searchFieldGeometry(root: Locator) {
 
     return {
       value: input?.value ?? null,
+      type: input?.getAttribute("type") ?? null,
+      name: input?.getAttribute("name") ?? null,
+      form: input?.getAttribute("form") ?? null,
       placeholder: input?.getAttribute("placeholder") ?? null,
       ariaInvalid: input?.getAttribute("aria-invalid") ?? null,
       ariaRequired: input?.getAttribute("aria-required") ?? null,
@@ -145,6 +148,19 @@ function cssPixelNumber(value: string | null) {
 }
 
 test.describe("comparison SearchField visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await searchFieldFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "SearchField default state",
+      { maxMismatchRatio: 0.2, maxDimensionDelta: 24, pixelThreshold: 64 },
+    );
+  });
+
   test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await searchFieldFixtures(page, "?isInvalid=true&isRequired=true&size=XL");
 
@@ -178,6 +194,9 @@ test.describe("comparison SearchField visual parity", () => {
     const solid = await searchFieldGeometry(fixtures.solidRoot);
 
     expect(solid.value).toBe(react.value);
+    expect(solid.type).toBe(react.type);
+    expect(solid.name).toBe(react.name);
+    expect(solid.form).toBe(react.form);
     expect(solid.placeholder).toBe(react.placeholder);
     expect(solid.ariaInvalid).toBe(react.ariaInvalid);
     expect(solid.required).toBe(react.required);
@@ -279,6 +298,68 @@ test.describe("comparison SearchField visual parity", () => {
       1,
       "SearchField clear button centerline",
     );
+  });
+
+  test("side label form and aria validation props match current React Spectrum", async ({
+    page,
+  }) => {
+    const fixtures = await searchFieldFixtures(
+      page,
+      "?labelPosition=side&labelAlign=end&necessityIndicator=label&isRequired=true&validationBehavior=aria&name=projectSearch&form=projectSearchForm&withContextualHelp=true&type=text",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      labelPosition: "side",
+      labelAlign: "end",
+      necessityIndicator: "label",
+      validationBehavior: "aria",
+      name: "projectSearch",
+      form: "projectSearchForm",
+      type: "text",
+      withContextualHelp: true,
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      labelPosition: "side",
+      labelAlign: "end",
+      necessityIndicator: "label",
+      validationBehavior: "aria",
+      name: "projectSearch",
+      form: "projectSearchForm",
+      type: "text",
+      withContextualHelp: true,
+    });
+
+    const react = await searchFieldGeometry(fixtures.reactRoot);
+    const solid = await searchFieldGeometry(fixtures.solidRoot);
+
+    expect(solid.type).toBe(react.type);
+    expect(solid.name).toBe(react.name);
+    expect(solid.form).toBe(react.form);
+    expect(solid.ariaRequired).toBe(react.ariaRequired);
+    expect(solid.required).toBe(react.required);
+    expectNear(
+      solid.group?.height ?? null,
+      react.group?.height ?? null,
+      1,
+      "SearchField side group height",
+    );
+    expectNear(solid.labelToGroupGap, react.labelToGroupGap, 1, "SearchField side label gap");
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "SearchField side label aria validation state",
+      { maxMismatchRatio: 0.2, maxDimensionDelta: 24, pixelThreshold: 64 },
+    );
+  });
+
+  test("read-only state hides the clear button like React Spectrum", async ({ page }) => {
+    const fixtures = await searchFieldFixtures(page, "?isReadOnly=true&value=status");
+
+    await expect(fixtures.reactPanel.getByRole("button", { name: /clear/i })).toHaveCount(0);
+    await expect(fixtures.solidPanel.getByRole("button", { name: /clear/i })).toHaveCount(0);
   });
 
   test("typing and clear update controlled value on both stacks", async ({ page }) => {

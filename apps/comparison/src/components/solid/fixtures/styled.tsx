@@ -8671,6 +8671,16 @@ function SolidSpectrumSearchFieldDemo() {
       value: value(),
     }),
   );
+  const contextualHelp = createMemo(() =>
+    demoProps().withContextualHelp
+      ? hc(SolidSpectrumContextualHelp, {}, [
+          hc(SolidSpectrumHeading, {}, ["Search syntax"]),
+          hc(SolidSpectrumContent, {}, [
+            hc("p", {}, ["Use project names, owners, or status keywords."]),
+          ]),
+        ])
+      : undefined,
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -8712,6 +8722,30 @@ function SolidSpectrumSearchFieldDemo() {
             },
             get size() {
               return demoProps().size;
+            },
+            get labelPosition() {
+              return demoProps().labelPosition;
+            },
+            get labelAlign() {
+              return demoProps().labelAlign;
+            },
+            get necessityIndicator() {
+              return demoProps().necessityIndicator;
+            },
+            get contextualHelp() {
+              return contextualHelp();
+            },
+            get name() {
+              return demoProps().name;
+            },
+            get form() {
+              return demoProps().form;
+            },
+            get validationBehavior() {
+              return demoProps().validationBehavior;
+            },
+            get type() {
+              return demoProps().type;
             },
             get description() {
               return demoProps().description;

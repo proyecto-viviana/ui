@@ -366,7 +366,15 @@ import {
   pickerSizeOptions,
   pickerValidationBehaviorOptions,
 } from "./picker-demo";
-import { searchFieldDemoDefaults, searchFieldSizeOptions } from "./searchfield-demo";
+import {
+  searchFieldDemoDefaults,
+  searchFieldLabelAlignOptions,
+  searchFieldLabelPositionOptions,
+  searchFieldNecessityIndicatorOptions,
+  searchFieldSizeOptions,
+  searchFieldTypeOptions,
+  searchFieldValidationBehaviorOptions,
+} from "./searchfield-demo";
 import {
   rangeSliderDemoDefaults,
   rangeSliderFormatOptions,
@@ -4144,6 +4152,53 @@ const searchFieldControls: ComponentControlGroup = {
       options: options(searchFieldSizeOptions),
     },
     {
+      name: "labelPosition",
+      label: "labelPosition",
+      kind: "radio",
+      defaultValue: searchFieldDemoDefaults.labelPosition,
+      options: options(searchFieldLabelPositionOptions),
+    },
+    {
+      name: "labelAlign",
+      label: "labelAlign",
+      kind: "radio",
+      defaultValue: searchFieldDemoDefaults.labelAlign,
+      options: options(searchFieldLabelAlignOptions),
+    },
+    {
+      name: "necessityIndicator",
+      label: "necessityIndicator",
+      kind: "radio",
+      defaultValue: searchFieldDemoDefaults.necessityIndicator,
+      options: options(searchFieldNecessityIndicatorOptions),
+    },
+    {
+      name: "name",
+      label: "name",
+      kind: "text",
+      defaultValue: searchFieldDemoDefaults.name,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: searchFieldDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "radio",
+      defaultValue: searchFieldDemoDefaults.validationBehavior,
+      options: options(searchFieldValidationBehaviorOptions),
+    },
+    {
+      name: "type",
+      label: "type",
+      kind: "radio",
+      defaultValue: searchFieldDemoDefaults.type,
+      options: options(searchFieldTypeOptions),
+    },
+    {
       name: "description",
       label: "description",
       kind: "text",
@@ -4179,6 +4234,12 @@ const searchFieldControls: ComponentControlGroup = {
       kind: "switch",
       defaultValue: false,
     },
+    {
+      name: "withContextualHelp",
+      label: "contextualHelp",
+      kind: "switch",
+      defaultValue: false,
+    },
   ],
   apiProps: [
     "label",
@@ -4189,6 +4250,10 @@ const searchFieldControls: ComponentControlGroup = {
     "onClear",
     "placeholder",
     "size",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "contextualHelp",
     "description",
     "errorMessage",
     "isDisabled",
@@ -4196,11 +4261,11 @@ const searchFieldControls: ComponentControlGroup = {
     "isRequired",
     "isInvalid",
     "name",
+    "form",
+    "validationBehavior",
+    "type",
     "maxLength",
     "minLength",
-    "labelPosition",
-    "labelAlign",
-    "necessityIndicator",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -4208,7 +4273,7 @@ const searchFieldControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 SearchField docs and source control surface. The viewer drives label, value, placeholder, S2 size, description/error text, disabled/read-only/required/invalid states, controlled value changes, and clear behavior into both stacks.",
+  note: "Modeled from the S2 SearchField docs and source control surface. The viewer drives label, value, placeholder, S2 size, label placement/alignment, required indicator mode, contextual help, form/name/type/validation behavior, description/error text, disabled/read-only/required/invalid states, controlled value changes, and clear behavior into both stacks.",
 };
 
 const textAreaControls: ComponentControlGroup = {

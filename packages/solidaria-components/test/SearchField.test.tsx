@@ -16,7 +16,10 @@ import {
   SearchFieldLabel,
   SearchFieldInput,
   SearchFieldClearButton,
+  SearchFieldContext,
 } from "../src/SearchField";
+import { FieldError } from "../src/FieldError";
+import { Form } from "../src/Form";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -298,10 +301,33 @@ describe("SearchField", () => {
   // ============================================
 
   describe("required state", () => {
-    it("should support isRequired", () => {
+    it("should support isRequired with native validation by default", () => {
       render(() => <TestSearchField fieldProps={{ isRequired: true }} />);
 
       const input = screen.getByRole("searchbox");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("should support aria validation behavior", () => {
+      render(() => (
+        <TestSearchField fieldProps={{ isRequired: true, validationBehavior: "aria" }} />
+      ));
+
+      const input = screen.getByRole("searchbox");
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+
+    it("should inherit validation behavior from Form", () => {
+      render(() => (
+        <Form validationBehavior="aria">
+          <TestSearchField fieldProps={{ isRequired: true }} />
+        </Form>
+      ));
+
+      const input = screen.getByRole("searchbox");
+      expect(input).not.toHaveAttribute("required");
       expect(input).toHaveAttribute("aria-required", "true");
     });
 
@@ -357,6 +383,60 @@ describe("SearchField", () => {
 
       const input = screen.getByRole("searchbox");
       expect(input).toHaveAttribute("type", "search");
+    });
+
+    it("should forward form and type props", () => {
+      render(() => (
+        <TestSearchField
+          fieldProps={{
+            type: "text",
+            name: "query",
+            form: "searchForm",
+            enterKeyHint: "search",
+          }}
+        />
+      ));
+
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveAttribute("type", "text");
+      expect(input).toHaveAttribute("name", "query");
+      expect(input).toHaveAttribute("form", "searchForm");
+      expect(input).toHaveAttribute("enterkeyhint", "search");
+    });
+
+    it("should merge SearchFieldContext props", () => {
+      render(() => (
+        <SearchFieldContext.Provider
+          value={{
+            slots: {
+              default: {
+                "aria-label": "Context search",
+                defaultValue: "from context",
+              },
+            },
+          }}
+        >
+          <SearchField>{() => <SearchFieldInput />}</SearchField>
+        </SearchFieldContext.Provider>
+      ));
+
+      const input = screen.getByRole("searchbox", { name: "Context search" });
+      expect(input).toHaveValue("from context");
+    });
+
+    it("should provide FieldError context", () => {
+      render(() => (
+        <SearchField aria-label="Search" isInvalid errorMessage="Search term required">
+          {() => (
+            <>
+              <SearchFieldInput />
+              <FieldError />
+            </>
+          )}
+        </SearchField>
+      ));
+
+      expect(screen.getByText("Search term required")).toBeInTheDocument();
     });
   });
 

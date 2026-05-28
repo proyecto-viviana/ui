@@ -5774,6 +5774,18 @@ function ReactSearchFieldDemo() {
     ...demoProps,
     value,
   });
+  const contextualHelp = demoProps.withContextualHelp
+    ? jsxs(SpectrumContextualHelp, {
+        children: [
+          jsx(SpectrumHeading, { children: "Search syntax" }),
+          jsx(SpectrumContent, {
+            children: jsx("p", {
+              children: "Use project names, owners, or status keywords.",
+            }),
+          }),
+        ],
+      })
+    : undefined;
 
   return renderReactSpectrumReference(
     jsx("div", {
@@ -5786,6 +5798,14 @@ function ReactSearchFieldDemo() {
         value,
         placeholder: demoProps.placeholder,
         size: demoProps.size,
+        labelPosition: demoProps.labelPosition,
+        labelAlign: demoProps.labelAlign,
+        necessityIndicator: demoProps.necessityIndicator,
+        contextualHelp,
+        name: demoProps.name,
+        form: demoProps.form,
+        validationBehavior: demoProps.validationBehavior,
+        type: demoProps.type,
         description: demoProps.description,
         errorMessage: demoProps.errorMessage,
         isDisabled: demoProps.isDisabled,

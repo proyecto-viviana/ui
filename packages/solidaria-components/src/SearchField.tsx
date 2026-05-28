@@ -20,9 +20,17 @@ import {
   createFocusRing,
   createHover,
   createPress,
+  mergeProps,
   type AriaSearchFieldProps,
 } from "@proyecto-viviana/solidaria";
-import { createSearchFieldState, type SearchFieldState } from "@proyecto-viviana/solid-stately";
+import {
+  createSearchFieldState,
+  VALID_VALIDITY_STATE,
+  type SearchFieldState,
+  type ValidationResult,
+} from "@proyecto-viviana/solid-stately";
+import { FormContext, type FormProps } from "./Form";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -66,6 +74,8 @@ export interface SearchFieldProps extends Omit<AriaSearchFieldProps, "label">, S
   class?: ClassNameOrFunction<SearchFieldRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<SearchFieldRenderProps>;
+  /** Ref for the outer search field element. */
+  ref?: (el: HTMLDivElement) => void;
 }
 
 export interface SearchFieldInputRenderProps {
@@ -110,27 +120,78 @@ export interface SearchFieldClearButtonProps
   style?: StyleOrFunction<SearchFieldClearButtonRenderProps>;
 }
 
-interface SearchFieldContextValue {
-  state: SearchFieldState;
-  inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
-  clearButtonProps: {
+interface SearchFieldContextValue extends Partial<SearchFieldProps> {
+  state?: SearchFieldState;
+  inputProps?: JSX.InputHTMLAttributes<HTMLInputElement>;
+  clearButtonProps?: {
     "aria-label": string;
     tabIndex: number;
     disabled?: boolean;
     onMouseDown: (e: MouseEvent) => void;
     onClick: () => void;
   };
-  labelProps: JSX.HTMLAttributes<HTMLElement>;
-  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
-  errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
-  isDisabled: boolean;
-  isInvalid: boolean;
-  isRequired: boolean;
-  isReadOnly: boolean;
-  setInputRef: (el: HTMLInputElement) => void;
+  labelProps?: JSX.HTMLAttributes<HTMLElement>;
+  descriptionProps?: JSX.HTMLAttributes<HTMLElement>;
+  errorMessageProps?: JSX.HTMLAttributes<HTMLElement>;
+  isDisabled?: boolean;
+  isInvalid?: boolean;
+  isRequired?: boolean;
+  isReadOnly?: boolean;
+  setInputRef?: (el: HTMLInputElement) => void;
+  slots?: Record<string, SearchFieldProps>;
 }
 
 export const SearchFieldContext = createContext<SearchFieldContextValue | null>(null);
+
+function withFormValidationBehavior(
+  props: SearchFieldProps,
+  formContext: FormProps | null,
+): SearchFieldProps {
+  if (!formContext?.validationBehavior) {
+    return props;
+  }
+
+  return new Proxy(props, {
+    get(target, property, receiver) {
+      const localValue = Reflect.get(target, property, receiver);
+      if (property === "validationBehavior" && localValue === undefined) {
+        return formContext.validationBehavior;
+      }
+
+      return localValue;
+    },
+    has(target, property) {
+      return (
+        Reflect.has(target, property) ||
+        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
+      );
+    },
+    ownKeys(target) {
+      const keys = new Set(Reflect.ownKeys(target));
+      if (formContext.validationBehavior !== undefined) {
+        keys.add("validationBehavior");
+      }
+
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+      if (descriptor) {
+        return descriptor;
+      }
+
+      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => formContext.validationBehavior,
+        };
+      }
+
+      return undefined;
+    },
+  });
+}
 
 function eventWithCurrentTarget<T extends HTMLElement>(event: Event, element: T): Event {
   return new Proxy(event, {
@@ -158,9 +219,36 @@ function clearDelegatedTextEntryHandlers(element: HTMLElement) {
  * A search field allows a user to enter and clear a search query.
  */
 export function SearchField(props: SearchFieldProps): JSX.Element {
+  const formContext = useContext(FormContext);
+  const contextProps = useContext(SearchFieldContext);
+  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextBaseProps = createMemo<SearchFieldProps>(() => {
+    if (!contextProps) return {};
+    const {
+      state: _state,
+      inputProps: _inputProps,
+      clearButtonProps: _clearButtonProps,
+      labelProps: _labelProps,
+      descriptionProps: _descriptionProps,
+      errorMessageProps: _errorMessageProps,
+      isDisabled: _isDisabled,
+      isInvalid: _isInvalid,
+      isRequired: _isRequired,
+      isReadOnly: _isReadOnly,
+      setInputRef: _setInputRef,
+      slots: _slots,
+      ...restContextProps
+    } = contextProps;
+    return restContextProps as SearchFieldProps;
+  });
+  const baseProps = (
+    contextProps ? mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) : props
+  ) as SearchFieldProps;
+  const mergedProps = withFormValidationBehavior(baseProps, formContext);
+
   const [local, stateProps, ariaProps, rest] = splitProps(
-    props,
-    ["children", "class", "style", "slot"],
+    mergedProps,
+    ["children", "class", "style", "slot", "ref"],
     ["value", "defaultValue", "onChange", "onSubmit", "onClear"],
     [
       "label",
@@ -175,10 +263,15 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       "errorMessage",
       "id",
       "autoFocus",
+      "excludeFromTabOrder",
       "name",
+      "form",
+      "validationBehavior",
+      "type",
       "placeholder",
       "autoComplete",
       "inputMode",
+      "enterKeyHint",
       "autoCorrect",
       "autoCapitalize",
       "spellCheck",
@@ -257,14 +350,29 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       get name() {
         return ariaProps.name;
       },
+      get form() {
+        return ariaProps.form;
+      },
+      get validationBehavior() {
+        return ariaProps.validationBehavior;
+      },
+      get type() {
+        return ariaProps.type;
+      },
       get autoFocus() {
         return ariaProps.autoFocus;
+      },
+      get excludeFromTabOrder() {
+        return ariaProps.excludeFromTabOrder;
       },
       get autoComplete() {
         return ariaProps.autoComplete;
       },
       get inputMode() {
         return ariaProps.inputMode;
+      },
+      get enterKeyHint() {
+        return ariaProps.enterKeyHint;
       },
       get autoCorrect() {
         return ariaProps.autoCorrect;
@@ -348,7 +456,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      children: local.children,
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-SearchField",
@@ -380,6 +488,27 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
 
+  const fieldValidation = createMemo<ValidationResult>(() => {
+    const isInvalid = searchFieldAria.isInvalid;
+    const errorMessage = ariaProps.errorMessage;
+    const validationErrors = isInvalid && typeof errorMessage === "string" ? [errorMessage] : [];
+
+    return {
+      isInvalid,
+      validationErrors,
+      validationDetails: isInvalid
+        ? { ...VALID_VALIDITY_STATE, customError: true, valid: false }
+        : VALID_VALIDITY_STATE,
+    };
+  });
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      return fieldValidation();
+    },
+    get errorMessageProps() {
+      return searchFieldAria.errorMessageProps;
+    },
+  };
   const contextValue: SearchFieldContextValue = {
     state,
     get inputProps() {
@@ -417,20 +546,23 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   };
 
   return (
-    <SearchFieldContext.Provider value={contextValue}>
-      <div
-        {...domProps()}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        data-empty={state.value() === "" || undefined}
-        data-disabled={ariaProps.isDisabled || undefined}
-        data-invalid={searchFieldAria.isInvalid || undefined}
-        data-required={ariaProps.isRequired || undefined}
-        data-readonly={ariaProps.isReadOnly || undefined}
-      >
-        {fieldChildren()}
-      </div>
-    </SearchFieldContext.Provider>
+    <FieldErrorContext.Provider value={fieldErrorContext}>
+      <SearchFieldContext.Provider value={contextValue}>
+        <div
+          {...domProps()}
+          ref={local.ref}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-empty={state.value() === "" || undefined}
+          data-disabled={ariaProps.isDisabled || undefined}
+          data-invalid={searchFieldAria.isInvalid || undefined}
+          data-required={ariaProps.isRequired || undefined}
+          data-readonly={ariaProps.isReadOnly || undefined}
+        >
+          {fieldChildren()}
+        </div>
+      </SearchFieldContext.Provider>
+    </FieldErrorContext.Provider>
   );
 }
 
@@ -487,8 +619,8 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
-    isDisabled: context.isDisabled,
-    isInvalid: context.isInvalid,
+    isDisabled: !!context.isDisabled,
+    isInvalid: !!context.isInvalid,
   }));
 
   const renderProps = useRenderProps(
@@ -568,7 +700,7 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
       {...mergedInputProps()}
       ref={(element) => {
         inputElement = element;
-        context.setInputRef(element);
+        context.setInputRef?.(element);
         const ref = (domProps as { ref?: unknown }).ref;
         if (typeof ref === "function") {
           ref(element);
@@ -596,11 +728,11 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
     throw new Error("SearchFieldClearButton must be used within a SearchField");
   }
 
-  const isDisabled = () => context.isDisabled || context.isReadOnly;
-  const isEmpty = () => context.state.value() === "";
+  const isDisabled = () => !!(context.isDisabled || context.isReadOnly);
+  const isEmpty = () => (context.state?.value() ?? "") === "";
   const clear = () => {
     if (!isDisabled() && !isEmpty()) {
-      context.clearButtonProps.onClick();
+      context.clearButtonProps?.onClick();
     }
   };
 
@@ -648,10 +780,10 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
       <button
         {...domProps}
         type="button"
-        aria-label={context.clearButtonProps["aria-label"]}
-        tabIndex={context.clearButtonProps.tabIndex}
-        disabled={context.clearButtonProps.disabled}
-        onMouseDown={context.clearButtonProps.onMouseDown}
+        aria-label={context.clearButtonProps?.["aria-label"] ?? "Clear search"}
+        tabIndex={context.clearButtonProps?.tabIndex ?? -1}
+        disabled={context.clearButtonProps?.disabled}
+        onMouseDown={context.clearButtonProps?.onMouseDown}
         {...cleanPressProps()}
         onPointerUp={clear}
         onMouseUp={clear}

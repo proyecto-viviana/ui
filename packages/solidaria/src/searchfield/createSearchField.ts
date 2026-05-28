@@ -10,7 +10,7 @@ import { mergeProps } from "../utils";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import type { SearchFieldState } from "@proyecto-viviana/solid-stately";
 
-export interface AriaSearchFieldProps extends Omit<AriaTextFieldProps, "type"> {
+export interface AriaSearchFieldProps extends AriaTextFieldProps {
   /** Handler that is called when the user submits the search (pressing Enter). */
   onSubmit?: (value: string) => void;
   /** Handler that is called when the clear button is pressed or Escape clears the field. */
@@ -90,14 +90,29 @@ export function createSearchField(
     get name() {
       return getProps().name;
     },
+    get form() {
+      return getProps().form;
+    },
+    get validationBehavior() {
+      return getProps().validationBehavior ?? "native";
+    },
+    get type() {
+      return getProps().type ?? "search";
+    },
     get autoFocus() {
       return getProps().autoFocus;
+    },
+    get excludeFromTabOrder() {
+      return getProps().excludeFromTabOrder;
     },
     get autoComplete() {
       return getProps().autoComplete;
     },
     get inputMode() {
       return getProps().inputMode;
+    },
+    get enterKeyHint() {
+      return getProps().enterKeyHint;
     },
     get autoCorrect() {
       return getProps().autoCorrect;
@@ -159,7 +174,6 @@ export function createSearchField(
     get onInput() {
       return getProps().onInput;
     },
-    type: "search",
     onChange: setValue,
   });
 
