@@ -29,9 +29,8 @@ import AddIcon from "../icon/ui-icons/Add";
 import DashIcon from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
 
-export type NumberFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
-type S2NumberFieldSize = "S" | "M" | "L" | "XL";
-export type NumberFieldVariant = "outline" | "filled";
+export type NumberFieldSize = "S" | "M" | "L" | "XL";
+type S2NumberFieldSize = NumberFieldSize;
 export type NumberFieldLabelPosition = "top" | "side";
 export type NumberFieldLabelAlign = "start" | "end";
 export type NumberFieldNecessityIndicator = "icon" | "label";
@@ -42,8 +41,6 @@ export interface NumberFieldProps extends Omit<
 > {
   /** The size of the number field. */
   size?: NumberFieldSize;
-  /** Legacy visual variant. S2 NumberFields do not expose visual variants. */
-  variant?: NumberFieldVariant;
   /** Spectrum-defined generated classes. */
   styles?: StyleString;
   /** Additional CSS class name. Use only as a last resort. */
@@ -350,21 +347,7 @@ function NumberFieldError(props: { class?: string; children?: JSX.Element }): JS
 }
 
 function normalizeNumberFieldSize(size: NumberFieldSize | undefined): S2NumberFieldSize {
-  switch (size) {
-    case "sm":
-      return "S";
-    case "md":
-      return "M";
-    case "lg":
-      return "L";
-    case "S":
-    case "M":
-    case "L":
-    case "XL":
-      return size;
-    default:
-      return "M";
-  }
+  return size ?? "M";
 }
 
 function focusFieldInput(event: Event & { currentTarget: HTMLDivElement }) {
@@ -419,7 +402,6 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
-    "variant",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",

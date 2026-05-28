@@ -20,8 +20,8 @@ normalized to the current gate checklist.
 - Current accepted under the full gate model: Calendar, Checkbox, ColorArea,
   ColorField, ColorSlider, ColorWheel, ColorSwatch, ColorSwatchPicker,
   Disclosure, DropZone, Icons, Illustrations, IllustratedMessage, InlineAlert,
-  ListView, Popover, TagGroup, Toast, ToggleButton, ToggleButtonGroup, Tooltip,
-  TreeView.
+  ListView, NumberField, Popover, TagGroup, Toast, ToggleButton,
+  ToggleButtonGroup, Tooltip, TreeView.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -60,8 +60,8 @@ Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
 - Modeled viewer controls: 69/69 entries.
-- Validation notes: 62/69 entries. Missing notes: NumberField, Picker,
-  RadioGroup, SearchField, Switch, TextArea, and TextField.
+- Validation notes: 63/69 entries. Missing notes: Picker, RadioGroup,
+  SearchField, Switch, TextArea, and TextField.
 - Current visual/asserted evidence: 69/69 entries.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
@@ -103,6 +103,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [ListView](./listview-validation-notes.md)
 - [Meter](./meter-validation-notes.md)
 - [NotificationBadge](./notificationbadge-validation-notes.md)
+- [NumberField](./numberfield-validation-notes.md)
 - [Popover](./popover-validation-notes.md)
 - [ProgressBar](./progressbar-validation-notes.md)
 - [ProgressCircle](./progresscircle-validation-notes.md)

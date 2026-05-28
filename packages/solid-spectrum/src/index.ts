@@ -377,12 +377,7 @@ export type { MeterProps } from "./meter";
 
 // NumberField
 export { NumberField } from "./numberfield";
-export type {
-  NumberFieldProps,
-  NumberFieldSize,
-  NumberFieldState,
-  NumberFieldVariant,
-} from "./numberfield";
+export type { NumberFieldProps, NumberFieldSize, NumberFieldState } from "./numberfield";
 
 // Picker
 export { Picker, PickerItem } from "./picker";

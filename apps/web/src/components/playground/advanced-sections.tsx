@@ -1957,16 +1957,23 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
       {/* Size variants */}
       <div>
         <h4 class="text-sm font-medium text-primary-200 mb-3">Size Variants</h4>
-        <div class="grid gap-6 sm:grid-cols-3">
-          <StyledNumberField label="Small" defaultValue={10} size="sm" minValue={0} maxValue={50} />
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <StyledNumberField label="Small" defaultValue={10} size="S" minValue={0} maxValue={50} />
           <StyledNumberField
             label="Medium (default)"
             defaultValue={25}
-            size="md"
+            size="M"
             minValue={0}
             maxValue={50}
           />
-          <StyledNumberField label="Large" defaultValue={40} size="lg" minValue={0} maxValue={50} />
+          <StyledNumberField label="Large" defaultValue={40} size="L" minValue={0} maxValue={50} />
+          <StyledNumberField
+            label="Extra large"
+            defaultValue={45}
+            size="XL"
+            minValue={0}
+            maxValue={50}
+          />
         </div>
       </div>
 

@@ -63,7 +63,9 @@ async function numberFieldGeometry(root: Locator) {
     const helpTextLeaf = Array.from(element.querySelectorAll<HTMLElement>("*")).find(
       (candidate) =>
         candidate.children.length === 0 &&
-        candidate.textContent?.trim() === "Quantity is required.",
+        ["Enter a quantity.", "Quantity is required."].includes(
+          candidate.textContent?.trim() ?? "",
+        ),
     );
     const helpTextParent = helpTextLeaf?.parentElement;
     const helpText =
@@ -266,6 +268,132 @@ function expectRgbNear(
 }
 
 test.describe("comparison NumberField visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await numberFieldFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "NumberField default state",
+      { maxMismatchRatio: 0.16, maxDimensionDelta: 24, pixelThreshold: 64 },
+    );
+  });
+
+  test("default geometry matches React Spectrum", async ({ page }) => {
+    const fixtures = await numberFieldFixtures(page);
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      size: "M",
+      hideStepper: false,
+      isInvalid: false,
+      isRequired: false,
+      value: 5,
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      size: "M",
+      hideStepper: false,
+      isInvalid: false,
+      isRequired: false,
+      value: 5,
+    });
+
+    const react = await numberFieldGeometry(fixtures.reactRoot);
+    const solid = await numberFieldGeometry(fixtures.solidRoot);
+
+    expect(solid.value).toBe(react.value);
+    expect(solid.placeholder).toBe(react.placeholder);
+    expect(solid.ariaInvalid).toBe(react.ariaInvalid);
+    expect(solid.ariaRequired).toBe(react.ariaRequired);
+    expect(solid.required).toBe(react.required);
+    expect(solid.disabled).toBe(react.disabled);
+    expect(solid.readOnly).toBe(react.readOnly);
+    expect(solid.groupBorderColor).toBe(react.groupBorderColor);
+    expect(solid.groupBackground).toBe(react.groupBackground);
+    expect(solid.inputColor).toBe(react.inputColor);
+    expect(solid.helpColor).toBe(react.helpColor);
+    expect(solid.stepperButtonCount).toBe(react.stepperButtonCount);
+    expect(solid.stepperButtonFontSize).toBe(react.stepperButtonFontSize);
+    expect(solid.stepperIconFontSize).toBe(react.stepperIconFontSize);
+    expect(solid.invalidIcon).toBeNull();
+    expect(react.invalidIcon).toBeNull();
+
+    expectNear(
+      solid.group?.width ?? null,
+      react.group?.width ?? null,
+      1,
+      "NumberField default group width",
+    );
+    expectNear(
+      solid.group?.height ?? null,
+      react.group?.height ?? null,
+      1,
+      "NumberField default group height",
+    );
+    expectNear(
+      solid.input?.height ?? null,
+      react.input?.height ?? null,
+      1,
+      "NumberField default input height",
+    );
+    expectNear(
+      solid.decrementButton?.width ?? null,
+      react.decrementButton?.width ?? null,
+      1,
+      "NumberField default decrement button width",
+    );
+    expectNear(
+      solid.decrementButton?.height ?? null,
+      react.decrementButton?.height ?? null,
+      1,
+      "NumberField default decrement button height",
+    );
+    expectNear(
+      cssPixelNumber(solid.stepperButtonComputedWidth),
+      cssPixelNumber(react.stepperButtonComputedWidth),
+      1,
+      "NumberField default stepper button computed width",
+    );
+    expectNear(
+      cssPixelNumber(solid.stepperButtonComputedHeight),
+      cssPixelNumber(react.stepperButtonComputedHeight),
+      1,
+      "NumberField default stepper button computed height",
+    );
+    expectNear(
+      solid.decrementIcon?.width ?? null,
+      react.decrementIcon?.width ?? null,
+      1,
+      "NumberField default decrement icon width",
+    );
+    expectNear(
+      solid.decrementIcon?.height ?? null,
+      react.decrementIcon?.height ?? null,
+      1,
+      "NumberField default decrement icon height",
+    );
+    expectNear(
+      cssPixelNumber(solid.stepperIconComputedWidth),
+      cssPixelNumber(react.stepperIconComputedWidth),
+      1,
+      "NumberField default stepper icon computed width",
+    );
+    expectNear(
+      cssPixelNumber(solid.stepperIconComputedHeight),
+      cssPixelNumber(react.stepperIconComputedHeight),
+      1,
+      "NumberField default stepper icon computed height",
+    );
+    expectNear(solid.groupToHelpGap, react.groupToHelpGap, 1, "NumberField default help gap");
+    expectNear(
+      solid.inputCenterDelta,
+      react.inputCenterDelta,
+      1,
+      "NumberField default input centerline",
+    );
+  });
+
   test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await numberFieldFixtures(
       page,

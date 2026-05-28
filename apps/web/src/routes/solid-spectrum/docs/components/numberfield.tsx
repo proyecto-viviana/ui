@@ -148,15 +148,17 @@ function NumberFieldPage() {
 
       <Example
         title="Sizes"
-        description="NumberField supports small, medium, and large sizes."
-        code={`<NumberField label="Small" size="sm" defaultValue={5} />
-<NumberField label="Medium" size="md" defaultValue={10} />
-<NumberField label="Large" size="lg" defaultValue={15} />`}
+        description="NumberField supports S, M, L, and XL sizes."
+        code={`<NumberField label="Small" size="S" defaultValue={5} />
+<NumberField label="Medium" size="M" defaultValue={10} />
+<NumberField label="Large" size="L" defaultValue={15} />
+<NumberField label="Extra large" size="XL" defaultValue={20} />`}
       >
         <div class="max-w-xs space-y-4">
-          <NumberField label="Small" size="sm" defaultValue={5} />
-          <NumberField label="Medium" size="md" defaultValue={10} />
-          <NumberField label="Large" size="lg" defaultValue={15} />
+          <NumberField label="Small" size="S" defaultValue={5} />
+          <NumberField label="Medium" size="M" defaultValue={10} />
+          <NumberField label="Large" size="L" defaultValue={15} />
+          <NumberField label="Extra large" size="XL" defaultValue={20} />
         </div>
       </Example>
 
