@@ -688,6 +688,15 @@ details.s2-nav-group > div {
   background: var(--s2-docs-example-bg);
 }
 
+.s2-example[data-component-slug="dropzone"],
+.s2-example[data-component-slug="illustratedmessage"] {
+  --s2-example-preview-min-height: 330px;
+}
+
+.s2-example[data-component-slug="tableview"] {
+  --s2-example-preview-min-height: 360px;
+}
+
 .s2-example-preview {
   grid-area: preview;
   display: grid;

@@ -30,6 +30,7 @@ export default function ComponentExampleSection(props: ComponentExampleSectionPr
           id: "example",
           role: "group",
           "aria-labelledby": "example-title",
+          "data-component-slug": props.slug,
         },
         h(
           "div",

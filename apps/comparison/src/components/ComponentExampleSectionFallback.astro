@@ -16,6 +16,7 @@ const { entry } = Astro.props as Props;
   id="example"
   role="group"
   aria-labelledby="example-title"
+  data-component-slug={entry.slug}
   data-component-example-section-fallback
 >
   <div class="s2-example-preview" role="group" aria-label="Rendered comparison">

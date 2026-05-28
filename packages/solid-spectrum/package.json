@@ -140,6 +140,10 @@
       "import": "./dist/theme.css",
       "default": "./src/theme.css"
     },
+    "./font-faces.css": {
+      "import": "./dist/font-faces.css",
+      "default": "./src/font-faces.css"
+    },
     "./styles.css": {
       "import": "./dist/styles.css",
       "default": "./src/styles.css"
