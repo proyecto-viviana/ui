@@ -76,6 +76,7 @@ import {
   Meter as SolidSpectrumMeter,
   NumberField as SolidSpectrumNumberField,
   Picker as SolidSpectrumPicker,
+  PickerItem as SolidSpectrumPickerItem,
   Popover as SolidSpectrumPopover,
   ProgressBar as SolidSpectrumProgressBar,
   ProgressCircle as SolidSpectrumProgressCircle,
@@ -7171,8 +7172,25 @@ function SolidSpectrumNumberFieldDemo() {
 function SolidSpectrumPickerDemo() {
   const [demoProps, setDemoProps] = createSignal<PickerDemoProps>(pickerDemoPropsFromWindow());
   const [selectedKey, setSelectedKey] = createSignal(demoProps().selectedKey);
+  const [loadMoreCount, setLoadMoreCount] = createSignal(0);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
+  );
+  const menuWidth = createMemo(() => {
+    const parsed = Number.parseInt(demoProps().menuWidth, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  });
+  const disabledKeys = createMemo(() =>
+    demoProps().disableEnterprise ? ["enterprise"] : undefined,
+  );
+  const selectedItem = createMemo(() => pickerItems.find((item) => item.id === selectedKey()));
+  const contextualHelp = createMemo(() =>
+    demoProps().withContextualHelp
+      ? hc(SolidSpectrumContextualHelp, {}, [
+          hc(SolidSpectrumHeading, { slot: "title" }, ["Plan help"]),
+          h("p", {}, ["Pick the plan that matches expected usage."]),
+        ])
+      : undefined,
   );
 
   onMount(() => {
@@ -7197,12 +7215,7 @@ function SolidSpectrumPickerDemo() {
     });
   });
 
-  const serializedProps = createMemo(() =>
-    serializePickerDemoProps({
-      ...demoProps(),
-      selectedKey: selectedKey(),
-    }),
-  );
+  const serializedProps = createMemo(() => serializePickerDemoProps(demoProps()));
 
   return hc(
     SolidSpectrumProvider,
@@ -7214,6 +7227,12 @@ function SolidSpectrumPickerDemo() {
       style: providerShellStyle,
     },
     [
+      h("form", {
+        hidden: true,
+        get id() {
+          return demoProps().form || "picker-external-form";
+        },
+      }),
       hc(
         "div",
         {
@@ -7227,51 +7246,133 @@ function SolidSpectrumPickerDemo() {
           get "data-comparison-value"() {
             return selectedKey();
           },
+          get "data-comparison-load-more-count"() {
+            return String(loadMoreCount());
+          },
         },
         [
-          hc(SolidSpectrumPicker, {
-            items: pickerItems,
-            getKey: (item: (typeof pickerItems)[number]) => item.id,
-            getTextValue: (item: (typeof pickerItems)[number]) => item.label,
-            get label() {
-              return demoProps().label;
+          hc(
+            SolidSpectrumPicker,
+            {
+              items: pickerItems,
+              getKey: (item: (typeof pickerItems)[number]) => item.id,
+              getTextValue: (item: (typeof pickerItems)[number]) => item.label,
+              get label() {
+                return demoProps().label;
+              },
+              get value() {
+                return demoProps().selectionSource === "value" ? selectedKey() : undefined;
+              },
+              get defaultValue() {
+                return demoProps().selectionSource === "defaultValue"
+                  ? demoProps().selectedKey
+                  : undefined;
+              },
+              get placeholder() {
+                return demoProps().placeholder;
+              },
+              get size() {
+                return demoProps().size;
+              },
+              get labelPosition() {
+                return demoProps().labelPosition;
+              },
+              get labelAlign() {
+                return demoProps().labelAlign;
+              },
+              get necessityIndicator() {
+                return demoProps().necessityIndicator;
+              },
+              get contextualHelp() {
+                return contextualHelp();
+              },
+              get description() {
+                return demoProps().description;
+              },
+              get errorMessage() {
+                return demoProps().errorMessage;
+              },
+              get name() {
+                return demoProps().name || undefined;
+              },
+              get form() {
+                return demoProps().form || undefined;
+              },
+              get validationBehavior() {
+                return demoProps().validationBehavior;
+              },
+              get direction() {
+                return demoProps().direction;
+              },
+              get align() {
+                return demoProps().align;
+              },
+              get menuWidth() {
+                return menuWidth();
+              },
+              get shouldFlip() {
+                return demoProps().shouldFlip;
+              },
+              get loadingState() {
+                return demoProps().loadingState === "idle" ? undefined : demoProps().loadingState;
+              },
+              get onLoadMore() {
+                return demoProps().loadingState === "idle"
+                  ? undefined
+                  : () => setLoadMoreCount((count) => count + 1);
+              },
+              get renderValue() {
+                return demoProps().withRenderValue
+                  ? (items: Array<(typeof pickerItems)[number]>) =>
+                      h(
+                        "span",
+                        { "data-comparison-render-value": "true" },
+                        `${items?.[0]?.label ?? selectedItem()?.label ?? "Selected"} plan`,
+                      )
+                  : undefined;
+              },
+              get disabledKeys() {
+                return disabledKeys();
+              },
+              get isQuiet() {
+                return demoProps().isQuiet;
+              },
+              get isDisabled() {
+                return demoProps().isDisabled;
+              },
+              get isRequired() {
+                return demoProps().isRequired;
+              },
+              get isInvalid() {
+                return demoProps().isInvalid;
+              },
+              onChange: (nextKey: unknown) => {
+                if (nextKey == null) {
+                  return;
+                }
+                const nextSelectedKey = String(nextKey);
+                setSelectedKey(nextSelectedKey as PickerDemoProps["selectedKey"]);
+                setDemoProps((current: PickerDemoProps) => ({
+                  ...current,
+                  ...(current.selectionSource === "value"
+                    ? { selectedKey: nextSelectedKey as PickerDemoProps["selectedKey"] }
+                    : {}),
+                }));
+              },
             },
-            get selectedKey() {
-              return selectedKey();
-            },
-            get placeholder() {
-              return demoProps().placeholder;
-            },
-            get size() {
-              return demoProps().size;
-            },
-            get description() {
-              return demoProps().description;
-            },
-            get errorMessage() {
-              return demoProps().errorMessage;
-            },
-            get isQuiet() {
-              return demoProps().isQuiet;
-            },
-            get isDisabled() {
-              return demoProps().isDisabled;
-            },
-            get isRequired() {
-              return demoProps().isRequired;
-            },
-            get isInvalid() {
-              return demoProps().isInvalid;
-            },
-            onSelectionChange: (nextKey: unknown) => {
-              const nextSelectedKey = String(nextKey);
-              setSelectedKey(nextSelectedKey as PickerDemoProps["selectedKey"]);
-              setDemoProps((current: PickerDemoProps) => ({
-                ...current,
-                selectedKey: nextSelectedKey as PickerDemoProps["selectedKey"],
-              }));
-            },
-          }),
+            renderProp((item: (typeof pickerItems)[number]) =>
+              hc(
+                SolidSpectrumPickerItem,
+                {
+                  id: item.id,
+                  get isDisabled() {
+                    return item.id === "enterprise" && demoProps().disableEnterprise;
+                  },
+                },
+                [item.label],
+              ),
+            ),
+          ),
         ],
       ),
     ],

@@ -55,6 +55,7 @@ import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
+import { ListBoxLoadMoreItem } from "./ListBox";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -208,6 +209,14 @@ export interface SelectListBoxProps<T> extends SlotProps {
   children?: (item: T) => JSX.Element;
   /** Content to display when the listbox has no items. */
   renderEmptyState?: () => JSX.Element;
+  /** Called when the load more sentinel becomes visible. */
+  onLoadMore?: () => void | Promise<void>;
+  /** Whether additional items are currently loading. */
+  isLoading?: boolean;
+  /** Content to display in the load more sentinel row. */
+  renderLoadMore?: () => JSX.Element | undefined;
+  /** CSS class for the load more sentinel row. */
+  loadMoreClass?: ClassNameOrFunction<{ isLoading: boolean }>;
   /** Whether the listbox is rendered inside an overlay popover. */
   isInPopover?: boolean;
   /** The CSS className for the element. */
@@ -459,7 +468,18 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     rootRef = el;
     assignRef(local.ref, el);
   };
-  const isInvalid = createMemo(() => selectValidation().isInvalid);
+  const validation = createMemo<ValidationResult>(() => {
+    const current = selectValidation();
+    if (current.isInvalid || !ariaProps.isInvalid) {
+      return current;
+    }
+
+    return {
+      ...DEFAULT_VALIDATION_RESULT,
+      isInvalid: true,
+    };
+  });
+  const isInvalid = createMemo(() => validation().isInvalid);
   const triggerDescribedBy = () => {
     const ids = [
       (triggerProps as { "aria-describedby"?: string })["aria-describedby"],
@@ -478,7 +498,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     }) as JSX.HTMLAttributes<HTMLElement>;
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
-      return selectValidation();
+      return validation();
     },
     get errorMessageProps() {
       return { id: errorMessageId };
@@ -491,6 +511,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     state.selectionMode() === "multiple"
       ? state.selectedKeys() === "all" || (state.selectedKeys() as Set<Key>).size > 0
       : state.selectedKey() != null;
+  const hasNativeValidation = () => (ariaProps.validationBehavior ?? "native") === "native";
   const getSelectValidation = (select: HTMLSelectElement): ValidationResult => {
     if (ariaProps.isRequired && !hasSelection()) {
       return {
@@ -519,7 +540,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     name: stateProps.name,
     form: ariaProps.form,
     isRequired: ariaProps.isRequired,
-    validationBehavior: "native",
+    validationBehavior: ariaProps.validationBehavior ?? "native",
     get isDisabled() {
       return resolveDisabled();
     },
@@ -562,7 +583,9 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           <select
             {...hiddenSelectProps}
             name={hasSelection() ? undefined : stateProps.name}
-            required={(ariaProps.isRequired && !hasSelection()) || undefined}
+            required={
+              (hasNativeValidation() && ariaProps.isRequired && !hasSelection()) || undefined
+            }
             onInvalid={handleHiddenSelectInvalid}
             onChange={handleHiddenSelectChange}
           >
@@ -683,7 +706,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
             return { id: errorMessageId };
           },
           get validation() {
-            return selectValidation();
+            return validation();
           },
           isOpen,
           isFocused,
@@ -881,6 +904,10 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     "slot",
     "children",
     "renderEmptyState",
+    "onLoadMore",
+    "isLoading",
+    "renderLoadMore",
+    "loadMoreClass",
     "isInPopover",
   ]);
 
@@ -998,6 +1025,15 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
           </For>
         </Show>
       )}
+      <Show when={local.onLoadMore}>
+        <ListBoxLoadMoreItem
+          onLoadMore={local.onLoadMore!}
+          isLoading={local.isLoading}
+          class={local.loadMoreClass}
+        >
+          {local.renderLoadMore?.()}
+        </ListBoxLoadMoreItem>
+      </Show>
     </ul>
   );
 

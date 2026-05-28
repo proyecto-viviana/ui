@@ -2573,7 +2573,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "planned",
       solid: "planned",
       pairDiff: "planned",
-      note: "Picker is now wired on both styled stacks, but current default visual evidence and pair-diff thresholds still need to be added in the remaining form/input visual tightening pass.",
+      note: "Picker is wired on both styled stacks. Current visual evidence focuses on invalid, open-list, keyboard, and advanced docs-state gates; a dedicated default-state pair-diff remains planned so the default route has its own screenshot threshold.",
     },
     {
       id: "styled.invalid-required-xl",
@@ -2622,8 +2622,8 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "The docs-style prop controls drive label, selected key, placeholder, size, quiet, description/error message, disabled, required, and invalid state into both stacks.",
+      spec: "e2e/modeled-controls-contract.spec.ts; e2e/picker-visual.spec.ts",
+      note: "The docs-style prop controls drive controlled value/defaultValue selection, label placement/alignment/necessity, contextual help, custom renderValue, form owner/name, validation behavior, async loading/onLoadMore, popover direction/alignment/width/flip, disabled item state, placeholder, size, quiet, description/error message, disabled, required, and invalid state into both stacks. The Picker visual spec also asserts the advanced routed state against React Spectrum.",
     },
   ],
   rangeslider: [

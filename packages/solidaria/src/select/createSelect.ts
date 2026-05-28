@@ -22,6 +22,8 @@ export interface AriaSelectProps {
   isDisabled?: boolean;
   /** Whether the select is required. */
   isRequired?: boolean;
+  /** Whether the select is invalid. */
+  isInvalid?: boolean;
   /** The label for the select. */
   label?: JSX.Element;
   /** An accessible label for the select when no visible label is provided. */
@@ -48,6 +50,8 @@ export interface AriaSelectProps {
   disallowTypeAhead?: boolean;
   /** Whether the select can open when its collection is empty. @default false */
   allowsEmptyCollection?: boolean;
+  /** Whether validation should use ARIA attributes or native browser validation. */
+  validationBehavior?: "aria" | "native";
 }
 
 export interface SelectAria<T> {

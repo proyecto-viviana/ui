@@ -25,7 +25,7 @@ async function pickerFixtures(page: Page, query = "") {
     solidCanvas: await frameworkCanvas(section, "Solidaria stack"),
     reactRoot,
     solidRoot,
-    reactButton: reactRoot.locator("button").first(),
+    reactButton: reactRoot.locator("button[aria-haspopup='listbox']").first(),
     solidButton: solidRoot.locator("button[aria-haspopup='listbox']").first(),
   };
 }
@@ -50,7 +50,7 @@ async function pickerGeometry(root: Locator) {
           };
 
     const rootRect = element.getBoundingClientRect();
-    const button = element.querySelector<HTMLButtonElement>("button");
+    const button = element.querySelector<HTMLButtonElement>("button[aria-haspopup='listbox']");
     const value = button?.querySelector<HTMLElement>("span[id$='value'], span") ?? null;
     const label =
       Array.from(element.querySelectorAll<HTMLElement>("span, label, div")).find(
@@ -144,6 +144,8 @@ async function openListMetrics(root: Locator) {
     );
     const focusedOption = options.find((option) => option.hasAttribute("data-focused"));
     const firstOption = options[0] ?? null;
+    const enterpriseOption =
+      options.find((option) => option.textContent?.trim() === "Enterprise") ?? null;
     const checkmark = firstOption?.querySelector<SVGElement>("svg") ?? null;
     const listboxStyle = listbox == null ? null : window.getComputedStyle(listbox);
     const dialogStyle = dialog == null ? null : window.getComputedStyle(dialog);
@@ -154,6 +156,7 @@ async function openListMetrics(root: Locator) {
       ) ?? null;
     const labelStyle = label == null ? null : window.getComputedStyle(label);
     const listboxRect = listbox?.getBoundingClientRect();
+    const dialogRect = dialog?.getBoundingClientRect();
     const optionRect = firstOption?.getBoundingClientRect();
     const checkmarkRect = checkmark?.getBoundingClientRect();
 
@@ -174,10 +177,16 @@ async function openListMetrics(root: Locator) {
       popoverPadding: dialogStyle?.padding ?? null,
       listboxPadding: listboxStyle?.padding ?? null,
       listboxMargin: listboxStyle?.margin ?? null,
+      listboxWidth: listboxRect == null ? null : Number(listboxRect.width.toFixed(4)),
+      popoverWidth: dialogRect == null ? null : Number(dialogRect.width.toFixed(4)),
       optionGridAreas: optionStyle?.gridTemplateAreas ?? null,
       optionGridColumns: optionStyle?.gridTemplateColumns ?? null,
       firstOptionDataFocused: firstOption?.hasAttribute("data-focused") ?? false,
       firstOptionDataHovered: firstOption?.hasAttribute("data-hovered") ?? false,
+      enterpriseDisabled:
+        enterpriseOption?.getAttribute("aria-disabled") === "true" ||
+        enterpriseOption?.hasAttribute("data-disabled") ||
+        false,
       firstOptionBackground: optionStyle?.backgroundColor ?? null,
       firstOptionColor: optionStyle?.color ?? null,
       optionLeftInset:
@@ -386,7 +395,11 @@ test.describe("comparison Picker visual parity", () => {
       Math.abs(scrollY - beforeScrollY),
       "opening the portaled listbox should keep the page anchored",
     ).toBeLessThan(20);
-    expect(scrollY, "opening should not jump to the document bottom").toBeLessThan(bottomScrollY);
+    if (bottomScrollY > 0) {
+      expect(scrollY, "opening should not jump to the document bottom").toBeLessThan(bottomScrollY);
+    } else {
+      expect(scrollY, "non-scrollable pages should stay at the top").toBe(0);
+    }
   });
 
   test("keyboard navigation moves focus before committing selection", async ({ page }) => {
@@ -514,5 +527,62 @@ test.describe("comparison Picker visual parity", () => {
     expectNear(solid.optionHeight, react.optionHeight, 1, "Picker option height");
     expectNear(solid.checkmarkWidth, react.checkmarkWidth, 1, "Picker list checkmark width");
     expectNear(solid.checkmarkHeight, react.checkmarkHeight, 1, "Picker list checkmark height");
+  });
+
+  test("advanced controls drive selection source, form, label, validation, and popover props", async ({
+    page,
+  }) => {
+    const query =
+      "?selectionSource=defaultValue&selectedKey=starter&labelPosition=side&labelAlign=end&necessityIndicator=label&isRequired=true&withContextualHelp=true&withRenderValue=true&name=planField&form=pickerForm&validationBehavior=aria&direction=top&align=end&menuWidth=360&loadingState=loadingMore&disableEnterprise=true&shouldFlip=false";
+
+    for (const stack of ["react", "solid"] as const) {
+      const fixtures = await pickerFixtures(page, query);
+      const item =
+        stack === "react"
+          ? { stack, root: fixtures.reactRoot, button: fixtures.reactButton }
+          : { stack, root: fixtures.solidRoot, button: fixtures.solidButton };
+
+      expect(await controlProps(item.root)).toMatchObject({
+        selectedKey: "starter",
+        selectionSource: "defaultValue",
+        labelPosition: "side",
+        labelAlign: "end",
+        necessityIndicator: "label",
+        name: "planField",
+        form: "pickerForm",
+        validationBehavior: "aria",
+        direction: "top",
+        align: "end",
+        menuWidth: "360",
+        disableEnterprise: true,
+        shouldFlip: false,
+        withContextualHelp: true,
+        withRenderValue: true,
+        loadingState: "loadingMore",
+      });
+
+      await expect(item.root).toHaveAttribute("data-comparison-value", "starter");
+      await expect(item.button).toContainText("Starter plan");
+      await expect(item.root.locator('[name="planField"]').first()).toHaveAttribute(
+        "form",
+        "pickerForm",
+      );
+      await expect(item.root.getByRole("button", { name: /help/i }).first()).toBeVisible();
+
+      await item.button.click();
+      const metrics = await waitForOpenListMetrics(item.root, `${item.stack} advanced popover`);
+      expectNear(metrics.popoverWidth, 360, 2, `${item.stack} menuWidth popover`);
+      expect(metrics.enterpriseDisabled, `${item.stack} Enterprise option disabled`).toBe(true);
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Enter");
+
+      await expect(item.root).toHaveAttribute("data-comparison-value", "pro");
+      await expect(item.button).toContainText("Pro plan");
+      expect(await controlProps(item.root)).toMatchObject({
+        selectedKey: "starter",
+        selectionSource: "defaultValue",
+      });
+      await expect(item.button).toHaveAttribute("aria-expanded", "false");
+    }
   });
 });

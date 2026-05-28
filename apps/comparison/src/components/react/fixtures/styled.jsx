@@ -4118,7 +4118,38 @@ function ReactNumberFieldDemo() {
 function ReactPickerDemo() {
   const [demoProps, setDemoProps] = useState(pickerDemoPropsFromWindow);
   const [selectedKey, setSelectedKey] = useState(() => demoProps.selectedKey);
+  const [loadMoreCount, setLoadMoreCount] = useState(0);
   const colorScheme = useComparisonResolvedTheme();
+  const menuWidth = Number.parseInt(demoProps.menuWidth, 10);
+  const numericMenuWidth = Number.isFinite(menuWidth) && menuWidth > 0 ? menuWidth : undefined;
+  const disabledKeys = demoProps.disableEnterprise ? ["enterprise"] : undefined;
+  const selectedItem = pickerItems.find((item) => item.id === selectedKey);
+  const selectionProps =
+    demoProps.selectionSource === "value"
+      ? { value: selectedKey }
+      : { defaultValue: demoProps.selectedKey };
+  const renderValue = demoProps.withRenderValue
+    ? (items) =>
+        jsx("span", {
+          "data-comparison-render-value": "true",
+          children: `${items?.[0]?.label ?? selectedItem?.label ?? "Selected"} plan`,
+        })
+    : undefined;
+  const contextualHelp = demoProps.withContextualHelp
+    ? jsxs(SpectrumContextualHelp, {
+        children: [
+          jsx(SpectrumHeading, { slot: "title", children: "Plan help" }),
+          jsx(SpectrumContent, { children: "Pick the plan that matches expected usage." }),
+        ],
+      })
+    : undefined;
+  const renderKey = [
+    demoProps.selectionSource,
+    demoProps.selectionSource === "defaultValue" ? demoProps.selectedKey : "controlled",
+    demoProps.withContextualHelp,
+    demoProps.withRenderValue,
+    demoProps.loadingState,
+  ].join("|");
 
   useEffect(() => {
     const handleControlsChange = (event) => {
@@ -4133,33 +4164,72 @@ function ReactPickerDemo() {
   }, []);
 
   return renderReactSpectrumReference(
-    jsx("div", {
-      "data-comparison-control-root": "picker",
-      "data-comparison-control-props": serializePickerDemoProps({
-        ...demoProps,
-        selectedKey,
-      }),
-      "data-comparison-value": selectedKey,
-      children: jsx(SpectrumPicker, {
-        label: demoProps.label,
-        selectedKey,
-        placeholder: demoProps.placeholder,
-        size: demoProps.size,
-        description: demoProps.description,
-        errorMessage: demoProps.errorMessage,
-        isQuiet: demoProps.isQuiet,
-        isDisabled: demoProps.isDisabled,
-        isRequired: demoProps.isRequired,
-        isInvalid: demoProps.isInvalid,
-        onSelectionChange: (nextKey) => {
-          const nextSelectedKey = String(nextKey);
-          setSelectedKey(nextSelectedKey);
-          setDemoProps((current) => ({ ...current, selectedKey: nextSelectedKey }));
-        },
-        children: pickerItems.map((item) =>
-          jsx(SpectrumPickerItem, { id: item.id, children: item.label }, item.id),
-        ),
-      }),
+    jsxs(Fragment, {
+      children: [
+        demoProps.form ? jsx("form", { id: demoProps.form, hidden: true }) : null,
+        jsx("div", {
+          "data-comparison-control-root": "picker",
+          "data-comparison-control-props": serializePickerDemoProps(demoProps),
+          "data-comparison-value": selectedKey,
+          "data-comparison-load-more-count": String(loadMoreCount),
+          children: jsx(
+            SpectrumPicker,
+            {
+              label: demoProps.label,
+              ...selectionProps,
+              placeholder: demoProps.placeholder,
+              size: demoProps.size,
+              labelPosition: demoProps.labelPosition,
+              labelAlign: demoProps.labelAlign,
+              necessityIndicator: demoProps.necessityIndicator,
+              contextualHelp,
+              description: demoProps.description,
+              errorMessage: demoProps.errorMessage,
+              name: demoProps.name || undefined,
+              form: demoProps.form || undefined,
+              validationBehavior: demoProps.validationBehavior,
+              direction: demoProps.direction,
+              align: demoProps.align,
+              menuWidth: numericMenuWidth,
+              shouldFlip: demoProps.shouldFlip,
+              loadingState: demoProps.loadingState === "idle" ? undefined : demoProps.loadingState,
+              onLoadMore:
+                demoProps.loadingState === "idle"
+                  ? undefined
+                  : () => setLoadMoreCount((count) => count + 1),
+              renderValue,
+              disabledKeys,
+              isQuiet: demoProps.isQuiet,
+              isDisabled: demoProps.isDisabled,
+              isRequired: demoProps.isRequired,
+              isInvalid: demoProps.isInvalid,
+              onChange: (nextKey) => {
+                if (nextKey == null) {
+                  return;
+                }
+                const nextSelectedKey = String(nextKey);
+                setSelectedKey(nextSelectedKey);
+                setDemoProps((current) => ({
+                  ...current,
+                  ...(current.selectionSource === "value" ? { selectedKey: nextSelectedKey } : {}),
+                }));
+              },
+              children: pickerItems.map((item) =>
+                jsx(
+                  SpectrumPickerItem,
+                  {
+                    id: item.id,
+                    isDisabled: item.id === "enterprise" && demoProps.disableEnterprise,
+                    children: item.label,
+                  },
+                  item.id,
+                ),
+              ),
+            },
+            renderKey,
+          ),
+        }),
+      ],
     }),
     colorScheme,
   );
