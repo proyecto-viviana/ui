@@ -753,7 +753,8 @@ html[data-theme="dark"] body.s2-docs {
 .s2-framework-panel > .comparison-island,
 .s2-framework-panel > .s2-empty-state {
   display: grid;
-  place-items: center;
+  align-items: start;
+  justify-items: center;
   height: 100%;
   min-height: var(--s2-example-preview-min-height);
   padding: 44px 16px 26px;
@@ -780,8 +781,9 @@ html[data-theme="dark"] body.s2-docs {
   inline-size: max-content;
   max-inline-size: 100%;
   justify-self: center;
-  align-content: center;
-  place-items: center;
+  align-content: start;
+  align-items: start;
+  justify-items: center;
   min-height: auto;
 }
 
