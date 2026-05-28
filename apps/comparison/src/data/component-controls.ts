@@ -155,6 +155,11 @@ import {
   popoverTriggerModeOptions,
 } from "./popover-demo";
 import {
+  providerBackgroundOptions,
+  providerColorSchemeOptions,
+  providerDemoDefaults,
+} from "./provider-demo";
+import {
   dateRangePickerCalendarSystemOptions,
   dateRangePickerDemoDefaults,
   dateRangePickerFirstDayOfWeekOptions,
@@ -426,6 +431,41 @@ function options(values: readonly string[]): ComponentControlOption[] {
 function defaultableOptions(values: readonly string[]): ComponentControlOption[] {
   return values.map((value) => ({ value, label: value || "Default" }));
 }
+
+const providerControls: ComponentControlGroup = {
+  slug: "provider",
+  title: "Provider",
+  coverage: "modeled",
+  controls: [
+    {
+      name: "colorScheme",
+      label: "colorScheme",
+      kind: "radio",
+      defaultValue: providerDemoDefaults.colorScheme,
+      options: options(providerColorSchemeOptions),
+    },
+    {
+      name: "background",
+      label: "background",
+      kind: "radio",
+      defaultValue: providerDemoDefaults.background,
+      options: options(providerBackgroundOptions),
+    },
+  ],
+  apiProps: [
+    "children",
+    "locale",
+    "router",
+    "colorScheme",
+    "background",
+    "styles",
+    "elementType",
+    "id",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ],
+  note: "Modeled from the S2 Provider docs/API viewer. The route drives the docs-exposed colorScheme and background props into both stacks; locale, router, elementType, styles, DOM props, and unsafe escape hatches remain API inventory or source-review coverage rather than extra viewer controls.",
+};
 
 const buttonControls: ComponentControlGroup = {
   slug: "button",
@@ -7538,6 +7578,7 @@ const toastControls: ComponentControlGroup = {
 };
 
 export const componentControlGroups = {
+  provider: providerControls,
   accordion: accordionControls,
   disclosure: disclosureControls,
   actionbar: actionBarControls,

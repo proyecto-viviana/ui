@@ -499,6 +499,11 @@ import {
   serializeProgressCircleDemoProps,
 } from "@comparison/data/progress-demo";
 import {
+  normalizeProviderDemoProps,
+  providerDemoPropsFromWindow,
+  serializeProviderDemoProps,
+} from "@comparison/data/provider-demo";
+import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
   textFieldDemoPropsFromWindow,
@@ -750,7 +755,7 @@ function selectedKeysParamFromWindow(fallback) {
 }
 
 export const reactStyledFixtures = {
-  provider: renderProviderDemo,
+  provider: () => jsx(ReactProviderDemo, {}),
   accordion: () => jsx(ReactAccordionDemo, {}),
   disclosure: () => jsx(ReactDisclosureDemo, {}),
   actionbar: () => jsx(ReactActionBarDemo, {}),
@@ -821,17 +826,30 @@ export const reactStyledFixtures = {
   treeview: () => jsx(ReactTreeViewDemo, {}),
 };
 
-function renderProviderDemo() {
+function ReactProviderDemo() {
+  const [demoProps, setDemoProps] = useState(providerDemoPropsFromWindow);
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "provider") {
+        setDemoProps(normalizeProviderDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
   return jsx(SpectrumProvider, {
-    colorScheme: "dark",
-    background: "base",
+    "data-comparison-control-root": "provider",
+    "data-comparison-control-props": serializeProviderDemoProps(demoProps),
+    colorScheme: demoProps.colorScheme,
+    background: demoProps.background,
     UNSAFE_style: providerShellStyle,
     children: jsxs("div", {
       className: "comparison-provider-stack",
       children: [
         jsx("div", {
           className: "comparison-provider-caption",
-          children: "Outer provider: dark / medium scale",
+          children: `Outer provider: ${demoProps.colorScheme} / ${demoProps.background}`,
         }),
         jsx(SpectrumButton, {
           variant: "primary",

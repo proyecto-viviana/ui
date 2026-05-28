@@ -549,6 +549,12 @@ import {
   type ProgressCircleDemoProps,
 } from "@comparison/data/progress-demo";
 import {
+  normalizeProviderDemoProps,
+  providerDemoPropsFromWindow,
+  serializeProviderDemoProps,
+  type ProviderDemoProps,
+} from "@comparison/data/provider-demo";
+import {
   normalizeTextFieldDemoProps,
   serializeTextFieldDemoProps,
   textFieldDemoPropsFromWindow,
@@ -928,7 +934,7 @@ function solidSingleButtonFamilyChildren(
 }
 
 export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixture>> = {
-  provider: renderProviderDemo,
+  provider: () => h(SolidSpectrumProviderDemo, {}),
   accordion: () => h(SolidSpectrumAccordionDemo, {}),
   disclosure: () => h(SolidSpectrumDisclosureDemo, {}),
   actionbar: () => h(SolidSpectrumActionBarDemo, {}),
@@ -999,22 +1005,52 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   treeview: () => h(SolidSpectrumTreeViewDemo, {}),
 };
 
-function renderProviderDemo() {
-  return h(
+function SolidSpectrumProviderDemo() {
+  const [demoProps, setDemoProps] = createSignal<ProviderDemoProps>(providerDemoPropsFromWindow());
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "provider") {
+        setDemoProps(normalizeProviderDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+  });
+
+  return hc(
     SolidSpectrumProvider,
-    { colorScheme: "dark", background: "base", style: providerShellStyle },
-    h(
-      "div",
-      { class: "comparison-provider-stack" },
-      h("div", { class: "comparison-provider-caption" }, "Outer provider: dark / medium scale"),
-      h(SolidSpectrumButton, { variant: "primary" }, "Inherited Action"),
-      h(
-        SolidSpectrumProvider,
-        { colorScheme: "light", background: "base", style: nestedProviderStyle },
-        h("div", { class: "comparison-provider-caption" }, "Nested provider: local light override"),
-        h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
-      ),
-    ),
+    {
+      "data-comparison-control-root": "provider",
+      get "data-comparison-control-props"() {
+        return serializeProviderDemoProps(demoProps());
+      },
+      get colorScheme() {
+        return demoProps().colorScheme;
+      },
+      get background() {
+        return demoProps().background;
+      },
+      style: providerShellStyle,
+    },
+    [
+      hc("div", { class: "comparison-provider-stack" }, [
+        hc("div", { class: "comparison-provider-caption" }, [
+          () => `Outer provider: ${demoProps().colorScheme} / ${demoProps().background}`,
+        ]),
+        h(SolidSpectrumButton, { variant: "primary" }, "Inherited Action"),
+        h(
+          SolidSpectrumProvider,
+          { colorScheme: "light", background: "base", style: nestedProviderStyle },
+          h(
+            "div",
+            { class: "comparison-provider-caption" },
+            "Nested provider: local light override",
+          ),
+          h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
+        ),
+      ]),
+    ],
   );
 }
 
