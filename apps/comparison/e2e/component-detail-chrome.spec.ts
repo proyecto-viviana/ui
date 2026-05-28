@@ -46,6 +46,17 @@ test.describe("comparison component detail chrome", () => {
     ).toHaveAttribute("href", /react-spectrum/);
     await expect(page.locator(".s2-brand-text")).toBeVisible();
 
+    const docsNav = page.getByRole("navigation", { name: "Components" });
+    await expect(docsNav.getByRole("button", { name: "Components" })).toBeVisible();
+    await expect(docsNav.getByRole("link", { name: "Accordion" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(docsNav.getByRole("link", { name: "ActionBar" })).toBeVisible();
+    await expect(docsNav.getByText("Overview", { exact: true })).toHaveCount(0);
+    await expect(docsNav.getByText("Navigation & Structure", { exact: true })).toHaveCount(0);
+    await expect(docsNav.getByText("Visual parity", { exact: true })).toHaveCount(0);
+
     const main = page.locator(".s2-main");
     await expect
       .poll(() =>

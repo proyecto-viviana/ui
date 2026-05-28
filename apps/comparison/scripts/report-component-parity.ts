@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-import { componentGroupDefinitions } from "../src/data/component-groups";
 import { componentControlGroups } from "../src/data/component-controls";
 import { comparisonEntries } from "../src/data/comparison-manifest";
 import { reactSpectrumCatalogue } from "../src/data/react-spectrum-catalogue";
@@ -139,12 +138,10 @@ const comparisonEntriesBySlug = new Map(comparisonEntries.map((entry) => [entry.
 const officialSlugs = new Set(officialEntriesBySlug.keys());
 const comparisonSlugs = new Set(comparisonEntriesBySlug.keys());
 const controlGroupSlugs = new Set(Object.keys(componentControlGroups));
-const groupedSlugCounts = new Map<string, number>();
+const sidebarSlugCounts = new Map<string, number>();
 
-for (const group of componentGroupDefinitions) {
-  for (const slug of group.slugs) {
-    groupedSlugCounts.set(slug, (groupedSlugCounts.get(slug) ?? 0) + 1);
-  }
+for (const entry of comparisonEntries) {
+  sidebarSlugCounts.set(entry.slug, (sidebarSlugCounts.get(entry.slug) ?? 0) + 1);
 }
 
 const reactStyledFixtureSlugs = readObjectLiteralKeys(
@@ -163,16 +160,16 @@ const extraManifestEntries = comparisonEntries
   .filter((entry) => !officialSlugs.has(entry.slug))
   .map((entry) => ({ slug: entry.slug, title: entry.title }));
 const missingSidebarEntries = reactSpectrumCatalogue
-  .filter((entry) => !groupedSlugCounts.has(entry.slug))
+  .filter((entry) => !sidebarSlugCounts.has(entry.slug))
   .map((entry) => ({ slug: entry.slug, title: entry.title }));
-const duplicateSidebarEntries = [...groupedSlugCounts]
+const duplicateSidebarEntries = [...sidebarSlugCounts]
   .filter(([, count]) => count > 1)
   .map(([slug, count]) => ({
     slug,
     title: titleForSlug(slug),
-    detail: `${count} sidebar groups`,
+    detail: `${count} sidebar entries`,
   }));
-const unknownSidebarEntries = [...groupedSlugCounts.keys()]
+const unknownSidebarEntries = [...sidebarSlugCounts.keys()]
   .filter((slug) => !officialSlugs.has(slug))
   .map((slug) => ({ slug, title: slug }));
 const missingControlGroups = reactSpectrumCatalogue
@@ -236,7 +233,7 @@ console.log("Comparison component parity audit");
 console.log(`Official S2 catalogue entries: ${reactSpectrumCatalogue.length}`);
 console.log(`Comparison manifest entries: ${comparisonEntries.length}`);
 console.log(
-  `Sidebar grouped official entries: ${reactSpectrumCatalogue.length - missingSidebarEntries.length}`,
+  `Sidebar official entries: ${reactSpectrumCatalogue.length - missingSidebarEntries.length}`,
 );
 console.log(
   `Official entries with modeled controls: ${
@@ -264,9 +261,9 @@ printGapSection(
   missingManifestEntries,
 );
 printGapSection("Comparison manifest entries outside official S2 catalogue", extraManifestEntries);
-printGapSection("Official entries missing from sidebar grouping", missingSidebarEntries);
-printGapSection("Sidebar entries duplicated across groups", duplicateSidebarEntries);
-printGapSection("Sidebar entries outside official S2 catalogue", unknownSidebarEntries);
+printGapSection("Official entries missing from sidebar navigation", missingSidebarEntries);
+printGapSection("Sidebar navigation entries duplicated", duplicateSidebarEntries);
+printGapSection("Sidebar navigation entries outside official S2 catalogue", unknownSidebarEntries);
 printGapSection("Official entries missing modeled control groups", missingControlGroups);
 printGapSection("Official entries with gap control groups", gapControlGroups);
 printGapSection(

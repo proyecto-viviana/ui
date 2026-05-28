@@ -1,4 +1,5 @@
 import {
+  focusRing,
   style,
   type StyleString,
 } from "@proyecto-viviana/solid-spectrum/style" with { type: "macro" };
@@ -634,6 +635,7 @@ export const docsNavRoot = style({
   display: "grid",
   gap: 0,
   font: "ui",
+  minWidth: 0,
   gridAutoFlow: {
     "@media (max-width: 860px)": "row",
   },
@@ -648,26 +650,64 @@ export const docsNavRoot = style({
   },
 });
 
-export const docsNavHeading = style({
-  marginTop: {
-    default: 24,
-    ":first-child": 0,
-  },
-  marginBottom: 8,
-  color: "neutral",
-  font: "title",
+export const docsNavSection = style({
+  display: "grid",
+  minWidth: "[185px]",
 });
 
-export const docsNavLink = style({
-  display: "inline-flex",
+export const docsNavSectionSummary = style({
+  display: "flex",
   alignItems: "center",
   minHeight: 32,
   paddingX: 4,
+  color: "neutral",
+  font: "ui",
+  fontWeight: "bold",
+  cursor: "pointer",
+  listStyleType: "none",
+});
+
+export const docsNavSectionPanel = style({
+  minWidth: 0,
+});
+
+export const docsNavSectionPanelInner = style({
+  paddingStart: "[18px]",
+});
+
+export const docsNavList = style({
+  listStyleType: "none",
+  padding: 0,
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  width: "full",
+  boxSizing: "border-box",
+});
+
+export const docsNavItem = style({
+  minWidth: 0,
+});
+
+export const docsNavLink = style({
+  ...focusRing(),
+  display: "flex",
+  alignItems: "center",
+  gap: "[6px]",
+  width: "full",
+  boxSizing: "border-box",
+  minHeight: 32,
+  paddingX: 4,
+  borderRadius: "default",
   color: {
     default: "neutral",
     ":hover": "neutral",
   },
+  font: "ui",
+  fontWeight: "normal",
   textDecoration: "none",
+  transition: "default",
 });
 
 export const docsNavLinkCurrent = style({
@@ -675,81 +715,22 @@ export const docsNavLinkCurrent = style({
   fontWeight: "bold",
 });
 
-export const docsNavGroup = style({
-  display: "grid",
-  gap: "[1px]",
-  marginY: 2,
-});
-
-export const docsNavGroupHeader = style({
-  minWidth: 0,
-  gap: 8,
-});
-
-export const docsNavGroupTitle = style({
-  minWidth: 0,
-});
-
-export const docsNavGroupLabel = style({
+export const docsNavLinkText = style({
   minWidth: 0,
   truncate: true,
 });
 
-export const docsNavCount = style({
-  justifySelf: "end",
-});
-
-export const docsNavGroupPanel = style({
-  borderStartWidth: 1,
-  borderStyle: "solid",
-  borderColor: "gray-300",
-});
-
-export const docsNavGroupLinks = style({
-  display: "grid",
-  gap: "[1px]",
-});
-
-export const docsNavGroupLink = style({
-  paddingStart: 4,
-});
-
-export const docsNavGroupSummary = style({
-  display: "grid",
-  gridTemplateColumns: "[minmax(0, 1fr) auto 12px]",
-  alignItems: "center",
-  gap: 8,
-  minHeight: 32,
-  paddingY: 4,
-  paddingX: 4,
-  color: "neutral",
-  font: "detail",
-  cursor: "pointer",
-  listStyleType: "none",
-});
-
-export const docsNavGroupFallbackLinks = style({
-  display: "grid",
-  gap: "[1px]",
-  paddingStart: "[10px]",
-  paddingBottom: 8,
-  borderStartWidth: 1,
-  borderStyle: "solid",
-  borderColor: "gray-300",
-});
-
-export const docsNavCountFallback = style({
-  minWidth: 24,
-  paddingX: "[6px]",
-  paddingY: "[1px]",
-  borderWidth: 1,
-  borderStyle: "solid",
-  borderColor: "gray-300",
+export const docsNavIndicator = style({
+  width: 2,
+  height: "[1lh]",
+  flexShrink: 0,
   borderRadius: "full",
-  color: "neutral-subdued",
-  font: "ui-sm",
-  fontWeight: "bold",
-  textAlign: "center",
+  backgroundColor: "transparent",
+  transition: "default",
+});
+
+export const docsNavIndicatorCurrent = style({
+  backgroundColor: "gray-800",
 });
 
 export const docsTocRoot = style({

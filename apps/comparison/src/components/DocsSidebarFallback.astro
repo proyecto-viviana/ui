@@ -1,15 +1,17 @@
 ---
-import { groupComparisonEntries } from "@comparison/data/component-groups";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
 import {
-  docsNavGroup,
-  docsNavGroupFallbackLinks,
-  docsNavGroupLink,
-  docsNavGroupSummary,
-  docsNavHeading,
+  docsNavIndicator,
+  docsNavIndicatorCurrent,
+  docsNavItem,
   docsNavLink,
   docsNavLinkCurrent,
+  docsNavLinkText,
+  docsNavList,
   docsNavRoot,
+  docsNavSection,
+  docsNavSectionPanelInner,
+  docsNavSectionSummary,
   staticClassName,
 } from "./solid/chrome/styles";
 
@@ -20,62 +22,50 @@ export interface Props {
   referenceUrl?: string;
 }
 
-const { activeSlug, navigationLabel, referenceLabel, referenceUrl } = Astro.props;
+const { activeSlug, navigationLabel } = Astro.props;
 const normalizedActiveSlug = comparisonEntries.some((entry) => entry.slug === activeSlug)
   ? (activeSlug as ComparisonSlug)
   : undefined;
-const isIndexPage = normalizedActiveSlug == null;
-const visualParityHref = normalizedActiveSlug ? "#visual-state-coverage" : "/components/button";
-const apiCoverageHref = normalizedActiveSlug ? "#api" : "/components/button#api";
-const componentGroups = groupComparisonEntries(comparisonEntries);
 const navRootClass = staticClassName(docsNavRoot);
-const navGroupClass = staticClassName(docsNavGroup);
-const navGroupSummaryClass = staticClassName(docsNavGroupSummary);
-const navGroupFallbackLinksClass = staticClassName(docsNavGroupFallbackLinks);
-const navHeadingClass = staticClassName(docsNavHeading);
+const navSectionClass = staticClassName(docsNavSection);
+const navSectionSummaryClass = staticClassName(docsNavSectionSummary);
+const navSectionPanelInnerClass = staticClassName(docsNavSectionPanelInner);
+const navListClass = staticClassName(docsNavList);
+const navItemClass = staticClassName(docsNavItem);
 const navLinkClass = staticClassName(docsNavLink);
 const navLinkCurrentClass = staticClassName(docsNavLinkCurrent);
-const navGroupLinkClass = staticClassName(docsNavGroupLink);
+const navLinkTextClass = staticClassName(docsNavLinkText);
+const navIndicatorClass = staticClassName(docsNavIndicator);
+const navIndicatorCurrentClass = staticClassName(docsNavIndicatorCurrent);
 ---
 
-<nav class:list={["s2-nav s2-nav--grouped", navRootClass]} aria-label={navigationLabel ?? "Documentation"}>
-  <p class={navHeadingClass}>Overview</p>
-  <a
-    href="/"
-    class:list={[navLinkClass, isIndexPage && navLinkCurrentClass]}
-    aria-current={isIndexPage ? "page" : undefined}
-  >
-    Getting started
-  </a>
-  <p class={navHeadingClass}>Components</p>
-  {componentGroups.map((group, index) => (
-    <details
-      class:list={["s2-nav-group", navGroupClass]}
-      open={isIndexPage ? index === 0 : group.entries.some((item) => item.slug === normalizedActiveSlug)}
-    >
-      <summary class={navGroupSummaryClass}>
-        <span>{group.title}</span>
-      </summary>
-      <div class:list={["s2-nav-group-links", navGroupFallbackLinksClass]}>
-        {group.entries.map((item) => (
-          <a
-            href={`/components/${item.slug}`}
-            class:list={[
-              navLinkClass,
-              navGroupLinkClass,
-              item.slug === normalizedActiveSlug && navLinkCurrentClass,
-            ]}
-            aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
-          >
-            {item.title}
-          </a>
+<nav class:list={["s2-nav", navRootClass]} aria-label={navigationLabel ?? "Documentation"}>
+  <details class:list={["s2-nav-section", navSectionClass]} open>
+    <summary class:list={["s2-nav-section-summary", navSectionSummaryClass]}>
+      Components
+    </summary>
+    <div class={navSectionPanelInnerClass}>
+      <ul class:list={["s2-nav-list", navListClass]}>
+        {comparisonEntries.map((item) => (
+          <li class={navItemClass}>
+            <a
+              href={`/components/${item.slug}`}
+              class:list={["s2-nav-link", navLinkClass, item.slug === normalizedActiveSlug && navLinkCurrentClass]}
+              aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
+            >
+              <span
+                aria-hidden="true"
+                class:list={[
+                  "s2-nav-link-indicator",
+                  navIndicatorClass,
+                  item.slug === normalizedActiveSlug && navIndicatorCurrentClass,
+                ]}
+              />
+              <span class={navLinkTextClass}>{item.title}</span>
+            </a>
+          </li>
         ))}
-      </div>
-    </details>
-  ))}
-  <p class={navHeadingClass}>Guides</p>
-  <a href={visualParityHref} class={navLinkClass}>Visual parity</a>
-  <a href={apiCoverageHref} class={navLinkClass}>API coverage</a>
-  <p class={navHeadingClass}>Reference</p>
-  {referenceUrl ? <a href={referenceUrl} class={navLinkClass}>{referenceLabel ?? "S2 docs"}</a> : null}
+      </ul>
+    </div>
+  </details>
 </nav>
