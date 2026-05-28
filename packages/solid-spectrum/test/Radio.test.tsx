@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { RadioGroup, Radio } from "../src/radio";
+import { Form } from "../src/form";
+import { RadioGroup, Radio, RadioContext, RadioGroupContext } from "../src/radio";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
 
@@ -288,34 +289,36 @@ describe("RadioGroup", () => {
   });
 
   describe("sizes", () => {
-    it("renders with default md size", () => {
+    it("renders with default M size", () => {
       render(() => (
         <RadioGroup aria-label="Test group">
           <Radio value="a">Option A</Radio>
         </RadioGroup>
       ));
       const group = screen.getByRole("radiogroup");
-      expect(group).toHaveAttribute("data-size", "md");
+      expect(group).toHaveAttribute("data-size", "M");
     });
 
-    it("renders with sm size", () => {
+    it("renders with S2 and legacy size aliases", () => {
       render(() => (
-        <RadioGroup aria-label="Test group" size="sm">
-          <Radio value="a">Option A</Radio>
-        </RadioGroup>
+        <>
+          <RadioGroup aria-label="Small group" size="sm">
+            <Radio value="a">Option A</Radio>
+          </RadioGroup>
+          <RadioGroup aria-label="Large group" size="XL">
+            <Radio value="b">Option B</Radio>
+          </RadioGroup>
+        </>
       ));
-      const group = screen.getByRole("radiogroup");
-      expect(group).toHaveAttribute("data-size", "sm");
-    });
 
-    it("renders with lg size", () => {
-      render(() => (
-        <RadioGroup aria-label="Test group" size="lg">
-          <Radio value="a">Option A</Radio>
-        </RadioGroup>
-      ));
-      const group = screen.getByRole("radiogroup");
-      expect(group).toHaveAttribute("data-size", "lg");
+      expect(screen.getByRole("radiogroup", { name: "Small group" })).toHaveAttribute(
+        "data-size",
+        "S",
+      );
+      expect(screen.getByRole("radiogroup", { name: "Large group" })).toHaveAttribute(
+        "data-size",
+        "XL",
+      );
     });
   });
 
@@ -348,6 +351,26 @@ describe("RadioGroup", () => {
         </RadioGroup>
       ));
       expect(screen.getByText("Please select an option")).toBeInTheDocument();
+    });
+
+    it("renders S2 label placement, necessity label, and contextual help", () => {
+      render(() => (
+        <RadioGroup
+          label="Plan"
+          labelPosition="side"
+          labelAlign="end"
+          necessityIndicator="label"
+          isRequired
+          contextualHelp={<span>Billing help</span>}
+        >
+          <Radio value="starter">Starter</Radio>
+        </RadioGroup>
+      ));
+
+      const group = screen.getByRole("radiogroup", { name: /Plan/ });
+      expect(group).toBeInTheDocument();
+      expect(screen.getByText("(required)")).toBeInTheDocument();
+      expect(screen.getByText("Billing help")).toBeInTheDocument();
     });
 
     it("supports render-prop children in Radio", () => {
@@ -432,10 +455,8 @@ describe("RadioGroup", () => {
       ));
 
       const group = screen.getByRole("radiogroup");
-      const error = screen.getByText("Please select an option");
-      const errorId = error.getAttribute("id");
-      expect(errorId).toBeTruthy();
-      expect(group.getAttribute("aria-describedby") ?? "").not.toContain(errorId!);
+      expect(screen.queryByText("Please select an option")).not.toBeInTheDocument();
+      expect(group.getAttribute("aria-describedby") ?? "").not.toContain("error");
     });
 
     it("includes error id in aria-describedby when group is invalid", () => {
@@ -452,7 +473,7 @@ describe("RadioGroup", () => {
 
       const group = screen.getByRole("radiogroup");
       const error = screen.getByText("Please select an option");
-      const errorId = error.getAttribute("id");
+      const errorId = error.closest('[role="alert"]')?.getAttribute("id");
       expect(errorId).toBeTruthy();
       expect(group.getAttribute("aria-describedby") ?? "").toContain(errorId!);
     });
@@ -495,6 +516,121 @@ describe("RadioGroup", () => {
       ));
       const group = screen.getByRole("radiogroup");
       expect(group).toHaveAttribute("aria-required", "true");
+    });
+
+    it("defaults required radio inputs to native validation", () => {
+      render(() => (
+        <RadioGroup label="Plans" name="plan" form="checkout" isRequired>
+          <Radio value="starter">Starter</Radio>
+          <Radio value="pro">Pro</Radio>
+        </RadioGroup>
+      ));
+
+      const starter = screen.getByRole("radio", { name: "Starter" });
+      expect(starter).toHaveAttribute("name", "plan");
+      expect(starter).toHaveAttribute("form", "checkout");
+      expect(starter).toHaveAttribute("required");
+      expect(starter).not.toHaveAttribute("aria-required");
+    });
+
+    it("keeps aria validation required state on the group, not child inputs", () => {
+      render(() => (
+        <RadioGroup label="Plans" name="plan" isRequired validationBehavior="aria">
+          <Radio value="starter">Starter</Radio>
+          <Radio value="pro">Pro</Radio>
+        </RadioGroup>
+      ));
+
+      const starter = screen.getByRole("radio", { name: "Starter" });
+      expect(screen.getByRole("radiogroup")).toHaveAttribute("aria-required", "true");
+      expect(starter).toHaveAttribute("name", "plan");
+      expect(starter).not.toHaveAttribute("required");
+      expect(starter).not.toHaveAttribute("aria-required");
+    });
+  });
+
+  describe("Spectrum context and Form integration", () => {
+    it("merges RadioGroupContext props, unsafe style, and refs", () => {
+      const ref = vi.fn();
+
+      render(() => (
+        <RadioGroupContext.Provider
+          value={{
+            label: "Context plan",
+            defaultValue: "pro",
+            name: "plan",
+            form: "checkout",
+            UNSAFE_className: "context-group",
+            UNSAFE_style: { margin: "2px" },
+            ref,
+          }}
+        >
+          <RadioGroup>
+            <Radio value="starter">Starter</Radio>
+            <Radio value="pro">Pro</Radio>
+          </RadioGroup>
+        </RadioGroupContext.Provider>
+      ));
+
+      const group = screen.getByRole("radiogroup", { name: "Context plan" });
+      const pro = screen.getByRole("radio", { name: "Pro" });
+
+      expect(group).toHaveClass("context-group");
+      expect(group).toHaveStyle({ margin: "2px" });
+      expect(ref).toHaveBeenCalledWith(group);
+      expect(pro).toBeChecked();
+      expect(pro).toHaveAttribute("name", "plan");
+      expect(pro).toHaveAttribute("form", "checkout");
+    });
+
+    it("merges RadioContext props, unsafe style, and refs", () => {
+      const ref = vi.fn();
+      const inputRef = vi.fn();
+
+      render(() => (
+        <RadioGroup label="Plans">
+          <RadioContext.Provider
+            value={{
+              value: "starter",
+              children: "Starter",
+              UNSAFE_className: "context-radio",
+              UNSAFE_style: { margin: "1px" },
+              ref,
+              inputRef,
+            }}
+          >
+            <Radio />
+          </RadioContext.Provider>
+        </RadioGroup>
+      ));
+
+      const radio = screen.getByRole("radio", { name: "Starter" }) as HTMLInputElement;
+      const root = radio.closest(".context-radio") as HTMLElement;
+
+      expect(root).toHaveClass("context-radio");
+      expect(root).toHaveStyle({ margin: "1px" });
+      expect(ref).toHaveBeenCalledWith(root);
+      expect(inputRef).toHaveBeenCalledWith(radio);
+    });
+
+    it("inherits Form props on RadioGroup without forcing required on selected children", () => {
+      render(() => (
+        <Form isRequired isDisabled necessityIndicator="label" size="XL">
+          <RadioGroup label="Plans" defaultValue="starter">
+            <Radio value="starter">Starter</Radio>
+            <Radio value="pro">Pro</Radio>
+          </RadioGroup>
+        </Form>
+      ));
+
+      const group = screen.getByRole("radiogroup", { name: /Plans/ });
+      const starter = screen.getByRole("radio", { name: "Starter" });
+
+      expect(group).toHaveAttribute("data-size", "XL");
+      expect(starter).toBeDisabled();
+      expect(starter).toBeChecked();
+      expect(starter).not.toHaveAttribute("aria-required");
+      expect(screen.getByText("(required)")).toBeInTheDocument();
     });
   });
 

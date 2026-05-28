@@ -61,9 +61,10 @@ async function radioGroupGeometry(root: Locator) {
     const labelText = selectedLabel == null ? null : window.getComputedStyle(selectedLabel);
     const circleStyle = circle == null ? null : window.getComputedStyle(circle);
     const circleRect = circle?.getBoundingClientRect();
-    const helpText = Array.from(element.querySelectorAll<HTMLElement>("div")).find((candidate) =>
-      candidate.textContent?.includes("Choose a plan"),
-    );
+    const helpText = Array.from(element.querySelectorAll<HTMLElement>("div")).find((candidate) => {
+      const text = candidate.textContent ?? "";
+      return text.includes("Choose a plan") || text.includes("Select one plan");
+    });
     const itemContainer = group?.querySelector<HTMLElement>(':scope > div[class*="sd13"]');
     const itemContainerStyle =
       itemContainer == null ? null : window.getComputedStyle(itemContainer);
@@ -83,6 +84,26 @@ async function radioGroupGeometry(root: Locator) {
       circleWillChange: circleStyle?.willChange ?? null,
       helpText: helpText?.textContent?.trim() ?? null,
       invalid: group?.getAttribute("data-invalid") === "true",
+    };
+  });
+}
+
+async function radioGroupFieldSurface(root: Locator) {
+  return root.evaluate((element) => {
+    const group = element.querySelector<HTMLElement>('[role="radiogroup"]');
+    const labelId = group?.getAttribute("aria-labelledby") ?? "";
+    const label = labelId ? element.ownerDocument.getElementById(labelId) : null;
+    const input = element.querySelector<HTMLInputElement>('input[type="radio"]');
+    const contextualHelpButtonCount = element.querySelectorAll("button").length;
+
+    return {
+      labelText: label?.textContent?.replace(/\s+/g, " ").trim() ?? null,
+      groupRequired: group?.getAttribute("aria-required") ?? null,
+      inputName: input?.getAttribute("name") ?? null,
+      inputForm: input?.getAttribute("form") ?? null,
+      inputRequired: input?.hasAttribute("required") ?? false,
+      inputAriaRequired: input?.getAttribute("aria-required") ?? null,
+      contextualHelpButtonCount,
     };
   });
 }
@@ -142,6 +163,47 @@ test.describe("comparison RadioGroup visual parity", () => {
     }
   });
 
+  test("default state matches React Spectrum geometry", async ({ page }) => {
+    const fixtures = await radioGroupFixtures(page);
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      selectedValue: "starter",
+      orientation: "vertical",
+      size: "M",
+      labelPosition: "top",
+      labelAlign: "start",
+      necessityIndicator: "icon",
+      isInvalid: false,
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      selectedValue: "starter",
+      orientation: "vertical",
+      size: "M",
+      labelPosition: "top",
+      labelAlign: "start",
+      necessityIndicator: "icon",
+      isInvalid: false,
+    });
+
+    const react = await radioGroupGeometry(fixtures.reactRoot);
+    const solid = await radioGroupGeometry(fixtures.solidRoot);
+
+    expect(solid.selectedValue).toBe(react.selectedValue);
+    expect(solid.selectedChecked).toBe(react.selectedChecked);
+    expect(solid.groupOrientation).toBe(react.groupOrientation);
+    expect(solid.itemFlexDirection).toBe(react.itemFlexDirection);
+    expect(solid.labelColor).toBe(react.labelColor);
+    expect(solid.circleBorderWidth).toBe(react.circleBorderWidth);
+    expect(solid.circleBorderColor).toBe(react.circleBorderColor);
+    expect(solid.circleBackground).toBe(react.circleBackground);
+    expect(solid.circleTransform).toBe(react.circleTransform);
+    expect(solid.circleWillChange).toBe(react.circleWillChange);
+    expect(solid.helpText).toBe(react.helpText);
+    expect(solid.invalid).toBe(react.invalid);
+    expectNear(solid.circleWidth, react.circleWidth, 0.75, "Default radio circle width");
+    expectNear(solid.circleHeight, react.circleHeight, 0.75, "Default radio circle height");
+  });
+
   test("selected emphasized XL invalid horizontal state matches React Spectrum geometry", async ({
     page,
   }) => {
@@ -184,5 +246,48 @@ test.describe("comparison RadioGroup visual parity", () => {
     expect(solid.invalid).toBe(react.invalid);
     expectNear(solid.circleWidth, react.circleWidth, 0.75, "Radio circle width");
     expectNear(solid.circleHeight, react.circleHeight, 0.75, "Radio circle height");
+  });
+
+  test("side label, required label, form props, and aria validation match React Spectrum", async ({
+    page,
+  }) => {
+    const fixtures = await radioGroupFixtures(
+      page,
+      "?labelPosition=side&labelAlign=end&necessityIndicator=label&isRequired=true&name=plan&form=checkout&validationBehavior=aria&withContextualHelp=true",
+    );
+
+    expect(await controlProps(fixtures.reactRoot)).toMatchObject({
+      labelPosition: "side",
+      labelAlign: "end",
+      necessityIndicator: "label",
+      isRequired: true,
+      name: "plan",
+      form: "checkout",
+      validationBehavior: "aria",
+      withContextualHelp: true,
+    });
+    expect(await controlProps(fixtures.solidRoot)).toMatchObject({
+      labelPosition: "side",
+      labelAlign: "end",
+      necessityIndicator: "label",
+      isRequired: true,
+      name: "plan",
+      form: "checkout",
+      validationBehavior: "aria",
+      withContextualHelp: true,
+    });
+
+    const react = await radioGroupFieldSurface(fixtures.reactRoot);
+    const solid = await radioGroupFieldSurface(fixtures.solidRoot);
+
+    expect(solid.labelText).toBe(react.labelText);
+    expect(solid.labelText).toContain("(required)");
+    expect(solid.groupRequired).toBe(react.groupRequired);
+    expect(solid.inputName).toBe(react.inputName);
+    expect(solid.inputForm).toBe(react.inputForm);
+    expect(solid.inputRequired).toBe(react.inputRequired);
+    expect(solid.inputAriaRequired).toBe(react.inputAriaRequired);
+    expect(solid.contextualHelpButtonCount).toBe(react.contextualHelpButtonCount);
+    expect(solid.contextualHelpButtonCount).toBeGreaterThan(0);
   });
 });

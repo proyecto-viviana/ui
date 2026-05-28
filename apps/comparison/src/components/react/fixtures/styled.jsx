@@ -5283,8 +5283,22 @@ function ReactRadioGroupDemo() {
         value,
         size: demoProps.size,
         orientation: demoProps.orientation,
+        labelPosition: demoProps.labelPosition,
+        labelAlign: demoProps.labelAlign,
+        necessityIndicator: demoProps.necessityIndicator,
+        name: demoProps.name || undefined,
+        form: demoProps.form || undefined,
+        validationBehavior: demoProps.validationBehavior || undefined,
         description: demoProps.description,
         errorMessage: demoProps.errorMessage,
+        contextualHelp: demoProps.withContextualHelp
+          ? jsxs(SpectrumContextualHelp, {
+              children: [
+                jsx(SpectrumHeading, { children: "Plan help" }),
+                jsx(SpectrumContent, { children: "Choose the plan that matches this workspace." }),
+              ],
+            })
+          : undefined,
         isEmphasized: demoProps.isEmphasized,
         isDisabled: demoProps.isDisabled,
         isReadOnly: demoProps.isReadOnly,

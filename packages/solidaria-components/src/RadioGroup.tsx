@@ -125,7 +125,10 @@ export interface RadioRenderProps {
 export interface RadioGroupProps
   extends
     Omit<AriaRadioGroupProps, "children" | "label" | "description" | "errorMessage">,
-    Pick<RadioGroupStateProps, "value" | "defaultValue" | "onChange">,
+    Pick<
+      RadioGroupStateProps,
+      "value" | "defaultValue" | "onChange" | "validationState" | "validate"
+    >,
     SlotProps {
   /** The children of the component. A function may be provided to receive render props. */
   children?: RenderChildren<RadioGroupRenderProps>;
@@ -220,6 +223,11 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     isReadOnly: mergedProps.isReadOnly,
     isRequired: mergedProps.isRequired,
     isInvalid: mergedProps.isInvalid,
+    validationState: mergedProps.validationState,
+    validate: mergedProps.validate,
+    validationBehavior: mergedProps.validationBehavior,
+    name: mergedProps.name,
+    form: mergedProps.form,
   }));
 
   // Create radio group aria props

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import {
   children as resolveChildren,
-  mergeProps as solidMergeProps,
+  mergeProps,
   Show,
   splitProps,
   type JSX,
@@ -27,27 +27,49 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
+import { FormContext, useFormProps, useIsInForm } from "../form";
+import {
+  getSlottedContextProps,
+  mergeContextRefs,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+  type RefLike,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type RadioGroupOrientation = "horizontal" | "vertical";
 export type RadioGroupSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2RadioGroupSize = "S" | "M" | "L" | "XL";
+export type RadioGroupLabelPosition = "top" | "side";
+export type RadioGroupLabelAlign = "start" | "end";
+export type RadioGroupNecessityIndicator = "icon" | "label";
 
-interface RadioContextValue {
-  size: S2RadioGroupSize;
+interface RadioStyleContextValue {
+  size?: RadioGroupSize;
   isEmphasized?: boolean;
 }
 
-const RadioStyleContext = createContext<RadioContextValue>({ size: "M" });
+const RadioStyleContext = createContext<RadioStyleContextValue>({});
 
 export interface RadioGroupProps extends Omit<
   HeadlessRadioGroupProps,
-  "class" | "children" | "style"
+  "class" | "children" | "style" | "slot" | "ref"
 > {
   /** The size of the RadioGroup. */
   size?: RadioGroupSize;
   /** The axis the radio elements should align with. */
   orientation?: RadioGroupOrientation;
+  /** The label's overall position relative to the radio items. */
+  labelPosition?: RadioGroupLabelPosition;
+  /** The label's horizontal alignment relative to the radio items. */
+  labelAlign?: RadioGroupLabelAlign;
+  /** Whether the required state should be shown as an icon or text label. */
+  necessityIndicator?: RadioGroupNecessityIndicator;
+  /** A contextual help element to place next to the label. */
+  contextualHelp?: JSX.Element;
   /** Whether the RadioGroup should be displayed with an emphasized style. */
   isEmphasized?: boolean;
   /** Spectrum-defined generated classes. */
@@ -66,9 +88,20 @@ export interface RadioGroupProps extends Omit<
   errorMessage?: JSX.Element;
   /** Children radios. */
   children?: JSX.Element;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the radio group root element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
-export interface RadioProps extends Omit<HeadlessRadioProps, "class" | "children" | "style"> {
+export interface RadioProps extends Omit<
+  HeadlessRadioProps,
+  "class" | "children" | "render" | "style" | "slot" | "ref" | "inputRef"
+> {
+  /** The size of the radio. Usually inherited from the RadioGroup or Form. */
+  size?: RadioGroupSize;
+  /** Whether the radio should be displayed with an emphasized style. */
+  isEmphasized?: boolean;
   /** Spectrum-defined generated classes. */
   styles?: StyleString;
   /** Additional CSS class name. Use only as a last resort. */
@@ -79,6 +112,12 @@ export interface RadioProps extends Omit<HeadlessRadioProps, "class" | "children
   class?: string;
   /** Label text for the element. */
   children?: JSX.Element;
+  /** Slot name when used in a Spectrum context. */
+  slot?: string | null;
+  /** Ref for the underlying label element. */
+  ref?: RefLike<HTMLLabelElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
 }
 
 interface RadioStyleProps {
@@ -91,6 +130,9 @@ interface RadioStyleProps {
 
 type RadioStyleState = RadioRenderProps & RadioStyleProps;
 type RadioGroupStyleState = RadioGroupRenderProps & RadioStyleProps;
+
+export const RadioContext = createContext<SpectrumContextValue<RadioProps>>(null);
+export const RadioGroupContext = createContext<SpectrumContextValue<RadioGroupProps>>(null);
 
 const radioGroupRoot = style<RadioGroupStyleState>(
   {
@@ -149,6 +191,12 @@ const radioGroupHelpText = style<RadioGroupStyleState>({
   alignItems: "baseline",
   gap: "text-to-visual",
   font: controlFont(),
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
   color: {
     default: "neutral-subdued",
     isInvalid: {
@@ -160,6 +208,21 @@ const radioGroupHelpText = style<RadioGroupStyleState>({
       forcedColors: "GrayText",
     },
   },
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+});
+
+const radioGroupRequiredIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const radioGroupNoWrap = style({
+  whiteSpace: "nowrap",
 });
 
 const wrapper = style<RadioStyleState & { isInForm?: boolean }>(
@@ -238,10 +301,6 @@ function normalizeRadioSize(size: RadioGroupSize | undefined): S2RadioGroupSize 
   }
 }
 
-function radioDataSize(size: RadioGroupSize | undefined): RadioGroupSize {
-  return size ?? "md";
-}
-
 function radioPressScaleStyle(
   element: HTMLDivElement | undefined,
   renderProps: RadioRenderProps,
@@ -256,18 +315,36 @@ function radioPressScaleStyle(
   return pressStyle;
 }
 
+function requiredIconStyle(size: S2RadioGroupSize): JSX.CSSProperties {
+  const pixelSize = size === "L" || size === "XL" ? 10 : 8;
+  return {
+    width: `${pixelSize}px`,
+    height: `${pixelSize}px`,
+  };
+}
+
 /**
  * Radio groups allow users to select a single option from a list of mutually exclusive options.
  */
 export function RadioGroup(props: RadioGroupProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const isInForm = useIsInForm();
+  const formContext = useContext(FormContext);
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(RadioGroupContext), props.slot);
   const defaultProps: Partial<RadioGroupProps> = {
     orientation: "vertical",
+    labelPosition: "top",
+    labelAlign: "start",
+    necessityIndicator: "icon",
   };
-  const merged = solidMergeProps(defaultProps, providerProps);
-  const [local, headlessProps] = splitProps(merged, [
+  const mergedProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "orientation",
+    "labelPosition",
+    "labelAlign",
+    "necessityIndicator",
+    "contextualHelp",
     "isEmphasized",
     "styles",
     "UNSAFE_className",
@@ -277,11 +354,25 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
     "description",
     "errorMessage",
     "children",
+    "slot",
+    "ref",
   ]);
   const size = () => normalizeRadioSize(local.size);
-  const labelId = createUniqueId();
-  const descriptionId = createUniqueId();
-  const errorId = createUniqueId();
+  const labelPosition = () => local.labelPosition ?? "top";
+  const labelAlign = () => local.labelAlign ?? "start";
+  const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const idBase = createUniqueId();
+  const labelId = `${idBase}-label`;
+  const descriptionId = `${idBase}-description`;
+  const errorId = `${idBase}-error`;
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
+
   const ariaDescribedBy = () => {
     const ids = [
       headlessProps["aria-describedby"],
@@ -293,17 +384,18 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
 
   const getClassName = (renderProps: RadioGroupRenderProps): string =>
     [
-      local.UNSAFE_className,
-      local.class,
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
       radioGroupRoot(
         {
           ...renderProps,
           size: size(),
-          labelPosition: "top",
-          labelAlign: "start",
-          isInForm: false,
+          labelPosition: labelPosition(),
+          labelAlign: labelAlign(),
+          isInForm,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
@@ -315,28 +407,76 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
           class={radioGroupLabelWrapper({
             ...renderProps,
             size: size(),
-            labelPosition: "top",
+            labelPosition: labelPosition(),
+            labelAlign: labelAlign(),
           })}
         >
           <span id={labelId} class={radioGroupLabel({ ...renderProps, size: size() })}>
             {local.label}
+            <Show when={headlessProps.isRequired || necessityIndicator() === "label"}>
+              <span class={radioGroupNoWrap}>
+                &nbsp;
+                <Show
+                  when={necessityIndicator() === "icon"}
+                  fallback={
+                    <span aria-hidden={headlessProps.isRequired ? true : undefined}>
+                      {headlessProps.isRequired ? "(required)" : "(optional)"}
+                    </span>
+                  }
+                >
+                  <AsteriskIcon
+                    size={size() === "S" ? "M" : size()}
+                    class={radioGroupRequiredIcon}
+                    style={requiredIconStyle(size())}
+                    aria-hidden="true"
+                  />
+                </Show>
+              </span>
+            </Show>
           </span>
+          <Show when={local.contextualHelp}>
+            <span data-slot="contextualHelp">{local.contextualHelp}</span>
+          </Show>
         </div>
       </Show>
-      <div class={radioGroupItems({ ...renderProps, size: size() })}>{local.children}</div>
+      <div
+        class={radioGroupItems({
+          ...renderProps,
+          size: size(),
+          orientation: local.orientation,
+        })}
+      >
+        <FormContext.Provider
+          value={{
+            ...(formContext ?? {}),
+            get size() {
+              return size();
+            },
+            isRequired: undefined,
+          }}
+        >
+          <RadioContext.Provider
+            value={{
+              get isEmphasized() {
+                return local.isEmphasized;
+              },
+            }}
+          >
+            {local.children}
+          </RadioContext.Provider>
+        </FormContext.Provider>
+      </div>
       <Show when={local.description && !renderProps.isInvalid}>
         <div id={descriptionId} class={radioGroupHelpText({ ...renderProps, size: size() })}>
           {local.description}
         </div>
       </Show>
-      <Show when={local.errorMessage}>
-        <div
-          id={errorId}
-          role="alert"
-          class={radioGroupHelpText({ ...renderProps, size: size(), isInvalid: true })}
-          style={{ display: renderProps.isInvalid ? undefined : "none" }}
-        >
-          {local.errorMessage}
+      <Show when={local.errorMessage && renderProps.isInvalid}>
+        <div id={errorId} role="alert" class={radioGroupHelpText({ ...renderProps, size: size() })}>
+          <CenterBaseline>
+            <AlertTriangleIcon aria-hidden="true" />
+          </CenterBaseline>
+          <span>{local.errorMessage}</span>
         </div>
       </Show>
     </>
@@ -346,7 +486,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
     <RadioStyleContext.Provider
       value={{
         get size() {
-          return size();
+          return local.size;
         },
         get isEmphasized() {
           return local.isEmphasized;
@@ -365,9 +505,11 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
         orientation={local.orientation}
         aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
         aria-describedby={ariaDescribedBy()}
+        ref={(element) => assignRootRef(element)}
+        slot={local.slot ?? undefined}
         class={getClassName}
-        style={local.UNSAFE_style}
-        data-size={radioDataSize(local.size)}
+        style={mergedUnsafeStyle()}
+        data-size={size()}
       >
         {renderChildren}
       </HeadlessRadioGroup>
@@ -379,36 +521,65 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
  * Radio buttons allow users to select a single option from a list of mutually exclusive options.
  */
 export function Radio(props: RadioProps): JSX.Element {
-  const providerProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(providerProps, [
+  const groupStyleContext = useContext(RadioStyleContext);
+  const isInForm = useIsInForm();
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(RadioContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "size",
+    "isEmphasized",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
     "class",
     "children",
+    "slot",
+    "ref",
+    "inputRef",
   ]);
-  const context = useContext(RadioStyleContext);
+  const size = () => normalizeRadioSize(local.size ?? groupStyleContext.size);
+  const isEmphasized = () => local.isEmphasized ?? groupStyleContext.isEmphasized;
   let circleElement: HTMLDivElement | undefined;
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLLabelElement> } | null)?.ref,
+    props.ref,
+  );
+  const assignInputRef = mergeContextRefs(
+    (contextProps as { inputRef?: RefLike<HTMLInputElement> } | null)?.inputRef,
+    props.inputRef,
+  );
 
   const getClassName = (renderProps: RadioRenderProps): string =>
     [
-      local.UNSAFE_className,
-      local.class,
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
       wrapper(
         {
           ...renderProps,
-          size: context.size,
-          isEmphasized: context.isEmphasized,
-          isInForm: false,
+          size: size(),
+          isEmphasized: isEmphasized(),
+          isInForm,
         },
-        local.styles,
+        mergedStyles(),
       ),
     ]
       .filter(Boolean)
       .join(" ");
 
   return (
-    <HeadlessRadio {...headlessProps} class={getClassName} style={local.UNSAFE_style}>
+    <HeadlessRadio
+      {...headlessProps}
+      ref={(element) => assignRootRef(element)}
+      inputRef={(element) => assignInputRef(element)}
+      slot={local.slot ?? undefined}
+      class={getClassName}
+      style={mergedUnsafeStyle()}
+    >
       {(renderProps) => {
         const resolvedChildren = resolveChildren(() =>
           typeof local.children === "function" ? local.children(renderProps) : local.children,
@@ -418,8 +589,8 @@ export function Radio(props: RadioProps): JSX.Element {
             ref={circleElement}
             class={circle({
               ...renderProps,
-              size: context.size,
-              isEmphasized: context.isEmphasized,
+              size: size(),
+              isEmphasized: isEmphasized(),
             })}
             style={radioPressScaleStyle(circleElement, renderProps)}
           />

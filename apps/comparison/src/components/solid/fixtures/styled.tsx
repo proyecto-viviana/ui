@@ -6154,6 +6154,14 @@ function SolidSpectrumRadioGroupDemo() {
       selectedValue: value(),
     }),
   );
+  const contextualHelp = createMemo(() =>
+    demoProps().withContextualHelp
+      ? hc(SolidSpectrumContextualHelp, {}, [
+          hc(SolidSpectrumHeading, { slot: "title" }, ["Plan help"]),
+          hc(SolidSpectrumContent, {}, ["Choose the plan that matches this workspace."]),
+        ])
+      : undefined,
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -6195,11 +6203,32 @@ function SolidSpectrumRadioGroupDemo() {
               get orientation() {
                 return demoProps().orientation;
               },
+              get labelPosition() {
+                return demoProps().labelPosition;
+              },
+              get labelAlign() {
+                return demoProps().labelAlign;
+              },
+              get necessityIndicator() {
+                return demoProps().necessityIndicator;
+              },
+              get name() {
+                return demoProps().name || undefined;
+              },
+              get form() {
+                return demoProps().form || undefined;
+              },
+              get validationBehavior() {
+                return demoProps().validationBehavior || undefined;
+              },
               get description() {
                 return demoProps().description;
               },
               get errorMessage() {
                 return demoProps().errorMessage;
+              },
+              get contextualHelp() {
+                return contextualHelp();
               },
               get isEmphasized() {
                 return demoProps().isEmphasized;

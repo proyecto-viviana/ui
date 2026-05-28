@@ -287,6 +287,7 @@ export function createRadio(
         describedByIds.push(groupData.descriptionId);
       }
       const ariaDescribedBy = describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
+      const validationBehavior = groupData?.validationBehavior ?? "native";
 
       return mergeProps(domProps(), interactions, {
         type: "radio" as const,
@@ -294,7 +295,7 @@ export function createRadio(
         form: groupData?.form,
         tabIndex: getTabIndex(),
         disabled: isDisabled(),
-        required: state.isRequired,
+        required: validationBehavior === "native" ? state.isRequired : undefined,
         checked: isSelected(),
         value: value(),
         onChange,

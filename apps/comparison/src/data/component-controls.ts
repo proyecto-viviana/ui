@@ -271,8 +271,12 @@ import {
 } from "./progress-demo";
 import {
   radioGroupDemoDefaults,
+  radioGroupLabelAlignOptions,
+  radioGroupLabelPositionOptions,
+  radioGroupNecessityIndicatorOptions,
   radioGroupOrientationOptions,
   radioGroupSizeOptions,
+  radioGroupValidationBehaviorOptions,
 } from "./radiogroup-demo";
 import {
   segmentedControlDemoDefaults,
@@ -2668,6 +2672,46 @@ const radioGroupControls: ComponentControlGroup = {
       options: options(radioGroupOrientationOptions),
     },
     {
+      name: "labelPosition",
+      label: "labelPosition",
+      kind: "radio",
+      defaultValue: radioGroupDemoDefaults.labelPosition,
+      options: options(radioGroupLabelPositionOptions),
+    },
+    {
+      name: "labelAlign",
+      label: "labelAlign",
+      kind: "radio",
+      defaultValue: radioGroupDemoDefaults.labelAlign,
+      options: options(radioGroupLabelAlignOptions),
+    },
+    {
+      name: "necessityIndicator",
+      label: "necessityIndicator",
+      kind: "radio",
+      defaultValue: radioGroupDemoDefaults.necessityIndicator,
+      options: options(radioGroupNecessityIndicatorOptions),
+    },
+    {
+      name: "name",
+      label: "name",
+      kind: "text",
+      defaultValue: radioGroupDemoDefaults.name,
+    },
+    {
+      name: "form",
+      label: "form",
+      kind: "text",
+      defaultValue: radioGroupDemoDefaults.form,
+    },
+    {
+      name: "validationBehavior",
+      label: "validationBehavior",
+      kind: "radio",
+      defaultValue: radioGroupDemoDefaults.validationBehavior,
+      options: options(radioGroupValidationBehaviorOptions),
+    },
+    {
       name: "description",
       label: "description",
       kind: "text",
@@ -2678,6 +2722,12 @@ const radioGroupControls: ComponentControlGroup = {
       label: "errorMessage",
       kind: "text",
       defaultValue: radioGroupDemoDefaults.errorMessage,
+    },
+    {
+      name: "withContextualHelp",
+      label: "contextualHelp",
+      kind: "switch",
+      defaultValue: radioGroupDemoDefaults.withContextualHelp,
     },
     {
       name: "isEmphasized",
@@ -2720,6 +2770,10 @@ const radioGroupControls: ComponentControlGroup = {
     "orientation",
     "description",
     "errorMessage",
+    "contextualHelp",
+    "name",
+    "form",
+    "validationBehavior",
     "isEmphasized",
     "isDisabled",
     "isReadOnly",
@@ -2728,6 +2782,7 @@ const radioGroupControls: ComponentControlGroup = {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "slot",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -2735,7 +2790,7 @@ const radioGroupControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 RadioGroup source control surface. The viewer drives label, selected value, S2 size, orientation, description/error text, emphasized treatment, and disabled/read-only/required/invalid states into both stacks.",
+  note: "Modeled from the S2 RadioGroup docs and source control surface. The viewer drives label, selected value, S2 size, orientation, label placement/alignment, necessity indicator, form name/form props, validation behavior, description/error text, contextualHelp, emphasized treatment, and disabled/read-only/required/invalid states into both stacks.",
 };
 
 const numberFieldControls: ComponentControlGroup = {
