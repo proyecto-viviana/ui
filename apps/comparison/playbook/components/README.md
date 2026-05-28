@@ -19,8 +19,9 @@ normalized to the current gate checklist.
 
 - Current accepted under the full gate model: Calendar, Checkbox, ColorArea,
   ColorField, ColorSlider, ColorWheel, ColorSwatch, ColorSwatchPicker,
-  Disclosure, Icons, Illustrations, IllustratedMessage, InlineAlert, ListView,
-  Popover, TagGroup, Toast, ToggleButton, ToggleButtonGroup, Tooltip, TreeView.
+  Disclosure, DropZone, Icons, Illustrations, IllustratedMessage, InlineAlert,
+  ListView, Popover, TagGroup, Toast, ToggleButton, ToggleButtonGroup, Tooltip,
+  TreeView.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -35,7 +36,7 @@ normalized to the current gate checklist.
   and Text.
 - Active current-gate pass: none selected.
 - Comparison-live with explicit release-hardening backfill gaps: Card/CardView.
-- Pre-pass only: none.
+- Pre-pass only: Provider.
 
 Current-gate normalization means the note contains the current
 `Acceptance Gate Checklist`, `Agent Workflow`, `Behavior State Machine`,
@@ -58,9 +59,9 @@ controls, validation notes, and current visual/asserted evidence.
 Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
-- Modeled viewer controls: 68/69 entries. Missing control group: Provider.
-- Validation notes: 60/69 entries. Missing notes: DropZone, NumberField,
-  Picker, Provider, RadioGroup, SearchField, Switch, TextArea, and TextField.
+- Modeled viewer controls: 69/69 entries.
+- Validation notes: 62/69 entries. Missing notes: NumberField, Picker,
+  RadioGroup, SearchField, Switch, TextArea, and TextField.
 - Current visual/asserted evidence: 69/69 entries.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
@@ -92,6 +93,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [ContextualHelp](./contextualhelp-validation-notes.md)
 - [Disclosure](./disclosure-validation-notes.md)
 - [Divider](./divider-validation-notes.md)
+- [DropZone](./dropzone-validation-notes.md)
 - [Form](./form-validation-notes.md)
 - [Image](./image-validation-notes.md)
 - [Icons and Illustrations](./icon-illustration-validation-notes.md)
@@ -104,6 +106,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [Popover](./popover-validation-notes.md)
 - [ProgressBar](./progressbar-validation-notes.md)
 - [ProgressCircle](./progresscircle-validation-notes.md)
+- [Provider](./provider-validation-notes.md)
 - [RangeCalendar](./rangecalendar-validation-notes.md)
 - [RangeSlider](./rangeslider-validation-notes.md)
 - [Skeleton](./skeleton-validation-notes.md)

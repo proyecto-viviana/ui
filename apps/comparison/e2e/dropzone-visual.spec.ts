@@ -7,7 +7,7 @@ import {
 } from "./comparison-page";
 import {
   clearPointer,
-  expectExactPreparedInPlaceScreenshotPair,
+  expectExactPreparedFixedScreenshotPair,
   pinComparisonTheme,
 } from "./visual-diff";
 import { dropZoneSizeOptions } from "../src/data/dropzone-demo";
@@ -183,7 +183,7 @@ test.describe("comparison DropZone visual parity", () => {
   test("DropZone default state is pixel-identical", async ({ page }) => {
     const fixtures = await dropZoneFixtures(page);
 
-    await expectExactPreparedInPlaceScreenshotPair(
+    await expectExactPreparedFixedScreenshotPair(
       page,
       fixtures.reactRoot,
       fixtures.solidRoot,
@@ -252,7 +252,7 @@ test.describe("comparison DropZone visual parity", () => {
       replaceMessage: "Drop file to replace",
     });
 
-    await expectExactPreparedInPlaceScreenshotPair(
+    await expectExactPreparedFixedScreenshotPair(
       page,
       fixtures.reactRoot,
       fixtures.solidRoot,
