@@ -1127,11 +1127,13 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
       },
     },
   );
+  const isOptionFocusVisible = () =>
+    optionAria.isFocused() && (selectContext?.isFocusVisible() ?? optionAria.isFocusVisible());
 
   const renderValues = createMemo<SelectOptionRenderProps>(() => ({
     isSelected: optionAria.isSelected(),
     isFocused: optionAria.isFocused(),
-    isFocusVisible: optionAria.isFocusVisible(),
+    isFocusVisible: isOptionFocusVisible(),
     isPressed: optionAria.isPressed(),
     isHovered: optionAria.isHovered(),
     isDisabled: optionAria.isDisabled(),
@@ -1203,7 +1205,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
         style={renderProps.style()}
         data-selected={optionAria.isSelected() || undefined}
         data-focused={optionAria.isFocused() || undefined}
-        data-focus-visible={optionAria.isFocusVisible() || undefined}
+        data-focus-visible={isOptionFocusVisible() || undefined}
         data-pressed={optionAria.isPressed() || undefined}
         data-hovered={optionAria.isHovered() || undefined}
         data-disabled={optionAria.isDisabled() || undefined}

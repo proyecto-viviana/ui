@@ -2623,7 +2623,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts; e2e/picker-visual.spec.ts",
-      note: "The docs-style prop controls drive controlled value/defaultValue selection, label placement/alignment/necessity, contextual help, custom renderValue, form owner/name, validation behavior, async loading/onLoadMore, popover direction/alignment/width/flip, disabled item state, placeholder, size, quiet, description/error message, disabled, required, and invalid state into both stacks. The Picker visual spec also asserts the advanced routed state against React Spectrum.",
+      note: "The docs-style prop controls drive controlled value/defaultValue selection, single/multiple selectionMode, label placement/alignment/necessity, contextual help, custom renderValue, form owner/name, validation behavior, async loading/onLoadMore, popover direction/alignment/width/flip, disabled item state, placeholder, size, quiet, description/error message, disabled, required, and invalid state into both stacks. The Picker visual spec also asserts the advanced routed state against React Spectrum; PickerSection and PickerItem link navigation remain validation-note blockers.",
     },
   ],
   rangeslider: [

@@ -4,6 +4,7 @@ export { comparisonControlsEvent };
 
 export const pickerSizeOptions = ["S", "M", "L", "XL"] as const;
 export const pickerKeyOptions = ["starter", "pro", "enterprise"] as const;
+export const pickerSelectionModeOptions = ["single", "multiple"] as const;
 export const pickerSelectionSourceOptions = ["value", "defaultValue"] as const;
 export const pickerLabelPositionOptions = ["top", "side"] as const;
 export const pickerLabelAlignOptions = ["start", "end"] as const;
@@ -15,6 +16,7 @@ export const pickerLoadingStateOptions = ["idle", "loading", "loadingMore"] as c
 
 export type PickerDemoSize = (typeof pickerSizeOptions)[number];
 export type PickerDemoKey = (typeof pickerKeyOptions)[number];
+export type PickerDemoSelectionMode = (typeof pickerSelectionModeOptions)[number];
 export type PickerDemoSelectionSource = (typeof pickerSelectionSourceOptions)[number];
 export type PickerDemoLabelPosition = (typeof pickerLabelPositionOptions)[number];
 export type PickerDemoLabelAlign = (typeof pickerLabelAlignOptions)[number];
@@ -27,6 +29,7 @@ export type PickerDemoLoadingState = (typeof pickerLoadingStateOptions)[number];
 export interface PickerDemoProps {
   label: string;
   selectedKey: PickerDemoKey;
+  selectionMode: PickerDemoSelectionMode;
   selectionSource: PickerDemoSelectionSource;
   placeholder: string;
   size: PickerDemoSize;
@@ -61,6 +64,7 @@ export const pickerItems = [
 export const pickerDemoDefaults: PickerDemoProps = {
   label: "Plan",
   selectedKey: "pro",
+  selectionMode: "single",
   selectionSource: "value",
   placeholder: "Select plan",
   size: "M",
@@ -119,12 +123,34 @@ function selectionSourceParam(value: string | null | undefined): PickerDemoSelec
   return isOneOf(value, pickerSelectionSourceOptions) ? value : pickerDemoDefaults.selectionSource;
 }
 
+export function pickerSelectedKeysForMode(
+  selectedKey: PickerDemoKey,
+  selectionMode: PickerDemoSelectionMode,
+): PickerDemoKey[] {
+  if (selectionMode === "single") {
+    return [selectedKey];
+  }
+
+  const secondaryKey: PickerDemoKey = selectedKey === "starter" ? "pro" : "starter";
+  return [selectedKey, secondaryKey];
+}
+
+export function serializePickerSelectedKeys(
+  selectedKeys: readonly string[],
+  selectionMode: PickerDemoSelectionMode,
+) {
+  return selectionMode === "multiple" ? selectedKeys.join(",") : (selectedKeys[0] ?? "");
+}
+
 export function normalizePickerDemoProps(props: Partial<PickerDemoProps>): PickerDemoProps {
   return {
     label: typeof props.label === "string" && props.label ? props.label : pickerDemoDefaults.label,
     selectedKey: isOneOf(props.selectedKey, pickerKeyOptions)
       ? props.selectedKey
       : pickerDemoDefaults.selectedKey,
+    selectionMode: isOneOf(props.selectionMode, pickerSelectionModeOptions)
+      ? props.selectionMode
+      : pickerDemoDefaults.selectionMode,
     selectionSource: selectionSourceParam(props.selectionSource),
     placeholder:
       typeof props.placeholder === "string" ? props.placeholder : pickerDemoDefaults.placeholder,
@@ -169,6 +195,7 @@ export function normalizePickerDemoProps(props: Partial<PickerDemoProps>): Picke
 export function pickerDemoPropsFromSearch(search: string): PickerDemoProps {
   const params = new URLSearchParams(search);
   const selectedKey = params.get("selectedKey");
+  const selectionMode = params.get("selectionMode");
   const size = params.get("size");
 
   return normalizePickerDemoProps({
@@ -176,6 +203,9 @@ export function pickerDemoPropsFromSearch(search: string): PickerDemoProps {
     selectedKey: isOneOf(selectedKey, pickerKeyOptions)
       ? selectedKey
       : pickerDemoDefaults.selectedKey,
+    selectionMode: isOneOf(selectionMode, pickerSelectionModeOptions)
+      ? selectionMode
+      : pickerDemoDefaults.selectionMode,
     selectionSource: selectionSourceParam(params.get("selectionSource")),
     placeholder: params.get("placeholder") ?? pickerDemoDefaults.placeholder,
     size: isOneOf(size, pickerSizeOptions) ? size : pickerDemoDefaults.size,
@@ -244,6 +274,7 @@ export function serializePickerDemoProps(props: PickerDemoProps) {
   return JSON.stringify({
     label: props.label,
     selectedKey: props.selectedKey,
+    selectionMode: props.selectionMode,
     selectionSource: props.selectionSource,
     placeholder: props.placeholder,
     size: props.size,

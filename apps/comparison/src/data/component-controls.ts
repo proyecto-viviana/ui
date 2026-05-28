@@ -357,6 +357,7 @@ import {
   pickerLabelPositionOptions,
   pickerLoadingStateOptions,
   pickerNecessityIndicatorOptions,
+  pickerSelectionModeOptions,
   pickerSelectionSourceOptions,
   pickerSizeOptions,
   pickerValidationBehaviorOptions,
@@ -4365,6 +4366,13 @@ const pickerControls: ComponentControlGroup = {
       options: options(pickerKeyOptions),
     },
     {
+      name: "selectionMode",
+      label: "selectionMode",
+      kind: "radio",
+      defaultValue: pickerDemoDefaults.selectionMode,
+      options: options(pickerSelectionModeOptions),
+    },
+    {
       name: "selectionSource",
       label: "selectionSource",
       kind: "radio",
@@ -4517,6 +4525,7 @@ const pickerControls: ComponentControlGroup = {
     "value",
     "defaultValue",
     "onChange",
+    "selectionMode",
     "placeholder",
     "size",
     "labelPosition",
@@ -4549,7 +4558,7 @@ const pickerControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 Picker docs and source. The viewer drives controlled value/defaultValue selection, label placement/alignment/necessity, contextual help, custom renderValue, form submission props, validation behavior, async loading state/onLoadMore, popover placement/width/flip, disabled item state, quiet/disabled/required/invalid state, and S2 size into both stacks.",
+  note: "Modeled from the S2 Picker docs and source. The viewer drives controlled value/defaultValue selection, single/multiple selectionMode, label placement/alignment/necessity, contextual help, custom renderValue, form submission props, validation behavior, async loading state/onLoadMore, popover placement/width/flip, disabled item state, quiet/disabled/required/invalid state, and S2 size into both stacks. Static PickerSection composition and PickerItem link navigation remain validation-note blockers.",
 };
 
 const comboBoxControls: ComponentControlGroup = {

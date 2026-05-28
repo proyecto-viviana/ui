@@ -71,6 +71,45 @@ describe("Picker (solid-spectrum)", () => {
     expect(screen.getByRole("button")).toHaveTextContent("API");
   });
 
+  it("supports S2 multiple value/defaultValue/onChange selection props", async () => {
+    const user = setupUser();
+    const onChange = vi.fn();
+    const { unmount } = render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        selectionMode="multiple"
+        defaultOpen
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        value={["#page-title"]}
+        onChange={onChange}
+      />
+    ));
+
+    expect(screen.getByRole("listbox")).toHaveAttribute("aria-multiselectable", "true");
+
+    await user.click(screen.getByRole("option", { name: "API" }));
+
+    expect(onChange).toHaveBeenLastCalledWith(["#page-title", "#api"]);
+
+    unmount();
+
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        selectionMode="multiple"
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        defaultValue={["#page-title", "#api"]}
+        renderValue={(items) => <span>{items.map((item) => item.label).join(" + ")}</span>}
+      />
+    ));
+
+    expect(screen.getByRole("button")).toHaveTextContent("Accordion + API");
+  });
+
   it("renders label help, contextual help, and custom selected value content", () => {
     render(() => (
       <Picker<SectionItem>
@@ -115,6 +154,27 @@ describe("Picker (solid-spectrum)", () => {
     expect(select).toHaveAttribute("form", "docs-form");
     expect(hiddenInput).toHaveAttribute("form", "docs-form");
     expect(hiddenInput).toHaveValue("#api");
+  });
+
+  it("submits multiple selected S2 values through named hidden inputs", () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Docs section"
+        selectionMode="multiple"
+        name="section"
+        form="docs-form"
+        defaultValue={["#page-title", "#api"]}
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      />
+    ));
+
+    const values = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[type="hidden"][name="section"]'),
+    ).map((input) => input.value);
+
+    expect(values).toEqual(["#page-title", "#api"]);
   });
 
   it("uses native required validation only for native validationBehavior", () => {

@@ -354,6 +354,8 @@ import {
   normalizePickerDemoProps,
   pickerDemoPropsFromWindow,
   pickerItems,
+  pickerSelectedKeysForMode,
+  serializePickerSelectedKeys,
   serializePickerDemoProps,
 } from "@comparison/data/picker-demo";
 import {
@@ -4117,23 +4119,37 @@ function ReactNumberFieldDemo() {
 
 function ReactPickerDemo() {
   const [demoProps, setDemoProps] = useState(pickerDemoPropsFromWindow);
-  const [selectedKey, setSelectedKey] = useState(() => demoProps.selectedKey);
+  const [selectedKeys, setSelectedKeys] = useState(() =>
+    pickerSelectedKeysForMode(demoProps.selectedKey, demoProps.selectionMode),
+  );
   const [loadMoreCount, setLoadMoreCount] = useState(0);
   const colorScheme = useComparisonResolvedTheme();
   const menuWidth = Number.parseInt(demoProps.menuWidth, 10);
   const numericMenuWidth = Number.isFinite(menuWidth) && menuWidth > 0 ? menuWidth : undefined;
   const disabledKeys = demoProps.disableEnterprise ? ["enterprise"] : undefined;
+  const selectedKey = selectedKeys[0] ?? demoProps.selectedKey;
   const selectedItem = pickerItems.find((item) => item.id === selectedKey);
+  const selectionValue = demoProps.selectionMode === "multiple" ? selectedKeys : selectedKey;
   const selectionProps =
     demoProps.selectionSource === "value"
-      ? { value: selectedKey }
-      : { defaultValue: demoProps.selectedKey };
+      ? { value: selectionValue }
+      : {
+          defaultValue:
+            demoProps.selectionMode === "multiple"
+              ? pickerSelectedKeysForMode(demoProps.selectedKey, demoProps.selectionMode)
+              : demoProps.selectedKey,
+        };
   const renderValue = demoProps.withRenderValue
-    ? (items) =>
-        jsx("span", {
+    ? (items) => {
+        const labels = items?.map((item) => item?.label).filter(Boolean) ?? [];
+        return jsx("span", {
           "data-comparison-render-value": "true",
-          children: `${items?.[0]?.label ?? selectedItem?.label ?? "Selected"} plan`,
-        })
+          children:
+            labels.length > 1
+              ? `${labels.join(" + ")} plans`
+              : `${labels[0] ?? selectedItem?.label ?? "Selected"} plan`,
+        });
+      }
     : undefined;
   const contextualHelp = demoProps.withContextualHelp
     ? jsxs(SpectrumContextualHelp, {
@@ -4144,6 +4160,7 @@ function ReactPickerDemo() {
       })
     : undefined;
   const renderKey = [
+    demoProps.selectionMode,
     demoProps.selectionSource,
     demoProps.selectionSource === "defaultValue" ? demoProps.selectedKey : "controlled",
     demoProps.withContextualHelp,
@@ -4156,7 +4173,7 @@ function ReactPickerDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "picker") {
         const nextProps = normalizePickerDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setSelectedKey(nextProps.selectedKey);
+        setSelectedKeys(pickerSelectedKeysForMode(nextProps.selectedKey, nextProps.selectionMode));
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
@@ -4170,13 +4187,17 @@ function ReactPickerDemo() {
         jsx("div", {
           "data-comparison-control-root": "picker",
           "data-comparison-control-props": serializePickerDemoProps(demoProps),
-          "data-comparison-value": selectedKey,
+          "data-comparison-value": serializePickerSelectedKeys(
+            selectedKeys,
+            demoProps.selectionMode,
+          ),
           "data-comparison-load-more-count": String(loadMoreCount),
           children: jsx(
             SpectrumPicker,
             {
               label: demoProps.label,
               ...selectionProps,
+              selectionMode: demoProps.selectionMode,
               placeholder: demoProps.placeholder,
               size: demoProps.size,
               labelPosition: demoProps.labelPosition,
@@ -4203,12 +4224,17 @@ function ReactPickerDemo() {
               isDisabled: demoProps.isDisabled,
               isRequired: demoProps.isRequired,
               isInvalid: demoProps.isInvalid,
-              onChange: (nextKey) => {
-                if (nextKey == null) {
+              onChange: (nextValue) => {
+                const nextSelectedKeys = Array.isArray(nextValue)
+                  ? nextValue.map(String)
+                  : nextValue == null
+                    ? []
+                    : [String(nextValue)];
+                if (nextSelectedKeys.length === 0) {
                   return;
                 }
-                const nextSelectedKey = String(nextKey);
-                setSelectedKey(nextSelectedKey);
+                const nextSelectedKey = nextSelectedKeys[0];
+                setSelectedKeys(nextSelectedKeys);
                 setDemoProps((current) => ({
                   ...current,
                   ...(current.selectionSource === "value" ? { selectedKey: nextSelectedKey } : {}),

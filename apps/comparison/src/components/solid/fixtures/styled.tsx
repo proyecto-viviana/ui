@@ -384,6 +384,8 @@ import {
   normalizePickerDemoProps,
   pickerDemoPropsFromWindow,
   pickerItems,
+  pickerSelectedKeysForMode,
+  serializePickerSelectedKeys,
   serializePickerDemoProps,
   type PickerDemoProps,
 } from "@comparison/data/picker-demo";
@@ -7171,7 +7173,9 @@ function SolidSpectrumNumberFieldDemo() {
 
 function SolidSpectrumPickerDemo() {
   const [demoProps, setDemoProps] = createSignal<PickerDemoProps>(pickerDemoPropsFromWindow());
-  const [selectedKey, setSelectedKey] = createSignal(demoProps().selectedKey);
+  const [selectedKeys, setSelectedKeys] = createSignal(
+    pickerSelectedKeysForMode(demoProps().selectedKey, demoProps().selectionMode),
+  );
   const [loadMoreCount, setLoadMoreCount] = createSignal(0);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
@@ -7183,6 +7187,7 @@ function SolidSpectrumPickerDemo() {
   const disabledKeys = createMemo(() =>
     demoProps().disableEnterprise ? ["enterprise"] : undefined,
   );
+  const selectedKey = createMemo(() => selectedKeys()[0] ?? demoProps().selectedKey);
   const selectedItem = createMemo(() => pickerItems.find((item) => item.id === selectedKey()));
   const contextualHelp = createMemo(() =>
     demoProps().withContextualHelp
@@ -7198,7 +7203,7 @@ function SolidSpectrumPickerDemo() {
       if (event instanceof CustomEvent && event.detail?.component === "picker") {
         const nextProps = normalizePickerDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
-        setSelectedKey(nextProps.selectedKey);
+        setSelectedKeys(pickerSelectedKeysForMode(nextProps.selectedKey, nextProps.selectionMode));
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -7244,7 +7249,7 @@ function SolidSpectrumPickerDemo() {
             return serializedProps();
           },
           get "data-comparison-value"() {
-            return selectedKey();
+            return serializePickerSelectedKeys(selectedKeys(), demoProps().selectionMode);
           },
           get "data-comparison-load-more-count"() {
             return String(loadMoreCount());
@@ -7261,12 +7266,21 @@ function SolidSpectrumPickerDemo() {
                 return demoProps().label;
               },
               get value() {
-                return demoProps().selectionSource === "value" ? selectedKey() : undefined;
+                if (demoProps().selectionSource !== "value") {
+                  return undefined;
+                }
+                return demoProps().selectionMode === "multiple" ? selectedKeys() : selectedKey();
               },
               get defaultValue() {
-                return demoProps().selectionSource === "defaultValue"
-                  ? demoProps().selectedKey
-                  : undefined;
+                if (demoProps().selectionSource !== "defaultValue") {
+                  return undefined;
+                }
+                return demoProps().selectionMode === "multiple"
+                  ? pickerSelectedKeysForMode(demoProps().selectedKey, demoProps().selectionMode)
+                  : demoProps().selectedKey;
+              },
+              get selectionMode() {
+                return demoProps().selectionMode;
               },
               get placeholder() {
                 return demoProps().placeholder;
@@ -7324,11 +7338,11 @@ function SolidSpectrumPickerDemo() {
               get renderValue() {
                 return demoProps().withRenderValue
                   ? (items: Array<(typeof pickerItems)[number]>) =>
-                      h(
-                        "span",
-                        { "data-comparison-render-value": "true" },
-                        `${items?.[0]?.label ?? selectedItem()?.label ?? "Selected"} plan`,
-                      )
+                      h("span", { "data-comparison-render-value": "true" }, [
+                        items.length > 1
+                          ? `${items.map((item) => item.label).join(" + ")} plans`
+                          : `${items[0]?.label ?? selectedItem()?.label ?? "Selected"} plan`,
+                      ])
                   : undefined;
               },
               get disabledKeys() {
@@ -7346,12 +7360,17 @@ function SolidSpectrumPickerDemo() {
               get isInvalid() {
                 return demoProps().isInvalid;
               },
-              onChange: (nextKey: unknown) => {
-                if (nextKey == null) {
+              onChange: (nextValue: unknown) => {
+                const nextSelectedKeys = Array.isArray(nextValue)
+                  ? nextValue.map(String)
+                  : nextValue == null
+                    ? []
+                    : [String(nextValue)];
+                if (nextSelectedKeys.length === 0) {
                   return;
                 }
-                const nextSelectedKey = String(nextKey);
-                setSelectedKey(nextSelectedKey as PickerDemoProps["selectedKey"]);
+                const nextSelectedKey = nextSelectedKeys[0] as PickerDemoProps["selectedKey"];
+                setSelectedKeys(nextSelectedKeys as Array<PickerDemoProps["selectedKey"]>);
                 setDemoProps((current: PickerDemoProps) => ({
                   ...current,
                   ...(current.selectionSource === "value"

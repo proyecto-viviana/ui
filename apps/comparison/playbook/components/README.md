@@ -36,6 +36,7 @@ normalized to the current gate checklist.
   and Text.
 - Active current-gate pass: none selected.
 - Comparison-live with explicit release-hardening backfill gaps: Card/CardView.
+- Partial current-gate pass with component-owned blockers: Picker.
 - Pre-pass only: Provider.
 
 Current-gate normalization means the note contains the current
@@ -60,8 +61,8 @@ Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
 - Modeled viewer controls: 69/69 entries.
-- Validation notes: 63/69 entries. Missing notes: Picker, RadioGroup,
-  SearchField, Switch, TextArea, and TextField.
+- Validation notes: 64/69 entries. Missing notes: RadioGroup, SearchField,
+  Switch, TextArea, and TextField.
 - Current visual/asserted evidence: 69/69 entries.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
@@ -104,6 +105,7 @@ visual/contract coverage; remaining gaps are listed above.
 - [Meter](./meter-validation-notes.md)
 - [NotificationBadge](./notificationbadge-validation-notes.md)
 - [NumberField](./numberfield-validation-notes.md)
+- [Picker](./picker-validation-notes.md)
 - [Popover](./popover-validation-notes.md)
 - [ProgressBar](./progressbar-validation-notes.md)
 - [ProgressCircle](./progresscircle-validation-notes.md)

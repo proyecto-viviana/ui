@@ -182,6 +182,7 @@ async function openListMetrics(root: Locator) {
       optionGridAreas: optionStyle?.gridTemplateAreas ?? null,
       optionGridColumns: optionStyle?.gridTemplateColumns ?? null,
       firstOptionDataFocused: firstOption?.hasAttribute("data-focused") ?? false,
+      firstOptionDataFocusVisible: firstOption?.hasAttribute("data-focus-visible") ?? false,
       firstOptionDataHovered: firstOption?.hasAttribute("data-hovered") ?? false,
       enterpriseDisabled:
         enterpriseOption?.getAttribute("aria-disabled") === "true" ||
@@ -515,6 +516,7 @@ test.describe("comparison Picker visual parity", () => {
     expect(solid.optionGridAreas).not.toBe("none");
     expect(solid.optionGridColumns).toBe(react.optionGridColumns);
     expect(solidHover.firstOptionDataFocused).toBe(reactHover.firstOptionDataFocused);
+    expect(solidHover.firstOptionDataFocusVisible).toBe(reactHover.firstOptionDataFocusVisible);
     expect(solidHover.firstOptionDataHovered).toBe(reactHover.firstOptionDataHovered);
     expect(solidHover.firstOptionBackground).toBe(reactHover.firstOptionBackground);
     expect(solidHover.firstOptionColor).toBe(reactHover.firstOptionColor);

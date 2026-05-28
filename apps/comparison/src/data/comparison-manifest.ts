@@ -757,10 +757,10 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "Picker",
     category: "Components",
     summary:
-      "Single-selection dropdown with S2 field layout, trigger, selected value, help text, validation, and listbox state.",
+      "Selection dropdown with S2 field layout, trigger, selected value, help text, validation, and listbox state.",
     styledSummary: "React Spectrum Picker vs Solid Spectrum Picker.",
     styledNote:
-      "React uses @react-spectrum/s2 Picker directly; Solid uses @proyecto-viviana/solid-spectrum Picker with S2-derived field layout, trigger, selected value/renderValue, icons, help text, validation, form, async loading, disabled item, and popover styling over the Solid Select primitive.",
+      "React uses @react-spectrum/s2 Picker directly; Solid uses @proyecto-viviana/solid-spectrum Picker with S2-derived field layout, trigger, selected value/renderValue, single and multiple value aliases, icons, help text, validation, form, async loading, disabled item, and popover styling over the Solid Select primitive. Section and link item parity remains tracked in the Picker validation note.",
   }),
 
   popover: styledLiveOfficialEntry({
