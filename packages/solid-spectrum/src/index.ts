@@ -333,6 +333,8 @@ export { default as ContrastIcon } from "./icon/s2wf-icons/ContrastIcon";
 export type { ContrastIconProps } from "./icon/s2wf-icons/ContrastIcon";
 export { default as LightenIcon } from "./icon/s2wf-icons/LightenIcon";
 export type { LightenIconProps } from "./icon/s2wf-icons/LightenIcon";
+export { default as LinkIcon } from "./icon/s2wf-icons/LinkIcon";
+export type { LinkIconProps } from "./icon/s2wf-icons/LinkIcon";
 export { default as MenuHamburgerIcon } from "./icon/s2wf-icons/MenuHamburgerIcon";
 export type { MenuHamburgerIconProps } from "./icon/s2wf-icons/MenuHamburgerIcon";
 export { default as SearchIcon } from "./icon/s2wf-icons/SearchIcon";
