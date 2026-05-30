@@ -1,0 +1,521 @@
+---
+// Ported by hand from vendor/s2-docs/pages/ComboBox.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS/collapse markers stripped. Gated by
+// `report:parity --slug=combobox`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "combobox";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "ComboBox";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#slots", label: "Slots", depth: 3 },
+  { href: "#sections", label: "Sections", depth: 3 },
+  { href: "#asynchronous-loading", label: "Asynchronous loading", depth: 3 },
+  { href: "#actions", label: "Actions", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#input-value", label: "Input value", depth: 3 },
+  { href: "#fully-controlled", label: "Fully controlled", depth: 3 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#popover-options", label: "Popover options", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-combobox", label: "ComboBox", depth: 3 },
+  { href: "#api-comboboxitem", label: "ComboBoxItem", depth: 3 },
+  { href: "#api-comboboxsection", label: "ComboBoxSection", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {ComboBox, ComboBoxItem} from '@react-spectrum/s2';
+
+function Example() {
+  let options = [
+    { id: 1, name: 'Aardvark' },
+    { id: 2, name: 'Cat' },
+    { id: 3, name: 'Dog' },
+    { id: 4, name: 'Kangaroo' },
+    { id: 5, name: 'Koala' },
+    { id: 6, name: 'Penguin' },
+    { id: 7, name: 'Snake' },
+    { id: 8, name: 'Turtle' },
+    { id: 9, name: 'Wombat' }
+  ];
+
+  return (
+    <ComboBox label="Animals" defaultItems={options} placeholder="Select an animal">
+      {(item) => <ComboBoxItem>{item.name}</ComboBoxItem>}
+    </ComboBox>
+  );
+}`;
+
+const slotsCode = `"use client";
+import {Avatar, ComboBox, ComboBoxItem, Text} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Comment from '@react-spectrum/s2/icons/Comment';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import UserSettings from '@react-spectrum/s2/icons/UserSettings';
+
+const users = Array.from({length: 5}, (_, i) => ({
+  id: \`user\${i + 1}\`,
+  name: \`User \${i + 1}\`,
+  email: \`user\${i + 1}@example.com\`,
+  avatar: 'https://i.imgur.com/kJOwAdv.png'
+}));
+
+<div className={style({display: 'flex', gap: 12, flexWrap: 'wrap'})}>
+  <ComboBox label="Permissions" defaultSelectedKey="read" placeholder="Select a permission level">
+    <ComboBoxItem id="read" textValue="Read">
+      <Comment />
+      <Text slot="label">Read</Text>
+      <Text slot="description">Comment only</Text>
+    </ComboBoxItem>
+    <ComboBoxItem id="write" textValue="Write">
+      <Edit />
+      <Text slot="label">Write</Text>
+      <Text slot="description">Read and write only</Text>
+    </ComboBoxItem>
+    <ComboBoxItem id="admin" textValue="Admin">
+      <UserSettings />
+      <Text slot="label">Admin</Text>
+      <Text slot="description">Full access</Text>
+    </ComboBoxItem>
+  </ComboBox>
+  <ComboBox label="Share" defaultItems={users} defaultSelectedKey="user1" placeholder="Select a user">
+    {(item) => (
+      <ComboBoxItem id={item.id} textValue={item.name}>
+        <Avatar slot="avatar" src={item.avatar} />
+        <Text slot="label">{item.name}</Text>
+        <Text slot="description">{item.email}</Text>
+      </ComboBoxItem>
+    )}
+  </ComboBox>
+</div>`;
+
+const sectionsCode = `"use client";
+import {ComboBox, ComboBoxItem, ComboBoxSection, Header, Heading, Text} from '@react-spectrum/s2';
+
+<ComboBox label="Preferred fruit or vegetable" placeholder="Select an option">
+  <ComboBoxSection>
+    <Header>
+      <Heading>Fruit</Heading>
+      <Text slot="description">Sweet and nutritious</Text>
+    </Header>
+    <ComboBoxItem id="apple">Apple</ComboBoxItem>
+    <ComboBoxItem id="banana">Banana</ComboBoxItem>
+    <ComboBoxItem id="orange">Orange</ComboBoxItem>
+    <ComboBoxItem id="grapes">Grapes</ComboBoxItem>
+  </ComboBoxSection>
+  <ComboBoxSection>
+    <Header>
+      <Heading>Vegetable</Heading>
+      <Text slot="description">Healthy and savory</Text>
+    </Header>
+    <ComboBoxItem id="broccoli">Broccoli</ComboBoxItem>
+    <ComboBoxItem id="carrots">Carrots</ComboBoxItem>
+    <ComboBoxItem id="spinach">Spinach</ComboBoxItem>
+    <ComboBoxItem id="lettuce">Lettuce</ComboBoxItem>
+  </ComboBoxSection>
+</ComboBox>`;
+
+const asyncCode = `"use client";
+import {ComboBox, ComboBoxItem, useAsyncList} from '@react-spectrum/s2';
+
+interface Character {
+  name: string
+}
+
+function Example() {
+  let list = useAsyncList<Character>({
+    async load({signal, cursor, filterText}) {
+      if (cursor) {
+        cursor = cursor.replace(/^http:\\/\\//i, 'https://');
+      }
+
+      let res = await fetch(cursor || \`https://swapi.py4e.com/api/people/?search=\${filterText}\`, {signal});
+      let json = await res.json();
+
+      return {
+        items: json.results,
+        cursor: json.next
+      };
+    }
+  });
+
+  return (
+    <ComboBox
+      label="Star Wars Character Lookup"
+      placeholder="Select a character"
+      items={list.items}
+      inputValue={list.filterText}
+      onInputChange={list.setFilterText}
+      loadingState={list.loadingState}
+      onLoadMore={list.loadMore}>
+      {item => <ComboBoxItem id={item.name} textValue={item.name}>{item.name}</ComboBoxItem>}
+    </ComboBox>
+  );
+}`;
+
+const actionsCode = `"use client";
+import {ComboBox, ComboBoxItem} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [inputValue, setInputValue] = useState('');
+
+  return (
+    <ComboBox
+      label="Favorite Animal"
+      placeholder="Select an animal"
+      inputValue={inputValue}
+      onInputChange={setInputValue}>
+      {inputValue.length > 0 && (
+        <ComboBoxItem onAction={() => alert('Creating ' + inputValue)}>
+          {\`Create "\${inputValue}"\`}
+        </ComboBoxItem>
+      )}
+      <ComboBoxItem>Aardvark</ComboBoxItem>
+      <ComboBoxItem>Cat</ComboBoxItem>
+      <ComboBoxItem>Dog</ComboBoxItem>
+      <ComboBoxItem>Kangaroo</ComboBoxItem>
+      <ComboBoxItem>Panda</ComboBoxItem>
+      <ComboBoxItem>Snake</ComboBoxItem>
+    </ComboBox>
+  );
+}`;
+
+const linksCode = `"use client";
+import {ComboBox, ComboBoxItem} from '@react-spectrum/s2';
+
+<ComboBox label="Bookmarks" placeholder="Select a bookmark">
+  <ComboBoxItem href="https://adobe.com/" target="_blank">Adobe</ComboBoxItem>
+  <ComboBoxItem href="https://apple.com/" target="_blank">Apple</ComboBoxItem>
+  <ComboBoxItem href="https://google.com/" target="_blank">Google</ComboBoxItem>
+  <ComboBoxItem href="https://microsoft.com/" target="_blank">Microsoft</ComboBoxItem>
+</ComboBox>`;
+
+const selectionCode = `"use client";
+import {ComboBox, ComboBoxItem, type Key} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [animal, setAnimal] = useState<Key | null>("bison");
+
+  return (
+    <div>
+      <ComboBox
+        label="Pick an animal"
+        placeholder="Select an animal"
+        selectedKey={animal}
+        onSelectionChange={setAnimal}>
+        <ComboBoxItem id="koala">Koala</ComboBoxItem>
+        <ComboBoxItem id="kangaroo">Kangaroo</ComboBoxItem>
+        <ComboBoxItem id="platypus" isDisabled>Platypus</ComboBoxItem>
+        <ComboBoxItem id="eagle">Bald Eagle</ComboBoxItem>
+        <ComboBoxItem id="bison">Bison</ComboBoxItem>
+        <ComboBoxItem id="skunk">Skunk</ComboBoxItem>
+      </ComboBox>
+      <p>Current selection: {animal}</p>
+    </div>
+  );
+}`;
+
+const inputValueCode = `"use client";
+import {ComboBox, ComboBoxItem, type Key} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example(props) {
+  let [value, setValue] = useState<Key>('Kangaroo');
+
+  return (
+    <div>
+      <ComboBox
+        {...props}
+        label="Favorite Animal"
+        placeholder="Select an animal"
+        inputValue={value}
+        onInputChange={setValue}>
+        <ComboBoxItem id="koala">Koala</ComboBoxItem>
+        <ComboBoxItem id="kangaroo">Kangaroo</ComboBoxItem>
+        <ComboBoxItem id="platypus">Platypus</ComboBoxItem>
+        <ComboBoxItem id="eagle">Bald Eagle</ComboBoxItem>
+        <ComboBoxItem id="bison">Bison</ComboBoxItem>
+        <ComboBoxItem id="skunk">Skunk</ComboBoxItem>
+      </ComboBox>
+      <p>Current input value: {value}</p>
+    </div>
+  );
+}`;
+
+const fullyControlledCode = `"use client";
+import {ComboBox, ComboBoxItem, type Key} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function ControlledComboBox() {
+  let options = [
+    {id: 1, name: 'Aerospace'},
+    {id: 2, name: 'Mechanical'},
+    {id: 3, name: 'Civil'},
+    {id: 4, name: 'Biomedical'},
+    {id: 5, name: 'Nuclear'},
+    {id: 6, name: 'Industrial'},
+    {id: 7, name: 'Chemical'},
+    {id: 8, name: 'Agricultural'},
+    {id: 9, name: 'Electrical'}
+  ];
+
+  let [fieldState, setFieldState] = useState<{selectedKey: Key | null, inputValue: string}>({
+    selectedKey: null,
+    inputValue: ''
+  });
+
+  let onSelectionChange = (id: Key | null) => {
+    setFieldState({
+      inputValue: id ? (options.find(o => o.id === id)?.name ?? '') : '',
+      selectedKey: id
+    });
+  };
+
+  let onInputChange = (value: string) => {
+    setFieldState(prevState => ({
+      inputValue: value,
+      selectedKey: value === '' ? null : prevState.selectedKey
+    }));
+  };
+
+  return (
+    <div>
+      <ComboBox
+        label="Pick a engineering major"
+        placeholder="Select a major"
+        defaultItems={options}
+        selectedKey={fieldState.selectedKey}
+        inputValue={fieldState.inputValue}
+        onSelectionChange={onSelectionChange}
+        onInputChange={onInputChange}>
+        {item => <ComboBoxItem>{item.name}</ComboBoxItem>}
+      </ComboBox>
+      <pre className={style({font: 'body'})}>
+        Current selected major id: {fieldState.selectedKey}{'\\n'}
+        Current input text: {fieldState.inputValue}
+      </pre>
+    </div>
+  );
+}`;
+
+const formsCode = `"use client";
+import {ComboBox, ComboBoxItem, Form, Button} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <Form>
+      <ComboBox
+        {...props}
+        label="Animal"
+        placeholder="e.g. Cat"
+        name="animal"
+        description="Please select an animal.">
+        <ComboBoxItem id="aardvark">Aardvark</ComboBoxItem>
+        <ComboBoxItem id="cat">Cat</ComboBoxItem>
+        <ComboBoxItem id="dog">Dog</ComboBoxItem>
+        <ComboBoxItem id="kangaroo">Kangaroo</ComboBoxItem>
+        <ComboBoxItem id="panda">Panda</ComboBoxItem>
+        <ComboBoxItem id="snake">Snake</ComboBoxItem>
+      </ComboBox>
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+
+const popoverCode = `"use client";
+import {ComboBox, ComboBoxItem} from '@react-spectrum/s2';
+
+<ComboBox>
+  <ComboBoxItem id="red panda">Red Panda</ComboBoxItem>
+  <ComboBoxItem id="cat">Cat</ComboBoxItem>
+  <ComboBoxItem id="dog">Dog</ComboBoxItem>
+  <ComboBoxItem id="aardvark">Aardvark</ComboBoxItem>
+  <ComboBoxItem id="kangaroo">Kangaroo</ComboBoxItem>
+  <ComboBoxItem id="snake">Snake</ComboBoxItem>
+</ComboBox>`;
+
+const anatomyCode = `<ComboBox>
+  <ComboBoxItem>
+    <Icon /> or <Avatar />
+    <Text slot="label" />
+    <Text slot="description" />
+  </ComboBoxItem>
+  <ComboBoxSection>
+    <Header>
+      <Heading />
+      <Text slot="description" />
+    </Header>
+    <ComboBoxItem />
+  </ComboBoxSection>
+</ComboBox>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="combobox" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    ComboBox allow users to choose a single option from a collapsible list of options when space is
+    limited.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>ComboBox</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="slots" class={h3Class}>Slots</h3>
+  <p class={pClass}>
+    <code>ComboBoxItem</code> supports icons, avatars, and <code>label</code> and
+    <code>description</code> text slots.
+  </p>
+  <Code code={slotsCode} lang="tsx" theme="github-dark" />
+  <p class={pClass}>
+    <strong>Accessibility:</strong> Interactive elements (e.g. buttons) within ComboBox items are
+    not allowed. This will break keyboard and screen reader navigation. Only add textual or
+    decorative graphics (e.g. icons) as children.
+  </p>
+
+  <h3 id="sections" class={h3Class}>Sections</h3>
+  <p class={pClass}>
+    Use the <code>&lt;ComboBoxSection&gt;</code> component to group options. A
+    <code>&lt;Header&gt;</code> element, with a <code>&lt;Heading&gt;</code> and optional
+    <code>description</code> slot can be included to label a section. Sections without a header must
+    have an <code>aria-label</code>.
+  </p>
+  <Code code={sectionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="asynchronous-loading" class={h3Class}>Asynchronous loading</h3>
+  <p class={pClass}>
+    Use the <code>loadingState</code> and <code>onLoadMore</code> props to enable async loading and
+    infinite scrolling.
+  </p>
+  <Code code={asyncCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="actions" class={h3Class}>Actions</h3>
+  <p class={pClass}>
+    Use the <code>onAction</code> prop on a <code>&lt;ComboBoxItem&gt;</code> to perform a custom
+    action when the item is pressed. This example adds a "Create" action for the current input
+    value.
+  </p>
+  <Code code={actionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a <code>&lt;ComboBoxItem&gt;</code> to create a link. See the
+    getting started guide to learn how to integrate with your framework. Link items in a
+    <code>ComboBox</code> are not selectable.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>defaultSelectedKey</code> or <code>selectedKey</code> prop to set the selected
+    item. The selected key corresponds to the <code>id</code> prop of an item. Items can be disabled
+    with the <code>isDisabled</code> prop. See the selection guide for more details.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="input-value" class={h3Class}>Input value</h3>
+  <p class={pClass}>
+    Use the <code>inputValue</code> or <code>defaultInputValue</code> prop to set the value of the
+    input field. By default, the value will be reverted to the selected item on blur. Set the
+    <code>allowsCustomValue</code> prop to enable entering values that are not in the list.
+  </p>
+  <Code code={inputValueCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="fully-controlled" class={h3Class}>Fully controlled</h3>
+  <p class={pClass}>
+    Both <code>inputValue</code> and <code>selectedKey</code> can be controlled simultaneously.
+    However, each interaction will only trigger either <code>onInputChange</code> or
+    <code>onSelectionChange</code>, not both. When controlling both props, you must update both
+    values accordingly.
+  </p>
+  <Code code={fullyControlledCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the <code>id</code> of the selected item to the server.
+    Set the <code>isRequired</code> prop to validate that the user selects a value, or implement
+    custom client or server-side validation. See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="popover-options" class={h2Class}>Popover options</h2>
+  <p class={pClass}>
+    Use the <code>menuTrigger</code> prop to control when the popover opens:
+  </p>
+  <ul class={pClass}>
+    <li><code>input</code> (default): popover opens when the user edits the input text.</li>
+    <li><code>focus</code>: popover opens when the user focuses the input.</li>
+    <li>
+      <code>manual</code>: popover only opens when the user presses the trigger button or uses the
+      arrow keys.
+    </li>
+  </ul>
+  <p class={pClass}>
+    The <code>align</code>, <code>direction</code>, <code>shouldFlip</code> and
+    <code>menuWidth</code> props control the behavior of the popover.
+  </p>
+  <Code code={popoverCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-combobox" class={h3Class}>ComboBox</h3>
+  <PropTable component={slug} />
+
+  <h3 id="api-comboboxitem" class={h3Class}>ComboBoxItem</h3>
+  <p class={pClass}>
+    A <code>&lt;ComboBoxItem&gt;</code> represents an individual option within a
+    <code>ComboBox</code>.
+  </p>
+
+  <h3 id="api-comboboxsection" class={h3Class}>ComboBoxSection</h3>
+  <p class={pClass}>
+    A <code>&lt;ComboBoxSection&gt;</code> groups related <code>&lt;ComboBoxItem&gt;</code>s within
+    a <code>ComboBox</code>.
+  </p>
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
