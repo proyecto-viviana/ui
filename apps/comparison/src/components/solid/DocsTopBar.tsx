@@ -65,6 +65,7 @@ export interface DocsTopBarProps {
   reactSpectrumUrl?: string;
   referenceLabel?: string;
   referenceUrl?: string;
+  tocItems?: DocsTocItem[];
   tocSlug?: string;
   tocVariant?: DocsTocVariant;
 }
@@ -118,6 +119,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
   const mobileTocItems = createMemo(() =>
     getDocsTocItems({
       entry: props.tocSlug ? getComparisonEntry(props.tocSlug) : undefined,
+      items: props.tocItems,
       variant: props.tocVariant ?? "index",
     }),
   );
@@ -269,7 +271,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           "aria-label": "Solid Spectrum home",
         },
         [
-          h("span", { class: brandMarkClass, "aria-hidden": "true" }, "S"),
+          h("span", { class: brandMarkClass, "aria-hidden": "true" }, "SS"),
           h("span", { class: classNames("s2-brand-text", brandTextClass) }, "Solid Spectrum"),
         ],
       ),

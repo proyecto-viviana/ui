@@ -4,6 +4,7 @@ import DocsSidebarMount from "@comparison/components/DocsSidebarMount.astro";
 import DocsTocMount from "@comparison/components/DocsTocMount.astro";
 import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import type { DocsTocItem, DocsTocVariant } from "@comparison/data/docs-toc";
 import {
   docsArticleColumn,
   docsArticleContent,
@@ -15,8 +16,6 @@ import {
 } from "@comparison/components/solid/chrome/styles";
 import "@comparison/styles/global.css";
 
-type DocsTocVariant = "index" | "component";
-
 export interface Props {
   reactSpectrumUrl?: string;
   sidebarActiveSlug?: string;
@@ -25,6 +24,7 @@ export interface Props {
   sidebarReferenceUrl?: string;
   title: string;
   tocEntry?: ComparisonEntry;
+  tocItems?: DocsTocItem[];
   tocSourceLabel?: string;
   tocSourceUrl?: string;
   tocVariant: DocsTocVariant;
@@ -38,6 +38,7 @@ const {
   sidebarReferenceUrl,
   title,
   tocEntry,
+  tocItems,
   tocSourceLabel,
   tocSourceUrl,
   tocVariant,
@@ -114,6 +115,7 @@ const s2PrimaryFontPreloadUrl =
       reactSpectrumUrl={reactSpectrumUrl}
       referenceLabel={sidebarReferenceLabel}
       referenceUrl={sidebarReferenceUrl}
+      tocItems={tocItems}
       tocSlug={tocEntry?.slug}
       tocVariant={tocVariant}
     />
@@ -139,6 +141,7 @@ const s2PrimaryFontPreloadUrl =
         <aside class:list={["s2-docs-toc-rail", tocRailClass]} aria-label="On this page">
           <DocsTocMount
             entry={tocEntry}
+            items={tocItems}
             sourceLabel={tocSourceLabel}
             sourceUrl={tocSourceUrl}
             variant={tocVariant}

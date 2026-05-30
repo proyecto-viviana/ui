@@ -1,20 +1,21 @@
 ---
 import DocsTocFallback from "./DocsTocFallback.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
+import type { DocsTocItem, DocsTocVariant } from "@comparison/data/docs-toc";
 import { docsChromeMount, docsTocMount, staticClassName } from "./solid/chrome/styles";
-
-type DocsTocVariant = "index" | "component";
 
 export interface Props {
   entry?: ComparisonEntry;
+  items?: DocsTocItem[];
   sourceLabel?: string;
   sourceUrl?: string;
   variant: DocsTocVariant;
 }
 
-const { entry, sourceLabel, sourceUrl, variant } = Astro.props;
+const { entry, items, sourceLabel, sourceUrl, variant } = Astro.props;
 const chromeMountClass = staticClassName(docsChromeMount);
 const tocMountClass = staticClassName(docsTocMount);
+const serializedItems = items && items.length > 0 ? JSON.stringify(items) : "";
 ---
 
 <div
@@ -22,9 +23,16 @@ const tocMountClass = staticClassName(docsTocMount);
   data-component-slug={entry?.slug ?? ""}
   data-source-label={sourceLabel ?? "S2 source"}
   data-source-url={sourceUrl ?? ""}
+  data-toc-items={serializedItems}
   data-variant={variant}
 >
-  <DocsTocFallback entry={entry} sourceLabel={sourceLabel} sourceUrl={sourceUrl} variant={variant} />
+  <DocsTocFallback
+    entry={entry}
+    items={items}
+    sourceLabel={sourceLabel}
+    sourceUrl={sourceUrl}
+    variant={variant}
+  />
 </div>
 <script>
   import "../scripts/docs-toc-mount.tsx";

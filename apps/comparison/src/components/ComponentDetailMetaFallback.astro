@@ -11,11 +11,23 @@ interface Props {
   entry: ComparisonEntry;
   controlGroup: ComponentControlGroup;
   coverage: ComponentCoverage;
+  // Namespaces the section anchor ids (e.g. "parity-") so they don't collide
+  // with page-authored heading ids when this block is reused inside a docs page.
+  // Defaults to "" — the legacy [slug].astro component-variant ToC targets the
+  // bare ids (#coverage, #api, #components, …).
+  idPrefix?: string;
   supportingLayers: ComparisonLayerId[];
   visualStates: readonly VisualStateTarget[];
 }
 
-const { entry, controlGroup, coverage, supportingLayers, visualStates } = Astro.props as Props;
+const {
+  entry,
+  controlGroup,
+  coverage,
+  idPrefix = "",
+  supportingLayers,
+  visualStates,
+} = Astro.props as Props;
 
 const layerTitles: Record<ComparisonLayerId, string> = {
   styled: "Styled Layer",
@@ -27,7 +39,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
 
 <section
   class="s2-section"
-  id="coverage"
+  id={`${idPrefix}coverage`}
   aria-labelledby="coverage-title"
   data-component-detail-meta-fallback
 >
@@ -48,7 +60,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
 
 <section
   class="s2-section"
-  id="visual-state-coverage"
+  id={`${idPrefix}visual-state-coverage`}
   aria-labelledby="visual-title"
   data-component-detail-meta-fallback
 >
@@ -76,7 +88,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
 
 <section
   class="s2-section"
-  id="api"
+  id={`${idPrefix}api`}
   aria-labelledby="api-title"
   data-component-detail-meta-fallback
 >
@@ -104,7 +116,7 @@ const layerTitles: Record<ComparisonLayerId, string> = {
   return (
     <section
       class="s2-section"
-      id={layer}
+      id={`${idPrefix}${layer}`}
       aria-labelledby={`${layer}-title`}
       data-component-detail-meta-fallback
     >

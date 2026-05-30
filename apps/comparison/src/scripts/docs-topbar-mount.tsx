@@ -1,5 +1,10 @@
 import { render } from "solid-js/web";
 import DocsTopBar from "@comparison/components/solid/DocsTopBar";
+import { parseTocItems, type DocsTocVariant } from "@comparison/data/docs-toc";
+
+function toDocsTocVariant(value: string | undefined): DocsTocVariant {
+  return value === "component" || value === "page" ? value : "index";
+}
 
 for (const mountNode of document.querySelectorAll<HTMLElement>(".js-docs-topbar-mount")) {
   if (mountNode.dataset.mounted) {
@@ -12,8 +17,9 @@ for (const mountNode of document.querySelectorAll<HTMLElement>(".js-docs-topbar-
   const reactSpectrumUrl = mountNode.dataset.reactSpectrumUrl || undefined;
   const referenceLabel = mountNode.dataset.referenceLabel || undefined;
   const referenceUrl = mountNode.dataset.referenceUrl || undefined;
+  const tocItems = parseTocItems(mountNode.dataset.tocItems);
   const tocSlug = mountNode.dataset.tocSlug || undefined;
-  const tocVariant = mountNode.dataset.tocVariant === "component" ? "component" : "index";
+  const tocVariant = toDocsTocVariant(mountNode.dataset.tocVariant);
   mountNode.replaceChildren();
 
   render(
@@ -24,6 +30,7 @@ for (const mountNode of document.querySelectorAll<HTMLElement>(".js-docs-topbar-
         reactSpectrumUrl,
         referenceLabel,
         referenceUrl,
+        tocItems,
         tocSlug,
         tocVariant,
       }),

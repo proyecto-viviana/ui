@@ -23,6 +23,7 @@ import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
 export interface DocsTocProps {
+  items?: DocsTocItem[];
   sourceLabel?: string;
   sourceUrl?: string;
   slug?: string;
@@ -122,35 +123,45 @@ export default function DocsToc(props: DocsTocProps) {
             "ul",
             { class: tocListClass },
             items.map((item) =>
-              h("li", { class: tocListItemClass }, [
-                hc(
-                  Link,
-                  {
-                    href: item.href,
-                    variant: "secondary",
-                    isStandalone: true,
-                    isQuiet: true,
-                    get UNSAFE_className() {
-                      return cx(tocLinkClass, currentHref() === item.href && tocLinkCurrentClass);
-                    },
-                    get "aria-current"() {
-                      return currentHref() === item.href ? "page" : undefined;
-                    },
-                  },
-                  [
-                    h("span", {
-                      "aria-hidden": "true",
-                      get class() {
-                        return cx(
-                          tocIndicatorClass,
-                          currentHref() === item.href && tocIndicatorCurrentClass,
-                        );
+              h(
+                "li",
+                {
+                  class: tocListItemClass,
+                  style:
+                    item.depth && item.depth > 2
+                      ? `padding-inline-start: ${(item.depth - 2) * 12}px`
+                      : undefined,
+                },
+                [
+                  hc(
+                    Link,
+                    {
+                      href: item.href,
+                      variant: "secondary",
+                      isStandalone: true,
+                      isQuiet: true,
+                      get UNSAFE_className() {
+                        return cx(tocLinkClass, currentHref() === item.href && tocLinkCurrentClass);
                       },
-                    }),
-                    h("span", { class: tocLinkTextClass }, item.label),
-                  ],
-                ),
-              ]),
+                      get "aria-current"() {
+                        return currentHref() === item.href ? "page" : undefined;
+                      },
+                    },
+                    [
+                      h("span", {
+                        "aria-hidden": "true",
+                        get class() {
+                          return cx(
+                            tocIndicatorClass,
+                            currentHref() === item.href && tocIndicatorCurrentClass,
+                          );
+                        },
+                      }),
+                      h("span", { class: tocLinkTextClass }, item.label),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -225,6 +236,7 @@ function createCurrentHref(items: DocsTocItem[]) {
 function getTocItems(props: DocsTocProps): DocsTocItem[] {
   return getDocsTocItems({
     entry: props.slug ? getComparisonEntry(props.slug) : undefined,
+    items: props.items,
     variant: props.variant,
   });
 }

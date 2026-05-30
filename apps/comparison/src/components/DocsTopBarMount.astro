@@ -1,6 +1,6 @@
 ---
 import DocsTopBarFallback from "./DocsTopBarFallback.astro";
-import type { DocsTocVariant } from "@comparison/data/docs-toc";
+import type { DocsTocItem, DocsTocVariant } from "@comparison/data/docs-toc";
 
 export interface Props {
   activeSlug?: string;
@@ -8,6 +8,7 @@ export interface Props {
   reactSpectrumUrl?: string;
   referenceLabel?: string;
   referenceUrl?: string;
+  tocItems?: DocsTocItem[];
   tocSlug?: string;
   tocVariant?: DocsTocVariant;
 }
@@ -18,10 +19,12 @@ const {
   reactSpectrumUrl,
   referenceLabel,
   referenceUrl,
+  tocItems,
   tocSlug,
   tocVariant,
 } = Astro.props;
 const normalizedReactSpectrumUrl = typeof reactSpectrumUrl === "string" ? reactSpectrumUrl : "";
+const serializedTocItems = tocItems && tocItems.length > 0 ? JSON.stringify(tocItems) : "";
 ---
 
 <div
@@ -31,6 +34,7 @@ const normalizedReactSpectrumUrl = typeof reactSpectrumUrl === "string" ? reactS
   data-react-spectrum-url={normalizedReactSpectrumUrl}
   data-reference-label={referenceLabel ?? "S2 docs"}
   data-reference-url={referenceUrl ?? ""}
+  data-toc-items={serializedTocItems}
   data-toc-slug={tocSlug ?? ""}
   data-toc-variant={tocVariant ?? "index"}
 >

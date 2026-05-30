@@ -1,6 +1,6 @@
 ---
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
-import { getDocsTocItems, type DocsTocVariant } from "@comparison/data/docs-toc";
+import { getDocsTocItems, type DocsTocItem, type DocsTocVariant } from "@comparison/data/docs-toc";
 import {
   docsTocActions,
   docsTocDivider,
@@ -17,12 +17,13 @@ import {
 
 export interface Props {
   entry?: ComparisonEntry;
+  items?: DocsTocItem[];
   sourceLabel?: string;
   sourceUrl?: string;
   variant: DocsTocVariant;
 }
 
-const { entry, sourceLabel, sourceUrl, variant } = Astro.props;
+const { entry, items, sourceLabel, sourceUrl, variant } = Astro.props;
 const tocNavClass = staticClassName(docsTocNav);
 const tocHeadingClass = staticClassName(docsTocHeading);
 const tocLinkClass = staticClassName(docsTocLink);
@@ -34,7 +35,7 @@ const tocActionsClass = staticClassName(docsTocActions);
 const tocDividerClass = staticClassName(docsTocDivider);
 const tocScrollerClass = staticClassName(docsTocScroller);
 
-const items = getDocsTocItems({ entry, variant });
+const tocItems = getDocsTocItems({ entry, items, variant });
 ---
 
 <div data-docs-toc-fallback>
@@ -42,8 +43,11 @@ const items = getDocsTocItems({ entry, variant });
   <div class={tocScrollerClass}>
     <nav class={tocNavClass} aria-label="On this page">
       <ul class={tocListClass}>
-        {items.map((item) => (
-          <li class={tocListItemClass}>
+        {tocItems.map((item) => (
+          <li
+            class={tocListItemClass}
+            style={item.depth && item.depth > 2 ? `padding-inline-start: ${(item.depth - 2) * 12}px` : undefined}
+          >
             <a href={item.href} class={tocLinkClass}>
               <span aria-hidden="true" class={tocIndicatorClass}></span>
               <span class={tocLinkTextClass}>{item.label}</span>

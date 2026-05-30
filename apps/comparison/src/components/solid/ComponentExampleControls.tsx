@@ -276,7 +276,11 @@ function controlField(
   );
 }
 
-function controlStack(control: ComponentControl, field: JSX.Element, className?: string) {
+function controlStack(
+  control: ComponentControl,
+  field: JSX.Element | (() => JSX.Element),
+  className?: string,
+) {
   const classes = ["s2-control-field-stack", className].filter(Boolean).join(" ");
   return h("div", { class: classes }, [controlLabel(control), field]);
 }

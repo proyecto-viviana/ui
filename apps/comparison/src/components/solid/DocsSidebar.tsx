@@ -1,10 +1,5 @@
 import h from "solid-js/h";
-import {
-  Disclosure,
-  DisclosurePanel,
-  DisclosureTitle,
-  Provider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Provider } from "@proyecto-viviana/solid-spectrum";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
 import {
   docsNavIndicator,
@@ -78,39 +73,23 @@ function normalizeActiveSlug(slug?: string): ComparisonSlug | undefined {
 }
 
 function navComponentsSection(activeSlug: ComparisonSlug | undefined) {
-  return hc(
-    Disclosure,
+  return h(
+    "div",
     {
       id: "components",
-      isQuiet: true,
-      density: "spacious",
-      defaultExpanded: true,
-      styles: navSectionClass,
-      UNSAFE_className: "s2-nav-section",
+      class: cx("s2-nav-section", navSectionClass, navSectionPanelClass),
     },
-    [
-      hc(DisclosureTitle, { level: 3 }, ["Components"]),
-      hc(
-        DisclosurePanel,
-        {
-          styles: navSectionPanelClass,
-          UNSAFE_className: "s2-nav-section-panel",
-        },
-        [
-          h(
-            "div",
-            { class: navSectionPanelInnerClass },
-            h(
-              "ul",
-              { class: cx("s2-nav-list", navListClass) },
-              comparisonEntries.map((item) =>
-                h("li", { class: navItemClass }, navLink(item, item.slug === activeSlug)),
-              ),
-            ),
-          ),
-        ],
+    h(
+      "div",
+      { class: navSectionPanelInnerClass },
+      h(
+        "ul",
+        { class: cx("s2-nav-list", navListClass) },
+        comparisonEntries.map((item) =>
+          h("li", { class: navItemClass }, navLink(item, item.slug === activeSlug)),
+        ),
       ),
-    ],
+    ),
   );
 }
 

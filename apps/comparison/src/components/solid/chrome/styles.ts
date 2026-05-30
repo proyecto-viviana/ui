@@ -1,5 +1,6 @@
 import {
   focusRing,
+  iconStyle,
   style,
   type StyleString,
 } from "@proyecto-viviana/solid-spectrum/style" with { type: "macro" };
@@ -83,9 +84,9 @@ export const docsBrandMark = style({
   width: 26,
   height: 26,
   borderRadius: "sm",
-  backgroundColor: "neutral",
-  color: "auto",
-  font: "ui",
+  backgroundColor: "informative",
+  color: "white",
+  font: "ui-sm",
   fontWeight: "black",
 });
 
@@ -561,8 +562,8 @@ export const docsArticleColumn = style({
 
 export const docsArticleContent = style({
   "--text-width": {
-    type: "length",
-    value: "768px",
+    type: "width",
+    value: "[768px]",
   },
   display: "grid",
   gap: "[34px]",
@@ -832,3 +833,120 @@ export const docsTocActions = style({
 export const docsTocDivider = style({
   marginY: 12,
 });
+
+// Typography styles mirrored from react-spectrum/packages/dev/s2-docs/src/typography.tsx.
+// Keep value-for-value parity with upstream — do not invent sizes, weights, or selectors.
+
+export const docsTypographyH1 = style({
+  font: "heading-3xl",
+  // This variable is used to calculate the line height.
+  // Normally it is set by the fontSize, but the custom clamp prevents this.
+  "--fs": {
+    type: "opacity",
+    value: {
+      default: "pow(1.125, 10)", // heading-2xl
+      isLongForm: "pow(1.125, 8)", // heading-xl
+    },
+  },
+  fontSize: {
+    default: {
+      // On mobile, adjust heading to fit in the viewport, and clamp between a min and max font size.
+      default: "[clamp(2.1875rem, (100vw - 32px) / var(--width-per-em), 3.4375rem)]",
+      isLongForm: "[clamp(2.1875rem, (100vw - 32px) / var(--width-per-em), 2.75rem)]",
+    },
+    lg: {
+      default: "heading-3xl",
+      isLongForm: "heading-2xl",
+    },
+  },
+  textWrap: "balance",
+  marginY: 0,
+  width: "full",
+  maxWidth: "--text-width",
+  marginX: "auto",
+});
+
+export const docsTypographyH2 = style({
+  font: "heading-lg",
+  marginTop: 48,
+  marginBottom: 24,
+  maxWidth: "--text-width",
+  marginX: "auto",
+  textWrap: "balance",
+  position: "relative",
+  overflowX: "clip",
+});
+
+export const docsTypographyH3 = style({
+  font: "heading",
+  marginTop: 36,
+  marginBottom: 24,
+  maxWidth: "--text-width",
+  marginX: "auto",
+  textWrap: "balance",
+  position: "relative",
+  overflowX: { default: "clip", ":has([data-step])": "visible" },
+});
+
+export const docsTypographyH4 = style({
+  font: "heading-sm",
+  maxWidth: "--text-width",
+  marginX: "auto",
+  textWrap: "balance",
+  position: "relative",
+  overflowX: "clip",
+});
+
+export const docsTypographyP = style({
+  font: "body-lg",
+  fontFamily: {
+    default: "sans",
+    isLongForm: "serif",
+  },
+  textWrap: "pretty",
+  marginY: "[1lh]",
+  maxWidth: "--text-width",
+  marginX: "auto",
+});
+
+export const docsTypographyLI = style({
+  font: "body-lg",
+  fontFamily: {
+    default: "sans",
+    isLongForm: "serif",
+  },
+  textWrap: "pretty",
+  marginY: {
+    default: 0,
+    isLongForm: 8,
+  },
+  maxWidth: "--text-width",
+  marginX: "auto",
+});
+
+export const docsTypographyPageDescription = style({
+  font: "body-xl",
+  maxWidth: "--text-width",
+  marginX: "auto",
+  marginTop: 8,
+  marginBottom: 24,
+});
+
+export const docsTypographyAnchor = style({
+  position: "absolute",
+  opacity: {
+    default: 0,
+    isHovered: 1,
+    isFocusVisible: 1,
+  },
+  marginStart: {
+    default: 8,
+    level: {
+      3: 4,
+      4: 4,
+    },
+  },
+  transition: "[opacity 0.2s ease-in-out]",
+});
+
+export const docsTypographyAnchorIcon = iconStyle({ size: "S", marginBottom: 4 });
