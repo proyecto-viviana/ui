@@ -1,0 +1,48 @@
+---
+// Phase 3 (degraded): two-column Name / Parity table from the manifest's
+// apiProps list. Types, defaults, descriptions, and grouped sections land in
+// Phase 5 (prop metadata extractor). Fully static — no island.
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+
+interface Props {
+  component: string;
+}
+
+const { component } = Astro.props as Props;
+const entry = getComparisonEntry(component) ?? getComparisonEntry(component.toLowerCase());
+const group = entry ? getComponentControlGroup(entry) : null;
+const apiProps = group?.apiProps ?? [];
+---
+
+{
+  !entry ? (
+    <div class="s2-prop-table-stub s2-empty-state">No manifest entry for "{component}".</div>
+  ) : (
+    <div class="s2-prop-table-stub">
+      <p class="s2-prop-table-stub-note">
+        Types and defaults land in Phase 5 (prop metadata extractor).
+      </p>
+      {apiProps.length === 0 ? (
+        <div class="s2-empty-state">No tracked props.</div>
+      ) : (
+        <table class="s2-prop-table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Parity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {apiProps.map((name) => (
+              <tr>
+                <td><code>{name}</code></td>
+                <td>tracked</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}

@@ -1,0 +1,32 @@
+---
+// Phase 3 (stub): the full preview + parity-tabs surface lands in Phase 4 (it
+// becomes a nested island only where genuine interactivity is needed). For now
+// this is a static card; the example code is shown via Astro's built-in Shiki
+// <Code> component (zero extra deps). The prop contract is the final shape so
+// Phase 4 doesn't change it.
+import { Code } from "astro:components";
+
+interface Props {
+  component: string;
+  example?: string;
+  showCompare?: boolean;
+  height?: string;
+  code?: string;
+  lang?: string;
+}
+
+const { component, example, code, lang = "tsx" } = Astro.props as Props;
+const subtitle = example ?? component;
+---
+
+<section class="s2-comparison-example-stub" data-comparison-example={component}>
+  <header class="s2-comparison-example-stub-header">
+    <strong>Example</strong>
+    <span>{subtitle}</span>
+  </header>
+  <p class="s2-comparison-example-stub-note">
+    Example surface lands in Phase 4 (single preview by default; Compare tab opts
+    into the dual-panel parity view).
+  </p>
+  {code ? <Code code={code} lang={lang as any} theme="github-dark" /> : <slot />}
+</section>

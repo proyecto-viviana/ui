@@ -1,0 +1,27 @@
+---
+// Phase 3 (stub): the real StateTable lands in Phase 5 alongside the prop
+// metadata extractor (same metadata source). Renders any declared state names
+// passed in. Fully static — no island.
+interface Props {
+  component?: string;
+  properties?: string[];
+}
+
+const { component, properties = [] } = Astro.props as Props;
+---
+
+<div class="s2-state-table-stub" data-state-table={component ?? ""}>
+  <p class="s2-state-table-stub-note">
+    State table — final implementation lands in Phase 5 (prop metadata extractor).
+  </p>
+  {
+    properties.length > 0 && (
+      <ul class="s2-state-table-stub-list">
+        {properties.map((name) => (
+          <li><code>{name}</code></li>
+        ))}
+      </ul>
+    )
+  }
+  <slot />
+</div>

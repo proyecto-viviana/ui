@@ -1,0 +1,47 @@
+---
+// Static parity report for a component docs page. Wraps the existing
+// ComponentDetailMetaFallback (the SSR markup already used by the legacy
+// [slug].astro path) in a native <details> so the parity story stays present
+// but visually quiet. Fully server-rendered — no island, no client JS.
+import ComponentDetailMetaFallback from "./ComponentDetailMetaFallback.astro";
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import { getComponentCoverage } from "@comparison/data/coverage";
+import {
+  getComparisonEntry,
+  layerOrder,
+  type ComparisonLayerId,
+} from "@comparison/data/comparison-manifest";
+import { getVisualStateTargets } from "@comparison/data/visual-state-matrix";
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props as Props;
+const entry = getComparisonEntry(slug);
+const playgroundLayer: ComparisonLayerId = "styled";
+const controlGroup = entry ? getComponentControlGroup(entry) : null;
+const coverage = entry && controlGroup ? getComponentCoverage(entry, controlGroup) : null;
+const visualStates = entry ? getVisualStateTargets(entry) : [];
+const supportingLayers = layerOrder.filter((layer) => layer !== playgroundLayer);
+---
+
+{
+  entry && controlGroup && coverage ? (
+    <details class="s2-parity-disclosure">
+      <summary class="s2-parity-disclosure-summary">Parity report</summary>
+      <div class="s2-parity-disclosure-body">
+        <ComponentDetailMetaFallback
+          entry={entry}
+          controlGroup={controlGroup}
+          coverage={coverage}
+          idPrefix="parity-"
+          supportingLayers={supportingLayers}
+          visualStates={visualStates}
+        />
+      </div>
+    </details>
+  ) : (
+    <div class="s2-empty-state">No parity data for "{slug}".</div>
+  )
+}

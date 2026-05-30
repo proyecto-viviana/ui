@@ -1,0 +1,122 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Button.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight markers stripped. Gated by `report:parity --slug=button`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "button";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Button";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#events", label: "Events", depth: 2 },
+  { href: "#pending", label: "Pending", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#button-anatomy", label: "Button", depth: 3 },
+];
+
+const eventsCode = `"use client";
+import {Button} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [count, setCount] = useState(0);
+
+  return (
+    <Button onPress={() => setCount(c => c + 1)}>
+      {\`\${count} Edits\`}
+    </Button>
+  );
+}`;
+
+const pendingCode = `"use client";
+import {Button} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function PendingButton() {
+  let [isPending, setPending] = useState(false);
+
+  return (
+    <Button
+      variant="primary"
+      isPending={isPending}
+      onPress={() => {
+        setPending(true);
+        setTimeout(() => {
+          setPending(false);
+        }, 5000);
+      }}>
+      Save
+    </Button>
+  );
+}`;
+
+const anatomyCode = `<Button>
+  <Icon />
+  <Text />
+</Button>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="button" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Buttons allow users to perform an action. They have multiple styles for various needs, and are
+    ideal for calling attention to where a user needs to do something in order to move forward in a
+    flow.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="events" class={h2Class}>Events</h2>
+  <p class={pClass}>
+    Use the <code>onPress</code> prop to handle interactions via mouse, keyboard, and touch. The
+    <code>onPressStart</code>, <code>onPressEnd</code>, and <code>onPressChange</code> events are
+    also emitted as the user interacts with the button.
+  </p>
+  <Code code={eventsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="pending" class={h2Class}>Pending</h2>
+  <p class={pClass}>
+    Use the <code>isPending</code> prop to display a pending state. Pending buttons remain
+    focusable, but are otherwise disabled. After a 1 second delay, an indeterminate spinner will be
+    displayed in place of the button label and icon.
+  </p>
+  <Code code={pendingCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+  <h3 id="button-anatomy" class={h3Class}>Button</h3>
+  <PropTable component="button" />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

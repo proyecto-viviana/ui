@@ -1,0 +1,61 @@
+---
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComparisonExample from "@comparison/components/ComparisonExample.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const entry = getComparisonEntry("button");
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Button";
+const widthPerEm = getTextWidth(title);
+const buttonExample = `<Button variant="primary">Save</Button>`;
+const toc = [
+  { href: "#button", label: "Button" },
+  { href: "#events", label: "Events" },
+  { href: "#pending", label: "Pending" },
+  { href: "#api", label: "API" },
+];
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug="button"
+  sidebarNavigationLabel="Components"
+  title="Button | Solid Spectrum (astro-smoke)"
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="button" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>A button allows a user to perform an action or to navigate to another page.</p>
+
+  <ComparisonExample component="Button" code={buttonExample} />
+
+  <h2 id="events" class={h2Class}>Events</h2>
+  <p class={pClass}>
+    Use the <code>onPress</code> prop to handle interactions via mouse, keyboard, and touch.
+  </p>
+
+  <h2 id="pending" class={h2Class}>Pending</h2>
+  <p class={pClass}>
+    Use the <code>isPending</code> prop to display a pending state.
+  </p>
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component="button" />
+
+  <ParityDisclosure slug="button" />
+</DocsPageLayout>
