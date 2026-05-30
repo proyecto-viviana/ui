@@ -3276,6 +3276,43 @@ html[data-resolved-theme="dark"] .s2-marketing-hero-card-pill--quiet {
   line-height: 1.45;
 }
 
+/* Heading anchor-on-hover, mirroring upstream s2-docs typography (AnchorLink).
+   The anchor is injected by docs-heading-anchors.ts; with auto offsets it sits
+   at its static position right after the heading text, fading in on hover. */
+.s2-article :is(h2, h3, h4)[id] {
+  position: relative;
+}
+
+.s2-heading-anchor {
+  position: absolute;
+  margin-inline-start: 8px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--s2-text-muted, #959595);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.s2-article :is(h3, h4)[id] .s2-heading-anchor {
+  margin-inline-start: 4px;
+}
+
+.s2-heading-anchor svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.s2-article :is(h2, h3, h4)[id]:hover .s2-heading-anchor,
+.s2-heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+.s2-heading-anchor:hover {
+  color: var(--s2-text, #111);
+}
+
 .s2-parity-disclosure {
   margin: 48px auto 0;
   max-width: var(--text-width, 768px);
