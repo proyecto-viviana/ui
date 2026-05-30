@@ -870,6 +870,7 @@ export const docsTypographyH2 = style({
   font: "heading-lg",
   marginTop: 48,
   marginBottom: 24,
+  width: "full",
   maxWidth: "--text-width",
   marginX: "auto",
   textWrap: "balance",
@@ -881,6 +882,7 @@ export const docsTypographyH3 = style({
   font: "heading",
   marginTop: 36,
   marginBottom: 24,
+  width: "full",
   maxWidth: "--text-width",
   marginX: "auto",
   textWrap: "balance",
@@ -890,6 +892,7 @@ export const docsTypographyH3 = style({
 
 export const docsTypographyH4 = style({
   font: "heading-sm",
+  width: "full",
   maxWidth: "--text-width",
   marginX: "auto",
   textWrap: "balance",
