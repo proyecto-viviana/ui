@@ -1,0 +1,20 @@
+This directory contains MDX source files vendored from
+github.com/adobe/react-spectrum under the Apache License 2.0.
+
+Upstream:           https://github.com/adobe/react-spectrum
+Path:               packages/dev/s2-docs/pages/s2/
+License:            Apache-2.0 (see ../LICENSE-react-spectrum)
+Source:             local react-spectrum/ checkout at the repo root
+Upstream version:   2.21.0-beta.0
+Synced:             2026-05-28T15:15:21.538Z
+
+Synced pages:
+  - Button.mdx
+  - ComboBox.mdx
+  - DatePicker.mdx
+
+These files are read-only inputs to
+`apps/comparison/scripts/import-s2-docs-mdx.ts`. Do not hand-edit. To
+refresh, run:
+
+  vp run --filter @proyecto-viviana/comparison sync:vendor

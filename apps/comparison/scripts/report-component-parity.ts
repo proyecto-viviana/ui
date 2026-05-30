@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
@@ -15,6 +15,18 @@ interface Gap {
 
 const strict = process.argv.includes("--strict");
 
+// Optional per-component scope for the dev loop: `--slug=button` narrows every
+// gap section (and the strict exit code) to a single component, so porting one
+// docs page at a time has a focused gate to run.
+const slugFilter = (() => {
+  const arg = process.argv.find((value) => value.startsWith("--slug="));
+  return arg ? arg.slice("--slug=".length).trim().toLowerCase() : undefined;
+})();
+
+function scope<T extends { slug: string }>(gaps: readonly T[]): readonly T[] {
+  return slugFilter ? gaps.filter((gap) => gap.slug === slugFilter) : gaps;
+}
+
 function titleForSlug(slug: string): string {
   return reactSpectrumCatalogue.find((entry) => entry.slug === slug)?.title ?? slug;
 }
@@ -26,13 +38,14 @@ function formatGap(gap: Gap): string {
 }
 
 function printGapSection(label: string, gaps: readonly Gap[]): void {
-  if (gaps.length === 0) {
+  const scoped = scope(gaps);
+  if (scoped.length === 0) {
     console.log(`[pass] ${label}`);
     return;
   }
 
-  console.log(`[gap] ${label}: ${gaps.length}`);
-  for (const gap of gaps) {
+  console.log(`[gap] ${label}: ${scoped.length}`);
+  for (const gap of scoped) {
     console.log(formatGap(gap));
   }
 }
@@ -133,6 +146,110 @@ function hasCurrentVisualEvidence(slug: string): boolean {
   );
 }
 
+// --- Docs-page gate (Stage 1: static structural faithfulness + integrity) ---
+//
+// Each component's docs page is a hand-authored static .astro at
+// src/pages/components/<slug>.astro (the astro-smoke shape). This gate verifies,
+// without a browser, that a ported page (a) mirrors the upstream section
+// structure of the vendored s2-docs MDX and (b) is internally sound: ToC anchors
+// resolve to real heading ids, ids are unique, and <ParityDisclosure> is present.
+const docsPagesDir = new URL("../src/pages/components/", import.meta.url);
+const vendorPagesDir = new URL("../vendor/s2-docs/pages/", import.meta.url);
+
+function docsPageUrl(slug: string): URL {
+  return new URL(`${slug}.astro`, docsPagesDir);
+}
+
+function hasDocsPage(slug: string): boolean {
+  return existsSync(docsPageUrl(slug));
+}
+
+const vendoredMdxBySlug = (() => {
+  const map = new Map<string, string>();
+  const dir = fileURLToPath(vendorPagesDir);
+  if (existsSync(dir)) {
+    for (const name of readdirSync(dir)) {
+      if (name.endsWith(".mdx")) {
+        map.set(name.slice(0, -".mdx".length).toLowerCase(), name);
+      }
+    }
+  }
+  return map;
+})();
+
+function stripInlineMd(text: string): string {
+  return text
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&[a-z]+;|&#\d+;/g, "")
+    .trim();
+}
+
+function normalizeHeading(text: string): string {
+  return stripInlineMd(text).toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function upstreamSections(slug: string): string[] {
+  const file = vendoredMdxBySlug.get(slug);
+  if (!file) {
+    return [];
+  }
+  const source = readFileSync(fileURLToPath(new URL(file, vendorPagesDir)), "utf8");
+  const sections: string[] = [];
+  for (const line of source.split("\n")) {
+    const match = line.match(/^(#{2,3})\s+(.*)$/);
+    if (match) {
+      const normalized = normalizeHeading(match[2]);
+      if (normalized) {
+        sections.push(normalized);
+      }
+    }
+  }
+  return sections;
+}
+
+interface PortedPage {
+  headingTexts: Set<string>;
+  headingIds: string[];
+  tocHrefs: string[];
+  hasParity: boolean;
+}
+
+function readPortedPage(slug: string): PortedPage | null {
+  if (!hasDocsPage(slug)) {
+    return null;
+  }
+  const source = readFileSync(fileURLToPath(docsPageUrl(slug)), "utf8");
+  const headingTexts = new Set<string>();
+  const headingIds: string[] = [];
+  const headingRe = /<(h[1-3])\b[^>]*?\bid="([^"]*)"[^>]*>([\s\S]*?)<\/\1>/g;
+  let match: RegExpExecArray | null;
+  while ((match = headingRe.exec(source)) !== null) {
+    headingIds.push(match[2]);
+    const normalized = normalizeHeading(match[3]);
+    if (normalized) {
+      headingTexts.add(normalized);
+    }
+  }
+  const tocHrefs: string[] = [];
+  const tocBlock = source.match(/const toc\s*=\s*\[([\s\S]*?)\]\s*;/);
+  if (tocBlock) {
+    const hrefRe = /href:\s*"([^"]+)"/g;
+    let hrefMatch: RegExpExecArray | null;
+    while ((hrefMatch = hrefRe.exec(tocBlock[1])) !== null) {
+      tocHrefs.push(hrefMatch[1]);
+    }
+  }
+  return {
+    headingTexts,
+    headingIds,
+    tocHrefs,
+    hasParity: /<ParityDisclosure\b/.test(source),
+  };
+}
+
 const officialEntriesBySlug = new Map(reactSpectrumCatalogue.map((entry) => [entry.slug, entry]));
 const comparisonEntriesBySlug = new Map(comparisonEntries.map((entry) => [entry.slug, entry]));
 const officialSlugs = new Set(officialEntriesBySlug.keys());
@@ -145,7 +262,7 @@ for (const entry of comparisonEntries) {
 }
 
 const reactStyledFixtureSlugs = readObjectLiteralKeys(
-  new URL("../src/components/react/fixtures/styled.jsx", import.meta.url),
+  new URL("../src/components/react/fixtures/styled.js", import.meta.url),
   "reactStyledFixtures",
 );
 const solidStyledFixtureSlugs = readObjectLiteralKeys(
@@ -214,6 +331,63 @@ const noCurrentVisualEvidence = reactSpectrumCatalogue
   .filter((entry) => !hasCurrentVisualEvidence(entry.slug))
   .map((entry) => ({ slug: entry.slug, title: entry.title }));
 
+// Docs-page gate.
+const docsPagesMissing: Gap[] = [];
+const docsSectionDrift: Gap[] = [];
+const docsIntegrityGaps: Gap[] = [];
+let docsPagesPorted = 0;
+
+for (const entry of reactSpectrumCatalogue) {
+  const ported = readPortedPage(entry.slug);
+  if (!ported) {
+    // Only a "porting backlog" gap when there's upstream MDX to port from.
+    if (vendoredMdxBySlug.has(entry.slug)) {
+      docsPagesMissing.push({
+        slug: entry.slug,
+        title: entry.title,
+        detail: `no src/pages/components/${entry.slug}.astro`,
+      });
+    }
+    continue;
+  }
+
+  docsPagesPorted += 1;
+
+  // (a) Structural faithfulness: every upstream H2/H3 section must appear as a
+  // heading on the ported page.
+  const sections = upstreamSections(entry.slug);
+  const missingSections = sections.filter((section) => !ported.headingTexts.has(section));
+  if (missingSections.length > 0) {
+    docsSectionDrift.push({
+      slug: entry.slug,
+      title: entry.title,
+      detail: `missing upstream sections: ${missingSections.join(", ")}`,
+    });
+  }
+
+  // (b) Integrity: unique heading ids, ToC anchors resolve, ParityDisclosure present.
+  const problems: string[] = [];
+  const duplicateIds = [
+    ...new Set(ported.headingIds.filter((id, index) => ported.headingIds.indexOf(id) !== index)),
+  ];
+  if (duplicateIds.length > 0) {
+    problems.push(`duplicate heading ids: ${duplicateIds.join(", ")}`);
+  }
+  const idSet = new Set(ported.headingIds);
+  const danglingToc = ported.tocHrefs.filter(
+    (href) => href.startsWith("#") && !idSet.has(href.slice(1)),
+  );
+  if (danglingToc.length > 0) {
+    problems.push(`ToC anchors with no heading: ${danglingToc.join(", ")}`);
+  }
+  if (!ported.hasParity) {
+    problems.push("missing <ParityDisclosure>");
+  }
+  if (problems.length > 0) {
+    docsIntegrityGaps.push({ slug: entry.slug, title: entry.title, detail: problems.join("; ") });
+  }
+}
+
 const blockingGaps = [
   missingManifestEntries,
   extraManifestEntries,
@@ -226,8 +400,12 @@ const blockingGaps = [
   missingReactStyledFixtures,
   missingSolidStyledFixtures,
   missingValidationNotes,
-].reduce((count, gaps) => count + gaps.length, 0);
-const depthGaps = noCurrentVisualEvidence.length;
+  // Ported docs pages must stay faithful + internally sound. (Not-yet-ported
+  // pages live in docsPagesMissing, which is tracked but non-blocking.)
+  docsSectionDrift,
+  docsIntegrityGaps,
+].reduce((count, gaps) => count + scope(gaps).length, 0);
+const depthGaps = scope(noCurrentVisualEvidence).length;
 
 console.log("Comparison component parity audit");
 console.log(`Official S2 catalogue entries: ${reactSpectrumCatalogue.length}`);
@@ -250,6 +428,10 @@ console.log(
     reactSpectrumCatalogue.length - depthGaps
   }`,
 );
+console.log(`Docs pages ported: ${docsPagesPorted} / ${vendoredMdxBySlug.size} vendored`);
+if (slugFilter) {
+  console.log(`Scoped to slug: ${slugFilter}`);
+}
 console.log("");
 console.log(
   "Note: React Spectrum S2 documents this route as `Icons`; the comparison slug is `icons`.",
@@ -277,6 +459,11 @@ printGapSection(
   "Official entries without current visual/asserted evidence",
   noCurrentVisualEvidence,
 );
+
+console.log("");
+printGapSection("Docs pages not yet ported (upstream MDX vendored)", docsPagesMissing);
+printGapSection("Docs pages drifting from upstream section structure", docsSectionDrift);
+printGapSection("Docs pages with ToC / anchor / parity integrity problems", docsIntegrityGaps);
 
 if (strict && (blockingGaps > 0 || depthGaps > 0)) {
   process.exitCode = 1;

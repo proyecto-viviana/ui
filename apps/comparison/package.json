@@ -10,6 +10,7 @@
     "build:workspace-deps": "vp run --filter @proyecto-viviana/solid-stately build && vp run --filter @proyecto-viviana/solidaria build && vp run --filter @proyecto-viviana/solidaria-components build && vp run --filter @proyecto-viviana/solid-spectrum build",
     "report:gaps": "tsx scripts/report-catalogue-gaps.ts",
     "report:exports": "tsx scripts/report-s2-export-gaps.ts",
+    "sync:vendor": "tsx scripts/sync-vendor-s2-docs.ts",
     "report:parity": "tsx scripts/report-component-parity.ts",
     "report:parity:strict": "tsx scripts/report-component-parity.ts --strict",
     "test:button": "vp run build && playwright test e2e/button-visual.spec.ts e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/grouped-button-controls-visual.spec.ts e2e/collection-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
