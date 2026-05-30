@@ -1,0 +1,53 @@
+---
+import {
+  comparisonEntries,
+  missingOfficialComparisonEntries,
+  officialComparisonEntries,
+} from "@comparison/data/comparison-manifest";
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+import { getComponentCoverage } from "@comparison/data/coverage";
+import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
+import { officialVisualStateSummary } from "@comparison/data/visual-state-matrix";
+import CatalogueOverviewMount from "@comparison/components/CatalogueOverviewMount.astro";
+import IndexHeroMount from "@comparison/components/IndexHeroMount.astro";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+
+const liveCount = comparisonEntries.filter((entry) => entry.priority === "live").length;
+const officialCount = officialComparisonEntries.length;
+const missingOfficialCount = missingOfficialComparisonEntries.length;
+const visualEvidenceStateCount = officialVisualStateSummary.visualEvidenceStates;
+const strictStateCount = officialVisualStateSummary.strictPairDiffStates;
+
+const entriesWithCoverage = comparisonEntries.map((entry) => ({
+  entry,
+  coverage: getComponentCoverage(entry, getComponentControlGroup(entry)),
+}));
+
+const overallCoverage = Math.round(
+  entriesWithCoverage.reduce((sum, item) => sum + item.coverage.overall, 0) /
+    entriesWithCoverage.length,
+);
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={reactSpectrumCatalogueSource.url}
+  sidebarNavigationLabel="Documentation"
+  sidebarReferenceLabel="S2 catalogue"
+  sidebarReferenceUrl={reactSpectrumCatalogueSource.url}
+  title="Coverage"
+  tocSourceLabel="S2 source"
+  tocSourceUrl={reactSpectrumCatalogueSource.url}
+  tocVariant="index"
+>
+  <IndexHeroMount />
+
+  <CatalogueOverviewMount
+    entriesWithCoverage={entriesWithCoverage}
+    missingOfficialCount={missingOfficialCount}
+    officialCount={officialCount}
+    overallCoverage={overallCoverage}
+    strictStateCount={strictStateCount}
+    visualEvidenceStateCount={visualEvidenceStateCount}
+    liveCount={liveCount}
+  />
+</DocsPageLayout>

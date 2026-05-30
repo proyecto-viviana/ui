@@ -1,0 +1,59 @@
+---
+import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
+---
+
+<div class="s2-marketing-hero">
+  <section class="s2-marketing-hero-section" aria-labelledby="marketing-hero-title">
+    <div class="s2-marketing-hero-inner">
+      <div class="s2-marketing-hero-copy">
+        <h1 id="marketing-hero-title" class="s2-marketing-hero-title">
+          Spectrum 2, made for Solid.
+        </h1>
+        <p class="s2-marketing-hero-lede">
+          A faithful SolidJS port of Adobe's Spectrum 2 design system. Accessible primitives,
+          styled components, and a parity-tracked migration path from React Spectrum.
+        </p>
+        <div class="s2-marketing-hero-actions">
+          <a class="s2-marketing-hero-button s2-marketing-hero-button--accent" href="/coverage"
+            >Browse components</a
+          >
+          <a
+            class="s2-marketing-hero-button s2-marketing-hero-button--secondary"
+            href={reactSpectrumCatalogueSource.url}>React Spectrum</a
+          >
+        </div>
+      </div>
+      <div class="s2-marketing-hero-visual" aria-hidden="true">
+        <div class="s2-marketing-hero-card">
+          <div class="s2-marketing-hero-card-bar">
+            <span class="s2-marketing-hero-card-dot"></span>
+            <span class="s2-marketing-hero-card-dot"></span>
+            <span class="s2-marketing-hero-card-dot"></span>
+            <span class="s2-marketing-hero-card-title">Solid Spectrum</span>
+          </div>
+          <div class="s2-marketing-hero-card-body">
+            <div class="s2-marketing-hero-card-row">
+              <span class="s2-marketing-hero-card-pill s2-marketing-hero-card-pill--accent"
+                >Accent</span
+              >
+              <span class="s2-marketing-hero-card-pill">Secondary</span>
+              <span class="s2-marketing-hero-card-pill s2-marketing-hero-card-pill--quiet"
+                >Quiet</span
+              >
+            </div>
+            <div class="s2-marketing-hero-card-row">
+              <div class="s2-marketing-hero-card-tile"></div>
+              <div class="s2-marketing-hero-card-tile"></div>
+              <div class="s2-marketing-hero-card-tile"></div>
+              <div class="s2-marketing-hero-card-tile"></div>
+            </div>
+            <div class="s2-marketing-hero-card-row">
+              <div class="s2-marketing-hero-card-tile s2-marketing-hero-card-tile--wide"></div>
+              <div class="s2-marketing-hero-card-tile"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

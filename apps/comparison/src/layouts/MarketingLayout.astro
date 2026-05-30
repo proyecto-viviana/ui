@@ -1,0 +1,84 @@
+---
+import DocsFooterMount from "@comparison/components/DocsFooterMount.astro";
+import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
+import "@comparison/styles/global.css";
+
+export interface Props {
+  reactSpectrumUrl?: string;
+  title: string;
+}
+
+const { reactSpectrumUrl, title } = Astro.props;
+const s2PrimaryFontPreloadUrl =
+  "https://use.typekit.net/af/ca4cba/0000000000000000775c55a1/31/l?primer=f592e0a4b9356877842506ce344308576437e4f677d7c9b78ca2162e6cad991a&fvd=n1&v=3";
+---
+
+<html lang="en" data-theme="system" data-resolved-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://use.typekit.net" crossorigin />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href={s2PrimaryFontPreloadUrl}
+    />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        const storageKey = "solid-spectrum-theme";
+        const isThemeChoice = (value) =>
+          value === "system" || value === "light" || value === "dark";
+
+        let theme = "system";
+
+        try {
+          const savedTheme = window.localStorage.getItem(storageKey);
+
+          if (isThemeChoice(savedTheme)) {
+            theme = savedTheme;
+          }
+        } catch {
+          theme = "system";
+        }
+
+        const resolvedTheme =
+          theme === "light" || theme === "dark"
+            ? theme
+            : window.matchMedia?.("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+
+        root.dataset.theme = theme;
+        root.dataset.resolvedTheme = resolvedTheme;
+      })();
+    </script>
+    <title>{title}</title>
+  </head>
+  <body class="comparison-app s2-docs s2-marketing" data-theme="system" data-resolved-theme="light">
+    <script is:inline>
+      (() => {
+        const root = document.body;
+        const theme = document.documentElement.dataset.theme || "system";
+        const resolvedTheme = document.documentElement.dataset.resolvedTheme || "light";
+        root.dataset.theme = theme;
+        root.dataset.resolvedTheme = resolvedTheme;
+      })();
+    </script>
+
+    <DocsTopBarMount reactSpectrumUrl={reactSpectrumUrl} tocVariant="index" />
+
+    <main class="s2-marketing-main">
+      <slot />
+    </main>
+
+    <DocsFooterMount />
+
+    <script>
+      import "@comparison/scripts/docs-theme";
+    </script>
+  </body>
+</html>
