@@ -51,6 +51,9 @@ output/playwright/
 /table-page-snapshot.yaml
 /table-page.png
 
+# Comparison visual-audit captures (regenerable; see docs/comparison-docs-overhaul/08-visual-audit.md)
+docs/comparison-docs-overhaul/assets/visual-audit/
+
 # Local
 .DS_Store
 .mcp.json
