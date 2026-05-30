@@ -311,6 +311,15 @@ const comparisonS2Macros = () => {
       }
 
       const filePath = stripViteRequestSuffix(id);
+      // The native macro transform only supports JS/TS extensions; invoking it
+      // for any other module (e.g. an .astro docs page that merely *quotes* a
+      // `with { type: 'macro' }` import inside a code sample) passes an
+      // undefined Type to the napi binding and crashes the build. Mirror the
+      // underlying plugin's own transformInclude gate before delegating.
+      if (!(plugin.transformInclude?.call(this, filePath) ?? true)) {
+        return null;
+      }
+
       const result = await plugin.transform?.call(this, code, filePath);
       const transformedCode =
         typeof result === "string"
