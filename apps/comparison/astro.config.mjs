@@ -366,7 +366,10 @@ const comparisonS2Macros = () => {
 export default defineConfig({
   integrations: [
     comparisonReact({
-      include: ["src/components/react/**/*"],
+      // The current React comparison island is precompiled JS. Keep the React
+      // dev transform scoped to future raw JSX/TSX files so Fast Refresh does
+      // not wrap the manual mount path before Astro's preamble is available.
+      include: ["src/components/react/**/*.jsx", "src/components/react/**/*.tsx"],
       exclude: [
         "src/components/solid/**/*",
         "../../packages/solid-stately/src/**/*",

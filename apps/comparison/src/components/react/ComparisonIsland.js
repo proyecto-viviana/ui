@@ -19,7 +19,7 @@ import {
   comparisonTabItems as tabItems,
   getComparisonReferenceKind,
 } from "@comparison/data/comparison-contract";
-import { reactStyledFixtures } from "./fixtures/styled.jsx";
+import { reactStyledFixtures } from "./fixtures/styled.js";
 function ComparisonIsland(props) {
   const overlayRootRef = useRef(null);
   return /* @__PURE__ */ jsxs("div", {

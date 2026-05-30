@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import ComparisonIsland from "../components/react/ComparisonIsland.jsx";
+import ComparisonIsland from "../components/react/ComparisonIsland.js";
 
 export function mountReactComparisonIslands(root: ParentNode = document) {
   for (const mountNode of root.querySelectorAll<HTMLElement>(".js-react-mount")) {
