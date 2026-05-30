@@ -503,19 +503,13 @@ const anatomyCode = `<ComboBox>
   <Code code={anatomyCode} lang="tsx" theme="github-dark" />
 
   <h3 id="api-combobox" class={h3Class}>ComboBox</h3>
-  <PropTable component={slug} />
+  <PropTable source="ComboBox" />
 
   <h3 id="api-comboboxitem" class={h3Class}>ComboBoxItem</h3>
-  <p class={pClass}>
-    A <code>&lt;ComboBoxItem&gt;</code> represents an individual option within a
-    <code>ComboBox</code>.
-  </p>
+  <PropTable source="ComboBoxItem" />
 
   <h3 id="api-comboboxsection" class={h3Class}>ComboBoxSection</h3>
-  <p class={pClass}>
-    A <code>&lt;ComboBoxSection&gt;</code> groups related <code>&lt;ComboBoxItem&gt;</code>s within
-    a <code>ComboBox</code>.
-  </p>
+  <PropTable source="ComboBoxSection" />
 
   <ParityDisclosure slug={slug} />
 </DocsPageLayout>

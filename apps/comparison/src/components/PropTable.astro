@@ -1,29 +1,97 @@
 ---
-// Phase 3 (degraded): two-column Name / Parity table from the manifest's
-// apiProps list. Types, defaults, descriptions, and grouped sections land in
-// Phase 5 (prop metadata extractor). Fully static — no island.
+// Renders the upstream S2 `Name / Type / Default / Description` prop table from
+// the vendored markdown under vendor/s2-docs/props/ (parsed at build time).
+// Falls back to the degraded manifest `Name / Parity` list for components that
+// don't have a vendored prop table yet.
+//
+// Note: upstream groups props into Events/Forms/Accessibility/Advanced tabs; the
+// vendored data is the flat alphabetical table the docs render, so grouping is
+// deferred (it needs upstream group metadata, which the table doesn't carry).
 import { getComparisonEntry } from "@comparison/data/comparison-manifest";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
+import { parsePropTable, renderPropDescription } from "@comparison/data/prop-tables";
 
 interface Props {
-  component: string;
+  // Component slug (drives the degraded fallback + default export lookup).
+  component?: string;
+  // Explicit upstream export name, for pages with multiple prop tables
+  // (e.g. ComboBox / ComboBoxItem / ComboBoxSection).
+  source?: string;
 }
 
-const { component } = Astro.props as Props;
-const entry = getComparisonEntry(component) ?? getComparisonEntry(component.toLowerCase());
-const group = entry ? getComponentControlGroup(entry) : null;
-const apiProps = group?.apiProps ?? [];
+const { component, source } = Astro.props as Props;
+
+// Slug -> upstream export name for the vendored prop tables.
+const slugToExport: Record<string, string> = {
+  button: "Button",
+  combobox: "ComboBox",
+  datepicker: "DatePicker",
+};
+
+const exportName = source ?? (component ? slugToExport[component] : undefined);
+
+// Vendored as .mdx (not .md) so the repo formatter — which mangles `|` inside
+// code spans in markdown tables — leaves these raw upstream tables untouched.
+const propFiles = import.meta.glob("../../vendor/s2-docs/props/*.mdx", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+
+const vendoredMarkdown =
+  exportName != null
+    ? (propFiles[`../../vendor/s2-docs/props/${exportName}.mdx`] ?? null)
+    : null;
+const rows = vendoredMarkdown ? parsePropTable(vendoredMarkdown) : [];
+
+// Degraded fallback: the manifest's apiProps name list.
+const fallbackEntry =
+  rows.length === 0 && component
+    ? (getComparisonEntry(component) ?? getComparisonEntry(component.toLowerCase()))
+    : null;
+const fallbackGroup = fallbackEntry ? getComponentControlGroup(fallbackEntry) : null;
+const fallbackProps = fallbackGroup?.apiProps ?? [];
 ---
 
 {
-  !entry ? (
-    <div class="s2-prop-table-stub s2-empty-state">No manifest entry for "{component}".</div>
-  ) : (
+  rows.length > 0 ? (
+    <table class="s2-prop-table s2-prop-table-full">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Type</th>
+          <th scope="col">Default</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr>
+            <td>
+              <code class="s2-prop-name">{row.name}</code>
+            </td>
+            <td>
+              <code class="s2-prop-type">{row.type}</code>
+            </td>
+            <td>
+              {row.default === "—" ? (
+                <span class="s2-prop-default-empty">—</span>
+              ) : (
+                <code>{row.default}</code>
+              )}
+            </td>
+            <td class="s2-prop-desc" set:html={renderPropDescription(row.description)} />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ) : fallbackEntry ? (
     <div class="s2-prop-table-stub">
       <p class="s2-prop-table-stub-note">
-        Types and defaults land in Phase 5 (prop metadata extractor).
+        Type/default/description land when an upstream prop table is vendored for this
+        component (see vendor/s2-docs/props).
       </p>
-      {apiProps.length === 0 ? (
+      {fallbackProps.length === 0 ? (
         <div class="s2-empty-state">No tracked props.</div>
       ) : (
         <table class="s2-prop-table">
@@ -34,9 +102,11 @@ const apiProps = group?.apiProps ?? [];
             </tr>
           </thead>
           <tbody>
-            {apiProps.map((name) => (
+            {fallbackProps.map((name) => (
               <tr>
-                <td><code>{name}</code></td>
+                <td>
+                  <code>{name}</code>
+                </td>
                 <td>tracked</td>
               </tr>
             ))}
@@ -44,5 +114,7 @@ const apiProps = group?.apiProps ?? [];
         </table>
       )}
     </div>
+  ) : (
+    <div class="s2-prop-table-stub s2-empty-state">No prop data for "{source ?? component}".</div>
   )
 }

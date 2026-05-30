@@ -3229,6 +3229,53 @@ html[data-resolved-theme="dark"] .s2-marketing-hero-card-pill--quiet {
   color: var(--s2-text-muted, #6b6b6b);
 }
 
+/* Full upstream Name/Type/Default/Description table. Fixed layout + column
+   hints so long union types wrap inside their column instead of overflowing. */
+.s2-prop-table-full {
+  table-layout: fixed;
+  margin: 16px 0 8px;
+}
+
+.s2-prop-table-full td {
+  vertical-align: top;
+}
+
+.s2-prop-table-full th:nth-child(1),
+.s2-prop-table-full td:nth-child(1) {
+  width: 18%;
+}
+
+.s2-prop-table-full th:nth-child(2),
+.s2-prop-table-full td:nth-child(2) {
+  width: 34%;
+}
+
+.s2-prop-table-full th:nth-child(3),
+.s2-prop-table-full td:nth-child(3) {
+  width: 12%;
+}
+
+.s2-prop-table-full code {
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+.s2-prop-name {
+  font-weight: 600;
+}
+
+.s2-prop-type {
+  color: var(--s2-text-muted, #6b6b6b);
+}
+
+.s2-prop-default-empty {
+  color: var(--s2-text-muted, #9b9b9b);
+}
+
+.s2-prop-desc {
+  line-height: 1.45;
+}
+
 .s2-parity-disclosure {
   margin: 48px auto 0;
   max-width: var(--text-width, 768px);
