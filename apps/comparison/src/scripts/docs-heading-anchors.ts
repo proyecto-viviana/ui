@@ -16,7 +16,13 @@ function enhanceHeadingAnchors(): void {
   if (!article) {
     return;
   }
-  const headings = article.querySelectorAll<HTMLElement>("h2[id], h3[id], h4[id]");
+  // Only the hand-authored doc-section headings (direct children of the
+  // article). Headings nested inside the live example mount, the parity
+  // disclosure, or the legacy detail-meta mount are not doc sections and must
+  // not get an anchor (it would also pollute their accessible name).
+  const headings = article.querySelectorAll<HTMLElement>(
+    ":scope > h2[id], :scope > h3[id], :scope > h4[id]",
+  );
   for (const heading of headings) {
     if (!heading.id || heading.querySelector(".s2-heading-anchor")) {
       continue;

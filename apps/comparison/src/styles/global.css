@@ -3321,7 +3321,7 @@ html[data-resolved-theme="dark"] .s2-marketing-hero-card-pill--quiet {
 /* Heading anchor-on-hover, mirroring upstream s2-docs typography (AnchorLink).
    The anchor is injected by docs-heading-anchors.ts; with auto offsets it sits
    at its static position right after the heading text, fading in on hover. */
-.s2-article :is(h2, h3, h4)[id] {
+.s2-article > :is(h2, h3, h4)[id] {
   position: relative;
 }
 
@@ -3336,7 +3336,7 @@ html[data-resolved-theme="dark"] .s2-marketing-hero-card-pill--quiet {
   text-decoration: none;
 }
 
-.s2-article :is(h3, h4)[id] .s2-heading-anchor {
+.s2-article > :is(h3, h4)[id] .s2-heading-anchor {
   margin-inline-start: 4px;
 }
 
@@ -3346,7 +3346,7 @@ html[data-resolved-theme="dark"] .s2-marketing-hero-card-pill--quiet {
   height: 16px;
 }
 
-.s2-article :is(h2, h3, h4)[id]:hover .s2-heading-anchor,
+.s2-article > :is(h2, h3, h4)[id]:hover .s2-heading-anchor,
 .s2-heading-anchor:focus-visible {
   opacity: 1;
 }
