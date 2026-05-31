@@ -1,0 +1,20 @@
+# DisclosurePanel
+
+<!-- Curated to the documented Spectrum props. The raw S2 export spreads HTMLDivElement,
+so its extracted prop list also carries ~60 undescribed DOM passthrough handlers
+(onMouseDown, onPointer*, onTransition*, dir, hidden, inert, lang, translate, …) that the
+upstream docs table does not surface. Mirrors the curated AccordionItemPanel table. -->
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `aria-describedby` | `string | undefined` | — | Identifies the element (or elements) that describes the object. |
+| `aria-details` | `string | undefined` | — | Identifies the element (or elements) that provide a detailed, extended description for the object. |
+| `aria-label` | `string | undefined` | — | Defines a string value that labels the current element. |
+| `aria-labelledby` | `string | undefined` | — | Identifies the element (or elements) that labels the current element. |
+| `children` | `React.ReactNode` | — |  |
+| `id` | `string | undefined` | — | The element's unique identifier. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id). |
+| `label` | `React.ReactNode` | — | The content to display as the label. |
+| `labelElementType` | `React.ElementType | undefined` | 'label' | The HTML element used to render the label, e.g. 'label', or 'span'. |
+| `role` | `"group" | "region" | undefined` | 'group' | The accessibility role for the disclosure's panel. |
+| `UNSAFE_className` | `UnsafeClassName | undefined` | — | Sets the CSS [className](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `UNSAFE_style` | `React.CSSProperties | undefined` | — | Sets inline [style](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |

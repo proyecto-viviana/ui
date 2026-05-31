@@ -6,11 +6,13 @@ Path:               packages/dev/s2-docs/pages/s2/
 License:            Apache-2.0 (see ../LICENSE-react-spectrum)
 Source:             local react-spectrum/ checkout at the repo root
 Upstream version:   2.21.0-beta.0
-Synced:             2026-05-31T16:53:54.527Z
+Synced:             2026-05-31T18:00:48.921Z
 
 Synced pages:
+  - Accordion.mdx
   - ActionButton.mdx
   - ActionButtonGroup.mdx
+  - ActionMenu.mdx
   - Avatar.mdx
   - AvatarGroup.mdx
   - Badge.mdx
@@ -23,6 +25,7 @@ Synced pages:
   - ContextualHelp.mdx
   - DateField.mdx
   - DatePicker.mdx
+  - Disclosure.mdx
   - Divider.mdx
   - InlineAlert.mdx
   - Link.mdx

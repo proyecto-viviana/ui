@@ -1,0 +1,134 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Disclosure.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=disclosure`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "disclosure";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Disclosure";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#expanding", label: "Expanding", depth: 2 },
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-disclosure", label: "Disclosure", depth: 3 },
+  { href: "#api-disclosureheader", label: "DisclosureHeader", depth: 3 },
+  { href: "#api-disclosuretitle", label: "DisclosureTitle", depth: 3 },
+  { href: "#api-disclosurepanel", label: "DisclosurePanel", depth: 3 },
+];
+
+const expandingCode = `"use client";
+import {Disclosure, DisclosureTitle, DisclosurePanel} from '@react-spectrum/s2';
+import {useState} from 'react';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+function Example() {
+  let [isExpanded, setIsExpanded] = useState(true);
+
+  return (
+    <Disclosure
+      styles={style({width: 250})}
+      isExpanded={isExpanded}
+      onExpandedChange={setIsExpanded}>
+      <DisclosureTitle>Download, Install, and Set Up</DisclosureTitle>
+      <DisclosurePanel>Instructions on how to download, install, and set up</DisclosurePanel>
+    </Disclosure>
+  );
+}`;
+
+const contentCode = `"use client";
+import {Disclosure, DisclosureTitle, DisclosurePanel, DisclosureHeader, ActionButton} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<Disclosure styles={style({width: 250})}>
+  <DisclosureHeader>
+    <DisclosureTitle>Project Settings</DisclosureTitle>
+    <ActionButton>Edit</ActionButton>
+  </DisclosureHeader>
+  <DisclosurePanel>
+    Configure your project settings including name, description, and permissions.
+  </DisclosurePanel>
+</Disclosure>`;
+
+const anatomyCode = `<Disclosure>
+  <DisclosureHeader>
+    <DisclosureTitle />
+  </DisclosureHeader>
+  <DisclosurePanel />
+</Disclosure>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="disclosure" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    A disclosure is a collapsible section of content. It is composed of a header with a heading and
+    trigger button, and a panel that contains the content.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="expanding" class={h2Class}>Expanding</h2>
+  <p class={pClass}>
+    Use the <code>isExpanded</code> or <code>defaultExpanded</code> prop to set the expanded state,
+    and <code>onExpandedChange</code> to handle user interactions.
+  </p>
+  <Code code={expandingCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    Use <code>DisclosureHeader</code> to add additional elements alongside the title, such as action
+    buttons or icons.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-disclosure" class={h3Class}>Disclosure</h3>
+  <PropTable source="Disclosure" />
+
+  <h3 id="api-disclosureheader" class={h3Class}>DisclosureHeader</h3>
+  <PropTable source="DisclosureHeader" />
+
+  <h3 id="api-disclosuretitle" class={h3Class}>DisclosureTitle</h3>
+  <PropTable source="DisclosureTitle" />
+
+  <h3 id="api-disclosurepanel" class={h3Class}>DisclosurePanel</h3>
+  <PropTable source="DisclosurePanel" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

@@ -1,0 +1,152 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Accordion.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=accordion`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "accordion";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Accordion";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#expanding", label: "Expanding", depth: 2 },
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-accordion", label: "Accordion", depth: 3 },
+  { href: "#api-accordionitem", label: "AccordionItem", depth: 3 },
+  { href: "#api-accordionitemheader", label: "AccordionItemHeader", depth: 3 },
+  { href: "#api-accordionitemtitle", label: "AccordionItemTitle", depth: 3 },
+  { href: "#api-accordionitempanel", label: "AccordionItemPanel", depth: 3 },
+];
+
+const expandingCode = `"use client";
+import {Accordion, AccordionItem, AccordionItemTitle, AccordionItemPanel, type Key} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [expandedKeys, setExpandedKeys] = useState(new Set<Key>(['settings']));
+
+  return (
+    <Accordion
+      expandedKeys={expandedKeys}
+      onExpandedChange={setExpandedKeys}>
+      <AccordionItem id="settings">
+        <AccordionItemTitle>Settings</AccordionItemTitle>
+        <AccordionItemPanel>Application settings content</AccordionItemPanel>
+      </AccordionItem>
+      <AccordionItem id="preferences">
+        <AccordionItemTitle>Preferences</AccordionItemTitle>
+        <AccordionItemPanel>User preferences content</AccordionItemPanel>
+      </AccordionItem>
+      <AccordionItem id="advanced">
+        <AccordionItemTitle>Advanced</AccordionItemTitle>
+        <AccordionItemPanel>Advanced configuration options</AccordionItemPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+}`;
+
+const contentCode = `"use client";
+import {Accordion, AccordionItem, AccordionItemTitle, AccordionItemPanel, AccordionItemHeader, ActionButton} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<Accordion>
+  <AccordionItem styles={style({width: 250})}>
+    <AccordionItemHeader>
+      <AccordionItemTitle>Project Settings</AccordionItemTitle>
+      <ActionButton>Edit</ActionButton>
+    </AccordionItemHeader>
+    <AccordionItemPanel>
+      Configure your project settings including name, description, and permissions.
+    </AccordionItemPanel>
+  </AccordionItem>
+  <AccordionItem id="preferences">
+    <AccordionItemTitle>Preferences</AccordionItemTitle>
+    <AccordionItemPanel>User preferences content</AccordionItemPanel>
+  </AccordionItem>
+</Accordion>`;
+
+const anatomyCode = `<Accordion>
+  <AccordionItem>
+    <AccordionItemHeader>
+      <AccordionItemTitle />
+    </AccordionItemHeader>
+    <AccordionItemPanel />
+  </AccordionItem>
+</Accordion>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="accordion" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>An accordion is a container for multiple accordion items.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="expanding" class={h2Class}>Expanding</h2>
+  <p class={pClass}>
+    Use the <code>defaultExpandedKeys</code> or <code>expandedKeys</code> prop to set the expanded
+    items, and <code>onExpandedChange</code> to handle user interactions. The expanded keys
+    correspond to the <code>id</code> prop of each <code>{"<AccordionItem>"}</code>.
+  </p>
+  <Code code={expandingCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    Use <code>AccordionItemHeader</code> to add additional elements alongside the title, such as
+    action buttons or icons.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-accordion" class={h3Class}>Accordion</h3>
+  <PropTable source="Accordion" />
+
+  <h3 id="api-accordionitem" class={h3Class}>AccordionItem</h3>
+  <PropTable source="AccordionItem" />
+
+  <h3 id="api-accordionitemheader" class={h3Class}>AccordionItemHeader</h3>
+  <PropTable source="AccordionItemHeader" />
+
+  <h3 id="api-accordionitemtitle" class={h3Class}>AccordionItemTitle</h3>
+  <PropTable source="AccordionItemTitle" />
+
+  <h3 id="api-accordionitempanel" class={h3Class}>AccordionItemPanel</h3>
+  <PropTable source="AccordionItemPanel" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

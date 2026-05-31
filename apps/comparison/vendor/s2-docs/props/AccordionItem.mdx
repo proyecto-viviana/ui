@@ -1,0 +1,17 @@
+# AccordionItem
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `React.ReactNode` | — | The contents of the accordion item, consisting of a accordion item title and accordion item panel. |
+| `defaultExpanded` | `boolean | undefined` | — | Whether the accordion item is expanded by default (uncontrolled). |
+| `density` | `"compact" | "regular" | "spacious" | undefined` | 'regular' | The amount of space between the accordion item. |
+| `id` | `Key | undefined` | — | An id for the accordion item, matching the id used in `expandedKeys`. |
+| `isDisabled` | `boolean | undefined` | — | Whether the accordion item is disabled. |
+| `isExpanded` | `boolean | undefined` | — | Whether the accordion item is expanded (controlled). |
+| `isQuiet` | `boolean | undefined` | — | Whether the accordion item should be displayed with a quiet style. |
+| `onExpandedChange` | `((isExpanded: boolean) => void) | undefined` | — | Handler that is called when the accordion item's expanded state changes. |
+| `size` | `"L" | "M" | "S" | "XL" | undefined` | 'M' | The size of the accordion item. |
+| `slot` | `string | null | undefined` | — | A slot name for the component. Slots allow the component to receive props from a parent component. An explicit `null` value indicates that the local props completely override all props received from a parent. |
+| `styles` | `StylesProp | undefined` | — | Spectrum-defined styles, returned by the `style()` macro. |
+| `UNSAFE_className` | `UnsafeClassName | undefined` | — | Sets the CSS [className](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `UNSAFE_style` | `React.CSSProperties | undefined` | — | Sets inline [style](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |

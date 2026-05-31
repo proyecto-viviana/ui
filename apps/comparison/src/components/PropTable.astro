@@ -23,8 +23,10 @@ const { component, source } = Astro.props as Props;
 
 // Slug -> upstream export name for the vendored prop tables.
 const slugToExport: Record<string, string> = {
+  accordion: "Accordion",
   actionbutton: "ActionButton",
   actionbuttongroup: "ActionButtonGroup",
+  actionmenu: "ActionMenu",
   avatar: "Avatar",
   avatargroup: "AvatarGroup",
   badge: "Badge",
@@ -37,6 +39,7 @@ const slugToExport: Record<string, string> = {
   contextualhelp: "ContextualHelp",
   datefield: "DateField",
   datepicker: "DatePicker",
+  disclosure: "Disclosure",
   divider: "Divider",
   inlinealert: "InlineAlert",
   link: "Link",
