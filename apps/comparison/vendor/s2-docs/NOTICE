@@ -6,7 +6,7 @@ Path:               packages/dev/s2-docs/pages/s2/
 License:            Apache-2.0 (see ../LICENSE-react-spectrum)
 Source:             local react-spectrum/ checkout at the repo root
 Upstream version:   2.21.0-beta.0
-Synced:             2026-05-31T04:20:10.584Z
+Synced:             2026-05-31T04:37:55.827Z
 
 Synced pages:
   - Button.mdx
@@ -23,6 +23,11 @@ Synced pages:
   - Meter.mdx
   - ProgressBar.mdx
   - ToggleButton.mdx
+  - StatusLight.mdx
+  - Badge.mdx
+  - Divider.mdx
+  - Avatar.mdx
+  - ActionButton.mdx
 
 These files are read-only inputs to
 `apps/comparison/scripts/import-s2-docs-mdx.ts`. Do not hand-edit. To
