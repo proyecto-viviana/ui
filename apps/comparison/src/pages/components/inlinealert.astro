@@ -1,0 +1,102 @@
+---
+// Ported by hand from vendor/s2-docs/pages/InlineAlert.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling markers stripped. Gated by `report:parity --slug=inlinealert`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "inlinealert";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "InlineAlert";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#auto-focus", label: "Auto focus", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-inlinealert", label: "InlineAlert", depth: 3 },
+];
+
+const autoFocusCode = `"use client";
+import {InlineAlert, Heading, Content, Button} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function Example() {
+  let [shown, setShown] = useState(false);
+
+  return (
+    <div className={style({display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center'})}>
+      <Button variant="primary" onPress={() => setShown(!shown)}>
+        {shown ? 'Hide Alert' : 'Show Alert'}
+      </Button>
+      {shown &&
+        <InlineAlert variant="negative" autoFocus>
+          <Heading>Error</Heading>
+          <Content>There was an error processing your request. Please try again.</Content>
+        </InlineAlert>
+      }
+    </div>
+  );
+}`;
+
+const anatomyCode = `<InlineAlert>
+  <Heading />
+  <Content />
+</InlineAlert>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="inlinealert" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Inline alerts display a non-modal message associated with objects in a view. These are often
+    used in form validation, providing a place to aggregate feedback related to multiple fields.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="auto-focus" class={h2Class}>Auto focus</h2>
+  <p class={pClass}>
+    Use the <code>autoFocus</code> prop to focus the alert when it first renders. This is useful for
+    displaying alerts that need immediate attention, such as form submission errors.
+  </p>
+  <Code code={autoFocusCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-inlinealert" class={h3Class}>InlineAlert</h3>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

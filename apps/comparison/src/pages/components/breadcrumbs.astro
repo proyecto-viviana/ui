@@ -1,0 +1,149 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Breadcrumbs.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling markers stripped. Gated by `report:parity --slug=breadcrumbs`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "breadcrumbs";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Breadcrumbs";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#overflow-behavior", label: "Overflow Behavior", depth: 3 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-breadcrumbs", label: "Breadcrumbs", depth: 3 },
+  { href: "#api-breadcrumb", label: "Breadcrumb", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {Breadcrumbs, Breadcrumb, type Key} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [breadcrumbs, setBreadcrumbs] = useState([
+    {id: 1, label: 'Home'},
+    {id: 2, label: 'Library'},
+    {id: 3, label: 'Documents'},
+    {id: 4, label: 'Annual Reports'}
+  ]);
+
+  let navigate = (id: Key) => {
+    let i = breadcrumbs.findIndex(item => item.id === id);
+    setBreadcrumbs(breadcrumbs.slice(0, i + 1));
+  };
+
+  return (
+    <Breadcrumbs items={breadcrumbs} onAction={navigate}>
+      {item => <Breadcrumb>{item.label}</Breadcrumb>}
+    </Breadcrumbs>
+  );
+}`;
+
+const overflowCode = `"use client";
+import {Breadcrumbs, Breadcrumb} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<div
+  className={style({
+    width: 400,
+    maxWidth: 'full',
+    padding: 16,
+    boxSizing: 'border-box',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: 'gray-300',
+    borderRadius: 'default',
+    resize: 'horizontal',
+    overflow: 'hidden'
+  })}>
+  <Breadcrumbs>
+    <Breadcrumb>Documents</Breadcrumb>
+    <Breadcrumb>My Shared Folder</Breadcrumb>
+    <Breadcrumb>Projects and Workflows</Breadcrumb>
+    <Breadcrumb>Annual Reports 2024</Breadcrumb>
+    <Breadcrumb>Marketing Materials</Breadcrumb>
+    <Breadcrumb>Q3 Campaign Assets</Breadcrumb>
+    <Breadcrumb>Final Deliverables</Breadcrumb>
+  </Breadcrumbs>
+</div>`;
+
+const anatomyCode = `<Breadcrumbs>
+  <Breadcrumb />
+</Breadcrumbs>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="breadcrumbs" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Breadcrumbs show hierarchy and navigational context for a user's location within an application.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>Breadcrumbs</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a function to render the children. The <code>onAction</code> event
+    is called when a user presses a breadcrumb.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+  <p class={pClass}>
+    <strong>Accessibility:</strong> When breadcrumbs are used as a main navigation element for a
+    page, they can be placed in a navigation landmark. Landmarks help assistive technology users
+    quickly find major sections of a page. Place breadcrumbs inside a <code>&lt;nav&gt;</code>
+    element with an <code>aria-label</code> to create a navigation landmark.
+  </p>
+
+  <h3 id="overflow-behavior" class={h3Class}>Overflow Behavior</h3>
+  <p class={pClass}>
+    Breadcrumbs automatically collapse items into a menu when space is limited. A maximum of 4 items
+    are shown including the root and menu button.
+  </p>
+  <Code code={overflowCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-breadcrumbs" class={h3Class}>Breadcrumbs</h3>
+  <PropTable source="Breadcrumbs" />
+
+  <h3 id="api-breadcrumb" class={h3Class}>Breadcrumb</h3>
+  <PropTable source="Breadcrumb" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

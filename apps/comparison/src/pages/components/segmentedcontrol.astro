@@ -1,0 +1,139 @@
+---
+// Ported by hand from vendor/s2-docs/pages/SegmentedControl.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling markers stripped (the upstream Content section's icon-only variant
+// is shown via the live mount). Gated by `report:parity --slug=segmentedcontrol`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "segmentedcontrol";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "SegmentedControl";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-segmentedcontrol", label: "SegmentedControl", depth: 3 },
+  { href: "#api-segmentedcontrolitem", label: "SegmentedControlItem", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {SegmentedControl, SegmentedControlItem, Text} from '@react-spectrum/s2';
+import AlignLeft from '@react-spectrum/s2/icons/AlignLeft';
+import AlignCenter from '@react-spectrum/s2/icons/AlignCenter';
+import AlignRight from '@react-spectrum/s2/icons/AlignRight';
+
+<SegmentedControl aria-label="Text alignment">
+  <SegmentedControlItem id="left">
+    <AlignLeft />
+    <Text>Left</Text>
+  </SegmentedControlItem>
+  <SegmentedControlItem id="center">
+    <AlignCenter />
+    <Text>Center</Text>
+  </SegmentedControlItem>
+  <SegmentedControlItem id="right">
+    <AlignRight />
+    <Text>Right</Text>
+  </SegmentedControlItem>
+</SegmentedControl>`;
+
+const selectionCode = `"use client";
+import {SegmentedControl, SegmentedControlItem, type Key} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [selected, setSelected] = useState<Key>('month');
+
+  return (
+    <div>
+      <SegmentedControl
+        selectedKey={selected}
+        onSelectionChange={setSelected}
+        aria-label="Time granularity">
+        <SegmentedControlItem id="day">Day</SegmentedControlItem>
+        <SegmentedControlItem id="week" isDisabled>Week</SegmentedControlItem>
+        <SegmentedControlItem id="month">Month</SegmentedControlItem>
+        <SegmentedControlItem id="year">Year</SegmentedControlItem>
+      </SegmentedControl>
+      <p>Selected: {selected}</p>
+    </div>
+  );
+}`;
+
+const anatomyCode = `<SegmentedControl>
+  <SegmentedControlItem>
+    <Icon />
+    <Text />
+  </SegmentedControlItem>
+</SegmentedControl>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="segmentedcontrol" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    A SegmentedControl is a mutually exclusive group of buttons used for view switching.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    SegmentedControlItem supports icons and text as children. When a visible label is omitted,
+    provide an <code>aria-label</code>.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>defaultSelectedKey</code> or <code>selectedKey</code> prop to set the selected
+    item. The selected key corresponds to the <code>id</code> prop of a
+    <code>&lt;SegmentedControlItem&gt;</code>. Items can be disabled with the <code>isDisabled</code>
+    prop. See the selection guide for more details.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-segmentedcontrol" class={h3Class}>SegmentedControl</h3>
+  <PropTable source="SegmentedControl" />
+
+  <h3 id="api-segmentedcontrolitem" class={h3Class}>SegmentedControlItem</h3>
+  <PropTable source="SegmentedControlItem" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
