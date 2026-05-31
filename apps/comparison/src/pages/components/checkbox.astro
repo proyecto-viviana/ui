@@ -1,0 +1,112 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Checkbox.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=checkbox`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "checkbox";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Checkbox";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const selectionCode = `"use client";
+import {Checkbox} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example(props) {
+  let [selected, setSelection] = useState(false);
+
+  return (
+    <>
+      <Checkbox
+        {...props}
+        isSelected={selected}
+        onChange={setSelection}
+      >
+        Subscribe
+      </Checkbox>
+      <p>{\`You are \${props.isIndeterminate ? 'partially subscribed' : selected ? 'subscribed' : 'unsubscribed'}\`}</p>
+    </>
+  );
+}`;
+
+const formsCode = `"use client";
+import {Checkbox, Button, Form} from '@react-spectrum/s2';
+
+<Form>
+  <Checkbox
+    name="terms"
+    value="agree"
+    isRequired>
+    I agree to the terms
+  </Checkbox>
+  <Button type="submit">Submit</Button>
+</Form>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="checkbox" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Checkboxes allow users to select multiple items from a list of individual items, or to mark one
+    individual item as selected.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>isSelected</code> or <code>defaultSelected</code> prop to set the selection state,
+    and <code>onChange</code> to handle selection changes. The <code>isIndeterminate</code> prop
+    overrides the selection state regardless of user interaction.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> and <code>value</code> props to submit the checkbox to the server. Set
+    the <code>isRequired</code> prop to validate the user selects the checkbox, or implement custom
+    client or server-side validation. See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
