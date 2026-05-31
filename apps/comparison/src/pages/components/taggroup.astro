@@ -1,0 +1,286 @@
+---
+// Ported by hand from vendor/s2-docs/pages/TagGroup.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/PROPS markers stripped. The `### Slots` ExampleSwitcher (Icon/Avatar/Image)
+// is rendered as three sequential code blocks. Gated by `report:parity --slug=taggroup`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "taggroup";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "TagGroup";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#slots", label: "Slots", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#empty-state", label: "Empty state", depth: 3 },
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#group-actions", label: "Group actions", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-taggroup", label: "TagGroup", depth: 3 },
+  { href: "#api-tag", label: "Tag", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {TagGroup, Tag, useListData} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+function PhotoCategories() {
+  let list = useListData({
+    initialItems: [
+      {id: 1, name: 'Landscape'},
+      {id: 2, name: 'Portrait'},
+      {id: 3, name: 'Night'},
+      {id: 4, name: 'Dual'},
+      {id: 5, name: 'Golden Hour'}
+    ]
+  });
+
+  return (
+    <TagGroup
+      label="Photo categories"
+      styles={style({maxWidth: 320})}
+      items={list.items}
+      onRemove={(keys) => list.remove(...keys)}>
+      {(item) => <Tag>{item.name}</Tag>}
+    </TagGroup>
+  );
+}`;
+
+const iconCode = `"use client";
+import {TagGroup, Tag, Text} from '@react-spectrum/s2';
+import FileText from '@react-spectrum/s2/icons/FileText';
+import Camera from '@react-spectrum/s2/icons/Camera';
+import Filmstrip from '@react-spectrum/s2/icons/Filmstrip';
+import VectorDraw from '@react-spectrum/s2/icons/VectorDraw';
+
+<TagGroup label="Media types">
+  <Tag textValue="Text">
+    <FileText />
+    <Text>Text</Text>
+  </Tag>
+  <Tag textValue="Photos">
+    <Camera />
+    <Text>Photos</Text>
+  </Tag>
+  <Tag textValue="Videos">
+    <Filmstrip />
+    <Text>Videos</Text>
+  </Tag>
+  <Tag textValue="Illustration">
+    <VectorDraw />
+    <Text>Illustration</Text>
+  </Tag>
+</TagGroup>`;
+
+const avatarCode = `"use client";
+import {TagGroup, Tag, Avatar, Text} from '@react-spectrum/s2';
+
+<TagGroup label="Users">
+  <Tag textValue="Abraham Baker">
+    <Avatar src="https://www.untitledui.com/images/avatars/abraham-baker" />
+    <Text>Abraham Baker</Text>
+  </Tag>
+  <Tag textValue="Adriana Sullivan">
+    <Avatar src="https://www.untitledui.com/images/avatars/adriana-sullivan" />
+    <Text>Adriana Sullivan</Text>
+  </Tag>
+  <Tag textValue="Jonathan Kelly">
+    <Avatar src="https://www.untitledui.com/images/avatars/jonathan-kelly" />
+    <Text>Jonathan Kelly</Text>
+  </Tag>
+  <Tag textValue="Zara Bush">
+    <Avatar src="https://www.untitledui.com/images/avatars/zara-bush" />
+    <Text>Zara Bush</Text>
+  </Tag>
+</TagGroup>`;
+
+const imageCode = `"use client";
+import {TagGroup, Tag, Image, Text} from '@react-spectrum/s2';
+
+<TagGroup label="Dogs">
+  <Tag textValue="Golden Retriever">
+    <Image src="https://images.unsplash.com/photo-1422565096762-bdb997a56a84?w=100&h=100&fit=crop" />
+    <Text>Golden Retriever</Text>
+  </Tag>
+  <Tag textValue="Pug">
+    <Image src="https://images.unsplash.com/photo-1523626797181-8c5ae80d40c2?w=100&h=100&fit=crop" />
+    <Text>Pug</Text>
+  </Tag>
+  <Tag textValue="Chihuahua">
+    <Image src="https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=100&h=100&fit=crop" />
+    <Text>Chihuahua</Text>
+  </Tag>
+  <Tag textValue="Husky">
+    <Image src="https://images.unsplash.com/photo-1491604612772-6853927639ef?w=100&h=100&fit=crop" />
+    <Text>Husky</Text>
+  </Tag>
+</TagGroup>`;
+
+const linksCode = `"use client";
+import {TagGroup, Tag} from '@react-spectrum/s2';
+
+<TagGroup label="Photo categories">
+  <Tag href="https://en.wikipedia.org/wiki/Landscape_photography" target="_blank">Landscape</Tag>
+  <Tag href="https://en.wikipedia.org/wiki/Portrait_photography" target="_blank">Portrait</Tag>
+  <Tag href="https://en.wikipedia.org/wiki/Macro_photography" target="_blank">Macro</Tag>
+  <Tag href="https://en.wikipedia.org/wiki/Night_photography" target="_blank">Night</Tag>
+  <Tag href="https://en.wikipedia.org/wiki/Dualphotography" target="_blank">Dual</Tag>
+  <Tag href="https://en.wikipedia.org/wiki/Golden_hour_(photography)" target="_blank">Golden Hour</Tag>
+</TagGroup>`;
+
+const emptyStateCode = `"use client";
+import {TagGroup, Link} from '@react-spectrum/s2';
+
+<TagGroup
+  label="Photo categories"
+  renderEmptyState={() => (
+    <>No categories. <Link href="https://react-spectrum.adobe.com/">Click here</Link> to add some.</>
+  )}>
+  {[]}
+</TagGroup>`;
+
+const selectionCode = `"use client";
+import {TagGroup, Tag, type Selection} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example(props) {
+  let [selected, setSelected] = useState<Selection>(new Set());
+
+  return (
+    <div>
+      <TagGroup
+        {...props}
+        label="Amenities"
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+      >
+        <Tag id="laundry">Laundry</Tag>
+        <Tag id="fitness">Fitness center</Tag>
+        <Tag id="parking" isDisabled>Parking</Tag>
+        <Tag id="pool">Swimming pool</Tag>
+        <Tag id="breakfast">Breakfast</Tag>
+      </TagGroup>
+      <p>Current selection: {selected === 'all' ? 'all' : [...selected].join(', ')}</p>
+    </div>
+  );
+}`;
+
+const groupActionsCode = `"use client";
+import {TagGroup, Tag} from '@react-spectrum/s2';
+
+<TagGroup
+  label="Interests"
+  groupActionLabel="Clear"
+  onGroupAction={() => alert('Clear')}>
+  <Tag>News</Tag>
+  <Tag>Travel</Tag>
+  <Tag>Gaming</Tag>
+  <Tag>Shopping</Tag>
+</TagGroup>`;
+
+const anatomyCode = `<TagGroup>
+  <Tag>
+    <Icon /> or <Avatar /> or <Image />
+    <Text />
+  </Tag>
+</TagGroup>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="taggroup" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Tags allow users to categorize content. They can represent keywords or people, and are grouped to
+    describe an item or a search request.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>TagGroup</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a function to render the children. Items can be removed via the
+    <code>onRemove</code> event.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="slots" class={h3Class}>Slots</h3>
+  <p class={pClass}><code>Tag</code> supports icons, avatars, or images, and text as children.</p>
+  <Code code={iconCode} lang="tsx" theme="github-dark" />
+  <Code code={avatarCode} lang="tsx" theme="github-dark" />
+  <Code code={imageCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a <code>{"<Tag>"}</code> to create a link. See the getting
+    started guide to learn how to integrate with your framework.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="empty-state" class={h3Class}>Empty state</h3>
+  <p class={pClass}>
+    Use <code>renderEmptyState</code> to render placeholder content when the TagGroup is empty.
+  </p>
+  <Code code={emptyStateCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>selectionMode</code> prop to enable single or multiple selection. The selected
+    items can be controlled via the <code>selectedKeys</code> prop, matching the <code>id</code> prop
+    of the items. Items can be disabled with the <code>isDisabled</code> prop. See the selection
+    guide for more details.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="group-actions" class={h2Class}>Group actions</h2>
+  <p class={pClass}>
+    Use the <code>groupActionLabel</code> and <code>onGroupAction</code> props to add an action
+    button at the end of the tags.
+  </p>
+  <Code code={groupActionsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-taggroup" class={h3Class}>TagGroup</h3>
+  <PropTable source="TagGroup" />
+
+  <h3 id="api-tag" class={h3Class}>Tag</h3>
+  <PropTable source="Tag" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

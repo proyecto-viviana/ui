@@ -1,0 +1,20 @@
+# Image
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `alt` | `string | undefined` | — | Accessible alt text for the image. |
+| `crossOrigin` | `"anonymous" | "use-credentials" | undefined` | — | Indicates if the fetching of the image must be done using a CORS request. [See MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/crossorigin). |
+| `decoding` | `"async" | "auto" | "sync" | undefined` | — | Whether the browser should decode images synchronously or asynchronously. [See MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#decoding). |
+| `fetchPriority` | `"auto" | "high" | "low" | undefined` | — | Provides a hint of the relative priority to use when fetching the image. [See MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#fetchpriority). |
+| `group` | `ImageGroup | undefined` | — | A group of images to coordinate between, matching the group passed to the `<ImageCoordinator>` component. If not provided, the default image group is used. |
+| `height` | `number | undefined` | — | The intrinsic height of the image. [See MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img#height). |
+| `itemProp` | `string | undefined` | — | Associates the image with a microdata object. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/itemprop). |
+| `loading` | `"eager" | "lazy" | undefined` | — | Whether the image should be loaded immediately or lazily when scrolled into view. [See MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#loading). |
+| `referrerPolicy` | `HTMLAttributeReferrerPolicy | undefined` | — | A string indicating which referrer to use when fetching the resource. [See MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#referrerpolicy). |
+| `renderError` | `(() => ReactNode) | undefined` | — | A function that is called to render a fallback when the image fails to load. |
+| `slot` | `string | null | undefined` | — | A slot name for the component. Slots allow the component to receive props from a parent component. An explicit `null` value indicates that the local props completely override all props received from a parent. |
+| `src` | `string | ImageSource[] | undefined` | — | The URL of the image or a list of conditional sources. |
+| `styles` | `StyleString | undefined` | — | Spectrum-defined styles, returned by the `style()` macro. |
+| `UNSAFE_className` | `UnsafeClassName | undefined` | — | Sets the CSS [className](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `UNSAFE_style` | `CSSProperties | undefined` | — | Sets inline [style](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `width` | `number | undefined` | — | The intrinsic width of the image. [See MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img#width). |
