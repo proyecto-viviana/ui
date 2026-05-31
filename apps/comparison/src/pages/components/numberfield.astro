@@ -1,0 +1,153 @@
+---
+// Ported by hand from vendor/s2-docs/pages/NumberField.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. The upstream Format options and
+// Value scale sections use interactive examples; here they're prose-only (the
+// live mount exposes those props). Gated by `report:parity --slug=numberfield`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "numberfield";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "NumberField";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#format-options", label: "Format options", depth: 3 },
+  { href: "#value-scale", label: "Value scale", depth: 3 },
+  { href: "#numbering-system", label: "Numbering system", depth: 3 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const valueCode = `"use client";
+import {NumberField} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [value, setValue] = useState(25);
+  return (
+    <div>
+      <NumberField
+        label="Cookies to buy"
+        placeholder="Enter a number"
+        value={value}
+        onChange={setValue}
+      />
+      <p>Current value: {value}</p>
+    </div>
+  );
+}`;
+
+const numberingSystemCode = `"use client";
+import {Provider, NumberField} from '@react-spectrum/s2';
+
+<Provider>
+  <NumberField
+    label="Value"
+    defaultValue={1024}
+    placeholder="Enter a number" />
+</Provider>`;
+
+const formsCode = `"use client";
+import {NumberField, Button, Form} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <Form>
+      <NumberField
+        {...props}
+        label="Width"
+        name="width"
+      />
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="numberfield" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    NumberFields allow users to input number values with a keyboard or increment/decrement with step
+    buttons.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the number value. The
+    <code>onChange</code> event is called when the user finishes editing the value (e.g. on blur,
+    incrementing, or decrementing).
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="format-options" class={h3Class}>Format options</h3>
+  <p class={pClass}>
+    Use the <code>formatOptions</code> prop to control how the value is formatted (according to the
+    user's locale). This is compatible with the <code>Intl.NumberFormat</code> API.
+  </p>
+
+  <h3 id="value-scale" class={h3Class}>Value scale</h3>
+  <p class={pClass}>
+    Use the <code>minValue</code>, <code>maxValue</code>, and <code>step</code> props to set the
+    allowed values. Steps are calculated starting from the minimum. For example, if
+    <code>{"minValue={2}"}</code>, and <code>{"step={3}"}</code>, the valid step values would be 2,
+    5, 8, 11, etc.
+  </p>
+
+  <h3 id="numbering-system" class={h3Class}>Numbering system</h3>
+  <p class={pClass}>
+    By default, <code>NumberField</code> displays the value using the numbering system for the
+    user's locale. Use <code>&lt;Provider&gt;</code> to override the numbering system by setting the
+    Unicode numbering system locale extension. The Latin, Arabic, Devanagari, Bengali, and Han
+    positional decimal numbering systems are currently supported.
+  </p>
+  <Code code={numberingSystemCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the raw number value (not a formatted string) to the
+    server. Set the <code>isRequired</code> prop to validate that the user enters a value, or
+    implement custom client or server-side validation. See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
