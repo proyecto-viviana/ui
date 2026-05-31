@@ -1,0 +1,152 @@
+---
+// Ported by hand from vendor/s2-docs/pages/DateField.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=datefield`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "datefield";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "DateField";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#format-options", label: "Format options", depth: 3 },
+  { href: "#international-calendars", label: "International calendars", depth: 3 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const valueCode = `"use client";
+import {parseDate, getLocalTimeZone, CalendarDate} from '@internationalized/date';
+import {useDateFormatter} from 'react-aria';
+import {DateField} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [date, setDate] = useState<CalendarDate | null>(parseDate('2020-02-03'));
+  let formatter = useDateFormatter({ dateStyle: 'full' });
+
+  return (
+    <>
+      <DateField
+        value={date}
+        onChange={setDate} />
+      <p>Selected date: {date ? formatter.format(date.toDate(getLocalTimeZone())) : '--'}</p>
+    </>
+  );
+}`;
+
+const formatOptionsCode = `"use client";
+import {parseZonedDateTime} from '@internationalized/date';
+import {DateField} from '@react-spectrum/s2';
+
+<DateField
+  defaultValue={parseZonedDateTime('2025-02-03T08:45:00[America/Los_Angeles]')} />`;
+
+const internationalCalendarsCode = `"use client";
+import {Provider, DateField} from '@react-spectrum/s2';
+import {parseZonedDateTime} from '@internationalized/date';
+
+<Provider>
+  <DateField defaultValue={parseZonedDateTime('2025-02-03T08:45:00[America/Los_Angeles]')} />
+</Provider>`;
+
+const formsCode = `"use client";
+import {today, getLocalTimeZone} from '@internationalized/date';
+import {DateField, Form, Button} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <Form>
+      <DateField
+        {...props}
+        label="Appointment date"
+        name="date"
+        minValue={today(getLocalTimeZone())}
+      />
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="datefield" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    DateFields allow users to enter and edit date and time values using a keyboard.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the date value, using
+    objects in the <code>@internationalized/date</code> package. This library supports parsing date
+    strings in multiple formats, manipulation across international calendar systems, time zones, etc.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="format-options" class={h3Class}>Format options</h3>
+  <p class={pClass}>
+    The date format is automatically determined based on the user's locale. <code>DateField</code>
+    supports several props to control how values are displayed.
+  </p>
+  <Code code={formatOptionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="international-calendars" class={h3Class}>International calendars</h3>
+  <p class={pClass}>
+    By default, <code>DateField</code> displays the value using the calendar system for the user's
+    locale. Use <code>&lt;Provider&gt;</code> to override the calendar system by setting the Unicode
+    calendar locale extension. The <code>onChange</code> event always receives a date in the same
+    calendar as the <code>value</code> or <code>defaultValue</code> (Gregorian if no value is
+    provided), regardless of the displayed locale.
+  </p>
+  <Code code={internationalCalendarsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the selected date to the server as an ISO 8601 string.
+    Set the <code>isRequired</code>, <code>minValue</code>, or <code>maxValue</code> props to
+    validate the value, or implement custom client or server-side validation. See the Forms guide to
+    learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

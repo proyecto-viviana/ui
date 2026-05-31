@@ -1,0 +1,131 @@
+---
+// Ported by hand from vendor/s2-docs/pages/TimeField.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=timefield`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "timefield";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "TimeField";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#format-options", label: "Format options", depth: 3 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const valueCode = `"use client";
+import {Time} from '@internationalized/date';
+import {TimeField} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [time, setTime] = useState<Time | null>(new Time(11, 45));
+
+  return (
+    <>
+      <TimeField
+        value={time}
+        onChange={setTime} />
+      <p>Selected time: {time ? time.toString() : '--'}</p>
+    </>
+  );
+}`;
+
+const formatOptionsCode = `"use client";
+import {parseZonedDateTime} from '@internationalized/date';
+import {TimeField} from '@react-spectrum/s2';
+
+<TimeField
+  defaultValue={parseZonedDateTime('2025-02-03T17:45:00[America/Los_Angeles]')} />`;
+
+const formsCode = `"use client";
+import {Time} from '@internationalized/date';
+import {TimeField, Form, Button} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <Form>
+      <TimeField
+        {...props}
+        label="Appointment time"
+        name="time"
+        minValue={new Time(9)}
+        maxValue={new Time(17)}
+        validate={time => time?.minute % 15 !== 0 ? 'Appointments start every 15 minutes.' : null}
+      />
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="timefield" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>TimeFields allow users to enter and edit time values using a keyboard.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the time value, using objects
+    in the <code>@internationalized/date</code> package. <code>TimeField</code> accepts plain Time,
+    CalendarDateTime, or ZonedDateTime, but only displays the time.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="format-options" class={h3Class}>Format options</h3>
+  <p class={pClass}>
+    The time format is automatically determined based on the user's locale. <code>TimeField</code>
+    supports several props to control how values are displayed.
+  </p>
+  <Code code={formatOptionsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the selected date to the server as an ISO 8601 string.
+    Set the <code>isRequired</code>, <code>minValue</code>, or <code>maxValue</code> props to
+    validate the value, or implement custom client or server-side validation. See the Forms guide to
+    learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

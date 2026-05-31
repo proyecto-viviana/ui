@@ -6,7 +6,7 @@ Path:               packages/dev/s2-docs/pages/s2/
 License:            Apache-2.0 (see ../LICENSE-react-spectrum)
 Source:             local react-spectrum/ checkout at the repo root
 Upstream version:   2.21.0-beta.0
-Synced:             2026-05-31T04:50:33.069Z
+Synced:             2026-05-31T05:15:11.398Z
 
 Synced pages:
   - Button.mdx
@@ -33,6 +33,9 @@ Synced pages:
   - ContextualHelp.mdx
   - SegmentedControl.mdx
   - LinkButton.mdx
+  - DateField.mdx
+  - TimeField.mdx
+  - RangeSlider.mdx
 
 These files are read-only inputs to
 `apps/comparison/scripts/import-s2-docs-mdx.ts`. Do not hand-edit. To

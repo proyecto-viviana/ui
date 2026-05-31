@@ -1,0 +1,106 @@
+---
+// Ported by hand from vendor/s2-docs/pages/RangeSlider.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling markers stripped. The upstream Value scale section uses an
+// interactive example; here it's prose-only. Gated by `report:parity --slug=rangeslider`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "rangeslider";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "RangeSlider";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#value-scale", label: "Value scale", depth: 3 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const valueCode = `"use client";
+import {RangeSlider} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function Example() {
+  let [currentValue, setCurrentValue] = useState({start: 25, end: 75});
+  let [finalValue, setFinalValue] = useState(currentValue);
+
+  return (
+    <>
+      <RangeSlider
+        label="Cookies to buy"
+        value={currentValue}
+        onChange={setCurrentValue}
+        onChangeEnd={setFinalValue} />
+      <pre className={style({font: 'body'})}>
+        onChange value: {JSON.stringify(currentValue)}{'\\n'}
+        onChangeEnd value: {JSON.stringify(finalValue)}
+      </pre>
+    </>
+  );
+}`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="rangeslider" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    RangeSliders allow users to quickly select a subset range. They should be used when the upper
+    and lower bounds to the range are invariable.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the RangeSlider's value. The
+    value is an object with <code>start</code> and <code>end</code> properties. The
+    <code>onChange</code> event is called as the user drags, and <code>onChangeEnd</code> is called
+    when the thumb is released.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="value-scale" class={h3Class}>Value scale</h3>
+  <p class={pClass}>
+    By default, slider values are percentages between 0 and 100. Use the <code>minValue</code>,
+    <code>maxValue</code>, and <code>step</code> props to set the allowed values. Steps are
+    calculated starting from the minimum. For example, if <code>{"minValue={2}"}</code>, and
+    <code>{"step={3}"}</code>, the valid step values would be 2, 5, 8, 11, etc.
+  </p>
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
