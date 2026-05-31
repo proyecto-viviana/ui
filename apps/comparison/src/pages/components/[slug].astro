@@ -3,6 +3,7 @@ import ComponentExampleSectionMount from "@comparison/components/ComponentExampl
 import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
 import { comparisonEntries, type ComparisonEntry } from "@comparison/data/comparison-manifest";
 import ComponentDetailMetaMount from "@comparison/components/ComponentDetailMetaMount.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
 import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
 
 export function getStaticPaths() {
@@ -32,4 +33,6 @@ const { entry } = Astro.props as { entry: ComparisonEntry };
   <ComponentExampleSectionMount entry={entry} />
 
   <ComponentDetailMetaMount entry={entry} />
+
+  <PortingNote component={entry.slug} />
 </DocsPageLayout>

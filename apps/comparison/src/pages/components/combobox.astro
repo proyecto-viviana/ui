@@ -8,6 +8,7 @@ import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
 import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
 import PropTable from "@comparison/components/PropTable.astro";
 import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
 import { getComparisonEntry } from "@comparison/data/comparison-manifest";
 import {
   docsTypographyH1,
@@ -510,6 +511,8 @@ const anatomyCode = `<ComboBox>
 
   <h3 id="api-comboboxsection" class={h3Class}>ComboBoxSection</h3>
   <PropTable source="ComboBoxSection" />
+
+  <PortingNote component={slug} />
 
   <ParityDisclosure slug={slug} />
 </DocsPageLayout>

@@ -1,0 +1,24 @@
+---
+// Quiet, collapsed "Porting note" disclosure rendered at page level (below the
+// API table), moved out of the example card per the visual audit (F5). Sources
+// the note from the component's control group.
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import { getComponentControlGroup } from "@comparison/data/component-controls";
+
+interface Props {
+  component: string;
+}
+
+const { component } = Astro.props as Props;
+const entry = getComparisonEntry(component) ?? getComparisonEntry(component.toLowerCase());
+const note = entry ? getComponentControlGroup(entry).note : null;
+---
+
+{
+  note && (
+    <details class="s2-porting-note">
+      <summary class="s2-porting-note-summary">Porting note</summary>
+      <p>{note}</p>
+    </details>
+  )
+}

@@ -668,6 +668,48 @@ html[data-theme="dark"] body.s2-docs {
   margin: 0;
 }
 
+.s2-example-copy {
+  margin-inline-start: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--s2-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--s2-text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.s2-example-copy:hover {
+  background: var(--s2-bg-muted);
+  color: var(--s2-text);
+}
+
+/* Page-level "Porting note", moved out of the example card (audit F5). */
+.s2-porting-note {
+  max-width: var(--text-width, 768px);
+  margin: 24px auto 0;
+  color: var(--s2-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.s2-porting-note-summary {
+  padding: 6px 0;
+  color: var(--s2-text-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.s2-porting-note-summary:hover {
+  color: var(--s2-text);
+}
+
+.s2-porting-note p {
+  margin: 8px 0 0;
+}
+
 .s2-overall-coverage {
   display: grid;
   width: min(520px, 100%);

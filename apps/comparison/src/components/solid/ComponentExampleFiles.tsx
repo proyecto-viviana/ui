@@ -30,6 +30,15 @@ export default function ComponentExampleFiles(props: ComponentExampleFilesProps)
   );
   const source = () => generateSolidExampleSource(controlGroup, values());
 
+  const [copied, setCopied] = createSignal(false);
+  let copyTimer: ReturnType<typeof setTimeout> | undefined;
+  const copySource = () => {
+    void navigator.clipboard?.writeText(source());
+    setCopied(true);
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => setCopied(false), 1500);
+  };
+
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       const detail = (event as CustomEvent<{ component?: string; props?: ExampleSourceValues }>)
@@ -46,7 +55,11 @@ export default function ComponentExampleFiles(props: ComponentExampleFilesProps)
     onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
   });
 
-  return h("div", { class: "s2-example-files-content" }, [
+  onCleanup(() => clearTimeout(copyTimer));
+
+  return h(
+    "div",
+    { class: "s2-example-files-content" },
     h(
       "div",
       { class: "s2-example-code-card" },
@@ -54,15 +67,18 @@ export default function ComponentExampleFiles(props: ComponentExampleFilesProps)
         "div",
         { class: "s2-example-code-label" },
         h("span", {}, "Generated source"),
-        h("strong", {}, "solid-spectrum route"),
+        h(
+          "button",
+          {
+            type: "button",
+            class: "s2-example-copy",
+            onClick: copySource,
+            "aria-label": "Copy generated source",
+          },
+          () => (copied() ? "Copied" : "Copy"),
+        ),
       ),
       h("pre", { class: "s2-example-code" }, h("code", {}, source)),
     ),
-    h(
-      "details",
-      { class: "s2-example-note" },
-      h("summary", {}, "Porting note"),
-      h("p", {}, controlGroup.note),
-    ),
-  ])();
+  )();
 }
