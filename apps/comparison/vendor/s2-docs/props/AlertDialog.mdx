@@ -1,0 +1,20 @@
+# AlertDialog
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `autoFocusButton` | `"cancel" | "primary" | "secondary" | undefined` | — | Button to focus by default when the dialog opens. |
+| `cancelLabel` | `string | undefined` | — | The label to display within the cancel button. |
+| `children` | `ReactNode` | — | The contents of the AlertDialog. |
+| `id` | `string | undefined` | — | The element's unique identifier. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id). |
+| `isPrimaryActionDisabled` | `boolean | undefined` | — | Whether the primary button is disabled. |
+| `isSecondaryActionDisabled` | `boolean | undefined` | — | Whether the secondary button is disabled. |
+| `onCancel` | `(() => void) | undefined` | — | Handler that is called when the cancel button is pressed. |
+| `onPrimaryAction` | `(() => void) | undefined` | — | Handler that is called when the primary button is pressed. |
+| `onSecondaryAction` | `(() => void) | undefined` | — | Handler that is called when the secondary button is pressed. |
+| `primaryActionLabel` | `string` | — | The label to display within the confirm button. |
+| `secondaryActionLabel` | `string | undefined` | — | The label to display within the secondary button. |
+| `size` | `"L" | "M" | "S" | undefined` | 'M' | The size of the Dialog. |
+| `title` | `string` | — | The title of the AlertDialog. |
+| `UNSAFE_className` | `UnsafeClassName | undefined` | — | Sets the CSS [className](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `UNSAFE_style` | `CSSProperties | undefined` | — | Sets inline [style](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `variant` | `"confirmation" | "destructive" | "error" | "information" | "warning" | undefined` | 'confirmation' | The [visual style](https://spectrum.adobe.com/page/alert-dialog/#Options) of the AlertDialog. |

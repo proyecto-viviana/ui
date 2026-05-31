@@ -1,0 +1,323 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Dialog.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/PROPS/focus markers stripped. The hero example is shown by the live mount.
+// Gated by `report:parity --slug=dialog`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "dialog";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Dialog";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#standard-dialog", label: "Standard Dialog", depth: 3 },
+  { href: "#alert-dialog", label: "Alert Dialog", depth: 3 },
+  { href: "#fullscreen-dialog", label: "Fullscreen Dialog", depth: 3 },
+  { href: "#custom-dialog", label: "Custom Dialog", depth: 3 },
+  { href: "#dialog-container", label: "Dialog Container", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-dialog", label: "Dialog", depth: 3 },
+  { href: "#api-alertdialog", label: "AlertDialog", depth: 3 },
+  { href: "#api-fullscreendialog", label: "FullscreenDialog", depth: 3 },
+  { href: "#api-customdialog", label: "CustomDialog", depth: 3 },
+  { href: "#api-dialogtrigger", label: "DialogTrigger", depth: 3 },
+  { href: "#api-dialogcontainer", label: "DialogContainer", depth: 3 },
+];
+
+const standardCode = `"use client";
+import {Dialog, DialogTrigger, Button, ButtonGroup, Heading, Header, Content, Footer, Checkbox, Image} from '@react-spectrum/s2';
+import heroImage from 'url:./assets/preview.png';
+
+function Example(props) {
+  return (
+    <DialogTrigger>
+      <Button variant="primary">Open Dialog</Button>
+      <Dialog {...props}>
+        {({close}) => (
+          <>
+            <Image slot="hero" src={heroImage} />
+            <Heading slot="title">Dialog Title</Heading>
+            <Header>Header</Header>
+            <Content>
+              <p>Standard dialog description. This should briefly communicate any additional information or context about the standard dialog title, to help users make one of the decisions offered by the buttons. Make it no more than a few short sentences.</p>
+            </Content>
+            <Footer>
+              <Checkbox>Don't show this again</Checkbox>
+            </Footer>
+            <ButtonGroup>
+              <Button onPress={close} variant="secondary">Cancel</Button>
+              <Button onPress={close} variant="accent">Subscribe</Button>
+            </ButtonGroup>
+          </>
+        )}
+      </Dialog>
+    </DialogTrigger>
+  );
+}`;
+
+const alertCode = `"use client";
+import {AlertDialog, DialogTrigger, Button} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <DialogTrigger>
+      <Button>Publish</Button>
+      <AlertDialog
+        {...props}
+        onPrimaryAction={() => alert('onPrimaryAction')}
+        onSecondaryAction={() => alert('onSecondaryAction')}>
+        {props.children}
+      </AlertDialog>
+    </DialogTrigger>
+  );
+}`;
+
+const fullscreenCode = `"use client";
+import {FullscreenDialog, DialogTrigger, Button, ButtonGroup, Heading, Header, Content} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <DialogTrigger>
+      <Button variant="primary">Open Fullscreen</Button>
+      <FullscreenDialog {...props}>
+        {({close}) => (
+          <>
+            <Heading slot="title">Advanced Settings</Heading>
+            <Header>Configure your application preferences</Header>
+            <Content>
+              <p>This fullscreen dialog provides ample space for complex forms, detailed content, or multi-step workflows.</p>
+              <p>The content area can scroll if needed, making it perfect for lengthy forms or comprehensive settings panels.</p>
+            </Content>
+            <ButtonGroup>
+              <Button onPress={close} variant="secondary">Cancel</Button>
+              <Button onPress={close} variant="accent">Save Changes</Button>
+            </ButtonGroup>
+          </>
+        )}
+      </FullscreenDialog>
+    </DialogTrigger>
+  );
+}`;
+
+const customCode = `"use client";
+import {CustomDialog, DialogTrigger, Button, Heading, CloseButton} from '@react-spectrum/s2';
+import Checkmark from '@react-spectrum/s2/illustrations/gradient/generic1/Checkmark';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+function Example(props) {
+  return (
+    <DialogTrigger>
+      <Button>Open dialog</Button>
+      <CustomDialog {...props}>
+        <div className={style({display: 'flex', flexDirection: 'column', rowGap: 8, alignItems: 'center'})}>
+          <Checkmark />
+          <Heading slot="title" styles={style({font: 'heading-lg', textAlign: 'center', marginY: 0})}>Thank you!</Heading>
+          <p className={style({font: 'body', textAlign: 'center', marginY: 0})}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <CloseButton styles={style({position: 'absolute', top: 12, insetEnd: 12})} />
+        </div>
+      </CustomDialog>
+    </DialogTrigger>
+  );
+}`;
+
+const containerCode = `"use client";
+import {DialogContainer, Dialog, Button, ButtonGroup, Heading, Content, ActionMenu, MenuItem, type Key} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function DialogContainerExample() {
+  let [dialogType, setDialogType] = useState<Key | null>(null);
+
+  return (
+    <>
+      <ActionMenu onAction={setDialogType}>
+        <MenuItem id="edit">Edit Item</MenuItem>
+        <MenuItem id="delete">Delete Item</MenuItem>
+        <MenuItem id="share">Share Item</MenuItem>
+      </ActionMenu>
+
+      <DialogContainer onDismiss={() => setDialogType(null)}>
+        {dialogType === 'edit' && (
+          <Dialog>
+            {({close}) => (
+              <>
+                <Heading slot="title">Edit Item</Heading>
+                <Content>Make changes to your item here.</Content>
+                <ButtonGroup>
+                  <Button onPress={close} variant="secondary">Cancel</Button>
+                  <Button onPress={close} variant="accent">Save</Button>
+                </ButtonGroup>
+              </>
+            )}
+          </Dialog>
+        )}
+        {dialogType === 'delete' && (
+          <Dialog>
+            {({close}) => (
+              <>
+                <Heading slot="title">Delete Item</Heading>
+                <Content>Are you sure you want to delete this item? This action cannot be undone.</Content>
+                <ButtonGroup>
+                  <Button onPress={close} variant="secondary">Cancel</Button>
+                  <Button onPress={close} variant="negative">Delete</Button>
+                </ButtonGroup>
+              </>
+            )}
+          </Dialog>
+        )}
+        {dialogType === 'share' && (
+          <Dialog>
+            {({close}) => (
+              <>
+                <Heading slot="title">Share Item</Heading>
+                <Content>Choose how you would like to share this item.</Content>
+                <ButtonGroup>
+                  <Button onPress={close} variant="secondary">Cancel</Button>
+                  <Button onPress={close} variant="accent">Share</Button>
+                </ButtonGroup>
+              </>
+            )}
+          </Dialog>
+        )}
+      </DialogContainer>
+    </>
+  );
+}`;
+
+const dialogAnatomy = `<Dialog>
+  <Image slot="hero">
+  <Heading slot="title" />
+  <Header />
+  <Content />
+  <Footer />
+  <ButtonGroup />
+</Dialog>`;
+
+const fullscreenAnatomy = `<FullscreenDialog>
+  <Heading slot="title" />
+  <Header />
+  <Content />
+  <ButtonGroup />
+</FullscreenDialog>`;
+
+const dialogTriggerAnatomy = `<DialogTrigger>
+  <Button />
+  <Dialog />
+</DialogTrigger>`;
+
+const dialogContainerAnatomy = `<DialogContainer>
+  <Dialog />
+</DialogContainer>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="dialog" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Dialogs are windows containing contextual information, tasks, or workflows that appear over the
+    user interface. Depending on the kind of Dialog, further interactions may be blocked until the
+    Dialog is acknowledged.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    Dialogs are windows containing contextual information, tasks, or workflows that appear over the
+    user interface. Spectrum includes several pre-defined dialog components with layouts for specific
+    use cases, or you can use <code>CustomDialog</code> to create a custom layout.
+  </p>
+
+  <h3 id="standard-dialog" class={h3Class}>Standard Dialog</h3>
+  <p class={pClass}>
+    Use <code>Dialog</code> for standard dialog layouts. It supports <code>Image</code>,
+    <code>Heading</code>, <code>Header</code>, <code>Content</code>, <code>Footer</code>, and
+    <code>ButtonGroup</code> slots. Dismissible dialogs replace their <code>ButtonGroup</code> with a
+    close button.
+  </p>
+  <Code code={standardCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="alert-dialog" class={h3Class}>Alert Dialog</h3>
+  <p class={pClass}>
+    Use <code>AlertDialog</code> for confirmation, error messages, and other critical information
+    that must be acknowledged.
+  </p>
+  <Code code={alertCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="fullscreen-dialog" class={h3Class}>Fullscreen Dialog</h3>
+  <p class={pClass}>
+    Use <code>FullscreenDialog</code> for complex workflows that require more space. It supports
+    <code>Heading</code>, <code>Header</code>, <code>Content</code>, and <code>ButtonGroup</code>
+    slots.
+  </p>
+  <Code code={fullscreenCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="custom-dialog" class={h3Class}>Custom Dialog</h3>
+  <p class={pClass}>Use <code>CustomDialog</code> for complete control over the dialog layout.</p>
+  <Code code={customCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="dialog-container" class={h2Class}>Dialog Container</h2>
+  <p class={pClass}>
+    Use <code>DialogContainer</code> to show a dialog programmatically or mount in a different part
+    of the JSX tree (e.g. outside a menu).
+  </p>
+  <Code code={containerCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+
+  <h3 id="api-dialog" class={h3Class}>Dialog</h3>
+  <Code code={dialogAnatomy} lang="tsx" theme="github-dark" />
+  <PropTable source="Dialog" />
+
+  <h3 id="api-alertdialog" class={h3Class}>AlertDialog</h3>
+  <PropTable source="AlertDialog" />
+
+  <h3 id="api-fullscreendialog" class={h3Class}>FullscreenDialog</h3>
+  <Code code={fullscreenAnatomy} lang="tsx" theme="github-dark" />
+  <PropTable source="FullscreenDialog" />
+
+  <h3 id="api-customdialog" class={h3Class}>CustomDialog</h3>
+  <PropTable source="CustomDialog" />
+
+  <h3 id="api-dialogtrigger" class={h3Class}>DialogTrigger</h3>
+  <Code code={dialogTriggerAnatomy} lang="tsx" theme="github-dark" />
+  <PropTable source="DialogTrigger" />
+
+  <h3 id="api-dialogcontainer" class={h3Class}>DialogContainer</h3>
+  <Code code={dialogContainerAnatomy} lang="tsx" theme="github-dark" />
+  <PropTable source="DialogContainer" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

@@ -1,0 +1,297 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Tabs.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS/focus markers stripped. Gated by `report:parity --slug=tabs`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "tabs";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Tabs";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#icons", label: "Icons", depth: 3 },
+  { href: "#overflow-behavior", label: "Overflow behavior", depth: 3 },
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-tabs", label: "Tabs", depth: 3 },
+  { href: "#api-tablist", label: "TabList", depth: 3 },
+  { href: "#api-tab", label: "Tab", depth: 3 },
+  { href: "#api-tabpanel", label: "TabPanel", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {ActionButton, ActionButtonGroup, Tabs, TabList, Tab, TabPanel, Collection} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+import AddCircle from '@react-spectrum/s2/icons/AddCircle';
+import RemoveCircle from '@react-spectrum/s2/icons/RemoveCircle';
+
+function Example() {
+  let [tabs, setTabs] = useState([
+    {id: 1, title: 'Tab 1', content: 'Tab body 1'},
+    {id: 2, title: 'Tab 2', content: 'Tab body 2'},
+    {id: 3, title: 'Tab 3', content: 'Tab body 3'}
+  ]);
+
+  let addTab = () => {
+    setTabs(tabs => [
+      ...tabs,
+      {
+        id: tabs.length + 1,
+        title: \`Tab \${tabs.length + 1}\`,
+        content: \`Tab body \${tabs.length + 1}\`
+      }
+    ]);
+  };
+
+  let removeTab = () => {
+    if (tabs.length > 1) {
+      setTabs(tabs => tabs.slice(0, -1));
+    }
+  };
+
+  return (
+    <Tabs aria-label="Tabs" styles={style({width: 'full'})}>
+      <div className={style({display: 'flex', alignItems: 'center'})}>
+        <TabList
+          items={tabs}
+          styles={style({flexShrink: 1, flexGrow: 1, flexBasis: 'auto'})}>
+          {item => <Tab>{item.title}</Tab>}
+        </TabList>
+        <ActionButtonGroup density="compact" size="S">
+          <ActionButton onPress={addTab} aria-label="Add tab">
+            <AddCircle />
+          </ActionButton>
+          <ActionButton onPress={removeTab} aria-label="Remove tab">
+            <RemoveCircle />
+          </ActionButton>
+        </ActionButtonGroup>
+      </div>
+      <Collection items={tabs}>
+        {item => <TabPanel>{item.content}</TabPanel>}
+      </Collection>
+    </Tabs>
+  )
+}`;
+
+const iconsCode = `"use client"
+import {Tabs, TabList, Tab, TabPanel, Text} from '@react-spectrum/s2';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import Bell from '@react-spectrum/s2/icons/Bell';
+import Heart from '@react-spectrum/s2/icons/Heart';
+
+<Tabs>
+  <TabList>
+    <Tab id="edit">
+      <Edit />
+      <Text>Edit</Text>
+    </Tab>
+    <Tab id="bell">
+      <Bell />
+      <Text>Notifications</Text>
+    </Tab>
+    <Tab id="heart">
+      <Heart />
+      <Text>Likes</Text>
+    </Tab>
+  </TabList>
+  <TabPanel id="edit">
+    Review your edits
+  </TabPanel>
+  <TabPanel id="bell">
+    Check your notifications
+  </TabPanel>
+  <TabPanel id="heart">
+    See your likes
+  </TabPanel>
+</Tabs>`;
+
+const overflowCode = `"use client";
+import {Tabs, TabList, Tab, TabPanel} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<div
+  className={style({
+    width: 320,
+    maxWidth: 'full',
+    padding: 16,
+    boxSizing: 'border-box',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: 'gray-300',
+    borderRadius: 'default',
+    overflow: 'hidden',
+    resize: 'horizontal'
+  })}>
+  <Tabs aria-label="Tabs">
+    <TabList>
+      <Tab id="home">Home</Tab>
+      <Tab id="profile">Profile</Tab>
+      <Tab id="contact">Contact</Tab>
+      <Tab id="about">About</Tab>
+    </TabList>
+    <TabPanel id="home">
+      Welcome home
+    </TabPanel>
+    <TabPanel id="profile">
+      View your profile
+    </TabPanel>
+    <TabPanel id="contact">
+      Find your contacts
+    </TabPanel>
+    <TabPanel id="about">
+      Learn more
+    </TabPanel>
+  </Tabs>
+</div>`;
+
+const selectionCode = `"use client";
+import {Tabs, TabList, Tab, TabPanel, type Key} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Home from '@react-spectrum/s2/illustrations/gradient/generic2/Home';
+import Folder from '@react-spectrum/s2/illustrations/gradient/generic2/FolderOpen';
+import Search from '@react-spectrum/s2/illustrations/gradient/generic2/Search';
+import Settings from '@react-spectrum/s2/illustrations/gradient/generic1/GearSetting';
+import {useState} from 'react';
+
+function Example() {
+  let [tab, setTab] = useState<Key>("files");
+  return (
+    <div>
+      <Tabs
+        aria-label="Tabs"
+        selectedKey={tab}
+        onSelectionChange={setTab}
+      >
+        <TabList aria-label="Tabs">
+          <Tab id="home">Home</Tab>
+          <Tab id="files">Files</Tab>
+          <Tab id="search" isDisabled>Search</Tab>
+          <Tab id="settings">Settings</Tab>
+        </TabList>
+        <TabPanel id="home">
+          <div className={style({size: 'full', display: 'flex', alignItems: 'center', justifyContent: 'center'})}>
+            <Home />
+          </div>
+        </TabPanel>
+        <TabPanel id="files">
+          <div className={style({size: 'full', display: 'flex', alignItems: 'center', justifyContent: 'center'})}>
+            <Folder />
+          </div>
+        </TabPanel>
+        <TabPanel id="search">
+          <div className={style({size: 'full', display: 'flex', alignItems: 'center', justifyContent: 'center'})}>
+            <Search />
+          </div>
+        </TabPanel>
+        <TabPanel id="settings">
+          <div className={style({size: 'full', display: 'flex', alignItems: 'center', justifyContent: 'center'})}>
+            <Settings />
+          </div>
+        </TabPanel>
+      </Tabs>
+      <p>Selected tab: {tab}</p>
+    </div>
+  );
+}`;
+
+const anatomyCode = `<Tabs>
+  <TabList>
+    <Tab>
+      <Icon />
+      <Text />
+    </Tab>
+  </TabList>
+  <TabPanel />
+</Tabs>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="tabs" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Tabs organize content into multiple sections and allow users to navigate between them. The
+    content under the set of tabs should be related and form a coherent unit.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>TabList</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="icons" class={h3Class}>Icons</h3>
+  <p class={pClass}>
+    <code>Tab</code> supports icons and text as children. Text is always required, but can be hidden
+    when the tabs are expanded using the <code>labelBehavior</code> prop.
+  </p>
+  <Code code={iconsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="overflow-behavior" class={h3Class}>Overflow behavior</h3>
+  <p class={pClass}>
+    Horizontal tabs automatically collapse into a Picker when space is limited.
+  </p>
+  <Code code={overflowCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>defaultSelectedKey</code> or <code>selectedKey</code> prop to set the selected tab.
+    The selected key corresponds to the <code>id</code> prop of a <code>{"<Tab>"}</code>. Tabs can be
+    disabled with the <code>isDisabled</code> prop. See the selection guide for more details.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-tabs" class={h3Class}>Tabs</h3>
+  <PropTable source="Tabs" />
+
+  <h3 id="api-tablist" class={h3Class}>TabList</h3>
+  <PropTable source="TabList" />
+
+  <h3 id="api-tab" class={h3Class}>Tab</h3>
+  <PropTable source="Tab" />
+
+  <h3 id="api-tabpanel" class={h3Class}>TabPanel</h3>
+  <PropTable source="TabPanel" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

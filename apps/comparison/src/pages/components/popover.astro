@@ -1,0 +1,119 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Popover.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS/focus markers stripped. Gated by `report:parity --slug=popover`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "popover";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Popover";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#custom-anchor", label: "Custom anchor", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-dialogtrigger", label: "DialogTrigger", depth: 3 },
+  { href: "#api-popover", label: "Popover", depth: 3 },
+];
+
+const customAnchorCode = `"use client";
+import {Popover, Button} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState, useRef} from 'react';
+
+function Example() {
+  let [isOpen, setOpen] = useState(false);
+  let triggerRef = useRef(null);
+
+  return (
+    <div className={style({display: 'flex', flexDirection: 'column', gap: 64, alignItems: 'center'})}>
+      <Button onPress={() => setOpen(!isOpen)}>
+        Open popover
+      </Button>
+      <div
+        ref={triggerRef}
+        className={style({
+          padding: 8,
+          backgroundColor: 'gray-100',
+          borderRadius: 'default',
+          font: 'ui'
+        })}>
+        Popover appears here
+      </div>
+      <Popover
+        triggerRef={triggerRef}
+        isOpen={isOpen}
+        onOpenChange={setOpen}>
+        <div className={style({font: 'ui'})}>
+          Popover with custom trigger reference
+        </div>
+      </Popover>
+    </div>
+  );
+}`;
+
+const anatomyCode = `<DialogTrigger>
+  <Button />
+  <Popover>
+    {/* ... */}
+  </Popover>
+</DialogTrigger>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="popover" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>A popover is an overlay element positioned relative to a trigger.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="custom-anchor" class={h2Class}>Custom anchor</h2>
+  <p class={pClass}>
+    To position a popover relative to a different element than its trigger, use the
+    <code>triggerRef</code> and <code>isOpen</code> props instead of <code>{"<DialogTrigger>"}</code>.
+    <code>onOpenChange</code> will be called when the user closes the popover.
+  </p>
+  <Code code={customAnchorCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-dialogtrigger" class={h3Class}>DialogTrigger</h3>
+  <PropTable source="DialogTrigger" />
+
+  <h3 id="api-popover" class={h3Class}>Popover</h3>
+  <PropTable source="Popover" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
