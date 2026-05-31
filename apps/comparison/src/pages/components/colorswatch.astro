@@ -1,0 +1,109 @@
+---
+// Ported by hand from vendor/s2-docs/pages/ColorSwatch.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=colorswatch`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "colorswatch";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "ColorSwatch";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#custom-sizing", label: "Custom sizing", depth: 2 },
+  { href: "#accessibility", label: "Accessibility", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const valueCode = `"use client";
+import {ColorSwatch} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<div className={style({display: 'flex', gap: 12, alignItems: 'center'})}>
+  <ColorSwatch color="#ff6600" />
+  <ColorSwatch color="rgb(255, 0, 255)" />
+  <ColorSwatch color="hsl(120, 100%, 42%)" />
+  <ColorSwatch color="rgba(0, 150, 255, 0.5)" />
+  <ColorSwatch />
+</div>`;
+
+const sizingCode = `"use client";
+import {ColorSwatch} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<ColorSwatch
+  color="#10b981"
+  styles={style({width: 80, height: 40})} />`;
+
+const accessibilityCode = `"use client";
+import {ColorSwatch} from '@react-spectrum/s2';
+
+<ColorSwatch
+  color="#f00"
+  aria-label="Background color"
+  colorName="Fire truck red" />`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="colorswatch" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>A ColorSwatch displays a preview of a selected color.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    A ColorSwatch displays a color value passed via the <code>color</code> prop. The value can be a
+    string or <code>Color</code> object. When no color is provided or the color is transparent, a
+    red slash will be displayed.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="custom-sizing" class={h2Class}>Custom sizing</h2>
+  <p class={pClass}>ColorSwatch can be resized using the <code>styles</code> prop.</p>
+  <Code code={sizingCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="accessibility" class={h2Class}>Accessibility</h2>
+  <p class={pClass}>
+    By default, ColorSwatch includes a localized color description for screen reader users (e.g.
+    "dark vibrant blue"). Use the <code>colorName</code> prop to override this. Set an
+    <code>aria-label</code> to provide additional context. In this example, a screen reader will
+    announce "Fire truck red, Background color".
+  </p>
+  <Code code={accessibilityCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

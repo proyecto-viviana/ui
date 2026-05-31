@@ -6,7 +6,7 @@ Path:               packages/dev/s2-docs/pages/s2/
 License:            Apache-2.0 (see ../LICENSE-react-spectrum)
 Source:             local react-spectrum/ checkout at the repo root
 Upstream version:   2.21.0-beta.0
-Synced:             2026-05-31T18:00:48.921Z
+Synced:             2026-05-31T18:27:54.828Z
 
 Synced pages:
   - Accordion.mdx
@@ -21,6 +21,12 @@ Synced pages:
   - ButtonGroup.mdx
   - Checkbox.mdx
   - CheckboxGroup.mdx
+  - ColorArea.mdx
+  - ColorField.mdx
+  - ColorSlider.mdx
+  - ColorSwatch.mdx
+  - ColorSwatchPicker.mdx
+  - ColorWheel.mdx
   - ComboBox.mdx
   - ContextualHelp.mdx
   - DateField.mdx
