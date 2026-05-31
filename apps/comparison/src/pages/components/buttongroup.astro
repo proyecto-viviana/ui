@@ -1,0 +1,101 @@
+---
+// Ported by hand from vendor/s2-docs/pages/ButtonGroup.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=buttongroup`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "buttongroup";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "ButtonGroup";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#overflow", label: "Overflow", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-buttongroup", label: "ButtonGroup", depth: 3 },
+];
+
+const overflowCode = `"use client";
+import {ButtonGroup, Button} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<div
+  className={style({
+    width: 300,
+    maxWidth: 'full',
+    padding: 16,
+    boxSizing: 'border-box',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: 'gray-300',
+    borderRadius: 'default',
+    resize: 'horizontal',
+    overflow: 'hidden'
+  })}>
+  <ButtonGroup>
+    <Button variant="primary">Rate Now</Button>
+    <Button variant="secondary">No, thanks</Button>
+    <Button variant="secondary">Remind me later</Button>
+  </ButtonGroup>
+</div>`;
+
+const anatomyCode = `<ButtonGroup>
+  <Button />
+  <LinkButton />
+</ButtonGroup>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="buttongroup" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    ButtonGroup handles overflow for a grouping of buttons whose actions are related to each other.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="overflow" class={h2Class}>Overflow</h2>
+  <p class={pClass}>
+    When horizontal space is limited, ButtonGroup switches to a vertical layout.
+  </p>
+  <Code code={overflowCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-buttongroup" class={h3Class}>ButtonGroup</h3>
+  <PropTable source="ButtonGroup" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

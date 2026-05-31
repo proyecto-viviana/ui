@@ -1,0 +1,141 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Tooltip.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. The upstream Accessibility InlineAlert
+// is rendered as a lead-in note (not a gated heading). Gated by `report:parity --slug=tooltip`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "tooltip";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Tooltip";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#interactions", label: "Interactions", depth: 2 },
+  { href: "#non-interactive-elements", label: "Non-interactive elements", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-tooltiptrigger", label: "TooltipTrigger", depth: 3 },
+  { href: "#api-tooltip", label: "Tooltip", depth: 3 },
+];
+
+const interactionsCode = `"use client";
+import {TooltipTrigger, Tooltip, ActionButton} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Edit from '@react-spectrum/s2/icons/Edit';
+import Save from '@react-spectrum/s2/icons/SaveFloppy';
+
+function Example(props) {
+  return (
+    <div className={style({display: 'flex', gap: 8})}>
+      <TooltipTrigger {...props}>
+        <ActionButton aria-label="Edit">
+          <Edit />
+        </ActionButton>
+        <Tooltip>
+          Edit
+        </Tooltip>
+      </TooltipTrigger>
+      <TooltipTrigger {...props}>
+        <ActionButton aria-label="Save">
+          <Save />
+        </ActionButton>
+        <Tooltip>
+          Save
+        </Tooltip>
+      </TooltipTrigger>
+    </div>
+  );
+}`;
+
+const nonInteractiveCode = `"use client";
+import {Button, ContextualHelp, Heading, Content} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<div className={style({display: 'flex', gap: 8, alignItems: 'center'})}>
+  <Button isDisabled>Delete resource</Button>
+  <ContextualHelp variant="info">
+    <Heading>Permission required</Heading>
+    <Content>
+      Your admin must grant you permission before you can delete resources.
+    </Content>
+  </ContextualHelp>
+</div>`;
+
+const anatomyCode = `<TooltipTrigger>
+  <Button />
+  <Tooltip />
+</TooltipTrigger>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="tooltip" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Display container for Tooltip content. Has a directional arrow dependent on its placement.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="interactions" class={h2Class}>Interactions</h2>
+  <p class={pClass}>
+    Tooltips appear after a "warmup" delay when hovering, or instantly on focus. Once a tooltip is
+    displayed, other tooltips display immediately. If the user waits for the "cooldown period"
+    before hovering another element, the warmup timer restarts.
+  </p>
+  <Code code={interactionsCode} lang="tsx" theme="github-dark" />
+  <p class={pClass}>
+    <strong>Accessibility:</strong> Tooltips are not shown on touch screen interactions. Ensure that
+    your UI is usable without tooltips, or use an alternative component such as a Popover to show
+    information in an adjacent element.
+  </p>
+
+  <h2 id="non-interactive-elements" class={h2Class}>Non-interactive elements</h2>
+  <p class={pClass}>
+    Tooltips must be placed on focusable elements so they are accessible to keyboard and screen
+    reader users. Use ContextualHelp to provide context for non-interactive elements such as plain
+    text or disabled buttons.
+  </p>
+  <Code code={nonInteractiveCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-tooltiptrigger" class={h3Class}>TooltipTrigger</h3>
+  <PropTable source="TooltipTrigger" />
+
+  <h3 id="api-tooltip" class={h3Class}>Tooltip</h3>
+  <PropTable source="Tooltip" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

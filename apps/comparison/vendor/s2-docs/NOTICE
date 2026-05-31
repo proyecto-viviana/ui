@@ -6,39 +6,44 @@ Path:               packages/dev/s2-docs/pages/s2/
 License:            Apache-2.0 (see ../LICENSE-react-spectrum)
 Source:             local react-spectrum/ checkout at the repo root
 Upstream version:   2.21.0-beta.0
-Synced:             2026-05-31T14:45:59.479Z
+Synced:             2026-05-31T16:53:54.527Z
 
 Synced pages:
-  - Button.mdx
-  - ComboBox.mdx
-  - DatePicker.mdx
-  - Checkbox.mdx
-  - Switch.mdx
-  - Link.mdx
-  - TextField.mdx
-  - SearchField.mdx
-  - RadioGroup.mdx
-  - NumberField.mdx
-  - Slider.mdx
-  - Meter.mdx
-  - ProgressBar.mdx
-  - ToggleButton.mdx
-  - StatusLight.mdx
-  - Badge.mdx
-  - Divider.mdx
-  - Avatar.mdx
   - ActionButton.mdx
-  - Breadcrumbs.mdx
-  - InlineAlert.mdx
-  - ContextualHelp.mdx
-  - SegmentedControl.mdx
-  - LinkButton.mdx
-  - DateField.mdx
-  - TimeField.mdx
-  - RangeSlider.mdx
-  - ProgressCircle.mdx
+  - ActionButtonGroup.mdx
+  - Avatar.mdx
   - AvatarGroup.mdx
+  - Badge.mdx
+  - Breadcrumbs.mdx
+  - Button.mdx
+  - ButtonGroup.mdx
+  - Checkbox.mdx
+  - CheckboxGroup.mdx
+  - ComboBox.mdx
+  - ContextualHelp.mdx
+  - DateField.mdx
+  - DatePicker.mdx
+  - Divider.mdx
+  - InlineAlert.mdx
+  - Link.mdx
+  - LinkButton.mdx
+  - Meter.mdx
+  - NumberField.mdx
+  - ProgressBar.mdx
+  - ProgressCircle.mdx
+  - RadioGroup.mdx
+  - RangeSlider.mdx
+  - SearchField.mdx
+  - SegmentedControl.mdx
   - Skeleton.mdx
+  - Slider.mdx
+  - StatusLight.mdx
+  - Switch.mdx
+  - TextField.mdx
+  - TimeField.mdx
+  - ToggleButton.mdx
+  - ToggleButtonGroup.mdx
+  - Tooltip.mdx
 
 These files are read-only inputs to
 `apps/comparison/scripts/import-s2-docs-mdx.ts`. Do not hand-edit. To

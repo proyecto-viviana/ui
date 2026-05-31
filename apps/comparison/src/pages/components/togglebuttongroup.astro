@@ -1,0 +1,116 @@
+---
+// Ported by hand from vendor/s2-docs/pages/ToggleButtonGroup.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=togglebuttongroup`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "togglebuttongroup";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "ToggleButtonGroup";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-togglebuttongroup", label: "ToggleButtonGroup", depth: 3 },
+];
+
+const selectionCode = `"use client";
+import {ToggleButtonGroup, ToggleButton, type Key} from '@react-spectrum/s2';
+import {useState} from 'react';
+import TextBold from '@react-spectrum/s2/icons/TextBold';
+import TextItalic from '@react-spectrum/s2/icons/TextItalic';
+import TextUnderline from '@react-spectrum/s2/icons/TextUnderline';
+import TextStrikeThrough from '@react-spectrum/s2/icons/TextStrikeThrough';
+
+function Example(props) {
+  let [selected, setSelected] = useState(new Set<Key>(['bold']));
+
+  return (
+    <>
+      <ToggleButtonGroup
+        {...props}
+        aria-label="Text style"
+        density="compact"
+        selectedKeys={selected}
+        onSelectionChange={setSelected}>
+        <ToggleButton id="bold" aria-label="Bold">
+          <TextBold />
+        </ToggleButton>
+        <ToggleButton id="italic" aria-label="Italic" isDisabled>
+          <TextItalic />
+        </ToggleButton>
+        <ToggleButton id="underline" aria-label="Underline">
+          <TextUnderline />
+        </ToggleButton>
+        <ToggleButton id="strike" aria-label="Strikethrough">
+          <TextStrikeThrough />
+        </ToggleButton>
+      </ToggleButtonGroup>
+      <p>Current selection: {[...selected].join(', ')}</p>
+    </>
+  );
+}`;
+
+const anatomyCode = `<ToggleButtonGroup>
+  <ToggleButton />
+</ToggleButtonGroup>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="togglebuttongroup" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    A ToggleButtonGroup is a grouping of related ToggleButtons, with single or multiple selection.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>selectionMode</code> prop to enable single or multiple selection. The selected
+    toggle buttons can be controlled via the <code>selectedKeys</code> prop, matching the
+    <code>id</code> of each <code>{"<ToggleButton>"}</code>. Toggle buttons can be disabled with the
+    <code>isDisabled</code> prop. See the selection guide for more details.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-togglebuttongroup" class={h3Class}>ToggleButtonGroup</h3>
+  <PropTable source="ToggleButtonGroup" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

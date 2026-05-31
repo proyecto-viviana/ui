@@ -1,0 +1,130 @@
+---
+// Ported by hand from vendor/s2-docs/pages/CheckboxGroup.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=checkboxgroup`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "checkboxgroup";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "CheckboxGroup";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-checkboxgroup", label: "CheckboxGroup", depth: 3 },
+];
+
+const valueCode = `"use client";
+import {CheckboxGroup, Checkbox} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [selected, setSelected] = useState(['soccer', 'baseball']);
+
+  return (
+    <>
+      <CheckboxGroup
+        label="Favorite sports"
+        value={selected}
+        onChange={setSelected}>
+        <Checkbox value="soccer">Soccer</Checkbox>
+        <Checkbox value="baseball">Baseball</Checkbox>
+        <Checkbox value="basketball">Basketball</Checkbox>
+      </CheckboxGroup>
+      <p>Current selection: {selected.join(', ')}</p>
+    </>
+  );
+}`;
+
+const formsCode = `"use client";
+import {CheckboxGroup, Checkbox, Button, Form} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<Form>
+  <CheckboxGroup
+    label="Sandwich condiments"
+    name="condiments"
+    isRequired>
+    <Checkbox value="lettuce">Lettuce</Checkbox>
+    <Checkbox value="tomato">Tomato</Checkbox>
+    <Checkbox value="onion">Onion</Checkbox>
+    <Checkbox value="sprouts">Sprouts</Checkbox>
+  </CheckboxGroup>
+  <CheckboxGroup label="Agree to the following" name="terms">
+    <Checkbox value="terms" isRequired>Terms and conditions</Checkbox>
+    <Checkbox value="privacy" isRequired>Privacy policy</Checkbox>
+    <Checkbox value="cookies" isRequired>Cookie policy</Checkbox>
+  </CheckboxGroup>
+  <Button type="submit" styles={style({marginTop: 8})}>Submit</Button>
+</Form>`;
+
+const anatomyCode = `<CheckboxGroup>
+  <Checkbox />
+</CheckboxGroup>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="checkboxgroup" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    A CheckboxGroup allows users to select one or more items from a list of choices.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the selected items, and
+    <code>onChange</code> to handle selection changes.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the selected checkboxes to the server. Set the
+    <code>isRequired</code> prop on the <code>{"<CheckboxGroup>"}</code> to validate the user selects
+    at least one checkbox, or on individual checkboxes. See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-checkboxgroup" class={h3Class}>CheckboxGroup</h3>
+  <PropTable source="CheckboxGroup" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
