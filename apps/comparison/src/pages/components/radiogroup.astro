@@ -1,0 +1,132 @@
+---
+// Ported by hand from vendor/s2-docs/pages/RadioGroup.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=radiogroup`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "radiogroup";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "RadioGroup";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-radiogroup", label: "RadioGroup", depth: 3 },
+  { href: "#api-radio", label: "Radio", depth: 3 },
+];
+
+const valueCode = `"use client";
+import {RadioGroup, Radio} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [selected, setSelected] = useState<string | null>(null);
+
+  return (
+    <>
+      <RadioGroup
+        label="Favorite sport"
+        value={selected}
+        onChange={setSelected}>
+        <Radio value="soccer">Soccer</Radio>
+        <Radio value="baseball">Baseball</Radio>
+        <Radio value="basketball">Basketball</Radio>
+      </RadioGroup>
+      <p>Current selection: {selected || 'None'}</p>
+    </>
+  );
+}`;
+
+const formsCode = `"use client";
+import {RadioGroup, Radio, Button, Form} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <Form>
+      <RadioGroup
+        {...props}
+        label="Favorite pet"
+        name="pet"
+      >
+        <Radio value="dog">Dog</Radio>
+        <Radio value="cat">Cat</Radio>
+        <Radio value="dragon">Dragon</Radio>
+      </RadioGroup>
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+
+const anatomyCode = `<RadioGroup>
+  <Radio />
+</RadioGroup>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="radiogroup" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Radio groups allow users to select a single option from a list of mutually exclusive options.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the selected item, and
+    <code>onChange</code> to handle selection changes.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the selected radio to the server. Set the
+    <code>isRequired</code> prop to validate that the user selects an option, or implement custom
+    client or server-side validation. See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-radiogroup" class={h3Class}>RadioGroup</h3>
+  <PropTable source="RadioGroup" />
+
+  <h3 id="api-radio" class={h3Class}>Radio</h3>
+  <PropTable source="Radio" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

@@ -1,0 +1,114 @@
+---
+// Ported by hand from vendor/s2-docs/pages/TextField.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the
+// docs-tooling highlight/PROPS markers stripped. Gated by `report:parity --slug=textfield`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "textfield";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "TextField";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const valueCode = `"use client";
+import {TextField} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [name, setName] = useState('');
+
+  return (
+    <>
+      <TextField
+        label="Name"
+        placeholder="Enter your full name"
+        value={name}
+        onChange={setName} />
+      <p>Your name: {name}</p>
+    </>
+  );
+}`;
+
+const formsCode = `"use client";
+import {TextField, Button, Form} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <Form>
+      <TextField
+        {...props}
+        label="Email"
+        placeholder="Enter your email"
+        name="email"
+      />
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="textfield" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    TextFields are text inputs that allow users to input custom text entries with a keyboard.
+    Various decorations can be displayed around the field to communicate the entry requirements.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the text value, and
+    <code>onChange</code> to handle user input.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the text value to the server. Set the
+    <code>isRequired</code>, <code>minLength</code>, <code>maxLength</code>, <code>pattern</code>, or
+    <code>type</code> props to validate the value, or implement custom client or server-side
+    validation. See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
