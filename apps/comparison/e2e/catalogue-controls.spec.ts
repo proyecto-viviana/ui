@@ -7,7 +7,7 @@ async function selectPickerOption(page: Page, label: string, option: string) {
 
 test.describe("comparison catalogue controls", () => {
   test("hydrates the topbar chrome", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/coverage");
 
     const topbarMount = page.locator(".js-docs-topbar-mount");
     await expect(topbarMount).toHaveAttribute("data-mounted", "true");
@@ -64,7 +64,7 @@ test.describe("comparison catalogue controls", () => {
 
   test("hydrates the table of contents chrome", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/");
+    await page.goto("/coverage");
 
     const tocMount = page.locator(".js-docs-toc-mount");
     await expect(tocMount).toHaveAttribute("data-mounted", "true");
@@ -115,7 +115,7 @@ test.describe("comparison catalogue controls", () => {
   });
 
   test("hydrates the catalogue overview chrome", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/coverage");
 
     const overviewMount = page.locator(".js-catalogue-overview-mount");
     await expect(overviewMount).toHaveAttribute("data-mounted", "true");
@@ -131,7 +131,7 @@ test.describe("comparison catalogue controls", () => {
   });
 
   test("filters by search text and reports visible count", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/coverage");
 
     await expect(page.locator(".js-index-hero-mount[data-mounted='true']")).toHaveCount(1);
     await expect(page.getByRole("heading", { level: 1, name: "Solid Spectrum" })).toBeVisible();
@@ -145,7 +145,7 @@ test.describe("comparison catalogue controls", () => {
   });
 
   test("sorts visible entries by component name", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/coverage");
 
     await selectPickerOption(page, "Sort", "Name");
 
@@ -160,7 +160,7 @@ test.describe("comparison catalogue controls", () => {
   });
 
   test("switches the docs theme", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/coverage");
 
     await expect(page.locator("body")).toHaveAttribute("data-theme", "system");
     await expect(page.locator("[data-theme-toggle-icon]")).toHaveText("System");

@@ -47,7 +47,8 @@ test.describe("comparison component detail chrome", () => {
     await expect(page.locator(".s2-brand-text")).toBeVisible();
 
     const docsNav = page.getByRole("navigation", { name: "Components" });
-    await expect(docsNav.getByRole("button", { name: "Components" })).toBeVisible();
+    // Sidebar is a flat list aligned with the upstream S2 docs (no "Components"
+    // disclosure button); the nav is identified by its aria-label above.
     await expect(docsNav.getByRole("link", { name: "Accordion" })).toHaveAttribute(
       "aria-current",
       "page",
