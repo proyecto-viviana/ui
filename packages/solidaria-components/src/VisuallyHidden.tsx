@@ -28,15 +28,24 @@ export function VisuallyHidden(props: VisuallyHiddenProps): JSX.Element {
     isFocusable: local.isFocusable,
   }));
 
-  const elementType = () => local.elementType ?? "span";
   const mergedProps = () =>
     mergeProps<Record<string, unknown>>(
       others as unknown as Record<string, unknown>,
       visuallyHiddenProps() as unknown as Record<string, unknown>,
     );
 
+  // elementType is read once (structural, not reactive). The default `span` is
+  // rendered as a static element rather than via `<Dynamic>`: a reactive
+  // `<Dynamic>` desyncs Solid's hydration markers, leaving the registry dirty so
+  // a later sibling re-render throws "template is not a function" in prod (and a
+  // hard hydration crash under solid-refresh in dev). `<Dynamic>` is reserved for
+  // an explicit custom elementType.
+  const tag = local.elementType ?? "span";
+  if (tag === "span") {
+    return <span {...mergedProps()}>{props.children}</span>;
+  }
   return (
-    <Dynamic component={elementType()} {...mergedProps()}>
+    <Dynamic component={tag} {...mergedProps()}>
       {props.children}
     </Dynamic>
   );
