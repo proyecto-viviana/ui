@@ -1,0 +1,184 @@
+---
+// Ported by hand from vendor/s2-docs/pages/DateRangePicker.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/PROPS markers stripped. Gated by `report:parity --slug=daterangepicker`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "daterangepicker";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "DateRangePicker";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#format-options", label: "Format options", depth: 3 },
+  { href: "#international-calendars", label: "International calendars", depth: 3 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const valueCode = `"use client";
+import {parseDate, getLocalTimeZone, type CalendarDate} from '@internationalized/date';
+import {useDateFormatter, type RangeValue} from 'react-aria';
+import {DateRangePicker} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [range, setRange] = useState<RangeValue<CalendarDate> | null>({
+    start: parseDate('2025-02-03'),
+    end: parseDate('2025-02-12')
+  });
+  let formatter = useDateFormatter({ dateStyle: 'long' });
+
+  return (
+    <>
+      <DateRangePicker
+        value={range}
+        onChange={setRange} />
+      <p>Selected range: {range ? formatter.formatRange(
+        range.start.toDate(getLocalTimeZone()),
+        range.end.toDate(getLocalTimeZone())
+      ) : '--'}</p>
+    </>
+  );
+}`;
+
+const formatOptionsCode = `"use client";
+import {parseZonedDateTime} from '@internationalized/date';
+import {DateRangePicker} from '@react-spectrum/s2';
+
+<DateRangePicker
+  defaultValue={{
+    start: parseZonedDateTime('2025-02-03T08:45:00[America/Los_Angeles]'),
+    end: parseZonedDateTime('2025-02-14T08:45:00[America/Los_Angeles]')
+  }} />`;
+
+const internationalCode = `"use client";
+import {Provider, DateRangePicker} from '@react-spectrum/s2';
+import {parseDate} from '@internationalized/date';
+
+<Provider>
+  <DateRangePicker
+    defaultValue={{
+      start: parseDate('2025-02-03'),
+      end: parseDate('2025-02-14')
+    }} />
+</Provider>`;
+
+const formsCode = `"use client";
+import {isWeekend, today, getLocalTimeZone} from '@internationalized/date';
+import {DateRangePicker, Form, Button, useLocale} from '@react-spectrum/s2';
+
+function Example(props) {
+  let {locale} = useLocale();
+  let now = today(getLocalTimeZone());
+  let disabledRanges = [
+    [now, now.add({ days: 5 })],
+    [now.add({ days: 14 }), now.add({ days: 16 })],
+    [now.add({ days: 23 }), now.add({ days: 24 })]
+  ];
+
+  return (
+    <Form>
+      <DateRangePicker
+        {...props}
+        label="Trip dates"
+        startName="startDate"
+        endName="endDate"
+        minValue={today(getLocalTimeZone())}
+        isDateUnavailable={date => (
+          isWeekend(date, locale) ||
+          disabledRanges.some((interval) =>
+            date.compare(interval[0]) >= 0 && date.compare(interval[1]) <= 0
+          )
+        )}
+      />
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="daterangepicker" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    DateRangePickers combine two DateFields and a RangeCalendar popover to allow users to enter or
+    select a date and time range.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>value</code> or <code>defaultValue</code> prop to set the selected date range,
+    using objects in the <code>@internationalized/date</code> package. This library supports parsing
+    date strings in multiple formats, manipulation across international calendar systems, time zones,
+    etc.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="format-options" class={h3Class}>Format options</h3>
+  <p class={pClass}>
+    The date format is automatically determined based on the user's locale. <code>DateRangePicker</code>
+    supports several props to control how values are displayed.
+  </p>
+  <Code code={formatOptionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="international-calendars" class={h3Class}>International calendars</h3>
+  <p class={pClass}>
+    By default, <code>DateRangePicker</code> displays the value using the calendar system for the
+    user's locale. Use <code>{"<Provider>"}</code> to override the calendar system by setting the
+    Unicode calendar locale extension. The <code>onChange</code> event always receives a date in the
+    same calendar as the <code>value</code> or <code>defaultValue</code> (Gregorian if no value is
+    provided), regardless of the displayed locale.
+  </p>
+  <Code code={internationalCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the selected date to the server as an ISO 8601 string.
+    Set the <code>isRequired</code>, <code>minValue</code>, or <code>maxValue</code> props to validate
+    the value, or implement custom client or server-side validation. The
+    <code>isDateUnavailable</code> callback prevents certain dates from being selected. Use
+    <code>allowsNonContiguousRanges</code> to allow selecting ranges containing unavailable dates.
+    See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

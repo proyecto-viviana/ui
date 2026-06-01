@@ -6,7 +6,7 @@ Path:               packages/dev/s2-docs/pages/s2/
 License:            Apache-2.0 (see ../LICENSE-react-spectrum)
 Source:             local react-spectrum/ checkout at the repo root
 Upstream version:   2.21.0-beta.0
-Synced:             2026-05-31T21:18:38.726Z
+Synced:             2026-06-01T01:19:35.867Z
 
 Synced pages:
   - Accordion.mdx
@@ -19,6 +19,7 @@ Synced pages:
   - Breadcrumbs.mdx
   - Button.mdx
   - ButtonGroup.mdx
+  - Calendar.mdx
   - Checkbox.mdx
   - CheckboxGroup.mdx
   - ColorArea.mdx
@@ -31,6 +32,7 @@ Synced pages:
   - ContextualHelp.mdx
   - DateField.mdx
   - DatePicker.mdx
+  - DateRangePicker.mdx
   - Dialog.mdx
   - Disclosure.mdx
   - Divider.mdx
@@ -46,6 +48,7 @@ Synced pages:
   - ProgressBar.mdx
   - ProgressCircle.mdx
   - RadioGroup.mdx
+  - RangeCalendar.mdx
   - RangeSlider.mdx
   - SearchField.mdx
   - SegmentedControl.mdx
