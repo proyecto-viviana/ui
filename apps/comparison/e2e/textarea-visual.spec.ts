@@ -201,6 +201,19 @@ function expectNear(
 }
 
 test.describe("comparison TextArea visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await textAreaFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "TextArea default state",
+      { maxMismatchRatio: 0.22, maxDimensionDelta: 32, pixelThreshold: 64 },
+    );
+  });
+
   test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await textAreaFixtures(page, invalidRequiredXLQuery);
 

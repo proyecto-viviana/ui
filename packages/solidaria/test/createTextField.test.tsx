@@ -51,10 +51,23 @@ describe("createTextField hook", () => {
 
     it("with appropriate props if isRequired is defined", () => {
       let props = renderTextFieldHook({ isRequired: true, "aria-label": "mandatory label" });
-      expect(props["aria-required"]).toBeTruthy();
+      expect(props.required).toBeTruthy();
+      expect(props["aria-required"]).toBeUndefined();
 
       props = renderTextFieldHook({ isRequired: false, "aria-label": "mandatory label" });
+      expect(props.required).toBeFalsy();
       expect(props["aria-required"]).toBeUndefined();
+    });
+
+    it("with aria required props if aria validation behavior is defined", () => {
+      const props = renderTextFieldHook({
+        isRequired: true,
+        validationBehavior: "aria",
+        "aria-label": "mandatory label",
+      });
+
+      expect(props.required).toBeFalsy();
+      expect(props["aria-required"]).toBeTruthy();
     });
 
     it("with appropriate props if isReadOnly is defined", () => {

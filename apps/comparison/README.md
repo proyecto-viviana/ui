@@ -39,14 +39,14 @@ focused.
 Routes are generated from the official React Spectrum S2 catalogue. Missing
 Solid implementations stay visible as gaps.
 
-Current local report snapshot (2026-05-26): `69` official entries tracked,
-`69` live on both stacks, `0` missing/gap catalogue entries, `346` visual
-states tracked, `105` with current visual evidence, and `56` with strict
-pair-diff tests.
+Current local report snapshot (2026-06-01): `69` official entries tracked,
+`69` live on both stacks, `0` missing/gap catalogue entries, `349` visual
+states tracked, `113` with current visual evidence, `56` with strict pair-diff
+tests, and `0` blocked visual-state rows.
 
-The strict parity report currently fails until Provider gets modeled viewer
-controls and DropZone, NumberField, Picker, Provider, RadioGroup, SearchField,
-Switch, TextArea, and TextField get validation notes.
+The strict parity report is green: modeled controls, validation notes, and
+current visual/asserted evidence are all `69/69`. The gap report has no
+missing/gap catalogue entries or blocked visual-state rows.
 
 Use the reports as the current roadmap:
 

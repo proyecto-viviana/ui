@@ -29,7 +29,7 @@ Status: partial
 | 6 State                | partial  | Wrapper-level tests cover controlled/default single and multiple value aliases.                        |
 | 7 ARIA hooks           | partial  | Select/listbox roles and multiple selection are covered; section/link item semantics remain.           |
 | 8 Headless             | partial  | Solidaria Select supports multiple keys but not hierarchical Picker sections or link options.          |
-| 9 Styled S2            | partial  | Invalid/open/advanced route states have visual evidence; default pair diff remains planned.            |
+| 9 Styled S2            | partial  | Default, invalid, open-list, keyboard, and advanced route states have visual evidence.                 |
 | 10 Runtime lifecycle   | partial  | Route controls and load-more counter are covered; section/link navigation lifecycle remains.           |
 | 11 Harness integrity   | complete | React imports S2 directly; Solid imports public `@proyecto-viviana/solid-spectrum` Picker.             |
 | 12 Comparison evidence | complete | Focused package, build, Playwright, parity, and check gates passed for this checkpoint.                |
@@ -50,18 +50,18 @@ Status: partial
 
 ## Gate Outcome Summary
 
-| Gate                                     | Outcome | Evidence                                                                                                                                               | Blockers/owner                                                                      |
-| ---------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Official Docs And Viewer Parity          | partial | S2 docs list static/dynamic collections, items, sections, renderValue, forms, validation, async loading, and popover props.                            | PickerSection, PickerItem link navigation, and rich item slot evidence remain.      |
-| External Authority And Standards         | partial | React Aria Select docs checked for value, collection, form, validation, and listbox semantics.                                                         | Need section/link semantics mapped after lower collection work.                     |
-| Upstream React Source Parity             | partial | Solid wrapper now accepts S2 `value`, `defaultValue`, and `onChange` for single and multiple selection.                                                | Hierarchical sections and link items are not ported.                                |
-| Solid Idiomatic Implementation           | passing | Wrapper uses accessors/mergeProps and routes S2 aliases through Solidaria selected-key APIs.                                                           | None for the current flat item route.                                               |
-| Accessibility And I18n                   | partial | Package tests cover listbox multiple selection and form hidden inputs.                                                                                 | Section group labeling, link option navigation, and richer item content need proof. |
-| Behavior State Machine                   | partial | Existing e2e covers invalid/open/select/keyboard paths; package tests cover multiple alias payloads.                                                   | Multi-select browser transition and section/link transitions remain.                |
-| Style Source-To-Computed Parity          | partial | Invalid required XL, open list, keyboard, and advanced states have current visual/computed evidence, including option focus-visible background parity. | Dedicated default-state pair diff and rich item slot geometry remain.               |
-| React-Vs-Solid Comparison Harness Parity | passing | Shared Picker demo data drives both React S2 and Solid public Picker, including `selectionMode`.                                                       | None for the current flat item route.                                               |
-| Known Defects And Regression Protection  | partial | Known section/link/default-visual gaps are now blockers in this note and metadata.                                                                     | Resolve blockers before accepted status.                                            |
-| Evidence And Handoff                     | passing | Focused gates passed for this checkpoint.                                                                                                              | Keep partial blockers active until resolved.                                        |
+| Gate                                     | Outcome | Evidence                                                                                                                                                        | Blockers/owner                                                                      |
+| ---------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Official Docs And Viewer Parity          | partial | S2 docs list static/dynamic collections, items, sections, renderValue, forms, validation, async loading, and popover props.                                     | PickerSection, PickerItem link navigation, and rich item slot evidence remain.      |
+| External Authority And Standards         | partial | React Aria Select docs checked for value, collection, form, validation, and listbox semantics.                                                                  | Need section/link semantics mapped after lower collection work.                     |
+| Upstream React Source Parity             | partial | Solid wrapper now accepts S2 `value`, `defaultValue`, and `onChange` for single and multiple selection.                                                         | Hierarchical sections and link items are not ported.                                |
+| Solid Idiomatic Implementation           | passing | Wrapper uses accessors/mergeProps and routes S2 aliases through Solidaria selected-key APIs.                                                                    | None for the current flat item route.                                               |
+| Accessibility And I18n                   | partial | Package tests cover listbox multiple selection and form hidden inputs.                                                                                          | Section group labeling, link option navigation, and richer item content need proof. |
+| Behavior State Machine                   | partial | Existing e2e covers invalid/open/select/keyboard paths; package tests cover multiple alias payloads.                                                            | Multi-select browser transition and section/link transitions remain.                |
+| Style Source-To-Computed Parity          | partial | Default, invalid required XL, open list, keyboard, and advanced states have current visual/computed evidence, including option focus-visible background parity. | Rich item slot geometry remains.                                                    |
+| React-Vs-Solid Comparison Harness Parity | passing | Shared Picker demo data drives both React S2 and Solid public Picker, including `selectionMode`.                                                                | None for the current flat item route.                                               |
+| Known Defects And Regression Protection  | partial | Known section, link, multi-select browser, and rich item slot gaps are blockers in this note and metadata.                                                      | Resolve blockers before accepted status.                                            |
+| Evidence And Handoff                     | passing | Focused gates passed for this checkpoint.                                                                                                                       | Keep partial blockers active until resolved.                                        |
 
 ## Research
 
@@ -100,7 +100,6 @@ Status: partial
 | Implement `PickerSection`/hierarchical collection support.  | Docs, source, behavior, a11y, style | Picker/Select stack | yes               |
 | Implement `PickerItem` link navigation and non-selection.   | Docs, source, behavior, a11y        | Picker/SelectOption | yes               |
 | Add browser evidence for multi-select transitions.          | Behavior / Comparison Harness       | Picker e2e          | yes               |
-| Add dedicated default Picker pair diff and computed checks. | Style Source-To-Computed            | Picker e2e          | yes               |
 | Prove rich item slot geometry for icon/avatar/description.  | Docs, source, style, a11y           | Picker route/e2e    | yes               |
 | Map section labels and link items to accessible name/order. | Accessibility And I18n              | Picker/Select stack | yes               |
 
@@ -112,14 +111,13 @@ Status: partial
   - `vp test packages/solid-spectrum/test/Picker.test.tsx`
     - 1 file, 9 tests passed after the final iterable selection helper
       cleanup.
-  - `vp exec --filter @proyecto-viviana/comparison playwright test e2e/picker-visual.spec.ts e2e/modeled-controls-contract.spec.ts --project=chromium --reporter=line --grep "comparison Picker visual parity|Picker side-panel controls"`
-    - 12 tests passed.
+  - `COMPARISON_BASE_URL=http://127.0.0.1:4321 vp exec --filter @proyecto-viviana/comparison playwright test e2e/picker-visual.spec.ts --project=chromium --reporter=line`
+    - 9 tests passed after adding the dedicated default-state pair diff.
   - `vp run comparison:build`
-    - 70 pages built.
+    - 136 pages built.
   - `vp run comparison:report:parity`
-    - 69/69 official routes, 69/69 modeled controls, 64/69 validation notes.
-      Missing notes remain RadioGroup, SearchField, Switch, TextArea, and
-      TextField.
+    - 69/69 official routes, 69/69 modeled controls, 69/69 validation notes,
+      and 69/69 current visual/asserted evidence.
   - `vp check --fix`
     - Formatting completed and lint passed.
   - `git diff --check`
@@ -128,8 +126,8 @@ Status: partial
 ## Handoff
 
 - Status after this pass: partial.
-- This checkpoint fixes the S2 alias gap for single and multiple selection and
-  keeps the remaining blockers explicit. It also fixes the Select popover option
-  focus-visible mismatch exposed by the Picker open-list parity test. Picker
-  must not be moved to accepted until the gaps above are closed with package and
-  browser evidence.
+- This checkpoint fixes the S2 alias gap for single and multiple selection,
+  adds dedicated default visual evidence, and keeps the remaining blockers
+  explicit. It also fixes the Select popover option focus-visible mismatch
+  exposed by the Picker open-list parity test. Picker must not be moved to
+  accepted until the gaps above are closed with package and browser evidence.

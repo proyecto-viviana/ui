@@ -271,6 +271,35 @@ describe("TextField", () => {
       const input = screen.getByRole("textbox");
 
       expect(input.closest(".solidaria-TextField")).toHaveAttribute("data-required");
+      expect(input).toHaveAttribute("required");
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("should support aria validation for required input state", () => {
+      render(() => <TestTextField isRequired validationBehavior="aria" />);
+      const input = screen.getByRole("textbox");
+
+      expect(input.closest(".solidaria-TextField")).toHaveAttribute("data-required");
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+
+    it("should support required textarea state", () => {
+      render(() => <TestTextField input={TextArea} isRequired />);
+      const textarea = screen.getByRole("textbox");
+
+      expect(textarea.closest(".solidaria-TextField")).toHaveAttribute("data-required");
+      expect(textarea).toHaveAttribute("required");
+      expect(textarea).not.toHaveAttribute("aria-required");
+    });
+
+    it("should support aria validation for required textarea state", () => {
+      render(() => <TestTextField input={TextArea} isRequired validationBehavior="aria" />);
+      const textarea = screen.getByRole("textbox");
+
+      expect(textarea.closest(".solidaria-TextField")).toHaveAttribute("data-required");
+      expect(textarea).not.toHaveAttribute("required");
+      expect(textarea).toHaveAttribute("aria-required", "true");
     });
 
     it("supports validation errors", () => {

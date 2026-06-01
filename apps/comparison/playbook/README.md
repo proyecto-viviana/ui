@@ -18,6 +18,19 @@ another.
 Each gate must also have an explicit outcome summary in the component notes, so
 the final status is visible without inferring it from scattered checklist rows.
 
+## Parity Commit Closeout
+
+Parity commits should end with a short closeout line or body paragraph that
+records:
+
+- gate/status changed;
+- source/docs checked;
+- tests/reports run;
+- remaining blockers, or `none`.
+
+Keep the closeout evidence-focused. Do not claim acceptance unless the
+validation notes show every gate complete.
+
 When a pass uses AI agents or parallel AI review, use
 [Agent Workflow](./agent-workflow.md). Agents get narrow context packs and
 produce structured evidence; the coordinator owns final status.

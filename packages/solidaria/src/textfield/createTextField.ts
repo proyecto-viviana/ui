@@ -144,7 +144,7 @@ export function createTextField<
     const p = getProps();
     const isInvalid = p.isInvalid ?? false;
     const isTextarea = p.inputElementType === "textarea";
-    const validationBehavior = p.validationBehavior ?? "aria";
+    const validationBehavior = p.validationBehavior ?? "native";
 
     return mergeProps(
       getDomProps(),

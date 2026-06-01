@@ -138,11 +138,17 @@ const deps = {
 };
 
 const css = {
-  fileName: "style.css",
+  fileName: "styles.css",
   splitting: false,
   inject: false,
   minify: true,
 };
+
+const copiedCssFiles = ["components.css", "font-faces.css", "theme.css"].map((fileName) => ({
+  from: `src/${fileName}`,
+  to: "dist",
+  flatten: true,
+}));
 
 export default defineConfig({
   pack: [
@@ -160,7 +166,7 @@ export default defineConfig({
       css,
       plugins: [s2Macros(), solid({ solid: { generate: "dom", hydratable: true } })],
       deps,
-      copy: [{ from: "src/*.css", to: "dist", flatten: true }],
+      copy: copiedCssFiles,
     },
     {
       entry: ssrEntry,

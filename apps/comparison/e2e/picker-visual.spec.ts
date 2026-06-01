@@ -252,6 +252,19 @@ function expectNear(
 }
 
 test.describe("comparison Picker visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await pickerFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "Picker default state",
+      { maxMismatchRatio: 0.2, maxDimensionDelta: 24, pixelThreshold: 64 },
+    );
+  });
+
   test("invalid required XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await pickerFixtures(page, "?isInvalid=true&isRequired=true&size=XL");
 

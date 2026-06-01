@@ -104,9 +104,17 @@ describe("TextField", () => {
   });
 
   describe("required state", () => {
-    it("sets aria-required when isRequired is true", () => {
+    it("uses native required validation by default", () => {
       render(() => <TextField aria-label="Test input" isRequired />);
       const input = screen.getByRole("textbox");
+      expect(input).toHaveAttribute("required");
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("sets aria-required when validationBehavior is aria", () => {
+      render(() => <TextField aria-label="Test input" isRequired validationBehavior="aria" />);
+      const input = screen.getByRole("textbox");
+      expect(input).not.toHaveAttribute("required");
       expect(input).toHaveAttribute("aria-required", "true");
     });
 

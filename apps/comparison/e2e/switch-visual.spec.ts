@@ -158,14 +158,33 @@ async function setSwitchControl(page: Page, name: string, checked: boolean) {
     `[data-comparison-controls="switch"] input[type="checkbox"][name="${name}"]`,
   );
   await expect(input).toHaveCount(1);
+  if ((await input.isChecked()) === checked) {
+    return;
+  }
+
+  const label = input.locator("xpath=ancestor::label[1]");
+  await label.click();
   if (checked) {
-    await input.check();
+    await expect(input).toBeChecked();
   } else {
-    await input.uncheck();
+    await expect(input).not.toBeChecked();
   }
 }
 
 test.describe("comparison Switch visual parity", () => {
+  test("default state matches current React Spectrum", async ({ page }) => {
+    const fixtures = await switchFixtures(page);
+
+    await clearPointer(page);
+    await expectScreenshotPair(
+      page,
+      fixtures.reactCanvas,
+      fixtures.solidCanvas,
+      "Switch default state",
+      { maxMismatchRatio: 0.16, maxDimensionDelta: 16, pixelThreshold: 64 },
+    );
+  });
+
   test("selected emphasized XL state matches current React Spectrum", async ({ page }) => {
     const fixtures = await switchFixtures(page, "?isSelected=true&isEmphasized=true&size=XL");
 

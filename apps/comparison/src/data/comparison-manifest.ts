@@ -902,7 +902,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
         "Tabbed content with required labeling, collection composition, selection state, orientation, density, label behavior, keyboard activation, and panel mounting.",
       styledSummary: "React Spectrum Tabs vs Solid Spectrum Tabs.",
       styledNote:
-        "React uses @react-spectrum/s2 Tabs directly; Solid uses @proyecto-viviana/solid-spectrum Tabs with S2-derived tablist, tab, indicator, Text/Icon slot, and panel styling. Horizontal overflow collapse into the S2 Tabs Picker is still tracked as the remaining styled parity blocker.",
+        "React uses @react-spectrum/s2 Tabs directly; Solid uses @proyecto-viviana/solid-spectrum Tabs with S2-derived tablist, tab, indicator, Text/Icon slot, panel styling, and horizontal overflow collapse into the S2 Tabs Picker.",
     }),
     componentStatus: "parity",
     parity: "partial",
@@ -910,7 +910,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     gapSummary: [
       "React and Solid styled tab demos are mounted from their public packages.",
       "Route controls cover selection, disabled keys, orientation, density, label behavior, keyboard activation, icon/Text composition, force-mounted panels, and static/dynamic collections.",
-      "Solid styled Tabs still need the upstream horizontal overflow collapse branch that swaps the tab row for the S2 Tabs Picker.",
+      "Solid styled Tabs port the upstream horizontal overflow branch that swaps the tab row for the S2 Tabs Picker.",
     ],
     layers: {
       styled: layerTrack(
@@ -918,7 +918,7 @@ const entryOverrides: Record<string, ComparisonEntry> = {
         "React Spectrum Tabs vs Solid Spectrum Tabs.",
         "live",
         "live",
-        "Both styled stacks are live, but the Solid overflow-collapse branch is still pending.",
+        "Both styled stacks are live, including the horizontal overflow-collapse picker branch.",
       ),
       components: layerTrack(
         "Component Tabs",

@@ -1588,7 +1588,7 @@ const tabsControls: ComponentControlGroup = {
     "UNSAFE_className",
     "UNSAFE_style",
   ],
-  note: "Modeled from the S2 Tabs docs, API, and installed source. The route drives required labeling, controlled/default selection, disabled keys, disabled root, automatic/manual keyboard activation, horizontal/vertical orientation, compact/regular density, show/hide label behavior, static and dynamic collection composition, icon+Text slots, and shouldForceMount. Horizontal overflow collapse into the S2 Tabs Picker remains an explicit blocker until the Solid wrapper ports the upstream measurement/collapse branch.",
+  note: "Modeled from the S2 Tabs docs, API, and installed source. The route drives required labeling, controlled/default selection, disabled keys, disabled root, automatic/manual keyboard activation, horizontal/vertical orientation, compact/regular density, show/hide label behavior, static and dynamic collection composition, icon+Text slots, force-mounted panel exposure, and horizontal overflow collapse into the S2 Tabs Picker.",
 };
 
 const avatarControls: ComponentControlGroup = {

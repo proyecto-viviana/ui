@@ -129,9 +129,17 @@ describe("TextArea (solid-spectrum)", () => {
       expect(textarea.getAttribute("aria-invalid")).toBe("true");
     });
 
-    it("sets aria-required when required", () => {
+    it("uses native required validation by default", () => {
       render(() => <TextArea aria-label="Notes" isRequired />);
       const textarea = screen.getByRole("textbox");
+      expect(textarea).toHaveAttribute("required");
+      expect(textarea).not.toHaveAttribute("aria-required");
+    });
+
+    it("sets aria-required when validationBehavior is aria", () => {
+      render(() => <TextArea aria-label="Notes" isRequired validationBehavior="aria" />);
+      const textarea = screen.getByRole("textbox");
+      expect(textarea).not.toHaveAttribute("required");
       expect(textarea).toHaveAttribute("aria-required", "true");
     });
 

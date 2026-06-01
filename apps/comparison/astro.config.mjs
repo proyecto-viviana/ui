@@ -382,7 +382,7 @@ export default defineConfig({
       ],
     }),
     solid({
-      include: ["src/components/solid/**/*"],
+      include: ["src/components/solid/**/*", "../../packages/solid-spectrum/src/**/*"],
       exclude: ["src/components/react/**/*"],
     }),
   ],
@@ -419,7 +419,7 @@ export default defineConfig({
         },
         {
           find: /^@proyecto-viviana\/solid-spectrum$/,
-          replacement: path.resolve(repoRoot, "packages/solid-spectrum/dist/index.js"),
+          replacement: path.resolve(repoRoot, "packages/solid-spectrum/src/index.ts"),
         },
       ],
     },

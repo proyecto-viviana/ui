@@ -1,0 +1,44 @@
+{
+  "name": "@proyecto-viviana/viviana-ui",
+  "version": "0.0.0",
+  "description": "Viviana design system. Starts by re-exporting @proyecto-viviana/solid-spectrum (same components + tokens + style macro); diverges (viviana tokens, then components) over time.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/proyecto-viviana/proyecto-viviana.git",
+    "directory": "packages/viviana-ui"
+  },
+  "files": [
+    "src"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "solid": "./src/index.ts",
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./style": {
+      "solid": "./src/style.ts",
+      "types": "./src/style.ts",
+      "import": "./src/style.ts",
+      "default": "./src/style.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@proyecto-viviana/solid-spectrum": "workspace:*"
+  },
+  "devDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  }
+}

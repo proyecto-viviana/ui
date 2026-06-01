@@ -214,7 +214,13 @@ describe("Tabs (solid-spectrum S2)", () => {
       </Tabs>
     ));
 
-    expect(screen.getAllByRole("tabpanel", { hidden: true })).toHaveLength(2);
+    const panels = Array.from(document.querySelectorAll(".solidaria-TabPanel"));
+
+    expect(panels).toHaveLength(2);
+    expect(screen.getAllByRole("tabpanel", { hidden: true })).toHaveLength(1);
+    expect(panels[0]).toHaveAttribute("role", "tabpanel");
+    expect(panels[1]).not.toHaveAttribute("role");
+    expect(panels[1]).toHaveAttribute("data-inert", "true");
     expect(document.querySelector(".solidaria-TabPanels")).toBeInTheDocument();
   });
 

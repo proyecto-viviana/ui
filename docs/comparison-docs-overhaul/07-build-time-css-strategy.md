@@ -190,13 +190,21 @@ that source.
      preserves macro CSS assets across Rolldown load timing; component sources
      should not depend on package-specific workarounds.
 2. **Comparison app (Astro)**
-   - Add `macros.vite()` to `astro.config.mjs`'s `vite.plugins`, ordered before
-     `@astrojs/solid-js` / `@astrojs/react`.
-   - Add the `manualChunks` rule for `macro-*.css` and set
-     `cssMinify: 'lightningcss'`.
-   - Consume `solid-spectrum` **source** (via the `solid` condition) instead of
-     the `dist/index.js` alias, so component `style()` calls and the new chrome
-     `style()` calls compile in one macro pass into one atomic bundle.
+   - Run the app-side Parcel macro plugin before Astro's JSX renderers. The
+     comparison app uses a small `comparisonS2Macros()` adapter over
+     `macros.raw()` so Astro query-suffixed client script ids and delayed virtual
+     CSS loads resolve correctly; this is the app equivalent of `macros.vite()`
+     for Astro.
+   - Let Astro/Vite emit macro CSS as linked assets. Keep leak scans for
+     unresolved `macro-*.css` ids, macro import attributes, and
+     `__styleMacroDynamic__` references in built JS.
+   - Consume `solid-spectrum` **source** (via `packages/solid-spectrum/src`)
+     instead of the `dist/index.js` alias, so component `style()` calls and the
+     new chrome `style()` calls compile in one app macro pass.
+   - Current checkpoint: the app consumes `packages/solid-spectrum/src/index.ts`,
+     imports only `font-faces.css` globally from Solid Spectrum, the comparison
+     build passes, built output has no `components.css`/`styles.css` references,
+     and the focused 30-test visual suite passes.
 
 This single change resolves three things at once:
 
@@ -215,10 +223,10 @@ This single change resolves three things at once:
 - **tsdown CSS maturity.** tsdown documents CSS support as experimental. Treat
   `@tsdown/css` updates as gated: package build, CSS asset presence, export
   surface, and visual smoke before upgrading.
-- **Astro pipeline.** Astro is Vite-based, so `macros.vite()` should slot in,
-  but Astro injects integration plugins itself; **plugin ordering** (macros
-  before the Solid/React JSX transform) must be verified. Likely needs the
-  plugin's `enforce: 'pre'`. Spike item.
+- **Astro pipeline.** Astro is Vite-based, but its integration pipeline needs an
+  app adapter around `macros.raw()` instead of the plain Vite plugin. Keep the
+  macro before the Solid/React JSX transform and keep dist leak scans in the
+  build proof.
 - **Solid JSX interaction.** `vite-plugin-solid`'s JSX transform must run
   _after_ the macro. Confirm in the spike.
 - **Import-attribute tooling.** `with {type:'macro'}` needs a recent TypeScript
@@ -301,8 +309,8 @@ The sequencing decision is now fixed:
    `tsc` declarations unchanged.
 2. Convert `style` imports from the runtime bridge to upstream macro import
    attributes.
-3. Wire the comparison app's Vite/Astro pipeline to run `macros.vite()` over
-   source exports.
+3. Wire the comparison app's Vite/Astro pipeline to run the app-side macro
+   adapter over source exports.
 4. Prove the publishing path from Vite Plus/tsdown output, including
    macro-emitted CSS and declarations.
 

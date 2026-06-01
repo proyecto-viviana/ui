@@ -3,33 +3,29 @@
 This is the steering snapshot for the port. It should stay short and should be
 refreshed from local scripts, not from memory.
 
-Last refreshed: 2026-05-26.
+Last refreshed: 2026-06-01.
 
 ## Snapshot
 
-| Area                          | Current evidence                                                                                                | What it means                                                                                                                                  |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| React Aria Components exports | `vp run guard:rac-export-gap`: `0` missing named exports, `166` extra Solid exports                             | The public headless component barrel is no longer blocked on missing names. Behavior still needs component-by-component tests.                 |
-| Required RAC tracker          | `vp run guard:rac-parity`: no missing tracked symbols                                                           | The narrow required-symbol guard is green. It warns that `TreeHeader` and `TreeSection` are not in the upstream RAC index.                     |
-| Spectrum S2 catalogue         | `vp run comparison:report:gaps`: `69` official entries tracked, `69` live on both sides, `0` missing/gap        | Route/catalogue parity is complete. The remaining component work is strict evidence, validation notes, support exports, and release-hardening. |
-| Strict S2 component audit     | `vp run comparison:report:parity`: modeled controls `68/69`, validation notes `60/69`, current evidence `69/69` | `comparison:report:parity:strict` intentionally fails until Provider controls and the missing validation notes are closed.                     |
-| Visual state coverage         | `346` official states tracked, `105` with current React/Solid visual evidence, `56` with strict pair-diff tests | The visual harness exists, but many current states still need strict pair-diff or computed-contract proof.                                     |
-| S2 export surface             | `vp run comparison:report:exports`: `23` of `208` React S2 value exports missing; `8` extra Solid value exports | Root catalogue component exports are present; support exports such as contexts, slots, hooks, and helpers are still missing.                   |
+| Area                          | Current evidence                                                                                                   | What it means                                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| React Aria Components exports | `vp run guard:rac-export-gap`: `0` missing named exports, `168` extra Solid exports                                | The public headless component barrel is no longer blocked on missing names. Behavior still needs component-by-component tests.              |
+| Required RAC tracker          | `vp run guard:rac-parity`: no missing tracked symbols                                                              | The narrow required-symbol guard is green. It warns that `TreeHeader` and `TreeSection` are not in the upstream RAC index.                  |
+| Spectrum S2 catalogue         | `vp run comparison:report:gaps`: `69` official entries tracked, `69` live on both sides, `0` missing/gap           | Route/catalogue parity is complete. Remaining component work is visual-state release hardening and support exports.                         |
+| Strict S2 component audit     | `vp run comparison:report:parity`: modeled controls `69/69`, validation notes `69/69`, current evidence `69/69`    | `comparison:report:parity:strict` is green and should stay a required current-gate check.                                                   |
+| S2 macro CSS path             | `vp run comparison:build` plus focused Picker/Switch/TextField/TextArea/Tabs Playwright suite: `30` Chromium tests | Package CSS emits through the macro build, and the comparison app now consumes Solid Spectrum source without a component stylesheet import. |
+| Visual state coverage         | `349` official states tracked, `113` with current React/Solid visual evidence, `56` with strict pair-diff tests    | There are no blocked visual-state rows in the current gap report.                                                                           |
+| S2 export surface             | `vp run comparison:report:exports`: `22` of `208` React S2 value exports missing; `14` extra Solid value exports   | Root catalogue component exports are present; support exports such as contexts, slots, hooks, and helpers are still missing.                |
 
 ## Main Gaps
 
-The catalogue route gap is closed. Current strict component parity gaps:
+The catalogue route gap, strict component parity audit, and blocked visual-state
+rows are closed.
 
-- Provider is the only official entry without a modeled viewer control group.
-- DropZone, NumberField, Picker, Provider, RadioGroup, SearchField, Switch,
-  TextArea, and TextField are missing validation notes.
-- NumberField, Picker, RadioGroup, SearchField, Switch, Tabs, TextArea, and
-  TextField still have default/style visual rows without complete strict
-  visual or pair-diff coverage; Tabs horizontal overflow remains blocked.
-
-Visual coverage debt exists even for live entries. Many live components have
-default screenshots but only asserted thresholds, planned state rows, or no
-strict pair-diff coverage beyond a narrow path.
+Visual coverage debt still exists even when the strict audit is green. Prefer
+computed contracts, interaction assertions, or strict React-vs-Solid pair diffs
+for new state rows, and keep thresholded screenshot checks as review evidence
+unless the component note explains why they are sufficient.
 
 `solidaria-components` has extra exports relative to upstream RAC. Some are
 intentional aliases or Solid-specific composition helpers; keep them documented
@@ -37,25 +33,18 @@ as local additions when they are public API.
 
 ## Current Priorities
 
-1. Close the strict component parity audit gaps from
-   `vp run comparison:report:parity`: Provider controls and the nine missing
-   validation notes.
-2. Run the component playbook in order for each missing validation-note
-   component. Do not accept another
-   pass with hidden retro-audit debt; mark it partial until in-scope gates are
-   closed.
-3. Convert planned visual-state rows into strict current React/Solid pair-diff
+1. Convert new visual-state rows into current React/Solid pair-diff
    tests, especially for hover, focus-visible, pressed, selected, invalid,
    disabled, open, dismiss, and keyboard navigation states. Do not reintroduce
    per-side committed PNG baselines as focused acceptance gates.
-4. Continue support-export parity for missing contexts, slots, hooks, helpers,
+2. Continue support-export parity for missing contexts, slots, hooks, helpers,
    and support values. Do not count root catalogue export parity as complete API
    parity.
-5. Add behavior tests where export parity is already green. Do not add more
+3. Add behavior tests where export parity is already green. Do not add more
    barrel names unless a report identifies an actual missing upstream export.
-6. Keep component-internal S2 styling in `packages/solid-spectrum`. The
-   comparison app shell may use `solid-spectrum` and the S2 macro, but app CSS
-   must not hand-author component colors, spacing, radius, or states.
+4. Keep component-internal S2 styling in `packages/solid-spectrum`. The
+   comparison app shell may use `solid-spectrum` source and the S2 macro, but
+   app CSS must not hand-author component colors, spacing, radius, or states.
 
 ## Refresh Commands
 
@@ -69,9 +58,8 @@ vp run comparison:report:exports
 vp run check
 ```
 
-`comparison:report:parity:strict` is expected to fail while the strict audit
-gaps above remain open. Treat its output as the blocking task list, not as an
-optional report.
+`comparison:report:parity:strict` is expected to pass. Treat a failure as a
+blocking regression before claiming current-gate component parity.
 
 Chromium Playwright may need to run outside the sandbox on this host when the
 browser reports `sandbox_host_linux.cc:41 shutdown: Operation not permitted`.

@@ -21,7 +21,8 @@ normalized to the current gate checklist.
   ColorField, ColorSlider, ColorWheel, ColorSwatch, ColorSwatchPicker,
   Disclosure, DropZone, Icons, Illustrations, IllustratedMessage, InlineAlert,
   ListView, NumberField, Popover, TagGroup, Toast, ToggleButton,
-  ToggleButtonGroup, Tooltip, TreeView, RadioGroup, SearchField.
+  ToggleButtonGroup, Tooltip, TreeView, RadioGroup, SearchField, Switch,
+  Tabs, TextArea, TextField.
 - Current-gate normalized before the known-defect/regression gate: Accordion,
   ActionBar, ActionMenu, Avatar, AvatarGroup, Badge, Breadcrumbs, Button,
   Button family, CheckboxGroup, ComboBox, ContextualHelp, Divider, Form, Image,
@@ -61,13 +62,14 @@ Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
 - Modeled viewer controls: 69/69 entries.
-- Validation notes: 66/69 entries. Missing notes: Switch, TextArea, and
-  TextField.
+- Validation notes: 69/69 entries.
 - Current visual/asserted evidence: 69/69 entries.
+- `comparison:report:parity:strict`: passing.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
 `icons`. Icons and Illustrations now have modeled controls and strict primitive
-visual/contract coverage; remaining gaps are listed above.
+visual/contract coverage. `comparison:report:gaps` currently has no
+missing/gap catalogue entries or blocked visual-state rows.
 
 ## Files
 
@@ -119,10 +121,13 @@ visual/contract coverage; remaining gaps are listed above.
 - [SelectBoxGroup](./selectboxgroup-validation-notes.md)
 - [Slider](./slider-validation-notes.md)
 - [StatusLight](./statuslight-validation-notes.md)
+- [Switch](./switch-validation-notes.md)
 - [Tabs](./tabs-validation-notes.md)
 - [TagGroup](./taggroup-validation-notes.md)
 - [TableView](./tableview-validation-notes.md)
 - [Text](./text-validation-notes.md)
+- [TextArea](./textarea-validation-notes.md)
+- [TextField](./textfield-validation-notes.md)
 - [Toast](./toast-validation-notes.md)
 - [ToggleButton](./togglebutton-validation-notes.md)
 - [ToggleButtonGroup](./togglebuttongroup-validation-notes.md)

@@ -45,9 +45,12 @@ Before accepting a component, write its state plan:
 ## Current Migration State
 
 - The existing app-local Spectrum skin is legacy for component surfaces.
+- The comparison app consumes `solid-spectrum` source for the app-side S2 macro
+  pass and imports only `font-faces.css` globally; package
+  `components.css`/`styles.css` are not the app shell component-style path.
 - Current catalogue route coverage is complete (`69/69` live on both stacks);
-  remaining S2 work is strict evidence, validation notes, support exports, and
-  release-hardening.
+  remaining S2 work is visual-state release hardening, support exports, and
+  API evidence.
 - Components still depending on app-local component-surface CSS are partial or
   missing/gap, not valid styled parity.
 - Start each component from the headless Solid component plus copied/ported S2
