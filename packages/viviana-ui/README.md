@@ -13,6 +13,9 @@ Divergence is incremental:
    the viviana look rather than Spectrum's.
 2. **Shadow** specific components here where viviana needs different structure.
 
+Keeping in sync with solid-spectrum (which files to check, the update plan when a
+new React Spectrum release is ported) is documented in **[UPSTREAM.md](./UPSTREAM.md)**.
+
 ## Usage
 
 ```ts
