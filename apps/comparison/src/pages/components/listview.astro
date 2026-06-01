@@ -1,0 +1,490 @@
+---
+// Ported by hand from vendor/s2-docs/pages/ListView.mdx (upstream: react-spectrum,
+// Apache-2.0; fetched from upstream main — newer than the local checkout snapshot).
+// Prose is upstream-verbatim; code blocks are copied with the docs-tooling highlight/collapse
+// markers stripped, long Unsplash tracking params trimmed, the async regex backslashes and the
+// selection `${key}`/`${selection}` literals escaped. The hero example is shown by the live
+// mount. Gated by `report:parity --slug=listview`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "listview";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "ListView";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#slots", label: "Slots", depth: 3 },
+  { href: "#asynchronous-loading", label: "Asynchronous loading", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#empty-state", label: "Empty state", depth: 3 },
+  { href: "#selection-and-actions", label: "Selection and actions", depth: 2 },
+  { href: "#navigation", label: "Navigation", depth: 3 },
+  { href: "#drag-and-drop", label: "Drag and drop", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-listview", label: "ListView", depth: 3 },
+  { href: "#api-listviewitem", label: "ListViewItem", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {ListView, ListViewItem} from '@react-spectrum/s2/ListView';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+let files = [
+  {id: 'adobe-photoshop', name: 'Adobe Photoshop'},
+  {id: 'adobe-xd', name: 'Adobe XD'},
+  {id: 'adobe-indesign', name: 'Adobe InDesign'}
+];
+
+<ListView aria-label="Dynamic files" items={files} styles={style({width: 'full', maxWidth: 400, height: 320})}>
+  {item => (
+    <ListViewItem id={item.id}>{item.name}</ListViewItem>
+  )}
+</ListView>`;
+
+const slotsCode = `"use client";
+import {ActionButton, Text} from '@react-spectrum/s2/ActionButton';
+import {ActionButtonGroup} from '@react-spectrum/s2/ActionButtonGroup';
+import {ActionMenu, MenuItem} from '@react-spectrum/s2/ActionMenu';
+import {Image} from '@react-spectrum/s2/Image';
+import {ListView, ListViewItem} from '@react-spectrum/s2/ListView';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import Copy from '@react-spectrum/s2/icons/Copy';
+import Delete from '@react-spectrum/s2/icons/Delete';
+import File from '@react-spectrum/s2/icons/File';
+import Share from '@react-spectrum/s2/icons/Share';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+let documents = [
+  {id: 'project-brief', name: 'Project brief.pdf'},
+  {id: 'quarterly-report', name: 'Quarterly report.docx'},
+  {id: 'budget', name: 'Budget.xlsx'}
+];
+let images = [
+  {id: 'dessert-sunset', name: 'Dessert sunset.jpg', image_url: 'https://images.unsplash.com/photo-1705034598432-1694e203cdf3?q=80&w=600&auto=format&fit=crop'},
+  {id: 'hiking-trail', name: 'Hiking trail.png', image_url: 'https://images.unsplash.com/photo-1722233987129-61dc344db8b6?q=80&w=600&auto=format&fit=crop'},
+  {id: 'mountain-with-lake', name: 'Mountain with lake.png', image_url: 'https://images.unsplash.com/photo-1722172118908-1a97c312ce8c?q=80&w=600&auto=format&fit=crop'}
+];
+
+<div className={style({display: 'flex', gap: 24, width: 'full', flexWrap: 'wrap', justifyContent: 'center'})}>
+  <ListView aria-label="Documents" items={documents} styles={style({flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 200, maxWidth: 400, height: 320})}>
+    {item => (
+      <ListViewItem id={item.id} textValue={item.name}>
+        <File />
+        <Text>{item.name}</Text>
+        <Text slot="description">Document</Text>
+        <ActionButtonGroup aria-label="File actions">
+          <ActionButton aria-label="Edit">
+            <Edit />
+          </ActionButton>
+          <ActionButton aria-label="Delete">
+            <Delete />
+          </ActionButton>
+        </ActionButtonGroup>
+      </ListViewItem>
+    )}
+  </ListView>
+  <ListView aria-label="Images" items={images} styles={style({flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 200, maxWidth: 400, height: 320})}>
+    {item => (
+      <ListViewItem id={item.id} textValue={item.name}>
+        <Image src={item.image_url} alt={item.name} />
+        <Text>{item.name}</Text>
+        <Text slot="description">Image</Text>
+        <ActionMenu>
+          <MenuItem>
+            <Copy />
+            <Text>Copy</Text>
+          </MenuItem>
+          <MenuItem>
+            <Share />
+            <Text>Share</Text>
+          </MenuItem>
+          <MenuItem>
+            <Delete />
+            <Text>Delete</Text>
+          </MenuItem>
+        </ActionMenu>
+      </ListViewItem>
+    )}
+  </ListView>
+</div>`;
+
+const asyncCode = `"use client";
+import {ListView, ListViewItem} from '@react-spectrum/s2/ListView';
+import {useAsyncList} from '@react-spectrum/s2/useAsyncList';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+interface Character {
+  name: string
+}
+
+function AsyncListView() {
+  let list = useAsyncList<Character>({
+    async load({signal, cursor}) {
+      if (cursor) {
+        cursor = cursor.replace(/^http:\\/\\//i, 'https://');
+      }
+
+      let res = await fetch(cursor || 'https://swapi.py4e.com/api/people/?search=', {signal});
+      let json = await res.json();
+      return {
+        items: json.results,
+        cursor: json.next
+      };
+    }
+  });
+
+  return (
+    <ListView
+      aria-label="Star Wars characters"
+      loadingState={list.loadingState}
+      onLoadMore={list.loadMore}
+      items={list.items}
+      styles={style({width: 'full', maxWidth: 400, height: 320})}>
+      {item => (
+        <ListViewItem id={item.name}>{item.name}</ListViewItem>
+      )}
+    </ListView>
+  );
+}`;
+
+const linksCode = `"use client";
+import {ListView, ListViewItem} from '@react-spectrum/s2/ListView';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<ListView aria-label="Bookmarks" styles={style({width: 'full', maxWidth: 400, height: 320})}>
+  <ListViewItem id="adobe" href="https://adobe.com" target="_blank">
+    adobe.com
+  </ListViewItem>
+  <ListViewItem id="spectrum" href="https://spectrum.adobe.com" target="_blank">
+    spectrum.adobe.com
+  </ListViewItem>
+  <ListViewItem id="react-spectrum" href="https://react-spectrum.adobe.com" target="_blank">
+    react-spectrum.adobe.com
+  </ListViewItem>
+</ListView>`;
+
+const emptyStateCode = `"use client";
+import {ListView} from '@react-spectrum/s2/ListView';
+import {IllustratedMessage, Heading, Content} from '@react-spectrum/s2/IllustratedMessage';
+import {Link} from '@react-spectrum/s2/Link';
+import FolderOpen from '@react-spectrum/s2/illustrations/linear/FolderOpen';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<ListView
+  aria-label="Search results"
+  styles={style({width: 'full', maxWidth: 400})}
+  renderEmptyState={() => (
+    <IllustratedMessage>
+      <FolderOpen />
+      <Heading>No results</Heading>
+      <Content>Press <Link href="https://adobe.com">here</Link> for more info.</Content>
+    </IllustratedMessage>
+  )}>
+  {[]}
+</ListView>`;
+
+const selectionActionsCode = `"use client";
+import {ListView, ListViewItem, type Selection} from '@react-spectrum/s2/ListView';
+import {ActionBar, ActionButton} from '@react-spectrum/s2/ActionBar';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import Copy from '@react-spectrum/s2/icons/Copy';
+import Delete from '@react-spectrum/s2/icons/Delete';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function Example(props) {
+  let [selected, setSelected] = useState<Selection>(new Set());
+
+  return (
+    <div className={style({width: 'full'})}>
+      <ListView
+        {...props}
+        aria-label="Files"
+        styles={style({width: 'full', maxWidth: 400, height: 320})}
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+        onAction={key => alert(\`Action on \${key}\`)}
+        renderActionBar={(selectedKeys) => {
+          let selection = selectedKeys === 'all' ? 'all' : [...selectedKeys].join(', ');
+          return (
+            <ActionBar>
+              <ActionButton aria-label="Edit" onPress={() => alert(\`Edit \${selection}\`)}>
+                <Edit />
+              </ActionButton>
+              <ActionButton aria-label="Copy" onPress={() => alert(\`Copy \${selection}\`)}>
+                <Copy />
+              </ActionButton>
+              <ActionButton aria-label="Delete" onPress={() => alert(\`Delete \${selection}\`)}>
+                <Delete />
+              </ActionButton>
+            </ActionBar>
+          );
+        }}>
+        <ListViewItem id="a">Brand guidelines.pdf</ListViewItem>
+        <ListViewItem id="b">Icon set.svg</ListViewItem>
+        <ListViewItem id="c">Homepage comp.fig</ListViewItem>
+        <ListViewItem id="d" isDisabled>Archived.zip</ListViewItem>
+      </ListView>
+      <p>Current selection: {selected === 'all' ? 'all' : [...selected].join(', ')}</p>
+    </div>
+  );
+}`;
+
+const navigationCode = `"use client";
+import {Breadcrumbs, Breadcrumb} from '@react-spectrum/s2/Breadcrumbs';
+import {ListView, ListViewItem, Text, type Key} from '@react-spectrum/s2/ListView';
+import App from '@react-spectrum/s2/icons/App';
+import Folder from '@react-spectrum/s2/icons/Folder';
+import File from '@react-spectrum/s2/icons/File';
+import Image from '@react-spectrum/s2/icons/Image';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+type FileItem = {id: string, name: string, icon: React.ReactNode};
+type FolderItem = {id: string, name: string, icon: React.ReactNode, children: ListItem[]};
+type ListItem = FileItem | FolderItem;
+type BreadcrumbItem = {id: string, name: string, icon: React.ReactNode, children: ListItem[]};
+
+let rootItems: ListItem[] = [
+  {id: 'photoshop', name: 'Adobe Photoshop', icon: <App />},
+  {id: 'xd', name: 'Adobe XD', icon: <App />},
+  {id: 'documents', name: 'Documents', icon: <Folder />, children: [
+    {id: 'sales-pitch', name: 'Sales Pitch', icon: <File />},
+    {id: 'demo', name: 'Demo', icon: <File />},
+    {id: 'taxes', name: 'Taxes', icon: <File />}
+  ]},
+  {id: 'indesign', name: 'Adobe InDesign', icon: <App />},
+  {id: 'utilities', name: 'Utilities', icon: <Folder />, children: [
+    {id: 'activity-monitor', name: 'Activity Monitor', icon: <App />}
+  ]},
+  {id: 'aftereffects', name: 'Adobe AfterEffects', icon: <App />},
+  {id: 'illustrator', name: 'Adobe Illustrator', icon: <App />},
+  {id: 'pictures', name: 'Pictures', icon: <Folder />, children: [
+    {id: 'yosemite', name: 'Yosemite', icon: <Image />},
+    {id: 'jackson-hole', name: 'Jackson Hole', icon: <Image />},
+    {id: 'crater-lake', name: 'Crater Lake', icon: <Image />}
+  ]}
+];
+
+function NavigationExample() {
+  let [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([
+    {id: 'root', name: 'Root', icon: <Folder />, children: rootItems}
+  ]);
+
+  let currentItems = breadcrumbs[breadcrumbs.length - 1].children;
+
+  let onAction = (key: Key) => {
+    let item = currentItems.find(item => item.id === key);
+    if (item && 'children' in item) {
+      setBreadcrumbs(prev => [...prev, item]);
+    }
+  };
+
+  let onBreadcrumbAction = (key: Key) => {
+    let index = breadcrumbs.findIndex(item => item.id === key);
+    setBreadcrumbs(breadcrumbs.slice(0, index + 1));
+  };
+
+  return (
+    <div className={style({display: 'flex', flexDirection: 'column', gap: 8, width: 'full', maxWidth: 400})}>
+      <Breadcrumbs onAction={onBreadcrumbAction}>
+        {breadcrumbs.map(item => (
+          <Breadcrumb key={item.id} id={item.id}>{item.name}</Breadcrumb>
+        ))}
+      </Breadcrumbs>
+      <ListView
+        aria-label={breadcrumbs[breadcrumbs.length - 1].name}
+        items={currentItems}
+        onAction={onAction}
+        styles={style({width: 'full', height: 320})}>
+        {item => (
+          <ListViewItem id={item.id} textValue={item.name} hasChildItems={item && 'children' in item}>
+            {item.icon}
+            <Text>{item.name}</Text>
+          </ListViewItem>
+        )}
+      </ListView>
+    </div>
+  );
+}`;
+
+const dragDropCode = `"use client";
+import {ListView, ListViewItem} from '@react-spectrum/s2/ListView';
+import {Text} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {DragPreview, useDragAndDrop} from '@react-spectrum/s2/useDragAndDrop';
+import {useListData} from '@react-spectrum/s2/useListData';
+import File from '@react-spectrum/s2/icons/File';
+
+function ReorderableList() {
+  let list = useListData({
+    initialItems: [
+      {id: '1', name: 'Adobe Photoshop'},
+      {id: '2', name: 'Adobe XD'},
+      {id: '3', name: 'Adobe InDesign'},
+      {id: '4', name: 'Adobe AfterEffects'}
+    ]
+  });
+
+  let {dragAndDropHooks} = useDragAndDrop({
+    getItems: (keys, items: typeof list.items) => items.map(item => ({'text/plain': item.name})),
+    onReorder(e) {
+      if (e.target.dropPosition === 'before') {
+        list.moveBefore(e.target.key, e.keys);
+      } else if (e.target.dropPosition === 'after') {
+        list.moveAfter(e.target.key, e.keys);
+      }
+    },
+    renderDragPreview: (items) => (
+      <DragPreview items={items}>
+        <File />
+        <Text>{items[0]['text/plain']}</Text>
+      </DragPreview>
+    )
+  });
+
+  return (
+    <ListView
+      aria-label="Reorderable files"
+      selectionMode="multiple"
+      items={list.items}
+      dragAndDropHooks={dragAndDropHooks}
+      styles={style({width: 'full', maxWidth: 320})}>
+      {item => (
+        <ListViewItem textValue={item.name}>
+          <File />
+          <Text>{item.name}</Text>
+        </ListViewItem>
+      )}
+    </ListView>
+  );
+}`;
+
+const anatomyCode = `<ListView>
+  <ListViewItem>
+    <Icon />
+    <Image />
+    <Text />
+    <Text slot="description" />
+    <ActionMenu /> or <ActionButtonGroup />
+  </ListViewItem>
+</ListView>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="listview" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>A ListView displays a list of interactive items, and allows a user to navigate, select, or perform an action.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>ListView</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the items
+    prop, and a function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="slots" class={h3Class}>Slots</h3>
+  <p class={pClass}>
+    <code>ListViewItem</code> supports icons, <code>Text</code>, Image, ActionMenu, and
+    ActionButtonGroup as children, and must have a <code>textValue</code> prop for accessibility.
+  </p>
+  <Code code={slotsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="asynchronous-loading" class={h3Class}>Asynchronous loading</h3>
+  <p class={pClass}>
+    Use the <code>loadingState</code> and <code>onLoadMore</code> props to enable async loading and
+    infinite scrolling.
+  </p>
+  <Code code={asyncCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a <code>ListViewItem</code> to create a link. See the getting
+    started guide to learn how to integrate with your framework. Link interactions vary depending on
+    the selection behavior. See the selection guide for more details.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="empty-state" class={h3Class}>Empty state</h3>
+  <p class={pClass}>
+    Use <code>renderEmptyState</code> to render placeholder content when there are no items.
+  </p>
+  <Code code={emptyStateCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection-and-actions" class={h2Class}>Selection and actions</h2>
+  <p class={pClass}>
+    Use the <code>selectionMode</code> prop to enable single or multiple selection. The selected
+    items can be controlled via the <code>selectedKeys</code> prop, matching the <code>id</code> prop
+    of the items. The <code>onAction</code> event handles item actions. Items can be disabled with
+    the <code>isDisabled</code> prop. See the selection guide for more details.
+  </p>
+  <Code code={selectionActionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="navigation" class={h3Class}>Navigation</h3>
+  <p class={pClass}>
+    Use the <code>hasChildItems</code> prop on <code>ListViewItem</code> to display a chevron
+    indicator, signaling that an item can be navigated into. Combine with <code>onAction</code> and
+    Breadcrumbs to build a drill-down navigation pattern.
+  </p>
+  <Code code={navigationCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="drag-and-drop" class={h2Class}>Drag and drop</h2>
+  <p class={pClass}>
+    ListView supports drag and drop interactions when the <code>dragAndDropHooks</code> prop is
+    provided using the useDragAndDrop hook. Users can drop data on the list as a whole, on individual
+    items, insert new items between existing ones, or reorder items. See the drag and drop guide to
+    learn more.
+  </p>
+  <p class={pClass}>
+    You can customize the drag preview by passing DragPreview or your own custom drag preview element
+    to <code>useDragAndDrop</code>'s <code>renderDragPreview</code>. <code>DragPreview</code> supports
+    leading icons and <code>Text</code> with <code>label</code> and <code>description</code> slots.
+  </p>
+  <Code code={dragDropCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-listview" class={h3Class}>ListView</h3>
+  <PropTable source="ListView" />
+
+  <h3 id="api-listviewitem" class={h3Class}>ListViewItem</h3>
+  <PropTable source="ListViewItem" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
