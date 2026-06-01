@@ -1,0 +1,10 @@
+# PickerSection
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `aria-label` | `string | undefined` | — | An accessibility label for the section. |
+| `children` | `((item: T) => React.ReactElement) | React.ReactNode` | — | Static child items or a function to render children. |
+| `dependencies` | `readonly any[] | undefined` | — | Values that should invalidate the item cache when using dynamic collections. |
+| `id` | `Key | undefined` | — | The unique id of the section. |
+| `items` | `Iterable<T> | undefined` | — | Item objects in the section. |
+| `value` | `T | undefined` | — | The object value that this section represents. When using dynamic collections, this is set automatically. |

@@ -1,0 +1,492 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Menu.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/PROPS markers stripped. The Slots ExampleSwitcher (Icon/Image) renders as two
+// sequential code blocks; the Accessibility InlineAlert as a lead-in note. The hero example
+// is shown by the live mount. Gated by `report:parity --slug=menu`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "menu";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Menu";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#slots", label: "Slots", depth: 3 },
+  { href: "#sections", label: "Sections", depth: 3 },
+  { href: "#submenus", label: "Submenus", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#popover-content", label: "Popover content", depth: 3 },
+  { href: "#autocomplete", label: "Autocomplete", depth: 3 },
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#section-level-selection", label: "Section-level selection", depth: 3 },
+  { href: "#menu-trigger", label: "Menu trigger", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-menutrigger", label: "MenuTrigger", depth: 3 },
+  { href: "#api-menu", label: "Menu", depth: 3 },
+  { href: "#api-menuitem", label: "MenuItem", depth: 3 },
+  { href: "#api-menusection", label: "MenuSection", depth: 3 },
+  { href: "#api-submenutrigger", label: "SubmenuTrigger", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {Menu, MenuTrigger, MenuItem, ActionButton} from '@react-spectrum/s2';
+
+let items = [
+  {id: 'cut', name: 'Cut'},
+  {id: 'copy', name: 'Copy'},
+  {id: 'paste', name: 'Paste'},
+  {id: 'select-all', name: 'Select All'}
+];
+
+<MenuTrigger>
+  <ActionButton>Edit</ActionButton>
+  <Menu items={items}>
+    {item => <MenuItem>{item.name}</MenuItem>}
+  </Menu>
+</MenuTrigger>`;
+
+const iconCode = `"use client";
+import {MenuTrigger, ActionButton, Menu, MenuItem, Text, Keyboard} from '@react-spectrum/s2';
+import Copy from '@react-spectrum/s2/icons/Copy';
+import Cut from '@react-spectrum/s2/icons/Cut';
+import Paste from '@react-spectrum/s2/icons/Paste';
+
+<MenuTrigger>
+  <ActionButton>Edit</ActionButton>
+  <Menu>
+    <MenuItem textValue="Copy">
+      <Copy />
+      <Text slot="label">Copy</Text>
+      <Text slot="description">Copy the selected text</Text>
+      <Keyboard>⌘C</Keyboard>
+    </MenuItem>
+    <MenuItem textValue="Cut">
+      <Cut />
+      <Text slot="label">Cut</Text>
+      <Text slot="description">Cut the selected text</Text>
+      <Keyboard>⌘X</Keyboard>
+    </MenuItem>
+    <MenuItem textValue="Paste">
+      <Paste />
+      <Text slot="label">Paste</Text>
+      <Text slot="description">Paste the copied text</Text>
+      <Keyboard>⌘V</Keyboard>
+    </MenuItem>
+  </Menu>
+</MenuTrigger>`;
+
+const imageCode = `"use client";
+import {MenuTrigger, ActionButton, Menu, MenuItem, Text, Image} from '@react-spectrum/s2';
+import normal from 'url:./assets/normal.png';
+import multiply from 'url:./assets/multiply.png';
+import screen from 'url:./assets/screen.png';
+
+<MenuTrigger>
+  <ActionButton>Blend mode</ActionButton>
+  <Menu>
+    <MenuItem textValue="normal">
+      <Image src={normal} />
+      <Text slot="label">Normal</Text>
+      <Text slot="description">No effect applied.</Text>
+    </MenuItem>
+    <MenuItem textValue="multiply">
+      <Image src={multiply} />
+      <Text slot="label">Multiply</Text>
+      <Text slot="description">Add contrast, detail, and darken shadows.</Text>
+    </MenuItem>
+    <MenuItem textValue="screen">
+      <Image src={screen} />
+      <Text slot="label">Screen</Text>
+      <Text slot="description">Reduce contrast and brighten details.</Text>
+    </MenuItem>
+  </Menu>
+</MenuTrigger>`;
+
+const sectionsCode = `"use client";
+import {MenuTrigger, ActionButton, Menu, MenuItem, MenuSection, Header, Heading, Text} from '@react-spectrum/s2';
+
+<MenuTrigger>
+  <ActionButton>Publish</ActionButton>
+  <Menu>
+    <MenuSection>
+      <Header>
+        <Heading>Export</Heading>
+        <Text slot="description">Save to your device</Text>
+      </Header>
+      <MenuItem>Image…</MenuItem>
+      <MenuItem>Video…</MenuItem>
+      <MenuItem>Text…</MenuItem>
+    </MenuSection>
+    <MenuSection>
+      <Header>
+        <Heading>Share</Heading>
+        <Text slot="description">Share to social media</Text>
+      </Header>
+      <MenuItem>YouTube…</MenuItem>
+      <MenuItem>Instagram…</MenuItem>
+      <MenuItem>Email…</MenuItem>
+    </MenuSection>
+  </Menu>
+</MenuTrigger>`;
+
+const submenusCode = `"use client";
+import {Menu, MenuTrigger, MenuItem, SubmenuTrigger, ActionButton} from '@react-spectrum/s2';
+
+<MenuTrigger>
+  <ActionButton>Actions</ActionButton>
+  <Menu>
+    <MenuItem>Copy</MenuItem>
+    <MenuItem>Cut</MenuItem>
+    <MenuItem>Paste</MenuItem>
+    <SubmenuTrigger>
+      <MenuItem id="share">Share</MenuItem>
+      <Menu>
+        <MenuItem>Email</MenuItem>
+        <MenuItem>SMS</MenuItem>
+        <MenuItem>Copy Link</MenuItem>
+      </Menu>
+    </SubmenuTrigger>
+  </Menu>
+</MenuTrigger>`;
+
+const linksCode = `"use client";
+import {Menu, MenuTrigger, MenuItem, ActionButton} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <MenuTrigger>
+      <ActionButton>Links</ActionButton>
+      <Menu {...props}>
+        <MenuItem href="https://adobe.com/" target="_blank">Adobe</MenuItem>
+        <MenuItem href="https://apple.com/" target="_blank">Apple</MenuItem>
+        <MenuItem href="https://google.com/" target="_blank">Google</MenuItem>
+        <MenuItem href="https://microsoft.com/" target="_blank">Microsoft</MenuItem>
+      </Menu>
+    </MenuTrigger>
+  );
+}`;
+
+const popoverContentCode = `"use client";
+import {Popover, MenuTrigger, ActionButton, Menu, MenuItem, MenuSection, SubmenuTrigger, Avatar, Switch, Divider, Text} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Buildings from '@react-spectrum/s2/icons/Buildings';
+import Settings from '@react-spectrum/s2/icons/Settings';
+
+<MenuTrigger>
+  <ActionButton aria-label="Account">
+    <Avatar src="https://i.imgur.com/xIe7Wlb.png" />
+  </ActionButton>
+  <Popover>
+    <div className={style({paddingTop: 4, display: 'flex', flexDirection: 'column', gap: 12})}>
+      <div className={style({display: 'flex', gap: 12, alignItems: 'center', marginX: 12})}>
+        <Avatar src="https://i.imgur.com/xIe7Wlb.png" size={56} />
+        <div>
+          <div className={style({font: 'title'})}>Devon Govett</div>
+          <div className={style({font: 'ui'})}>user@example.com</div>
+          <Switch styles={style({marginTop: 4})}>Dark theme</Switch>
+        </div>
+      </div>
+      <Divider styles={style({marginX: 12})} />
+      <Menu aria-label="Account">
+        <MenuSection>
+          <SubmenuTrigger>
+            <MenuItem>
+              <Buildings />
+              <Text slot="label">Organization</Text>
+              <Text slot="value">Nike</Text>
+            </MenuItem>
+            <Menu selectionMode="single" selectedKeys={['nike']}>
+              <MenuItem id="adobe">Adobe</MenuItem>
+              <MenuItem id="nike">Nike</MenuItem>
+              <MenuItem id="apple">Apple</MenuItem>
+            </Menu>
+          </SubmenuTrigger>
+          <MenuItem>
+            <Settings />
+            <Text slot="label">Settings</Text>
+          </MenuItem>
+        </MenuSection>
+        <MenuSection>
+          <MenuItem>Legal notices</MenuItem>
+          <MenuItem>Sign out</MenuItem>
+        </MenuSection>
+      </Menu>
+    </div>
+  </Popover>
+</MenuTrigger>`;
+
+const autocompleteCode = `"use client";
+import {Autocomplete, MenuTrigger, ActionButton, Menu, MenuItem, Popover, SearchField} from '@react-spectrum/s2';
+import {useFilter} from 'react-aria-components';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+function Example() {
+  let {contains} = useFilter({sensitivity: 'base'});
+
+  return (
+    <MenuTrigger>
+      <ActionButton>Add tag...</ActionButton>
+      <Popover aria-label="Select a tag">
+        <Autocomplete filter={contains}>
+          <SearchField aria-label="Search tags" autoFocus />
+          <Menu styles={style({marginTop: 8})}>
+            <MenuItem>News</MenuItem>
+            <MenuItem>Travel</MenuItem>
+            <MenuItem>Shopping</MenuItem>
+            <MenuItem>Business</MenuItem>
+            <MenuItem>Entertainment</MenuItem>
+            <MenuItem>Food</MenuItem>
+            <MenuItem>Technology</MenuItem>
+            <MenuItem>Health</MenuItem>
+            <MenuItem>Science</MenuItem>
+          </Menu>
+        </Autocomplete>
+      </Popover>
+    </MenuTrigger>
+  );
+}`;
+
+const selectionCode = `"use client";
+import {Menu, MenuTrigger, MenuItem, ActionButton, Selection} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example(props) {
+  let [selected, setSelected] = useState<Selection>(new Set(['rulers']));
+
+  return (
+    <>
+      <MenuTrigger>
+        <ActionButton>View</ActionButton>
+        <Menu
+          {...props}
+          selectedKeys={selected}
+          onSelectionChange={setSelected}>
+          <MenuItem id="grid">Pixel grid</MenuItem>
+          <MenuItem id="rulers">Rulers</MenuItem>
+          <MenuItem id="comments" isDisabled>Comments</MenuItem>
+          <MenuItem id="layout">Layout guides</MenuItem>
+          <MenuItem id="toolbar">Toolbar</MenuItem>
+        </Menu>
+      </MenuTrigger>
+      <p>Current selection: {selected === 'all' ? 'all' : [...selected].join(', ')}</p>
+    </>
+  );
+}`;
+
+const sectionLevelCode = `"use client";
+import {Menu, MenuTrigger, MenuItem, MenuSection, Header, Heading, ActionButton, Selection} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example() {
+  let [style, setStyle] = useState<Selection>(new Set(['bold']));
+  let [align, setAlign] = useState<Selection>(new Set(['left']));
+  return (
+    <MenuTrigger>
+      <ActionButton>Edit</ActionButton>
+      <Menu>
+        <MenuSection>
+          <Header>
+            <Heading>Clipboard</Heading>
+          </Header>
+          <MenuItem>Cut</MenuItem>
+          <MenuItem>Copy</MenuItem>
+          <MenuItem>Paste</MenuItem>
+        </MenuSection>
+        <MenuSection
+          selectionMode="multiple"
+          selectedKeys={style}
+          onSelectionChange={setStyle}>
+          <Header>
+            <Heading>Text style</Heading>
+          </Header>
+          <MenuItem id="bold">Bold</MenuItem>
+          <MenuItem id="italic">Italic</MenuItem>
+          <MenuItem id="underline">Underline</MenuItem>
+        </MenuSection>
+        <MenuSection selectionMode="single" selectedKeys={align} onSelectionChange={setAlign}>
+          <Header>
+            <Heading>Text alignment</Heading>
+          </Header>
+          <MenuItem id="left">Left</MenuItem>
+          <MenuItem id="center">Center</MenuItem>
+          <MenuItem id="right">Right</MenuItem>
+        </MenuSection>
+      </Menu>
+    </MenuTrigger>
+  );
+}`;
+
+const menuTriggerCode = `"use client";
+import {MenuTrigger, Menu, MenuItem, ActionButton} from '@react-spectrum/s2';
+
+<MenuTrigger>
+  <ActionButton>Copy</ActionButton>
+  <Menu>
+    <MenuItem>Copy as plain text</MenuItem>
+    <MenuItem>Copy as rich text</MenuItem>
+    <MenuItem>Copy URL</MenuItem>
+  </Menu>
+</MenuTrigger>`;
+
+const anatomyCode = `<MenuTrigger>
+  <Button />
+  <Menu>
+    <MenuItem>
+      <Icon /> or <Image />
+      <Text slot="label" />
+      <Text slot="description" />
+      <Keyboard />
+    </MenuItem>
+    <MenuSection>
+      <Header>
+        <Heading />
+        <Text slot="description" />
+      </Header>
+      <MenuItem />
+    </MenuSection>
+    <SubmenuTrigger>
+      <MenuItem />
+      <Menu />
+    </SubmenuTrigger>
+  </Menu>
+</MenuTrigger>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="menu" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>Displays a list of actions or options that a user can choose.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>Menu</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="slots" class={h3Class}>Slots</h3>
+  <p class={pClass}>
+    <code>MenuItem</code> supports icons or images, <code>label</code> and <code>description</code>
+    text slots, and keyboard shortcuts.
+  </p>
+  <Code code={iconCode} lang="tsx" theme="github-dark" />
+  <Code code={imageCode} lang="tsx" theme="github-dark" />
+  <p class={pClass}>
+    <strong>Accessibility:</strong> Interactive elements (e.g. buttons) within menu items are not
+    allowed. This will break keyboard and screen reader navigation. Only add textual or decorative
+    graphics (e.g. icons or images) as children.
+  </p>
+
+  <h3 id="sections" class={h3Class}>Sections</h3>
+  <p class={pClass}>
+    Use the <code>{"<MenuSection>"}</code> component to group options. A <code>{"<Header>"}</code>
+    element, with a <code>{"<Heading>"}</code> and optional <code>description</code> slot can be
+    included to label a section. Sections without a header must have an <code>aria-label</code>.
+  </p>
+  <Code code={sectionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="submenus" class={h3Class}>Submenus</h3>
+  <p class={pClass}>
+    Wrap a <code>{"<MenuItem>"}</code> and a <code>{"<Menu>"}</code> with a
+    <code>{"<SubmenuTrigger>"}</code> to create a submenu.
+  </p>
+  <Code code={submenusCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a <code>{"<MenuItem>"}</code> to create a link. See the getting
+    started guide to learn how to integrate with your framework.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="popover-content" class={h3Class}>Popover content</h3>
+  <p class={pClass}>
+    Wrap the Menu in a Popover to add additional sibling elements. This example includes a header
+    with interactive content.
+  </p>
+  <Code code={popoverContentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="autocomplete" class={h3Class}>Autocomplete</h3>
+  <p class={pClass}>
+    Use Autocomplete from React Aria Components with a SearchField to make a menu searchable.
+  </p>
+  <Code code={autocompleteCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>selectionMode</code> prop to enable single or multiple selection. The selected
+    items can be controlled via the <code>selectedKeys</code> prop, matching the <code>id</code> prop
+    of the items. Items can be disabled with the <code>isDisabled</code> prop. See the selection
+    guide for more details.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="section-level-selection" class={h3Class}>Section-level selection</h3>
+  <p class={pClass}>
+    Each section in a menu may have independent selection states by passing
+    <code>selectionMode</code> and <code>selectedKeys</code> to the <code>MenuSection</code>.
+  </p>
+  <Code code={sectionLevelCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="menu-trigger" class={h2Class}>Menu trigger</h2>
+  <p class={pClass}>
+    MenuTrigger accepts props to control trigger interactions and Menu positioning.
+  </p>
+  <Code code={menuTriggerCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-menutrigger" class={h3Class}>MenuTrigger</h3>
+  <PropTable source="MenuTrigger" />
+
+  <h3 id="api-menu" class={h3Class}>Menu</h3>
+  <PropTable source="Menu" />
+
+  <h3 id="api-menuitem" class={h3Class}>MenuItem</h3>
+  <PropTable source="MenuItem" />
+
+  <h3 id="api-menusection" class={h3Class}>MenuSection</h3>
+  <PropTable source="MenuSection" />
+
+  <h3 id="api-submenutrigger" class={h3Class}>SubmenuTrigger</h3>
+  <PropTable source="SubmenuTrigger" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

@@ -6,7 +6,7 @@ Path:               packages/dev/s2-docs/pages/s2/
 License:            Apache-2.0 (see ../LICENSE-react-spectrum)
 Source:             local react-spectrum/ checkout at the repo root
 Upstream version:   2.21.0-beta.0
-Synced:             2026-05-31T20:23:50.457Z
+Synced:             2026-05-31T21:18:38.726Z
 
 Synced pages:
   - Accordion.mdx
@@ -38,8 +38,10 @@ Synced pages:
   - InlineAlert.mdx
   - Link.mdx
   - LinkButton.mdx
+  - Menu.mdx
   - Meter.mdx
   - NumberField.mdx
+  - Picker.mdx
   - Popover.mdx
   - ProgressBar.mdx
   - ProgressCircle.mdx

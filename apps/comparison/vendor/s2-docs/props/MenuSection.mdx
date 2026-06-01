@@ -1,0 +1,16 @@
+# MenuSection
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `aria-label` | `string | undefined` | — | An accessibility label for the section. |
+| `children` | `((item: T) => ReactElement) | ReactNode` | — | Static child items or a function to render children. |
+| `defaultSelectedKeys` | `"all" | Iterable<Key> | undefined` | — | The initial selected keys in the collection (uncontrolled). |
+| `dependencies` | `readonly any[] | undefined` | — | Values that should invalidate the item cache when using dynamic collections. |
+| `disallowEmptySelection` | `boolean | undefined` | — | Whether the collection allows empty selection. |
+| `id` | `Key | undefined` | — | The unique id of the section. |
+| `items` | `Iterable<T> | undefined` | — | Item objects in the section. |
+| `onSelectionChange` | `((keys: Selection) => void) | undefined` | — | Handler that is called when the selection changes. |
+| `selectedKeys` | `"all" | Iterable<Key> | undefined` | — | The currently selected keys in the collection (controlled). |
+| `selectionMode` | `SelectionMode | undefined` | — | The type of selection that is allowed in the collection. |
+| `shouldCloseOnSelect` | `boolean | undefined` | — | Whether the menu should close when the menu item is selected. |
+| `value` | `T | undefined` | — | The object value that this section represents. When using dynamic collections, this is set automatically. |

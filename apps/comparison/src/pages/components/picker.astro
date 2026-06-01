@@ -1,0 +1,374 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Picker.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/PROPS markers stripped. The Accessibility InlineAlert renders as a lead-in note.
+// Nested template literals in the Slots/Async examples are escaped. Gated by `report:parity --slug=picker`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "picker";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Picker";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#slots", label: "Slots", depth: 3 },
+  { href: "#sections", label: "Sections", depth: 3 },
+  { href: "#asynchronous-loading", label: "Asynchronous loading", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#value", label: "Value", depth: 2 },
+  { href: "#forms", label: "Forms", depth: 2 },
+  { href: "#popover-options", label: "Popover options", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-picker", label: "Picker", depth: 3 },
+  { href: "#api-pickeritem", label: "PickerItem", depth: 3 },
+  { href: "#api-pickersection", label: "PickerSection", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {Picker, PickerItem} from '@react-spectrum/s2';
+
+function Example() {
+  let options = [
+    { id: 1, name: 'Aardvark' },
+    { id: 2, name: 'Cat' },
+    { id: 3, name: 'Dog' },
+    { id: 4, name: 'Kangaroo' },
+    { id: 5, name: 'Koala' },
+    { id: 6, name: 'Penguin' },
+    { id: 7, name: 'Snake' },
+    { id: 8, name: 'Turtle' },
+    { id: 9, name: 'Wombat' }
+  ];
+
+  return (
+    <Picker label="Animals" items={options}>
+      {(item) => <PickerItem>{item.name}</PickerItem>}
+    </Picker>
+  );
+}`;
+
+const slotsCode = `"use client";
+import {Avatar, Picker, PickerItem, Text} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Comment from '@react-spectrum/s2/icons/Comment';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import UserSettings from '@react-spectrum/s2/icons/UserSettings';
+
+const users = Array.from({length: 5}, (_, i) => ({
+  id: \`user\${i + 1}\`,
+  name: \`User \${i + 1}\`,
+  email: \`user\${i + 1}@example.com\`,
+  avatar: 'https://i.imgur.com/kJOwAdv.png'
+}));
+
+<div className={style({display: 'flex', gap: 12, flexWrap: 'wrap'})}>
+  <Picker label="Permissions" defaultValue="read">
+    <PickerItem id="read" textValue="Read">
+      <Comment />
+      <Text slot="label">Read</Text>
+      <Text slot="description">Comment only</Text>
+    </PickerItem>
+    <PickerItem id="write" textValue="Write">
+      <Edit />
+      <Text slot="label">Write</Text>
+      <Text slot="description">Read and write only</Text>
+    </PickerItem>
+    <PickerItem id="admin" textValue="Admin">
+      <UserSettings />
+      <Text slot="label">Admin</Text>
+      <Text slot="description">Full access</Text>
+    </PickerItem>
+  </Picker>
+  <Picker label="Share" items={users} defaultValue="user1">
+    {(item) => (
+      <PickerItem id={item.id} textValue={item.name}>
+        <Avatar slot="avatar" src={item.avatar} />
+        <Text slot="label">{item.name}</Text>
+        <Text slot="description">{item.email}</Text>
+      </PickerItem>
+    )}
+  </Picker>
+</div>`;
+
+const sectionsCode = `"use client";
+import {Picker, PickerSection, PickerItem, Header, Heading, Text} from '@react-spectrum/s2';
+
+<Picker label="Ice cream flavor">
+  <PickerSection>
+    <Header>
+      <Heading>Neopolitan flavors</Heading>
+      <Text slot="description">These flavors are common</Text>
+    </Header>
+    <PickerItem>Chocolate</PickerItem>
+    <PickerItem>Strawberry</PickerItem>
+    <PickerItem>Vanilla</PickerItem>
+  </PickerSection>
+  <PickerSection>
+    <Header>
+      <Heading>Others</Heading>
+      <Text slot="description">These flavors are uncommon</Text>
+    </Header>
+    <PickerItem>Matcha</PickerItem>
+    <PickerItem>Ube</PickerItem>
+    <PickerItem>Prickly pear</PickerItem>
+  </PickerSection>
+</Picker>`;
+
+const asyncCode = `"use client";
+import {Picker, PickerItem, useAsyncList} from '@react-spectrum/s2';
+
+interface Character {
+  name: string
+}
+
+function AsyncLoadingExample() {
+  let list = useAsyncList<Character>({
+    async load({signal, cursor}) {
+      let res = await fetch(
+        cursor || \`https://pokeapi.co/api/v2/pokemon\`,
+        { signal }
+      );
+      let json = await res.json();
+
+      return {
+        items: json.results,
+        cursor: json.next
+      };
+    }
+  });
+
+  return (
+    <Picker
+      aria-label="Pokemon"
+      items={list.items}
+      loadingState={list.loadingState}
+      onLoadMore={list.loadMore}>
+      {(item) => <PickerItem id={item.name}>{item.name}</PickerItem>}
+    </Picker>
+  );
+}`;
+
+const linksCode = `"use client";
+import {Picker, PickerItem} from '@react-spectrum/s2';
+
+<Picker label="Project">
+  <PickerItem href="https://example.com/" target="_blank">Create new…</PickerItem>
+  <PickerItem>Proposal</PickerItem>
+  <PickerItem>Budget</PickerItem>
+  <PickerItem>Onboarding</PickerItem>
+</Picker>`;
+
+const valueCode = `"use client";
+import {Picker, PickerItem} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function Example(props) {
+  let [animal, setAnimal] = useState("bison");
+
+  return (
+    <div>
+      <Picker
+        {...props}
+        label="Pick an animal"
+        value={animal}
+        onChange={setAnimal}
+      >
+        <PickerItem id="koala">Koala</PickerItem>
+        <PickerItem id="kangaroo">Kangaroo</PickerItem>
+        <PickerItem id="platypus" isDisabled>Platypus</PickerItem>
+        <PickerItem id="eagle">Bald Eagle</PickerItem>
+        <PickerItem id="bison">Bison</PickerItem>
+        <PickerItem id="skunk">Skunk</PickerItem>
+      </Picker>
+      <pre className={style({font: 'body'})}>Current selection: {JSON.stringify(animal)}</pre>
+    </div>
+  );
+}`;
+
+const formsCode = `"use client";
+import {Picker, PickerItem, Form, Button} from '@react-spectrum/s2';
+
+function Example(props) {
+  return (
+    <Form>
+      <Picker
+        {...props}
+        label="Animal"
+        name="animal"
+        description="Please select an animal.">
+        <PickerItem id="aardvark">Aardvark</PickerItem>
+        <PickerItem id="cat">Cat</PickerItem>
+        <PickerItem id="dog">Dog</PickerItem>
+        <PickerItem id="kangaroo">Kangaroo</PickerItem>
+        <PickerItem id="panda">Panda</PickerItem>
+        <PickerItem id="snake">Snake</PickerItem>
+      </Picker>
+      <Button type="submit">Submit</Button>
+    </Form>
+  );
+}`;
+
+const popoverOptionsCode = `"use client";
+import {Picker, PickerItem} from '@react-spectrum/s2';
+import {useState} from 'react';
+
+function Example(props) {
+  let [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <p>Select is {open ? 'open' : 'closed'}</p>
+      <Picker
+        {...props}
+        label="Choose frequency"
+        isOpen={open}
+        onOpenChange={setOpen}>
+        <PickerItem id="rarely">Rarely</PickerItem>
+        <PickerItem id="sometimes">Sometimes</PickerItem>
+        <PickerItem id="always">Always</PickerItem>
+      </Picker>
+    </div>
+  );
+}`;
+
+const anatomyCode = `<Picker>
+  <PickerItem>
+    <Icon /> or <Avatar />
+    <Text slot="label" />
+    <Text slot="description" />
+  </PickerItem>
+  <PickerSection>
+    <Header>
+      <Heading />
+      <Text slot="description" />
+    </Header>
+    <PickerItem />
+  </PickerSection>
+</Picker>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="picker" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Pickers allow users to choose a single option from a collapsible list of options when space is
+    limited.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>Picker</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="slots" class={h3Class}>Slots</h3>
+  <p class={pClass}>
+    <code>PickerItem</code> supports icons, avatars, and <code>label</code> and
+    <code>description</code> text slots.
+  </p>
+  <Code code={slotsCode} lang="tsx" theme="github-dark" />
+  <p class={pClass}>
+    <strong>Accessibility:</strong> Interactive elements (e.g. buttons) within picker items are not
+    allowed. This will break keyboard and screen reader navigation. Only add textual or decorative
+    graphics (e.g. icons) as children.
+  </p>
+
+  <h3 id="sections" class={h3Class}>Sections</h3>
+  <p class={pClass}>
+    Use the <code>{"<PickerSection>"}</code> component to group options. A <code>{"<Header>"}</code>
+    element, with a <code>{"<Heading>"}</code> and optional <code>description</code> slot can be
+    included to label a section. Sections without a header must have an <code>aria-label</code>.
+  </p>
+  <Code code={sectionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="asynchronous-loading" class={h3Class}>Asynchronous loading</h3>
+  <p class={pClass}>
+    Use the <code>loadingState</code> and <code>onLoadMore</code> props to enable async loading and
+    infinite scrolling.
+  </p>
+  <Code code={asyncCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a <code>{"<PickerItem>"}</code> to create a link. See the
+    getting started guide to learn how to integrate with your framework. Link items in a
+    <code>Picker</code> are not selectable.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="value" class={h2Class}>Value</h2>
+  <p class={pClass}>
+    Use the <code>defaultValue</code> or <code>value</code> prop to set the selected item. The value
+    corresponds to the <code>id</code> prop of an item. When <code>selectionMode="multiple"</code>,
+    <code>value</code> and <code>onChange</code> accept an array. Items can be disabled with the
+    <code>isDisabled</code> prop.
+  </p>
+  <Code code={valueCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="forms" class={h2Class}>Forms</h2>
+  <p class={pClass}>
+    Use the <code>name</code> prop to submit the <code>id</code> of the selected item to the server.
+    Set the <code>isRequired</code> prop to validate that the user selects an option, or implement
+    custom client or server-side validation. See the Forms guide to learn more.
+  </p>
+  <Code code={formsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="popover-options" class={h2Class}>Popover options</h2>
+  <p class={pClass}>
+    The open state of the Picker can be controlled via the <code>defaultOpen</code> and
+    <code>isOpen</code> props. The <code>align</code>, <code>direction</code>, <code>shouldFlip</code>
+    and <code>menuWidth</code> props control the behavior of the popover.
+  </p>
+  <Code code={popoverOptionsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-picker" class={h3Class}>Picker</h3>
+  <PropTable source="Picker" />
+
+  <h3 id="api-pickeritem" class={h3Class}>PickerItem</h3>
+  <PropTable source="PickerItem" />
+
+  <h3 id="api-pickersection" class={h3Class}>PickerSection</h3>
+  <PropTable source="PickerSection" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
