@@ -1,0 +1,14 @@
+# ActionBar
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | A list of ActionButtons to display. |
+| `id` | `string | undefined` | — | The element's unique identifier. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id). |
+| `isEmphasized` | `boolean | undefined` | — | Whether the ActionBar should be displayed with a emphasized style. |
+| `onClearSelection` | `(() => void) | undefined` | — | Handler that is called when the ActionBar clear button is pressed. |
+| `scrollRef` | `RefObject<HTMLElement | null> | undefined` | — | A ref to the scrollable element the ActionBar appears above. |
+| `selectedItemCount` | `number | "all" | undefined` | — | The number of selected items that the ActionBar is currently linked to. If 0, the ActionBar is hidden. |
+| `slot` | `string | null | undefined` | — | A slot name for the component. Slots allow the component to receive props from a parent component. An explicit `null` value indicates that the local props completely override all props received from a parent. |
+| `styles` | `StylesProp | undefined` | — | Spectrum-defined styles, returned by the `style()` macro. |
+| `UNSAFE_className` | `UnsafeClassName | undefined` | — | Sets the CSS [className](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `UNSAFE_style` | `CSSProperties | undefined` | — | Sets inline [style](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
