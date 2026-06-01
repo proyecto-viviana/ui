@@ -1,0 +1,17 @@
+# Column
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `align` | `"center" | "end" | "start" | undefined` | 'start' | The alignment of the column's contents relative to its allotted width. |
+| `allowsResizing` | `boolean | undefined` | — | Whether the column allows resizing. |
+| `allowsSorting` | `boolean | undefined` | — | Whether the column allows sorting. |
+| `children` | `React.ReactNode` | — | The content to render as the column header. |
+| `defaultWidth` | `ColumnSize | null | undefined` | — | The default width of the column. This prop only applies when the `<Table>` is wrapped in a `<ResizableTableContainer>`. |
+| `id` | `Key | undefined` | — | The unique id of the column. |
+| `isRowHeader` | `boolean | undefined` | — | Whether a column is a [row header](https://www.w3.org/TR/wai-aria-1.1/#rowheader) and should be announced by assistive technology during row navigation. |
+| `maxWidth` | `ColumnStaticSize | null | undefined` | — | The maximum width of the column. This prop only applies when the `<Table>` is wrapped in a `<ResizableTableContainer>`. |
+| `menuItems` | `React.ReactNode` | — | Menu fragment to be rendered inside the column header's menu. |
+| `minWidth` | `ColumnStaticSize | null | undefined` | — | The minimum width of the column. This prop only applies when the `<Table>` is wrapped in a `<ResizableTableContainer>`. |
+| `showDivider` | `boolean | undefined` | — | Whether the column should render a divider between it and the next column. |
+| `textValue` | `string | undefined` | — | A string representation of the column's contents, used for accessibility announcements. |
+| `width` | `ColumnSize | null | undefined` | — | The width of the column. This prop only applies when the `<Table>` is wrapped in a `<ResizableTableContainer>`. |
