@@ -1,0 +1,152 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Provider.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// markers stripped. The upstream "Supported Locales" Disclosure is rendered as a native
+// <details> (no Solid Disclosure dependency in the static page). Gated by
+// `report:parity --slug=provider`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "provider";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Provider";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#locales", label: "Locales", depth: 2 },
+  { href: "#client-side-routing", label: "Client side routing", depth: 2 },
+  { href: "#server-side-rendering", label: "Server side rendering", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-provider", label: "Provider", depth: 3 },
+];
+
+const localesCode = `<Provider locale="en-US">
+  <YourApp />
+</Provider>`;
+
+const routingCode = `let navigate = useNavigateFromYourRouter();
+
+<Provider router={{navigate}}>
+  <YourApp />
+</Provider>`;
+
+const ssrCode = `<Provider elementType="html" locale="en-US">
+  <YourApp />
+</Provider>`;
+
+const supportedLocales = [
+  "Arabic (United Arab Emirates)",
+  "Bulgarian (Bulgaria)",
+  "Chinese (Simplified)",
+  "Chinese (Traditional)",
+  "Croatian (Croatia)",
+  "Czech (Czech Republic)",
+  "Danish (Denmark)",
+  "Dutch (Netherlands)",
+  "English (Great Britain)",
+  "English (United States)",
+  "Estonian (Estonia)",
+  "Finnish (Finland)",
+  "French (Canada)",
+  "French (France)",
+  "German (Germany)",
+  "Greek (Greece)",
+  "Hebrew (Israel)",
+  "Hungarian (Hungary)",
+  "Italian (Italy)",
+  "Japanese (Japan)",
+  "Korean (Korea)",
+  "Latvian (Latvia)",
+  "Lithuanian (Lithuania)",
+  "Norwegian (Norway)",
+  "Polish (Poland)",
+  "Portuguese (Brazil)",
+  "Romanian (Romania)",
+  "Russian (Russia)",
+  "Serbian (Serbia)",
+  "Slovakian (Slovakia)",
+  "Slovenian (Slovenia)",
+  "Spanish (Spain)",
+  "Swedish (Sweden)",
+  "Turkish (Turkey)",
+  "Ukrainian (Ukraine)",
+];
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="provider" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Provider is the container for all React Spectrum components. It loads the font and sets the
+    colorScheme, locale, and other application level settings.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="locales" class={h2Class}>Locales</h2>
+  <p class={pClass}>
+    By default, React Spectrum chooses the locale matching the user's browser/operating system
+    language, but this can be overridden with the locale prop if you have an application specific
+    setting. This prop accepts a BCP 47 language code.
+  </p>
+  <Code code={localesCode} lang="tsx" theme="github-dark" />
+  <details class="s2-porting-note">
+    <summary>Supported Locales</summary>
+    <ul style="column-width: 200px; padding-left: 16px;">
+      {supportedLocales.map((locale) => <li>{locale}</li>)}
+    </ul>
+  </details>
+
+  <h2 id="client-side-routing" class={h2Class}>Client side routing</h2>
+  <p class={pClass}>
+    The Provider component accepts an optional <code>router</code> prop. This enables React Spectrum
+    components that render links to perform client side navigation using your application or
+    framework's client side router. See the getting started guide for details on how to set this up.
+  </p>
+  <Code code={routingCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="server-side-rendering" class={h2Class}>Server side rendering</h2>
+  <p class={pClass}>
+    When using SSR, the <code>{"<Provider>"}</code> component can be rendered as the root
+    <code>{"<html>"}</code> element. The <code>locale</code> prop should always be specified to avoid
+    hydration errors.
+  </p>
+  <Code code={ssrCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+
+  <h3 id="api-provider" class={h3Class}>Provider</h3>
+  <PropTable source="Provider" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

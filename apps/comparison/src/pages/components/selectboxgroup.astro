@@ -1,0 +1,169 @@
+---
+// Ported by hand from vendor/s2-docs/pages/SelectBoxGroup.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/PROPS markers stripped. Gated by `report:parity --slug=selectboxgroup`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "selectboxgroup";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "SelectBoxGroup";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#selection", label: "Selection", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-selectboxgroup", label: "SelectBoxGroup", depth: 3 },
+  { href: "#api-selectbox", label: "SelectBox", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {SelectBoxGroup, SelectBox, Text} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Home from '@react-spectrum/s2/illustrations/linear/Home';
+import Phone from '@react-spectrum/s2/illustrations/linear/Phone';
+import MailOpen from '@react-spectrum/s2/illustrations/linear/MailOpen';
+
+let options = [
+  { id: 'address', name: 'Home address', illustration: <Home /> },
+  { id: 'email', name: 'Email address', illustration: <MailOpen /> },
+  { id: 'phone', name: 'Phone number', illustration: <Phone /> }
+];
+
+function Example() {
+
+  return (
+    <SelectBoxGroup
+      aria-label="Contact info"
+      items={options}
+      selectionMode="multiple"
+      styles={style({width: 'full'})}>
+      {((item) => (
+        <SelectBox id={item.id} textValue={item.name}>
+          {item.illustration}
+          <Text slot="label">{item.name}</Text>
+        </SelectBox>
+      ))}
+    </SelectBoxGroup>
+  );
+}`;
+
+const selectionCode = `"use client";
+import {SelectBoxGroup, SelectBox, Text, type Selection} from '@react-spectrum/s2'
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+import Server from '@react-spectrum/s2/illustrations/linear/Server';
+import StarFilled1 from '@react-spectrum/s2/illustrations/linear/Star';
+import AlertNotice from '@react-spectrum/s2/illustrations/linear/AlertNotice';
+import PaperAirplane from '@react-spectrum/s2/illustrations/linear/Paperairplane';
+
+function Example(props) {
+  let [selected, setSelected] = useState<Selection>(new Set());
+
+  return (
+    <>
+      <SelectBoxGroup
+        {...props}
+        aria-label="Select a cloud"
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+        styles={style({width: 'full'})}>
+        <SelectBox id="aws" textValue="Amazon Web Services">
+          <Server />
+          <Text slot="label">Amazon Web Services</Text>
+          <Text slot="description">Reliable cloud infrastructure</Text>
+        </SelectBox>
+        <SelectBox id="azure" textValue="Microsoft Azure">
+          <AlertNotice />
+          <Text slot="label">Microsoft Azure</Text>
+        </SelectBox>
+        <SelectBox id="gcp" textValue="Google Cloud Platform">
+          <PaperAirplane />
+          <Text slot="label">Google Cloud Platform</Text>
+        </SelectBox>
+        <SelectBox id="ibm" textValue="IBM Cloud">
+          <StarFilled1 />
+          <Text slot="label">IBM Cloud</Text>
+          <Text slot="description">Hybrid cloud solutions</Text>
+        </SelectBox>
+      </SelectBoxGroup>
+      <p>Current selection: {selected === 'all' ? 'all' : [...selected].join(', ')}</p>
+    </>
+  );
+}`;
+
+const anatomyCode = `<SelectBoxGroup>
+  <SelectBox>
+    <Illustration />
+    <Text slot="label" />
+    <Text slot="description" />
+  </SelectBox>
+</SelectBoxGroup>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="selectboxgroup" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>Allows users to select one or more options from a list.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>SelectBoxGroup</code> follows the Collection Components API, accepting both static and
+    dynamic collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection" class={h2Class}>Selection</h2>
+  <p class={pClass}>
+    Use the <code>selectionMode</code> prop to enable single or multiple selection. The selected
+    items can be controlled via the <code>selectedKeys</code> prop, matching the <code>id</code> prop
+    of the items. Items can be disabled with the <code>isDisabled</code> prop. See the selection
+    guide for more details.
+  </p>
+  <Code code={selectionCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-selectboxgroup" class={h3Class}>SelectBoxGroup</h3>
+  <PropTable source="SelectBoxGroup" />
+
+  <h3 id="api-selectbox" class={h3Class}>SelectBox</h3>
+  <PropTable source="SelectBox" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
