@@ -1,0 +1,26 @@
+# Row
+
+<!-- Curated to the documented Spectrum props. The raw S2 export spreads HTMLTableRowElement,
+so its extracted prop list also carries ~60 undescribed DOM passthrough handlers
+(onMouseDown, onPointer*, onTransition*, onAnimation*, onTouch*, dir, hidden, inert, lang,
+translate, …) that the upstream docs table does not surface. `onClick` is kept because it
+carries a real description. -->
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `((item: T) => ReactElement) | React.ReactNode` | — | The cells within the row. Supports static items or a function for dynamic rendering. |
+| `columns` | `Iterable<T> | undefined` | — | A list of columns used when dynamically rendering cells. |
+| `dependencies` | `readonly any[] | undefined` | — | Values that should invalidate the cell cache when using dynamic collections. |
+| `download` | `boolean | string | undefined` | — | Causes the browser to download the linked URL. A string may be provided to suggest a file name. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#download). |
+| `href` | `string | undefined` | — | A URL to link to. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#href). |
+| `hrefLang` | `string | undefined` | — | Hints at the human language of the linked URL. See[MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#hreflang). |
+| `id` | `Key | undefined` | — | The unique id of the row. |
+| `isDisabled` | `boolean | undefined` | — | Whether the row is disabled. |
+| `onAction` | `(() => void) | undefined` | — | Handler that is called when a user performs an action on the row. The exact user event depends on the collection's `selectionBehavior` prop and the interaction modality. |
+| `onClick` | `((e: React.MouseEvent<FocusableElement>) => void) | undefined` | — | **Not recommended – use `onPress` instead.** `onClick` is an alias for `onPress` provided for compatibility with other libraries. `onPress` provides additional event details for non-mouse interactions. |
+| `ping` | `string | undefined` | — | A space-separated list of URLs to ping when the link is followed. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#ping). |
+| `referrerPolicy` | `React.HTMLAttributeReferrerPolicy | undefined` | — | How much of the referrer to send when following the link. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#referrerpolicy). |
+| `rel` | `string | undefined` | — | The relationship between the linked resource and the current page. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel). |
+| `routerOptions` | `undefined` | — | Options for the configured client side router. |
+| `target` | `React.HTMLAttributeAnchorTarget | undefined` | — | The target window for the link. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#target). |
+| `textValue` | `string | undefined` | — | A string representation of the row's contents, used for features like typeahead. |

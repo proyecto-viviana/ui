@@ -1,0 +1,15 @@
+# EditableCell
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `action` | `string | ((formData: FormData) => void | Promise<void>) | undefined` | — | The action to submit the form to. Only available in React 19+. |
+| `align` | `"center" | "end" | "start" | undefined` | 'start' | The alignment of the column's contents relative to its allotted width. |
+| `children` | `React.ReactNode` | — | The content to render as the cell children. |
+| `colSpan` | `number | undefined` | — | Indicates how many columns the data cell spans. |
+| `id` | `Key | undefined` | — | The unique id of the cell. |
+| `isSaving` | `boolean | undefined` | — | Whether the cell is currently being saved. |
+| `onCancel` | `(() => void) | undefined` | — | Handler that is called when the user cancels the edit. |
+| `onSubmit` | `((e: FormEvent<HTMLFormElement>) => void) | undefined` | — | Handler that is called when the value has been changed and is ready to be saved. |
+| `renderEditing` | `() => ReactNode` | — | The component which will handle editing the cell. For example, a `TextField` or a `Picker`. |
+| `showDivider` | `boolean | undefined` | — | Whether the column should render a divider between it and the next column. |
+| `textValue` | `string | undefined` | — | A string representation of the cell's contents, used for features like typeahead. |
