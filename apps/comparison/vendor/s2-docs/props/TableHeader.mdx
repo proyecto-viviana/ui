@@ -1,0 +1,7 @@
+# TableHeader
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `((item: T) => ReactElement) | React.ReactNode` | — | A list of `Column(s)` or a function. If the latter, a list of columns must be provided using the `columns` prop. |
+| `columns` | `Iterable<T> | undefined` | — | A list of table columns. |
+| `dependencies` | `readonly any[] | undefined` | — | Values that should invalidate the column cache when using dynamic collections. |

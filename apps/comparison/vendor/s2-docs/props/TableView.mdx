@@ -1,0 +1,41 @@
+# TableView
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `aria-describedby` | `string | undefined` | — | Identifies the element (or elements) that describes the object. |
+| `aria-details` | `string | undefined` | — | Identifies the element (or elements) that provide a detailed, extended description for the object. |
+| `aria-label` | `string | undefined` | — | Defines a string value that labels the current element. |
+| `aria-labelledby` | `string | undefined` | — | Identifies the element (or elements) that labels the current element. |
+| `children` | `React.ReactNode` | — | The elements that make up the table. Includes the TableHeader, TableBody, Columns, and Rows. |
+| `defaultExpandedKeys` | `Iterable<Key> | undefined` | — | The initial expanded keys in the collection (uncontrolled). |
+| `defaultSelectedKeys` | `"all" | Iterable<Key> | undefined` | — | The initial selected keys in the collection (uncontrolled). |
+| `density` | `"compact" | "regular" | "spacious" | undefined` | 'regular' | Sets the amount of vertical padding within each cell. |
+| `disabledBehavior` | `DisabledBehavior | undefined` | 'all' | Whether `disabledKeys` applies to all interactions, or only selection. |
+| `disabledKeys` | `Iterable<Key> | undefined` | — | A list of row keys to disable. |
+| `disallowEmptySelection` | `boolean | undefined` | — | Whether the collection allows empty selection. |
+| `dragAndDropHooks` | `DragAndDropHooks | undefined` | — | The drag and drop hooks returned by `useDragAndDrop` used to enable drag and drop behavior for the Table. |
+| `escapeKeyBehavior` | `"clearSelection" | "none" | undefined` | 'clearSelection' | Whether pressing the escape key should clear selection in the table or not. Most experiences should not modify this option as it eliminates a keyboard user's ability to easily clear selection. Only use if the escape key is being handled externally or should not trigger selection clearing contextually. |
+| `expandedKeys` | `Iterable<Key> | undefined` | — | The currently expanded keys in the collection (controlled). |
+| `id` | `string | undefined` | — | The element's unique identifier. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id). |
+| `isQuiet` | `boolean | undefined` | — | Whether the Table should be displayed with a quiet style. |
+| `loadingState` | `LoadingState | undefined` | — | The current loading state of the table. |
+| `onAction` | `((key: Key) => void) | undefined` | — | Handler that is called when a user performs an action on a row. |
+| `onExpandedChange` | `((keys: Set<Key>) => any) | undefined` | — | Handler that is called when items are expanded or collapsed. |
+| `onLoadMore` | `(() => any) | undefined` | — | Handler that is called when more items should be loaded, e.g. while scrolling near the bottom. |
+| `onResize` | `((widths: Map<Key, ColumnSize>) => void) | undefined` | — | Handler that is called when a user performs a column resize. Can be used with the width property on columns to put the column widths into a controlled state. |
+| `onResizeEnd` | `((widths: Map<Key, ColumnSize>) => void) | undefined` | — | Handler that is called after a user performs a column resize. Can be used to store the widths of columns for another future session. |
+| `onResizeStart` | `((widths: Map<Key, ColumnSize>) => void) | undefined` | — | Handler that is called when a user starts a column resize. |
+| `onSelectionChange` | `((keys: Selection) => void) | undefined` | — | Handler that is called when the selection changes. |
+| `onSortChange` | `((descriptor: SortDescriptor) => any) | undefined` | — | Handler that is called when the sorted column or direction changes. |
+| `overflowMode` | `"truncate" | "wrap" | undefined` | 'truncate' | Sets the overflow behavior for the cell contents. |
+| `renderActionBar` | `((selectedKeys: "all" | Set<Key>) => ReactElement) | undefined` | — | Provides the ActionBar to display when rows are selected in the TableView. |
+| `selectedKeys` | `"all" | Iterable<Key> | undefined` | — | The currently selected keys in the collection (controlled). |
+| `selectionMode` | `SelectionMode | undefined` | — | The type of selection that is allowed in the collection. |
+| `selectionStyle` | `"checkbox" | "highlight" | undefined` | 'checkbox' | How selection should be displayed. |
+| `shouldSelectOnPressUp` | `boolean | undefined` | — | Whether selection should occur on press up instead of press down. |
+| `slot` | `string | null | undefined` | — | A slot name for the component. Slots allow the component to receive props from a parent component. An explicit `null` value indicates that the local props completely override all props received from a parent. |
+| `sortDescriptor` | `SortDescriptor | undefined` | — | The current sorted column and direction. |
+| `styles` | `StylesPropWithHeight | undefined` | — | Spectrum-defined styles, returned by the `style()` macro. |
+| `treeColumn` | `Key | undefined` | — | The id of the column that displays hierarchical data. |
+| `UNSAFE_className` | `UnsafeClassName | undefined` | — | Sets the CSS [className](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
+| `UNSAFE_style` | `React.CSSProperties | undefined` | — | Sets inline [style](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. |
