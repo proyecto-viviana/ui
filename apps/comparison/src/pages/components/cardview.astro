@@ -1,0 +1,391 @@
+---
+// Ported by hand from vendor/s2-docs/pages/CardView.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim. The upstream `///- collapse -///` data arrays
+// (30-item image list, 12-topic list, 6-card list — hidden by default in the rendered docs)
+// are abbreviated here to a couple of representative entries with a `// …` note; the full
+// component-usage code is preserved. Nested template literals (async fetch URL, selection
+// alerts) are escaped. The hero example is shown by the live mount. Gated by `report:parity --slug=cardview`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "cardview";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "CardView";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#asynchronous-loading", label: "Asynchronous loading", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#empty-state", label: "Empty state", depth: 3 },
+  { href: "#selection-and-actions", label: "Selection and actions", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-cardview", label: "CardView", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {CardView, AssetCard, CardPreview, Image, Content, Text} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+let images = [
+  {
+    id: "8SXaMMWCTGc",
+    title: "A Ficus Lyrata Leaf in the sunlight",
+    user: "Clay Banks",
+    image: "https://images.unsplash.com/photo-1580133318324-f2f76d987dd8?q=80&w=400&auto=format&fit=crop",
+    width: 400,
+    height: 600
+  },
+  {
+    id: "pYjCqqDEOFo",
+    title: "beach of Italy",
+    user: "alan bajura",
+    image: "https://images.unsplash.com/photo-1737100522891-e8946ac97fd1?q=80&w=400&auto=format&fit=crop",
+    width: 400,
+    height: 600
+  }
+  // … 28 more image objects
+];
+
+for (let i = 0; images.length < 200; i++) {
+  images.push({...images[i % 30], id: String(i)});
+}
+
+<CardView
+  aria-label="Nature photos"
+  styles={style({width: 'full', height: 500})}
+  layout="waterfall"
+  size="S"
+  items={images}>
+  {image => (
+    <AssetCard>
+      <CardPreview>
+        <Image src={image.image} width={image.width} height={image.height} />
+      </CardPreview>
+      <Content>
+        <Text slot="title">{image.title}</Text>
+        <Text slot="description">{image.user}</Text>
+      </Content>
+    </AssetCard>
+  )}
+</CardView>`;
+
+const asyncCode = `"use client";
+import {CardView, Collection, SkeletonCollection, Card, CardPreview, Image, Content, Text, Avatar, useAsyncList} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+type Item = {
+  id: string;
+  description?: string;
+  alt_description?: string;
+  urls: {regular: string};
+  width: number;
+  height: number;
+  user: {name: string; profile_image: {small: string}};
+};
+
+export default function Example(props) {
+  let list = useAsyncList<Item, number | null>({
+    async load({signal, cursor, items}) {
+      let page = cursor || 1;
+      let res = await fetch(
+        \`https://api.unsplash.com/topics/nature/photos?page=\${page}&per_page=30&client_id=YOUR_ACCESS_KEY\`,
+        {signal}
+      );
+      let nextItems = await res.json();
+      // Filter duplicates which might be returned by the API.
+      let existingKeys = new Set(items.map(i => i.id));
+      nextItems = nextItems.filter(i => !existingKeys.has(i.id) && (i.description || i.alt_description));
+      return {items: nextItems, cursor: nextItems.length ? page + 1 : null};
+    }
+  });
+
+  let loadingState = props.loadingState || list.loadingState;
+
+  return (
+    <CardView
+      aria-label="Nature photos"
+      size="S"
+      layout="waterfall"
+      loadingState={loadingState}
+      onLoadMore={props.loadingState ? undefined : list.loadMore}
+      styles={style({width: 'full', height: 500})}>
+      <Collection items={loadingState === 'loading' ? [] : list.items}>
+        {item => <PhotoCard item={item} layout={props.layout || 'waterfall'} />}
+      </Collection>
+      {(loadingState === 'loading' || loadingState === 'loadingMore') && (
+        <SkeletonCollection>
+          {() => (
+            <PhotoCard
+              item={{
+                id: String(Math.random()),
+                user: {name: 'Placeholder name', profile_image: {small: ''}},
+                urls: {regular: ''},
+                description: 'This is a fake description. Kinda long so it wraps to a new line.',
+                alt_description: '',
+                width: 400,
+                height: 200 + Math.max(0, Math.round(Math.random() * 400))
+              }}
+              layout={props.layout || 'waterfall'} />
+          )}
+        </SkeletonCollection>
+      )}
+    </CardView>
+  );
+}
+
+function PhotoCard({item, layout}: {item: Item, layout: string}) {
+  return (
+    <Card id={item.id} textValue={item.description || item.alt_description}>
+      {({size}) => (<>
+        <CardPreview>
+          <Image
+            src={item.urls.regular}
+            width={item.width}
+            height={item.height}
+            styles={style({
+              width: 'full',
+              pointerEvents: 'none',
+              objectFit: 'cover'
+            })} />
+        </CardPreview>
+        <Content>
+          <Text slot="title">{item.description || item.alt_description}</Text>
+          <div className={style({display: 'flex', alignItems: 'center', gap: 8, gridArea: 'description'})}>
+            <Avatar src={item.user.profile_image.small} size={size === 'S' ? 24 : size === 'M' ? 32 : size === 'L' ? 40 : 32} />
+            <Text slot="description">{item.user.name}</Text>
+          </div>
+        </Content>
+      </>)}
+    </Card>
+  );
+}`;
+
+const linksCode = `"use client";
+import {CardView, Card, CollectionCardPreview, Image, Content, Text} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Folder from '@react-spectrum/s2/icons/Folder';
+
+let topics = [
+  {
+    "id": "bo8jQKTaE0Y",
+    "href": "https://unsplash.com/t/wallpapers",
+    "photos": [
+      {"id": "pH6ff1GpUMo", "src": "https://plus.unsplash.com/premium_photo-1700558685040-a75735b86bb7?q=80&w=400&fit=max"},
+      {"id": "CPjNU3ChRl4", "src": "https://images.unsplash.com/photo-1756187793625-4a29fef1f4f8?q=80&w=400&fit=max"}
+      // … 2 more photos
+    ],
+    "title": "Wallpapers",
+    "count": 16689
+  },
+  {
+    "id": "6sMVjTLSkeQ",
+    "href": "https://unsplash.com/t/nature",
+    "photos": [
+      {"id": "G-5JCERzbE8", "src": "https://images.unsplash.com/photo-1755838692094-49a97b9fb9ab?q=80&w=400&fit=max"},
+      {"id": "I8vmQEZDhM0", "src": "https://plus.unsplash.com/premium_photo-1678483692858-d9ca6e9c67f9?q=80&w=400&fit=max"}
+      // … 2 more photos
+    ],
+    "title": "Nature",
+    "count": 32010
+  }
+  // … 10 more topics
+];
+
+<CardView
+  aria-label="Collections"
+  styles={style({width: 'full', height: 500})}
+  size="S"
+  items={topics}>
+  {topic => (
+    <Card href={topic.href} target="_blank" textValue={topic.title}>
+      <CollectionCardPreview>
+        {topic.photos.map(photo => (
+          <Image key={photo.id} alt="" src={photo.src} />
+        ))}
+      </CollectionCardPreview>
+      <Content>
+        <Text slot="title">{topic.title}</Text>
+        <div className={style({display: 'flex', alignItems: 'center', gap: 8})}>
+          <Folder />
+          <Text slot="description">{topic.count} photos</Text>
+        </div>
+      </Content>
+    </Card>
+  )}
+</CardView>`;
+
+const emptyStateCode = `"use client";
+import {CardView, IllustratedMessage, Heading, Content} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import Image from '@react-spectrum/s2/illustrations/gradient/generic1/Image';
+
+<CardView
+  aria-label="Assets"
+  styles={style({width: 'full', height: 300})}
+  renderEmptyState={() => (
+    <IllustratedMessage size="L">
+      <Image />
+      <Heading>Create your first asset.</Heading>
+      <Content>Get started by uploading or importing some assets.</Content>
+    </IllustratedMessage>
+  )}>
+  {[]}
+</CardView>`;
+
+const selectionActionsCode = `"use client";
+import {CardView, AssetCard, CardPreview, Image, Content, Text, ActionBar, ActionButton, type Selection} from '@react-spectrum/s2';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import Copy from '@react-spectrum/s2/icons/Copy';
+import Delete from '@react-spectrum/s2/icons/Delete';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function Example(props) {
+  let [selected, setSelected] = useState<Selection>(new Set());
+
+  return (
+    <>
+      <CardView
+        aria-label="Nature photos"
+        styles={style({width: 'full', height: 500})}
+        {...props}
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+        onAction={key => alert(\`Clicked \${key}\`)}
+        renderActionBar={(selectedKeys) => {
+          let selection = selectedKeys === 'all' ? 'all' : [...selectedKeys].join(', ');
+          return (
+            <ActionBar>
+              <ActionButton onPress={() => alert(\`Edit \${selection}\`)}>
+                <Edit />
+                <Text>Edit</Text>
+              </ActionButton>
+              <ActionButton onPress={() => alert(\`Copy \${selection}\`)}>
+                <Copy />
+                <Text>Copy</Text>
+              </ActionButton>
+              <ActionButton onPress={() => alert(\`Delete \${selection}\`)}>
+                <Delete />
+                <Text>Delete</Text>
+              </ActionButton>
+            </ActionBar>
+          );
+        }}>
+        <AssetCard id={1}>
+          <CardPreview>
+            <Image src="https://images.unsplash.com/photo-1705034598432-1694e203cdf3?q=80&w=600&auto=format&fit=crop" />
+          </CardPreview>
+          <Content>
+            <Text slot="title">Desert Sunset</Text>
+            <Text slot="description">PNG • 2/3/2024</Text>
+          </Content>
+        </AssetCard>
+        <AssetCard id={2} isDisabled>
+          <CardPreview>
+            <Image src="https://images.unsplash.com/photo-1722233987129-61dc344db8b6?q=80&w=600&auto=format&fit=crop" />
+          </CardPreview>
+          <Content>
+            <Text slot="title">Hiking Trail</Text>
+            <Text slot="description">JPEG • 1/10/2022</Text>
+          </Content>
+        </AssetCard>
+        {/* … 4 more AssetCards */}
+      </CardView>
+      <p>Current selection: {selected === 'all' ? 'all' : [...selected].join(', ')}</p>
+    </>
+  );
+}`;
+
+const anatomyCode = `<CardView>
+  <Card />
+  <SkeletonCollection />
+</CardView>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="cardview" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    A CardView displays a group of related objects, with support for selection and bulk actions.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>CardView</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a recursive function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="asynchronous-loading" class={h3Class}>Asynchronous loading</h3>
+  <p class={pClass}>
+    Use the <code>loadingState</code> and <code>onLoadMore</code> props to enable async loading and
+    infinite scrolling. When loading, render a <code>{"<SkeletonCollection>"}</code> to generate
+    placeholder content to display as skeleton cards.
+  </p>
+  <Code code={asyncCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a Card to create a link. See the getting started guide to learn
+    how to integrate with your framework. Link interactions vary depending on the selection behavior.
+    See the selection guide for more details.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="empty-state" class={h3Class}>Empty state</h3>
+  <p class={pClass}>
+    Use <code>renderEmptyState</code> to render placeholder content when the CardView is empty.
+  </p>
+  <Code code={emptyStateCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection-and-actions" class={h2Class}>Selection and actions</h2>
+  <p class={pClass}>
+    Use <code>selectionMode</code> to enable single or multiple selection, and <code>selectedKeys</code>
+    (matching each card's <code>id</code>) to control the selected cards. Return an ActionBar from
+    <code>renderActionBar</code> to handle bulk actions, and use <code>onAction</code> for row
+    navigation. Disable cards with <code>isDisabled</code>. See the selection guide for details.
+  </p>
+  <Code code={selectionActionsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-cardview" class={h3Class}>CardView</h3>
+  <PropTable source="CardView" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
