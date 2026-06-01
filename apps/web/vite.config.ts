@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { tanstackStart } from "@tanstack/solid-start/plugin/vite";
-import tailwindcss from "@tailwindcss/vite";
 import viteSolid from "vite-plugin-solid";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -32,7 +31,6 @@ export default defineConfig({
   plugins: [
     tanstackStart(),
     viteSolid({ ssr: true }),
-    tailwindcss(),
     ...(isProd ? [cloudflare({ viteEnvironment: { name: "ssr" } })] : []),
   ],
 });

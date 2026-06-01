@@ -119,13 +119,7 @@ const localSolidPackages = [
   "@proyecto-viviana/solidaria-components",
   "@proyecto-viviana/solid-spectrum",
 ];
-const reactNoExternalPackages = [
-  "@mui/material",
-  "@mui/base",
-  "@babel/runtime",
-  "use-immer",
-  "@material-tailwind/react",
-];
+const reactNoExternalPackages = ["@mui/material", "@mui/base", "@babel/runtime", "use-immer"];
 
 const stripViteRequestSuffix = (id) => id.split(/[?#]/, 1)[0];
 const macroImportPattern = /with[\s\n]*\{\s*type:[\s\n]*["']macro["'][\s\n]*\}/;

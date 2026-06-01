@@ -1,8 +1,5 @@
-/* Tailwind CSS v4 */
-@import "tailwindcss";
-
-/* Scan UI package for Tailwind classes */
-@source "../../../packages/solid-spectrum/src/**/*.tsx";
+@import "./local-utilities.css";
+@import "../../../packages/solid-spectrum/src/components.css";
 
 /* Docs site semantic tokens — bound to solid-spectrum's data-color-scheme attribute. */
 :where(:root) {
@@ -15,7 +12,7 @@
 }
 
 /* Viviana UI theme tokens */
-@theme {
+:root {
   /* Breakpoints */
   --breakpoint-xxs: 320px;
   --breakpoint-xs: 475px;
@@ -198,9 +195,6 @@
   --color-warning-bg: rgba(210, 153, 34, 0.1);
   --color-danger-bg: rgba(248, 81, 73, 0.1);
 }
-
-/* Import UI package component styles (after theme vars are defined) */
-@import "../../../packages/solid-spectrum/src/components.css";
 
 /* ===== FONT UTILITIES ===== */
 .font-sen {

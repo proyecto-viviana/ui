@@ -130,14 +130,12 @@ function InstallationPage() {
         </table>
       </div>
 
-      <SectionHeading color={colors().blue}>Tailwind CSS Setup</SectionHeading>
+      <SectionHeading color={colors().blue}>CSS Theme Tokens</SectionHeading>
       <p style={{ "margin-bottom": "0.75rem" }}>
-        The UI components use Tailwind CSS v4. Add the theme variables to your CSS:
+        Add the theme variables to your app CSS when you want to customize the default colors:
       </p>
       <pre style={codeBlock("")}>
-        <code>{`@import "tailwindcss";
-
-@theme {
+        <code>{`:root {
   --color-primary-100: #ddf4ff;
   --color-primary-200: #b6e3ff;
   --color-primary-300: #80ccff;

@@ -56,7 +56,7 @@ From `s2-docs/src/Layout.tsx` + `pages/s2/Checkbox.mdx` + `pages/s2/Button.mdx`.
   Default) with `DisclosureRow` groups (Content, Selection, Events, Styling, …)
   and a required-`Asterisk` marker.
 - Richer pages add anatomy `Figure`s, `<StateTable>`, and `<ExampleSwitcher>`
-  (vanilla / tailwind / s2 tabs).
+  (vanilla / utility CSS / s2 tabs).
 
 ## 3. Which Spectrum components the docs chrome is built from
 

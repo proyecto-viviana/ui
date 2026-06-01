@@ -25,7 +25,7 @@ part of the macro work, not an unrelated later cleanup.
 
 | Family                                       | Mechanism                                                                                                                                 | Examples                                                          |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Scanner / utility**                        | Scan source _text_ for known class-name tokens; generate CSS for what is found. Never executes your code.                                 | Tailwind (v4 = Rust "Oxide" engine + `@tailwindcss/vite`), UnoCSS |
+| **Scanner / utility**                        | Scan source _text_ for known class-name tokens; generate CSS for what is found. Never executes your code.                                 | Utility-first CSS engines, UnoCSS                                 |
 | **Build-time eval / zero-runtime CSS-in-JS** | A bundler plugin _executes_ style declarations at build time, emits static CSS, replaces calls with class strings. No style engine ships. | StyleX, vanilla-extract, Linaria / WyW-in-JS, Panda CSS, Compiled |
 | **Runtime CSS-in-JS**                        | A style engine serializes and injects CSS in the browser at render time.                                                                  | Emotion, styled-components, stitches                              |
 

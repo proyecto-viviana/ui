@@ -31,7 +31,7 @@ const faqItems: FaqEntry[] = [
     id: "getting-started",
     question: "How do I get started?",
     answer:
-      "Install the packages with npm, bun, or pnpm, wrap your app with the Provider component, and start importing components. Check the documentation for each component's API and examples.",
+      "Install the packages with npm or pnpm, wrap your app with the Provider component, and start importing components. Check the documentation for each component's API and examples.",
   },
   {
     id: "customization",
