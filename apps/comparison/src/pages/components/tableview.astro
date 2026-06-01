@@ -1,0 +1,853 @@
+---
+// Ported by hand from vendor/s2-docs/pages/TableView.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/collapse markers stripped. Nested template literals (column-menus, editable-cells,
+// selection examples) and the async regex backslashes are escaped inside the page literals.
+// The hero example is shown by the live mount. Gated by `report:parity --slug=tableview`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "tableview";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "TableView";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#asynchronous-loading", label: "Asynchronous loading", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#empty-state", label: "Empty state", depth: 3 },
+  { href: "#cell-options", label: "Cell options", depth: 3 },
+  { href: "#column-menus", label: "Column menus", depth: 3 },
+  { href: "#editable-cells", label: "Editable cells", depth: 3 },
+  { href: "#selection-and-actions", label: "Selection and actions", depth: 2 },
+  { href: "#sorting", label: "Sorting", depth: 2 },
+  { href: "#column-resizing", label: "Column resizing", depth: 2 },
+  { href: "#resize-events", label: "Resize events", depth: 3 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-tableview", label: "TableView", depth: 3 },
+  { href: "#api-tableheader", label: "TableHeader", depth: 3 },
+  { href: "#api-column", label: "Column", depth: 3 },
+  { href: "#api-tablebody", label: "TableBody", depth: 3 },
+  { href: "#api-row", label: "Row", depth: 3 },
+  { href: "#api-cell", label: "Cell", depth: 3 },
+  { href: "#api-editablecell", label: "EditableCell", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell, CheckboxGroup, Checkbox, ActionButton} from '@react-spectrum/s2';
+import {useState} from 'react';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+const columns = [
+  {name: 'Name', id: 'name', isRowHeader: true},
+  {name: 'Type', id: 'type'},
+  {name: 'Date Modified', id: 'date'}
+];
+
+const initialRows = [
+  {id: 1, name: 'Games', date: '6/7/2020', type: 'File folder'},
+  {id: 2, name: 'Program Files', date: '4/7/2021', type: 'File folder'},
+  {id: 3, name: 'bootmgr', date: '11/20/2010', type: 'System file'},
+  {id: 4, name: 'log.txt', date: '1/18/2016', type: 'Text Document'}
+];
+
+function FileTable() {
+  let [showColumns, setShowColumns] = useState(['name', 'type', 'date']);
+  let visibleColumns = columns.filter(column => showColumns.includes(column.id));
+
+  let [rows, setRows] = useState(initialRows);
+  let addRow = () => {
+    let date = new Date().toLocaleDateString();
+    setRows(rows => [
+      ...rows,
+      {id: rows.length + 1, name: 'file.txt', date, type: 'Text Document'}
+    ]);
+  };
+
+  return (
+    <div className={style({display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'start', width: 'full'})}>
+      <CheckboxGroup aria-label="Show columns" value={showColumns} onChange={setShowColumns} orientation="horizontal">
+        <Checkbox value="type">Type</Checkbox>
+        <Checkbox value="date">Date Modified</Checkbox>
+      </CheckboxGroup>
+      <TableView aria-label="Files" styles={style({width: 'full'})}>
+        <TableHeader columns={visibleColumns}>
+          {column => (
+            <Column isRowHeader={column.isRowHeader}>
+              {column.name}
+            </Column>
+          )}
+        </TableHeader>
+        <TableBody items={rows} dependencies={[visibleColumns]}>
+          {item => (
+            <Row columns={visibleColumns}>
+              {column => <Cell>{item[column.id]}</Cell>}
+            </Row>
+          )}
+        </TableBody>
+      </TableView>
+      <ActionButton onPress={addRow}>Add row</ActionButton>
+    </div>
+  );
+}`;
+
+const asyncCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell, useAsyncList} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+interface Character {
+  name: string;
+  height: number;
+  mass: number;
+  birth_year: number;
+}
+
+function AsyncSortTable() {
+  let list = useAsyncList<Character>({
+    async load({ signal, cursor }) {
+      if (cursor) {
+        cursor = cursor.replace(/^http:\\/\\//i, 'https://');
+      }
+
+      let res = await fetch(
+        cursor || 'https://swapi.py4e.com/api/people/?search=',
+        { signal }
+      );
+      let json = await res.json();
+
+      return {
+        items: json.results,
+        cursor: json.next
+      };
+    }
+  });
+
+  return (
+    <TableView
+      aria-label="Star Wars characters"
+      loadingState={list.loadingState}
+      onLoadMore={list.loadMore}
+      styles={style({width: 'full', height: 320})}>
+      <TableHeader>
+        <Column id="name" isRowHeader>Name</Column>
+        <Column id="height">Height</Column>
+        <Column id="mass">Mass</Column>
+        <Column id="birth_year">Birth Year</Column>
+      </TableHeader>
+      <TableBody items={list.items}>
+        {(item) => (
+          <Row id={item.name}>
+            <Cell>{item.name}</Cell>
+            <Cell>{item.height}</Cell>
+            <Cell>{item.mass}</Cell>
+            <Cell>{item.birth_year}</Cell>
+          </Row>
+        )}
+      </TableBody>
+    </TableView>
+  );
+}`;
+
+const linksCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+<TableView
+  styles={style({width: 'full'})}>
+  <TableHeader>
+    <Column isRowHeader>Name</Column>
+    <Column>URL</Column>
+    <Column>Date added</Column>
+  </TableHeader>
+  <TableBody>
+    <Row href="https://adobe.com/" target="_blank">
+      <Cell>Adobe</Cell>
+      <Cell>https://adobe.com/</Cell>
+      <Cell>January 28, 2023</Cell>
+    </Row>
+    <Row href="https://google.com/" target="_blank">
+      <Cell>Google</Cell>
+      <Cell>https://google.com/</Cell>
+      <Cell>April 5, 2023</Cell>
+    </Row>
+    <Row href="https://nytimes.com/" target="_blank">
+      <Cell>New York Times</Cell>
+      <Cell>https://nytimes.com/</Cell>
+      <Cell>July 12, 2023</Cell>
+    </Row>
+  </TableBody>
+</TableView>`;
+
+const emptyStateCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, IllustratedMessage, Heading, Content, Link} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import FolderOpen from '@react-spectrum/s2/illustrations/linear/FolderOpen';
+
+<TableView aria-label="Search results" styles={style({width: 'full', height: 320})}>
+  <TableHeader>
+    <Column isRowHeader>Name</Column>
+    <Column>Type</Column>
+    <Column>Date Modified</Column>
+  </TableHeader>
+  <TableBody
+    renderEmptyState={() => (
+      <IllustratedMessage>
+        <FolderOpen />
+        <Heading>No results</Heading>
+        <Content>Press <Link href="https://adobe.com">here</Link> for more info.</Content>
+      </IllustratedMessage>
+    )}>
+    {[]}
+  </TableBody>
+</TableView>`;
+
+const cellOptionsCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell, Collection} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+const rows = [
+  {id: 1, name: 'Charizard', type: 'Fire, Flying', level: 67},
+  {id: 2, name: 'Blastoise', type: 'Water', level: 56},
+  {id: 3, name: 'Venusaur', type: 'Grass, Poison', level: 83},
+  {id: 4, name: 'Pikachu', type: 'Electric', level: 100}
+];
+
+const columns = [
+  {id: 'name', name: 'Name', isRowHeader: true, showDivider: true, align: undefined},
+  {id: 'type', name: 'Type', isRowHeader: false, showDivider: true, align: 'center'},
+  {id: 'level', name: 'Level', isRowHeader: false, showDivider: false, align: 'end'}
+] as const;
+
+function TableWithDividers() {
+  return (
+    <TableView
+      aria-label="Favorite pokemon"
+      styles={style({width: 400, maxWidth: 'full'})}>
+      <TableHeader columns={columns}>
+        {(column) => (
+          <Column
+            showDivider={column.showDivider}
+            align={column.align}
+            isRowHeader={column.isRowHeader}>
+            {column.name}
+          </Column>
+        )}
+      </TableHeader>
+      <TableBody>
+        <Collection items={rows}>
+          {item => (
+            <Row id={item.id} columns={columns}>
+              {(column) => (
+                <Cell
+                  showDivider={column.showDivider}
+                  align={column.align}>
+                  {item[column.id]}
+                </Cell>
+              )}
+            </Row>
+          )}
+        </Collection>
+        <Row>
+          <Cell colSpan={2} align="end" showDivider>Total:</Cell>
+          <Cell align="end">{rows.reduce((p, v) => p + v.level, 0)}</Cell>
+        </Row>
+      </TableBody>
+    </TableView>
+  );
+}`;
+
+const columnMenusCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell, MenuSection, MenuItem} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+const rows = [
+  {id: 1, name: 'Charizard', type: 'Fire, Flying', level: 67},
+  {id: 2, name: 'Blastoise', type: 'Water', level: 56},
+  {id: 3, name: 'Venusaur', type: 'Grass, Poison', level: 83},
+  {id: 4, name: 'Pikachu', type: 'Electric', level: 100}
+];
+
+const columns = [
+  {id: 'name', name: 'Name', isRowHeader: true},
+  {id: 'type', name: 'Type'},
+  {id: 'level', name: 'Level'}
+];
+
+function CustomMenusTable() {
+  return (
+    <TableView aria-label="Favorite pokemon" styles={style({width: 400, maxWidth: 'full'})}>
+      <TableHeader columns={columns}>
+        {(column) => (
+          <Column
+            menuItems={
+              <>
+                <MenuSection>
+                  <MenuItem onAction={() => alert(\`Filtering "\${column.name}" column\`)}>Filter</MenuItem>
+                </MenuSection>
+                <MenuSection>
+                  <MenuItem onAction={() => alert(\`Hiding "\${column.name}" column\`)}>Hide column</MenuItem>
+                  <MenuItem onAction={() => alert(\`Managing the "\${column.name}" column\`)}>Manage columns</MenuItem>
+                </MenuSection>
+              </>
+            }
+            isRowHeader={column.isRowHeader}>
+            {column.name}
+          </Column>
+        )}
+      </TableHeader>
+      <TableBody items={rows}>
+        {item => (
+          <Row id={item.id} columns={columns}>
+            {(column) => {
+              return <Cell>{item[column.id]}</Cell>;
+            }}
+          </Row>
+        )}
+      </TableBody>
+    </TableView>
+  );
+}`;
+
+const editableCellsCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell, EditableCell, TextField, ActionButton, Picker, PickerItem, Text, type Key, type ColumnProps} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import User from '@react-spectrum/s2/icons/User';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import {useCallback} from 'react';
+import {useListData} from '@react-stately/data';
+
+let defaultItems = [
+  {id: 1, fruits: 'Apples', task: 'Collect', farmer: 'Eva'},
+  {id: 2, fruits: 'Oranges', task: 'Collect', farmer: 'Steven'},
+  {id: 3, fruits: 'Pears', task: 'Collect', farmer: 'Michael'},
+  {id: 4, fruits: 'Cherries', task: 'Collect', farmer: 'Sara'},
+  {id: 5, fruits: 'Dates', task: 'Collect', farmer: 'Karina'},
+  {id: 6, fruits: 'Bananas', task: 'Collect', farmer: 'Otto'},
+  {id: 7, fruits: 'Melons', task: 'Collect', farmer: 'Matt'},
+  {id: 8, fruits: 'Figs', task: 'Collect', farmer: 'Emily'},
+  {id: 9, fruits: 'Blueberries', task: 'Collect', farmer: 'Amelia'},
+  {id: 10, fruits: 'Blackberries', task: 'Collect', farmer: 'Isla'}
+];
+
+let editableColumns: Array<Omit<ColumnProps, 'children'> & {name: string}> = [
+  {name: 'Fruits', id: 'fruits', isRowHeader: true, width: '2fr', minWidth: 200},
+  {name: 'Task', id: 'task', width: '1fr', minWidth: 150},
+  {name: 'Farmer', id: 'farmer', width: '1fr', minWidth: 150}
+];
+
+export default function EditableTable(props) {
+  let columns = editableColumns;
+  let data = useListData({initialItems: defaultItems});
+
+  let onChange = useCallback((id: Key, columnId: Key, values: any) => {
+    let value = values[columnId];
+    if (value == null) {
+      return;
+    }
+    data.update(id, (prevItem) => ({...prevItem, [columnId]: value}));
+  }, [data]);
+
+  return (
+    <TableView aria-label="Dynamic table" {...props} styles={style({height: 208, width: 'full'})}>
+      <TableHeader columns={columns}>
+        {(column) => (
+          <Column {...column}>{column.name}</Column>
+        )}
+      </TableHeader>
+      <TableBody items={data.items}>
+        {item => (
+          <Row id={item.id} columns={columns}>
+            {(column) => {
+              if (column.id === 'fruits') {
+                return (
+                  <EditableCell
+                    aria-label={\`Edit \${item[column.id]} in \${column.name}\`}
+                    align={column.align}
+                    showDivider={column.showDivider}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      let formData = new FormData(e.target as HTMLFormElement);
+                      let values = Object.fromEntries(formData.entries());
+                      onChange(item.id, column.id!, values);
+                    }}
+                    renderEditing={() => (
+                      <TextField
+                        aria-label="Fruit name edit field"
+                        autoFocus
+                        validate={value => value.length > 0 ? null : 'Fruit name is required'}
+                        styles={style({flexGrow: 1, flexShrink: 1, minWidth: 0})}
+                        defaultValue={item[column.id!]}
+                        name={column.id! as string} />
+                    )}>
+                    <div className={style({display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between'})}>
+                      <span className={style({minWidth: 0, truncate: true})}>
+                        {item[column.id]}
+                      </span>
+                      <ActionButton slot="edit" aria-label="Edit fruit">
+                        <Edit />
+                      </ActionButton>
+                    </div>
+                  </EditableCell>
+                );
+              }
+              if (column.id === 'farmer') {
+                return (
+                  <EditableCell
+                    align={column.align}
+                    showDivider={column.showDivider}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      let formData = new FormData(e.target as HTMLFormElement);
+                      let values = Object.fromEntries(formData.entries());
+                      onChange(item.id, column.id!, values);
+                    }}
+                    renderEditing={() => (
+                      <Picker
+                        aria-label="Edit farmer"
+                        autoFocus
+                        styles={style({flexGrow: 1, flexShrink: 1, minWidth: 0})}
+                        defaultValue={item[column.id!]}
+                        name={column.id! as string}
+                        items={defaultItems}>
+                        {item => (
+                          <PickerItem textValue={item.farmer} id={item.farmer}>
+                            <User />
+                            <Text>{item.farmer}</Text>
+                          </PickerItem>
+                        )}
+                      </Picker>
+                    )}>
+                    <div className={style({display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between'})}>
+                      {item[column.id]}
+                      <ActionButton slot="edit" aria-label="Edit fruit"><Edit /></ActionButton>
+                    </div>
+                  </EditableCell>
+                );
+              }
+              return <Cell align={column.align} showDivider={column.showDivider}>{item[column.id!]}</Cell>;
+            }}
+          </Row>
+        )}
+      </TableBody>
+    </TableView>
+  );
+}`;
+
+const selectionActionsCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell, ActionBar, ActionButton, Text, type Selection} from '@react-spectrum/s2';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import Copy from '@react-spectrum/s2/icons/Copy';
+import Delete from '@react-spectrum/s2/icons/Delete';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function Example(props) {
+  let [selected, setSelected] = useState<Selection>(new Set());
+
+  return (
+    <>
+      <TableView
+        {...props}
+        aria-label="Favorite pokemon"
+        styles={style({width: 'full', height: 200})}
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+        onAction={key => alert(\`Clicked \${key}\`)}
+        renderActionBar={(selectedKeys) => {
+          let selection = selectedKeys === 'all' ? 'all' : [...selectedKeys].join(', ');
+          return (
+            <ActionBar>
+              <ActionButton onPress={() => alert(\`Edit \${selection}\`)}>
+                <Edit />
+                <Text>Edit</Text>
+              </ActionButton>
+              <ActionButton onPress={() => alert(\`Copy \${selection}\`)}>
+                <Copy />
+                <Text>Copy</Text>
+              </ActionButton>
+              <ActionButton onPress={() => alert(\`Delete \${selection}\`)}>
+                <Delete />
+                <Text>Delete</Text>
+              </ActionButton>
+            </ActionBar>
+          );
+        }}>
+        <TableHeader>
+          <Column isRowHeader>Name</Column>
+          <Column>Type</Column>
+          <Column>Level</Column>
+        </TableHeader>
+        <TableBody>
+          <Row id="charizard">
+            <Cell>Charizard</Cell>
+            <Cell>Fire, Flying</Cell>
+            <Cell>67</Cell>
+          </Row>
+          <Row id="blastoise">
+            <Cell>Blastoise</Cell>
+            <Cell>Water</Cell>
+            <Cell>56</Cell>
+          </Row>
+          <Row id="venusaur" isDisabled>
+            <Cell>Venusaur</Cell>
+            <Cell>Grass, Poison</Cell>
+            <Cell>83</Cell>
+          </Row>
+          <Row id="pikachu">
+            <Cell>Pikachu</Cell>
+            <Cell>Electric</Cell>
+            <Cell>100</Cell>
+          </Row>
+        </TableBody>
+      </TableView>
+      <p>Current selection: {selected === 'all' ? 'all' : [...selected].join(', ')}</p>
+    </>
+  );
+}`;
+
+const sortingCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell, type SortDescriptor} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+const rows = [
+  {id: 1, name: 'Charizard', type: 'Fire, Flying', level: 67},
+  {id: 2, name: 'Blastoise', type: 'Water', level: 56},
+  {id: 3, name: 'Venusaur', type: 'Grass, Poison', level: 83},
+  {id: 4, name: 'Pikachu', type: 'Electric', level: 100}
+];
+
+function SortableTable() {
+  let [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(null);
+  let sortedRows = rows;
+  if (sortDescriptor) {
+    sortedRows = rows.toSorted((a, b) => {
+      let first = a[sortDescriptor.column];
+      let second = b[sortDescriptor.column];
+      let cmp = first < second ? -1 : 1;
+      if (sortDescriptor.direction === 'descending') {
+        cmp = -cmp;
+      }
+      return cmp;
+    });
+  }
+
+  return (
+    <TableView
+      aria-label="Favorite pokemon"
+      styles={style({width: 400, maxWidth: 'full'})}
+      sortDescriptor={sortDescriptor ?? undefined}
+      onSortChange={setSortDescriptor}
+    >
+      <TableHeader>
+        <Column id="name" isRowHeader allowsSorting>Name</Column>
+        <Column id="type" allowsSorting>Type</Column>
+        <Column id="level" allowsSorting>Level</Column>
+      </TableHeader>
+      <TableBody items={sortedRows}>
+        {item => (
+          <Row>
+            <Cell>{item.name}</Cell>
+            <Cell>{item.type}</Cell>
+            <Cell>{item.level}</Cell>
+          </Row>
+        )}
+      </TableBody>
+    </TableView>
+  );
+}`;
+
+const columnResizingCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+const rows = [
+  {id: 1, name: '2022 Roadmap Proposal Revision 012822 Copy (2)', date: 'November 27, 2022 at 4:56PM', size: '214 KB'},
+  {id: 2, name: 'Budget', date: 'January 27, 2021 at 1:56AM', size: '14 MB'},
+  {id: 3, name: 'Welcome Email Template', date: 'July 24, 2022 at 2:48 PM', size: '20 KB'},
+  {id: 4, name: 'Job Posting_8301', date: 'May 30, 2025', size: '139 KB'}
+];
+
+<TableView aria-label="Table with resizable columns" styles={style({width: 400, maxWidth: 'full'})}>
+  <TableHeader>
+    <Column id="file" isRowHeader maxWidth={500} allowsResizing>
+      File Name
+    </Column>
+    <Column id="size" width={80}>Size</Column>
+    <Column id="date" minWidth={100} allowsResizing>
+      Date Modified
+    </Column>
+  </TableHeader>
+  <TableBody items={rows}>
+    {item => (
+      <Row>
+        <Cell>{item.name}</Cell>
+        <Cell>{item.size}</Cell>
+        <Cell>{item.date}</Cell>
+      </Row>
+    )}
+  </TableBody>
+</TableView>`;
+
+const resizeEventsCode = `"use client";
+import {TableView, TableHeader, Column, TableBody, Row, Cell} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useSyncExternalStore} from 'react';
+
+const rows = [
+  {id: 1, name: '2022 Roadmap Proposal Revision 012822 Copy (2)', date: 'November 27, 2022 at 4:56PM', size: '214 KB'},
+  {id: 2, name: 'Budget', date: 'January 27, 2021 at 1:56AM', size: '14 MB'},
+  {id: 3, name: 'Welcome Email Template', date: 'July 24, 2022 at 2:48 PM', size: '20 KB'},
+  {id: 4, name: 'Job Posting_8301', date: 'May 30, 2025', size: '139 KB'}
+];
+
+const columns = [
+  {id: 'file', name: 'File Name'},
+  {id: 'size', name: 'Size'},
+  {id: 'date', name: 'Date'}
+];
+
+const initialWidths = new Map<string, string | number>([
+  ['file', '1fr'],
+  ['size', 80],
+  ['date', 100]
+]);
+
+export default function ResizableTable() {
+  let columnWidths = useSyncExternalStore(subscribe, getColumnWidths, getInitialWidths);
+
+  return (
+    <TableView
+      aria-label="Table with resizable columns"
+      onResize={setColumnWidths}
+      styles={style({width: 400, maxWidth: 'full'})}>
+      <TableHeader columns={columns} dependencies={[columnWidths]}>
+        {column => (
+          <Column
+            isRowHeader={column.id === 'file'}
+            allowsResizing
+            width={columnWidths.get(column.id)}
+          >
+            {column.name}
+          </Column>
+        )}
+      </TableHeader>
+      <TableBody items={rows}>
+        {item => (
+          <Row>
+            <Cell>{item.name}</Cell>
+            <Cell>{item.size}</Cell>
+            <Cell>{item.date}</Cell>
+          </Row>
+        )}
+      </TableBody>
+    </TableView>
+  );
+}
+
+let parsedWidths;
+function getColumnWidths() {
+  // Parse column widths from localStorage.
+  if (!parsedWidths) {
+    let data = localStorage.getItem('table-widths');
+    if (data) {
+      parsedWidths = new Map(JSON.parse(data));
+    }
+  }
+  return parsedWidths || initialWidths;
+}
+
+function setColumnWidths(widths) {
+  // Store new widths in localStorage, and trigger subscriptions.
+  localStorage.setItem('table-widths', JSON.stringify(Array.from(widths)));
+  window.dispatchEvent(new Event('storage'));
+}
+
+function getInitialWidths() {
+  return initialWidths;
+}
+
+function subscribe(fn) {
+  let onStorage = () => {
+    // Invalidate cache.
+    parsedWidths = null;
+    fn();
+  };
+
+  window.addEventListener('storage', onStorage);
+  return () => window.removeEventListener('storage', onStorage);
+}`;
+
+const anatomyCode = `<TableView>
+  <TableHeader>
+    <Column />
+  </TableHeader>
+  <TableBody>
+    <Row>
+      <Cell />
+      <EditableCell />
+    </Row>
+  </TableBody>
+</TableView>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="tableview" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Tables are containers for displaying information. They allow users to quickly scan, sort,
+    compare, and take action on large amounts of data.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>TableView</code> follows the Collection Components API, accepting both static and dynamic
+    collections. In this example, both the columns and the rows are provided to the table via a
+    render function, enabling the user to hide and show columns and add additional rows.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+  <p class={pClass}>
+    <strong>Memoization:</strong> Dynamic collections are automatically memoized to improve
+    performance. Use the <code>dependencies</code> prop to invalidate cached elements that depend on
+    external state (e.g. <code>columns</code> in this example).
+  </p>
+
+  <h3 id="asynchronous-loading" class={h3Class}>Asynchronous loading</h3>
+  <p class={pClass}>
+    Use the <code>loadingState</code> and <code>onLoadMore</code> props to enable async loading and
+    infinite scrolling.
+  </p>
+  <Code code={asyncCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a Row to create a link. See the getting started guide to learn
+    how to integrate with your framework. Link interactions vary depending on the selection behavior.
+    See the selection guide for more details.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="empty-state" class={h3Class}>Empty state</h3>
+  <p class={pClass}>
+    Use <code>renderEmptyState</code> to render placeholder content when the table is empty.
+  </p>
+  <Code code={emptyStateCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="cell-options" class={h3Class}>Cell options</h3>
+  <p class={pClass}>
+    Use the <code>align</code> prop on a Column and Cell to set the text alignment.
+    <code>showDivider</code> adds a divider between a cell and the next cell. <code>colSpan</code>
+    makes a cell span multiple columns.
+  </p>
+  <Code code={cellOptionsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="column-menus" class={h3Class}>Column menus</h3>
+  <p class={pClass}>
+    Use the <code>menuItems</code> prop to add custom menu items to a Column. See the Menu docs for
+    more details.
+  </p>
+  <Code code={columnMenusCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="editable-cells" class={h3Class}>Editable cells</h3>
+  <p class={pClass}>
+    Render an <code>{"<EditableCell>"}</code> instead of a <code>{"<Cell>"}</code> to allow users to
+    edit the value. Editing is triggered by an <code>{'<ActionButton slot="edit">'}</code> and occurs
+    in a popover that can contain one or more inputs.
+  </p>
+  <Code code={editableCellsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection-and-actions" class={h2Class}>Selection and actions</h2>
+  <p class={pClass}>
+    Use <code>selectionMode</code> to enable single or multiple selection, and <code>selectedKeys</code>
+    (matching each row's <code>id</code>) to control the selected rows. Return an ActionBar from
+    <code>renderActionBar</code> to handle bulk actions, and use <code>onAction</code> for row
+    navigation. Disable rows with <code>isDisabled</code>. See the selection guide for details.
+  </p>
+  <Code code={selectionActionsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="sorting" class={h2Class}>Sorting</h2>
+  <p class={pClass}>
+    Set the <code>allowsSorting</code> prop on a Column to make it sortable. When the column header is
+    pressed, <code>onSortChange</code> is called with a SortDescriptor including the sorted column and
+    direction (ascending or descending). Use this to sort the data accordingly, and pass the
+    <code>sortDescriptor</code> prop to the TableView to display the sorted column.
+  </p>
+  <Code code={sortingCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="column-resizing" class={h2Class}>Column resizing</h2>
+  <p class={pClass}>
+    Set the <code>allowsResizing</code> prop on a Column to make it resizable. Use the
+    <code>defaultWidth</code>, <code>width</code>, <code>minWidth</code>, and <code>maxWidth</code>
+    props on a Column to control resizing behavior. These accept pixels, percentages, or fractional
+    values (the fr unit). The default column width is <code>1fr</code>.
+  </p>
+  <Code code={columnResizingCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="resize-events" class={h3Class}>Resize events</h3>
+  <p class={pClass}>
+    The TableView's <code>onResize</code> event is called when a column resizer is moved by the user.
+    The <code>onResizeEnd</code> event is called when the user finishes resizing. These receive a
+    <code>Map</code> containing the widths of all columns in the TableView. This example persists the
+    column widths in <code>localStorage</code>.
+  </p>
+  <Code code={resizeEventsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-tableview" class={h3Class}>TableView</h3>
+  <PropTable source="TableView" />
+
+  <h3 id="api-tableheader" class={h3Class}>TableHeader</h3>
+  <PropTable source="TableHeader" />
+
+  <h3 id="api-column" class={h3Class}>Column</h3>
+  <PropTable source="Column" />
+
+  <h3 id="api-tablebody" class={h3Class}>TableBody</h3>
+  <PropTable source="TableBody" />
+
+  <h3 id="api-row" class={h3Class}>Row</h3>
+  <PropTable source="Row" />
+
+  <h3 id="api-cell" class={h3Class}>Cell</h3>
+  <PropTable source="Cell" />
+
+  <h3 id="api-editablecell" class={h3Class}>EditableCell</h3>
+  <PropTable source="EditableCell" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
