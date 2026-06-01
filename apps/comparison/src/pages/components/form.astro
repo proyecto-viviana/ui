@@ -1,0 +1,206 @@
+---
+// Ported by hand from vendor/s2-docs/pages/Form.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight markers stripped. The Submitting-data ExampleSwitcher (React 19 / React 18)
+// renders as two sequential code blocks; their `Hello, ${name}` template literals are
+// backslash-escaped inside the outer page literal. Gated by `report:parity --slug=form`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "form";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Form";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#submitting-data", label: "Submitting data", depth: 2 },
+  { href: "#validation", label: "Validation", depth: 2 },
+  { href: "#server-validation", label: "Server validation", depth: 3 },
+  { href: "#focus-management", label: "Focus management", depth: 3 },
+  { href: "#api", label: "API", depth: 2 },
+];
+
+const submit19Code = `"use client";
+import {Form, TextField, Button} from '@react-spectrum/s2';
+
+<Form
+  action={formData => {
+    let name = formData.get('name');
+    alert(\`Hello, \${name}!\`);
+  }}>
+  <TextField name="name" label="Name" placeholder="Enter your full name" />
+  <Button type="submit">Submit</Button>
+</Form>`;
+
+const submit18Code = `"use client";
+import {Form, TextField, Button} from '@react-spectrum/s2';
+
+<Form
+  onSubmit={event => {
+    // Prevent default browser page refresh.
+    event.preventDefault();
+
+    // Get data from form.
+    let target = event.target as HTMLFormElement;
+    let formData = new FormData(target);
+    let name = formData.get('name');
+    alert(\`Hello, \${name}!\`);
+
+    // Reset form after submission.
+    target.reset();
+  }}>
+  <TextField name="name" label="Name" placeholder="Enter your full name" />
+  <Button type="submit">Submit</Button>
+</Form>`;
+
+const validationCode = `"use client";
+import {Form, TextField, Button} from '@react-spectrum/s2';
+
+<Form>
+  <TextField
+    label="Username"
+    placeholder="Choose a username"
+    isRequired
+    validate={value => value === 'admin' ? 'Nice try.' : null}
+    name="username"
+    defaultValue="admin" />
+  <Button type="submit">Submit</Button>
+</Form>`;
+
+const serverValidationCode = `"use client";
+import {Form, TextField} from '@react-spectrum/s2';
+
+<Form
+  validationErrors={{
+    username: 'This username is not available.'
+  }}>
+  <TextField
+    name="username"
+    label="Username"
+    placeholder="Choose a username"
+    defaultValue="admin" />
+</Form>`;
+
+const focusManagementCode = `"use client";
+import {Form, TextField, Button, InlineAlert, Heading, Content} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'}
+import {useState} from 'react';
+
+function Example() {
+  let [isInvalid, setInvalid] = useState(false);
+
+  return (
+    <Form
+      styles={style({width: 300, maxWidth: 'full'})}
+      onInvalid={e => {
+        e.preventDefault();
+        setInvalid(true);
+      }}
+      onSubmit={e => {
+        e.preventDefault();
+        setInvalid(false);
+      }}
+      onReset={() => setInvalid(false)}>
+      {isInvalid &&
+        <InlineAlert variant="negative" autoFocus>
+          <Heading>Unable to submit</Heading>
+          <Content>Please fix the validation errors below, and re-submit the form.</Content>
+        </InlineAlert>
+      }
+      <TextField
+        name="firstName"
+        isRequired
+        label="First name"
+        placeholder="Enter your first name" />
+      <TextField
+        name="lastName"
+        isRequired
+        label="Last name"
+        placeholder="Enter your last name" />
+      <div className={style({display: 'flex', gap: 8})}>
+        <Button type="submit" variant="accent">Submit</Button>
+        <Button type="reset" variant="secondary">Reset</Button>
+      </div>
+    </Form>
+  );
+}`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="form" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    Forms allow users to enter data that can be submitted while providing alignment and styling for
+    form fields.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="submitting-data" class={h2Class}>Submitting data</h2>
+  <p class={pClass}>
+    When using React 19, use the <code>action</code> prop to handle form submission. This receives a
+    <code>FormData</code> object containing the values for each form field. In React 18 or earlier,
+    use the <code>onSubmit</code> event instead. See the Forms guide details about integrating with
+    frameworks.
+  </p>
+  <Code code={submit19Code} lang="tsx" theme="github-dark" />
+  <Code code={submit18Code} lang="tsx" theme="github-dark" />
+
+  <h2 id="validation" class={h2Class}>Validation</h2>
+  <p class={pClass}>
+    Use validation props on each form field to prevent submission of invalid values. When
+    <code>validationBehavior="aria"</code>, form submission will not be prevented and validation will
+    occur as the value is edited instead of on form submission. See the Forms guide for more details.
+  </p>
+  <Code code={validationCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="server-validation" class={h3Class}>Server validation</h3>
+  <p class={pClass}>
+    Use the <code>validationErrors</code> prop to provide server validation errors to the fields
+    within a <code>{"<Form>"}</code>.
+  </p>
+  <Code code={serverValidationCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="focus-management" class={h3Class}>Focus management</h3>
+  <p class={pClass}>
+    By default, after a user submits a form with validation errors, the first invalid field will be
+    focused. To prevent this, call <code>preventDefault()</code> in the <code>onInvalid</code> event.
+    This example moves focus to an alert at the top of the form.
+  </p>
+  <Code code={focusManagementCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
