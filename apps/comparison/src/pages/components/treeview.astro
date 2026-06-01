@@ -1,0 +1,397 @@
+---
+// Ported by hand from vendor/s2-docs/pages/TreeView.mdx (upstream: react-spectrum,
+// Apache-2.0). Prose is upstream-verbatim; code blocks are copied with the docs-tooling
+// highlight/collapse markers stripped. The async example's regex backslashes and pokeapi
+// backtick string, and the selection example's `Clicked ${key}` literal, are escaped inside
+// the page literals. The hero example is shown by the live mount. Gated by `report:parity --slug=treeview`.
+import { Code } from "astro:components";
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyH3,
+  docsTypographyP,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "treeview";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const h3Class = staticClassName(docsTypographyH3);
+const pClass = staticClassName(docsTypographyP);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "TreeView";
+const widthPerEm = getTextWidth(title);
+const toc = [
+  { href: "#content", label: "Content", depth: 2 },
+  { href: "#slots", label: "Slots", depth: 3 },
+  { href: "#asynchronous-loading", label: "Asynchronous loading", depth: 3 },
+  { href: "#links", label: "Links", depth: 3 },
+  { href: "#empty-state", label: "Empty state", depth: 3 },
+  { href: "#selection-and-actions", label: "Selection and actions", depth: 2 },
+  { href: "#api", label: "API", depth: 2 },
+  { href: "#api-treeview", label: "TreeView", depth: 3 },
+  { href: "#api-treeviewitem", label: "TreeViewItem", depth: 3 },
+  { href: "#api-treeviewitemcontent", label: "TreeViewItemContent", depth: 3 },
+  { href: "#api-treeviewloadmoreitem", label: "TreeViewLoadMoreItem", depth: 3 },
+];
+
+const contentCode = `"use client";
+import {TreeView, TreeViewItem, TreeViewItemContent, Collection} from '@react-spectrum/s2';
+
+let items = [
+  {id: 1, title: 'Documents', type: 'directory', children: [
+    {id: 2, title: 'Project', type: 'directory', children: [
+      {id: 3, title: 'Weekly Report', type: 'file', children: []},
+      {id: 4, title: 'Budget', type: 'file', children: []}
+    ]}
+  ]},
+  {id: 5, title: 'Photos', type: 'directory', children: [
+    {id: 6, title: 'Image 1', type: 'file', children: []},
+    {id: 7, title: 'Image 2', type: 'file', children: []}
+  ]}
+];
+
+<TreeView
+  aria-label="Files"
+  defaultExpandedKeys={[1, 4]}
+  items={items}
+  selectionMode="multiple">
+  {function renderItem(item) {
+    return (
+      <TreeViewItem textValue={item.title}>
+        <TreeViewItemContent>{item.title}</TreeViewItemContent>
+        {/* recursively render children */}
+        <Collection items={item.children}>
+          {renderItem}
+        </Collection>
+      </TreeViewItem>
+    );
+  }}
+</TreeView>`;
+
+const slotsCode = `"use client";
+import {TreeView, TreeViewItem, TreeViewItemContent, Collection, ActionMenu, MenuItem, Text} from '@react-spectrum/s2';
+import Folder from '@react-spectrum/s2/icons/Folder';
+import File from '@react-spectrum/s2/icons/File';
+import Edit from '@react-spectrum/s2/icons/Edit';
+import Delete from '@react-spectrum/s2/icons/Delete';
+
+let items = [
+  {id: 1, title: 'Documents', type: 'directory', children: [
+    {id: 2, title: 'Project', type: 'directory', children: [
+      {id: 3, title: 'Weekly Report', type: 'file', children: []},
+      {id: 4, title: 'Budget', type: 'file', children: []}
+    ]}
+  ]},
+  {id: 5, title: 'Photos', type: 'directory', children: [
+    {id: 6, title: 'Image 1', type: 'file', children: []},
+    {id: 7, title: 'Image 2', type: 'file', children: []}
+  ]}
+];
+
+<TreeView
+  aria-label="Files"
+  defaultExpandedKeys={[1, 4]}
+  items={items}
+  selectionMode="multiple">
+  {function renderItem(item) {
+    return (
+      <TreeViewItem textValue={item.title}>
+        <TreeViewItemContent>
+          {item.type === 'directory' ? <Folder /> : <File />}
+          <Text>{item.title}</Text>
+          <ActionMenu>
+            <MenuItem>
+              <Edit />
+              <Text>Edit</Text>
+            </MenuItem>
+            <MenuItem>
+              <Delete />
+              <Text>Delete</Text>
+            </MenuItem>
+          </ActionMenu>
+        </TreeViewItemContent>
+        <Collection items={item.children}>
+          {renderItem}
+        </Collection>
+      </TreeViewItem>
+    );
+  }}
+</TreeView>`;
+
+const asyncCode = `"use client";
+import {TreeView, TreeViewItem, TreeViewItemContent, TreeViewLoadMoreItem, Collection, useAsyncList} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+
+interface Character {
+  name: string
+}
+
+function AsyncLoadingExample() {
+  let starWarsList = useAsyncList<Character>({
+    async load({signal, cursor}) {
+      if (cursor) {
+        cursor = cursor.replace(/^http:\\/\\//i, 'https://');
+      }
+
+      let res = await fetch(cursor || 'https://swapi.py4e.com/api/people/?search=', {signal});
+      let json = await res.json();
+
+      return {
+        items: json.results,
+        cursor: json.next
+      };
+    }
+  });
+
+  let pokemonList = useAsyncList<Character>({
+    async load({signal, cursor, filterText}) {
+      let res = await fetch(
+        cursor || \`https://pokeapi.co/api/v2/pokemon\`,
+        {signal}
+      );
+      let json = await res.json();
+
+      return {
+        items: json.results,
+        cursor: json.next
+      };
+    }
+  });
+
+  return (
+    <TreeView
+      aria-label="Async loading tree"
+      styles={style({height: 300})}>
+      <TreeViewItem textValue="Pokemon">
+        <TreeViewItemContent>Pokemon</TreeViewItemContent>
+        <Collection items={pokemonList.items}>
+          {(item) => (
+            <TreeViewItem id={item.name} textValue={item.name}>
+              <TreeViewItemContent>{item.name}</TreeViewItemContent>
+            </TreeViewItem>
+          )}
+        </Collection>
+        <TreeViewLoadMoreItem
+          onLoadMore={pokemonList.loadMore}
+          loadingState={pokemonList.loadingState} />
+      </TreeViewItem>
+      <TreeViewItem textValue="Star Wars">
+        <TreeViewItemContent>Star Wars</TreeViewItemContent>
+        <Collection items={starWarsList.items}>
+          {(item) => (
+            <TreeViewItem id={item.name} textValue={item.name}>
+              <TreeViewItemContent>{item.name}</TreeViewItemContent>
+            </TreeViewItem>
+          )}
+        </Collection>
+        <TreeViewLoadMoreItem
+          onLoadMore={starWarsList.loadMore}
+          loadingState={starWarsList.loadingState} />
+      </TreeViewItem>
+    </TreeView>
+  );
+}`;
+
+const linksCode = `"use client";
+import {TreeView, TreeViewItem, TreeViewItemContent} from '@react-spectrum/s2';
+
+<TreeView
+  aria-label="TreeView with links"
+  selectionMode="multiple"
+  defaultExpandedKeys={['bulbasaur', 'ivysaur']}>
+  <TreeViewItem
+    href="https://pokemondb.net/pokedex/bulbasaur"
+    target="_blank"
+    id="bulbasaur"
+    textValue="Bulbasaur">
+    <TreeViewItemContent>Bulbasaur</TreeViewItemContent>
+    <TreeViewItem
+      id="ivysaur"
+      href="https://pokemondb.net/pokedex/ivysaur"
+      target="_blank"
+      textValue="Ivysaur">
+      <TreeViewItemContent>Ivysaur</TreeViewItemContent>
+      <TreeViewItem
+        id="venusaur"
+        textValue="Venusaur"
+        href="https://pokemondb.net/pokedex/venusaur"
+        target="_blank">
+        <TreeViewItemContent>Venusaur</TreeViewItemContent>
+      </TreeViewItem>
+    </TreeViewItem>
+  </TreeViewItem>
+</TreeView>`;
+
+const emptyStateCode = `"use client";
+import {TreeView, IllustratedMessage, Heading, Content, Link} from '@react-spectrum/s2';
+import FolderOpen from '@react-spectrum/s2/illustrations/linear/FolderOpen';
+
+<TreeView
+  aria-label="Search results"
+  renderEmptyState={() => (
+    <IllustratedMessage>
+      <FolderOpen />
+      <Heading>No results</Heading>
+      <Content>Press <Link href="https://adobe.com">here</Link> for more info.</Content>
+    </IllustratedMessage>
+  )}>
+  {[]}
+</TreeView>`;
+
+const selectionActionsCode = `"use client";
+import {TreeView, TreeViewItem, TreeViewItemContent, type Selection} from '@react-spectrum/s2';
+import {style} from '@react-spectrum/s2/style' with {type: 'macro'};
+import {useState} from 'react';
+
+function Example(props) {
+  let [selected, setSelected] = useState<Selection>(new Set());
+
+  return (
+    <div className={style({width: 'full'})}>
+      <TreeView
+        {...props}
+        aria-label="Pokemon evolution"
+        styles={style({height: 250, width: 'full', maxWidth: 300})}
+        selectedKeys={selected}
+        onSelectionChange={setSelected}
+        onAction={key => alert(\`Clicked \${key}\`)}
+      >
+        <TreeViewItem id="bulbasaur" textValue="Bulbasaur">
+          <TreeViewItemContent>Bulbasaur</TreeViewItemContent>
+          <TreeViewItem id="ivysaur" textValue="Ivysaur">
+            <TreeViewItemContent>Ivysaur</TreeViewItemContent>
+            <TreeViewItem id="venusaur" isDisabled textValue="Venusaur">
+              <TreeViewItemContent>Venusaur</TreeViewItemContent>
+            </TreeViewItem>
+          </TreeViewItem>
+        </TreeViewItem>
+        <TreeViewItem id="charmander" textValue="Charmander">
+          <TreeViewItemContent>Charmander</TreeViewItemContent>
+          <TreeViewItem id="charmeleon" textValue="Charmeleon">
+            <TreeViewItemContent>Charmeleon</TreeViewItemContent>
+            <TreeViewItem id="charizard" textValue="Charizard">
+              <TreeViewItemContent>Charizard</TreeViewItemContent>
+            </TreeViewItem>
+          </TreeViewItem>
+        </TreeViewItem>
+        <TreeViewItem id="squirtle" textValue="Squirtle">
+          <TreeViewItemContent>Squirtle</TreeViewItemContent>
+          <TreeViewItem id="wartortle" textValue="Wartortle">
+            <TreeViewItemContent>Wartortle</TreeViewItemContent>
+            <TreeViewItem id="blastoise" textValue="Blastoise">
+              <TreeViewItemContent>Blastoise</TreeViewItemContent>
+            </TreeViewItem>
+          </TreeViewItem>
+        </TreeViewItem>
+      </TreeView>
+      <p>Current selection: {selected === 'all' ? 'all' : [...selected].join(', ')}</p>
+    </div>
+  );
+}`;
+
+const anatomyCode = `<TreeView>
+  <TreeViewItem>
+    <TreeViewItemContent>
+      <Icon />
+      <Text />
+      <ActionMenu /> or <ActionButtonGroup />
+    </TreeViewItemContent>
+    <TreeViewItem>
+      {/* ... */}
+    </TreeViewItem>
+    <TreeViewLoadMoreItem />
+  </TreeViewItem>
+</TreeView>`;
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="treeview" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>A tree view provides users with a way to navigate nested hierarchical information.</p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="content" class={h2Class}>Content</h2>
+  <p class={pClass}>
+    <code>TreeView</code> follows the Collection Components API, accepting both static and dynamic
+    collections. This example shows a dynamic collection, passing a list of objects to the
+    <code>items</code> prop, and a recursive function to render the children.
+  </p>
+  <Code code={contentCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="slots" class={h3Class}>Slots</h3>
+  <p class={pClass}>
+    <code>TreeViewItemContent</code> supports icons, <code>Text</code>, ActionMenu, and
+    ActionButtonGroup as children.
+  </p>
+  <Code code={slotsCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="asynchronous-loading" class={h3Class}>Asynchronous loading</h3>
+  <p class={pClass}>
+    Use renderEmptyState to display a spinner during initial load. To enable infinite scrolling,
+    render a <code>{"<TreeViewLoadMoreItem>"}</code> at the end of each
+    <code>{"<TreeViewItem>"}</code>.
+  </p>
+  <Code code={asyncCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="links" class={h3Class}>Links</h3>
+  <p class={pClass}>
+    Use the <code>href</code> prop on a <code>{"<TreeItem>"}</code> to create a link. See the getting
+    started guide to learn how to integrate with your framework.
+  </p>
+  <Code code={linksCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="empty-state" class={h3Class}>Empty state</h3>
+  <p class={pClass}>
+    Use <code>renderEmptyState</code> to render placeholder content when the tree is empty.
+  </p>
+  <Code code={emptyStateCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="selection-and-actions" class={h2Class}>Selection and actions</h2>
+  <p class={pClass}>
+    Use the <code>selectionMode</code> prop to enable single or multiple selection. The selected
+    items can be controlled via the <code>selectedKeys</code> prop, matching the <code>id</code> prop
+    of the items. The <code>onAction</code> event handles item actions. Items can be disabled with
+    the <code>isDisabled</code> prop. See the selection guide for more details.
+  </p>
+  <Code code={selectionActionsCode} lang="tsx" theme="github-dark" />
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <Code code={anatomyCode} lang="tsx" theme="github-dark" />
+
+  <h3 id="api-treeview" class={h3Class}>TreeView</h3>
+  <PropTable source="TreeView" />
+
+  <h3 id="api-treeviewitem" class={h3Class}>TreeViewItem</h3>
+  <PropTable source="TreeViewItem" />
+
+  <h3 id="api-treeviewitemcontent" class={h3Class}>TreeViewItemContent</h3>
+  <PropTable source="TreeViewItemContent" />
+
+  <h3 id="api-treeviewloadmoreitem" class={h3Class}>TreeViewLoadMoreItem</h3>
+  <PropTable source="TreeViewLoadMoreItem" />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>
