@@ -14,6 +14,7 @@ import {
   createSignal,
   createUniqueId,
   splitProps,
+  untrack,
   Show,
 } from "solid-js";
 import {
@@ -211,10 +212,14 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     const { ref: _ref4, ...rest } = focusProps as Record<string, unknown>;
     return rest;
   };
-  const switchChildren = () => {
+  // Resolve the render-prop children ONCE (untracked) — see TextField. Re-invoking
+  // it on a reactive update re-clones its templates and, mid-hydration, throws a
+  // Hydration Mismatch. The children keep fine-grained reactivity via the
+  // childRenderValues getters + <Show>s.
+  const switchChildren = untrack(() => {
     const children = props.children;
     return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  });
 
   return (
     <label
@@ -239,7 +244,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
           aria-describedby={describedBy()}
         />
       </VisuallyHidden>
-      {switchChildren()}
+      {switchChildren}
       <Show when={local.description}>
         <span id={descriptionId} slot="description">
           {local.description}
