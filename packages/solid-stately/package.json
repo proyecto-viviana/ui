@@ -37,7 +37,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsdown && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
     "dev": "tsup --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },

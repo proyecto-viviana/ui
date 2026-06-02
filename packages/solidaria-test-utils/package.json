@@ -20,7 +20,7 @@
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "rm -rf dist && tsdown",
     "dev": "tsup --watch"
   },
   "peerDependencies": {
