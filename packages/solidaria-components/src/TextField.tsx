@@ -78,7 +78,6 @@ export interface TextFieldContextValue {
   isInvalid?: boolean;
   slots?: Record<string, TextFieldProps>;
   inputId?: string;
-  setInputId?: (id: string | undefined) => void;
 }
 
 export const TextFieldContext = createContext<TextFieldContextValue | null>(null);
@@ -220,10 +219,6 @@ export function Input(props: InputProps): JSX.Element {
     }
     return props.class == null ? { ...props, class: "solidaria-Input" } : props;
   };
-
-  createEffect(() => {
-    context?.setInputId?.((mergedProps() as { id?: string }).id);
-  });
 
   onMount(() => {
     const element = inputElement;
@@ -388,7 +383,6 @@ export function TextArea(props: TextAreaProps): JSX.Element {
  * ```
  */
 export function TextField(props: TextFieldProps): JSX.Element {
-  const [inputId, setInputId] = createSignal<string | undefined>();
   const formContext = useContext(FormContext);
   const contextProps = useContext(TextFieldContext);
   const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
@@ -551,10 +545,13 @@ export function TextField(props: TextFieldProps): JSX.Element {
     get isInvalid() {
       return textFieldAria.isInvalid;
     },
+    // Deterministic at render (createTextField generates it via createUniqueId),
+    // so the Label's `for` is stable across SSR + hydration. A signal set from an
+    // onMount effect would flip undefined->id post-mount and re-execute the Label
+    // template — crashing hydration if the re-run lands mid-hydration (dev).
     get inputId() {
-      return inputId();
+      return (textFieldAria.inputProps as { id?: string }).id;
     },
-    setInputId,
   };
   const fieldChildren = () => {
     const children = local.children;
