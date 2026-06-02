@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/proyecto-viviana/proyecto-viviana.git",
+    "url": "git+https://github.com/proyecto-viviana/ui.git",
     "directory": "packages/solid-spectrum"
   },
   "files": [
@@ -30,109 +30,109 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "solid": "./src/index.ts",
+      "solid": "./dist/index.jsx",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./ActionMenu": {
       "types": "./dist/ActionMenu.d.ts",
-      "solid": "./src/ActionMenu.ts",
+      "solid": "./dist/ActionMenu.jsx",
       "import": "./dist/ActionMenu.js",
       "default": "./dist/ActionMenu.js"
     },
     "./Breadcrumbs": {
       "types": "./dist/Breadcrumbs.d.ts",
-      "solid": "./src/Breadcrumbs.ts",
+      "solid": "./dist/Breadcrumbs.jsx",
       "import": "./dist/Breadcrumbs.js",
       "default": "./dist/Breadcrumbs.js"
     },
     "./Calendar": {
       "types": "./dist/Calendar.d.ts",
-      "solid": "./src/Calendar.ts",
+      "solid": "./dist/Calendar.jsx",
       "import": "./dist/Calendar.js",
       "default": "./dist/Calendar.js"
     },
     "./ColorArea": {
       "types": "./dist/ColorArea.d.ts",
-      "solid": "./src/ColorArea.ts",
+      "solid": "./dist/ColorArea.jsx",
       "import": "./dist/ColorArea.js",
       "default": "./dist/ColorArea.js"
     },
     "./ColorField": {
       "types": "./dist/ColorField.d.ts",
-      "solid": "./src/ColorField.ts",
+      "solid": "./dist/ColorField.jsx",
       "import": "./dist/ColorField.js",
       "default": "./dist/ColorField.js"
     },
     "./ColorSlider": {
       "types": "./dist/ColorSlider.d.ts",
-      "solid": "./src/ColorSlider.ts",
+      "solid": "./dist/ColorSlider.jsx",
       "import": "./dist/ColorSlider.js",
       "default": "./dist/ColorSlider.js"
     },
     "./ColorSwatch": {
       "types": "./dist/ColorSwatch.d.ts",
-      "solid": "./src/ColorSwatch.ts",
+      "solid": "./dist/ColorSwatch.jsx",
       "import": "./dist/ColorSwatch.js",
       "default": "./dist/ColorSwatch.js"
     },
     "./ColorSwatchPicker": {
       "types": "./dist/ColorSwatchPicker.d.ts",
-      "solid": "./src/ColorSwatchPicker.ts",
+      "solid": "./dist/ColorSwatchPicker.jsx",
       "import": "./dist/ColorSwatchPicker.js",
       "default": "./dist/ColorSwatchPicker.js"
     },
     "./ColorWheel": {
       "types": "./dist/ColorWheel.d.ts",
-      "solid": "./src/ColorWheel.ts",
+      "solid": "./dist/ColorWheel.jsx",
       "import": "./dist/ColorWheel.js",
       "default": "./dist/ColorWheel.js"
     },
     "./Disclosure": {
       "types": "./dist/disclosure-export.d.ts",
-      "solid": "./src/disclosure-export.ts",
+      "solid": "./dist/disclosure-export.jsx",
       "import": "./dist/disclosure-export.js",
       "default": "./dist/disclosure-export.js"
     },
     "./Card": {
       "types": "./dist/Card.d.ts",
-      "solid": "./src/Card.ts",
+      "solid": "./dist/Card.jsx",
       "import": "./dist/Card.js",
       "default": "./dist/Card.js"
     },
     "./CardView": {
       "types": "./dist/CardView.d.ts",
-      "solid": "./src/CardView.ts",
+      "solid": "./dist/CardView.jsx",
       "import": "./dist/CardView.js",
       "default": "./dist/CardView.js"
     },
     "./ListView": {
       "types": "./dist/ListView.d.ts",
-      "solid": "./src/ListView.ts",
+      "solid": "./dist/ListView.jsx",
       "import": "./dist/ListView.js",
       "default": "./dist/ListView.js"
     },
     "./TreeView": {
       "types": "./dist/TreeView.d.ts",
-      "solid": "./src/TreeView.ts",
+      "solid": "./dist/TreeView.jsx",
       "import": "./dist/TreeView.js",
       "default": "./dist/TreeView.js"
     },
     "./RangeCalendar": {
       "types": "./dist/RangeCalendar.d.ts",
-      "solid": "./src/RangeCalendar.ts",
+      "solid": "./dist/RangeCalendar.jsx",
       "import": "./dist/RangeCalendar.js",
       "default": "./dist/RangeCalendar.js"
     },
     "./Tabs": {
       "types": "./dist/Tabs.d.ts",
-      "solid": "./src/Tabs.ts",
+      "solid": "./dist/Tabs.jsx",
       "import": "./dist/Tabs.js",
       "default": "./dist/Tabs.js"
     },
     "./Menu": {
       "types": "./dist/Menu.d.ts",
-      "solid": "./src/Menu.ts",
+      "solid": "./dist/Menu.jsx",
       "import": "./dist/Menu.js",
       "default": "./dist/Menu.js"
     },
@@ -154,13 +154,13 @@
     },
     "./style": {
       "types": "./dist/style/index.d.ts",
-      "solid": "./src/style/index.ts",
+      "solid": "./dist/style/index.jsx",
       "import": "./dist/style/index.js",
       "default": "./dist/style/index.js"
     },
     "./style/runtime": {
       "types": "./dist/style/runtime.d.ts",
-      "solid": "./src/style/runtime.ts",
+      "solid": "./dist/style/runtime.jsx",
       "import": "./dist/style/runtime.js",
       "default": "./dist/style/runtime.js"
     }

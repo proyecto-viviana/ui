@@ -119,13 +119,6 @@ const entry = [
   "src/style/runtime.ts",
 ];
 
-const ssrEntry = Object.fromEntries(
-  entry.map((file) => {
-    let name = file.replace(/^src\//, "").replace(/\.ts$/, "");
-    return [`${name}.ssr`, file];
-  }),
-);
-
 const deps = {
   alwaysBundle: [/^@adobe\/spectrum-tokens(\/.*)?$/],
   neverBundle: [
@@ -169,24 +162,34 @@ export default defineConfig({
       copy: copiedCssFiles,
     },
     {
-      entry: ssrEntry,
+      // JSX preserved (macro-expanded) -> dist/*.jsx — the `solid` export
+      // condition. The consumer's compiler turns this into DOM
+      // or SSR per-environment, so no separate pre-built SSR bundle is needed.
+      // The style() macro still runs here (style() -> class strings), so
+      // consumers don't need the macro plugin; styles.css comes from the DOM
+      // build above.
+      entry,
       format: ["esm"],
       target: "esnext",
-      platform: "node",
+      platform: "browser",
       outDir: "dist",
       clean: false,
       sourcemap: true,
       dts: false,
       fixedExtension: false,
       hash: false,
-      css,
+      inputOptions(options) {
+        options.transform = { ...(options.transform || {}), jsx: "preserve" };
+        return options;
+      },
       outputOptions(options) {
         return {
           ...options,
-          chunkFileNames: "[name].ssr.js",
+          entryFileNames: "[name].jsx",
+          chunkFileNames: "[name].jsx",
         };
       },
-      plugins: [s2Macros(), solid({ solid: { generate: "ssr" } })],
+      plugins: [s2Macros()],
       deps,
     },
   ],
