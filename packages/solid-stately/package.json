@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/proyecto-viviana/proyecto-viviana.git",
+    "url": "git+https://github.com/proyecto-viviana/ui.git",
     "directory": "packages/solid-stately"
   },
   "files": [
@@ -28,7 +28,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "solid": "./src/index.ts",
+      "solid": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
