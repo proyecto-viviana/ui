@@ -5,10 +5,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/proyecto-viviana/proyecto-viviana.git",
+    "url": "git+https://github.com/proyecto-viviana/ui.git",
     "directory": "packages/viviana-ui"
   },
   "files": [
+    "dist",
     "src"
   ],
   "type": "module",
@@ -17,10 +18,10 @@
   ],
   "exports": {
     ".": {
-      "solid": "./src/index.ts",
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "solid": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./style": {
       "solid": "./src/style.ts",
@@ -31,6 +32,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown"
   },
   "dependencies": {
     "@proyecto-viviana/solid-spectrum": "workspace:*"
