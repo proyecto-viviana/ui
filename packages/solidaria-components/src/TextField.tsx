@@ -15,6 +15,7 @@ import {
   onCleanup,
   onMount,
   splitProps,
+  untrack,
 } from "solid-js";
 import {
   createTextField,
@@ -553,10 +554,15 @@ export function TextField(props: TextFieldProps): JSX.Element {
       return (textFieldAria.inputProps as { id?: string }).id;
     },
   };
-  const fieldChildren = () => {
+  // Resolve the render-prop children ONCE (untracked). Re-invoking it on a
+  // reactive update re-clones its templates; if that lands mid-hydration it
+  // throws a Hydration Mismatch (worst in dev, where slow unbundled modules widen
+  // the hydration window). The children carry their own fine-grained reactivity
+  // (render-value getters + <Show>s), so they update without being re-created.
+  const fieldChildren = untrack(() => {
     const children = local.children;
     return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  });
   const rootProps = () =>
     ({
       ...domProps(),
@@ -575,7 +581,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   const customRootProps = () =>
     ({
       ...rootProps(),
-      children: fieldChildren(),
+      children: fieldChildren,
     }) as JSX.HTMLAttributes<HTMLDivElement>;
 
   return (
@@ -584,7 +590,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
         {local.render ? (
           local.render(customRootProps(), renderValues())
         ) : (
-          <div {...rootProps()}>{fieldChildren()}</div>
+          <div {...rootProps()}>{fieldChildren}</div>
         )}
       </TextFieldContext.Provider>
     </FieldErrorContext.Provider>
