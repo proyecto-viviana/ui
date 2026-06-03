@@ -22,7 +22,9 @@ export interface VisuallyHiddenProps extends ParentProps, JSX.HTMLAttributes<HTM
  * VisuallyHidden hides its children visually, while keeping content visible to screen readers.
  */
 export function VisuallyHidden(props: VisuallyHiddenProps): JSX.Element {
-  const [local, others] = splitProps(props, ["elementType", "isFocusable", "style"]);
+  // Split children so the getter is not read once through `{...mergedProps()}`
+  // and again during explicit rendering. Hydration code is sensitive to that.
+  const [local, others] = splitProps(props, ["elementType", "isFocusable", "style", "children"]);
   const { visuallyHiddenProps } = createVisuallyHidden(() => ({
     style: local.style,
     isFocusable: local.isFocusable,
@@ -42,11 +44,11 @@ export function VisuallyHidden(props: VisuallyHiddenProps): JSX.Element {
   // an explicit custom elementType.
   const tag = local.elementType ?? "span";
   if (tag === "span") {
-    return <span {...mergedProps()}>{props.children}</span>;
+    return <span {...mergedProps()}>{local.children}</span>;
   }
   return (
     <Dynamic component={tag} {...mergedProps()}>
-      {props.children}
+      {local.children}
     </Dynamic>
   );
 }
