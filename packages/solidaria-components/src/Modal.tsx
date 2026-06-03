@@ -30,6 +30,7 @@ import {
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  useIsHydrated,
 } from "./utils";
 import {
   DialogTriggerContext,
@@ -101,9 +102,10 @@ export const ModalContext = OverlayTriggerStateContext;
  * It handles click-outside dismissal and provides styling hooks.
  */
 export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
-  if (isServer) {
-    return <>{props.children}</>;
-  }
+  // Do NOT early-return on the server: rendering children bare on the server and a
+  // <Show>/<Portal> overlay on the client desyncs hydration. Run the same structure
+  // on both and gate the Portal on useIsHydrated() (see Popover for the rationale).
+  const isHydrated = useIsHydrated();
 
   // IMPORTANT: Don't destructure or access props.children early!
   // In SolidJS, children are lazily evaluated. Accessing them before
@@ -244,7 +246,7 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
   };
 
   return (
-    <Show when={isOpen() || local.isExiting}>
+    <Show when={isHydrated() && (isOpen() || local.isExiting)}>
       <Portal mount={portalContainer()}>
         <OverlayTriggerStateContext.Provider value={state}>
           <InternalModalContext.Provider value={internalModalContext}>

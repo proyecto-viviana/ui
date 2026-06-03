@@ -17,7 +17,7 @@ import {
   Show,
   useContext,
 } from "solid-js";
-import { Portal, isServer } from "solid-js/web";
+import { Portal } from "solid-js/web";
 import {
   type ToastState,
   type QueuedToast,
@@ -37,6 +37,7 @@ import {
   type StyleOrFunction,
   useRenderProps,
   filterDOMProps,
+  useIsHydrated,
 } from "./utils";
 
 export interface ToastContent {
@@ -208,9 +209,10 @@ export function ToastProvider(props: ToastProviderProps): JSX.Element {
  * ```
  */
 export function ToastRegion(props: ToastRegionProps): JSX.Element {
-  if (isServer) {
-    return null as unknown as JSX.Element;
-  }
+  // Do NOT early-return on the server: returning null on the server and a <Show>
+  // on the client desyncs hydration when the region is in the SSR tree. Render the
+  // same structure on both and gate the Portal on useIsHydrated() (see Popover).
+  const isHydrated = useIsHydrated();
 
   const [local, rest] = splitProps(props, [
     "children",
@@ -338,7 +340,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
   };
 
   return (
-    <Show when={hasToasts()}>
+    <Show when={isHydrated() && hasToasts()}>
       <Show when={local.portal !== false} fallback={regionContent()}>
         <Portal mount={portalContainer()}>{regionContent()}</Portal>
       </Show>
