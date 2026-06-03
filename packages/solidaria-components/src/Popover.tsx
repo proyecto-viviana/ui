@@ -17,7 +17,7 @@ import {
   useContext,
   Show,
 } from "solid-js";
-import { Portal, isServer } from "solid-js/web";
+import { Portal } from "solid-js/web";
 import {
   createOverlayTrigger,
   createPopover,
@@ -36,6 +36,7 @@ import {
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  useIsHydrated,
 } from "./utils";
 import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
 
@@ -237,11 +238,13 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
  * A popover is an overlay element positioned relative to a trigger.
  */
 export function Popover(props: PopoverProps): JSX.Element {
-  if (isServer) {
-    // On the server, return null - popovers should not render during SSR
-    return null as unknown as JSX.Element;
-  }
-
+  // Note: do NOT early-return on the server. Returning `null` on the server and a
+  // full <Show>/<Portal> tree on the client desyncs Solid's hydration walk (the
+  // server emits no marker for the <Show>), which surfaces as "Hydration Mismatch /
+  // getNextElement" in the parent (e.g. Picker). Instead, run the same structure on
+  // both and gate the Portal on `useIsHydrated()` so the overlay only mounts on the
+  // client after hydration — the server + first client render both produce an empty
+  // <Show> marker, so hydration aligns.
   const [local, rest] = splitProps(props, [
     "class",
     "style",
@@ -269,6 +272,9 @@ export function Popover(props: PopoverProps): JSX.Element {
 
   let popoverRef!: HTMLDivElement;
   const [groupRef, setGroupRef] = createSignal<HTMLDivElement | null>(null);
+  // False on the server and during hydration; true after onMount. Gates the Portal
+  // so overlay content only ever renders client-side, post-hydration.
+  const isHydrated = useIsHydrated();
 
   const triggerContext = useContext(PopoverTriggerContext);
   const dialogTriggerContext = useContext(DialogTriggerContext);
@@ -566,7 +572,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   );
 
   return (
-    <Show when={isOpen() || local.isExiting}>
+    <Show when={isHydrated() && (isOpen() || local.isExiting)}>
       <Portal mount={portalContainer()}>
         <Show when={!local.isNonModal && !isSubPopover() && isOpen()}>{underlay()}</Show>
         <Show
