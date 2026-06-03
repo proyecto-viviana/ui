@@ -24,10 +24,10 @@
       "default": "./dist/index.js"
     },
     "./style": {
-      "solid": "./src/style.ts",
-      "types": "./src/style.ts",
-      "import": "./src/style.ts",
-      "default": "./src/style.ts"
+      "types": "./dist/style.d.ts",
+      "solid": "./dist/style.js",
+      "import": "./dist/style.js",
+      "default": "./dist/style.js"
     }
   },
   "publishConfig": {
