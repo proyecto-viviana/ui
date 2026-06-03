@@ -4,7 +4,34 @@ _Last updated: 2026-06-02. Repos involved: `proyecto-viviana/ui` (this repo, the
 design system) and `proyecto-viviana/social` (the pokeforos app — see its
 `docs/viviana-ui-consumption.md` for the consumer side)._
 
-## TL;DR
+## ✅ RESOLVED + VERIFIED (2026-06-02) — read this first
+
+The fix is the **consumption/build approach**, exactly as the analysis below
+concludes — **not** a component change. The Switch's `<input>` is wrapped in the
+**`VisuallyHidden` component**, which is the react-aria pattern (react-aria's own
+Switch does `<VisuallyHidden elementType="span"><input/></VisuallyHidden>`, shared
+by Checkbox/RadioGroup/SearchField/Slider/DropZone). That nested-component insert
+drifts Solid's hydration keys **only when the lib is consumed PRE-COMPILED in
+separate dom/ssr passes** (the "compiled-dual" build). Ship the lib **JSX-preserve**
+(`solid`→`dist/*.jsx`) so the **consumer compiles dom+ssr from one source in one
+run → keys align**. **Verified on `/perfil`: with `VisuallyHidden` intact +
+JSX-preserve consumption, the Switch hydrates with 0 errors.** This keeps
+`VisuallyHidden` (faithful to react-aria, consistent across all form components)
+and fixes every such component at once.
+
+**On codex's fix:** codex worked around it by deleting `VisuallyHidden` from the
+Switch and hiding the `<input>` via a CSS `style()` overlay (`position:absolute;
+inset:0; opacity:0`) with the visible track `aria-hidden` + `pointerEvents:none`.
+That is a11y-valid but a **Switch-only divergence from react-aria**. We restored
+`VisuallyHidden`, re-tested under JSX-preserve, confirmed it's clean, and
+**reverted codex's change** as unnecessary. The component is unchanged from the
+committed react-aria-faithful version; the fix lives entirely in the build.
+
+(History note: an earlier edit of this banner briefly framed codex's removal as
+THE fix — that was wrong. The verified root cause + fix are the build approach, as
+the body of this doc already said.)
+
+## TL;DR (matches the verified resolution above)
 
 - The recurring **"Hydration Mismatch — Unable to find DOM nodes for hydration
   key"** crash on Switch / VisuallyHidden (and other nested form components) is
@@ -136,38 +163,42 @@ compiles) is correct and is what the committed state (`d2193352`) already has.
 
 ## Next steps (when resuming)
 
-1. **Revert the uncommitted compiled-dual changes** in this repo (see "Repo
-   state" below) — i.e., go back to the committed JSX-preserve build
-   (`fc9128a0`/`1754f4b5`/`d2193352`): `solid`→`dist/*.jsx`, `default`→`dist/*.js`,
-   no `workerd`/`node`→ssr routing.
-2. **Verify** jsx-preserve is clean in `vp dev` end-to-end (the `src`-alias result
-   strongly implies it, since both are consumer-compilation; re-confirm with the
-   `/switch-test` Switch in a `<div>` wrapper). If for some reason it isn't, the
-   `src`-alias result is the fallback proof that consumer-compilation works.
+1. ~~Revert the compiled-dual experiment back to JSX-preserve.~~ **DONE** — the
+   committed build (`fc9128a0`/`1754f4b5`/`d2193352`) is JSX-preserve
+   (`solid`→`dist/*.jsx`, `default`→`dist/*.js`, no `workerd`/`node`→ssr routing).
+   No compiled-dual changes remain.
+2. ~~Verify JSX-preserve + `VisuallyHidden` is clean in `vp dev`.~~ **DONE
+   (2026-06-02)** — `/perfil` Switch ("Notificaciones por email", checked)
+   hydrates with **0 errors** under the `src`-alias consumption (consumer
+   compiles). `VisuallyHidden` is intact (codex's overlay reverted).
 3. Decide whether to keep the small **VisuallyHidden `splitProps(children)`** fix
-   (correct; harmless) and **publish** (changeset already staged:
-   `.changeset/tsdown-jsx-preserve-exports.md`). For jsx-preserve, the consumer
-   compiles the `.jsx`, so the macro is already expanded into it at lib-build
-   time and consumers don't need the macro plugin for the lib's own styles.
-4. Update dependencies across both repos ("just in case" maintenance) — deferred.
-5. Then have pokeforos consume the **published** packages (drop the src alias) and
-   re-verify dev + prod.
+   (correct; harmless — currently uncommitted) and **publish** (changeset already
+   staged: `.changeset/tsdown-jsx-preserve-exports.md`). For JSX-preserve the
+   consumer compiles the `.jsx`, so the macro is expanded at lib-build time and
+   consumers don't need the macro plugin for the lib's own styles.
+4. **Verify the published path** before relying on it: have pokeforos consume the
+   lib's built `dist/*.jsx` **from node_modules** (via the `solid` condition,
+   `pnpm pack`/`link`), not the `src` alias. Same mechanism (consumer compiles the
+   `.jsx`), so expected clean — but not yet re-confirmed with the actual built
+   artifact.
+5. Update dependencies across both repos ("just in case" maintenance) — deferred.
+6. Then switch pokeforos's dep from the alias/`link:` to the **published**
+   `^0.0.x` and re-verify dev + prod.
 
-## Repo state at pause (uncommitted in this repo)
+## Repo state (uncommitted in this repo, 2026-06-02)
 
-These uncommitted changes are the **compiled-dual experiment** (the wrong turn)
-plus the VisuallyHidden fix. To resume on the correct path, most of these get
-reverted (back to the committed JSX-preserve at `d2193352`):
+The compiled-dual experiment is fully reverted; `ToggleSwitch` is the committed
+react-aria-faithful `VisuallyHidden` version (no diff vs HEAD). Remaining
+uncommitted, all keep-worthy:
 
-- `packages/{solidaria,solidaria-components}/tsdown.config.ts` — switched to
-  compiled DOM + SSR dual build. **Revert** to JSX-preserve.
-- `packages/solid-spectrum/vite.config.ts` — replaced the JSX-preserve pack entry
-  with an SSR-compiled entry. **Revert.**
-- `packages/{solidaria,solidaria-components,solid-spectrum,viviana-ui,
-solid-stately}/package.json` — exports switched to `workerd`/`worker`/`node`→
-  ssr.js + `import`→index.js (dropped `solid`). **Revert** to `solid`→`*.jsx`.
+- `docs/dev-hydration-investigation.md` — this writeup.
 - `packages/solidaria-components/src/VisuallyHidden.tsx` — the `splitProps`
-  children fix. **Keep** (correctness), optional.
+  children fix (correctness; see "Validated outcomes" #4). **Keep.**
+- `packages/viviana-ui/{package.json,tsdown.config.ts}` — build `src/style.ts` →
+  `dist/style.js` so the `viviana-ui/style` macro entry ships as JS (the
+  macro-from-node_modules publish-blocker; see "Validated outcomes" #3). **Keep.**
+- `apps/web/src/routeTree.gen.ts` — generated; ignore/revert.
 
-`bfb16be9` (tsdown), `fc9128a0`/`1754f4b5`/`d2193352` (JSX-preserve build), and the
-repo-rename commits are committed and correct.
+`bfb16be9` (tsdown), `fc9128a0`/`1754f4b5`/`d2193352` (JSX-preserve build),
+`a4a375f1` (this doc's first cut), and the repo-rename commits are committed and
+correct.
