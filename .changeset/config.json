@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "proyecto-viviana/proyecto-viviana"
+      "repo": "proyecto-viviana/ui"
     }
   ],
   "commit": false,

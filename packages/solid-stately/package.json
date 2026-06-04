@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/solid-stately",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "A 1-1 SolidJS port of React Stately - headless state management for UI components",
   "keywords": [
     "headless",
