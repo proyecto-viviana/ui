@@ -252,7 +252,13 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      // Lazy: the region content is gated behind `<Show when={isHydrated() && …}>`
+      // (Portal) below, so reading children must not instantiate templates during
+      // the component body (would walk getNextElement before the gate the server
+      // kept closed → hydration mismatch). See Popover for the full rationale.
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ToastRegion",

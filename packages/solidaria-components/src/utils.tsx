@@ -334,13 +334,17 @@ export function useIsHydrated(): Accessor<boolean> {
     return () => false;
   }
 
-  // On client, start false and switch to true after animation frame
-  // This ensures we're past the hydration phase
+  // On client, start false (so the first render matches the server, which
+  // emitted nothing for hydrated-gated content) and flip to true after mount.
   const [isHydrated, setIsHydrated] = createSignal(false);
 
-  // Use requestAnimationFrame to ensure we're past hydration
-  // onMount may not fire during hydration for matching DOM
-  requestAnimationFrame(() => {
+  // onMount runs in the effect phase — *after* the synchronous hydration pass
+  // has finished walking the server DOM — so flipping here renders the gated
+  // content as a fresh client-side update (Portal: no getNextElement walk, no
+  // mismatch), yet fires synchronously under `render()` (unit tests / pure CSR)
+  // where requestAnimationFrame would never run. This mirrors the component
+  // gate above and is strictly earlier than a rAF tick.
+  onMount(() => {
     setIsHydrated(true);
   });
 

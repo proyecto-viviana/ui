@@ -1,5 +1,12 @@
 # @proyecto-viviana/viviana-ui
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @proyecto-viviana/solid-spectrum@0.5.1
+
 ## 0.1.0
 
 ### Minor Changes

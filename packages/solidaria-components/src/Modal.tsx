@@ -479,7 +479,14 @@ function ModalContent(
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      // Lazy: the modal content is gated behind `<Show when={isHydrated() && …}>`
+      // (Portal) below, so it must not be instantiated during the component body.
+      // An eager `children: props.children` would build the content template (and
+      // walk getNextElement) before the gate — content the server never emitted →
+      // hydration mismatch. See Popover for the full rationale.
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Modal",

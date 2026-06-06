@@ -407,7 +407,16 @@ export function Popover(props: PopoverProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      // Read children lazily. The popover content is gated behind
+      // `<Show when={isHydrated() && …}>` below, so it must NOT be instantiated
+      // during the component body. An eager `children: props.children` reads the
+      // child getter at object-construction time, building the content template
+      // (and walking `getNextElement`) before the gate — which the server, with
+      // the gate closed, never emitted → hydration mismatch. The getter defers
+      // the read until `renderChildren()` runs inside the gated overlay.
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Popover",

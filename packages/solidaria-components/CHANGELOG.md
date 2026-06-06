@@ -1,5 +1,17 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.3.1
+
+### Patch Changes
+
+- Fix SSR hydration mismatch in overlay components (Picker, ComboBox, Menu, DatePicker, Dialog).
+
+  The overlay primitives (`Popover`, `Modal`, `Toast`) gate their portalled content behind `useIsHydrated()` so the server emits nothing for a closed overlay. But they passed `children: props.children` to `useRenderProps`, which read the children getter eagerly at construction — instantiating the gated content's DOM template during the synchronous hydration walk that the server never emitted. SolidJS then threw `Hydration Mismatch. Unable to find DOM nodes for hydration key: …` at `_$getNextElement`.
+
+  Fixed structurally by reading children lazily (`get children()`) so the read is deferred until `renderChildren()` runs inside the gated `<Show>`/`<Portal>`. The value is identical; only the eager template instantiation — the bug — is removed.
+
+  Also, `useIsHydrated()` now flips on `onMount` (the effect phase, after the synchronous hydration pass) instead of `requestAnimationFrame`. This keeps the gate matching the server on the first render, mounts the content as a clean client-side update (no `getNextElement` walk), and — unlike rAF — fires synchronously under `render()`, so the gated content also renders in unit tests / pure CSR.
+
 ## 0.3.0
 
 ### Minor Changes

@@ -16,6 +16,9 @@ export default defineConfig({
     pool: "vmThreads",
     setupFiles: ["./vitest.setup.ts"],
     include: ["packages/**/test/**/*.test.{ts,tsx}", "benchmarks/**/*.bench.{ts,tsx}"],
+    // SSR-compiled tests run under vitest.ssr.config.ts (node env, generate:"ssr");
+    // hydration tests run under vitest.hydrate.config.ts (jsdom, dom+hydratable).
+    exclude: ["**/node_modules/**", "**/dist/**", "**/*.{ssr,hydrate}.test.{ts,tsx}"],
     deps: {
       optimizer: {
         client: {
