@@ -30,15 +30,15 @@ declare global {
 }
 
 test.describe("comparison component detail chrome", () => {
-  test("hydrates the detail page Solid Spectrum surfaces", async ({ page }) => {
+  test("hydrates the ported detail page Solid Spectrum surfaces", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto("/components/accordion/");
     await waitForComparisonRouteReady(page);
 
-    const heroMount = page.locator(".js-component-detail-hero-mount");
-    await expect(heroMount).toHaveAttribute("data-mounted", "true");
-    await expect(heroMount.locator("[data-component-detail-hero-fallback]")).toHaveCount(0);
-    await expect(heroMount.getByRole("heading", { level: 1, name: "Accordion" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Accordion" })).toBeVisible();
+    await expect(
+      page.getByText("An accordion is a container for multiple accordion items."),
+    ).toBeVisible();
     await expect(
       page
         .getByRole("navigation", { name: "Top navigation" })
@@ -90,15 +90,12 @@ test.describe("comparison component detail chrome", () => {
       .toBe("1");
     const toc = page.getByRole("navigation", { name: "On this page" });
     await expect(toc.getByRole("listitem")).toHaveCount(8);
-    await expect(toc.getByRole("link", { name: "Accordion" })).toHaveAttribute(
+    await expect(toc.getByRole("link", { name: "Expanding" })).toHaveAttribute(
       "href",
-      "#page-title",
+      "#expanding",
     );
-    await expect(toc.getByRole("link", { name: "Accordion" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-    await expect(toc.getByRole("link", { name: "Example" })).toHaveAttribute("href", "#example");
+    await expect(toc.getByRole("link", { name: "Content" })).toHaveAttribute("href", "#content");
+    await expect(toc.getByRole("link", { name: "API" })).toHaveAttribute("href", "#api");
     await expect(tocRail.getByRole("link", { name: "S2 source" })).toHaveAttribute(
       "href",
       /react-spectrum/,
@@ -139,16 +136,12 @@ test.describe("comparison component detail chrome", () => {
       )
       .toBe(true);
 
-    const metaMount = page.locator(".js-component-detail-meta-mount");
-    await expect(metaMount).toHaveAttribute("data-mounted", "true");
-    await expect(metaMount.locator("[data-component-detail-meta-fallback]")).toHaveCount(0);
-    await expect(
-      metaMount.getByRole("heading", { exact: true, level: 2, name: "Coverage" }),
-    ).toBeVisible();
-    await expect(
-      metaMount.getByRole("heading", { level: 2, name: "Visual State Coverage" }),
-    ).toBeVisible();
-    await expect(metaMount.getByRole("table", { name: "Accordion API props" })).toBeVisible();
+    await expect(page.locator("h2#expanding")).toBeVisible();
+    await expect(page.locator("h2#api")).toBeVisible();
+    await expect(page.locator("h3#api-accordion")).toBeVisible();
+    await expect(page.getByRole("cell", { name: "allowsMultipleExpanded" })).toBeVisible();
+    await expect(page.getByText("Porting note", { exact: true })).toBeVisible();
+    await expect(page.getByText("Parity report", { exact: true })).toBeVisible();
   });
 
   test("matches the upstream mobile header and body chrome", async ({ page }) => {
@@ -183,7 +176,7 @@ test.describe("comparison component detail chrome", () => {
     await expect(mobileToc).toBeVisible();
     await expect(page.locator(".s2-brand-text")).toBeHidden();
     await expect(mobileToc.getByRole("button", { name: "Table of contents" })).toContainText(
-      "Accordion",
+      "Expanding",
     );
     await expect
       .poll(() =>
@@ -199,7 +192,7 @@ test.describe("comparison component detail chrome", () => {
 
     const listbox = page.getByRole("listbox");
     await expect(listbox).toBeVisible();
-    await expect(listbox.getByRole("option", { name: "Accordion" })).toBeVisible();
+    await expect(listbox.getByRole("option", { name: "Expanding" })).toBeVisible();
     await expect(listbox.getByRole("option", { name: "API" })).toBeVisible();
     await listbox.getByRole("option", { name: "API" }).click();
     await expect(page).toHaveURL(/#api$/);
