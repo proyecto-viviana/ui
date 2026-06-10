@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createSignal } from "solid-js";
 import { render, screen } from "@solidjs/testing-library";
 import {
   ActionButton,
@@ -122,6 +123,33 @@ describe("button-family S2 contexts", () => {
     ));
 
     expect(screen.getByRole("img", { name: "Nueva actividad" })).toBeInTheDocument();
+  });
+
+  it("keeps ActionButton dynamic aria trigger props reactive", async () => {
+    const user = setupUser();
+
+    function MenuTriggerButton() {
+      const [isOpen, setIsOpen] = createSignal(false);
+
+      return (
+        <ActionButton
+          aria-label={isOpen() ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={isOpen()}
+          onPress={() => setIsOpen(!isOpen())}
+        >
+          Menú
+        </ActionButton>
+      );
+    }
+
+    render(() => <MenuTriggerButton />);
+    const button = screen.getByRole("button", { name: "Abrir menú" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    await user.click(button);
+    expect(screen.getByRole("button", { name: "Cerrar menú" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
   });
 
   it("applies ActionButtonGroupContext to the group and its children", () => {

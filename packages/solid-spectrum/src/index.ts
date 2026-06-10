@@ -327,6 +327,8 @@ export type {
 // Icons and illustrations
 export { createIcon, createIllustration, IconContext, IllustrationContext } from "./icon";
 export type { IconContextValue, SpectrumIconProps, SpectrumIllustrationProps } from "./icon";
+export { default as BellIcon } from "./icon/s2wf-icons/BellIcon";
+export type { BellIconProps } from "./icon/s2wf-icons/BellIcon";
 export { default as CloseIcon } from "./icon/s2wf-icons/CloseIcon";
 export type { CloseIconProps } from "./icon/s2wf-icons/CloseIcon";
 export { default as ContrastIcon } from "./icon/s2wf-icons/ContrastIcon";

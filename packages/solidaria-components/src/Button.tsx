@@ -97,6 +97,44 @@ function createLiveCustomRootProps(
   return props;
 }
 
+const buttonAriaOverrideProps = [
+  "aria-label",
+  "aria-labelledby",
+  "aria-describedby",
+  "aria-details",
+  "aria-haspopup",
+  "aria-expanded",
+  "aria-controls",
+  "aria-pressed",
+  "aria-current",
+  "aria-disabled",
+] as const;
+
+function createForwardedAriaButtonProps(
+  source: AriaButtonProps,
+  overrides: AriaButtonProps,
+): AriaButtonProps {
+  const result = {} as AriaButtonProps;
+
+  for (const key in source) {
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return (source as Record<string, unknown>)[key];
+      },
+    });
+  }
+
+  for (const key in overrides) {
+    const descriptor = Object.getOwnPropertyDescriptor(overrides, key);
+    if (!descriptor) continue;
+    Object.defineProperty(result, key, { ...descriptor, enumerable: true, configurable: true });
+  }
+
+  return result;
+}
+
 export interface ButtonRenderProps {
   /** Whether the button is currently hovered with a mouse. */
   isHovered: boolean;
@@ -238,28 +276,29 @@ export function Button(props: ButtonProps): JSX.Element {
     }
   };
 
-  const buttonAria = createButton({
-    ...ariaProps,
-    onPress: handlePress,
-    get onPressStart() {
-      return resolvePending() ? undefined : ariaProps.onPressStart;
-    },
-    get onPressEnd() {
-      return resolvePending() ? undefined : ariaProps.onPressEnd;
-    },
-    get onPressUp() {
-      return resolvePending() ? undefined : ariaProps.onPressUp;
-    },
-    get onPressChange() {
-      return resolvePending() ? undefined : ariaProps.onPressChange;
-    },
-    get onClick() {
-      return resolvePending() ? undefined : ariaProps.onClick;
-    },
-    get isDisabled() {
-      return resolveDisabled() || resolvePending();
-    },
-  });
+  const buttonAria = createButton(
+    createForwardedAriaButtonProps(ariaProps, {
+      onPress: handlePress,
+      get onPressStart() {
+        return resolvePending() ? undefined : ariaProps.onPressStart;
+      },
+      get onPressEnd() {
+        return resolvePending() ? undefined : ariaProps.onPressEnd;
+      },
+      get onPressUp() {
+        return resolvePending() ? undefined : ariaProps.onPressUp;
+      },
+      get onPressChange() {
+        return resolvePending() ? undefined : ariaProps.onPressChange;
+      },
+      get onClick() {
+        return resolvePending() ? undefined : ariaProps.onClick;
+      },
+      get isDisabled() {
+        return resolveDisabled() || resolvePending();
+      },
+    }),
+  );
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
@@ -394,6 +433,13 @@ export function Button(props: ButtonProps): JSX.Element {
     }
     return next;
   };
+  const directAriaProps = () => {
+    const next: Record<string, unknown> = {};
+    for (const name of buttonAriaOverrideProps) {
+      next[name] = (ariaProps as Record<string, unknown>)[name];
+    }
+    return next;
+  };
   const disablePendingInteractions = (props: Record<string, unknown>) => {
     if (!resolvePending()) {
       return props;
@@ -433,6 +479,7 @@ export function Button(props: ButtonProps): JSX.Element {
     ({
       ...domProps(),
       ...disablePendingInteractions(cleanButtonProps()),
+      ...directAriaProps(),
       ...triggerAriaProps(),
       ...cleanFocusProps(),
       ...cleanHoverProps(),

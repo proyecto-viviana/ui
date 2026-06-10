@@ -881,6 +881,27 @@ describe("Button", () => {
       const button = screen.getByRole("button");
       expect(button).toHaveAttribute("aria-expanded", "true");
     });
+
+    it("should keep dynamic aria-label and aria-expanded reactive", async () => {
+      const [isOpen, setIsOpen] = createSignal(false);
+      render(() => (
+        <Button
+          aria-label={isOpen() ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen()}
+          onPress={() => setIsOpen(!isOpen())}
+        >
+          Menu
+        </Button>
+      ));
+
+      const button = screen.getByRole("button", { name: "Open menu" });
+      expect(button).toHaveAttribute("aria-expanded", "false");
+      await user.click(button);
+      expect(screen.getByRole("button", { name: "Close menu" })).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+    });
   });
 
   describe("a11y validation", () => {
