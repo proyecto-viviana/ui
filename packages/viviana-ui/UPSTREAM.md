@@ -1,6 +1,6 @@
 # viviana-ui ← solid-spectrum: sync & update plan
 
-`@proyecto-viviana/viviana-ui` is the **brand layer**: it reskins
+`@proyecto-viviana/ui` is the **brand layer**: it reskins
 `@proyecto-viviana/solid-spectrum` with viviana design tokens (and, where needed,
 overrides components). It is downstream of solid-spectrum the way solid-spectrum
 is downstream of `@react-spectrum/s2`. This doc records **what viviana-ui tracks

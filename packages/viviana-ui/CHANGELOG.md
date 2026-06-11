@@ -1,4 +1,4 @@
-# @proyecto-viviana/viviana-ui
+# @proyecto-viviana/ui
 
 ## 0.1.4
 

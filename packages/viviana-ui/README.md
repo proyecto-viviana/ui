@@ -1,4 +1,4 @@
-# @proyecto-viviana/viviana-ui
+# @proyecto-viviana/ui
 
 The viviana brand's design system.
 
@@ -19,8 +19,8 @@ new React Spectrum release is ported) is documented in **[UPSTREAM.md](./UPSTREA
 ## Usage
 
 ```ts
-import { Button, TextField } from "@proyecto-viviana/viviana-ui";
-import { style } from "@proyecto-viviana/viviana-ui/style" with { type: "macro" };
+import { Button, TextField } from "@proyecto-viviana/ui";
+import { style } from "@proyecto-viviana/ui/style" with { type: "macro" };
 ```
 
 Consumers need the `unplugin-parcel-macros` vite plugin (the style macro is

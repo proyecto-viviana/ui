@@ -16,7 +16,7 @@ const packages = [
   { name: "@proyecto-viviana/solidaria", dir: "packages/solidaria" },
   { name: "@proyecto-viviana/solidaria-components", dir: "packages/solidaria-components" },
   { name: "@proyecto-viviana/solid-spectrum", dir: "packages/solid-spectrum" },
-  { name: "@proyecto-viviana/viviana-ui", dir: "packages/viviana-ui" },
+  { name: "@proyecto-viviana/ui", dir: "packages/viviana-ui" },
 ];
 
 const packageByName = new Map(packages.map((pkg) => [pkg.name, pkg]));
@@ -135,7 +135,7 @@ const overrideSpecs = Object.fromEntries(
 printJson("Packed tarballs", tarballs);
 printJson("pnpm.overrides for consumers", overrideSpecs);
 printJson("Pokeforos dependency", {
-  "@proyecto-viviana/viviana-ui": fileSpec(tarballs["@proyecto-viviana/viviana-ui"]),
+  "@proyecto-viviana/ui": fileSpec(tarballs["@proyecto-viviana/ui"]),
 });
 printJson("Comparison dependencies", {
   "@proyecto-viviana/solid-stately": fileSpec(tarballs["@proyecto-viviana/solid-stately"]),

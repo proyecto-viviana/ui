@@ -1,4 +1,4 @@
-// @proyecto-viviana/viviana-ui — the viviana brand's design system.
+// @proyecto-viviana/ui — the viviana brand's design system.
 //
 // It starts as a thin re-export of @proyecto-viviana/solid-spectrum (identical
 // components + tokens + style macro), establishing the package consumers depend

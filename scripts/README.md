@@ -33,7 +33,7 @@ chain:
 - `@proyecto-viviana/solidaria`
 - `@proyecto-viviana/solidaria-components`
 - `@proyecto-viviana/solid-spectrum`
-- `@proyecto-viviana/viviana-ui`
+- `@proyecto-viviana/ui`
 
 Use `vp run pack:local-chain` from the repo root to rebuild and pack them into
 `/tmp/viviana-ui-packs-chain`. The script stages package copies under `/tmp`,

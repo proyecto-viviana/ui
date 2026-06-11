@@ -10,7 +10,7 @@
     "build:solidaria": "vp run --filter @proyecto-viviana/solidaria build",
     "build:components": "vp run --filter @proyecto-viviana/solidaria-components build",
     "build:solid-spectrum": "vp run --filter @proyecto-viviana/solid-spectrum build",
-    "build:viviana-ui": "vp run --filter @proyecto-viviana/viviana-ui build",
+    "build:viviana-ui": "vp run --filter @proyecto-viviana/ui build",
     "build:web": "vp run --filter @proyecto-viviana/web build",
     "dev": "vp run --filter @proyecto-viviana/web dev",
     "start": "vp run --filter @proyecto-viviana/web start",

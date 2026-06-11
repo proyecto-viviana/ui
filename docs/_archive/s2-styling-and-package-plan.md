@@ -12,7 +12,7 @@ This is the controlling direction for the styled packages and the comparison app
 | Behavior                   | `@proyecto-viviana/solidaria`            | ARIA behavior hooks and interaction logic.                  |
 | Headless components        | `@proyecto-viviana/solidaria-components` | Pre-wired, unstyled components with public styling hooks.   |
 | Spectrum styled components | `@proyecto-viviana/solid-spectrum`       | Spectrum 2-compatible styled Solid components.              |
-| Viviana design system      | `@proyecto-viviana/viviana-ui`           | Proyecto Viviana's own product design system.               |
+| Viviana design system      | `@proyecto-viviana/ui`                   | Proyecto Viviana's own product design system.               |
 
 ## S2 Styling Research
 
@@ -57,7 +57,7 @@ The first implementation can be a compiled/static package stylesheet if that is 
 
 - The React side imports only `@react-spectrum/s2` components for the canonical reference.
 - The Solid side imports only `@proyecto-viviana/solid-spectrum` for Spectrum parity.
-- `@proyecto-viviana/viviana-ui` can have its own docs, but it is not the S2 parity target.
+- `@proyecto-viviana/ui` can have its own docs, but it is not the S2 parity target.
 - Harness CSS may lay out the page, grids, controls, and screenshot frame. It must not style component internals.
 - Each component page should have one interactive prop controller, modeled after the S2 docs pattern.
 - Each component should record supported, missing, and intentionally absent S2 API entries.
