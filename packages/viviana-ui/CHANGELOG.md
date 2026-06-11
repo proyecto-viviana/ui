@@ -1,5 +1,11 @@
 # @proyecto-viviana/viviana-ui
 
+## 0.1.3
+
+### Patch Changes
+
+- 0588d1e: Expose CSS entrypoints that mirror solid-spectrum so apps can import component styles through viviana-ui.
+
 ## 0.1.2
 
 ### Patch Changes
