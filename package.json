@@ -47,6 +47,8 @@
     "comparison:dev:worker": "vp run --filter @proyecto-viviana/comparison dev:worker",
     "comparison:deploy": "vp run --filter @proyecto-viviana/comparison deploy",
     "comparison:deploy:dry-run": "vp run --filter @proyecto-viviana/comparison deploy:dry-run",
+    "pack:local-chain": "vp run build:stately && vp run build:solidaria && vp run build:components && vp run build:solid-spectrum && vp run build:viviana-ui && node scripts/pack-local-chain.mjs",
+    "pack:local-chain:skip-build": "node scripts/pack-local-chain.mjs",
     "test": "vp test packages",
     "test:run": "vp test run packages",
     "test:watch": "vp test packages",

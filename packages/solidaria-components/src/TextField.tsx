@@ -149,8 +149,21 @@ export interface LabelProps extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
 export function Label(props: LabelProps): JSX.Element {
   const context = useContext(TextFieldContext);
 
+  const localDOMProps = () => {
+    const result: Record<string, unknown> = {};
+    const propsRecord = props as Record<string, unknown>;
+
+    for (const key in propsRecord) {
+      if (key !== "children") {
+        result[key] = propsRecord[key];
+      }
+    }
+    return result;
+  };
+
   // Merge context labelProps with local props (local props take precedence)
   const mergedProps = () => {
+    const localProps = localDOMProps();
     if (context) {
       const { ref: _ref, ...contextLabelProps } = (context.labelProps ?? {}) as Record<
         string,
@@ -159,14 +172,14 @@ export function Label(props: LabelProps): JSX.Element {
       const merged = {
         ...contextLabelProps,
         ...(context.inputId ? { for: context.inputId } : {}),
-        ...props,
+        ...localProps,
       } as Record<string, unknown>;
       if (merged.class == null) {
         merged.class = "solidaria-Label";
       }
       return merged;
     }
-    return props.class == null ? { ...props, class: "solidaria-Label" } : props;
+    return localProps.class == null ? { ...localProps, class: "solidaria-Label" } : localProps;
   };
 
   return <label {...mergedProps()}>{props.children}</label>;

@@ -10,6 +10,7 @@ const ignoredPaths = [
   "playwright-report/**",
   "test-results/**",
   "react-spectrum/**",
+  "apps/comparison/vendor/s2-docs/**",
   "apps/**/dist/**",
   "packages/**/dist/**",
 ];
