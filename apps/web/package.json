@@ -14,20 +14,20 @@
     "@proyecto-viviana/solid-stately": "^0.3.0",
     "@proyecto-viviana/solidaria": "^0.3.0",
     "@proyecto-viviana/solidaria-components": "^0.3.2",
-    "@tanstack/router-core": "1.161.1",
-    "@tanstack/solid-router": "1.161.1",
-    "@tanstack/solid-start": "1.161.1",
+    "@tanstack/router-core": "1.171.13",
+    "@tanstack/solid-router": "1.170.15",
+    "@tanstack/solid-start": "1.168.25",
     "solid-icons": "^1.2.0",
     "solid-js": "^1.9.11",
     "vite": "^7.3.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
-    "@cloudflare/vite-plugin": "^1.25.2",
+    "@cloudflare/vite-plugin": "^1.40.2",
     "@playwright/test": "^1.58.2",
     "playwright": "^1.58.2",
     "typescript": "^5.9.3",
-    "vite-plugin-solid": "^2.11.10",
-    "wrangler": "^4.67.0"
+    "vite-plugin-solid": "^2.11.12",
+    "wrangler": "^4.100.0"
   }
 }

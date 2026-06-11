@@ -382,7 +382,13 @@ export default defineConfig({
       ],
     }),
     solid({
-      include: ["src/components/solid/**/*", "../../packages/solid-spectrum/src/**/*"],
+      include: [
+        "src/components/solid/**/*",
+        "../../packages/solid-stately/src/**/*",
+        "../../packages/solidaria/src/**/*",
+        "../../packages/solidaria-components/src/**/*",
+        "../../packages/solid-spectrum/src/**/*",
+      ],
       exclude: ["src/components/react/**/*"],
     }),
   ],

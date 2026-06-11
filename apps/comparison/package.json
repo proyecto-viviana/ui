@@ -35,15 +35,15 @@
     "deploy:dry-run": "vp run build && XDG_CONFIG_HOME=/tmp/proyecto-viviana-wrangler vp exec wrangler deploy --dry-run --config wrangler.jsonc"
   },
   "dependencies": {
-    "@astrojs/react": "^4.2.2",
-    "@astrojs/solid-js": "^5.1.1",
+    "@astrojs/react": "^5.0.7",
+    "@astrojs/solid-js": "^6.0.1",
     "@internationalized/date": "^3.12.1",
     "@proyecto-viviana/solid-spectrum": "workspace:*",
     "@proyecto-viviana/solid-stately": "workspace:*",
     "@proyecto-viviana/solidaria": "workspace:*",
     "@proyecto-viviana/solidaria-components": "workspace:*",
     "@react-spectrum/s2": "^1.3.0",
-    "astro": "^5.6.1",
+    "astro": "^6.1.10",
     "react": "^19.2.5",
     "react-aria": "3.48.0",
     "react-aria-components": "1.17.0",
@@ -52,7 +52,7 @@
     "solid-js": "^1.9.11"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.58.2",
     "playwright": "^1.58.2",
     "typescript": "^5.8.2"
