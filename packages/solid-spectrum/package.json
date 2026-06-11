@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/solid-spectrum",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Spectrum 2-compatible styled components for SolidJS",
   "keywords": [
     "components",
@@ -33,6 +33,84 @@
       "solid": "./dist/index.jsx",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./ActionButton": {
+      "types": "./dist/ActionButton.d.ts",
+      "solid": "./dist/ActionButton.jsx",
+      "import": "./dist/ActionButton.js",
+      "default": "./dist/ActionButton.js"
+    },
+    "./Button": {
+      "types": "./dist/Button.d.ts",
+      "solid": "./dist/Button.jsx",
+      "import": "./dist/Button.js",
+      "default": "./dist/Button.js"
+    },
+    "./ContrastIcon": {
+      "types": "./dist/ContrastIcon.d.ts",
+      "solid": "./dist/ContrastIcon.jsx",
+      "import": "./dist/ContrastIcon.js",
+      "default": "./dist/ContrastIcon.js"
+    },
+    "./FileTrigger": {
+      "types": "./dist/FileTrigger.d.ts",
+      "solid": "./dist/FileTrigger.jsx",
+      "import": "./dist/FileTrigger.js",
+      "default": "./dist/FileTrigger.js"
+    },
+    "./LightenIcon": {
+      "types": "./dist/LightenIcon.d.ts",
+      "solid": "./dist/LightenIcon.jsx",
+      "import": "./dist/LightenIcon.js",
+      "default": "./dist/LightenIcon.js"
+    },
+    "./LinkButton": {
+      "types": "./dist/LinkButton.d.ts",
+      "solid": "./dist/LinkButton.jsx",
+      "import": "./dist/LinkButton.js",
+      "default": "./dist/LinkButton.js"
+    },
+    "./Picker": {
+      "types": "./dist/Picker.d.ts",
+      "solid": "./dist/Picker.jsx",
+      "import": "./dist/Picker.js",
+      "default": "./dist/Picker.js"
+    },
+    "./Provider": {
+      "types": "./dist/Provider.d.ts",
+      "solid": "./dist/Provider.jsx",
+      "import": "./dist/Provider.js",
+      "default": "./dist/Provider.js"
+    },
+    "./SearchField": {
+      "types": "./dist/SearchField.d.ts",
+      "solid": "./dist/SearchField.jsx",
+      "import": "./dist/SearchField.js",
+      "default": "./dist/SearchField.js"
+    },
+    "./SegmentedControl": {
+      "types": "./dist/SegmentedControl.d.ts",
+      "solid": "./dist/SegmentedControl.jsx",
+      "import": "./dist/SegmentedControl.js",
+      "default": "./dist/SegmentedControl.js"
+    },
+    "./Switch": {
+      "types": "./dist/Switch.d.ts",
+      "solid": "./dist/Switch.jsx",
+      "import": "./dist/Switch.js",
+      "default": "./dist/Switch.js"
+    },
+    "./TextArea": {
+      "types": "./dist/TextArea.d.ts",
+      "solid": "./dist/TextArea.jsx",
+      "import": "./dist/TextArea.js",
+      "default": "./dist/TextArea.js"
+    },
+    "./TextField": {
+      "types": "./dist/TextField.d.ts",
+      "solid": "./dist/TextField.jsx",
+      "import": "./dist/TextField.js",
+      "default": "./dist/TextField.js"
     },
     "./ActionMenu": {
       "types": "./dist/ActionMenu.d.ts",

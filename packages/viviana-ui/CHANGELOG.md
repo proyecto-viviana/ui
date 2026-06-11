@@ -1,5 +1,13 @@
 # @proyecto-viviana/viviana-ui
 
+## 0.1.4
+
+### Patch Changes
+
+- Expose button, provider, form, input, segmented control, switch, and icon component subpaths for direct Viviana UI imports.
+- Updated dependencies:
+  - @proyecto-viviana/solid-spectrum@0.5.3
+
 ## 0.1.3
 
 ### Patch Changes

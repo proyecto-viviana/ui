@@ -25,6 +25,11 @@
       "@proyecto-viviana/solidaria": ["./packages/solidaria/src/index.ts"],
       "@proyecto-viviana/solidaria-components": ["./packages/solidaria-components/src/index.ts"],
       "@proyecto-viviana/solid-spectrum": ["./packages/solid-spectrum/src/index.ts"],
+      "@proyecto-viviana/solid-spectrum/style": ["./packages/solid-spectrum/src/style/index.ts"],
+      "@proyecto-viviana/solid-spectrum/style/runtime": [
+        "./packages/solid-spectrum/src/style/runtime.ts"
+      ],
+      "@proyecto-viviana/solid-spectrum/*": ["./packages/solid-spectrum/src/*.ts"],
       "@proyecto-viviana/solidaria-test-utils": ["./packages/solidaria-test-utils/src/index.ts"],
       "@proyecto-viviana/solid-spectrum-test-utils": [
         "./packages/solid-spectrum-test-utils/src/index.ts"
