@@ -23,6 +23,22 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./theme.css": {
+      "import": "./dist/theme.css",
+      "default": "./src/theme.css"
+    },
+    "./font-faces.css": {
+      "import": "./dist/font-faces.css",
+      "default": "./src/font-faces.css"
+    },
+    "./styles.css": {
+      "import": "./dist/styles.css",
+      "default": "./src/styles.css"
+    },
+    "./components.css": {
+      "import": "./dist/components.css",
+      "default": "./src/components.css"
+    },
     "./style": {
       "types": "./dist/style.d.ts",
       "solid": "./dist/style.js",
@@ -34,7 +50,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown"
+    "build": "tsdown && cp src/styles.css src/components.css src/font-faces.css src/theme.css dist/"
   },
   "dependencies": {
     "@proyecto-viviana/solid-spectrum": "workspace:*"
