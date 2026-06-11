@@ -79,6 +79,7 @@ export interface TextFieldContextValue {
   isInvalid?: boolean;
   slots?: Record<string, TextFieldProps>;
   inputId?: string;
+  setInputId?: (id: string | undefined) => void;
 }
 
 export const TextFieldContext = createContext<TextFieldContextValue | null>(null);
@@ -204,6 +205,14 @@ export function Input(props: InputProps): JSX.Element {
   const context = useContext(TextFieldContext);
   let inputElement: HTMLInputElement | undefined;
 
+  createEffect(() => {
+    context?.setInputId?.(props.id);
+  });
+
+  onCleanup(() => {
+    context?.setInputId?.(undefined);
+  });
+
   // Merge context inputProps with local props (local props take precedence)
   const mergedProps = () => {
     if (context) {
@@ -290,6 +299,14 @@ export interface TextAreaProps extends Omit<
 export function TextArea(props: TextAreaProps): JSX.Element {
   const context = useContext(TextFieldContext);
   let textAreaElement: HTMLTextAreaElement | undefined;
+
+  createEffect(() => {
+    context?.setInputId?.(props.id);
+  });
+
+  onCleanup(() => {
+    context?.setInputId?.(undefined);
+  });
 
   // Merge context inputProps with local props (local props take precedence)
   // Note: TextArea uses inputProps from context since it's an input variant
@@ -396,6 +413,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
       errorMessageProps: _errorMessageProps,
       isInvalid: _isInvalid,
       slots: _slots,
+      setInputId: _setInputId,
       ...rest
     } = contextProps;
     return rest as TextFieldProps;
@@ -449,6 +467,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
       return ariaProps.isDisabled;
     },
   });
+  const [inputIdOverride, setInputIdOverride] = createSignal<string | undefined>();
 
   const renderValues = createMemo<TextFieldRenderProps>(() => ({
     isDisabled: ariaProps.isDisabled || false,
@@ -551,7 +570,10 @@ export function TextField(props: TextFieldProps): JSX.Element {
     // onMount effect would flip undefined->id post-mount and re-execute the Label
     // template — crashing hydration if the re-run lands mid-hydration (dev).
     get inputId() {
-      return (textFieldAria.inputProps as { id?: string }).id;
+      return inputIdOverride() ?? (textFieldAria.inputProps as { id?: string }).id;
+    },
+    setInputId(id: string | undefined) {
+      setInputIdOverride(id);
     },
   };
   // Resolve the render-prop children ONCE (untracked). Re-invoking it on a
@@ -559,10 +581,11 @@ export function TextField(props: TextFieldProps): JSX.Element {
   // throws a Hydration Mismatch (worst in dev, where slow unbundled modules widen
   // the hydration window). The children carry their own fine-grained reactivity
   // (render-value getters + <Show>s), so they update without being re-created.
-  const fieldChildren = untrack(() => {
-    const children = local.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  });
+  const FieldChildren = () =>
+    untrack(() => {
+      const children = local.children;
+      return typeof children === "function" ? children(childRenderValues) : children;
+    });
   const rootProps = () =>
     ({
       ...domProps(),
@@ -581,7 +604,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   const customRootProps = () =>
     ({
       ...rootProps(),
-      children: fieldChildren,
+      children: <FieldChildren />,
     }) as JSX.HTMLAttributes<HTMLDivElement>;
 
   return (
@@ -590,7 +613,9 @@ export function TextField(props: TextFieldProps): JSX.Element {
         {local.render ? (
           local.render(customRootProps(), renderValues())
         ) : (
-          <div {...rootProps()}>{fieldChildren}</div>
+          <div {...rootProps()}>
+            <FieldChildren />
+          </div>
         )}
       </TextFieldContext.Provider>
     </FieldErrorContext.Provider>

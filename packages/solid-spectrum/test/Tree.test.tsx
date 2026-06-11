@@ -101,7 +101,7 @@ describe("TreeView (solid-spectrum)", () => {
     expect(treeViewSubpath.TreeViewContext).toBe(TreeViewContext);
     expect(packageJson.exports["./TreeView"]).toMatchObject({
       types: "./dist/TreeView.d.ts",
-      solid: "./src/TreeView.ts",
+      solid: "./dist/TreeView.jsx",
       import: "./dist/TreeView.js",
       default: "./dist/TreeView.js",
     });

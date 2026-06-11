@@ -113,7 +113,7 @@ describe("ColorEditor (headless)", () => {
         </ColorEditor>
       ));
 
-      const swatch = screen.getByRole("img", { name: "Preview swatch" });
+      const swatch = screen.getByRole("img", { name: /Preview swatch/ });
       expect((swatch as HTMLElement).style.backgroundColor).toBe("rgb(255, 0, 0)");
     });
   });

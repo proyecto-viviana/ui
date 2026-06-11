@@ -30,7 +30,7 @@ describe("ColorSwatchPicker (solid-spectrum)", () => {
   it("declares the package subpath export", () => {
     expect(packageJson.exports["./ColorSwatchPicker"]).toMatchObject({
       types: "./dist/ColorSwatchPicker.d.ts",
-      solid: "./src/ColorSwatchPicker.ts",
+      solid: "./dist/ColorSwatchPicker.jsx",
       import: "./dist/ColorSwatchPicker.js",
       default: "./dist/ColorSwatchPicker.js",
     });

@@ -82,7 +82,9 @@ function clearGlobalToasts() {
 /** Normalize auto-generated IDs so snapshots stay stable across runs. */
 function normalizeIds(html: string): string {
   const idMap = new Map<string, string>();
+  const tokenMap = new Map<string, string>();
   let counter = 0;
+  let tokenCounter = 0;
   return html
     .replace(/id="([^"]+)"/g, (_match, id) => {
       if (!idMap.has(id)) {
@@ -105,7 +107,13 @@ function normalizeIds(html: string): string {
         return `${attr}="${normalized}"`;
       },
     )
-    .replace(/name="solidaria-cl-\d+"/g, 'name="solidaria-cl-0"');
+    .replace(/name="solidaria-cl-\d+"/g, 'name="solidaria-cl-0"')
+    .replace(/\bcl-\d+\b/g, (token) => {
+      if (!tokenMap.has(token)) {
+        tokenMap.set(token, `cl-${tokenCounter++}`);
+      }
+      return tokenMap.get(token)!;
+    });
 }
 
 function expectS2Button(button: HTMLElement, text: string): void {
@@ -207,11 +215,12 @@ describe("Regression: Slider", () => {
     const { container } = render(() => (
       <Slider label="Volume" value={40} minValue={0} maxValue={100} />
     ));
-    const slider = screen.getByRole("slider") as HTMLInputElement;
-    expect(slider).toHaveAttribute("type", "range");
-    expect(slider.value).toBe("40");
-    expect(slider.min).toBe("0");
-    expect(slider.max).toBe("100");
+    const slider = screen.getByRole("slider");
+    const input = document.querySelector('input[type="range"]') as HTMLInputElement;
+    expect(input).toHaveAttribute("type", "range");
+    expect(input.value).toBe("40");
+    expect(input.min).toBe("0");
+    expect(input.max).toBe("100");
     expect(slider).toHaveAttribute("aria-valuetext", "40");
     expect(screen.getByText("Volume")).toBeInTheDocument();
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();

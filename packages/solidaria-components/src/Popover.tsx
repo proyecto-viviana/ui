@@ -480,6 +480,14 @@ export function Popover(props: PopoverProps): JSX.Element {
   };
 
   const shouldBeDialog = () => !local.isNonModal || resolvedTrigger() === "SubmenuTrigger";
+  const shouldContainFocus = () => {
+    if (!shouldBeDialog()) {
+      return false;
+    }
+
+    const trigger = resolvedTrigger();
+    return trigger !== "MenuTrigger" && trigger !== "SubmenuTrigger";
+  };
   const portalContext = useUNSAFE_PortalContext();
   const portalContainer = () => {
     if (isSubPopover()) {
@@ -547,7 +555,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     <PopoverContext.Provider
       value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
     >
-      <FocusScope contain={shouldBeDialog()} restoreFocus>
+      <FocusScope contain={shouldContainFocus()} restoreFocus>
         <div
           {...domProps()}
           {...cleanPopoverProps()}

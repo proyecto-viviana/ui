@@ -16,7 +16,7 @@ describe("ColorSwatch public subpath", () => {
   it("declares package exports", () => {
     expect(packageJson.exports["./ColorSwatch"]).toMatchObject({
       types: "./dist/ColorSwatch.d.ts",
-      solid: "./src/ColorSwatch.ts",
+      solid: "./dist/ColorSwatch.jsx",
       import: "./dist/ColorSwatch.js",
       default: "./dist/ColorSwatch.js",
     });

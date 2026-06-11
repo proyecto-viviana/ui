@@ -1,5 +1,11 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.3.2
+
+### Patch Changes
+
+- [`7502ee7`](https://github.com/proyecto-viviana/ui/commit/7502ee70a735d1831a2c62b581fb0ba690146327) Thanks [@EmoPorEmilio](https://github.com/EmoPorEmilio)! - Keep Button and ActionButton dynamic aria trigger props reactive, and export BellIcon from the root Spectrum/Viviana surface.
+
 ## 0.3.1
 
 ### Patch Changes

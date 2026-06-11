@@ -8,11 +8,13 @@ import { Form, Slider, SliderContext } from "../src";
 describe("Slider (solid-spectrum)", () => {
   it("renders slider with value semantics", () => {
     render(() => <Slider label="Volume" value={40} minValue={0} maxValue={100} />);
-    const slider = screen.getByRole("slider") as HTMLInputElement;
-    expect(slider).toHaveAttribute("type", "range");
-    expect(slider.value).toBe("40");
-    expect(slider.min).toBe("0");
-    expect(slider.max).toBe("100");
+    const slider = screen.getByRole("slider");
+    const input = document.querySelector('input[type="range"]') as HTMLInputElement;
+
+    expect(input).toHaveAttribute("type", "range");
+    expect(input.value).toBe("40");
+    expect(input.min).toBe("0");
+    expect(input.max).toBe("100");
     expect(slider).toHaveAttribute("aria-valuetext", "40");
   });
 
@@ -24,17 +26,17 @@ describe("Slider (solid-spectrum)", () => {
 
   it("supports uncontrolled defaultValue", () => {
     render(() => <Slider label="Volume" defaultValue={40} />);
-    const slider = screen.getByRole("slider") as HTMLInputElement;
+    const input = document.querySelector('input[type="range"]') as HTMLInputElement;
 
-    expect(slider.value).toBe("40");
+    expect(input.value).toBe("40");
   });
 
   it("passes form input props through the hidden range input", () => {
     render(() => <Slider label="Volume" value={40} name="volume" form="audioForm" />);
-    const slider = screen.getByRole("slider") as HTMLInputElement;
+    const input = document.querySelector('input[type="range"]') as HTMLInputElement;
 
-    expect(slider).toHaveAttribute("name", "volume");
-    expect(slider).toHaveAttribute("form", "audioForm");
+    expect(input).toHaveAttribute("name", "volume");
+    expect(input).toHaveAttribute("form", "audioForm");
   });
 
   it("inherits form disabled state", () => {
@@ -44,7 +46,11 @@ describe("Slider (solid-spectrum)", () => {
       </Form>
     ));
 
-    expect(screen.getByRole("slider")).toBeDisabled();
+    const slider = screen.getByRole("slider");
+    const input = document.querySelector('input[type="range"]') as HTMLInputElement;
+
+    expect(slider).toHaveAttribute("aria-disabled", "true");
+    expect(input).toBeDisabled();
   });
 
   it("merges SliderContext props, styles, unsafe style, and ref", () => {
@@ -64,9 +70,10 @@ describe("Slider (solid-spectrum)", () => {
       </SliderContext.Provider>
     ));
 
-    const slider = screen.getByRole("slider", { name: "Context volume" }) as HTMLInputElement;
+    const slider = screen.getByRole("slider", { name: "Context volume" });
+    const input = document.querySelector('input[type="range"]') as HTMLInputElement;
     const root = slider.closest(".context-slider") as HTMLElement;
-    expect(slider.value).toBe("25");
+    expect(input.value).toBe("25");
     expect(root).toHaveClass("context-slider");
     expect(root).toHaveStyle({ margin: "1px" });
     expect(ref).toHaveBeenCalledWith(root);

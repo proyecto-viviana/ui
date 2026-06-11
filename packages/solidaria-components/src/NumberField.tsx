@@ -525,9 +525,19 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
   }
 
   const isDisabled = () => context.isDisabled || !context.state.canIncrement();
+  const pressButtonProps = () => {
+    const {
+      onClick: _onClick,
+      disabled: _disabled,
+      type: _type,
+      tabIndex: _tabIndex,
+      ...rest
+    } = context.incrementButtonProps as Record<string, unknown>;
+    return rest;
+  };
 
   const buttonAria = createButton({
-    ...(context.incrementButtonProps as Record<string, unknown>),
+    ...pressButtonProps(),
     elementType: "div",
     get isDisabled() {
       return isDisabled();
@@ -594,9 +604,19 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
   }
 
   const isDisabled = () => context.isDisabled || !context.state.canDecrement();
+  const pressButtonProps = () => {
+    const {
+      onClick: _onClick,
+      disabled: _disabled,
+      type: _type,
+      tabIndex: _tabIndex,
+      ...rest
+    } = context.decrementButtonProps as Record<string, unknown>;
+    return rest;
+  };
 
   const buttonAria = createButton({
-    ...(context.decrementButtonProps as Record<string, unknown>),
+    ...pressButtonProps(),
     elementType: "div",
     get isDisabled() {
       return isDisabled();

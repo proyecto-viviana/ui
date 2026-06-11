@@ -11,6 +11,7 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { focusWithoutScrolling } from "../utils/focus";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
+import { useLocale } from "../i18n";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { SliderState, SliderOrientation } from "@proyecto-viviana/solid-stately";
 
@@ -61,6 +62,7 @@ export function createSlider(
 ): SliderAria {
   const getProps = () => access(props);
   const id = createId(getProps().id);
+  const locale = useLocale();
 
   // Generate IDs for associated elements
   const inputId = `${id}-input`;
@@ -158,6 +160,38 @@ export function createSlider(
     if (state.isDisabled) return;
 
     switch (e.key) {
+      case "ArrowRight":
+        e.preventDefault();
+        if (state.orientation === "horizontal" && locale().direction === "rtl") {
+          state.decrement();
+        } else {
+          state.increment();
+        }
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        if (state.orientation === "horizontal" && locale().direction === "rtl") {
+          state.increment();
+        } else {
+          state.decrement();
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (state.orientation === "vertical") {
+          state.increment();
+        } else {
+          state.decrement();
+        }
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        if (state.orientation === "vertical") {
+          state.decrement();
+        } else {
+          state.increment();
+        }
+        break;
       case "PageUp":
         e.preventDefault();
         state.increment(state.pageStep / state.step);
@@ -277,8 +311,20 @@ export function createSlider(
       const isVertical = state.orientation === "vertical";
 
       return {
+        role: "slider",
+        "aria-valuemin": state.minValue,
+        "aria-valuemax": state.maxValue,
+        "aria-valuenow": state.value(),
+        "aria-valuetext": state.getFormattedValue(),
+        "aria-orientation": state.orientation,
+        "aria-disabled": state.isDisabled || undefined,
+        "aria-labelledby": labelledBy(),
+        "aria-label": labelledBy() ? undefined : ariaLabel(),
+        tabIndex: state.isDisabled ? undefined : 0,
         onPointerDown: onThumbPointerDown,
         onKeyDown: onThumbKeyDown,
+        onFocus,
+        onBlur,
         style: {
           position: "absolute",
           [isVertical ? "bottom" : "left"]: `${percent * 100}%`,
@@ -297,6 +343,7 @@ export function createSlider(
         {
           type: "range",
           id: inputId,
+          "aria-hidden": true,
           min: state.minValue,
           max: state.maxValue,
           step: state.step,
@@ -308,7 +355,7 @@ export function createSlider(
           "aria-valuetext": state.getFormattedValue(),
           "aria-labelledby": labelledBy(),
           "aria-label": labelledBy() ? undefined : ariaLabel(),
-          tabIndex: state.isDisabled ? undefined : 0,
+          tabIndex: -1,
           onInput: (e: Event) => {
             const target = e.target as HTMLInputElement;
             state.setValue(parseFloat(target.value));

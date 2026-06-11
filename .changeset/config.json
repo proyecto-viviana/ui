@@ -1,9 +1,10 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
   "changelog": [
-    "@changesets/changelog-github",
+    "./changelog.cjs",
     {
-      "repo": "proyecto-viviana/ui"
+      "repo": "proyecto-viviana/ui",
+      "serverUrl": "https://github.com"
     }
   ],
   "commit": false,

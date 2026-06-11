@@ -707,8 +707,8 @@ describe("ComboBox", () => {
       });
 
       if (interactionType === "keyboard") {
-        screen.getByRole("option", { name: "Apple" }).focus();
-        await user.keyboard("{Enter}");
+        screen.getByRole("combobox").focus();
+        await user.keyboard("{ArrowDown}{Enter}");
       } else {
         await user.click(screen.getByRole("option", { name: "Apple" }));
       }

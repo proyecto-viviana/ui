@@ -365,6 +365,7 @@ export function Tag(props: TagProps): JSX.Element {
       get key() {
         return local.id;
       },
+      role: "row",
       get isDisabled() {
         return local.isDisabled || groupContext?.isDisabled;
       },

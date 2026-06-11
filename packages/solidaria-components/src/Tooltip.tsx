@@ -226,6 +226,40 @@ const TriggerWrapper: ParentComponent<{
 }> = (props) => {
   const child = () => props.children as JSX.Element;
   const [triggerElement, setTriggerElement] = createSignal<HTMLElement | null>(null);
+  const [wrapperElement, setWrapperElement] = createSignal<HTMLSpanElement | null>(null);
+  const getWrapperEventProps = () => {
+    const triggerProps = props.triggerProps as Record<string, unknown>;
+    const wrapperProps: Record<string, unknown> = {};
+    const eventPropNames = [
+      "onFocus",
+      "onBlur",
+      "onPointerEnter",
+      "onPointerLeave",
+      "onPointerOver",
+      "onPointerOut",
+      "onMouseEnter",
+      "onMouseLeave",
+      "onTouchStart",
+      "onPointerDown",
+      "onKeyDown",
+    ];
+
+    for (const propName of eventPropNames) {
+      const handler = triggerProps[propName];
+      if (typeof handler === "function") {
+        wrapperProps[propName] = handler;
+      }
+    }
+
+    if (!wrapperProps.onPointerEnter && typeof triggerProps.onMouseEnter === "function") {
+      wrapperProps.onPointerEnter = triggerProps.onMouseEnter;
+    }
+    if (!wrapperProps.onPointerLeave && typeof triggerProps.onMouseLeave === "function") {
+      wrapperProps.onPointerLeave = triggerProps.onMouseLeave;
+    }
+
+    return wrapperProps as JSX.HTMLAttributes<HTMLSpanElement>;
+  };
 
   createEffect(() => {
     const element = triggerElement();
@@ -241,7 +275,9 @@ const TriggerWrapper: ParentComponent<{
       element.removeAttribute("aria-describedby");
     }
 
-    const listeners: Array<[string, EventListener]> = [];
+    const wrapper = wrapperElement();
+    const targets = Array.from(new Set([element, wrapper].filter(Boolean))) as HTMLElement[];
+    const listeners: Array<[HTMLElement, string, EventListener]> = [];
     const eventProps = [
       ["onFocus", "focus"],
       ["onBlur", "blur"],
@@ -257,17 +293,24 @@ const TriggerWrapper: ParentComponent<{
     ] as const;
 
     for (const [propName, eventName] of eventProps) {
-      const handler = triggerProps[propName];
+      let handler = triggerProps[propName];
+      if (!handler && propName === "onPointerEnter") {
+        handler = triggerProps.onMouseEnter;
+      } else if (!handler && propName === "onPointerLeave") {
+        handler = triggerProps.onMouseLeave;
+      }
       if (typeof handler === "function") {
         const listener = handler as EventListener;
-        element.addEventListener(eventName, listener);
-        listeners.push([eventName, listener]);
+        for (const target of targets) {
+          target.addEventListener(eventName, listener);
+          listeners.push([target, eventName, listener]);
+        }
       }
     }
 
     onCleanup(() => {
-      for (const [eventName, listener] of listeners) {
-        element.removeEventListener(eventName, listener);
+      for (const [target, eventName, listener] of listeners) {
+        target.removeEventListener(eventName, listener);
       }
       if (describedBy && element.getAttribute("aria-describedby") === describedBy) {
         element.removeAttribute("aria-describedby");
@@ -279,6 +322,8 @@ const TriggerWrapper: ParentComponent<{
   // However, display:contents makes getBoundingClientRect return zeros,
   // so we pass a ref callback that finds the first actual element child.
   const handleRef = (span: HTMLSpanElement) => {
+    setWrapperElement(span);
+
     const findElementChild = (el: Element): HTMLElement | null => {
       for (const child of el.children) {
         if (child instanceof HTMLElement) {
@@ -329,7 +374,7 @@ const TriggerWrapper: ParentComponent<{
   };
 
   return (
-    <span ref={handleRef} style={{ display: "contents" }}>
+    <span {...getWrapperEventProps()} ref={handleRef} style={{ display: "contents" }}>
       {child()}
     </span>
   );

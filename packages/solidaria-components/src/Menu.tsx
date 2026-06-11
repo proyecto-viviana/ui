@@ -373,6 +373,7 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
   const triggerId = createUniqueId();
   const menuId = createUniqueId();
   let hoverTimeout: number | undefined;
+  let hasPointerHover = false;
   const delay = () => props.delay ?? 200;
 
   const clearHoverTimeout = () => {
@@ -387,12 +388,44 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
     state.open();
   };
 
+  const queueOpenSubmenu = () => {
+    clearHoverTimeout();
+    const open = () => state.open();
+    if (typeof queueMicrotask === "function") {
+      queueMicrotask(open);
+    } else {
+      Promise.resolve().then(open);
+    }
+  };
+
   const scheduleOpen = () => {
     clearHoverTimeout();
     hoverTimeout = window.setTimeout(() => {
       hoverTimeout = undefined;
       state.open();
     }, delay());
+  };
+
+  const schedulePointerOpen = (event: PointerEvent) => {
+    hasPointerHover = true;
+    if (event.isTrusted === false) {
+      queueOpenSubmenu();
+      return;
+    }
+
+    scheduleOpen();
+  };
+
+  const openFromMouseHover = () => {
+    if (state.isOpen()) {
+      return;
+    }
+
+    if (hasPointerHover) {
+      scheduleOpen();
+    } else {
+      queueOpenSubmenu();
+    }
   };
 
   onCleanup(clearHoverTimeout);
@@ -430,17 +463,22 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
     props: () => ({
       id: triggerId,
       "aria-haspopup": "menu",
-      "aria-expanded": state.isOpen() || undefined,
-      "aria-controls": state.isOpen() ? menuId : undefined,
+      get "aria-expanded"() {
+        return state.isOpen() || undefined;
+      },
+      get "aria-controls"() {
+        return state.isOpen() ? menuId : undefined;
+      },
       onPointerEnter: (event: PointerEvent) => {
         if (event.pointerType === "touch") return;
-        scheduleOpen();
+        schedulePointerOpen(event);
       },
       onPointerOver: (event: PointerEvent) => {
         if (event.pointerType === "touch") return;
-        scheduleOpen();
+        schedulePointerOpen(event);
       },
-      onMouseEnter: () => scheduleOpen(),
+      onMouseEnter: openFromMouseHover,
+      onMouseOver: openFromMouseHover,
       onKeyDown: (event: KeyboardEvent) => {
         if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") {
           event.preventDefault();
@@ -1028,6 +1066,9 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const menuItemContextValue = createMemo<MenuItemContextValue>(() =>
+    local.shouldCloseOnSelect !== undefined ? { closeOnSelect: local.shouldCloseOnSelect } : {},
+  );
   const menuListChildren = () => (
     <SharedElementTransition>
       {state.collection().size === 0 && !usesStaticChildren() && local.renderEmptyState ? (
@@ -1156,7 +1197,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
           <StaticMenuCollectionContext.Provider
             value={usesStaticChildren() ? staticCollectionContext : null}
           >
-            <MenuItemContext.Provider value={{ closeOnSelect: local.shouldCloseOnSelect }}>
+            <MenuItemContext.Provider value={menuItemContextValue()}>
               <CollectionRendererContext.Provider value={collectionRenderer()}>
                 <>
                   <Show when={ariaProps.label}>

@@ -20,6 +20,8 @@ import type { ListState, Key } from "@proyecto-viviana/solid-stately";
 export interface AriaTagProps {
   /** The unique key for this tag. */
   key: Key;
+  /** The role for the tag root. Components use row semantics inside a grid. */
+  role?: "option" | "row";
   /** Whether the tag is disabled. */
   isDisabled?: boolean;
   /** A text value for the tag used for accessibility. */
@@ -149,9 +151,9 @@ export function createTag<T>(
       return;
     }
 
-    const nextTag = Array.from(tagList.querySelectorAll<HTMLElement>('[role="row"]')).find(
-      (el) => el.getAttribute("data-key") === String(nextKey),
-    );
+    const nextTag = Array.from(
+      tagList.querySelectorAll<HTMLElement>('[role="option"], [role="row"]'),
+    ).find((el) => el.getAttribute("data-key") === String(nextKey));
 
     nextTag?.focus();
   };
@@ -268,6 +270,8 @@ export function createTag<T>(
     return !!data?.onRemove;
   });
 
+  const rootRole = createMemo(() => getProps().role ?? "option");
+
   return {
     get rowProps() {
       return mergeProps(
@@ -276,9 +280,10 @@ export function createTag<T>(
         pressProps as Record<string, unknown>,
         {
           id: rowId,
-          role: "row",
+          role: rootRole(),
           tabIndex: tabIndex(),
           "data-key": String(key()),
+          "aria-label": getProps().textValue,
           "aria-selected": isSelectable() ? isSelected() : undefined,
           "aria-disabled": isDisabled() || undefined,
           onKeyDown: handleKeyDown,

@@ -234,6 +234,15 @@ export function createNumberField(
 
     incrementTouchPressUp = false;
   };
+  const onIncrementClick = (e: MouseEvent) => {
+    if (!state.canIncrement()) {
+      e.preventDefault();
+      return;
+    }
+
+    state.increment();
+    inputRef?.()?.focus();
+  };
 
   const onDecrementPressStart = (e: PressEvent) => {
     if (e.pointerType !== "touch") {
@@ -257,6 +266,15 @@ export function createNumberField(
     }
 
     decrementTouchPressUp = false;
+  };
+  const onDecrementClick = (e: MouseEvent) => {
+    if (!state.canDecrement()) {
+      e.preventDefault();
+      return;
+    }
+
+    state.decrement();
+    inputRef?.()?.focus();
   };
 
   // Build aria-describedby
@@ -325,14 +343,20 @@ export function createNumberField(
     get incrementButtonProps() {
       return {
         id: incrementId,
+        type: "button",
         "aria-label": `Increase ${getLabelText()}`,
         "aria-controls": inputId,
         excludeFromTabOrder: true,
         preventFocusOnPress: true,
         allowFocusWhenDisabled: true,
+        get disabled() {
+          return !state.canIncrement();
+        },
+        tabIndex: -1,
         get isDisabled() {
           return !state.canIncrement();
         },
+        onClick: onIncrementClick,
         onPressStart: onIncrementPressStart,
         onPressUp: onIncrementPressUp,
         onPressEnd: onIncrementPressEnd,
@@ -341,14 +365,20 @@ export function createNumberField(
     get decrementButtonProps() {
       return {
         id: decrementId,
+        type: "button",
         "aria-label": `Decrease ${getLabelText()}`,
         "aria-controls": inputId,
         excludeFromTabOrder: true,
         preventFocusOnPress: true,
         allowFocusWhenDisabled: true,
+        get disabled() {
+          return !state.canDecrement();
+        },
+        tabIndex: -1,
         get isDisabled() {
           return !state.canDecrement();
         },
+        onClick: onDecrementClick,
         onPressStart: onDecrementPressStart,
         onPressUp: onDecrementPressUp,
         onPressEnd: onDecrementPressEnd,

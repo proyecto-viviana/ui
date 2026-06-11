@@ -39,6 +39,7 @@ import {
   type CalendarState,
   type RangeCalendarState,
   type DateFieldStateProps,
+  type DatePickerStateOptions,
   type CalendarDate,
   type DateValue,
   type RangeCalendarStateProps,
@@ -349,11 +350,65 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   const [triggerRef, setTriggerRef] = createSignal<HTMLElement | null>(null);
   const [fieldRef, setFieldRef] = createSignal<HTMLDivElement | null>(null);
 
-  // Unified state using createDatePickerState as single source of truth
-  const datePickerState = createDatePickerState<T>({
-    ...(stateProps as unknown as import("@proyecto-viviana/solid-stately").DatePickerStateOptions<T>),
-    shouldCloseOnSelect: local.shouldCloseOnSelect,
-  });
+  // Unified state using createDatePickerState as single source of truth.
+  // Use getters here so controlled props keep tracking after splitProps.
+  const datePickerStateProps = {
+    get value() {
+      return stateProps.value;
+    },
+    get defaultValue() {
+      return stateProps.defaultValue;
+    },
+    get onChange() {
+      return stateProps.onChange;
+    },
+    get minValue() {
+      return stateProps.minValue;
+    },
+    get maxValue() {
+      return stateProps.maxValue;
+    },
+    get isDisabled() {
+      return stateProps.isDisabled;
+    },
+    get isReadOnly() {
+      return stateProps.isReadOnly;
+    },
+    get isRequired() {
+      return stateProps.isRequired;
+    },
+    get granularity() {
+      return stateProps.granularity;
+    },
+    get hourCycle() {
+      return stateProps.hourCycle;
+    },
+    get hideTimeZone() {
+      return stateProps.hideTimeZone;
+    },
+    get placeholderValue() {
+      return stateProps.placeholderValue;
+    },
+    get shouldCloseOnSelect() {
+      return local.shouldCloseOnSelect;
+    },
+    get defaultOpen() {
+      return stateProps.defaultOpen;
+    },
+    get isOpen() {
+      return stateProps.isOpen;
+    },
+    get onOpenChange() {
+      return stateProps.onOpenChange;
+    },
+    get isDateUnavailable() {
+      return stateProps.isDateUnavailable;
+    },
+    get validationState() {
+      return stateProps.validationState;
+    },
+  } satisfies DatePickerStateOptions<T>;
+  const datePickerState = createDatePickerState<T>(datePickerStateProps);
 
   const overlayState = {
     get isOpen() {

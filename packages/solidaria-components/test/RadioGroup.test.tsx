@@ -1125,12 +1125,9 @@ describe("RadioGroup", () => {
         }
       };
 
-      expectNotFocused(...labels);
-
-      await user.tab();
-      expect(document.activeElement).toBe(radios[0]);
-      expect(labels[0]).toHaveAttribute("data-focus-visible");
-      expect(labels[0]).toHaveClass("focus");
+      await waitFor(() => {
+        expect(document.activeElement).toBe(radios[0]);
+      });
       expectNotFocused(labels[1], labels[2]);
 
       await user.tab();

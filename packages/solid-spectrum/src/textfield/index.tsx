@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { type JSX, splitProps, Show, useContext } from "solid-js";
+import { type JSX, mergeProps, splitProps, Show, useContext } from "solid-js";
 import {
   TextField as HeadlessTextField,
   Label as HeadlessLabel,
@@ -310,12 +310,21 @@ export function TextField(props: TextFieldProps): JSX.Element {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "validationState",
   ]);
 
   const size = () => normalizeTextFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const normalizedHeadlessProps = mergeProps(headlessProps, {
+    get isInvalid() {
+      return headlessProps.isInvalid ?? local.validationState === "invalid";
+    },
+    get validationBehavior() {
+      return headlessProps.validationBehavior ?? (local.validationState ? "aria" : undefined);
+    },
+  });
 
   const rootClassName = (renderProps: TextFieldRenderProps) =>
     [
@@ -365,7 +374,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
 
   return (
     <HeadlessTextField
-      {...headlessProps}
+      {...normalizedHeadlessProps}
       label={local.label}
       description={local.description}
       errorMessage={local.errorMessage}

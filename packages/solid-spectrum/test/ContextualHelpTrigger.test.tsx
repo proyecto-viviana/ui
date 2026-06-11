@@ -183,7 +183,8 @@ describe("ContextualHelp (solid-spectrum)", () => {
       </ContextualHelpContext.Provider>
     ));
 
-    const trigger = screen.getByRole("button", { hidden: true });
+    const trigger = document.getElementById("field-help");
+    expect(trigger).toHaveAttribute("type", "button");
     expect(trigger).toHaveAttribute("id", "field-help");
     expect(trigger).toHaveAttribute("aria-labelledby", "field-label field-help");
     expect(triggerRef).toBe(trigger);

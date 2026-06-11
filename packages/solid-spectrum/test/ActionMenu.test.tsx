@@ -754,7 +754,7 @@ describe("ActionMenu (solid-spectrum)", () => {
     >;
     expect(packageExports["./ActionMenu"]).toMatchObject({
       types: "./dist/ActionMenu.d.ts",
-      solid: "./src/ActionMenu.ts",
+      solid: "./dist/ActionMenu.jsx",
       import: "./dist/ActionMenu.js",
       default: "./dist/ActionMenu.js",
     });
