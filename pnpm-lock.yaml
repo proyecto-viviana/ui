@@ -153,14 +153,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/solid-spectrum
       '@proyecto-viviana/solid-stately':
-        specifier: ^0.2.7
-        version: 0.2.7(solid-js@1.9.12)
+        specifier: ^0.3.0
+        version: 0.3.0(solid-js@1.9.12)
       '@proyecto-viviana/solidaria':
-        specifier: ^0.2.8
-        version: 0.2.8(solid-js@1.9.12)
+        specifier: ^0.3.0
+        version: 0.3.0(solid-js@1.9.12)
       '@proyecto-viviana/solidaria-components':
-        specifier: ^0.2.9
-        version: 0.2.9(solid-js@1.9.12)
+        specifier: ^0.3.2
+        version: 0.3.2(solid-js@1.9.12)
       '@tanstack/router-core':
         specifier: 1.161.1
         version: 1.161.1
@@ -1843,18 +1843,18 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@proyecto-viviana/solid-stately@0.2.7':
-    resolution: {integrity: sha512-6vFoCyd0Ja+PP+NRWiJzYoYdlLmFrrHl+gOGvDiCRpWjQ+q6ZLFu1fJE8ueABjKB8O6PMArG1gWt9NESWIfrpQ==}
+  '@proyecto-viviana/solid-stately@0.3.0':
+    resolution: {integrity: sha512-CRsUDsHsVDk08Fie3bMozxiXrtcxKmCEQugO8FdMYTKEV44NCx31oPX6nazhRpq97Y35b10EyPFlFyPNbX4GNQ==}
     peerDependencies:
       solid-js: ^1.9.0
 
-  '@proyecto-viviana/solidaria-components@0.2.9':
-    resolution: {integrity: sha512-iSE042krKrk3QEGqf43EZkIPhnJWQ5TzHBAbGIV2TTJsrcB9wfyUNLxnBOkmuy5Zx+8W6r5DzA7fj+dHemYrLw==}
+  '@proyecto-viviana/solidaria-components@0.3.2':
+    resolution: {integrity: sha512-rqGKgKjm9UfcS40RfNzELqoG6g86GL+BnV0tEfZyQ5+zbs29yClInXMEHnuoPQbY4bIJjzfvZw3CLPPmugIJxQ==}
     peerDependencies:
       solid-js: ^1.9.0
 
-  '@proyecto-viviana/solidaria@0.2.8':
-    resolution: {integrity: sha512-R/vfAkGdM3wqAWxelCXGi0L+2nCVizx/WWoOClK9qrxIWQVHui6YspTI4T9UA0jWIqPa7jACCCBOJ9cUkZLH+Q==}
+  '@proyecto-viviana/solidaria@0.3.0':
+    resolution: {integrity: sha512-2C1mlpx+/kc3oLlu430sNRrxfQtEUPj5AhJafi7lZLGzltAM6GCCZYyi3rNa+wf7HKC8BO4PxDkdftZ+2Yn4rg==}
     peerDependencies:
       solid-js: ^1.9.0
 
@@ -6481,23 +6481,24 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@proyecto-viviana/solid-stately@0.2.7(solid-js@1.9.12)':
+  '@proyecto-viviana/solid-stately@0.3.0(solid-js@1.9.12)':
     dependencies:
       '@internationalized/date': 3.12.1
       solid-js: 1.9.12
 
-  '@proyecto-viviana/solidaria-components@0.2.9(solid-js@1.9.12)':
+  '@proyecto-viviana/solidaria-components@0.3.2(solid-js@1.9.12)':
     dependencies:
       '@internationalized/date': 3.12.1
-      '@proyecto-viviana/solid-stately': 0.2.7(solid-js@1.9.12)
-      '@proyecto-viviana/solidaria': 0.2.8(solid-js@1.9.12)
+      '@proyecto-viviana/solid-stately': 0.3.0(solid-js@1.9.12)
+      '@proyecto-viviana/solidaria': 0.3.0(solid-js@1.9.12)
       solid-js: 1.9.12
 
-  '@proyecto-viviana/solidaria@0.2.8(solid-js@1.9.12)':
+  '@proyecto-viviana/solidaria@0.3.0(solid-js@1.9.12)':
     dependencies:
       '@internationalized/date': 3.12.1
-      '@internationalized/string': 3.2.7
-      '@proyecto-viviana/solid-stately': 0.2.7(solid-js@1.9.12)
+      '@internationalized/number': 3.6.6
+      '@internationalized/string': 3.2.8
+      '@proyecto-viviana/solid-stately': 0.3.0(solid-js@1.9.12)
       solid-js: 1.9.12
 
   '@quansync/fs@1.0.0':

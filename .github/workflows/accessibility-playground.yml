@@ -30,13 +30,13 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: vp install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Chromium
-        run: vp exec --filter @proyecto-viviana/web -- playwright install --with-deps chromium
+        run: pnpm exec vp exec --filter @proyecto-viviana/web -- playwright install --with-deps chromium
 
       - name: Run blocking accessibility checks
-        run: vp run ci:a11y
+        run: pnpm run ci:a11y
 
       - name: Upload Playwright artifacts
         if: always()

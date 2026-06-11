@@ -31,10 +31,10 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: vp install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Fetch base branch
         run: git fetch origin main --depth=1
 
       - name: Run changesets CI check
-        run: vp run ci:changesets
+        run: pnpm run ci:changesets
