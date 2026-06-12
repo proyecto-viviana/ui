@@ -1,9 +1,18 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, JSX, onMount, Show, For, Suspense, lazy } from "solid-js";
+import { CalendarCard } from "@proyecto-viviana/solid-spectrum/CalendarCard";
+import { Chip } from "@proyecto-viviana/solid-spectrum/Chip";
+import {
+  ConversationBubble,
+  ConversationPreview,
+} from "@proyecto-viviana/solid-spectrum/Conversation";
+import { EventCard } from "@proyecto-viviana/solid-spectrum/EventCard";
+import { PageLayout } from "@proyecto-viviana/solid-spectrum/PageLayout";
+import { ProfileCard } from "@proyecto-viviana/solid-spectrum/ProfileCard";
+import { TimelineItem } from "@proyecto-viviana/solid-spectrum/TimelineItem";
 import {
   Button,
   Badge,
-  Chip,
   Alert,
   Avatar,
   AvatarGroup,
@@ -15,13 +24,6 @@ import {
   Dialog,
   DialogTrigger,
   DialogFooter,
-  ProfileCard,
-  EventCard,
-  CalendarCard,
-  ConversationPreview,
-  ConversationBubble,
-  TimelineItem,
-  PageLayout,
   TextField,
   Link,
   ProgressBar,

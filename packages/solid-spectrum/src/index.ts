@@ -4,7 +4,7 @@
 // should live outside the main S2 export path.
 
 // Provider
-export { Provider } from "./provider";
+export { Provider, useTheme } from "./provider";
 export type {
   ColorScheme,
   ProviderContextValue,
@@ -35,8 +35,16 @@ export type {
 } from "./accordion";
 
 // ActionBar
-export { ActionBar, ActionBarContext } from "./actionbar";
-export type { ActionBarProps } from "./actionbar";
+export { ActionBar, ActionBarContainer, ActionBarContext } from "./actionbar";
+export type { ActionBarContainerProps, ActionBarProps } from "./actionbar";
+
+// ActionGroup
+export { ActionGroup } from "./actiongroup";
+export type { ActionGroupProps } from "./actiongroup";
+
+// Alert
+export { Alert } from "./alert";
+export type { AlertProps, AlertVariant } from "./alert";
 
 // ActionButton / Button family
 export { ActionButton } from "./button/ActionButton";
@@ -75,10 +83,13 @@ export { ActionMenu, ActionMenuContext } from "./menu/ActionMenu";
 export type { ActionMenuProps } from "./menu/ActionMenu";
 export {
   Collection,
+  ContextualHelpTrigger,
   Menu,
+  MenuButton,
   MenuContext,
   MenuItem,
   MenuSection,
+  MenuSeparator,
   MenuTrigger,
   SubmenuTrigger,
   UnavailableMenuItemTrigger,
@@ -86,9 +97,11 @@ export {
 export type {
   MenuItemProps,
   MenuAlign,
+  MenuButtonProps,
   MenuDirection,
   MenuProps,
   MenuSectionProps,
+  MenuSeparatorProps,
   MenuSize,
   SubmenuTriggerProps,
   MenuTriggerProps,
@@ -193,6 +206,7 @@ export type {
 export {
   ColorArea,
   ColorAreaContext,
+  ColorEditor,
   ColorField,
   ColorFieldContext,
   ColorSlider,
@@ -201,6 +215,7 @@ export {
   ColorSwatchContext,
   ColorSwatchPicker,
   ColorSwatchPickerContext,
+  ColorSwatchPickerItem,
   ColorWheel,
   ColorWheelContext,
   getColorChannels,
@@ -210,6 +225,7 @@ export type {
   Color,
   ColorAxes,
   ColorAreaProps,
+  ColorEditorProps,
   ColorChannel,
   ColorChannelRange,
   ColorFieldProps,
@@ -222,6 +238,7 @@ export type {
   ColorSize,
   ColorSliderProps,
   ColorSwatchPickerDensity,
+  ColorSwatchPickerItemProps,
   ColorSwatchPickerProps,
   ColorSwatchPickerRounding,
   ColorSwatchPickerSize,
@@ -237,8 +254,22 @@ export type {
 } from "./color/ColorSwatchPicker";
 
 // ComboBox
-export { ComboBox, ComboBoxContext, ComboBoxOption as ComboBoxItem } from "./combobox";
+export {
+  ComboBox,
+  ComboBoxButton,
+  ComboBoxContext,
+  ComboBoxInput,
+  ComboBoxInputGroup,
+  ComboBoxListBox,
+  ComboBoxOption,
+  ComboBoxOption as ComboBoxItem,
+  defaultContainsFilter,
+} from "./combobox";
 export type {
+  ComboBoxButtonProps,
+  ComboBoxInputProps,
+  ComboBoxListBoxProps,
+  ComboBoxOptionProps,
   ComboBoxOptionProps as ComboBoxItemProps,
   ComboBoxProps,
   ComboBoxSize,
@@ -305,6 +336,10 @@ export type {
 export { Divider, DividerContext } from "./divider";
 export type { DividerOrientation, DividerProps, DividerSize, DividerStaticColor } from "./divider";
 
+// Separator
+export { Separator } from "./separator";
+export type { SeparatorProps, SeparatorSize, SeparatorVariant } from "./separator";
+
 // DropZone
 export { DropZone, DropZoneContext } from "./dropzone";
 export type { DropZoneProps, DropZoneSize } from "./dropzone";
@@ -362,6 +397,14 @@ export type { InlineAlertFillStyle, InlineAlertProps, InlineAlertVariant } from 
 export { Link, LinkContext } from "./link";
 export type { LinkProps } from "./link";
 
+// Layout
+export { Flex, Grid } from "./layout";
+export type { FlexProps, GridProps } from "./layout";
+
+// ListBox
+export { ListBox, ListBoxOption, ListBoxSection } from "./listbox";
+export type { ListBoxOptionProps, ListBoxProps, ListBoxSectionProps, ListBoxSize } from "./listbox";
+
 // ListView
 export { ListView, ListViewContext, ListViewItem } from "./list";
 export type {
@@ -388,8 +431,16 @@ export { Picker, PickerItem } from "./picker";
 export type { PickerItemProps, PickerProps, PickerSize } from "./picker";
 
 // Popover
-export { Popover } from "./popover";
-export type { PopoverPlacement, PopoverProps, PopoverRenderProps, PopoverSize } from "./popover";
+export { Popover, PopoverFooter, PopoverHeader, PopoverTrigger } from "./popover";
+export type {
+  PopoverFooterProps,
+  PopoverHeaderProps,
+  PopoverPlacement,
+  PopoverProps,
+  PopoverRenderProps,
+  PopoverSize,
+  PopoverTriggerProps,
+} from "./popover";
 
 // Progress
 export { NotificationBadge, NotificationBadgeContext } from "./notificationbadge";
@@ -435,6 +486,17 @@ export type { SegmentedControlItemProps, SegmentedControlProps } from "./segment
 // SelectBoxGroup
 export { SelectBox, SelectBoxGroup, SelectBoxGroupContext } from "./selectboxgroup";
 export type { SelectBoxGroupProps, SelectBoxOrientation, SelectBoxProps } from "./selectboxgroup";
+
+// Select
+export { Select, SelectListBox, SelectOption, SelectTrigger, SelectValue } from "./select";
+export type {
+  SelectListBoxProps,
+  SelectOptionProps,
+  SelectProps,
+  SelectSize,
+  SelectTriggerProps,
+  SelectValueProps,
+} from "./select";
 
 // Skeleton
 export { Skeleton, SkeletonCollection, useIsSkeleton } from "./skeleton";
@@ -486,27 +548,44 @@ export { StatusLight, StatusLightContext } from "./statuslight";
 export type { StatusLightProps } from "./statuslight";
 
 // Switch
-export { Switch } from "./switch";
-export type { SwitchProps, SwitchSize } from "./switch";
+export { Switch, TabSwitch, ToggleSwitch } from "./switch";
+export type { SwitchProps, SwitchSize, TabSwitchProps, ToggleSwitchProps } from "./switch";
 
 // TableView
 export {
+  ResizableTableContainer,
+  Table,
   TableBody,
+  TableCell,
   TableCell as Cell,
+  TableColumn,
   TableColumn as Column,
+  TableFooter,
   TableHeader,
+  TableRow,
   TableRow as Row,
+  TableSelectAllCheckbox,
+  TableSelectionCheckbox,
   TableView,
 } from "./table";
 export type {
   ColumnDefinition,
   Key,
+  ResizableTableContainerProps,
   SortDescriptor,
+  TableAlign,
   TableBodyProps,
+  TableCellProps,
   TableCellProps as CellProps,
+  TableColumnProps,
   TableColumnProps as ColumnProps,
+  TableDensity,
+  TableFooterProps,
   TableHeaderProps,
+  TableOverflowMode,
+  TableProps,
   TableProps as TableViewProps,
+  TableRowProps,
   TableRowProps as RowProps,
   TableSize,
   TableVariant,
@@ -548,8 +627,31 @@ export type {
 } from "./textfield";
 
 // Toast
-export { ToastContainer, ToastQueue } from "./toast";
-export type { ToastContainerProps, ToastOptions } from "./toast";
+export {
+  addToast,
+  Toast,
+  ToastContainer,
+  ToastProvider,
+  ToastQueue,
+  ToastRegion,
+  toastError,
+  toastInfo,
+  toastSuccess,
+  toastWarning,
+} from "./toast";
+export type {
+  ToastContainerProps,
+  ToastOptions,
+  ToastPlacement,
+  ToastProps,
+  ToastProviderProps,
+  ToastRegionProps,
+  ToastVariant,
+} from "./toast";
+
+// Toolbar
+export { Toolbar } from "./toolbar";
+export type { ToolbarProps, ToolbarSize, ToolbarVariant } from "./toolbar";
 
 // Tooltip
 export { Tooltip, TooltipTrigger } from "./tooltip";
@@ -564,6 +666,12 @@ export type {
 // TreeView
 export {
   Collection as TreeViewCollection,
+  Tree,
+  TreeExpandButton,
+  TreeItem,
+  TreeItemContent,
+  TreeLoadMoreItem,
+  TreeSelectionCheckbox,
   TreeView,
   TreeViewContext,
   TreeViewItem,
@@ -571,12 +679,17 @@ export {
   TreeViewLoadMoreItem,
 } from "./tree";
 export type {
+  TreeExpandButtonProps,
   TreeItemData,
+  TreeItemContentProps,
   TreeItemContentProps as TreeViewItemContentProps,
+  TreeItemProps,
   TreeItemProps as TreeViewItemProps,
+  TreeLoadMoreItemProps,
   TreeLoadMoreItemProps as TreeViewLoadMoreItemProps,
   TreeLoadingState,
   TreeOverflowMode,
+  TreeProps,
   TreeProps as TreeViewProps,
   TreeRenderItemState,
   TreeSelectionStyle,

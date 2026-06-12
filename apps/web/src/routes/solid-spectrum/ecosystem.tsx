@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { Header } from "@/components";
-import { ProjectCard, PageLayout } from "@proyecto-viviana/solid-spectrum";
+import { PageLayout } from "@proyecto-viviana/solid-spectrum/PageLayout";
+import { ProjectCard } from "@proyecto-viviana/solid-spectrum/ProjectCard";
 
 export const Route = createFileRoute("/solid-spectrum/ecosystem")({
   component: Ecosystem,

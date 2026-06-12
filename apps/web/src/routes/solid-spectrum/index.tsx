@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { GitHubIcon } from "@proyecto-viviana/solid-spectrum";
+import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
 import { Header } from "@/components";
 import { useThemeColors, useTheme } from "@/utils/theme";
 

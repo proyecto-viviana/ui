@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@tanstack/solid-router";
-import { GitHubIcon, Logo } from "@proyecto-viviana/solid-spectrum";
+import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
+import { Logo } from "@proyecto-viviana/solid-spectrum/Logo";
 import { createSignal, onMount, onCleanup, Show } from "solid-js";
 import { useTheme, useThemeColors } from "@/utils/theme";
 

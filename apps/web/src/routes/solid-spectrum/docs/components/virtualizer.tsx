@@ -5,7 +5,7 @@ import {
   ListLayout,
   GridLayout,
   WaterfallLayout,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solidaria-components";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 const listItems = Array.from({ length: 1000 }, (_, i) => ({
