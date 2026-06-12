@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/ui",
-  "version": "0.1.4",
+  "version": "0.3.6",
   "description": "Viviana design system. Starts by re-exporting @proyecto-viviana/solid-spectrum (same components + tokens + style macro); diverges (viviana tokens, then components) over time.",
   "license": "MIT",
   "repository": {

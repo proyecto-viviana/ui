@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@proyecto-viviana/solid-spectrum": "workspace:*",
-    "@proyecto-viviana/solid-stately": "^0.3.0",
-    "@proyecto-viviana/solidaria": "^0.3.0",
-    "@proyecto-viviana/solidaria-components": "^0.3.2",
+    "@proyecto-viviana/solid-stately": "workspace:*",
+    "@proyecto-viviana/solidaria": "workspace:*",
+    "@proyecto-viviana/solidaria-components": "workspace:*",
     "@tanstack/router-core": "1.171.13",
     "@tanstack/solid-router": "1.170.15",
     "@tanstack/solid-start": "1.168.25",
