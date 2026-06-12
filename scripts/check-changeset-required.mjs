@@ -8,7 +8,20 @@ const releasablePaths = [
   "packages/solidaria/",
   "packages/solidaria-components/",
   "packages/solid-spectrum/",
+  "packages/viviana-ui/",
 ];
+
+function getHeadRef() {
+  if (process.env.CHANGESET_HEAD_REF) return process.env.CHANGESET_HEAD_REF;
+  if (process.env.GITHUB_HEAD_REF) return process.env.GITHUB_HEAD_REF;
+  if (process.env.GITHUB_REF_NAME) return process.env.GITHUB_REF_NAME;
+
+  try {
+    return execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim();
+  } catch {
+    return "";
+  }
+}
 
 function getChangedFiles() {
   const output = execFileSync("git", ["diff", "--name-only", `${baseRef}...HEAD`], {
@@ -39,6 +52,13 @@ if (process.env.CHANGED_FILES) {
 
 if (changedFiles.length === 0) {
   console.log("No changed files detected.");
+  process.exit(0);
+}
+
+const headRef = getHeadRef();
+
+if (headRef.startsWith("changeset-release/")) {
+  console.log(`Changesets release branch detected (${headRef}). Changeset file not required.`);
   process.exit(0);
 }
 

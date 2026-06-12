@@ -159,14 +159,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/solid-spectrum
       '@proyecto-viviana/solid-stately':
-        specifier: ^0.3.0
-        version: 0.3.0(solid-js@1.9.12)
+        specifier: workspace:*
+        version: link:../../packages/solid-stately
       '@proyecto-viviana/solidaria':
-        specifier: ^0.3.0
-        version: 0.3.0(solid-js@1.9.12)
+        specifier: workspace:*
+        version: link:../../packages/solidaria
       '@proyecto-viviana/solidaria-components':
-        specifier: ^0.3.2
-        version: 0.3.2(solid-js@1.9.12)
+        specifier: workspace:*
+        version: link:../../packages/solidaria-components
       '@tanstack/router-core':
         specifier: 1.171.13
         version: 1.171.13
@@ -1664,21 +1664,6 @@ packages:
 
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
-
-  '@proyecto-viviana/solid-stately@0.3.0':
-    resolution: {integrity: sha512-CRsUDsHsVDk08Fie3bMozxiXrtcxKmCEQugO8FdMYTKEV44NCx31oPX6nazhRpq97Y35b10EyPFlFyPNbX4GNQ==}
-    peerDependencies:
-      solid-js: ^1.9.0
-
-  '@proyecto-viviana/solidaria-components@0.3.2':
-    resolution: {integrity: sha512-rqGKgKjm9UfcS40RfNzELqoG6g86GL+BnV0tEfZyQ5+zbs29yClInXMEHnuoPQbY4bIJjzfvZw3CLPPmugIJxQ==}
-    peerDependencies:
-      solid-js: ^1.9.0
-
-  '@proyecto-viviana/solidaria@0.3.0':
-    resolution: {integrity: sha512-2C1mlpx+/kc3oLlu430sNRrxfQtEUPj5AhJafi7lZLGzltAM6GCCZYyi3rNa+wf7HKC8BO4PxDkdftZ+2Yn4rg==}
-    peerDependencies:
-      solid-js: ^1.9.0
 
   '@quansync/fs@1.0.0':
     resolution: {integrity: sha512-4TJ3DFtlf1L5LDMaM6CanJ/0lckGNtJcMjQ1NAV6zDmA0tEHKZtxNKin8EgPaVX1YzljbxckyT2tJrpQKAtngQ==}
@@ -6054,26 +6039,6 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@proyecto-viviana/solid-stately@0.3.0(solid-js@1.9.12)':
-    dependencies:
-      '@internationalized/date': 3.12.1
-      solid-js: 1.9.12
-
-  '@proyecto-viviana/solidaria-components@0.3.2(solid-js@1.9.12)':
-    dependencies:
-      '@internationalized/date': 3.12.1
-      '@proyecto-viviana/solid-stately': 0.3.0(solid-js@1.9.12)
-      '@proyecto-viviana/solidaria': 0.3.0(solid-js@1.9.12)
-      solid-js: 1.9.12
-
-  '@proyecto-viviana/solidaria@0.3.0(solid-js@1.9.12)':
-    dependencies:
-      '@internationalized/date': 3.12.1
-      '@internationalized/number': 3.6.6
-      '@internationalized/string': 3.2.8
-      '@proyecto-viviana/solid-stately': 0.3.0(solid-js@1.9.12)
-      solid-js: 1.9.12
-
   '@quansync/fs@1.0.0':
     dependencies:
       quansync: 1.0.0
@@ -6594,7 +6559,7 @@ snapshots:
       lightningcss: 1.32.0
       postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.12)(tsx@4.21.0)(yaml@2.8.3)
       rolldown: 1.1.1
-      tsdown: 0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@5.9.3)(unrun@0.2.39)
+      tsdown: 0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39)
     optionalDependencies:
       postcss: 8.5.12
     transitivePeerDependencies:
@@ -8541,22 +8506,6 @@ snapshots:
       glob: 13.0.6
       package-json-from-dist: 1.0.1
 
-  rolldown-plugin-dts@0.25.2(rolldown@1.1.1)(typescript@5.9.3):
-    dependencies:
-      '@babel/generator': 8.0.0-rc.6
-      '@babel/helper-validator-identifier': 8.0.0-rc.6
-      '@babel/parser': 8.0.0-rc.6
-      ast-kit: 3.0.0-beta.1
-      birpc: 4.0.0
-      dts-resolver: 3.0.0
-      get-tsconfig: 5.0.0-beta.5
-      obug: 2.1.1
-      rolldown: 1.1.1
-    optionalDependencies:
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - oxc-resolver
-
   rolldown-plugin-dts@0.25.2(rolldown@1.1.1)(typescript@6.0.3):
     dependencies:
       '@babel/generator': 8.0.0-rc.6
@@ -8869,34 +8818,6 @@ snapshots:
   tsconfck@3.1.6(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
-
-  tsdown@0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@5.9.3)(unrun@0.2.39):
-    dependencies:
-      ansis: 4.3.1
-      cac: 7.0.0
-      defu: 6.1.7
-      empathic: 2.0.1
-      hookable: 6.1.1
-      import-without-cache: 0.4.0
-      obug: 2.1.1
-      picomatch: 4.0.4
-      rolldown: 1.1.1
-      rolldown-plugin-dts: 0.25.2(rolldown@1.1.1)(typescript@5.9.3)
-      semver: 7.8.4
-      tinyexec: 1.2.4
-      tinyglobby: 0.2.17
-      tree-kill: 1.2.2
-      unconfig-core: 7.5.0
-    optionalDependencies:
-      '@tsdown/css': 0.22.2(jiti@2.7.0)(postcss@8.5.12)(tsdown@0.22.2)(tsx@4.21.0)(yaml@2.8.3)
-      tsx: 4.21.0
-      typescript: 5.9.3
-      unrun: 0.2.39
-    transitivePeerDependencies:
-      - '@ts-macro/tsc'
-      - '@typescript/native-preview'
-      - oxc-resolver
-      - vue-tsc
 
   tsdown@0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39):
     dependencies:
