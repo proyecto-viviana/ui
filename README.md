@@ -8,30 +8,31 @@ SolidJS ports of Adobe's React accessibility and Spectrum stacks:
 | `@proyecto-viviana/solidaria`            | Solid port of React Aria hooks and behavior primitives. |
 | `@proyecto-viviana/solidaria-components` | Solid port of React Aria Components.                    |
 | `@proyecto-viviana/solid-spectrum`       | Spectrum 2 styled Solid components.                     |
+| `@proyecto-viviana/ui`                   | Proyecto Viviana product UI package.                    |
 
 This project is not production-ready. Use it as a parity port and test bed until
 the release policy says otherwise.
 
 ## Current Shape
 
-Last refreshed from local reports on 2026-05-26:
+Last refreshed from local reports on 2026-06-12:
 
 - React Aria Components named exports: `0` missing from
-  `solidaria-components`.
+  `solidaria-components` (`229` upstream names, `397` Solid exports).
 - Spectrum S2 catalogue: `69` official entries tracked, `69` live on both
   React and Solid sides, `0` missing/gap catalogue entries.
-- Strict component parity audit: `68/69` official entries have modeled viewer
-  controls, `60/69` have validation notes, and `69/69` have current
-  visual/asserted evidence.
-- Visual parity coverage: `346` official states tracked, `105` with current
+- Strict component parity audit: `69/69` official entries have modeled viewer
+  controls, validation notes, and current visual/asserted evidence.
+- Visual parity coverage: `349` official states tracked, `113` with current
   React/Solid visual evidence, `56` with strict pair-diff tests.
 - `solid-spectrum` root catalogue exports are present, but many support exports
-  are still missing: `23` support exports are absent and `8` Solid exports are
-  local extras.
+  are still missing: `22` non-root/support S2 exports are absent. There are
+  `69` local Solid value exports beyond S2.
 
 Export parity is not behavior parity. A component is not done until source,
-ARIA behavior, keyboard flows, interaction timing, styling, and visual tests all
-match the upstream contract.
+ARIA behavior, keyboard flows, focus management, form behavior, interaction
+timing, styling, accessibility checks, and visual tests all match the upstream
+contract.
 
 ## Daily Commands
 
@@ -43,6 +44,8 @@ vp run comparison:dev
 vp run comparison:report:parity
 vp run comparison:report:gaps
 vp run comparison:report:exports
+vp run comparison:test:a11y
+vp run a11y:check
 vp run guard:rac-export-gap
 ```
 
@@ -60,17 +63,18 @@ vp run comparison:report:parity:strict
 vp run comparison:report:gaps
 ```
 
-The strict command currently exits non-zero until the tracked depth gaps are
-closed: Provider needs modeled viewer controls, and DropZone, NumberField,
-Picker, Provider, RadioGroup, SearchField, Switch, TextArea, and TextField need
-validation notes. After those are closed, use the visual coverage report to
-turn planned/asserted states into strict pair-diff or computed-contract proof.
+The strict command is expected to pass. Treat a failure as a blocking
+current-gate regression before claiming component parity. Use the visual
+coverage report to turn planned/asserted states into strict pair-diff,
+computed-contract, or interaction proof.
 
 Pick one component or component family, then follow
 [`apps/comparison/COMPONENT_PLAYBOOK.md`](apps/comparison/COMPONENT_PLAYBOOK.md).
 The comparison app is the verification harness. Its docs shell may dogfood
 `solid-spectrum`, but component-internal S2 styling belongs in
 `packages/solid-spectrum`, not in app CSS.
+Accessibility proof must include browser interaction tests; axe is smoke
+coverage, not the whole gate.
 
 For React Aria Components parity, start with:
 
@@ -83,6 +87,10 @@ accessibility, and test parity rather than adding names to the barrel.
 
 ## Docs Map
 
+- [`AGENTS.md`](AGENTS.md): repo-wide instructions for AI agents.
+- [`CLAUDE.md`](CLAUDE.md): Claude Code-specific notes that defer to
+  `AGENTS.md`.
+- [`docs/README.md`](docs/README.md): tracked docs index and archive boundary.
 - [`docs/CURRENT_STATUS.md`](docs/CURRENT_STATUS.md): current gap snapshot and
   next priorities.
 - [`docs/tooling.md`](docs/tooling.md): command layer, checks, and local AI

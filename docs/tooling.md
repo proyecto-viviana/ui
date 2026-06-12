@@ -73,21 +73,23 @@ Vite's native `resolve.tsconfigPaths` support instead of `vite-tsconfig-paths`.
 
 ## AI Tooling for Component Parity
 
-Two Adobe-published MCP servers are installed globally and provide on-demand
-access to React Aria and Spectrum S2 documentation during component parity work.
+Tracked agent instructions live in [`AGENTS.md`](../AGENTS.md). Claude
+Code-specific guidance lives in [`CLAUDE.md`](../CLAUDE.md). The `.claude/`
+directory contains Claude working docs and notes; consult relevant files, but
+verify status claims against current source, tests, reports, and the comparison
+playbook.
+
+When available, Adobe-published MCP servers provide on-demand access to React
+Aria and Spectrum S2 documentation during component parity work.
 
 | Server              | Package               | What it covers                                                                  |
 | ------------------- | --------------------- | ------------------------------------------------------------------------------- |
 | `react-aria`        | `@react-aria/mcp`     | React Aria Components — props, ARIA roles, keyboard interactions, accessibility |
 | `react-spectrum-s2` | `@react-spectrum/mcp` | Spectrum S2 — props, slots, style tokens, icons, illustrations                  |
 
-Both are registered in `~/.claude.json` (Claude Code), `~/.codex/config.toml`
-(Codex), and `~/.config/opencode/opencode.json` (OpenCode). They use
-`npx -y @<pkg>@latest` and auto-resolve the newest version each session.
-
-Matching agent skills (`react-aria`, `react-spectrum-s2`) are installed in
-`~/.claude/skills/` and load reference docs and style-macro guidance
-automatically when working on component parity in Claude Code.
+Local registration varies by agent client. If the MCP servers or matching
+agent skills are unavailable, fall back to installed source, vendored docs,
+relevant `.claude/` notes, and the tracked comparison playbook.
 
 See [`apps/comparison/COMPONENT_PLAYBOOK.md`](../apps/comparison/COMPONENT_PLAYBOOK.md)
 for the component audit sequence. Use
@@ -97,14 +99,15 @@ and
 for the specific source hierarchy and MCP/documentation sources to use during a
 component audit.
 
-To verify the servers are connected:
+Claude Code users can verify MCP connectivity with:
 
 ```bash
 claude mcp list
 ```
 
-Both should show `✓ Connected`. If not, check that Node.js is available in the
-shell (`node --version`).
+If they are not connected, check the local client config and that Node.js is
+available in the shell (`node --version`). Do not block project work only
+because an optional local MCP integration is unavailable.
 
 ## Package Build Migration
 
