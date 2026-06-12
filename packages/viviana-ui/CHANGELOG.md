@@ -1,6 +1,6 @@
 # @proyecto-viviana/ui
 
-## 0.1.5
+## 0.3.6
 
 ### Patch Changes
 
