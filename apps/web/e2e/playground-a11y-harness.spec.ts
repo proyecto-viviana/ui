@@ -10,6 +10,7 @@
  */
 
 import { test, expect, type Page } from "@playwright/test";
+import { routes } from "./helpers/routes";
 import {
   ensureSectionVisible,
   runA11yHarness,
@@ -25,7 +26,7 @@ async function waitForPageReady(page: Page) {
 
 test.describe("A11y harness smoke tests", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/playground");
+    await page.goto(routes.playground);
     await waitForPageReady(page);
   });
 

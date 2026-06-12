@@ -1,5 +1,5 @@
 @import "./local-utilities.css";
-@import "../../../packages/solid-spectrum/src/components.css";
+@import "@proyecto-viviana/solid-spectrum/components.css";
 
 /* Docs site semantic tokens — bound to solid-spectrum's data-color-scheme attribute. */
 :where(:root) {

@@ -1182,7 +1182,7 @@ const checkboxControls: ComponentControlGroup = {
       label: "validationBehavior",
       kind: "radio",
       defaultValue: checkboxDemoDefaults.validationBehavior,
-      options: options(checkboxValidationBehaviorOptions),
+      options: defaultableOptions(checkboxValidationBehaviorOptions),
     },
     {
       name: "isDisabled",
@@ -1320,7 +1320,7 @@ const checkboxGroupControls: ComponentControlGroup = {
       label: "validationBehavior",
       kind: "radio",
       defaultValue: checkboxGroupDemoDefaults.validationBehavior,
-      options: options(checkboxGroupValidationBehaviorOptions),
+      options: defaultableOptions(checkboxGroupValidationBehaviorOptions),
     },
     {
       name: "description",
@@ -2595,7 +2595,7 @@ const formControls: ComponentControlGroup = {
       label: "validationBehavior",
       kind: "radio",
       defaultValue: formDemoDefaults.validationBehavior,
-      options: options(formValidationBehaviorOptions),
+      options: defaultableOptions(formValidationBehaviorOptions),
     },
     {
       name: "isRequired",
@@ -2717,7 +2717,7 @@ const radioGroupControls: ComponentControlGroup = {
       label: "validationBehavior",
       kind: "radio",
       defaultValue: radioGroupDemoDefaults.validationBehavior,
-      options: options(radioGroupValidationBehaviorOptions),
+      options: defaultableOptions(radioGroupValidationBehaviorOptions),
     },
     {
       name: "description",
@@ -4189,7 +4189,7 @@ const searchFieldControls: ComponentControlGroup = {
       label: "validationBehavior",
       kind: "radio",
       defaultValue: searchFieldDemoDefaults.validationBehavior,
-      options: options(searchFieldValidationBehaviorOptions),
+      options: defaultableOptions(searchFieldValidationBehaviorOptions),
     },
     {
       name: "type",
@@ -4562,7 +4562,7 @@ const pickerControls: ComponentControlGroup = {
       label: "validationBehavior",
       kind: "radio",
       defaultValue: pickerDemoDefaults.validationBehavior,
-      options: options(pickerValidationBehaviorOptions),
+      options: defaultableOptions(pickerValidationBehaviorOptions),
     },
     {
       name: "direction",
@@ -4789,7 +4789,7 @@ const comboBoxControls: ComponentControlGroup = {
       label: "validationBehavior",
       kind: "radio",
       defaultValue: comboBoxDemoDefaults.validationBehavior,
-      options: options(comboBoxValidationBehaviorOptions),
+      options: defaultableOptions(comboBoxValidationBehaviorOptions),
     },
     {
       name: "menuTrigger",

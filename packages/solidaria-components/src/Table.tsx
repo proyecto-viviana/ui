@@ -1889,8 +1889,16 @@ export function TableSelectAllCheckbox(props: TableSelectAllCheckboxProps = {}):
     () => state as TableState<object, TableCollection<object>>,
   );
 
+  let inputRef: HTMLInputElement | undefined;
+  createEffect(() => {
+    if (inputRef) {
+      inputRef.indeterminate = selectAllCheckboxAria.isIndeterminate;
+    }
+  });
+
   return (
     <input
+      ref={inputRef}
       {...selectAllCheckboxAria.checkboxProps}
       class={props.class}
       style={props.style}

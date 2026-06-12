@@ -18,9 +18,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "vp dev --port 4000",
-    url: "http://localhost:4000",
+    command: "vp build && vp preview --port 4000",
+    url: "http://localhost:4000/solid-spectrum/playground",
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 180000,
   },
 });

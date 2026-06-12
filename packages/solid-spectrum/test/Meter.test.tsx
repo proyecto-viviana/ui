@@ -109,7 +109,7 @@ describe("Meter (solid-spectrum)", () => {
 
     const meter = screen.getByRole("meter", { name: "Boundary" }) as HTMLElement;
     expect(screen.getByTestId("meter-root")).toBe(meter);
-    expect(meter).toHaveAttribute("role", "meter progressbar");
+    expect(meter).toHaveAttribute("role", "meter");
     expect(meter).toHaveClass("unsafe-meter");
     expect(meter).not.toHaveClass("legacy-meter");
     expect(meter).toHaveStyle({ margin: "2px" });

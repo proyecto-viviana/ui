@@ -1,14 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
-import {
-  ComboBox,
-  ComboBoxInputGroup,
-  ComboBoxInput,
-  ComboBoxButton,
-  ComboBoxListBox,
-  ComboBoxOption,
-  defaultContainsFilter,
-} from "@proyecto-viviana/solid-spectrum";
+import { ComboBox, ComboBoxOption, defaultContainsFilter } from "@proyecto-viviana/solid-spectrum";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/combobox")({
@@ -39,10 +31,6 @@ function ComboBoxPage() {
       description="A combination of a text input and a dropdown listbox. Users can type to filter the options and select from the filtered list. Fully keyboard accessible."
       importCode={`import {
   ComboBox,
-  ComboBoxInputGroup,
-  ComboBoxInput,
-  ComboBoxButton,
-  ComboBoxListBox,
   ComboBoxOption,
   defaultContainsFilter,
 } from '@proyecto-viviana/solid-spectrum';`}
@@ -60,13 +48,7 @@ function ComboBoxPage() {
   label="Select a food"
   placeholder="Type to filter..."
 >
-  <ComboBoxInputGroup>
-    <ComboBoxInput />
-    <ComboBoxButton />
-  </ComboBoxInputGroup>
-  <ComboBoxListBox>
-    {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
-  </ComboBoxListBox>
+  {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
 </ComboBox>`}
       >
         <div class="max-w-sm space-y-2">
@@ -80,18 +62,12 @@ function ComboBoxPage() {
             label="Select a food"
             placeholder="Type to filter..."
           >
-            <ComboBoxInputGroup>
-              <ComboBoxInput />
-              <ComboBoxButton />
-            </ComboBoxInputGroup>
-            <ComboBoxListBox>
-              {(item: FoodItem) => (
-                <ComboBoxOption id={item.id}>
-                  <span class="font-medium">{item.name}</span>
-                  <span class="ml-2 text-xs text-primary-400">{item.category}</span>
-                </ComboBoxOption>
-              )}
-            </ComboBoxListBox>
+            {(item: FoodItem) => (
+              <ComboBoxOption id={item.id}>
+                <span class="font-medium">{item.name}</span>
+                <span class="ml-2 text-xs text-primary-400">{item.category}</span>
+              </ComboBoxOption>
+            )}
           </ComboBox>
           <p class="text-sm text-primary-400">Selected: {selected() || "none"}</p>
         </div>
@@ -115,13 +91,7 @@ function ComboBoxPage() {
               label={size === "sm" ? "Small" : size === "md" ? "Medium" : "Large"}
               placeholder="Filter..."
             >
-              <ComboBoxInputGroup>
-                <ComboBoxInput />
-                <ComboBoxButton />
-              </ComboBoxInputGroup>
-              <ComboBoxListBox>
-                {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
-              </ComboBoxListBox>
+              {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
             </ComboBox>
           ))}
         </div>
@@ -147,13 +117,7 @@ function ComboBoxPage() {
             placeholder="Start typing..."
             description="Choose your favorite food"
           >
-            <ComboBoxInputGroup>
-              <ComboBoxInput />
-              <ComboBoxButton />
-            </ComboBoxInputGroup>
-            <ComboBoxListBox>
-              {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
-            </ComboBoxListBox>
+            {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
           </ComboBox>
           <ComboBox<FoodItem>
             items={foods}
@@ -165,13 +129,7 @@ function ComboBoxPage() {
             isInvalid
             errorMessage="Please select a valid food item"
           >
-            <ComboBoxInputGroup>
-              <ComboBoxInput />
-              <ComboBoxButton />
-            </ComboBoxInputGroup>
-            <ComboBoxListBox>
-              {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
-            </ComboBoxListBox>
+            {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
           </ComboBox>
         </div>
       </Example>
@@ -190,13 +148,7 @@ function ComboBoxPage() {
             isDisabled
             label="Disabled ComboBox"
           >
-            <ComboBoxInputGroup>
-              <ComboBoxInput />
-              <ComboBoxButton />
-            </ComboBoxInputGroup>
-            <ComboBoxListBox>
-              {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
-            </ComboBoxListBox>
+            {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
           </ComboBox>
         </div>
       </Example>

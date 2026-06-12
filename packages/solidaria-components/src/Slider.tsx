@@ -468,23 +468,25 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
     ) as JSX.InputHTMLAttributes<HTMLInputElement>;
 
   return (
-    <div
-      {...domProps}
-      {...cleanThumbProps()}
-      {...cleanHoverProps()}
-      class={renderProps.class()}
-      style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
-      data-dragging={state.isDragging() || undefined}
-      data-focused={isFocused() || state.isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
-    >
+    <>
       <VisuallyHidden>
         <input ref={setInputRef} {...mergedInputProps()} />
       </VisuallyHidden>
-      {renderProps.renderChildren()}
-    </div>
+      <div
+        {...domProps}
+        {...cleanThumbProps()}
+        {...cleanHoverProps()}
+        class={renderProps.class()}
+        style={mergedStyle()}
+        data-disabled={state.isDisabled || undefined}
+        data-dragging={state.isDragging() || undefined}
+        data-focused={isFocused() || state.isFocused() || undefined}
+        data-focus-visible={isFocusVisible() || undefined}
+        data-hovered={isHovered() || undefined}
+      >
+        {renderProps.renderChildren()}
+      </div>
+    </>
   );
 }
 

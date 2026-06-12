@@ -21,6 +21,7 @@ export default defineConfig({
     dedupe: ["solid-js", "@tanstack/solid-router", "@tanstack/router-core"],
   },
   optimizeDeps: {
+    noDiscovery: true,
     exclude: [
       "@proyecto-viviana/solid-spectrum",
       "@proyecto-viviana/solidaria",

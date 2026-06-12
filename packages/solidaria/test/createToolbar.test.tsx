@@ -292,6 +292,7 @@ describe("createToolbar", () => {
 
       expect(outer).toHaveAttribute("role", "toolbar");
       expect(inner).toHaveAttribute("role", "group");
+      expect(inner).not.toHaveAttribute("aria-orientation");
     });
   });
 });

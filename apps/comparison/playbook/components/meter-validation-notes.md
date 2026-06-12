@@ -39,9 +39,9 @@ contract coverage, and refreshed report/guard evidence.
       Meter semantics, value formatting, render children, class support, and
       defensive invalid equal-range behavior outside the styled S2 wrapper.
 - [x] DOM/accessibility contract: styled Meter renders a root meter with
-      fallback `progressbar` role token, ARIA value attributes, internal label
-      association, `aria-valuetext`, route harness `data-*` passthrough, and no
-      unsupported styled event/class/style branches.
+      `role="meter"`, ARIA value attributes, internal label association,
+      `aria-valuetext`, route harness `data-*` passthrough, and no unsupported
+      styled event/class/style branches.
 - [x] Style source-to-computed: S2 style macro output covers wrapper grid,
       FieldLabel/value Text typography, track/fill geometry, all variants, all
       sizes, all static colors, label positions, Skeleton loading, and
@@ -84,8 +84,11 @@ contract coverage, and refreshed report/guard evidence.
 
 ## Accessibility And I18n
 
-- The root uses `role="meter progressbar"` to match the React Spectrum/Solid
-  compatibility contract while preserving meter semantics for queries.
+- The root uses `role="meter"` to preserve valid meter semantics and avoid
+  conflicting multi-token widget roles.
+- The comparison React Spectrum fixture normalizes the current React S2
+  `meter progressbar` fallback role token to `meter` before axe runs, keeping
+  the visual reference intact while validating the same ARIA semantics.
 - Visible labels produce an internal stable ID and `aria-labelledby`; explicit
   ARIA label props and descriptions flow through to the root.
 - `aria-valuenow`, `aria-valuemin`, `aria-valuemax`, and generated or explicit
@@ -101,9 +104,9 @@ contract coverage, and refreshed report/guard evidence.
 
 ## Style Source-To-Computed
 
-- React S2 Meter source wraps RAC Meter with S2 bar grid, FieldLabel/value Text,
-  shared track/fill styles, semantic variant fills, static-color overlays,
-  forced-colors branches, `MeterContext`, and `SkeletonWrapper`.
+- React S2 Meter source wraps RAC Meter with S2 bar grid, FieldLabel/value
+  Text, shared track/fill styles, semantic variant fills, static-color overlays,
+  forced-colors branches, fallback meter role semantics, `MeterContext`, and `SkeletonWrapper`.
 - Solid S2 Meter follows that contract without the prior compatibility aliases
   for variant, size, `class`, `showValueLabel`, raw DOM style, or root event
   props.
@@ -198,28 +201,28 @@ contract coverage, and refreshed report/guard evidence.
 
 ## Source Branch Coverage
 
-| Layer    | Upstream branch                    | Solid owner              | Class           | Observable                                       | Status  | Evidence                         |
-| -------- | ---------------------------------- | ------------------------ | --------------- | ------------------------------------------------ | ------- | -------------------------------- |
-| Headless | meter role and fallback role token | Solidaria meter props    | semantics       | `role="meter progressbar"` and ARIA values       | matched | unit and e2e tests               |
-| Headless | value/min/max ARIA                 | Solidaria meter props    | semantics       | `aria-valuenow/min/max`                          | matched | unit and e2e tests               |
-| Headless | explicit string valueLabel         | Solidaria meter props    | semantics/text  | value text and `aria-valuetext`                  | matched | unit and e2e tests               |
-| Headless | renderable displayed valueLabel    | styled Meter             | text            | displayed slot content without object ARIA text  | matched | unit test                        |
-| Headless | formatOptions value text           | Solidaria meter props    | semantics/text  | generated formatted value text                   | matched | unit test                        |
-| Styled   | S2 prop boundary                   | S2 `Meter` wrapper       | API             | no legacy class/size/variant/showValueLabel DOM  | matched | unit tests                       |
-| Styled   | wrapper bar grid                   | S2 `Meter` style macro   | visual/layout   | grid columns/areas, gap, min/max width           | matched | e2e computed contract            |
-| Styled   | FieldLabel label branch            | label wrapper/styles     | visual/text     | label typography and grid placement              | matched | unit and e2e tests               |
-| Styled   | value Text branch                  | `Text` with value styles | visual/text     | value typography and grid placement              | matched | unit and e2e tests               |
-| Styled   | track branch                       | S2 `trackStyles`         | visual          | height, radius, overflow, background, outline    | matched | e2e computed/forced-colors tests |
-| Styled   | fill width branch                  | S2 `fillStyles`          | visual/value    | clamped percentage width                         | matched | unit and e2e tests               |
-| Styled   | variant fill map                   | S2 `fillStyles`          | visual          | informative/positive/notice/negative fills       | matched | e2e full variant matrix          |
-| Styled   | size track map                     | S2 `trackStyles`         | visual          | S/M/L/XL track heights                           | matched | e2e full size matrix             |
-| Styled   | staticColor overlay branches       | S2 static-color styles   | visual          | undefined/white/black/auto overlay treatment     | matched | e2e full staticColor matrix      |
-| Styled   | labelPosition top/side branches    | S2 bar styles            | visual/layout   | grid template changes                            | matched | e2e label-position matrix        |
-| Styled   | forced-colors track/fill branches  | generated S2 CSS         | visual/a11y     | ButtonFace/ButtonText computed contract          | matched | e2e forced-colors test           |
-| Styled   | `MeterContext` merge               | S2 `Meter`               | context         | context props apply, local unsafe props override | matched | unit test                        |
-| Styled   | `SkeletonWrapper` branch           | `SkeletonWrapper`        | loading/visual  | inert skeleton wrapper around track/value text   | matched | unit test                        |
-| Harness  | route control surface              | comparison route         | route integrity | visible labels/order/defaults and changed props  | matched | e2e route-control test           |
-| Harness  | root DOM contract                  | comparison visual spec   | route integrity | root data attrs, role, ARIA, track/fill DOM      | matched | e2e computed contract            |
+| Layer    | Upstream branch                   | Solid owner              | Class           | Observable                                       | Status  | Evidence                         |
+| -------- | --------------------------------- | ------------------------ | --------------- | ------------------------------------------------ | ------- | -------------------------------- |
+| Headless | meter role                        | Solidaria meter props    | semantics       | `role="meter"` and ARIA values                   | matched | unit and e2e tests               |
+| Headless | value/min/max ARIA                | Solidaria meter props    | semantics       | `aria-valuenow/min/max`                          | matched | unit and e2e tests               |
+| Headless | explicit string valueLabel        | Solidaria meter props    | semantics/text  | value text and `aria-valuetext`                  | matched | unit and e2e tests               |
+| Headless | renderable displayed valueLabel   | styled Meter             | text            | displayed slot content without object ARIA text  | matched | unit test                        |
+| Headless | formatOptions value text          | Solidaria meter props    | semantics/text  | generated formatted value text                   | matched | unit test                        |
+| Styled   | S2 prop boundary                  | S2 `Meter` wrapper       | API             | no legacy class/size/variant/showValueLabel DOM  | matched | unit tests                       |
+| Styled   | wrapper bar grid                  | S2 `Meter` style macro   | visual/layout   | grid columns/areas, gap, min/max width           | matched | e2e computed contract            |
+| Styled   | FieldLabel label branch           | label wrapper/styles     | visual/text     | label typography and grid placement              | matched | unit and e2e tests               |
+| Styled   | value Text branch                 | `Text` with value styles | visual/text     | value typography and grid placement              | matched | unit and e2e tests               |
+| Styled   | track branch                      | S2 `trackStyles`         | visual          | height, radius, overflow, background, outline    | matched | e2e computed/forced-colors tests |
+| Styled   | fill width branch                 | S2 `fillStyles`          | visual/value    | clamped percentage width                         | matched | unit and e2e tests               |
+| Styled   | variant fill map                  | S2 `fillStyles`          | visual          | informative/positive/notice/negative fills       | matched | e2e full variant matrix          |
+| Styled   | size track map                    | S2 `trackStyles`         | visual          | S/M/L/XL track heights                           | matched | e2e full size matrix             |
+| Styled   | staticColor overlay branches      | S2 static-color styles   | visual          | undefined/white/black/auto overlay treatment     | matched | e2e full staticColor matrix      |
+| Styled   | labelPosition top/side branches   | S2 bar styles            | visual/layout   | grid template changes                            | matched | e2e label-position matrix        |
+| Styled   | forced-colors track/fill branches | generated S2 CSS         | visual/a11y     | ButtonFace/ButtonText computed contract          | matched | e2e forced-colors test           |
+| Styled   | `MeterContext` merge              | S2 `Meter`               | context         | context props apply, local unsafe props override | matched | unit test                        |
+| Styled   | `SkeletonWrapper` branch          | `SkeletonWrapper`        | loading/visual  | inert skeleton wrapper around track/value text   | matched | unit test                        |
+| Harness  | route control surface             | comparison route         | route integrity | visible labels/order/defaults and changed props  | matched | e2e route-control test           |
+| Harness  | root DOM contract                 | comparison visual spec   | route integrity | root data attrs, role, ARIA, track/fill DOM      | matched | e2e computed contract            |
 
 ## Evidence
 

@@ -49,8 +49,8 @@ function TabsPage() {
       <Example
         title="Basic Usage"
         description="A simple tab interface with multiple panels."
-        code={`<Tabs items={tabs}>
-  <TabList aria-label="Settings">
+        code={`<Tabs items={tabs} aria-label="Settings">
+  <TabList>
     {(item) => <Tab id={item.id}>{item.label}</Tab>}
   </TabList>
   <TabPanel id="account">...</TabPanel>
@@ -58,10 +58,13 @@ function TabsPage() {
   <TabPanel id="notifications">...</TabPanel>
 </Tabs>`}
       >
-        <Tabs items={settingsTabs} getKey={(item) => item.id} getTextValue={(item) => item.label}>
-          <TabList<TabItem> aria-label="Settings">
-            {(item) => <Tab id={item.id}>{item.label}</Tab>}
-          </TabList>
+        <Tabs
+          items={settingsTabs}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.label}
+          aria-label="Settings"
+        >
+          <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="account">
             <div class="p-4 text-bg-600">
               Manage your account settings, profile information, and preferences.
@@ -83,7 +86,7 @@ function TabsPage() {
       <Example
         title="Controlled Tabs"
         description="Control which tab is selected programmatically."
-        code={`<Tabs items={tabs} selectedKey={selectedKey()} onSelectionChange={setSelectedKey}>...</Tabs>`}
+        code={`<Tabs items={tabs} selectedKey={selectedKey()} onSelectionChange={setSelectedKey} aria-label="Controlled tabs">...</Tabs>`}
       >
         <div>
           <div class="mb-4 flex gap-2">
@@ -106,10 +109,9 @@ function TabsPage() {
             getTextValue={(item) => item.label}
             selectedKey={selectedKey()}
             onSelectionChange={(key) => setSelectedKey(String(key))}
+            aria-label="Controlled tabs"
           >
-            <TabList<TabItem> aria-label="Controlled tabs">
-              {(item) => <Tab id={item.id}>{item.label}</Tab>}
-            </TabList>
+            <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
             <TabPanel id="tab1">
               <div class="p-4 text-bg-600">Content for Tab 1</div>
             </TabPanel>
@@ -126,17 +128,16 @@ function TabsPage() {
       <Example
         title="Disabled Tabs"
         description="Individual tabs can be disabled."
-        code={`<Tabs items={tabs} disabledKeys={["enterprise"]}>...</Tabs>`}
+        code={`<Tabs items={tabs} disabledKeys={["enterprise"]} aria-label="Feature tiers">...</Tabs>`}
       >
         <Tabs
           items={featureTabs}
           getKey={(item) => item.id}
           getTextValue={(item) => item.label}
           disabledKeys={["enterprise"]}
+          aria-label="Feature tiers"
         >
-          <TabList<TabItem> aria-label="Features">
-            {(item) => <Tab id={item.id}>{item.label}</Tab>}
-          </TabList>
+          <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="free">
             <div class="p-4 text-bg-600">Free tier features available to all users.</div>
           </TabPanel>
@@ -152,17 +153,16 @@ function TabsPage() {
       <Example
         title="Vertical Orientation"
         description="Tabs can be displayed vertically."
-        code={`<Tabs items={tabs} orientation="vertical">...</Tabs>`}
+        code={`<Tabs items={tabs} orientation="vertical" aria-label="Vertical navigation">...</Tabs>`}
       >
         <Tabs
           items={verticalTabs}
           getKey={(item) => item.id}
           getTextValue={(item) => item.label}
           orientation="vertical"
+          aria-label="Vertical navigation"
         >
-          <TabList<TabItem> aria-label="Vertical navigation">
-            {(item) => <Tab id={item.id}>{item.label}</Tab>}
-          </TabList>
+          <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="general">
             <div class="p-4 text-bg-600">General settings and preferences.</div>
           </TabPanel>

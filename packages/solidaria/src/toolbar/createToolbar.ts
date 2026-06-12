@@ -26,7 +26,7 @@ export interface ToolbarAria {
   /** Props for the toolbar container element. */
   toolbarProps: {
     role: "toolbar" | "group";
-    "aria-orientation": Orientation;
+    "aria-orientation"?: Orientation;
     "aria-label"?: string;
     "aria-labelledby"?: string;
     tabIndex?: number;
@@ -410,7 +410,7 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
         return isInToolbar() ? "group" : "toolbar";
       },
       get "aria-orientation"() {
-        return orientation();
+        return isInToolbar() ? undefined : orientation();
       },
       get "aria-label"() {
         return ariaLabel();

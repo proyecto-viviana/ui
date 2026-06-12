@@ -16,6 +16,7 @@ describe("Slider (solid-spectrum)", () => {
     expect(input.min).toBe("0");
     expect(input.max).toBe("100");
     expect(slider).toHaveAttribute("aria-valuetext", "40");
+    expect(slider.contains(input)).toBe(false);
   });
 
   it("supports vertical orientation", () => {

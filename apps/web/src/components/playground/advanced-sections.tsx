@@ -42,10 +42,6 @@ import {
   ActionBar as StyledActionBar,
   ActionBarContainer as StyledActionBarContainer,
   ComboBox as StyledComboBox,
-  ComboBoxInputGroup as StyledComboBoxInputGroup,
-  ComboBoxInput as StyledComboBoxInput,
-  ComboBoxButton as StyledComboBoxButton,
-  ComboBoxListBox as StyledComboBoxListBox,
   ComboBoxOption as StyledComboBoxOption,
   defaultContainsFilter,
   TextArea,
@@ -1700,6 +1696,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
           selectedKey={selectedKey()}
           onSelectionChange={handleChange}
           variant="underline"
+          aria-label="Styled tab variants"
         >
           <StyledTabList>
             {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
@@ -1722,6 +1719,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
           getTextValue={(item: TabItem) => item.label}
           defaultSelectedKey="features"
           variant="pill"
+          aria-label="Pill tab example"
         >
           <StyledTabList>
             {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
@@ -1744,6 +1742,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
             defaultSelectedKey="overview"
             variant="boxed"
             size="sm"
+            aria-label="Small boxed tabs"
           >
             <StyledTabList>
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
@@ -1761,6 +1760,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
             defaultSelectedKey="overview"
             variant="boxed"
             size="md"
+            aria-label="Medium boxed tabs"
           >
             <StyledTabList>
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
@@ -1778,6 +1778,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
             defaultSelectedKey="overview"
             variant="boxed"
             size="lg"
+            aria-label="Large boxed tabs"
           >
             <StyledTabList>
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
@@ -2250,20 +2251,14 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
             label="Select a food"
             placeholder="Type to filter..."
           >
-            <StyledComboBoxInputGroup>
-              <StyledComboBoxInput />
-              <StyledComboBoxButton />
-            </StyledComboBoxInputGroup>
-            <StyledComboBoxListBox>
-              {(item: ComboBoxItem) => (
-                <StyledComboBoxOption id={item.id}>
-                  <div class="flex justify-between items-center w-full">
-                    <span>{item.name}</span>
-                    <span class="text-xs text-primary-400">{item.category}</span>
-                  </div>
-                </StyledComboBoxOption>
-              )}
-            </StyledComboBoxListBox>
+            {(item: ComboBoxItem) => (
+              <StyledComboBoxOption id={item.id}>
+                <div class="flex justify-between items-center w-full">
+                  <span>{item.name}</span>
+                  <span class="text-xs text-primary-400">{item.category}</span>
+                </div>
+              </StyledComboBoxOption>
+            )}
           </StyledComboBox>
         </div>
       </div>
@@ -2281,15 +2276,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
             label="Small"
             placeholder="Filter..."
           >
-            <StyledComboBoxInputGroup>
-              <StyledComboBoxInput />
-              <StyledComboBoxButton />
-            </StyledComboBoxInputGroup>
-            <StyledComboBoxListBox>
-              {(item: ComboBoxItem) => (
-                <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
-              )}
-            </StyledComboBoxListBox>
+            {(item: ComboBoxItem) => (
+              <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
+            )}
           </StyledComboBox>
 
           <StyledComboBox<ComboBoxItem>
@@ -2301,15 +2290,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
             label="Medium"
             placeholder="Filter..."
           >
-            <StyledComboBoxInputGroup>
-              <StyledComboBoxInput />
-              <StyledComboBoxButton />
-            </StyledComboBoxInputGroup>
-            <StyledComboBoxListBox>
-              {(item: ComboBoxItem) => (
-                <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
-              )}
-            </StyledComboBoxListBox>
+            {(item: ComboBoxItem) => (
+              <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
+            )}
           </StyledComboBox>
 
           <StyledComboBox<ComboBoxItem>
@@ -2321,15 +2304,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
             label="Large"
             placeholder="Filter..."
           >
-            <StyledComboBoxInputGroup>
-              <StyledComboBoxInput />
-              <StyledComboBoxButton />
-            </StyledComboBoxInputGroup>
-            <StyledComboBoxListBox>
-              {(item: ComboBoxItem) => (
-                <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
-              )}
-            </StyledComboBoxListBox>
+            {(item: ComboBoxItem) => (
+              <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
+            )}
           </StyledComboBox>
         </div>
       </div>
@@ -2347,15 +2324,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
             placeholder="Start typing..."
             description="Choose your favorite food from the list"
           >
-            <StyledComboBoxInputGroup>
-              <StyledComboBoxInput />
-              <StyledComboBoxButton />
-            </StyledComboBoxInputGroup>
-            <StyledComboBoxListBox>
-              {(item: ComboBoxItem) => (
-                <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
-              )}
-            </StyledComboBoxListBox>
+            {(item: ComboBoxItem) => (
+              <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
+            )}
           </StyledComboBox>
 
           <StyledComboBox<ComboBoxItem>
@@ -2371,15 +2342,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
             isInvalid={isRequiredInvalid()}
             errorMessage={isRequiredInvalid() ? "Please select a food item" : undefined}
           >
-            <StyledComboBoxInputGroup>
-              <StyledComboBoxInput />
-              <StyledComboBoxButton />
-            </StyledComboBoxInputGroup>
-            <StyledComboBoxListBox>
-              {(item: ComboBoxItem) => (
-                <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
-              )}
-            </StyledComboBoxListBox>
+            {(item: ComboBoxItem) => (
+              <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
+            )}
           </StyledComboBox>
         </div>
       </div>
@@ -2396,15 +2361,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
             isDisabled
             label="Disabled ComboBox"
           >
-            <StyledComboBoxInputGroup>
-              <StyledComboBoxInput />
-              <StyledComboBoxButton />
-            </StyledComboBoxInputGroup>
-            <StyledComboBoxListBox>
-              {(item: ComboBoxItem) => (
-                <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
-              )}
-            </StyledComboBoxListBox>
+            {(item: ComboBoxItem) => (
+              <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
+            )}
           </StyledComboBox>
         </div>
       </div>

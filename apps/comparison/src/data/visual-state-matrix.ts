@@ -3421,7 +3421,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "strict",
       spec: "e2e/timefield-visual.spec.ts",
-      note: "Standalone TimeField route mounts both stacks with S2 field shell styling, editable time spinbuttons, visible label linkage, help text, and strict zero-tolerance deterministic closed-field React/Solid pair-diff evidence.",
+      note: "Standalone TimeField route mounts both stacks with S2 field shell styling, editable time spinbuttons, visible label linkage, help text, exact-dimension deterministic closed-field React/Solid pair-diff evidence, bounded accessible segment paint drift, and panel-scoped axe coverage.",
     },
     {
       id: "styled.timefield.value",

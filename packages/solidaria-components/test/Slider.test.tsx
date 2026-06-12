@@ -62,6 +62,8 @@ describe("Slider", () => {
 
       const slider = screen.getByRole("slider");
       expect(slider).toBeInTheDocument();
+      const input = document.querySelector('input[type="range"]') as HTMLInputElement;
+      expect(slider.contains(input)).toBe(false);
     });
 
     it("should render track", () => {

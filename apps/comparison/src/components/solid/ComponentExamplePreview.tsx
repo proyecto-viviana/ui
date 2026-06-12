@@ -76,6 +76,7 @@ function frameworkPanel(options: FrameworkPanelOptions) {
           class: `comparison-island js-${options.framework}-mount`,
           "data-component-slug": options.slug,
           "data-layer": playgroundLayer,
+          tabIndex: 0,
         })
       : h("div", { class: "s2-empty-state" }, emptyStateLabel(options.framework, options.status)),
   );

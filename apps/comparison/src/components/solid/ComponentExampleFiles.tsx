@@ -78,7 +78,7 @@ export default function ComponentExampleFiles(props: ComponentExampleFilesProps)
           () => (copied() ? "Copied" : "Copy"),
         ),
       ),
-      h("pre", { class: "s2-example-code" }, h("code", {}, source)),
+      h("pre", { class: "s2-example-code", tabIndex: 0 }, h("code", {}, source)),
     ),
   )();
 }

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { routes } from "./helpers/routes";
 
 const runAxe = process.env.RUN_AXE === "1";
 const includeContrast = process.env.AXE_INCLUDE_CONTRAST === "1";
@@ -82,7 +83,7 @@ test.describe("Playground accessibility (axe scan)", () => {
     // Level 1: WCAG 2.1 A + AA (the standard bar — must pass)
     test(`[${theme}] WCAG 2.1 AA — zero violations`, async ({ page }) => {
       test.skip(!runAxe, "Queued until RUN_AXE=1");
-      await page.goto("/playground");
+      await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
 
@@ -95,7 +96,7 @@ test.describe("Playground accessibility (axe scan)", () => {
     // Level 2: WCAG 2.2 AA (latest standard)
     test(`[${theme}] WCAG 2.2 AA — zero violations`, async ({ page }) => {
       test.skip(!runAxe, "Queued until RUN_AXE=1");
-      await page.goto("/playground");
+      await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
 
@@ -110,7 +111,7 @@ test.describe("Playground accessibility (axe scan)", () => {
     // Level 3: Best practices (axe recommendations beyond WCAG)
     test(`[${theme}] best-practices — zero violations`, async ({ page }) => {
       test.skip(!runAxe, "Queued until RUN_AXE=1");
-      await page.goto("/playground");
+      await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
 
@@ -122,7 +123,7 @@ test.describe("Playground accessibility (axe scan)", () => {
     // Level 4: WCAG AAA
     test(`[${theme}] WCAG 2.1 AAA — zero violations`, async ({ page }) => {
       test.skip(!runAxe, "Queued until RUN_AXE=1");
-      await page.goto("/playground");
+      await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
 
@@ -134,7 +135,7 @@ test.describe("Playground accessibility (axe scan)", () => {
     // Level 5: Experimental rules
     test(`[${theme}] experimental rules — zero violations`, async ({ page }) => {
       test.skip(!runAxe, "Queued until RUN_AXE=1");
-      await page.goto("/playground");
+      await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
 

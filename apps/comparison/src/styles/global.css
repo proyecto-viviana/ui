@@ -618,6 +618,11 @@ html[data-theme="dark"] body.s2-docs {
   line-height: 1.5;
 }
 
+.s2-example-code:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--s2-accent) 58%, transparent);
+  outline-offset: -2px;
+}
+
 .s2-example-controls {
   position: relative;
   grid-area: controls;
@@ -802,6 +807,11 @@ html[data-theme="dark"] body.s2-docs {
   padding: 44px 16px 26px;
   overflow: auto;
   border-top: 0;
+}
+
+.s2-framework-panel > .comparison-island:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--s2-accent) 58%, transparent);
+  outline-offset: -2px;
 }
 
 .s2-framework-panel > .comparison-island > .comparison-island {

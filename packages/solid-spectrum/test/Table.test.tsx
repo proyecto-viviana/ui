@@ -130,7 +130,8 @@ describe("TableView (solid-spectrum)", () => {
 
     const selectAll = screen.getByRole("checkbox", { name: "Select All" });
     expect(selectAll).toHaveAttribute("data-indeterminate", "true");
-    expect(selectAll).toHaveAttribute("aria-checked", "mixed");
+    expect(selectAll).not.toHaveAttribute("aria-checked");
+    expect((selectAll as HTMLInputElement).indeterminate).toBe(true);
 
     const alice = screen.getByRole("row", { name: /Alice/ });
     const bob = screen.getByRole("row", { name: /Bob/ });

@@ -328,7 +328,7 @@ export function Meter(props: MeterProps): JSX.Element {
     <div
       {...getDataAttributes(merged)}
       {...meterAria.meterProps}
-      role={"meter progressbar" as never}
+      role="meter"
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,

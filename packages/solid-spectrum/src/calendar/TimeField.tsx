@@ -185,6 +185,21 @@ const timeSegment = style<
     },
   },
   borderRadius: "[2px]",
+  display: {
+    default: "inline-flex",
+    isPunctuation: "inline",
+  },
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  height: {
+    default: "[24px]",
+    isPunctuation: "auto",
+  },
+  minHeight: {
+    default: "[24px]",
+    isPunctuation: "auto",
+  },
   paddingX: {
     default: 2,
     isPunctuation: 0,

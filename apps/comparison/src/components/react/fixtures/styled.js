@@ -3284,6 +3284,7 @@ function ReactInlineAlertDemo() {
 function ReactMeterDemo() {
   const colorScheme = useComparisonResolvedTheme();
   const [demoProps, setDemoProps] = useState(meterDemoPropsFromWindow);
+  const meterRef = useRef(null);
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "meter") {
@@ -3294,6 +3295,15 @@ function ReactMeterDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
+  // React S2 currently emits "meter progressbar"; axe validates the concrete role.
+  // Normalize only the comparison reference role, leaving visual output unchanged.
+  useEffect(() => {
+    const meterElement = meterRef.current?.UNSAFE_getDOMNode?.();
+    if (meterElement?.getAttribute("role") === "meter progressbar") {
+      meterElement.setAttribute("role", "meter");
+    }
+  }, [demoProps]);
+
   return renderReactSpectrumReference(
     jsx("div", {
       ...staticColorBackdropProps(demoProps.staticColor, "comparison-meter-row"),
@@ -3301,6 +3311,7 @@ function ReactMeterDemo() {
         "data-comparison-control-root": "meter",
         "data-comparison-control-props": serializeMeterDemoProps(demoProps),
         label: demoProps.label,
+        ref: meterRef,
         value: demoProps.value,
         minValue: demoProps.minValue,
         maxValue: demoProps.maxValue,

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { routes } from "./helpers/routes";
 
 const CALENDAR_SECTION = 'section[data-testid="section-calendar"]';
 const RANGE_CALENDAR_SECTION = 'section[data-testid="section-rangecalendar"]';
@@ -71,7 +72,7 @@ async function checkNoRuntimeErrors(errors: string[]) {
 
 test.describe("Playground Calendar Regression", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/playground");
+    await page.goto(routes.playground);
     await waitForPageReady(page);
   });
 

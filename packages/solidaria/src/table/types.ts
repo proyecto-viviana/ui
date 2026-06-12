@@ -170,4 +170,6 @@ export interface TableSelectionCheckboxAria {
 export interface TableSelectAllCheckboxAria {
   /** Props to spread on the checkbox input element. */
   checkboxProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /** Whether the native checkbox should expose its mixed state. */
+  isIndeterminate: boolean;
 }

@@ -191,6 +191,22 @@ describe("button-family S2 contexts", () => {
     expect(document.activeElement).toBe(paste);
   });
 
+  it("omits toolbar orientation when ActionButtonGroup is nested as a group", () => {
+    render(() => (
+      <ActionButtonGroup aria-label="Outer actions">
+        <ActionButton>Copy</ActionButton>
+        <ActionButtonGroup aria-label="Nested actions">
+          <ActionButton>Paste</ActionButton>
+        </ActionButtonGroup>
+      </ActionButtonGroup>
+    ));
+
+    const nested = screen.getByRole("group", { name: "Nested actions" });
+
+    expect(nested).not.toHaveAttribute("aria-orientation");
+    expect(nested).toHaveAttribute("data-orientation", "horizontal");
+  });
+
   it("applies ToggleButtonContext to standalone ToggleButtons", () => {
     render(() => (
       <ToggleButtonContext.Provider value={{ size: "XL", isSelected: true }}>

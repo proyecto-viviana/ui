@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { routes } from "./helpers/routes";
 
 /**
  * Playground component tests focused on stable contracts:
@@ -52,7 +53,7 @@ async function ensureSectionVisible(page: Page, sectionId: string) {
 
 test.describe("Playground Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/playground");
+    await page.goto(routes.playground);
     await waitForPageReady(page);
   });
 

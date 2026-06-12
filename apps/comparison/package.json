@@ -21,6 +21,7 @@
     "test:contract": "vp run build && playwright test e2e/styled-contract.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
     "test:default": "vp run build && playwright test e2e/default-state-visual.spec.ts e2e/default-state-pair-diff.spec.ts e2e/live-styled-visual.spec.ts --reporter=line",
     "test:pair": "vp run build && playwright test e2e/default-state-pair-diff.spec.ts --reporter=line",
+    "test:a11y": "vp run build && playwright test e2e/comparison-axe.spec.ts --reporter=line",
     "test:dialog": "vp run build && playwright test e2e/dialog-visual.spec.ts --reporter=line",
     "test:datefield": "vp run build && playwright test e2e/datefield-visual.spec.ts e2e/modeled-controls-contract.spec.ts --grep DateField --reporter=line",
     "test:timefield": "vp run build && playwright test e2e/timefield-visual.spec.ts e2e/modeled-controls-contract.spec.ts --grep TimeField --reporter=line",
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.58.2",
+    "axe-core": "^4.11.4",
     "playwright": "^1.58.2",
     "typescript": "^5.8.2"
   },

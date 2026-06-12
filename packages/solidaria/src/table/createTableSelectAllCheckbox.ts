@@ -55,12 +55,8 @@ export function createTableSelectAllCheckbox<T extends object>(
       "aria-label": s.selectionMode === "single" ? "Select" : "Select All",
     };
 
-    // Handle indeterminate state
-    // Note: indeterminate is not a standard HTML attribute, it must be set via JavaScript
-    // The component using this should handle this separately
     if (isIndeterminate()) {
       baseProps["data-indeterminate"] = "true";
-      baseProps["aria-checked"] = "mixed";
     }
 
     return baseProps as JSX.InputHTMLAttributes<HTMLInputElement>;
@@ -69,6 +65,9 @@ export function createTableSelectAllCheckbox<T extends object>(
   return {
     get checkboxProps() {
       return checkboxProps();
+    },
+    get isIndeterminate() {
+      return isIndeterminate();
     },
   };
 }
