@@ -1,5 +1,13 @@
 # @proyecto-viviana/ui
 
+## 0.1.5
+
+### Patch Changes
+
+- 3a740bb: Fix TextField label hydration during SSR and republish the Viviana UI package chain against the fixed components.
+- Updated dependencies 3a740bb:
+  - @proyecto-viviana/solid-spectrum@0.5.4
+
 ## 0.1.4
 
 ### Patch Changes

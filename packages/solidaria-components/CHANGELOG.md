@@ -1,5 +1,11 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.3.3
+
+### Patch Changes
+
+- 3a740bb: Fix TextField label hydration during SSR and republish the Viviana UI package chain against the fixed components.
+
 ## 0.3.2
 
 ### Patch Changes
