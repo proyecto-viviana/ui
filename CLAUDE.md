@@ -10,6 +10,10 @@ The `.claude/` directory is currently ignored in this checkout, so verify its
 claims against current source, tests, generated reports, and the comparison
 playbook before acting.
 
+Use `.claude/README.md` as the navigation index for Claude working docs.
+`.claude/docs/PLAN.md` is a short Current Claude Workbench pointer, not a
+project status source of truth.
+
 When a lasting decision, checklist, or handoff matters to the project, put it in
 tracked docs:
 
