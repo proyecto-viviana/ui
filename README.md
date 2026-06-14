@@ -83,3 +83,13 @@ docs/adr/                architecture decision records (ADR 0001 = S2 styling bo
 - Docs-only changes need no Changeset; releasable package code usually does.
 - Git history is the archive — retired docs are removed from `main`, recoverable
   from the commit that removed them.
+
+## License & attribution
+
+- Our own work is [MIT](LICENSE) — deliberately permissive.
+- The packages are SolidJS ports of Adobe's React Spectrum stack (Apache-2.0).
+  That direct-license obligation is honored in [`NOTICE`](NOTICE) and
+  [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0); ported files keep their upstream
+  headers.
+- [`CREDITS.md`](CREDITS.md) credits everything sourced, referenced, or
+  inspired-by — add to it in the change that introduces new such material.

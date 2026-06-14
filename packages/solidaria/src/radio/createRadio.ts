@@ -133,8 +133,8 @@ export function createRadio(
   //    internal `checked` state when clicked, regardless of what the signal says
   //
   // To prevent this, we force the input's `checked` DOM property to match our state
-  // after processing the change. This is the pattern used by Kobalte and other
-  // SolidJS component libraries.
+  // after processing the change. This is a common pattern across SolidJS component
+  // libraries (see CREDITS.md for attribution).
   const onChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
     e.stopPropagation();
 

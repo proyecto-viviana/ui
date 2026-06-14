@@ -1,0 +1,47 @@
+Proyecto Viviana
+Copyright (c) Proyecto Viviana contributors
+
+This product is licensed under the MIT License (see LICENSE) and includes
+software that is derived from, or bundles, works licensed under the Apache
+License, Version 2.0 (see LICENSE-APACHE-2.0). A full, human-readable list of
+sourced, referenced, and inspired-by material is maintained in CREDITS.md.
+
+================================================================================
+Apache-2.0 derived works (Adobe React Spectrum)
+================================================================================
+
+The following packages are SolidJS ports of, and contain code derived from,
+Adobe's React Spectrum project:
+
+  @proyecto-viviana/solid-stately         derived from  @react-stately/*
+  @proyecto-viviana/solidaria             derived from  @react-aria/*
+  @proyecto-viviana/solidaria-components  derived from  react-aria-components
+  @proyecto-viviana/solid-spectrum        derived from  @react-spectrum/s2
+
+Original work:
+  React Spectrum
+  Copyright 2019 Adobe (and other contributors)
+  https://github.com/adobe/react-spectrum
+  Licensed under the Apache License, Version 2.0.
+
+Significant changes (Apache-2.0 section 4(b)): the source has been ported from
+React to SolidJS. APIs, the reactivity model (signals/stores in place of hooks),
+rendering, and behavior have been adapted to Solid's primitives. Ported source
+files retain Adobe's original copyright and Apache-2.0 header alongside a
+"Ported from" / "Based on" reference to the corresponding upstream module.
+
+This product also depends on, or bundles for reference, the following Apache-2.0
+material from Adobe:
+
+  - @react-spectrum/s2, @adobe/spectrum-tokens, and
+    @internationalized/{date,number,string} (runtime / peer dependencies).
+  - A vendored copy of the React Spectrum S2 documentation site under
+    apps/comparison/vendor/s2-docs/, used as a comparison reference. That
+    directory carries its own upstream NOTICE at
+    apps/comparison/vendor/s2-docs/NOTICE.
+
+As required by section 4(c) of the Apache License, Version 2.0, the upstream
+React Spectrum NOTICE (which itself lists the third-party sources Adobe modified)
+is carried forward by reference and can be obtained from the React Spectrum
+repository at https://github.com/adobe/react-spectrum/blob/main/NOTICE.txt and,
+for the vendored documentation site, at apps/comparison/vendor/s2-docs/NOTICE.
