@@ -1,102 +1,85 @@
 # Proyecto Viviana
 
-SolidJS ports of Adobe's React accessibility and Spectrum stacks:
+A faithful, **certified** Solid port of Adobe's React Stately, React Aria, and
+React Spectrum S2 stacks — the same real accessibility and behavior, for SolidJS.
+Parity is not a step toward a product; **parity is the product**.
 
-| Package                                  | Role                                                    |
-| ---------------------------------------- | ------------------------------------------------------- |
-| `@proyecto-viviana/solid-stately`        | Solid port of React Stately state primitives.           |
-| `@proyecto-viviana/solidaria`            | Solid port of React Aria hooks and behavior primitives. |
-| `@proyecto-viviana/solidaria-components` | Solid port of React Aria Components.                    |
-| `@proyecto-viviana/solid-spectrum`       | Spectrum 2 styled Solid components.                     |
-| `@proyecto-viviana/ui`                   | Proyecto Viviana product UI package.                    |
+| Package                | npm                                      | Role                                                                             |
+| ---------------------- | ---------------------------------------- | -------------------------------------------------------------------------------- |
+| `solid-stately`        | `@proyecto-viviana/solid-stately`        | State primitives. Port of `@react-stately`.                                      |
+| `solidaria`            | `@proyecto-viviana/solidaria`            | Accessibility hooks (ARIA, keyboard, focus, press/hover). Port of `@react-aria`. |
+| `solidaria-components` | `@proyecto-viviana/solidaria-components` | Headless components. Port of `react-aria-components`.                            |
+| `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       | Spectrum 2 styled components. Port of `@react-spectrum/s2`.                      |
+| `viviana-ui`           | `@proyecto-viviana/ui`                   | Product design-system layer.                                                     |
 
-This project is not production-ready. Use it as a parity port and test bed until
-the release policy says otherwise.
+## Status
 
-## Current Shape
+This is a parity port and test bed, not production-ready — use it as such until
+the release policy says otherwise. `solid-stately`, `solidaria`,
+`solidaria-components`, and `solid-spectrum` are the four releasable public
+packages; `@proyecto-viviana/ui` is public but not yet in the release matrix
+(`.claude/current/release-policy.md`).
 
-Last refreshed from local reports on 2026-06-12:
+Export parity is not behavior parity. A component is not "ported" until it is
+**certified** — API, ARIA, keyboard/focus, forms/validation, behavior/timing,
+styling, visual parity, and i18n all matched and held by tests that can fail. The
+bar and the gate ladder are in `.claude/current/certification.md`; the current
+snapshot is `.claude/current/status.md` (refreshed from scripts, not memory).
 
-- React Aria Components named exports: `0` missing from
-  `solidaria-components` (`229` upstream names, `397` Solid exports).
-- Spectrum S2 catalogue: `69` official entries tracked, `69` live on both
-  React and Solid sides, `0` missing/gap catalogue entries.
-- Strict component parity audit: `69/69` official entries have modeled viewer
-  controls, validation notes, and current visual/asserted evidence.
-- Visual parity coverage: `349` official states tracked, `113` with current
-  React/Solid visual evidence, `56` with strict pair-diff tests.
-- `solid-spectrum` root catalogue exports are present, but many support exports
-  are still missing: `22` non-root/support S2 exports are absent. There are
-  `69` local Solid value exports beyond S2.
+## Start here
 
-Export parity is not behavior parity. A component is not done until source,
-ARIA behavior, keyboard flows, focus management, form behavior, interaction
-timing, styling, accessibility checks, and visual tests all match the upstream
-contract.
+1. [`AGENTS.md`](AGENTS.md) — the operating rules (read first).
+2. [`.claude/current/README.md`](.claude/current/README.md) — index for the deep
+   docs: steering, certification, architecture, status, work queue.
+3. [`apps/comparison/COMPONENT_PLAYBOOK.md`](apps/comparison/COMPONENT_PLAYBOOK.md)
+   — the per-component parity runner.
 
-## Daily Commands
+## Quick start
 
 ```bash
 vp install
-vp run check
-vp test run packages
-vp run comparison:dev
-vp run comparison:report:parity
+vp run dev              # apps/web playground
+vp run comparison:dev   # apps/comparison parity harness
+vp run check            # format + lint + typecheck
+```
+
+## Common gates
+
+```bash
+vp run check                            # format + lint + typecheck
+vp test run packages                    # package unit/integration suites
+vp run a11y:check                       # axe AA + comparison a11y + smoke
+vp run comparison:report:parity:strict  # strict S2 audit (expected to pass)
 vp run comparison:report:gaps
 vp run comparison:report:exports
-vp run comparison:test:a11y
-vp run a11y:check
-vp run guard:rac-export-gap
+vp run docs:check                       # docs frontmatter / tracking integrity
 ```
 
-Use `vp` commands for repo work. Raw package-manager commands are only for
-debugging package-manager-specific behavior.
+`comparison:report:parity:strict` is expected to pass; treat an in-scope failure
+as a blocking regression. The full ladder is in `.claude/current/certification.md`.
 
-## How To Pick Work
+## Dev dashboard
 
-For styled Spectrum parity, the catalogue route gap is closed. Start with the
-strict parity and visual coverage reports:
+`/admin` (dev only, in `apps/web`) is the internal operating surface — roadmap,
+task tracker, gantt, docs browser, architecture, and glossary — projecting the
+`.claude/current/` frontmatter. It never ships. Run `vp run dev` and open
+`http://localhost:3000/admin`.
 
-```bash
-vp run comparison:report:parity
-vp run comparison:report:parity:strict
-vp run comparison:report:gaps
+## Repo layout
+
+```text
+packages/                Solid ports (the five-layer chain) + private test-utils
+apps/web                 playground app + the dev-only /admin dashboard
+apps/comparison          React-vs-Solid parity verification harness
+docs/adr/                architecture decision records (ADR 0001 = S2 styling boundary)
+.claude/current/         the live deep-docs surface (index: README.md)
 ```
 
-The strict command is expected to pass. Treat a failure as a blocking
-current-gate regression before claiming component parity. Use the visual
-coverage report to turn planned/asserted states into strict pair-diff,
-computed-contract, or interaction proof.
+## Guidelines
 
-Pick one component or component family, then follow
-[`apps/comparison/COMPONENT_PLAYBOOK.md`](apps/comparison/COMPONENT_PLAYBOOK.md).
-The comparison app is the verification harness. Its docs shell may dogfood
-`solid-spectrum`, but component-internal S2 styling belongs in
-`packages/solid-spectrum`, not in app CSS.
-Accessibility proof must include browser interaction tests; axe is smoke
-coverage, not the whole gate.
-
-For React Aria Components parity, start with:
-
-```bash
-vp run guard:rac-export-gap
-```
-
-The current export gap is closed, so new work should focus on behavior,
-accessibility, and test parity rather than adding names to the barrel.
-
-## Docs Map
-
-- [`AGENTS.md`](AGENTS.md): repo-wide instructions for AI agents.
-- [`CLAUDE.md`](CLAUDE.md): Claude Code-specific notes that defer to
-  `AGENTS.md`.
-- [`docs/README.md`](docs/README.md): tracked docs index and archive boundary.
-- [`docs/CURRENT_STATUS.md`](docs/CURRENT_STATUS.md): current gap snapshot and
-  next priorities.
-- [`docs/tooling.md`](docs/tooling.md): command layer, checks, and local AI
-  documentation tooling.
-- [`docs/release-policy.md`](docs/release-policy.md): package release rules.
-- [`docs/adr/0001-s2-styling-source-of-truth.md`](docs/adr/0001-s2-styling-source-of-truth.md):
-  styling source-of-truth rule for Spectrum 2 parity.
-- [`apps/comparison/README.md`](apps/comparison/README.md): comparison app
-  boundary and commands.
+- Check `git status --short` before edits. Use `vp` for repo work (raw `pnpm`
+  only when debugging the package manager). Never add a dependency without
+  explicit approval.
+- Docs-only changes need no Changeset; releasable package code usually does.
+- Git history is the archive — retired docs are removed from `main`, recoverable
+  from the commit that removed them.
