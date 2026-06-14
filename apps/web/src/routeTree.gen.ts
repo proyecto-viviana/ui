@@ -8,1220 +8,1282 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as AdminRouteImport } from "./routes/admin";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as SolidSpectrumIndexRouteImport } from "./routes/solid-spectrum/index";
-import { Route as SolidSpectrumPlaygroundRouteImport } from "./routes/solid-spectrum/playground";
-import { Route as SolidSpectrumEcosystemRouteImport } from "./routes/solid-spectrum/ecosystem";
-import { Route as SolidSpectrumDocsRouteRouteImport } from "./routes/solid-spectrum/docs/route";
-import { Route as SolidSpectrumDocsIndexRouteImport } from "./routes/solid-spectrum/docs/index";
-import { Route as SolidSpectrumDocsInstallationRouteImport } from "./routes/solid-spectrum/docs/installation";
-import { Route as SolidSpectrumDocsHooksCreatePressRouteImport } from "./routes/solid-spectrum/docs/hooks/create-press";
-import { Route as SolidSpectrumDocsHooksCreateButtonRouteImport } from "./routes/solid-spectrum/docs/hooks/create-button";
-import { Route as SolidSpectrumDocsComponentsVirtualizerRouteImport } from "./routes/solid-spectrum/docs/components/virtualizer";
-import { Route as SolidSpectrumDocsComponentsTreeRouteImport } from "./routes/solid-spectrum/docs/components/tree";
-import { Route as SolidSpectrumDocsComponentsTooltipRouteImport } from "./routes/solid-spectrum/docs/components/tooltip";
-import { Route as SolidSpectrumDocsComponentsToolbarRouteImport } from "./routes/solid-spectrum/docs/components/toolbar";
-import { Route as SolidSpectrumDocsComponentsToastRouteImport } from "./routes/solid-spectrum/docs/components/toast";
-import { Route as SolidSpectrumDocsComponentsTimefieldRouteImport } from "./routes/solid-spectrum/docs/components/timefield";
-import { Route as SolidSpectrumDocsComponentsTextfieldRouteImport } from "./routes/solid-spectrum/docs/components/textfield";
-import { Route as SolidSpectrumDocsComponentsTextareaRouteImport } from "./routes/solid-spectrum/docs/components/textarea";
-import { Route as SolidSpectrumDocsComponentsTaggroupRouteImport } from "./routes/solid-spectrum/docs/components/taggroup";
-import { Route as SolidSpectrumDocsComponentsTabsRouteImport } from "./routes/solid-spectrum/docs/components/tabs";
-import { Route as SolidSpectrumDocsComponentsTableRouteImport } from "./routes/solid-spectrum/docs/components/table";
-import { Route as SolidSpectrumDocsComponentsSwitchRouteImport } from "./routes/solid-spectrum/docs/components/switch";
-import { Route as SolidSpectrumDocsComponentsSliderRouteImport } from "./routes/solid-spectrum/docs/components/slider";
-import { Route as SolidSpectrumDocsComponentsSeparatorRouteImport } from "./routes/solid-spectrum/docs/components/separator";
-import { Route as SolidSpectrumDocsComponentsSelectRouteImport } from "./routes/solid-spectrum/docs/components/select";
-import { Route as SolidSpectrumDocsComponentsSearchfieldRouteImport } from "./routes/solid-spectrum/docs/components/searchfield";
-import { Route as SolidSpectrumDocsComponentsRangecalendarRouteImport } from "./routes/solid-spectrum/docs/components/rangecalendar";
-import { Route as SolidSpectrumDocsComponentsProviderRouteImport } from "./routes/solid-spectrum/docs/components/provider";
-import { Route as SolidSpectrumDocsComponentsProgressbarRouteImport } from "./routes/solid-spectrum/docs/components/progressbar";
-import { Route as SolidSpectrumDocsComponentsPopoverRouteImport } from "./routes/solid-spectrum/docs/components/popover";
-import { Route as SolidSpectrumDocsComponentsPickerRouteImport } from "./routes/solid-spectrum/docs/components/picker";
-import { Route as SolidSpectrumDocsComponentsNumberfieldRouteImport } from "./routes/solid-spectrum/docs/components/numberfield";
-import { Route as SolidSpectrumDocsComponentsMeterRouteImport } from "./routes/solid-spectrum/docs/components/meter";
-import { Route as SolidSpectrumDocsComponentsMenuRouteImport } from "./routes/solid-spectrum/docs/components/menu";
-import { Route as SolidSpectrumDocsComponentsLinkRouteImport } from "./routes/solid-spectrum/docs/components/link";
-import { Route as SolidSpectrumDocsComponentsGridlistRouteImport } from "./routes/solid-spectrum/docs/components/gridlist";
-import { Route as SolidSpectrumDocsComponentsFiletriggerRouteImport } from "./routes/solid-spectrum/docs/components/filetrigger";
-import { Route as SolidSpectrumDocsComponentsDropzoneRouteImport } from "./routes/solid-spectrum/docs/components/dropzone";
-import { Route as SolidSpectrumDocsComponentsDisclosureRouteImport } from "./routes/solid-spectrum/docs/components/disclosure";
-import { Route as SolidSpectrumDocsComponentsDialogRouteImport } from "./routes/solid-spectrum/docs/components/dialog";
-import { Route as SolidSpectrumDocsComponentsDaterangepickerRouteImport } from "./routes/solid-spectrum/docs/components/daterangepicker";
-import { Route as SolidSpectrumDocsComponentsDatepickerRouteImport } from "./routes/solid-spectrum/docs/components/datepicker";
-import { Route as SolidSpectrumDocsComponentsDatefieldRouteImport } from "./routes/solid-spectrum/docs/components/datefield";
-import { Route as SolidSpectrumDocsComponentsContextualhelpRouteImport } from "./routes/solid-spectrum/docs/components/contextualhelp";
-import { Route as SolidSpectrumDocsComponentsComboboxRouteImport } from "./routes/solid-spectrum/docs/components/combobox";
-import { Route as SolidSpectrumDocsComponentsColorRouteImport } from "./routes/solid-spectrum/docs/components/color";
-import { Route as SolidSpectrumDocsComponentsCheckboxRouteImport } from "./routes/solid-spectrum/docs/components/checkbox";
-import { Route as SolidSpectrumDocsComponentsCalendarRouteImport } from "./routes/solid-spectrum/docs/components/calendar";
-import { Route as SolidSpectrumDocsComponentsButtonRouteImport } from "./routes/solid-spectrum/docs/components/button";
-import { Route as SolidSpectrumDocsComponentsBreadcrumbsRouteImport } from "./routes/solid-spectrum/docs/components/breadcrumbs";
-import { Route as SolidSpectrumDocsComponentsBadgeRouteImport } from "./routes/solid-spectrum/docs/components/badge";
-import { Route as SolidSpectrumDocsComponentsAlertdialogRouteImport } from "./routes/solid-spectrum/docs/components/alertdialog";
-import { Route as SolidSpectrumDocsComponentsActiongroupRouteImport } from "./routes/solid-spectrum/docs/components/actiongroup";
-import { Route as SolidSpectrumDocsComponentsActionbarRouteImport } from "./routes/solid-spectrum/docs/components/actionbar";
-import { Route as SolidSpectrumDocsComponentsAccordionRouteImport } from "./routes/solid-spectrum/docs/components/accordion";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/index'
+import { Route as SolidSpectrumPlaygroundRouteImport } from './routes/solid-spectrum/playground'
+import { Route as SolidSpectrumEcosystemRouteImport } from './routes/solid-spectrum/ecosystem'
+import { Route as SolidSpectrumDocsRouteRouteImport } from './routes/solid-spectrum/docs/route'
+import { Route as SolidSpectrumDocsIndexRouteImport } from './routes/solid-spectrum/docs/index'
+import { Route as SolidSpectrumDocsInstallationRouteImport } from './routes/solid-spectrum/docs/installation'
+import { Route as SolidSpectrumDocsHooksCreatePressRouteImport } from './routes/solid-spectrum/docs/hooks/create-press'
+import { Route as SolidSpectrumDocsHooksCreateButtonRouteImport } from './routes/solid-spectrum/docs/hooks/create-button'
+import { Route as SolidSpectrumDocsComponentsVirtualizerRouteImport } from './routes/solid-spectrum/docs/components/virtualizer'
+import { Route as SolidSpectrumDocsComponentsTreeRouteImport } from './routes/solid-spectrum/docs/components/tree'
+import { Route as SolidSpectrumDocsComponentsTooltipRouteImport } from './routes/solid-spectrum/docs/components/tooltip'
+import { Route as SolidSpectrumDocsComponentsToolbarRouteImport } from './routes/solid-spectrum/docs/components/toolbar'
+import { Route as SolidSpectrumDocsComponentsToastRouteImport } from './routes/solid-spectrum/docs/components/toast'
+import { Route as SolidSpectrumDocsComponentsTimefieldRouteImport } from './routes/solid-spectrum/docs/components/timefield'
+import { Route as SolidSpectrumDocsComponentsTextfieldRouteImport } from './routes/solid-spectrum/docs/components/textfield'
+import { Route as SolidSpectrumDocsComponentsTextareaRouteImport } from './routes/solid-spectrum/docs/components/textarea'
+import { Route as SolidSpectrumDocsComponentsTaggroupRouteImport } from './routes/solid-spectrum/docs/components/taggroup'
+import { Route as SolidSpectrumDocsComponentsTabsRouteImport } from './routes/solid-spectrum/docs/components/tabs'
+import { Route as SolidSpectrumDocsComponentsTableRouteImport } from './routes/solid-spectrum/docs/components/table'
+import { Route as SolidSpectrumDocsComponentsSwitchRouteImport } from './routes/solid-spectrum/docs/components/switch'
+import { Route as SolidSpectrumDocsComponentsSliderRouteImport } from './routes/solid-spectrum/docs/components/slider'
+import { Route as SolidSpectrumDocsComponentsSeparatorRouteImport } from './routes/solid-spectrum/docs/components/separator'
+import { Route as SolidSpectrumDocsComponentsSelectRouteImport } from './routes/solid-spectrum/docs/components/select'
+import { Route as SolidSpectrumDocsComponentsSearchfieldRouteImport } from './routes/solid-spectrum/docs/components/searchfield'
+import { Route as SolidSpectrumDocsComponentsRangecalendarRouteImport } from './routes/solid-spectrum/docs/components/rangecalendar'
+import { Route as SolidSpectrumDocsComponentsProviderRouteImport } from './routes/solid-spectrum/docs/components/provider'
+import { Route as SolidSpectrumDocsComponentsProgressbarRouteImport } from './routes/solid-spectrum/docs/components/progressbar'
+import { Route as SolidSpectrumDocsComponentsPopoverRouteImport } from './routes/solid-spectrum/docs/components/popover'
+import { Route as SolidSpectrumDocsComponentsPickerRouteImport } from './routes/solid-spectrum/docs/components/picker'
+import { Route as SolidSpectrumDocsComponentsNumberfieldRouteImport } from './routes/solid-spectrum/docs/components/numberfield'
+import { Route as SolidSpectrumDocsComponentsMeterRouteImport } from './routes/solid-spectrum/docs/components/meter'
+import { Route as SolidSpectrumDocsComponentsMenuRouteImport } from './routes/solid-spectrum/docs/components/menu'
+import { Route as SolidSpectrumDocsComponentsLinkRouteImport } from './routes/solid-spectrum/docs/components/link'
+import { Route as SolidSpectrumDocsComponentsGridlistRouteImport } from './routes/solid-spectrum/docs/components/gridlist'
+import { Route as SolidSpectrumDocsComponentsFiletriggerRouteImport } from './routes/solid-spectrum/docs/components/filetrigger'
+import { Route as SolidSpectrumDocsComponentsDropzoneRouteImport } from './routes/solid-spectrum/docs/components/dropzone'
+import { Route as SolidSpectrumDocsComponentsDisclosureRouteImport } from './routes/solid-spectrum/docs/components/disclosure'
+import { Route as SolidSpectrumDocsComponentsDialogRouteImport } from './routes/solid-spectrum/docs/components/dialog'
+import { Route as SolidSpectrumDocsComponentsDaterangepickerRouteImport } from './routes/solid-spectrum/docs/components/daterangepicker'
+import { Route as SolidSpectrumDocsComponentsDatepickerRouteImport } from './routes/solid-spectrum/docs/components/datepicker'
+import { Route as SolidSpectrumDocsComponentsDatefieldRouteImport } from './routes/solid-spectrum/docs/components/datefield'
+import { Route as SolidSpectrumDocsComponentsContextualhelpRouteImport } from './routes/solid-spectrum/docs/components/contextualhelp'
+import { Route as SolidSpectrumDocsComponentsComboboxRouteImport } from './routes/solid-spectrum/docs/components/combobox'
+import { Route as SolidSpectrumDocsComponentsColorRouteImport } from './routes/solid-spectrum/docs/components/color'
+import { Route as SolidSpectrumDocsComponentsCheckboxRouteImport } from './routes/solid-spectrum/docs/components/checkbox'
+import { Route as SolidSpectrumDocsComponentsCalendarRouteImport } from './routes/solid-spectrum/docs/components/calendar'
+import { Route as SolidSpectrumDocsComponentsButtonRouteImport } from './routes/solid-spectrum/docs/components/button'
+import { Route as SolidSpectrumDocsComponentsBreadcrumbsRouteImport } from './routes/solid-spectrum/docs/components/breadcrumbs'
+import { Route as SolidSpectrumDocsComponentsBadgeRouteImport } from './routes/solid-spectrum/docs/components/badge'
+import { Route as SolidSpectrumDocsComponentsAlertdialogRouteImport } from './routes/solid-spectrum/docs/components/alertdialog'
+import { Route as SolidSpectrumDocsComponentsActiongroupRouteImport } from './routes/solid-spectrum/docs/components/actiongroup'
+import { Route as SolidSpectrumDocsComponentsActionbarRouteImport } from './routes/solid-spectrum/docs/components/actionbar'
+import { Route as SolidSpectrumDocsComponentsAccordionRouteImport } from './routes/solid-spectrum/docs/components/accordion'
 
 const AdminRoute = AdminRouteImport.update({
-  id: "/admin",
-  path: "/admin",
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SolidSpectrumIndexRoute = SolidSpectrumIndexRouteImport.update({
-  id: "/solid-spectrum/",
-  path: "/solid-spectrum/",
+  id: '/solid-spectrum/',
+  path: '/solid-spectrum/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
-  id: "/solid-spectrum/playground",
-  path: "/solid-spectrum/playground",
+  id: '/solid-spectrum/playground',
+  path: '/solid-spectrum/playground',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SolidSpectrumEcosystemRoute = SolidSpectrumEcosystemRouteImport.update({
-  id: "/solid-spectrum/ecosystem",
-  path: "/solid-spectrum/ecosystem",
+  id: '/solid-spectrum/ecosystem',
+  path: '/solid-spectrum/ecosystem',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SolidSpectrumDocsRouteRoute = SolidSpectrumDocsRouteRouteImport.update({
-  id: "/solid-spectrum/docs",
-  path: "/solid-spectrum/docs",
+  id: '/solid-spectrum/docs',
+  path: '/solid-spectrum/docs',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const SolidSpectrumDocsIndexRoute = SolidSpectrumDocsIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
-const SolidSpectrumDocsInstallationRoute = SolidSpectrumDocsInstallationRouteImport.update({
-  id: "/installation",
-  path: "/installation",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
-const SolidSpectrumDocsHooksCreatePressRoute = SolidSpectrumDocsHooksCreatePressRouteImport.update({
-  id: "/hooks/create-press",
-  path: "/hooks/create-press",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+} as any)
+const SolidSpectrumDocsInstallationRoute =
+  SolidSpectrumDocsInstallationRouteImport.update({
+    id: '/installation',
+    path: '/installation',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsHooksCreatePressRoute =
+  SolidSpectrumDocsHooksCreatePressRouteImport.update({
+    id: '/hooks/create-press',
+    path: '/hooks/create-press',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsHooksCreateButtonRoute =
   SolidSpectrumDocsHooksCreateButtonRouteImport.update({
-    id: "/hooks/create-button",
-    path: "/hooks/create-button",
+    id: '/hooks/create-button',
+    path: '/hooks/create-button',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsVirtualizerRoute =
   SolidSpectrumDocsComponentsVirtualizerRouteImport.update({
-    id: "/components/virtualizer",
-    path: "/components/virtualizer",
+    id: '/components/virtualizer',
+    path: '/components/virtualizer',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsTreeRoute = SolidSpectrumDocsComponentsTreeRouteImport.update({
-  id: "/components/tree",
-  path: "/components/tree",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsTreeRoute =
+  SolidSpectrumDocsComponentsTreeRouteImport.update({
+    id: '/components/tree',
+    path: '/components/tree',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsTooltipRoute =
   SolidSpectrumDocsComponentsTooltipRouteImport.update({
-    id: "/components/tooltip",
-    path: "/components/tooltip",
+    id: '/components/tooltip',
+    path: '/components/tooltip',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsToolbarRoute =
   SolidSpectrumDocsComponentsToolbarRouteImport.update({
-    id: "/components/toolbar",
-    path: "/components/toolbar",
+    id: '/components/toolbar',
+    path: '/components/toolbar',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsToastRoute = SolidSpectrumDocsComponentsToastRouteImport.update({
-  id: "/components/toast",
-  path: "/components/toast",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsToastRoute =
+  SolidSpectrumDocsComponentsToastRouteImport.update({
+    id: '/components/toast',
+    path: '/components/toast',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsTimefieldRoute =
   SolidSpectrumDocsComponentsTimefieldRouteImport.update({
-    id: "/components/timefield",
-    path: "/components/timefield",
+    id: '/components/timefield',
+    path: '/components/timefield',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsTextfieldRoute =
   SolidSpectrumDocsComponentsTextfieldRouteImport.update({
-    id: "/components/textfield",
-    path: "/components/textfield",
+    id: '/components/textfield',
+    path: '/components/textfield',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsTextareaRoute =
   SolidSpectrumDocsComponentsTextareaRouteImport.update({
-    id: "/components/textarea",
-    path: "/components/textarea",
+    id: '/components/textarea',
+    path: '/components/textarea',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsTaggroupRoute =
   SolidSpectrumDocsComponentsTaggroupRouteImport.update({
-    id: "/components/taggroup",
-    path: "/components/taggroup",
+    id: '/components/taggroup',
+    path: '/components/taggroup',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsTabsRoute = SolidSpectrumDocsComponentsTabsRouteImport.update({
-  id: "/components/tabs",
-  path: "/components/tabs",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
-const SolidSpectrumDocsComponentsTableRoute = SolidSpectrumDocsComponentsTableRouteImport.update({
-  id: "/components/table",
-  path: "/components/table",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
-const SolidSpectrumDocsComponentsSwitchRoute = SolidSpectrumDocsComponentsSwitchRouteImport.update({
-  id: "/components/switch",
-  path: "/components/switch",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
-const SolidSpectrumDocsComponentsSliderRoute = SolidSpectrumDocsComponentsSliderRouteImport.update({
-  id: "/components/slider",
-  path: "/components/slider",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsTabsRoute =
+  SolidSpectrumDocsComponentsTabsRouteImport.update({
+    id: '/components/tabs',
+    path: '/components/tabs',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTableRoute =
+  SolidSpectrumDocsComponentsTableRouteImport.update({
+    id: '/components/table',
+    path: '/components/table',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsSwitchRoute =
+  SolidSpectrumDocsComponentsSwitchRouteImport.update({
+    id: '/components/switch',
+    path: '/components/switch',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsSliderRoute =
+  SolidSpectrumDocsComponentsSliderRouteImport.update({
+    id: '/components/slider',
+    path: '/components/slider',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsSeparatorRoute =
   SolidSpectrumDocsComponentsSeparatorRouteImport.update({
-    id: "/components/separator",
-    path: "/components/separator",
+    id: '/components/separator',
+    path: '/components/separator',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsSelectRoute = SolidSpectrumDocsComponentsSelectRouteImport.update({
-  id: "/components/select",
-  path: "/components/select",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsSelectRoute =
+  SolidSpectrumDocsComponentsSelectRouteImport.update({
+    id: '/components/select',
+    path: '/components/select',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsSearchfieldRoute =
   SolidSpectrumDocsComponentsSearchfieldRouteImport.update({
-    id: "/components/searchfield",
-    path: "/components/searchfield",
+    id: '/components/searchfield',
+    path: '/components/searchfield',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsRangecalendarRoute =
   SolidSpectrumDocsComponentsRangecalendarRouteImport.update({
-    id: "/components/rangecalendar",
-    path: "/components/rangecalendar",
+    id: '/components/rangecalendar',
+    path: '/components/rangecalendar',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsProviderRoute =
   SolidSpectrumDocsComponentsProviderRouteImport.update({
-    id: "/components/provider",
-    path: "/components/provider",
+    id: '/components/provider',
+    path: '/components/provider',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsProgressbarRoute =
   SolidSpectrumDocsComponentsProgressbarRouteImport.update({
-    id: "/components/progressbar",
-    path: "/components/progressbar",
+    id: '/components/progressbar',
+    path: '/components/progressbar',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsPopoverRoute =
   SolidSpectrumDocsComponentsPopoverRouteImport.update({
-    id: "/components/popover",
-    path: "/components/popover",
+    id: '/components/popover',
+    path: '/components/popover',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsPickerRoute = SolidSpectrumDocsComponentsPickerRouteImport.update({
-  id: "/components/picker",
-  path: "/components/picker",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsPickerRoute =
+  SolidSpectrumDocsComponentsPickerRouteImport.update({
+    id: '/components/picker',
+    path: '/components/picker',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsNumberfieldRoute =
   SolidSpectrumDocsComponentsNumberfieldRouteImport.update({
-    id: "/components/numberfield",
-    path: "/components/numberfield",
+    id: '/components/numberfield',
+    path: '/components/numberfield',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsMeterRoute = SolidSpectrumDocsComponentsMeterRouteImport.update({
-  id: "/components/meter",
-  path: "/components/meter",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
-const SolidSpectrumDocsComponentsMenuRoute = SolidSpectrumDocsComponentsMenuRouteImport.update({
-  id: "/components/menu",
-  path: "/components/menu",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
-const SolidSpectrumDocsComponentsLinkRoute = SolidSpectrumDocsComponentsLinkRouteImport.update({
-  id: "/components/link",
-  path: "/components/link",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsMeterRoute =
+  SolidSpectrumDocsComponentsMeterRouteImport.update({
+    id: '/components/meter',
+    path: '/components/meter',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsMenuRoute =
+  SolidSpectrumDocsComponentsMenuRouteImport.update({
+    id: '/components/menu',
+    path: '/components/menu',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsLinkRoute =
+  SolidSpectrumDocsComponentsLinkRouteImport.update({
+    id: '/components/link',
+    path: '/components/link',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsGridlistRoute =
   SolidSpectrumDocsComponentsGridlistRouteImport.update({
-    id: "/components/gridlist",
-    path: "/components/gridlist",
+    id: '/components/gridlist',
+    path: '/components/gridlist',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsFiletriggerRoute =
   SolidSpectrumDocsComponentsFiletriggerRouteImport.update({
-    id: "/components/filetrigger",
-    path: "/components/filetrigger",
+    id: '/components/filetrigger',
+    path: '/components/filetrigger',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsDropzoneRoute =
   SolidSpectrumDocsComponentsDropzoneRouteImport.update({
-    id: "/components/dropzone",
-    path: "/components/dropzone",
+    id: '/components/dropzone',
+    path: '/components/dropzone',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsDisclosureRoute =
   SolidSpectrumDocsComponentsDisclosureRouteImport.update({
-    id: "/components/disclosure",
-    path: "/components/disclosure",
+    id: '/components/disclosure',
+    path: '/components/disclosure',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsDialogRoute = SolidSpectrumDocsComponentsDialogRouteImport.update({
-  id: "/components/dialog",
-  path: "/components/dialog",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsDialogRoute =
+  SolidSpectrumDocsComponentsDialogRouteImport.update({
+    id: '/components/dialog',
+    path: '/components/dialog',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsDaterangepickerRoute =
   SolidSpectrumDocsComponentsDaterangepickerRouteImport.update({
-    id: "/components/daterangepicker",
-    path: "/components/daterangepicker",
+    id: '/components/daterangepicker',
+    path: '/components/daterangepicker',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsDatepickerRoute =
   SolidSpectrumDocsComponentsDatepickerRouteImport.update({
-    id: "/components/datepicker",
-    path: "/components/datepicker",
+    id: '/components/datepicker',
+    path: '/components/datepicker',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsDatefieldRoute =
   SolidSpectrumDocsComponentsDatefieldRouteImport.update({
-    id: "/components/datefield",
-    path: "/components/datefield",
+    id: '/components/datefield',
+    path: '/components/datefield',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsContextualhelpRoute =
   SolidSpectrumDocsComponentsContextualhelpRouteImport.update({
-    id: "/components/contextualhelp",
-    path: "/components/contextualhelp",
+    id: '/components/contextualhelp',
+    path: '/components/contextualhelp',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsComboboxRoute =
   SolidSpectrumDocsComponentsComboboxRouteImport.update({
-    id: "/components/combobox",
-    path: "/components/combobox",
+    id: '/components/combobox',
+    path: '/components/combobox',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsColorRoute = SolidSpectrumDocsComponentsColorRouteImport.update({
-  id: "/components/color",
-  path: "/components/color",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsColorRoute =
+  SolidSpectrumDocsComponentsColorRouteImport.update({
+    id: '/components/color',
+    path: '/components/color',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsCheckboxRoute =
   SolidSpectrumDocsComponentsCheckboxRouteImport.update({
-    id: "/components/checkbox",
-    path: "/components/checkbox",
+    id: '/components/checkbox',
+    path: '/components/checkbox',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsCalendarRoute =
   SolidSpectrumDocsComponentsCalendarRouteImport.update({
-    id: "/components/calendar",
-    path: "/components/calendar",
+    id: '/components/calendar',
+    path: '/components/calendar',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsButtonRoute = SolidSpectrumDocsComponentsButtonRouteImport.update({
-  id: "/components/button",
-  path: "/components/button",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsButtonRoute =
+  SolidSpectrumDocsComponentsButtonRouteImport.update({
+    id: '/components/button',
+    path: '/components/button',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsBreadcrumbsRoute =
   SolidSpectrumDocsComponentsBreadcrumbsRouteImport.update({
-    id: "/components/breadcrumbs",
-    path: "/components/breadcrumbs",
+    id: '/components/breadcrumbs',
+    path: '/components/breadcrumbs',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
-const SolidSpectrumDocsComponentsBadgeRoute = SolidSpectrumDocsComponentsBadgeRouteImport.update({
-  id: "/components/badge",
-  path: "/components/badge",
-  getParentRoute: () => SolidSpectrumDocsRouteRoute,
-} as any);
+  } as any)
+const SolidSpectrumDocsComponentsBadgeRoute =
+  SolidSpectrumDocsComponentsBadgeRouteImport.update({
+    id: '/components/badge',
+    path: '/components/badge',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsAlertdialogRoute =
   SolidSpectrumDocsComponentsAlertdialogRouteImport.update({
-    id: "/components/alertdialog",
-    path: "/components/alertdialog",
+    id: '/components/alertdialog',
+    path: '/components/alertdialog',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsActiongroupRoute =
   SolidSpectrumDocsComponentsActiongroupRouteImport.update({
-    id: "/components/actiongroup",
-    path: "/components/actiongroup",
+    id: '/components/actiongroup',
+    path: '/components/actiongroup',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsActionbarRoute =
   SolidSpectrumDocsComponentsActionbarRouteImport.update({
-    id: "/components/actionbar",
-    path: "/components/actionbar",
+    id: '/components/actionbar',
+    path: '/components/actionbar',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 const SolidSpectrumDocsComponentsAccordionRoute =
   SolidSpectrumDocsComponentsAccordionRouteImport.update({
-    id: "/components/accordion",
-    path: "/components/accordion",
+    id: '/components/accordion',
+    path: '/components/accordion',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any);
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/admin": typeof AdminRoute;
-  "/solid-spectrum/docs": typeof SolidSpectrumDocsRouteRouteWithChildren;
-  "/solid-spectrum/ecosystem": typeof SolidSpectrumEcosystemRoute;
-  "/solid-spectrum/playground": typeof SolidSpectrumPlaygroundRoute;
-  "/solid-spectrum/": typeof SolidSpectrumIndexRoute;
-  "/solid-spectrum/docs/installation": typeof SolidSpectrumDocsInstallationRoute;
-  "/solid-spectrum/docs/": typeof SolidSpectrumDocsIndexRoute;
-  "/solid-spectrum/docs/components/accordion": typeof SolidSpectrumDocsComponentsAccordionRoute;
-  "/solid-spectrum/docs/components/actionbar": typeof SolidSpectrumDocsComponentsActionbarRoute;
-  "/solid-spectrum/docs/components/actiongroup": typeof SolidSpectrumDocsComponentsActiongroupRoute;
-  "/solid-spectrum/docs/components/alertdialog": typeof SolidSpectrumDocsComponentsAlertdialogRoute;
-  "/solid-spectrum/docs/components/badge": typeof SolidSpectrumDocsComponentsBadgeRoute;
-  "/solid-spectrum/docs/components/breadcrumbs": typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
-  "/solid-spectrum/docs/components/button": typeof SolidSpectrumDocsComponentsButtonRoute;
-  "/solid-spectrum/docs/components/calendar": typeof SolidSpectrumDocsComponentsCalendarRoute;
-  "/solid-spectrum/docs/components/checkbox": typeof SolidSpectrumDocsComponentsCheckboxRoute;
-  "/solid-spectrum/docs/components/color": typeof SolidSpectrumDocsComponentsColorRoute;
-  "/solid-spectrum/docs/components/combobox": typeof SolidSpectrumDocsComponentsComboboxRoute;
-  "/solid-spectrum/docs/components/contextualhelp": typeof SolidSpectrumDocsComponentsContextualhelpRoute;
-  "/solid-spectrum/docs/components/datefield": typeof SolidSpectrumDocsComponentsDatefieldRoute;
-  "/solid-spectrum/docs/components/datepicker": typeof SolidSpectrumDocsComponentsDatepickerRoute;
-  "/solid-spectrum/docs/components/daterangepicker": typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
-  "/solid-spectrum/docs/components/dialog": typeof SolidSpectrumDocsComponentsDialogRoute;
-  "/solid-spectrum/docs/components/disclosure": typeof SolidSpectrumDocsComponentsDisclosureRoute;
-  "/solid-spectrum/docs/components/dropzone": typeof SolidSpectrumDocsComponentsDropzoneRoute;
-  "/solid-spectrum/docs/components/filetrigger": typeof SolidSpectrumDocsComponentsFiletriggerRoute;
-  "/solid-spectrum/docs/components/gridlist": typeof SolidSpectrumDocsComponentsGridlistRoute;
-  "/solid-spectrum/docs/components/link": typeof SolidSpectrumDocsComponentsLinkRoute;
-  "/solid-spectrum/docs/components/menu": typeof SolidSpectrumDocsComponentsMenuRoute;
-  "/solid-spectrum/docs/components/meter": typeof SolidSpectrumDocsComponentsMeterRoute;
-  "/solid-spectrum/docs/components/numberfield": typeof SolidSpectrumDocsComponentsNumberfieldRoute;
-  "/solid-spectrum/docs/components/picker": typeof SolidSpectrumDocsComponentsPickerRoute;
-  "/solid-spectrum/docs/components/popover": typeof SolidSpectrumDocsComponentsPopoverRoute;
-  "/solid-spectrum/docs/components/progressbar": typeof SolidSpectrumDocsComponentsProgressbarRoute;
-  "/solid-spectrum/docs/components/provider": typeof SolidSpectrumDocsComponentsProviderRoute;
-  "/solid-spectrum/docs/components/rangecalendar": typeof SolidSpectrumDocsComponentsRangecalendarRoute;
-  "/solid-spectrum/docs/components/searchfield": typeof SolidSpectrumDocsComponentsSearchfieldRoute;
-  "/solid-spectrum/docs/components/select": typeof SolidSpectrumDocsComponentsSelectRoute;
-  "/solid-spectrum/docs/components/separator": typeof SolidSpectrumDocsComponentsSeparatorRoute;
-  "/solid-spectrum/docs/components/slider": typeof SolidSpectrumDocsComponentsSliderRoute;
-  "/solid-spectrum/docs/components/switch": typeof SolidSpectrumDocsComponentsSwitchRoute;
-  "/solid-spectrum/docs/components/table": typeof SolidSpectrumDocsComponentsTableRoute;
-  "/solid-spectrum/docs/components/tabs": typeof SolidSpectrumDocsComponentsTabsRoute;
-  "/solid-spectrum/docs/components/taggroup": typeof SolidSpectrumDocsComponentsTaggroupRoute;
-  "/solid-spectrum/docs/components/textarea": typeof SolidSpectrumDocsComponentsTextareaRoute;
-  "/solid-spectrum/docs/components/textfield": typeof SolidSpectrumDocsComponentsTextfieldRoute;
-  "/solid-spectrum/docs/components/timefield": typeof SolidSpectrumDocsComponentsTimefieldRoute;
-  "/solid-spectrum/docs/components/toast": typeof SolidSpectrumDocsComponentsToastRoute;
-  "/solid-spectrum/docs/components/toolbar": typeof SolidSpectrumDocsComponentsToolbarRoute;
-  "/solid-spectrum/docs/components/tooltip": typeof SolidSpectrumDocsComponentsTooltipRoute;
-  "/solid-spectrum/docs/components/tree": typeof SolidSpectrumDocsComponentsTreeRoute;
-  "/solid-spectrum/docs/components/virtualizer": typeof SolidSpectrumDocsComponentsVirtualizerRoute;
-  "/solid-spectrum/docs/hooks/create-button": typeof SolidSpectrumDocsHooksCreateButtonRoute;
-  "/solid-spectrum/docs/hooks/create-press": typeof SolidSpectrumDocsHooksCreatePressRoute;
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
+  '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
+  '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/solid-spectrum/': typeof SolidSpectrumIndexRoute
+  '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
+  '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
+  '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
+  '/solid-spectrum/docs/components/actionbar': typeof SolidSpectrumDocsComponentsActionbarRoute
+  '/solid-spectrum/docs/components/actiongroup': typeof SolidSpectrumDocsComponentsActiongroupRoute
+  '/solid-spectrum/docs/components/alertdialog': typeof SolidSpectrumDocsComponentsAlertdialogRoute
+  '/solid-spectrum/docs/components/badge': typeof SolidSpectrumDocsComponentsBadgeRoute
+  '/solid-spectrum/docs/components/breadcrumbs': typeof SolidSpectrumDocsComponentsBreadcrumbsRoute
+  '/solid-spectrum/docs/components/button': typeof SolidSpectrumDocsComponentsButtonRoute
+  '/solid-spectrum/docs/components/calendar': typeof SolidSpectrumDocsComponentsCalendarRoute
+  '/solid-spectrum/docs/components/checkbox': typeof SolidSpectrumDocsComponentsCheckboxRoute
+  '/solid-spectrum/docs/components/color': typeof SolidSpectrumDocsComponentsColorRoute
+  '/solid-spectrum/docs/components/combobox': typeof SolidSpectrumDocsComponentsComboboxRoute
+  '/solid-spectrum/docs/components/contextualhelp': typeof SolidSpectrumDocsComponentsContextualhelpRoute
+  '/solid-spectrum/docs/components/datefield': typeof SolidSpectrumDocsComponentsDatefieldRoute
+  '/solid-spectrum/docs/components/datepicker': typeof SolidSpectrumDocsComponentsDatepickerRoute
+  '/solid-spectrum/docs/components/daterangepicker': typeof SolidSpectrumDocsComponentsDaterangepickerRoute
+  '/solid-spectrum/docs/components/dialog': typeof SolidSpectrumDocsComponentsDialogRoute
+  '/solid-spectrum/docs/components/disclosure': typeof SolidSpectrumDocsComponentsDisclosureRoute
+  '/solid-spectrum/docs/components/dropzone': typeof SolidSpectrumDocsComponentsDropzoneRoute
+  '/solid-spectrum/docs/components/filetrigger': typeof SolidSpectrumDocsComponentsFiletriggerRoute
+  '/solid-spectrum/docs/components/gridlist': typeof SolidSpectrumDocsComponentsGridlistRoute
+  '/solid-spectrum/docs/components/link': typeof SolidSpectrumDocsComponentsLinkRoute
+  '/solid-spectrum/docs/components/menu': typeof SolidSpectrumDocsComponentsMenuRoute
+  '/solid-spectrum/docs/components/meter': typeof SolidSpectrumDocsComponentsMeterRoute
+  '/solid-spectrum/docs/components/numberfield': typeof SolidSpectrumDocsComponentsNumberfieldRoute
+  '/solid-spectrum/docs/components/picker': typeof SolidSpectrumDocsComponentsPickerRoute
+  '/solid-spectrum/docs/components/popover': typeof SolidSpectrumDocsComponentsPopoverRoute
+  '/solid-spectrum/docs/components/progressbar': typeof SolidSpectrumDocsComponentsProgressbarRoute
+  '/solid-spectrum/docs/components/provider': typeof SolidSpectrumDocsComponentsProviderRoute
+  '/solid-spectrum/docs/components/rangecalendar': typeof SolidSpectrumDocsComponentsRangecalendarRoute
+  '/solid-spectrum/docs/components/searchfield': typeof SolidSpectrumDocsComponentsSearchfieldRoute
+  '/solid-spectrum/docs/components/select': typeof SolidSpectrumDocsComponentsSelectRoute
+  '/solid-spectrum/docs/components/separator': typeof SolidSpectrumDocsComponentsSeparatorRoute
+  '/solid-spectrum/docs/components/slider': typeof SolidSpectrumDocsComponentsSliderRoute
+  '/solid-spectrum/docs/components/switch': typeof SolidSpectrumDocsComponentsSwitchRoute
+  '/solid-spectrum/docs/components/table': typeof SolidSpectrumDocsComponentsTableRoute
+  '/solid-spectrum/docs/components/tabs': typeof SolidSpectrumDocsComponentsTabsRoute
+  '/solid-spectrum/docs/components/taggroup': typeof SolidSpectrumDocsComponentsTaggroupRoute
+  '/solid-spectrum/docs/components/textarea': typeof SolidSpectrumDocsComponentsTextareaRoute
+  '/solid-spectrum/docs/components/textfield': typeof SolidSpectrumDocsComponentsTextfieldRoute
+  '/solid-spectrum/docs/components/timefield': typeof SolidSpectrumDocsComponentsTimefieldRoute
+  '/solid-spectrum/docs/components/toast': typeof SolidSpectrumDocsComponentsToastRoute
+  '/solid-spectrum/docs/components/toolbar': typeof SolidSpectrumDocsComponentsToolbarRoute
+  '/solid-spectrum/docs/components/tooltip': typeof SolidSpectrumDocsComponentsTooltipRoute
+  '/solid-spectrum/docs/components/tree': typeof SolidSpectrumDocsComponentsTreeRoute
+  '/solid-spectrum/docs/components/virtualizer': typeof SolidSpectrumDocsComponentsVirtualizerRoute
+  '/solid-spectrum/docs/hooks/create-button': typeof SolidSpectrumDocsHooksCreateButtonRoute
+  '/solid-spectrum/docs/hooks/create-press': typeof SolidSpectrumDocsHooksCreatePressRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/admin": typeof AdminRoute;
-  "/solid-spectrum/ecosystem": typeof SolidSpectrumEcosystemRoute;
-  "/solid-spectrum/playground": typeof SolidSpectrumPlaygroundRoute;
-  "/solid-spectrum": typeof SolidSpectrumIndexRoute;
-  "/solid-spectrum/docs/installation": typeof SolidSpectrumDocsInstallationRoute;
-  "/solid-spectrum/docs": typeof SolidSpectrumDocsIndexRoute;
-  "/solid-spectrum/docs/components/accordion": typeof SolidSpectrumDocsComponentsAccordionRoute;
-  "/solid-spectrum/docs/components/actionbar": typeof SolidSpectrumDocsComponentsActionbarRoute;
-  "/solid-spectrum/docs/components/actiongroup": typeof SolidSpectrumDocsComponentsActiongroupRoute;
-  "/solid-spectrum/docs/components/alertdialog": typeof SolidSpectrumDocsComponentsAlertdialogRoute;
-  "/solid-spectrum/docs/components/badge": typeof SolidSpectrumDocsComponentsBadgeRoute;
-  "/solid-spectrum/docs/components/breadcrumbs": typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
-  "/solid-spectrum/docs/components/button": typeof SolidSpectrumDocsComponentsButtonRoute;
-  "/solid-spectrum/docs/components/calendar": typeof SolidSpectrumDocsComponentsCalendarRoute;
-  "/solid-spectrum/docs/components/checkbox": typeof SolidSpectrumDocsComponentsCheckboxRoute;
-  "/solid-spectrum/docs/components/color": typeof SolidSpectrumDocsComponentsColorRoute;
-  "/solid-spectrum/docs/components/combobox": typeof SolidSpectrumDocsComponentsComboboxRoute;
-  "/solid-spectrum/docs/components/contextualhelp": typeof SolidSpectrumDocsComponentsContextualhelpRoute;
-  "/solid-spectrum/docs/components/datefield": typeof SolidSpectrumDocsComponentsDatefieldRoute;
-  "/solid-spectrum/docs/components/datepicker": typeof SolidSpectrumDocsComponentsDatepickerRoute;
-  "/solid-spectrum/docs/components/daterangepicker": typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
-  "/solid-spectrum/docs/components/dialog": typeof SolidSpectrumDocsComponentsDialogRoute;
-  "/solid-spectrum/docs/components/disclosure": typeof SolidSpectrumDocsComponentsDisclosureRoute;
-  "/solid-spectrum/docs/components/dropzone": typeof SolidSpectrumDocsComponentsDropzoneRoute;
-  "/solid-spectrum/docs/components/filetrigger": typeof SolidSpectrumDocsComponentsFiletriggerRoute;
-  "/solid-spectrum/docs/components/gridlist": typeof SolidSpectrumDocsComponentsGridlistRoute;
-  "/solid-spectrum/docs/components/link": typeof SolidSpectrumDocsComponentsLinkRoute;
-  "/solid-spectrum/docs/components/menu": typeof SolidSpectrumDocsComponentsMenuRoute;
-  "/solid-spectrum/docs/components/meter": typeof SolidSpectrumDocsComponentsMeterRoute;
-  "/solid-spectrum/docs/components/numberfield": typeof SolidSpectrumDocsComponentsNumberfieldRoute;
-  "/solid-spectrum/docs/components/picker": typeof SolidSpectrumDocsComponentsPickerRoute;
-  "/solid-spectrum/docs/components/popover": typeof SolidSpectrumDocsComponentsPopoverRoute;
-  "/solid-spectrum/docs/components/progressbar": typeof SolidSpectrumDocsComponentsProgressbarRoute;
-  "/solid-spectrum/docs/components/provider": typeof SolidSpectrumDocsComponentsProviderRoute;
-  "/solid-spectrum/docs/components/rangecalendar": typeof SolidSpectrumDocsComponentsRangecalendarRoute;
-  "/solid-spectrum/docs/components/searchfield": typeof SolidSpectrumDocsComponentsSearchfieldRoute;
-  "/solid-spectrum/docs/components/select": typeof SolidSpectrumDocsComponentsSelectRoute;
-  "/solid-spectrum/docs/components/separator": typeof SolidSpectrumDocsComponentsSeparatorRoute;
-  "/solid-spectrum/docs/components/slider": typeof SolidSpectrumDocsComponentsSliderRoute;
-  "/solid-spectrum/docs/components/switch": typeof SolidSpectrumDocsComponentsSwitchRoute;
-  "/solid-spectrum/docs/components/table": typeof SolidSpectrumDocsComponentsTableRoute;
-  "/solid-spectrum/docs/components/tabs": typeof SolidSpectrumDocsComponentsTabsRoute;
-  "/solid-spectrum/docs/components/taggroup": typeof SolidSpectrumDocsComponentsTaggroupRoute;
-  "/solid-spectrum/docs/components/textarea": typeof SolidSpectrumDocsComponentsTextareaRoute;
-  "/solid-spectrum/docs/components/textfield": typeof SolidSpectrumDocsComponentsTextfieldRoute;
-  "/solid-spectrum/docs/components/timefield": typeof SolidSpectrumDocsComponentsTimefieldRoute;
-  "/solid-spectrum/docs/components/toast": typeof SolidSpectrumDocsComponentsToastRoute;
-  "/solid-spectrum/docs/components/toolbar": typeof SolidSpectrumDocsComponentsToolbarRoute;
-  "/solid-spectrum/docs/components/tooltip": typeof SolidSpectrumDocsComponentsTooltipRoute;
-  "/solid-spectrum/docs/components/tree": typeof SolidSpectrumDocsComponentsTreeRoute;
-  "/solid-spectrum/docs/components/virtualizer": typeof SolidSpectrumDocsComponentsVirtualizerRoute;
-  "/solid-spectrum/docs/hooks/create-button": typeof SolidSpectrumDocsHooksCreateButtonRoute;
-  "/solid-spectrum/docs/hooks/create-press": typeof SolidSpectrumDocsHooksCreatePressRoute;
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
+  '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/solid-spectrum': typeof SolidSpectrumIndexRoute
+  '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
+  '/solid-spectrum/docs': typeof SolidSpectrumDocsIndexRoute
+  '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
+  '/solid-spectrum/docs/components/actionbar': typeof SolidSpectrumDocsComponentsActionbarRoute
+  '/solid-spectrum/docs/components/actiongroup': typeof SolidSpectrumDocsComponentsActiongroupRoute
+  '/solid-spectrum/docs/components/alertdialog': typeof SolidSpectrumDocsComponentsAlertdialogRoute
+  '/solid-spectrum/docs/components/badge': typeof SolidSpectrumDocsComponentsBadgeRoute
+  '/solid-spectrum/docs/components/breadcrumbs': typeof SolidSpectrumDocsComponentsBreadcrumbsRoute
+  '/solid-spectrum/docs/components/button': typeof SolidSpectrumDocsComponentsButtonRoute
+  '/solid-spectrum/docs/components/calendar': typeof SolidSpectrumDocsComponentsCalendarRoute
+  '/solid-spectrum/docs/components/checkbox': typeof SolidSpectrumDocsComponentsCheckboxRoute
+  '/solid-spectrum/docs/components/color': typeof SolidSpectrumDocsComponentsColorRoute
+  '/solid-spectrum/docs/components/combobox': typeof SolidSpectrumDocsComponentsComboboxRoute
+  '/solid-spectrum/docs/components/contextualhelp': typeof SolidSpectrumDocsComponentsContextualhelpRoute
+  '/solid-spectrum/docs/components/datefield': typeof SolidSpectrumDocsComponentsDatefieldRoute
+  '/solid-spectrum/docs/components/datepicker': typeof SolidSpectrumDocsComponentsDatepickerRoute
+  '/solid-spectrum/docs/components/daterangepicker': typeof SolidSpectrumDocsComponentsDaterangepickerRoute
+  '/solid-spectrum/docs/components/dialog': typeof SolidSpectrumDocsComponentsDialogRoute
+  '/solid-spectrum/docs/components/disclosure': typeof SolidSpectrumDocsComponentsDisclosureRoute
+  '/solid-spectrum/docs/components/dropzone': typeof SolidSpectrumDocsComponentsDropzoneRoute
+  '/solid-spectrum/docs/components/filetrigger': typeof SolidSpectrumDocsComponentsFiletriggerRoute
+  '/solid-spectrum/docs/components/gridlist': typeof SolidSpectrumDocsComponentsGridlistRoute
+  '/solid-spectrum/docs/components/link': typeof SolidSpectrumDocsComponentsLinkRoute
+  '/solid-spectrum/docs/components/menu': typeof SolidSpectrumDocsComponentsMenuRoute
+  '/solid-spectrum/docs/components/meter': typeof SolidSpectrumDocsComponentsMeterRoute
+  '/solid-spectrum/docs/components/numberfield': typeof SolidSpectrumDocsComponentsNumberfieldRoute
+  '/solid-spectrum/docs/components/picker': typeof SolidSpectrumDocsComponentsPickerRoute
+  '/solid-spectrum/docs/components/popover': typeof SolidSpectrumDocsComponentsPopoverRoute
+  '/solid-spectrum/docs/components/progressbar': typeof SolidSpectrumDocsComponentsProgressbarRoute
+  '/solid-spectrum/docs/components/provider': typeof SolidSpectrumDocsComponentsProviderRoute
+  '/solid-spectrum/docs/components/rangecalendar': typeof SolidSpectrumDocsComponentsRangecalendarRoute
+  '/solid-spectrum/docs/components/searchfield': typeof SolidSpectrumDocsComponentsSearchfieldRoute
+  '/solid-spectrum/docs/components/select': typeof SolidSpectrumDocsComponentsSelectRoute
+  '/solid-spectrum/docs/components/separator': typeof SolidSpectrumDocsComponentsSeparatorRoute
+  '/solid-spectrum/docs/components/slider': typeof SolidSpectrumDocsComponentsSliderRoute
+  '/solid-spectrum/docs/components/switch': typeof SolidSpectrumDocsComponentsSwitchRoute
+  '/solid-spectrum/docs/components/table': typeof SolidSpectrumDocsComponentsTableRoute
+  '/solid-spectrum/docs/components/tabs': typeof SolidSpectrumDocsComponentsTabsRoute
+  '/solid-spectrum/docs/components/taggroup': typeof SolidSpectrumDocsComponentsTaggroupRoute
+  '/solid-spectrum/docs/components/textarea': typeof SolidSpectrumDocsComponentsTextareaRoute
+  '/solid-spectrum/docs/components/textfield': typeof SolidSpectrumDocsComponentsTextfieldRoute
+  '/solid-spectrum/docs/components/timefield': typeof SolidSpectrumDocsComponentsTimefieldRoute
+  '/solid-spectrum/docs/components/toast': typeof SolidSpectrumDocsComponentsToastRoute
+  '/solid-spectrum/docs/components/toolbar': typeof SolidSpectrumDocsComponentsToolbarRoute
+  '/solid-spectrum/docs/components/tooltip': typeof SolidSpectrumDocsComponentsTooltipRoute
+  '/solid-spectrum/docs/components/tree': typeof SolidSpectrumDocsComponentsTreeRoute
+  '/solid-spectrum/docs/components/virtualizer': typeof SolidSpectrumDocsComponentsVirtualizerRoute
+  '/solid-spectrum/docs/hooks/create-button': typeof SolidSpectrumDocsHooksCreateButtonRoute
+  '/solid-spectrum/docs/hooks/create-press': typeof SolidSpectrumDocsHooksCreatePressRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/admin": typeof AdminRoute;
-  "/solid-spectrum/docs": typeof SolidSpectrumDocsRouteRouteWithChildren;
-  "/solid-spectrum/ecosystem": typeof SolidSpectrumEcosystemRoute;
-  "/solid-spectrum/playground": typeof SolidSpectrumPlaygroundRoute;
-  "/solid-spectrum/": typeof SolidSpectrumIndexRoute;
-  "/solid-spectrum/docs/installation": typeof SolidSpectrumDocsInstallationRoute;
-  "/solid-spectrum/docs/": typeof SolidSpectrumDocsIndexRoute;
-  "/solid-spectrum/docs/components/accordion": typeof SolidSpectrumDocsComponentsAccordionRoute;
-  "/solid-spectrum/docs/components/actionbar": typeof SolidSpectrumDocsComponentsActionbarRoute;
-  "/solid-spectrum/docs/components/actiongroup": typeof SolidSpectrumDocsComponentsActiongroupRoute;
-  "/solid-spectrum/docs/components/alertdialog": typeof SolidSpectrumDocsComponentsAlertdialogRoute;
-  "/solid-spectrum/docs/components/badge": typeof SolidSpectrumDocsComponentsBadgeRoute;
-  "/solid-spectrum/docs/components/breadcrumbs": typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
-  "/solid-spectrum/docs/components/button": typeof SolidSpectrumDocsComponentsButtonRoute;
-  "/solid-spectrum/docs/components/calendar": typeof SolidSpectrumDocsComponentsCalendarRoute;
-  "/solid-spectrum/docs/components/checkbox": typeof SolidSpectrumDocsComponentsCheckboxRoute;
-  "/solid-spectrum/docs/components/color": typeof SolidSpectrumDocsComponentsColorRoute;
-  "/solid-spectrum/docs/components/combobox": typeof SolidSpectrumDocsComponentsComboboxRoute;
-  "/solid-spectrum/docs/components/contextualhelp": typeof SolidSpectrumDocsComponentsContextualhelpRoute;
-  "/solid-spectrum/docs/components/datefield": typeof SolidSpectrumDocsComponentsDatefieldRoute;
-  "/solid-spectrum/docs/components/datepicker": typeof SolidSpectrumDocsComponentsDatepickerRoute;
-  "/solid-spectrum/docs/components/daterangepicker": typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
-  "/solid-spectrum/docs/components/dialog": typeof SolidSpectrumDocsComponentsDialogRoute;
-  "/solid-spectrum/docs/components/disclosure": typeof SolidSpectrumDocsComponentsDisclosureRoute;
-  "/solid-spectrum/docs/components/dropzone": typeof SolidSpectrumDocsComponentsDropzoneRoute;
-  "/solid-spectrum/docs/components/filetrigger": typeof SolidSpectrumDocsComponentsFiletriggerRoute;
-  "/solid-spectrum/docs/components/gridlist": typeof SolidSpectrumDocsComponentsGridlistRoute;
-  "/solid-spectrum/docs/components/link": typeof SolidSpectrumDocsComponentsLinkRoute;
-  "/solid-spectrum/docs/components/menu": typeof SolidSpectrumDocsComponentsMenuRoute;
-  "/solid-spectrum/docs/components/meter": typeof SolidSpectrumDocsComponentsMeterRoute;
-  "/solid-spectrum/docs/components/numberfield": typeof SolidSpectrumDocsComponentsNumberfieldRoute;
-  "/solid-spectrum/docs/components/picker": typeof SolidSpectrumDocsComponentsPickerRoute;
-  "/solid-spectrum/docs/components/popover": typeof SolidSpectrumDocsComponentsPopoverRoute;
-  "/solid-spectrum/docs/components/progressbar": typeof SolidSpectrumDocsComponentsProgressbarRoute;
-  "/solid-spectrum/docs/components/provider": typeof SolidSpectrumDocsComponentsProviderRoute;
-  "/solid-spectrum/docs/components/rangecalendar": typeof SolidSpectrumDocsComponentsRangecalendarRoute;
-  "/solid-spectrum/docs/components/searchfield": typeof SolidSpectrumDocsComponentsSearchfieldRoute;
-  "/solid-spectrum/docs/components/select": typeof SolidSpectrumDocsComponentsSelectRoute;
-  "/solid-spectrum/docs/components/separator": typeof SolidSpectrumDocsComponentsSeparatorRoute;
-  "/solid-spectrum/docs/components/slider": typeof SolidSpectrumDocsComponentsSliderRoute;
-  "/solid-spectrum/docs/components/switch": typeof SolidSpectrumDocsComponentsSwitchRoute;
-  "/solid-spectrum/docs/components/table": typeof SolidSpectrumDocsComponentsTableRoute;
-  "/solid-spectrum/docs/components/tabs": typeof SolidSpectrumDocsComponentsTabsRoute;
-  "/solid-spectrum/docs/components/taggroup": typeof SolidSpectrumDocsComponentsTaggroupRoute;
-  "/solid-spectrum/docs/components/textarea": typeof SolidSpectrumDocsComponentsTextareaRoute;
-  "/solid-spectrum/docs/components/textfield": typeof SolidSpectrumDocsComponentsTextfieldRoute;
-  "/solid-spectrum/docs/components/timefield": typeof SolidSpectrumDocsComponentsTimefieldRoute;
-  "/solid-spectrum/docs/components/toast": typeof SolidSpectrumDocsComponentsToastRoute;
-  "/solid-spectrum/docs/components/toolbar": typeof SolidSpectrumDocsComponentsToolbarRoute;
-  "/solid-spectrum/docs/components/tooltip": typeof SolidSpectrumDocsComponentsTooltipRoute;
-  "/solid-spectrum/docs/components/tree": typeof SolidSpectrumDocsComponentsTreeRoute;
-  "/solid-spectrum/docs/components/virtualizer": typeof SolidSpectrumDocsComponentsVirtualizerRoute;
-  "/solid-spectrum/docs/hooks/create-button": typeof SolidSpectrumDocsHooksCreateButtonRoute;
-  "/solid-spectrum/docs/hooks/create-press": typeof SolidSpectrumDocsHooksCreatePressRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
+  '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
+  '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/solid-spectrum/': typeof SolidSpectrumIndexRoute
+  '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
+  '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
+  '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
+  '/solid-spectrum/docs/components/actionbar': typeof SolidSpectrumDocsComponentsActionbarRoute
+  '/solid-spectrum/docs/components/actiongroup': typeof SolidSpectrumDocsComponentsActiongroupRoute
+  '/solid-spectrum/docs/components/alertdialog': typeof SolidSpectrumDocsComponentsAlertdialogRoute
+  '/solid-spectrum/docs/components/badge': typeof SolidSpectrumDocsComponentsBadgeRoute
+  '/solid-spectrum/docs/components/breadcrumbs': typeof SolidSpectrumDocsComponentsBreadcrumbsRoute
+  '/solid-spectrum/docs/components/button': typeof SolidSpectrumDocsComponentsButtonRoute
+  '/solid-spectrum/docs/components/calendar': typeof SolidSpectrumDocsComponentsCalendarRoute
+  '/solid-spectrum/docs/components/checkbox': typeof SolidSpectrumDocsComponentsCheckboxRoute
+  '/solid-spectrum/docs/components/color': typeof SolidSpectrumDocsComponentsColorRoute
+  '/solid-spectrum/docs/components/combobox': typeof SolidSpectrumDocsComponentsComboboxRoute
+  '/solid-spectrum/docs/components/contextualhelp': typeof SolidSpectrumDocsComponentsContextualhelpRoute
+  '/solid-spectrum/docs/components/datefield': typeof SolidSpectrumDocsComponentsDatefieldRoute
+  '/solid-spectrum/docs/components/datepicker': typeof SolidSpectrumDocsComponentsDatepickerRoute
+  '/solid-spectrum/docs/components/daterangepicker': typeof SolidSpectrumDocsComponentsDaterangepickerRoute
+  '/solid-spectrum/docs/components/dialog': typeof SolidSpectrumDocsComponentsDialogRoute
+  '/solid-spectrum/docs/components/disclosure': typeof SolidSpectrumDocsComponentsDisclosureRoute
+  '/solid-spectrum/docs/components/dropzone': typeof SolidSpectrumDocsComponentsDropzoneRoute
+  '/solid-spectrum/docs/components/filetrigger': typeof SolidSpectrumDocsComponentsFiletriggerRoute
+  '/solid-spectrum/docs/components/gridlist': typeof SolidSpectrumDocsComponentsGridlistRoute
+  '/solid-spectrum/docs/components/link': typeof SolidSpectrumDocsComponentsLinkRoute
+  '/solid-spectrum/docs/components/menu': typeof SolidSpectrumDocsComponentsMenuRoute
+  '/solid-spectrum/docs/components/meter': typeof SolidSpectrumDocsComponentsMeterRoute
+  '/solid-spectrum/docs/components/numberfield': typeof SolidSpectrumDocsComponentsNumberfieldRoute
+  '/solid-spectrum/docs/components/picker': typeof SolidSpectrumDocsComponentsPickerRoute
+  '/solid-spectrum/docs/components/popover': typeof SolidSpectrumDocsComponentsPopoverRoute
+  '/solid-spectrum/docs/components/progressbar': typeof SolidSpectrumDocsComponentsProgressbarRoute
+  '/solid-spectrum/docs/components/provider': typeof SolidSpectrumDocsComponentsProviderRoute
+  '/solid-spectrum/docs/components/rangecalendar': typeof SolidSpectrumDocsComponentsRangecalendarRoute
+  '/solid-spectrum/docs/components/searchfield': typeof SolidSpectrumDocsComponentsSearchfieldRoute
+  '/solid-spectrum/docs/components/select': typeof SolidSpectrumDocsComponentsSelectRoute
+  '/solid-spectrum/docs/components/separator': typeof SolidSpectrumDocsComponentsSeparatorRoute
+  '/solid-spectrum/docs/components/slider': typeof SolidSpectrumDocsComponentsSliderRoute
+  '/solid-spectrum/docs/components/switch': typeof SolidSpectrumDocsComponentsSwitchRoute
+  '/solid-spectrum/docs/components/table': typeof SolidSpectrumDocsComponentsTableRoute
+  '/solid-spectrum/docs/components/tabs': typeof SolidSpectrumDocsComponentsTabsRoute
+  '/solid-spectrum/docs/components/taggroup': typeof SolidSpectrumDocsComponentsTaggroupRoute
+  '/solid-spectrum/docs/components/textarea': typeof SolidSpectrumDocsComponentsTextareaRoute
+  '/solid-spectrum/docs/components/textfield': typeof SolidSpectrumDocsComponentsTextfieldRoute
+  '/solid-spectrum/docs/components/timefield': typeof SolidSpectrumDocsComponentsTimefieldRoute
+  '/solid-spectrum/docs/components/toast': typeof SolidSpectrumDocsComponentsToastRoute
+  '/solid-spectrum/docs/components/toolbar': typeof SolidSpectrumDocsComponentsToolbarRoute
+  '/solid-spectrum/docs/components/tooltip': typeof SolidSpectrumDocsComponentsTooltipRoute
+  '/solid-spectrum/docs/components/tree': typeof SolidSpectrumDocsComponentsTreeRoute
+  '/solid-spectrum/docs/components/virtualizer': typeof SolidSpectrumDocsComponentsVirtualizerRoute
+  '/solid-spectrum/docs/hooks/create-button': typeof SolidSpectrumDocsHooksCreateButtonRoute
+  '/solid-spectrum/docs/hooks/create-press': typeof SolidSpectrumDocsHooksCreatePressRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/admin"
-    | "/solid-spectrum/docs"
-    | "/solid-spectrum/ecosystem"
-    | "/solid-spectrum/playground"
-    | "/solid-spectrum/"
-    | "/solid-spectrum/docs/installation"
-    | "/solid-spectrum/docs/"
-    | "/solid-spectrum/docs/components/accordion"
-    | "/solid-spectrum/docs/components/actionbar"
-    | "/solid-spectrum/docs/components/actiongroup"
-    | "/solid-spectrum/docs/components/alertdialog"
-    | "/solid-spectrum/docs/components/badge"
-    | "/solid-spectrum/docs/components/breadcrumbs"
-    | "/solid-spectrum/docs/components/button"
-    | "/solid-spectrum/docs/components/calendar"
-    | "/solid-spectrum/docs/components/checkbox"
-    | "/solid-spectrum/docs/components/color"
-    | "/solid-spectrum/docs/components/combobox"
-    | "/solid-spectrum/docs/components/contextualhelp"
-    | "/solid-spectrum/docs/components/datefield"
-    | "/solid-spectrum/docs/components/datepicker"
-    | "/solid-spectrum/docs/components/daterangepicker"
-    | "/solid-spectrum/docs/components/dialog"
-    | "/solid-spectrum/docs/components/disclosure"
-    | "/solid-spectrum/docs/components/dropzone"
-    | "/solid-spectrum/docs/components/filetrigger"
-    | "/solid-spectrum/docs/components/gridlist"
-    | "/solid-spectrum/docs/components/link"
-    | "/solid-spectrum/docs/components/menu"
-    | "/solid-spectrum/docs/components/meter"
-    | "/solid-spectrum/docs/components/numberfield"
-    | "/solid-spectrum/docs/components/picker"
-    | "/solid-spectrum/docs/components/popover"
-    | "/solid-spectrum/docs/components/progressbar"
-    | "/solid-spectrum/docs/components/provider"
-    | "/solid-spectrum/docs/components/rangecalendar"
-    | "/solid-spectrum/docs/components/searchfield"
-    | "/solid-spectrum/docs/components/select"
-    | "/solid-spectrum/docs/components/separator"
-    | "/solid-spectrum/docs/components/slider"
-    | "/solid-spectrum/docs/components/switch"
-    | "/solid-spectrum/docs/components/table"
-    | "/solid-spectrum/docs/components/tabs"
-    | "/solid-spectrum/docs/components/taggroup"
-    | "/solid-spectrum/docs/components/textarea"
-    | "/solid-spectrum/docs/components/textfield"
-    | "/solid-spectrum/docs/components/timefield"
-    | "/solid-spectrum/docs/components/toast"
-    | "/solid-spectrum/docs/components/toolbar"
-    | "/solid-spectrum/docs/components/tooltip"
-    | "/solid-spectrum/docs/components/tree"
-    | "/solid-spectrum/docs/components/virtualizer"
-    | "/solid-spectrum/docs/hooks/create-button"
-    | "/solid-spectrum/docs/hooks/create-press";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/admin'
+    | '/solid-spectrum/docs'
+    | '/solid-spectrum/ecosystem'
+    | '/solid-spectrum/playground'
+    | '/solid-spectrum/'
+    | '/solid-spectrum/docs/installation'
+    | '/solid-spectrum/docs/'
+    | '/solid-spectrum/docs/components/accordion'
+    | '/solid-spectrum/docs/components/actionbar'
+    | '/solid-spectrum/docs/components/actiongroup'
+    | '/solid-spectrum/docs/components/alertdialog'
+    | '/solid-spectrum/docs/components/badge'
+    | '/solid-spectrum/docs/components/breadcrumbs'
+    | '/solid-spectrum/docs/components/button'
+    | '/solid-spectrum/docs/components/calendar'
+    | '/solid-spectrum/docs/components/checkbox'
+    | '/solid-spectrum/docs/components/color'
+    | '/solid-spectrum/docs/components/combobox'
+    | '/solid-spectrum/docs/components/contextualhelp'
+    | '/solid-spectrum/docs/components/datefield'
+    | '/solid-spectrum/docs/components/datepicker'
+    | '/solid-spectrum/docs/components/daterangepicker'
+    | '/solid-spectrum/docs/components/dialog'
+    | '/solid-spectrum/docs/components/disclosure'
+    | '/solid-spectrum/docs/components/dropzone'
+    | '/solid-spectrum/docs/components/filetrigger'
+    | '/solid-spectrum/docs/components/gridlist'
+    | '/solid-spectrum/docs/components/link'
+    | '/solid-spectrum/docs/components/menu'
+    | '/solid-spectrum/docs/components/meter'
+    | '/solid-spectrum/docs/components/numberfield'
+    | '/solid-spectrum/docs/components/picker'
+    | '/solid-spectrum/docs/components/popover'
+    | '/solid-spectrum/docs/components/progressbar'
+    | '/solid-spectrum/docs/components/provider'
+    | '/solid-spectrum/docs/components/rangecalendar'
+    | '/solid-spectrum/docs/components/searchfield'
+    | '/solid-spectrum/docs/components/select'
+    | '/solid-spectrum/docs/components/separator'
+    | '/solid-spectrum/docs/components/slider'
+    | '/solid-spectrum/docs/components/switch'
+    | '/solid-spectrum/docs/components/table'
+    | '/solid-spectrum/docs/components/tabs'
+    | '/solid-spectrum/docs/components/taggroup'
+    | '/solid-spectrum/docs/components/textarea'
+    | '/solid-spectrum/docs/components/textfield'
+    | '/solid-spectrum/docs/components/timefield'
+    | '/solid-spectrum/docs/components/toast'
+    | '/solid-spectrum/docs/components/toolbar'
+    | '/solid-spectrum/docs/components/tooltip'
+    | '/solid-spectrum/docs/components/tree'
+    | '/solid-spectrum/docs/components/virtualizer'
+    | '/solid-spectrum/docs/hooks/create-button'
+    | '/solid-spectrum/docs/hooks/create-press'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/admin"
-    | "/solid-spectrum/ecosystem"
-    | "/solid-spectrum/playground"
-    | "/solid-spectrum"
-    | "/solid-spectrum/docs/installation"
-    | "/solid-spectrum/docs"
-    | "/solid-spectrum/docs/components/accordion"
-    | "/solid-spectrum/docs/components/actionbar"
-    | "/solid-spectrum/docs/components/actiongroup"
-    | "/solid-spectrum/docs/components/alertdialog"
-    | "/solid-spectrum/docs/components/badge"
-    | "/solid-spectrum/docs/components/breadcrumbs"
-    | "/solid-spectrum/docs/components/button"
-    | "/solid-spectrum/docs/components/calendar"
-    | "/solid-spectrum/docs/components/checkbox"
-    | "/solid-spectrum/docs/components/color"
-    | "/solid-spectrum/docs/components/combobox"
-    | "/solid-spectrum/docs/components/contextualhelp"
-    | "/solid-spectrum/docs/components/datefield"
-    | "/solid-spectrum/docs/components/datepicker"
-    | "/solid-spectrum/docs/components/daterangepicker"
-    | "/solid-spectrum/docs/components/dialog"
-    | "/solid-spectrum/docs/components/disclosure"
-    | "/solid-spectrum/docs/components/dropzone"
-    | "/solid-spectrum/docs/components/filetrigger"
-    | "/solid-spectrum/docs/components/gridlist"
-    | "/solid-spectrum/docs/components/link"
-    | "/solid-spectrum/docs/components/menu"
-    | "/solid-spectrum/docs/components/meter"
-    | "/solid-spectrum/docs/components/numberfield"
-    | "/solid-spectrum/docs/components/picker"
-    | "/solid-spectrum/docs/components/popover"
-    | "/solid-spectrum/docs/components/progressbar"
-    | "/solid-spectrum/docs/components/provider"
-    | "/solid-spectrum/docs/components/rangecalendar"
-    | "/solid-spectrum/docs/components/searchfield"
-    | "/solid-spectrum/docs/components/select"
-    | "/solid-spectrum/docs/components/separator"
-    | "/solid-spectrum/docs/components/slider"
-    | "/solid-spectrum/docs/components/switch"
-    | "/solid-spectrum/docs/components/table"
-    | "/solid-spectrum/docs/components/tabs"
-    | "/solid-spectrum/docs/components/taggroup"
-    | "/solid-spectrum/docs/components/textarea"
-    | "/solid-spectrum/docs/components/textfield"
-    | "/solid-spectrum/docs/components/timefield"
-    | "/solid-spectrum/docs/components/toast"
-    | "/solid-spectrum/docs/components/toolbar"
-    | "/solid-spectrum/docs/components/tooltip"
-    | "/solid-spectrum/docs/components/tree"
-    | "/solid-spectrum/docs/components/virtualizer"
-    | "/solid-spectrum/docs/hooks/create-button"
-    | "/solid-spectrum/docs/hooks/create-press";
+    | '/'
+    | '/admin'
+    | '/solid-spectrum/ecosystem'
+    | '/solid-spectrum/playground'
+    | '/solid-spectrum'
+    | '/solid-spectrum/docs/installation'
+    | '/solid-spectrum/docs'
+    | '/solid-spectrum/docs/components/accordion'
+    | '/solid-spectrum/docs/components/actionbar'
+    | '/solid-spectrum/docs/components/actiongroup'
+    | '/solid-spectrum/docs/components/alertdialog'
+    | '/solid-spectrum/docs/components/badge'
+    | '/solid-spectrum/docs/components/breadcrumbs'
+    | '/solid-spectrum/docs/components/button'
+    | '/solid-spectrum/docs/components/calendar'
+    | '/solid-spectrum/docs/components/checkbox'
+    | '/solid-spectrum/docs/components/color'
+    | '/solid-spectrum/docs/components/combobox'
+    | '/solid-spectrum/docs/components/contextualhelp'
+    | '/solid-spectrum/docs/components/datefield'
+    | '/solid-spectrum/docs/components/datepicker'
+    | '/solid-spectrum/docs/components/daterangepicker'
+    | '/solid-spectrum/docs/components/dialog'
+    | '/solid-spectrum/docs/components/disclosure'
+    | '/solid-spectrum/docs/components/dropzone'
+    | '/solid-spectrum/docs/components/filetrigger'
+    | '/solid-spectrum/docs/components/gridlist'
+    | '/solid-spectrum/docs/components/link'
+    | '/solid-spectrum/docs/components/menu'
+    | '/solid-spectrum/docs/components/meter'
+    | '/solid-spectrum/docs/components/numberfield'
+    | '/solid-spectrum/docs/components/picker'
+    | '/solid-spectrum/docs/components/popover'
+    | '/solid-spectrum/docs/components/progressbar'
+    | '/solid-spectrum/docs/components/provider'
+    | '/solid-spectrum/docs/components/rangecalendar'
+    | '/solid-spectrum/docs/components/searchfield'
+    | '/solid-spectrum/docs/components/select'
+    | '/solid-spectrum/docs/components/separator'
+    | '/solid-spectrum/docs/components/slider'
+    | '/solid-spectrum/docs/components/switch'
+    | '/solid-spectrum/docs/components/table'
+    | '/solid-spectrum/docs/components/tabs'
+    | '/solid-spectrum/docs/components/taggroup'
+    | '/solid-spectrum/docs/components/textarea'
+    | '/solid-spectrum/docs/components/textfield'
+    | '/solid-spectrum/docs/components/timefield'
+    | '/solid-spectrum/docs/components/toast'
+    | '/solid-spectrum/docs/components/toolbar'
+    | '/solid-spectrum/docs/components/tooltip'
+    | '/solid-spectrum/docs/components/tree'
+    | '/solid-spectrum/docs/components/virtualizer'
+    | '/solid-spectrum/docs/hooks/create-button'
+    | '/solid-spectrum/docs/hooks/create-press'
   id:
-    | "__root__"
-    | "/"
-    | "/admin"
-    | "/solid-spectrum/docs"
-    | "/solid-spectrum/ecosystem"
-    | "/solid-spectrum/playground"
-    | "/solid-spectrum/"
-    | "/solid-spectrum/docs/installation"
-    | "/solid-spectrum/docs/"
-    | "/solid-spectrum/docs/components/accordion"
-    | "/solid-spectrum/docs/components/actionbar"
-    | "/solid-spectrum/docs/components/actiongroup"
-    | "/solid-spectrum/docs/components/alertdialog"
-    | "/solid-spectrum/docs/components/badge"
-    | "/solid-spectrum/docs/components/breadcrumbs"
-    | "/solid-spectrum/docs/components/button"
-    | "/solid-spectrum/docs/components/calendar"
-    | "/solid-spectrum/docs/components/checkbox"
-    | "/solid-spectrum/docs/components/color"
-    | "/solid-spectrum/docs/components/combobox"
-    | "/solid-spectrum/docs/components/contextualhelp"
-    | "/solid-spectrum/docs/components/datefield"
-    | "/solid-spectrum/docs/components/datepicker"
-    | "/solid-spectrum/docs/components/daterangepicker"
-    | "/solid-spectrum/docs/components/dialog"
-    | "/solid-spectrum/docs/components/disclosure"
-    | "/solid-spectrum/docs/components/dropzone"
-    | "/solid-spectrum/docs/components/filetrigger"
-    | "/solid-spectrum/docs/components/gridlist"
-    | "/solid-spectrum/docs/components/link"
-    | "/solid-spectrum/docs/components/menu"
-    | "/solid-spectrum/docs/components/meter"
-    | "/solid-spectrum/docs/components/numberfield"
-    | "/solid-spectrum/docs/components/picker"
-    | "/solid-spectrum/docs/components/popover"
-    | "/solid-spectrum/docs/components/progressbar"
-    | "/solid-spectrum/docs/components/provider"
-    | "/solid-spectrum/docs/components/rangecalendar"
-    | "/solid-spectrum/docs/components/searchfield"
-    | "/solid-spectrum/docs/components/select"
-    | "/solid-spectrum/docs/components/separator"
-    | "/solid-spectrum/docs/components/slider"
-    | "/solid-spectrum/docs/components/switch"
-    | "/solid-spectrum/docs/components/table"
-    | "/solid-spectrum/docs/components/tabs"
-    | "/solid-spectrum/docs/components/taggroup"
-    | "/solid-spectrum/docs/components/textarea"
-    | "/solid-spectrum/docs/components/textfield"
-    | "/solid-spectrum/docs/components/timefield"
-    | "/solid-spectrum/docs/components/toast"
-    | "/solid-spectrum/docs/components/toolbar"
-    | "/solid-spectrum/docs/components/tooltip"
-    | "/solid-spectrum/docs/components/tree"
-    | "/solid-spectrum/docs/components/virtualizer"
-    | "/solid-spectrum/docs/hooks/create-button"
-    | "/solid-spectrum/docs/hooks/create-press";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/solid-spectrum/docs'
+    | '/solid-spectrum/ecosystem'
+    | '/solid-spectrum/playground'
+    | '/solid-spectrum/'
+    | '/solid-spectrum/docs/installation'
+    | '/solid-spectrum/docs/'
+    | '/solid-spectrum/docs/components/accordion'
+    | '/solid-spectrum/docs/components/actionbar'
+    | '/solid-spectrum/docs/components/actiongroup'
+    | '/solid-spectrum/docs/components/alertdialog'
+    | '/solid-spectrum/docs/components/badge'
+    | '/solid-spectrum/docs/components/breadcrumbs'
+    | '/solid-spectrum/docs/components/button'
+    | '/solid-spectrum/docs/components/calendar'
+    | '/solid-spectrum/docs/components/checkbox'
+    | '/solid-spectrum/docs/components/color'
+    | '/solid-spectrum/docs/components/combobox'
+    | '/solid-spectrum/docs/components/contextualhelp'
+    | '/solid-spectrum/docs/components/datefield'
+    | '/solid-spectrum/docs/components/datepicker'
+    | '/solid-spectrum/docs/components/daterangepicker'
+    | '/solid-spectrum/docs/components/dialog'
+    | '/solid-spectrum/docs/components/disclosure'
+    | '/solid-spectrum/docs/components/dropzone'
+    | '/solid-spectrum/docs/components/filetrigger'
+    | '/solid-spectrum/docs/components/gridlist'
+    | '/solid-spectrum/docs/components/link'
+    | '/solid-spectrum/docs/components/menu'
+    | '/solid-spectrum/docs/components/meter'
+    | '/solid-spectrum/docs/components/numberfield'
+    | '/solid-spectrum/docs/components/picker'
+    | '/solid-spectrum/docs/components/popover'
+    | '/solid-spectrum/docs/components/progressbar'
+    | '/solid-spectrum/docs/components/provider'
+    | '/solid-spectrum/docs/components/rangecalendar'
+    | '/solid-spectrum/docs/components/searchfield'
+    | '/solid-spectrum/docs/components/select'
+    | '/solid-spectrum/docs/components/separator'
+    | '/solid-spectrum/docs/components/slider'
+    | '/solid-spectrum/docs/components/switch'
+    | '/solid-spectrum/docs/components/table'
+    | '/solid-spectrum/docs/components/tabs'
+    | '/solid-spectrum/docs/components/taggroup'
+    | '/solid-spectrum/docs/components/textarea'
+    | '/solid-spectrum/docs/components/textfield'
+    | '/solid-spectrum/docs/components/timefield'
+    | '/solid-spectrum/docs/components/toast'
+    | '/solid-spectrum/docs/components/toolbar'
+    | '/solid-spectrum/docs/components/tooltip'
+    | '/solid-spectrum/docs/components/tree'
+    | '/solid-spectrum/docs/components/virtualizer'
+    | '/solid-spectrum/docs/hooks/create-button'
+    | '/solid-spectrum/docs/hooks/create-press'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AdminRoute: typeof AdminRoute;
-  SolidSpectrumDocsRouteRoute: typeof SolidSpectrumDocsRouteRouteWithChildren;
-  SolidSpectrumEcosystemRoute: typeof SolidSpectrumEcosystemRoute;
-  SolidSpectrumPlaygroundRoute: typeof SolidSpectrumPlaygroundRoute;
-  SolidSpectrumIndexRoute: typeof SolidSpectrumIndexRoute;
+  IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  SolidSpectrumDocsRouteRoute: typeof SolidSpectrumDocsRouteRouteWithChildren
+  SolidSpectrumEcosystemRoute: typeof SolidSpectrumEcosystemRoute
+  SolidSpectrumPlaygroundRoute: typeof SolidSpectrumPlaygroundRoute
+  SolidSpectrumIndexRoute: typeof SolidSpectrumIndexRoute
 }
 
-declare module "@tanstack/solid-router" {
+declare module '@tanstack/solid-router' {
   interface FileRoutesByPath {
-    "/admin": {
-      id: "/admin";
-      path: "/admin";
-      fullPath: "/admin";
-      preLoaderRoute: typeof AdminRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/solid-spectrum/": {
-      id: "/solid-spectrum/";
-      path: "/solid-spectrum";
-      fullPath: "/solid-spectrum/";
-      preLoaderRoute: typeof SolidSpectrumIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/solid-spectrum/playground": {
-      id: "/solid-spectrum/playground";
-      path: "/solid-spectrum/playground";
-      fullPath: "/solid-spectrum/playground";
-      preLoaderRoute: typeof SolidSpectrumPlaygroundRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/solid-spectrum/ecosystem": {
-      id: "/solid-spectrum/ecosystem";
-      path: "/solid-spectrum/ecosystem";
-      fullPath: "/solid-spectrum/ecosystem";
-      preLoaderRoute: typeof SolidSpectrumEcosystemRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/solid-spectrum/docs": {
-      id: "/solid-spectrum/docs";
-      path: "/solid-spectrum/docs";
-      fullPath: "/solid-spectrum/docs";
-      preLoaderRoute: typeof SolidSpectrumDocsRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/solid-spectrum/docs/": {
-      id: "/solid-spectrum/docs/";
-      path: "/";
-      fullPath: "/solid-spectrum/docs/";
-      preLoaderRoute: typeof SolidSpectrumDocsIndexRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/installation": {
-      id: "/solid-spectrum/docs/installation";
-      path: "/installation";
-      fullPath: "/solid-spectrum/docs/installation";
-      preLoaderRoute: typeof SolidSpectrumDocsInstallationRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/hooks/create-press": {
-      id: "/solid-spectrum/docs/hooks/create-press";
-      path: "/hooks/create-press";
-      fullPath: "/solid-spectrum/docs/hooks/create-press";
-      preLoaderRoute: typeof SolidSpectrumDocsHooksCreatePressRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/hooks/create-button": {
-      id: "/solid-spectrum/docs/hooks/create-button";
-      path: "/hooks/create-button";
-      fullPath: "/solid-spectrum/docs/hooks/create-button";
-      preLoaderRoute: typeof SolidSpectrumDocsHooksCreateButtonRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/virtualizer": {
-      id: "/solid-spectrum/docs/components/virtualizer";
-      path: "/components/virtualizer";
-      fullPath: "/solid-spectrum/docs/components/virtualizer";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsVirtualizerRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/tree": {
-      id: "/solid-spectrum/docs/components/tree";
-      path: "/components/tree";
-      fullPath: "/solid-spectrum/docs/components/tree";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTreeRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/tooltip": {
-      id: "/solid-spectrum/docs/components/tooltip";
-      path: "/components/tooltip";
-      fullPath: "/solid-spectrum/docs/components/tooltip";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTooltipRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/toolbar": {
-      id: "/solid-spectrum/docs/components/toolbar";
-      path: "/components/toolbar";
-      fullPath: "/solid-spectrum/docs/components/toolbar";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsToolbarRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/toast": {
-      id: "/solid-spectrum/docs/components/toast";
-      path: "/components/toast";
-      fullPath: "/solid-spectrum/docs/components/toast";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsToastRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/timefield": {
-      id: "/solid-spectrum/docs/components/timefield";
-      path: "/components/timefield";
-      fullPath: "/solid-spectrum/docs/components/timefield";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTimefieldRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/textfield": {
-      id: "/solid-spectrum/docs/components/textfield";
-      path: "/components/textfield";
-      fullPath: "/solid-spectrum/docs/components/textfield";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextfieldRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/textarea": {
-      id: "/solid-spectrum/docs/components/textarea";
-      path: "/components/textarea";
-      fullPath: "/solid-spectrum/docs/components/textarea";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextareaRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/taggroup": {
-      id: "/solid-spectrum/docs/components/taggroup";
-      path: "/components/taggroup";
-      fullPath: "/solid-spectrum/docs/components/taggroup";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTaggroupRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/tabs": {
-      id: "/solid-spectrum/docs/components/tabs";
-      path: "/components/tabs";
-      fullPath: "/solid-spectrum/docs/components/tabs";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTabsRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/table": {
-      id: "/solid-spectrum/docs/components/table";
-      path: "/components/table";
-      fullPath: "/solid-spectrum/docs/components/table";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTableRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/switch": {
-      id: "/solid-spectrum/docs/components/switch";
-      path: "/components/switch";
-      fullPath: "/solid-spectrum/docs/components/switch";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSwitchRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/slider": {
-      id: "/solid-spectrum/docs/components/slider";
-      path: "/components/slider";
-      fullPath: "/solid-spectrum/docs/components/slider";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSliderRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/separator": {
-      id: "/solid-spectrum/docs/components/separator";
-      path: "/components/separator";
-      fullPath: "/solid-spectrum/docs/components/separator";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSeparatorRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/select": {
-      id: "/solid-spectrum/docs/components/select";
-      path: "/components/select";
-      fullPath: "/solid-spectrum/docs/components/select";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSelectRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/searchfield": {
-      id: "/solid-spectrum/docs/components/searchfield";
-      path: "/components/searchfield";
-      fullPath: "/solid-spectrum/docs/components/searchfield";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSearchfieldRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/rangecalendar": {
-      id: "/solid-spectrum/docs/components/rangecalendar";
-      path: "/components/rangecalendar";
-      fullPath: "/solid-spectrum/docs/components/rangecalendar";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsRangecalendarRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/provider": {
-      id: "/solid-spectrum/docs/components/provider";
-      path: "/components/provider";
-      fullPath: "/solid-spectrum/docs/components/provider";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsProviderRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/progressbar": {
-      id: "/solid-spectrum/docs/components/progressbar";
-      path: "/components/progressbar";
-      fullPath: "/solid-spectrum/docs/components/progressbar";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsProgressbarRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/popover": {
-      id: "/solid-spectrum/docs/components/popover";
-      path: "/components/popover";
-      fullPath: "/solid-spectrum/docs/components/popover";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsPopoverRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/picker": {
-      id: "/solid-spectrum/docs/components/picker";
-      path: "/components/picker";
-      fullPath: "/solid-spectrum/docs/components/picker";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsPickerRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/numberfield": {
-      id: "/solid-spectrum/docs/components/numberfield";
-      path: "/components/numberfield";
-      fullPath: "/solid-spectrum/docs/components/numberfield";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsNumberfieldRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/meter": {
-      id: "/solid-spectrum/docs/components/meter";
-      path: "/components/meter";
-      fullPath: "/solid-spectrum/docs/components/meter";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsMeterRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/menu": {
-      id: "/solid-spectrum/docs/components/menu";
-      path: "/components/menu";
-      fullPath: "/solid-spectrum/docs/components/menu";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsMenuRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/link": {
-      id: "/solid-spectrum/docs/components/link";
-      path: "/components/link";
-      fullPath: "/solid-spectrum/docs/components/link";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsLinkRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/gridlist": {
-      id: "/solid-spectrum/docs/components/gridlist";
-      path: "/components/gridlist";
-      fullPath: "/solid-spectrum/docs/components/gridlist";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsGridlistRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/filetrigger": {
-      id: "/solid-spectrum/docs/components/filetrigger";
-      path: "/components/filetrigger";
-      fullPath: "/solid-spectrum/docs/components/filetrigger";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsFiletriggerRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/dropzone": {
-      id: "/solid-spectrum/docs/components/dropzone";
-      path: "/components/dropzone";
-      fullPath: "/solid-spectrum/docs/components/dropzone";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDropzoneRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/disclosure": {
-      id: "/solid-spectrum/docs/components/disclosure";
-      path: "/components/disclosure";
-      fullPath: "/solid-spectrum/docs/components/disclosure";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDisclosureRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/dialog": {
-      id: "/solid-spectrum/docs/components/dialog";
-      path: "/components/dialog";
-      fullPath: "/solid-spectrum/docs/components/dialog";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDialogRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/daterangepicker": {
-      id: "/solid-spectrum/docs/components/daterangepicker";
-      path: "/components/daterangepicker";
-      fullPath: "/solid-spectrum/docs/components/daterangepicker";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/datepicker": {
-      id: "/solid-spectrum/docs/components/datepicker";
-      path: "/components/datepicker";
-      fullPath: "/solid-spectrum/docs/components/datepicker";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatepickerRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/datefield": {
-      id: "/solid-spectrum/docs/components/datefield";
-      path: "/components/datefield";
-      fullPath: "/solid-spectrum/docs/components/datefield";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatefieldRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/contextualhelp": {
-      id: "/solid-spectrum/docs/components/contextualhelp";
-      path: "/components/contextualhelp";
-      fullPath: "/solid-spectrum/docs/components/contextualhelp";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsContextualhelpRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/combobox": {
-      id: "/solid-spectrum/docs/components/combobox";
-      path: "/components/combobox";
-      fullPath: "/solid-spectrum/docs/components/combobox";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsComboboxRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/color": {
-      id: "/solid-spectrum/docs/components/color";
-      path: "/components/color";
-      fullPath: "/solid-spectrum/docs/components/color";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsColorRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/checkbox": {
-      id: "/solid-spectrum/docs/components/checkbox";
-      path: "/components/checkbox";
-      fullPath: "/solid-spectrum/docs/components/checkbox";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsCheckboxRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/calendar": {
-      id: "/solid-spectrum/docs/components/calendar";
-      path: "/components/calendar";
-      fullPath: "/solid-spectrum/docs/components/calendar";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsCalendarRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/button": {
-      id: "/solid-spectrum/docs/components/button";
-      path: "/components/button";
-      fullPath: "/solid-spectrum/docs/components/button";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsButtonRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/breadcrumbs": {
-      id: "/solid-spectrum/docs/components/breadcrumbs";
-      path: "/components/breadcrumbs";
-      fullPath: "/solid-spectrum/docs/components/breadcrumbs";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/badge": {
-      id: "/solid-spectrum/docs/components/badge";
-      path: "/components/badge";
-      fullPath: "/solid-spectrum/docs/components/badge";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsBadgeRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/alertdialog": {
-      id: "/solid-spectrum/docs/components/alertdialog";
-      path: "/components/alertdialog";
-      fullPath: "/solid-spectrum/docs/components/alertdialog";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsAlertdialogRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/actiongroup": {
-      id: "/solid-spectrum/docs/components/actiongroup";
-      path: "/components/actiongroup";
-      fullPath: "/solid-spectrum/docs/components/actiongroup";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsActiongroupRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/actionbar": {
-      id: "/solid-spectrum/docs/components/actionbar";
-      path: "/components/actionbar";
-      fullPath: "/solid-spectrum/docs/components/actionbar";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsActionbarRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
-    "/solid-spectrum/docs/components/accordion": {
-      id: "/solid-spectrum/docs/components/accordion";
-      path: "/components/accordion";
-      fullPath: "/solid-spectrum/docs/components/accordion";
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsAccordionRouteImport;
-      parentRoute: typeof SolidSpectrumDocsRouteRoute;
-    };
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solid-spectrum/': {
+      id: '/solid-spectrum/'
+      path: '/solid-spectrum'
+      fullPath: '/solid-spectrum/'
+      preLoaderRoute: typeof SolidSpectrumIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solid-spectrum/playground': {
+      id: '/solid-spectrum/playground'
+      path: '/solid-spectrum/playground'
+      fullPath: '/solid-spectrum/playground'
+      preLoaderRoute: typeof SolidSpectrumPlaygroundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solid-spectrum/ecosystem': {
+      id: '/solid-spectrum/ecosystem'
+      path: '/solid-spectrum/ecosystem'
+      fullPath: '/solid-spectrum/ecosystem'
+      preLoaderRoute: typeof SolidSpectrumEcosystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solid-spectrum/docs': {
+      id: '/solid-spectrum/docs'
+      path: '/solid-spectrum/docs'
+      fullPath: '/solid-spectrum/docs'
+      preLoaderRoute: typeof SolidSpectrumDocsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solid-spectrum/docs/': {
+      id: '/solid-spectrum/docs/'
+      path: '/'
+      fullPath: '/solid-spectrum/docs/'
+      preLoaderRoute: typeof SolidSpectrumDocsIndexRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/installation': {
+      id: '/solid-spectrum/docs/installation'
+      path: '/installation'
+      fullPath: '/solid-spectrum/docs/installation'
+      preLoaderRoute: typeof SolidSpectrumDocsInstallationRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/hooks/create-press': {
+      id: '/solid-spectrum/docs/hooks/create-press'
+      path: '/hooks/create-press'
+      fullPath: '/solid-spectrum/docs/hooks/create-press'
+      preLoaderRoute: typeof SolidSpectrumDocsHooksCreatePressRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/hooks/create-button': {
+      id: '/solid-spectrum/docs/hooks/create-button'
+      path: '/hooks/create-button'
+      fullPath: '/solid-spectrum/docs/hooks/create-button'
+      preLoaderRoute: typeof SolidSpectrumDocsHooksCreateButtonRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/virtualizer': {
+      id: '/solid-spectrum/docs/components/virtualizer'
+      path: '/components/virtualizer'
+      fullPath: '/solid-spectrum/docs/components/virtualizer'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsVirtualizerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/tree': {
+      id: '/solid-spectrum/docs/components/tree'
+      path: '/components/tree'
+      fullPath: '/solid-spectrum/docs/components/tree'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTreeRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/tooltip': {
+      id: '/solid-spectrum/docs/components/tooltip'
+      path: '/components/tooltip'
+      fullPath: '/solid-spectrum/docs/components/tooltip'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTooltipRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/toolbar': {
+      id: '/solid-spectrum/docs/components/toolbar'
+      path: '/components/toolbar'
+      fullPath: '/solid-spectrum/docs/components/toolbar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsToolbarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/toast': {
+      id: '/solid-spectrum/docs/components/toast'
+      path: '/components/toast'
+      fullPath: '/solid-spectrum/docs/components/toast'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsToastRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/timefield': {
+      id: '/solid-spectrum/docs/components/timefield'
+      path: '/components/timefield'
+      fullPath: '/solid-spectrum/docs/components/timefield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTimefieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/textfield': {
+      id: '/solid-spectrum/docs/components/textfield'
+      path: '/components/textfield'
+      fullPath: '/solid-spectrum/docs/components/textfield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextfieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/textarea': {
+      id: '/solid-spectrum/docs/components/textarea'
+      path: '/components/textarea'
+      fullPath: '/solid-spectrum/docs/components/textarea'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextareaRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/taggroup': {
+      id: '/solid-spectrum/docs/components/taggroup'
+      path: '/components/taggroup'
+      fullPath: '/solid-spectrum/docs/components/taggroup'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTaggroupRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/tabs': {
+      id: '/solid-spectrum/docs/components/tabs'
+      path: '/components/tabs'
+      fullPath: '/solid-spectrum/docs/components/tabs'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTabsRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/table': {
+      id: '/solid-spectrum/docs/components/table'
+      path: '/components/table'
+      fullPath: '/solid-spectrum/docs/components/table'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTableRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/switch': {
+      id: '/solid-spectrum/docs/components/switch'
+      path: '/components/switch'
+      fullPath: '/solid-spectrum/docs/components/switch'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSwitchRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/slider': {
+      id: '/solid-spectrum/docs/components/slider'
+      path: '/components/slider'
+      fullPath: '/solid-spectrum/docs/components/slider'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSliderRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/separator': {
+      id: '/solid-spectrum/docs/components/separator'
+      path: '/components/separator'
+      fullPath: '/solid-spectrum/docs/components/separator'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSeparatorRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/select': {
+      id: '/solid-spectrum/docs/components/select'
+      path: '/components/select'
+      fullPath: '/solid-spectrum/docs/components/select'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSelectRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/searchfield': {
+      id: '/solid-spectrum/docs/components/searchfield'
+      path: '/components/searchfield'
+      fullPath: '/solid-spectrum/docs/components/searchfield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSearchfieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/rangecalendar': {
+      id: '/solid-spectrum/docs/components/rangecalendar'
+      path: '/components/rangecalendar'
+      fullPath: '/solid-spectrum/docs/components/rangecalendar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsRangecalendarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/provider': {
+      id: '/solid-spectrum/docs/components/provider'
+      path: '/components/provider'
+      fullPath: '/solid-spectrum/docs/components/provider'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsProviderRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/progressbar': {
+      id: '/solid-spectrum/docs/components/progressbar'
+      path: '/components/progressbar'
+      fullPath: '/solid-spectrum/docs/components/progressbar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsProgressbarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/popover': {
+      id: '/solid-spectrum/docs/components/popover'
+      path: '/components/popover'
+      fullPath: '/solid-spectrum/docs/components/popover'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsPopoverRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/picker': {
+      id: '/solid-spectrum/docs/components/picker'
+      path: '/components/picker'
+      fullPath: '/solid-spectrum/docs/components/picker'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsPickerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/numberfield': {
+      id: '/solid-spectrum/docs/components/numberfield'
+      path: '/components/numberfield'
+      fullPath: '/solid-spectrum/docs/components/numberfield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsNumberfieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/meter': {
+      id: '/solid-spectrum/docs/components/meter'
+      path: '/components/meter'
+      fullPath: '/solid-spectrum/docs/components/meter'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsMeterRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/menu': {
+      id: '/solid-spectrum/docs/components/menu'
+      path: '/components/menu'
+      fullPath: '/solid-spectrum/docs/components/menu'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsMenuRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/link': {
+      id: '/solid-spectrum/docs/components/link'
+      path: '/components/link'
+      fullPath: '/solid-spectrum/docs/components/link'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsLinkRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/gridlist': {
+      id: '/solid-spectrum/docs/components/gridlist'
+      path: '/components/gridlist'
+      fullPath: '/solid-spectrum/docs/components/gridlist'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsGridlistRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/filetrigger': {
+      id: '/solid-spectrum/docs/components/filetrigger'
+      path: '/components/filetrigger'
+      fullPath: '/solid-spectrum/docs/components/filetrigger'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsFiletriggerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/dropzone': {
+      id: '/solid-spectrum/docs/components/dropzone'
+      path: '/components/dropzone'
+      fullPath: '/solid-spectrum/docs/components/dropzone'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDropzoneRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/disclosure': {
+      id: '/solid-spectrum/docs/components/disclosure'
+      path: '/components/disclosure'
+      fullPath: '/solid-spectrum/docs/components/disclosure'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDisclosureRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/dialog': {
+      id: '/solid-spectrum/docs/components/dialog'
+      path: '/components/dialog'
+      fullPath: '/solid-spectrum/docs/components/dialog'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDialogRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/daterangepicker': {
+      id: '/solid-spectrum/docs/components/daterangepicker'
+      path: '/components/daterangepicker'
+      fullPath: '/solid-spectrum/docs/components/daterangepicker'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/datepicker': {
+      id: '/solid-spectrum/docs/components/datepicker'
+      path: '/components/datepicker'
+      fullPath: '/solid-spectrum/docs/components/datepicker'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatepickerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/datefield': {
+      id: '/solid-spectrum/docs/components/datefield'
+      path: '/components/datefield'
+      fullPath: '/solid-spectrum/docs/components/datefield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatefieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/contextualhelp': {
+      id: '/solid-spectrum/docs/components/contextualhelp'
+      path: '/components/contextualhelp'
+      fullPath: '/solid-spectrum/docs/components/contextualhelp'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsContextualhelpRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/combobox': {
+      id: '/solid-spectrum/docs/components/combobox'
+      path: '/components/combobox'
+      fullPath: '/solid-spectrum/docs/components/combobox'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsComboboxRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/color': {
+      id: '/solid-spectrum/docs/components/color'
+      path: '/components/color'
+      fullPath: '/solid-spectrum/docs/components/color'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsColorRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/checkbox': {
+      id: '/solid-spectrum/docs/components/checkbox'
+      path: '/components/checkbox'
+      fullPath: '/solid-spectrum/docs/components/checkbox'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsCheckboxRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/calendar': {
+      id: '/solid-spectrum/docs/components/calendar'
+      path: '/components/calendar'
+      fullPath: '/solid-spectrum/docs/components/calendar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsCalendarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/button': {
+      id: '/solid-spectrum/docs/components/button'
+      path: '/components/button'
+      fullPath: '/solid-spectrum/docs/components/button'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsButtonRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/breadcrumbs': {
+      id: '/solid-spectrum/docs/components/breadcrumbs'
+      path: '/components/breadcrumbs'
+      fullPath: '/solid-spectrum/docs/components/breadcrumbs'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/badge': {
+      id: '/solid-spectrum/docs/components/badge'
+      path: '/components/badge'
+      fullPath: '/solid-spectrum/docs/components/badge'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsBadgeRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/alertdialog': {
+      id: '/solid-spectrum/docs/components/alertdialog'
+      path: '/components/alertdialog'
+      fullPath: '/solid-spectrum/docs/components/alertdialog'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsAlertdialogRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/actiongroup': {
+      id: '/solid-spectrum/docs/components/actiongroup'
+      path: '/components/actiongroup'
+      fullPath: '/solid-spectrum/docs/components/actiongroup'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsActiongroupRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/actionbar': {
+      id: '/solid-spectrum/docs/components/actionbar'
+      path: '/components/actionbar'
+      fullPath: '/solid-spectrum/docs/components/actionbar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsActionbarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/accordion': {
+      id: '/solid-spectrum/docs/components/accordion'
+      path: '/components/accordion'
+      fullPath: '/solid-spectrum/docs/components/accordion'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsAccordionRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
   }
 }
 
 interface SolidSpectrumDocsRouteRouteChildren {
-  SolidSpectrumDocsInstallationRoute: typeof SolidSpectrumDocsInstallationRoute;
-  SolidSpectrumDocsIndexRoute: typeof SolidSpectrumDocsIndexRoute;
-  SolidSpectrumDocsComponentsAccordionRoute: typeof SolidSpectrumDocsComponentsAccordionRoute;
-  SolidSpectrumDocsComponentsActionbarRoute: typeof SolidSpectrumDocsComponentsActionbarRoute;
-  SolidSpectrumDocsComponentsActiongroupRoute: typeof SolidSpectrumDocsComponentsActiongroupRoute;
-  SolidSpectrumDocsComponentsAlertdialogRoute: typeof SolidSpectrumDocsComponentsAlertdialogRoute;
-  SolidSpectrumDocsComponentsBadgeRoute: typeof SolidSpectrumDocsComponentsBadgeRoute;
-  SolidSpectrumDocsComponentsBreadcrumbsRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRoute;
-  SolidSpectrumDocsComponentsButtonRoute: typeof SolidSpectrumDocsComponentsButtonRoute;
-  SolidSpectrumDocsComponentsCalendarRoute: typeof SolidSpectrumDocsComponentsCalendarRoute;
-  SolidSpectrumDocsComponentsCheckboxRoute: typeof SolidSpectrumDocsComponentsCheckboxRoute;
-  SolidSpectrumDocsComponentsColorRoute: typeof SolidSpectrumDocsComponentsColorRoute;
-  SolidSpectrumDocsComponentsComboboxRoute: typeof SolidSpectrumDocsComponentsComboboxRoute;
-  SolidSpectrumDocsComponentsContextualhelpRoute: typeof SolidSpectrumDocsComponentsContextualhelpRoute;
-  SolidSpectrumDocsComponentsDatefieldRoute: typeof SolidSpectrumDocsComponentsDatefieldRoute;
-  SolidSpectrumDocsComponentsDatepickerRoute: typeof SolidSpectrumDocsComponentsDatepickerRoute;
-  SolidSpectrumDocsComponentsDaterangepickerRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRoute;
-  SolidSpectrumDocsComponentsDialogRoute: typeof SolidSpectrumDocsComponentsDialogRoute;
-  SolidSpectrumDocsComponentsDisclosureRoute: typeof SolidSpectrumDocsComponentsDisclosureRoute;
-  SolidSpectrumDocsComponentsDropzoneRoute: typeof SolidSpectrumDocsComponentsDropzoneRoute;
-  SolidSpectrumDocsComponentsFiletriggerRoute: typeof SolidSpectrumDocsComponentsFiletriggerRoute;
-  SolidSpectrumDocsComponentsGridlistRoute: typeof SolidSpectrumDocsComponentsGridlistRoute;
-  SolidSpectrumDocsComponentsLinkRoute: typeof SolidSpectrumDocsComponentsLinkRoute;
-  SolidSpectrumDocsComponentsMenuRoute: typeof SolidSpectrumDocsComponentsMenuRoute;
-  SolidSpectrumDocsComponentsMeterRoute: typeof SolidSpectrumDocsComponentsMeterRoute;
-  SolidSpectrumDocsComponentsNumberfieldRoute: typeof SolidSpectrumDocsComponentsNumberfieldRoute;
-  SolidSpectrumDocsComponentsPickerRoute: typeof SolidSpectrumDocsComponentsPickerRoute;
-  SolidSpectrumDocsComponentsPopoverRoute: typeof SolidSpectrumDocsComponentsPopoverRoute;
-  SolidSpectrumDocsComponentsProgressbarRoute: typeof SolidSpectrumDocsComponentsProgressbarRoute;
-  SolidSpectrumDocsComponentsProviderRoute: typeof SolidSpectrumDocsComponentsProviderRoute;
-  SolidSpectrumDocsComponentsRangecalendarRoute: typeof SolidSpectrumDocsComponentsRangecalendarRoute;
-  SolidSpectrumDocsComponentsSearchfieldRoute: typeof SolidSpectrumDocsComponentsSearchfieldRoute;
-  SolidSpectrumDocsComponentsSelectRoute: typeof SolidSpectrumDocsComponentsSelectRoute;
-  SolidSpectrumDocsComponentsSeparatorRoute: typeof SolidSpectrumDocsComponentsSeparatorRoute;
-  SolidSpectrumDocsComponentsSliderRoute: typeof SolidSpectrumDocsComponentsSliderRoute;
-  SolidSpectrumDocsComponentsSwitchRoute: typeof SolidSpectrumDocsComponentsSwitchRoute;
-  SolidSpectrumDocsComponentsTableRoute: typeof SolidSpectrumDocsComponentsTableRoute;
-  SolidSpectrumDocsComponentsTabsRoute: typeof SolidSpectrumDocsComponentsTabsRoute;
-  SolidSpectrumDocsComponentsTaggroupRoute: typeof SolidSpectrumDocsComponentsTaggroupRoute;
-  SolidSpectrumDocsComponentsTextareaRoute: typeof SolidSpectrumDocsComponentsTextareaRoute;
-  SolidSpectrumDocsComponentsTextfieldRoute: typeof SolidSpectrumDocsComponentsTextfieldRoute;
-  SolidSpectrumDocsComponentsTimefieldRoute: typeof SolidSpectrumDocsComponentsTimefieldRoute;
-  SolidSpectrumDocsComponentsToastRoute: typeof SolidSpectrumDocsComponentsToastRoute;
-  SolidSpectrumDocsComponentsToolbarRoute: typeof SolidSpectrumDocsComponentsToolbarRoute;
-  SolidSpectrumDocsComponentsTooltipRoute: typeof SolidSpectrumDocsComponentsTooltipRoute;
-  SolidSpectrumDocsComponentsTreeRoute: typeof SolidSpectrumDocsComponentsTreeRoute;
-  SolidSpectrumDocsComponentsVirtualizerRoute: typeof SolidSpectrumDocsComponentsVirtualizerRoute;
-  SolidSpectrumDocsHooksCreateButtonRoute: typeof SolidSpectrumDocsHooksCreateButtonRoute;
-  SolidSpectrumDocsHooksCreatePressRoute: typeof SolidSpectrumDocsHooksCreatePressRoute;
+  SolidSpectrumDocsInstallationRoute: typeof SolidSpectrumDocsInstallationRoute
+  SolidSpectrumDocsIndexRoute: typeof SolidSpectrumDocsIndexRoute
+  SolidSpectrumDocsComponentsAccordionRoute: typeof SolidSpectrumDocsComponentsAccordionRoute
+  SolidSpectrumDocsComponentsActionbarRoute: typeof SolidSpectrumDocsComponentsActionbarRoute
+  SolidSpectrumDocsComponentsActiongroupRoute: typeof SolidSpectrumDocsComponentsActiongroupRoute
+  SolidSpectrumDocsComponentsAlertdialogRoute: typeof SolidSpectrumDocsComponentsAlertdialogRoute
+  SolidSpectrumDocsComponentsBadgeRoute: typeof SolidSpectrumDocsComponentsBadgeRoute
+  SolidSpectrumDocsComponentsBreadcrumbsRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRoute
+  SolidSpectrumDocsComponentsButtonRoute: typeof SolidSpectrumDocsComponentsButtonRoute
+  SolidSpectrumDocsComponentsCalendarRoute: typeof SolidSpectrumDocsComponentsCalendarRoute
+  SolidSpectrumDocsComponentsCheckboxRoute: typeof SolidSpectrumDocsComponentsCheckboxRoute
+  SolidSpectrumDocsComponentsColorRoute: typeof SolidSpectrumDocsComponentsColorRoute
+  SolidSpectrumDocsComponentsComboboxRoute: typeof SolidSpectrumDocsComponentsComboboxRoute
+  SolidSpectrumDocsComponentsContextualhelpRoute: typeof SolidSpectrumDocsComponentsContextualhelpRoute
+  SolidSpectrumDocsComponentsDatefieldRoute: typeof SolidSpectrumDocsComponentsDatefieldRoute
+  SolidSpectrumDocsComponentsDatepickerRoute: typeof SolidSpectrumDocsComponentsDatepickerRoute
+  SolidSpectrumDocsComponentsDaterangepickerRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRoute
+  SolidSpectrumDocsComponentsDialogRoute: typeof SolidSpectrumDocsComponentsDialogRoute
+  SolidSpectrumDocsComponentsDisclosureRoute: typeof SolidSpectrumDocsComponentsDisclosureRoute
+  SolidSpectrumDocsComponentsDropzoneRoute: typeof SolidSpectrumDocsComponentsDropzoneRoute
+  SolidSpectrumDocsComponentsFiletriggerRoute: typeof SolidSpectrumDocsComponentsFiletriggerRoute
+  SolidSpectrumDocsComponentsGridlistRoute: typeof SolidSpectrumDocsComponentsGridlistRoute
+  SolidSpectrumDocsComponentsLinkRoute: typeof SolidSpectrumDocsComponentsLinkRoute
+  SolidSpectrumDocsComponentsMenuRoute: typeof SolidSpectrumDocsComponentsMenuRoute
+  SolidSpectrumDocsComponentsMeterRoute: typeof SolidSpectrumDocsComponentsMeterRoute
+  SolidSpectrumDocsComponentsNumberfieldRoute: typeof SolidSpectrumDocsComponentsNumberfieldRoute
+  SolidSpectrumDocsComponentsPickerRoute: typeof SolidSpectrumDocsComponentsPickerRoute
+  SolidSpectrumDocsComponentsPopoverRoute: typeof SolidSpectrumDocsComponentsPopoverRoute
+  SolidSpectrumDocsComponentsProgressbarRoute: typeof SolidSpectrumDocsComponentsProgressbarRoute
+  SolidSpectrumDocsComponentsProviderRoute: typeof SolidSpectrumDocsComponentsProviderRoute
+  SolidSpectrumDocsComponentsRangecalendarRoute: typeof SolidSpectrumDocsComponentsRangecalendarRoute
+  SolidSpectrumDocsComponentsSearchfieldRoute: typeof SolidSpectrumDocsComponentsSearchfieldRoute
+  SolidSpectrumDocsComponentsSelectRoute: typeof SolidSpectrumDocsComponentsSelectRoute
+  SolidSpectrumDocsComponentsSeparatorRoute: typeof SolidSpectrumDocsComponentsSeparatorRoute
+  SolidSpectrumDocsComponentsSliderRoute: typeof SolidSpectrumDocsComponentsSliderRoute
+  SolidSpectrumDocsComponentsSwitchRoute: typeof SolidSpectrumDocsComponentsSwitchRoute
+  SolidSpectrumDocsComponentsTableRoute: typeof SolidSpectrumDocsComponentsTableRoute
+  SolidSpectrumDocsComponentsTabsRoute: typeof SolidSpectrumDocsComponentsTabsRoute
+  SolidSpectrumDocsComponentsTaggroupRoute: typeof SolidSpectrumDocsComponentsTaggroupRoute
+  SolidSpectrumDocsComponentsTextareaRoute: typeof SolidSpectrumDocsComponentsTextareaRoute
+  SolidSpectrumDocsComponentsTextfieldRoute: typeof SolidSpectrumDocsComponentsTextfieldRoute
+  SolidSpectrumDocsComponentsTimefieldRoute: typeof SolidSpectrumDocsComponentsTimefieldRoute
+  SolidSpectrumDocsComponentsToastRoute: typeof SolidSpectrumDocsComponentsToastRoute
+  SolidSpectrumDocsComponentsToolbarRoute: typeof SolidSpectrumDocsComponentsToolbarRoute
+  SolidSpectrumDocsComponentsTooltipRoute: typeof SolidSpectrumDocsComponentsTooltipRoute
+  SolidSpectrumDocsComponentsTreeRoute: typeof SolidSpectrumDocsComponentsTreeRoute
+  SolidSpectrumDocsComponentsVirtualizerRoute: typeof SolidSpectrumDocsComponentsVirtualizerRoute
+  SolidSpectrumDocsHooksCreateButtonRoute: typeof SolidSpectrumDocsHooksCreateButtonRoute
+  SolidSpectrumDocsHooksCreatePressRoute: typeof SolidSpectrumDocsHooksCreatePressRoute
 }
 
-const SolidSpectrumDocsRouteRouteChildren: SolidSpectrumDocsRouteRouteChildren = {
-  SolidSpectrumDocsInstallationRoute: SolidSpectrumDocsInstallationRoute,
-  SolidSpectrumDocsIndexRoute: SolidSpectrumDocsIndexRoute,
-  SolidSpectrumDocsComponentsAccordionRoute: SolidSpectrumDocsComponentsAccordionRoute,
-  SolidSpectrumDocsComponentsActionbarRoute: SolidSpectrumDocsComponentsActionbarRoute,
-  SolidSpectrumDocsComponentsActiongroupRoute: SolidSpectrumDocsComponentsActiongroupRoute,
-  SolidSpectrumDocsComponentsAlertdialogRoute: SolidSpectrumDocsComponentsAlertdialogRoute,
-  SolidSpectrumDocsComponentsBadgeRoute: SolidSpectrumDocsComponentsBadgeRoute,
-  SolidSpectrumDocsComponentsBreadcrumbsRoute: SolidSpectrumDocsComponentsBreadcrumbsRoute,
-  SolidSpectrumDocsComponentsButtonRoute: SolidSpectrumDocsComponentsButtonRoute,
-  SolidSpectrumDocsComponentsCalendarRoute: SolidSpectrumDocsComponentsCalendarRoute,
-  SolidSpectrumDocsComponentsCheckboxRoute: SolidSpectrumDocsComponentsCheckboxRoute,
-  SolidSpectrumDocsComponentsColorRoute: SolidSpectrumDocsComponentsColorRoute,
-  SolidSpectrumDocsComponentsComboboxRoute: SolidSpectrumDocsComponentsComboboxRoute,
-  SolidSpectrumDocsComponentsContextualhelpRoute: SolidSpectrumDocsComponentsContextualhelpRoute,
-  SolidSpectrumDocsComponentsDatefieldRoute: SolidSpectrumDocsComponentsDatefieldRoute,
-  SolidSpectrumDocsComponentsDatepickerRoute: SolidSpectrumDocsComponentsDatepickerRoute,
-  SolidSpectrumDocsComponentsDaterangepickerRoute: SolidSpectrumDocsComponentsDaterangepickerRoute,
-  SolidSpectrumDocsComponentsDialogRoute: SolidSpectrumDocsComponentsDialogRoute,
-  SolidSpectrumDocsComponentsDisclosureRoute: SolidSpectrumDocsComponentsDisclosureRoute,
-  SolidSpectrumDocsComponentsDropzoneRoute: SolidSpectrumDocsComponentsDropzoneRoute,
-  SolidSpectrumDocsComponentsFiletriggerRoute: SolidSpectrumDocsComponentsFiletriggerRoute,
-  SolidSpectrumDocsComponentsGridlistRoute: SolidSpectrumDocsComponentsGridlistRoute,
-  SolidSpectrumDocsComponentsLinkRoute: SolidSpectrumDocsComponentsLinkRoute,
-  SolidSpectrumDocsComponentsMenuRoute: SolidSpectrumDocsComponentsMenuRoute,
-  SolidSpectrumDocsComponentsMeterRoute: SolidSpectrumDocsComponentsMeterRoute,
-  SolidSpectrumDocsComponentsNumberfieldRoute: SolidSpectrumDocsComponentsNumberfieldRoute,
-  SolidSpectrumDocsComponentsPickerRoute: SolidSpectrumDocsComponentsPickerRoute,
-  SolidSpectrumDocsComponentsPopoverRoute: SolidSpectrumDocsComponentsPopoverRoute,
-  SolidSpectrumDocsComponentsProgressbarRoute: SolidSpectrumDocsComponentsProgressbarRoute,
-  SolidSpectrumDocsComponentsProviderRoute: SolidSpectrumDocsComponentsProviderRoute,
-  SolidSpectrumDocsComponentsRangecalendarRoute: SolidSpectrumDocsComponentsRangecalendarRoute,
-  SolidSpectrumDocsComponentsSearchfieldRoute: SolidSpectrumDocsComponentsSearchfieldRoute,
-  SolidSpectrumDocsComponentsSelectRoute: SolidSpectrumDocsComponentsSelectRoute,
-  SolidSpectrumDocsComponentsSeparatorRoute: SolidSpectrumDocsComponentsSeparatorRoute,
-  SolidSpectrumDocsComponentsSliderRoute: SolidSpectrumDocsComponentsSliderRoute,
-  SolidSpectrumDocsComponentsSwitchRoute: SolidSpectrumDocsComponentsSwitchRoute,
-  SolidSpectrumDocsComponentsTableRoute: SolidSpectrumDocsComponentsTableRoute,
-  SolidSpectrumDocsComponentsTabsRoute: SolidSpectrumDocsComponentsTabsRoute,
-  SolidSpectrumDocsComponentsTaggroupRoute: SolidSpectrumDocsComponentsTaggroupRoute,
-  SolidSpectrumDocsComponentsTextareaRoute: SolidSpectrumDocsComponentsTextareaRoute,
-  SolidSpectrumDocsComponentsTextfieldRoute: SolidSpectrumDocsComponentsTextfieldRoute,
-  SolidSpectrumDocsComponentsTimefieldRoute: SolidSpectrumDocsComponentsTimefieldRoute,
-  SolidSpectrumDocsComponentsToastRoute: SolidSpectrumDocsComponentsToastRoute,
-  SolidSpectrumDocsComponentsToolbarRoute: SolidSpectrumDocsComponentsToolbarRoute,
-  SolidSpectrumDocsComponentsTooltipRoute: SolidSpectrumDocsComponentsTooltipRoute,
-  SolidSpectrumDocsComponentsTreeRoute: SolidSpectrumDocsComponentsTreeRoute,
-  SolidSpectrumDocsComponentsVirtualizerRoute: SolidSpectrumDocsComponentsVirtualizerRoute,
-  SolidSpectrumDocsHooksCreateButtonRoute: SolidSpectrumDocsHooksCreateButtonRoute,
-  SolidSpectrumDocsHooksCreatePressRoute: SolidSpectrumDocsHooksCreatePressRoute,
-};
+const SolidSpectrumDocsRouteRouteChildren: SolidSpectrumDocsRouteRouteChildren =
+  {
+    SolidSpectrumDocsInstallationRoute: SolidSpectrumDocsInstallationRoute,
+    SolidSpectrumDocsIndexRoute: SolidSpectrumDocsIndexRoute,
+    SolidSpectrumDocsComponentsAccordionRoute:
+      SolidSpectrumDocsComponentsAccordionRoute,
+    SolidSpectrumDocsComponentsActionbarRoute:
+      SolidSpectrumDocsComponentsActionbarRoute,
+    SolidSpectrumDocsComponentsActiongroupRoute:
+      SolidSpectrumDocsComponentsActiongroupRoute,
+    SolidSpectrumDocsComponentsAlertdialogRoute:
+      SolidSpectrumDocsComponentsAlertdialogRoute,
+    SolidSpectrumDocsComponentsBadgeRoute:
+      SolidSpectrumDocsComponentsBadgeRoute,
+    SolidSpectrumDocsComponentsBreadcrumbsRoute:
+      SolidSpectrumDocsComponentsBreadcrumbsRoute,
+    SolidSpectrumDocsComponentsButtonRoute:
+      SolidSpectrumDocsComponentsButtonRoute,
+    SolidSpectrumDocsComponentsCalendarRoute:
+      SolidSpectrumDocsComponentsCalendarRoute,
+    SolidSpectrumDocsComponentsCheckboxRoute:
+      SolidSpectrumDocsComponentsCheckboxRoute,
+    SolidSpectrumDocsComponentsColorRoute:
+      SolidSpectrumDocsComponentsColorRoute,
+    SolidSpectrumDocsComponentsComboboxRoute:
+      SolidSpectrumDocsComponentsComboboxRoute,
+    SolidSpectrumDocsComponentsContextualhelpRoute:
+      SolidSpectrumDocsComponentsContextualhelpRoute,
+    SolidSpectrumDocsComponentsDatefieldRoute:
+      SolidSpectrumDocsComponentsDatefieldRoute,
+    SolidSpectrumDocsComponentsDatepickerRoute:
+      SolidSpectrumDocsComponentsDatepickerRoute,
+    SolidSpectrumDocsComponentsDaterangepickerRoute:
+      SolidSpectrumDocsComponentsDaterangepickerRoute,
+    SolidSpectrumDocsComponentsDialogRoute:
+      SolidSpectrumDocsComponentsDialogRoute,
+    SolidSpectrumDocsComponentsDisclosureRoute:
+      SolidSpectrumDocsComponentsDisclosureRoute,
+    SolidSpectrumDocsComponentsDropzoneRoute:
+      SolidSpectrumDocsComponentsDropzoneRoute,
+    SolidSpectrumDocsComponentsFiletriggerRoute:
+      SolidSpectrumDocsComponentsFiletriggerRoute,
+    SolidSpectrumDocsComponentsGridlistRoute:
+      SolidSpectrumDocsComponentsGridlistRoute,
+    SolidSpectrumDocsComponentsLinkRoute: SolidSpectrumDocsComponentsLinkRoute,
+    SolidSpectrumDocsComponentsMenuRoute: SolidSpectrumDocsComponentsMenuRoute,
+    SolidSpectrumDocsComponentsMeterRoute:
+      SolidSpectrumDocsComponentsMeterRoute,
+    SolidSpectrumDocsComponentsNumberfieldRoute:
+      SolidSpectrumDocsComponentsNumberfieldRoute,
+    SolidSpectrumDocsComponentsPickerRoute:
+      SolidSpectrumDocsComponentsPickerRoute,
+    SolidSpectrumDocsComponentsPopoverRoute:
+      SolidSpectrumDocsComponentsPopoverRoute,
+    SolidSpectrumDocsComponentsProgressbarRoute:
+      SolidSpectrumDocsComponentsProgressbarRoute,
+    SolidSpectrumDocsComponentsProviderRoute:
+      SolidSpectrumDocsComponentsProviderRoute,
+    SolidSpectrumDocsComponentsRangecalendarRoute:
+      SolidSpectrumDocsComponentsRangecalendarRoute,
+    SolidSpectrumDocsComponentsSearchfieldRoute:
+      SolidSpectrumDocsComponentsSearchfieldRoute,
+    SolidSpectrumDocsComponentsSelectRoute:
+      SolidSpectrumDocsComponentsSelectRoute,
+    SolidSpectrumDocsComponentsSeparatorRoute:
+      SolidSpectrumDocsComponentsSeparatorRoute,
+    SolidSpectrumDocsComponentsSliderRoute:
+      SolidSpectrumDocsComponentsSliderRoute,
+    SolidSpectrumDocsComponentsSwitchRoute:
+      SolidSpectrumDocsComponentsSwitchRoute,
+    SolidSpectrumDocsComponentsTableRoute:
+      SolidSpectrumDocsComponentsTableRoute,
+    SolidSpectrumDocsComponentsTabsRoute: SolidSpectrumDocsComponentsTabsRoute,
+    SolidSpectrumDocsComponentsTaggroupRoute:
+      SolidSpectrumDocsComponentsTaggroupRoute,
+    SolidSpectrumDocsComponentsTextareaRoute:
+      SolidSpectrumDocsComponentsTextareaRoute,
+    SolidSpectrumDocsComponentsTextfieldRoute:
+      SolidSpectrumDocsComponentsTextfieldRoute,
+    SolidSpectrumDocsComponentsTimefieldRoute:
+      SolidSpectrumDocsComponentsTimefieldRoute,
+    SolidSpectrumDocsComponentsToastRoute:
+      SolidSpectrumDocsComponentsToastRoute,
+    SolidSpectrumDocsComponentsToolbarRoute:
+      SolidSpectrumDocsComponentsToolbarRoute,
+    SolidSpectrumDocsComponentsTooltipRoute:
+      SolidSpectrumDocsComponentsTooltipRoute,
+    SolidSpectrumDocsComponentsTreeRoute: SolidSpectrumDocsComponentsTreeRoute,
+    SolidSpectrumDocsComponentsVirtualizerRoute:
+      SolidSpectrumDocsComponentsVirtualizerRoute,
+    SolidSpectrumDocsHooksCreateButtonRoute:
+      SolidSpectrumDocsHooksCreateButtonRoute,
+    SolidSpectrumDocsHooksCreatePressRoute:
+      SolidSpectrumDocsHooksCreatePressRoute,
+  }
 
-const SolidSpectrumDocsRouteRouteWithChildren = SolidSpectrumDocsRouteRoute._addFileChildren(
-  SolidSpectrumDocsRouteRouteChildren,
-);
+const SolidSpectrumDocsRouteRouteWithChildren =
+  SolidSpectrumDocsRouteRoute._addFileChildren(
+    SolidSpectrumDocsRouteRouteChildren,
+  )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -1230,16 +1292,16 @@ const rootRouteChildren: RootRouteChildren = {
   SolidSpectrumEcosystemRoute: SolidSpectrumEcosystemRoute,
   SolidSpectrumPlaygroundRoute: SolidSpectrumPlaygroundRoute,
   SolidSpectrumIndexRoute: SolidSpectrumIndexRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/solid-start";
-declare module "@tanstack/solid-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/solid-start'
+declare module '@tanstack/solid-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
