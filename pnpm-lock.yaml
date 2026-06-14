@@ -188,6 +188,9 @@ importers:
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.1.24
         version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.2)(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.21.0)(typescript@5.9.3)(unrun@0.2.39)(yaml@2.8.3)'
+      yaml:
+        specifier: ^2.8.3
+        version: 2.8.3
     devDependencies:
       '@axe-core/playwright':
         specifier: ^4.11.1
@@ -6562,7 +6565,7 @@ snapshots:
       lightningcss: 1.32.0
       postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.12)(tsx@4.21.0)(yaml@2.8.3)
       rolldown: 1.1.1
-      tsdown: 0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39)
+      tsdown: 0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@5.9.3)(unrun@0.2.39)
     optionalDependencies:
       postcss: 8.5.12
     transitivePeerDependencies:
@@ -8509,6 +8512,22 @@ snapshots:
       glob: 13.0.6
       package-json-from-dist: 1.0.1
 
+  rolldown-plugin-dts@0.25.2(rolldown@1.1.1)(typescript@5.9.3):
+    dependencies:
+      '@babel/generator': 8.0.0-rc.6
+      '@babel/helper-validator-identifier': 8.0.0-rc.6
+      '@babel/parser': 8.0.0-rc.6
+      ast-kit: 3.0.0-beta.1
+      birpc: 4.0.0
+      dts-resolver: 3.0.0
+      get-tsconfig: 5.0.0-beta.5
+      obug: 2.1.1
+      rolldown: 1.1.1
+    optionalDependencies:
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - oxc-resolver
+
   rolldown-plugin-dts@0.25.2(rolldown@1.1.1)(typescript@6.0.3):
     dependencies:
       '@babel/generator': 8.0.0-rc.6
@@ -8821,6 +8840,34 @@ snapshots:
   tsconfck@3.1.6(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
+
+  tsdown@0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@5.9.3)(unrun@0.2.39):
+    dependencies:
+      ansis: 4.3.1
+      cac: 7.0.0
+      defu: 6.1.7
+      empathic: 2.0.1
+      hookable: 6.1.1
+      import-without-cache: 0.4.0
+      obug: 2.1.1
+      picomatch: 4.0.4
+      rolldown: 1.1.1
+      rolldown-plugin-dts: 0.25.2(rolldown@1.1.1)(typescript@5.9.3)
+      semver: 7.8.4
+      tinyexec: 1.2.4
+      tinyglobby: 0.2.17
+      tree-kill: 1.2.2
+      unconfig-core: 7.5.0
+    optionalDependencies:
+      '@tsdown/css': 0.22.2(jiti@2.7.0)(postcss@8.5.12)(tsdown@0.22.2)(tsx@4.21.0)(yaml@2.8.3)
+      tsx: 4.21.0
+      typescript: 5.9.3
+      unrun: 0.2.39
+    transitivePeerDependencies:
+      - '@ts-macro/tsc'
+      - '@typescript/native-preview'
+      - oxc-resolver
+      - vue-tsc
 
   tsdown@0.22.2(@tsdown/css@0.22.2)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39):
     dependencies:

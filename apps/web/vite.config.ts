@@ -4,6 +4,7 @@ import { tanstackStart } from "@tanstack/solid-start/plugin/vite";
 import viteSolid from "vite-plugin-solid";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { adminApiPlugin } from "./src/app/admin/server/plugin";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProd = process.env.NODE_ENV === "production";
@@ -30,6 +31,10 @@ export default defineConfig({
     ],
   },
   plugins: [
+    // Dev-only /api/admin middleware (apply:"serve"); runs in the Node process,
+    // not the workerd SSR env (which has no repo filesystem). Ordered first so it
+    // wins for /api/admin before any SSR catch-all. See admin-dashboard.md.
+    adminApiPlugin(),
     tanstackStart(),
     viteSolid({ ssr: true }),
     ...(isProd ? [cloudflare({ viteEnvironment: { name: "ssr" } })] : []),
