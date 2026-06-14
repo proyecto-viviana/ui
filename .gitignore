@@ -57,4 +57,10 @@ docs/comparison-docs-overhaul/assets/visual-audit/
 # Local
 .DS_Store
 .mcp.json
-.claude/
+
+# .claude/ is local scratch; only the curated, current surface is tracked.
+# Ignored: docs/ + journal/ (superseded historical notes), skills/, settings.local.json.
+.claude/*
+!.claude/current/
+!.claude/reference/
+!.claude/README.md
