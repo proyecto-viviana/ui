@@ -122,7 +122,7 @@ the `Disclosure` family, `Divider`, `Picker`, `Button`, `Link`, `Table*`,
 `TextField`, `Radio`/`RadioGroup`, `Card`, `Tabs`, `Accordion`. The styling
 function lives at the `./style` export (`src/style/`).
 
-Known gaps from `docs/CURRENT_STATUS.md` affect _content_ (what renders inside
+Known gaps from `.claude/current/status.md` affect _content_ (what renders inside
 the comparison panels) — Disclosure, Tabs, Popover, ProgressBar, TableView,
 TagGroup and others are still missing/blocked styled S2 entries. The **chrome
 itself is unblocked**: the components it needs are exported and styled.

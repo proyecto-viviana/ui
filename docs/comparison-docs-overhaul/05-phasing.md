@@ -9,7 +9,7 @@ Each phase is independently shippable and leaves the app working.
 - Resolve the remaining open questions below (app-side macro wiring, JSX vs
   hyperscript, prop-metadata extractor choice).
 - Keep `docs/adr/0001-s2-styling-source-of-truth.md`,
-  `apps/comparison/README.md`, and `docs/CURRENT_STATUS.md` aligned on the CSS
+  `apps/comparison/README.md`, and `.claude/current/status.md` aligned on the CSS
   boundary: the comparison app **shell** may use `solid-spectrum`; the boundary
   is "no hand-written CSS re-implementing S2 component surfaces".
 - Prototype one chrome `style()` call end-to-end through the S2 macro plugin
@@ -70,7 +70,7 @@ Exit: all catalogue components have MDX pages at content parity.
 
 Delete dead `s2-*` rules from `global.css` (keep only harness chrome:
 screenshot frames, comparison-panel framing). Update `COMPONENT_PLAYBOOK.md`,
-`CURRENT_STATUS.md`, `playbook/` notes, and any e2e/visual specs asserting on
+`.claude/current/status.md`, `playbook/` notes, and any e2e/visual specs asserting on
 old `.s2-*` selectors.
 
 Exit: no hand-written S2-surface CSS remains; reports and suites green.
