@@ -1,3 +1,11 @@
+---
+kind: research
+status: current
+---
+
+Status: Current source of truth.
+Update when: this research pack is revised, superseded, or relocated.
+
 # Overnight parity audit research pack (2026-06-15)
 
 > **Stage status:** this pack currently contains the completed **breadth-mapping / audit-seeding stage**. It is not the finished overnight deep audit. The next stage is depth-first source comparison by component family, with concrete upstream-vs-local deltas recorded as findings.

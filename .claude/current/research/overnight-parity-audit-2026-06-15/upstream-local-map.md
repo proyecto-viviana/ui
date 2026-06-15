@@ -1,3 +1,11 @@
+---
+kind: research
+status: current
+---
+
+Status: Current source of truth.
+Update when: this research pack is revised, superseded, or relocated.
+
 # Upstream/local source map
 
 Authority order: local installed `@react-spectrum/s2@1.3.0` for styled/API S2; `react-aria-components@1.17.0` for component composition; `react-aria@3.48.0` for ARIA/focus/keyboard; `react-stately@3.46.0` for state; vendored `apps/comparison/vendor/s2-docs` for docs/viewer examples and prop tables.

@@ -1,3 +1,11 @@
+---
+kind: research
+status: current
+---
+
+Status: Current source of truth.
+Update when: this research pack is revised, superseded, or relocated.
+
 # Evidence gap ledger
 
 This ledger records proof gaps found by breadth mapping and baseline reports. It does not claim implementation bugs unless a source/test mismatch was directly observed.

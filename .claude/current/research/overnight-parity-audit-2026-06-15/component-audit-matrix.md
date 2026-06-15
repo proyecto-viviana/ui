@@ -1,3 +1,11 @@
+---
+kind: research
+status: current
+---
+
+Status: Current source of truth.
+Update when: this research pack is revised, superseded, or relocated.
+
 # Component audit matrix
 
 Severity is intentionally strict: missing component-specific tests, partial validation notes, or unclassified source branches are treated as risk even if catalogue reports are green.

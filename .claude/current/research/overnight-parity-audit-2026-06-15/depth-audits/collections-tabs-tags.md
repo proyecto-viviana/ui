@@ -1,3 +1,11 @@
+---
+kind: research
+status: current
+---
+
+Status: Current source of truth.
+Update when: this research pack is revised, superseded, or relocated.
+
 # Depth audit slice: collections, tabs, tags, and button-family follow-up
 
 ## Scope and authority
