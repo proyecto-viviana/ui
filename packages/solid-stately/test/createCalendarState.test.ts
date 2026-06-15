@@ -549,17 +549,37 @@ describe("createCalendarState", () => {
       });
     });
 
-    it("should return correct visible range for multiple months", () => {
+    it("should default to centered alignment for multiple months", () => {
+      // Mirrors @react-stately/calendar useCalendarState: when no
+      // selectionAlignment is provided it defaults to 'center', so a 3-month
+      // view focused on June centers on June (May–July), not June–August.
       createRoot((dispose) => {
         const focusDate = new CalendarDate(2024, 6, 15);
         const state = createCalendarState({
           defaultFocusedValue: focusDate,
-          visibleMonths: 2,
+          visibleMonths: 3,
         });
 
         const range = state.visibleRange();
-        expect(range.start.month).toBe(6);
-        expect(range.end.month).toBe(7);
+        expect(range.start).toEqual(new CalendarDate(2024, 5, 1));
+        expect(range.end).toEqual(new CalendarDate(2024, 7, 31));
+
+        dispose();
+      });
+    });
+
+    it("should align to the start when selectionAlignment is 'start'", () => {
+      createRoot((dispose) => {
+        const focusDate = new CalendarDate(2024, 6, 15);
+        const state = createCalendarState({
+          defaultFocusedValue: focusDate,
+          visibleMonths: 3,
+          selectionAlignment: "start",
+        });
+
+        const range = state.visibleRange();
+        expect(range.start).toEqual(new CalendarDate(2024, 6, 1));
+        expect(range.end).toEqual(new CalendarDate(2024, 8, 31));
 
         dispose();
       });
