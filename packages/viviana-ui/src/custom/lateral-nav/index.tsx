@@ -1,5 +1,9 @@
 import type { JSX } from "solid-js";
 import { Show, For } from "solid-js";
+// Styled via the S2 style() macro through viviana's own seam (../../style →
+// src/style.ts). A sidebar nav (sections with an accent rail + links) on the
+// S2 spacing/type ramps in Silapse colors.
+import { style } from "../../style" with { type: "macro" };
 
 export interface NavItemProps {
   title: string;
@@ -7,10 +11,17 @@ export interface NavItemProps {
   class?: string;
 }
 
+const item = style({
+  display: "flex",
+  alignItems: "center",
+  font: "heading-sm",
+  color: "[var(--color-primary-200)]",
+});
+
 export function NavItem(props: NavItemProps) {
   return (
-    <li class={`flex items-center ${props.class ?? ""}`}>
-      <span class="text-lg font-bold text-primary-200">{props.title}</span>
+    <li class={`${item} ${props.class ?? ""}`}>
+      <span>{props.title}</span>
       {props.children}
     </li>
   );
@@ -23,16 +34,19 @@ export interface NavLinkProps {
   class?: string;
 }
 
-export function NavLink(props: NavLinkProps) {
-  const activeStyles = "font-medium text-primary-300 underline underline-offset-4";
-  const inactiveStyles =
-    "font-normal text-gray-200 underline-offset-4 hover:text-gray-100 hover:underline";
+const link = style<{ active: boolean }>({
+  font: "ui",
+  textDecoration: { default: "none", active: "underline" },
+  fontWeight: { default: "normal", active: "medium" },
+  color: {
+    default: "[var(--color-text-secondary)]",
+    active: "[var(--color-primary-300)]",
+  },
+});
 
+export function NavLink(props: NavLinkProps) {
   return (
-    <a
-      href={props.href}
-      class={`${props.active ? activeStyles : inactiveStyles} ${props.class ?? ""}`}
-    >
+    <a href={props.href} class={`${link({ active: props.active ?? false })} ${props.class ?? ""}`}>
       {props.children}
     </a>
   );
@@ -45,19 +59,38 @@ export interface NavSectionProps {
   class?: string;
 }
 
+const sectionRow = style({
+  display: "flex",
+});
+
+const accentRail = style({
+  flexShrink: 0,
+  width: 4,
+  height: 20,
+  backgroundColor: "[var(--color-accent-300)]",
+});
+
+const list = style({
+  display: "flex",
+  flexDirection: "column",
+  flexGrow: 1,
+  gap: 4,
+  paddingStart: 16,
+});
+
 export function NavSection(props: NavSectionProps) {
   return (
     <div class={props.class ?? ""}>
       <NavItem title={props.title} />
-      <div class="flex h-full">
-        <div class="h-5 w-1 bg-accent-300" />
-        <ul class="flex h-full flex-1 flex-col gap-1 pl-4">
+      <div class={sectionRow}>
+        <div class={accentRail} />
+        <ul class={list}>
           <Show when={props.links}>
             <For each={props.links}>
-              {(link) => (
+              {(navLink) => (
                 <li>
-                  <NavLink href={link.href} active={link.active}>
-                    {link.label}
+                  <NavLink href={navLink.href} active={navLink.active}>
+                    {navLink.label}
                   </NavLink>
                 </li>
               )}
@@ -76,13 +109,22 @@ export interface LateralNavProps {
   class?: string;
 }
 
-export function LateralNav(props: LateralNavProps) {
-  const bgColor = () => (props.transparent ? "" : "bg-bg-200");
+const nav = style<{ transparent: boolean }>({
+  width: 300,
+  margin: 0,
+  padding: 12,
+  borderEndWidth: 1,
+  borderStyle: "solid",
+  borderColor: "[var(--color-primary-600)]",
+  backgroundColor: {
+    default: "[var(--color-bg-200)]",
+    transparent: "transparent",
+  },
+});
 
+export function LateralNav(props: LateralNavProps) {
   return (
-    <div
-      class={`hidden w-[300px] md:block ${bgColor()} m-0 border-r border-primary-600 p-3 ${props.class ?? ""}`}
-    >
+    <div class={`${nav({ transparent: props.transparent ?? false })} ${props.class ?? ""}`}>
       {props.children}
     </div>
   );

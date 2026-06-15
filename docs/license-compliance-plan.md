@@ -98,9 +98,15 @@ from…` markers that already name the upstream module.
    pre-rename "styled" era. Relocated to `viviana-ui/src/custom/` with their
    subpath exports moved to `@proyecto-viviana/ui/*`; `solid-spectrum` is now a
    pure S2 port. None is derivative of Adobe S2, so all stay bucket C (MIT).
-   Caveat: their CSS hooks (`vui-*`, `bg-*`/`text-*`) live in `apps/web`, so the
-   components are largely unstyled on their own — a separate cleanup, not a
-   licensing concern.
+   The earlier styling caveat is _resolved_: the components no longer depend on
+   `apps/web`'s ad-hoc CSS hooks (`vui-*`, `bg-*`/`text-*`). All 12 now style via
+   the S2 `style()` macro through viviana-ui's own seam — S2 named tokens carry
+   shape (spacing/radius/type) while Silapse colors ride in as arbitrary
+   `[var(--color-*)]` values from viviana-ui's own token layer
+   (`src/viviana-tokens.css`). The macro CSS is extracted to
+   `dist/viviana-components.css` at build, so the components are self-contained
+   and themeable. This keeps them firmly bucket C (MIT): the S2 macro is a
+   build-time utility, not copied S2 component source.
 4. **Barrels / `viviana-ui/src/custom/`** — leave header-less, or add a short
    MIT / Proyecto-Viviana header for clarity?
 

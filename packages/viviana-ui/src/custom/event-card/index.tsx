@@ -2,6 +2,10 @@ import type { JSX } from "solid-js";
 import { Show, For } from "solid-js";
 import { Avatar } from "@proyecto-viviana/solid-spectrum";
 import { Button as HeadlessButton } from "@proyecto-viviana/solidaria-components";
+// Styled via the S2 style() macro through viviana's own seam (../../style →
+// src/style.ts). An event summary card (S2 Card shape: preview + content +
+// footer) plus a compact list-item variant, on the S2 ramps in Silapse colors.
+import { style } from "../../style" with { type: "macro" };
 
 export interface EventCardProps {
   title: string;
@@ -20,6 +24,83 @@ export interface EventCardProps {
   class?: string;
 }
 
+const card = style({
+  position: "relative",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+  borderRadius: "xl",
+  backgroundColor: "[var(--color-bg-200)]",
+  boxShadow: "elevated",
+});
+
+const decoration = style({
+  position: "absolute",
+  top: 8,
+  insetEnd: 8,
+  width: 32,
+  height: 32,
+  objectFit: "contain",
+});
+
+const preview = style({
+  width: "full",
+  aspectRatio: "16/9",
+  objectFit: "cover",
+});
+
+const body = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  padding: 16,
+});
+
+const title = style({
+  font: "heading",
+  color: "[var(--color-accent)]",
+});
+
+const meta = style({
+  display: "flex",
+  alignItems: "center",
+  gap: 16,
+  font: "ui-sm",
+  color: "[var(--color-text-secondary)]",
+});
+
+const metaItem = style({
+  display: "flex",
+  alignItems: "center",
+  gap: 4,
+});
+
+const metaIcon = style({
+  color: "[var(--color-accent)]",
+});
+
+const attendeesRow = style({
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+});
+
+const avatars = style({
+  display: "flex",
+  alignItems: "center",
+  gap: 4,
+});
+
+const more = style({
+  font: "ui-sm",
+  color: "[var(--color-text-secondary)]",
+});
+
+const actionRow = style({
+  display: "flex",
+  gap: 8,
+});
+
 export function EventCard(props: EventCardProps) {
   const displayedAttendees = () => props.attendees?.slice(0, 3) ?? [];
   const remainingCount = () => {
@@ -29,38 +110,29 @@ export function EventCard(props: EventCardProps) {
   };
 
   return (
-    <div class={`relative bg-bg-200 rounded-3xl overflow-hidden ${props.class ?? ""}`}>
+    <div class={`${card} ${props.class ?? ""}`}>
       <Show when={props.decorationImage}>
-        <div class="absolute -top-2 -right-2 z-10 flex flex-col gap-1">
-          <img src={props.decorationImage} alt="" class="w-8 h-8 object-contain" />
-          <img src={props.decorationImage} alt="" class="w-6 h-6 object-contain ml-2" />
-          <img src={props.decorationImage} alt="" class="w-5 h-5 object-contain" />
-        </div>
+        <img class={decoration} src={props.decorationImage} alt="" />
       </Show>
 
       <Show when={props.image}>
-        <div class="relative h-32 w-full">
-          <img src={props.image} alt={props.title} class="w-full h-full object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-t from-bg-200 via-transparent to-transparent" />
-        </div>
+        <img class={preview} src={props.image} alt={props.title} />
       </Show>
 
-      <div class="p-4 pt-2">
-        <h3 class="font-bold text-xl leading-tight bg-gradient-to-r from-accent to-accent-300 bg-clip-text text-transparent">
-          {props.title}
-        </h3>
+      <div class={body}>
+        <h3 class={title}>{props.title}</h3>
 
         <Show when={props.date || props.author}>
-          <div class="flex items-center gap-4 mt-3 text-sm text-primary-300">
+          <div class={meta}>
             <Show when={props.author}>
-              <div class="flex items-center gap-1.5">
-                <span class="text-accent">@</span>
+              <div class={metaItem}>
+                <span class={metaIcon}>@</span>
                 <span>{props.author}</span>
               </div>
             </Show>
             <Show when={props.date}>
-              <div class="flex items-center gap-1.5">
-                <span class="text-accent">⏱</span>
+              <div class={metaItem}>
+                <span class={metaIcon}>⏱</span>
                 <span>{props.date}</span>
               </div>
             </Show>
@@ -68,20 +140,20 @@ export function EventCard(props: EventCardProps) {
         </Show>
 
         <Show when={displayedAttendees().length > 0}>
-          <div class="flex items-center mt-3">
-            <div class="flex -space-x-2">
+          <div class={attendeesRow}>
+            <div class={avatars}>
               <For each={displayedAttendees()}>
                 {(attendee) => <Avatar src={attendee.avatar} alt={attendee.name} size="sm" />}
               </For>
             </div>
             <Show when={remainingCount() > 0}>
-              <span class="ml-2 text-sm text-primary-300">+{remainingCount()} más</span>
+              <span class={more}>+{remainingCount()} más</span>
             </Show>
           </div>
         </Show>
 
         <Show when={props.actions}>
-          <div class="mt-4 flex gap-2">
+          <div class={actionRow}>
             {typeof props.actions === "function" ? props.actions() : props.actions}
           </div>
         </Show>
@@ -98,21 +170,61 @@ export interface EventListItemProps {
   class?: string;
 }
 
+const listItem = style({
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+  width: "full",
+  padding: 8,
+  borderRadius: "lg",
+  textAlign: "start",
+  cursor: "pointer",
+  backgroundColor: "transparent",
+  borderStyle: "none",
+});
+
+const thumb = style({
+  width: 48,
+  height: 48,
+  flexShrink: 0,
+  borderRadius: "default",
+  objectFit: "cover",
+});
+
+const listBody = style({
+  display: "flex",
+  flexDirection: "column",
+  flexGrow: 1,
+  minWidth: 0,
+});
+
+const listTitle = style({
+  font: "ui",
+  fontWeight: "medium",
+  color: "[var(--color-primary-100)]",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const listSubtitle = style({
+  font: "ui-sm",
+  color: "[var(--color-text-secondary)]",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
 export function EventListItem(props: EventListItemProps) {
   return (
-    <HeadlessButton
-      class={`flex items-center gap-3 w-full p-2 rounded-lg hover:bg-bg-300 transition-colors text-left ${props.class ?? ""}`}
-      onPress={() => props.onClick?.()}
-    >
+    <HeadlessButton class={`${listItem} ${props.class ?? ""}`} onPress={() => props.onClick?.()}>
       <Show when={props.image}>
-        <div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-          <img src={props.image} alt={props.title} class="w-full h-full object-cover" />
-        </div>
+        <img class={thumb} src={props.image} alt={props.title} />
       </Show>
-      <div class="flex-1 min-w-0">
-        <h4 class="font-medium text-primary-100 truncate">{props.title}</h4>
+      <div class={listBody}>
+        <h4 class={listTitle}>{props.title}</h4>
         <Show when={props.subtitle}>
-          <p class="text-sm text-primary-300 truncate">{props.subtitle}</p>
+          <p class={listSubtitle}>{props.subtitle}</p>
         </Show>
       </div>
     </HeadlessButton>

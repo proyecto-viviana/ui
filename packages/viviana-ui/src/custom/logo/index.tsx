@@ -1,4 +1,8 @@
-import { JSX } from "solid-js";
+import type { JSX } from "solid-js";
+// Styled via the S2 style() macro through viviana's own seam (../../style →
+// src/style.ts). A clean two-word wordmark: the S2 title ramp sizes it; Silapse
+// colors paint it (primary + accent). `inverted` swaps which word takes accent.
+import { style } from "../../style" with { type: "macro" };
 
 export type LogoSize = "sm" | "md" | "lg" | "xl";
 
@@ -10,34 +14,40 @@ export interface LogoProps {
   class?: string;
 }
 
-export function Logo(props: LogoProps): JSX.Element {
-  const sizeClass = () => {
-    switch (props.size) {
-      case "sm":
-        return "vui-logo--sm";
-      case "lg":
-        return "vui-logo--lg";
-      case "xl":
-        return "vui-logo--xl";
-      case "md":
-      default:
-        return "vui-logo--md";
-    }
-  };
+const wordmark = style<{ size: LogoSize }>({
+  display: "inline-flex",
+  alignItems: "baseline",
+  columnGap: 8,
+  whiteSpace: "nowrap",
+  font: {
+    size: {
+      sm: "title-sm",
+      md: "title",
+      lg: "title-xl",
+      xl: "title-3xl",
+    },
+  },
+  fontWeight: "black",
+});
 
+const word = style<{ tone: "primary" | "accent" }>({
+  color: {
+    tone: {
+      primary: "[var(--color-primary-100)]",
+      accent: "[var(--color-accent)]",
+    },
+  },
+});
+
+export function Logo(props: LogoProps): JSX.Element {
   const firstWord = () => props.firstWord ?? "Proyecto";
   const secondWord = () => props.secondWord ?? "Viviana";
+  const inverted = () => props.inverted ?? false;
 
   return (
-    <span
-      class={`vui-logo ${sizeClass()} ${props.inverted ? "vui-logo--inverted" : ""} ${props.class ?? ""}`}
-    >
-      <span class="vui-logo__first" data-text={props.inverted ? firstWord() : undefined}>
-        {firstWord()}
-      </span>
-      <span class="vui-logo__second" data-text={props.inverted ? undefined : secondWord()}>
-        {secondWord()}
-      </span>
+    <span class={`${wordmark({ size: props.size ?? "md" })} ${props.class ?? ""}`}>
+      <span class={word({ tone: inverted() ? "accent" : "primary" })}>{firstWord()}</span>
+      <span class={word({ tone: inverted() ? "primary" : "accent" })}>{secondWord()}</span>
     </span>
   );
 }

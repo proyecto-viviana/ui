@@ -1,5 +1,11 @@
-import { type JSX, Show } from "solid-js";
+import type { JSX } from "solid-js";
+import { Show } from "solid-js";
 import { Button as HeadlessButton } from "@proyecto-viviana/solidaria-components";
+// Styled via the S2 style() macro through viviana's own seam (../../style →
+// src/style.ts). S2 named tokens carry the shape (mirrors Badge's size-S
+// control: minHeight 24, 2px border, ui-sm font, pill radius); Silapse colors
+// ride in as arbitrary `[var(--color-*)]` values.
+import { style } from "../../style" with { type: "macro" };
 
 export type ChipVariant = "primary" | "secondary" | "accent" | "outline";
 
@@ -16,16 +22,41 @@ export interface ChipProps {
   class?: string;
 }
 
-const variantStyles: Record<ChipVariant, string> = {
-  primary: "bg-primary-700 text-primary-100 shadow-primary-chip",
-  secondary: "bg-primary-700 text-primary-100 hover:bg-primary-600",
-  accent: "bg-accent text-bg-400",
-  outline: "bg-transparent border border-primary-500 text-primary-300",
-};
+const chip = style<{ variant: ChipVariant }>({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  columnGap: "text-to-visual",
+  minHeight: 24,
+  width: "fit",
+  paddingX: 12,
+  borderRadius: "full",
+  borderStyle: "solid",
+  borderWidth: 2,
+  font: "ui-sm",
+  borderColor: {
+    default: "transparent",
+    variant: { outline: "[var(--color-primary-600)]" },
+  },
+  backgroundColor: {
+    variant: {
+      primary: "[var(--color-primary-700)]",
+      secondary: "[var(--color-bg-100)]",
+      accent: "[var(--color-accent)]",
+      outline: "transparent",
+    },
+  },
+  color: {
+    variant: {
+      primary: "[var(--color-primary-100)]",
+      secondary: "[var(--color-primary-200)]",
+      accent: "[var(--color-bg-400)]",
+      outline: "[var(--color-primary-200)]",
+    },
+  },
+});
 
 export function Chip(props: ChipProps) {
-  const variant = () => props.variant ?? "primary";
-
   const renderIcon = () => {
     const icon = props.icon;
     if (!icon) return null;
@@ -35,13 +66,13 @@ export function Chip(props: ChipProps) {
 
   return (
     <HeadlessButton
-      class={`flex justify-center items-center h-6 w-auto rounded-full px-4 py-1 font-medium text-sm tracking-wide transition-colors ${variantStyles[variant()]} ${props.class ?? ""}`}
+      class={`${chip({ variant: props.variant ?? "primary" })} ${props.class ?? ""}`}
       onPress={() => props.onClick?.()}
     >
       <Show when={props.icon}>
-        <span class="mr-1.5">{renderIcon()}</span>
+        <span>{renderIcon()}</span>
       </Show>
-      <span>{props.text}</span>
+      {props.text}
     </HeadlessButton>
   );
 }

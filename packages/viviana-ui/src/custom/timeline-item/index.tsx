@@ -1,6 +1,10 @@
 import type { JSX } from "solid-js";
 import { Show } from "solid-js";
 import { Avatar } from "@proyecto-viviana/solid-spectrum";
+// Styled via the S2 style() macro through viviana's own seam (../../style →
+// src/style.ts). A social timeline event card (two avatars + icon + message)
+// on the S2 spacing/radius ramps in Silapse colors.
+import { style } from "../../style" with { type: "macro" };
 
 export type TimelineEventType = "follow" | "like" | "comment" | "event" | "custom";
 
@@ -29,37 +33,70 @@ export interface TimelineItemProps {
   class?: string;
 }
 
+const nameEmph = style({
+  fontWeight: "bold",
+  color: "[var(--color-accent)]",
+});
+
 const eventMessages: Record<TimelineEventType, (left: string, right: string) => JSX.Element> = {
   follow: (left, right) => (
     <>
-      <span class="font-semibold text-accent-200">{left}</span>
+      <span class={nameEmph}>{left}</span>
       {" ha empezado a seguir a "}
-      <span class="font-semibold text-accent-200">{right}</span>
+      <span class={nameEmph}>{right}</span>
     </>
   ),
   like: (left, right) => (
     <>
-      <span class="font-semibold text-accent-200">{left}</span>
+      <span class={nameEmph}>{left}</span>
       {" le ha dado like a "}
-      <span class="font-semibold text-accent-200">{right}</span>
+      <span class={nameEmph}>{right}</span>
     </>
   ),
   comment: (left, right) => (
     <>
-      <span class="font-semibold text-accent-200">{left}</span>
+      <span class={nameEmph}>{left}</span>
       {" ha comentado en "}
-      <span class="font-semibold text-accent-200">{right}</span>
+      <span class={nameEmph}>{right}</span>
     </>
   ),
   event: (left, right) => (
     <>
-      <span class="font-semibold text-accent-200">{left}</span>
+      <span class={nameEmph}>{left}</span>
       {" asistirá al evento de "}
-      <span class="font-semibold text-accent-200">{right}</span>
+      <span class={nameEmph}>{right}</span>
     </>
   ),
   custom: () => null,
 };
+
+const card = style({
+  display: "inline-flex",
+  flexDirection: "column",
+  gap: 20,
+  padding: 20,
+  borderRadius: "xl",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "[var(--color-primary-700)]",
+  backgroundColor: "[var(--color-bg-200)]",
+});
+
+const avatarsRow = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+});
+
+const messageRow = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
+  font: "ui",
+  color: "[var(--color-text-secondary)]",
+});
 
 export function TimelineItem(props: TimelineItemProps) {
   const type = () => props.type ?? "follow";
@@ -81,10 +118,8 @@ export function TimelineItem(props: TimelineItemProps) {
   };
 
   return (
-    <div
-      class={`inline-flex w-auto flex-col gap-5 rounded-2xl border border-primary-700 bg-bg-200 p-5 hover:bg-bg-300 transition-colors ${props.class ?? ""}`}
-    >
-      <div class="flex items-center justify-around gap-3">
+    <div class={`${card} ${props.class ?? ""}`}>
+      <div class={avatarsRow}>
         <Show when={props.leftUser}>
           <Avatar src={props.leftUser!.avatar} alt={props.leftUser!.name} />
         </Show>
@@ -93,8 +128,8 @@ export function TimelineItem(props: TimelineItemProps) {
           <Avatar src={props.rightUser!.avatar} alt={props.rightUser!.name} />
         </Show>
       </div>
-      <div class="flex items-center justify-center gap-3 text-center">
-        <span class="font-light text-primary-300">
+      <div class={messageRow}>
+        <span>
           <Show when={props.message} fallback={eventMessages[type()](leftName(), rightName())}>
             {renderMessage()}
           </Show>

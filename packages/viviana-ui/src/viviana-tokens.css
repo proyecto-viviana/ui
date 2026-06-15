@@ -1,0 +1,318 @@
+/*
+ * Viviana ("Silapse") design tokens.
+ *
+ * The brand's color palette + typography, owned by the design system itself so
+ * the product components are self-contained. The S2 style() macro carries the
+ * *shape* (spacing, radius, sizing, type ramp) via its named tokens; these vars
+ * supply the *colors*, referenced from components as arbitrary `[var(--color-*)]`
+ * values. Dark is the default (`:root`); light overrides bind to the same
+ * `data-color-scheme` attribute solid-spectrum's theme uses, so a single scheme
+ * switch flips both layers together.
+ *
+ * Values mirror apps/web's palette verbatim — keep them in sync until apps/web
+ * consumes this file directly.
+ */
+
+:root {
+  /* Grey scale */
+  --color-grey-50: #ffffff;
+  --color-grey-100: #e0e0e0;
+  --color-grey-200: #c0c0c0;
+  --color-grey-300: #a0a0a0;
+  --color-grey-400: #606060;
+  --color-grey-500: #404040;
+  --color-grey-600: #1a1a1a;
+  --color-grey-700: #111111;
+  --color-grey-800: #0a0a0a;
+  --color-grey-900: #000000;
+
+  /* Blue scale */
+  --color-blue-50: #f0f7ff;
+  --color-blue-100: #ddf4ff;
+  --color-blue-200: #b6e3ff;
+  --color-blue-300: #80ccff;
+  --color-blue-400: #54aeff;
+  --color-blue-500: #388bfd;
+  --color-blue-600: #1f6feb;
+  --color-blue-700: #1158c7;
+  --color-blue-800: #0d419d;
+  --color-blue-900: #050a12;
+
+  /* Pink scale */
+  --color-pink-50: #fff5f9;
+  --color-pink-100: #ffe4f3;
+  --color-pink-200: #ffc9e9;
+  --color-pink-300: #ffa0d5;
+  --color-pink-400: #f778ba;
+  --color-pink-500: #d84a8f;
+  --color-pink-600: #b13570;
+  --color-pink-700: #912b5a;
+  --color-pink-800: #702244;
+  --color-pink-900: #0f0508;
+
+  /* Background — pure void */
+  --color-bg-100: #404040;
+  --color-bg-200: #252525;
+  --color-bg-300: #1a1a1a;
+  --color-bg-400: #111111;
+  --color-bg-light: #515151;
+
+  /* Primary — blue scale */
+  --color-primary: #75abc7;
+  --color-primary-50: #081018;
+  --color-primary-100: #ddf4ff;
+  --color-primary-200: #b6e3ff;
+  --color-primary-300: #80ccff;
+  --color-primary-400: #54aeff;
+  --color-primary-500: #4da0ff;
+  --color-primary-600: #3080f4;
+  --color-primary-700: #1158c7;
+  --color-primary-800: #0d419d;
+  --color-primary-900: #050a12;
+
+  /* Accent — pink */
+  --color-accent: #df5c9a;
+  --color-accent-50: #100810;
+  --color-accent-100: #0f0508;
+  --color-accent-200: #150a12;
+  --color-accent-300: #ffa0d5;
+  --color-accent-400: #f778ba;
+  --color-accent-500: #d84a8f;
+  --color-accent-600: #f778ba;
+  --color-accent-700: #ffa0d5;
+  --color-accent-800: #ffc9e9;
+  --color-accent-900: #0f0508;
+  --color-accent-highlight: #e2a2be;
+
+  /* Semantic colors */
+  --color-success-100: #e5fff3;
+  --color-success-200: #102a18;
+  --color-success-300: #1a3a25;
+  --color-success-400: #c2ffc8;
+  --color-success-500: #5bc96e;
+  --color-success-600: #238636;
+  --color-success-700: #9fefaa;
+  --color-success-800: #c2ffc8;
+  --color-success-900: #e5fff3;
+  --color-warning-100: #fffbe5;
+  --color-warning-200: #2a2010;
+  --color-warning-300: #3a2c18;
+  --color-warning-400: #ffdd87;
+  --color-warning-500: #e5c462;
+  --color-warning-600: #966a13;
+  --color-warning-700: #ffea9f;
+  --color-warning-800: #fff3c2;
+  --color-warning-900: #fffbe5;
+  --color-danger-100: #ffe5e5;
+  --color-danger-200: #2a1010;
+  --color-danger-300: #401818;
+  --color-danger-400: #ff8787;
+  --color-danger-500: #e56767;
+  --color-danger-600: #da3633;
+  --color-danger-700: #ffa8a8;
+  --color-danger-800: #ffc7c7;
+  --color-danger-900: #ffe5e5;
+
+  /* Cards */
+  --color-cards-bg: #373737;
+  --color-cards-bg-load: #484848;
+  --color-correct: #83f1a7;
+  --color-incorrect: #e74c3c;
+
+  /* Canvas */
+  --color-canvas-bg: #000000;
+
+  /* Surfaces */
+  --color-background: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-elevated: #111111;
+
+  /* Blue depth backgrounds */
+  --color-bg-blue-deep: #050a12;
+  --color-bg-blue-dark: #081020;
+  --color-bg-blue-mid: #0a1830;
+  --color-bg-blue-light: #102040;
+
+  /* Text */
+  --color-text: #ffffff;
+  --color-text-secondary: #a0a0a0;
+  --color-text-muted: #606060;
+  --color-text-dim: #4f6d85;
+  --color-text-disabled: #404040;
+
+  /* Borders */
+  --color-border: #1a1a1a;
+  --color-border-muted: #141414;
+  --color-divider: #141414;
+
+  /* Semantic base + dim */
+  --color-success: #3fb950;
+  --color-success-dim: #238636;
+  --color-warning: #d29922;
+  --color-warning-dim: #966a13;
+  --color-danger: #f85149;
+  --color-danger-dim: #da3633;
+
+  /* Dim versions (wire base / inactive elements) */
+  --color-primary-dim: #1a3040;
+  --color-accent-dim: #301520;
+
+  /* Header background */
+  --color-header-bg: #181818;
+
+  /* Glow effects (for drop-shadow filters) */
+  --color-primary-glow: rgba(128, 204, 255, 0.6);
+  --color-accent-glow: rgba(255, 160, 213, 0.6);
+  --color-fusion-glow: rgba(180, 140, 230, 0.7);
+
+  /* Semantic background tints */
+  --color-success-bg: rgba(63, 185, 80, 0.1);
+  --color-warning-bg: rgba(210, 153, 34, 0.1);
+  --color-danger-bg: rgba(248, 81, 73, 0.1);
+
+  /* Typography */
+  --font-sen: "Sen", sans-serif;
+  --font-jost: "Jost", sans-serif;
+  --font-sans: "Sen", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-title: "Jost", system-ui, sans-serif;
+  --font-body: "Sen", system-ui, sans-serif;
+}
+
+[data-color-scheme="light"] {
+  /* Grey scale */
+  --color-grey-100: #f5f5f5;
+  --color-grey-200: #e5e5e5;
+  --color-grey-300: #d4d4d4;
+  --color-grey-400: #a3a3a3;
+  --color-grey-500: #737373;
+  --color-grey-600: #525252;
+  --color-grey-700: #404040;
+  --color-grey-800: #262626;
+  --color-grey-900: #171717;
+
+  --color-blue-100: #e0f0f7;
+  --color-blue-200: #b6d9eb;
+  --color-blue-300: #8bc4db;
+  --color-blue-400: #75abc7;
+  --color-blue-500: #5a94b3;
+  --color-blue-600: #3d7a9c;
+  --color-blue-700: #2b6080;
+  --color-blue-800: #1a4560;
+  --color-blue-900: #0d2a3d;
+
+  --color-pink-100: #fef2f7;
+  --color-pink-200: #fcc7e0;
+  --color-pink-300: #f78fb9;
+  --color-pink-400: #df5c9a;
+  --color-pink-500: #cf2c74;
+  --color-pink-600: #a31f58;
+  --color-pink-700: #8a1a4a;
+  --color-pink-800: #6b143a;
+  --color-pink-900: #4d0f2a;
+
+  /* Backgrounds — AA-verified against primary text */
+  --color-bg-100: #7096a8;
+  --color-bg-200: #a8c5d4;
+  --color-bg-300: #c8dce6;
+  --color-bg-400: #dbe8ef;
+  --color-bg-light: #ffffff;
+
+  /* Primary — blue */
+  --color-primary: #75abc7;
+  --color-primary-50: #f0f7ff;
+  --color-primary-100: #06131d;
+  --color-primary-200: #0c2436;
+  --color-primary-300: #133a54;
+  --color-primary-400: #195073;
+  --color-primary-500: #1e6090;
+  --color-primary-600: #2470a5;
+  --color-primary-700: #5ea8d0;
+  --color-primary-800: #9dcce4;
+  --color-primary-900: #0d2a3d;
+
+  /* Accent — pink */
+  --color-accent: #df5c9a;
+  --color-accent-100: #fef2f7;
+  --color-accent-200: #7d1c48;
+  --color-accent-300: #f78fb9;
+  --color-accent-400: #df5c9a;
+  --color-accent-500: #8a1e4a;
+  --color-accent-highlight: #d4508a;
+
+  /* Semantic — darker for readability on light bgs */
+  --color-success-100: #e5fff3;
+  --color-success-200: #c2ffc8;
+  --color-success-300: #9fefaa;
+  --color-success-400: #1a7f37;
+  --color-success-500: #5bc96e;
+  --color-success-600: #116329;
+  --color-success-700: #3d7a5f;
+  --color-success-800: #2a5741;
+  --color-success-900: #1a3529;
+  --color-warning-100: #fffbe5;
+  --color-warning-200: #fff3c2;
+  --color-warning-300: #ffea9f;
+  --color-warning-400: #7d5200;
+  --color-warning-500: #e5c462;
+  --color-warning-600: #654200;
+  --color-warning-700: #7a6d42;
+  --color-warning-800: #574d2f;
+  --color-warning-900: #352f1c;
+  --color-danger-100: #ffe5e5;
+  --color-danger-200: #ffc7c7;
+  --color-danger-300: #ffa8a8;
+  --color-danger-400: #cf222e;
+  --color-danger-500: #e56767;
+  --color-danger-600: #a40e26;
+  --color-danger-700: #7a4242;
+  --color-danger-800: #572f2f;
+  --color-danger-900: #351c1c;
+
+  --color-cards-bg: #ecf2f5;
+  --color-cards-bg-load: #dfeaef;
+  --color-correct: #1a7f37;
+  --color-incorrect: #cf222e;
+
+  --color-canvas-bg: #404040;
+
+  /* Surfaces */
+  --color-background: #f2f7fa;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #e6f0f5;
+
+  --color-bg-blue-deep: #e0f0f7;
+  --color-bg-blue-dark: #b6d9eb;
+  --color-bg-blue-mid: #8bc4db;
+  --color-bg-blue-light: #75abc7;
+
+  /* Text */
+  --color-text: #1a3040;
+  --color-text-secondary: #405d70;
+  --color-text-muted: #7096a8;
+  --color-text-disabled: #a8c5d4;
+
+  /* Borders */
+  --color-border: #c8dce6;
+  --color-border-muted: #dbe8ef;
+  --color-divider: #dbe8ef;
+
+  /* Semantic base + dim */
+  --color-success: #5bc96e;
+  --color-success-dim: #559d87;
+  --color-warning: #e5c462;
+  --color-warning-dim: #9d8d55;
+  --color-danger: #e56767;
+  --color-danger-dim: #9d5555;
+
+  /* Dim, glow, bg tints */
+  --color-primary-dim: #b6d9eb;
+  --color-accent-dim: #fcc7e0;
+  --color-header-bg: #d0e4ed;
+  --color-primary-glow: rgba(117, 171, 199, 0.4);
+  --color-accent-glow: rgba(223, 92, 154, 0.4);
+  --color-fusion-glow: rgba(170, 130, 180, 0.5);
+  --color-success-bg: rgba(63, 185, 80, 0.1);
+  --color-warning-bg: rgba(210, 153, 34, 0.15);
+  --color-danger-bg: rgba(248, 81, 73, 0.1);
+}

@@ -1,5 +1,8 @@
 @import "./local-utilities.css";
-@import "@proyecto-viviana/solid-spectrum/components.css";
+/* viviana-ui is the umbrella package: its components.css re-exports
+   solid-spectrum's full CSS (font-faces + atomic rules) and adds the migrated
+   custom components' extracted atomic CSS. */
+@import "@proyecto-viviana/ui/components.css";
 
 /* Docs site semantic tokens — bound to solid-spectrum's data-color-scheme attribute. */
 :where(:root) {
