@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
 import { createRoot, createSignal, For } from "solid-js";
 import { createToast, createToastRegion } from "../src/toast";
+import { setInteractionModality } from "../src/interactions";
 
 describe("createToast", () => {
   afterEach(() => {
@@ -23,6 +24,7 @@ describe("createToast", () => {
 
       expect(aria.toastProps.role).toBe("alertdialog");
       expect(aria.toastProps["aria-modal"]).toBe("false");
+      expect(aria.toastProps.tabIndex).toBe(0);
       expect(aria.contentProps.role).toBe("alert");
       expect(aria.contentProps["aria-live"]).toBe("assertive");
       expect(aria.titleProps.id).toBeTruthy();
@@ -207,6 +209,7 @@ describe("createToastRegion", () => {
     const before = screen.getByTestId("before");
     const firstToast = screen.getByTestId("toast-1");
 
+    setInteractionModality("keyboard");
     before.focus();
     firstToast.focus();
     fireEvent.focusIn(firstToast, { relatedTarget: before });

@@ -1,9 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import type { JSX } from "solid-js";
-import { render, screen, waitFor, within } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { ActionButton } from "../src";
 import * as MenuSubpath from "../src/Menu";
@@ -28,6 +28,8 @@ const items = [
   { id: "duplicate", label: "Duplicate" },
   { id: "delete", label: "Delete" },
 ];
+
+afterEach(() => cleanup());
 
 describe("Menu (solid-spectrum)", () => {
   it("mirrors the public S2 Menu subpath exports", () => {
@@ -155,6 +157,27 @@ describe("Menu (solid-spectrum)", () => {
       // secondary: 'bg-bg-400 text-primary-200 border-primary-600'
       expect(button.className).toContain("bg-bg-400");
       expect(button.className).toContain("border-primary-600");
+    });
+
+    it("keeps mouse press styling until document pointerup", () => {
+      render(() => (
+        <MenuTrigger>
+          <MenuButton>Actions</MenuButton>
+          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
+            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const button = screen.getByRole("button");
+      fireEvent.pointerDown(button, { pointerType: "mouse", button: 0 });
+
+      expect(button).toHaveAttribute("data-pressed", "true");
+      expect(button.className).toContain("scale-95");
+
+      fireEvent.pointerUp(document, { pointerType: "mouse", button: 0 });
+      expect(button).not.toHaveAttribute("data-pressed");
+      expect(button.className).not.toContain("scale-95");
     });
 
     it("applies primary variant classes", () => {

@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@solidjs/testing-library";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal } from "solid-js";
 import packageJson from "../package.json";
@@ -20,6 +20,8 @@ import {
 import { Header, Heading, Menu, MenuItem, MenuSection, SubmenuTrigger } from "../src/menu";
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
+
+afterEach(() => cleanup());
 
 const items = [
   { id: "copy", label: "Copy", shortcut: "Cmd+C" },
@@ -66,6 +68,65 @@ describe("ActionMenu (solid-spectrum)", () => {
     await user.click(screen.getByRole("menuitem", { name: "Copy" }));
 
     expect(onAction).toHaveBeenCalledWith("copy");
+  });
+
+  it("renders data-driven item descriptions, shortcuts, icons, disabled keys, and links", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    const richItems = [
+      {
+        id: "open",
+        label: "Open",
+        description: "Open in workspace",
+        shortcut: "⌘O",
+        icon: () => <svg aria-hidden="true" data-testid="open-icon" />,
+      },
+      {
+        id: "disabled",
+        label: "Disabled action",
+        description: "Unavailable right now",
+        isDisabled: true,
+      },
+      {
+        id: "docs",
+        label: "Open docs",
+        href: "https://example.com/docs",
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
+    ];
+
+    render(() => (
+      <ActionMenu defaultOpen items={richItems} getKey={(item) => item.id} onAction={onAction} />
+    ));
+
+    const menu = screen.getByRole("menu");
+    const openItem = within(menu).getByRole("menuitem", { name: "Open" });
+    expect(openItem).toContainElement(screen.getByTestId("open-icon"));
+    expect(within(openItem).getByText("Open in workspace")).toHaveAttribute(
+      "data-rsp-slot",
+      "text",
+    );
+    expect(within(openItem).getByText("⌘O")).toBeInTheDocument();
+
+    const disabledItem = within(menu).getByRole("menuitem", { name: "Disabled action" });
+    expect(disabledItem).toHaveAttribute("aria-disabled", "true");
+    expect(within(disabledItem).getByText("Unavailable right now")).toHaveAttribute(
+      "data-rsp-slot",
+      "text",
+    );
+
+    const linkItem = within(menu).getByRole("menuitem", { name: "Open docs" });
+    expect(linkItem.tagName).toBe("A");
+    expect(linkItem).toHaveAttribute("href", "https://example.com/docs");
+    expect(linkItem).toHaveAttribute("target", "_blank");
+    expect(linkItem).toHaveAttribute("rel", "noopener noreferrer");
+
+    await user.click(openItem);
+    expect(onAction).toHaveBeenCalledWith("open");
+
+    await user.click(disabledItem);
+    expect(onAction).not.toHaveBeenCalledWith("disabled");
   });
 
   it("forwards explicit labelable props and tracks menu-button ARIA state", async () => {
@@ -797,6 +858,7 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(helpPopover).toHaveAttribute("role", "dialog");
     expect(helpPopover).toHaveAttribute("data-trigger", "SubmenuTrigger");
     expect(helpPopover).toHaveAccessibleName("Locked action");
+    expect(helpPopover?.querySelector("svg")).toBeNull();
 
     const heading = within(helpPopover as HTMLElement).getByText("Locked action");
     expect(heading.tagName).toBe("H2");

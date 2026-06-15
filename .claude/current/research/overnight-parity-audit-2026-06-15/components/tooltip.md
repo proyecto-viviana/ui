@@ -1,0 +1,70 @@
+# Tooltip parity audit seed
+
+## Scope
+
+- Slug: `tooltip`.
+- Current read: accepted in validation index; still requires source-backed re-audit before treating as line-by-line certified in this research pass.
+- Strict risk: Medium.
+
+## Local implementation seeds
+
+- `packages/solid-spectrum/src/tooltip/index.tsx`
+- `packages/solid-spectrum/test/Tooltip.test.tsx`
+- `packages/solid-stately/src/tooltip/createTooltipTriggerState.d.ts`
+- `packages/solid-stately/src/tooltip/createTooltipTriggerState.ts`
+- `packages/solid-stately/src/tooltip/index.d.ts`
+- `packages/solid-stately/src/tooltip/index.ts`
+- `packages/solidaria/src/tooltip/createTooltip.ts`
+- `packages/solidaria/src/tooltip/createTooltipTrigger.ts`
+- `packages/solidaria/src/tooltip/index.ts`
+- `packages/solidaria-components/src/Tooltip.tsx`
+
+## Upstream S2 authority seeds
+
+- `node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Tooltip.mjs`
+- `node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Tooltip.css`
+- `node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Tooltip.mjs`
+- `node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Tooltip.d.ts`
+- `node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Tooltip.d.ts`
+- `node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Tooltip.ts`
+- `node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Tooltip.tsx`
+
+## React Aria Components / React Aria / React Stately hints
+
+- RAC hints: `Tooltip`
+- React Aria hints: `useTooltipTrigger`
+- React Stately hints: `useTooltipTriggerState`
+
+## Comparison evidence seeds
+
+- Route page: present.
+- Validation notes: `apps/comparison/playbook/components/tooltip-validation-notes.md`.
+- E2E specs: `apps/comparison/e2e/tooltip-visual.spec.ts`.
+
+## Required line-by-line audit axes
+
+- [ ] API / exports / props / defaults
+- [ ] ARIA and accessibility
+- [ ] Keyboard and focus
+- [ ] Forms and validation
+- [ ] Behavior and timing
+- [ ] HTML and DOM structure
+- [ ] S2 styling and tokens
+- [ ] Visual parity evidence
+- [ ] I18n / RTL / locale
+- [ ] External library and API usage
+- [ ] Internal architecture / layer boundaries
+- [ ] Tests that can fail for the branch
+
+## Initial findings
+
+- Automated source mapping found 10 local seed path(s) and 7 upstream S2 seed path(s).
+- Automated test map found 1 component-related comparison spec(s), but the exact upstream branch coverage still needs source-backed verification.
+- No component-specific blocker was proven by this seed beyond validation-index status.
+
+## Recommended future fixes / proof work
+
+1. Open upstream S2 source first, then local Solid source, and build a branch table for every user-observable condition.
+2. Classify each API/export delta as exact parity, Solid adaptation, documented local addition, unsupported, or bug.
+3. Add or update tests only in a later implementation pass; this research document intentionally does not change code.
+4. Close every unchecked axis above before marking this component certified from this audit.

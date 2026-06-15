@@ -183,6 +183,7 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
       offset={popoverProps.offset ?? -2}
       crossOffset={popoverProps.crossOffset ?? -8}
       padding="none"
+      hideArrow
       class={local.class}
     >
       <div class={contextualHelpFrame}>
@@ -314,11 +315,13 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
       <Popover
         {...popoverProps}
         aria-label={triggerLabel()}
+        aria-labelledby={titleId}
         placement={popoverProps.placement ?? "bottom start"}
         containerPadding={popoverProps.containerPadding ?? 8}
         offset={8}
         shouldFlip={popoverProps.shouldFlip ?? true}
         padding="none"
+        hideArrow
       >
         <div class={contextualHelpFrame}>
           <div class={contextualHelpInner} style={contextualHelpInnerStyle}>

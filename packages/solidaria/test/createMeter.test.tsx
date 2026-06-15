@@ -1,9 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect } from "vitest";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { createMeter } from "../src/meter";
+
+afterEach(() => cleanup());
 
 // Test component that uses createMeter
 function TestMeter(props: {
@@ -109,6 +111,16 @@ describe("createMeter", () => {
     expect(meter).toHaveAttribute("aria-valuemax", "10");
     // 5/10 = 50% - format may vary by locale
     expect(meter.getAttribute("aria-valuetext")).toMatch(/50\s?%/);
+  });
+
+  it("should handle equal min and max values without NaN", () => {
+    render(() => <TestMeter value={10} minValue={10} maxValue={10} />);
+    const meter = screen.getByTestId("meter");
+    expect(meter).toHaveAttribute("aria-valuenow", "10");
+    expect(meter).toHaveAttribute("aria-valuemin", "10");
+    expect(meter).toHaveAttribute("aria-valuemax", "10");
+    expect(meter.getAttribute("aria-valuetext")).toMatch(/0\s?%/);
+    expect(meter.getAttribute("aria-valuetext")).not.toContain("NaN");
   });
 
   it("should default min to 0 and max to 100", () => {

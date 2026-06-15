@@ -1,9 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect } from "vitest";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { createProgressBar } from "../src/progress";
+
+afterEach(() => cleanup());
 
 // Test component that uses createProgressBar
 function TestProgressBar(props: {

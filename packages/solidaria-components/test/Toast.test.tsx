@@ -363,6 +363,7 @@ describe("Toast", () => {
 
       expect(region).toHaveAttribute("data-solidaria-top-layer", "true");
       expect(region).toContainElement(toast);
+      expect(toast).toHaveAttribute("tabIndex", "0");
     });
 
     it("should inject toast content into a live-region-accessible element", () => {

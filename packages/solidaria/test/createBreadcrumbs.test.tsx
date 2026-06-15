@@ -1,14 +1,16 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import {
   createBreadcrumbItem,
   createBreadcrumbs,
   type AriaBreadcrumbItemProps,
   type AriaBreadcrumbsProps,
 } from "../src/breadcrumbs";
+
+afterEach(() => cleanup());
 
 function TestBreadcrumbsNav(props: AriaBreadcrumbsProps) {
   const { navProps } = createBreadcrumbs(props);

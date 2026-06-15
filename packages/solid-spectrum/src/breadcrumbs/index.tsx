@@ -790,6 +790,7 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
     <span style={{ display: "contents" }}>
       <HeadlessBreadcrumbItem
         {...headlessProps}
+        elementType={isCurrent() ? "div" : headlessProps.elementType}
         ref={(node: HTMLElement) => assignRefs(node)}
         isDisabled={headlessProps.isDisabled || context.isDisabled()}
         class={getClassName}

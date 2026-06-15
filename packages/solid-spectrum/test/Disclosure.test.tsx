@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect } from "vitest";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { ActionButton } from "../src";
 import {
@@ -15,6 +15,10 @@ import {
 } from "../src/disclosure";
 
 describe("Disclosure (solid-spectrum)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("toggles expanded state from trigger interaction", async () => {
     const user = setupUser();
 
@@ -57,6 +61,20 @@ describe("Disclosure (solid-spectrum)", () => {
     await user.click(two);
     expect(two).toHaveAttribute("aria-expanded", "true");
     expect(one).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("forwards the explicit DisclosurePanel role to the headless panel", () => {
+    render(() => (
+      <Disclosure defaultExpanded>
+        <DisclosureTitle>Details</DisclosureTitle>
+        <DisclosurePanel role="region">Region content</DisclosurePanel>
+      </Disclosure>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "Details" });
+    const panel = screen.getByRole("region");
+    expect(panel).toHaveAttribute("aria-labelledby", trigger.id);
+    expect(trigger).toHaveAttribute("aria-controls", panel.id);
   });
 
   it("renders the S2 title/header/panel structure with size and density axes", () => {

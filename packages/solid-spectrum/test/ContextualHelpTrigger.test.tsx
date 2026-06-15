@@ -1,13 +1,15 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect } from "vitest";
+import { cleanup, render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { ContextualHelp, ContextualHelpContext } from "../src/contextualhelp";
 import { ContextualHelpTrigger } from "../src/menu/ContextualHelpTrigger";
 import { Content, Footer, Heading } from "../src/text";
+
+afterEach(() => cleanup());
 
 describe("ContextualHelpTrigger (solid-spectrum)", () => {
   const defaultChildren: [any, any] = [
@@ -154,13 +156,25 @@ describe("ContextualHelp (solid-spectrum)", () => {
     ));
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Help" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Permission required" })).toBeInTheDocument();
     });
     const heading = screen.getByRole("heading", { name: "Permission required", level: 2 });
     expect(heading.id).toBeTruthy();
     expect(heading.className).toBeTruthy();
     expect(screen.getByText("Your admin must grant permission.").className).toBeTruthy();
     expect(screen.getByText("Learn more about segments").className).toBeTruthy();
+  });
+
+  it("hides the popover arrow to match S2 ContextualHelp", async () => {
+    render(() => (
+      <ContextualHelp isOpen>
+        <Heading>Permission required</Heading>
+        <Content>Your admin must grant permission.</Content>
+      </ContextualHelp>
+    ));
+
+    const dialog = await screen.findByRole("dialog", { name: "Permission required" });
+    expect(dialog.querySelector("svg")).toBeNull();
   });
 
   it("accepts ContextualHelpContext trigger props and refs", async () => {

@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect } from "vitest";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { assertNoA11yViolations } from "@proyecto-viviana/solidaria-test-utils";
 import {
@@ -16,6 +16,10 @@ import {
 } from "../src";
 
 describe("Accordion (solid-spectrum)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("exports the S2 context and renders the documented item structure", () => {
     const { container } = render(() => (
       <Accordion defaultExpandedKeys={["personal"]} size="L" density="spacious" isQuiet>
@@ -47,6 +51,22 @@ describe("Accordion (solid-spectrum)", () => {
     expect(billingTrigger).toHaveAttribute("aria-expanded", "false");
     expect(personalPanel).toHaveAttribute("aria-hidden", "false");
     expect(billingPanel).toHaveAttribute("hidden", "until-found");
+  });
+
+  it("forwards explicit AccordionItemPanel roles through the public S2 wrapper", () => {
+    render(() => (
+      <Accordion defaultExpandedKeys={["region"]}>
+        <AccordionItem id="region">
+          <AccordionItemTitle>Regional details</AccordionItemTitle>
+          <AccordionItemPanel role="region">Regional content</AccordionItemPanel>
+        </AccordionItem>
+      </Accordion>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "Regional details" });
+    const panel = screen.getByRole("region");
+    expect(panel).toHaveAttribute("aria-labelledby", trigger.id);
+    expect(trigger).toHaveAttribute("aria-controls", panel.id);
   });
 
   it("supports multiple expansion and Set<Key> change payloads", async () => {

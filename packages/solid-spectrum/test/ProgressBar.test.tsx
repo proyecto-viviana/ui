@@ -1,9 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { ProgressBar } from "../src/progress-bar";
+
+afterEach(() => cleanup());
 
 describe("ProgressBar (solid-spectrum)", () => {
   it('renders with role="progressbar"', () => {

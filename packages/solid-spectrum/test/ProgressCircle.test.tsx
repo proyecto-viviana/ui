@@ -1,9 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { ProgressCircle } from "../src/progress/ProgressCircle";
+
+afterEach(() => cleanup());
 
 describe("ProgressCircle (solid-spectrum)", () => {
   it("renders a progressbar root and S2 SVG geometry", () => {
@@ -22,6 +24,19 @@ describe("ProgressCircle (solid-spectrum)", () => {
     expect(fill).toHaveAttribute("pathLength", "100");
     expect(fill).toHaveAttribute("stroke-dasharray", "100 200");
     expect(fill).toHaveAttribute("stroke-dashoffset", "50");
+  });
+
+  it("handles equal min and max without NaN dash offset", () => {
+    const { container } = render(() => (
+      <ProgressCircle value={10} minValue={10} maxValue={10} aria-label="Equal range" />
+    ));
+    const progressbar = screen.getByRole("progressbar", { name: "Equal range" });
+    const fill = container.querySelectorAll("circle")[2];
+
+    expect(progressbar).toHaveAttribute("aria-valuetext");
+    expect(progressbar.getAttribute("aria-valuetext")).not.toContain("NaN");
+    expect(fill).toHaveAttribute("stroke-dashoffset", "100");
+    expect(container.innerHTML).not.toContain("NaN");
   });
 
   it("uses S2 radius values for sizes", () => {

@@ -205,6 +205,11 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function safeRange(min: number, max: number): number {
+  const range = max - min;
+  return Number.isFinite(range) && range > 0 ? range : 1;
+}
+
 function stringValueLabel(value: JSX.Element | undefined): string | undefined {
   if (typeof value === "string" || typeof value === "number") {
     return String(value);
@@ -315,7 +320,7 @@ export function Meter(props: MeterProps): JSX.Element {
     const minValue = local.minValue ?? 0;
     const maxValue = local.maxValue ?? 100;
     const value = clamp(local.value ?? 0, minValue, maxValue);
-    return ((value - minValue) / (maxValue - minValue)) * 100;
+    return ((value - minValue) / safeRange(minValue, maxValue)) * 100;
   });
   const valueText = () =>
     local.valueLabel ?? (meterAria.meterProps["aria-valuetext"] as string | undefined);

@@ -1,0 +1,2430 @@
+[
+  {
+    "title": "Accordion",
+    "slug": "accordion",
+    "local": [
+      "packages/solid-spectrum/src/accordion/index.tsx",
+      "packages/solid-spectrum/test/Accordion.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Accordion.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Accordion.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Accordion.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Accordion.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Accordion.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Accordion.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Accordion.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "accordion-validation-notes.md"
+    ],
+    "tests": [
+      "accordion-contract.spec.ts",
+      "accordion-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ActionBar",
+    "slug": "actionbar",
+    "local": [
+      "packages/solid-spectrum/src/actionbar/index.tsx",
+      "packages/solid-spectrum/test/ActionBar.test.tsx",
+      "packages/solidaria-components/src/ActionBar.tsx",
+      "packages/solidaria-components/test/ActionBar.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ActionBar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionBar.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionBar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ActionBar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ActionBar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ActionBar.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ActionBar.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "actionbar-validation-notes.md"
+    ],
+    "tests": [
+      "actionbar-contract.spec.ts",
+      "actionbar-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ActionButton",
+    "slug": "actionbutton",
+    "local": [
+      "packages/solid-spectrum/src/ActionButton.ts",
+      "packages/solid-spectrum/src/actionbuttongroup/index.tsx",
+      "packages/solid-spectrum/src/button/ActionButton.tsx",
+      "packages/viviana-ui/src/ActionButton.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ActionButton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ActionButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionButton.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionButton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionButtonGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ActionButton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ActionButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ActionButton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ActionButtonGroup.d.ts"
+    ],
+    "rac": [
+      "Button"
+    ],
+    "ra": [
+      "useButton"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "button-family-validation-notes.md",
+      "button-validation-notes.md",
+      "togglebutton-validation-notes.md",
+      "togglebuttongroup-validation-notes.md"
+    ],
+    "tests": [
+      "actionbutton-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ActionButtonGroup",
+    "slug": "actionbuttongroup",
+    "local": [
+      "packages/solid-spectrum/src/actionbuttongroup/index.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ActionButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionButtonGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ActionButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ActionButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ActionButtonGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ActionButtonGroup.tsx"
+    ],
+    "rac": [
+      "Button",
+      "Group"
+    ],
+    "ra": [
+      "useButton"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "button-family-validation-notes.md",
+      "button-validation-notes.md",
+      "togglebutton-validation-notes.md",
+      "togglebuttongroup-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "ActionMenu",
+    "slug": "actionmenu",
+    "local": [
+      "packages/solid-spectrum/src/ActionMenu.ts",
+      "packages/solid-spectrum/src/menu/ActionMenu.tsx",
+      "packages/solid-spectrum/test/ActionMenu.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ActionMenu.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ActionMenu.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ActionMenu.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ActionMenu.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ActionMenu.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ActionMenu.tsx"
+    ],
+    "rac": [
+      "Menu"
+    ],
+    "ra": [
+      "useMenu"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "actionmenu-validation-notes.md"
+    ],
+    "tests": [
+      "actionmenu-contract.spec.ts",
+      "actionmenu-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Avatar",
+    "slug": "avatar",
+    "local": [
+      "packages/solid-spectrum/src/avatar/index.tsx",
+      "packages/solid-spectrum/test/Avatar.test.tsx",
+      "packages/solid-spectrum/test/AvatarGroup.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Avatar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/AvatarGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Avatar.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Avatar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/AvatarGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/AvatarGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Avatar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/AvatarGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Avatar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/AvatarGroup.d.ts"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "avatar-validation-notes.md"
+    ],
+    "tests": [
+      "avatar-group-visual.spec.ts",
+      "avatar-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "AvatarGroup",
+    "slug": "avatargroup",
+    "local": [
+      "packages/solid-spectrum/test/AvatarGroup.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/AvatarGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/AvatarGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/AvatarGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/AvatarGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/AvatarGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/AvatarGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/AvatarGroup.tsx"
+    ],
+    "rac": [
+      "Group"
+    ],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "avatargroup-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "Badge",
+    "slug": "badge",
+    "local": [
+      "packages/solid-spectrum/src/badge/index.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/BadgeVerifiedIcon.tsx",
+      "packages/solid-spectrum/test/Badge.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Badge.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Badge.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Badge.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Badge.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Badge.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Badge.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/BadgeVerified.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/BadgeVerified.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/BadgeVerified.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/BadgeVerified.mjs"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "badge-validation-notes.md"
+    ],
+    "tests": [
+      "badge-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Breadcrumbs",
+    "slug": "breadcrumbs",
+    "local": [
+      "packages/solid-spectrum/src/Breadcrumbs.ts",
+      "packages/solid-spectrum/src/breadcrumbs/index.tsx",
+      "packages/solid-spectrum/src/breadcrumbs/s2-breadcrumbs-styles.ts",
+      "packages/solid-spectrum/test/Breadcrumbs.test.tsx",
+      "packages/solidaria/src/breadcrumbs/createBreadcrumbs.ts",
+      "packages/solidaria/src/breadcrumbs/index.ts",
+      "packages/solidaria-components/src/Breadcrumbs.tsx",
+      "packages/solidaria-components/test/Breadcrumbs.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Breadcrumbs.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Breadcrumbs.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Breadcrumbs.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Breadcrumbs.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Breadcrumbs.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Breadcrumbs.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Breadcrumbs.tsx"
+    ],
+    "rac": [
+      "Breadcrumbs"
+    ],
+    "ra": [
+      "useBreadcrumbs"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "breadcrumbs-validation-notes.md"
+    ],
+    "tests": [
+      "breadcrumbs-contract.spec.ts",
+      "breadcrumbs-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Button",
+    "slug": "button",
+    "local": [
+      "packages/solid-spectrum/src/Button.ts",
+      "packages/solid-spectrum/src/button/ActionButton.tsx",
+      "packages/solid-spectrum/src/button/Button.tsx",
+      "packages/solid-spectrum/src/button/ClearButton.tsx",
+      "packages/solid-spectrum/src/button/FieldButton.tsx",
+      "packages/solid-spectrum/src/button/LinkButton.tsx",
+      "packages/solid-spectrum/src/button/LogicButton.tsx",
+      "packages/solid-spectrum/src/button/S2PendingProgressCircle.tsx",
+      "packages/solid-spectrum/src/button/ToggleButton.tsx",
+      "packages/solid-spectrum/src/button/context.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Button.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Button.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Button.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ButtonGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Button.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Button.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ButtonGroup.d.ts"
+    ],
+    "rac": [
+      "Button",
+      "ToggleButton",
+      "ToggleButtonGroup"
+    ],
+    "ra": [
+      "useButton",
+      "useToggleButton",
+      "useToggleButtonGroup"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "button-family-validation-notes.md",
+      "button-validation-notes.md",
+      "togglebutton-validation-notes.md",
+      "togglebuttongroup-validation-notes.md"
+    ],
+    "tests": [
+      "actionbutton-visual.spec.ts",
+      "button-family-contract.spec.ts",
+      "button-visual.spec.ts",
+      "collection-button-controls-visual.spec.ts",
+      "grouped-button-controls-visual.spec.ts",
+      "single-button-controls-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ButtonGroup",
+    "slug": "buttongroup",
+    "local": [
+      "packages/solid-spectrum/src/buttongroup/index.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ButtonGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ButtonGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ButtonGroup.tsx"
+    ],
+    "rac": [
+      "Button",
+      "Group",
+      "ToggleButtonGroup"
+    ],
+    "ra": [
+      "useButton",
+      "useToggleButtonGroup"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "button-family-validation-notes.md",
+      "button-validation-notes.md",
+      "togglebutton-validation-notes.md",
+      "togglebuttongroup-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "Calendar",
+    "slug": "calendar",
+    "local": [
+      "packages/solid-spectrum/src/Calendar.ts",
+      "packages/solid-spectrum/src/calendar/DateField.tsx",
+      "packages/solid-spectrum/src/calendar/DatePicker.tsx",
+      "packages/solid-spectrum/src/calendar/DateRangePicker.tsx",
+      "packages/solid-spectrum/src/calendar/RangeCalendar.tsx",
+      "packages/solid-spectrum/src/calendar/TimeField.tsx",
+      "packages/solid-spectrum/src/calendar/index.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/CalendarAddIcon.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/CalendarDayIcon.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/CalendarEditIcon.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Calendar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Calendar.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Calendar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Calendar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Calendar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Calendar.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Calendar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Calendar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/CalendarAdd.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/CalendarAdd.mjs"
+    ],
+    "rac": [
+      "Calendar",
+      "RangeCalendar"
+    ],
+    "ra": [
+      "useCalendar",
+      "useRangeCalendar"
+    ],
+    "rs": [
+      "useCalendarState",
+      "useRangeCalendarState"
+    ],
+    "page": true,
+    "note": [
+      "calendar-validation-notes.md"
+    ],
+    "tests": [
+      "calendar-contract.spec.ts",
+      "calendar-visual.spec.ts",
+      "rangecalendar-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Card",
+    "slug": "card",
+    "local": [
+      "packages/solid-spectrum/src/Card.ts",
+      "packages/solid-spectrum/src/CardView.ts",
+      "packages/solid-spectrum/src/card/index.tsx",
+      "packages/solid-spectrum/src/cardview/index.tsx",
+      "packages/solid-spectrum/test/CardView.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Card.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/CardView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Card.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Card.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CardView.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CardView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Card.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/CardView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Card.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/CardView.d.ts"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "card-cardview-validation-notes.md"
+    ],
+    "tests": [
+      "card-cardview-contract.spec.ts"
+    ]
+  },
+  {
+    "title": "CardView",
+    "slug": "cardview",
+    "local": [
+      "packages/solid-spectrum/src/CardView.ts",
+      "packages/solid-spectrum/src/cardview/index.tsx",
+      "packages/solid-spectrum/test/CardView.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/CardView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CardView.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CardView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/CardView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/CardView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/CardView.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/CardView.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [],
+    "tests": [
+      "card-cardview-contract.spec.ts"
+    ]
+  },
+  {
+    "title": "Checkbox",
+    "slug": "checkbox",
+    "local": [
+      "packages/solid-spectrum/src/checkbox/index.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/CheckBoxIcon.tsx",
+      "packages/solid-spectrum/test/Checkbox.test.tsx",
+      "packages/solid-stately/src/checkbox/createCheckboxGroupState.d.ts",
+      "packages/solid-stately/src/checkbox/createCheckboxGroupState.ts",
+      "packages/solid-stately/src/checkbox/index.d.ts",
+      "packages/solid-stately/src/checkbox/index.ts",
+      "packages/solidaria/src/checkbox/createCheckbox.ts",
+      "packages/solidaria/src/checkbox/createCheckboxGroup.ts",
+      "packages/solidaria/src/checkbox/createCheckboxGroupItem.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Checkbox.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/CheckboxGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Checkbox.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Checkbox.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CheckboxGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CheckboxGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Checkbox.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/CheckboxGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Checkbox.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/CheckboxGroup.d.ts"
+    ],
+    "rac": [
+      "Checkbox",
+      "CheckboxGroup"
+    ],
+    "ra": [
+      "useCheckbox",
+      "useCheckboxGroup"
+    ],
+    "rs": [
+      "useCheckboxGroupState"
+    ],
+    "page": true,
+    "note": [
+      "checkbox-validation-notes.md"
+    ],
+    "tests": [
+      "checkbox-visual.spec.ts",
+      "checkboxgroup-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "CheckboxGroup",
+    "slug": "checkboxgroup",
+    "local": [],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/CheckboxGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CheckboxGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/CheckboxGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/CheckboxGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/CheckboxGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/CheckboxGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/CheckboxGroup.tsx"
+    ],
+    "rac": [
+      "Checkbox",
+      "CheckboxGroup",
+      "Group"
+    ],
+    "ra": [
+      "useCheckbox",
+      "useCheckboxGroup"
+    ],
+    "rs": [
+      "useCheckboxGroupState"
+    ],
+    "page": true,
+    "note": [
+      "checkboxgroup-validation-notes.md"
+    ],
+    "tests": [
+      "checkboxgroup-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ColorArea",
+    "slug": "colorarea",
+    "local": [
+      "packages/solid-spectrum/src/ColorArea.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ColorArea.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorArea.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorArea.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ColorArea.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ColorArea.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ColorArea.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ColorArea.tsx"
+    ],
+    "rac": [
+      "ColorArea"
+    ],
+    "ra": [
+      "useColorArea"
+    ],
+    "rs": [
+      "Color",
+      "useColorAreaState"
+    ],
+    "page": true,
+    "note": [
+      "colorarea-validation-notes.md"
+    ],
+    "tests": [
+      "colorarea-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ColorField",
+    "slug": "colorfield",
+    "local": [
+      "packages/solid-spectrum/src/ColorField.ts",
+      "packages/solid-spectrum/test/ColorField.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ColorField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorField.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ColorField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ColorField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ColorField.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ColorField.tsx"
+    ],
+    "rac": [
+      "ColorField"
+    ],
+    "ra": [
+      "useColorField",
+      "useField"
+    ],
+    "rs": [
+      "Color",
+      "useColorFieldState"
+    ],
+    "page": true,
+    "note": [
+      "colorfield-validation-notes.md"
+    ],
+    "tests": [
+      "colorfield-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ColorSlider",
+    "slug": "colorslider",
+    "local": [
+      "packages/solid-spectrum/src/ColorSlider.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ColorSlider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSlider.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSlider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ColorSlider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ColorSlider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ColorSlider.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ColorSlider.tsx"
+    ],
+    "rac": [
+      "ColorSlider",
+      "Slider"
+    ],
+    "ra": [
+      "useColorSlider",
+      "useId",
+      "useSlider"
+    ],
+    "rs": [
+      "Color",
+      "useColorSliderState"
+    ],
+    "page": true,
+    "note": [
+      "colorslider-validation-notes.md"
+    ],
+    "tests": [
+      "colorslider-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ColorSwatch",
+    "slug": "colorswatch",
+    "local": [
+      "packages/solid-spectrum/src/ColorSwatch.ts",
+      "packages/solid-spectrum/src/ColorSwatchPicker.ts",
+      "packages/solid-spectrum/src/color/ColorSwatchPicker.tsx",
+      "packages/solid-spectrum/test/ColorSwatch.test.tsx",
+      "packages/solid-spectrum/test/ColorSwatchPicker.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ColorSwatch.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ColorSwatchPicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSwatch.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSwatch.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSwatchPicker.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSwatchPicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ColorSwatch.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ColorSwatchPicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ColorSwatch.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ColorSwatchPicker.d.ts"
+    ],
+    "rac": [
+      "ColorSwatch",
+      "ColorSwatchPicker"
+    ],
+    "ra": [
+      "useColorSwatch"
+    ],
+    "rs": [
+      "Color"
+    ],
+    "page": true,
+    "note": [
+      "colorswatch-validation-notes.md"
+    ],
+    "tests": [
+      "colorswatch-visual.spec.ts",
+      "colorswatchpicker-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ColorSwatchPicker",
+    "slug": "colorswatchpicker",
+    "local": [
+      "packages/solid-spectrum/src/ColorSwatchPicker.ts",
+      "packages/solid-spectrum/src/color/ColorSwatchPicker.tsx",
+      "packages/solid-spectrum/test/ColorSwatchPicker.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ColorSwatchPicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSwatchPicker.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorSwatchPicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ColorSwatchPicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ColorSwatchPicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ColorSwatchPicker.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ColorSwatchPicker.tsx"
+    ],
+    "rac": [
+      "ColorSwatch",
+      "ColorSwatchPicker"
+    ],
+    "ra": [
+      "useColorSwatch"
+    ],
+    "rs": [
+      "Color"
+    ],
+    "page": true,
+    "note": [
+      "colorswatchpicker-validation-notes.md"
+    ],
+    "tests": [
+      "colorswatchpicker-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ColorWheel",
+    "slug": "colorwheel",
+    "local": [
+      "packages/solid-spectrum/src/ColorWheel.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ColorWheel.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorWheel.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ColorWheel.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ColorWheel.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ColorWheel.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ColorWheel.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ColorWheel.tsx"
+    ],
+    "rac": [
+      "ColorWheel"
+    ],
+    "ra": [
+      "useColorWheel"
+    ],
+    "rs": [
+      "Color",
+      "useColorWheelState"
+    ],
+    "page": true,
+    "note": [
+      "colorwheel-validation-notes.md"
+    ],
+    "tests": [
+      "colorwheel-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ComboBox",
+    "slug": "combobox",
+    "local": [
+      "packages/solid-spectrum/src/combobox/index.tsx",
+      "packages/solid-spectrum/test/ComboBox.test.tsx",
+      "packages/solid-stately/src/combobox/createComboBoxState.d.ts",
+      "packages/solid-stately/src/combobox/createComboBoxState.ts",
+      "packages/solid-stately/src/combobox/index.d.ts",
+      "packages/solid-stately/src/combobox/index.ts",
+      "packages/solidaria/src/combobox/createComboBox.ts",
+      "packages/solidaria/src/combobox/index.ts",
+      "packages/solidaria/src/combobox/intl/index.ts",
+      "packages/solidaria-components/src/ComboBox.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ComboBox.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ComboBox.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ComboBox.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ComboBox.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ComboBox.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ComboBox.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ComboBox.tsx"
+    ],
+    "rac": [
+      "ComboBox"
+    ],
+    "ra": [
+      "useComboBox"
+    ],
+    "rs": [
+      "useComboBoxState"
+    ],
+    "page": true,
+    "note": [
+      "combobox-validation-notes.md"
+    ],
+    "tests": [
+      "combobox-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ContextualHelp",
+    "slug": "contextualhelp",
+    "local": [
+      "packages/solid-spectrum/src/contextualhelp/index.tsx",
+      "packages/solid-spectrum/src/menu/ContextualHelpTrigger.tsx",
+      "packages/solid-spectrum/test/ContextualHelpTrigger.test.tsx",
+      "packages/solidaria-components/src/ContextualHelpTrigger.tsx",
+      "packages/solidaria-components/test/ContextualHelpTrigger.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ContextualHelp.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ContextualHelp.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ContextualHelp.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ContextualHelp.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ContextualHelp.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ContextualHelp.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ContextualHelp.tsx"
+    ],
+    "rac": [
+      "Text"
+    ],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "contextualhelp-validation-notes.md"
+    ],
+    "tests": [
+      "contextualhelp-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "DateField",
+    "slug": "datefield",
+    "local": [
+      "packages/solid-spectrum/src/calendar/DateField.tsx",
+      "packages/solid-spectrum/test/DateField.test.tsx",
+      "packages/solidaria-components/src/DateField.tsx",
+      "packages/solidaria-components/test/DateField.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/DateField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DateField.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DateField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/DateField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/DateField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/DateField.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/DateField.tsx"
+    ],
+    "rac": [
+      "DateField"
+    ],
+    "ra": [
+      "useDateField",
+      "useField"
+    ],
+    "rs": [
+      "useDateFieldState"
+    ],
+    "page": true,
+    "note": [
+      "datefield-validation-notes.md"
+    ],
+    "tests": [
+      "datefield-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "DatePicker",
+    "slug": "datepicker",
+    "local": [
+      "packages/solid-spectrum/src/calendar/DatePicker.tsx",
+      "packages/solid-spectrum/src/datepicker/index.tsx",
+      "packages/solid-spectrum/test/DatePicker.test.tsx",
+      "packages/solid-stately/src/datepicker/index.ts",
+      "packages/solid-stately/test/datepicker-compat.test.ts",
+      "packages/solidaria/src/datepicker/createDateField.ts",
+      "packages/solidaria/src/datepicker/createDatePicker.ts",
+      "packages/solidaria/src/datepicker/createDatePickerGroup.ts",
+      "packages/solidaria/src/datepicker/createDateRangePicker.ts",
+      "packages/solidaria/src/datepicker/createDateSegment.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/DatePicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DatePicker.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DatePicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/DatePicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/DatePicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/DatePicker.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/DatePicker.tsx"
+    ],
+    "rac": [
+      "DatePicker"
+    ],
+    "ra": [
+      "useDatePicker"
+    ],
+    "rs": [
+      "useDatePickerState"
+    ],
+    "page": true,
+    "note": [
+      "datepicker-validation-notes.md"
+    ],
+    "tests": [
+      "datepicker-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "DateRangePicker",
+    "slug": "daterangepicker",
+    "local": [
+      "packages/solid-spectrum/src/calendar/DateRangePicker.tsx",
+      "packages/solid-spectrum/test/DateRangePicker.test.tsx",
+      "packages/solidaria-components/src/DateRangePickerContext.tsx",
+      "packages/solidaria-components/test/DateRangePicker.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/DateRangePicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DateRangePicker.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DateRangePicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/DateRangePicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/DateRangePicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/DateRangePicker.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/DateRangePicker.tsx"
+    ],
+    "rac": [
+      "DateRangePicker"
+    ],
+    "ra": [
+      "useDateRangePicker"
+    ],
+    "rs": [
+      "useDateRangePickerState"
+    ],
+    "page": true,
+    "note": [
+      "daterangepicker-validation-notes.md"
+    ],
+    "tests": [
+      "daterangepicker-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Dialog",
+    "slug": "dialog",
+    "local": [
+      "packages/solid-spectrum/src/dialog/AlertDialog.tsx",
+      "packages/solid-spectrum/src/dialog/Dialog.tsx",
+      "packages/solid-spectrum/src/dialog/index.tsx",
+      "packages/solid-spectrum/test/Dialog.test.tsx",
+      "packages/solidaria/src/dialog/createDialog.ts",
+      "packages/solidaria/src/dialog/index.ts",
+      "packages/solidaria/src/dialog/types.ts",
+      "packages/solidaria-components/src/Dialog.tsx",
+      "packages/solidaria-components/test/Dialog.test.tsx",
+      "packages/solidaria-components/test/DialogTriggerDebug.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Dialog.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Dialog.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Dialog.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DialogContainer.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DialogTrigger.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Dialog.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Dialog.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/DialogContainer.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/DialogTrigger.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Dialog.ts"
+    ],
+    "rac": [
+      "Dialog"
+    ],
+    "ra": [
+      "useDialog"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "dialog-validation-notes.md"
+    ],
+    "tests": [
+      "dialog-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Disclosure",
+    "slug": "disclosure",
+    "local": [
+      "packages/solid-spectrum/src/disclosure/index.tsx",
+      "packages/solid-spectrum/src/disclosure-export.ts",
+      "packages/solid-spectrum/test/Disclosure.test.tsx",
+      "packages/solid-stately/src/disclosure/createDisclosureState.d.ts",
+      "packages/solid-stately/src/disclosure/createDisclosureState.ts",
+      "packages/solid-stately/src/disclosure/index.d.ts",
+      "packages/solid-stately/src/disclosure/index.ts",
+      "packages/solidaria/src/disclosure/createDisclosure.ts",
+      "packages/solidaria/src/disclosure/createDisclosureGroup.ts",
+      "packages/solidaria/src/disclosure/index.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Disclosure.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Disclosure.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Disclosure.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Disclosure.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Disclosure.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Disclosure.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Disclosure.tsx"
+    ],
+    "rac": [
+      "Disclosure",
+      "DisclosureGroup"
+    ],
+    "ra": [
+      "useDisclosure"
+    ],
+    "rs": [
+      "useDisclosureGroupState",
+      "useDisclosureState"
+    ],
+    "page": true,
+    "note": [
+      "disclosure-validation-notes.md"
+    ],
+    "tests": [
+      "disclosure-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Divider",
+    "slug": "divider",
+    "local": [
+      "packages/solid-spectrum/src/divider/index.tsx",
+      "packages/solid-spectrum/test/Divider.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Divider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Divider.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Divider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Divider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Divider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Divider.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Divider.tsx"
+    ],
+    "rac": [],
+    "ra": [
+      "useId"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "divider-validation-notes.md"
+    ],
+    "tests": [
+      "divider-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "DropZone",
+    "slug": "dropzone",
+    "local": [
+      "packages/solid-spectrum/src/dropzone/index.tsx",
+      "packages/solid-spectrum/test/DropZone.test.tsx",
+      "packages/solidaria-components/src/DropZone.tsx",
+      "packages/solidaria-components/test/DropZone.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/DropZone.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DropZone.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/DropZone.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/DropZone.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/DropZone.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/DropZone.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/DropZone.tsx"
+    ],
+    "rac": [
+      "DropZone"
+    ],
+    "ra": [
+      "useDrop"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "dropzone-validation-notes.md"
+    ],
+    "tests": [
+      "dropzone-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Form",
+    "slug": "form",
+    "local": [
+      "packages/solid-spectrum/src/form/Field.tsx",
+      "packages/solid-spectrum/src/form/HelpText.tsx",
+      "packages/solid-spectrum/src/form/index.tsx",
+      "packages/solid-spectrum/test/Form.test.tsx",
+      "packages/solid-spectrum/test/FormFieldError.test.tsx",
+      "packages/solid-stately/src/form/createFormValidationState.d.ts",
+      "packages/solid-stately/src/form/createFormValidationState.ts",
+      "packages/solid-stately/src/form/index.d.ts",
+      "packages/solid-stately/src/form/index.ts",
+      "packages/solidaria/src/form/createFormReset.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Form.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Form.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Form.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Form.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Form.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Form.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Form.tsx"
+    ],
+    "rac": [
+      "Form"
+    ],
+    "ra": [
+      "useDateFormatter",
+      "useListFormatter",
+      "useLocalizedStringFormatter",
+      "useNumberFormatter"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "form-validation-notes.md"
+    ],
+    "tests": [
+      "form-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Icons",
+    "slug": "icons",
+    "local": [
+      "packages/solid-spectrum/src/icon/icons/CrossIcon.tsx",
+      "packages/solid-spectrum/src/icon/icons/GitHubIcon.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/3D.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/3D.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/3DAsset.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/3DAsset.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/3DMaterial.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/3DMaterial.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/ABC.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/ABC.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Accessibility.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Accessibility.mjs"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": false,
+    "note": [],
+    "tests": []
+  },
+  {
+    "title": "IllustratedMessage",
+    "slug": "illustratedmessage",
+    "local": [
+      "packages/solid-spectrum/src/illustratedmessage/index.tsx",
+      "packages/solid-spectrum/test/IllustratedMessage.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/IllustratedMessage.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/IllustratedMessage.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/IllustratedMessage.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/IllustratedMessage.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/IllustratedMessage.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/IllustratedMessage.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/IllustratedMessage.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": false,
+    "note": [
+      "illustratedmessage-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "Illustrations",
+    "slug": "illustrations",
+    "local": [],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/3D.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/3D.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/3Dasset.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/3Dasset.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/AIGenerate.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/AIGenerate.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/AIGenerateImage.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/AIGenerateImage.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/AIchat.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/illustrations/gradient/generic1/AIchat.mjs"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": false,
+    "note": [],
+    "tests": []
+  },
+  {
+    "title": "Image",
+    "slug": "image",
+    "local": [
+      "packages/solid-spectrum/src/icon/s2wf-icons/ImageAddIcon.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/ImageBackgroundRemoveIcon.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/ImageIcon.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/ImagesIcon.tsx",
+      "packages/solid-spectrum/src/image/index.tsx",
+      "packages/solid-spectrum/test/Image.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Image.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ImageCoordinator.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Image.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Image.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ImageCoordinator.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Image.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ImageCoordinator.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Image.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ImageCoordinator.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Image.ts"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "image-validation-notes.md"
+    ],
+    "tests": [
+      "image-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "InlineAlert",
+    "slug": "inlinealert",
+    "local": [
+      "packages/solid-spectrum/src/inlinealert/index.tsx",
+      "packages/solid-spectrum/test/InlineAlert.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/InlineAlert.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/InlineAlert.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/InlineAlert.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/InlineAlert.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/InlineAlert.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/InlineAlert.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/InlineAlert.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "inlinealert-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "Link",
+    "slug": "link",
+    "local": [
+      "packages/solid-spectrum/src/LinkButton.ts",
+      "packages/solid-spectrum/src/button/LinkButton.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/LinkIcon.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/LinkVerticalIcon.tsx",
+      "packages/solid-spectrum/src/icon/ui-icons/LinkOut.tsx",
+      "packages/solid-spectrum/src/link/index.tsx",
+      "packages/solid-spectrum/test/Link.test.tsx",
+      "packages/solidaria/src/link/createLink.ts",
+      "packages/solidaria/src/link/index.ts",
+      "packages/solidaria-components/src/Link.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Link.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/LinkButton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Link.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Link.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/LinkOut.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/LinkOut.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Link.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/LinkButton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Link.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/ui-icons/LinkOut.d.ts"
+    ],
+    "rac": [
+      "Link"
+    ],
+    "ra": [
+      "useLink"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "link-validation-notes.md"
+    ],
+    "tests": [
+      "link-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "LinkButton",
+    "slug": "linkbutton",
+    "local": [
+      "packages/solid-spectrum/src/LinkButton.ts",
+      "packages/solid-spectrum/src/button/LinkButton.tsx",
+      "packages/viviana-ui/src/LinkButton.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/LinkButton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/LinkButton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/LinkButton.ts"
+    ],
+    "rac": [
+      "Button",
+      "Link"
+    ],
+    "ra": [
+      "useButton",
+      "useLink"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "button-family-validation-notes.md",
+      "button-validation-notes.md",
+      "togglebutton-validation-notes.md",
+      "togglebuttongroup-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "ListView",
+    "slug": "listview",
+    "local": [
+      "packages/solid-spectrum/src/ListView.ts",
+      "packages/solid-spectrum/test/ListView.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ListView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ListView.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ListView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ListView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ListView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ListView.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ListView.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "listview-validation-notes.md"
+    ],
+    "tests": [
+      "listview-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Menu",
+    "slug": "menu",
+    "local": [
+      "packages/solid-spectrum/src/Menu.ts",
+      "packages/solid-spectrum/src/icon/s2wf-icons/MenuHamburgerIcon.tsx",
+      "packages/solid-spectrum/src/menu/ActionMenu.tsx",
+      "packages/solid-spectrum/src/menu/ContextualHelpTrigger.tsx",
+      "packages/solid-spectrum/src/menu/SubmenuTrigger.tsx",
+      "packages/solid-spectrum/src/menu/index.tsx",
+      "packages/solid-spectrum/src/menu/menu-context.ts",
+      "packages/solid-spectrum/src/menu/s2-menu-styles.ts",
+      "packages/solid-spectrum/test/Menu.test.tsx",
+      "packages/solid-stately/src/menu/index.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Menu.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Menu.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Menu.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Menu.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Menu.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Menu.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/MenuHamburger.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/MenuHamburger.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Menu.tsx"
+    ],
+    "rac": [
+      "Menu"
+    ],
+    "ra": [
+      "useMenu"
+    ],
+    "rs": [
+      "useMenuTriggerState"
+    ],
+    "page": true,
+    "note": [
+      "menu-validation-notes.md"
+    ],
+    "tests": [
+      "actionmenu-contract.spec.ts",
+      "actionmenu-visual.spec.ts",
+      "menu-contract.spec.ts",
+      "menu-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Meter",
+    "slug": "meter",
+    "local": [
+      "packages/solid-spectrum/src/meter/index.tsx",
+      "packages/solid-spectrum/test/Meter.test.tsx",
+      "packages/solidaria/src/meter/createMeter.ts",
+      "packages/solidaria/src/meter/index.ts",
+      "packages/solidaria-components/src/Meter.tsx",
+      "packages/solidaria-components/test/Meter.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Meter.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Meter.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Meter.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Meter.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Meter.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Meter.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Meter.tsx"
+    ],
+    "rac": [
+      "Meter"
+    ],
+    "ra": [
+      "useMeter"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "meter-validation-notes.md"
+    ],
+    "tests": [
+      "meter-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "NumberField",
+    "slug": "numberfield",
+    "local": [
+      "packages/solid-spectrum/src/numberfield/index.tsx",
+      "packages/solid-spectrum/test/NumberField.test.tsx",
+      "packages/solid-stately/src/numberfield/createNumberFieldState.d.ts",
+      "packages/solid-stately/src/numberfield/createNumberFieldState.ts",
+      "packages/solid-stately/src/numberfield/index.d.ts",
+      "packages/solid-stately/src/numberfield/index.ts",
+      "packages/solidaria/src/numberfield/createNumberField.ts",
+      "packages/solidaria/src/numberfield/index.ts",
+      "packages/solidaria-components/src/NumberField.tsx",
+      "packages/solidaria-components/test/NumberField.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/NumberField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/NumberField.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/NumberField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/NumberField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/NumberField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/NumberField.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/NumberField.tsx"
+    ],
+    "rac": [
+      "NumberField"
+    ],
+    "ra": [
+      "useField",
+      "useNumberField"
+    ],
+    "rs": [
+      "useNumberFieldState"
+    ],
+    "page": true,
+    "note": [
+      "numberfield-validation-notes.md"
+    ],
+    "tests": [
+      "numberfield-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Picker",
+    "slug": "picker",
+    "local": [
+      "packages/solid-spectrum/src/Picker.ts",
+      "packages/solid-spectrum/src/picker/index.tsx",
+      "packages/solid-spectrum/test/Picker.hydrate.test.tsx",
+      "packages/solid-spectrum/test/Picker.ssr.test.tsx",
+      "packages/solid-spectrum/test/Picker.test.tsx",
+      "packages/viviana-ui/src/Picker.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Picker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Picker.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Picker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Picker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Picker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Picker.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Picker.tsx"
+    ],
+    "rac": [
+      "ColorPicker",
+      "ColorSwatchPicker",
+      "DatePicker",
+      "DateRangePicker"
+    ],
+    "ra": [
+      "useDatePicker",
+      "useDateRangePicker"
+    ],
+    "rs": [
+      "useColorPickerState",
+      "useDatePickerState",
+      "useDateRangePickerState"
+    ],
+    "page": true,
+    "note": [
+      "picker-validation-notes.md"
+    ],
+    "tests": [
+      "colorswatchpicker-visual.spec.ts",
+      "datepicker-visual.spec.ts",
+      "daterangepicker-visual.spec.ts",
+      "picker-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Popover",
+    "slug": "popover",
+    "local": [
+      "packages/solid-spectrum/src/popover/index.tsx",
+      "packages/solidaria/src/popover/calculatePosition.ts",
+      "packages/solidaria/src/popover/createOverlayPosition.ts",
+      "packages/solidaria/src/popover/createPopover.ts",
+      "packages/solidaria/src/popover/index.ts",
+      "packages/solidaria-components/src/Popover.tsx",
+      "packages/solidaria-components/test/Popover.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Popover.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Popover.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Popover.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Popover.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Popover.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Popover.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Popover.tsx"
+    ],
+    "rac": [
+      "Popover"
+    ],
+    "ra": [
+      "usePopover"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "popover-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "ProgressBar",
+    "slug": "progressbar",
+    "local": [
+      "packages/solid-spectrum/test/ProgressBar.test.tsx",
+      "packages/solidaria-components/src/ProgressBar.tsx",
+      "packages/solidaria-components/test/ProgressBar.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ProgressBar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ProgressBar.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ProgressBar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ProgressBar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ProgressBar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ProgressBar.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ProgressBar.tsx"
+    ],
+    "rac": [
+      "ProgressBar"
+    ],
+    "ra": [
+      "useProgressBar"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "progressbar-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "ProgressCircle",
+    "slug": "progresscircle",
+    "local": [
+      "packages/solid-spectrum/src/progress/ProgressCircle.tsx",
+      "packages/solid-spectrum/test/ProgressCircle.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ProgressCircle.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ProgressCircle.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ProgressCircle.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ProgressCircle.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ProgressCircle.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ProgressCircle.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ProgressCircle.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "progresscircle-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "Provider",
+    "slug": "provider",
+    "local": [
+      "packages/solid-spectrum/src/Provider.ts",
+      "packages/solid-spectrum/src/provider/index.tsx",
+      "packages/solid-spectrum/test/ProviderParity.test.tsx",
+      "packages/viviana-ui/src/Provider.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Provider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Provider.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Provider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Provider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Provider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Provider.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Provider.tsx"
+    ],
+    "rac": [
+      "I18nProvider"
+    ],
+    "ra": [
+      "I18nProvider",
+      "PortalProvider",
+      "SSRProvider",
+      "useId"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "provider-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "RadioGroup",
+    "slug": "radiogroup",
+    "local": [
+      "packages/solidaria-components/src/RadioGroup.tsx",
+      "packages/solidaria-components/test/RadioGroup.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/RadioGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/RadioGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/RadioGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/RadioGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/RadioGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/RadioGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/RadioGroup.tsx"
+    ],
+    "rac": [
+      "Group",
+      "RadioGroup"
+    ],
+    "ra": [
+      "useRadioGroup"
+    ],
+    "rs": [
+      "useRadioGroupState"
+    ],
+    "page": true,
+    "note": [
+      "radiogroup-validation-notes.md"
+    ],
+    "tests": [
+      "radiogroup-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "RangeCalendar",
+    "slug": "rangecalendar",
+    "local": [
+      "packages/solid-spectrum/src/RangeCalendar.ts",
+      "packages/solid-spectrum/src/calendar/RangeCalendar.tsx",
+      "packages/solid-spectrum/test/RangeCalendar.test.tsx",
+      "packages/solidaria-components/src/RangeCalendar.tsx",
+      "packages/solidaria-components/test/RangeCalendar.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/RangeCalendar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/RangeCalendar.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/RangeCalendar.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/RangeCalendar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/RangeCalendar.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/RangeCalendar.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/RangeCalendar.tsx"
+    ],
+    "rac": [
+      "Calendar",
+      "RangeCalendar"
+    ],
+    "ra": [
+      "useCalendar",
+      "useRangeCalendar"
+    ],
+    "rs": [
+      "useRangeCalendarState"
+    ],
+    "page": true,
+    "note": [
+      "rangecalendar-validation-notes.md"
+    ],
+    "tests": [
+      "rangecalendar-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "RangeSlider",
+    "slug": "rangeslider",
+    "local": [
+      "packages/solid-spectrum/src/slider/RangeSlider.tsx",
+      "packages/solid-spectrum/test/RangeSlider.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/RangeSlider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/RangeSlider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/RangeSlider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/RangeSlider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/RangeSlider.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/RangeSlider.tsx"
+    ],
+    "rac": [
+      "Slider"
+    ],
+    "ra": [
+      "useId",
+      "useSlider"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "rangeslider-validation-notes.md"
+    ],
+    "tests": [
+      "rangeslider-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "SearchField",
+    "slug": "searchfield",
+    "local": [
+      "packages/solid-spectrum/src/SearchField.ts",
+      "packages/solid-spectrum/src/searchfield/index.tsx",
+      "packages/solid-spectrum/test/SearchField.test.tsx",
+      "packages/solid-stately/src/searchfield/createSearchFieldState.d.ts",
+      "packages/solid-stately/src/searchfield/createSearchFieldState.ts",
+      "packages/solid-stately/src/searchfield/index.d.ts",
+      "packages/solid-stately/src/searchfield/index.ts",
+      "packages/solidaria/src/searchfield/createSearchField.ts",
+      "packages/solidaria/src/searchfield/index.ts",
+      "packages/solidaria-components/src/SearchField.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/SearchField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/SearchField.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/SearchField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/SearchField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/SearchField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/SearchField.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/SearchField.tsx"
+    ],
+    "rac": [
+      "SearchField"
+    ],
+    "ra": [
+      "useField",
+      "useSearchField"
+    ],
+    "rs": [
+      "useSearchFieldState"
+    ],
+    "page": true,
+    "note": [
+      "searchfield-validation-notes.md"
+    ],
+    "tests": [
+      "searchfield-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "SegmentedControl",
+    "slug": "segmentedcontrol",
+    "local": [
+      "packages/solid-spectrum/src/SegmentedControl.ts",
+      "packages/solid-spectrum/src/segmentedcontrol/index.tsx",
+      "packages/solid-spectrum/test/SegmentedControl.test.tsx",
+      "packages/viviana-ui/src/SegmentedControl.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/SegmentedControl.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/SegmentedControl.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/SegmentedControl.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/SegmentedControl.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/SegmentedControl.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/SegmentedControl.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/SegmentedControl.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "segmentedcontrol-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "SelectBoxGroup",
+    "slug": "selectboxgroup",
+    "local": [
+      "packages/solid-spectrum/src/selectboxgroup/index.tsx",
+      "packages/solid-spectrum/test/SelectBoxGroup.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/SelectBoxGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/SelectBoxGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/SelectBoxGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/SelectBoxGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/SelectBoxGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/SelectBoxGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/SelectBoxGroup.tsx"
+    ],
+    "rac": [
+      "Group",
+      "Select"
+    ],
+    "ra": [
+      "useSelect"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "selectboxgroup-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "Skeleton",
+    "slug": "skeleton",
+    "local": [
+      "packages/solid-spectrum/src/skeleton/index.tsx",
+      "packages/solid-spectrum/test/Skeleton.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Skeleton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/SkeletonCollection.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Skeleton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Skeleton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/SkeletonCollection.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Skeleton.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Skeleton.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Skeleton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Skeleton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Skeleton.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "skeleton-validation-notes.md"
+    ],
+    "tests": [
+      "skeleton-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Slider",
+    "slug": "slider",
+    "local": [
+      "packages/solid-spectrum/src/slider/RangeSlider.tsx",
+      "packages/solid-spectrum/src/slider/index.tsx",
+      "packages/solid-spectrum/test/Slider.test.tsx",
+      "packages/solid-stately/src/slider/createSliderState.d.ts",
+      "packages/solid-stately/src/slider/createSliderState.ts",
+      "packages/solid-stately/src/slider/index.d.ts",
+      "packages/solid-stately/src/slider/index.ts",
+      "packages/solidaria/src/slider/createSlider.ts",
+      "packages/solidaria/src/slider/index.ts",
+      "packages/solidaria-components/src/Slider.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Slider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Slider.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Slider.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Slider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Slider.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Slider.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Slider.tsx"
+    ],
+    "rac": [
+      "ColorSlider",
+      "Slider"
+    ],
+    "ra": [
+      "useColorSlider",
+      "useId",
+      "useSlider"
+    ],
+    "rs": [
+      "useColorSliderState",
+      "useSliderState"
+    ],
+    "page": true,
+    "note": [
+      "slider-validation-notes.md"
+    ],
+    "tests": [
+      "colorslider-visual.spec.ts",
+      "rangeslider-visual.spec.ts",
+      "slider-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "StatusLight",
+    "slug": "statuslight",
+    "local": [
+      "packages/solid-spectrum/src/statuslight/index.tsx",
+      "packages/solid-spectrum/test/StatusLight.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/StatusLight.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/StatusLight.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/StatusLight.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/StatusLight.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/StatusLight.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/StatusLight.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/StatusLight.tsx"
+    ],
+    "rac": [],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "statuslight-validation-notes.md"
+    ],
+    "tests": [
+      "statuslight-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Switch",
+    "slug": "switch",
+    "local": [
+      "packages/solid-spectrum/src/Switch.ts",
+      "packages/solid-spectrum/src/icon/s2wf-icons/SwitchIcon.tsx",
+      "packages/solid-spectrum/src/icon/s2wf-icons/SwitchVerticalIcon.tsx",
+      "packages/solid-spectrum/src/switch/ToggleSwitch.tsx",
+      "packages/solid-spectrum/src/switch/index.tsx",
+      "packages/solid-spectrum/test/Switch.test.tsx",
+      "packages/solidaria/src/switch/createSwitch.ts",
+      "packages/solidaria/src/switch/index.ts",
+      "packages/solidaria-components/src/Switch.tsx",
+      "packages/solidaria-components/test/Switch.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Switch.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Switch.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Switch.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Switch.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Switch.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Switch.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Switch.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/Switch.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/SwitchVertical.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/icons/SwitchVertical.mjs"
+    ],
+    "rac": [
+      "Switch"
+    ],
+    "ra": [
+      "useSwitch"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "switch-validation-notes.md"
+    ],
+    "tests": [
+      "switch-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "TableView",
+    "slug": "tableview",
+    "local": [],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/TableView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TableView.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TableView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/TableView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/TableView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/TableView.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/TableView.tsx"
+    ],
+    "rac": [
+      "Table"
+    ],
+    "ra": [
+      "useTable"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "tableview-validation-notes.md"
+    ],
+    "tests": [
+      "tableview-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Tabs",
+    "slug": "tabs",
+    "local": [
+      "packages/solid-spectrum/src/Tabs.ts",
+      "packages/solid-spectrum/src/tabs/TabsPicker.tsx",
+      "packages/solid-spectrum/src/tabs/index.tsx",
+      "packages/solid-spectrum/test/Tabs.test.tsx",
+      "packages/solid-stately/src/tabs/createTabListState.d.ts",
+      "packages/solid-stately/src/tabs/createTabListState.ts",
+      "packages/solid-stately/src/tabs/index.d.ts",
+      "packages/solid-stately/src/tabs/index.ts",
+      "packages/solidaria/src/tabs/createTabs.ts",
+      "packages/solidaria/src/tabs/index.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Tabs.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Tabs.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Tabs.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TabsPicker.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TabsPicker.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Tabs.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Tabs.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/TabsPicker.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Tabs.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Tabs.tsx"
+    ],
+    "rac": [
+      "Tabs"
+    ],
+    "ra": [],
+    "rs": [],
+    "page": true,
+    "note": [
+      "tabs-validation-notes.md"
+    ],
+    "tests": [
+      "tabs-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "TagGroup",
+    "slug": "taggroup",
+    "local": [
+      "packages/solid-spectrum/test/TagGroup.test.tsx",
+      "packages/solidaria-components/src/TagGroup.tsx",
+      "packages/solidaria-components/test/TagGroup.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/TagGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TagGroup.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TagGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/TagGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/TagGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/TagGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/TagGroup.tsx"
+    ],
+    "rac": [
+      "Group",
+      "TagGroup"
+    ],
+    "ra": [
+      "useTagGroup"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "taggroup-validation-notes.md"
+    ],
+    "tests": [
+      "taggroup-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "TextArea",
+    "slug": "textarea",
+    "local": [
+      "packages/solid-spectrum/src/TextArea.ts",
+      "packages/solid-spectrum/src/textfield/TextArea.tsx",
+      "packages/solid-spectrum/test/TextArea.test.tsx",
+      "packages/viviana-ui/src/TextArea.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/TextArea.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/TextArea.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/TextArea.ts"
+    ],
+    "rac": [
+      "Text",
+      "TextArea"
+    ],
+    "ra": [],
+    "rs": [],
+    "page": false,
+    "note": [
+      "textarea-validation-notes.md"
+    ],
+    "tests": [
+      "textarea-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "TextField",
+    "slug": "textfield",
+    "local": [
+      "packages/solid-spectrum/src/TextField.ts",
+      "packages/solid-spectrum/src/textfield/TextArea.tsx",
+      "packages/solid-spectrum/src/textfield/index.tsx",
+      "packages/solid-spectrum/src/textfield/s2-textarea-styles.ts",
+      "packages/solid-spectrum/test/TextField.hydrate.test.tsx",
+      "packages/solid-spectrum/test/TextField.ssr.test.tsx",
+      "packages/solid-spectrum/test/TextField.test.tsx",
+      "packages/solid-stately/src/textfield/createTextFieldState.d.ts",
+      "packages/solid-stately/src/textfield/createTextFieldState.ts",
+      "packages/solid-stately/src/textfield/index.d.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/TextField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TextField.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TextField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/TextField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/TextField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/TextField.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/TextField.tsx"
+    ],
+    "rac": [
+      "Text",
+      "TextField"
+    ],
+    "ra": [
+      "useField",
+      "useTextField"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "textfield-validation-notes.md"
+    ],
+    "tests": [
+      "textfield-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "TimeField",
+    "slug": "timefield",
+    "local": [
+      "packages/solid-spectrum/src/calendar/TimeField.tsx",
+      "packages/solid-spectrum/test/TimeField.test.tsx",
+      "packages/solidaria-components/src/TimeField.tsx",
+      "packages/solidaria-components/test/TimeField.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/TimeField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TimeField.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TimeField.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/TimeField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/TimeField.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/TimeField.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/TimeField.tsx"
+    ],
+    "rac": [
+      "TimeField"
+    ],
+    "ra": [
+      "useField",
+      "useTimeField"
+    ],
+    "rs": [
+      "useTimeFieldState"
+    ],
+    "page": true,
+    "note": [
+      "timefield-validation-notes.md"
+    ],
+    "tests": [
+      "timefield-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "Toast",
+    "slug": "toast",
+    "local": [
+      "packages/solid-spectrum/src/toast/index.tsx",
+      "packages/solid-spectrum/test/Toast.test.tsx",
+      "packages/solid-stately/src/toast/createToastState.d.ts",
+      "packages/solid-stately/src/toast/createToastState.ts",
+      "packages/solid-stately/src/toast/index.d.ts",
+      "packages/solid-stately/src/toast/index.ts",
+      "packages/solidaria/src/toast/createToast.ts",
+      "packages/solidaria/src/toast/createToastRegion.ts",
+      "packages/solidaria/src/toast/index.ts",
+      "packages/solidaria-components/src/Toast.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Toast.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Toast.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Toast.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Toast.module_css.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Toast_module.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Toast.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Toast.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Toast.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Toast.module.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Toast.tsx"
+    ],
+    "rac": [
+      "Toast"
+    ],
+    "ra": [
+      "useToast"
+    ],
+    "rs": [
+      "useToastState"
+    ],
+    "page": false,
+    "note": [
+      "toast-validation-notes.md"
+    ],
+    "tests": [
+      "toast-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "ToggleButton",
+    "slug": "togglebutton",
+    "local": [
+      "packages/solid-spectrum/src/button/ToggleButton.tsx",
+      "packages/solid-spectrum/src/togglebuttongroup/index.tsx",
+      "packages/solid-spectrum/test/ToggleButton.test.tsx",
+      "packages/solid-spectrum/test/ToggleButtonGroup.test.tsx",
+      "packages/solidaria-components/src/ToggleButton.tsx",
+      "packages/solidaria-components/src/ToggleButtonGroup.tsx",
+      "packages/solidaria-components/test/ToggleButton.test.tsx",
+      "packages/solidaria-components/test/ToggleButtonGroup.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ToggleButton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ToggleButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ToggleButton.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ToggleButton.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ToggleButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ToggleButton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ToggleButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ToggleButton.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ToggleButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ToggleButton.ts"
+    ],
+    "rac": [
+      "Button",
+      "ToggleButton",
+      "ToggleButtonGroup"
+    ],
+    "ra": [
+      "useButton",
+      "useToggleButton",
+      "useToggleButtonGroup"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "button-family-validation-notes.md",
+      "button-validation-notes.md",
+      "togglebutton-validation-notes.md",
+      "togglebuttongroup-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "ToggleButtonGroup",
+    "slug": "togglebuttongroup",
+    "local": [
+      "packages/solid-spectrum/src/togglebuttongroup/index.tsx",
+      "packages/solid-spectrum/test/ToggleButtonGroup.test.tsx",
+      "packages/solidaria-components/src/ToggleButtonGroup.tsx",
+      "packages/solidaria-components/test/ToggleButtonGroup.test.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/ToggleButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/ToggleButtonGroup.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/ToggleButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/ToggleButtonGroup.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/ToggleButtonGroup.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/ToggleButtonGroup.tsx"
+    ],
+    "rac": [
+      "Button",
+      "Group",
+      "ToggleButton",
+      "ToggleButtonGroup"
+    ],
+    "ra": [
+      "useButton",
+      "useToggleButton",
+      "useToggleButtonGroup"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "button-family-validation-notes.md",
+      "button-validation-notes.md",
+      "togglebutton-validation-notes.md",
+      "togglebuttongroup-validation-notes.md"
+    ],
+    "tests": []
+  },
+  {
+    "title": "Tooltip",
+    "slug": "tooltip",
+    "local": [
+      "packages/solid-spectrum/src/tooltip/index.tsx",
+      "packages/solid-spectrum/test/Tooltip.test.tsx",
+      "packages/solid-stately/src/tooltip/createTooltipTriggerState.d.ts",
+      "packages/solid-stately/src/tooltip/createTooltipTriggerState.ts",
+      "packages/solid-stately/src/tooltip/index.d.ts",
+      "packages/solid-stately/src/tooltip/index.ts",
+      "packages/solidaria/src/tooltip/createTooltip.ts",
+      "packages/solidaria/src/tooltip/createTooltipTrigger.ts",
+      "packages/solidaria/src/tooltip/index.ts",
+      "packages/solidaria-components/src/Tooltip.tsx"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/Tooltip.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Tooltip.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/Tooltip.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/Tooltip.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/Tooltip.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/Tooltip.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/Tooltip.tsx"
+    ],
+    "rac": [
+      "Tooltip"
+    ],
+    "ra": [
+      "useTooltipTrigger"
+    ],
+    "rs": [
+      "useTooltipTriggerState"
+    ],
+    "page": true,
+    "note": [
+      "tooltip-validation-notes.md"
+    ],
+    "tests": [
+      "tooltip-visual.spec.ts"
+    ]
+  },
+  {
+    "title": "TreeView",
+    "slug": "treeview",
+    "local": [
+      "packages/solid-spectrum/src/TreeView.ts"
+    ],
+    "up": [
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/exports/TreeView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TreeView.css",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/private/TreeView.mjs",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/exports/TreeView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/dist/types/src/TreeView.d.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/exports/TreeView.ts",
+      "node_modules/.pnpm/@react-spectrum+s2@1.3.0_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2/src/TreeView.tsx"
+    ],
+    "rac": [
+      "Tree"
+    ],
+    "ra": [
+      "useTree"
+    ],
+    "rs": [],
+    "page": true,
+    "note": [
+      "treeview-validation-notes.md"
+    ],
+    "tests": [
+      "treeview-visual.spec.ts"
+    ]
+  }
+]

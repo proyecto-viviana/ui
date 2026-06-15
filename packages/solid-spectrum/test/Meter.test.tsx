@@ -1,10 +1,12 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { Meter, MeterContext } from "../src/meter";
 import { Skeleton } from "../src/skeleton";
+
+afterEach(() => cleanup());
 
 describe("Meter (solid-spectrum)", () => {
   it("renders with meter role, value attributes, and S2 classes", () => {
@@ -28,6 +30,18 @@ describe("Meter (solid-spectrum)", () => {
 
     expect(container.querySelector('[style*="width: 100%"]')).toBeInTheDocument();
     expect(container.querySelector('[style*="width: 0%"]')).toBeInTheDocument();
+  });
+
+  it("handles equal min and max without NaN fill width", () => {
+    const { container } = render(() => (
+      <Meter value={10} minValue={10} maxValue={10} aria-label="Equal range" />
+    ));
+    const meter = screen.getByRole("meter", { name: "Equal range" });
+
+    expect(meter).toHaveAttribute("aria-valuetext");
+    expect(meter.getAttribute("aria-valuetext")).not.toContain("NaN");
+    expect(container.querySelector('[style*="width: 0%"]')).toBeInTheDocument();
+    expect(container.innerHTML).not.toContain("NaN");
   });
 
   it("uses formatOptions for generated value text", () => {

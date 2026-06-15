@@ -1,11 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@solidjs/testing-library";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { Breadcrumb, BreadcrumbItem, Breadcrumbs, BreadcrumbsContext } from "../src/breadcrumbs";
 import * as BreadcrumbsSubpath from "../src/Breadcrumbs";
+
+afterEach(() => cleanup());
 
 interface CrumbItem {
   id: string;
@@ -46,7 +48,9 @@ describe("Breadcrumbs (solid-spectrum)", () => {
 
     expect(screen.getByRole("navigation", { name: "Static breadcrumbs" })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
-    expect(screen.getByText("Breadcrumbs")).toHaveAttribute("aria-current", "page");
+    const current = screen.getByText("Breadcrumbs");
+    expect(current).toHaveAttribute("aria-current", "page");
+    expect(current.tagName).toBe("DIV");
     expect(screen.getAllByRole("link")).toHaveLength(2);
   });
 

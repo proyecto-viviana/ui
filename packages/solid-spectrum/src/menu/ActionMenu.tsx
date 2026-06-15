@@ -31,7 +31,7 @@ import type { StyleString } from "../style";
 import { fontRelative, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { s2IntlStrings } from "../intl";
-import { HeaderContext, HeadingContext, Text, TextContext } from "../text";
+import { HeaderContext, HeadingContext, Keyboard, Text, TextContext } from "../text";
 import { useTheme } from "../provider";
 import { pressScale } from "../pressScale";
 import {
@@ -121,8 +121,13 @@ export interface ActionMenuProps<T> extends Omit<
 export const ActionMenuContext = createContext<SpectrumContextValue<ActionMenuProps<any>>>(null);
 
 function fallbackItemLabel(item: unknown): string {
-  const menuItem = item as { id?: string | number; label?: string; textValue?: string };
-  return menuItem.label ?? menuItem.textValue ?? String(menuItem.id ?? "");
+  const menuItem = item as { id?: string | number; label?: string; name?: string; textValue?: string };
+  return menuItem.label ?? menuItem.name ?? menuItem.textValue ?? String(menuItem.id ?? "");
+}
+
+function fallbackItemTextValue(item: unknown): string {
+  const menuItem = item as { textValue?: string };
+  return menuItem.textValue ?? fallbackItemLabel(item);
 }
 
 function actionMenuPlacement(
@@ -297,24 +302,68 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
       return local.children(item);
     }
 
+    const itemData = item as {
+      id?: Key;
+      key?: Key;
+      label?: string;
+      name?: string;
+      textValue?: string;
+      description?: JSX.Element;
+      shortcut?: JSX.Element;
+      keyboardShortcut?: JSX.Element;
+      icon?: JSX.Element | (() => JSX.Element);
+      isDisabled?: boolean;
+      href?: string;
+      target?: string;
+      rel?: string;
+      download?: boolean | string;
+    };
     const label = fallbackItemLabel(item);
-    const itemKey = (item as { id?: Key }).id ?? label;
+    const textValue = fallbackItemTextValue(item);
+    const itemKey =
+      typeof menuProps.getKey === "function"
+        ? menuProps.getKey(item)
+        : (itemData.id ?? itemData.key ?? label);
+    const description = () => itemData.description;
+    const shortcut = () => itemData.shortcut ?? itemData.keyboardShortcut;
+    const icon = () => (typeof itemData.icon === "function" ? itemData.icon() : itemData.icon);
     const itemStyleProps = (renderProps: MenuItemRenderProps): S2MenuItemStyleProps => ({
       ...renderProps,
       isFocused: (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused,
       size: menuSize(),
-      isLink: false,
+      isLink: Boolean(itemData.href),
     });
 
     return (
       <HeadlessMenuItem
         id={itemKey}
-        textValue={label}
+        textValue={textValue}
+        isDisabled={itemData.isDisabled}
+        href={itemData.href}
+        target={itemData.target}
+        rel={itemData.rel}
+        download={itemData.download}
         class={(renderProps: MenuItemRenderProps) => s2MenuItem(itemStyleProps(renderProps))}
       >
+        {(() => {
+          const renderedIcon = icon();
+          return renderedIcon ? <span slot="icon">{renderedIcon}</span> : null;
+        })()}
         <Text slot="label" styles={() => menuItemLabel({ size: menuSize() })} data-rsp-slot="text">
           {label}
         </Text>
+        {description() ? (
+          <Text
+            slot="description"
+            styles={() =>
+              menuItemDescription({ size: menuSize(), isFocused: false, isDisabled: itemData.isDisabled })
+            }
+            data-rsp-slot="text"
+          >
+            {description()}
+          </Text>
+        ) : null}
+        {shortcut() ? <Keyboard>{shortcut()}</Keyboard> : null}
       </HeadlessMenuItem>
     );
   };

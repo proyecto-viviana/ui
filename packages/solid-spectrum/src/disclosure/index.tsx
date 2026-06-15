@@ -728,7 +728,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
     "slot",
     "ref",
   ] as const);
-  const [, headlessProps] = splitProps(forwardedProps, ["role"] as const);
+  const headlessProps = forwardedProps;
   const context = getDisclosureContext();
   const size = () => normalizeSize(context.size);
   const getClassName = (_renderProps: DisclosureRenderProps): string =>
