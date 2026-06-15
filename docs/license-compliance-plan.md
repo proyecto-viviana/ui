@@ -45,10 +45,11 @@ own code is misattribution, the opposite failure.
 - **B · Hand-ported source — ~500 files** (the stately/aria/components
   hooks+state, the ~180 non-icon `solid-spectrum` components & style macro).
   **Per-file Adobe header, exact upstream year** (decided approach).
-- **C · Genuinely original — ~50 files** (`solid-spectrum/src/custom/`,
-  the `viviana-ui` re-export layer, barrels, Solid-only glue). **No Adobe
-  header** — our work, MIT. (`src/custom/` legitimacy is itself under review —
-  see Open questions.)
+- **C · Genuinely original — ~50 files** (the bespoke product components now in
+  `viviana-ui/src/custom/`, the `viviana-ui` re-export layer, barrels, Solid-only
+  glue). **No Adobe header** — our work, MIT. (These 12 components were relocated
+  out of `solid-spectrum/src/custom/` into `viviana-ui` — see Open question 3 —
+  so `solid-spectrum` is again a pure S2 port.)
 
 ### Mappability for the exact-year approach (bucket B)
 
@@ -92,10 +93,16 @@ from…` markers that already name the upstream module.
    files (Adobe workflow icons have occasionally carried their own terms).
 2. **Fallback year values** — confirm aria/stately ≈ 2020, s2/icons ≈ 2024 for
    the unmappable minority.
-3. **`solid-spectrum/src/custom/`** — what is it, should it exist at all, and is
-   any of it actually derivative? Resolve before finalizing bucket C.
-4. **Barrels / `custom/`** — leave header-less, or add a short MIT /
-   Proyecto-Viviana header for clarity?
+3. **`solid-spectrum/src/custom/`** — _Resolved._ It was 12 bespoke product
+   components (cards / feed / app-shell), not S2 primitives — legacy from the
+   pre-rename "styled" era. Relocated to `viviana-ui/src/custom/` with their
+   subpath exports moved to `@proyecto-viviana/ui/*`; `solid-spectrum` is now a
+   pure S2 port. None is derivative of Adobe S2, so all stay bucket C (MIT).
+   Caveat: their CSS hooks (`vui-*`, `bg-*`/`text-*`) live in `apps/web`, so the
+   components are largely unstyled on their own — a separate cleanup, not a
+   licensing concern.
+4. **Barrels / `viviana-ui/src/custom/`** — leave header-less, or add a short
+   MIT / Proyecto-Viviana header for clarity?
 
 ## References
 

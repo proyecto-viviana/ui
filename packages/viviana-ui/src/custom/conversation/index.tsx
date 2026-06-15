@@ -1,5 +1,5 @@
 import { Show, For } from "solid-js";
-import { Avatar } from "../../avatar";
+import { Avatar } from "@proyecto-viviana/solid-spectrum";
 import { Button as HeadlessButton } from "@proyecto-viviana/solidaria-components";
 
 export interface Message {

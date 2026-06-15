@@ -1,9 +1,11 @@
 import { defineConfig } from "tsdown";
 
-// viviana-ui is a thin re-export of solid-spectrum. Externalize solid-spectrum so
-// the `solid` condition propagates down to its JSX-preserved entry (the consumer
-// compiles that per-environment). Build `./style` as JS too: @parcel/macros cannot
-// strip TypeScript from macro entrypoints once they live under node_modules.
+// viviana-ui re-exports solid-spectrum and adds its own product components (the
+// relocated cards / feed / shell pieces). Externalize solid-spectrum so its
+// `solid` condition propagates down to its JSX-preserved entry; for our own
+// components we preserve JSX here too (jsx: "preserve" below) so the consumer
+// compiles them per-environment (DOM vs SSR). Build `./style` as JS too:
+// @parcel/macros cannot strip TypeScript from macro entrypoints under node_modules.
 export default defineConfig({
   entry: [
     "src/index.ts",
@@ -21,6 +23,16 @@ export default defineConfig({
     "src/Switch.ts",
     "src/TextArea.ts",
     "src/TextField.ts",
+    // Relocated viviana product components (Solid .tsx — JSX preserved below).
+    "src/CalendarCard.ts",
+    "src/Chip.ts",
+    "src/Conversation.ts",
+    "src/EventCard.ts",
+    "src/Logo.ts",
+    "src/PageLayout.ts",
+    "src/ProfileCard.ts",
+    "src/ProjectCard.ts",
+    "src/TimelineItem.ts",
   ],
   format: ["esm"],
   platform: "neutral",
@@ -34,6 +46,7 @@ export default defineConfig({
       "solid-js/web",
       "solid-js/store",
       "@proyecto-viviana/solid-spectrum",
+      "@proyecto-viviana/solidaria-components",
       "@proyecto-viviana/solid-spectrum/style",
       "@proyecto-viviana/solid-spectrum/ActionButton",
       "@proyecto-viviana/solid-spectrum/Button",
@@ -49,6 +62,12 @@ export default defineConfig({
       "@proyecto-viviana/solid-spectrum/TextArea",
       "@proyecto-viviana/solid-spectrum/TextField",
     ],
+  },
+  inputOptions(options) {
+    // Keep JSX in the emitted .js instead of compiling it to a runtime; the Solid
+    // consumer compiles it per-environment, matching the re-export philosophy.
+    options.transform = { ...(options.transform ?? {}), jsx: "preserve" };
+    return options;
   },
   outputOptions: { entryFileNames: "[name].js" },
 });

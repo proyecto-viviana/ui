@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 import { Show } from "solid-js";
-import { Avatar } from "../../avatar";
+import { Avatar } from "@proyecto-viviana/solid-spectrum";
 
 export type TimelineEventType = "follow" | "like" | "comment" | "event" | "custom";
 

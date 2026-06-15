@@ -242,65 +242,11 @@
       "import": "./dist/style/runtime.js",
       "default": "./dist/style/runtime.js"
     },
-    "./CalendarCard": {
-      "types": "./dist/CalendarCard.d.ts",
-      "solid": "./dist/CalendarCard.jsx",
-      "import": "./dist/CalendarCard.js",
-      "default": "./dist/CalendarCard.js"
-    },
-    "./Chip": {
-      "types": "./dist/Chip.d.ts",
-      "solid": "./dist/Chip.jsx",
-      "import": "./dist/Chip.js",
-      "default": "./dist/Chip.js"
-    },
-    "./Conversation": {
-      "types": "./dist/Conversation.d.ts",
-      "solid": "./dist/Conversation.jsx",
-      "import": "./dist/Conversation.js",
-      "default": "./dist/Conversation.js"
-    },
-    "./EventCard": {
-      "types": "./dist/EventCard.d.ts",
-      "solid": "./dist/EventCard.jsx",
-      "import": "./dist/EventCard.js",
-      "default": "./dist/EventCard.js"
-    },
     "./GitHubIcon": {
       "types": "./dist/GitHubIcon.d.ts",
       "solid": "./dist/GitHubIcon.jsx",
       "import": "./dist/GitHubIcon.js",
       "default": "./dist/GitHubIcon.js"
-    },
-    "./Logo": {
-      "types": "./dist/Logo.d.ts",
-      "solid": "./dist/Logo.jsx",
-      "import": "./dist/Logo.js",
-      "default": "./dist/Logo.js"
-    },
-    "./PageLayout": {
-      "types": "./dist/PageLayout.d.ts",
-      "solid": "./dist/PageLayout.jsx",
-      "import": "./dist/PageLayout.js",
-      "default": "./dist/PageLayout.js"
-    },
-    "./ProfileCard": {
-      "types": "./dist/ProfileCard.d.ts",
-      "solid": "./dist/ProfileCard.jsx",
-      "import": "./dist/ProfileCard.js",
-      "default": "./dist/ProfileCard.js"
-    },
-    "./ProjectCard": {
-      "types": "./dist/ProjectCard.d.ts",
-      "solid": "./dist/ProjectCard.jsx",
-      "import": "./dist/ProjectCard.js",
-      "default": "./dist/ProjectCard.js"
-    },
-    "./TimelineItem": {
-      "types": "./dist/TimelineItem.d.ts",
-      "solid": "./dist/TimelineItem.jsx",
-      "import": "./dist/TimelineItem.js",
-      "default": "./dist/TimelineItem.js"
     }
   },
   "publishConfig": {

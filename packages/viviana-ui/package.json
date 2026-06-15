@@ -101,6 +101,60 @@
       "import": "./dist/TextField.js",
       "default": "./dist/TextField.js"
     },
+    "./CalendarCard": {
+      "types": "./dist/CalendarCard.d.ts",
+      "solid": "./dist/CalendarCard.js",
+      "import": "./dist/CalendarCard.js",
+      "default": "./dist/CalendarCard.js"
+    },
+    "./Chip": {
+      "types": "./dist/Chip.d.ts",
+      "solid": "./dist/Chip.js",
+      "import": "./dist/Chip.js",
+      "default": "./dist/Chip.js"
+    },
+    "./Conversation": {
+      "types": "./dist/Conversation.d.ts",
+      "solid": "./dist/Conversation.js",
+      "import": "./dist/Conversation.js",
+      "default": "./dist/Conversation.js"
+    },
+    "./EventCard": {
+      "types": "./dist/EventCard.d.ts",
+      "solid": "./dist/EventCard.js",
+      "import": "./dist/EventCard.js",
+      "default": "./dist/EventCard.js"
+    },
+    "./Logo": {
+      "types": "./dist/Logo.d.ts",
+      "solid": "./dist/Logo.js",
+      "import": "./dist/Logo.js",
+      "default": "./dist/Logo.js"
+    },
+    "./PageLayout": {
+      "types": "./dist/PageLayout.d.ts",
+      "solid": "./dist/PageLayout.js",
+      "import": "./dist/PageLayout.js",
+      "default": "./dist/PageLayout.js"
+    },
+    "./ProfileCard": {
+      "types": "./dist/ProfileCard.d.ts",
+      "solid": "./dist/ProfileCard.js",
+      "import": "./dist/ProfileCard.js",
+      "default": "./dist/ProfileCard.js"
+    },
+    "./ProjectCard": {
+      "types": "./dist/ProjectCard.d.ts",
+      "solid": "./dist/ProjectCard.js",
+      "import": "./dist/ProjectCard.js",
+      "default": "./dist/ProjectCard.js"
+    },
+    "./TimelineItem": {
+      "types": "./dist/TimelineItem.d.ts",
+      "solid": "./dist/TimelineItem.js",
+      "import": "./dist/TimelineItem.js",
+      "default": "./dist/TimelineItem.js"
+    },
     "./theme.css": {
       "import": "./dist/theme.css",
       "default": "./src/theme.css"
@@ -131,9 +185,11 @@
     "build": "tsdown && cp src/styles.css src/components.css src/font-faces.css src/theme.css dist/"
   },
   "dependencies": {
-    "@proyecto-viviana/solid-spectrum": "workspace:*"
+    "@proyecto-viviana/solid-spectrum": "workspace:*",
+    "@proyecto-viviana/solidaria-components": "workspace:*"
   },
   "devDependencies": {
+    "@proyecto-viviana/solid-spectrum-test-utils": "workspace:*",
     "solid-js": "^1.9.0"
   },
   "peerDependencies": {

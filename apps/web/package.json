@@ -14,6 +14,7 @@
     "@proyecto-viviana/solid-stately": "workspace:*",
     "@proyecto-viviana/solidaria": "workspace:*",
     "@proyecto-viviana/solidaria-components": "workspace:*",
+    "@proyecto-viviana/ui": "workspace:*",
     "@tanstack/router-core": "1.171.13",
     "@tanstack/solid-router": "1.170.15",
     "@tanstack/solid-start": "1.168.25",
