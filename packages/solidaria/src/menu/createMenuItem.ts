@@ -3,12 +3,14 @@
  * Based on @react-aria/menu useMenuItem.
  */
 
-import { type JSX, type Accessor } from "solid-js";
+import { createEffect, type JSX, type Accessor } from "solid-js";
 import { createPress } from "../interactions/createPress";
 import { createHover } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
+import { focusSafely } from "../utils/focus";
+import { getOwnerDocument } from "../utils/dom";
 import { getMenuData } from "./createMenu";
 import type { MenuState, Key, SelectionMode } from "@proyecto-viviana/solid-stately";
 
@@ -62,7 +64,7 @@ export interface MenuItemAria {
 export function createMenuItem<T>(
   props: MaybeAccessor<AriaMenuItemProps>,
   state: MenuState<T>,
-  _ref?: () => HTMLElement | null,
+  ref?: () => HTMLElement | null,
 ): MenuItemAria {
   const getProps = () => access(props);
 
@@ -79,6 +81,25 @@ export function createMenuItem<T>(
   const isFocused: Accessor<boolean> = () => {
     return state.focusedKey() === getProps().key;
   };
+
+  // Move real DOM focus onto the associated node when this item becomes the
+  // collection's focused key. The tabIndex 0/-1 swap below is only the
+  // declarative half of roving tabindex; without imperatively focusing the
+  // element here, keyboard navigation updates state but never moves the actual
+  // focus or the assistive-technology cursor. Mirrors @react-aria/selection's
+  // useSelectableItem, which focuses the item element when `key === manager.focusedKey`.
+  createEffect(() => {
+    if (!isFocused() || !state.isFocused()) return;
+
+    const element = ref?.();
+    if (!element) return;
+
+    // Avoid redundantly re-focusing an element that already has focus.
+    const ownerDocument = getOwnerDocument(element);
+    if (ownerDocument.activeElement !== element) {
+      focusSafely(element);
+    }
+  });
 
   const isSelected: Accessor<boolean> = () => {
     return selectionMode() !== "none" && state.isSelected(getProps().key);

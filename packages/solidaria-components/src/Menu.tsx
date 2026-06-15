@@ -1281,7 +1281,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const staticCollection = useContext(StaticMenuCollectionContext);
   const sectionSelection = useContext(MenuSectionSelectionContext);
   const sectionSelectionRegistry = useContext(MenuSectionSelectionRegistryContext);
-  const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
+  // Tracks the focusable menuitem element (the <li>, or the inner <a> for link
+  // items) so roving focus can be moved onto it imperatively.
+  const [ref, setRef] = createSignal<HTMLElement | null>(null);
   const contextProps = () => itemContext?.props?.() ?? {};
   const combinedOnAction = () => {
     local.onAction?.();
@@ -1382,6 +1384,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       },
     },
     state,
+    () => ref(),
   );
 
   const { isHovered, hoverProps } = createHover({
@@ -1597,6 +1600,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
           local.render(linkMenuItemProps(), renderValues())
         ) : (
           <a
+            // Point the focus ref at the actual focusable menuitem (the <a>),
+            // not the presentation <li> wrapper, so roving focus lands correctly.
+            ref={(el) => setRef(el)}
             {...mergeProps(
               cleanItemPropsForLink(),
               contextProps() as Record<string, unknown>,
