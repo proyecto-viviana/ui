@@ -46,6 +46,17 @@ export default defineConfig({
         __dirname,
         "packages/solidaria-test-utils/src/index.ts",
       ),
+      // More-specific subpath alias first so it wins over the base alias below.
+      // Needed so viviana-ui natives (which re-export the macro seam and Avatar
+      // from solid-spectrum) resolve to src in tests instead of the unbuilt dist.
+      "@proyecto-viviana/solid-spectrum/style": resolve(
+        __dirname,
+        "packages/solid-spectrum/src/style/index.ts",
+      ),
+      "@proyecto-viviana/solid-spectrum": resolve(
+        __dirname,
+        "packages/solid-spectrum/src/index.ts",
+      ),
     },
   },
 });
