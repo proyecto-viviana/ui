@@ -654,7 +654,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
       data-open={state.isOpen() || undefined}
       data-focused={isFocused() || undefined}
       data-focus-visible={isFocusVisible() || undefined}
-      data-pressed={(context.isPressed?.() || buttonAria.isPressed()) || undefined}
+      data-pressed={context.isPressed?.() || buttonAria.isPressed() || undefined}
       data-hovered={isHovered() || undefined}
       data-disabled={local.isDisabled || undefined}
     >
@@ -669,17 +669,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
 export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const [local, stateProps, ariaProps] = splitProps(
     props,
-    [
-      "children",
-      "class",
-      "style",
-      "render",
-      "slot",
-      "renderEmptyState",
-      "shouldCloseOnSelect",
-      "ref",
-      "staticChildren",
-    ],
+    ["children", "class", "style", "render", "slot", "renderEmptyState", "ref", "staticChildren"],
     [
       "items",
       "getKey",
@@ -695,6 +685,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       "allowDuplicateSelectionEvents",
       "onAction",
       "onClose",
+      "shouldCloseOnSelect",
       "dragAndDropHooks",
     ],
   );
@@ -1117,7 +1108,9 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
   const menuItemContextValue = createMemo<MenuItemContextValue>(() =>
-    local.shouldCloseOnSelect !== undefined ? { closeOnSelect: local.shouldCloseOnSelect } : {},
+    stateProps.shouldCloseOnSelect !== undefined
+      ? { closeOnSelect: stateProps.shouldCloseOnSelect }
+      : {},
   );
   const menuListChildren = () => (
     <SharedElementTransition>

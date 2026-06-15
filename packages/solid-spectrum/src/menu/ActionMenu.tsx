@@ -12,12 +12,10 @@ import {
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
   Menu as HeadlessMenu,
-  MenuItem as HeadlessMenuItem,
   Popover as HeadlessPopover,
   MenuTriggerContext,
   type MenuProps as HeadlessMenuProps,
   type MenuTriggerRenderProps,
-  type MenuItemRenderProps,
   type MenuTriggerProps as HeadlessMenuTriggerProps,
   type MenuRenderProps,
   type PopoverRenderProps,
@@ -47,15 +45,14 @@ import type { ActionButtonSize } from "../button/group-context";
 import {
   menu as s2Menu,
   menuFrame,
-  menuItem as s2MenuItem,
   menuItemDescription,
   menuItemLabel,
   menuPopover,
   menuSectionHeader,
   menuSectionHeading,
-  type S2MenuItemStyleProps,
 } from "./s2-menu-styles";
 import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
+import { MenuItem } from "./index";
 
 export type ActionMenuMenuSize = "S" | "M" | "L" | "XL";
 export type ActionMenuAlign = "start" | "end";
@@ -121,7 +118,12 @@ export interface ActionMenuProps<T> extends Omit<
 export const ActionMenuContext = createContext<SpectrumContextValue<ActionMenuProps<any>>>(null);
 
 function fallbackItemLabel(item: unknown): string {
-  const menuItem = item as { id?: string | number; label?: string; name?: string; textValue?: string };
+  const menuItem = item as {
+    id?: string | number;
+    label?: string;
+    name?: string;
+    textValue?: string;
+  };
   return menuItem.label ?? menuItem.name ?? menuItem.textValue ?? String(menuItem.id ?? "");
 }
 
@@ -326,16 +328,15 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         : (itemData.id ?? itemData.key ?? label);
     const description = () => itemData.description;
     const shortcut = () => itemData.shortcut ?? itemData.keyboardShortcut;
-    const icon = () => (typeof itemData.icon === "function" ? itemData.icon() : itemData.icon);
-    const itemStyleProps = (renderProps: MenuItemRenderProps): S2MenuItemStyleProps => ({
-      ...renderProps,
-      isFocused: (renderProps.hasSubmenu && renderProps.isOpen) || renderProps.isFocused,
-      size: menuSize(),
-      isLink: Boolean(itemData.href),
-    });
+    const iconRenderer =
+      typeof itemData.icon === "function"
+        ? (itemData.icon as () => JSX.Element)
+        : itemData.icon != null
+          ? () => itemData.icon as JSX.Element
+          : undefined;
 
     return (
-      <HeadlessMenuItem
+      <MenuItem
         id={itemKey}
         textValue={textValue}
         isDisabled={itemData.isDisabled}
@@ -343,28 +344,16 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         target={itemData.target}
         rel={itemData.rel}
         download={itemData.download}
-        class={(renderProps: MenuItemRenderProps) => s2MenuItem(itemStyleProps(renderProps))}
+        icon={iconRenderer}
       >
-        {(() => {
-          const renderedIcon = icon();
-          return renderedIcon ? <span slot="icon">{renderedIcon}</span> : null;
-        })()}
-        <Text slot="label" styles={() => menuItemLabel({ size: menuSize() })} data-rsp-slot="text">
-          {label}
-        </Text>
-        {description() ? (
-          <Text
-            slot="description"
-            styles={() =>
-              menuItemDescription({ size: menuSize(), isFocused: false, isDisabled: itemData.isDisabled })
-            }
-            data-rsp-slot="text"
-          >
-            {description()}
-          </Text>
-        ) : null}
-        {shortcut() ? <Keyboard>{shortcut()}</Keyboard> : null}
-      </HeadlessMenuItem>
+        {() => (
+          <>
+            <Text slot="label">{label}</Text>
+            {description() ? <Text slot="description">{description()}</Text> : null}
+            {shortcut() ? <Keyboard>{shortcut()}</Keyboard> : null}
+          </>
+        )}
+      </MenuItem>
     );
   };
 

@@ -20,6 +20,7 @@ import {
 import { Header, Heading, Menu, MenuItem, MenuSection, SubmenuTrigger } from "../src/menu";
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
+import MoreIcon from "../src/icon/s2wf-icons/MoreIcon";
 
 afterEach(() => cleanup());
 
@@ -79,7 +80,7 @@ describe("ActionMenu (solid-spectrum)", () => {
         label: "Open",
         description: "Open in workspace",
         shortcut: "⌘O",
-        icon: () => <svg aria-hidden="true" data-testid="open-icon" />,
+        icon: () => <MoreIcon data-testid="open-icon" />,
       },
       {
         id: "disabled",
@@ -103,11 +104,15 @@ describe("ActionMenu (solid-spectrum)", () => {
     const menu = screen.getByRole("menu");
     const openItem = within(menu).getByRole("menuitem", { name: "Open" });
     expect(openItem).toContainElement(screen.getByTestId("open-icon"));
+    expect(screen.getByTestId("open-icon")).toHaveAttribute("data-slot", "icon");
+    expect(screen.getByTestId("open-icon").parentElement).toHaveAttribute("slot", "icon");
     expect(within(openItem).getByText("Open in workspace")).toHaveAttribute(
       "data-rsp-slot",
       "text",
     );
-    expect(within(openItem).getByText("⌘O")).toBeInTheDocument();
+    const shortcut = within(openItem).getByText("⌘O");
+    expect(shortcut.tagName).toBe("KBD");
+    expect(shortcut.className).toContain("-macro-dynamic");
 
     const disabledItem = within(menu).getByRole("menuitem", { name: "Disabled action" });
     expect(disabledItem).toHaveAttribute("aria-disabled", "true");
@@ -121,6 +126,7 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(linkItem).toHaveAttribute("href", "https://example.com/docs");
     expect(linkItem).toHaveAttribute("target", "_blank");
     expect(linkItem).toHaveAttribute("rel", "noopener noreferrer");
+    expect(linkItem.querySelector('[slot="descriptor"]')).toBeInTheDocument();
 
     await user.click(openItem);
     expect(onAction).toHaveBeenCalledWith("open");
