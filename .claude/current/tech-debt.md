@@ -36,10 +36,21 @@ tasks:
     title: Replace the tautological live-region and private-component tests
     state: open
     roadmap: certification-enforcement
+  - id: research-frontmatter-baseline
+    title: Add baseline kind/status frontmatter to the overnight-parity-audit research tree
+    state: open
+    roadmap: certification-enforcement
   - id: ci-gates-required
     title: Flip the gate ladder from report-only to required
     state: open
-    depends: [ci-gates-report-only, ts-nocheck-style, ts-nocheck-components, lint-rules-reenable]
+    depends:
+      [
+        ci-gates-report-only,
+        ts-nocheck-style,
+        ts-nocheck-components,
+        lint-rules-reenable,
+        research-frontmatter-baseline,
+      ]
     roadmap: certification-enforcement
   - id: contract-spec-burndown
     title: Keyboard/focus/announcement contract specs for the 59 visual-only components
@@ -144,6 +155,17 @@ toward enforcement.
 **Exit:** a required CI job runs the full gate ladder (typecheck + `vp run check` +
 `comparison:test:contract`/`pair` + ungated axe + `guard:*` + `docs:check`) on
 every PR, so "green" means the documented bar passed.
+
+## docs:check is red — the research tree lacks frontmatter
+
+`vp run docs:check` reports `85` `missing baseline frontmatter` errors, all from
+`.claude/current/research/overnight-parity-audit-2026-06-15/` (`86` tracked files
+with no `kind`/`status`). The validator sweeps all of `.claude/current/`, so this
+keeps the `docs:check` gate red independent of the tracking graph, which in turn
+blocks `ci-gates-required`.
+
+**Exit:** every file in that tree carries baseline `kind`/`status` frontmatter (or
+the tree is relocated out of `.claude/current/`); `docs:check` is green.
 
 ## Shared headless spine is re-implemented per widget
 
