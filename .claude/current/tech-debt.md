@@ -74,3 +74,15 @@ support-export parity is not.
 
 **Exit:** `comparison:report:exports` shows no missing S2 support exports, with
 any Solid-only exports documented as local additions.
+
+## License attribution incomplete (per-file headers)
+
+The packages are SolidJS ports (derivative works) of Adobe's Apache-2.0 React
+Spectrum stack, but only `12` of `989` source files retain the required per-file
+copyright/license notice (Apache-2.0 §4(d)). Repo-level attribution is in place
+(`LICENSE-APACHE-2.0`, `NOTICE`, `CREDITS.md`); the per-file pass is mapped in
+[`docs/license-compliance-plan.md`](../../docs/license-compliance-plan.md).
+
+**Exit:** every derivative source file retains its upstream Adobe header plus a
+React→Solid change note (generated icons via the generator); genuinely original
+files stay MIT without an Adobe notice.
