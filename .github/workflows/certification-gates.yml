@@ -1,0 +1,167 @@
+name: Certification Gates (report-only)
+
+# Non-blocking projection of the full certification gate ladder
+# (.claude/current/certification.md). These gates exist in package.json but no
+# other workflow invokes them, so drift they would catch can merge green. This
+# job runs each on every PR and posts a status table WITHOUT failing the build,
+# making the real state visible before the ladder is made required
+# (see the `ci-gates-required` task in .claude/current/tech-debt.md).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: certification-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certification-gates:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
+
+      # Keystone gate: passes today only because 35 solid-spectrum files carry
+      # @ts-nocheck (tsc skips them). It begins surfacing real breakage as the
+      # ts-nocheck-style / ts-nocheck-components tasks land.
+      - name: typecheck
+        id: typecheck
+        continue-on-error: true
+        run: pnpm run typecheck
+
+      - name: lint (vp check)
+        id: lint
+        continue-on-error: true
+        run: pnpm exec vp check
+
+      - name: guard rac-parity
+        id: guard_rac_parity
+        continue-on-error: true
+        run: pnpm run guard:rac-parity
+
+      - name: guard rac-export-gap
+        id: guard_rac_export_gap
+        continue-on-error: true
+        run: pnpm run guard:rac-export-gap
+
+      - name: guard dnd-keyboard-parity
+        id: guard_dnd_keyboard
+        continue-on-error: true
+        run: pnpm run guard:dnd-keyboard-parity
+
+      - name: guard virtualizer-keyboard-parity
+        id: guard_virtualizer_keyboard
+        continue-on-error: true
+        run: pnpm run guard:virtualizer-keyboard-parity
+
+      - name: guard docs-routes
+        id: guard_docs_routes
+        continue-on-error: true
+        run: pnpm run guard:docs-routes
+
+      - name: docs:check
+        id: docs_check
+        continue-on-error: true
+        run: pnpm run docs:check
+
+      - name: comparison parity (strict)
+        id: parity_strict
+        continue-on-error: true
+        run: pnpm run comparison:report:parity:strict
+
+      - name: comparison contract suite
+        id: contract
+        continue-on-error: true
+        run: pnpm run comparison:test:contract
+
+      - name: comparison pair-diff suite
+        id: pair
+        continue-on-error: true
+        run: pnpm run comparison:test:pair
+
+      # Ungated axe: the blocking gate excludes color-contrast and the stricter
+      # scans; a11y:full runs them all (non-blocking here).
+      - name: axe (full / ungated)
+        id: axe_full
+        continue-on-error: true
+        run: pnpm run a11y:full
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: certification-gates-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            apps/comparison/playwright-report
+            apps/web/playwright-report
+            test-results
+
+      - name: Publish summary
+        if: always()
+        env:
+          O_TYPECHECK: ${{ steps.typecheck.outcome }}
+          O_LINT: ${{ steps.lint.outcome }}
+          O_GUARD_RAC_PARITY: ${{ steps.guard_rac_parity.outcome }}
+          O_GUARD_RAC_EXPORT_GAP: ${{ steps.guard_rac_export_gap.outcome }}
+          O_GUARD_DND: ${{ steps.guard_dnd_keyboard.outcome }}
+          O_GUARD_VIRTUALIZER: ${{ steps.guard_virtualizer_keyboard.outcome }}
+          O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
+          O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
+          O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
+          O_CONTRACT: ${{ steps.contract.outcome }}
+          O_PAIR: ${{ steps.pair.outcome }}
+          O_AXE_FULL: ${{ steps.axe_full.outcome }}
+        run: |
+          icon() {
+            case "$1" in
+              success) echo "✅ pass" ;;
+              failure) echo "❌ fail" ;;
+              skipped) echo "⏭️ skip" ;;
+              cancelled) echo "🚫 cancelled" ;;
+              *) echo "▫️ $1" ;;
+            esac
+          }
+          {
+            echo "## Certification Gates (report-only)"
+            echo ""
+            echo "**Non-blocking.** Projects the certification gate ladder so each gate's real status is visible on every PR. None of these gates run in any other workflow today; this job exists to make that gap measurable before flipping the ladder to required (\`ci-gates-required\` in \`tech-debt.md\`)."
+            echo ""
+            echo "| Gate | Result |"
+            echo "| --- | --- |"
+            echo "| \`typecheck\` | $(icon "$O_TYPECHECK") |"
+            echo "| \`vp check\` (lint) | $(icon "$O_LINT") |"
+            echo "| \`guard:rac-parity\` | $(icon "$O_GUARD_RAC_PARITY") |"
+            echo "| \`guard:rac-export-gap\` | $(icon "$O_GUARD_RAC_EXPORT_GAP") |"
+            echo "| \`guard:dnd-keyboard-parity\` | $(icon "$O_GUARD_DND") |"
+            echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
+            echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
+            echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
+            echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"
+            echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
+            echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
+            echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") |"
+            echo ""
+            echo "_\`typecheck\` passes today only because 35 \`solid-spectrum\` files carry \`@ts-nocheck\`; it starts surfacing breakage as those are removed._"
+          } >> "$GITHUB_STEP_SUMMARY"

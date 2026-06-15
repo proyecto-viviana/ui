@@ -16,6 +16,108 @@ tasks:
     title: Audit the 22 missing S2 support exports
     state: open
     roadmap: support-export-parity
+  - id: ci-gates-report-only
+    title: Run the full gate ladder in CI as a non-blocking report
+    state: in-progress
+    roadmap: certification-enforcement
+  - id: ts-nocheck-style
+    title: Remove @ts-nocheck from the 6 style/ files and fix surfaced errors
+    state: open
+    roadmap: certification-enforcement
+  - id: ts-nocheck-components
+    title: Remove @ts-nocheck from the ~29 component files (batched)
+    state: open
+    roadmap: certification-enforcement
+  - id: lint-rules-reenable
+    title: Re-enable the 13 disabled lint rules (or justify each inline)
+    state: open
+    roadmap: certification-enforcement
+  - id: replace-tautological-tests
+    title: Replace the tautological live-region and private-component tests
+    state: open
+    roadmap: certification-enforcement
+  - id: ci-gates-required
+    title: Flip the gate ladder from report-only to required
+    state: open
+    depends: [ci-gates-report-only, ts-nocheck-style, ts-nocheck-components, lint-rules-reenable]
+    roadmap: certification-enforcement
+  - id: contract-spec-burndown
+    title: Keyboard/focus/announcement contract specs for the 59 visual-only components
+    state: open
+    depends: [port-selection-manager, port-list-keyboard-delegate, port-context-slots]
+    roadmap: certification-enforcement
+  - id: port-selection-manager
+    title: Port SelectionManager/Selection to the upstream anchor+current model
+    state: open
+    roadmap: headless-spine-port
+  - id: port-list-keyboard-delegate
+    title: Port ListKeyboardDelegate + useSelectableCollection/List/Item (with RTL)
+    state: open
+    roadmap: headless-spine-port
+  - id: port-context-slots
+    title: Make useContextProps/useSlottedContext/composeRenderProps live and slot-capable
+    state: open
+    roadmap: headless-spine-port
+  - id: port-submenu-state
+    title: Add submenu state to createMenuState
+    state: open
+    roadmap: headless-spine-port
+  - id: menu-focus-roving
+    title: Move real focus on focusedKey change in Menu
+    state: open
+    roadmap: headless-spine-port
+  - id: migrate-menu-spine
+    title: Re-route Menu onto the ported manager+delegate; delete per-widget copy
+    state: open
+    depends: [port-selection-manager, port-list-keyboard-delegate]
+    roadmap: headless-spine-port
+  - id: migrate-listbox-spine
+    title: Re-route ListBox onto the ported spine; switch ul/li to div[role]
+    state: open
+    depends: [port-selection-manager, port-list-keyboard-delegate]
+    roadmap: headless-spine-port
+  - id: migrate-combobox-nav
+    title: Fix ComboBox filtered-list nav onto the ported delegate
+    state: open
+    depends: [port-list-keyboard-delegate]
+    roadmap: headless-spine-port
+  - id: migrate-describedby-slots
+    title: Wire aria-describedby across components onto the ported slot path
+    state: open
+    depends: [port-context-slots]
+    roadmap: headless-spine-port
+  - id: macro-route-styled
+    title: Route the 14 hand-authored components through style(); delete local-utilities.css
+    state: open
+    roadmap: consumer-delivery
+  - id: viviana-ui-subpath-exports
+    title: Add the 19 missing solid-spectrum sub-path exports to viviana-ui
+    state: open
+    roadmap: consumer-delivery
+  - id: viviana-ui-button-passthrough
+    title: Add an unstyled Button passthrough in solid-spectrum; re-route the 4 natives
+    state: open
+    roadmap: consumer-delivery
+  - id: dead-natives
+    title: Delete or wire Header/NavHeader/LateralNav
+    state: open
+    roadmap: consumer-delivery
+  - id: picker-api-upstream
+    title: Drop invented Picker props; expose selectedKey/onSelectionChange
+    state: open
+    roadmap: upstream-api-parity
+  - id: treeview-api-upstream
+    title: Drop grafted TreeView CardView props; expose only onAction
+    state: open
+    roadmap: upstream-api-parity
+  - id: calendar-default-alignment
+    title: Fix calendar start-vs-center default and rewrite the bug-asserting test
+    state: open
+    roadmap: upstream-api-parity
+  - id: calendar-i18n-strings
+    title: Route calendar cell/grid/segment strings through createStringFormatter
+    state: open
+    roadmap: upstream-api-parity
 ---
 
 # Tech Debt
@@ -30,10 +132,14 @@ permanent.
 
 The gate ladder (`vp run check`, `guard:*`, `comparison:report:parity:strict`,
 `comparison:test:pair`/`test:contract`, `docs:check`) is defined in `package.json`
-but no CI workflow invokes it, and `vp run typecheck` runs in no workflow either.
-The guards and pair/contract suites only run when invoked by hand, so any drift
-they would catch can merge green. This is the root enabler beneath the type-check,
-axe, and visual-coverage debts below (Rule #1/#7).
+but no CI workflow invokes it, so any drift these guards and the pair/contract
+suites would catch can merge green. `vp run typecheck` _does_ run in CI (via
+`build` in `release-readiness`), but it passes only because 35 `solid-spectrum`
+files carry `@ts-nocheck` and `tsc` skips them — the styled layer is unchecked
+either way. This is the root enabler beneath the type-check, axe, and
+visual-coverage debts below (Rule #1/#7). A non-blocking `certification-gates.yml`
+workflow now projects the full ladder's status on every PR as the first step
+toward enforcement.
 
 **Exit:** a required CI job runs the full gate ladder (typecheck + `vp run check` +
 `comparison:test:contract`/`pair` + ungated axe + `guard:*` + `docs:check`) on

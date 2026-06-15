@@ -83,9 +83,11 @@ The mechanism by which all the above merges green:
   `guard:*`, `comparison:report:parity:strict`, `comparison:test:pair/contract`,
   `docs:check`.
 - **Type checking off in the styled layer:** 35 solid-spectrum files `@ts-nocheck`
-  (0 in all three lower packages — verified); `vp run typecheck` in no workflow;
-  13 lint rules `"off"` at `vite.config.ts:36-48` (incl. `no-floating-promises`,
-  `no-unused-vars`).
+  (0 in all three lower packages — verified). `vp run typecheck` _does_ run in CI
+  (via `build` in `release-readiness`) but passes green because `tsc` skips those
+  35 files — the styled layer is unchecked. 13 lint rules `"off"` at
+  `vite.config.ts:36-48` (incl. `no-floating-promises`, `no-unused-vars`), and
+  `vp check` (lint) runs in no workflow.
 - **Axe floor opt-in:** 5 WCAG scans `test.skip` unless `RUN_AXE=1` (verified);
   `test:e2e` passes with zero axe assertions.
 - **Behavior dimensions unproven:** 59/69 components visual-only e2e (#09); 293/349

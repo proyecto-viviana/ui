@@ -32,6 +32,26 @@ items:
     status: open
     window: null
     docs: [release-policy.md, steering.md]
+  - id: certification-enforcement
+    title: Enforce the certification gate ladder in CI
+    status: in-progress
+    window: null
+    docs: [tech-debt.md, certification.md]
+  - id: headless-spine-port
+    title: Port the shared headless spine
+    status: open
+    window: null
+    docs: [tech-debt.md]
+  - id: consumer-delivery
+    title: Ship correctly to installed consumers
+    status: open
+    window: null
+    docs: [tech-debt.md]
+  - id: upstream-api-parity
+    title: Prune component APIs to the upstream surface
+    status: open
+    window: null
+    docs: [tech-debt.md]
 ---
 
 # Roadmap
@@ -63,3 +83,19 @@ structure; replace them with live initiatives as the work is actually scheduled.
   `.claude/current` tracking model. Tasks in `admin-dashboard.md`.
 - **ui-release-promotion** — promote `@proyecto-viviana/ui` from prerelease to
   stable once certification thresholds hold. See `release-policy.md`.
+
+The next four are the actionable initiatives distilled from the 2026-06-15 harsh
+review (archived under `docs/_review-2026-06-15/`); their tasks live in
+`tech-debt.md`. Slugs are provisional (Rule #3) — owner to confirm names.
+
+- **certification-enforcement** — wire the certification gate ladder into CI:
+  report-only first (`certification-gates.yml`), then required once the styled
+  layer type-checks and the suites are green.
+- **headless-spine-port** — port `SelectionManager`, `ListKeyboardDelegate` /
+  `useSelectable*`, and `useContextProps` + slots to their lowest layer, then
+  migrate the per-widget copies onto them.
+- **consumer-delivery** — make "ships correctly" true on npm: route styled
+  components through the macro, add the missing sub-path exports, fix the boundary
+  skips.
+- **upstream-api-parity** — prune invented component props (Picker, TreeView) and
+  hardcoded i18n strings back to the upstream surface.
