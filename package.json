@@ -70,6 +70,7 @@
     "guard:rac-export-gap": "vp exec tsx scripts/check-rac-export-gap.ts",
     "guard:dnd-keyboard-parity": "vp exec tsx scripts/check-dnd-keyboard-parity.ts",
     "guard:virtualizer-keyboard-parity": "vp exec tsx scripts/check-virtualizer-keyboard-parity.ts",
+    "guard:upstream-test-parity": "vp exec tsx scripts/check-upstream-test-parity.ts",
     "docs:check": "vp exec tsx scripts/check-docs-current.ts",
     "bench:bundle": "vp exec tsx benchmarks/bundle-size/analyze.ts",
     "bench:runtime": "vp test run benchmarks/runtime",

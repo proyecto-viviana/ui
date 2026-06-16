@@ -81,6 +81,7 @@ vp run guard:rac-parity
 vp run guard:rac-export-gap
 vp run guard:dnd-keyboard-parity
 vp run guard:virtualizer-keyboard-parity
+vp run guard:upstream-test-parity   # contract-vocabulary diff vs the pinned upstream test suites
 ```
 
 ## The acceptance gates
@@ -95,6 +96,13 @@ only when every in-scope gate is `complete`; otherwise it is `partial` or
 `not-started`. Each component's validation note
 (`../../apps/comparison/playbook/components/`) carries the gate outcome table and
 the evidence.
+
+`guard:upstream-test-parity` mechanizes a first-pass triage for **Gate 3 (Upstream
+React Source Parity)**: it diffs the ARIA-contract vocabulary our tests assert
+against the pinned upstream React Aria Components + S2 suites and ranks where we
+diverge. It is a discovery aid, not a floor — every flag is reconciled against the
+authoritative source before a test changes (see `upstream-sync.md`, which also
+defines how new upstream releases are absorbed).
 
 ## Refresh
 

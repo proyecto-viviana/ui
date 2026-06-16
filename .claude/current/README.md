@@ -28,9 +28,10 @@ truth for terms with reach.
 7. `status.md`
 8. `work-queue.md`
 9. `tooling.md`
-10. `release-policy.md`
-11. `tech-debt.md`
-12. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
+10. `upstream-sync.md`
+11. `release-policy.md`
+12. `tech-debt.md`
+13. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
 
 ## Files
 
@@ -43,6 +44,7 @@ truth for terms with reach.
 | `status.md`         | Current parity/coverage snapshot, refreshed from scripts (not memory).                                                          |
 | `work-queue.md`     | Current priorities, how to pick work, active workstreams.                                                                       |
 | `tooling.md`        | The `vp` command layer, static gates, hooks, MCP servers, package-build migration.                                              |
+| `upstream-sync.md`  | How the vendored React Spectrum oracle is pinned, how new Adobe releases are absorbed, and the `guard:upstream-test-parity` contract-vocabulary diff. |
 | `release-policy.md` | Releasable packages, Changesets, CI gates, npm publishing.                                                                      |
 | `tech-debt.md`      | Known debt and temporary bridges, each with an exit.                                                                            |
 

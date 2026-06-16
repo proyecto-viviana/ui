@@ -1,0 +1,10 @@
+{
+  "release": "@adobe/react-spectrum@3.47.1",
+  "commit": "791377f0ad2093fb6ad36582e403289f13b0376b",
+  "tags": {
+    "@react-spectrum/s2": "1.4.0",
+    "react-aria-components": "1.18.0"
+  },
+  "pinnedAt": "2026-06-16",
+  "notes": "The gitignored ./react-spectrum oracle is materialized at this upstream release. Bump it via the .claude/current/upstream-sync.md playbook, then re-run `vp run guard:upstream-test-parity` and triage the diff."
+}
