@@ -113,4 +113,23 @@ describe("Disclosure (solid-spectrum)", () => {
     await user.click(action);
     expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
+
+  it("passes a caller-supplied role through to the disclosure panel (upstream parity)", () => {
+    // Upstream react-aria-components DisclosurePanel defaults to role="group" but
+    // accepts a `role` prop so callers can override it (e.g. role="region" for landmark).
+    // Our solid-spectrum DisclosurePanel was stripping `role` with splitProps before passing
+    // it to HeadlessDisclosurePanel, silently preventing the override.  Without the fix,
+    // the panel always renders with role="group" even when role="region" is passed.
+    render(() => (
+      <Disclosure defaultExpanded>
+        <DisclosureTitle>Landmark panel</DisclosureTitle>
+        <DisclosurePanel role="region">Landmark content</DisclosurePanel>
+      </Disclosure>
+    ));
+
+    // Without the fix: getByRole("region") would throw because the panel is role="group"
+    const panel = screen.getByRole("region", { hidden: true });
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveAttribute("data-rsp-slot", "disclosure-panel");
+  });
 });
