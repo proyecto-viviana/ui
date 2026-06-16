@@ -181,19 +181,21 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     intlToCalendar(toCalendarDate(date), calendar());
 
   const selectionAlignmentOffset = (): number => {
+    // Mirrors @react-stately/calendar useCalendarState, where selectionAlignment
+    // defaults to "center" (alignCenter) when not provided.
     switch (props.selectionAlignment) {
+      case "start":
+        return 0;
       case "end":
         return Math.max(visibleMonths - 1, 0);
-      case "center": {
+      case "center":
+      default: {
         let halfDuration = Math.floor(visibleMonths / 2);
         if (halfDuration > 0 && visibleMonths % 2 === 0) {
           halfDuration--;
         }
         return halfDuration;
       }
-      case "start":
-      default:
-        return 0;
     }
   };
 
