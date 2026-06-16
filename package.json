@@ -58,7 +58,7 @@
     "a11y:axe:aa": "RUN_AXE=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/playground-axe.spec.ts -g \"WCAG 2.2 AA\" --reporter=line",
     "a11y:axe:comparison": "vp run comparison:test:a11y",
     "a11y:axe:playground": "RUN_AXE=1 AXE_INCLUDE_CONTRAST=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/playground-axe.spec.ts --reporter=line",
-    "a11y:smoke": "vp exec --filter @proyecto-viviana/web -- playwright test e2e/docs-menu.spec.ts e2e/playground-components.spec.ts e2e/calendar-regression.spec.ts --reporter=line",
+    "a11y:smoke": "vp exec --filter @proyecto-viviana/web -- playwright test e2e/docs-menu.spec.ts e2e/playground-components.spec.ts e2e/calendar-regression.spec.ts e2e/menu-focus.spec.ts --reporter=line",
     "a11y:check": "vp run a11y:axe:aa && vp run a11y:axe:comparison && vp run a11y:smoke",
     "a11y:full": "vp run a11y:axe:playground && AXE_INCLUDE_CONTRAST=1 vp run a11y:axe:comparison && vp run a11y:smoke",
     "a11y:ci": "vp run a11y:check",
