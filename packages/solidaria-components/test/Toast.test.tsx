@@ -392,22 +392,35 @@ describe("Toast", () => {
       }
     });
 
-    it("should monitor live region announcements with createLiveRegionMonitor", () => {
+    it("should announce the toast text in an assertive live region", async () => {
+      // Start observing before the toast mounts so the live region insertion is captured.
       const monitor = createLiveRegionMonitor(document.body);
 
       render(() => (
-        <ToastProvider>
+        <ToastProvider useGlobalQueue>
           <div>App</div>
+          <ToastRegion portal={false}>
+            {(renderProps) => (
+              <For each={renderProps.visibleToasts()}>
+                {(toast) => <DefaultToast toast={toast} />}
+              </For>
+            )}
+          </ToastRegion>
         </ToastProvider>
       ));
 
       addToast({ title: "Monitor test toast" });
 
-      // Monitor captures any mutations in live regions
-      // Even if no announcements are captured (depends on component implementation),
-      // the monitor should work without errors
-      expect(monitor.announcements).toBeDefined();
-      expect(Array.isArray(monitor.announcements)).toBe(true);
+      // The toast message must land in a live region (role="alert" / aria-live)
+      // and be announced. A toast that mounts with an empty / missing live region
+      // produces no announcement, so this rejects (and the test fails).
+      const announcement = await monitor.waitForAnnouncement("Monitor test toast", {
+        timeout: 1000,
+      });
+
+      expect(announcement.text).toContain("Monitor test toast");
+      // createToast wires the content area as assertive (role="alert").
+      expect(announcement.politeness).toBe("assertive");
 
       monitor.stop();
     });

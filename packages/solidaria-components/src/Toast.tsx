@@ -131,6 +131,7 @@ export const ToastContext = createContext<ToastState<ToastContent> | null>(null)
 interface ToastAriaContextValue {
   titleProps: JSX.HTMLAttributes<HTMLElement>;
   descriptionProps: JSX.HTMLAttributes<HTMLElement>;
+  contentProps: JSX.HTMLAttributes<HTMLElement>;
 }
 
 const ToastAriaContext = createContext<ToastAriaContextValue | null>(null);
@@ -478,8 +479,10 @@ export function Toast(props: ToastProps): JSX.Element {
 
   const { ref: _ref, ...cleanToastProps } = toastAria.toastProps as Record<string, unknown>;
 
-  // Ensure ARIA title/description IDs are present on rendered sub-components,
-  // even when children are pre-composed outside the Toast provider owner.
+  // Ensure ARIA title/description IDs and the content live-region attributes are
+  // present on rendered sub-components, even when children are pre-composed outside
+  // the Toast provider owner (as DefaultToast does), where useContext can't reach
+  // this owner's ToastAriaContext.
   createEffect(() => {
     if (!toastRef) return;
 
@@ -487,6 +490,7 @@ export function Toast(props: ToastProps): JSX.Element {
     const descriptionId = (toastAria.descriptionProps as Record<string, unknown>).id as
       | string
       | undefined;
+    const contentProps = toastAria.contentProps as Record<string, unknown>;
 
     if (titleId) {
       const titleEl = toastRef.querySelector("[data-solidaria-toast-title]");
@@ -501,11 +505,27 @@ export function Toast(props: ToastProps): JSX.Element {
         descriptionEl.id = descriptionId;
       }
     }
+
+    // Wire the content area as a live region (role="alert" / aria-live="assertive")
+    // so the toast message is announced to screen readers when it appears.
+    const contentEl = toastRef.querySelector("[data-solidaria-toast-content]");
+    if (contentEl instanceof HTMLElement) {
+      const role = contentProps.role as string | undefined;
+      const ariaLive = contentProps["aria-live"] as string | undefined;
+      const ariaAtomic = contentProps["aria-atomic"] as string | undefined;
+      if (role) contentEl.setAttribute("role", role);
+      if (ariaLive) contentEl.setAttribute("aria-live", ariaLive);
+      if (ariaAtomic) contentEl.setAttribute("aria-atomic", ariaAtomic);
+    }
   });
 
   return (
     <ToastAriaContext.Provider
-      value={{ titleProps: toastAria.titleProps, descriptionProps: toastAria.descriptionProps }}
+      value={{
+        titleProps: toastAria.titleProps,
+        descriptionProps: toastAria.descriptionProps,
+        contentProps: toastAria.contentProps,
+      }}
     >
       <div
         ref={toastRef}
@@ -564,6 +584,39 @@ export function ToastDescription(props: ToastDescriptionProps): JSX.Element {
     <div
       data-solidaria-toast-description=""
       {...ariaDescriptionProps}
+      class={props.class}
+      style={props.style}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+export interface ToastContentProps {
+  children: JSX.Element;
+  class?: string;
+  style?: JSX.CSSProperties;
+}
+
+/**
+ * ToastContent wraps the toast message (title + description) in the live region
+ * announced to screen readers. It carries `role="alert"` / `aria-live="assertive"`
+ * from createToast's contentProps so the toast text is announced when it appears.
+ *
+ * It is rendered as a sibling of the close button (never wrapping it) so screen
+ * readers announce the message without reading the close button first.
+ */
+export function ToastContent(props: ToastContentProps): JSX.Element {
+  const context = useContext(ToastAriaContext);
+  const { ref: _ref, ...ariaContentProps } = (context?.contentProps ?? {}) as Record<
+    string,
+    unknown
+  >;
+
+  return (
+    <div
+      data-solidaria-toast-content=""
+      {...ariaContentProps}
       class={props.class}
       style={props.style}
     >
@@ -633,7 +686,7 @@ export function DefaultToast(props: DefaultToastProps): JSX.Element {
   return (
     <Toast toast={props.toast}>
       <div style={{ display: "flex", "align-items": "flex-start", gap: "12px" }}>
-        <div style={{ flex: 1 }}>
+        <ToastContent style={{ flex: 1 }}>
           <Show when={title()}>
             <ToastTitle style={{ "font-weight": "bold", "margin-bottom": "4px" }}>
               {title()}
@@ -647,7 +700,7 @@ export function DefaultToast(props: DefaultToastProps): JSX.Element {
               {actionLabel()}
             </button>
           </Show>
-        </div>
+        </ToastContent>
         <ToastCloseButton toast={props.toast} />
       </div>
     </Toast>
