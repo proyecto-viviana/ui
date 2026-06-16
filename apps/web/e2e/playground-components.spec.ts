@@ -177,19 +177,21 @@ test.describe("Playground Page", () => {
     await checkNoHydrationErrors(errors);
   });
 
-  test("taggroup section exposes labeled listbox keyboard navigation", async ({ page }) => {
+  test("taggroup section exposes labeled grid keyboard navigation", async ({ page }) => {
     const errors = await setupErrorCapture(page);
     const section = await ensureSectionVisible(page, "taggroup");
 
-    const listbox = section.getByRole("listbox", { name: "Languages" }).first();
-    await expect(listbox).toBeVisible();
+    // RAC TagGroup is a selection grid, not a listbox: the container is
+    // role="grid" and each tag is a role="row" (with a role="gridcell" inside).
+    const grid = section.getByRole("grid", { name: "Languages" }).first();
+    await expect(grid).toBeVisible();
 
-    const options = listbox.locator('[role="option"]');
-    await expect(options.first()).toBeVisible();
-    expect(await options.count()).toBeGreaterThan(1);
+    const tags = grid.locator('[role="row"]');
+    await expect(tags.first()).toBeVisible();
+    expect(await tags.count()).toBeGreaterThan(1);
 
-    const first = options.first();
-    const second = options.nth(1);
+    const first = tags.first();
+    const second = tags.nth(1);
 
     await first.focus();
     await page.keyboard.press("ArrowRight");
@@ -549,13 +551,26 @@ test.describe("Playground Page", () => {
     const section = await ensureSectionVisible(page, "toast");
 
     await section.getByRole("button", { name: "Success Toast" }).first().click();
-    await section.getByRole("button", { name: "Error Toast" }).first().click();
 
     const region = page.getByRole("region", { name: "Notifications" }).first();
     await expect(region).toBeVisible();
+
+    // The first toast shows on its own. Wait for it to render before queuing the
+    // next so both register (one click per animation frame, as a user would).
+    await expect(region.getByRole("alertdialog")).toHaveCount(1);
+    await expect(region).toContainText("Changes saved successfully!");
+
+    // Adding a second toast collapses the stack: S2 keeps only the front (most
+    // recent) toast as a live alertdialog and tucks the rest behind it as
+    // presentational slivers until the front toast's "Show all" control expands
+    // them.
+    await section.getByRole("button", { name: "Error Toast" }).first().click();
+    await expect(region.getByRole("alertdialog")).toHaveCount(1);
+    await expect(region).toContainText("Something went wrong. Please try again.");
+
+    await region.getByRole("button", { name: "Show all" }).click();
     await expect(region.getByRole("alertdialog")).toHaveCount(2);
     await expect(region).toContainText("Changes saved successfully!");
-    await expect(region).toContainText("Something went wrong. Please try again.");
 
     await checkNoHydrationErrors(errors);
   });
@@ -586,7 +601,7 @@ test.describe("Playground Page", () => {
     }
     await expect(toast.locator(`#${describedBy}`)).toHaveCount(1);
 
-    await toast.getByRole("button", { name: "Dismiss" }).click();
+    await toast.getByRole("button", { name: "Close" }).click();
     await expect(page.getByRole("alertdialog").filter({ hasText: "Custom Toast" })).toHaveCount(0);
 
     await checkNoHydrationErrors(errors);

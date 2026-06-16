@@ -69,7 +69,7 @@ import {
   PopoverFooter,
   // Toast
   ToastProvider,
-  ToastRegion,
+  ToastContainer,
   addToast,
   toastSuccess,
   toastError,
@@ -1198,7 +1198,7 @@ function Playground() {
             </Show>
           </div>
         </main>
-        <ToastRegion placement="bottom-end" />
+        <ToastContainer placement="bottom-end" />
       </PageLayout>
     </ToastProvider>
   );

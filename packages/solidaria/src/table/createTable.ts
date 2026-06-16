@@ -63,13 +63,6 @@ function isRow<T>(node: GridNode<T> | null): boolean {
   return node?.type === "item";
 }
 
-function focusCurrentElement(el: HTMLElement | null | undefined) {
-  const target = el?.querySelector<HTMLElement>(
-    '[role="row"][tabindex="0"], [role="rowheader"][tabindex="0"], [role="gridcell"][tabindex="0"], [role="columnheader"][tabindex="0"]',
-  );
-  target?.focus();
-}
-
 /**
  * Creates accessibility props for a table component.
  */
@@ -146,7 +139,6 @@ export function createTable<T extends object>(
     const isRTL = locale().direction === "rtl";
     const setFocusedKey = (key: Key) => {
       s.setFocusedKey(key);
-      queueMicrotask(() => focusCurrentElement(ref()));
     };
     const runTypeahead = (focusedKey: Key, focusedItem: GridNode<T>) => {
       if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) {
@@ -551,6 +543,34 @@ export function createTable<T extends object>(
       s.setFocused(false);
     }
   };
+
+  // Mirror React Aria's useSelectableCollection: once the roving tabindex for
+  // the focused key has been committed to the DOM, move browser focus onto that
+  // element from a post-commit effect — looking it up by its stable data-key
+  // rather than by transient tabindex. Doing this imperatively during the key
+  // handler (in a microtask) raced Solid's reconciliation and dropped focus to
+  // <body>, so Space/Enter never reached the grid's selection handler.
+  createEffect(() => {
+    const s = state();
+    const key = s.focusedKey;
+    const el = ref();
+    if (!el || key == null || !s.isFocused) {
+      return;
+    }
+
+    // Only manage focus while it already lives inside the table (keyboard
+    // navigation). Never pull focus back from elsewhere on the page when the
+    // focused key changes from a background interaction.
+    const active = document.activeElement;
+    if (active && active !== el && !el.contains(active)) {
+      return;
+    }
+
+    const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    if (target && target !== active) {
+      target.focus();
+    }
+  });
 
   // Warn if no label is provided
   createMemo(() => {

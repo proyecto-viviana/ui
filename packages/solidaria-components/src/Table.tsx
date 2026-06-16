@@ -1651,6 +1651,7 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
       ),
       class: renderProps.class(),
       style: renderProps.style(),
+      "data-key": rowKey(),
       "data-selected": isSelected() || undefined,
       "data-focused": isFocused() || undefined,
       "data-focus-visible": (isFocusVisible() && isFocused()) || undefined,
@@ -1801,6 +1802,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
       colSpan: local.colSpan,
       class: renderProps.class(),
       style: renderProps.style(),
+      "data-key": cellNode().key,
       "data-focused": isFocused() || undefined,
       "data-focus-visible": (isFocusVisible() && isFocused()) || undefined,
       "data-column-index": cellColumnIndex(),
@@ -1822,6 +1824,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
       colSpan={local.colSpan}
       class={renderProps.class()}
       style={renderProps.style()}
+      data-key={cellNode().key}
       data-focused={isFocused() || undefined}
       data-focus-visible={(isFocusVisible() && isFocused()) || undefined}
       data-column-index={cellColumnIndex()}
