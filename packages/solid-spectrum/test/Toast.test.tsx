@@ -49,6 +49,24 @@ describe("Toast (solid-spectrum)", () => {
       expect(region).toBeInTheDocument();
     });
 
+    it("hides the stack-expand affordance without a ToastContainer", () => {
+      // A bare ToastRegion has no expand/collapse context, so it must not render
+      // the collapsed-stack "Show all" affordance it cannot honor — mirroring the
+      // upstream split where ToastContainer, not the low-level region, owns
+      // stack expansion.
+      render(() => (
+        <ToastProvider useGlobalQueue>
+          <ToastRegion portal={false} />
+        </ToastProvider>
+      ));
+
+      addToast({ title: "First toast", type: "info" });
+      addToast({ title: "Second toast", type: "info" });
+
+      expect(screen.getByRole("region")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Show all/ })).not.toBeInTheDocument();
+    });
+
     it("ToastContainer self-wires the global queue with S2 default placement", () => {
       render(() => <ToastContainer portal={false} />);
 

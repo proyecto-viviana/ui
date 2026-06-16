@@ -92,6 +92,13 @@ export interface ToastProps extends Omit<HeadlessToastProps, "class" | "style"> 
   isExpanded?: Accessor<boolean>;
   /** Internal stack expansion handler used by ToastContainer. */
   onToggleExpanded?: () => void;
+  /**
+   * Whether a ToastContainer is present to drive stack expansion. When false (a
+   * bare ToastRegion, which has no expand/collapse context), the collapsed-stack
+   * "Show all" affordance is hidden because it cannot be honored — mirroring the
+   * upstream split where ToastContainer, not the low-level region, owns expansion.
+   */
+  canExpand?: boolean;
   /** Internal placement edge used for collapsed background stack positioning. */
   placementEdge?: ToastEdge;
 }
@@ -531,6 +538,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
                       visibleToasts={visibleToasts}
                       isExpanded={isExpanded}
                       onToggleExpanded={() => toggleExpanded(visibleToasts())}
+                      canExpand={Boolean(containerContext)}
                       placementEdge={placement().edge}
                     />
                   )}
@@ -597,6 +605,7 @@ export function Toast(props: ToastProps): JSX.Element {
     "visibleToasts",
     "isExpanded",
     "onToggleExpanded",
+    "canExpand",
     "placementEdge",
   ]);
   const state = useToastContext();
@@ -671,7 +680,7 @@ export function Toast(props: ToastProps): JSX.Element {
                 </Show>
               </div>
             </div>
-            <Show when={!isExpanded() && visibleToasts().length > 1}>
+            <Show when={local.canExpand && !isExpanded() && visibleToasts().length > 1}>
               <ActionButton
                 isQuiet
                 staticColor="white"
