@@ -161,4 +161,29 @@ describe("Breadcrumbs (solid-spectrum)", () => {
 
     expect(onAction).toHaveBeenCalledWith("files");
   });
+
+  it("renders the current (last) breadcrumb as a non-link element (upstream S2 parity)", () => {
+    // Upstream React Spectrum S2 renders the current item as a <div>, not an <a>.
+    // Our Breadcrumb component must pass elementType="div" for the current item so that
+    // the headless BreadcrumbItem (which defaults to <a>) renders as a non-interactive element.
+    // Without the fix, isCurrent() is true but elementType stays "a", so the item would
+    // render as an <a> without href — still an anchor in the accessibility tree.
+    render(() => (
+      <Breadcrumbs aria-label="Current item test">
+        <Breadcrumb href="/">Home</Breadcrumb>
+        <Breadcrumb href="/react-spectrum">React Spectrum</Breadcrumb>
+        <Breadcrumb>Breadcrumbs</Breadcrumb>
+      </Breadcrumbs>
+    ));
+
+    const currentItem = screen.getByText("Breadcrumbs");
+    // S2: current item must not be rendered as a link
+    expect(currentItem.tagName.toLowerCase()).not.toBe("a");
+    // The accessible role for a non-link inline element is generic — no "link" role
+    expect(currentItem).not.toHaveAttribute("href");
+    // It should carry aria-current="page" to mark it as the current page
+    expect(currentItem).toHaveAttribute("aria-current", "page");
+    // Non-current items are links
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+  });
 });
