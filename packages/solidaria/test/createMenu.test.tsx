@@ -92,6 +92,39 @@ describe("createMenu", () => {
     });
   });
 
+  it("does not call onClose for keyboard activation when shouldCloseOnSelect is false", () => {
+    createRoot((dispose) => {
+      const onAction = vi.fn();
+      const onClose = vi.fn();
+      const items = [
+        { key: "copy", label: "Copy" },
+        { key: "paste", label: "Paste" },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+
+      state.setFocusedKey("copy");
+
+      const { menuProps } = createMenu(
+        { onAction, onClose, shouldCloseOnSelect: false, "aria-label": "Actions" },
+        state,
+      );
+
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      onKeyDown({
+        key: "Enter",
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent);
+
+      expect(onAction).toHaveBeenCalledWith("copy");
+      expect(onClose).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
   it("updates selection when Enter is pressed in selection mode", () => {
     createRoot((dispose) => {
       const onSelectionChange = vi.fn();

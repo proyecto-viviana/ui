@@ -726,6 +726,36 @@ describe("Menu", () => {
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
 
+    it("should not close individual menu item on root keyboard activation when closeOnSelect=false", async () => {
+      render(() => (
+        <MenuTrigger>
+          <MenuButton aria-label="Menu">Menu</MenuButton>
+          <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
+            {(item) => (
+              <MenuItem id={item.id} closeOnSelect={item.id === "cat" ? false : undefined}>
+                {item.name}
+              </MenuItem>
+            )}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Menu" }));
+      const menu = screen.getByRole("menu");
+      menu.focus();
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      expect(screen.getByRole("menuitem", { name: "Cat" })).toHaveAttribute("data-focused");
+
+      fireEvent.keyDown(menu, { key: "Enter" });
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      expect(screen.getByRole("menuitem", { name: "Dog" })).toHaveAttribute("data-focused");
+
+      fireEvent.keyDown(menu, { key: "Enter" });
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
+
     it("should allow clicking menu items", async () => {
       render(() => <TestMenu />);
 
@@ -987,14 +1017,99 @@ describe("Menu", () => {
       expect(onAction).not.toHaveBeenCalledWith("archive");
 
       menu.focus();
-      await user.keyboard("{ArrowDown}");
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
       expect(bold).toHaveAttribute("data-focused");
-      await user.keyboard("{ArrowDown}");
-      expect(deleteItem).toHaveAttribute("data-focused");
 
-      await user.click(bold);
+      fireEvent.keyDown(menu, { key: "Enter" });
       expect(onAction).toHaveBeenCalledWith("bold");
       expect(screen.getByRole("menu")).toBeInTheDocument();
+
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      expect(deleteItem).toHaveAttribute("data-focused");
+
+      fireEvent.keyDown(menu, { key: "Enter" });
+      expect(onAction).toHaveBeenCalledWith("delete");
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
+
+    it("keeps section radio items open on root keyboard activation when shouldCloseOnSelect=false", () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Format</MenuButton>
+          <Menu aria-label="Format">
+            <MenuSection selectionMode="single" shouldCloseOnSelect={false}>
+              <MenuItem id="bold" textValue="Bold">
+                Bold
+              </MenuItem>
+              <MenuItem id="italic" textValue="Italic">
+                Italic
+              </MenuItem>
+            </MenuSection>
+            <MenuSection>
+              <MenuItem id="delete" textValue="Delete">
+                Delete
+              </MenuItem>
+            </MenuSection>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const menu = screen.getByRole("menu");
+      menu.focus();
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      const italic = screen.getByRole("menuitemradio", { name: "Italic" });
+      expect(italic).toHaveAttribute("data-focused");
+
+      fireEvent.keyDown(menu, { key: "Enter" });
+      expect(italic).toHaveAttribute("aria-checked", "true");
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveAttribute("data-focused");
+
+      fireEvent.keyDown(menu, { key: "Enter" });
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
+
+    it("keeps section checkbox items open on root keyboard activation when shouldCloseOnSelect=false", () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Format</MenuButton>
+          <Menu aria-label="Format">
+            <MenuSection selectionMode="multiple" shouldCloseOnSelect={false}>
+              <MenuItem id="bold" textValue="Bold">
+                Bold
+              </MenuItem>
+              <MenuItem id="italic" textValue="Italic">
+                Italic
+              </MenuItem>
+            </MenuSection>
+            <MenuSection>
+              <MenuItem id="delete" textValue="Delete">
+                Delete
+              </MenuItem>
+            </MenuSection>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const menu = screen.getByRole("menu");
+      menu.focus();
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      const bold = screen.getByRole("menuitemcheckbox", { name: "Bold" });
+      expect(bold).toHaveAttribute("data-focused");
+
+      fireEvent.keyDown(menu, { key: "Enter" });
+      expect(bold).toHaveAttribute("aria-checked", "true");
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      fireEvent.keyDown(menu, { key: "ArrowDown" });
+      expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveAttribute("data-focused");
+
+      fireEvent.keyDown(menu, { key: "Enter" });
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
   });
 
@@ -1311,6 +1426,18 @@ describe("MenuTrigger", () => {
       expect(button).toHaveClass("solidaria-MenuButton");
     });
 
+    it("keeps mouse press state until document pointerup", () => {
+      render(() => <TestMenuTrigger />);
+
+      const button = screen.getByRole("button");
+      fireEvent.pointerDown(button, { pointerType: "mouse", button: 0 });
+
+      expect(button).toHaveAttribute("data-pressed", "true");
+
+      fireEvent.pointerUp(document, { pointerType: "mouse", button: 0 });
+      expect(button).not.toHaveAttribute("data-pressed");
+    });
+
     it("should not render menu initially", () => {
       render(() => <TestMenuTrigger />);
 
@@ -1355,6 +1482,21 @@ describe("MenuTrigger", () => {
 
       await user.click(screen.getByRole("button"));
       await user.click(screen.getByRole("menuitem", { name: "Cat" }));
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+    });
+
+    it("should not close the menu on keyboard activation when shouldCloseOnSelect is false", async () => {
+      render(() => <TestMenuTrigger menuProps={{ shouldCloseOnSelect: false }} />);
+
+      await user.click(screen.getByRole("button"));
+      screen.getByRole("menuitem", { name: "Cat" }).focus();
+      await user.keyboard("{Enter}");
+
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+
+      screen.getByRole("menuitem", { name: "Dog" }).focus();
+      await user.keyboard(" ");
+
       expect(screen.getByRole("menu")).toBeInTheDocument();
     });
 
