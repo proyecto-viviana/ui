@@ -189,4 +189,19 @@ describe("ContextualHelp (solid-spectrum)", () => {
     expect(trigger).toHaveAttribute("aria-labelledby", "field-label field-help");
     expect(triggerRef).toBe(trigger);
   });
+
+  it("hides the popover arrow tip (upstream S2 parity)", () => {
+    // S2 ContextualHelp uses hideArrow on the popover — it renders as a plain
+    // card without a directional arrow tip.  Without the fix, the Popover renders
+    // its default SVG arrow element (width=18, height=9) inside the overlay.
+    const { baseElement } = render(() => (
+      <ContextualHelp isOpen>
+        <Content>Arrow test content</Content>
+      </ContextualHelp>
+    ));
+
+    // The arrow SVG has a distinguishing viewBox="0 0 18 10" from PopoverArrow.
+    const arrowSvg = baseElement.querySelector('svg[viewBox="0 0 18 10"]');
+    expect(arrowSvg).toBeNull();
+  });
 });
