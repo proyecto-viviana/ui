@@ -79,6 +79,7 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     "aria-modal": "false",
     "aria-labelledby": hasTitle ? titleId : undefined,
     "aria-describedby": hasDescription ? descriptionId : undefined,
+    tabIndex: 0,
     "data-animation": props.toast.animation,
     "data-key": props.toast.key,
   }));
