@@ -178,6 +178,7 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
       {...popoverProps}
       id={popoverId()}
       aria-labelledby={ariaLabelledBy()}
+      hideArrow
       trigger="SubmenuTrigger"
       placement={popoverProps.placement ?? "end top"}
       offset={popoverProps.offset ?? -2}
@@ -314,6 +315,7 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
       <Popover
         {...popoverProps}
         aria-label={triggerLabel()}
+        hideArrow
         placement={popoverProps.placement ?? "bottom start"}
         containerPadding={popoverProps.containerPadding ?? 8}
         offset={8}

@@ -95,6 +95,11 @@ describe("Menu (solid-spectrum)", () => {
       expect(
         within(helpPopover as HTMLElement).getByText("Ask an admin to enable this command."),
       ).toBeInTheDocument();
+
+      // S2 ContextualHelpPopover hides the arrow tip (upstream parity).
+      // Without the fix, the Popover renders its default SVG arrow (viewBox="0 0 18 10").
+      const arrowSvg = document.querySelector('svg[viewBox="0 0 18 10"]');
+      expect(arrowSvg).toBeNull();
     });
 
     it("opens documented ActionButton composition in a top-level Menu popover", async () => {
