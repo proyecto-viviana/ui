@@ -71,6 +71,47 @@ describe("createToast", () => {
       dispose();
     });
   });
+
+  it("toastProps includes tabIndex 0 so the toast container is keyboard-focusable", () => {
+    createRoot((dispose) => {
+      const toast = {
+        key: "toast-4",
+        animation: "entering",
+      } as any;
+
+      const aria = createToast({
+        toast,
+        state: { close: vi.fn() } as any,
+      });
+
+      expect(aria.toastProps.tabIndex).toBe(0);
+      dispose();
+    });
+  });
+
+  it("rendered alertdialog element carries tabindex=0 and can receive DOM focus", () => {
+    render(() =>
+      (() => {
+        const toast = { key: "toast-5", animation: "entering" } as any;
+        const state = { close: vi.fn() } as any;
+        const aria = createToast({ toast, state });
+        return (
+          <div
+            {...aria.toastProps}
+            data-testid="toast-container"
+          >
+            <div {...aria.contentProps}>Toast message</div>
+          </div>
+        );
+      })(),
+    );
+
+    const container = screen.getByTestId("toast-container");
+    expect(container).toHaveAttribute("tabindex", "0");
+
+    container.focus();
+    expect(document.activeElement).toBe(container);
+  });
 });
 
 describe("createToastRegion", () => {
