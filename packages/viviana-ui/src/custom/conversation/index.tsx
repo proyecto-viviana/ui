@@ -124,12 +124,12 @@ export interface ConversationBubbleProps {
   class?: string;
 }
 
-const bubbleRow = style<{ user: boolean }>({
+const bubbleRow = style<{ isUser: boolean }>({
   display: "flex",
-  justifyContent: { default: "start", user: "end" },
+  justifyContent: { default: "start", isUser: "end" },
 });
 
-const bubble = style<{ user: boolean }>({
+const bubble = style<{ isUser: boolean }>({
   display: "flex",
   flexDirection: "column",
   gap: 2,
@@ -139,19 +139,19 @@ const bubble = style<{ user: boolean }>({
   borderRadius: "lg",
   backgroundColor: {
     default: "[var(--color-bg-300)]",
-    user: "[var(--color-accent)]",
+    isUser: "[var(--color-accent)]",
   },
   color: {
     default: "[var(--color-primary-100)]",
-    user: "[var(--color-bg-400)]",
+    isUser: "[var(--color-bg-400)]",
   },
 });
 
-const bubbleTime = style<{ user: boolean }>({
+const bubbleTime = style<{ isUser: boolean }>({
   font: "detail-sm",
   color: {
     default: "[var(--color-text-muted)]",
-    user: "[var(--color-bg-300)]",
+    isUser: "[var(--color-bg-300)]",
   },
 });
 
@@ -159,11 +159,11 @@ export function ConversationBubble(props: ConversationBubbleProps) {
   const isUser = () => props.sender === "user";
 
   return (
-    <div class={`${bubbleRow({ user: isUser() })} ${props.class ?? ""}`}>
-      <div class={bubble({ user: isUser() })}>
+    <div class={`${bubbleRow({ isUser: isUser() })} ${props.class ?? ""}`}>
+      <div class={bubble({ isUser: isUser() })}>
         <p>{props.content}</p>
         <Show when={props.timestamp}>
-          <span class={bubbleTime({ user: isUser() })}>{props.timestamp}</span>
+          <span class={bubbleTime({ isUser: isUser() })}>{props.timestamp}</span>
         </Show>
       </div>
     </div>

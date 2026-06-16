@@ -34,19 +34,19 @@ export interface NavLinkProps {
   class?: string;
 }
 
-const link = style<{ active: boolean }>({
+const link = style<{ isActive: boolean }>({
   font: "ui",
-  textDecoration: { default: "none", active: "underline" },
-  fontWeight: { default: "normal", active: "medium" },
+  textDecoration: { default: "none", isActive: "underline" },
+  fontWeight: { default: "normal", isActive: "medium" },
   color: {
     default: "[var(--color-text-secondary)]",
-    active: "[var(--color-primary-300)]",
+    isActive: "[var(--color-primary-300)]",
   },
 });
 
 export function NavLink(props: NavLinkProps) {
   return (
-    <a href={props.href} class={`${link({ active: props.active ?? false })} ${props.class ?? ""}`}>
+    <a href={props.href} class={`${link({ isActive: props.active ?? false })} ${props.class ?? ""}`}>
       {props.children}
     </a>
   );
@@ -109,7 +109,7 @@ export interface LateralNavProps {
   class?: string;
 }
 
-const nav = style<{ transparent: boolean }>({
+const nav = style<{ isTransparent: boolean }>({
   width: 300,
   margin: 0,
   padding: 12,
@@ -118,13 +118,13 @@ const nav = style<{ transparent: boolean }>({
   borderColor: "[var(--color-primary-600)]",
   backgroundColor: {
     default: "[var(--color-bg-200)]",
-    transparent: "transparent",
+    isTransparent: "transparent",
   },
 });
 
 export function LateralNav(props: LateralNavProps) {
   return (
-    <div class={`${nav({ transparent: props.transparent ?? false })} ${props.class ?? ""}`}>
+    <div class={`${nav({ isTransparent: props.transparent ?? false })} ${props.class ?? ""}`}>
       {props.children}
     </div>
   );

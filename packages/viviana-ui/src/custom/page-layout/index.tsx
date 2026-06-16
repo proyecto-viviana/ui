@@ -9,14 +9,14 @@ export interface PageLayoutProps extends JSX.HTMLAttributes<HTMLDivElement> {
   withHeader?: boolean;
 }
 
-const page = style<{ withHeader: boolean }>({
+const page = style<{ isWithHeader: boolean }>({
   display: "flex",
   flexDirection: "column",
   minHeight: "screen",
   width: "full",
   backgroundColor: "[var(--color-background)]",
   color: "[var(--color-text)]",
-  paddingTop: { withHeader: 64 },
+  paddingTop: { isWithHeader: 64 },
 });
 
 export function PageLayout(props: PageLayoutProps) {
@@ -24,7 +24,7 @@ export function PageLayout(props: PageLayoutProps) {
 
   return (
     <div
-      class={`${page({ withHeader: local.withHeader ?? false })} ${local.class ?? ""}`}
+      class={`${page({ isWithHeader: local.withHeader ?? false })} ${local.class ?? ""}`}
       {...rest}
     >
       {props.children}

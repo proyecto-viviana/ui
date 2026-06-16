@@ -17,7 +17,7 @@ export interface ProjectCardProps {
   class?: string;
 }
 
-const card = style<{ size: ProjectCardSize; inactive: boolean }>({
+const card = style<{ size: ProjectCardSize; isInactive: boolean }>({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -31,7 +31,7 @@ const card = style<{ size: ProjectCardSize; inactive: boolean }>({
   color: "[var(--color-primary-100)]",
   textDecoration: "none",
   padding: { size: { sm: 12, md: 16, lg: 20 } },
-  opacity: { default: 1, inactive: 0.5 },
+  opacity: { default: 1, isInactive: 0.5 },
 });
 
 const image = style({
@@ -62,7 +62,7 @@ export function ProjectCard(props: ProjectCardProps): JSX.Element {
     </>
   );
 
-  const classes = () => `${card({ size: size(), inactive: inactive() })} ${props.class ?? ""}`;
+  const classes = () => `${card({ size: size(), isInactive: inactive() })} ${props.class ?? ""}`;
 
   if (props.href) {
     return (
