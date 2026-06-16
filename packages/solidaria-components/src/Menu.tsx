@@ -249,6 +249,8 @@ interface MenuTriggerContextValue {
   state: OverlayTriggerState;
   triggerProps: JSX.HTMLAttributes<HTMLElement>;
   menuProps: JSX.HTMLAttributes<HTMLElement>;
+  isPressed?: () => boolean;
+  onPressStart?: (e: { pointerType?: string }) => void;
 }
 
 interface MenuItemContextValue {
@@ -283,6 +285,12 @@ interface MenuSectionSelectionRegistryContextValue {
   selectItem(key: Key, event?: MenuSelectionEvent): boolean;
 }
 
+interface MenuItemCloseRegistryContextValue {
+  registerItem(key: Key, shouldCloseOnSelect: () => boolean | undefined): void;
+  unregisterItem(key: Key, shouldCloseOnSelect: () => boolean | undefined): void;
+  shouldCloseOnSelect(key: Key | null): boolean | undefined;
+}
+
 export const MenuContext = createContext<MenuContextValue<unknown> | null>(null);
 export const MenuStateContext = createContext<MenuState<unknown> | null>(null);
 export const MenuTriggerContext = createContext<MenuTriggerContextValue | null>(null);
@@ -292,6 +300,7 @@ const StaticMenuCollectionContext = createContext<StaticMenuCollectionContextVal
 const MenuSectionSelectionContext = createContext<MenuSectionSelectionContextValue | null>(null);
 const MenuSectionSelectionRegistryContext =
   createContext<MenuSectionSelectionRegistryContextValue | null>(null);
+const MenuItemCloseRegistryContext = createContext<MenuItemCloseRegistryContextValue | null>(null);
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -323,6 +332,22 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
     },
   });
 
+  const [isMousePressed, setMousePressed] = createSignal(false);
+  const onPressStart = (e: { pointerType?: string }) => {
+    if (e.pointerType !== "mouse" || typeof document === "undefined") {
+      return;
+    }
+
+    setMousePressed(true);
+    document.addEventListener(
+      "pointerup",
+      () => {
+        setMousePressed(false);
+      },
+      { once: true, capture: true },
+    );
+  };
+
   const menuTrigger = createMenuTrigger(
     {
       get isDisabled() {
@@ -343,6 +368,8 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
           get menuProps() {
             return menuTrigger.menuProps;
           },
+          isPressed: isMousePressed,
+          onPressStart,
         }}
       >
         {props.children}
@@ -550,6 +577,9 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     get isDisabled() {
       return local.isDisabled;
     },
+    onPressStart(e) {
+      context.onPressStart?.(e);
+    },
     onPress() {
       state.toggle();
     },
@@ -567,7 +597,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     isOpen: state.isOpen(),
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
-    isPressed: buttonAria.isPressed(),
+    isPressed: context.isPressed?.() || buttonAria.isPressed(),
     isHovered: isHovered(),
     isDisabled: !!local.isDisabled,
   }));
@@ -624,7 +654,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
       data-open={state.isOpen() || undefined}
       data-focused={isFocused() || undefined}
       data-focus-visible={isFocusVisible() || undefined}
-      data-pressed={buttonAria.isPressed() || undefined}
+      data-pressed={context.isPressed?.() || buttonAria.isPressed() || undefined}
       data-hovered={isHovered() || undefined}
       data-disabled={local.isDisabled || undefined}
     >
@@ -639,17 +669,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
 export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const [local, stateProps, ariaProps] = splitProps(
     props,
-    [
-      "children",
-      "class",
-      "style",
-      "render",
-      "slot",
-      "renderEmptyState",
-      "shouldCloseOnSelect",
-      "ref",
-      "staticChildren",
-    ],
+    ["children", "class", "style", "render", "slot", "renderEmptyState", "ref", "staticChildren"],
     [
       "items",
       "getKey",
@@ -665,6 +685,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       "allowDuplicateSelectionEvents",
       "onAction",
       "onClose",
+      "shouldCloseOnSelect",
       "dragAndDropHooks",
     ],
   );
@@ -675,6 +696,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
   const staticItemMap = new Map<Key, StaticMenuCollectionItem>();
   const sectionSelectionMap = new Map<Key, MenuSectionSelectionContextValue>();
+  const itemCloseMap = new Map<Key, () => boolean | undefined>();
   const usesStaticChildren = () => local.staticChildren != null || stateProps.items == null;
 
   const syncStaticItems = () => {
@@ -718,6 +740,19 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
 
       selection.select(key, event);
       return true;
+    },
+  };
+  const itemCloseRegistry: MenuItemCloseRegistryContextValue = {
+    registerItem(key, shouldCloseOnSelect) {
+      itemCloseMap.set(key, shouldCloseOnSelect);
+    },
+    unregisterItem(key, shouldCloseOnSelect) {
+      if (itemCloseMap.get(key) === shouldCloseOnSelect) {
+        itemCloseMap.delete(key);
+      }
+    },
+    shouldCloseOnSelect(key) {
+      return key == null ? undefined : itemCloseMap.get(key)?.();
     },
   };
   const handleAction = (key: Key) => {
@@ -807,6 +842,12 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       },
       get onClose() {
         return stateProps.onClose ?? (() => triggerContext?.state.close());
+      },
+      get shouldCloseOnSelect() {
+        return (
+          itemCloseRegistry.shouldCloseOnSelect(state.focusedKey()) ??
+          stateProps.shouldCloseOnSelect
+        );
       },
       get "aria-label"() {
         return ariaProps["aria-label"];
@@ -1067,7 +1108,9 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
   const menuItemContextValue = createMemo<MenuItemContextValue>(() =>
-    local.shouldCloseOnSelect !== undefined ? { closeOnSelect: local.shouldCloseOnSelect } : {},
+    stateProps.shouldCloseOnSelect !== undefined
+      ? { closeOnSelect: stateProps.shouldCloseOnSelect }
+      : {},
   );
   const menuListChildren = () => (
     <SharedElementTransition>
@@ -1194,44 +1237,46 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     >
       <MenuStateContext.Provider value={state}>
         <MenuSectionSelectionRegistryContext.Provider value={sectionSelectionRegistry}>
-          <StaticMenuCollectionContext.Provider
-            value={usesStaticChildren() ? staticCollectionContext : null}
-          >
-            <MenuItemContext.Provider value={menuItemContextValue()}>
-              <CollectionRendererContext.Provider value={collectionRenderer()}>
-                <>
-                  <Show when={ariaProps.label}>
-                    <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
-                  </Show>
-                  {local.render ? (
-                    local.render(menuListProps(), renderValues())
-                  ) : (
-                    <ul
-                      ref={setResolvedMenuRef}
-                      {...mergeProps(
-                        domProps(),
-                        cleanMenuProps(),
-                        cleanTriggerMenuProps(),
-                        cleanFocusProps(),
-                        (droppableCollection()?.collectionProps as
-                          | Record<string, unknown>
-                          | undefined) ?? {},
-                      )}
-                      class={renderProps.class()}
-                      style={renderProps.style()}
-                      slot={local.slot}
-                      data-focused={state.isFocused() || undefined}
-                      data-disabled={resolveDisabled() || undefined}
-                      data-empty={state.collection().size === 0 || undefined}
-                      data-drop-target={isRootDropTarget() || undefined}
-                    >
-                      {menuListChildren()}
-                    </ul>
-                  )}
-                </>
-              </CollectionRendererContext.Provider>
-            </MenuItemContext.Provider>
-          </StaticMenuCollectionContext.Provider>
+          <MenuItemCloseRegistryContext.Provider value={itemCloseRegistry}>
+            <StaticMenuCollectionContext.Provider
+              value={usesStaticChildren() ? staticCollectionContext : null}
+            >
+              <MenuItemContext.Provider value={menuItemContextValue()}>
+                <CollectionRendererContext.Provider value={collectionRenderer()}>
+                  <>
+                    <Show when={ariaProps.label}>
+                      <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
+                    </Show>
+                    {local.render ? (
+                      local.render(menuListProps(), renderValues())
+                    ) : (
+                      <ul
+                        ref={setResolvedMenuRef}
+                        {...mergeProps(
+                          domProps(),
+                          cleanMenuProps(),
+                          cleanTriggerMenuProps(),
+                          cleanFocusProps(),
+                          (droppableCollection()?.collectionProps as
+                            | Record<string, unknown>
+                            | undefined) ?? {},
+                        )}
+                        class={renderProps.class()}
+                        style={renderProps.style()}
+                        slot={local.slot}
+                        data-focused={state.isFocused() || undefined}
+                        data-disabled={resolveDisabled() || undefined}
+                        data-empty={state.collection().size === 0 || undefined}
+                        data-drop-target={isRootDropTarget() || undefined}
+                      >
+                        {menuListChildren()}
+                      </ul>
+                    )}
+                  </>
+                </CollectionRendererContext.Provider>
+              </MenuItemContext.Provider>
+            </StaticMenuCollectionContext.Provider>
+          </MenuItemCloseRegistryContext.Provider>
         </MenuSectionSelectionRegistryContext.Provider>
       </MenuStateContext.Provider>
     </MenuContext.Provider>
@@ -1281,6 +1326,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const staticCollection = useContext(StaticMenuCollectionContext);
   const sectionSelection = useContext(MenuSectionSelectionContext);
   const sectionSelectionRegistry = useContext(MenuSectionSelectionRegistryContext);
+  const itemCloseRegistry = useContext(MenuItemCloseRegistryContext);
   // Tracks the focusable menuitem element (the <li>, or the inner <a> for link
   // items) so roving focus can be moved onto it imperatively.
   const [ref, setRef] = createSignal<HTMLElement | null>(null);
@@ -1289,11 +1335,17 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     local.onAction?.();
     itemContext?.onAction?.();
   };
+  const itemCloseOnSelect = () =>
+    ariaProps.closeOnSelect ??
+    sectionSelection?.shouldCloseOnSelect() ??
+    itemContext?.closeOnSelect;
   const activeSectionSelection = () =>
     sectionSelection && sectionSelection.selectionMode() !== "none" ? sectionSelection : null;
   let registeredStaticKey: Key | null = null;
   let registeredSectionSelectionKey: Key | null = null;
   let registeredSectionSelection: MenuSectionSelectionContextValue | null = null;
+  let registeredCloseKey: Key | null = null;
+  let registeredCloseAccessor: (() => boolean | undefined) | null = null;
 
   const unregisterSectionSelection = () => {
     if (registeredSectionSelectionKey != null && registeredSectionSelection) {
@@ -1347,6 +1399,32 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
 
   onCleanup(unregisterSectionSelection);
 
+  const unregisterItemClose = () => {
+    if (registeredCloseKey != null && registeredCloseAccessor) {
+      itemCloseRegistry?.unregisterItem(registeredCloseKey, registeredCloseAccessor);
+      registeredCloseKey = null;
+      registeredCloseAccessor = null;
+    }
+  };
+
+  createEffect(() => {
+    if (!itemCloseRegistry) {
+      unregisterItemClose();
+      return;
+    }
+
+    if (registeredCloseKey === local.id && registeredCloseAccessor === itemCloseOnSelect) {
+      return;
+    }
+
+    unregisterItemClose();
+    registeredCloseKey = local.id;
+    registeredCloseAccessor = itemCloseOnSelect;
+    itemCloseRegistry.registerItem(local.id, itemCloseOnSelect);
+  });
+
+  onCleanup(unregisterItemClose);
+
   const itemAria = createMenuItem<T>(
     {
       key: local.id,
@@ -1364,11 +1442,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         return combinedOnAction;
       },
       get closeOnSelect() {
-        return (
-          ariaProps.closeOnSelect ??
-          sectionSelection?.shouldCloseOnSelect() ??
-          itemContext?.closeOnSelect
-        );
+        return itemCloseOnSelect();
       },
       get href() {
         return local.href;

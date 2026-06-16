@@ -641,71 +641,86 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const keyboardContextValue = (renderProps: MenuItemRenderProps) => ({
     styles: () => menuItemKeyboard(itemStyleProps(renderProps)),
   });
-  const renderChildren = (renderProps: MenuItemRenderProps) => {
+  const MenuItemContents = (contentProps: { renderProps: MenuItemRenderProps }) => {
     const children =
       typeof local.children === "function"
-        ? (local.children as (props: MenuItemRenderProps) => JSX.Element)(renderProps)
+        ? (local.children as (props: MenuItemRenderProps) => JSX.Element)(contentProps.renderProps)
         : local.children;
 
+    return (
+      <>
+        <Show
+          when={
+            contentProps.renderProps.selectionMode === "single" &&
+            !contentProps.renderProps.hasSubmenu
+          }
+        >
+          <CheckmarkIcon
+            aria-hidden="true"
+            data-rsp-slot="selection-indicator"
+            size={selectionIconSize[size]}
+            class={menuItemCheckmark(itemStyleProps(contentProps.renderProps))}
+          />
+        </Show>
+        <Show
+          when={
+            contentProps.renderProps.selectionMode === "multiple" &&
+            !contentProps.renderProps.hasSubmenu
+          }
+        >
+          <span
+            aria-hidden="true"
+            data-rsp-slot="selection-indicator"
+            class={menuItemCheckbox(itemStyleProps(contentProps.renderProps))}
+          >
+            <Show when={contentProps.renderProps.isSelected}>
+              <CheckmarkIcon
+                size={selectionIconSize[size]}
+                class={menuItemCheckboxIcon as unknown as string}
+              />
+            </Show>
+          </span>
+        </Show>
+        {local.icon?.()}
+        {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
+        {local.shortcut ? <Keyboard>{local.shortcut}</Keyboard> : null}
+        <Show when={isLinkOut() && !hideLinkOutIcon}>
+          <span slot="descriptor" class={menuItemDescriptor} data-rsp-slot="descriptor">
+            <LinkOutIcon size={linkOutIconSize[size]} class={menuItemDescriptorIcon({ size })} />
+          </span>
+        </Show>
+        <Show when={contentProps.renderProps.hasSubmenu && !isUnavailable}>
+          <span slot="descriptor" class={menuItemDescriptor} data-rsp-slot="descriptor">
+            <S2ChevronIcon
+              size={size}
+              class={menuItemDescriptorIcon({ size })}
+              style={chevronStyle()}
+            />
+          </span>
+        </Show>
+        <Show when={isUnavailable}>
+          <span
+            id={unavailableDescriptionId}
+            slot="descriptor"
+            class={menuItemDescriptor}
+            data-rsp-slot="descriptor"
+          >
+            <InfoCircleIcon
+              aria-label={stringFormatter().format("menu.unavailable")}
+              class={menuItemDescriptorIcon({ size })}
+            />
+          </span>
+        </Show>
+      </>
+    );
+  };
+
+  const renderChildren = (renderProps: MenuItemRenderProps) => {
     return (
       <IconContext.Provider value={iconContextValue}>
         <TextContext.Provider value={textContextValue(renderProps)}>
           <KeyboardContext.Provider value={keyboardContextValue(renderProps)}>
-            <Show when={renderProps.selectionMode === "single" && !renderProps.hasSubmenu}>
-              <CheckmarkIcon
-                aria-hidden="true"
-                data-rsp-slot="selection-indicator"
-                size={selectionIconSize[size]}
-                class={menuItemCheckmark(itemStyleProps(renderProps))}
-              />
-            </Show>
-            <Show when={renderProps.selectionMode === "multiple" && !renderProps.hasSubmenu}>
-              <span
-                aria-hidden="true"
-                data-rsp-slot="selection-indicator"
-                class={menuItemCheckbox(itemStyleProps(renderProps))}
-              >
-                <Show when={renderProps.isSelected}>
-                  <CheckmarkIcon
-                    size={selectionIconSize[size]}
-                    class={menuItemCheckboxIcon as unknown as string}
-                  />
-                </Show>
-              </span>
-            </Show>
-            {local.icon?.()}
-            {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
-            {local.shortcut ? <Keyboard>{local.shortcut}</Keyboard> : null}
-            <Show when={isLinkOut() && !hideLinkOutIcon}>
-              <span slot="descriptor" class={menuItemDescriptor} data-rsp-slot="descriptor">
-                <LinkOutIcon
-                  size={linkOutIconSize[size]}
-                  class={menuItemDescriptorIcon({ size })}
-                />
-              </span>
-            </Show>
-            <Show when={renderProps.hasSubmenu && !isUnavailable}>
-              <span slot="descriptor" class={menuItemDescriptor} data-rsp-slot="descriptor">
-                <S2ChevronIcon
-                  size={size}
-                  class={menuItemDescriptorIcon({ size })}
-                  style={chevronStyle()}
-                />
-              </span>
-            </Show>
-            <Show when={isUnavailable}>
-              <span
-                id={unavailableDescriptionId}
-                slot="descriptor"
-                class={menuItemDescriptor}
-                data-rsp-slot="descriptor"
-              >
-                <InfoCircleIcon
-                  aria-label={stringFormatter().format("menu.unavailable")}
-                  class={menuItemDescriptorIcon({ size })}
-                />
-              </span>
-            </Show>
+            <MenuItemContents renderProps={renderProps} />
           </KeyboardContext.Provider>
         </TextContext.Provider>
       </IconContext.Provider>

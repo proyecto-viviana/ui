@@ -80,6 +80,8 @@ export interface AriaMenuProps {
   onAction?: (key: Key) => void;
   /** Handler called when the menu should close. */
   onClose?: () => void;
+  /** Whether the menu should close when an item is selected. */
+  shouldCloseOnSelect?: boolean;
   /** Whether focus should automatically wrap around. */
   shouldFocusWrap?: boolean;
   /** Whether to auto-focus the first item when the menu opens. */
@@ -257,7 +259,9 @@ export function createMenu<T>(
         if (focusedKey != null && !isDisabled(focusedKey)) {
           state.select(focusedKey, e, collection);
           p.onAction?.(focusedKey);
-          p.onClose?.();
+          if (p.shouldCloseOnSelect !== false) {
+            p.onClose?.();
+          }
         }
         break;
       }
