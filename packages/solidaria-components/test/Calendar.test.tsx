@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import {
   Calendar,
   CalendarHeading,
@@ -75,6 +75,26 @@ describe("Calendar", () => {
 
       const grid = screen.getByRole("grid");
       expect(grid).toBeInTheDocument();
+    });
+
+    // Mirrors upstream Calendar.test.js (the `within(grid).getAllByRole('rowgroup' | 'columnheader' | 'row')`
+    // structure checks): the grid is a native <table role="grid"> whose <thead>/<tbody> expose `rowgroup`,
+    // <tr> exposes `row`, <th scope="col"> exposes `columnheader`, and each day <td> exposes `gridcell`.
+    it("should expose the grid table structure (rowgroups, columnheaders, rows, gridcells)", async () => {
+      render(() => (
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForCalendarHydration();
+
+      const grid = screen.getByRole("grid");
+      // header rowgroup + body rowgroup
+      expect(within(grid).getAllByRole("rowgroup")).toHaveLength(2);
+      // one columnheader per weekday
+      expect(within(grid).getAllByRole("columnheader")).toHaveLength(7);
+      // header row + one row per week
+      expect(within(grid).getAllByRole("row").length).toBeGreaterThanOrEqual(5);
+      // a gridcell per day in the month (empty padding <td> carry no role)
+      expect(within(grid).getAllByRole("gridcell").length).toBeGreaterThanOrEqual(28);
     });
 
     it("should render month and year header", async () => {
