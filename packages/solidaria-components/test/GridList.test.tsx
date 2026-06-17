@@ -84,6 +84,10 @@ describe("GridList", () => {
       expect(screen.getByText("Apple")).toBeTruthy();
       expect(screen.getByText("Banana")).toBeTruthy();
       expect(screen.getByText("Cherry")).toBeTruthy();
+      // Each GridListItem exposes its content in a role="gridcell" (mirrors
+      // upstream GridList.test.js `getAllByRole('gridcell')`; createGridListItem
+      // emits role: "row" › role: "gridcell").
+      expect(screen.getAllByRole("gridcell")).toHaveLength(3);
     });
 
     it("should render items with default class", () => {
