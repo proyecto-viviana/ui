@@ -3,22 +3,30 @@
  *
  * Provides state management for date field components with segment-based editing.
  * Based on @react-stately/datepicker useDateFieldState
+ *
+ * Editing is modeled with an {@link IncompleteDate} display value so that invalid
+ * intermediate dates (e.g. February 31st, produced by editing the day before the
+ * month) are held as-typed while the field is focused and only constrained on blur
+ * via `confirmPlaceholder`, matching upstream behavior. Out-of-range values are
+ * never snapped to `minValue`/`maxValue`; they are kept and reported as invalid.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
 import {
-  CalendarDate,
+  type AnyDateTime,
+  type Calendar,
   type CalendarDateTime,
   type DateValue,
+  GregorianCalendar,
   today,
   getLocalTimeZone,
   DateFormatter,
   toCalendarDate as intlToCalendarDate,
   toCalendarDateTime,
-  endOfMonth,
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
+import { IncompleteDate } from "./IncompleteDate";
 import {
   createFormValidationState,
   DEFAULT_VALIDATION_RESULT,
@@ -47,7 +55,7 @@ export interface DateSegment {
   /** The text content of the segment. */
   text: string;
   /** The numeric value of the segment (if applicable). */
-  value?: number;
+  value?: number | null;
   /** The minimum value for the segment. */
   minValue?: number;
   /** The maximum value for the segment. */
@@ -160,62 +168,53 @@ export interface DateFieldState<T extends DateValue = DateValue> {
   defaultValue: T | null;
 }
 
+type HourCycle = "h11" | "h12" | "h23" | "h24";
+
 /**
  * Provides state management for a date field component.
  */
-export function createDateFieldState<T extends DateValue = CalendarDate>(
+export function createDateFieldState<T extends DateValue = DateValue>(
   props: DateFieldStateProps<T> = {},
 ): DateFieldState<T> {
   const timeZone = getLocalTimeZone();
   const locale = props.locale ?? "en-US";
   const granularity = props.granularity ?? "day";
+  const calendar: Calendar = new GregorianCalendar();
+  const hourCycle = resolveHourCycle(locale, props.hourCycle);
+  const displaySegments = computeDisplaySegments(granularity, hourCycle);
+
+  const getPlaceholderValue = (): DateValue => {
+    const base = props.placeholderValue ?? today(timeZone);
+    return granularity === "day" ? intlToCalendarDate(base) : toCalendarDateTime(base);
+  };
+
+  const toSource = (v: DateValue | null): Partial<Omit<AnyDateTime, "copy">> | null =>
+    (v as Partial<Omit<AnyDateTime, "copy">> | null) ?? null;
 
   // State signals
   const initialValue = props.defaultValue ?? null;
   const [internalValue, setInternalValue] = createSignal<T | null>(initialValue);
 
-  // Track partial values during editing
-  const [placeholderDate, setPlaceholderDate] = createSignal<Partial<DateParts>>({});
-
-  // Controlled vs uncontrolled value
+  // Controlled vs uncontrolled committed value
   const value = createMemo<T | null>(() => {
     const controlled = access(props.value);
     return controlled !== undefined ? controlled : internalValue();
   });
 
-  // The effective date value
-  const dateValue = createMemo<DateValue | null>(() => {
+  // The display override: holds the (possibly invalid/incomplete) value being edited.
+  const [displayValue, setDisplayValue] = createSignal<IncompleteDate>(
+    new IncompleteDate(calendar, hourCycle, toSource(value())),
+  );
+
+  // Reset the display override whenever the committed value changes from the outside
+  // (e.g. a controlled `value` prop update).
+  let lastSyncedValue = value();
+  createEffect(() => {
     const v = value();
-    if (v) return v;
-
-    // Build from placeholder parts
-    const parts = placeholderDate();
-    const placeholder = props.placeholderValue ?? today(timeZone);
-
-    if (Object.keys(parts).length === 0) return null;
-
-    // Create a date from the parts
-    const year = parts.year ?? placeholder.year;
-    const month = parts.month ?? placeholder.month;
-    const day = parts.day ?? placeholder.day;
-
-    if (granularity === "day") {
-      return intlToCalendarDate(placeholder).set({ year, month, day });
+    if (v !== lastSyncedValue) {
+      lastSyncedValue = v;
+      setDisplayValue(new IncompleteDate(calendar, hourCycle, toSource(v)));
     }
-
-    // For time granularities
-    const hour = parts.hour ?? 0;
-    const minute = parts.minute ?? 0;
-    const second = parts.second ?? 0;
-
-    return toCalendarDateTime(placeholder).set({
-      year,
-      month,
-      day,
-      hour,
-      minute,
-      second,
-    }) as unknown as T;
   });
 
   // Derived states
@@ -284,187 +283,181 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
     () => explicitValidationState() ?? (isInvalid() ? "invalid" : undefined),
   );
 
-  // Generate segments based on granularity and locale
-  const segments = createMemo<DateSegment[]>(() => {
+  // The effective date value, derived from the display override.
+  const dateValue = createMemo<DateValue | null>(() => {
     const v = value();
-    const placeholder = props.placeholderValue ?? today(timeZone);
-    const parts = placeholderDate();
+    if (v) return v;
+    const dv = displayValue();
+    if (dv.isCleared(displaySegments)) return null;
+    return dv.toValue(getPlaceholderValue());
+  });
 
-    const segs: DateSegment[] = [];
+  // Generate segments from the display override (so invalid intermediate values render as typed).
+  const segments = createMemo<DateSegment[]>(() => {
+    const dv = displayValue();
+    const base = value() ?? getPlaceholderValue();
+    const resolved = dv.toValue(base);
+    const jsDate = resolved.toDate(timeZone);
 
-    // Determine format options based on granularity
     const shouldForceLeadingZeros = props.shouldForceLeadingZeros === true;
-    const formatOptions: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: shouldForceLeadingZeros ? "2-digit" : "numeric",
-      day: shouldForceLeadingZeros ? "2-digit" : "numeric",
-    };
-
-    if (granularity !== "day") {
-      formatOptions.hour = "2-digit";
-      formatOptions.minute = "2-digit";
-      if (granularity === "second") {
-        formatOptions.second = "2-digit";
-      }
-      if (props.hourCycle) {
-        formatOptions.hourCycle = props.hourCycle === 12 ? "h12" : "h23";
-      }
-    }
-
+    const formatOptions = buildFormatOptions(granularity, shouldForceLeadingZeros, props.hourCycle);
     const formatter = new DateFormatter(locale, formatOptions);
-    const dateToFormat = v ?? placeholder;
-    const formattedParts = formatter.formatToParts(dateToFormat.toDate(timeZone));
+    const resolvedOptions = formatter.resolvedOptions() as unknown as Record<string, string>;
+    const parts = formatter.formatToParts(jsDate);
 
-    for (const part of formattedParts) {
+    const numberFormatter = new Intl.NumberFormat(locale, { useGrouping: false });
+    const twoDigitFormatter = new Intl.NumberFormat(locale, {
+      useGrouping: false,
+      minimumIntegerDigits: 2,
+    });
+
+    const result: DateSegment[] = [];
+    for (const part of parts) {
       const type = mapPartType(part.type);
 
       if (type === "literal") {
-        segs.push({
+        result.push({
           type: "literal",
           text: part.value,
           isEditable: false,
           isPlaceholder: false,
           placeholder: part.value,
         });
-      } else if (type) {
-        const segValue = getSegmentValue(v, type);
-        const partValue = parts[type as keyof DateParts];
-        const hasValue = v !== null || partValue !== undefined;
+        continue;
+      }
+      if (!type) continue;
 
-        segs.push({
-          type,
-          text: hasValue
-            ? part.value
-            : getPlaceholderText(type, locale, granularity, shouldForceLeadingZeros),
-          value: segValue ?? partValue,
-          minValue: getMinValue(type),
-          maxValue: getMaxValue(type, v ?? placeholder),
-          isEditable: !isDisabled() && !isReadOnly(),
-          isPlaceholder: !hasValue,
-          placeholder: getPlaceholderText(type, locale, granularity, shouldForceLeadingZeros),
-        });
+      const editable = isEditableSegment(type);
+      const rawValue = rawSegmentValue(dv, type);
+      const isPlaceholder = editable && rawValue == null;
+      const limits = dv.getSegmentLimits(type);
+      const placeholderText = getPlaceholderText(
+        type,
+        locale,
+        granularity,
+        shouldForceLeadingZeros,
+      );
+
+      // For numeric date/time segments, render the raw edited value (e.g. "31" even
+      // when the resolved date is Feb 28) using a NumberFormatter, mirroring upstream.
+      let text = part.value;
+      if (
+        (type === "year" || type === "month" || type === "day" || type === "hour") &&
+        typeof rawValue === "number"
+      ) {
+        const numeric = rawValue ?? 0;
+        text =
+          resolvedOptions[type] === "2-digit"
+            ? twoDigitFormatter.format(numeric)
+            : numberFormatter.format(numeric);
+      }
+
+      result.push({
+        type,
+        text: isPlaceholder ? placeholderText : text,
+        value: limits?.value,
+        minValue: limits?.minValue,
+        maxValue: limits?.maxValue,
+        isEditable: editable && !isDisabled() && !isReadOnly(),
+        isPlaceholder,
+        placeholder: placeholderText,
+      });
+    }
+
+    return result;
+  });
+
+  // Commit a concrete value (updates the controlled/uncontrolled value and fires onChange).
+  const commitDate = (newValue: T | null) => {
+    const controlled = access(props.value);
+    if (controlled === undefined) {
+      lastSyncedValue = newValue;
+      setInternalValue(() => newValue);
+    }
+    props.onChange?.(newValue);
+  };
+
+  // Set value with the upstream split: complete + valid commits eagerly; an incomplete
+  // or invalid (e.g. Feb 31) value is held as a display override until blur.
+  const setValue = (newValue: T | IncompleteDate | null) => {
+    if (isDisabled() || isReadOnly()) return;
+
+    if (newValue == null || (newValue instanceof IncompleteDate && newValue.isCleared(displaySegments))) {
+      commitDate(null);
+      setDisplayValue(new IncompleteDate(calendar, hourCycle, null));
+      return;
+    }
+
+    if (!(newValue instanceof IncompleteDate)) {
+      commitDate(newValue);
+      setDisplayValue(new IncompleteDate(calendar, hourCycle, toSource(newValue)));
+      return;
+    }
+
+    // If the new value is complete and valid, trigger onChange eagerly. If it represents
+    // an incomplete or invalid value (e.g. February 30th), wait until blur to trigger onChange.
+    if (newValue.isComplete(displaySegments)) {
+      const resolved = newValue.toValue(value() ?? getPlaceholderValue());
+      if (newValue.validate(resolved, displaySegments)) {
+        const committed = value();
+        if (!committed || resolved.compare(committed) !== 0) {
+          setDisplayValue(new IncompleteDate(calendar, hourCycle, toSource(resolved)));
+          commitDate(resolved as T);
+          return;
+        }
       }
     }
 
-    return segs;
-  });
+    // Incomplete/invalid value. Set temporary display override.
+    setDisplayValue(newValue);
+  };
 
-  // Set value with onChange callback
-  const setValue = (newValue: T | null) => {
+  const adjustSegment = (type: DateSegmentType, amount: number) => {
     if (isDisabled() || isReadOnly()) return;
-
-    const controlled = access(props.value);
-    if (controlled === undefined) {
-      setInternalValue(() => newValue);
-    }
-
-    if (props.onChange) {
-      props.onChange(newValue);
-    }
-
-    // Clear placeholder parts
-    setPlaceholderDate({});
+    setValue(displayValue().cycle(type, amount, getPlaceholderValue(), displaySegments));
   };
 
   // Set a specific segment value
   const setSegment = (type: DateSegmentType, newValue: number) => {
     if (isDisabled() || isReadOnly()) return;
-
-    const v = value();
-
-    if (v) {
-      // Update existing value
-      const updated = updateDatePart(v, type, newValue);
-      setValue(updated as T);
-    } else {
-      // Update placeholder parts
-      setPlaceholderDate((prev) => ({
-        ...prev,
-        [type]: newValue,
-      }));
-    }
+    setValue(displayValue().set(type, newValue, getPlaceholderValue()));
   };
 
-  // Increment a segment
-  const incrementSegment = (type: DateSegmentType) => {
-    if (isDisabled() || isReadOnly()) return;
+  const incrementSegment = (type: DateSegmentType) => adjustSegment(type, 1);
+  const decrementSegment = (type: DateSegmentType) => adjustSegment(type, -1);
 
-    const v = value();
-    const current = v ? getSegmentValue(v, type) : placeholderDate()[type as keyof DateParts];
-    const max = getMaxValue(type, v ?? props.placeholderValue ?? today(timeZone));
-    const min = getMinValue(type);
-
-    const newValue = current !== undefined ? current + 1 : min;
-    setSegment(type, newValue > max ? min : newValue);
-  };
-
-  // Decrement a segment
-  const decrementSegment = (type: DateSegmentType) => {
-    if (isDisabled() || isReadOnly()) return;
-
-    const v = value();
-    const current = v ? getSegmentValue(v, type) : placeholderDate()[type as keyof DateParts];
-    const max = getMaxValue(type, v ?? props.placeholderValue ?? today(timeZone));
-    const min = getMinValue(type);
-
-    const newValue = current !== undefined ? current - 1 : max;
-    setSegment(type, newValue < min ? max : newValue);
-  };
-
-  // Clear a segment
+  // Clear a segment, reverting it to its placeholder.
   const clearSegment = (type: DateSegmentType) => {
     if (isDisabled() || isReadOnly()) return;
-    if (type === "literal") return;
-
-    const v = value();
-    if (v) {
-      // Reset only the target segment to its minimum value instead of clearing the entire value
-      const min = getMinValue(type);
-      const updated = updateDatePart(v, type, min);
-      setValue(updated as T);
-    } else {
-      setPlaceholderDate((prev) => {
-        const next = { ...prev };
-        delete next[type as keyof DateParts];
-        return next;
-      });
+    let dv = displayValue();
+    if (type !== "timeZoneName" && type !== "literal") {
+      dv = dv.clear(type);
     }
+    setValue(dv);
   };
 
-  // Confirm placeholder value
+  // When the field is blurred, constrain a complete-but-invalid display value
+  // (e.g. February 31st -> February 28th) and emit onChange. Out-of-range values
+  // are left as-is and reported via validation rather than being snapped.
   const confirmPlaceholder = () => {
     if (isDisabled() || isReadOnly()) return;
+    const dv = displayValue();
+    if (!dv.isComplete(displaySegments)) return;
 
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
-    const constrain = (candidate: DateValue): DateValue => {
-      if (minValue && candidate.compare(minValue) < 0) {
-        return minValue;
-      }
-      if (maxValue && candidate.compare(maxValue) > 0) {
-        return maxValue;
-      }
-      return candidate;
-    };
-
-    const parts = placeholderDate();
-    if (Object.keys(parts).length > 0) {
-      const dv = dateValue();
-      if (dv) {
-        const candidate = constrain(dv);
-        // Commit even if unavailable so isInvalid can flag it; don't leave field stuck
-        setValue(candidate as T);
-      }
-      return;
+    const resolved = dv.toValue(value() ?? getPlaceholderValue());
+    const committed = value();
+    const needsCommit = !committed || resolved.compare(committed) !== 0;
+    if (needsCommit) {
+      commitDate(resolved as T);
     }
 
-    const current = value();
-    if (current) {
-      const constrained = constrain(current);
-      // Apply min/max constraints even if unavailable; isInvalid will flag unavailable dates
-      if (constrained.compare(current) !== 0) {
-        setValue(constrained as T);
-      }
+    // Reset the display override so a constrained value (e.g. February 31st ->
+    // February 28th) renders. Only touch the signal when the displayed raw value
+    // diverged from the resolved value, or when we committed — otherwise leave it
+    // untouched so blur (which fires on every focus move) does not churn the
+    // segments and drop focus.
+    if (needsCommit || !dv.validate(resolved, displaySegments)) {
+      setDisplayValue(new IncompleteDate(calendar, hourCycle, toSource(value() ?? resolved)));
     }
   };
 
@@ -519,13 +512,98 @@ export function createDateFieldState<T extends DateValue = CalendarDate>(
   };
 }
 
-interface DateParts {
-  year?: number;
-  month?: number;
-  day?: number;
-  hour?: number;
-  minute?: number;
-  second?: number;
+const EDITABLE_SEGMENTS: Record<string, boolean> = {
+  year: true,
+  month: true,
+  day: true,
+  hour: true,
+  minute: true,
+  second: true,
+  dayPeriod: true,
+  era: true,
+};
+
+function isEditableSegment(type: DateSegmentType): boolean {
+  return EDITABLE_SEGMENTS[type] === true;
+}
+
+function rawSegmentValue(dv: IncompleteDate, type: DateSegmentType): number | string | null {
+  switch (type) {
+    case "era":
+      return dv.era;
+    case "year":
+      return dv.year;
+    case "month":
+      return dv.month;
+    case "day":
+      return dv.day;
+    case "hour":
+      return dv.hour;
+    case "minute":
+      return dv.minute;
+    case "second":
+      return dv.second;
+    case "dayPeriod":
+      return dv.dayPeriod;
+    default:
+      return null;
+  }
+}
+
+function resolveHourCycle(locale: string, hourCycle?: 12 | 24): HourCycle {
+  const formatter = new DateFormatter(locale, {
+    hour: "numeric",
+    hour12: hourCycle != null ? hourCycle === 12 : undefined,
+  });
+  return (formatter.resolvedOptions().hourCycle as HourCycle) ?? "h23";
+}
+
+function computeDisplaySegments(
+  granularity: "day" | "hour" | "minute" | "second",
+  hourCycle: HourCycle,
+): DateSegmentType[] {
+  const is12HourClock = hourCycle === "h11" || hourCycle === "h12";
+  const segments: DateSegmentType[] = [
+    "era",
+    "year",
+    "month",
+    "day",
+    "hour",
+    ...(is12HourClock ? (["dayPeriod"] as const) : []),
+    "minute",
+    "second",
+  ];
+  // We never expose era as an editable segment, so the maximum displayed unit is the year.
+  const minIndex = segments.indexOf("era");
+  const maxIndex = segments.indexOf(
+    granularity === "hour" && is12HourClock ? "dayPeriod" : granularity,
+  );
+  return segments.slice(minIndex, maxIndex + 1);
+}
+
+function buildFormatOptions(
+  granularity: "day" | "hour" | "minute" | "second",
+  shouldForceLeadingZeros: boolean,
+  hourCycle?: 12 | 24,
+): Intl.DateTimeFormatOptions {
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: shouldForceLeadingZeros ? "2-digit" : "numeric",
+    day: shouldForceLeadingZeros ? "2-digit" : "numeric",
+  };
+
+  if (granularity !== "day") {
+    formatOptions.hour = "2-digit";
+    formatOptions.minute = "2-digit";
+    if (granularity === "second") {
+      formatOptions.second = "2-digit";
+    }
+    if (hourCycle) {
+      formatOptions.hourCycle = hourCycle === 12 ? "h12" : "h23";
+    }
+  }
+
+  return formatOptions;
 }
 
 function mapPartType(type: Intl.DateTimeFormatPartTypes): DateSegmentType | null {
@@ -552,66 +630,6 @@ function mapPartType(type: Intl.DateTimeFormatPartTypes): DateSegmentType | null
       return "literal";
     default:
       return null;
-  }
-}
-
-function getSegmentValue(date: DateValue | null, type: DateSegmentType): number | undefined {
-  if (!date) return undefined;
-
-  switch (type) {
-    case "year":
-      return date.year;
-    case "month":
-      return date.month;
-    case "day":
-      return date.day;
-    case "hour":
-      return "hour" in date ? (date as CalendarDateTime).hour : undefined;
-    case "minute":
-      return "minute" in date ? (date as CalendarDateTime).minute : undefined;
-    case "second":
-      return "second" in date ? (date as CalendarDateTime).second : undefined;
-    default:
-      return undefined;
-  }
-}
-
-function getMinValue(type: DateSegmentType): number {
-  switch (type) {
-    case "year":
-      return 1;
-    case "month":
-      return 1;
-    case "day":
-      return 1;
-    case "hour":
-      return 0;
-    case "minute":
-      return 0;
-    case "second":
-      return 0;
-    default:
-      return 0;
-  }
-}
-
-function getMaxValue(type: DateSegmentType, date: DateValue): number {
-  switch (type) {
-    case "year":
-      return 9999;
-    case "month":
-      return 12;
-    case "day":
-      // Get days in month
-      return endOfMonth(date).day;
-    case "hour":
-      return 23;
-    case "minute":
-      return 59;
-    case "second":
-      return 59;
-    default:
-      return 0;
   }
 }
 
@@ -646,7 +664,7 @@ function getPlaceholderText(
   for (const part of parts) {
     const mappedType = mapPartType(part.type);
     if (mappedType === type) {
-      return part.value.replace(/\d/g, (d) => {
+      return part.value.replace(/\d/g, (_d) => {
         if (type === "year") return "y";
         if (type === "month") return "m";
         if (type === "day") return "d";
@@ -673,25 +691,5 @@ function getPlaceholderText(
   }
 }
 
-function updateDatePart(date: DateValue, type: DateSegmentType, value: number): DateValue {
-  if (typeof (date as { set?: unknown }).set !== "function") {
-    return date;
-  }
-
-  switch (type) {
-    case "year":
-      return date.set({ year: value });
-    case "month":
-      return date.set({ month: value });
-    case "day":
-      return date.set({ day: value });
-    case "hour":
-      return date.set({ hour: value });
-    case "minute":
-      return date.set({ minute: value });
-    case "second":
-      return date.set({ second: value });
-    default:
-      return date;
-  }
-}
+// Re-export so existing imports of CalendarDateTime keep resolving through this module.
+export type { CalendarDateTime };

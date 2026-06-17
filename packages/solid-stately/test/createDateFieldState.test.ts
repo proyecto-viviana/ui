@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createRoot } from "solid-js";
 import { CalendarDate } from "@internationalized/date";
 import { createDateFieldState } from "../src/calendar/createDateFieldState";
@@ -17,7 +17,7 @@ describe("createDateFieldState", () => {
     });
   });
 
-  it("constrains placeholder commit to minValue on confirm", () => {
+  it("keeps a typed value below minValue as-is and reports rangeUnderflow", () => {
     createRoot((dispose) => {
       const minValue = new CalendarDate(2024, 6, 10);
       const state = createDateFieldState({
@@ -28,17 +28,20 @@ describe("createDateFieldState", () => {
       state.setSegment("year", 2024);
       state.setSegment("month", 6);
       state.setSegment("day", 5);
+      // Blurring must not snap an out-of-range value to the minimum (upstream parity).
       state.confirmPlaceholder();
 
       const value = state.value();
       expect(value).toBeTruthy();
-      expect(value?.compare(minValue)).toBe(0);
+      expect(value?.compare(new CalendarDate(2024, 6, 5))).toBe(0);
+      expect(value?.compare(minValue)).toBeLessThan(0);
+      expect(state.realtimeValidation().validationDetails.rangeUnderflow).toBe(true);
 
       dispose();
     });
   });
 
-  it("constrains placeholder commit to maxValue on confirm", () => {
+  it("keeps a typed value above maxValue as-is and reports rangeOverflow", () => {
     createRoot((dispose) => {
       const maxValue = new CalendarDate(2024, 6, 20);
       const state = createDateFieldState({
@@ -53,13 +56,15 @@ describe("createDateFieldState", () => {
 
       const value = state.value();
       expect(value).toBeTruthy();
-      expect(value?.compare(maxValue)).toBe(0);
+      expect(value?.compare(new CalendarDate(2024, 6, 25))).toBe(0);
+      expect(value?.compare(maxValue)).toBeGreaterThan(0);
+      expect(state.realtimeValidation().validationDetails.rangeOverflow).toBe(true);
 
       dispose();
     });
   });
 
-  it("constrains existing edited value to minValue on confirm", () => {
+  it("keeps an existing edited value below minValue as-is and reports rangeUnderflow", () => {
     createRoot((dispose) => {
       const minValue = new CalendarDate(2024, 6, 10);
       const state = createDateFieldState({
@@ -71,7 +76,59 @@ describe("createDateFieldState", () => {
       expect(state.value()?.day).toBe(1);
 
       state.confirmPlaceholder();
-      expect(state.value()?.compare(minValue)).toBe(0);
+      expect(state.value()?.compare(new CalendarDate(2024, 6, 1))).toBe(0);
+      expect(state.value()?.compare(minValue)).toBeLessThan(0);
+      expect(state.realtimeValidation().validationDetails.rangeUnderflow).toBe(true);
+
+      dispose();
+    });
+  });
+
+  it("holds an invalid day-of-month while typing and constrains it on blur", () => {
+    createRoot((dispose) => {
+      const onChange = vi.fn();
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2023, 1, 31),
+        onChange,
+      });
+
+      // Editing the month to February yields an impossible February 31st. Upstream
+      // holds the typed value (no onChange) until the field is blurred.
+      state.setSegment("month", 2);
+
+      expect(state.value()?.month).toBe(1);
+      expect(state.value()?.day).toBe(31);
+      expect(onChange).not.toHaveBeenCalled();
+
+      const segmentText = Object.fromEntries(
+        state.segments().map((segment) => [segment.type, segment.text]),
+      );
+      expect(segmentText.month).toBe("2");
+      expect(segmentText.day).toBe("31");
+
+      // Blur constrains February 31st to the last valid day of the month and commits.
+      state.confirmPlaceholder();
+
+      expect(state.value()?.compare(new CalendarDate(2023, 2, 28))).toBe(0);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange.mock.calls[0][0]?.compare(new CalendarDate(2023, 2, 28))).toBe(0);
+
+      dispose();
+    });
+  });
+
+  it("commits a complete, valid edit eagerly", () => {
+    createRoot((dispose) => {
+      const onChange = vi.fn();
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2024, 6, 15),
+        onChange,
+      });
+
+      state.setSegment("day", 20);
+
+      expect(state.value()?.compare(new CalendarDate(2024, 6, 20))).toBe(0);
+      expect(onChange).toHaveBeenCalledTimes(1);
 
       dispose();
     });
