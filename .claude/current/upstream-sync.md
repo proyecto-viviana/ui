@@ -123,9 +123,10 @@ the authoritative source before changing a test. Known limits:
 ## Latest sweep — 2026-06-16 (pin `s2@1.4.0` / `rac@1.18.0`)
 
 45 components matched; 17 raw role-divergence flags. Regenerate anytime with
-`vp run guard:upstream-test-parity`. **17 is a ceiling, not a bug count** — the
-first pass of triage (confirming each against source) found *zero* confirmed bugs
-so far and reclassified the flags into the buckets below. The headline lesson:
+`vp run guard:upstream-test-parity`. **17 is a ceiling, not a bug count** — triage
+(confirming each against source) has so far found exactly **one** confirmed
+component bug, **numberfield** (bucket C below, fixed in commit `0702d3b1`), and
+reclassified the rest into the buckets below. The headline lesson:
 
 > **The top-ranked "bug" was the oracle's own blind spot.** Our combined
 > `ToggleButton.test.tsx` asserts `getByRole("radio")` for a single-select
@@ -151,7 +152,8 @@ test doesn't, and there's no S2 unit test to anchor it → confirm against S2
 **Bucket C — field-wrapper role nuances to reconcile** (the `upstream-only` side
 is the signal: upstream asserts a `group` role on the field we may not).
 - **datefield** [23] / **timefield** [20] — we-only `{button, presentation}` ‖ upstream-only `{group}`.
-- **numberfield** [17] `{spinbutton}` ‖ `{group, textbox}`; **searchfield** [15] / **popover** [17] `{textbox}`; **menu** [12] `{presentation}`.
+- **numberfield** [17] `{spinbutton}` ‖ `{group, textbox}` — ✅ **reconciled** (commit `0702d3b1`, 2026-06-16): confirmed *component* bug, not a test divergence. Upstream `useNumberField` wraps `useSpinButton` but overrides its output (`role: null`, `aria-valuenow/min/max/text: null`) because a spinbutton can't be focused with VoiceOver. Component now renders a `textbox` inside the `role=group` wrapper with `aria-roledescription="number field"`; tests + regression snapshot updated; changeset bumps all three packages.
+- **searchfield** [15] / **popover** [17] `{textbox}`; **menu** [12] `{presentation}` — still open.
 
 **Bucket D — genuine coverage gaps (`upstream-only` roles we never assert)** —
 the most actionable real work; port the upstream structural assertions.
