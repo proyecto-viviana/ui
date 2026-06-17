@@ -18,6 +18,7 @@ import {
   CalendarButton,
   CalendarGrid,
   CalendarCell,
+  type CalendarProps,
 } from "../src/Calendar";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -375,6 +376,114 @@ describe("Calendar", () => {
       await waitFor(() => {
         expect(day15).toHaveAttribute("data-selected");
       });
+    });
+  });
+
+  // ============================================
+  // MULTIPLE SELECTION (selectionMode="multiple")
+  // ============================================
+
+  describe("multiple selection", () => {
+    function TestMultiCalendar(props: {
+      calendarProps?: Partial<CalendarProps<CalendarDate, "multiple">>;
+    }) {
+      return (
+        <Calendar
+          aria-label="Test Calendar"
+          selectionMode="multiple"
+          defaultFocusedValue={new CalendarDate(2024, 6, 15)}
+          {...props.calendarProps}
+        >
+          <header>
+            <CalendarButton slot="previous">◀</CalendarButton>
+            <CalendarHeading />
+            <CalendarButton slot="next">▶</CalendarButton>
+          </header>
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+        </Calendar>
+      );
+    }
+
+    it("marks the grid as multi-selectable", async () => {
+      render(() => <TestMultiCalendar />);
+      await waitForCalendarHydration();
+
+      expect(screen.getByRole("grid")).toHaveAttribute("aria-multiselectable", "true");
+    });
+
+    it("does not mark a single-selection grid as multi-selectable", async () => {
+      render(() => (
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForCalendarHydration();
+
+      expect(screen.getByRole("grid")).not.toHaveAttribute("aria-multiselectable");
+    });
+
+    it("selects multiple dates and keeps each one selected", async () => {
+      render(() => <TestMultiCalendar />);
+      await waitForCalendarHydration();
+
+      const day10 = screen.getByText("10");
+      const day12 = screen.getByText("12");
+
+      await user.click(day10);
+      await user.click(day12);
+
+      await waitFor(() => {
+        expect(day10).toHaveAttribute("data-selected");
+        expect(day12).toHaveAttribute("data-selected");
+      });
+    });
+
+    it("toggles a selected date off when it is clicked again", async () => {
+      render(() => <TestMultiCalendar />);
+      await waitForCalendarHydration();
+
+      const day10 = screen.getByText("10");
+      const day12 = screen.getByText("12");
+
+      await user.click(day10);
+      await user.click(day12);
+      await waitFor(() => expect(day10).toHaveAttribute("data-selected"));
+
+      await user.click(day10);
+
+      await waitFor(() => {
+        expect(day10).not.toHaveAttribute("data-selected");
+      });
+      expect(day12).toHaveAttribute("data-selected");
+    });
+
+    it("reflects a default array value", async () => {
+      render(() => (
+        <TestMultiCalendar
+          calendarProps={{
+            defaultValue: [new CalendarDate(2024, 6, 10), new CalendarDate(2024, 6, 20)],
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      expect(screen.getByText("10")).toHaveAttribute("data-selected");
+      expect(screen.getByText("20")).toHaveAttribute("data-selected");
+      expect(screen.getByText("12")).not.toHaveAttribute("data-selected");
+    });
+
+    it("fires onChange with the array of selected dates", async () => {
+      const onChange = vi.fn();
+      render(() => <TestMultiCalendar calendarProps={{ onChange }} />);
+      await waitForCalendarHydration();
+
+      await user.click(screen.getByText("10"));
+      await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+      expect(Array.isArray(onChange.mock.calls[0][0])).toBe(true);
+      expect(onChange.mock.calls[0][0]).toHaveLength(1);
+      expect(onChange.mock.calls[0][0][0]).toHaveProperty("day", 10);
+
+      await user.click(screen.getByText("12"));
+      await waitFor(() => expect(onChange).toHaveBeenCalledTimes(2));
+      expect(onChange.mock.calls[1][0]).toHaveLength(2);
     });
   });
 

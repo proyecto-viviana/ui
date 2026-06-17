@@ -194,6 +194,174 @@ describe("createCalendarState", () => {
     });
   });
 
+  describe("multiple selection", () => {
+    it("defaults to single selection mode", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState();
+        expect(state.selectionMode()).toBe("single");
+        dispose();
+      });
+    });
+
+    it("exposes the configured selection mode", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+        });
+        expect(state.selectionMode()).toBe("multiple");
+        dispose();
+      });
+    });
+
+    it("accumulates selected dates as an array", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+        });
+        const d1 = new CalendarDate(2024, 6, 10);
+        const d2 = new CalendarDate(2024, 6, 12);
+
+        state.selectDate(d1);
+        expect(state.value()).toEqual([d1]);
+
+        state.selectDate(d2);
+        expect(state.value()).toEqual([d1, d2]);
+
+        dispose();
+      });
+    });
+
+    it("toggles a date off when it is selected again", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+        });
+        const d1 = new CalendarDate(2024, 6, 10);
+        const d2 = new CalendarDate(2024, 6, 12);
+
+        state.selectDate(d1);
+        state.selectDate(d2);
+        state.selectDate(d1);
+
+        expect(state.value()).toEqual([d2]);
+        expect(state.isSelected(d1)).toBe(false);
+        expect(state.isSelected(d2)).toBe(true);
+
+        dispose();
+      });
+    });
+
+    it("reports every selected date via isSelected", () => {
+      createRoot((dispose) => {
+        const d1 = new CalendarDate(2024, 6, 10);
+        const d2 = new CalendarDate(2024, 6, 12);
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+          defaultValue: [d1, d2],
+        });
+
+        expect(state.isSelected(d1)).toBe(true);
+        expect(state.isSelected(d2)).toBe(true);
+        expect(state.isSelected(new CalendarDate(2024, 6, 11))).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("initializes from a default array value and seeds focus from the first date", () => {
+      createRoot((dispose) => {
+        const d1 = new CalendarDate(2024, 6, 10);
+        const d2 = new CalendarDate(2024, 6, 12);
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+          defaultValue: [d1, d2],
+        });
+
+        expect(state.value()).toEqual([d1, d2]);
+        expect(state.focusedDate()).toEqual(d1);
+
+        dispose();
+      });
+    });
+
+    it("calls onChange with the updated array on each toggle", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+          onChange,
+        });
+        const d1 = new CalendarDate(2024, 6, 10);
+        const d2 = new CalendarDate(2024, 6, 12);
+
+        state.selectDate(d1);
+        expect(onChange).toHaveBeenLastCalledWith([d1]);
+
+        state.selectDate(d2);
+        expect(onChange).toHaveBeenLastCalledWith([d1, d2]);
+
+        state.selectDate(d1);
+        expect(onChange).toHaveBeenLastCalledWith([d2]);
+
+        dispose();
+      });
+    });
+
+    it("clears to an empty array when set to null", () => {
+      createRoot((dispose) => {
+        const d1 = new CalendarDate(2024, 6, 10);
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+          defaultValue: [d1],
+        });
+
+        state.setValue(null);
+        expect(state.value()).toEqual([]);
+
+        dispose();
+      });
+    });
+
+    it("supports a controlled array value", () => {
+      createRoot((dispose) => {
+        const d1 = new CalendarDate(2024, 6, 10);
+        const d2 = new CalendarDate(2024, 6, 12);
+        const [value, setValue] = createSignal<CalendarDate[]>([d1]);
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+          get value() {
+            return value();
+          },
+        });
+
+        expect(state.value()).toEqual([d1]);
+
+        setValue([d1, d2]);
+        expect(state.value()).toEqual([d1, d2]);
+
+        dispose();
+      });
+    });
+
+    it("toggles the focused date through selectFocusedDate", () => {
+      createRoot((dispose) => {
+        const focusDate = new CalendarDate(2024, 6, 15);
+        const state = createCalendarState<CalendarDate, "multiple">({
+          selectionMode: "multiple",
+          defaultFocusedValue: focusDate,
+        });
+
+        state.selectFocusedDate();
+        expect(state.value()).toEqual([focusDate]);
+
+        state.selectFocusedDate();
+        expect(state.value()).toEqual([]);
+
+        dispose();
+      });
+    });
+  });
+
   describe("readonly and disabled behavior", () => {
     it("should ignore value changes when disabled", () => {
       createRoot((dispose) => {

@@ -142,11 +142,26 @@ export function createCalendarGrid<T extends CalendarState>(
     }
   };
 
+  // Whether more than one date can be selected at once. Mirrors
+  // @react-aria/calendar useCalendarGrid: true for a RangeCalendar (highlightable
+  // range) or a Calendar in multiple-selection mode.
+  const isMultiSelectable = (): boolean => {
+    if ("highlightedRange" in state) {
+      return true;
+    }
+    return (
+      "selectionMode" in state &&
+      typeof state.selectionMode === "function" &&
+      state.selectionMode() === "multiple"
+    );
+  };
+
   // Grid props
   const gridProps = createMemo(() => ({
     role: "grid",
     "aria-readonly": state.isReadOnly() || undefined,
     "aria-disabled": state.isDisabled() || undefined,
+    "aria-multiselectable": isMultiSelectable() || undefined,
     tabIndex: state.isFocused() ? 0 : -1,
     onFocus: () => state.setFocused(true),
     onBlur: () => state.setFocused(false),

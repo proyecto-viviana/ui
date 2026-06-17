@@ -19,8 +19,9 @@ asserted role. The release notes are the only signal those happened — see the
 > per-PR "Fixed" lists (`react-aria.adobe.com/releases/v1-16-0`, …) to resolve every
 > 🔍 ticket into a firm ✅/⛔ — is the **next session's** job. Until then treat 🔍 as
 > "unverified." Execution of the confirmed ⛔ gaps has started (leaf-first, no
-> conflicts): **T-29 SliderFill ✔** and **T-25 Calendar month/year pickers ✔**;
-> next up in the Calendar cluster is **T-23/T-26**. See the shortlist at the foot.
+> conflicts): **T-29 SliderFill ✔**, **T-25 Calendar month/year pickers ✔**, and
+> **T-23 Calendar multi-select ✔**; next up in the Calendar cluster is **T-26**.
+> See the shortlist at the foot.
 
 ## Scope & sources
 
@@ -98,7 +99,7 @@ internal — not a port concern).
 
 ## Train 5 — RAC 1.18.0 / S2 1.4.0 (2026-05-30, current pin)
 
-- [ ] **T-23** ⛔ RAC — **Calendar multiple date selection**. No multi-select on Calendar. ⇄ same feature as the S2 1.4 Calendar note.
+- [x] **T-23** ✔ RAC — **Calendar multiple date selection** (changeset `calendar-multiple-selection.md`). `selectionMode="multiple"` ported across `solid-stately` (defaulted `M` generic + `CalendarValueType`, array value, `isSameDay` toggle, `setValue(null)→[]`), `solidaria` (`aria-multiselectable` on the grid), and `solidaria-components` (`Calendar` generic over `M`, threads `selectionMode`). ⇄ same feature as the S2 1.4 Calendar note; the S2 styled `Calendar` (`@ts-nocheck`) already forwards `selectionMode` through to the headless component.
 - [ ] **T-24** ✅ RAC — **CalendarHeading** component. Present; verify.
 - [x] **T-25** ✔ RAC — **CalendarMonthPicker** + **CalendarYearPicker** (jump to month/year). **Done by us** this cycle (changeset `calendar-month-year-picker.md`): ported the `createCalendar{Month,Year}Picker` aria hooks (solidaria) + the headless `CalendarMonthPicker` / `CalendarYearPicker` render-prop components (solidaria-components). Like upstream, each is context-agnostic (reads `CalendarContext` or `RangeCalendarContext`, works in both Calendar and RangeCalendar) — **not** split per-type. Exposed `minValue`/`maxValue` accessors on both calendar states for the year-window clamp. 6 tests.
 - [ ] **T-26** ⛔ RAC — **RangeCalendar**: available dates derived from the first selected date (`firstAvailableDate` validation). Absent. Real gap.
@@ -118,7 +119,7 @@ From the first pass, these are **confirmed absent** and are the clearest port
 candidates (roughly highest-value first):
 
 1. ~~**T-29 SliderFill**~~ — ✔ **done** (changeset `slider-fill-component.md`); first port landed.
-2. ~~**T-25 CalendarMonthPicker / CalendarYearPicker**~~ — ✔ **done** (changeset `calendar-month-year-picker.md`). Remaining Calendar 1.18 cluster: **T-23 Calendar multi-select** + **T-26 RangeCalendar firstAvailableDate**.
+2. ~~**T-25 CalendarMonthPicker / CalendarYearPicker**~~ — ✔ **done** (changeset `calendar-month-year-picker.md`); ~~**T-23 Calendar multi-select**~~ — ✔ **done** (changeset `calendar-multiple-selection.md`). Remaining Calendar 1.18 cluster: **T-26 RangeCalendar firstAvailableDate**.
 3. **T-16 Table expandable rows** (`treeColumn`) — larger; assumes the collection plumbing.
 4. **T-17/T-21 Virtualizer window scrolling** — cross-cutting virtualizer change.
 5. **T-04 DateField constrain-on-blur** — behavioral; the kind of fix the ARIA gate never catches, so worth confirming carefully against source.

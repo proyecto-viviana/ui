@@ -2,6 +2,8 @@ export {
   createCalendarState,
   type CalendarStateProps,
   type CalendarState,
+  type CalendarSelectionMode,
+  type CalendarValueType,
   type ValidationState,
   type CalendarPageBehavior,
   type CalendarSelectionAlignment,

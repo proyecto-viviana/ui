@@ -35,13 +35,23 @@ export type CalendarDayOfWeek = "sun" | "mon" | "tue" | "wed" | "thu" | "fri" | 
 
 const dayOfWeekNames: CalendarDayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
-export interface CalendarStateProps<T extends DateValue = DateValue> {
+export type CalendarSelectionMode = "single" | "multiple";
+export type CalendarValueType<T, M extends CalendarSelectionMode> = M extends "single"
+  ? T
+  : readonly T[];
+
+export interface CalendarStateProps<
+  T extends DateValue = DateValue,
+  M extends CalendarSelectionMode = "single",
+> {
   /** The current value (controlled). */
-  value?: MaybeAccessor<T | null>;
+  value?: MaybeAccessor<CalendarValueType<T | null, M> | undefined>;
   /** The default value (uncontrolled). */
-  defaultValue?: T | null;
+  defaultValue?: CalendarValueType<T | null, M> | null;
   /** Handler called when the value changes. */
-  onChange?: (value: T | null) => void;
+  onChange?: (value: CalendarValueType<T | null, M>) => void;
+  /** Whether single or multiple date selection is enabled. */
+  selectionMode?: MaybeAccessor<M>;
   /** The minimum allowed date. */
   minValue?: MaybeAccessor<DateValue | undefined>;
   /** The maximum allowed date. */
@@ -82,11 +92,16 @@ export interface CalendarStateProps<T extends DateValue = DateValue> {
   firstDayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
 
-export interface CalendarState<T extends DateValue = DateValue> {
-  /** The currently selected date. */
-  value: Accessor<T | null>;
-  /** Sets the selected date. */
-  setValue: (value: T | null) => void;
+export interface CalendarState<
+  T extends DateValue = DateValue,
+  M extends CalendarSelectionMode = "single",
+> {
+  /** Whether single or multiple selection is enabled. */
+  selectionMode: Accessor<CalendarSelectionMode>;
+  /** The currently selected date(s). */
+  value: Accessor<CalendarValueType<T | null, M>>;
+  /** Sets the selected date(s). */
+  setValue: (value: CalendarValueType<T | null, M>) => void;
   /** The currently focused date. */
   focusedDate: Accessor<CalendarDate>;
   /** Sets the focused date. */
@@ -168,13 +183,17 @@ export interface CalendarState<T extends DateValue = DateValue> {
 /**
  * Provides state management for a calendar component.
  */
-export function createCalendarState<T extends DateValue = CalendarDate>(
-  props: CalendarStateProps<T> = {},
-): CalendarState<T> {
+export function createCalendarState<
+  T extends DateValue = CalendarDate,
+  M extends CalendarSelectionMode = "single",
+>(props: CalendarStateProps<T, M> = {}): CalendarState<T, M> {
   const timeZone = getLocalTimeZone();
   const locale = createMemo(() => access(props.locale) ?? "en-US");
   const minValueState = createMemo(() => access(props.minValue) ?? null);
   const maxValueState = createMemo(() => access(props.maxValue) ?? null);
+  const selectionMode = createMemo<CalendarSelectionMode>(
+    () => access(props.selectionMode) ?? "single",
+  );
   const resolvedOptions = createMemo(() => new DateFormatter(locale()).resolvedOptions());
   const calendar = createMemo(() =>
     (props.createCalendar ?? intlCreateCalendar)(resolvedOptions().calendar as CalendarIdentifier),
@@ -246,18 +265,24 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
       return toDisplayCalendarDate(props.defaultFocusedValue);
     }
     const controlledValue = access(props.value);
-    if (controlledValue) {
-      return toDisplayCalendarDate(controlledValue);
+    const controlledFirst = Array.isArray(controlledValue) ? controlledValue[0] : controlledValue;
+    if (controlledFirst) {
+      return toDisplayCalendarDate(controlledFirst);
     }
-    if (props.defaultValue) {
-      return toDisplayCalendarDate(props.defaultValue);
+    const defaultFirst = Array.isArray(props.defaultValue)
+      ? props.defaultValue[0]
+      : props.defaultValue;
+    if (defaultFirst) {
+      return toDisplayCalendarDate(defaultFirst);
     }
     return intlToCalendar(today(timeZone), calendar());
   };
 
   // State signals
   const initialFocusedDate = constrainDate(getInitialFocusedDate());
-  const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
+  const [internalValue, setInternalValue] = createSignal<T | T[] | null>(
+    (props.defaultValue as T | T[] | null) ?? null,
+  );
   const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(initialFocusedDate);
   const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
     alignVisibleRangeStart(initialFocusedDate),
@@ -266,12 +291,15 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   const [isPaginating, setIsPaginating] = createSignal(false);
 
   // Controlled vs uncontrolled value
-  const sourceValue = createMemo<T | null>(() => {
+  const sourceValue = createMemo<T | T[] | null>(() => {
     const controlled = access(props.value);
-    return controlled !== undefined ? controlled : internalValue();
+    return controlled !== undefined ? (controlled as T | T[] | null) : internalValue();
   });
-  const value = createMemo<T | null>(() => {
+  const value = createMemo<T | T[] | null>(() => {
     const currentValue = sourceValue();
+    if (Array.isArray(currentValue)) {
+      return currentValue.map((v) => toDisplayCalendarDate(v) as unknown as T);
+    }
     return currentValue ? (toDisplayCalendarDate(currentValue) as unknown as T) : null;
   });
 
@@ -378,13 +406,22 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   });
 
   // Set value with onChange callback
-  const setValue = (newValue: T | null) => {
+  const setValue = (newValue: T | T[] | null) => {
     if (isDisabled() || isReadOnly()) return;
 
     const oldValue = sourceValue();
-    const nextValue = newValue
-      ? (convertValue(constrainDate(toDisplayCalendarDate(newValue)), oldValue) as T)
-      : null;
+    const referenceValue = Array.isArray(oldValue) ? oldValue[0] ?? null : oldValue;
+
+    let nextValue: T | T[] | null;
+    if (newValue == null) {
+      nextValue = selectionMode() === "multiple" ? ([] as T[]) : null;
+    } else if (Array.isArray(newValue)) {
+      nextValue = newValue.map(
+        (v) => convertValue(constrainDate(toDisplayCalendarDate(v)), referenceValue) as T,
+      );
+    } else {
+      nextValue = convertValue(constrainDate(toDisplayCalendarDate(newValue)), referenceValue) as T;
+    }
 
     const controlled = access(props.value);
     if (controlled === undefined) {
@@ -392,7 +429,7 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     }
 
     if (!Object.is(oldValue, nextValue) && props.onChange) {
-      props.onChange(nextValue);
+      props.onChange(nextValue as CalendarValueType<T | null, M>);
     }
   };
 
@@ -412,8 +449,12 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   // Check if a date is selected
   const isSelected = (date: DateValue): boolean => {
     const v = value();
-    if (!v) return false;
-    return isSameDay(toDisplayCalendarDate(date), toDisplayCalendarDate(v));
+    if (v == null) return false;
+    const target = toDisplayCalendarDate(date);
+    if (Array.isArray(v)) {
+      return v.some((d) => isSameDay(target, toDisplayCalendarDate(d)));
+    }
+    return isSameDay(target, toDisplayCalendarDate(v));
   };
 
   // Check if a date is focused
@@ -510,17 +551,32 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   const selectFocusedDate = () => {
     if (isReadOnly() || isDisabled()) return;
     const date = focusedDate();
-    if (!isCellDisabled(date) && !isCellUnavailable(date)) {
-      setValue(date as unknown as T);
+    if (!isCellUnavailable(date)) {
+      selectDate(date);
     }
   };
 
   const selectDate = (date: CalendarDate) => {
     if (isReadOnly() || isDisabled()) return;
-    if (!isCellDisabled(date) && !isCellUnavailable(date)) {
+    if (isCellDisabled(date) || isCellUnavailable(date)) return;
+
+    if (selectionMode() === "multiple") {
+      const current = value();
+      const base: CalendarDate[] = Array.isArray(current)
+        ? current.map((v) => toDisplayCalendarDate(v))
+        : current != null
+          ? [toDisplayCalendarDate(current)]
+          : [];
+      const target = toDisplayCalendarDate(date);
+      const index = base.findIndex((d) => isSameDay(d, target));
+      const nextValue =
+        index >= 0 ? [...base.slice(0, index), ...base.slice(index + 1)] : [...base, target];
+      setValue(nextValue as unknown as T[]);
+    } else {
       setValue(date as unknown as T);
-      setFocusedDate(date);
     }
+
+    setFocusedDate(date);
   };
 
   // Get dates in a specific week
@@ -556,8 +612,9 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
   };
 
   return {
-    value,
-    setValue,
+    selectionMode,
+    value: value as unknown as Accessor<CalendarValueType<T | null, M>>,
+    setValue: setValue as unknown as (value: CalendarValueType<T | null, M>) => void,
     focusedDate,
     setFocusedDate,
     isDisabled,

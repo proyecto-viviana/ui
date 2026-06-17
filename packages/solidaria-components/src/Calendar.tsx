@@ -30,6 +30,7 @@ import {
   createCalendarState,
   type CalendarState,
   type CalendarStateProps,
+  type CalendarSelectionMode,
   type CalendarDate,
   type DateValue,
   endOfMonth,
@@ -69,10 +70,13 @@ export interface CalendarRenderProps {
   isInvalid: boolean;
 }
 
-export interface CalendarProps<T extends DateValue = DateValue>
+export interface CalendarProps<
+  T extends DateValue = DateValue,
+  M extends CalendarSelectionMode = "single",
+>
   extends
     Omit<AriaCalendarProps, "id" | "isDisabled" | "isReadOnly">,
-    Omit<CalendarStateProps<T>, "locale">,
+    Omit<CalendarStateProps<T, M>, "locale">,
     SlotProps {
   /** The children of the component. */
   children?: JSX.Element;
@@ -207,7 +211,10 @@ export function useCalendarContext(): CalendarState<DateValue> {
  * </Calendar>
  * ```
  */
-export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProps<T>): JSX.Element {
+export function Calendar<
+  T extends DateValue = CalendarDate,
+  M extends CalendarSelectionMode = "single",
+>(props: CalendarProps<T, M>): JSX.Element {
   const inheritedState = useContext(CalendarContext);
 
   // Use hydration-safe pattern for client-only rendering
@@ -227,9 +234,10 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
   );
 }
 
-function CalendarWithState<T extends DateValue = CalendarDate>(
-  props: CalendarProps<T> & { state: CalendarState<DateValue> },
-): JSX.Element {
+function CalendarWithState<
+  T extends DateValue = CalendarDate,
+  M extends CalendarSelectionMode = "single",
+>(props: CalendarProps<T, M> & { state: CalendarState<DateValue> }): JSX.Element {
   const [local, stateProps, rest] = splitProps(
     props,
     ["children", "class", "style", "slot", "state", "ref"],
@@ -237,6 +245,7 @@ function CalendarWithState<T extends DateValue = CalendarDate>(
       "value",
       "defaultValue",
       "onChange",
+      "selectionMode",
       "minValue",
       "maxValue",
       "isDisabled",
@@ -303,7 +312,10 @@ function CalendarWithState<T extends DateValue = CalendarDate>(
 /**
  * Internal Calendar component that renders after client mount.
  */
-function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<T>): JSX.Element {
+function CalendarInner<
+  T extends DateValue = CalendarDate,
+  M extends CalendarSelectionMode = "single",
+>(props: CalendarProps<T, M>): JSX.Element {
   const [local, stateProps, rest] = splitProps(
     props,
     ["children", "class", "style", "slot", "ref"],
@@ -311,6 +323,7 @@ function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<
       "value",
       "defaultValue",
       "onChange",
+      "selectionMode",
       "minValue",
       "maxValue",
       "isDisabled",
@@ -333,7 +346,7 @@ function CalendarInner<T extends DateValue = CalendarDate>(props: CalendarProps<
   );
 
   // Create calendar state
-  const state = createCalendarState(stateProps);
+  const state = createCalendarState<T, M>(stateProps);
 
   // Create calendar ARIA props
   const calendarAria = createCalendar(
