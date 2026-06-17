@@ -124,9 +124,11 @@ the authoritative source before changing a test. Known limits:
 
 45 components matched; 17 raw role-divergence flags. Regenerate anytime with
 `vp run guard:upstream-test-parity`. **17 is a ceiling, not a bug count** — triage
-(confirming each against source) has so far found exactly **one** confirmed
-component bug, **numberfield** (bucket C below, fixed in commit `0702d3b1`), and
-reclassified the rest into the buckets below. The headline lesson:
+(confirming each against source) has so far produced **two** confirmed
+component-side fixes — **numberfield** (emitted the wrong roles; commit `0702d3b1`)
+and **searchfield** (missing the S2 `FieldGroup` role; commit `2574335f`) — plus
+two **component-correct** cases where only test coverage was added (**datefield** /
+**timefield**), and reclassified the rest into the buckets below. The headline lesson:
 
 > **The top-ranked "bug" was the oracle's own blind spot.** Our combined
 > `ToggleButton.test.tsx` asserts `getByRole("radio")` for a single-select
@@ -153,7 +155,9 @@ test doesn't, and there's no S2 unit test to anchor it → confirm against S2
 is the signal: upstream asserts a `group` role on the field we may not).
 - **datefield** [23] / **timefield** [20] — ✅ **reconciled** (commit `6a3c7775`, 2026-06-16): *not* a component bug. `createDateField` already emits `role="group"` on the standalone field wrapper (and `role="presentation"` when embedded in a DatePicker, mirroring upstream `useDateField`'s `roleSymbol` switch). The oracle only saw `group` as `upstream-only` because our coverage exercised it via `querySelector` — invisible to the vocabulary extractor; added explicit `getByRole("group")` assertions at the solidaria-components layer. Oracle now reports `upstream-only {—}` for roles on both. Residual we-only `{button, presentation}` are benign — the contextual-help button + the `DateInput` presentation container / literal segments (Bucket A). A reminder that `querySelector('[role=…]')` is an oracle blind spot, like `queryByRole`.
 - **numberfield** [17] `{spinbutton}` ‖ `{group, textbox}` — ✅ **reconciled** (commit `0702d3b1`, 2026-06-16): confirmed *component* bug, not a test divergence. Upstream `useNumberField` wraps `useSpinButton` but overrides its output (`role: null`, `aria-valuenow/min/max/text: null`) because a spinbutton can't be focused with VoiceOver. Component now renders a `textbox` inside the `role=group` wrapper with `aria-roledescription="number field"`; tests + regression snapshot updated; changeset bumps all three packages. _Oracle still shows score 9 — pure ARIA-vocab noise: our `.not.toHaveAttribute("aria-value*")` negative assertions are miscounted as usage. No role divergence remains._
-- **searchfield** [15] / **popover** [17] `{textbox}`; **menu** [12] `{presentation}` — still open.
+- **searchfield** [15] `{textbox}` ‖ `{group}` — ✅ **reconciled** (commit `2574335f`, 2026-06-16): confirmed *component* gap at the **S2 layer**. S2's SearchField field shell is a `FieldGroup` (RAC `<Group>` → `role="group"`) around the icon, input, and clear button; ours rendered the same shell as a roleless `<div>` (the RAC SearchField has no group, so the group is S2-only). Added `role="group"`; oracle now reports `upstream-only {—}` for roles. Residual we-only `{textbox}` is the deliberate `type="text"` override test (benign — upstream's `type` prop, exercised). Changeset bumps solid-spectrum.
+- **popover** [17] `{textbox}` ‖ `{—}` — benign (Bucket A): our Popover test renders a `textbox` as example content; no upstream gap. No action.
+- **menu** [12] `{presentation}` ‖ upstream-only `{textbox}` — the upstream `textbox` is the Autocomplete / search-header-in-Menu scenario we don't cover; a test-scenario gap (→ Bucket D), not a role bug.
 
 **Bucket D — genuine coverage gaps (`upstream-only` roles we never assert)** —
 the most actionable real work; port the upstream structural assertions.
