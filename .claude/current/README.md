@@ -29,9 +29,10 @@ truth for terms with reach.
 8. `work-queue.md`
 9. `tooling.md`
 10. `upstream-sync.md`
-11. `release-policy.md`
-12. `tech-debt.md`
-13. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
+11. `upstream-release-audit.md`
+12. `release-policy.md`
+13. `tech-debt.md`
+14. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
 
 ## Files
 
@@ -45,6 +46,7 @@ truth for terms with reach.
 | `work-queue.md`     | Current priorities, how to pick work, active workstreams.                                                                       |
 | `tooling.md`        | The `vp` command layer, static gates, hooks, MCP servers, package-build migration.                                              |
 | `upstream-sync.md`  | How the vendored React Spectrum oracle is pinned, how new Adobe releases are absorbed, and the `guard:upstream-test-parity` contract-vocabulary diff. |
+| `upstream-release-audit.md` | Backlog of atomic tickets distilled from Adobe's release notes (RAC 1.14→1.18 / S2 1.0→1.4): which shipped changes we have, owe, or already ported. |
 | `release-policy.md` | Releasable packages, Changesets, CI gates, npm publishing.                                                                      |
 | `tech-debt.md`      | Known debt and temporary bridges, each with an exit.                                                                            |
 

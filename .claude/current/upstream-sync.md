@@ -94,6 +94,11 @@ When Adobe ships a new `@react-spectrum/s2` / `react-aria-components`:
    gate — the notes are the only signal it happened. New components land here as
    "no port test exists" in the gate; the notes say whether they're worth porting.
 
+   The standing backlog of this triage — every release since the S2 1.0.0 major,
+   already broken into atomic port-vs-skip tickets with first-pass status — lives
+   in [`upstream-release-audit.md`](./upstream-release-audit.md) (oldest train
+   first). Extend it with each new train you cross.
+
 5. **Re-run the mechanical gates** against the new spec:
    ```bash
    vp run guard:upstream-test-parity   # contract-vocabulary diff (this doc)
