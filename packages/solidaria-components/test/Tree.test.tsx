@@ -128,24 +128,37 @@ describe("Tree", () => {
       expect(tree).toHaveClass("solidaria-Tree");
     });
 
-    it("should render TreeSection wrapper with section semantics", () => {
+    it("should render TreeSection wrapper as a rowgroup", () => {
       render(() => (
         <TreeSection>
           <div>Section content</div>
         </TreeSection>
       ));
 
-      const section = screen.getByText("Section content").closest("[data-section]");
-      expect(section).toBeInTheDocument();
-      expect(section).toHaveClass("solidaria-Section");
+      // A section exposes role="rowgroup" (mirrors upstream TreeSection, which
+      // reuses useGridListSection's rowGroupProps).
+      const section = screen.getByRole("rowgroup");
+      expect(section).toHaveClass("solidaria-TreeSection");
+      expect(section).toHaveAttribute("data-section");
+      expect(screen.getByText("Section content")).toBeInTheDocument();
     });
 
-    it("should render TreeHeader wrapper with heading semantics", () => {
-      render(() => <TreeHeader>Section header</TreeHeader>);
+    it("should render TreeHeader as a section row labelling the rowgroup", () => {
+      render(() => (
+        <TreeSection>
+          <TreeHeader>Section header</TreeHeader>
+          <div>Section content</div>
+        </TreeSection>
+      ));
 
-      const header = screen.getByRole("heading");
-      expect(header).toHaveTextContent("Section header");
-      expect(header).toHaveClass("solidaria-Header");
+      // The header renders role="row" wrapping a role="rowheader" whose id labels
+      // the section's rowgroup (mirrors upstream TreeHeader › GridListHeader and
+      // useGridListSection's rowProps/rowHeaderProps).
+      const row = screen.getByRole("row");
+      expect(row).toHaveClass("solidaria-TreeHeader");
+      const rowheader = screen.getByRole("rowheader");
+      expect(rowheader).toHaveTextContent("Section header");
+      expect(screen.getByRole("rowgroup")).toHaveAttribute("aria-labelledby", rowheader.id);
     });
 
     it("should render items with default class", () => {
@@ -166,8 +179,10 @@ describe("Tree", () => {
         </Tree>
       ));
 
-      expect(screen.getByRole("heading", { name: "Mammals" })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "Birds" })).toBeInTheDocument();
+      // Section titles render as role="rowheader" (mirrors upstream TreeHeader ›
+      // GridListHeader), not role="heading".
+      expect(screen.getByRole("rowheader", { name: "Mammals" })).toBeInTheDocument();
+      expect(screen.getByRole("rowheader", { name: "Birds" })).toBeInTheDocument();
       expect(screen.getByText("Lion")).toBeInTheDocument();
       expect(screen.getByText("Eagle")).toBeInTheDocument();
     });

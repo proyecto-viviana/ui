@@ -949,15 +949,15 @@ describe("Virtualizer", () => {
       </Virtualizer>
     ));
 
-    expect(screen.getByRole("heading", { name: "Section A" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Section B" })).not.toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "Section A" })).toBeInTheDocument();
+    expect(screen.queryByRole("rowheader", { name: "Section B" })).not.toBeInTheDocument();
 
     const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
     container.scrollTop = 20;
     fireEvent.scroll(container);
 
-    expect(screen.getByRole("heading", { name: "Section A" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Section B" })).not.toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "Section A" })).toBeInTheDocument();
+    expect(screen.queryByRole("rowheader", { name: "Section B" })).not.toBeInTheDocument();
   });
 
   it("updates tree section headers when scrolling across section boundaries", () => {
@@ -1000,15 +1000,15 @@ describe("Virtualizer", () => {
       </Virtualizer>
     ));
 
-    expect(screen.getByRole("heading", { name: "Section A" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Section B" })).not.toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "Section A" })).toBeInTheDocument();
+    expect(screen.queryByRole("rowheader", { name: "Section B" })).not.toBeInTheDocument();
 
     const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
     container.scrollTop = 60;
     fireEvent.scroll(container);
 
-    expect(screen.getByRole("heading", { name: "Section B" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Section A" })).not.toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "Section B" })).toBeInTheDocument();
+    expect(screen.queryByRole("rowheader", { name: "Section A" })).not.toBeInTheDocument();
   });
 
   it("retains focused item in virtualized listbox when no drop target is active", () => {

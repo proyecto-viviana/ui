@@ -124,6 +124,7 @@ export {
   // Basic utilities
   createIsSSR,
   createId,
+  createSlotId,
   canUseDOM,
   // SSR Provider
   SSRProvider,
@@ -456,6 +457,7 @@ export {
   createGridList,
   createGridListItem,
   createGridListSelectionCheckbox,
+  createGridListSection,
   getGridListData,
   type AriaGridListProps,
   type GridListAria,
@@ -463,6 +465,8 @@ export {
   type GridListItemAria,
   type AriaGridListSelectionCheckboxProps,
   type GridListSelectionCheckboxAria,
+  type AriaGridListSectionProps,
+  type GridListSectionAria,
 } from "./gridlist";
 
 export {

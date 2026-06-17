@@ -8,6 +8,7 @@ import {
   GridList,
   GridListItem,
   GridListSection,
+  GridListHeader,
   GridListSelectionCheckbox,
 } from "../src/GridList";
 import { useDragAndDrop } from "../src/useDragAndDrop";
@@ -29,9 +30,29 @@ describe("GridList", () => {
   // ============================================
 
   describe("rendering", () => {
-    it("should render GridListSection as a collection section primitive", () => {
+    it("should render GridListSection as a rowgroup collection section primitive", () => {
       const { container } = render(() => <GridListSection>Section</GridListSection>);
+      // A section exposes role="rowgroup" (mirrors upstream GridListSection /
+      // useGridListSection rowGroupProps) and keeps the data-section marker.
       expect(container.querySelector("[data-section]")).toBeInTheDocument();
+      expect(screen.getByRole("rowgroup")).toHaveClass("solidaria-GridListSection");
+    });
+
+    it("should label the section rowgroup via its header (mirrors upstream sections)", () => {
+      render(() => (
+        <GridListSection>
+          <GridListHeader>Produce</GridListHeader>
+          <div>Section content</div>
+        </GridListSection>
+      ));
+
+      // Mirrors upstream GridList.test.js "should support sections": the section
+      // is a role="rowgroup" labelled by its header's content via aria-labelledby
+      // (the header renders the labelling rowheader id).
+      const group = screen.getByRole("rowgroup");
+      const labelledBy = group.getAttribute("aria-labelledby");
+      expect(labelledBy).toBeTruthy();
+      expect(document.getElementById(labelledBy as string)).toHaveTextContent("Produce");
     });
 
     it("should render with default class", () => {

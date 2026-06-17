@@ -83,3 +83,28 @@ export interface GridListSelectionCheckboxAria {
   /** Props to spread on the checkbox input element. */
   checkboxProps: JSX.InputHTMLAttributes<HTMLInputElement>;
 }
+
+/**
+ * Props for the createGridListSection hook.
+ */
+export interface AriaGridListSectionProps {
+  /** ARIA label for the section, when it has no visible header. */
+  "aria-label"?: string;
+}
+
+/**
+ * Return value from createGridListSection.
+ */
+export interface GridListSectionAria {
+  /** Props to spread on the section header's outer (row) element. */
+  rowProps: { role: "row" };
+  /** Props to spread on the section header's inner (rowheader) element. */
+  rowHeaderProps: { id: string | undefined; role: "rowheader" };
+  /** Props to spread on the section's wrapper (rowgroup) element. */
+  rowGroupProps: {
+    role: "rowgroup";
+    id?: string;
+    "aria-label"?: string;
+    "aria-labelledby"?: string;
+  };
+}

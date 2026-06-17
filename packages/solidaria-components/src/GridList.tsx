@@ -24,10 +24,12 @@ import {
   createGridList,
   createGridListItem,
   createGridListSelectionCheckbox,
+  createGridListSection,
   createFocusRing,
   createHover,
   mergeProps,
   type AriaGridListProps,
+  type GridListSectionAria,
 } from "@proyecto-viviana/solidaria";
 import {
   createGridState,
@@ -50,7 +52,6 @@ import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
   CollectionRendererContext,
   type CollectionRendererContextValue,
-  Section,
   type SectionProps,
   useCollectionRenderer,
 } from "./Collection";
@@ -198,7 +199,12 @@ export const GridListContext = createContext<GridListContextValue<object> | null
 export const GridListStateContext = createContext<GridState<object, GridCollection<object>> | null>(
   null,
 );
-export const GridListHeaderContext = createContext<null>(null);
+/** Carries the section header's outer (row) props to {@link GridListHeader}. */
+export const GridListHeaderContext = createContext<GridListSectionAria["rowProps"] | null>(null);
+/** Carries the section header's inner (rowheader) props to {@link GridListHeader}. */
+export const GridListHeaderInnerContext = createContext<
+  GridListSectionAria["rowHeaderProps"] | null
+>(null);
 
 function buildGridCollection<T extends object>(
   items: T[],
@@ -905,19 +911,77 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
   );
 }
 
+/**
+ * The header of a {@link GridListSection}. Renders as `role="row"` wrapping a
+ * `role="rowheader"` whose id labels the section (mirrors upstream
+ * `GridListHeader`). The row/rowheader props are supplied by the enclosing
+ * section through context.
+ */
 export function GridListHeader(props: GridListHeaderProps): JSX.Element {
+  const rowProps = useContext(GridListHeaderContext);
+  const rowHeaderProps = useContext(GridListHeaderInnerContext);
   return (
-    <div class={props.class ?? "solidaria-GridListHeader"} style={props.style}>
-      {props.children}
+    <div class={props.class ?? "solidaria-GridListHeader"} style={props.style} {...(rowProps ?? {})}>
+      <div {...(rowHeaderProps ?? {})} style={{ display: "contents" }}>
+        {props.children}
+      </div>
     </div>
   );
 }
 
 /**
- * Section primitive alias for GridList composition parity.
+ * A section within a GridList. Renders as `role="rowgroup"` and supplies its
+ * optional {@link GridListHeader} with the row/rowheader props that wire up the
+ * section's `aria-labelledby` (mirrors upstream `GridListSection`).
  */
 export function GridListSection(props: GridListSectionProps): JSX.Element {
-  return <Section {...props} />;
+  const [local, domProps] = splitProps(props, ["children", "class", "style", "slot", "ref"]);
+
+  const section = createGridListSection({
+    get "aria-label"() {
+      return (domProps as { "aria-label"?: string })["aria-label"];
+    },
+  });
+
+  // Mirror upstream: resolve class/style via renderProps but keep children out
+  // of it (upstream passes `children: undefined`/`values: undefined`). The real
+  // children must only be evaluated inside the header providers below, otherwise
+  // a child <GridListHeader> would be instantiated in this component's owner and
+  // read the contexts as null.
+  // The values callback runs during setup (useRenderProps resolves class/style
+  // synchronously), so it must not read `local.children` — doing so would
+  // instantiate the header children in this owner, outside the providers below,
+  // and break their context wiring. Mirror upstream's `values: undefined` with a
+  // constant: a rendered section primitive always wraps its item collection.
+  const renderProps = useRenderProps(
+    {
+      children: undefined,
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-GridListSection",
+    },
+    () => ({ hasChildren: true }),
+  );
+
+  const filteredDomProps = createMemo(() => filterDOMProps(domProps, { global: true }));
+
+  return (
+    <div
+      ref={(el) => assignRef(local.ref, el)}
+      {...filteredDomProps()}
+      {...section.rowGroupProps}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      slot={local.slot}
+      data-section
+    >
+      <GridListHeaderContext.Provider value={section.rowProps}>
+        <GridListHeaderInnerContext.Provider value={section.rowHeaderProps}>
+          {local.children}
+        </GridListHeaderInnerContext.Provider>
+      </GridListHeaderContext.Provider>
+    </div>
+  );
 }
 
 GridList.Item = GridListItem;

@@ -81,6 +81,37 @@ export function createId(defaultId?: string): string {
 }
 
 /**
+ * Generates an id, but only resolves to it once an element with that id is
+ * actually present in the DOM. Returns `undefined` otherwise.
+ *
+ * This is a 1:1 port of @react-aria/utils's `useSlotId`. It exists so that an
+ * `aria-labelledby` can point at an optional slot (e.g. a section header) and
+ * automatically fall back to `undefined` when the slot is not rendered, instead
+ * of leaving a dangling reference to a non-existent id.
+ *
+ * The initial value is the generated id so that server and first client render
+ * agree (no hydration mismatch); a client-only effect then probes the DOM and
+ * clears the value when no matching element exists.
+ *
+ * @param deps - Accessors re-probed when their values change (mirrors the
+ *   dependency array of the upstream hook).
+ */
+export function createSlotId(deps: Array<Accessor<unknown>> = []): Accessor<string | undefined> {
+  const id = createId();
+  const [resolvedId, setResolvedId] = createSignal<string | undefined>(id);
+
+  createEffect(() => {
+    // Re-probe when any explicit dependency changes.
+    for (const dep of deps) {
+      dep();
+    }
+    setResolvedId(document.getElementById(id) ? id : undefined);
+  });
+
+  return resolvedId;
+}
+
+/**
  * Provides SSR context to the component tree.
  *
  * While SolidJS handles most SSR scenarios automatically, this provider

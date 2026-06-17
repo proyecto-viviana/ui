@@ -744,6 +744,7 @@ export {
   GridListLoadMoreItem,
   GridListContext,
   GridListHeaderContext,
+  GridListHeaderInnerContext,
   GridListStateContext,
   type GridListProps,
   type GridListRenderProps,

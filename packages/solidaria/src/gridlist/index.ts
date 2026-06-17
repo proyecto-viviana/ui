@@ -5,6 +5,7 @@
 export { createGridList, getGridListData } from "./createGridList";
 export { createGridListItem } from "./createGridListItem";
 export { createGridListSelectionCheckbox } from "./createGridListSelectionCheckbox";
+export { createGridListSection } from "./createGridListSection";
 
 export type {
   AriaGridListProps,
@@ -13,4 +14,6 @@ export type {
   GridListItemAria,
   AriaGridListSelectionCheckboxProps,
   GridListSelectionCheckboxAria,
+  AriaGridListSectionProps,
+  GridListSectionAria,
 } from "./types";

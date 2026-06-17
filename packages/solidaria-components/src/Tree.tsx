@@ -24,6 +24,7 @@ import {
   createTree,
   createTreeItem,
   createTreeSelectionCheckbox,
+  createGridListSection,
   createFocusRing,
   createHover,
   mergeProps,
@@ -60,14 +61,17 @@ import {
   CollectionRendererContext,
   flattenCollectionEntries,
   isCollectionSection,
-  Section,
-  Header,
   type CollectionEntry,
   type CollectionRendererContextValue,
   type SectionProps,
-  type HeaderProps,
   useCollectionRenderer,
 } from "./Collection";
+import {
+  GridListHeader,
+  GridListHeaderContext,
+  GridListHeaderInnerContext,
+  type GridListHeaderProps,
+} from "./GridList";
 import { useVirtualizerContext } from "./Virtualizer";
 import {
   handleLinkClick,
@@ -242,7 +246,7 @@ export interface TreeLoadMoreItemProps extends SlotProps {
 }
 
 export interface TreeSectionProps extends SectionProps {}
-export interface TreeHeaderProps extends HeaderProps {}
+export interface TreeHeaderProps extends GridListHeaderProps {}
 
 interface TreeContextValue<T extends object> {
   state: TreeState<T, TreeCollection<T>>;
@@ -1866,12 +1870,69 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
   return <>{renderProps.renderChildren()}</>;
 }
 
+/**
+ * A section within a Tree. Renders as `role="rowgroup"` and supplies its
+ * optional {@link TreeHeader} with the row/rowheader props that wire up the
+ * section's `aria-labelledby` (mirrors upstream `TreeSection`, which reuses
+ * `useGridListSection`).
+ */
 export function TreeSection(props: TreeSectionProps): JSX.Element {
-  return <Section {...props} />;
+  const [local, domProps] = splitProps(props, ["children", "class", "style", "slot", "ref"]);
+
+  const section = createGridListSection({
+    get "aria-label"() {
+      return (domProps as { "aria-label"?: string })["aria-label"];
+    },
+  });
+
+  // Mirror upstream: resolve class/style via renderProps but keep children out
+  // of it. The real children must only be evaluated inside the header providers
+  // below, otherwise a child <TreeHeader> would be instantiated in this
+  // component's owner and read the header contexts as null. The values callback
+  // runs during setup, so it must not read `local.children` either; mirror
+  // upstream's `values: undefined` with a constant.
+  const renderProps = useRenderProps(
+    {
+      children: undefined,
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-TreeSection",
+    },
+    () => ({ hasChildren: true }),
+  );
+
+  const filteredDomProps = createMemo(() => filterDOMProps(domProps, { global: true }));
+
+  return (
+    <div
+      ref={(el) => assignRef(local.ref, el)}
+      {...filteredDomProps()}
+      {...section.rowGroupProps}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      slot={local.slot}
+      data-section
+    >
+      <GridListHeaderContext.Provider value={section.rowProps}>
+        <GridListHeaderInnerContext.Provider value={section.rowHeaderProps}>
+          {local.children}
+        </GridListHeaderInnerContext.Provider>
+      </GridListHeaderContext.Provider>
+    </div>
+  );
 }
 
+/**
+ * The header of a {@link TreeSection}. Mirrors upstream `TreeHeader`, which is a
+ * thin wrapper over `GridListHeader` with a Tree-specific class. The row and
+ * rowheader semantics come from the enclosing section through context.
+ */
 export function TreeHeader(props: TreeHeaderProps): JSX.Element {
-  return <Header {...props} />;
+  return (
+    <GridListHeader class="solidaria-TreeHeader" {...props}>
+      {props.children}
+    </GridListHeader>
+  );
 }
 
 Tree.Item = TreeItem;
