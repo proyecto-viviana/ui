@@ -145,11 +145,11 @@ upstream; the extra role is an auxiliary widget in the same story). No action.
   the real `checkbox`/`switch` (asserted correctly, many times).
 
 **Bucket B — sanctioned S2 extras** (we test a real S2 behavior the RAC *unit*
-test doesn't, and there's no S2 unit test to anchor it → confirm against S2
-**source**, then record as an intentional local extra in the validation note).
-- **breadcrumbs** [42] `{navigation, menu, menuitem, button}` — the S2 collapse-to-overflow-menu + nav landmark.
-- **button** [20] / **select** [20] `{progressbar}` — S2 `isPending` spinner / async-loading list.
-- **disclosure** [30] `{group, region}` — DisclosureGroup wrapper + disclosure panel.
+test doesn't → all three **confirmed against S2 source** 2026-06-16; our we-only
+assertions are legitimate richer coverage, not invented roles. No code/test changes).
+- **breadcrumbs** [42] `{navigation, menu, menuitem, button}` — ✅ confirmed: `s2/src/Breadcrumbs.tsx` imports `Menu, MenuItem, MenuTrigger`; `BreadcrumbMenu` renders `<Menu items><MenuItem>` for the collapsed overflow, and breadcrumbs are a `navigation` landmark.
+- **button** [20] / **select** [20] `{progressbar}` — ✅ confirmed: `s2/src/Button.tsx` `isPending` → `usePendingState` → `isProgressVisible` renders `ProgressCircle` (progressbar); `s2/src/Picker.tsx` `loadingState` → `showButtonSpinner` / `isLoading` ProgressCircle.
+- **disclosure** [30] `{group, region}` — ✅ confirmed: `s2/src/Accordion.tsx` wraps items in RAC `DisclosureGroup` (role=group) and exposes `DisclosurePanel` (`role?: 'group' | 'region'`).
 
 **Bucket C — field-wrapper role nuances to reconcile** (the `upstream-only` side
 is the signal: upstream asserts a `group` role on the field we may not).
