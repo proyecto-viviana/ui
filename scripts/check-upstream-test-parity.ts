@@ -197,12 +197,12 @@ function extract(src: string): Vocab {
 // ---------------------------------------------------------------------------
 
 async function walk(dir: string): Promise<string[]> {
-  let entries: Awaited<ReturnType<typeof readdir>>;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
+  // Infer the entry type from the call: `Awaited<ReturnType<typeof readdir>>`
+  // resolves to the Buffer-flavored `Dirent` under newer @types/node (so
+  // `e.name` is typed as a buffer, not a string). A read failure (e.g. a
+  // missing dir) is treated as empty.
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (entries === null) return [];
   const out: string[] = [];
   for (const e of entries) {
     const full = path.join(dir, e.name);
