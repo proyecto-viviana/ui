@@ -235,6 +235,17 @@ describe("TimeField", () => {
       expect(spinbuttons.length).toBeGreaterThan(0);
     });
 
+    it("should expose the field wrapper as a group (matches upstream useDateField)", async () => {
+      render(() => <TestTimeField />);
+      await waitForTimeFieldHydration();
+
+      // Upstream useDateField (shared by TimeField) gives the standalone field
+      // grouping element role="group"; the spinbutton segments live inside it.
+      const group = screen.getByRole("group", { name: "Test Time" });
+      expect(group).toBeInTheDocument();
+      expect(group.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
+    });
+
     it("should render literal segments as separators", async () => {
       render(() => <TestTimeField />);
       await waitForTimeFieldHydration();

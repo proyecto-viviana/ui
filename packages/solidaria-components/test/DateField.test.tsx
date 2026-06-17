@@ -75,6 +75,19 @@ describe("DateField", () => {
       expect(spinbuttons.length).toBeGreaterThan(0);
     });
 
+    it("should expose the field wrapper as a group (matches upstream useDateField)", async () => {
+      render(() => <TestDateField />);
+      await waitForDateFieldHydration();
+
+      // Upstream useDateField gives the standalone field grouping element
+      // role="group"; it only becomes role="presentation" when embedded in a
+      // DatePicker (which provides its own group). The spinbutton segments live
+      // inside this group.
+      const group = screen.getByRole("group", { name: "Test Date Field" });
+      expect(group).toBeInTheDocument();
+      expect(group.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
+    });
+
     it("should render DateInput with presentation role", async () => {
       render(() => <TestDateField />);
       await waitForDateFieldHydration();
