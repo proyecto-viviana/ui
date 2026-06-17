@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
 import { DateInput, DateSegment } from "../src/DateField";
@@ -196,10 +196,11 @@ describe("DatePicker", () => {
       const button = document.querySelector(".solidaria-DatePickerButton") as HTMLElement;
       await user.click(button);
 
-      await waitFor(() => {
-        const grid = document.querySelector('[role="grid"]');
-        expect(grid).toBeInTheDocument();
-      });
+      // The popover reveals the embedded Calendar — assert its grid and day
+      // gridcells by role (mirrors upstream DatePicker.test.js `getAllByRole('gridcell')`).
+      const grid = await screen.findByRole("grid");
+      expect(grid).toBeInTheDocument();
+      expect(within(grid).getAllByRole("gridcell").length).toBeGreaterThanOrEqual(28);
     });
 
     it("should render content outside picker container (portal)", async () => {
@@ -402,6 +403,9 @@ describe("DatePicker", () => {
       expect(input).toHaveAttribute("type", "text");
       expect(input).toHaveAttribute("hidden");
       expect(input).toBeRequired();
+      // Same element by role: a native-validation hidden form input is a `textbox`
+      // (mirrors upstream DatePicker.test.js `getByRole('textbox', {hidden: true})`).
+      expect(screen.getByRole("textbox", { hidden: true })).toBe(input);
     });
 
     it("should render hidden input semantics for aria validation behavior", async () => {

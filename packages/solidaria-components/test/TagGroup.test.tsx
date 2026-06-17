@@ -108,6 +108,10 @@ describe("TagGroup", () => {
       ));
 
       expect(screen.getByText("No tags")).toBeInTheDocument();
+      // An empty TagGroup exposes role="group" (not "grid"); mirrors upstream
+      // TagGroup.test.js `getByRole('group')` and createTagGroup's
+      // `role: hasItems ? "grid" : "group"`.
+      expect(screen.getByRole("group")).toBeInTheDocument();
     });
   });
 

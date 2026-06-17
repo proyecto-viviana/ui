@@ -195,6 +195,20 @@ describe("DateRangePicker", () => {
     expect(button).toHaveAttribute("tabindex", "0");
   });
 
+  it("reveals the range calendar grid when open", async () => {
+    render(() => <TestDateRangePicker />);
+    await waitForHydration();
+
+    const trigger = document.querySelector(".solidaria-DateRangePickerButton") as HTMLElement;
+    await user.click(trigger);
+
+    // The popover reveals the embedded RangeCalendar — assert its grid and day
+    // gridcells by role (mirrors upstream DateRangePicker.test.js grid/gridcell checks).
+    const grid = await screen.findByRole("grid");
+    expect(grid).toBeInTheDocument();
+    expect(within(grid).getAllByRole("gridcell").length).toBeGreaterThanOrEqual(28);
+  });
+
   // ===== Disabled/ReadOnly states =====
 
   it("should not open when isDisabled", async () => {
