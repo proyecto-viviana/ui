@@ -121,17 +121,21 @@ describe("createNumberField", () => {
   });
 
   describe("renders properly", () => {
-    it("renders input with spinbutton role", () => {
+    it("renders the input as a textbox inside a group", () => {
       render(() => <TestNumberField aria-label="Amount" />);
 
-      const input = screen.getByRole("spinbutton");
+      // Upstream useNumberField overrides the spinbutton role for VoiceOver: the
+      // input is a textbox, the field wrapper carries role=group.
+      const input = screen.getByRole("textbox");
       expect(input).toBeInTheDocument();
+      expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+      expect(screen.getByRole("group")).toContainElement(input);
     });
 
     it("renders with default value", () => {
       render(() => <TestNumberField aria-label="Amount" defaultValue={50} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveValue("50");
     });
 
@@ -151,14 +155,14 @@ describe("createNumberField", () => {
       render(() => <TestNumberField label="Quantity" />);
 
       expect(screen.getByText("Quantity")).toBeInTheDocument();
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAccessibleName("Quantity");
     });
 
     it("supports aria-label", () => {
       render(() => <TestNumberField aria-label="Custom amount" />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-label", "Custom amount");
     });
 
@@ -170,7 +174,7 @@ describe("createNumberField", () => {
       const description = screen.getByTestId("description");
       expect(description).toHaveTextContent("Enter a value between 1 and 100");
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-describedby", expect.stringContaining(description.id));
     });
 
@@ -182,39 +186,49 @@ describe("createNumberField", () => {
       const error = screen.getByTestId("error");
       expect(error).toHaveTextContent("Value is out of range");
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-invalid", "true");
       expect(input).toHaveAttribute("aria-describedby", expect.stringContaining(error.id));
     });
   });
 
   describe("ARIA attributes", () => {
-    it("has aria-valuenow with current value", () => {
+    it("reflects the value via the input value, not aria-valuenow", () => {
       render(() => <TestNumberField aria-label="Amount" defaultValue={25} />);
 
-      const input = screen.getByRole("spinbutton");
-      expect(input).toHaveAttribute("aria-valuenow", "25");
+      // Upstream drops aria-value* with the spinbutton role; the value is
+      // announced through the textbox's own value instead.
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveValue("25");
+      expect(input).not.toHaveAttribute("aria-valuenow");
     });
 
-    it("has aria-valuemin and aria-valuemax when set", () => {
+    it("does not expose aria-valuemin/max on the textbox", () => {
       render(() => <TestNumberField aria-label="Amount" minValue={0} maxValue={100} />);
 
-      const input = screen.getByRole("spinbutton");
-      expect(input).toHaveAttribute("aria-valuemin", "0");
-      expect(input).toHaveAttribute("aria-valuemax", "100");
+      const input = screen.getByRole("textbox");
+      expect(input).not.toHaveAttribute("aria-valuemin");
+      expect(input).not.toHaveAttribute("aria-valuemax");
+    });
+
+    it("exposes aria-roledescription in place of the spinbutton role", () => {
+      render(() => <TestNumberField aria-label="Amount" />);
+
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveAttribute("aria-roledescription", "number field");
     });
 
     it("has aria-required when required", () => {
       render(() => <TestNumberField aria-label="Amount" isRequired />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-required", "true");
     });
 
     it("has aria-invalid when invalid", () => {
       render(() => <TestNumberField aria-label="Amount" isInvalid />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-invalid", "true");
     });
 
@@ -242,7 +256,7 @@ describe("createNumberField", () => {
     it("buttons reference input via aria-controls", () => {
       render(() => <TestNumberField aria-label="Amount" />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       const increment = screen.getByTestId("increment");
       const decrement = screen.getByTestId("decrement");
 
@@ -256,7 +270,7 @@ describe("createNumberField", () => {
       const onChange = vi.fn();
       render(() => <TestNumberField aria-label="Amount" defaultValue={10} onChange={onChange} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "ArrowUp" });
 
       expect(onChange).toHaveBeenCalledWith(11);
@@ -266,7 +280,7 @@ describe("createNumberField", () => {
       const onChange = vi.fn();
       render(() => <TestNumberField aria-label="Amount" defaultValue={10} onChange={onChange} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "ArrowDown" });
 
       expect(onChange).toHaveBeenCalledWith(9);
@@ -284,7 +298,7 @@ describe("createNumberField", () => {
         />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "Home" });
 
       expect(onChange).toHaveBeenCalledWith(0);
@@ -302,7 +316,7 @@ describe("createNumberField", () => {
         />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "End" });
 
       expect(onChange).toHaveBeenCalledWith(100);
@@ -320,7 +334,7 @@ describe("createNumberField", () => {
         />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "PageUp" });
 
       expect(onChange).toHaveBeenCalledWith(100);
@@ -338,7 +352,7 @@ describe("createNumberField", () => {
         />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "PageDown" });
 
       expect(onChange).toHaveBeenCalledWith(0);
@@ -350,7 +364,7 @@ describe("createNumberField", () => {
         <TestNumberField aria-label="Amount" defaultValue={10} onChange={onChange} isDisabled />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "ArrowUp" });
 
       expect(onChange).not.toHaveBeenCalled();
@@ -362,7 +376,7 @@ describe("createNumberField", () => {
         <TestNumberField aria-label="Amount" defaultValue={10} onChange={onChange} isReadOnly />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "ArrowUp" });
 
       expect(onChange).not.toHaveBeenCalled();
@@ -436,7 +450,7 @@ describe("createNumberField", () => {
         <TestNumberField aria-label="Amount" defaultValue={10} step={5} onChange={onChange} />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "ArrowUp" });
 
       expect(onChange).toHaveBeenCalledWith(15);
@@ -454,7 +468,7 @@ describe("createNumberField", () => {
         />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "ArrowDown" });
 
       expect(onChange).toHaveBeenCalledWith(0);
@@ -472,7 +486,7 @@ describe("createNumberField", () => {
         />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "ArrowUp" });
 
       expect(onChange).toHaveBeenCalledWith(100);
@@ -483,35 +497,35 @@ describe("createNumberField", () => {
     it("has text input type", () => {
       render(() => <TestNumberField aria-label="Amount" />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("type", "text");
     });
 
     it("has decimal inputmode", () => {
       render(() => <TestNumberField aria-label="Amount" />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("inputmode", "decimal");
     });
 
     it("disables autocomplete", () => {
       render(() => <TestNumberField aria-label="Amount" />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("autocomplete", "off");
     });
 
     it("supports name attribute", () => {
       render(() => <TestNumberField aria-label="Amount" name="quantity" />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("name", "quantity");
     });
 
     it("supports form attribute", () => {
       render(() => <TestNumberField aria-label="Amount" name="quantity" form="checkout-form" />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("form", "checkout-form");
     });
 
@@ -532,7 +546,7 @@ describe("createNumberField", () => {
         />
       ));
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       fireEvent.focus(input);
       fireEvent.keyDown(input, { key: "A" });
       fireEvent.keyUp(input, { key: "A" });
@@ -551,7 +565,7 @@ describe("createNumberField", () => {
     it("input is disabled when isDisabled is true", () => {
       render(() => <TestNumberField aria-label="Amount" isDisabled />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toBeDisabled();
     });
 
@@ -567,7 +581,7 @@ describe("createNumberField", () => {
     it("input is read-only when isReadOnly is true", () => {
       render(() => <TestNumberField aria-label="Amount" isReadOnly />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("readonly");
     });
   });

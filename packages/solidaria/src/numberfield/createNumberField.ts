@@ -313,11 +313,14 @@ export function createNumberField(
           autoComplete: "off",
           autoCorrect: "off",
           spellcheck: false,
-          role: "spinbutton",
-          "aria-valuenow": isNaN(state.numberValue()) ? undefined : state.numberValue(),
-          "aria-valuemin": state.minValue(),
-          "aria-valuemax": state.maxValue(),
-          "aria-valuetext": isNaN(state.numberValue()) ? undefined : state.inputValue(),
+          // Upstream useNumberField wraps useSpinButton but deliberately
+          // overrides its output: role=spinbutton can't be focused with
+          // VoiceOver, so the input is a plain textbox (inside the role=group
+          // wrapper above) and every aria-value* is dropped in favour of
+          // aria-roledescription. The formatted value is still announced via the
+          // input's own value. Mirror that contract instead of leaking the raw
+          // spinbutton semantics.
+          "aria-roledescription": "number field",
           "aria-invalid": p.isInvalid || undefined,
           "aria-required": p.isRequired || undefined,
           "aria-describedby": getAriaDescribedBy(),

@@ -66,11 +66,15 @@ describe("NumberField", () => {
       expect(field).toBeInTheDocument();
     });
 
-    it("should render input with spinbutton role", () => {
+    it("should render the input as a textbox inside a group", () => {
       render(() => <TestNumberField />);
 
-      const input = screen.getByRole("spinbutton");
+      // Upstream useNumberField overrides the spinbutton role: the input is a
+      // plain textbox, with role=group on the wrapping field.
+      const input = screen.getByRole("textbox");
       expect(input).toBeInTheDocument();
+      expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+      expect(screen.getByRole("group")).toContainElement(input);
     });
 
     it("should render increment and decrement buttons", () => {
@@ -114,14 +118,14 @@ describe("NumberField", () => {
     it("should display defaultValue", () => {
       render(() => <TestNumberField fieldProps={{ defaultValue: 5 }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveValue("5");
     });
 
     it("should display controlled value", () => {
       render(() => <TestNumberField fieldProps={{ value: 10 }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveValue("10");
     });
   });
@@ -164,14 +168,14 @@ describe("NumberField", () => {
     it("should return focus to input after increment button click", async () => {
       render(() => <TestNumberField fieldProps={{ defaultValue: 5 }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       const incrementButton = screen.getByRole("button", { name: /increase/i });
       input.focus();
       expect(input).toHaveFocus();
 
       await user.click(incrementButton);
 
-      expect(screen.getByRole("spinbutton")).toHaveFocus();
+      expect(screen.getByRole("textbox")).toHaveFocus();
     });
 
     it("should disable increment button at maxValue", () => {
@@ -198,7 +202,7 @@ describe("NumberField", () => {
       const onChange = vi.fn();
       render(() => <TestNumberField fieldProps={{ defaultValue: 5, onChange }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       input.focus();
       fireEvent.keyDown(input, { key: "ArrowUp" });
 
@@ -211,7 +215,7 @@ describe("NumberField", () => {
       const onChange = vi.fn();
       render(() => <TestNumberField fieldProps={{ defaultValue: 5, onChange }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       input.focus();
       fireEvent.keyDown(input, { key: "ArrowDown" });
 
@@ -225,7 +229,7 @@ describe("NumberField", () => {
       const onKeyUp = vi.fn();
       render(() => <TestNumberField fieldProps={{ onKeyDown, onKeyUp }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       await user.type(input, "1");
 
       expect(onKeyDown).toHaveBeenCalled();
@@ -260,12 +264,15 @@ describe("NumberField", () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
-    it("should have aria-valuemin and aria-valuemax", () => {
+    it("should not expose spinbutton aria-value* on the textbox", () => {
       render(() => <TestNumberField fieldProps={{ minValue: 0, maxValue: 100 }} />);
 
-      const input = screen.getByRole("spinbutton");
-      expect(input).toHaveAttribute("aria-valuemin", "0");
-      expect(input).toHaveAttribute("aria-valuemax", "100");
+      // Upstream drops aria-valuemin/max/now/text along with the spinbutton role
+      // (they can't be focused with VoiceOver); the range still constrains the
+      // value, it just isn't announced via aria-value*.
+      const input = screen.getByRole("textbox");
+      expect(input).not.toHaveAttribute("aria-valuemin");
+      expect(input).not.toHaveAttribute("aria-valuemax");
     });
   });
 
@@ -277,7 +284,7 @@ describe("NumberField", () => {
     it("should support isDisabled", () => {
       render(() => <TestNumberField fieldProps={{ isDisabled: true }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toBeDisabled();
     });
 
@@ -307,7 +314,7 @@ describe("NumberField", () => {
     it("should support isReadOnly", () => {
       render(() => <TestNumberField fieldProps={{ isReadOnly: true }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("readonly");
     });
 
@@ -341,7 +348,7 @@ describe("NumberField", () => {
     it("should support isRequired", () => {
       render(() => <TestNumberField fieldProps={{ isRequired: true }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-required", "true");
     });
 
@@ -361,7 +368,7 @@ describe("NumberField", () => {
     it("should support isInvalid", () => {
       render(() => <TestNumberField fieldProps={{ isInvalid: true }} />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-invalid", "true");
     });
 
@@ -378,24 +385,25 @@ describe("NumberField", () => {
   // ============================================
 
   describe("aria attributes", () => {
-    it("should have spinbutton role on input", () => {
+    it("should expose aria-roledescription instead of the spinbutton role", () => {
       render(() => <TestNumberField />);
 
-      const input = screen.getByRole("spinbutton");
-      expect(input).toBeInTheDocument();
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveAttribute("aria-roledescription", "number field");
     });
 
-    it("should have aria-valuenow", () => {
+    it("should reflect the value via the input value, not aria-valuenow", () => {
       render(() => <TestNumberField fieldProps={{ value: 5 }} />);
 
-      const input = screen.getByRole("spinbutton");
-      expect(input).toHaveAttribute("aria-valuenow", "5");
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input).toHaveValue("5");
+      expect(input).not.toHaveAttribute("aria-valuenow");
     });
 
     it("should have aria-label when provided", () => {
       render(() => <TestNumberField />);
 
-      const input = screen.getByRole("spinbutton");
+      const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-label", "Test Number");
     });
   });

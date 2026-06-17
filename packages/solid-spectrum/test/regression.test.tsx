@@ -181,13 +181,17 @@ describe("Regression: TextArea", () => {
 });
 
 describe("Regression: NumberField", () => {
-  it("renders spinbutton with increment/decrement and snapshot", () => {
+  it("renders a textbox with increment/decrement and snapshot", () => {
     const { container } = render(() => (
       <NumberField label="Quantity" defaultValue={5} minValue={0} maxValue={100} />
     ));
-    const spin = screen.getByRole("spinbutton") as HTMLInputElement;
-    expect(spin).toBeInTheDocument();
-    expect(spin.value).toBe("5");
+    // Upstream useNumberField overrides the spinbutton role for VoiceOver: the
+    // input is a textbox carrying aria-roledescription.
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+    expect(input.value).toBe("5");
+    expect(input).toHaveAttribute("aria-roledescription", "number field");
     expect(screen.getByText("Quantity")).toBeInTheDocument();
     // Increment/decrement buttons present
     const buttons = screen.getAllByRole("button");
