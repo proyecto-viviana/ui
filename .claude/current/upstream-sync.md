@@ -62,7 +62,27 @@ When Adobe ships a new `@react-spectrum/s2` / `react-aria-components`:
      packages/@react-spectrum/s2/src     packages/@react-spectrum/s2/test
    ```
 
-4. **Re-run the mechanical gates** against the new spec:
+4. **Read the release notes for intent.** The contract gate (step 5) only diffs
+   ARIA *vocabulary*, so it is blind to the changes that don't add or remove an
+   asserted role: behavioral/focus/event fixes, new props or options, and
+   deprecations. Those are described only in Adobe's release notes — and there is
+   **no per-package `CHANGELOG.md`** in the tree; Adobe publishes one GitHub
+   Release per package per minor (`React Aria Components v1.18.0`,
+   `React Spectrum S2 v1.4.0`, …) plus the website. Read both for the range you
+   just crossed:
+   ```bash
+   gh release view 'react-aria-components@<NEW>' --repo adobe/react-spectrum
+   gh release view '@react-spectrum/s2@<NEW>'    --repo adobe/react-spectrum
+   # browse the train:  gh release list --repo adobe/react-spectrum
+   # or the website:    https://react-spectrum.adobe.com/releases/
+   ```
+   For every entry touching a component we ship, decide port-vs-skip the same way
+   the sweep does (component-wrong → fix + changeset; already-correct → record
+   it in the validation note). A behavioral fix that changes no role trips no
+   gate — the notes are the only signal it happened. New components land here as
+   "no port test exists" in the gate; the notes say whether they're worth porting.
+
+5. **Re-run the mechanical gates** against the new spec:
    ```bash
    vp run guard:upstream-test-parity   # contract-vocabulary diff (this doc)
    vp run guard:rac-parity
@@ -71,12 +91,12 @@ When Adobe ships a new `@react-spectrum/s2` / `react-aria-components`:
    vp run guard:virtualizer-keyboard-parity
    ```
 
-5. **Triage** every newly-flagged (or newly-resolved) component against the
+6. **Triage** every newly-flagged (or newly-resolved) component against the
    authoritative upstream source, and update that component's validation note
    under Gate 3 (Upstream React Source Parity) in
    `../../apps/comparison/playbook/components/`.
 
-6. **Bump `scripts/upstream-pin.json`** (tag, commit, versions, `pinnedAt`) in the
+7. **Bump `scripts/upstream-pin.json`** (tag, commit, versions, `pinnedAt`) in the
    same change, so the pin and the tree never drift silently.
 
 > The upstream **test surface itself moves between releases.** By `s2@1.4.0` the
