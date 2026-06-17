@@ -554,15 +554,20 @@ export function createTable<T extends object>(
     const s = state();
     const key = s.focusedKey;
     const el = ref();
-    if (!el || key == null || !s.isFocused) {
+    if (!el || key == null) {
       return;
     }
 
-    // Only manage focus while it already lives inside the table (keyboard
-    // navigation). Never pull focus back from elsewhere on the page when the
-    // focused key changes from a background interaction.
+    // Only manage focus while it already lives inside the table — i.e. the user
+    // is navigating with the keyboard. We gate on the *physical* position of
+    // browser focus rather than the grid's logical `isFocused` signal: focus can
+    // land directly on a row (a pointer click, or programmatic row focus) without
+    // ever firing the grid's own non-bubbling focus handler, so `isFocused` stays
+    // false even though the table genuinely holds focus. The contains() check is
+    // also what keeps us from pulling focus back from elsewhere on the page when
+    // the focused key changes from a background interaction.
     const active = document.activeElement;
-    if (active && active !== el && !el.contains(active)) {
+    if (!active || (active !== el && !el.contains(active))) {
       return;
     }
 
