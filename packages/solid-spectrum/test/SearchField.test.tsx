@@ -17,6 +17,15 @@ describe("SearchField (solid-spectrum)", () => {
       expect(screen.getByRole("searchbox")).toBeInTheDocument();
     });
 
+    it("wraps the field shell in a group, matching the S2 FieldGroup", () => {
+      // S2's SearchField renders its field shell as RAC <Group> (role="group")
+      // around the icon, input, and clear button. The searchbox lives inside it.
+      render(() => <SearchField aria-label="Search" defaultValue="x" />);
+      const group = screen.getByRole("group");
+      expect(group).toContainElement(screen.getByRole("searchbox"));
+      expect(group).toContainElement(screen.getByRole("button"));
+    });
+
     it("renders with default empty value", () => {
       render(() => <SearchField aria-label="Search" />);
       const input = screen.getByRole("searchbox") as HTMLInputElement;

@@ -541,6 +541,10 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
           </Show>
 
           <div
+            // Mirrors S2's FieldGroup, which renders RAC <Group> (role="group")
+            // as the field shell around the icon, input, and clear button. The
+            // group is intentionally unnamed — the searchbox carries the label.
+            role="group"
             class={groupClass(renderProps)}
             onPointerDown={(event) => {
               if (event.pointerType === "mouse") {
