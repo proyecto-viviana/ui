@@ -12,6 +12,7 @@ import {
   createHover,
   mergeProps,
   type AriaSliderProps,
+  type HoverEvents,
 } from "@proyecto-viviana/solidaria";
 import {
   createSliderState,
@@ -124,6 +125,31 @@ export interface SliderThumbProps
   style?: StyleOrFunction<SliderThumbRenderProps>;
 }
 
+export interface SliderFillRenderProps {
+  /** Whether the slider is disabled. */
+  isDisabled: boolean;
+  /** Whether the slider fill is currently hovered with a mouse. */
+  isHovered: boolean;
+  /** The value as a percent (0-1). */
+  valuePercent: number;
+  /** The orientation. */
+  orientation: SliderOrientation;
+}
+
+export interface SliderFillProps
+  extends SlotProps,
+    HoverEvents,
+    Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children"> {
+  /** The offset from which to start the fill. Defaults to the slider's minValue. */
+  offset?: number;
+  /** The children of the fill. */
+  children?: RenderChildren<SliderFillRenderProps>;
+  /** The CSS className for the element. */
+  class?: ClassNameOrFunction<SliderFillRenderProps>;
+  /** The inline style for the element. */
+  style?: StyleOrFunction<SliderFillRenderProps>;
+}
+
 export interface SliderOutputRenderProps {
   /** The current value. */
   value: number;
@@ -156,6 +182,7 @@ interface SliderContextValue {
 export const SliderContext = createContext<SliderContextValue | null>(null);
 export const SliderStateContext = SliderContext;
 export const SliderTrackContext = SliderContext;
+export const SliderFillContext = SliderContext;
 export const SliderOutputContext = SliderContext;
 
 /**
@@ -490,6 +517,113 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
   );
 }
 
+/** Clamp a value between min and max (mirror of upstream's number/clamp). */
+function clampFill(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+/**
+ * The fill element of a slider, displaying the selected range.
+ *
+ * Port of react-aria-components `SliderFill` (RAC 1.18). Upstream reads the
+ * array-based `SliderState` (`values`/`getThumbPercent`); our `SliderState` is
+ * single-value, so this fills from `offset` (default the slider's minValue, i.e.
+ * 0%) to the current value — the single-thumb branch of upstream's math, using
+ * the same `(v - min) / (max - min)` percent formula the state itself uses.
+ */
+export function SliderFill(props: SliderFillProps): JSX.Element {
+  const [local, domProps] = splitProps(props, [
+    "class",
+    "style",
+    "slot",
+    "offset",
+    "children",
+    "onHoverStart",
+    "onHoverEnd",
+    "onHoverChange",
+  ]);
+
+  const context = useContext(SliderContext);
+  if (!context) {
+    throw new Error("SliderFill must be used within a Slider");
+  }
+
+  const { state } = context;
+
+  const { isHovered, hoverProps } = createHover(() => ({
+    onHoverStart: local.onHoverStart,
+    onHoverEnd: local.onHoverEnd,
+    onHoverChange: local.onHoverChange,
+  }));
+
+  // Percent (0-100) of an arbitrary value within the track — mirrors
+  // SliderState.getValuePercent's formula for a value other than the current one.
+  const percentOf = (value: number) => {
+    const range = state.maxValue - state.minValue;
+    return range === 0 ? 0 : ((value - state.minValue) / range) * 100;
+  };
+
+  const offset = () =>
+    local.offset != null
+      ? clampFill(local.offset, state.minValue, state.maxValue)
+      : state.minValue;
+  const start = () => percentOf(offset());
+  const end = () => state.getValuePercent() * 100;
+  const startPercent = () => Math.min(start(), end());
+  const sizePercent = () => Math.max(0, Math.max(start(), end()) - startPercent());
+
+  const renderValues = createMemo<SliderFillRenderProps>(() => ({
+    isDisabled: state.isDisabled,
+    isHovered: isHovered(),
+    valuePercent: state.getValuePercent(),
+    orientation: state.orientation,
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      children: props.children,
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-Slider-fill",
+    },
+    renderValues,
+  );
+
+  // useRenderProps has no defaultStyle; merge the positioning style with the
+  // user's, mirroring upstream SliderFill's defaultStyle (and SliderTrack here).
+  const mergedStyle = (): JSX.CSSProperties => {
+    const fillStyle: JSX.CSSProperties =
+      state.orientation === "vertical"
+        ? {
+            position: "absolute",
+            bottom: `${startPercent()}%`,
+            height: `${sizePercent()}%`,
+            width: "100%",
+          }
+        : {
+            position: "absolute",
+            "inset-inline-start": `${startPercent()}%`,
+            width: `${sizePercent()}%`,
+            height: "100%",
+          };
+    return { ...fillStyle, ...(renderProps.style() || {}) };
+  };
+
+  return (
+    <div
+      {...domProps}
+      {...hoverProps}
+      class={renderProps.class()}
+      style={mergedStyle()}
+      data-hovered={isHovered() || undefined}
+      data-disabled={state.isDisabled || undefined}
+      data-orientation={state.orientation}
+    >
+      {renderProps.renderChildren()}
+    </div>
+  );
+}
+
 /**
  * The output element of a slider, displaying the current value.
  */
@@ -549,4 +683,5 @@ export function SliderOutput(props: SliderOutputProps): JSX.Element {
 
 Slider.Track = SliderTrack;
 Slider.Thumb = SliderThumb;
+Slider.Fill = SliderFill;
 Slider.Output = SliderOutput;

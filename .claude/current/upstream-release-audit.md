@@ -14,6 +14,14 @@ behavioral/focus fixes, new props, and whole new components that don't alter an
 asserted role. The release notes are the only signal those happened — see the
 "Read the release notes for intent" step in [upstream-sync.md](./upstream-sync.md).
 
+> **Status — pass 1 complete; pass 2 scheduled 2026-06-18.** The tickets below come
+> from the release **highlights** (pass 1, done). **Pass 2** — mining the website
+> per-PR "Fixed" lists (`react-aria.adobe.com/releases/v1-16-0`, …) to resolve every
+> 🔍 ticket into a firm ✅/⛔ — is the **next session's** job. Until then treat 🔍 as
+> "unverified." Execution of the confirmed ⛔ gaps has started (leaf-first, no
+> conflicts): **T-29 SliderFill is ported ✔**; next up is the Calendar cluster
+> (T-25/T-23/T-26). See the shortlist at the foot.
+
 ## Scope & sources
 
 | Train (date) | RAC | S2 | Notes (highlights) |
@@ -96,7 +104,7 @@ internal — not a port concern).
 - [ ] **T-26** ⛔ RAC — **RangeCalendar**: available dates derived from the first selected date (`firstAvailableDate` validation). Absent. Real gap.
 - [ ] **T-27** ✅ RAC — **TableFooter** component. Present; verify. ⇄ same as the S2 1.4 TableFooter note.
 - [ ] **T-28** 🔍 RAC — **description + error messages** for **Checkbox / Radio / Switch** (forms). Verify (generic-term match). ⇄ same as the S2 1.4 note.
-- [ ] **T-29** ⛔ RAC — **SliderFill** component (simplifies styling the filled portion of a Slider). Absent (we have `SliderTrack`, not `SliderFill`). Real gap.
+- [x] **T-29** ✔ RAC — **SliderFill** component. **Done** (changeset `slider-fill-component.md`): ported to `solidaria-components/Slider.tsx` as `SliderFill` / `Slider.Fill` — single-thumb fill from `offset` (default minValue → 0%) to the current value, orientation-aware (`inset-inline-start`/`width` horizontal, `bottom`/`height` vertical), with `isHovered`/`isDisabled`/`orientation`/`valuePercent` render props + `data-*`, exported with a `SliderFillContext` alias; 12 tests.
 - [ ] **T-30** ✅ S2 — **drag & drop** for ListView / TableView / TreeView. `useDragAndDrop`/`DragAndDropHooks` present; verify the three S2 surfaces wire it.
 - [ ] **T-31** 🔍 S2 — **TableView highlight selection** + TableFooter. ⇄ TableFooter = **T-27**; highlight relates to **T-20**.
 - [ ] **T-32** 🔍 S2 — custom **prefixes** for ComboBox / TextField. Verify (generic-term match).
@@ -109,7 +117,7 @@ internal — not a port concern).
 From the first pass, these are **confirmed absent** and are the clearest port
 candidates (roughly highest-value first):
 
-1. **T-29 SliderFill** — small, self-contained new component.
+1. ~~**T-29 SliderFill**~~ — ✔ **done** (changeset `slider-fill-component.md`); first port landed.
 2. **T-25 CalendarMonthPicker / CalendarYearPicker** + **T-23 Calendar multi-select** + **T-26 RangeCalendar firstAvailableDate** — the Calendar 1.18 feature cluster; do together.
 3. **T-16 Table expandable rows** (`treeColumn`) — larger; assumes the collection plumbing.
 4. **T-17/T-21 Virtualizer window scrolling** — cross-cutting virtualizer change.

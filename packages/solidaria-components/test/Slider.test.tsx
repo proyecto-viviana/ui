@@ -14,7 +14,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { Slider, SliderTrack, SliderThumb, SliderOutput } from "../src/Slider";
+import { Slider, SliderTrack, SliderThumb, SliderFill, SliderOutput } from "../src/Slider";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -517,5 +517,146 @@ describe("Slider", () => {
         expect(onChange).toHaveBeenCalledWith(60);
       });
     });
+  });
+});
+
+// ============================================
+// SLIDER FILL (RAC 1.18)
+// ============================================
+
+describe("SliderFill", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  function TestSliderWithFill(props: {
+    sliderProps?: Partial<Parameters<typeof Slider>[0]>;
+    fillProps?: Partial<Parameters<typeof SliderFill>[0]>;
+  }) {
+    return (
+      <Slider aria-label="Test Slider" {...props.sliderProps}>
+        {() => (
+          <SliderTrack>
+            {() => (
+              <>
+                <SliderFill {...props.fillProps} />
+                <SliderThumb />
+              </>
+            )}
+          </SliderTrack>
+        )}
+      </Slider>
+    );
+  }
+
+  it("should render with the default fill class", () => {
+    render(() => <TestSliderWithFill sliderProps={{ defaultValue: 50 }} />);
+
+    const fill = document.querySelector(".solidaria-Slider-fill");
+    expect(fill).toBeInTheDocument();
+  });
+
+  it("should span from 0% to the value percent by default", () => {
+    render(() => (
+      <TestSliderWithFill sliderProps={{ defaultValue: 50, minValue: 0, maxValue: 100 }} />
+    ));
+
+    const fill = document.querySelector(".solidaria-Slider-fill") as HTMLElement;
+    const style = fill.getAttribute("style") ?? "";
+    expect(style).toContain("position: absolute");
+    expect(style).toContain("width: 50%");
+    expect(style).toContain("inset-inline-start: 0%");
+    expect(style).toContain("height: 100%");
+  });
+
+  it("should start the fill at the offset", () => {
+    render(() => (
+      <TestSliderWithFill
+        sliderProps={{ defaultValue: 75, minValue: 0, maxValue: 100 }}
+        fillProps={{ offset: 25 }}
+      />
+    ));
+
+    const fill = document.querySelector(".solidaria-Slider-fill") as HTMLElement;
+    const style = fill.getAttribute("style") ?? "";
+    // start = 25%, end = 75% → inset-inline-start 25%, width 50%
+    expect(style).toContain("inset-inline-start: 25%");
+    expect(style).toContain("width: 50%");
+  });
+
+  it("should clamp the offset to the slider range", () => {
+    render(() => (
+      <TestSliderWithFill
+        sliderProps={{ defaultValue: 50, minValue: 0, maxValue: 100 }}
+        fillProps={{ offset: 999 }}
+      />
+    ));
+
+    const fill = document.querySelector(".solidaria-Slider-fill") as HTMLElement;
+    const style = fill.getAttribute("style") ?? "";
+    // offset clamps to 100 → start 100%, end 50% → inset-inline-start 50%, width 50%
+    expect(style).toContain("inset-inline-start: 50%");
+    expect(style).toContain("width: 50%");
+  });
+
+  it("should position vertically with bottom/height", () => {
+    render(() => (
+      <TestSliderWithFill
+        sliderProps={{ defaultValue: 50, minValue: 0, maxValue: 100, orientation: "vertical" }}
+      />
+    ));
+
+    const fill = document.querySelector(".solidaria-Slider-fill") as HTMLElement;
+    const style = fill.getAttribute("style") ?? "";
+    expect(style).toContain("bottom: 0%");
+    expect(style).toContain("height: 50%");
+    expect(style).toContain("width: 100%");
+    expect(fill).toHaveAttribute("data-orientation", "vertical");
+  });
+
+  it("should reflect data-orientation", () => {
+    render(() => <TestSliderWithFill sliderProps={{ defaultValue: 50 }} />);
+
+    const fill = document.querySelector(".solidaria-Slider-fill");
+    expect(fill).toHaveAttribute("data-orientation", "horizontal");
+  });
+
+  it("should have data-disabled when the slider is disabled", () => {
+    render(() => <TestSliderWithFill sliderProps={{ defaultValue: 50, isDisabled: true }} />);
+
+    const fill = document.querySelector(".solidaria-Slider-fill");
+    expect(fill).toHaveAttribute("data-disabled");
+  });
+
+  it("should not have data-disabled when enabled", () => {
+    render(() => <TestSliderWithFill sliderProps={{ defaultValue: 50 }} />);
+
+    const fill = document.querySelector(".solidaria-Slider-fill");
+    expect(fill).not.toHaveAttribute("data-disabled");
+  });
+
+  it("should support a custom class", () => {
+    render(() => (
+      <TestSliderWithFill sliderProps={{ defaultValue: 50 }} fillProps={{ class: "my-fill" }} />
+    ));
+
+    expect(document.querySelector(".my-fill")).toBeInTheDocument();
+  });
+
+  it("should pass render-prop values to a class function", () => {
+    render(() => (
+      <TestSliderWithFill
+        sliderProps={{ defaultValue: 50, minValue: 0, maxValue: 100 }}
+        fillProps={{
+          class: (values) => `fill-${Math.round(values.valuePercent * 100)}-${values.orientation}`,
+        }}
+      />
+    ));
+
+    expect(document.querySelector(".fill-50-horizontal")).toBeInTheDocument();
+  });
+
+  it("should throw when used outside a Slider", () => {
+    expect(() => render(() => <SliderFill />)).toThrow(/must be used within a Slider/);
   });
 });
