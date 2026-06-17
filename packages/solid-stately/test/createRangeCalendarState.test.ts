@@ -1121,4 +1121,131 @@ describe("createRangeCalendarState", () => {
       });
     });
   });
+
+  describe("available range (firstAvailableDate)", () => {
+    // The 10th and 20th of June 2024 are unavailable.
+    const isDateUnavailable = (date: CalendarDate) =>
+      date.month === 6 && (date.day === 10 || date.day === 20);
+
+    it("passes the current selection anchor to isDateUnavailable", () => {
+      createRoot((dispose) => {
+        const seen: (CalendarDate | null)[] = [];
+        const anchor = new CalendarDate(2024, 6, 15);
+        const state = createRangeCalendarState({
+          isDateUnavailable: (date, anchorDate) => {
+            seen.push(anchorDate);
+            return false;
+          },
+        });
+
+        state.setAnchorDate(anchor);
+        state.isCellUnavailable(new CalendarDate(2024, 6, 16));
+
+        expect(seen.some((a) => a != null && a.compare(anchor) === 0)).toBe(true);
+
+        dispose();
+      });
+    });
+
+    it("narrows the selectable range to the contiguous span around the anchor", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({ isDateUnavailable });
+
+        // No anchor yet: nothing outside the unavailable dates is narrowed.
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 5))).toBe(false);
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 25))).toBe(false);
+
+        // Anchor on the 15th: bounded by the 10th and 20th -> available span [11, 19].
+        state.setAnchorDate(new CalendarDate(2024, 6, 15));
+
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 15))).toBe(false); // anchor
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 11))).toBe(false); // span start
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 19))).toBe(false); // span end
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 5))).toBe(true); // before span
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 25))).toBe(true); // after span
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 10))).toBe(true); // unavailable bound
+
+        // Clearing the anchor removes the narrowing.
+        state.setAnchorDate(null);
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 5))).toBe(false);
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 25))).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("does not narrow the range when allowsNonContiguousRanges is set", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          isDateUnavailable,
+          allowsNonContiguousRanges: true,
+        });
+
+        state.setAnchorDate(new CalendarDate(2024, 6, 15));
+
+        // Unavailable dates remain individually unavailable...
+        expect(state.isCellUnavailable(new CalendarDate(2024, 6, 10))).toBe(true);
+        // ...but dates beyond them stay reachable (not disabled).
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 5))).toBe(false);
+        expect(state.isCellDisabled(new CalendarDate(2024, 6, 25))).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("invalidates page navigation outside the available span while anchored", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          isDateUnavailable,
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+        });
+
+        // Visible month is June; without an anchor navigation is unconstrained.
+        expect(state.isPreviousVisibleRangeInvalid()).toBe(false);
+        expect(state.isNextVisibleRangeInvalid()).toBe(false);
+
+        // Anchor narrows the span to [11, 19] (both within June), so paging out is invalid.
+        state.setAnchorDate(new CalendarDate(2024, 6, 15));
+        expect(state.isPreviousVisibleRangeInvalid()).toBe(true);
+        expect(state.isNextVisibleRangeInvalid()).toBe(true);
+
+        // Clearing the anchor restores free navigation.
+        state.setAnchorDate(null);
+        expect(state.isPreviousVisibleRangeInvalid()).toBe(false);
+        expect(state.isNextVisibleRangeInvalid()).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("marks a committed range invalid when an endpoint is unavailable", () => {
+      createRoot((dispose) => {
+        const validState = createRangeCalendarState({
+          isDateUnavailable,
+          value: { start: new CalendarDate(2024, 6, 12), end: new CalendarDate(2024, 6, 18) },
+        });
+        expect(validState.isValueInvalid()).toBe(false);
+
+        const invalidState = createRangeCalendarState({
+          isDateUnavailable,
+          value: { start: new CalendarDate(2024, 6, 10), end: new CalendarDate(2024, 6, 18) },
+        });
+        expect(invalidState.isValueInvalid()).toBe(true);
+
+        dispose();
+      });
+    });
+
+    it("marks a committed range invalid when an endpoint is outside min/max", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          minValue: new CalendarDate(2024, 6, 10),
+          value: { start: new CalendarDate(2024, 6, 5), end: new CalendarDate(2024, 6, 18) },
+        });
+        expect(state.isValueInvalid()).toBe(true);
+
+        dispose();
+      });
+    });
+  });
 });

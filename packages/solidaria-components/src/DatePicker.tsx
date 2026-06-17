@@ -716,7 +716,12 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     hideTimeZone: stateProps.hideTimeZone,
     placeholderValue: stateProps.placeholderValue,
     validationState: () => (isInvalid() ? "invalid" : access(stateProps.validationState)),
-    isDateUnavailable: stateProps.isDateUnavailable,
+    // The range picker's isDateUnavailable is anchor-aware (date, anchorDate),
+    // but a text field has no range anchor, so adapt it to the field's 1-arg form
+    // by always passing a null anchor (checks raw per-date availability).
+    isDateUnavailable: stateProps.isDateUnavailable
+      ? (date: DateValue) => stateProps.isDateUnavailable!(date, null)
+      : undefined,
   } satisfies Partial<DateFieldStateProps<T>>;
 
   const startFieldState = createDateFieldState<T>({

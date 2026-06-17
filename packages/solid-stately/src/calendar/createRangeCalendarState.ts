@@ -21,6 +21,8 @@ import {
   endOfMonth,
   startOfWeek,
   getWeeksInMonth,
+  maxDate,
+  minDate,
   DateFormatter,
   createCalendar as intlCreateCalendar,
   toCalendar as intlToCalendar,
@@ -68,8 +70,12 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   locale?: MaybeAccessor<string | undefined>;
   /** Creates a calendar object for a locale calendar identifier. */
   createCalendar?: (identifier: CalendarIdentifier) => InternationalizedCalendar;
-  /** Callback to determine if a date is unavailable. */
-  isDateUnavailable?: (date: DateValue) => boolean;
+  /**
+   * Callback that determines if a date is unavailable. The second argument is the
+   * current selection anchor (the first selected date), so availability can be
+   * derived from it. Mirrors @react-stately/calendar 1.18.
+   */
+  isDateUnavailable?: (date: DateValue, anchorDate: CalendarDate | null) => boolean;
   /** The number of months to display at once. */
   visibleMonths?: MaybeAccessor<number | undefined>;
   /** Controls how the initial visible months are aligned around the current value. */
@@ -206,17 +212,56 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const toDisplayCalendarDate = (date: DateValue): CalendarDate =>
     intlToCalendar(toCalendarDate(date), calendar());
 
+  // The anchor date is the first selected date during a range drag. Declared up
+  // here (ahead of constrainDate) because the available-range derivation below
+  // depends on it, and constrainDate consults that range.
+  const [anchorDate, setAnchorDate] = createSignal<CalendarDate | null>(null);
+
+  // Mirrors @react-stately/calendar useRangeCalendarState getAvailableRange: once
+  // a range selection is anchored and unavailable dates exist, contiguous ranges
+  // are required (unless allowsNonContiguousRanges), so the selectable span is
+  // bounded by the nearest unavailable date on each side of the anchor.
+  const getAvailableRange = (
+    anchor: CalendarDate | null,
+  ): { start?: CalendarDate; end?: CalendarDate } | null => {
+    if (anchor && props.isDateUnavailable && !props.allowsNonContiguousRanges) {
+      const predicate = (date: CalendarDate): boolean => props.isDateUnavailable!(date, anchor);
+      return {
+        start: nextUnavailableDate(anchor, predicate, visibleMonths, -1),
+        end: nextUnavailableDate(anchor, predicate, visibleMonths, 1),
+      };
+    }
+    return null;
+  };
+
+  const availableRange = createMemo(() => getAvailableRange(anchorDate()));
+
+  // minValue/maxValue narrowed by the available range, in display-calendar space
+  // (what every cell/navigation bound below compares against). Mirrors upstream's
+  // maxDate(minValue, availableRange?.start) / minDate(maxValue, availableRange?.end);
+  // maxDate/minDate ignore undefined operands, so an absent bound passes through.
+  const effectiveMinValue = createMemo<CalendarDate | null>(() => {
+    const min = access(props.minValue);
+    const minCal = min != null ? toDisplayCalendarDate(min) : undefined;
+    return maxDate(minCal, availableRange()?.start) ?? null;
+  });
+  const effectiveMaxValue = createMemo<CalendarDate | null>(() => {
+    const max = access(props.maxValue);
+    const maxCal = max != null ? toDisplayCalendarDate(max) : undefined;
+    return minDate(maxCal, availableRange()?.end) ?? null;
+  });
+
   const constrainDate = (date: CalendarDate): CalendarDate => {
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
+    const min = effectiveMinValue();
+    const max = effectiveMaxValue();
 
     let constrained = date;
 
-    if (minValue && constrained.compare(toDisplayCalendarDate(minValue)) < 0) {
-      constrained = toDisplayCalendarDate(minValue);
+    if (min && constrained.compare(min) < 0) {
+      constrained = min;
     }
-    if (maxValue && constrained.compare(toDisplayCalendarDate(maxValue)) > 0) {
-      constrained = toDisplayCalendarDate(maxValue);
+    if (max && constrained.compare(max) > 0) {
+      constrained = max;
     }
 
     return constrained;
@@ -325,7 +370,6 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
     alignVisibleRangeStart(initialFocusedDate),
   );
-  const [anchorDate, setAnchorDate] = createSignal<CalendarDate | null>(null);
   const [isFocused, setFocused] = createSignal(false);
   const [isDragging, setDragging] = createSignal(false);
 
@@ -350,7 +394,27 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
-  const isValueInvalid = createMemo(() => validationState() === "invalid");
+  // A committed range is invalid when (not mid-drag) either endpoint is
+  // unavailable or falls outside [minValue, maxValue]. Mirrors upstream
+  // useRangeCalendarState's isInvalid derivation. Calls props.isDateUnavailable
+  // directly (with a null anchor) rather than the closures defined further down,
+  // since this memo runs eagerly during init.
+  const isInvalidSelection = createMemo(() => {
+    const v = sourceValue();
+    if (!v || anchorDate()) return false;
+    if (props.isDateUnavailable?.(v.start, null) || props.isDateUnavailable?.(v.end, null)) {
+      return true;
+    }
+    const min = access(props.minValue);
+    const max = access(props.maxValue);
+    const minCal = min != null ? toDisplayCalendarDate(min) : null;
+    const maxCal = max != null ? toDisplayCalendarDate(max) : null;
+    return (
+      isDateOutsideRange(toDisplayCalendarDate(v.start), minCal, maxCal) ||
+      isDateOutsideRange(toDisplayCalendarDate(v.end), minCal, maxCal)
+    );
+  });
+  const isValueInvalid = createMemo(() => validationState() === "invalid" || isInvalidSelection());
 
   // Highlighted range during selection
   const highlightedRange = createMemo<RangeValue<CalendarDate> | null>(() => {
@@ -524,7 +588,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
   // Check if a date is unavailable
   const isCellUnavailable = (date: DateValue): boolean => {
-    return props.isDateUnavailable?.(date) ?? false;
+    return props.isDateUnavailable?.(date, anchorDate()) ?? false;
   };
 
   // Check if a date is disabled
@@ -532,23 +596,23 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     if (isDisabled()) return true;
     if (props.isDateDisabled?.(date)) return true;
 
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
+    const min = effectiveMinValue();
+    const max = effectiveMaxValue();
     const calDate = toDisplayCalendarDate(date);
 
-    if (minValue && calDate.compare(toDisplayCalendarDate(minValue)) < 0) return true;
-    if (maxValue && calDate.compare(toDisplayCalendarDate(maxValue)) > 0) return true;
+    if (min && calDate.compare(min) < 0) return true;
+    if (max && calDate.compare(max) > 0) return true;
 
     return false;
   };
 
   const isDateOutsideAllowedRange = (date: DateValue): boolean => {
-    const minValue = access(props.minValue);
-    const maxValue = access(props.maxValue);
+    const min = effectiveMinValue();
+    const max = effectiveMaxValue();
     const calDate = toDisplayCalendarDate(date);
 
-    if (minValue && calDate.compare(toDisplayCalendarDate(minValue)) < 0) return true;
-    if (maxValue && calDate.compare(toDisplayCalendarDate(maxValue)) > 0) return true;
+    if (min && calDate.compare(min) < 0) return true;
+    if (max && calDate.compare(max) > 0) return true;
 
     return false;
   };
@@ -754,4 +818,44 @@ function convertValue(newValue: CalendarDate, oldValue?: DateValue | null): Date
   }
 
   return localValue;
+}
+
+/** Whether a date falls outside the closed [minValue, maxValue] interval. */
+function isDateOutsideRange(
+  date: CalendarDate,
+  minValue?: CalendarDate | null,
+  maxValue?: CalendarDate | null,
+): boolean {
+  return (
+    (minValue != null && date.compare(minValue) < 0) ||
+    (maxValue != null && date.compare(maxValue) > 0)
+  );
+}
+
+/**
+ * Walks outward from the anchor one day at a time in `dir` until it reaches an
+ * unavailable date, then returns the last available date before it — or
+ * undefined when no unavailable date is found within `visibleMonths` of the
+ * anchor (no narrowing needed on that side). Mirrors @react-stately/calendar
+ * nextUnavailableDate.
+ */
+function nextUnavailableDate(
+  anchorDate: CalendarDate,
+  isDateUnavailable: (date: CalendarDate) => boolean,
+  visibleMonths: number,
+  dir: number,
+): CalendarDate | undefined {
+  let nextDate = anchorDate.add({ days: dir });
+  const minBound = anchorDate.subtract({ months: visibleMonths });
+  const maxBound = anchorDate.add({ months: visibleMonths });
+  while (
+    (dir < 0 ? nextDate.compare(minBound) >= 0 : nextDate.compare(maxBound) <= 0) &&
+    !isDateUnavailable(nextDate)
+  ) {
+    nextDate = nextDate.add({ days: dir });
+  }
+  if (isDateUnavailable(nextDate)) {
+    return nextDate.add({ days: -dir });
+  }
+  return undefined;
 }

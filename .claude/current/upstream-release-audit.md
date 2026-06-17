@@ -19,9 +19,9 @@ asserted role. The release notes are the only signal those happened — see the
 > per-PR "Fixed" lists (`react-aria.adobe.com/releases/v1-16-0`, …) to resolve every
 > 🔍 ticket into a firm ✅/⛔ — is the **next session's** job. Until then treat 🔍 as
 > "unverified." Execution of the confirmed ⛔ gaps has started (leaf-first, no
-> conflicts): **T-29 SliderFill ✔**, **T-25 Calendar month/year pickers ✔**, and
-> **T-23 Calendar multi-select ✔**; next up in the Calendar cluster is **T-26**.
-> See the shortlist at the foot.
+> conflicts): **T-29 SliderFill ✔**, **T-25 Calendar month/year pickers ✔**,
+> **T-23 Calendar multi-select ✔**, and **T-26 RangeCalendar available-range ✔** —
+> which **completes the Calendar 1.18 cluster**. See the shortlist at the foot.
 
 ## Scope & sources
 
@@ -102,7 +102,7 @@ internal — not a port concern).
 - [x] **T-23** ✔ RAC — **Calendar multiple date selection** (changeset `calendar-multiple-selection.md`). `selectionMode="multiple"` ported across `solid-stately` (defaulted `M` generic + `CalendarValueType`, array value, `isSameDay` toggle, `setValue(null)→[]`), `solidaria` (`aria-multiselectable` on the grid), and `solidaria-components` (`Calendar` generic over `M`, threads `selectionMode`). ⇄ same feature as the S2 1.4 Calendar note; the S2 styled `Calendar` (`@ts-nocheck`) already forwards `selectionMode` through to the headless component.
 - [ ] **T-24** ✅ RAC — **CalendarHeading** component. Present; verify.
 - [x] **T-25** ✔ RAC — **CalendarMonthPicker** + **CalendarYearPicker** (jump to month/year). **Done by us** this cycle (changeset `calendar-month-year-picker.md`): ported the `createCalendar{Month,Year}Picker` aria hooks (solidaria) + the headless `CalendarMonthPicker` / `CalendarYearPicker` render-prop components (solidaria-components). Like upstream, each is context-agnostic (reads `CalendarContext` or `RangeCalendarContext`, works in both Calendar and RangeCalendar) — **not** split per-type. Exposed `minValue`/`maxValue` accessors on both calendar states for the year-window clamp. 6 tests.
-- [ ] **T-26** ⛔ RAC — **RangeCalendar**: available dates derived from the first selected date (`firstAvailableDate` validation). Absent. Real gap.
+- [x] **T-26** ✔ RAC — **RangeCalendar**: available dates derived from the first selected date (`firstAvailableDate` validation). **Done by us** this cycle (changeset `rangecalendar-available-range.md`): `createRangeCalendarState` now mirrors upstream `useRangeCalendarState` — anchor-aware `isDateUnavailable(date, anchorDate)`, an available range derived via `nextUnavailableDate` that narrows the effective min/max (feeding `isCellDisabled` / `isDateOutsideAllowedRange` so the prev/next page buttons disable at the span edges / `constrainDate`, unless `allowsNonContiguousRanges`), and `isValueInvalid` extended to flag a committed range whose endpoint is unavailable or out of `[minValue, maxValue]`. 6 stately tests. The `RangeCalendar` surfaces (solidaria-components / solid-spectrum) inherit the widened callback from `RangeCalendarStateProps`; the `DateRangePicker` adapts it to the 1-arg form its text fields expect (null anchor). **Follow-up:** the S2 `DateRangePicker` (`@ts-nocheck`) keeps a documentary 1-arg `isDateUnavailable` annotation though it already forwards the callback through to the embedded `RangeCalendar` at runtime — widening that annotation is tracked (analogous to the T-23 `CalendarProps` single-mode note).
 - [ ] **T-27** ✅ RAC — **TableFooter** component. Present; verify. ⇄ same as the S2 1.4 TableFooter note.
 - [ ] **T-28** 🔍 RAC — **description + error messages** for **Checkbox / Radio / Switch** (forms). Verify (generic-term match). ⇄ same as the S2 1.4 note.
 - [x] **T-29** ✔ RAC — **SliderFill** component. **Done** (changeset `slider-fill-component.md`): ported to `solidaria-components/Slider.tsx` as `SliderFill` / `Slider.Fill` — single-thumb fill from `offset` (default minValue → 0%) to the current value, orientation-aware (`inset-inline-start`/`width` horizontal, `bottom`/`height` vertical), with `isHovered`/`isDisabled`/`orientation`/`valuePercent` render props + `data-*`, exported with a `SliderFillContext` alias; 12 tests.
@@ -119,7 +119,7 @@ From the first pass, these are **confirmed absent** and are the clearest port
 candidates (roughly highest-value first):
 
 1. ~~**T-29 SliderFill**~~ — ✔ **done** (changeset `slider-fill-component.md`); first port landed.
-2. ~~**T-25 CalendarMonthPicker / CalendarYearPicker**~~ — ✔ **done** (changeset `calendar-month-year-picker.md`); ~~**T-23 Calendar multi-select**~~ — ✔ **done** (changeset `calendar-multiple-selection.md`). Remaining Calendar 1.18 cluster: **T-26 RangeCalendar firstAvailableDate**.
+2. ~~**T-25 CalendarMonthPicker / CalendarYearPicker**~~ — ✔ **done** (changeset `calendar-month-year-picker.md`); ~~**T-23 Calendar multi-select**~~ — ✔ **done** (changeset `calendar-multiple-selection.md`); ~~**T-26 RangeCalendar firstAvailableDate**~~ — ✔ **done** (changeset `rangecalendar-available-range.md`). **Calendar 1.18 cluster complete.**
 3. **T-16 Table expandable rows** (`treeColumn`) — larger; assumes the collection plumbing.
 4. **T-17/T-21 Virtualizer window scrolling** — cross-cutting virtualizer change.
 5. **T-04 DateField constrain-on-blur** — behavioral; the kind of fix the ARIA gate never catches, so worth confirming carefully against source.
