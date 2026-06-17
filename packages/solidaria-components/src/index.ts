@@ -587,6 +587,18 @@ export {
 } from "./Calendar";
 
 export {
+  CalendarMonthPicker,
+  CalendarYearPicker,
+  type CalendarMonthPickerProps,
+  type CalendarMonthPickerAria,
+  type CalendarMonthPickerItem,
+  type CalendarYearPickerProps,
+  type CalendarYearPickerAria,
+  type CalendarYearPickerItem,
+  type CalendarYearPickerFormatOptions,
+} from "./CalendarPicker";
+
+export {
   RangeCalendar,
   RangeCalendarHeading,
   RangeCalendarButton,

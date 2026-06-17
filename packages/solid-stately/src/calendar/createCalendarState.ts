@@ -91,6 +91,10 @@ export interface CalendarState<T extends DateValue = DateValue> {
   focusedDate: Accessor<CalendarDate>;
   /** Sets the focused date. */
   setFocusedDate: (date: CalendarDate) => void;
+  /** The minimum allowed date that a user may select. */
+  minValue: Accessor<DateValue | null>;
+  /** The maximum allowed date that a user may select. */
+  maxValue: Accessor<DateValue | null>;
   /** Whether the calendar is disabled. */
   isDisabled: Accessor<boolean>;
   /** Whether the calendar is read-only. */
@@ -169,6 +173,8 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
 ): CalendarState<T> {
   const timeZone = getLocalTimeZone();
   const locale = createMemo(() => access(props.locale) ?? "en-US");
+  const minValueState = createMemo(() => access(props.minValue) ?? null);
+  const maxValueState = createMemo(() => access(props.maxValue) ?? null);
   const resolvedOptions = createMemo(() => new DateFormatter(locale()).resolvedOptions());
   const calendar = createMemo(() =>
     (props.createCalendar ?? intlCreateCalendar)(resolvedOptions().calendar as CalendarIdentifier),
@@ -559,6 +565,8 @@ export function createCalendarState<T extends DateValue = CalendarDate>(
     visibleRange,
     timeZone,
     locale,
+    minValue: minValueState,
+    maxValue: maxValueState,
     firstDayOfWeek: firstDayOfWeekName,
     validationState,
     isValueInvalid,
