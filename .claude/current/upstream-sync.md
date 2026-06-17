@@ -172,4 +172,27 @@ aria-only) and **taggroup** are role-clean — the earlier `listbox`/`Dismiss`
 reconciliations hold. (That original Toast divergence lived in the **E2E** specs,
 not these unit tests — see the "unit tests only" limit above.)
 
+## Resume point — ordered worklist (pick up here)
+
+Single source of truth for *where the sweep stands*. Work top to bottom; tick a
+box and add the commit when done. Re-run `vp run guard:upstream-test-parity`
+after each to confirm the flag clears.
+
+**Done**
+- [x] Bucket A — benign file-level pollution. No action.
+- [x] Bucket B — sanctioned S2 extras (breadcrumbs / button / select / disclosure), all confirmed against S2 source (`52a606a1`).
+- [x] Bucket C — numberfield fix (`0702d3b1`), searchfield fix (`2574335f`), datefield/timefield coverage (`6a3c7775`), popover/menu triaged.
+
+**Remaining (in order)**
+- [ ] **0. Pre-existing Table PageDown failures** — `Table.test.tsx` 3 tests (`PageDown` focus, ~line 1248) fail on this branch, independent of the sweep. Do first; Table was itself oracle-flagged, so fixing it feeds back into the sweep.
+- [ ] **1. autocomplete** [10] — port the 8 upstream roles (`searchbox, menu, menuitem, textbox, group, separator, button, dialog`); we assert only `combobox`.
+- [ ] **2. calendar / rangecalendar** — port grid structure (`row, rowgroup, gridcell, option, columnheader`).
+- [ ] **3. tree / datepicker / daterangepicker / dialog / tabs / toolbar / taggroup** — port the per-component `upstream-only` roles listed in Bucket D.
+- [ ] **4. no-overlap components** — gridlist, tooltip, colorswatch, selectboxgroup, filetrigger, dropzone (no role overlap at all today).
+- [ ] **5. unmatched (no port test exists)** — actionbuttongroup, coachmark, color{area,picker,slider,wheel}, customdialog, group, hiddendateinput, labeledvalue, virtualizedmenu. Decide port-vs-skip per component.
+
+For each remaining item, the verdict is still **component-wrong vs test-wrong**:
+read upstream source first, then either fix the component (+ changeset) or add
+the missing assertion. Record the outcome on the matching Bucket line above.
+
 See `certification.md` (Gate 3) for where this guard sits in the ladder.
