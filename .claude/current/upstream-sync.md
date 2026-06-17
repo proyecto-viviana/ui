@@ -26,6 +26,18 @@ which makes release-to-release diffing first-class. `guard:upstream-test-parity`
 prints a **DRIFT** banner when the actual vendored versions don't match the pin —
 so "I don't think the vendored copy is the latest" is now a one-command check.
 
+Two distinct staleness checks, don't conflate them:
+
+- **tree vs. pin** (is the vendored checkout the one we pinned?) — the DRIFT
+  banner above.
+- **pin vs. latest upstream** (has Adobe shipped something newer than our pin?) —
+  `guard:upstream-freshness` (`scripts/check-upstream-freshness.ts`). It asks
+  GitHub for the latest RAC + S2 tags and exits non-zero when the pin is behind,
+  naming the gap. It runs **report-only in `certification-gates.yml`**, so a new
+  release surfaces as a ❌ cell on every PR instead of sitting unnoticed; run it
+  by hand anytime with `vp run guard:upstream-freshness`. When it goes red, work
+  the "Absorbing a new upstream release" steps below.
+
 ### Materialize / re-materialize the tree
 
 For a fresh clone, or after the pin moves and the tree is stale:

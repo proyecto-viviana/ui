@@ -75,6 +75,13 @@ jobs:
         continue-on-error: true
         run: pnpm run guard:virtualizer-keyboard-parity
 
+      # Warns (❌ cell) when Adobe has shipped a RAC/S2 release newer than our
+      # pin, so a stale oracle is visible instead of silently sitting for weeks.
+      - name: guard upstream-freshness
+        id: guard_upstream_freshness
+        continue-on-error: true
+        run: pnpm run guard:upstream-freshness
+
       - name: guard docs-routes
         id: guard_docs_routes
         continue-on-error: true
@@ -127,6 +134,7 @@ jobs:
           O_GUARD_RAC_EXPORT_GAP: ${{ steps.guard_rac_export_gap.outcome }}
           O_GUARD_DND: ${{ steps.guard_dnd_keyboard.outcome }}
           O_GUARD_VIRTUALIZER: ${{ steps.guard_virtualizer_keyboard.outcome }}
+          O_GUARD_FRESHNESS: ${{ steps.guard_upstream_freshness.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
           O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
@@ -156,6 +164,7 @@ jobs:
             echo "| \`guard:rac-export-gap\` | $(icon "$O_GUARD_RAC_EXPORT_GAP") |"
             echo "| \`guard:dnd-keyboard-parity\` | $(icon "$O_GUARD_DND") |"
             echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
+            echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"
