@@ -4,12 +4,15 @@
  */
 
 export { createTableState } from "./createTableState";
+export { createTreeGridState } from "./createTreeGridState";
 export { createTableColumnResizeState } from "./createTableColumnResizeState";
 export { TableCollection, createTableCollection } from "./TableCollection";
 export type {
   TableState,
   TableStateOptions,
   TableCollection as ITableCollection,
+  TreeGridState,
+  TreeGridStateOptions,
   SortDescriptor,
   SortDirection,
   Sortable,

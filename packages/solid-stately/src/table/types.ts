@@ -46,6 +46,8 @@ export interface TableCollection<T = unknown> extends GridCollection<T> {
   readonly head?: GridNode<T>;
   /** The node that makes up the body of the table. */
   readonly body: GridNode<T>;
+  /** The key of the column that renders the tree-grid expand/collapse affordance, if any. */
+  readonly treeColumn?: Key | null;
 }
 
 /**
@@ -64,6 +66,57 @@ export interface TableState<T, C extends TableCollection<T> = TableCollection<T>
   readonly sortDescriptor: SortDescriptor | null;
   /** Sort by the given column and direction. */
   sort(columnKey: Key, direction?: SortDirection): void;
+  /**
+   * The set of expanded row keys for tree grids. A plain table reports an empty set.
+   */
+  readonly expandedKeys: "all" | Set<Key>;
+  /**
+   * The key of the column that renders the expand/collapse affordance, or `null` for a
+   * plain (non-tree) table.
+   */
+  readonly treeColumn: Key | null;
+  /** Toggles the expanded state of a row by its key (no-op for a plain table). */
+  toggleKey(key: Key): void;
+}
+
+/**
+ * State for a tree grid (expandable rows). Mirrors `@react-stately/table`'s
+ * `UNSTABLE_useTreeGridState` return value.
+ */
+export interface TreeGridState<T, C extends TableCollection<T> = TableCollection<T>>
+  extends TableState<T, C> {
+  /** A set of keys for rows that are expanded. */
+  readonly expandedKeys: "all" | Set<Key>;
+  /** The key map containing nodes representing the collection's tree grid structure. */
+  readonly keyMap: Map<Key, GridNode<T>>;
+  /** The number of leaf columns provided by the user (excludes selection/drag columns). */
+  readonly userColumnCount: number;
+}
+
+/**
+ * Options for creating tree grid state. Mirrors `TreeGridStateProps` upstream; the
+ * expansion props keep the `UNSTABLE_` prefix while the feature is unstable.
+ */
+export interface TreeGridStateOptions<
+  T,
+  C extends TableCollection<T> = TableCollection<T>,
+> extends Omit<TableStateOptions<T, C>, "collection"> {
+  /** Column definitions. */
+  columns: ColumnDefinition<T>[];
+  /** Row definitions (may contain `childRows` for nested rows). */
+  rows: RowDefinition<T>[];
+  /** Function to get the key from a data item. */
+  getKey?: (item: T) => Key;
+  /** Function to get the text value from a data item. */
+  getTextValue?: (item: T, column: ColumnDefinition<T>) => string;
+  /** Set of column keys that serve as row headers. */
+  rowHeaderColumnKeys?: Set<Key>;
+  /** The currently expanded keys in the collection (controlled). */
+  UNSTABLE_expandedKeys?: "all" | Iterable<Key>;
+  /** The initial expanded keys in the collection (uncontrolled). */
+  UNSTABLE_defaultExpandedKeys?: "all" | Iterable<Key>;
+  /** Handler that is called when rows are expanded or collapsed. */
+  UNSTABLE_onExpandedChange?: (keys: Set<Key>) => void;
 }
 
 /**
@@ -151,4 +204,13 @@ export interface TableCollectionOptions<T = unknown> {
   showSelectionCheckboxes?: boolean;
   /** Set of column keys that serve as row headers. */
   rowHeaderColumnKeys?: Set<Key>;
+  /**
+   * The set of expanded row keys. Passing this (even an empty set) builds the collection
+   * in tree-grid mode: `childRows` are walked recursively, only rows whose ancestors are
+   * all expanded are flattened into the navigable body, and {@link TableCollection.treeColumn}
+   * resolves to a real column. Omit it for a plain (non-tree) table.
+   */
+  expandedKeys?: "all" | Set<Key>;
+  /** Explicit tree column key. Defaults to the first row-header column in tree-grid mode. */
+  treeColumn?: Key | null;
 }

@@ -242,12 +242,15 @@ export {
 
 export {
   createTableState,
+  createTreeGridState,
   createTableColumnResizeState,
   TableCollection,
   createTableCollection,
   type TableState,
   type TableStateOptions,
   type ITableCollection,
+  type TreeGridState,
+  type TreeGridStateOptions,
   type SortDescriptor,
   type SortDirection,
   type Sortable,

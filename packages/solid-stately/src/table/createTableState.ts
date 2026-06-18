@@ -126,5 +126,16 @@ export function createTableState<
       return sortDescriptor();
     },
     sort,
+
+    // A plain table has no expandable rows.
+    get expandedKeys(): "all" | Set<Key> {
+      return EMPTY_EXPANDED_KEYS;
+    },
+    get treeColumn(): Key | null {
+      return getOptions().collection.treeColumn ?? null;
+    },
+    toggleKey: () => {},
   };
 }
+
+const EMPTY_EXPANDED_KEYS: Set<Key> = new Set();

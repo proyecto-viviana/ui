@@ -5,6 +5,19 @@
 
 import type { JSX } from "solid-js";
 import type { Key, GridNode } from "@proyecto-viviana/solid-stately";
+import type { AriaButtonProps } from "../button/types";
+
+/**
+ * Props for a tree-grid row's expand/collapse chevron button.
+ *
+ * Press-based (mirrors `@react-aria/table`'s `expandButtonProps`) so it flows through our
+ * Button's `createPress`, plus the `data-react-aria-prevent-focus` marker that keeps focus
+ * management from re-focusing the chevron after a press.
+ */
+export type ExpandButtonProps = AriaButtonProps & {
+  /** Marks the chevron so focus management skips re-focusing it after a press. */
+  "data-react-aria-prevent-focus"?: boolean;
+};
 
 /**
  * Props for the createTable hook.
@@ -102,12 +115,18 @@ export interface AriaTableRowProps {
 export interface TableRowAria {
   /** Props to spread on the row element. */
   rowProps: JSX.HTMLAttributes<HTMLTableRowElement>;
+  /** Props to spread on a tree-grid row's expand/collapse chevron button. */
+  expandButtonProps: ExpandButtonProps;
   /** Whether the row is selected. */
   isSelected: boolean;
   /** Whether the row is disabled. */
   isDisabled: boolean;
   /** Whether the row is pressed. */
   isPressed: boolean;
+  /** Whether the row is expanded (tree grid only; false otherwise). */
+  isExpanded: boolean;
+  /** Whether the row has child rows (tree grid only; false otherwise). */
+  hasChildRows: boolean;
 }
 
 /**

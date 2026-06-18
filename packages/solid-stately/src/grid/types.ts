@@ -42,6 +42,10 @@ export interface GridNode<T = unknown> {
   prevKey?: Key | null;
   /** Next sibling key (visible order). */
   nextKey?: Key | null;
+  /** Key of the first child node, if any (used by tree grids). */
+  firstChildKey?: Key | null;
+  /** Key of the last child node, if any (used by tree grids). */
+  lastChildKey?: Key | null;
   /** Whether this node has child nodes. */
   hasChildNodes: boolean;
   /** Child nodes (cells for rows, rows for sections). */

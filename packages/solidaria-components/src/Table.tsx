@@ -36,6 +36,7 @@ import {
 } from "@proyecto-viviana/solidaria";
 import {
   createTableState,
+  createTreeGridState,
   createTableCollection,
   createTableColumnResizeState,
   type TableState,
@@ -44,6 +45,7 @@ import {
   type Key,
   type SortDescriptor,
   type ColumnDefinition,
+  type RowDefinition,
   type ColumnSize,
   type GridNode,
   type DropTarget,
@@ -122,6 +124,35 @@ function normalizeColumnDefinitions<T>(
   });
 }
 
+/** Resolves a stable, unique key for a tree-grid item (keys must be unique across levels). */
+function resolveItemKey<T>(item: T, getKey: ((item: T) => Key) | undefined, index: number): Key {
+  if (getKey) return getKey(item);
+  const record = item as { id?: Key; key?: Key };
+  return record.id ?? record.key ?? index;
+}
+
+/**
+ * Turns the flat `items` into nested {@link RowDefinition}s by recursively expanding each
+ * item's children via `getChildItems`. The result feeds the tree-grid collection.
+ */
+function toTreeRowDefinitions<T>(
+  items: Iterable<T>,
+  getKey: ((item: T) => Key) | undefined,
+  getChildItems: ((item: T) => Iterable<T> | undefined) | undefined,
+): RowDefinition<T>[] {
+  return Array.from(items).map((item, index) => {
+    const childItems = getChildItems?.(item);
+    const childRows = childItems
+      ? toTreeRowDefinitions(childItems, getKey, getChildItems)
+      : undefined;
+    return {
+      key: resolveItemKey(item, getKey, index),
+      value: item,
+      childRows: childRows && childRows.length > 0 ? childRows : undefined,
+    };
+  });
+}
+
 function getRowHeaderColumnKeys<T>(columns: (ColumnDefinition<T> & { id?: Key })[]): Set<Key> {
   const keys = new Set<Key>();
 
@@ -192,6 +223,18 @@ export interface TableProps<T extends object> extends Omit<AriaTableProps, "chil
   ) => JSX.Element;
   /** Drag and drop hooks from `useDragAndDrop`. */
   dragAndDropHooks?: DragAndDropHooks<T>;
+  /**
+   * Derives the child rows of an item, turning the flat `items` into a tree grid
+   * (expandable rows). Providing this — or any `UNSTABLE_*expandedKeys` prop — switches the
+   * table into tree-grid mode. Mirrors `@react-aria/table`'s `UNSTABLE_` tree-grid feature.
+   */
+  UNSTABLE_childItems?: (item: T) => Iterable<T> | undefined;
+  /** The currently expanded row keys (controlled). Tree grid only. */
+  UNSTABLE_expandedKeys?: "all" | Iterable<Key>;
+  /** The initial expanded row keys (uncontrolled). Tree grid only. */
+  UNSTABLE_defaultExpandedKeys?: "all" | Iterable<Key>;
+  /** Handler called when rows are expanded or collapsed. Tree grid only. */
+  UNSTABLE_onExpandedChange?: (keys: Set<Key>) => void;
 }
 
 export interface TableHeaderRenderProps {
@@ -324,6 +367,21 @@ export interface TableRowRenderProps {
   isHovered: boolean;
   /** Whether the row is disabled. */
   isDisabled: boolean;
+  /**
+   * Whether the row is expanded (tree grid only; `false` for a flat table).
+   * @selector [data-expanded]
+   */
+  isExpanded: boolean;
+  /**
+   * Whether the row has child rows (tree grid only; `false` for a flat table).
+   * @selector [data-has-child-items]
+   */
+  hasChildItems: boolean;
+  /**
+   * The 1-based nesting depth of the row within the table (1 for a flat table).
+   * @selector [data-level]
+   */
+  level: number;
 }
 
 export interface TableRowProps<T> extends SlotProps {
@@ -380,6 +438,27 @@ export interface TableCellRenderProps {
   isPressed: boolean;
   /** Whether the cell is hovered. */
   isHovered: boolean;
+  /**
+   * Whether the cell is in the tree column — the one that renders the expand/collapse
+   * chevron and nesting indentation (tree grid only; `false` for a flat table).
+   * @selector [data-tree-column]
+   */
+  isTreeColumn: boolean;
+  /**
+   * Whether the cell's row is expanded (tree grid only; `false` for a flat table).
+   * @selector [data-expanded]
+   */
+  isExpanded: boolean;
+  /**
+   * Whether the cell's row has child rows (tree grid only; `false` for a flat table).
+   * @selector [data-has-child-items]
+   */
+  hasChildItems: boolean;
+  /**
+   * The 1-based nesting depth of the cell's row within the table (1 for a flat table).
+   * @selector [data-level]
+   */
+  level: number;
 }
 
 export interface TableCellProps extends SlotProps {
@@ -472,6 +551,10 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
       "sortDescriptor",
       "onSortChange",
       "showSelectionCheckboxes",
+      "UNSTABLE_childItems",
+      "UNSTABLE_expandedKeys",
+      "UNSTABLE_defaultExpandedKeys",
+      "UNSTABLE_onExpandedChange",
     ],
   );
 
@@ -479,31 +562,57 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   const normalizedColumns = createMemo(() => normalizeColumnDefinitions(stateProps.columns));
   const rowHeaderColumnKeys = createMemo(() => getRowHeaderColumnKeys(normalizedColumns()));
 
-  const collection = createMemo(() =>
-    createTableCollection<T>({
-      columns: normalizedColumns(),
-      rows: stateProps.items,
-      getKey: stateProps.getKey,
-      getTextValue: stateProps.getTextValue as
-        | ((item: T, column: ColumnDefinition<T>) => string)
-        | undefined,
-      showSelectionCheckboxes: stateProps.showSelectionCheckboxes ?? false,
-      rowHeaderColumnKeys: rowHeaderColumnKeys().size > 0 ? rowHeaderColumnKeys() : undefined,
-    }),
-  );
+  // Tree-grid mode is selected structurally by the presence of any expansion prop. Like
+  // controlled-vs-uncontrolled, this is a one-time decision, not a reactive toggle.
+  const isTreeGrid =
+    stateProps.UNSTABLE_childItems !== undefined ||
+    stateProps.UNSTABLE_expandedKeys !== undefined ||
+    stateProps.UNSTABLE_defaultExpandedKeys !== undefined ||
+    stateProps.UNSTABLE_onExpandedChange !== undefined;
 
-  const state = createTableState<T, TableCollection<T>>(() => ({
-    collection: collection(),
-    disabledKeys: stateProps.disabledKeys,
-    selectionMode: stateProps.selectionMode,
-    selectionBehavior: stateProps.selectionBehavior,
-    selectedKeys: stateProps.selectedKeys,
-    defaultSelectedKeys: stateProps.defaultSelectedKeys,
-    onSelectionChange: stateProps.onSelectionChange,
-    sortDescriptor: stateProps.sortDescriptor,
-    onSortChange: stateProps.onSortChange,
-    showSelectionCheckboxes: stateProps.showSelectionCheckboxes,
-  }));
+  const getTextValue = () =>
+    stateProps.getTextValue as ((item: T, column: ColumnDefinition<T>) => string) | undefined;
+
+  const state: TableState<T, TableCollection<T>> = isTreeGrid
+    ? createTreeGridState<T, TableCollection<T>>(() => ({
+        columns: normalizedColumns(),
+        rows: toTreeRowDefinitions(stateProps.items, stateProps.getKey, stateProps.UNSTABLE_childItems),
+        getKey: stateProps.getKey,
+        getTextValue: getTextValue(),
+        showSelectionCheckboxes: stateProps.showSelectionCheckboxes ?? false,
+        rowHeaderColumnKeys: rowHeaderColumnKeys().size > 0 ? rowHeaderColumnKeys() : undefined,
+        disabledKeys: stateProps.disabledKeys,
+        selectionMode: stateProps.selectionMode,
+        selectionBehavior: stateProps.selectionBehavior,
+        selectedKeys: stateProps.selectedKeys,
+        defaultSelectedKeys: stateProps.defaultSelectedKeys,
+        onSelectionChange: stateProps.onSelectionChange,
+        sortDescriptor: stateProps.sortDescriptor,
+        onSortChange: stateProps.onSortChange,
+        UNSTABLE_expandedKeys: stateProps.UNSTABLE_expandedKeys,
+        UNSTABLE_defaultExpandedKeys: stateProps.UNSTABLE_defaultExpandedKeys,
+        UNSTABLE_onExpandedChange: stateProps.UNSTABLE_onExpandedChange,
+      }))
+    : createTableState<T, TableCollection<T>>(() => ({
+        collection: createTableCollection<T>({
+          columns: normalizedColumns(),
+          rows: stateProps.items,
+          getKey: stateProps.getKey,
+          getTextValue: getTextValue(),
+          showSelectionCheckboxes: stateProps.showSelectionCheckboxes ?? false,
+          rowHeaderColumnKeys: rowHeaderColumnKeys().size > 0 ? rowHeaderColumnKeys() : undefined,
+        }),
+        disabledKeys: stateProps.disabledKeys,
+        selectionMode: stateProps.selectionMode,
+        selectionBehavior: stateProps.selectionBehavior,
+        selectedKeys: stateProps.selectedKeys,
+        defaultSelectedKeys: stateProps.defaultSelectedKeys,
+        onSelectionChange: stateProps.onSelectionChange,
+        sortDescriptor: stateProps.sortDescriptor,
+        onSortChange: stateProps.onSortChange,
+        showSelectionCheckboxes: stateProps.showSelectionCheckboxes,
+      }));
+  const collection = () => state.collection;
   const parentCollectionRenderer = useCollectionRenderer<T>();
 
   const { gridProps } = createTable<T>(
@@ -1071,6 +1180,8 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
     context.collection,
   );
   const virtualRange = createMemo(() => {
+    // Tree grids render every visible (flattened) row; virtual windowing is a follow-up.
+    if (context.state.treeColumn != null) return null;
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return null;
     const rowCount = items().length;
     const baseRange = virtualizer.getVisibleRange(rowCount);
@@ -1125,6 +1236,11 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
     });
   });
   const visibleItems = createMemo(() => {
+    // Tree grid: render the flattened set of visible rows (top-level + expanded descendants)
+    // the collection materialises in document order, so the render fn runs once per visible row.
+    if (context.state.treeColumn != null) {
+      return rowNodes().map((node) => node.value as T);
+    }
     const range = virtualRange();
     if (!range) return items();
     return items().slice(range.start, range.end);
@@ -1435,7 +1551,7 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   if (!context) {
     throw new Error("TableRow must be used within a Table");
   }
-  const { state, collection } = context;
+  const { state } = context;
   const tableContext = context as unknown as TableContextValue<T>;
   const registeredCellIds: string[] = [];
   const generatedId = createUniqueId();
@@ -1454,8 +1570,10 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
 
   const [ref, setRef] = createSignal<HTMLTableRowElement | null>(null);
 
+  // Read through `state.collection` (not the destructured snapshot) so the node tracks
+  // collection rebuilds — e.g. a tree-grid row staying mounted across an expand/collapse.
   const rowNode = createMemo(() => {
-    const node = collection.getItem(rowKey());
+    const node = state.collection.getItem(rowKey());
     if (!node) {
       return {
         type: "item" as const,
@@ -1549,6 +1667,13 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     );
   });
 
+  // Tree-grid (expandable rows): nesting depth, child presence and expansion. These are
+  // inert for a flat table (level 1, no children, not expanded).
+  const isTreeRow = () => state.treeColumn != null;
+  const rowLevel = () => rowNode().level + 1;
+  const hasChildItems = () => rowAria.hasChildRows;
+  const isExpanded = () => rowAria.isExpanded;
+
   const renderValues = createMemo<TableRowRenderProps>(() => ({
     isSelected: isSelected(),
     isFocused: isFocused(),
@@ -1556,6 +1681,9 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     isPressed: isPressed(),
     isHovered: isHovered(),
     isDisabled: isDisabled(),
+    isExpanded: isExpanded(),
+    hasChildItems: hasChildItems(),
+    level: rowLevel(),
   }));
 
   // Resolve render props (children rendered directly in JSX to avoid eager evaluation)
@@ -1614,26 +1742,43 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     slots: {
       default: {},
       drag: dragButtonProps(),
+      // Tree-grid expand/collapse chevron; the slotted <Button slot="chevron"> picks these up.
+      // The aria hook yields DOM button attributes, merged onto the Button as passthrough props.
+      chevron: rowAria.expandButtonProps as unknown as ButtonProps,
     },
   }));
 
-  const rowChildren = () => (
-    <ButtonContext.Provider value={buttonContextValue()}>
-      {typeof local.children === "function" ? (
-        local.columns ? (
-          <For each={local.columns}>
-            {(column) =>
-              (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(column)
-            }
-          </For>
+  const rowChildren = () => {
+    // Cells claim their column by render order (see getCellColumnKey). Reset the registry at the
+    // start of every render pass so cells recreated on a render-props change — e.g. when a
+    // tree-grid row toggles expansion — re-register from the first column instead of appending
+    // fresh ids past the end of the column list (which would strand them without a column key).
+    registeredCellIds.length = 0;
+    return (
+      <ButtonContext.Provider value={buttonContextValue()}>
+        {typeof local.children === "function" ? (
+          local.columns ? (
+            <For each={local.columns}>
+              {(column) =>
+                (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(column)
+              }
+            </For>
+          ) : (
+            (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderValues())
+          )
         ) : (
-          (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderValues())
-        )
-      ) : (
-        local.children
-      )}
-    </ButtonContext.Provider>
-  );
+          local.children
+        )}
+      </ButtonContext.Provider>
+    );
+  };
+  // Tree-grid rows carry their nesting depth as a CSS var so the tree column can indent.
+  const rowStyle = () => {
+    const base = renderProps.style();
+    if (!isTreeRow()) return base;
+    return { ...(base ?? {}), "--table-row-level": rowLevel() } as JSX.CSSProperties;
+  };
+
   const tableRowProps = () =>
     ({
       ref: (el: HTMLTableRowElement) => {
@@ -1650,7 +1795,7 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
         (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
       ),
       class: renderProps.class(),
-      style: renderProps.style(),
+      style: rowStyle(),
       "data-key": rowKey(),
       "data-selected": isSelected() || undefined,
       "data-focused": isFocused() || undefined,
@@ -1672,6 +1817,9 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
       "data-referrer-policy": linkProps().referrerPolicy,
       "data-dragging": draggableItem()?.isDragging || undefined,
       "data-drop-target": droppableItem()?.isDropTarget || undefined,
+      "data-expanded": (isTreeRow() && isExpanded()) || undefined,
+      "data-has-child-items": (isTreeRow() && hasChildItems()) || undefined,
+      "data-level": isTreeRow() ? rowLevel() : undefined,
       children: rowChildren(),
     }) as JSX.HTMLAttributes<HTMLTableRowElement>;
 
@@ -1707,7 +1855,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
     throw new Error("TableCell must be used within a Table");
   }
 
-  const { state, collection } = tableContext;
+  const { state } = tableContext;
   const { rowKey, rowNode } = rowContext;
 
   const [ref, setRef] = createSignal<HTMLTableCellElement | null>(null);
@@ -1718,7 +1866,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
     const key = columnKey();
     if (key != null) {
       const cellKey = `${rowKey}-${key}`;
-      const node = collection.getItem(cellKey);
+      const node = state.collection.getItem(cellKey);
       if (node) return node;
     }
 
@@ -1738,8 +1886,20 @@ export function TableCell(props: TableCellProps): JSX.Element {
     const key = columnKey();
     if (key == null) return undefined;
     const cellKey = `${rowKey}-${key}`;
-    return collection.getItem(cellKey) ? (cellNode().index ?? 0) : undefined;
+    return state.collection.getItem(cellKey) ? (cellNode().index ?? 0) : undefined;
   });
+
+  // Tree-grid (expandable rows): the cell mirrors its row's nesting/expansion and flags the
+  // tree column (the one that renders the chevron + indentation). Inert for a flat table.
+  const isTreeGridCell = () => state.treeColumn != null;
+  const parentRowNode = createMemo(() => state.collection.getItem(rowKey));
+  const cellLevel = () => (parentRowNode()?.level ?? rowNode.level ?? 0) + 1;
+  const cellHasChildItems = () => parentRowNode()?.isExpandable ?? false;
+  const cellIsExpanded = () => {
+    if (!isTreeGridCell() || !cellHasChildItems()) return false;
+    return state.expandedKeys === "all" || state.expandedKeys.has(rowKey);
+  };
+  const isTreeColumn = () => isTreeGridCell() && columnKey() === state.treeColumn;
 
   const cellAria = createTableCell<object>(
     () => ({
@@ -1764,6 +1924,10 @@ export function TableCell(props: TableCellProps): JSX.Element {
     columnIndex: cellColumnIndex() ?? 0,
     isPressed: isPressed(),
     isHovered: isHovered(),
+    isTreeColumn: isTreeColumn(),
+    isExpanded: cellIsExpanded(),
+    hasChildItems: cellHasChildItems(),
+    level: cellLevel(),
   }));
 
   // Resolve render props (children rendered directly in JSX to avoid eager evaluation)
@@ -1808,6 +1972,10 @@ export function TableCell(props: TableCellProps): JSX.Element {
       "data-column-index": cellColumnIndex(),
       "data-pressed": isPressed() || undefined,
       "data-hovered": isHovered() || undefined,
+      "data-tree-column": isTreeColumn() || undefined,
+      "data-expanded": (isTreeGridCell() && cellIsExpanded()) || undefined,
+      "data-has-child-items": (isTreeGridCell() && cellHasChildItems()) || undefined,
+      "data-level": isTreeGridCell() ? cellLevel() : undefined,
       children: cellChildren(),
     }) as JSX.TdHTMLAttributes<HTMLTableCellElement>;
 
@@ -1830,6 +1998,10 @@ export function TableCell(props: TableCellProps): JSX.Element {
       data-column-index={cellColumnIndex()}
       data-pressed={isPressed() || undefined}
       data-hovered={isHovered() || undefined}
+      data-tree-column={isTreeColumn() || undefined}
+      data-expanded={(isTreeGridCell() && cellIsExpanded()) || undefined}
+      data-has-child-items={(isTreeGridCell() && cellHasChildItems()) || undefined}
+      data-level={isTreeGridCell() ? cellLevel() : undefined}
     >
       {cellChildren()}
     </td>

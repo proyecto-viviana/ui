@@ -6,8 +6,18 @@
 import { createMemo, createSignal, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import type { Key, TableState, TableCollection } from "@proyecto-viviana/solid-stately";
-import type { AriaTableRowProps, TableRowAria } from "./types";
+import type { AriaTableRowProps, TableRowAria, ExpandButtonProps } from "./types";
 import { getTableData } from "./createTable";
+import { useLocale } from "../i18n";
+
+/**
+ * Arrow keys that expand/collapse a tree-grid row, mirroring `@react-aria/table`.
+ * Direction is flipped under RTL.
+ */
+const EXPANSION_KEYS = {
+  expand: { ltr: "ArrowRight", rtl: "ArrowLeft" },
+  collapse: { ltr: "ArrowLeft", rtl: "ArrowRight" },
+} as const;
 
 /**
  * Creates accessibility props for a table row.
@@ -18,8 +28,39 @@ export function createTableRow<T extends object>(
   _ref: Accessor<HTMLTableRowElement | null>,
 ): TableRowAria {
   const [isPressed, setIsPressed] = createSignal(false);
+  const locale = useLocale();
   let didSelectOnPointer = false;
   let didActionOnPointer = false;
+
+  // Tree-grid (expandable rows): only active when the collection has a tree column.
+  const isTreeRow = createMemo(() => state().treeColumn != null);
+
+  const hasChildRows = createMemo(() => props().node.isExpandable ?? false);
+
+  const isExpanded = createMemo(() => {
+    const s = state();
+    if (s.treeColumn == null) return false;
+    return s.expandedKeys === "all" || s.expandedKeys.has(props().node.key);
+  });
+
+  // aria-posinset / aria-setsize among same-level sibling rows.
+  const siblingInfo = createMemo(() => {
+    const s = state();
+    const node = props().node;
+    if (node.parentKey != null) {
+      const parent = s.collection.getItem(node.parentKey);
+      if (parent) {
+        const siblings = parent.childNodes.filter((n) => n.type === "item");
+        return { posinset: node.index + 1, setsize: siblings.length };
+      }
+    }
+    const rootRows = s.collection.body.childNodes.filter((n) => n.type === "item");
+    const rootIndex = rootRows.findIndex((n) => n.key === node.key);
+    return {
+      posinset: rootIndex >= 0 ? rootIndex + 1 : node.index + 1,
+      setsize: rootRows.length,
+    };
+  });
 
   const isSelected = createMemo(() => {
     const s = state();
@@ -144,6 +185,43 @@ export function createTableRow<T extends object>(
 
     if (isDisabled()) return;
 
+    // Tree-grid expand/collapse with Left/Right arrows (flipped under RTL). Handled before
+    // selection/navigation; stopping propagation prevents the grid's arrow navigation when
+    // expansion consumes the key.
+    if (s.treeColumn != null) {
+      const direction = locale().direction === "rtl" ? "rtl" : "ltr";
+      const key = p.node.key;
+      const expanded = s.expandedKeys;
+      if (
+        e.key === EXPANSION_KEYS.expand[direction] &&
+        s.focusedKey === key &&
+        hasChildRows() &&
+        expanded !== "all" &&
+        !expanded.has(key)
+      ) {
+        s.toggleKey(key);
+        e.stopPropagation();
+        return;
+      } else if (e.key === EXPANSION_KEYS.collapse[direction] && s.focusedKey === key) {
+        if (expanded !== "all") {
+          if (hasChildRows() && expanded.has(key)) {
+            s.toggleKey(key);
+            e.stopPropagation();
+            return;
+          } else if (!expanded.has(key) && p.node.parentKey != null && p.node.level > 0) {
+            // Leaf or already-collapsed row: move focus to the parent row.
+            s.setFocusedKey(p.node.parentKey);
+            e.stopPropagation();
+            return;
+          }
+        } else {
+          s.toggleKey(key);
+          e.stopPropagation();
+          return;
+        }
+      }
+    }
+
     if (e.key === "Enter") {
       e.preventDefault();
 
@@ -250,17 +328,51 @@ export function createTableRow<T extends object>(
       onPointerUp,
     };
 
-    // Add aria-rowindex for virtualized tables
-    if (p.isVirtualized && node.rowIndex != null) {
+    // Tree-grid rows expose their nesting depth, position and expansion state.
+    if (s.treeColumn != null) {
+      const { posinset, setsize } = siblingInfo();
+      baseProps["aria-expanded"] = hasChildRows() ? isExpanded() : undefined;
+      baseProps["aria-level"] = node.level + 1; // 1-based
+      baseProps["aria-posinset"] = posinset;
+      baseProps["aria-setsize"] = setsize;
+    }
+
+    // Add aria-rowindex for virtualized tables. Tree grids omit it (matches upstream).
+    if (p.isVirtualized && s.treeColumn == null && node.rowIndex != null) {
       baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
     }
 
     return baseProps as JSX.HTMLAttributes<HTMLTableRowElement>;
   });
 
+  // Chevron button for expanding/collapsing a tree-grid row. Press-based so it flows through
+  // our Button's `createPress`, and excluded from the tab order — reached via the row's
+  // Left/Right arrow keys instead. Mirrors `@react-aria/table`'s `expandButtonProps`; whether a
+  // chevron renders for a leaf row is the consumer's call (gate on `hasChildItems`), matching S2.
+  const onExpandPress = () => {
+    const s = state();
+    const p = props();
+    if (isDisabled()) return;
+    s.toggleKey(p.node.key);
+    s.setFocused(true);
+    s.setFocusedKey(p.node.key);
+  };
+
+  const expandButtonProps = createMemo<ExpandButtonProps>(() => ({
+    isDisabled: isDisabled(),
+    onPress: onExpandPress,
+    excludeFromTabOrder: true,
+    preventFocusOnPress: true,
+    "data-react-aria-prevent-focus": true,
+    "aria-label": isExpanded() ? "Collapse" : "Expand",
+  }));
+
   return {
     get rowProps() {
       return rowProps();
+    },
+    get expandButtonProps() {
+      return expandButtonProps();
     },
     get isSelected() {
       return isSelected();
@@ -270,6 +382,12 @@ export function createTableRow<T extends object>(
     },
     get isPressed() {
       return isPressed();
+    },
+    get isExpanded() {
+      return isExpanded();
+    },
+    get hasChildRows() {
+      return hasChildRows();
     },
   };
 }

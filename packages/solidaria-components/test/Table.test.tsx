@@ -4085,3 +4085,266 @@ describe("Table", () => {
     });
   });
 });
+
+// ============================================
+// TREE GRID / EXPANDABLE ROWS (UNSTABLE)
+// ============================================
+
+interface TreeItem {
+  id: string;
+  name: string;
+  type: string;
+  children?: TreeItem[];
+}
+
+// projects > project-1 > (file-1, file-2), project-2 ; documents > doc-1
+const treeData: TreeItem[] = [
+  {
+    id: "projects",
+    name: "Projects",
+    type: "folder",
+    children: [
+      {
+        id: "project-1",
+        name: "Project 1",
+        type: "folder",
+        children: [
+          { id: "file-1", name: "File 1", type: "file" },
+          { id: "file-2", name: "File 2", type: "file" },
+        ],
+      },
+      { id: "project-2", name: "Project 2", type: "file" },
+    ],
+  },
+  {
+    id: "documents",
+    name: "Documents",
+    type: "folder",
+    children: [{ id: "doc-1", name: "Doc 1", type: "file" }],
+  },
+];
+
+const treeGridColumns = [
+  { key: "name", name: "Name", isRowHeader: true },
+  { key: "type", name: "Type" },
+];
+
+// Render-props at every level (avoids solid-refresh HMR context issues). The first column is
+// the tree column and hosts the slotted chevron button; its aria-label flows from the row.
+function TestTreeTable(props: Partial<Parameters<typeof Table>[0]> = {}) {
+  return (
+    <Table
+      items={treeData}
+      columns={treeGridColumns}
+      getKey={(item: any) => item.id}
+      aria-label="Files"
+      UNSTABLE_childItems={(item: any) => item.children}
+      {...props}
+    >
+      {() => (
+        <>
+          <TableHeader>
+            <TableColumn id="name">{() => <>Name</>}</TableColumn>
+            <TableColumn id="type">{() => <>Type</>}</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {(item: any) => (
+              <TableRow id={item.id} item={item}>
+                {() => (
+                  <>
+                    <TableCell>
+                      {(renderProps: any) => (
+                        <>
+                          {renderProps.hasChildItems && renderProps.isTreeColumn && (
+                            <Button slot="chevron">▶</Button>
+                          )}
+                          {item.name}
+                        </>
+                      )}
+                    </TableCell>
+                    <TableCell>{() => <>{item.type}</>}</TableCell>
+                  </>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </>
+      )}
+    </Table>
+  );
+}
+
+const rowByKey = (key: string) => document.querySelector(`tr[data-key="${key}"]`);
+const chevronOf = (key: string) => rowByKey(key)!.querySelector("button") as HTMLButtonElement;
+
+describe("Table (tree grid / expandable rows)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders only top-level rows when collapsed by default", () => {
+    render(() => <TestTreeTable />);
+
+    expect(document.querySelectorAll(".solidaria-Table-row")).toHaveLength(2);
+    expect(rowByKey("projects")).toBeTruthy();
+    expect(rowByKey("documents")).toBeTruthy();
+    expect(rowByKey("project-1")).toBeNull();
+    expect(rowByKey("file-1")).toBeNull();
+  });
+
+  it("flattens expanded descendants in document order", () => {
+    render(() => <TestTreeTable UNSTABLE_defaultExpandedKeys={["projects", "project-1"]} />);
+
+    const keys = Array.from(document.querySelectorAll<HTMLElement>("tr[data-key]")).map((row) =>
+      row.getAttribute("data-key"),
+    );
+    expect(keys).toEqual(["projects", "project-1", "file-1", "file-2", "project-2", "documents"]);
+  });
+
+  it("exposes tree ARIA attributes on rows", () => {
+    render(() => <TestTreeTable UNSTABLE_defaultExpandedKeys={["projects", "project-1"]} />);
+
+    const projects = rowByKey("projects")!;
+    expect(projects).toHaveAttribute("aria-expanded", "true");
+    expect(projects).toHaveAttribute("aria-level", "1");
+    expect(projects).toHaveAttribute("aria-posinset", "1");
+    expect(projects).toHaveAttribute("aria-setsize", "2");
+
+    expect(rowByKey("documents")).toHaveAttribute("aria-posinset", "2");
+
+    const project2 = rowByKey("project-2")!;
+    expect(project2).toHaveAttribute("aria-level", "2");
+    expect(project2).toHaveAttribute("aria-posinset", "2");
+    expect(project2).toHaveAttribute("aria-setsize", "2");
+    // Leaf row: no aria-expanded.
+    expect(project2).not.toHaveAttribute("aria-expanded");
+
+    const file1 = rowByKey("file-1")!;
+    expect(file1).toHaveAttribute("aria-level", "3");
+    expect(file1).toHaveAttribute("aria-posinset", "1");
+  });
+
+  it("exposes tree data attributes and the --table-row-level var on rows", () => {
+    render(() => <TestTreeTable UNSTABLE_defaultExpandedKeys={["projects", "project-1"]} />);
+
+    const projects = rowByKey("projects") as HTMLElement;
+    expect(projects).toHaveAttribute("data-expanded");
+    expect(projects).toHaveAttribute("data-has-child-items");
+    expect(projects).toHaveAttribute("data-level", "1");
+    expect(projects.style.getPropertyValue("--table-row-level")).toBe("1");
+
+    const file1 = rowByKey("file-1") as HTMLElement;
+    expect(file1).toHaveAttribute("data-level", "3");
+    expect(file1).not.toHaveAttribute("data-has-child-items");
+    expect(file1).not.toHaveAttribute("data-expanded");
+    expect(file1.style.getPropertyValue("--table-row-level")).toBe("3");
+  });
+
+  it("marks the tree column cell with data-tree-column and tree data attributes", () => {
+    render(() => <TestTreeTable UNSTABLE_defaultExpandedKeys={["projects"]} />);
+
+    const cells = rowByKey("projects")!.querySelectorAll("td, th");
+    const treeCell = cells[0];
+    const typeCell = cells[1];
+
+    expect(treeCell).toHaveAttribute("data-tree-column");
+    expect(treeCell).toHaveAttribute("data-expanded");
+    expect(treeCell).toHaveAttribute("data-has-child-items");
+    expect(treeCell).toHaveAttribute("data-level", "1");
+
+    expect(typeCell).not.toHaveAttribute("data-tree-column");
+  });
+
+  it("renders the chevron with an Expand label and excludes it from the tab order", () => {
+    render(() => <TestTreeTable />);
+
+    const chevron = chevronOf("projects");
+    expect(chevron).toHaveAttribute("aria-label", "Expand");
+    expect(chevron).toHaveAttribute("tabindex", "-1");
+    expect(chevron).toHaveAttribute("data-react-aria-prevent-focus", "true");
+  });
+
+  it("omits the chevron for leaf rows", () => {
+    render(() => <TestTreeTable UNSTABLE_defaultExpandedKeys={["projects"]} />);
+
+    // The cell only renders a chevron when the row has children (mirrors S2's TableView, which
+    // gates `<ExpandableRowChevron>` on `hasChildItems && isTreeColumn`).
+    expect(rowByKey("project-2")!.querySelector("button")).toBeNull();
+    expect(chevronOf("projects")).toBeTruthy();
+  });
+
+  it("expands and collapses an uncontrolled row when the chevron is pressed", () => {
+    render(() => <TestTreeTable />);
+
+    expect(rowByKey("project-1")).toBeNull();
+
+    fireEvent.click(chevronOf("projects"));
+    expect(rowByKey("project-1")).toBeTruthy();
+    expect(rowByKey("projects")).toHaveAttribute("aria-expanded", "true");
+
+    // Toggling re-renders the tree-column cell (Solid recreates its children rather than
+    // reconciling), so re-query the chevron before collapsing instead of reusing a stale node.
+    fireEvent.click(chevronOf("projects"));
+    expect(rowByKey("project-1")).toBeNull();
+    expect(rowByKey("projects")).not.toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("reports changes but stays put when expansion is controlled", () => {
+    const onExpandedChange = vi.fn();
+    render(() => (
+      <TestTreeTable
+        UNSTABLE_expandedKeys={["projects"]}
+        UNSTABLE_onExpandedChange={onExpandedChange}
+      />
+    ));
+
+    // Controlled value is reflected.
+    expect(rowByKey("project-1")).toBeTruthy();
+
+    fireEvent.click(chevronOf("projects"));
+    // The change is reported, but the view stays in sync with the (unchanged) controlled value.
+    expect(onExpandedChange).toHaveBeenCalledWith(new Set([]));
+    expect(rowByKey("project-1")).toBeTruthy();
+  });
+
+  it("expands and collapses the focused row with Arrow keys (LTR)", () => {
+    render(() => <TestTreeTable />);
+
+    const projects = rowByKey("projects") as HTMLElement;
+    fireEvent.focus(projects);
+
+    fireEvent.keyDown(projects, { key: "ArrowRight" });
+    expect(rowByKey("project-1")).toBeTruthy();
+
+    fireEvent.keyDown(projects, { key: "ArrowLeft" });
+    expect(rowByKey("project-1")).toBeNull();
+  });
+
+  it("expands the whole tree when expandedKeys is 'all'", () => {
+    render(() => <TestTreeTable UNSTABLE_expandedKeys="all" />);
+
+    const keys = Array.from(document.querySelectorAll<HTMLElement>("tr[data-key]")).map((row) =>
+      row.getAttribute("data-key"),
+    );
+    expect(keys).toEqual([
+      "projects",
+      "project-1",
+      "file-1",
+      "file-2",
+      "project-2",
+      "documents",
+      "doc-1",
+    ]);
+  });
+
+  it("omits tree attributes for a plain (non-tree) table", () => {
+    render(() => <TestTable />);
+
+    const row = document.querySelector(".solidaria-Table-row") as HTMLElement;
+    expect(row).not.toHaveAttribute("aria-level");
+    expect(row).not.toHaveAttribute("data-level");
+    expect(row).not.toHaveAttribute("data-expanded");
+    expect(row.style.getPropertyValue("--table-row-level")).toBe("");
+    expect(document.querySelector("[data-tree-column]")).toBeNull();
+  });
+});
