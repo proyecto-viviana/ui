@@ -61,6 +61,7 @@ export type TableSize = "sm" | "md" | "lg";
 export type TableVariant = "default" | "striped" | "bordered";
 export type TableDensity = "compact" | "regular" | "spacious";
 export type TableOverflowMode = "truncate" | "wrap";
+export type TableSelectionStyle = "checkbox" | "highlight";
 export type TableAlign = "start" | "center" | "end" | "left" | "right";
 
 interface TableContextValue {
@@ -68,6 +69,7 @@ interface TableContextValue {
   isQuiet: boolean;
   overflowMode: TableOverflowMode;
   showSelectionCheckboxes: boolean;
+  selectionStyle: TableSelectionStyle;
   loadingState?: LoadingState;
   onLoadMore?: () => void | Promise<void>;
 }
@@ -77,6 +79,7 @@ const TableContext = createContext<TableContextValue>({
   isQuiet: false,
   overflowMode: "truncate",
   showSelectionCheckboxes: false,
+  selectionStyle: "checkbox",
 });
 
 export interface TableProps<T extends object> extends Omit<
@@ -118,6 +121,13 @@ export interface TableProps<T extends object> extends Omit<
   variant?: TableVariant;
   /** Overrides the default S2 selection checkbox behavior. */
   showSelectionCheckboxes?: boolean;
+  /**
+   * How selection is displayed: `checkbox` shows selection checkboxes (toggle
+   * behavior), `highlight` selects whole rows with no checkboxes (replace
+   * behavior).
+   * @default 'checkbox'
+   */
+  selectionStyle?: TableSelectionStyle;
   /** S2 row action alias. */
   onAction?: (key: Key) => void;
   /** S2 asynchronous loading state. */
@@ -373,7 +383,12 @@ const rowHoverBackground = colorMix("gray-25", "gray-900", 5);
 const rowPressedBackground = colorMix("gray-25", "gray-900", 8);
 const rowSelectedBackground = colorMix("gray-25", "gray-900", 7);
 
-const tableRow = style<TableRowRenderProps & { density?: TableDensity }>({
+const rowHighlightBackground = colorMix("gray-25", "blue-900", 10);
+const rowHighlightActiveBackground = colorMix("gray-25", "blue-900", 15);
+
+const tableRow = style<
+  TableRowRenderProps & { density?: TableDensity; selectionStyle?: TableSelectionStyle }
+>({
   outlineStyle: "none",
   position: "relative",
   minHeight: {
@@ -383,7 +398,23 @@ const tableRow = style<TableRowRenderProps & { density?: TableDensity }>({
     default: "transparent",
     isHovered: rowHoverBackground,
     isPressed: rowPressedBackground,
-    isSelected: rowSelectedBackground,
+    isSelected: {
+      default: rowSelectedBackground,
+      selectionStyle: {
+        highlight: {
+          default: rowHighlightBackground,
+          isHovered: rowHighlightActiveBackground,
+          isPressed: rowHighlightActiveBackground,
+        },
+      },
+    },
+    forcedColors: {
+      selectionStyle: {
+        highlight: {
+          isSelected: "Highlight",
+        },
+      },
+    },
   },
   cursor: {
     isDisabled: "default",
@@ -392,6 +423,13 @@ const tableRow = style<TableRowRenderProps & { density?: TableDensity }>({
     default: baseColor("neutral-subdued"),
     isSelected: baseColor("neutral"),
     isDisabled: "disabled",
+    forcedColors: {
+      selectionStyle: {
+        highlight: {
+          isSelected: "HighlightText",
+        },
+      },
+    },
   },
 });
 
@@ -659,6 +697,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     "size",
     "variant",
     "showSelectionCheckboxes",
+    "selectionStyle",
     "selectionBehavior",
     "onSelectionChange",
     "onAction",
@@ -673,8 +712,15 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   const density = () => densityFromProps(local.size, local.density);
   const isQuiet = () => !!local.isQuiet;
   const overflowMode = () => local.overflowMode ?? "truncate";
+  const selectionStyle = (): TableSelectionStyle => local.selectionStyle ?? "checkbox";
+  const selectionBehavior = (): "toggle" | "replace" =>
+    local.selectionBehavior ?? (selectionStyle() === "highlight" ? "replace" : "toggle");
+  // Mirror upstream S2's gate: checkboxes only appear with toggle behavior in
+  // checkbox style. Highlight selection (replace behavior) hides them entirely.
   const showSelectionCheckboxes = () =>
-    local.showSelectionCheckboxes ?? headlessProps.selectionMode !== "none";
+    (local.showSelectionCheckboxes ?? headlessProps.selectionMode !== "none") &&
+    selectionStyle() === "checkbox" &&
+    selectionBehavior() === "toggle";
   const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
     selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
   );
@@ -707,13 +753,14 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     isQuiet: isQuiet(),
     overflowMode: overflowMode(),
     showSelectionCheckboxes: showSelectionCheckboxes(),
+    selectionStyle: selectionStyle(),
     loadingState: local.loadingState,
     onLoadMore: local.onLoadMore,
   }));
   const renderTable = () => (
     <HeadlessTable
       {...headlessProps}
-      selectionBehavior={local.selectionBehavior ?? "toggle"}
+      selectionBehavior={selectionBehavior()}
       shouldSelectOnPressUp={headlessProps.shouldSelectOnPressUp ?? true}
       showSelectionCheckboxes={showSelectionCheckboxes()}
       onRowAction={local.onAction ?? local.onRowAction}
@@ -723,6 +770,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
       data-density={density()}
       data-quiet={isQuiet() || undefined}
       data-overflow-mode={overflowMode()}
+      data-selection-style={selectionStyle()}
     >
       {local.children}
     </HeadlessTable>
@@ -894,7 +942,14 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     [
       local.UNSAFE_className,
       local.class,
-      mergeStyles(tableRow({ ...renderProps, density: context.density }), local.styles),
+      mergeStyles(
+        tableRow({
+          ...renderProps,
+          density: context.density,
+          selectionStyle: context.selectionStyle,
+        }),
+        local.styles,
+      ),
     ]
       .filter(Boolean)
       .join(" ");

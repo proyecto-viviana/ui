@@ -242,6 +242,85 @@ describe("TableView (solid-spectrum)", () => {
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["bob"]));
   });
 
+  it("defaults to checkbox selection style with toggle behavior", () => {
+    render(() => <TestTable selectionMode="multiple" defaultSelectedKeys={["alice"]} />);
+
+    const grid = screen.getByRole("grid", { name: "People" });
+    expect(grid).toHaveAttribute("data-selection-style", "checkbox");
+    // Select-all and per-row checkboxes remain in the default checkbox style.
+    expect(screen.getByRole("checkbox", { name: "Select All" })).toBeTruthy();
+    const alice = screen.getByRole("row", { name: /Alice/ });
+    expect(within(alice).getByRole("checkbox", { name: "Select" })).toBeTruthy();
+  });
+
+  it("supports highlight selection with replace behavior and no checkboxes", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+
+    function Demo() {
+      const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set(["alice"]));
+
+      return (
+        <Table
+          aria-label="People"
+          items={rows}
+          columns={columns}
+          getKey={(row) => row.id}
+          selectionMode="multiple"
+          selectionStyle="highlight"
+          selectedKeys={selectedKeys()}
+          onSelectionChange={(keys) => {
+            const nextKeys = normalizeKeys(keys);
+            setSelectedKeys(new Set(Array.from(nextKeys, String)));
+            onSelectionChange(keys);
+          }}
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                <TableColumn id="role">{() => <>Role</>}</TableColumn>
+                <TableColumn id="status">{() => <>Status</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(row) => (
+                  <TableRow id={row.id} item={row}>
+                    {() => (
+                      <>
+                        <TableCell>{() => <>{row.name}</>}</TableCell>
+                        <TableCell>{() => <>{row.role}</>}</TableCell>
+                        <TableCell>{() => <>{row.status}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      );
+    }
+
+    render(() => <Demo />);
+
+    const grid = screen.getByRole("grid", { name: "People" });
+    expect(grid).toHaveAttribute("data-selection-style", "highlight");
+    // Highlight selection drops both the select-all column and per-row checkboxes.
+    expect(screen.queryByRole("checkbox")).toBeNull();
+    expect(screen.getAllByRole("columnheader")).toHaveLength(3);
+
+    const alice = screen.getByRole("row", { name: /Alice/ });
+    const bob = screen.getByRole("row", { name: /Bob/ });
+    expect(alice).toHaveAttribute("data-selected", "true");
+
+    // Replace behavior: clicking another row replaces the selection rather than adding to it.
+    await user.click(bob);
+
+    expect(alice).not.toHaveAttribute("data-selected");
+    expect(bob).toHaveAttribute("data-selected", "true");
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["bob"]));
+  });
+
   it("selects rows on pointer up by default to match S2 press timing", () => {
     const onSelectionChange = vi.fn();
 
