@@ -559,6 +559,68 @@ describe("createMenu - disabled key navigation", () => {
       dispose();
     });
   });
+
+  it("does not skip disabled keys under disabledBehavior 'selection'", () => {
+    createRoot((dispose) => {
+      const items = [
+        { key: "item1", label: "Item 1" },
+        { key: "item2", label: "Item 2" },
+        { key: "item3", label: "Item 3" },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        disabledKeys: ["item2"],
+        disabledBehavior: "selection",
+      });
+
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      state.setFocusedKey("item1");
+
+      // item2 is disabled for selection only, so ArrowDown stays on it.
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      onKeyDown({
+        key: "ArrowDown",
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent);
+
+      expect(state.focusedKey()).toBe("item2");
+      dispose();
+    });
+  });
+
+  it("still does not activate a disabled-for-selection item on Enter", () => {
+    createRoot((dispose) => {
+      const onAction = vi.fn();
+      const items = [
+        { key: "item1", label: "Item 1" },
+        { key: "item2", label: "Item 2" },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        disabledKeys: ["item2"],
+        disabledBehavior: "selection",
+      });
+
+      const { menuProps } = createMenu({ "aria-label": "Test menu", onAction }, state);
+
+      // item2 is focusable under "selection" but must not activate.
+      state.setFocusedKey("item2");
+
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      onKeyDown({
+        key: "Enter",
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent);
+
+      expect(onAction).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
 });
 
 describe("createMenu - page navigation", () => {

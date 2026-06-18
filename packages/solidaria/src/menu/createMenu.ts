@@ -205,8 +205,11 @@ export function createMenu<T>(
     const p = getProps();
     const wrap = p.shouldFocusWrap ?? false;
 
-    // Use state.isDisabled which properly checks the disabledKeys accessor
-    const isDisabled = (key: Key) => state.isDisabled(key);
+    // Disabled keys only block keyboard navigation under disabledBehavior "all"
+    // (the default); under "selection" they stay focusable while their selection
+    // remains blocked. Mirrors ListKeyboardDelegate.isDisabled in React Aria,
+    // which gates the navigation skip on the resolved disabledBehavior.
+    const isDisabled = (key: Key) => state.isDisabled(key) && state.disabledBehavior() === "all";
 
     switch (e.key) {
       case "ArrowDown": {
@@ -255,8 +258,10 @@ export function createMenu<T>(
       case "Enter": {
         e.preventDefault();
         const focusedKey = state.focusedKey();
-        // Don't activate disabled items
-        if (focusedKey != null && !isDisabled(focusedKey)) {
+        // Don't activate disabled items. Activation uses the raw disabled check
+        // (not the navigation-gated one) so a key stays non-activatable
+        // regardless of disabledBehavior, matching SelectionManager.canSelectItem.
+        if (focusedKey != null && !state.isDisabled(focusedKey)) {
           state.select(focusedKey, e, collection);
           p.onAction?.(focusedKey);
           if (p.shouldCloseOnSelect !== false) {
