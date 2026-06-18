@@ -14,24 +14,29 @@ behavioral/focus fixes, new props, and whole new components that don't alter an
 asserted role. The release notes are the only signal those happened — see the
 "Read the release notes for intent" step in [upstream-sync.md](./upstream-sync.md).
 
-> **Status — pass 1 complete; source-based depth-verify done; web pass 2 remains.**
+> **Status — pass 1 complete; source-based depth-verify done; web pass 2 done. No 🔍 tickets remain.**
 > The tickets below come from the release **highlights** (pass 1, done). A
-> **source-based depth-verify** (oldest-first, reconciling each greppable 🔍/✅
-> against upstream `src` + ours) then resolved most of the list: confirmed-present
+> **source-based depth-verify** then resolved the greppable list: confirmed-present
 > **T-07, T-12, T-13, T-14, T-15, T-20, T-24, T-27, T-28, T-30, T-33** and the
 > animated **T-01**; confirmed-gap **T-02** (EditableCell), **T-18** (horizontal
-> virtualization), **T-32** (field `prefix`). What's **left for the web pass 2** is
-> only the genuinely *behavioral* tickets a grep can't settle — **T-03** (DOM
-> render prop), **T-05** (Menu-in-Popover), **T-06** (TreeView disabledBehavior),
-> **T-09** (overlay positioning), **T-10** (scroll-into-view), **T-22** (icons),
-> and the TableView-highlight half of **T-31** — via the per-PR "Fixed" lists
-> (`react-aria.adobe.com/releases/v1-16-0`, …). Treat those 🔍 as "unverified."
-> Execution of the confirmed ⛔ gaps (leaf-first, no conflicts): **T-29 SliderFill
-> ✔**, **T-25 Calendar month/year pickers ✔**, **T-23 Calendar multi-select ✔**,
-> **T-26 RangeCalendar available-range ✔** — which **completes the Calendar 1.18
-> cluster** — and **T-16 Table expandable rows ✔** (the `UNSTABLE_` tree grid,
-> headless React-Aria parity). New confirmed gaps (T-02, T-18, T-32) are on the
-> shortlist at the foot.
+> virtualization), **T-32** (field `prefix`). The **web pass 2** — mining the per-PR
+> "Fixed" lists for the genuinely *behavioral* tickets, then reconciling each against
+> the vendored 1.18/1.4 `src` — is now **complete**: **present** — **T-03** (the
+> `render` / `DOMRenderFunction` element-swap prop, faithfully wired), **T-09**
+> (overlay positioning — `calculatePosition` is a faithful post-#9343 port incl. the
+> non-viewport-container `boundaryToContainerTransformOffset`), **T-05**
+> (Menu-in-Popover — architecture-immune: our runtime-trigger model avoids the
+> React-portal context leak #9549 fixed), and **T-06** (TreeView `disabledBehavior` —
+> present; minor `forcedColors: GrayText` HCM follow-up); **new gaps** — **T-10**
+> (the whole `scrollIntoView` / `scrollIntoViewport` util family + its collection
+> wiring is unported), **T-31** (S2 `TableView` `selectionStyle="highlight"` —
+> upstream *does* have it, we don't), and **T-22** (icon set 8 of 410 behind — a
+> regen). Execution of the confirmed ⛔ gaps (leaf-first, no conflicts): **T-29
+> SliderFill ✔**, **T-25 Calendar month/year pickers ✔**, **T-23 Calendar
+> multi-select ✔**, **T-26 RangeCalendar available-range ✔** — which **completes the
+> Calendar 1.18 cluster** — and **T-16 Table expandable rows ✔** (the `UNSTABLE_`
+> tree grid, headless React-Aria parity). The open confirmed gaps (T-02, T-18, T-32,
+> T-31, T-10, T-22) are on the shortlist at the foot.
 
 ## Scope & sources
 
@@ -80,17 +85,17 @@ internal — not a port concern).
 
 ## Train 2 — RAC 1.15.0 / S2 1.1.0 (2026-02-04)
 
-- [ ] **T-03** 🔍 RAC — **DOM customization render prop** (new render prop to swap the rendered DOM element — Router `Link`, animation libs). Cross-cutting API; confirm we expose the equivalent.
+- [x] **T-03** ✅ RAC — **DOM customization render prop** (new render prop to swap the rendered DOM element — Router `Link`, animation libs). **Verified present** (web pass 2). Upstream added a cross-cutting `render?: DOMRenderFunction<E, T>` — `(domProps, renderProps) => element` — that overrides the rendered DOM element (RAC `utils.tsx` `DOMElement` / `DOMRenderProps`, for router links, animation libs, pre-styled components). Ours exposes the same element-swap `render` prop across `Button` / `RadioGroup` / `Select` / `Menu` / `Checkbox` / `Table` / `TextField` / `Popover` (e.g. `Button.tsx`: `render?: (props: JSX.ButtonHTMLAttributes, renderProps: ButtonRenderProps) => JSX.Element`) and **genuinely consumes it** — `Button.tsx:506` returns `local.render(customRootProps, customRenderValues)` when provided, not just a type. Faithful.
 - [x] **T-04** ✔ RAC — **DateField/DatePicker**: constrain dates **on blur**, not as-you-type (their most-upvoted issue). **Behavioral — invisible to the ARIA gate.** **Done by us** this cycle (changeset `datefield-constrain-on-blur.md`): ported upstream's `IncompleteDate` display model into `solid-stately`. A new `calendar/IncompleteDate.ts` (port of `@react-stately/datepicker`) holds the raw segment values, so a momentarily-impossible edit (e.g. month set to February while the day still reads `31`) is held exactly as typed while focused and constrained (Feb 31 → Feb 28) only on blur via `confirmPlaceholder`. `createDateFieldState` was reworked around a `displayValue: IncompleteDate` signal: `setSegment`/`incrementSegment`/`decrementSegment`/`clearSegment` operate on it; a complete + valid edit commits eagerly (fires `onChange`), an incomplete/invalid edit is held without firing `onChange` until blur; `segments` render the raw typed value via `Intl.NumberFormat`. **Divergence removed:** a typed value is no longer snapped to `minValue`/`maxValue` — out-of-range dates are kept and reported through validation (`rangeUnderflow`/`rangeOverflow`), matching React Aria (the 3 old clamp tests were rewritten to assert this). The `DateFieldState` public interface is unchanged, so `createDateSegment` (solidaria) and the `DateField`/`DatePicker`/`DateRangePicker` components (solidaria-components / solid-spectrum) inherit the behavior without API changes. **Solid note:** `confirmPlaceholder` only resets the `displayValue` signal when the value actually changed (a commit or a constrained Feb-31-style value), because blur fires on every focus move and Solid's reference-keyed `<For>` would otherwise recreate the just-focused segment node and drop focus. 13 stately tests (incl. invalid-combo-on-blur + eager-commit); full solid-stately suite green (836).
-- [ ] **T-05** 🔍 S2 — **Menu** renders correctly when opened from within a **Popover** (regression fix). Verify our popover-nested menu.
-- [ ] **T-06** 🔍 S2 — **TreeView** `disabledBehavior` styling updated to latest designs. Verify.
+- [x] **T-05** ✅ S2 — **Menu** renders correctly when opened from within a **Popover** (regression fix; upstream PR #9549 "Render menu popover if MenuTrigger is inside the popover"). **Verified present — architecture-immune** (web pass 2). Upstream's fix adds an `InPopoverContext` + `isPopover = (ctx || isSubmenu) && !inPopover` guard (S2 `Menu.tsx`) to patch a **React-portal context leak**: a `Menu` defined lexically inside a `Popover` inherited `inPopover === true` through the portal and mis-rendered inline. Ours decides popover-vs-inline from the **runtime** trigger type (`usePopoverTrigger()?.trigger === "MenuTrigger" / "SubmenuTrigger"` → `isPopoverMenu()`), which cannot leak through portals, so a MenuTrigger inside a Popover yields `isMenuTriggerPopover() === true` and renders as a popover correctly. The regression is specific to React's lexical-context model. **Follow-up (nice-to-have):** a menu-in-popover render test to lock the behavior.
+- [x] **T-06** ✅ S2 — **TreeView** `disabledBehavior` styling updated to latest designs (upstream PR #9472 "Update `disabledBehavior` style"). **Verified present, one minor HCM follow-up** (web pass 2). We have `disabledBehavior` + disabled tree styling; our disabled row-content color uses the `disabled` semantic token (→ `disabled-content-color`, S2's `gray-400`), matching upstream's literal `gray-400`. **Divergence:** upstream pairs that disabled color with `forcedColors: 'GrayText'` on the row content (`treeCellGrid`) and the `expandButton` chevron; ours omits the explicit `GrayText` forced-colors fallback (and the chevron defaults to `neutral-subdued` vs upstream's `inherit`). Small Windows-High-Contrast-Mode faithfulness follow-up, not a structural gap.
 
 ## Train 3 — RAC 1.16.0 / S2 1.2.0 (2026-03-04)
 
 - [x] **T-07** ✅ RAC — **multi-select ComboBox** (`selectionMode="multiple"`, `ComboBoxValue`, TagGroup display). **Verified present** this cycle: `ComboBoxValue` exported + used in `solidaria-components/ComboBox.tsx`. (Deep tag-display parity is a component-validation concern, not this audit's "do we have it" question.)
 - [x] **T-08** ✔ RAC — **Tree sections** (`TreeSection` + `TreeHeader`). **Done by us** this cycle — item 3b, commit `8341b2c3` (rowgroup/row/rowheader port).
-- [ ] **T-09** 🔍 RAC — overlay **positioning** improvements. Behavioral; second-pass.
-- [ ] **T-10** 🔍 RAC — **scroll-into-view** behavior. Behavioral; second-pass.
+- [x] **T-09** ✅ RAC — overlay **positioning** improvements (upstream PR #9343 "Fix overlay positioning for overlays positioned in non-viewport containers"). **Verified present** (web pass 2). Our `solidaria/src/popover/calculatePosition.ts` is a faithful port of the **current (post-#9343)** upstream file: same 16 functions (`getContainerDimensions` / `getDelta` / `computePosition` / `getMaxHeight` / `getAvailableSpace` / `calculatePositionInternal` / …), and the fix-specific token `boundaryToContainerTransformOffset` appears **4/4** — `getMaxHeight` applies `isContainerDescendentOfBoundary ? containerOffsetWithBoundary.top : 0` to the bounding rect exactly as upstream, i.e. the non-viewport-container handling is in.
+- [ ] **T-10** ⛔ RAC — **scroll-into-view** behavior (1.16 refinements: PR #9146 `scrollMargin` + inline/block alignment, PR #9634 scrollbar-width + RTL). **Confirmed gap** (web pass 2). The entire `@react-aria/utils` scroll-into-view family — `scrollIntoView(scrollView, element, opts)` + `scrollIntoViewport(target, opts)` — is **unported**: no `scrollIntoView` / `scrollIntoViewport` / `scrollToItem` anywhere in our src (only a private single-arg iOS-keyboard helper in `createPreventScroll.ts`; `utils/focus.ts` merely saves/restores scroll positions). Upstream calls `scrollIntoViewport` from `useSelectableCollection`, `useGridCell`, `useGridListItem`, `useCalendarCell`, `useDateSegment` to reveal a keyboard-focused off-screen item; none of our equivalents do, so collections/calendars fall back to native focus-scroll instead of the controlled util. The 1.16 `scrollMargin`/alignment/scrollbar-width/RTL refinements are a subset of this larger gap. Added to the shortlist.
 - [ ] **T-11** ➖ RAC — assorted crash fixes. Mine the per-PR list in the second pass.
 - [x] **T-12** ✅ S2 — **ListView** GA. **Verified present**: styled `ListView.ts` + `gridlist/` in solid-spectrum (S2 ListView = the styled GridList).
 - [x] **T-13** ✅ S2 — **unavailable menu items** (`isUnavailable`). **Verified present**: `isUnavailable` wired in `solid-spectrum/menu/index.tsx`.
@@ -103,9 +108,9 @@ internal — not a port concern).
 - [x] **T-17** ✔ RAC — **window scrolling** in **Virtualizer** (collection scrolls with the page; no fixed height). **Done by us** this cycle (changeset `virtualizer-window-scrolling.md`): the `Virtualizer` now computes its visible viewport as the scroll view's height intersected with the window viewport and offsets the visible range by how far the scroll view has been pushed above the viewport by page/ancestor scrolling, all driven by a single document-level capturing `scroll` listener — mirroring upstream `ScrollView`. A new `allowsWindowScrolling` prop (default `true`, matching RAC `CollectionRoot`'s hard-coded value) opts back into element-only scrolling; an explicit `viewportSize` layout option still wins. Behavior-preserving for a fixed-height collection inside the viewport (the `window ∩ element` math reduces exactly to element scroll), so existing collections are unaffected unless they actually scroll with the page; 58 Virtualizer tests (2 new window-scroll tests) plus the downstream collection suites stay green. **Follow-ups (do not affect window-scroll correctness):** the `isScrolling` `pointer-events: none` optimization and the imperative `scrollToItem`/`scrollToRect` API are not yet ported. ⇄ same feature as **T-21**.
 - [ ] **T-18** ⛔ RAC — **horizontally virtualized** GridList + ListBox. **Confirmed gap.** Upstream `ListLayout` (`react-stately/src/layout/ListLayout.ts`) takes an `orientation` option (default `vertical`) and offsets items along `x` or `y` (`offsetProperty = orientation === 'horizontal' ? 'x' : 'y'`); RAC ListBox/GridList expose `data-orientation="horizontal"`. Our `solidaria-components/VirtualizerLayouts.ts` is hardcoded vertical (`y: row * rowHeight`, `height: rowHeight`) with no orientation axis. Real gap. Added to the shortlist.
 - [ ] **T-19** ➖ RAC — dependency-management improvements (internal; not a port concern).
-- [x] **T-20** ✅ S2 — **highlight selection** in **TreeView**. **Verified present**: our `tree/index.tsx` has `TreeSelectionStyle = "checkbox" | "highlight"` (default `checkbox`) feeding the style conditions, mirroring upstream's `selectionStyle` + `selectionBehavior={highlight ? 'replace' : 'toggle'}`. ⇄ The **TableView**-highlight half of **T-31** is separate (upstream S2 `TableView` exposes no `selectionStyle` — behavioral; left for Pass 2).
+- [x] **T-20** ✅ S2 — **highlight selection** in **TreeView**. **Verified present**: our `tree/index.tsx` has `TreeSelectionStyle = "checkbox" | "highlight"` (default `checkbox`) feeding the style conditions, mirroring upstream's `selectionStyle` + `selectionBehavior={highlight ? 'replace' : 'toggle'}`. ⇄ The **TableView**-highlight half of **T-31** is separate, and is a **confirmed gap** — web pass 2 corrected the earlier claim here: upstream S2 `TableView` **does** expose `selectionStyle`, ours doesn't.
 - [x] **T-21** ✔ S2 — **window scrolling** in collection components. ⇄ **dedup of T-17** — the S2-styled collections (`ListBox` / `Table` / `Tree` / `Menu` / …) inherit the default-on window scrolling through the shared `solidaria-components` `Virtualizer`; covered by the same changeset (`virtualizer-window-scrolling.md`), and the S2 collection suites (85 tests) stay green.
-- [ ] **T-22** 🔍 S2 — updated **workflow icons** set. Verify our icon set is regenerated.
+- [ ] **T-22** ⛔ S2 — updated **workflow icons** set. **Verified — minor gap** (web pass 2). Not actually a S2 1.2.0 release-notes item (the 1.2.0 notes mention no icons; the new icons landed across later trains). Our s2wf set is **402 of upstream's 410** `.svg`s (each with a generated `.tsx`) — **8 behind**: `ArrowCurved`, `ArrowUpSend`, `BookmarkSingleFilled`, `PremiumIcon`, `StopProcessing`, `ZoomFitToHeight`, `ZoomFitToScreen`, `ZoomFitToWidth` (all `_20_N`). Pure regeneration follow-up (copy the 8 SVGs + run the icon codegen); no API/behavioral work. Low priority.
 
 ## Train 5 — RAC 1.18.0 / S2 1.4.0 (2026-05-30, current pin)
 
@@ -117,7 +122,7 @@ internal — not a port concern).
 - [x] **T-28** ✅ RAC — **description + error messages** for **Checkbox / Radio / Switch** (forms). **Verified present**: `description` / `errorMessage` / `FieldError` wired in all three (`solidaria-components/{Checkbox,RadioGroup,Switch}.tsx`). ⇄ same as the S2 1.4 note.
 - [x] **T-29** ✔ RAC — **SliderFill** component. **Done** (changeset `slider-fill-component.md`): ported to `solidaria-components/Slider.tsx` as `SliderFill` / `Slider.Fill` — single-thumb fill from `offset` (default minValue → 0%) to the current value, orientation-aware (`inset-inline-start`/`width` horizontal, `bottom`/`height` vertical), with `isHovered`/`isDisabled`/`orientation`/`valuePercent` render props + `data-*`, exported with a `SliderFillContext` alias; 12 tests.
 - [x] **T-30** ✅ S2 — **drag & drop** for ListView / TableView / TreeView. **Verified present**: `useDragAndDrop` wired across `ListBox` / `GridList` / `Table` / `Tree` / `Menu` in solidaria-components.
-- [ ] **T-31** 🔍 S2 — **TableView highlight selection** + TableFooter. ⇄ TableFooter = **T-27**; highlight relates to **T-20**.
+- [ ] **T-31** ⛔ S2 — **TableView highlight selection** + TableFooter. TableFooter ✅ = **T-27**; the **highlight half is a confirmed gap** (web pass 2). Upstream S2 `TableView.tsx` **does** expose `selectionStyle?: 'checkbox' | 'highlight'` (default `checkbox`): it derives `selectionBehavior={selectionStyle === 'highlight' ? 'replace' : 'toggle'}`, renders the checkbox column only when `selectionBehavior === 'toggle' && selectionStyle === 'checkbox'`, and carries highlight-selection border / `HighlightText` styling (the `selectionStyle: { highlight: … }` style conditions). Our `solid-spectrum/table` exposes only the raw `selectionBehavior` prop — **no `selectionStyle`, no highlight styling**. Parallels what we already shipped for Tree (**T-20**); a well-bounded S2 port. Added to the shortlist. **Correction:** supersedes the earlier T-20 note that wrongly said upstream `TableView` exposes no `selectionStyle`.
 - [ ] **T-32** ⛔ S2 — custom **prefixes** for ComboBox / TextField. **Confirmed gap.** Upstream hosts `prefix?: ReactNode` on the shared `FieldGroup` (`s2/src/Field.tsx`, with a `prefixId` + `aria-labelledby` association) and threads it into **ColorField, ComboBox, NumberField, TextField**. Prefix-only (no `suffix`). Our `solid-spectrum/field` exposes no prefix slot. Real gap. Added to the shortlist.
 - [x] **T-33** ✅ S2 — **LabeledValue** (display non-editable values). **Verified present**: `solid-spectrum/labeledvalue/`.
 
@@ -142,6 +147,15 @@ depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 8. **T-32 custom field `prefix`** — well-bounded: add `prefix?` to our `FieldGroup` (with `prefixId` + `aria-labelledby`) and thread it into ColorField / ComboBox / NumberField / TextField. Smallest of the open gaps; good next port.
 9. **T-18 horizontal virtualization** — give our `VirtualizerLayouts` an `orientation` axis (offset along `x`/width when horizontal) so GridList/ListBox can virtualize horizontally. Layout-level; larger.
 
-Everything tagged 🔍 needs a real check before it's either added here as a gap or
-struck as already-present. Everything tagged ✅ still needs a depth/behavior
-verify — an identifier is not a faithful port.
+10. **T-31 TableView `selectionStyle="highlight"`** — add `selectionStyle?: 'checkbox' | 'highlight'` to our S2 `TableView`, derive `selectionBehavior`, gate the checkbox column on `selectionStyle === 'checkbox'`, and add the highlight-selection border styling. Well-bounded; mirrors the Tree (T-20) port we already shipped.
+11. **T-10 scroll-into-view util family** — port `@react-aria/utils` `scrollIntoView` / `scrollIntoViewport` and wire `scrollIntoViewport` into our selectable-collection / grid / gridlist / calendar-cell / date-segment hooks so keyboard focus reveals off-screen items (incl. the 1.16 `scrollMargin` / alignment / scrollbar-width / RTL refinements). Cross-cutting; medium–large.
+12. **T-22 workflow-icon regen** — copy the 8 missing upstream SVGs and run the icon codegen. Trivial maintenance.
+
+**Minor follow-ups (not full tickets):** **T-06** — add `forcedColors: 'GrayText'` to the disabled tree row-content + chevron colors (and an `inherit` chevron default) to match upstream's HCM styling. **T-05** — a menu-in-popover render test to lock the architecture-immune behavior.
+
+**All passes complete.** Pass 1, the source-based depth-verify, and web pass 2 have
+each run; **no 🔍 tickets remain.** Every ticket is now ✔ done, ✅ verified-present,
+⛔ a shortlisted gap, or ➖ n/a. The open ⛔ shortlist (highest-value first):
+**T-02** EditableCell · **T-18** horizontal virtualization · **T-31** TableView
+highlight · **T-32** field `prefix` · **T-10** scroll-into-view · **T-22** icon
+regen (+ the standalone S2 Toast-animations follow-up).
