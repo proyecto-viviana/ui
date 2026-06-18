@@ -1,9 +1,12 @@
 import {
+  Show,
   createContext,
   createEffect,
   createMemo,
   createSignal,
+  getOwner,
   mergeProps,
+  runWithOwner,
   splitProps,
   useContext,
   type JSX,
@@ -22,6 +25,9 @@ import {
   TableColumnResizeStateContext as HeadlessTableColumnResizeStateContext,
   TableSelectionCheckbox as HeadlessTableSelectionCheckbox,
   TableStateContext as HeadlessTableStateContext,
+  Form as HeadlessForm,
+  Popover as HeadlessPopover,
+  OverlayTriggerStateContext,
   type ColumnResizerProps as HeadlessColumnResizerProps,
   type ColumnResizerRenderProps,
   type ResizableTableContainerProps as HeadlessResizableTableContainerProps,
@@ -49,13 +55,34 @@ import Checkmark from "../icon/ui-icons/Checkmark";
 import Dash from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
-import { baseColor, colorMix, focusRing, style } from "../style" with { type: "macro" };
+import {
+  baseColor,
+  colorMix,
+  focusRing,
+  setColorScheme,
+  style,
+} from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   controlFont,
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
+import { createMediaQuery } from "../utils/createMediaQuery";
+import { createStringFormatter, getOwnerDocument } from "@proyecto-viviana/solidaria";
+import {
+  ActionButton,
+  ActionButtonContext,
+  Button,
+  ButtonContext,
+  type ActionButtonProps,
+  type ActionButtonSize,
+} from "../button";
+import type { SpectrumContextValue } from "../button/spectrum-context";
+import { ButtonGroup } from "../buttongroup";
+import { CustomDialog, DialogContainer } from "../dialog";
+import Cross from "../icon/ui-icons/Cross";
+import { s2IntlStrings } from "../intl";
 
 export type TableSize = "sm" | "md" | "lg";
 export type TableVariant = "default" | "striped" | "bordered";
@@ -494,6 +521,133 @@ const tableCellContent = style<{
     },
   },
 });
+
+// An editable cell renders like a regular cell but dims its content while a
+// submitted edit is saving. The inline edit trigger, the editing popover/dialog,
+// and the save/cancel affordances are styled below, mirroring the S2 source.
+const editableCell = style<
+  TableCellRenderProps & {
+    align?: "start" | "center" | "end";
+    density?: TableDensity;
+    overflowMode?: TableOverflowMode;
+    showDivider?: boolean;
+    isSaving?: boolean;
+  }
+>({
+  ...focusRing(),
+  outlineOffset: -2,
+  outlineStyle: "none",
+  position: "relative",
+  color: {
+    default: "inherit",
+    isSaving: baseColor("neutral-subdued"),
+  },
+  paddingX: 16,
+  paddingY: 0,
+  minHeight: {
+    density: rowHeight,
+  },
+  height: {
+    density: rowHeight,
+  },
+  textAlign: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  verticalAlign: "middle",
+  borderWidth: 0,
+  borderBottomWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  borderEndWidth: {
+    showDivider: 1,
+  },
+});
+
+const editPopover = style(
+  {
+    ...setColorScheme(),
+    "--s2-container-bg": {
+      type: "backgroundColor",
+      value: "layer-2",
+    },
+    backgroundColor: "--s2-container-bg",
+    borderBottomRadius: "default",
+    boxShadow: "elevated",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: {
+      default: "gray-200",
+      forcedColors: "ButtonBorder",
+    },
+    boxSizing: "content-box",
+    isolation: "isolate",
+    pointerEvents: {
+      isExiting: "none",
+    },
+    outlineStyle: "none",
+    minWidth: "--trigger-width",
+    padding: 8,
+    display: "flex",
+    alignItems: "center",
+  },
+  getAllowedOverrides(),
+);
+
+const editForm = style({
+  width: "full",
+  display: "flex",
+  alignItems: "start",
+  gap: 16,
+});
+
+const editActions = style({
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "baseline",
+  flexShrink: 0,
+  flexGrow: 0,
+});
+
+const editFormMobile = style({
+  width: "full",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "start",
+  gap: 16,
+});
+
+const editButtonGroupStyles = style({
+  alignSelf: "end",
+});
+
+// The inline edit trigger is hidden until the row is hovered or focused, the
+// editor is open, or the device lacks a fine pointer (touch). Mirrors S2.
+const editButtonStyles = style<{ isForcedVisible?: boolean }>({
+  visibility: {
+    default: "hidden",
+    isForcedVisible: "visible",
+    ':is([role="row"]:hover *)': "visible",
+    ':is([role="row"][data-focus-visible-within] *)': "visible",
+    "@media not ((hover: hover) and (pointer: fine))": "visible",
+  },
+});
+
+// Input types whose text cannot be range-selected on open. Mirrors S2.
+const nonTextInputTypes = new Set([
+  "checkbox",
+  "radio",
+  "range",
+  "color",
+  "file",
+  "image",
+  "button",
+  "submit",
+  "reset",
+]);
 
 const emptyState = style({
   minHeight: 112,
@@ -1015,6 +1169,354 @@ export function TableCell(props: TableCellProps): JSX.Element {
   );
 }
 
+export interface EditableCellProps extends EditableCellOwnProps, TableCellProps {}
+
+interface EditableCellOwnProps {
+  /** Renders the editing form fields shown in the popover (desktop) or dialog (mobile). */
+  renderEditing: () => JSX.Element;
+  /** Whether a submitted edit is currently saving. Dims the cell and shows a pending trigger. */
+  isSaving?: boolean;
+  /** Handler called when the editing form is submitted. The native submit is already prevented. */
+  onSubmit?: (event: SubmitEvent) => void;
+  /** Handler called when editing is cancelled (Cancel button, Escape, or interact-outside without save). */
+  onCancel?: () => void;
+  /** A native form `action` for the editing form. */
+  action?: string;
+}
+
+/**
+ * An EditableCell is a table cell whose contents can be edited inline. Pressing
+ * the cell's `<ActionButton slot="edit">` opens an editing surface — a popover on
+ * desktop, a full dialog on touch devices — containing the fields returned by
+ * `renderEditing`. Mirrors the React Spectrum S2 `EditableCell`.
+ */
+export function EditableCell(props: EditableCellProps): JSX.Element {
+  const context = useContext(TableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "align",
+    "showDivider",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "renderEditing",
+    "isSaving",
+    "onSubmit",
+    "onCancel",
+    "action",
+    "ref",
+  ]);
+  let cellEl: HTMLTableCellElement | null = null;
+  const align = (): "start" | "center" | "end" => normalizeAlign(local.align);
+  const className = (renderProps: TableCellRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        editableCell({
+          ...renderProps,
+          align: align(),
+          density: context.density,
+          overflowMode: context.overflowMode,
+          showDivider: !!local.showDivider,
+          isSaving: !!local.isSaving,
+        }),
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const setCell = (el: HTMLTableCellElement): void => {
+    cellEl = el;
+    const ref = local.ref;
+    if (typeof ref === "function") {
+      ref(el);
+    } else if (ref) {
+      ref.current = el;
+    }
+  };
+
+  // The headless cell re-invokes its children callback whenever its own render props change
+  // (hover/press/focus). Recreating the stateful inner there would tear the edit button down
+  // mid-press and reset the open state, so anchor a single inner instance to EditableCell's
+  // owner and return it across every rerun. Cell render props are captured once and handed to
+  // the (static, per upstream) children — they are not re-read reactively.
+  const owner = getOwner();
+  let inner: JSX.Element | undefined;
+  let latestRenderProps: TableCellRenderProps | undefined;
+
+  const renderInner = (renderProps: TableCellRenderProps): JSX.Element => {
+    latestRenderProps = renderProps;
+    inner ??= runWithOwner(owner, () => (
+      <EditableCellInner
+        align={align}
+        overflowMode={() => context.overflowMode}
+        density={() => context.density}
+        getCell={() => cellEl}
+        renderEditing={local.renderEditing}
+        isSaving={() => local.isSaving}
+        onSubmit={local.onSubmit}
+        onCancel={local.onCancel}
+        action={local.action}
+        ariaLabel={(props as { "aria-label"?: string })["aria-label"]}
+        renderChildren={() => {
+          if (typeof local.children !== "function") {
+            return local.children;
+          }
+          // `latestRenderProps` is a plain capture, not a signal, so reading it does not make
+          // the children reactive to the cell's hover/press churn.
+          return latestRenderProps ? local.children(latestRenderProps) : null;
+        }}
+      />
+    )) as JSX.Element;
+    return inner;
+  };
+
+  return (
+    <HeadlessTableCell
+      {...headlessProps}
+      ref={setCell}
+      class={className}
+      style={local.UNSAFE_style}
+    >
+      {(renderProps: TableCellRenderProps) => renderInner(renderProps)}
+    </HeadlessTableCell>
+  );
+}
+
+interface EditableCellInnerProps {
+  align: () => "start" | "center" | "end";
+  overflowMode: () => TableOverflowMode;
+  density: () => TableDensity;
+  getCell: () => HTMLTableCellElement | null;
+  renderEditing: () => JSX.Element;
+  isSaving: () => boolean | undefined;
+  onSubmit?: (event: SubmitEvent) => void;
+  onCancel?: () => void;
+  action?: string;
+  ariaLabel?: string;
+  /**
+   * Invoked inside the edit-slot provider so the `slot="edit"` ActionButton
+   * resolves its `onPress` from `editSlots`. In Solid, `useContext` binds to the
+   * owner active when the component executes, so the children must be created
+   * here rather than pre-evaluated in `EditableCell`'s scope.
+   */
+  renderChildren: () => JSX.Element;
+}
+
+function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+  const [isOpen, setIsOpen] = createSignal(false);
+  const [formEl, setFormEl] = createSignal<HTMLFormElement | null>(null);
+  const [triggerWidth, setTriggerWidth] = createSignal(0);
+  const [tableWidth, setTableWidth] = createSignal(0);
+  const [verticalOffset, setVerticalOffset] = createSignal(0);
+
+  // Touch devices (no fine pointer / hover) get a full dialog instead of a popover.
+  const hasFinePointer = createMediaQuery("(hover: hover) and (pointer: fine)");
+  const isMobile = (): boolean => !hasFinePointer();
+
+  const size = (): ActionButtonSize => {
+    const density = props.density();
+    if (density === "compact") {
+      return "S";
+    }
+    if (density === "spacious") {
+      return "L";
+    }
+    return "M";
+  };
+
+  // Position the popover relative to the cell: measure the trigger and table
+  // widths, and offset upward by the row height so it overlays the cell. Mirrors
+  // the S2 useLayoutEffect.
+  createEffect(() => {
+    if (!isOpen()) {
+      return;
+    }
+    const cell = props.getCell();
+    const boundingRect = cell?.parentElement?.getBoundingClientRect();
+    setTriggerWidth(cell?.clientWidth ?? 0);
+    setVerticalOffset((boundingRect?.top ?? 0) - (boundingRect?.bottom ?? 0));
+    const grid = cell?.closest('[role="grid"],[role="treegrid"]');
+    setTableWidth((grid as HTMLElement | null)?.clientWidth ?? 0);
+  });
+
+  // Auto-select the entire text range of the autofocused input when the editor
+  // opens. Re-runs once the form element mounts. Mirrors the S2 useEffect.
+  createEffect(() => {
+    const form = formEl();
+    if (!isOpen() || !form) {
+      return;
+    }
+    queueMicrotask(() => {
+      if (!isOpen()) {
+        return;
+      }
+      const active = getOwnerDocument(form)?.activeElement;
+      if (
+        active &&
+        form.contains(active) &&
+        ((active instanceof HTMLInputElement && !nonTextInputTypes.has(active.type)) ||
+          active instanceof HTMLTextAreaElement) &&
+        typeof active.select === "function"
+      ) {
+        active.select();
+      }
+    });
+  });
+
+  const cancel = (): void => {
+    setIsOpen(false);
+    props.onCancel?.();
+  };
+
+  // Our headless Form doesn't prevent the native submit (unlike RAC's Form), so
+  // stop the page reload here, then notify the consumer and close. Mirrors S2.
+  const handleSubmit = (event: SubmitEvent): void => {
+    event.preventDefault();
+    props.onSubmit?.(event);
+    setIsOpen(false);
+  };
+
+  // The mobile dialog disables keyboard dismissal, so translate Escape into a
+  // cancel ourselves. Mirrors the S2 dialog-level Escape handler.
+  const onFormKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === "Escape") {
+      cancel();
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  };
+
+  const attachForm = (el: HTMLFormElement): void => {
+    setFormEl(el);
+    el.addEventListener("submit", handleSubmit);
+    if (isMobile()) {
+      el.addEventListener("keydown", onFormKeyDown);
+    }
+  };
+
+  // Interact-outside never closes the popover directly; instead, if focus is
+  // still within the form, submit (saving), which then closes. Mirrors S2.
+  const shouldCloseOnInteractOutside = (): boolean => {
+    const form = formEl();
+    if (!form) {
+      return false;
+    }
+    const active = getOwnerDocument(form)?.activeElement;
+    if (!active || !form.contains(active)) {
+      return false;
+    }
+    form.requestSubmit();
+    return false;
+  };
+
+  const editSlots: SpectrumContextValue<ActionButtonProps> = {
+    slots: {
+      default: {},
+      edit: {
+        onPress: () => setIsOpen(true),
+        excludeFromTabOrder: true,
+        get isPending() {
+          return props.isSaving();
+        },
+        get isQuiet() {
+          return !props.isSaving();
+        },
+        get size() {
+          return size();
+        },
+        get styles() {
+          return editButtonStyles({ isForcedVisible: isOpen() || !!props.isSaving() });
+        },
+      },
+    },
+  };
+
+  return (
+    <ButtonContext.Provider value={null}>
+      <ActionButtonContext.Provider value={editSlots}>
+        <div class={tableCellContent({ align: props.align(), overflowMode: props.overflowMode() })}>
+          {props.renderChildren()}
+        </div>
+
+        <ActionButtonContext.Provider value={null}>
+          <Show when={!isMobile()}>
+            <HeadlessPopover
+              isOpen={isOpen()}
+              onOpenChange={setIsOpen}
+              aria-label={props.ariaLabel ?? stringFormatter().format("table.editCell")}
+              triggerRef={() => props.getCell()}
+              placement="bottom start"
+              offset={verticalOffset()}
+              shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+              class={(renderProps) => editPopover({ isExiting: renderProps.isExiting })}
+              style={() => ({
+                minWidth: `min(${triggerWidth()}px, ${tableWidth()}px)`,
+                maxWidth: `${tableWidth()}px`,
+              })}
+            >
+              <OverlayTriggerStateContext.Provider value={null}>
+                <HeadlessForm
+                  ref={attachForm}
+                  action={props.action}
+                  class={editForm}
+                  style={() => ({ "--input-width": `calc(${triggerWidth()}px - 32px)` })}
+                >
+                  {props.renderEditing()}
+                  <div class={editActions}>
+                    <ActionButton
+                      isQuiet
+                      onPress={cancel}
+                      aria-label={stringFormatter().format("table.cancel")}
+                    >
+                      <Cross />
+                    </ActionButton>
+                    <ActionButton
+                      isQuiet
+                      type="submit"
+                      aria-label={stringFormatter().format("table.save")}
+                    >
+                      <Checkmark />
+                    </ActionButton>
+                  </div>
+                </HeadlessForm>
+              </OverlayTriggerStateContext.Provider>
+            </HeadlessPopover>
+          </Show>
+
+          <Show when={isMobile()}>
+            <DialogContainer onDismiss={() => formEl()?.requestSubmit()}>
+              <Show when={isOpen()}>
+                <CustomDialog
+                  isDismissible
+                  isKeyboardDismissDisabled
+                  aria-label={props.ariaLabel ?? stringFormatter().format("table.editCell")}
+                >
+                  <HeadlessForm ref={attachForm} action={props.action} class={editFormMobile}>
+                    {props.renderEditing()}
+                    <ButtonGroup align="end" styles={editButtonGroupStyles}>
+                      <Button onPress={cancel} variant="secondary" fillStyle="outline">
+                        Cancel
+                      </Button>
+                      <Button type="submit" variant="accent">
+                        Save
+                      </Button>
+                    </ButtonGroup>
+                  </HeadlessForm>
+                </CustomDialog>
+              </Show>
+            </DialogContainer>
+          </Show>
+        </ActionButtonContext.Provider>
+      </ActionButtonContext.Provider>
+    </ButtonContext.Provider>
+  );
+}
+
 export function TableSelectionCheckbox(props: {
   rowKey: Key;
   isSelected?: boolean;
@@ -1166,6 +1668,7 @@ Table.Body = TableBody;
 Table.Footer = TableFooter;
 Table.Row = TableRow;
 Table.Cell = TableCell;
+Table.EditableCell = EditableCell;
 Table.SelectionCheckbox = TableSelectionCheckbox;
 Table.SelectAllCheckbox = TableSelectAllCheckbox;
 Table.ColumnResizer = ColumnResizer;

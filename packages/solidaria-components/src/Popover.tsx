@@ -24,6 +24,7 @@ import {
   FocusScope,
   useUNSAFE_PortalContext,
   visuallyHiddenStyles,
+  type AriaLabelingProps,
   type Placement,
   type PlacementAxis,
 } from "@proyecto-viviana/solidaria";
@@ -59,7 +60,7 @@ export interface PopoverRenderProps {
   isExiting: boolean;
 }
 
-export interface PopoverProps extends SlotProps {
+export interface PopoverProps extends SlotProps, AriaLabelingProps {
   /** The children of the component - can be JSX or render function. */
   children?: RenderChildren<PopoverRenderProps>;
   /** The CSS className for the element. */

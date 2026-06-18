@@ -21,6 +21,9 @@ export interface S2IntlStrings {
   "menu.unavailable": string;
   "notificationbadge.indicatorOnly": string;
   "notificationbadge.plus": LocalizedString;
+  "table.cancel": string;
+  "table.editCell": string;
+  "table.save": string;
   "toast.clearAll": string;
   "toast.collapse": string;
   "toast.showAll": string;

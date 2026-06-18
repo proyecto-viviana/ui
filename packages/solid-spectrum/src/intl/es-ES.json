@@ -17,6 +17,9 @@
   "menu.unavailable": "No disponible",
   "notificationbadge.indicatorOnly": "Nueva actividad",
   "notificationbadge.plus": "{notifications}+",
+  "table.cancel": "Cancelar",
+  "table.editCell": "Editar celda",
+  "table.save": "Guardar",
   "toast.clearAll": "Borrar todo",
   "toast.collapse": "Contraer",
   "toast.showAll": "Mostrar todo"

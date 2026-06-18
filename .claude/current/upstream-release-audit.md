@@ -18,7 +18,7 @@ asserted role. The release notes are the only signal those happened — see the
 > The tickets below come from the release **highlights** (pass 1, done). A
 > **source-based depth-verify** then resolved the greppable list: confirmed-present
 > **T-07, T-12, T-13, T-14, T-15, T-20, T-24, T-27, T-28, T-30, T-33** and the
-> animated **T-01**; confirmed-gap **T-02** (EditableCell), **T-18** (horizontal
+> animated **T-01**; confirmed-gap **T-02** (EditableCell; **now ported ✔**), **T-18** (horizontal
 > virtualization), **T-32** (field `prefix`; **now ported ✔**). The **web pass 2** — mining the per-PR
 > "Fixed" lists for the genuinely *behavioral* tickets, then reconciling each against
 > the vendored 1.18/1.4 `src` — is now **complete**: **present** — **T-03** (the
@@ -37,7 +37,8 @@ asserted role. The release notes are the only signal those happened — see the
 > Calendar 1.18 cluster** — and **T-16 Table expandable rows ✔** (the `UNSTABLE_`
 > tree grid, headless React-Aria parity), and **T-31 TableView
 > `selectionStyle="highlight"` ✔** (the styled S2 highlight selection, mirroring the
-> Tree T-20 port). The open confirmed gaps (T-02, T-18) are on the
+> Tree T-20 port), and **T-02 EditableCell ✔** (the S2 inline cell editor —
+> desktop popover + touch dialog). The one open confirmed gap (T-18) is on the
 > shortlist at the foot.
 
 ## Scope & sources
@@ -83,7 +84,7 @@ internal — not a port concern).
 ## Train 1 — RAC 1.14.0 / S2 1.0.0 (2025-12-16, S2 GA)
 
 - [x] **T-01** ✔ RAC — animated **Tab** transitions (animate the selected-indicator/panel between tabs). **Verified present + refined** this cycle (changeset `selection-indicator-reduced-motion.md`): our `Tabs` already animates the selected indicator via a `SelectionIndicator` + a `translate`/`width`/`height` transition (200ms, `out`), matching upstream. The depth-verify surfaced one faithfulness gap — the indicator transition was **not** gated behind `@media (prefers-reduced-motion: reduce): none` the way upstream's is — now fixed, and the **same gap in `SegmentedControl`'s selection pill** was fixed alongside it (the two form the S2 selection-indicator cluster; `Disclosure` already had the gate). **Adjacent finding (separate, larger — tracked):** our S2 `Toast` implements **no** enter/exit/restack animations at all (it sets `translate`/`opacity` instantly), whereas upstream animates them through the View Transitions API with its own `prefers-reduced-motion` gate. That is a standalone animation-port follow-up, not a reduced-motion tweak — adding a reduced-motion gate to a non-animating toast would be a no-op.
-- [ ] **T-02** ⛔ S2 — inline **TableView** cell editing. **Confirmed gap** (depth-verify this cycle). Upstream ships an `EditableCell` component exported from S2 `TableView.tsx` (the `editableCell` style + `EditableCell`/`EditableCellInner`, ~lines 1480–1834) with a `renderEditing: () => ReactNode` slot that swaps a cell into an edit affordance (TextField, Picker, …) with its own focus + edit-overlay handling; exercised by `EditableTableView.test.tsx`. Our `solid-spectrum/src/table` exports no `EditableCell` and has no editing path — a real S2 port ticket (depends on our TableView + Picker/TextField cell rendering). Added to the shortlist.
+- [x] **T-02** ✔ S2 — inline **TableView** cell editing. **Was a confirmed gap** (depth-verify); **now ported** (changesets `table-editable-cell.md`, `table-row-modal-editor-support.md`). Upstream ships an `EditableCell` component exported from S2 `TableView.tsx` (the `editableCell` style + `EditableCell`/`EditableCellInner`, ~lines 1480–1834) with a `renderEditing: () => ReactNode` slot that swaps a cell into an edit affordance (TextField, Picker, …) with its own focus + edit-overlay handling; exercised by `EditableTableView.test.tsx`. We now export `EditableCell` / `EditableCellProps` from `solid-spectrum/src/table`, mirroring upstream's two paths: a fine-pointer **Popover** (modal → `role="dialog"`, icon-only save/cancel) and a touch **DialogContainer > CustomDialog** (text buttons), selected by a new `createMediaQuery` primitive (Solid port of `@react-spectrum/utils`' `useMediaQuery`). The supporting `solidaria-components` `TableRow` fix (build children once inside both `TableRowContext`/`ButtonContext` providers; stable `buttonContextValue` getter object) stops the row recreating its subtree when the editor popover toggles, and `Popover` now accepts `AriaLabelingProps`. 6 tests (`EditableCell.test.tsx`).
 
 ## Train 2 — RAC 1.15.0 / S2 1.1.0 (2026-02-04)
 
@@ -144,7 +145,7 @@ candidates (roughly highest-value first):
 **Pass-1 shortlist (1–5) fully cleared.** New confirmed gaps now come from the
 depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 
-6. **T-02 inline TableView cell editing** (`EditableCell` + `renderEditing`) — S2-styled; depends on our TableView + Picker/TextField cell rendering. Largest of the open gaps.
+6. **T-02 inline TableView cell editing** (`EditableCell` + `renderEditing`) — **✔ done** (changesets `table-editable-cell.md`, `table-row-modal-editor-support.md`): S2-styled `EditableCell` with the desktop-popover / touch-dialog split via a new `createMediaQuery` primitive, plus the `TableRow` subtree-recreation fix and `Popover` `AriaLabelingProps` widening that make an in-cell modal editor viable.
 7. **S2 Toast animations** (not a numbered release-notes ticket — found while verifying T-01). Our `Toast` sets `translate`/`opacity` instantly with no enter/exit/restack animation; upstream animates via the View Transitions API (with its own reduced-motion gate). Standalone animation-port follow-up.
 8. **T-32 custom field `prefix`** — **✔ done** (changeset `field-prefix.md`): added `prefix?: JSX.Element` to ColorField / ComboBox / NumberField / TextField via a shared `field/prefix.tsx` helper (`FieldPrefix` + `PrefixInputProvider`) that appends a `prefixId` to the input's `aria-labelledby` through a context proxy — no shared `FieldGroup` needed, no-prefix path unchanged. 4 tests.
 9. **T-18 horizontal virtualization** — give our `VirtualizerLayouts` an `orientation` axis (offset along `x`/width when horizontal) so GridList/ListBox can virtualize horizontally. Layout-level; larger.
@@ -158,5 +159,5 @@ depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 **All passes complete.** Pass 1, the source-based depth-verify, and web pass 2 have
 each run; **no 🔍 tickets remain.** Every ticket is now ✔ done, ✅ verified-present,
 ⛔ a shortlisted gap, or ➖ n/a. The open ⛔ shortlist (highest-value first):
-**T-02** EditableCell · **T-18** horizontal virtualization (+ the standalone S2
+**T-18** horizontal virtualization (+ the standalone S2
 Toast-animations follow-up).

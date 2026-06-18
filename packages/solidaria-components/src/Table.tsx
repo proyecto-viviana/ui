@@ -61,7 +61,7 @@ import {
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
-import { ButtonContext, type ButtonProps } from "./Button";
+import { ButtonContext, type ButtonContextValue, type ButtonProps } from "./Button";
 import {
   CollectionRendererContext,
   type CollectionRendererContextValue,
@@ -576,7 +576,11 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   const state: TableState<T, TableCollection<T>> = isTreeGrid
     ? createTreeGridState<T, TableCollection<T>>(() => ({
         columns: normalizedColumns(),
-        rows: toTreeRowDefinitions(stateProps.items, stateProps.getKey, stateProps.UNSTABLE_childItems),
+        rows: toTreeRowDefinitions(
+          stateProps.items,
+          stateProps.getKey,
+          stateProps.UNSTABLE_childItems,
+        ),
         getKey: stateProps.getKey,
         getTextValue: getTextValue(),
         showSelectionCheckboxes: stateProps.showSelectionCheckboxes ?? false,
@@ -1738,40 +1742,57 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
       },
     };
   });
-  const buttonContextValue = createMemo(() => ({
+  // A STABLE context object: its identity never changes, so the surrounding ButtonContext.Provider
+  // never tears down and recreates the row's children. The slots are getters, so a slotted
+  // <Button slot="drag"|"chevron"> reads the current drag/expand props each time it is (re)created —
+  // e.g. when the tree column recreates the chevron on expand/collapse.
+  const buttonContextValue: ButtonContextValue = {
     slots: {
       default: {},
-      drag: dragButtonProps(),
+      get drag() {
+        return dragButtonProps();
+      },
       // Tree-grid expand/collapse chevron; the slotted <Button slot="chevron"> picks these up.
       // The aria hook yields DOM button attributes, merged onto the Button as passthrough props.
-      chevron: rowAria.expandButtonProps as unknown as ButtonProps,
+      get chevron() {
+        return rowAria.expandButtonProps as unknown as ButtonProps;
+      },
     },
-  }));
-
-  const rowChildren = () => {
-    // Cells claim their column by render order (see getCellColumnKey). Reset the registry at the
-    // start of every render pass so cells recreated on a render-props change — e.g. when a
-    // tree-grid row toggles expansion — re-register from the first column instead of appending
-    // fresh ids past the end of the column list (which would strand them without a column key).
-    registeredCellIds.length = 0;
-    return (
-      <ButtonContext.Provider value={buttonContextValue()}>
-        {typeof local.children === "function" ? (
-          local.columns ? (
-            <For each={local.columns}>
-              {(column) =>
-                (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(column)
-              }
-            </For>
-          ) : (
-            (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderValues())
-          )
-        ) : (
-          local.children
-        )}
-      </ButtonContext.Provider>
-    );
   };
+
+  // Render props handed to the row's children as a STABLE getter proxy: reading a getter stays
+  // fine-grained reactive at the point of use, without forcing the children to be re-derived (and
+  // therefore disposed + recreated) whenever an unrelated render prop flips.
+  const childRenderProps: TableRowRenderProps = {
+    get isSelected() {
+      return isSelected();
+    },
+    get isFocused() {
+      return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible() && isFocused();
+    },
+    get isPressed() {
+      return isPressed();
+    },
+    get isHovered() {
+      return isHovered();
+    },
+    get isDisabled() {
+      return isDisabled();
+    },
+    get isExpanded() {
+      return isExpanded();
+    },
+    get hasChildItems() {
+      return hasChildItems();
+    },
+    get level() {
+      return rowLevel();
+    },
+  };
+
   // Tree-grid rows carry their nesting depth as a CSS var so the tree column can indent.
   const rowStyle = () => {
     const base = renderProps.style();
@@ -1779,53 +1800,139 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     return { ...(base ?? {}), "--table-row-level": rowLevel() } as JSX.CSSProperties;
   };
 
-  const tableRowProps = () =>
-    ({
-      ref: (el: HTMLTableRowElement) => {
-        setRef(el);
-        assignRef(local.ref, el);
-      },
-      ...domProps,
-      ...mergeProps(
-        cleanRowProps(),
-        cleanHoverProps(),
-        cleanFocusProps(),
-        focusWithinProps as Record<string, unknown>,
-        (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
-        (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
-      ),
-      class: renderProps.class(),
-      style: rowStyle(),
-      "data-key": rowKey(),
-      "data-selected": isSelected() || undefined,
-      "data-focused": isFocused() || undefined,
-      "data-focus-visible": (isFocusVisible() && isFocused()) || undefined,
-      "data-focus-visible-within": dataAttr(isFocusWithin() && isGlobalFocusVisible()),
-      "data-pressed": isPressed() || undefined,
-      "data-hovered": isHovered() || undefined,
-      "data-disabled": isDisabled() || undefined,
-      "data-href": linkProps().href,
-      "data-target": linkProps().target,
-      "data-rel": linkProps().rel,
-      "data-download":
-        typeof linkProps().download === "string"
-          ? linkProps().download
-          : linkProps().download
-            ? ""
-            : undefined,
-      "data-ping": linkProps().ping,
-      "data-referrer-policy": linkProps().referrerPolicy,
-      "data-dragging": draggableItem()?.isDragging || undefined,
-      "data-drop-target": droppableItem()?.isDropTarget || undefined,
-      "data-expanded": (isTreeRow() && isExpanded()) || undefined,
-      "data-has-child-items": (isTreeRow() && hasChildItems()) || undefined,
-      "data-level": isTreeRow() ? rowLevel() : undefined,
-      children: rowChildren(),
-    }) as JSX.HTMLAttributes<HTMLTableRowElement>;
-
   return (
     <TableRowContext.Provider value={rowContextValue}>
-      {local.render ? local.render(tableRowProps(), renderValues()) : <tr {...tableRowProps()} />}
+      <ButtonContext.Provider value={buttonContextValue}>
+        {(() => {
+          // Build the row's children HERE — inside BOTH providers — so each cell instantiates under
+          // this owner. TableCell/EditableCell read TableRowContext, and a slotted
+          // <Button slot="drag"|"chevron"> reads ButtonContext; in Solid useContext binds at the
+          // owner active when the component executes, so the children must be created inside the
+          // providers, not merely wrapped by them afterwards. They are built EXACTLY ONCE: a press
+          // or focus bubbling up from interactive cell content (e.g. an EditableCell's edit button)
+          // flips the row's render-props signals, and re-deriving the children on every such change
+          // would dispose and recreate the subtree, destroying the in-flight press. Cells claim
+          // their column by render order (see getCellColumnKey), so reset the registry once before
+          // this single pass.
+          registeredCellIds.length = 0;
+          const rowChildrenContent =
+            typeof local.children === "function" ? (
+              local.columns ? (
+                <For each={local.columns}>
+                  {(column) =>
+                    (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(column)
+                  }
+                </For>
+              ) : (
+                (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(
+                  childRenderProps,
+                )
+              )
+            ) : (
+              local.children
+            );
+          const tableRowProps = () =>
+            ({
+              ref: (el: HTMLTableRowElement) => {
+                setRef(el);
+                assignRef(local.ref, el);
+              },
+              ...domProps,
+              ...mergeProps(
+                cleanRowProps(),
+                cleanHoverProps(),
+                cleanFocusProps(),
+                focusWithinProps as Record<string, unknown>,
+                (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
+                (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
+              ),
+              class: renderProps.class(),
+              style: rowStyle(),
+              "data-key": rowKey(),
+              "data-selected": isSelected() || undefined,
+              "data-focused": isFocused() || undefined,
+              "data-focus-visible": (isFocusVisible() && isFocused()) || undefined,
+              "data-focus-visible-within": dataAttr(isFocusWithin() && isGlobalFocusVisible()),
+              "data-pressed": isPressed() || undefined,
+              "data-hovered": isHovered() || undefined,
+              "data-disabled": isDisabled() || undefined,
+              "data-href": linkProps().href,
+              "data-target": linkProps().target,
+              "data-rel": linkProps().rel,
+              "data-download":
+                typeof linkProps().download === "string"
+                  ? linkProps().download
+                  : linkProps().download
+                    ? ""
+                    : undefined,
+              "data-ping": linkProps().ping,
+              "data-referrer-policy": linkProps().referrerPolicy,
+              "data-dragging": draggableItem()?.isDragging || undefined,
+              "data-drop-target": droppableItem()?.isDropTarget || undefined,
+              "data-expanded": (isTreeRow() && isExpanded()) || undefined,
+              "data-has-child-items": (isTreeRow() && hasChildItems()) || undefined,
+              "data-level": isTreeRow() ? rowLevel() : undefined,
+              children: rowChildrenContent,
+            }) as JSX.HTMLAttributes<HTMLTableRowElement>;
+
+          return (
+            <Show
+              when={local.render}
+              fallback={
+                // Bind attributes individually on a STABLE <tr> (mirroring TableCell) so a
+                // render-props change updates attributes in place instead of recreating the element
+                // and its subtree.
+                <tr
+                  ref={(el: HTMLTableRowElement) => {
+                    setRef(el);
+                    assignRef(local.ref, el);
+                  }}
+                  {...domProps}
+                  {...mergeProps(
+                    cleanRowProps(),
+                    cleanHoverProps(),
+                    cleanFocusProps(),
+                    focusWithinProps as Record<string, unknown>,
+                    (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
+                    (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
+                  )}
+                  class={renderProps.class()}
+                  style={rowStyle()}
+                  data-key={rowKey()}
+                  data-selected={isSelected() || undefined}
+                  data-focused={isFocused() || undefined}
+                  data-focus-visible={(isFocusVisible() && isFocused()) || undefined}
+                  data-focus-visible-within={dataAttr(isFocusWithin() && isGlobalFocusVisible())}
+                  data-pressed={isPressed() || undefined}
+                  data-hovered={isHovered() || undefined}
+                  data-disabled={isDisabled() || undefined}
+                  data-href={linkProps().href}
+                  data-target={linkProps().target}
+                  data-rel={linkProps().rel}
+                  data-download={
+                    typeof linkProps().download === "string"
+                      ? linkProps().download
+                      : linkProps().download
+                        ? ""
+                        : undefined
+                  }
+                  data-ping={linkProps().ping}
+                  data-referrer-policy={linkProps().referrerPolicy}
+                  data-dragging={draggableItem()?.isDragging || undefined}
+                  data-drop-target={droppableItem()?.isDropTarget || undefined}
+                  data-expanded={(isTreeRow() && isExpanded()) || undefined}
+                  data-has-child-items={(isTreeRow() && hasChildItems()) || undefined}
+                  data-level={isTreeRow() ? rowLevel() : undefined}
+                >
+                  {rowChildrenContent}
+                </tr>
+              }
+            >
+              {local.render!(tableRowProps(), renderValues())}
+            </Show>
+          );
+        })()}
+      </ButtonContext.Provider>
     </TableRowContext.Provider>
   );
 }
