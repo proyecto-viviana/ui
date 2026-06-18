@@ -2355,4 +2355,140 @@ describe("Virtualizer", () => {
     widthSpy.mockRestore();
     vi.unstubAllGlobals();
   });
+
+  describe("horizontal orientation (T-18)", () => {
+    it("ListLayout.getLayoutInfo offsets items along x and fills height when horizontal", () => {
+      const layout = new ListLayout();
+      const info = layout.getLayoutInfo(
+        2,
+        { viewportWidth: 100, viewportHeight: 80 },
+        { itemSize: 50, orientation: "horizontal" },
+      );
+      expect(info.rect).toEqual({ x: 100, y: 0, width: 50, height: 80 });
+    });
+
+    it("ListLayout.getLayoutInfo stays vertical by default (offsets along y, fills width)", () => {
+      const layout = new ListLayout();
+      const info = layout.getLayoutInfo(
+        2,
+        { viewportWidth: 100, viewportHeight: 80 },
+        { itemSize: 50 },
+      );
+      expect(info.rect).toEqual({ x: 0, y: 100, width: 100, height: 50 });
+    });
+
+    it("ListLayout.getDropTargetFromPoint measures the x axis when horizontal", () => {
+      const layout = new ListLayout();
+      // x=130 with itemSize 60 -> index 2, 10px into the item (< 20px threshold) -> before.
+      const horizontal = layout.getDropTargetFromPoint({ x: 130, y: 9999 }, 10, {
+        itemSize: 60,
+        orientation: "horizontal",
+      });
+      expect(horizontal).toEqual({ type: "item", index: 2, position: "before" });
+      // The same coordinates on the y axis drive the default vertical layout instead.
+      const vertical = layout.getDropTargetFromPoint({ x: 9999, y: 130 }, 10, { itemSize: 60 });
+      expect(vertical).toEqual({ type: "item", index: 2, position: "before" });
+    });
+
+    it("exposes orientation and offsets layout info along x through the context", () => {
+      function Consumer(): JSX.Element {
+        const ctx = createMemo(() => useVirtualizerContext());
+        return (
+          <output data-testid="horizontal-ctx">
+            {JSON.stringify({
+              orientation: ctx()?.orientation ?? null,
+              layoutInfo3: ctx()?.getLayoutInfo(3) ?? null,
+            })}
+          </output>
+        );
+      }
+      render(() => (
+        <Virtualizer
+          layout={new ListLayout()}
+          layoutOptions={{ orientation: "horizontal", itemSize: 50 }}
+        >
+          <Consumer />
+        </Virtualizer>
+      ));
+      const parsed = JSON.parse(screen.getByTestId("horizontal-ctx").textContent || "{}");
+      expect(parsed.orientation).toBe("horizontal");
+      expect(parsed.layoutInfo3.rect.x).toBe(150);
+      expect(parsed.layoutInfo3.rect.width).toBe(50);
+    });
+
+    it("defaults the context orientation to vertical", () => {
+      function Consumer(): JSX.Element {
+        const ctx = createMemo(() => useVirtualizerContext());
+        return (
+          <output data-testid="vertical-ctx">
+            {JSON.stringify({
+              orientation: ctx()?.orientation ?? null,
+              layoutInfo3: ctx()?.getLayoutInfo(3) ?? null,
+            })}
+          </output>
+        );
+      }
+      render(() => (
+        <Virtualizer layout={new ListLayout()} layoutOptions={{ itemSize: 50 }}>
+          <Consumer />
+        </Virtualizer>
+      ));
+      const parsed = JSON.parse(screen.getByTestId("vertical-ctx").textContent || "{}");
+      expect(parsed.orientation).toBe("vertical");
+      expect(parsed.layoutInfo3.rect.y).toBe(150);
+      expect(parsed.layoutInfo3.rect.x).toBe(0);
+    });
+
+    it("GridList reflects its orientation via data-orientation", () => {
+      const items = [{ id: "a" }, { id: "b" }];
+      const vertical = render(() => (
+        <GridList aria-label="Vertical grid" items={items} getKey={(item) => item.id}>
+          {(item) => <GridListItem id={item.id}>{item.id}</GridListItem>}
+        </GridList>
+      ));
+      expect(
+        vertical.container.querySelector("[data-orientation]")?.getAttribute("data-orientation"),
+      ).toBe("vertical");
+      vertical.unmount();
+
+      const horizontal = render(() => (
+        <GridList
+          aria-label="Horizontal grid"
+          orientation="horizontal"
+          items={items}
+          getKey={(item) => item.id}
+        >
+          {(item) => <GridListItem id={item.id}>{item.id}</GridListItem>}
+        </GridList>
+      ));
+      expect(
+        horizontal.container.querySelector("[data-orientation]")?.getAttribute("data-orientation"),
+      ).toBe("horizontal");
+      horizontal.unmount();
+    });
+
+    it("renders virtualizer spacers along width when the layout is horizontal", () => {
+      const items = Array.from({ length: 200 }, (_, i) => ({ id: `i${i}`, label: `Item ${i}` }));
+      const { container } = render(() => (
+        <Virtualizer
+          layout={new ListLayout()}
+          layoutOptions={{ orientation: "horizontal", itemSize: 50, viewportSize: 100 }}
+        >
+          <GridList
+            aria-label="Horizontal virtual grid"
+            orientation="horizontal"
+            items={items}
+            getKey={(item) => item.id}
+          >
+            {(item) => <GridListItem id={item.id}>{item.label}</GridListItem>}
+          </GridList>
+        </Virtualizer>
+      ));
+      const spacer = container.querySelector("[data-virtualizer-spacer]") as HTMLElement | null;
+      expect(spacer).not.toBeNull();
+      // A horizontal layout reserves the windowed-out extent along width, not height.
+      expect(spacer!.style.width).not.toBe("");
+      expect(spacer!.style.height).toBe("");
+    });
+  });
 });

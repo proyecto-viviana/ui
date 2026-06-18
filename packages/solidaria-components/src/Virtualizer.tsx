@@ -32,6 +32,7 @@ import {
   type DefaultVirtualizerLayoutOptions,
   type GridLayoutOptions,
   type LayoutInfo,
+  type Orientation,
   type Point,
   type Rect,
   type Size,
@@ -70,6 +71,13 @@ export interface VirtualizerContextValue<O = unknown> {
   layout: VirtualizerLayout<O>;
   layoutOptions?: O;
   isVirtualized: boolean;
+  /**
+   * The resolved primary orientation of the layout. Consumers render their
+   * windowing spacers along this axis (`width` when `horizontal`, `height`
+   * when `vertical`) so the spacer size matches the offsets `getVisibleRange`
+   * produced.
+   */
+  orientation: Orientation;
   getVisibleRange: (itemCount: number) => VirtualizerVisibleRange;
   getLayoutInfo: (index: number) => LayoutInfo;
   getDropTargetFromPoint: (point: Point, itemCount: number) => VirtualizerDropTarget | null;
@@ -172,6 +180,9 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   ]);
   // The scroll view's own scroll position (its scrollTop).
   const [scrollOffset, setScrollOffset] = createSignal(0);
+  // The scroll view's horizontal scroll position (its scrollLeft), used as the
+  // primary scroll axis when the layout's orientation is horizontal.
+  const [scrollOffsetX, setScrollOffsetX] = createSignal(0);
   // How far the scroll view's top edge is above the window viewport, due to the
   // page (or an ancestor) being scrolled. Mirrors upstream ScrollView.viewportOffset.
   const [viewportOffset, setViewportOffset] = createSignal(0);
@@ -234,6 +245,9 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   });
   const itemSize = createMemo(() => getObjectValue(virtualOptions(), "itemSize") ?? 40);
   const overscan = createMemo(() => getObjectValue(virtualOptions(), "overscan") ?? 2);
+  const orientation = createMemo<Orientation>(
+    () => getObjectValue(virtualOptions(), "orientation") ?? "vertical",
+  );
   // The effective visible height. When window scrolling, this is the scroll view's
   // size intersected with the window viewport (capped to what is actually on screen),
   // mirroring upstream ScrollView.updateVisibleRect. Otherwise it is the scroll view's
@@ -252,12 +266,23 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   const effectiveScrollOffset = createMemo(() =>
     allowsWindowScrolling() ? scrollOffset() + viewportOffset() : scrollOffset(),
   );
+  // The primary-axis scroll offset and viewport size, selected by orientation.
+  // A horizontal layout scrolls along x (scrollLeft / client width); the vertical
+  // default scrolls along y (with the window-scrolling adjustments above).
+  const mainScrollOffset = createMemo(() =>
+    orientation() === "horizontal" ? scrollOffsetX() : effectiveScrollOffset(),
+  );
+  const mainViewportSize = createMemo(() => {
+    if (orientation() !== "horizontal") return viewportSize();
+    const explicit = getObjectValue(virtualOptions(), "viewportSize");
+    return explicit != null ? explicit : measuredViewportWidth();
+  });
 
   const getVisibleRange = (itemCount: number): VirtualizerVisibleRange => {
     const ctx: VirtualizerRangeContext = {
       itemCount,
-      scrollOffset: effectiveScrollOffset(),
-      viewportSize: viewportSize(),
+      scrollOffset: mainScrollOffset(),
+      viewportSize: mainViewportSize(),
       overscan: overscan(),
       viewportWidth: measuredViewportWidth(),
     };
@@ -281,18 +306,32 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   const getLayoutInfo = (index: number): LayoutInfo => {
     const ctx: VirtualizerLayoutInfoContext = {
       viewportWidth: measuredViewportWidth(),
+      viewportHeight: measuredViewportSize(),
     };
     const layoutResult = resolvedLayout().getLayoutInfo?.(index, ctx, layoutOptionsWithViewport());
-    const nextInfo = layoutResult ?? {
-      key: String(index),
-      index,
-      rect: {
-        x: 0,
-        y: index * itemSize(),
-        width: Math.max(0, measuredViewportWidth()),
-        height: itemSize(),
-      },
-    };
+    const nextInfo =
+      layoutResult ??
+      (orientation() === "horizontal"
+        ? {
+            key: String(index),
+            index,
+            rect: {
+              x: index * itemSize(),
+              y: 0,
+              width: itemSize(),
+              height: Math.max(0, measuredViewportSize()),
+            },
+          }
+        : {
+            key: String(index),
+            index,
+            rect: {
+              x: 0,
+              y: index * itemSize(),
+              width: Math.max(0, measuredViewportWidth()),
+              height: itemSize(),
+            },
+          });
     const cachedInfo = layoutInfoCache.get(index);
     if (cachedInfo && isSameLayoutInfo(cachedInfo, nextInfo)) {
       return cachedInfo;
@@ -597,7 +636,7 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
             : direction === "next"
               ? -1
               : itemCount;
-    const pageSize = Math.max(1, Math.floor(viewportSize() / Math.max(1, itemSize())));
+    const pageSize = Math.max(1, Math.floor(mainViewportSize() / Math.max(1, itemSize())));
     const delta = direction === "next" ? 1 : -1;
     const nextStart = currentIndex + delta * pageSize;
     const clampedStart = Math.max(0, Math.min(itemCount - 1, nextStart));
@@ -664,6 +703,7 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     layout: resolvedLayout(),
     layoutOptions: resolvedLayoutOptions(),
     isVirtualized: true,
+    orientation: orientation(),
     getVisibleRange,
     getLayoutInfo,
     getDropTargetFromPoint,
@@ -757,6 +797,8 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
         if (isContainer) {
           const next = Math.max(0, containerRef!.scrollTop);
           if (next !== scrollOffset()) setScrollOffset(next);
+          const nextX = Math.max(0, containerRef!.scrollLeft);
+          if (nextX !== scrollOffsetX()) setScrollOffsetX(nextX);
         } else {
           updateViewportOffset();
         }
@@ -801,6 +843,7 @@ export type {
   WaterfallLayoutOptions,
   VirtualizerDropTarget,
   LayoutInfo,
+  Orientation,
   Rect,
   Size,
   Point,

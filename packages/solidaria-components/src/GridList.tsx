@@ -55,7 +55,7 @@ import {
   type SectionProps,
   useCollectionRenderer,
 } from "./Collection";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, type Orientation } from "./Virtualizer";
 import {
   getNormalizedDropTargetKey,
   mergePersistedKeysIntoVirtualRange,
@@ -83,6 +83,12 @@ export interface GridListRenderProps {
   isDisabled: boolean;
   /** Whether the grid list is empty. */
   isEmpty: boolean;
+  /**
+   * The primary orientation of the items.
+   *
+   * @selector [data-orientation="vertical | horizontal"]
+   */
+  orientation: Orientation;
 }
 
 export interface GridListProps<T extends object>
@@ -107,6 +113,13 @@ export interface GridListProps<T extends object>
   defaultSelectedKeys?: "all" | Iterable<Key>;
   /** Handler called when selection changes. */
   onSelectionChange?: (keys: "all" | Set<Key>) => void;
+  /**
+   * The primary orientation of the items. Usually this is the direction that the collection
+   * scrolls.
+   *
+   * @default 'vertical'
+   */
+  orientation?: Orientation;
   /** The children of the component. A function may be provided to render each item. */
   children: (item: T) => JSX.Element;
   /** The CSS className for the element. */
@@ -301,6 +314,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "isLoading",
       "onLoadMore",
       "dragAndDropHooks",
+      "orientation",
     ],
     [
       "items",
@@ -372,11 +386,13 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
+  const orientation = (): Orientation => local.orientation ?? "vertical";
   const renderValues = createMemo<GridListRenderProps>(() => ({
     isFocused: state.isFocused || isFocused(),
     isFocusVisible: isFocusVisible(),
     isDisabled: ariaProps.isDisabled ?? false,
     isEmpty: stateProps.items.length === 0,
+    orientation: orientation(),
   }));
 
   const renderProps = useRenderProps(
@@ -467,7 +483,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
         ? new hooks.ListDropTargetDelegate(
             () => state.collection,
             () => ref(),
-            { layout: "grid", orientation: "vertical", direction: resolveDirection() },
+            { layout: "grid", orientation: orientation(), direction: resolveDirection() },
           )
         : undefined);
     if (!dropTargetDelegate) return undefined;
@@ -570,6 +586,10 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     if (!range) return stateProps.items;
     return stateProps.items.slice(range.start, range.end);
   });
+  // Spacers reserve the windowed-out extent along the virtualizer's primary axis,
+  // so a horizontal layout offsets along width rather than height.
+  const virtualSpacerStyle = (size: number): JSX.CSSProperties =>
+    virtualizer?.orientation === "horizontal" ? { width: `${size}px` } : { height: `${size}px` };
 
   const contextValue = createMemo<GridListContextValue<T>>(() => ({
     state,
@@ -612,6 +632,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
             data-disabled={ariaProps.isDisabled || undefined}
             data-empty={isEmpty() || undefined}
             data-drop-target={isRootDropTarget() || undefined}
+            data-orientation={orientation()}
           >
             <SharedElementTransition>
               {isEmpty() && local.renderEmptyState ? (
@@ -622,7 +643,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
                     <div
                       role="presentation"
                       aria-hidden="true"
-                      style={{ height: `${virtualRange()!.offsetTop}px` }}
+                      style={virtualSpacerStyle(virtualRange()!.offsetTop)}
                       data-virtualizer-spacer="top"
                     />
                   ) : null}
@@ -649,7 +670,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
                     <div
                       role="presentation"
                       aria-hidden="true"
-                      style={{ height: `${virtualRange()!.offsetBottom}px` }}
+                      style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
                       data-virtualizer-spacer="bottom"
                     />
                   ) : null}
@@ -921,7 +942,11 @@ export function GridListHeader(props: GridListHeaderProps): JSX.Element {
   const rowProps = useContext(GridListHeaderContext);
   const rowHeaderProps = useContext(GridListHeaderInnerContext);
   return (
-    <div class={props.class ?? "solidaria-GridListHeader"} style={props.style} {...(rowProps ?? {})}>
+    <div
+      class={props.class ?? "solidaria-GridListHeader"}
+      style={props.style}
+      {...(rowProps ?? {})}
+    >
       <div {...(rowHeaderProps ?? {})} style={{ display: "contents" }}>
         {props.children}
       </div>

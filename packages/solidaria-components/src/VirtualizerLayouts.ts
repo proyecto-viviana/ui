@@ -21,6 +21,13 @@ export interface Size {
   height: number;
 }
 
+/**
+ * The primary orientation of a linear layout — the axis items stack along, which
+ * is usually the direction the collection scrolls. Mirrors React Spectrum's
+ * `Orientation` and `ListLayout`'s `orientation` option.
+ */
+export type Orientation = "horizontal" | "vertical";
+
 export interface LayoutInfo {
   key: string | number;
   index: number;
@@ -46,6 +53,13 @@ export interface DefaultVirtualizerLayoutOptions {
   itemSize?: number;
   overscan?: number;
   viewportSize?: number;
+  /**
+   * The primary orientation of the items. Items offset along `x`/`width` when
+   * `horizontal`, and along `y`/`height` when `vertical`.
+   *
+   * @default 'vertical'
+   */
+  orientation?: Orientation;
 }
 
 export interface GridLayoutOptions extends DefaultVirtualizerLayoutOptions {
@@ -62,6 +76,11 @@ export interface WaterfallLayoutOptions extends GridLayoutOptions {
 
 export interface VirtualizerLayoutInfoContext {
   viewportWidth: number;
+  /**
+   * The viewport height, used as the cross-axis size for a `horizontal` layout
+   * (the analogue of `viewportWidth` for the `vertical` default).
+   */
+  viewportHeight?: number;
 }
 
 export interface VirtualizerDropTarget {
@@ -124,15 +143,29 @@ export class ListLayout {
     context: VirtualizerLayoutInfoContext,
     options?: DefaultVirtualizerLayoutOptions,
   ): LayoutInfo {
-    const itemHeight = Math.max(1, options?.itemSize ?? 40);
+    const itemSize = Math.max(1, options?.itemSize ?? 40);
+    if ((options?.orientation ?? "vertical") === "horizontal") {
+      // Items stack along the x axis; the cross axis (height) fills the viewport.
+      return {
+        key: String(index),
+        index,
+        rect: {
+          x: index * itemSize,
+          y: 0,
+          width: itemSize,
+          height: Math.max(0, context.viewportHeight ?? 0),
+        },
+      };
+    }
+    // Items stack along the y axis; the cross axis (width) fills the viewport.
     return {
       key: String(index),
       index,
       rect: {
         x: 0,
-        y: index * itemHeight,
+        y: index * itemSize,
         width: Math.max(0, context.viewportWidth),
-        height: itemHeight,
+        height: itemSize,
       },
     };
   }
@@ -143,18 +176,20 @@ export class ListLayout {
     options?: DefaultVirtualizerLayoutOptions,
   ): VirtualizerDropTarget | null {
     if (itemCount <= 0) return { type: "root", index: -1, position: "on" };
-    const itemHeight = Math.max(1, options?.itemSize ?? 40);
-    if (point.y < 0) {
+    const itemSize = Math.max(1, options?.itemSize ?? 40);
+    // Measure the drop point along the primary (scroll) axis.
+    const offset = (options?.orientation ?? "vertical") === "horizontal" ? point.x : point.y;
+    if (offset < 0) {
       return { type: "item", index: 0, position: "before" };
     }
-    const totalHeight = itemCount * itemHeight;
-    if (point.y >= totalHeight) {
+    const totalSize = itemCount * itemSize;
+    if (offset >= totalSize) {
       return { type: "item", index: itemCount - 1, position: "after" };
     }
-    const rawIndex = Math.floor(point.y / itemHeight);
+    const rawIndex = Math.floor(offset / itemSize);
     const index = Math.max(0, Math.min(rawIndex, itemCount - 1));
-    const offsetWithinItem = Math.max(0, point.y - index * itemHeight);
-    const threshold = itemHeight / 3;
+    const offsetWithinItem = Math.max(0, offset - index * itemSize);
+    const threshold = itemSize / 3;
     const position: VirtualizerDropTarget["position"] =
       offsetWithinItem < threshold ? "before" : offsetWithinItem > threshold * 2 ? "after" : "on";
     return { type: "item", index, position };

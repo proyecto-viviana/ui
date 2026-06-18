@@ -495,6 +495,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!range) return stateProps.items;
     return stateProps.items.slice(range.start, range.end);
   });
+  // Spacers reserve the windowed-out extent along the virtualizer's primary axis,
+  // so a horizontal layout offsets along width rather than height.
+  const virtualSpacerStyle = (size: number): JSX.CSSProperties =>
+    virtualizer?.orientation === "horizontal" ? { width: `${size}px` } : { height: `${size}px` };
   const sectionedRenderEntries = createMemo(() => {
     let globalIndex = 0;
     return stateProps.items.map((entry) => {
@@ -626,7 +630,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                       <li
                         role="presentation"
                         aria-hidden="true"
-                        style={{ height: `${virtualRange()!.offsetTop}px` }}
+                        style={virtualSpacerStyle(virtualRange()!.offsetTop)}
                         data-virtualizer-spacer="top"
                       />
                     ) : null}
@@ -653,7 +657,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                       <li
                         role="presentation"
                         aria-hidden="true"
-                        style={{ height: `${virtualRange()!.offsetBottom}px` }}
+                        style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
                         data-virtualizer-spacer="bottom"
                       />
                     ) : null}
