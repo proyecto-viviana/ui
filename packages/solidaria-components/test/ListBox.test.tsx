@@ -1332,4 +1332,92 @@ describe("ListBox", () => {
       expect(onSelectionChange).toHaveBeenCalled();
     });
   });
+
+  describe("horizontal orientation keyboard navigation", () => {
+    it("ArrowRight/ArrowLeft navigate the inline axis when horizontal", async () => {
+      render(() => (
+        <TestListBox listBoxProps={{ selectionMode: "single", orientation: "horizontal" }} />
+      ));
+
+      const listbox = screen.getByRole("listbox");
+      listbox.focus();
+      const options = screen.getAllByRole("option");
+
+      // Nothing focused yet: Right enters at the first item.
+      await user.keyboard("{ArrowRight}");
+      expect(options[0]).toHaveAttribute("data-focused");
+      expect(listbox).toHaveAttribute("aria-activedescendant", options[0].id);
+
+      // Right advances along the inline axis.
+      await user.keyboard("{ArrowRight}");
+      expect(options[1]).toHaveAttribute("data-focused");
+      expect(listbox).toHaveAttribute("aria-activedescendant", options[1].id);
+
+      // Left walks back.
+      await user.keyboard("{ArrowLeft}");
+      expect(options[0]).toHaveAttribute("data-focused");
+    });
+
+    it("Arrow Down/Up still navigate the block axis when horizontal", async () => {
+      render(() => (
+        <TestListBox listBoxProps={{ selectionMode: "single", orientation: "horizontal" }} />
+      ));
+
+      const listbox = screen.getByRole("listbox");
+      listbox.focus();
+      const options = screen.getAllByRole("option");
+
+      await user.keyboard("{ArrowDown}");
+      expect(options[0]).toHaveAttribute("data-focused");
+
+      await user.keyboard("{ArrowDown}");
+      expect(options[1]).toHaveAttribute("data-focused");
+
+      await user.keyboard("{ArrowUp}");
+      expect(options[0]).toHaveAttribute("data-focused");
+    });
+
+    it("ArrowLeft/ArrowRight are no-ops in a vertical (default) listbox", async () => {
+      render(() => <TestListBox listBoxProps={{ selectionMode: "single" }} />);
+
+      const listbox = screen.getByRole("listbox");
+      listbox.focus();
+      const options = screen.getAllByRole("option");
+
+      await user.keyboard("{ArrowRight}");
+      expect(options[0]).not.toHaveAttribute("data-focused");
+      expect(listbox).not.toHaveAttribute("aria-activedescendant");
+
+      await user.keyboard("{ArrowLeft}");
+      expect(options[0]).not.toHaveAttribute("data-focused");
+
+      // The block axis is still live, confirming the handler isn't disabled.
+      await user.keyboard("{ArrowDown}");
+      expect(options[0]).toHaveAttribute("data-focused");
+    });
+
+    it("RTL flips the horizontal axis (ArrowLeft=next, ArrowRight=previous)", async () => {
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <TestListBox listBoxProps={{ selectionMode: "single", orientation: "horizontal" }} />
+        </I18nProvider>
+      ));
+
+      const listbox = screen.getByRole("listbox");
+      listbox.focus();
+      const options = screen.getAllByRole("option");
+
+      // Nothing focused: either arrow enters at the first item.
+      await user.keyboard("{ArrowLeft}");
+      expect(options[0]).toHaveAttribute("data-focused");
+
+      // In RTL, ArrowLeft advances to the next item...
+      await user.keyboard("{ArrowLeft}");
+      expect(options[1]).toHaveAttribute("data-focused");
+
+      // ...and ArrowRight walks back to the previous item.
+      await user.keyboard("{ArrowRight}");
+      expect(options[0]).toHaveAttribute("data-focused");
+    });
+  });
 });

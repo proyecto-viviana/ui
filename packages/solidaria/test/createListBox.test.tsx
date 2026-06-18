@@ -219,6 +219,100 @@ describe("createListBox", () => {
       });
     });
 
+    it("handles ArrowRight to move focus to next item when horizontal", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({ orientation: "horizontal" }, state);
+
+        state.setFocusedKey("a");
+
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowRight"));
+
+        expect(state.focusedKey()).toBe("b");
+        dispose();
+      });
+    });
+
+    it("handles ArrowLeft to move focus to previous item when horizontal", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({ orientation: "horizontal" }, state);
+
+        state.setFocusedKey("c");
+
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowLeft"));
+
+        expect(state.focusedKey()).toBe("b");
+        dispose();
+      });
+    });
+
+    it("ignores ArrowRight/ArrowLeft in a vertical (default) listbox", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({}, state);
+
+        state.setFocusedKey("c");
+
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowRight"));
+        expect(state.focusedKey()).toBe("c");
+
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowLeft"));
+        expect(state.focusedKey()).toBe("c");
+        dispose();
+      });
+    });
+
+    it("flips ArrowRight/ArrowLeft under RTL when horizontal", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox(
+          { orientation: "horizontal", direction: "rtl" },
+          state,
+        );
+
+        state.setFocusedKey("b");
+        // RTL: ArrowRight moves to the previous item.
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowRight"));
+        expect(state.focusedKey()).toBe("a");
+
+        state.setFocusedKey("b");
+        // RTL: ArrowLeft moves to the next item.
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowLeft"));
+        expect(state.focusedKey()).toBe("c");
+        dispose();
+      });
+    });
+
+    it("enters at the first item when navigating the horizontal axis with no focus", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({ orientation: "horizontal" }, state);
+
+        expect(state.focusedKey()).toBeNull();
+
+        // Even ArrowLeft (a "backward" key) enters at the FIRST item, mirroring
+        // upstream's getFirstKey() fallback for both Left and Right.
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowLeft"));
+        expect(state.focusedKey()).toBe("a");
+        dispose();
+      });
+    });
+
+    it("skips disabled items navigating the horizontal axis", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({ disabledKeys: ["b", "c"] });
+        const { listBoxProps } = createListBox({ orientation: "horizontal" }, state);
+
+        state.setFocusedKey("a");
+
+        // ArrowRight skips disabled b and c, landing on d.
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowRight"));
+        expect(state.focusedKey()).toBe("d");
+        dispose();
+      });
+    });
+
     it("handles Space to toggle selection", () => {
       createRoot((dispose) => {
         const state = createBasicListState({ selectionMode: "multiple" });

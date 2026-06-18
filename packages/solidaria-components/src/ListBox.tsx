@@ -23,6 +23,7 @@ import {
   createFocusRing,
   createScrollIntoViewOnFocus,
   mergeProps,
+  useLocale,
   type AriaListBoxProps,
   type AriaOptionProps,
 } from "@proyecto-viviana/solidaria";
@@ -288,11 +289,18 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     return !!disabled;
   };
 
+  const locale = useLocale();
   const listBoxAria = createListBox(
     {
       ...ariaProps,
       get isDisabled() {
         return resolveDisabled();
+      },
+      get orientation() {
+        return stateProps.orientation ?? "vertical";
+      },
+      get direction() {
+        return locale().direction;
       },
     },
     state,

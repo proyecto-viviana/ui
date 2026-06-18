@@ -49,6 +49,20 @@ export interface AriaListBoxProps {
   shouldSelectOnFocus?: boolean;
   /** Whether type-to-select is disabled. @default false */
   disallowTypeAhead?: boolean;
+  /**
+   * The primary orientation of the items. In a horizontal listbox the Left/Right
+   * arrows navigate the list (the block-axis Up/Down arrows still work); in a
+   * vertical listbox Left/Right are no-ops, matching upstream's
+   * `ListKeyboardDelegate` for a `stack` layout.
+   * @default "vertical"
+   */
+  orientation?: "vertical" | "horizontal";
+  /**
+   * The text direction, used to resolve the horizontal navigation axis. In a
+   * horizontal listbox, RTL flips Left/Right (Right=previous, Left=next).
+   * @default "ltr"
+   */
+  direction?: "ltr" | "rtl";
 }
 
 export interface ListBoxAria {
@@ -221,6 +235,34 @@ export function createListBox<T>(
             state.replaceSelection(prevKey);
           } else if (e.shiftKey && state.selectionMode() === "multiple") {
             state.extendSelection(prevKey, collection);
+          }
+        }
+        break;
+      }
+      case "ArrowRight":
+      case "ArrowLeft": {
+        // Horizontal orientation promotes the inline axis to the primary
+        // navigation axis. Upstream's ListKeyboardDelegate strips
+        // getKeyLeftOf/getKeyRightOf for a vertical stack, so Left/Right stay
+        // no-ops there; in a horizontal stack they move prev/next, flipped
+        // under RTL (Right=next, Left=prev in LTR).
+        if (p.orientation !== "horizontal") break;
+        e.preventDefault();
+        const isRtl = p.direction === "rtl";
+        const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
+        const focusedKey = state.focusedKey();
+        // With nothing focused, both directions enter at the first item,
+        // mirroring upstream's getFirstKey() fallback for Left and Right.
+        const nextKey =
+          focusedKey != null
+            ? findNextEnabledKey(state, focusedKey, forward ? "next" : "prev", shouldWrap)
+            : findNextEnabledKey(state, null, "next", false);
+        if (nextKey != null) {
+          state.setFocusedKey(nextKey);
+          if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
+            state.replaceSelection(nextKey);
+          } else if (e.shiftKey && state.selectionMode() === "multiple") {
+            state.extendSelection(nextKey, collection);
           }
         }
         break;
