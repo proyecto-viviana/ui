@@ -910,6 +910,59 @@ describe("Virtualizer", () => {
     expect(screen.queryByText("Item 0")).not.toBeInTheDocument();
   });
 
+  it("disables content pointer events while scrolling and restores after the debounce", () => {
+    // Only fake setTimeout/clearTimeout so the rAF spy below still drives scroll updates.
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const items = Array.from({ length: 50 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+
+    render(() => (
+      <Virtualizer
+        layout={{}}
+        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
+        style={{ height: "60px", overflow: "auto" }}
+      >
+        <ListBox aria-label="Pointer events list" items={items} getKey={(item) => item.id}>
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+
+    const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
+    const content = container.querySelector("[data-virtualizer-content]") as HTMLDivElement;
+
+    const initial = content.style.pointerEvents;
+    container.scrollTop = 40;
+    fireEvent.scroll(container);
+    const whileScrolling = content.style.pointerEvents;
+
+    // A second scroll before the 300ms debounce elapses keeps pointer events disabled.
+    vi.advanceTimersByTime(150);
+    container.scrollTop = 80;
+    fireEvent.scroll(container);
+    vi.advanceTimersByTime(150);
+    const stillScrolling = content.style.pointerEvents;
+
+    // 300ms after the last scroll, pointer events are restored.
+    vi.advanceTimersByTime(300);
+    const afterScrolling = content.style.pointerEvents;
+
+    vi.useRealTimers();
+
+    expect(initial).toBe("");
+    expect(whileScrolling).toBe("none");
+    expect(stillScrolling).toBe("none");
+    expect(afterScrolling).toBe("");
+  });
+
   it("keeps section header visible when virtual range starts inside the same tree section", () => {
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
       cb(0);

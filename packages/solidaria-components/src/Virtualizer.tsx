@@ -192,6 +192,11 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   const [measuredViewportSize, setMeasuredViewportSize] = createSignal(0);
   const [measuredViewportWidth, setMeasuredViewportWidth] = createSignal(0);
   const allowsWindowScrolling = createMemo(() => local.allowsWindowScrolling ?? true);
+  // Whether the scroll view is actively scrolling. Mirrors upstream ScrollView's
+  // `isScrolling`: while scrolling, the content gets `pointer-events: none` so pointer
+  // events don't hit rows recycling under a stationary cursor (avoiding hover-state
+  // flicker and needless hit-testing). It flips back 300ms after the last scroll.
+  const [isScrolling, setIsScrolling] = createSignal(false);
   const [dropTargetResolver, setDropTargetResolver] = createSignal<
     VirtualizerDropTargetResolver | undefined
   >(undefined);
@@ -754,8 +759,11 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   };
 
   let scrollFrame: number | undefined;
+  // Debounce handle that resets `isScrolling` after scrolling stops.
+  let scrollEndTimeout: ReturnType<typeof setTimeout> | undefined;
   onCleanup(() => {
     if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
+    if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
   });
 
   onMount(() => {
@@ -790,6 +798,16 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
       if (!isContainer && !isAncestor) return;
       // An ancestor/page scroll only matters when the collection scrolls with the page.
       if (!isContainer && !allowsWindowScrolling()) return;
+
+      // Flag active scrolling and (re)arm the reset for 300ms after the last scroll.
+      // Our handler is already rAF-throttled, so a plain clear/reset debounce matches
+      // upstream's scrollEndTime bookkeeping without the extra accounting.
+      if (!isScrolling()) setIsScrolling(true);
+      if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
+      scrollEndTimeout = setTimeout(() => {
+        scrollEndTimeout = undefined;
+        setIsScrolling(false);
+      }, 300);
 
       if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
       scrollFrame = requestAnimationFrame(() => {
@@ -826,7 +844,18 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
           style={local.style}
           data-virtualizer
         >
-          {local.children}
+          {/*
+            Content wrapper mirroring upstream ScrollView's inner content div. It
+            carries the `pointer-events: none` while-scrolling optimization and is
+            otherwise a layout-transparent passthrough (the outer div remains the
+            scroll container we measure and read scroll offsets from).
+          */}
+          <div
+            data-virtualizer-content
+            style={{ "pointer-events": isScrolling() ? "none" : undefined }}
+          >
+            {local.children}
+          </div>
         </div>
       </VirtualizerContext.Provider>
     </CollectionRendererContext.Provider>
