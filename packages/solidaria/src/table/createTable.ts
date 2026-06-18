@@ -10,6 +10,8 @@ import type { TableState, TableCollection, Key, GridNode } from "@proyecto-vivia
 import type { AriaTableProps, TableAria } from "./types";
 import { useLocale } from "../i18n";
 import { announce } from "../live-announcer";
+import { scrollIntoViewport } from "../utils";
+import { getInteractionModality } from "../interactions/createInteractionModality";
 
 // Global map to store table metadata for child components
 const tableMap = new WeakMap<
@@ -574,6 +576,13 @@ export function createTable<T extends object>(
     const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
     if (target && target !== active) {
       target.focus();
+
+      // Reveal the newly focused row/cell when navigating with the keyboard,
+      // mirroring useSelectableCollection. Pointer-driven focus changes should
+      // not shift the scroll position under the user's finger.
+      if (getInteractionModality() !== "pointer") {
+        scrollIntoViewport(target, { containingElement: el });
+      }
     }
   });
 

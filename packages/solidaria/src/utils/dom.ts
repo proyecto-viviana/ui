@@ -286,6 +286,30 @@ export function getScrollParent(node: Element, checkForOverflow?: boolean): Elem
 }
 
 /**
+ * Gets every scrollable ancestor of an element, from the nearest up to (and
+ * including) the document scrolling element.
+ * @param node - The starting element
+ * @param checkForOverflow - If true, only include parents that actually overflow
+ */
+export function getScrollParents(node: Element, checkForOverflow?: boolean): Element[] {
+  const parentElements: Element[] = [];
+  const root = document.scrollingElement || document.documentElement;
+  let current: Element | null = node;
+
+  while (current) {
+    if (isScrollable(current, checkForOverflow)) {
+      parentElements.push(current);
+    }
+    if (current === root) {
+      break;
+    }
+    current = current.parentElement;
+  }
+
+  return parentElements;
+}
+
+/**
  * Checks if an element will open a virtual keyboard when focused.
  * Used for iOS Safari scroll handling.
  */

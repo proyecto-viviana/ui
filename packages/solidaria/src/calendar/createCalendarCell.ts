@@ -8,6 +8,7 @@
 import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
+import { scrollIntoViewport, getScrollParent } from "../utils";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { getInteractionModality } from "../interactions/createInteractionModality";
 import { useLocale } from "../i18n";
@@ -145,6 +146,14 @@ export function createCalendarCell<T extends CalendarState>(
     const element = ref?.();
     if (element && isFocused()) {
       focusSafely(element);
+
+      // Scroll into view if navigating with a keyboard, otherwise try not to
+      // shift the view under the user's mouse/finger. If in an overlay,
+      // scrollIntoViewport only scrolls up to the overlay scroll body. Only
+      // scroll if the cell actually got focused.
+      if (getInteractionModality() !== "pointer" && document.activeElement === element) {
+        scrollIntoViewport(element, { containingElement: getScrollParent(element) });
+      }
     }
   });
 

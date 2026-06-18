@@ -7,6 +7,7 @@
 
 import { createSignal, createMemo, onCleanup } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
+import { scrollIntoViewport, getScrollParent } from "../utils";
 import type { DateFieldState, DateSegment, DateSegmentType } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 
@@ -288,8 +289,12 @@ export function createDateSegment<T extends DateFieldState>(
     }
     hadPointerDown = false;
 
-    // Select all text in the segment
     const el = ref?.();
+    if (el) {
+      scrollIntoViewport(el, { containingElement: getScrollParent(el) });
+    }
+
+    // Select all text in the segment
     if (el && typeof window !== "undefined") {
       const selection = window.getSelection();
       if (selection) {

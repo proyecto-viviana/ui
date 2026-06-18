@@ -29,8 +29,11 @@ export {
   openLink,
   isScrollable,
   getScrollParent,
+  getScrollParents,
   willOpenKeyboard,
 } from "./dom";
+
+export { scrollIntoView, scrollIntoViewport } from "./scrollIntoView";
 
 export {
   areRectanglesOverlapping,
