@@ -1,11 +1,13 @@
 import {
   type JSX,
   type Accessor,
+  batch,
   createContext,
   createEffect,
   createSignal,
   For,
   onCleanup,
+  onMount,
   Show,
   splitProps,
   useContext,
@@ -46,6 +48,7 @@ import { ChevronDownIcon } from "../icon/s2wf-icons/ChevronDownIcon";
 import { CloseIcon } from "../icon/s2wf-icons/CloseIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 import { s2IntlStrings } from "../intl";
+import { createMediaQuery } from "../utils/createMediaQuery";
 import { focusRing, style } from "../style" with { type: "macro" };
 
 export type ToastPlacement = "top" | "top end" | "bottom" | "bottom end";
@@ -53,6 +56,251 @@ export type ToastVariant = "positive" | "negative" | "info" | "neutral";
 type LegacyToastVariant = "success" | "warning" | "error";
 type ToastEdge = "top" | "bottom";
 type ToastAlign = "center" | "end";
+
+// --- S2 Toast view transitions -------------------------------------------------
+// Ported from @react-spectrum/s2's Toast.module.css and the startViewTransition /
+// global reduce-motion machinery in Toast.tsx. Upstream ships these rules as a CSS
+// module that the bundler injects; the `::view-transition-group()` pseudo-elements,
+// `html.toast-*` global selectors and `@keyframes` cannot be expressed by the atomic
+// style() macro, so we inject the equivalent global stylesheet at runtime (guarded) —
+// the same idiom solidaria uses for createPress / createPreventScroll. Class names are
+// the literal ones from the upstream module (left un-hashed).
+const TOAST_ANIMATION_CSS = `
+/* Safari doesn't support :active-view-transition-type() yet, so we fall back to a class on the html element */
+html.toast-add,
+html.toast-remove,
+html.toast-expand,
+html.toast-collapse,
+html.toast-clear,
+html:active-view-transition-type(
+  toast-add,
+  toast-remove,
+  toast-expand,
+  toast-collapse,
+  toast-clear
+) {
+  view-transition-name: none;
+
+  .toast-controls {
+    view-transition-name: toast-controls;
+  }
+
+  .toast-background {
+    view-transition-name: toast-background;
+  }
+
+  &::view-transition-group(toast-background) {
+    z-index: 0;
+    will-change: transform;
+  }
+
+  &::view-transition-group(.toast),
+  &::view-transition-group(toast-list-expanded),
+  &::view-transition-group(toast-list-collapsed) {
+    z-index: 1;
+    will-change: transform;
+  }
+
+  &::view-transition-group(toast-controls) {
+    z-index: 2;
+    will-change: transform;
+  }
+
+  &::view-transition-group(toast-content),
+  &::view-transition-group(toast-expand),
+  &::view-transition-group(toast-action),
+  &::view-transition-group(toast-close) {
+    z-index: 3;
+    will-change: transform;
+  }
+
+  &::view-transition-group(*) {
+    animation-duration: 400ms;
+  }
+}
+
+html.toast-add,
+html.toast-remove,
+html:active-view-transition-type(toast-add, toast-remove) {
+  /* The new toast should slide in and out. With reduce motion enabled, it fades by default. */
+  &:not(.reduceMotion) {
+    &::view-transition-new(.toast):only-child {
+      animation-name: slide-in;
+    }
+
+    &::view-transition-old(.toast):only-child {
+      animation-name: slide-out;
+    }
+  }
+
+  &::view-transition-group(.toast.bottom) {
+    --slideX: 0;
+    --slideY: calc(100% + 12px);
+  }
+
+  &::view-transition-group(.toast.top) {
+    --slideX: 0;
+    --slideY: calc(-100% - 12px);
+  }
+
+  &::view-transition-group(.toast.start) {
+    --slideX: calc(-100% - 12px);
+    --slideY: 0;
+  }
+
+  &::view-transition-group(.toast.end) {
+    --slideX: calc(100% + 12px);
+    --slideY: 0;
+  }
+}
+
+/* Make the "Show all" button animate slightly faster/slower than other components when expanding/collapsing.
+ * This prevents it from appearing to overlap the text when it fades out and the text repositions. */
+html.toast-expand,
+html:active-view-transition-type(toast-expand) {
+  &::view-transition-group(toast-expand) {
+    animation-duration: 300ms;
+  }
+}
+
+html.toast-collapse,
+html:active-view-transition-type(toast-collapse) {
+  &::view-transition-group(toast-expand) {
+    animation-duration: 600ms;
+  }
+}
+
+html.toast-expand,
+html.toast-collapse,
+html:active-view-transition-type(toast-expand, toast-collapse) {
+  &:not(.reduceMotion) {
+    /* When expanding/collapsing, animate the components of the main toast individually. */
+    .toast-content {
+      view-transition-name: toast-content;
+    }
+
+    .toast-expand {
+      view-transition-name: toast-expand;
+    }
+
+    .toast-action {
+      view-transition-name: toast-action;
+    }
+
+    .toast-close {
+      view-transition-name: toast-close;
+    }
+
+    /* Force toast controls to be visible during the animation */
+    .toast-controls {
+      display: flex;
+    }
+
+    /* Smoothly transition the size of toasts. */
+    &::view-transition-old(.toast),
+    &::view-transition-new(.toast) {
+      /* Make the old and new images fill the size of the parent group. */
+      height: 100%;
+      width: 100%;
+    }
+
+    /* Background toasts don't have their components split apart in separate view transitions.
+     * This means we need to do some tricks to get the aspect ratio to transition smoothly.
+     * Clipping messes up the shadows a bit, but it's less noticeable on the background toasts. */
+    &::view-transition-old(.background-toast),
+    &::view-transition-new(.background-toast) {
+      /* Cover all of the available space without stretching the aspect ratio */
+      object-fit: cover;
+      object-position: top center;
+      /* Clip to retain rounded corners */
+      clip-path: inset(0px round 10px);
+    }
+  }
+
+  &.reduceMotion {
+    /* Do not animate individual toasts in reduced motion. The whole list cross-fades instead. */
+    .toast {
+      view-transition-name: none !important;
+    }
+
+    .toast-list-expanded {
+      view-transition-name: toast-list-expanded;
+    }
+
+    .toast-list-collapsed {
+      view-transition-name: toast-list-collapsed;
+    }
+  }
+}
+
+@keyframes slide-in {
+  from {
+    translate: var(--slideX) var(--slideY);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-out {
+  to {
+    translate: var(--slideX) var(--slideY);
+    opacity: 0;
+  }
+}
+`;
+
+let toastAnimationStylesInjected = false;
+function ensureToastAnimationStyles(): void {
+  if (toastAnimationStylesInjected || typeof document === "undefined") {
+    return;
+  }
+  const styleEl = document.createElement("style");
+  styleEl.id = "solid-spectrum-toast-animations";
+  styleEl.textContent = TOAST_ANIMATION_CSS;
+  document.head.appendChild(styleEl);
+  toastAnimationStylesInjected = true;
+}
+
+interface ViewTransition {
+  ready: Promise<void>;
+  finished: Promise<void>;
+}
+type DocumentWithViewTransition = Document & {
+  startViewTransition?: (callback: () => void) => ViewTransition;
+};
+
+let globalReduceMotion = false;
+
+/**
+ * Runs a toast queue/stack mutation inside a View Transition so the resulting re-render
+ * is animated, mirroring @react-spectrum/s2's startViewTransition. Adds a `toast-<action>`
+ * class (and `reduceMotion`) to <html> so the injected CSS can target the transition, then
+ * removes them once it settles. Where the View Transitions API is unavailable (SSR, jsdom,
+ * older browsers) it runs the mutation synchronously, so behavior is unchanged.
+ */
+function startViewTransition(fn: () => void, type: string): void {
+  const doc =
+    typeof document === "undefined" ? undefined : (document as DocumentWithViewTransition);
+  if (doc && typeof doc.startViewTransition === "function") {
+    ensureToastAnimationStyles();
+    doc.documentElement.classList.add(type);
+    if (globalReduceMotion) {
+      doc.documentElement.classList.add("reduceMotion");
+    }
+
+    const viewTransition = doc.startViewTransition(() => batch(fn));
+    void viewTransition.ready.catch(() => {});
+    void viewTransition.finished.finally(() => {
+      doc.documentElement.classList.remove(type, "reduceMotion");
+    });
+  } else {
+    fn();
+  }
+}
+
+/** A toast's view-transition-name; prefixed so the numeric queue keys remain valid CSS idents. */
+function toastViewTransitionName(key: string, suffix = ""): string {
+  return `toast-${key}${suffix}`;
+}
 
 export interface ToastOptions extends Omit<StatelyToastOptions, "priority"> {
   /** DOM id passed through to the queued toast content. */
@@ -79,7 +327,14 @@ export interface ToastRegionProps extends Omit<
   class?: string;
 }
 
-export interface ToastContainerProps extends ToastRegionProps {}
+export interface ToastContainerProps extends ToastRegionProps {
+  /**
+   * Forces reduced-motion toast animations regardless of the user's
+   * `prefers-reduced-motion` setting. Mirrors @react-spectrum/s2's
+   * `PRIVATE_forceReducedMotion` test hook.
+   */
+  PRIVATE_forceReducedMotion?: boolean;
+}
 
 export interface ToastProps extends Omit<HeadlessToastProps, "class" | "style"> {
   /** Additional CSS class name. */
@@ -101,6 +356,8 @@ export interface ToastProps extends Omit<HeadlessToastProps, "class" | "style"> 
   canExpand?: boolean;
   /** Internal placement edge used for collapsed background stack positioning. */
   placementEdge?: ToastEdge;
+  /** Internal placement alignment used for the toast's view-transition-class. */
+  placementAlign?: ToastAlign;
 }
 
 interface ToastContainerContextValue {
@@ -108,6 +365,7 @@ interface ToastContainerContextValue {
   toggleExpanded: () => void;
   collapse: () => void;
   clear: () => void;
+  reduceMotion: Accessor<boolean>;
 }
 
 const ToastContainerContext = createContext<ToastContainerContextValue | null>(null);
@@ -520,13 +778,16 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
             >
               <Show when={containerContext && isExpanded()}>
                 <div
-                  class={toastBackground}
+                  class={`toast-background ${toastBackground}`}
                   data-solid-spectrum-toast-background=""
                   onClick={containerContext?.collapse}
                 />
               </Show>
               <div
-                class={toastList({ placement: placement().edge, isExpanded: isExpanded() })}
+                class={[
+                  isExpanded() ? "toast-list-expanded" : "toast-list-collapsed",
+                  toastList({ placement: placement().edge, isExpanded: isExpanded() }),
+                ].join(" ")}
                 data-solid-spectrum-toast-list=""
                 onClick={(event) => handleListClick(event, visibleToasts())}
               >
@@ -540,6 +801,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
                       onToggleExpanded={() => toggleExpanded(visibleToasts())}
                       canExpand={Boolean(containerContext)}
                       placementEdge={placement().edge}
+                      placementAlign={placement().align}
                     />
                   )}
                 </For>
@@ -547,7 +809,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
               <Show when={containerContext}>
                 {(context) => (
                   <div
-                    class={toastControls({ isExpanded: isExpanded() })}
+                    class={`toast-controls ${toastControls({ isExpanded: isExpanded() })}`}
                     data-solid-spectrum-toast-controls=""
                   >
                     <ActionButton size="S" onPress={context().clear}>
@@ -572,7 +834,27 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
  * at the root of the app.
  */
 export function ToastContainer(props: ToastContainerProps): JSX.Element {
+  const [local, regionProps] = splitProps(props, ["PRIVATE_forceReducedMotion"]);
   const [isExpanded, setIsExpanded] = createSignal(false);
+
+  onMount(ensureToastAnimationStyles);
+
+  // Track prefers-reduced-motion and mirror it into the module-global flag that
+  // startViewTransition reads, restoring the previous value on cleanup.
+  const prefersReducedMotion = createMediaQuery("(prefers-reduced-motion)");
+  const reduceMotion = () => local.PRIVATE_forceReducedMotion ?? prefersReducedMotion();
+  createEffect(() => {
+    const previous = globalReduceMotion;
+    globalReduceMotion = reduceMotion();
+    onCleanup(() => {
+      globalReduceMotion = previous;
+    });
+  });
+
+  // Animate every global-queue mutation (add/remove/clear) with a view transition.
+  globalToastQueue.setWrapUpdate((fn, action) => startViewTransition(fn, `toast-${action}`));
+  onCleanup(() => globalToastQueue.setWrapUpdate(undefined));
+
   const unsubscribe = globalToastQueue.subscribe((toasts) => {
     if (toasts.length === 0) {
       setIsExpanded(false);
@@ -582,15 +864,26 @@ export function ToastContainer(props: ToastContainerProps): JSX.Element {
 
   const context: ToastContainerContextValue = {
     isExpanded,
-    toggleExpanded: () => setIsExpanded((value) => !value),
-    collapse: () => setIsExpanded(false),
+    toggleExpanded: () => {
+      const expanding = !isExpanded();
+      startViewTransition(
+        () => setIsExpanded(expanding),
+        expanding ? "toast-expand" : "toast-collapse",
+      );
+    },
+    collapse: () => {
+      if (isExpanded()) {
+        startViewTransition(() => setIsExpanded(false), "toast-collapse");
+      }
+    },
     clear: () => globalToastQueue.clear(),
+    reduceMotion,
   };
 
   return (
     <ToastContainerContext.Provider value={context}>
       <ToastProvider useGlobalQueue>
-        <ToastRegion {...props} />
+        <ToastRegion {...regionProps} />
       </ToastProvider>
     </ToastContainerContext.Provider>
   );
@@ -607,8 +900,10 @@ export function Toast(props: ToastProps): JSX.Element {
     "onToggleExpanded",
     "canExpand",
     "placementEdge",
+    "placementAlign",
   ]);
   const state = useToastContext();
+  const containerCtx = useContext(ToastContainerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const ariaStringFormatter = createStringFormatter(toastAriaIntlStrings);
   const content = () => local.toast.content;
@@ -622,6 +917,19 @@ export function Toast(props: ToastProps): JSX.Element {
   const isMain = () => index() <= 0;
   const isExpanded = () => local.isExpanded?.() ?? false;
   const shouldRenderAsSingle = () => !isMain() || visibleToasts().length <= 1 || isExpanded();
+  const reduceMotion = () => containerCtx?.reduceMotion() ?? false;
+  // Upstream gates the per-component view transitions on `ctx && isMain`; our `canExpand`
+  // already encodes the presence of a ToastContainer (the upstream `ctx`).
+  const useComponentTransition = () => local.canExpand === true && isMain();
+  const mainViewTransitionClass = () =>
+    [
+      "toast",
+      !isMain() ? "background-toast" : "",
+      local.placementEdge ?? "bottom",
+      local.placementAlign ?? "center",
+    ]
+      .filter(Boolean)
+      .join(" ");
   const handleAction = () => {
     actionHandler()?.();
     if (content().shouldCloseOnAction) {
@@ -640,6 +948,14 @@ export function Toast(props: ToastProps): JSX.Element {
       opacity: index() >= 3 ? 0 : 1,
       "z-index": visibleToasts().length - index() - 1,
       "pointer-events": "none",
+      // When reduced motion is enabled, append the index to the view-transition-name so
+      // adding/removing a toast cross-fades instead of transitioning position — the toasts
+      // read as separate elements per index rather than the same one moving.
+      "view-transition-name": toastViewTransitionName(
+        local.toast.key,
+        reduceMotion() ? `-${index()}` : "",
+      ),
+      "view-transition-class": "toast background-toast",
     }) as JSX.CSSProperties;
 
   return (
@@ -651,17 +967,25 @@ export function Toast(props: ToastProps): JSX.Element {
           {...rest}
           toast={local.toast}
           data-solid-spectrum-variant={variant()}
-          style={{
-            "z-index": visibleToasts().length - index() - 1,
-          }}
+          style={
+            {
+              "z-index": visibleToasts().length - index() - 1,
+              "view-transition-name": toastViewTransitionName(local.toast.key),
+              "view-transition-class": mainViewTransitionClass(),
+            } as JSX.CSSProperties
+          }
           class={(_renderProps: ToastRenderProps) =>
-            [toastStyle({ variant: variant(), isExpanded: isExpanded() }), local.class ?? ""]
+            [
+              "toast",
+              toastStyle({ variant: variant(), isExpanded: isExpanded() }),
+              local.class ?? "",
+            ]
               .filter(Boolean)
               .join(" ")
           }
         >
           <div class={toastBody({ isSingle: shouldRenderAsSingle() })}>
-            <div class={toastContent}>
+            <div class={useComponentTransition() ? `${toastContent} toast-content` : toastContent}>
               <Show when={getVariantIcon(variant())}>
                 {(icon) => (
                   <span class={toastIcon} data-solid-spectrum-toast-icon="">
@@ -685,6 +1009,7 @@ export function Toast(props: ToastProps): JSX.Element {
                 isQuiet
                 staticColor="white"
                 styles={toastExpand}
+                UNSAFE_className={useComponentTransition() ? "toast-expand" : undefined}
                 onPress={local.onToggleExpanded}
               >
                 {stringFormatter().format("toast.showAll")}
@@ -702,6 +1027,7 @@ export function Toast(props: ToastProps): JSX.Element {
                 fillStyle="outline"
                 staticColor="white"
                 styles={toastAction}
+                UNSAFE_className={useComponentTransition() ? "toast-action" : undefined}
                 onPress={handleAction}
               >
                 {actionLabel()}
@@ -711,7 +1037,11 @@ export function Toast(props: ToastProps): JSX.Element {
 
           <HeadlessToastCloseButton
             toast={local.toast}
-            class={closeButtonStyles({})}
+            class={
+              useComponentTransition()
+                ? `${closeButtonStyles({})} toast-close`
+                : closeButtonStyles({})
+            }
             aria-label={ariaStringFormatter().format("close")}
           >
             <CloseIcon aria-hidden="true" />
@@ -722,7 +1052,7 @@ export function Toast(props: ToastProps): JSX.Element {
       <div
         role="presentation"
         style={backgroundStyle()}
-        class={toastStyle({ variant: variant(), isExpanded: isExpanded() })}
+        class={`toast ${toastStyle({ variant: variant(), isExpanded: isExpanded() })}`}
         data-solid-spectrum-toast-background-item=""
         data-solid-spectrum-variant={variant()}
       />

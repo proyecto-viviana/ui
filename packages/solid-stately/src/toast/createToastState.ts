@@ -31,11 +31,20 @@ export interface QueuedToast<T> {
   timeout?: number;
 }
 
+/** The kind of queue mutation that triggered a notification, passed to `wrapUpdate`. */
+export type ToastAction = "add" | "remove" | "clear";
+
 export interface ToastQueueOptions {
   /** The maximum number of toasts to display at once. */
   maxVisibleToasts?: number;
   /** Whether toasts should stack (true) or queue (false). */
   hasExitAnimation?: boolean;
+  /**
+   * Wraps each update to the visible toasts (e.g. in `document.startViewTransition()`),
+   * so the resulting re-render can be animated. Receives the action that triggered the
+   * update. Mirrors `@react-stately/toast`'s `wrapUpdate`.
+   */
+  wrapUpdate?: (fn: () => void, action: ToastAction) => void;
 }
 
 export interface ToastStateProps<T> {
@@ -125,10 +134,29 @@ export class ToastQueue<T> {
   private maxVisibleToasts: number;
   private hasExitAnimation: boolean;
   private keyCounter = 0;
+  private wrapUpdate?: (fn: () => void, action: ToastAction) => void;
 
   constructor(options: ToastQueueOptions = {}) {
     this.maxVisibleToasts = options.maxVisibleToasts ?? 5;
     this.hasExitAnimation = options.hasExitAnimation ?? false;
+    this.wrapUpdate = options.wrapUpdate;
+  }
+
+  /**
+   * Installs (or clears) the function that wraps visible-toast updates, so the
+   * resulting re-render can be animated. Used to attach `document.startViewTransition`
+   * to a shared queue (e.g. the global queue) after construction.
+   */
+  setWrapUpdate(wrapUpdate?: (fn: () => void, action: ToastAction) => void): void {
+    this.wrapUpdate = wrapUpdate;
+  }
+
+  private runWithWrapUpdate(fn: () => void, action: ToastAction): void {
+    if (this.wrapUpdate) {
+      this.wrapUpdate(fn, action);
+    } else {
+      fn();
+    }
   }
 
   /**
@@ -173,7 +201,7 @@ export class ToastQueue<T> {
     this.queue = [...this.queue.slice(0, low), toast, ...this.queue.slice(low)];
 
     // Start timer for visible toasts
-    this.updateVisibility();
+    this.updateVisibility("add");
 
     return key;
   }
@@ -193,7 +221,7 @@ export class ToastQueue<T> {
       this.queue = this.queue.map((t) =>
         t.key === key ? { ...t, timer: null, animation: "exiting" } : t,
       );
-      this.notify();
+      this.notify("remove");
     } else {
       // Remove immediately
       this.remove(key);
@@ -211,7 +239,7 @@ export class ToastQueue<T> {
     }
 
     this.queue = this.queue.filter((t) => t.key !== key);
-    this.updateVisibility();
+    this.updateVisibility("remove");
   }
 
   /**
@@ -223,7 +251,7 @@ export class ToastQueue<T> {
     }
 
     this.queue = [];
-    this.notify();
+    this.notify("clear");
   }
 
   /**
@@ -244,7 +272,7 @@ export class ToastQueue<T> {
     }
   }
 
-  private updateVisibility(): void {
+  private updateVisibility(action: ToastAction): void {
     // Mark toasts as visible or queued based on maxVisibleToasts
     const visibleCount = this.queue.filter(
       (t) => t.animation !== "queued" && t.animation !== "exiting",
@@ -277,14 +305,19 @@ export class ToastQueue<T> {
       return nextToast;
     });
 
-    this.notify();
+    this.notify(action);
   }
 
-  private notify(): void {
+  private notify(action: ToastAction = "add"): void {
     const toasts = [...this.queue];
-    for (const callback of this.subscriptions) {
-      callback(toasts);
-    }
+    // The new visible toasts are computed synchronously above; only the subscriber
+    // fan-out (which drives the re-render) is wrapped, so it can run inside a view
+    // transition. Mirrors @react-stately/toast's updateVisibleToasts.
+    this.runWithWrapUpdate(() => {
+      for (const callback of this.subscriptions) {
+        callback(toasts);
+      }
+    }, action);
   }
 }
 

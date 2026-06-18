@@ -11,6 +11,7 @@ import {
   createToastQueue,
   ToastQueue,
   Timer,
+  type ToastAction,
 } from "../src/toast/createToastState";
 
 describe("createToastState", () => {
@@ -384,6 +385,75 @@ describe("ToastQueue", () => {
     expect(exitingToast.animation).toBe("exiting");
 
     queue.remove(key);
+  });
+});
+
+describe("ToastQueue wrapUpdate", () => {
+  it("wraps each visible-toast update with the action that triggered it", () => {
+    const actions: ToastAction[] = [];
+    const lengths: number[] = [];
+    const queue = new ToastQueue<string>({
+      wrapUpdate: (fn, action) => {
+        actions.push(action);
+        fn();
+      },
+    });
+    queue.subscribe((toasts) => lengths.push(toasts.length));
+
+    const key = queue.add("First Toast");
+    queue.close(key);
+    queue.add("Second Toast");
+    queue.clear();
+
+    expect(actions).toEqual(["add", "remove", "add", "clear"]);
+    expect(lengths).toEqual([1, 0, 1, 0]);
+  });
+
+  it("passes the remove action while an exit animation defers removal", () => {
+    const actions: ToastAction[] = [];
+    const queue = new ToastQueue<string>({
+      hasExitAnimation: true,
+      wrapUpdate: (fn, action) => {
+        actions.push(action);
+        fn();
+      },
+    });
+
+    const key = queue.add("Sticky toast");
+    queue.close(key); // marks the toast exiting and notifies, but does not remove it yet
+    queue.remove(key); // actual removal once the exit animation finishes
+
+    expect(actions).toEqual(["add", "remove", "remove"]);
+  });
+
+  it("notifies normally when no wrapUpdate is provided", () => {
+    const queue = new ToastQueue<string>();
+    const lengths: number[] = [];
+    queue.subscribe((toasts) => lengths.push(toasts.length));
+
+    queue.add("Toast");
+
+    expect(lengths).toEqual([1]);
+  });
+
+  it("setWrapUpdate installs and then clears the wrapper", () => {
+    const queue = new ToastQueue<string>();
+    const actions: ToastAction[] = [];
+
+    queue.setWrapUpdate((fn, action) => {
+      actions.push(action);
+      fn();
+    });
+    queue.add("First");
+    expect(actions).toEqual(["add"]);
+
+    queue.setWrapUpdate(undefined);
+    const lengths: number[] = [];
+    queue.subscribe((toasts) => lengths.push(toasts.length));
+    queue.add("Second");
+
+    expect(actions).toEqual(["add"]); // wrapper no longer records
+    expect(lengths).toEqual([2]); // but the queue still notifies subscribers
   });
 });
 

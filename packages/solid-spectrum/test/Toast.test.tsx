@@ -494,4 +494,81 @@ describe("Toast (solid-spectrum)", () => {
       spy.mockRestore();
     });
   });
+
+  describe("S2 view transitions", () => {
+    it("injects the global toast-animation stylesheet", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("Animated toast");
+
+      const styleEl = document.getElementById("solid-spectrum-toast-animations");
+      expect(styleEl).toBeInTheDocument();
+      expect(styleEl?.textContent).toContain("@keyframes slide-in");
+      expect(styleEl?.textContent).toContain("@keyframes slide-out");
+      expect(styleEl?.textContent).toContain("view-transition-name");
+      expect(styleEl?.textContent).toContain("::view-transition-group");
+    });
+
+    it("names the main toast and tags it with placement for the transition group", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("Solo toast");
+
+      const toast = screen.getByText("Solo toast").closest('[role="alertdialog"]') as HTMLElement;
+      expect(toast).toBeTruthy();
+      // Numeric queue keys are invalid CSS idents, so the name is prefixed with `toast-`.
+      expect(toast.style.getPropertyValue("view-transition-name")).toMatch(/^toast-\d+$/);
+      // [toast, placement, align] — drives the slide direction in the injected CSS.
+      expect(toast.style.getPropertyValue("view-transition-class")).toBe("toast bottom center");
+      expect(toast.classList.contains("toast")).toBe(true);
+    });
+
+    it("aligns the main toast transition class to a top-end placement", () => {
+      render(() => <ToastContainer placement="top end" portal={false} />);
+
+      ToastQueue.neutral("Corner toast");
+
+      const toast = screen.getByText("Corner toast").closest('[role="alertdialog"]') as HTMLElement;
+      expect(toast.style.getPropertyValue("view-transition-class")).toBe("toast top end");
+    });
+
+    it("gives collapsed background toasts a shared, position-based transition name", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+      ToastQueue.negative("Third toast");
+
+      const region = screen.getByRole("region", { name: "Notifications" });
+      const backgroundItems = region.querySelectorAll<HTMLElement>(
+        "[data-solid-spectrum-toast-background-item]",
+      );
+      expect(backgroundItems).toHaveLength(2);
+      for (const item of backgroundItems) {
+        // Without reduced motion the name carries no index suffix, so adding/removing a
+        // toast transitions position rather than cross-fading.
+        expect(item.style.getPropertyValue("view-transition-name")).toMatch(/^toast-\d+$/);
+        expect(item.style.getPropertyValue("view-transition-class")).toBe("toast background-toast");
+      }
+    });
+
+    it("suffixes background toast names with their index under reduced motion", () => {
+      render(() => <ToastContainer PRIVATE_forceReducedMotion portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+      ToastQueue.negative("Third toast");
+
+      const region = screen.getByRole("region", { name: "Notifications" });
+      const backgroundItems = region.querySelectorAll<HTMLElement>(
+        "[data-solid-spectrum-toast-background-item]",
+      );
+      expect(backgroundItems).toHaveLength(2);
+      for (const item of backgroundItems) {
+        // The index suffix makes each stack position read as a distinct element, so the
+        // list cross-fades instead of sliding when reduced motion is preferred.
+        expect(item.style.getPropertyValue("view-transition-name")).toMatch(/^toast-\d+-\d+$/);
+      }
+    });
+  });
 });
