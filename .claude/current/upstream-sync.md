@@ -252,3 +252,84 @@ read upstream source first, then either fix the component (+ changeset) or add
 the missing assertion. Record the outcome on the matching Bucket line above.
 
 See `certification.md` (Gate 3) for where this guard sits in the ladder.
+
+---
+
+## Source-level behavioral sweep — `disabledBehavior` (Tree / GridList / ListBox / Menu / Table)
+
+A sweep that runs *alongside* the vocab oracle above, against the same pinned
+source: read the upstream **hook + component + unit tests** for one behavior,
+diff against ours, fix faithfully with vitest tests + a **patch** changeset.
+Owning workstream: per-component certification (collection/overlay families).
+First aspect closed — `disabledBehavior` — 2026-06-18.
+
+**Authoritative semantics (re-verified from pinned source).** Three predicates,
+three *different* gates — the point of the flag is that they are not the same
+check:
+
+- **default** — `disabledBehavior = 'all'` for List/ListBox/Menu/Table/Tree
+  (`react-stately/src/selection/useMultipleSelectionState.ts:68`; RAC `Menu`
+  passes `...props` to `useTreeState`, no override).
+- **nav skip** — `ListKeyboardDelegate.isDisabled`
+  (`react-aria/src/selection/ListKeyboardDelegate.ts:90-95`):
+  `disabledBehavior === 'all' && (item.props.isDisabled || disabledKeys.has(key))
+  && item.props.disabledBehavior !== 'selection'`.
+- **focus / `onAction`** — `SelectionManager.isDisabled`
+  (`react-stately/src/selection/SelectionManager.ts:527-533`): same shape as nav
+  skip, **also gated on `'all'`** → returns `false` under `'selection'`.
+- **selection** — `SelectionManager.canSelectItem` → `canSelectItemIn`
+  (`SelectionManager.ts:510-525`): raw `disabledKeys.has(key) ||
+  item.props.isDisabled`, **regardless of `disabledBehavior`**. `select()` /
+  `toggleSelection` / `replaceSelection` self-guard on it (`:345/371/250`).
+
+So for a key in `disabledKeys`: under **`'all'`** (default) it is skipped in nav,
+not focusable, no `onAction`, not selectable; under **`'selection'`** it is
+focusable + navigable + **`onAction` fires** + still **not selectable** (the only
+thing the flag turns off is selection).
+
+**Divergence found & fixed.** All four collection components skipped disabled
+items in keyboard nav *unconditionally*, so a `'selection'`-disabled item could
+never be focused — `disabledBehavior: 'selection'` was effectively dead. Fix: an
+`isNavigationDisabled(state, key) = state.isDisabled(key) && disabledBehavior ===
+'all'` helper routed through every nav site, mirroring
+`ListKeyboardDelegate.isDisabled`. Selection paths were already correct
+(raw-block via the state's selection guards). API-shape note: GridState/TreeState
+are flat → `disabledBehavior` is a **property** (`state.disabledBehavior ===
+'all'`); ListState/MenuState wrap SelectionState → it is an **Accessor**
+(`state.disabledBehavior() === 'all'`).
+
+- **Tree** — `8cc7eccf` (`solid-stately/.../tree`, `solidaria/.../createTree*`).
+- **GridList** — `535be089` (`solidaria/src/gridlist/createGridList.ts`,
+  `solid-stately/src/grid` + Table forwarding). New `createGridList` nav suite
+  (8 tests) + `createGridState` disabled-behavior `describe` (3). Changeset
+  `gridlist-disabled-key-navigation` (patch solid-stately + solidaria).
+- **ListBox** — `64c454ea` (`solidaria/src/listbox/createListBox.ts`; both
+  `findNextEnabledKey` loops routed through the helper). +2 tests (no-skip under
+  `'selection'`; still blocks Space-select). Changeset `listbox-…` (patch
+  solidaria).
+- **Menu** — `9645db50` (`solidaria/src/menu/createMenu.ts`; nav-gated local
+  drives arrows/Home/End/PageUp/PageDown + `findNextNonDisabledKey`). +2 tests.
+  Changeset `menu-…` (patch solidaria).
+
+Adding the required `disabledBehavior` to `GridState` forced **Table** (extends
+`GridState`) to carry it: optional `disabledBehavior` on `TableStateOptions`,
+threaded into `createTableState`'s `createGridState` call, plus a forwarding
+getter — faithful (upstream `useTableState` accepts it via the selection-state
+props). Verified green: `tsc` exit 0; **246 tests / 8 files** (createTreeState,
+createGridState, createTableState, createTreeGridState, createTree,
+createGridList, createListBox, createMenu).
+
+**Deferred — the action-under-`'selection'` edge.** Upstream fires `onAction`
+for a `'selection'`-disabled item (`SelectionManager.isDisabled` is `'all'`-gated
+→ false here) while still blocking selection (`canSelectItem` raw-false). Our
+Enter/Space action guard uses the **raw** `state.isDisabled(focusedKey)`, so
+under `'selection'` we fire **neither** `onAction` nor selection — kept
+raw-blocked and consistent across all four while the nav-skip fix landed. The
+faithful fix is mechanical (gate the action guard on `isNavigationDisabled`
+instead of the raw check; `select()` already self-guards on `canSelectItem`, so
+selection stays blocked) but is its own scoped change (four components + tests +
+changeset) — **not yet done.**
+
+**Also not yet plumbed:** the `disabledBehavior` prop through the
+`solidaria-components` / `solid-spectrum` GridList & Menu wrappers (state defaults
+to `'all'`, so behavior is correct; the knob just is not exposed downstream yet).
