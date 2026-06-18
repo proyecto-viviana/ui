@@ -396,7 +396,10 @@ const tabIndicator = style<TabsStyleState>({
   },
   borderRadius: "full",
   contain: "strict",
-  transition: "[translate,width,height]",
+  transition: {
+    default: "[translate,width,height]",
+    "@media (prefers-reduced-motion: reduce)": "none",
+  },
   transitionDuration: 200,
   transitionTimingFunction: "out",
   bottom: {

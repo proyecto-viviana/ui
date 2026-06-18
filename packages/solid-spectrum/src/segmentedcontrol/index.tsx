@@ -150,7 +150,10 @@ const selectionIndicator = style<{ isDisabled?: boolean }>({
   width: "full",
   height: "full",
   contain: "strict",
-  transition: "[translate,width]",
+  transition: {
+    default: "[translate,width]",
+    "@media (prefers-reduced-motion: reduce)": "none",
+  },
   transitionDuration: 200,
   transitionTimingFunction: "out",
   boxSizing: "border-box",

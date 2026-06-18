@@ -67,7 +67,7 @@ internal — not a port concern).
 
 ## Train 1 — RAC 1.14.0 / S2 1.0.0 (2025-12-16, S2 GA)
 
-- [ ] **T-01** 🔍 RAC — animated **Tab** transitions (animate the selected-indicator/panel between tabs). Tabs exist; confirm transition support.
+- [x] **T-01** ✔ RAC — animated **Tab** transitions (animate the selected-indicator/panel between tabs). **Verified present + refined** this cycle (changeset `selection-indicator-reduced-motion.md`): our `Tabs` already animates the selected indicator via a `SelectionIndicator` + a `translate`/`width`/`height` transition (200ms, `out`), matching upstream. The depth-verify surfaced one faithfulness gap — the indicator transition was **not** gated behind `@media (prefers-reduced-motion: reduce): none` the way upstream's is — now fixed, and the **same gap in `SegmentedControl`'s selection pill** was fixed alongside it (the two form the S2 selection-indicator cluster; `Disclosure` already had the gate). **Adjacent finding (separate, larger — tracked):** our S2 `Toast` implements **no** enter/exit/restack animations at all (it sets `translate`/`opacity` instantly), whereas upstream animates them through the View Transitions API with its own `prefers-reduced-motion` gate. That is a standalone animation-port follow-up, not a reduced-motion tweak — adding a reduced-motion gate to a non-animating toast would be a no-op.
 - [ ] **T-02** 🔍 S2 — inline **TableView** cell editing. Confirm whether our TableView supports inline editing.
 
 ## Train 2 — RAC 1.15.0 / S2 1.1.0 (2026-02-04)
