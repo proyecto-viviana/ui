@@ -29,15 +29,15 @@ asserted role. The release notes are the only signal those happened — see the
 > React-portal context leak #9549 fixed), and **T-06** (TreeView `disabledBehavior` —
 > present; minor `forcedColors: GrayText` HCM follow-up); **new gaps** — **T-10**
 > (the whole `scrollIntoView` / `scrollIntoViewport` util family + its collection
-> wiring is unported), **T-31** (S2 `TableView` `selectionStyle="highlight"` —
-> upstream *does* have it; **now ported ✔**), and **T-22** (icon set 8 of 410 behind — a
-> regen). Execution of the confirmed ⛔ gaps (leaf-first, no conflicts): **T-29
+> wiring was unported; **now ported ✔**), **T-31** (S2 `TableView`
+> `selectionStyle="highlight"` — upstream *does* have it; **now ported ✔**), and
+> **T-22** (icon set was 8 of 410 behind; **now regenerated ✔**). Execution of the confirmed ⛔ gaps (leaf-first, no conflicts): **T-29
 > SliderFill ✔**, **T-25 Calendar month/year pickers ✔**, **T-23 Calendar
 > multi-select ✔**, **T-26 RangeCalendar available-range ✔** — which **completes the
 > Calendar 1.18 cluster** — and **T-16 Table expandable rows ✔** (the `UNSTABLE_`
 > tree grid, headless React-Aria parity), and **T-31 TableView
 > `selectionStyle="highlight"` ✔** (the styled S2 highlight selection, mirroring the
-> Tree T-20 port). The open confirmed gaps (T-02, T-18, T-22) are on the
+> Tree T-20 port). The open confirmed gaps (T-02, T-18) are on the
 > shortlist at the foot.
 
 ## Scope & sources
@@ -112,7 +112,7 @@ internal — not a port concern).
 - [ ] **T-19** ➖ RAC — dependency-management improvements (internal; not a port concern).
 - [x] **T-20** ✅ S2 — **highlight selection** in **TreeView**. **Verified present**: our `tree/index.tsx` has `TreeSelectionStyle = "checkbox" | "highlight"` (default `checkbox`) feeding the style conditions, mirroring upstream's `selectionStyle` + `selectionBehavior={highlight ? 'replace' : 'toggle'}`. ⇄ The **TableView**-highlight half of **T-31** is separate and is **now ported** (`table-selection-style-highlight.md`) — web pass 2 corrected the earlier claim here: upstream S2 `TableView` **does** expose `selectionStyle`, and ours now does too.
 - [x] **T-21** ✔ S2 — **window scrolling** in collection components. ⇄ **dedup of T-17** — the S2-styled collections (`ListBox` / `Table` / `Tree` / `Menu` / …) inherit the default-on window scrolling through the shared `solidaria-components` `Virtualizer`; covered by the same changeset (`virtualizer-window-scrolling.md`), and the S2 collection suites (85 tests) stay green.
-- [ ] **T-22** ⛔ S2 — updated **workflow icons** set. **Verified — minor gap** (web pass 2). Not actually a S2 1.2.0 release-notes item (the 1.2.0 notes mention no icons; the new icons landed across later trains). Our s2wf set is **402 of upstream's 410** `.svg`s (each with a generated `.tsx`) — **8 behind**: `ArrowCurved`, `ArrowUpSend`, `BookmarkSingleFilled`, `PremiumIcon`, `StopProcessing`, `ZoomFitToHeight`, `ZoomFitToScreen`, `ZoomFitToWidth` (all `_20_N`). Pure regeneration follow-up (copy the 8 SVGs + run the icon codegen); no API/behavioral work. Low priority.
+- [x] **T-22** ✔ S2 — updated **workflow icons** set. **Done by us** (changeset `workflow-icons-regen.md`). Not actually a S2 1.2.0 release-notes item (the 1.2.0 notes mention no icons; the new icons landed across later trains). Copied the 8 missing upstream `_20_N` SVGs — `ArrowCurved`, `ArrowUpSend`, `BookmarkSingleFilled`, `PremiumIcon`, `StopProcessing`, `ZoomFitToHeight`, `ZoomFitToScreen`, `ZoomFitToWidth` — into `assets/s2wf-icons` and reran `scripts/generate-solid-spectrum-icons.mjs` (then `vp fmt`), bringing our s2wf set to **410 of upstream's 410** with a generated `.tsx` + `s2wfIcons` barrel export for each (`PremiumIcon` → `PremiumIconIcon` under our `<Pascal>Icon` scheme). No API/behavioral work.
 
 ## Train 5 — RAC 1.18.0 / S2 1.4.0 (2026-05-30, current pin)
 
@@ -151,12 +151,12 @@ depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 
 10. **T-31 TableView `selectionStyle="highlight"`** — **✔ done** (`table-selection-style-highlight.md`): added `selectionStyle?: 'checkbox' | 'highlight'` to our S2 `TableView`, derived `selectionBehavior` (highlight → `replace`), gated both the select-all column and per-row checkboxes on `selectionStyle === 'checkbox'`, and gave selected rows the blue-tinted highlight background (HCM `Highlight`/`HighlightText`), scoped to the highlight path. Mirrors the Tree (T-20) port. Virtualizer-only border polish deferred.
 11. **T-10 scroll-into-view util family** — **✔ done** (`scroll-into-view.md`): ported `@react-aria/utils` `scrollIntoView` / `scrollIntoViewport` (+ `getScrollParents`) and wired `scrollIntoViewport` into the three real-DOM-focus hooks — `createDateSegment`, `createCalendarCell`, and `createTable`'s selectable-collection focus effect — so keyboard focus reveals off-screen items (incl. the 1.16 `scrollMargin` / alignment / scrollbar-width / RTL refinements). The activedescendant collections (ListBox / Menu / Select) and grid / gridlist walker-nav are tracked follow-ups.
-12. **T-22 workflow-icon regen** — copy the 8 missing upstream SVGs and run the icon codegen. Trivial maintenance.
+12. **T-22 workflow-icon regen** — **✔ done** (`workflow-icons-regen.md`): copied the 8 missing upstream SVGs into `assets/s2wf-icons` and reran the icon codegen (+ `vp fmt`), bringing the set to 410 with a `s2wfIcons` export for each.
 
 **Minor follow-ups (not full tickets):** **T-06** — add `forcedColors: 'GrayText'` to the disabled tree row-content + chevron colors (and an `inherit` chevron default) to match upstream's HCM styling. **T-05** — a menu-in-popover render test to lock the architecture-immune behavior.
 
 **All passes complete.** Pass 1, the source-based depth-verify, and web pass 2 have
 each run; **no 🔍 tickets remain.** Every ticket is now ✔ done, ✅ verified-present,
 ⛔ a shortlisted gap, or ➖ n/a. The open ⛔ shortlist (highest-value first):
-**T-02** EditableCell · **T-18** horizontal virtualization · **T-22** icon regen
-(+ the standalone S2 Toast-animations follow-up).
+**T-02** EditableCell · **T-18** horizontal virtualization (+ the standalone S2
+Toast-animations follow-up).
