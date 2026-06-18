@@ -90,11 +90,11 @@ internal — not a port concern).
 ## Train 4 — RAC 1.17.0 / S2 1.3.0 (2026-04-15)
 
 - [ ] **T-16** ⛔ RAC — **Table expandable rows** (`treeColumn` + chevron button in cells; macOS-Finder-style trees). No `treeColumn` anywhere. Real gap.
-- [ ] **T-17** ⛔ RAC — **window scrolling** in **Virtualizer** (collection scrolls with the page; no fixed height). No `isScrolling`/`scrollToItem`. ⇄ same feature as **T-21**.
+- [x] **T-17** ✔ RAC — **window scrolling** in **Virtualizer** (collection scrolls with the page; no fixed height). **Done by us** this cycle (changeset `virtualizer-window-scrolling.md`): the `Virtualizer` now computes its visible viewport as the scroll view's height intersected with the window viewport and offsets the visible range by how far the scroll view has been pushed above the viewport by page/ancestor scrolling, all driven by a single document-level capturing `scroll` listener — mirroring upstream `ScrollView`. A new `allowsWindowScrolling` prop (default `true`, matching RAC `CollectionRoot`'s hard-coded value) opts back into element-only scrolling; an explicit `viewportSize` layout option still wins. Behavior-preserving for a fixed-height collection inside the viewport (the `window ∩ element` math reduces exactly to element scroll), so existing collections are unaffected unless they actually scroll with the page; 58 Virtualizer tests (2 new window-scroll tests) plus the downstream collection suites stay green. **Follow-ups (do not affect window-scroll correctness):** the `isScrolling` `pointer-events: none` optimization and the imperative `scrollToItem`/`scrollToRect` API are not yet ported. ⇄ same feature as **T-21**.
 - [ ] **T-18** 🔍 RAC — **horizontally virtualized** GridList + ListBox. Verify orientation support in our virtualizer.
 - [ ] **T-19** ➖ RAC — dependency-management improvements (internal; not a port concern).
 - [ ] **T-20** 🔍 S2 — **highlight selection** in **TreeView**. ⇄ related to **T-31**. Verify.
-- [ ] **T-21** ⛔ S2 — **window scrolling** in collection components. ⇄ **dedup of T-17** (S2 side of the same RAC feature).
+- [x] **T-21** ✔ S2 — **window scrolling** in collection components. ⇄ **dedup of T-17** — the S2-styled collections (`ListBox` / `Table` / `Tree` / `Menu` / …) inherit the default-on window scrolling through the shared `solidaria-components` `Virtualizer`; covered by the same changeset (`virtualizer-window-scrolling.md`), and the S2 collection suites (85 tests) stay green.
 - [ ] **T-22** 🔍 S2 — updated **workflow icons** set. Verify our icon set is regenerated.
 
 ## Train 5 — RAC 1.18.0 / S2 1.4.0 (2026-05-30, current pin)
@@ -121,7 +121,7 @@ candidates (roughly highest-value first):
 1. ~~**T-29 SliderFill**~~ — ✔ **done** (changeset `slider-fill-component.md`); first port landed.
 2. ~~**T-25 CalendarMonthPicker / CalendarYearPicker**~~ — ✔ **done** (changeset `calendar-month-year-picker.md`); ~~**T-23 Calendar multi-select**~~ — ✔ **done** (changeset `calendar-multiple-selection.md`); ~~**T-26 RangeCalendar firstAvailableDate**~~ — ✔ **done** (changeset `rangecalendar-available-range.md`). **Calendar 1.18 cluster complete.**
 3. **T-16 Table expandable rows** (`treeColumn`) — larger; assumes the collection plumbing.
-4. **T-17/T-21 Virtualizer window scrolling** — cross-cutting virtualizer change.
+4. ~~**T-17/T-21 Virtualizer window scrolling**~~ — ✔ **done** (changeset `virtualizer-window-scrolling.md`); `window ∩ element` viewport + a document-level capturing scroll listener, default-on via the new `allowsWindowScrolling` prop (opt-out to element-only). `isScrolling` pointer-events and `scrollToItem` tracked as follow-ups.
 5. ~~**T-04 DateField constrain-on-blur**~~ — ✔ **done** (changeset `datefield-constrain-on-blur.md`); ported the `IncompleteDate` display model so edits constrain on blur, and removed the non-upstream min/max snap (out-of-range now stays as-typed + flags validation).
 
 Everything tagged 🔍 needs a real check before it's either added here as a gap or

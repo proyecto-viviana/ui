@@ -117,6 +117,13 @@ export interface VirtualizerProps<O> extends Omit<
   ) => JSX.Element | undefined;
   /** Optional operation resolver for collection drop target operations. */
   getDropOperation?: VirtualizerDropOperationResolver;
+  /**
+   * Whether the collection may scroll with the page rather than only within its
+   * own scroll container. When enabled (the default, matching react-aria-components),
+   * the visible rect is the intersection of the window viewport with the scroll view,
+   * so a virtualizer with unbounded height still virtualizes as the page scrolls.
+   */
+  allowsWindowScrolling?: boolean;
   class?: string;
   style?: string | JSX.CSSProperties;
 }
@@ -159,12 +166,21 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     "layoutOptions",
     "renderDropIndicator",
     "getDropOperation",
+    "allowsWindowScrolling",
     "class",
     "style",
   ]);
+  // The scroll view's own scroll position (its scrollTop).
   const [scrollOffset, setScrollOffset] = createSignal(0);
+  // How far the scroll view's top edge is above the window viewport, due to the
+  // page (or an ancestor) being scrolled. Mirrors upstream ScrollView.viewportOffset.
+  const [viewportOffset, setViewportOffset] = createSignal(0);
+  // The window viewport height, used as the visible height cap when window scrolling.
+  const [windowViewportSize, setWindowViewportSize] = createSignal(0);
+  // The scroll view's own measured size (clientHeight/clientWidth).
   const [measuredViewportSize, setMeasuredViewportSize] = createSignal(0);
   const [measuredViewportWidth, setMeasuredViewportWidth] = createSignal(0);
+  const allowsWindowScrolling = createMemo(() => local.allowsWindowScrolling ?? true);
   const [dropTargetResolver, setDropTargetResolver] = createSignal<
     VirtualizerDropTargetResolver | undefined
   >(undefined);
@@ -218,14 +234,29 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   });
   const itemSize = createMemo(() => getObjectValue(virtualOptions(), "itemSize") ?? 40);
   const overscan = createMemo(() => getObjectValue(virtualOptions(), "overscan") ?? 2);
-  const viewportSize = createMemo(
-    () => getObjectValue(virtualOptions(), "viewportSize") ?? measuredViewportSize() ?? 0,
+  // The effective visible height. When window scrolling, this is the scroll view's
+  // size intersected with the window viewport (capped to what is actually on screen),
+  // mirroring upstream ScrollView.updateVisibleRect. Otherwise it is the scroll view's
+  // own clientHeight. An explicit `viewportSize` layout option still takes precedence.
+  const viewportSize = createMemo(() => {
+    const explicit = getObjectValue(virtualOptions(), "viewportSize");
+    if (explicit != null) return explicit;
+    const elementSize = measuredViewportSize() ?? 0;
+    if (allowsWindowScrolling()) {
+      return Math.max(0, Math.min(elementSize - viewportOffset(), windowViewportSize()));
+    }
+    return elementSize;
+  });
+  // The top of the visible rect in content coordinates: the scroll view's own scroll
+  // position plus how far it has been pushed above the window viewport by page scroll.
+  const effectiveScrollOffset = createMemo(() =>
+    allowsWindowScrolling() ? scrollOffset() + viewportOffset() : scrollOffset(),
   );
 
   const getVisibleRange = (itemCount: number): VirtualizerVisibleRange => {
     const ctx: VirtualizerRangeContext = {
       itemCount,
-      scrollOffset: scrollOffset(),
+      scrollOffset: effectiveScrollOffset(),
       viewportSize: viewportSize(),
       overscan: overscan(),
       viewportWidth: measuredViewportWidth(),
@@ -666,24 +697,79 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     if (nextWidth !== measuredViewportWidth()) setMeasuredViewportWidth(nextWidth);
   };
 
+  const updateWindowViewport = () => {
+    if (typeof window === "undefined") return;
+    const next = window.innerHeight;
+    if (next !== windowViewportSize()) setWindowViewportSize(next);
+  };
+
+  // Recompute how far the scroll view's top edge sits above the window viewport.
+  // A negative bounding-rect top means the scroll view has been pushed up by page
+  // (or ancestor) scrolling; the offset is the amount scrolled past its top.
+  const updateViewportOffset = () => {
+    if (!containerRef || !allowsWindowScrolling()) return;
+    const rect = containerRef.getBoundingClientRect();
+    const next = rect.y < 0 ? -rect.y : 0;
+    if (next !== viewportOffset()) setViewportOffset(next);
+  };
+
+  let scrollFrame: number | undefined;
+  onCleanup(() => {
+    if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
+  });
+
   onMount(() => {
     updateViewportSize();
-    const handleResize = () => updateViewportSize();
+    updateWindowViewport();
+    updateViewportOffset();
+
+    const handleResize = () => {
+      updateViewportSize();
+      updateWindowViewport();
+      updateViewportOffset();
+    };
     window.addEventListener("resize", handleResize);
+
     const resizeObserver =
       typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => updateViewportSize()) : null;
     if (containerRef && resizeObserver) {
       resizeObserver.observe(containerRef);
     }
+
+    // A capturing listener on the document sees scroll events on the scroll view
+    // itself as well as on any ancestor (including the page), so a single handler
+    // can update the local scroll position or the window offset as appropriate.
+    const handleDocumentScroll = (e: Event) => {
+      if (!containerRef) return;
+      const target = e.target as Node | null;
+      const isContainer = target === containerRef;
+      const isAncestor =
+        target === document ||
+        target === (window as unknown as Node) ||
+        (target instanceof Node && target.contains(containerRef));
+      if (!isContainer && !isAncestor) return;
+      // An ancestor/page scroll only matters when the collection scrolls with the page.
+      if (!isContainer && !allowsWindowScrolling()) return;
+
+      if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = undefined;
+        if (isContainer) {
+          const next = Math.max(0, containerRef!.scrollTop);
+          if (next !== scrollOffset()) setScrollOffset(next);
+        } else {
+          updateViewportOffset();
+        }
+        updateViewportSize();
+      });
+    };
+    document.addEventListener("scroll", handleDocumentScroll, true);
+
     onCleanup(() => {
       window.removeEventListener("resize", handleResize);
       resizeObserver?.disconnect();
+      document.removeEventListener("scroll", handleDocumentScroll, true);
     });
-  });
-
-  let scrollFrame: number | undefined;
-  onCleanup(() => {
-    if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
   });
 
   return (
@@ -697,15 +783,6 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
           class={local.class}
           style={local.style}
           data-virtualizer
-          onScroll={(e) => {
-            const target = e.currentTarget as HTMLDivElement;
-            if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
-            scrollFrame = requestAnimationFrame(() => {
-              scrollFrame = undefined;
-              if (target.scrollTop !== scrollOffset()) setScrollOffset(target.scrollTop);
-              updateViewportSize();
-            });
-          }}
         >
           {local.children}
         </div>

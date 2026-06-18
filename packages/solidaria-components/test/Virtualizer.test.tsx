@@ -2242,4 +2242,117 @@ describe("Virtualizer", () => {
       dropPosition: "after",
     });
   });
+
+  it("tracks page scroll through the window viewport when allowsWindowScrolling is on (default)", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    // The scroll view is taller than the window, so it scrolls with the page.
+    const heightSpy = vi
+      .spyOn(window.HTMLElement.prototype, "clientHeight", "get")
+      .mockImplementation(() => 1000);
+    const widthSpy = vi
+      .spyOn(window.HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(() => 200);
+    vi.stubGlobal("innerHeight", 100);
+
+    const items = Array.from({ length: 100 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+
+    let boundingTop = 0;
+    const { container } = render(() => (
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, overscan: 0 }}>
+        <ListBox aria-label="Window scrolled list" items={items} getKey={(item) => item.id}>
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+
+    const virtualizer = container.querySelector("[data-virtualizer]") as HTMLDivElement;
+    vi.spyOn(virtualizer, "getBoundingClientRect").mockImplementation(
+      () => ({ y: boundingTop, top: boundingTop }) as DOMRect,
+    );
+
+    // Window viewport is 100px tall → exactly five 20px rows visible at the top
+    // (the scroll view's own 1000px height is capped to the window viewport).
+    expect(screen.getByText("Item 0")).toBeInTheDocument();
+    expect(screen.getByText("Item 4")).toBeInTheDocument();
+    expect(screen.queryByText("Item 5")).not.toBeInTheDocument();
+    expect(screen.queryByText("Item 10")).not.toBeInTheDocument();
+
+    // The page scrolls down 200px, pushing the scroll view's top above the viewport.
+    boundingTop = -200;
+    fireEvent.scroll(document);
+
+    expect(screen.getByText("Item 10")).toBeInTheDocument();
+    expect(screen.getByText("Item 14")).toBeInTheDocument();
+    expect(screen.queryByText("Item 0")).not.toBeInTheDocument();
+    expect(screen.queryByText("Item 9")).not.toBeInTheDocument();
+
+    heightSpy.mockRestore();
+    widthSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
+  it("ignores page scroll and uses the element's own height when allowsWindowScrolling is off", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const heightSpy = vi
+      .spyOn(window.HTMLElement.prototype, "clientHeight", "get")
+      .mockImplementation(() => 1000);
+    const widthSpy = vi
+      .spyOn(window.HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(() => 200);
+    vi.stubGlobal("innerHeight", 100);
+
+    const items = Array.from({ length: 100 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+
+    let boundingTop = 0;
+    const { container } = render(() => (
+      <Virtualizer
+        layout={{}}
+        layoutOptions={{ itemSize: 20, overscan: 0 }}
+        allowsWindowScrolling={false}
+      >
+        <ListBox aria-label="Self scrolled list" items={items} getKey={(item) => item.id}>
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+
+    const virtualizer = container.querySelector("[data-virtualizer]") as HTMLDivElement;
+    vi.spyOn(virtualizer, "getBoundingClientRect").mockImplementation(
+      () => ({ y: boundingTop, top: boundingTop }) as DOMRect,
+    );
+
+    // With window scrolling off the viewport is the element's own 1000px height,
+    // so the window viewport size (100px) does not cap the visible range.
+    expect(screen.getByText("Item 0")).toBeInTheDocument();
+    expect(screen.getByText("Item 5")).toBeInTheDocument();
+    expect(screen.getByText("Item 49")).toBeInTheDocument();
+    expect(screen.queryByText("Item 50")).not.toBeInTheDocument();
+
+    // A page scroll must not move the visible range when window scrolling is off.
+    boundingTop = -200;
+    fireEvent.scroll(document);
+
+    expect(screen.getByText("Item 0")).toBeInTheDocument();
+    expect(screen.queryByText("Item 50")).not.toBeInTheDocument();
+
+    heightSpy.mockRestore();
+    widthSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
 });
