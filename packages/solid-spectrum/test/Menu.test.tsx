@@ -6,6 +6,8 @@ import type { JSX } from "solid-js";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { ActionButton } from "../src";
+import { Button } from "../src/button";
+import { Popover, PopoverTrigger } from "../src/popover";
 import * as MenuSubpath from "../src/Menu";
 import {
   ContextualHelpPopover,
@@ -127,6 +129,52 @@ describe("Menu (solid-spectrum)", () => {
       expect(trigger).toHaveAttribute("aria-controls", menu.id);
       expect(menu.closest("[data-trigger='MenuTrigger']")).toBeInTheDocument();
       expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
+    });
+
+    it("renders in its own popover when opened from inside a Popover", async () => {
+      // Upstream regression (PR #9549): a Menu opened from inside a Popover must
+      // still render in its own popover, not inline in the surrounding one. Our
+      // Menu decides popover-vs-inline from the runtime trigger type, and
+      // MenuTrigger re-provides the PopoverTriggerContext so it shadows the outer
+      // PopoverTrigger's context — the divergence is architecture-immune for us.
+      //
+      // The outer Popover is non-modal here: that is the common shape for a
+      // popover that hosts a menu button, and it keeps the test focused on the
+      // popover-vs-inline decision. (A *modal* outer popover contains focus,
+      // which currently collapses a nested modal menu overlay — tracked as a
+      // separate follow-up in the release audit.)
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger defaultOpen>
+          <Button>Open settings</Button>
+          <Popover isNonModal>
+            <MenuTrigger>
+              <MenuButton>Actions</MenuButton>
+              <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
+                {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
+              </Menu>
+            </MenuTrigger>
+          </Popover>
+        </PopoverTrigger>
+      ));
+
+      // The wrapping Popover is genuinely open, so the MenuTrigger is nested in one.
+      const outerPopover = document.querySelector("[data-trigger='PopoverTrigger']");
+      expect(outerPopover).toBeInTheDocument();
+
+      const trigger = within(outerPopover as HTMLElement).getByRole("button", { name: "Actions" });
+      await user.click(trigger);
+
+      const menu = await screen.findByRole("menu", { name: "Actions" });
+      expect(within(menu).getByRole("menuitem", { name: "Edit" })).toBeInTheDocument();
+
+      // The menu rendered in its own MenuTrigger popover (role="dialog"), not inline.
+      const menuPopover = menu.closest("[data-trigger='MenuTrigger']");
+      expect(menuPopover).toBeInTheDocument();
+      expect(menuPopover).toHaveAttribute("role", "dialog");
+
+      // Its nearest popover ancestor is the MenuTrigger's, never the outer PopoverTrigger's.
+      expect(menu.closest("[data-trigger]")?.getAttribute("data-trigger")).toBe("MenuTrigger");
     });
   });
 
