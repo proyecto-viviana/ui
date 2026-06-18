@@ -308,6 +308,18 @@ const treeViewItem = style<TreeRowLayerProps>({
   color: {
     default: baseColor("neutral-subdued"),
     isSelected: baseColor("neutral"),
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+    forcedColors: "ButtonText",
+    selectionStyle: {
+      highlight: {
+        isSelected: {
+          forcedColors: "HighlightText",
+        },
+      },
+    },
   },
   backgroundColor: "transparent",
   cursor: {
@@ -408,8 +420,11 @@ const treeExpandButton = style<TreeRowLayerProps>({
   borderWidth: 0,
   backgroundColor: "transparent",
   color: {
-    default: "neutral-subdued",
-    isDisabled: "disabled",
+    default: "inherit",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
   },
   borderRadius: "default",
   visibility: {
@@ -530,7 +545,10 @@ const treeDescription = style<TreeRowLayerProps>({
   font: "ui-sm",
   color: {
     default: baseColor("neutral-subdued"),
-    isDisabled: "disabled",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
   },
   overflow: "hidden",
   textOverflow: {

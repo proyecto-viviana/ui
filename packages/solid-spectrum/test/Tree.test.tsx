@@ -313,6 +313,57 @@ describe("TreeView (solid-spectrum)", () => {
     expect(within(report).queryByRole("checkbox", { name: "Select" })).toBeNull();
   });
 
+  it("applies the disabled content color to the row, description, and chevron", () => {
+    // Mirrors upstream S2 TreeView, whose `treeCellGrid` / `expandButton` colors
+    // dim disabled content with `{ default: 'disabled', forcedColors: 'GrayText' }`
+    // (and an `inherit` chevron default). The style() macro hashes each
+    // (property, condition, value) tuple into one opaque atomic class — folding
+    // the forced-colors override into that class's CSS rather than a separate
+    // class — and jsdom loads no macro CSS, so we lock the behavior structurally
+    // instead of by computed color: the merged row and its description share the
+    // disabled-only color class (so disabled labels dim, not just descriptions),
+    // and the chevron carries that same class only when disabled.
+    render(() => (
+      <TreeView aria-label="Files" disabledKeys={["alpha"]}>
+        <TreeViewItem id="alpha" textValue="Alpha" description="Alpha details">
+          Alpha
+        </TreeViewItem>
+        <TreeViewItem id="bravo" textValue="Bravo" description="Bravo details">
+          Bravo
+        </TreeViewItem>
+      </TreeView>
+    ));
+
+    const classesOf = (el: Element | null | undefined): Set<string> =>
+      new Set((el?.getAttribute("class") ?? "").split(/\s+/).filter(Boolean));
+    const shared = (a: Set<string>, b: Set<string>): string[] => [...a].filter((x) => b.has(x));
+
+    const disabledRow = screen.getByRole("row", { name: /Alpha/ });
+    const enabledRow = screen.getByRole("row", { name: /Bravo/ });
+    const disabledDesc = screen.getByText("Alpha details");
+    const enabledDesc = screen.getByText("Bravo details");
+    const disabledChevron = disabledRow.querySelector('[data-rsp-slot="expand-button"]');
+    const enabledChevron = enabledRow.querySelector('[data-rsp-slot="expand-button"]');
+
+    // The disabled-only color class that the row and its description share, but
+    // that neither carries when enabled.
+    const enabledShared = new Set(shared(classesOf(enabledRow), classesOf(enabledDesc)));
+    const disabledColor = shared(classesOf(disabledRow), classesOf(disabledDesc)).filter(
+      (c) => !enabledShared.has(c),
+    );
+    expect(disabledColor.length).toBeGreaterThan(0);
+
+    // The chevron carries the same disabled content color — but only when
+    // disabled, since its enabled default is `inherit` (no color class of its own).
+    const disabledChevronClasses = classesOf(disabledChevron);
+    const enabledChevronClasses = classesOf(enabledChevron);
+    const chevronDisabledColor = disabledColor.filter((c) => disabledChevronClasses.has(c));
+    expect(chevronDisabledColor.length).toBeGreaterThan(0);
+    for (const c of chevronDisabledColor) {
+      expect(enabledChevronClasses.has(c)).toBe(false);
+    }
+  });
+
   it("renders link items as data-href rows", () => {
     render(() => (
       <TreeView aria-label="Links" items={[{ id: "docs", textValue: "Documentation" }]}>
