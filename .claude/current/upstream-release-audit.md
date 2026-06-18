@@ -68,7 +68,7 @@ internal — not a port concern).
 ## Train 1 — RAC 1.14.0 / S2 1.0.0 (2025-12-16, S2 GA)
 
 - [x] **T-01** ✔ RAC — animated **Tab** transitions (animate the selected-indicator/panel between tabs). **Verified present + refined** this cycle (changeset `selection-indicator-reduced-motion.md`): our `Tabs` already animates the selected indicator via a `SelectionIndicator` + a `translate`/`width`/`height` transition (200ms, `out`), matching upstream. The depth-verify surfaced one faithfulness gap — the indicator transition was **not** gated behind `@media (prefers-reduced-motion: reduce): none` the way upstream's is — now fixed, and the **same gap in `SegmentedControl`'s selection pill** was fixed alongside it (the two form the S2 selection-indicator cluster; `Disclosure` already had the gate). **Adjacent finding (separate, larger — tracked):** our S2 `Toast` implements **no** enter/exit/restack animations at all (it sets `translate`/`opacity` instantly), whereas upstream animates them through the View Transitions API with its own `prefers-reduced-motion` gate. That is a standalone animation-port follow-up, not a reduced-motion tweak — adding a reduced-motion gate to a non-animating toast would be a no-op.
-- [ ] **T-02** 🔍 S2 — inline **TableView** cell editing. Confirm whether our TableView supports inline editing.
+- [ ] **T-02** ⛔ S2 — inline **TableView** cell editing. **Confirmed gap** (depth-verify this cycle). Upstream ships an `EditableCell` component exported from S2 `TableView.tsx` (the `editableCell` style + `EditableCell`/`EditableCellInner`, ~lines 1480–1834) with a `renderEditing: () => ReactNode` slot that swaps a cell into an edit affordance (TextField, Picker, …) with its own focus + edit-overlay handling; exercised by `EditableTableView.test.tsx`. Our `solid-spectrum/src/table` exports no `EditableCell` and has no editing path — a real S2 port ticket (depends on our TableView + Picker/TextField cell rendering). Added to the shortlist.
 
 ## Train 2 — RAC 1.15.0 / S2 1.1.0 (2026-02-04)
 
@@ -125,6 +125,12 @@ candidates (roughly highest-value first):
 3. ~~**T-16 Table expandable rows**~~ (`treeColumn`) — ✔ **done** (changeset `table-expandable-rows.md`); the `UNSTABLE_` tree-grid stack ported headless-first through solid-stately (`createTreeGridState` + `TableCollection` tree mode) → solidaria (`createTableRow` tree ARIA + press-based chevron + arrow expand/collapse) → solidaria-components (`Table` chevron slot + `hasChildItems`/`isTreeColumn` render props). S2-styled chevron/indentation tracked as a follow-up.
 4. ~~**T-17/T-21 Virtualizer window scrolling**~~ — ✔ **done** (changeset `virtualizer-window-scrolling.md`); `window ∩ element` viewport + a document-level capturing scroll listener, default-on via the new `allowsWindowScrolling` prop (opt-out to element-only). `isScrolling` pointer-events and `scrollToItem` tracked as follow-ups.
 5. ~~**T-04 DateField constrain-on-blur**~~ — ✔ **done** (changeset `datefield-constrain-on-blur.md`); ported the `IncompleteDate` display model so edits constrain on blur, and removed the non-upstream min/max snap (out-of-range now stays as-typed + flags validation).
+
+**Pass-1 shortlist (1–5) fully cleared.** New confirmed gaps now come from the
+depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
+
+6. **T-02 inline TableView cell editing** (`EditableCell` + `renderEditing`) — S2-styled; depends on our TableView + Picker/TextField cell rendering. Largest of the open gaps.
+7. **S2 Toast animations** (not a numbered release-notes ticket — found while verifying T-01). Our `Toast` sets `translate`/`opacity` instantly with no enter/exit/restack animation; upstream animates via the View Transitions API (with its own reduced-motion gate). Standalone animation-port follow-up.
 
 Everything tagged 🔍 needs a real check before it's either added here as a gap or
 struck as already-present. Everything tagged ✅ still needs a depth/behavior
