@@ -717,3 +717,133 @@ describe("TableView (solid-spectrum)", () => {
     expect(screen.getByText("All active users")).toBeInTheDocument();
   });
 });
+
+interface TreeItem {
+  id: string;
+  name: string;
+  type: string;
+  children?: TreeItem[];
+}
+
+// projects > (project-1 > file-1), project-2
+const treeData: TreeItem[] = [
+  {
+    id: "projects",
+    name: "Projects",
+    type: "folder",
+    children: [
+      {
+        id: "project-1",
+        name: "Project 1",
+        type: "folder",
+        children: [{ id: "file-1", name: "File 1", type: "file" }],
+      },
+      { id: "project-2", name: "Project 2", type: "file" },
+    ],
+  },
+];
+
+// The first column is the row header, so the headless layer makes it the tree
+// column (the one that renders the chevron and indentation).
+const treeColumns = [
+  { key: "name", name: "Name", isRowHeader: true },
+  { key: "type", name: "Type" },
+];
+
+function TreeTable(props: { defaultExpandedKeys?: Iterable<string> } = {}) {
+  return (
+    <Table
+      aria-label="Files"
+      items={treeData}
+      columns={treeColumns}
+      getKey={(item) => item.id}
+      getTextValue={(item, column) => String(item[column.key as keyof TreeItem] ?? "")}
+      UNSTABLE_childItems={(item: TreeItem) => item.children}
+      UNSTABLE_defaultExpandedKeys={props.defaultExpandedKeys}
+    >
+      {() => (
+        <>
+          <TableHeader>
+            <TableColumn id="name">{() => <>Name</>}</TableColumn>
+            <TableColumn id="type">{() => <>Type</>}</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {(item: TreeItem) => (
+              <TableRow id={item.id} item={item}>
+                {() => (
+                  <>
+                    <TableCell>{() => <>{item.name}</>}</TableCell>
+                    <TableCell>{() => <>{item.type}</>}</TableCell>
+                  </>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </>
+      )}
+    </Table>
+  );
+}
+
+const treeRow = (key: string) =>
+  document.querySelector(`tr[data-key="${key}"]`) as HTMLElement | null;
+const treeColumnCell = (key: string) =>
+  treeRow(key)?.querySelector("[data-tree-column]") as HTMLElement | undefined;
+const treeChevron = (key: string) =>
+  treeColumnCell(key)?.querySelector("button") as HTMLButtonElement | undefined;
+
+describe("TableView tree grid (solid-spectrum)", () => {
+  afterEach(() => cleanup());
+
+  it("auto-injects the expand chevron into the tree column", () => {
+    render(() => <TreeTable />);
+
+    // Unlike the headless layer (where the consumer adds `<Button slot="chevron">`),
+    // the styled TableCell renders the ExpandableRowChevron itself, gated on
+    // `hasChildItems && isTreeColumn`. Mirrors @react-spectrum/s2 TableView's Cell.
+    const chevron = treeChevron("projects");
+    expect(treeColumnCell("projects")).toHaveAttribute("data-tree-column");
+    expect(chevron).toBeInTheDocument();
+    // The behavioral props (label, prevent-focus, press-to-toggle) flow in through
+    // the row's `chevron` slot because this is the headless Button.
+    expect(chevron).toHaveAttribute("slot", "chevron");
+    expect(chevron).toHaveAttribute("aria-label", "Expand");
+    expect(chevron).toHaveAttribute("tabindex", "-1");
+    // It renders the bare ui-icon glyph, hidden from assistive tech.
+    const glyph = chevron!.querySelector("svg");
+    expect(glyph).toBeInTheDocument();
+    expect(glyph).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("omits the chevron for leaf rows and non-tree columns", () => {
+    render(() => <TreeTable defaultExpandedKeys={["projects"]} />);
+
+    // Nested folder keeps a chevron; the leaf file row's tree cell renders none.
+    expect(treeChevron("project-1")).toBeInTheDocument();
+    expect(treeColumnCell("project-2")).toHaveAttribute("data-tree-column");
+    expect(treeChevron("project-2")).toBeNull();
+    expect(treeRow("project-2")!.querySelector("button")).toBeNull();
+
+    // Only the row-header column is the tree column.
+    const cells = treeRow("projects")!.querySelectorAll("th, td");
+    const treeCells = treeRow("projects")!.querySelectorAll("[data-tree-column]");
+    expect(treeCells).toHaveLength(1);
+    expect(cells.length).toBeGreaterThan(1);
+  });
+
+  it("toggles row expansion when the chevron is pressed", () => {
+    render(() => <TreeTable />);
+
+    expect(treeRow("project-1")).toBeNull();
+
+    fireEvent.click(treeChevron("projects")!);
+    expect(treeRow("project-1")).toBeTruthy();
+    expect(treeRow("projects")).toHaveAttribute("aria-expanded", "true");
+    // Re-query: toggling recreates the tree-column cell's children.
+    expect(treeChevron("projects")).toHaveAttribute("aria-label", "Collapse");
+
+    fireEvent.click(treeChevron("projects")!);
+    expect(treeRow("project-1")).toBeNull();
+    expect(treeRow("projects")).not.toHaveAttribute("aria-expanded", "true");
+  });
+});

@@ -12,6 +12,7 @@ import {
   type JSX,
 } from "solid-js";
 import {
+  Button as HeadlessButton,
   ColumnResizer as HeadlessColumnResizer,
   ResizableTableContainer as HeadlessResizableTableContainer,
   Table as HeadlessTable,
@@ -52,6 +53,7 @@ import type {
 } from "@proyecto-viviana/solid-stately";
 import Arrow from "../icon/ui-icons/Arrow";
 import Checkmark from "../icon/ui-icons/Checkmark";
+import Chevron from "../icon/ui-icons/Chevron";
 import Dash from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
@@ -293,6 +295,12 @@ const table = style<TableRenderProps & { isQuiet?: boolean; hasActionBar?: boole
   borderSpacing: 0,
   tableLayout: "fixed",
   disableTapHighlight: true,
+  // Per-level indentation unit for tree-grid columns; read by the cell's
+  // paddingStart calc. Mirrors @react-spectrum/s2 TableView's `--indent`.
+  "--indent": {
+    type: "width",
+    value: 16,
+  },
 });
 
 const legacyLabel = style({
@@ -466,6 +474,7 @@ const tableCell = style<
     density?: TableDensity;
     overflowMode?: TableOverflowMode;
     showDivider?: boolean;
+    isTreeColumnWithNoChildren?: boolean;
   }
 >({
   ...focusRing(),
@@ -475,6 +484,22 @@ const tableCell = style<
   color: "inherit",
   paddingX: 16,
   paddingY: 0,
+  // Tree-grid indentation. A leaf cell in the tree column reserves the chevron's
+  // footprint (36) so its content lines up with sibling rows that do show a
+  // chevron (16); each nesting level then adds `--indent`. Mirrors
+  // @react-spectrum/s2 TableView's `treeColumnStyles`.
+  "--treeColumnPadding": {
+    type: "width",
+    value: {
+      default: 16,
+      isTreeColumnWithNoChildren: 36,
+    },
+  },
+  paddingStart: {
+    default: 16,
+    isTreeColumn:
+      "calc(var(--treeColumnPadding) + (var(--table-row-level, 1) - 1) * var(--indent))",
+  },
   minHeight: {
     density: rowHeight,
   },
@@ -519,6 +544,54 @@ const tableCellContent = style<{
       truncate: "nowrap",
       wrap: "normal",
     },
+  },
+});
+
+// Flex wrapper placed *inside* the real `<td>` (rather than making the td a flex
+// container, which would break our fixed table-layout column widths) so the
+// expand chevron and the cell content sit side by side and fill the row height.
+const treeCellInner = style({
+  display: "flex",
+  alignItems: "center",
+  height: "full",
+  minWidth: 0,
+});
+
+// Ports @react-spectrum/s2 TableView's `expandButton`. Upstream rotates the
+// button via `transform`; we rotate with the `rotate` shorthand (matching our
+// TreeView's chevron idiom) and drop the RTL branch our codebase already omits.
+const expandButton = style<{ isDisabled?: boolean; isExpanded?: boolean }>({
+  color: {
+    default: "inherit",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  height: "full",
+  width: 40,
+  marginStart: -12,
+  display: "flex",
+  flexWrap: "wrap",
+  alignContent: "center",
+  justifyContent: "center",
+  outlineStyle: "none",
+  cursor: "default",
+  rotate: {
+    isExpanded: 90,
+  },
+  padding: 0,
+  transition: "default",
+  backgroundColor: "transparent",
+  borderWidth: 0,
+  borderStyle: "none",
+  disableTapHighlight: true,
+});
+
+const expandChevronIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
   },
 });
 
@@ -1128,6 +1201,24 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   );
 }
 
+// The bare expand/collapse affordance for a tree-grid row. This is the
+// *headless* Button so it picks up the row's `chevron` slot (the press handlers
+// that toggle expansion) from the surrounding TableRow's ButtonContext; the
+// styled solid-spectrum Button reads a different, styled ButtonContext and would
+// not. Mirrors @react-spectrum/s2 TableView's `ExpandableRowChevron`.
+function ExpandableRowChevron(props: { isExpanded?: boolean }): JSX.Element {
+  return (
+    <HeadlessButton
+      slot="chevron"
+      class={(renderProps) =>
+        expandButton({ isExpanded: !!props.isExpanded, isDisabled: renderProps.isDisabled })
+      }
+    >
+      <Chevron size="S" class={expandChevronIcon} aria-hidden="true" />
+    </HeadlessButton>
+  );
+}
+
 export function TableCell(props: TableCellProps): JSX.Element {
   const context = useContext(TableContext);
   const [local, headlessProps] = splitProps(props, [
@@ -1151,6 +1242,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
           density: context.density,
           overflowMode: context.overflowMode,
           showDivider: !!local.showDivider,
+          isTreeColumnWithNoChildren: renderProps.isTreeColumn && !renderProps.hasChildItems,
         }),
         local.styles,
       ),
@@ -1158,12 +1250,26 @@ export function TableCell(props: TableCellProps): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
+  const renderChildren = (renderProps: TableCellRenderProps) =>
+    typeof local.children === "function" ? local.children(renderProps) : local.children;
+  const content = (renderProps: TableCellRenderProps) => (
+    <div class={tableCellContent({ align: align(), overflowMode: context.overflowMode })}>
+      {renderChildren(renderProps)}
+    </div>
+  );
+
   return (
     <HeadlessTableCell {...headlessProps} class={className} style={local.UNSAFE_style}>
       {(renderProps: TableCellRenderProps) => (
-        <div class={tableCellContent({ align: align(), overflowMode: context.overflowMode })}>
-          {typeof local.children === "function" ? local.children(renderProps) : local.children}
-        </div>
+        <Show
+          when={renderProps.isTreeColumn && renderProps.hasChildItems}
+          fallback={content(renderProps)}
+        >
+          <div class={treeCellInner}>
+            <ExpandableRowChevron isExpanded={renderProps.isExpanded} />
+            {content(renderProps)}
+          </div>
+        </Show>
       )}
     </HeadlessTableCell>
   );
