@@ -127,6 +127,8 @@ export interface GridState<T, C extends GridCollection<T> = GridCollection<T>> {
   readonly collection: C;
   /** Keys of disabled rows. */
   readonly disabledKeys: Set<Key>;
+  /** Whether `disabledKeys` applies to all interactions, or only selection. */
+  readonly disabledBehavior: "selection" | "all";
   /** Whether keyboard navigation is disabled. */
   readonly isKeyboardNavigationDisabled: boolean;
   /** Currently focused key. */
@@ -173,6 +175,8 @@ export interface GridStateOptions<T, C extends GridCollection<T> = GridCollectio
   collection: C;
   /** Keys of disabled rows. */
   disabledKeys?: Iterable<Key>;
+  /** Whether `disabledKeys` applies to all interactions, or only selection. @default "all" */
+  disabledBehavior?: "selection" | "all";
   /** Focus mode: 'row' or 'cell'. */
   focusMode?: "row" | "cell";
   /** Selection mode. */

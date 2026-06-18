@@ -83,8 +83,10 @@ export interface TableState<T, C extends TableCollection<T> = TableCollection<T>
  * State for a tree grid (expandable rows). Mirrors `@react-stately/table`'s
  * `UNSTABLE_useTreeGridState` return value.
  */
-export interface TreeGridState<T, C extends TableCollection<T> = TableCollection<T>>
-  extends TableState<T, C> {
+export interface TreeGridState<
+  T,
+  C extends TableCollection<T> = TableCollection<T>,
+> extends TableState<T, C> {
   /** A set of keys for rows that are expanded. */
   readonly expandedKeys: "all" | Set<Key>;
   /** The key map containing nodes representing the collection's tree grid structure. */
@@ -130,6 +132,8 @@ export interface TableStateOptions<
   collection: C;
   /** Keys of disabled rows. */
   disabledKeys?: Iterable<Key>;
+  /** Whether `disabledKeys` applies to all interactions, or only selection. @default "all" */
+  disabledBehavior?: "selection" | "all";
   /** Focus mode: 'row' or 'cell'. */
   focusMode?: "row" | "cell";
   /** Selection mode. */

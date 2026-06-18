@@ -526,6 +526,63 @@ describe("createGridState", () => {
   });
 
   // ============================================
+  // DISABLED BEHAVIOR
+  // ============================================
+
+  describe("disabled behavior", () => {
+    it("should default disabledBehavior to 'all'", () => {
+      createRoot((dispose) => {
+        const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
+        const state = createGridState(() => ({ collection }));
+
+        expect(state.disabledBehavior).toBe("all");
+        dispose();
+      });
+    });
+
+    it("should expose the configured disabledBehavior", () => {
+      createRoot((dispose) => {
+        const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
+        const state = createGridState(() => ({
+          collection,
+          disabledBehavior: "selection",
+        }));
+
+        expect(state.disabledBehavior).toBe("selection");
+        dispose();
+      });
+    });
+
+    it("should never select disabled keys, even under disabledBehavior 'selection'", () => {
+      createRoot((dispose) => {
+        const collection = createMockCollection([
+          { key: "row1", cells: [{ key: "cell1" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+        ]);
+        const state = createGridState(() => ({
+          collection,
+          selectionMode: "multiple",
+          disabledBehavior: "selection",
+          disabledKeys: ["row1"],
+        }));
+
+        // Disabled keys are never selectable, mirroring
+        // SelectionManager.canSelectItem, which ignores disabledBehavior.
+        state.toggleSelection("row1");
+        expect(state.isSelected("row1")).toBe(false);
+
+        state.replaceSelection("row1");
+        expect(state.isSelected("row1")).toBe(false);
+
+        // A non-disabled key is still selectable.
+        state.toggleSelection("row2");
+        expect(state.isSelected("row2")).toBe(true);
+        dispose();
+      });
+    });
+  });
+
+  // ============================================
   // EXTEND SELECTION
   // ============================================
 

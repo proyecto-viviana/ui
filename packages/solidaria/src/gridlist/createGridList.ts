@@ -38,6 +38,38 @@ export function getGridListData<T extends object, C extends GridCollection<T>>(
 }
 
 /**
+ * Whether a key should be skipped during keyboard navigation. Disabled keys only
+ * block navigation under `disabledBehavior: "all"` (the default); under
+ * `"selection"` they remain focusable (selection is still blocked elsewhere).
+ * Mirrors `ListKeyboardDelegate.isDisabled` in React Aria.
+ */
+function isNavigationDisabled<T extends object, C extends GridCollection<T>>(
+  state: GridState<T, C>,
+  key: Key,
+): boolean {
+  return state.isDisabled(key) && state.disabledBehavior === "all";
+}
+
+/**
+ * Walks from `startKey` via `step` until reaching a navigable (not
+ * navigation-disabled) key, mirroring React Aria's
+ * `ListKeyboardDelegate.findNextNonDisabled`. The next/previous lookups and the
+ * `getFirstKey`/`getLastKey` boundaries all funnel through this so arrow keys,
+ * Home and End land on enabled rows only.
+ */
+function findNextNavigableKey<T extends object, C extends GridCollection<T>>(
+  state: GridState<T, C>,
+  startKey: Key | null,
+  step: (key: Key) => Key | null,
+): Key | null {
+  let key = startKey;
+  while (key != null && isNavigationDisabled(state, key)) {
+    key = step(key);
+  }
+  return key;
+}
+
+/**
  * Creates accessibility props for a grid list.
  */
 export function createGridList<T extends object, C extends GridCollection<T> = GridCollection<T>>(
@@ -76,31 +108,27 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     switch (e.key) {
       case "ArrowDown": {
         e.preventDefault();
-        if (focusedKey != null) {
-          const nextKey = collection.getKeyAfter(focusedKey);
-          if (nextKey != null) {
-            s.setFocusedKey(nextKey);
-          }
-        } else {
-          const firstKey = collection.getFirstKey();
-          if (firstKey != null) {
-            s.setFocusedKey(firstKey);
-          }
+        const nextKey =
+          focusedKey != null
+            ? findNextNavigableKey(s, collection.getKeyAfter(focusedKey), (k) =>
+                collection.getKeyAfter(k),
+              )
+            : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
+        if (nextKey != null) {
+          s.setFocusedKey(nextKey);
         }
         break;
       }
       case "ArrowUp": {
         e.preventDefault();
-        if (focusedKey != null) {
-          const prevKey = collection.getKeyBefore(focusedKey);
-          if (prevKey != null) {
-            s.setFocusedKey(prevKey);
-          }
-        } else {
-          const lastKey = collection.getLastKey();
-          if (lastKey != null) {
-            s.setFocusedKey(lastKey);
-          }
+        const prevKey =
+          focusedKey != null
+            ? findNextNavigableKey(s, collection.getKeyBefore(focusedKey), (k) =>
+                collection.getKeyBefore(k),
+              )
+            : findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k));
+        if (prevKey != null) {
+          s.setFocusedKey(prevKey);
         }
         break;
       }
@@ -115,24 +143,23 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         e.preventDefault();
         const isRtl = p.direction === "rtl";
         const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
-        if (focusedKey != null) {
-          const nextKey = forward
-            ? collection.getKeyAfter(focusedKey)
-            : collection.getKeyBefore(focusedKey);
-          if (nextKey != null) {
-            s.setFocusedKey(nextKey);
-          }
-        } else {
-          const firstKey = collection.getFirstKey();
-          if (firstKey != null) {
-            s.setFocusedKey(firstKey);
-          }
+        const step = forward
+          ? (k: Key) => collection.getKeyAfter(k)
+          : (k: Key) => collection.getKeyBefore(k);
+        const nextKey =
+          focusedKey != null
+            ? findNextNavigableKey(s, step(focusedKey), step)
+            : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
+        if (nextKey != null) {
+          s.setFocusedKey(nextKey);
         }
         break;
       }
       case "Home": {
         e.preventDefault();
-        const firstKey = collection.getFirstKey();
+        const firstKey = findNextNavigableKey(s, collection.getFirstKey(), (k) =>
+          collection.getKeyAfter(k),
+        );
         if (firstKey != null) {
           s.setFocusedKey(firstKey);
         }
@@ -140,7 +167,9 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       }
       case "End": {
         e.preventDefault();
-        const lastKey = collection.getLastKey();
+        const lastKey = findNextNavigableKey(s, collection.getLastKey(), (k) =>
+          collection.getKeyBefore(k),
+        );
         if (lastKey != null) {
           s.setFocusedKey(lastKey);
         }
@@ -184,9 +213,11 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     const s = state();
     s.setFocused(true);
 
-    // If nothing is focused, focus the first item
+    // If nothing is focused, focus the first navigable item
     if (s.focusedKey == null) {
-      const firstKey = s.collection.getFirstKey();
+      const firstKey = findNextNavigableKey(s, s.collection.getFirstKey(), (k) =>
+        s.collection.getKeyAfter(k),
+      );
       if (firstKey != null) {
         s.setFocusedKey(firstKey);
       }

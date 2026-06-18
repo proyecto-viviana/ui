@@ -42,6 +42,7 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   const selectionMode = createMemo(() => getOptions().selectionMode ?? "none");
   const selectionBehavior = createMemo(() => getOptions().selectionBehavior ?? "toggle");
   const disallowEmptySelection = createMemo(() => getOptions().disallowEmptySelection ?? false);
+  const disabledBehavior = createMemo(() => getOptions().disabledBehavior ?? "all");
 
   const focusMode = createMemo(() => getOptions().focusMode ?? "row");
 
@@ -272,6 +273,9 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     },
     get disabledKeys() {
       return disabledKeys();
+    },
+    get disabledBehavior() {
+      return disabledBehavior();
     },
     get isKeyboardNavigationDisabled() {
       return isKeyboardNavigationDisabled();

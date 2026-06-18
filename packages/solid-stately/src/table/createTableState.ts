@@ -33,6 +33,7 @@ export function createTableState<
   const gridState = createGridState<T, C>(() => ({
     collection: getOptions().collection,
     disabledKeys: getOptions().disabledKeys,
+    disabledBehavior: getOptions().disabledBehavior,
     focusMode: getOptions().focusMode,
     selectionMode: getOptions().selectionMode,
     selectionBehavior: getOptions().selectionBehavior,
@@ -82,6 +83,9 @@ export function createTableState<
     },
     get disabledKeys() {
       return gridState.disabledKeys;
+    },
+    get disabledBehavior() {
+      return gridState.disabledBehavior;
     },
     get isKeyboardNavigationDisabled() {
       return gridState.isKeyboardNavigationDisabled;
