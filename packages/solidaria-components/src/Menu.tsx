@@ -26,6 +26,7 @@ import {
   createHover,
   createButton,
   createInteractOutside,
+  createScrollIntoViewOnFocus,
   mergeProps,
   FocusScope,
   type AriaMenuProps,
@@ -861,6 +862,15 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     },
     state,
   );
+
+  // Reveal the activedescendant-focused item on keyboard navigation. The menu
+  // keeps real DOM focus on itself, so the browser won't natively scroll an
+  // off-screen focused item into view the way roving tabindex would.
+  createScrollIntoViewOnFocus({
+    focusedKey: () => state.focusedKey(),
+    isActive: () => state.isFocused(),
+    ref: () => menuRef(),
+  });
 
   const { isFocused, focusProps } = createFocusRing();
 

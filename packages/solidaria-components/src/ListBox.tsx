@@ -21,6 +21,7 @@ import {
   createListBox,
   createOption,
   createFocusRing,
+  createScrollIntoViewOnFocus,
   mergeProps,
   type AriaListBoxProps,
   type AriaOptionProps,
@@ -333,6 +334,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     return rest;
   };
   const [listRef, setListRef] = createSignal<HTMLElement | null>(null);
+
+  // Reveal the activedescendant-focused option on keyboard navigation. The
+  // listbox keeps real DOM focus on itself, so the browser won't natively scroll
+  // an off-screen focused option into view the way roving tabindex would.
+  createScrollIntoViewOnFocus({
+    focusedKey: () => state.focusedKey(),
+    isActive: () => state.isFocused(),
+    ref: () => listRef(),
+  });
 
   const isEmpty = () => stateProps.items.length === 0;
   const parentCollectionRenderer = useCollectionRenderer<unknown>();

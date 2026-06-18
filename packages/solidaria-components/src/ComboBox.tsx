@@ -24,6 +24,7 @@ import {
   getComboBoxData,
   createHover,
   createInteractOutside,
+  createScrollIntoViewOnFocus,
   mergeProps,
   type AriaComboBoxProps,
   type AriaListBoxProps,
@@ -913,6 +914,15 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   const state = comboBoxState;
 
   let listBoxRef: HTMLUListElement | undefined;
+
+  // Reveal the activedescendant-focused option on keyboard navigation while the
+  // listbox is open. Real DOM focus stays on the input, so the browser won't
+  // natively scroll an off-screen focused option into view.
+  createScrollIntoViewOnFocus({
+    focusedKey: () => state.focusedKey(),
+    isActive: () => isOpen(),
+    ref: () => listBoxRef ?? null,
+  });
 
   createInteractOutside({
     ref: () => listBoxRef ?? null,

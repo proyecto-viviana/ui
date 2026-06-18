@@ -627,6 +627,7 @@ export {
 } from "./steplist";
 
 export { createTypeSelect, type TypeSelectOptions, type TypeSelectAria } from "./selection";
+export { createScrollIntoViewOnFocus, type ScrollIntoViewOnFocusOptions } from "./selection";
 
 export { mergeProps, filterDOMProps, focusSafely, type FilterDOMPropsOptions } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";

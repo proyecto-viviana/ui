@@ -4,3 +4,7 @@
  */
 
 export { createTypeSelect, type TypeSelectOptions, type TypeSelectAria } from "./createTypeSelect";
+export {
+  createScrollIntoViewOnFocus,
+  type ScrollIntoViewOnFocusOptions,
+} from "./createScrollIntoViewOnFocus";
