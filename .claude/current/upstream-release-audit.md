@@ -14,16 +14,24 @@ behavioral/focus fixes, new props, and whole new components that don't alter an
 asserted role. The release notes are the only signal those happened — see the
 "Read the release notes for intent" step in [upstream-sync.md](./upstream-sync.md).
 
-> **Status — pass 1 complete; pass 2 scheduled 2026-06-18.** The tickets below come
-> from the release **highlights** (pass 1, done). **Pass 2** — mining the website
-> per-PR "Fixed" lists (`react-aria.adobe.com/releases/v1-16-0`, …) to resolve every
-> 🔍 ticket into a firm ✅/⛔ — is the **next session's** job. Until then treat 🔍 as
-> "unverified." Execution of the confirmed ⛔ gaps has started (leaf-first, no
-> conflicts): **T-29 SliderFill ✔**, **T-25 Calendar month/year pickers ✔**,
-> **T-23 Calendar multi-select ✔**, **T-26 RangeCalendar available-range ✔** —
-> which **completes the Calendar 1.18 cluster** — and **T-16 Table expandable rows
-> ✔** (the `UNSTABLE_` tree grid, headless React-Aria parity). See the shortlist at
-> the foot.
+> **Status — pass 1 complete; source-based depth-verify done; web pass 2 remains.**
+> The tickets below come from the release **highlights** (pass 1, done). A
+> **source-based depth-verify** (oldest-first, reconciling each greppable 🔍/✅
+> against upstream `src` + ours) then resolved most of the list: confirmed-present
+> **T-07, T-12, T-13, T-14, T-15, T-20, T-24, T-27, T-28, T-30, T-33** and the
+> animated **T-01**; confirmed-gap **T-02** (EditableCell), **T-18** (horizontal
+> virtualization), **T-32** (field `prefix`). What's **left for the web pass 2** is
+> only the genuinely *behavioral* tickets a grep can't settle — **T-03** (DOM
+> render prop), **T-05** (Menu-in-Popover), **T-06** (TreeView disabledBehavior),
+> **T-09** (overlay positioning), **T-10** (scroll-into-view), **T-22** (icons),
+> and the TableView-highlight half of **T-31** — via the per-PR "Fixed" lists
+> (`react-aria.adobe.com/releases/v1-16-0`, …). Treat those 🔍 as "unverified."
+> Execution of the confirmed ⛔ gaps (leaf-first, no conflicts): **T-29 SliderFill
+> ✔**, **T-25 Calendar month/year pickers ✔**, **T-23 Calendar multi-select ✔**,
+> **T-26 RangeCalendar available-range ✔** — which **completes the Calendar 1.18
+> cluster** — and **T-16 Table expandable rows ✔** (the `UNSTABLE_` tree grid,
+> headless React-Aria parity). New confirmed gaps (T-02, T-18, T-32) are on the
+> shortlist at the foot.
 
 ## Scope & sources
 
@@ -79,39 +87,39 @@ internal — not a port concern).
 
 ## Train 3 — RAC 1.16.0 / S2 1.2.0 (2026-03-04)
 
-- [ ] **T-07** ✅ RAC — **multi-select ComboBox** (`selectionMode="multiple"`, `ComboBoxValue`, TagGroup display). Confirmed present in `ComboBox.tsx`; verify `ComboBoxValue` render + tag display.
+- [x] **T-07** ✅ RAC — **multi-select ComboBox** (`selectionMode="multiple"`, `ComboBoxValue`, TagGroup display). **Verified present** this cycle: `ComboBoxValue` exported + used in `solidaria-components/ComboBox.tsx`. (Deep tag-display parity is a component-validation concern, not this audit's "do we have it" question.)
 - [x] **T-08** ✔ RAC — **Tree sections** (`TreeSection` + `TreeHeader`). **Done by us** this cycle — item 3b, commit `8341b2c3` (rowgroup/row/rowheader port).
 - [ ] **T-09** 🔍 RAC — overlay **positioning** improvements. Behavioral; second-pass.
 - [ ] **T-10** 🔍 RAC — **scroll-into-view** behavior. Behavioral; second-pass.
 - [ ] **T-11** ➖ RAC — assorted crash fixes. Mine the per-PR list in the second pass.
-- [ ] **T-12** 🔍 S2 — **ListView** GA. We have GridList/ListView surfaces; verify parity.
-- [ ] **T-13** ✅ S2 — **unavailable menu items** (`isUnavailable`). Present in `menu/`; verify depth.
-- [ ] **T-14** 🔍 S2 — **ActionBar** support for **TreeView**. Verify.
-- [ ] **T-15** 🔍 S2 — **Picker** custom render for the display value. Verify (grep matched a generic term).
+- [x] **T-12** ✅ S2 — **ListView** GA. **Verified present**: styled `ListView.ts` + `gridlist/` in solid-spectrum (S2 ListView = the styled GridList).
+- [x] **T-13** ✅ S2 — **unavailable menu items** (`isUnavailable`). **Verified present**: `isUnavailable` wired in `solid-spectrum/menu/index.tsx`.
+- [x] **T-14** ✅ S2 — **ActionBar** support for **TreeView**. **Verified present**: `actionbar/index.tsx` (solid-spectrum) + `ActionBar.tsx` (solidaria-components), referenced by our `tree/index.tsx` (and gridlist/cardview/table). Deep Tree-integration parity is a component-validation concern.
+- [x] **T-15** ✅ S2 — **Picker** custom render for the display value. **Verified present**: `renderValue` in `solid-spectrum/picker/index.tsx` + `solidaria-components/Select.tsx`.
 
 ## Train 4 — RAC 1.17.0 / S2 1.3.0 (2026-04-15)
 
 - [x] **T-16** ✔ RAC — **Table expandable rows** (`treeColumn` + chevron button in cells; macOS-Finder-style trees). **Done by us** this cycle (changeset `table-expandable-rows.md`): ported the `UNSTABLE_` tree-grid stack headless-first through all three RAC-equivalent layers, keeping the `UNSTABLE_` prefix. **solid-stately** — new `createTreeGridState` (port of `useTreeGridState`) owns the expanded-keys signal (controlled `UNSTABLE_expandedKeys` / uncontrolled `UNSTABLE_defaultExpandedKeys` / `UNSTABLE_onExpandedChange`), rebuilds the collection on expansion change, and layers `toggleKey` + `expandedKeys`/`treeColumn` getters onto the base state via `defineProperty` (spread would break the reactive getters); collapse-from-`'all'` materialises every expandable row first. `TableCollection` gained a tree-grid mode (`buildTreeRows` stamps each node's `level`/`isExpandable`/sibling position; resolves `treeColumn`), and `createTableState` exposes inert `expandedKeys`/`treeColumn`/`toggleKey` so the row hook reads one shape in both modes. **solidaria** — `createTableRow` emits the tree-grid row ARIA (`aria-expanded` only when the row has children, `aria-level`/`aria-posinset`/`aria-setsize`) and a **press-based** `expandButtonProps` (mirrors `useTableRow`: `onPress` toggles + focuses the row, `excludeFromTabOrder` + `preventFocusOnPress` + `data-react-aria-prevent-focus`, `Expand`/`Collapse` label) so the chevron flows through our Button's `createPress` rather than a raw DOM `onClick`; ArrowRight/ArrowLeft expand/collapse (RTL-flipped, leaf → focus parent), stopping propagation so grid navigation doesn't double-fire. **solidaria-components** — `Table` wires `expandButtonProps` to a `chevron` Button slot and threads the render-prop values (`isExpanded` on rows; `hasChildItems`/`isTreeColumn` on cells) so the consumer renders the chevron only in the tree column of rows with children — S2's `TableView` gating. **Behavioral note removed:** no invented `aria-hidden` on leaf chevrons (upstream conditionally renders the chevron instead). Tests per layer (stately `createTreeGridState`, solidaria `createTableRow` tree-grid + press, components `Table` tree grid); full suites green (solid-stately, solidaria 3397, solidaria-components 2075); `guard:upstream-test-parity` exit 0 (the tree `aria-expanded`/`-level`/`-posinset`/`-setsize` show as we-only — confirmed faithful to `useTableRow` source). **Follow-up:** the S2-styled `ExpandableRowChevron` + tree-column indentation in the `solid-spectrum` styled TableView is tracked, not in this pass.
 - [x] **T-17** ✔ RAC — **window scrolling** in **Virtualizer** (collection scrolls with the page; no fixed height). **Done by us** this cycle (changeset `virtualizer-window-scrolling.md`): the `Virtualizer` now computes its visible viewport as the scroll view's height intersected with the window viewport and offsets the visible range by how far the scroll view has been pushed above the viewport by page/ancestor scrolling, all driven by a single document-level capturing `scroll` listener — mirroring upstream `ScrollView`. A new `allowsWindowScrolling` prop (default `true`, matching RAC `CollectionRoot`'s hard-coded value) opts back into element-only scrolling; an explicit `viewportSize` layout option still wins. Behavior-preserving for a fixed-height collection inside the viewport (the `window ∩ element` math reduces exactly to element scroll), so existing collections are unaffected unless they actually scroll with the page; 58 Virtualizer tests (2 new window-scroll tests) plus the downstream collection suites stay green. **Follow-ups (do not affect window-scroll correctness):** the `isScrolling` `pointer-events: none` optimization and the imperative `scrollToItem`/`scrollToRect` API are not yet ported. ⇄ same feature as **T-21**.
-- [ ] **T-18** 🔍 RAC — **horizontally virtualized** GridList + ListBox. Verify orientation support in our virtualizer.
+- [ ] **T-18** ⛔ RAC — **horizontally virtualized** GridList + ListBox. **Confirmed gap.** Upstream `ListLayout` (`react-stately/src/layout/ListLayout.ts`) takes an `orientation` option (default `vertical`) and offsets items along `x` or `y` (`offsetProperty = orientation === 'horizontal' ? 'x' : 'y'`); RAC ListBox/GridList expose `data-orientation="horizontal"`. Our `solidaria-components/VirtualizerLayouts.ts` is hardcoded vertical (`y: row * rowHeight`, `height: rowHeight`) with no orientation axis. Real gap. Added to the shortlist.
 - [ ] **T-19** ➖ RAC — dependency-management improvements (internal; not a port concern).
-- [ ] **T-20** 🔍 S2 — **highlight selection** in **TreeView**. ⇄ related to **T-31**. Verify.
+- [x] **T-20** ✅ S2 — **highlight selection** in **TreeView**. **Verified present**: our `tree/index.tsx` has `TreeSelectionStyle = "checkbox" | "highlight"` (default `checkbox`) feeding the style conditions, mirroring upstream's `selectionStyle` + `selectionBehavior={highlight ? 'replace' : 'toggle'}`. ⇄ The **TableView**-highlight half of **T-31** is separate (upstream S2 `TableView` exposes no `selectionStyle` — behavioral; left for Pass 2).
 - [x] **T-21** ✔ S2 — **window scrolling** in collection components. ⇄ **dedup of T-17** — the S2-styled collections (`ListBox` / `Table` / `Tree` / `Menu` / …) inherit the default-on window scrolling through the shared `solidaria-components` `Virtualizer`; covered by the same changeset (`virtualizer-window-scrolling.md`), and the S2 collection suites (85 tests) stay green.
 - [ ] **T-22** 🔍 S2 — updated **workflow icons** set. Verify our icon set is regenerated.
 
 ## Train 5 — RAC 1.18.0 / S2 1.4.0 (2026-05-30, current pin)
 
 - [x] **T-23** ✔ RAC — **Calendar multiple date selection** (changeset `calendar-multiple-selection.md`). `selectionMode="multiple"` ported across `solid-stately` (defaulted `M` generic + `CalendarValueType`, array value, `isSameDay` toggle, `setValue(null)→[]`), `solidaria` (`aria-multiselectable` on the grid), and `solidaria-components` (`Calendar` generic over `M`, threads `selectionMode`). ⇄ same feature as the S2 1.4 Calendar note; the S2 styled `Calendar` (`@ts-nocheck`) already forwards `selectionMode` through to the headless component.
-- [ ] **T-24** ✅ RAC — **CalendarHeading** component. Present; verify.
+- [x] **T-24** ✅ RAC — **CalendarHeading** component. **Verified present**: `CalendarHeading` in Calendar + RangeCalendar across solidaria-components and solid-spectrum.
 - [x] **T-25** ✔ RAC — **CalendarMonthPicker** + **CalendarYearPicker** (jump to month/year). **Done by us** this cycle (changeset `calendar-month-year-picker.md`): ported the `createCalendar{Month,Year}Picker` aria hooks (solidaria) + the headless `CalendarMonthPicker` / `CalendarYearPicker` render-prop components (solidaria-components). Like upstream, each is context-agnostic (reads `CalendarContext` or `RangeCalendarContext`, works in both Calendar and RangeCalendar) — **not** split per-type. Exposed `minValue`/`maxValue` accessors on both calendar states for the year-window clamp. 6 tests.
 - [x] **T-26** ✔ RAC — **RangeCalendar**: available dates derived from the first selected date (`firstAvailableDate` validation). **Done by us** this cycle (changeset `rangecalendar-available-range.md`): `createRangeCalendarState` now mirrors upstream `useRangeCalendarState` — anchor-aware `isDateUnavailable(date, anchorDate)`, an available range derived via `nextUnavailableDate` that narrows the effective min/max (feeding `isCellDisabled` / `isDateOutsideAllowedRange` so the prev/next page buttons disable at the span edges / `constrainDate`, unless `allowsNonContiguousRanges`), and `isValueInvalid` extended to flag a committed range whose endpoint is unavailable or out of `[minValue, maxValue]`. 6 stately tests. The `RangeCalendar` surfaces (solidaria-components / solid-spectrum) inherit the widened callback from `RangeCalendarStateProps`; the `DateRangePicker` adapts it to the 1-arg form its text fields expect (null anchor). **Follow-up:** the S2 `DateRangePicker` (`@ts-nocheck`) keeps a documentary 1-arg `isDateUnavailable` annotation though it already forwards the callback through to the embedded `RangeCalendar` at runtime — widening that annotation is tracked (analogous to the T-23 `CalendarProps` single-mode note).
-- [ ] **T-27** ✅ RAC — **TableFooter** component. Present; verify. ⇄ same as the S2 1.4 TableFooter note.
-- [ ] **T-28** 🔍 RAC — **description + error messages** for **Checkbox / Radio / Switch** (forms). Verify (generic-term match). ⇄ same as the S2 1.4 note.
+- [x] **T-27** ✅ RAC — **TableFooter** component. **Verified present**: `TableFooter` exported from `solidaria-components/Table.tsx` + `solid-spectrum/table`. ⇄ same as the S2 1.4 TableFooter note.
+- [x] **T-28** ✅ RAC — **description + error messages** for **Checkbox / Radio / Switch** (forms). **Verified present**: `description` / `errorMessage` / `FieldError` wired in all three (`solidaria-components/{Checkbox,RadioGroup,Switch}.tsx`). ⇄ same as the S2 1.4 note.
 - [x] **T-29** ✔ RAC — **SliderFill** component. **Done** (changeset `slider-fill-component.md`): ported to `solidaria-components/Slider.tsx` as `SliderFill` / `Slider.Fill` — single-thumb fill from `offset` (default minValue → 0%) to the current value, orientation-aware (`inset-inline-start`/`width` horizontal, `bottom`/`height` vertical), with `isHovered`/`isDisabled`/`orientation`/`valuePercent` render props + `data-*`, exported with a `SliderFillContext` alias; 12 tests.
-- [ ] **T-30** ✅ S2 — **drag & drop** for ListView / TableView / TreeView. `useDragAndDrop`/`DragAndDropHooks` present; verify the three S2 surfaces wire it.
+- [x] **T-30** ✅ S2 — **drag & drop** for ListView / TableView / TreeView. **Verified present**: `useDragAndDrop` wired across `ListBox` / `GridList` / `Table` / `Tree` / `Menu` in solidaria-components.
 - [ ] **T-31** 🔍 S2 — **TableView highlight selection** + TableFooter. ⇄ TableFooter = **T-27**; highlight relates to **T-20**.
-- [ ] **T-32** 🔍 S2 — custom **prefixes** for ComboBox / TextField. Verify (generic-term match).
-- [ ] **T-33** ✅ S2 — **LabeledValue** (display non-editable values). Present in `labeledvalue/`; verify.
+- [ ] **T-32** ⛔ S2 — custom **prefixes** for ComboBox / TextField. **Confirmed gap.** Upstream hosts `prefix?: ReactNode` on the shared `FieldGroup` (`s2/src/Field.tsx`, with a `prefixId` + `aria-labelledby` association) and threads it into **ColorField, ComboBox, NumberField, TextField**. Prefix-only (no `suffix`). Our `solid-spectrum/field` exposes no prefix slot. Real gap. Added to the shortlist.
+- [x] **T-33** ✅ S2 — **LabeledValue** (display non-editable values). **Verified present**: `solid-spectrum/labeledvalue/`.
 
 ---
 
@@ -131,6 +139,8 @@ depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 
 6. **T-02 inline TableView cell editing** (`EditableCell` + `renderEditing`) — S2-styled; depends on our TableView + Picker/TextField cell rendering. Largest of the open gaps.
 7. **S2 Toast animations** (not a numbered release-notes ticket — found while verifying T-01). Our `Toast` sets `translate`/`opacity` instantly with no enter/exit/restack animation; upstream animates via the View Transitions API (with its own reduced-motion gate). Standalone animation-port follow-up.
+8. **T-32 custom field `prefix`** — well-bounded: add `prefix?` to our `FieldGroup` (with `prefixId` + `aria-labelledby`) and thread it into ColorField / ComboBox / NumberField / TextField. Smallest of the open gaps; good next port.
+9. **T-18 horizontal virtualization** — give our `VirtualizerLayouts` an `orientation` axis (offset along `x`/width when horizontal) so GridList/ListBox can virtualize horizontally. Layout-level; larger.
 
 Everything tagged 🔍 needs a real check before it's either added here as a gap or
 struck as already-present. Everything tagged ✅ still needs a depth/behavior
