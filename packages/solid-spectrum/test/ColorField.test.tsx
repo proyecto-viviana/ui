@@ -68,4 +68,20 @@ describe("ColorField", () => {
     expect(screen.getByText("Enter a valid color")).toBeInTheDocument();
     expect(container.firstElementChild).toHaveAttribute("data-invalid", "true");
   });
+
+  it("renders a prefix before the input and labels the input with it", () => {
+    render(() => <ColorField label="Color" defaultValue="#336699" prefix={<span>#</span>} />);
+
+    const input = screen.getByRole("textbox");
+    const label = screen.getByText("Color");
+    const prefix = screen.getByText("#");
+    const prefixContainer = prefix.closest("[id]") as HTMLElement;
+    const labelledBy = (input.getAttribute("aria-labelledby") ?? "").split(" ");
+
+    expect(labelledBy).toContain(label.id);
+    expect(labelledBy).toContain(prefixContainer.id);
+    expect(
+      prefixContainer.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 });

@@ -133,6 +133,23 @@ describe("ComboBox (solid-spectrum)", () => {
 
     expect(screen.getByRole("button", { name: "Help" })).toBeInTheDocument();
   });
+
+  it("renders a prefix before the input and labels the input with it", () => {
+    render(() => <FruitComboBox prefix={<span>$</span>} />);
+
+    const input = screen.getByRole("combobox");
+    const prefix = screen.getByText("$");
+    const prefixContainer = prefix.closest("[id]") as HTMLElement;
+    const labelledBy = (input.getAttribute("aria-labelledby") ?? "").split(" ").filter(Boolean);
+
+    // The input is labelled by both the visible label and the prefix.
+    expect(labelledBy).toContain(prefixContainer.id);
+    const labelId = labelledBy.find((id) => id !== prefixContainer.id);
+    expect(document.getElementById(labelId ?? "")?.textContent).toContain("Fruit");
+    expect(
+      prefixContainer.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 });
 
 describe("SearchAutocomplete (solid-spectrum)", () => {

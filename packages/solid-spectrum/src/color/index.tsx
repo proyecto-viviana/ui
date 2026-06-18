@@ -70,6 +70,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
+import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
@@ -1290,6 +1291,8 @@ export interface ColorFieldProps extends Omit<
   labelAlign?: ColorFieldLabelAlign;
   /** Whether required fields show an icon or text label. */
   necessityIndicator?: ColorFieldNecessityIndicator;
+  /** An icon or text rendered before the input. */
+  prefix?: JSX.Element;
 }
 
 /**
@@ -1321,10 +1324,12 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "prefix",
   ]);
 
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
 
+  const prefixId = createUniqueId();
   const size = () => normalizeColorFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -1429,7 +1434,15 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
             data-disabled={renderProps.isDisabled ? "true" : undefined}
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
-            <HeadlessColorFieldInput class={fieldStyles().input} />
+            <Show
+              when={local.prefix}
+              fallback={<HeadlessColorFieldInput class={fieldStyles().input} />}
+            >
+              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <PrefixInputProvider context={HeadlessColorFieldContext} prefixId={prefixId}>
+                <HeadlessColorFieldInput class={fieldStyles().input} />
+              </PrefixInputProvider>
+            </Show>
             <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
               <CenterBaseline>
                 <AlertTriangleIcon styles={fieldStyles().errorIcon} />

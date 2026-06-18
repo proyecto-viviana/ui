@@ -4,6 +4,7 @@ import {
   createContext,
   createEffect,
   createSignal,
+  createUniqueId,
   mergeProps,
   onCleanup,
   Show,
@@ -60,6 +61,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
+import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
@@ -98,6 +100,8 @@ export interface ComboBoxProps<T> extends Omit<
   labelAlign?: ComboBoxLabelAlign;
   necessityIndicator?: ComboBoxNecessityIndicator;
   contextualHelp?: JSX.Element;
+  /** An icon or text rendered before the input. */
+  prefix?: JSX.Element;
   direction?: "bottom" | "top";
   align?: "start" | "end";
   menuWidth?: number;
@@ -767,6 +771,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     "labelAlign",
     "necessityIndicator",
     "contextualHelp",
+    "prefix",
     "direction",
     "align",
     "menuWidth",
@@ -777,6 +782,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     "ref",
   ]);
 
+  const prefixId = createUniqueId();
   const size = () => normalizeComboBoxSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -870,7 +876,16 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
             </Show>
 
             <ComboBoxFieldGroup renderProps={renderProps} size={size}>
-              <HeadlessComboBoxInput class={comboBoxInput} />
+              <Show when={local.prefix} fallback={<HeadlessComboBoxInput class={comboBoxInput} />}>
+                <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+                <PrefixInputProvider
+                  context={HeadlessComboBoxContext}
+                  prefixId={prefixId}
+                  inputPropsIsFunction
+                >
+                  <HeadlessComboBoxInput class={comboBoxInput} />
+                </PrefixInputProvider>
+              </Show>
               <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
                 <CenterBaseline>
                   <AlertTriangleIcon styles={fieldErrorIcon} />

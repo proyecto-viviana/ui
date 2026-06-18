@@ -22,4 +22,20 @@ describe("NumberField (solid-spectrum)", () => {
     render(() => <NumberField label="Qty" defaultValue={1} hideStepper />);
     expect(screen.queryAllByRole("button")).toHaveLength(0);
   });
+
+  it("renders a prefix before the input and labels the input with it", () => {
+    render(() => <NumberField label="Price" defaultValue={5} prefix={<span>$</span>} />);
+
+    const input = screen.getByRole("textbox");
+    const label = screen.getByText("Price");
+    const prefix = screen.getByText("$");
+    const prefixContainer = prefix.closest("[id]") as HTMLElement;
+    const labelledBy = (input.getAttribute("aria-labelledby") ?? "").split(" ");
+
+    expect(labelledBy).toContain(label.id);
+    expect(labelledBy).toContain(prefixContainer.id);
+    expect(
+      prefixContainer.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 });

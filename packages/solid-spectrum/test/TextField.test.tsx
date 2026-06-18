@@ -341,4 +341,31 @@ describe("TextField", () => {
       expect(elements.length).toBeGreaterThan(0);
     });
   });
+
+  describe("prefix", () => {
+    it("renders the prefix before the input and labels the input with it", () => {
+      render(() => <TextField label="Amount" prefix={<span>$</span>} />);
+      const input = screen.getByRole("textbox");
+      const label = screen.getByText("Amount");
+      const prefix = screen.getByText("$");
+      // The prefix's container carries an id that the input references, in
+      // addition to the label, mirroring upstream's FieldGroup prefix.
+      const prefixContainer = prefix.closest("[id]") as HTMLElement;
+      expect(prefixContainer).toBeTruthy();
+      const labelledBy = (input.getAttribute("aria-labelledby") ?? "").split(" ");
+      expect(labelledBy).toContain(label.id);
+      expect(labelledBy).toContain(prefixContainer.id);
+      // The prefix renders before the input in the DOM.
+      expect(
+        prefixContainer.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it("does not alter aria-labelledby when no prefix is provided", () => {
+      render(() => <TextField label="Amount" />);
+      const input = screen.getByRole("textbox");
+      const label = screen.getByText("Amount");
+      expect(input.getAttribute("aria-labelledby")).toBe(label.id);
+    });
+  });
 });

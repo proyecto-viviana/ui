@@ -19,7 +19,7 @@ asserted role. The release notes are the only signal those happened — see the
 > **source-based depth-verify** then resolved the greppable list: confirmed-present
 > **T-07, T-12, T-13, T-14, T-15, T-20, T-24, T-27, T-28, T-30, T-33** and the
 > animated **T-01**; confirmed-gap **T-02** (EditableCell), **T-18** (horizontal
-> virtualization), **T-32** (field `prefix`). The **web pass 2** — mining the per-PR
+> virtualization), **T-32** (field `prefix`; **now ported ✔**). The **web pass 2** — mining the per-PR
 > "Fixed" lists for the genuinely *behavioral* tickets, then reconciling each against
 > the vendored 1.18/1.4 `src` — is now **complete**: **present** — **T-03** (the
 > `render` / `DOMRenderFunction` element-swap prop, faithfully wired), **T-09**
@@ -37,7 +37,7 @@ asserted role. The release notes are the only signal those happened — see the
 > Calendar 1.18 cluster** — and **T-16 Table expandable rows ✔** (the `UNSTABLE_`
 > tree grid, headless React-Aria parity), and **T-31 TableView
 > `selectionStyle="highlight"` ✔** (the styled S2 highlight selection, mirroring the
-> Tree T-20 port). The open confirmed gaps (T-02, T-18, T-32, T-10, T-22) are on the
+> Tree T-20 port). The open confirmed gaps (T-02, T-18, T-10, T-22) are on the
 > shortlist at the foot.
 
 ## Scope & sources
@@ -125,7 +125,7 @@ internal — not a port concern).
 - [x] **T-29** ✔ RAC — **SliderFill** component. **Done** (changeset `slider-fill-component.md`): ported to `solidaria-components/Slider.tsx` as `SliderFill` / `Slider.Fill` — single-thumb fill from `offset` (default minValue → 0%) to the current value, orientation-aware (`inset-inline-start`/`width` horizontal, `bottom`/`height` vertical), with `isHovered`/`isDisabled`/`orientation`/`valuePercent` render props + `data-*`, exported with a `SliderFillContext` alias; 12 tests.
 - [x] **T-30** ✅ S2 — **drag & drop** for ListView / TableView / TreeView. **Verified present**: `useDragAndDrop` wired across `ListBox` / `GridList` / `Table` / `Tree` / `Menu` in solidaria-components.
 - [x] **T-31** ✔ S2 — **TableView highlight selection** + TableFooter. TableFooter ✅ = **T-27**; the **highlight half is now ported** (changeset `table-selection-style-highlight.md`). Our `solid-spectrum/table` now exposes `selectionStyle?: 'checkbox' | 'highlight'` (default `checkbox`), deriving `selectionBehavior={selectionStyle === 'highlight' ? 'replace' : 'toggle'}` for the headless table (explicit `selectionBehavior` still overrides), gating **both** the select-all column and per-row checkboxes on `selectionStyle === 'checkbox'` with `toggle` behavior, and giving selected rows the blue-tinted highlight background (`color-mix(gray-25, blue-900, 10%)`, `15%` on hover/press) with `Highlight`/`HighlightText` forced-colors fallbacks — the style change is scoped to the highlight path so checkbox mode is byte-for-byte unchanged. `data-selection-style` is exposed for parity with Tree. Mirrors the **T-20** Tree port; 2 new tests + typecheck + the parity guard stay green. The virtualizer-only polish (contiguous-selection-block rounded corners + box-shadow row dividers via `isNextSelected`/`isPrevSelected`) is tied to the S2 grid's sticky-cell z-index layering and stays a tracked follow-up for our real-DOM `<table>`. **Correction (still stands):** supersedes the earlier T-20 note that wrongly said upstream `TableView` exposes no `selectionStyle`.
-- [ ] **T-32** ⛔ S2 — custom **prefixes** for ComboBox / TextField. **Confirmed gap.** Upstream hosts `prefix?: ReactNode` on the shared `FieldGroup` (`s2/src/Field.tsx`, with a `prefixId` + `aria-labelledby` association) and threads it into **ColorField, ComboBox, NumberField, TextField**. Prefix-only (no `suffix`). Our `solid-spectrum/field` exposes no prefix slot. Real gap. Added to the shortlist.
+- [x] **T-32** ✔ S2 — custom **prefixes** for ComboBox / TextField. **Now ported** (changeset `field-prefix.md`). Upstream hosts `prefix?: ReactNode` on the shared `FieldGroup` (`s2/src/Field.tsx`, with a `prefixId` + `aria-labelledby` association) and threads it into **ColorField, ComboBox, NumberField, TextField** (prefix-only; no `suffix`). We have no shared `FieldGroup` — each field composes its own group/input from its headless context — so the port adds a small shared helper `field/prefix.tsx`: `FieldPrefix` renders the prefix in a baseline-centered, icon-styled container (`CenterBaseline` gained an optional `id`) with a stable `id`, and `PrefixInputProvider` re-provides the field's own context through a proxy that appends that `id` to the input's `aria-labelledby` — preserving reactivity and each context's `inputProps` shape (object getter for TextField/NumberField/ColorField, function for ComboBox). All four fields now accept `prefix?: JSX.Element`; with no prefix the render path is byte-for-byte unchanged. 4 new tests (one per field) + typecheck + the parity guard stay green.
 - [x] **T-33** ✅ S2 — **LabeledValue** (display non-editable values). **Verified present**: `solid-spectrum/labeledvalue/`.
 
 ---
@@ -146,7 +146,7 @@ depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 
 6. **T-02 inline TableView cell editing** (`EditableCell` + `renderEditing`) — S2-styled; depends on our TableView + Picker/TextField cell rendering. Largest of the open gaps.
 7. **S2 Toast animations** (not a numbered release-notes ticket — found while verifying T-01). Our `Toast` sets `translate`/`opacity` instantly with no enter/exit/restack animation; upstream animates via the View Transitions API (with its own reduced-motion gate). Standalone animation-port follow-up.
-8. **T-32 custom field `prefix`** — well-bounded: add `prefix?` to our `FieldGroup` (with `prefixId` + `aria-labelledby`) and thread it into ColorField / ComboBox / NumberField / TextField. Smallest of the open gaps; good next port.
+8. **T-32 custom field `prefix`** — **✔ done** (changeset `field-prefix.md`): added `prefix?: JSX.Element` to ColorField / ComboBox / NumberField / TextField via a shared `field/prefix.tsx` helper (`FieldPrefix` + `PrefixInputProvider`) that appends a `prefixId` to the input's `aria-labelledby` through a context proxy — no shared `FieldGroup` needed, no-prefix path unchanged. 4 tests.
 9. **T-18 horizontal virtualization** — give our `VirtualizerLayouts` an `orientation` axis (offset along `x`/width when horizontal) so GridList/ListBox can virtualize horizontally. Layout-level; larger.
 
 10. **T-31 TableView `selectionStyle="highlight"`** — **✔ done** (`table-selection-style-highlight.md`): added `selectionStyle?: 'checkbox' | 'highlight'` to our S2 `TableView`, derived `selectionBehavior` (highlight → `replace`), gated both the select-all column and per-row checkboxes on `selectionStyle === 'checkbox'`, and gave selected rows the blue-tinted highlight background (HCM `Highlight`/`HighlightText`), scoped to the highlight path. Mirrors the Tree (T-20) port. Virtualizer-only border polish deferred.
@@ -158,6 +158,6 @@ depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 **All passes complete.** Pass 1, the source-based depth-verify, and web pass 2 have
 each run; **no 🔍 tickets remain.** Every ticket is now ✔ done, ✅ verified-present,
 ⛔ a shortlisted gap, or ➖ n/a. The open ⛔ shortlist (highest-value first):
-**T-02** EditableCell · **T-18** horizontal virtualization · **T-32** field `prefix`
-· **T-10** scroll-into-view · **T-22** icon regen (+ the standalone S2
-Toast-animations follow-up).
+**T-02** EditableCell · **T-18** horizontal virtualization · **T-10**
+scroll-into-view · **T-22** icon regen (+ the standalone S2 Toast-animations
+follow-up).

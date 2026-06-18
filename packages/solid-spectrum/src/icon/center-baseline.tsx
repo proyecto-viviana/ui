@@ -13,6 +13,7 @@ export const centerBaselineBefore = css(
 ) as StyleString;
 
 export interface CenterBaselineProps {
+  id?: string;
   style?: JSX.CSSProperties;
   styles?: StyleString | (() => StyleString | undefined);
   children: JSX.Element;
@@ -24,6 +25,7 @@ export function CenterBaseline(props: CenterBaselineProps): JSX.Element {
 
   return (
     <div
+      id={props.id}
       slot={props.slot}
       style={props.style}
       class={mergeStyles(centerBaselineClass, styles()) + " " + centerBaselineBefore}

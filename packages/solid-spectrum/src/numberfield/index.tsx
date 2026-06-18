@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { type JSX, createSignal, splitProps, Show, useContext } from "solid-js";
+import { type JSX, createSignal, createUniqueId, splitProps, Show, useContext } from "solid-js";
 import {
   NumberField as HeadlessNumberField,
   NumberFieldLabel as HeadlessNumberFieldLabel,
@@ -27,6 +27,7 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import AddIcon from "../icon/ui-icons/Add";
 import DashIcon from "../icon/ui-icons/Dash";
+import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import { useProviderProps } from "../provider";
 
 export type NumberFieldSize = "S" | "M" | "L" | "XL";
@@ -63,6 +64,8 @@ export interface NumberFieldProps extends Omit<
   labelAlign?: NumberFieldLabelAlign;
   /** Whether required fields show an icon or text label. */
   necessityIndicator?: NumberFieldNecessityIndicator;
+  /** An icon or text rendered before the input. */
+  prefix?: JSX.Element;
 }
 
 interface NumberFieldStyleProps extends NumberFieldRenderProps {
@@ -415,7 +418,9 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     "labelPosition",
     "labelAlign",
     "necessityIndicator",
+    "prefix",
   ]);
+  const prefixId = createUniqueId();
   const size = () => normalizeNumberFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -537,11 +542,25 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
             data-disabled={renderProps.isDisabled ? "true" : undefined}
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
-            <HeadlessNumberFieldInput
-              class={inputClass}
-              placeholder={local.placeholder}
-              onInput={local.onInput}
-            />
+            <Show
+              when={local.prefix}
+              fallback={
+                <HeadlessNumberFieldInput
+                  class={inputClass}
+                  placeholder={local.placeholder}
+                  onInput={local.onInput}
+                />
+              }
+            >
+              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <PrefixInputProvider context={NumberFieldContext} prefixId={prefixId}>
+                <HeadlessNumberFieldInput
+                  class={inputClass}
+                  placeholder={local.placeholder}
+                  onInput={local.onInput}
+                />
+              </PrefixInputProvider>
+            </Show>
             <Show when={renderProps.isInvalid}>
               <AlertTriangleIcon aria-hidden="true" styles={fieldErrorIcon} />
             </Show>

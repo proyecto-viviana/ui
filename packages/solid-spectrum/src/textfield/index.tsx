@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { type JSX, mergeProps, splitProps, Show, useContext } from "solid-js";
+import { type JSX, createUniqueId, mergeProps, splitProps, Show, useContext } from "solid-js";
 import {
   TextField as HeadlessTextField,
   Label as HeadlessLabel,
@@ -8,6 +8,7 @@ import {
   type TextFieldProps as HeadlessTextFieldProps,
   type TextFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import {
@@ -59,6 +60,8 @@ export interface TextFieldProps extends Omit<
   labelAlign?: TextFieldLabelAlign;
   /** Whether required fields show an icon or text label. */
   necessityIndicator?: TextFieldNecessityIndicator;
+  /** An icon or text rendered before the input, e.g. a unit or protocol. */
+  prefix?: JSX.Element;
 }
 
 interface TextFieldStyleProps extends TextFieldRenderProps {
@@ -311,8 +314,10 @@ export function TextField(props: TextFieldProps): JSX.Element {
     "labelAlign",
     "necessityIndicator",
     "validationState",
+    "prefix",
   ]);
 
+  const prefixId = createUniqueId();
   const size = () => normalizeTextFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -423,7 +428,12 @@ export function TextField(props: TextFieldProps): JSX.Element {
             data-disabled={renderProps.isDisabled ? "true" : undefined}
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
-            <HeadlessInput class={textFieldInput} />
+            <Show when={local.prefix} fallback={<HeadlessInput class={textFieldInput} />}>
+              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <PrefixInputProvider context={TextFieldContext} prefixId={prefixId}>
+                <HeadlessInput class={textFieldInput} />
+              </PrefixInputProvider>
+            </Show>
             <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
               <CenterBaseline>
                 <AlertTriangleIcon styles={fieldErrorIcon} />
