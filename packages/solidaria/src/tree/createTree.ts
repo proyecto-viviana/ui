@@ -36,6 +36,38 @@ export function getTreeData<T extends object, C extends TreeCollection<T>>(
 }
 
 /**
+ * Whether a key should be skipped during keyboard navigation. Disabled keys only
+ * block navigation under `disabledBehavior: "all"` (the default); under
+ * `"selection"` they remain focusable (selection is still blocked elsewhere).
+ * Mirrors `ListKeyboardDelegate.isDisabled` in React Aria.
+ */
+function isNavigationDisabled<T extends object, C extends TreeCollection<T>>(
+  state: TreeState<T, C>,
+  key: Key,
+): boolean {
+  return state.isDisabled(key) && state.disabledBehavior === "all";
+}
+
+/**
+ * Walks from `startKey` via `step` until reaching a key that is navigable (not
+ * disabled for navigation), mirroring React Aria's
+ * `ListKeyboardDelegate.findNextNonDisabled`. `getFirstKey`/`getLastKey` and the
+ * next/previous lookups all funnel through this so arrow keys, Home and End land
+ * on enabled rows only.
+ */
+function findNextNavigableKey<T extends object, C extends TreeCollection<T>>(
+  state: TreeState<T, C>,
+  startKey: Key | null,
+  step: (key: Key) => Key | null,
+): Key | null {
+  let key = startKey;
+  while (key != null && isNavigationDisabled(state, key)) {
+    key = step(key);
+  }
+  return key;
+}
+
+/**
  * Creates accessibility props for a tree.
  */
 export function createTree<T extends object, C extends TreeCollection<T> = TreeCollection<T>>(
@@ -75,31 +107,27 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     switch (e.key) {
       case "ArrowDown": {
         e.preventDefault();
-        if (focusedKey != null) {
-          const nextKey = collection.getKeyAfter(focusedKey);
-          if (nextKey != null) {
-            s.setFocusedKey(nextKey);
-          }
-        } else {
-          const firstKey = collection.getFirstKey();
-          if (firstKey != null) {
-            s.setFocusedKey(firstKey);
-          }
+        const nextKey =
+          focusedKey != null
+            ? findNextNavigableKey(s, collection.getKeyAfter(focusedKey), (k) =>
+                collection.getKeyAfter(k),
+              )
+            : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
+        if (nextKey != null) {
+          s.setFocusedKey(nextKey);
         }
         break;
       }
       case "ArrowUp": {
         e.preventDefault();
-        if (focusedKey != null) {
-          const prevKey = collection.getKeyBefore(focusedKey);
-          if (prevKey != null) {
-            s.setFocusedKey(prevKey);
-          }
-        } else {
-          const lastKey = collection.getLastKey();
-          if (lastKey != null) {
-            s.setFocusedKey(lastKey);
-          }
+        const prevKey =
+          focusedKey != null
+            ? findNextNavigableKey(s, collection.getKeyBefore(focusedKey), (k) =>
+                collection.getKeyBefore(k),
+              )
+            : findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k));
+        if (prevKey != null) {
+          s.setFocusedKey(prevKey);
         }
         break;
       }
@@ -133,7 +161,9 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
       }
       case "Home": {
         e.preventDefault();
-        const firstKey = collection.getFirstKey();
+        const firstKey = findNextNavigableKey(s, collection.getFirstKey(), (k) =>
+          collection.getKeyAfter(k),
+        );
         if (firstKey != null) {
           s.setFocusedKey(firstKey);
         }
@@ -141,7 +171,9 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
       }
       case "End": {
         e.preventDefault();
-        const lastKey = collection.getLastKey();
+        const lastKey = findNextNavigableKey(s, collection.getLastKey(), (k) =>
+          collection.getKeyBefore(k),
+        );
         if (lastKey != null) {
           s.setFocusedKey(lastKey);
         }
@@ -211,9 +243,11 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     const s = state();
     s.setFocused(true);
 
-    // If nothing is focused, focus the first item
+    // If nothing is focused, focus the first navigable item
     if (s.focusedKey == null) {
-      const firstKey = s.collection.getFirstKey();
+      const firstKey = findNextNavigableKey(s, s.collection.getFirstKey(), (k) =>
+        s.collection.getKeyAfter(k),
+      );
       if (firstKey != null) {
         s.setFocusedKey(firstKey);
       }

@@ -169,7 +169,9 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   };
 
   const toggleSelection = (key: Key) => {
-    if (isDisabled(key) && disabledBehavior() === "all") return;
+    // Disabled keys are never selectable, regardless of disabledBehavior
+    // (mirrors SelectionManager.canSelectItem, which ignores disabledBehavior).
+    if (isDisabled(key)) return;
     if (selectionMode() === "none") return;
 
     const current = selectedKeys();
@@ -203,7 +205,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   };
 
   const replaceSelection = (key: Key) => {
-    if (isDisabled(key) && disabledBehavior() === "all") return;
+    if (isDisabled(key)) return;
     if (selectionMode() === "none") return;
 
     updateSelection(new Set([key]));
@@ -211,7 +213,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   };
 
   const extendSelection = (toKey: Key) => {
-    if (isDisabled(toKey) && disabledBehavior() === "all") return;
+    if (isDisabled(toKey)) return;
     if (selectionMode() !== "multiple") {
       replaceSelection(toKey);
       return;
@@ -329,6 +331,9 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
     },
     get disabledKeys() {
       return disabledKeys();
+    },
+    get disabledBehavior() {
+      return disabledBehavior();
     },
     get expandedKeys() {
       return expandedKeys();

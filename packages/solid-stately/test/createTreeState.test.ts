@@ -455,6 +455,46 @@ describe("createTreeState", () => {
         dispose();
       });
     });
+
+    it("should not select disabled items even when disabledBehavior is 'selection'", () => {
+      createRoot((dispose) => {
+        const items = createTestItems();
+        const state = createState(
+          () => ({
+            selectionMode: "single",
+            disabledKeys: ["1"],
+            disabledBehavior: "selection",
+          }),
+          items,
+        );
+
+        // canSelectItem blocks disabled keys regardless of disabledBehavior, so a
+        // 'selection'-disabled key still cannot be toggled, replaced, or extended.
+        state.toggleSelection("1");
+        expect(state.isSelected("1")).toBe(false);
+
+        state.replaceSelection("1");
+        expect(state.isSelected("1")).toBe(false);
+
+        // A non-disabled key is still selectable under 'selection'.
+        state.toggleSelection("2");
+        expect(state.isSelected("2")).toBe(true);
+
+        dispose();
+      });
+    });
+
+    it("should expose the resolved disabledBehavior (default 'all')", () => {
+      createRoot((dispose) => {
+        const items = createTestItems();
+        expect(createState(() => ({}), items).disabledBehavior).toBe("all");
+        expect(createState(() => ({ disabledBehavior: "selection" }), items).disabledBehavior).toBe(
+          "selection",
+        );
+
+        dispose();
+      });
+    });
   });
 
   describe("focus state", () => {

@@ -81,6 +81,8 @@ export interface TreeState<T, C extends TreeCollection<T> = TreeCollection<T>> {
   readonly collection: C;
   /** Keys of disabled items. */
   readonly disabledKeys: Set<Key>;
+  /** Whether `disabledKeys` applies to all interactions, or only selection. */
+  readonly disabledBehavior: "selection" | "all";
   /** Keys of expanded items. */
   readonly expandedKeys: Set<Key>;
   /** Whether keyboard navigation is disabled. */

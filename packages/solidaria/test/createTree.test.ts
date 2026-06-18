@@ -47,6 +47,7 @@ function createState(
     defaultExpandedKeys?: Iterable<string | number>;
     selectionMode?: "none" | "single" | "multiple";
     disabledKeys?: Iterable<string | number>;
+    disabledBehavior?: "selection" | "all";
   } = {},
 ): TreeState<TestItem, TreeCollection<TestItem>> {
   const items = createTestItems();
@@ -707,6 +708,100 @@ describe("createTreeItem ARIA parity", () => {
       );
 
       expect(item.expandButtonProps["aria-labelledby"]).toBeUndefined();
+
+      dispose();
+    });
+  });
+});
+
+describe("createTree disabled key navigation parity", () => {
+  // Dispatch a keydown through the tree's onKeyDown handler.
+  const press = (treeProps: { onKeyDown?: unknown }, key: string) => {
+    (treeProps.onKeyDown as ((e: KeyboardEvent) => void) | undefined)?.({
+      key,
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+    } as unknown as KeyboardEvent);
+  };
+
+  it("ArrowDown/ArrowUp skip disabled rows under the default 'all' behavior", () => {
+    createRoot((dispose) => {
+      // Visible rows: 1, 1.1 (disabled), 1.2, 2
+      const state = createState({ defaultExpandedKeys: ["1"], disabledKeys: ["1.1"] });
+      const [ref] = createSignal<HTMLDivElement | null>(null);
+      const { treeProps } = createTree(
+        () => ({}),
+        () => state,
+        ref,
+      );
+
+      state.setFocusedKey("1");
+      press(treeProps, "ArrowDown");
+      expect(state.focusedKey).toBe("1.2"); // skipped 1.1
+
+      press(treeProps, "ArrowUp");
+      expect(state.focusedKey).toBe("1"); // skipped 1.1 going back
+
+      dispose();
+    });
+  });
+
+  it("ArrowDown lands on a disabled row under disabledBehavior 'selection'", () => {
+    createRoot((dispose) => {
+      const state = createState({
+        defaultExpandedKeys: ["1"],
+        disabledKeys: ["1.1"],
+        disabledBehavior: "selection",
+      });
+      const [ref] = createSignal<HTMLDivElement | null>(null);
+      const { treeProps } = createTree(
+        () => ({}),
+        () => state,
+        ref,
+      );
+
+      state.setFocusedKey("1");
+      press(treeProps, "ArrowDown");
+      expect(state.focusedKey).toBe("1.1"); // focusable; only selection is disabled
+
+      dispose();
+    });
+  });
+
+  it("Home and End land on the first/last enabled row under 'all'", () => {
+    createRoot((dispose) => {
+      // Visible rows: 1 (disabled), 1.1, 1.2, 2 (disabled)
+      const state = createState({ defaultExpandedKeys: ["1"], disabledKeys: ["1", "2"] });
+      const [ref] = createSignal<HTMLDivElement | null>(null);
+      const { treeProps } = createTree(
+        () => ({}),
+        () => state,
+        ref,
+      );
+
+      press(treeProps, "Home");
+      expect(state.focusedKey).toBe("1.1"); // first enabled
+
+      press(treeProps, "End");
+      expect(state.focusedKey).toBe("1.2"); // last enabled
+
+      dispose();
+    });
+  });
+
+  it("focusing the tree enters on the first enabled row under 'all'", () => {
+    createRoot((dispose) => {
+      // Root row "1" is disabled; first enabled visible row is "1.1".
+      const state = createState({ defaultExpandedKeys: ["1"], disabledKeys: ["1"] });
+      const [ref] = createSignal<HTMLDivElement | null>(null);
+      const { treeProps } = createTree(
+        () => ({}),
+        () => state,
+        ref,
+      );
+
+      (treeProps.onFocus as ((e: FocusEvent) => void) | undefined)?.({} as FocusEvent);
+      expect(state.focusedKey).toBe("1.1");
 
       dispose();
     });
