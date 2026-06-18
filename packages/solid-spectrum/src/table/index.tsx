@@ -421,8 +421,47 @@ const rowSelectedBackground = colorMix("gray-25", "gray-900", 7);
 const rowHighlightBackground = colorMix("gray-25", "blue-900", 10);
 const rowHighlightActiveBackground = colorMix("gray-25", "blue-900", 15);
 
+// The S2 highlight-selection "block" border — the blue outline around a run of
+// selected rows, rounded only on the group's outer corners — is a row-spanning
+// overlay. The S2 style() macro can't express a pseudo-element, so (exactly like
+// upstream's `highlightSelectionBorder` raw css) we inject a `::before` overlay
+// that reads the per-row custom properties the macro sets on the row. Upstream
+// also pins it to `z-index: 3` to paint above the virtualizer's sticky cells; our
+// real-DOM <table> has no sticky cells, so that part is dropped.
+const HIGHLIGHT_SELECTION_BORDER_CLASS = "solid-spectrum-table-highlight-selection";
+let highlightSelectionBorderInjected = false;
+function injectHighlightSelectionBorderCSS(): void {
+  if (highlightSelectionBorderInjected || typeof document === "undefined") return;
+  const style = document.createElement("style");
+  style.id = "solid-spectrum-table-highlight-selection-style";
+  style.textContent = `.${HIGHLIGHT_SELECTION_BORDER_CLASS}::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  border-style: solid;
+  border-color: var(--borderColor);
+  border-top-width: var(--borderTopWidth);
+  border-bottom-width: var(--borderBottomWidth);
+  border-inline-start-width: var(--borderStartEndWidth);
+  border-inline-end-width: var(--borderStartEndWidth);
+  border-start-start-radius: var(--borderTopRadius);
+  border-start-end-radius: var(--borderTopRadius);
+  border-end-start-radius: var(--borderBottomRadius);
+  border-end-end-radius: var(--borderBottomRadius);
+}`;
+  document.head.appendChild(style);
+  highlightSelectionBorderInjected = true;
+}
+
 const tableRow = style<
-  TableRowRenderProps & { density?: TableDensity; selectionStyle?: TableSelectionStyle }
+  TableRowRenderProps & {
+    density?: TableDensity;
+    selectionStyle?: TableSelectionStyle;
+    isNextSelected?: boolean;
+    isPrevSelected?: boolean;
+  }
 >({
   outlineStyle: "none",
   position: "relative",
@@ -466,6 +505,110 @@ const tableRow = style<
       },
     },
   },
+  // Highlight-selection block border + grouped rounded corners. These custom
+  // properties feed the `::before` overlay (see injectHighlightSelectionBorderCSS)
+  // and only take visible effect in highlight selection — the overlay class is
+  // appended to the row only then. Mirrors @react-spectrum/s2 TableView's `row`.
+  "--borderColorGray": {
+    type: "borderColor",
+    value: {
+      default: "gray-300",
+      forcedColors: {
+        default: "ButtonBorder",
+        isSelected: "Highlight",
+      },
+    },
+  },
+  "--borderColorBlue": {
+    type: "borderColor",
+    value: {
+      default: "blue-900",
+      forcedColors: "Highlight",
+    },
+  },
+  "--borderColor": {
+    type: "borderColor",
+    value: {
+      default: "transparent",
+      isSelected: "--borderColorBlue",
+    },
+  },
+  "--borderTopRadius": {
+    type: "borderTopStartRadius",
+    value: {
+      default: "none",
+      selectionStyle: {
+        highlight: {
+          default: "none",
+          isSelected: "[5px]",
+          isPrevSelected: "none",
+        },
+      },
+    },
+  },
+  "--borderBottomRadius": {
+    type: "borderBottomStartRadius",
+    value: {
+      default: "none",
+      selectionStyle: {
+        highlight: {
+          default: "none",
+          isSelected: "[5px]",
+          isNextSelected: "none",
+        },
+      },
+    },
+  },
+  // Round the row's own background to the selection block's outer corners; the
+  // visible blue border is drawn by the ::before overlay reading the same props.
+  borderBottomRadius: "[var(--borderBottomRadius)]",
+  borderTopRadius: "[var(--borderTopRadius)]",
+  "--borderTopWidth": {
+    type: "width",
+    value: {
+      default: {
+        selectionStyle: {
+          checkbox: 0,
+          highlight: 1,
+        },
+      },
+      isPrevSelected: 0,
+    },
+  },
+  "--borderBottomWidth": {
+    type: "width",
+    value: {
+      default: {
+        selectionStyle: {
+          checkbox: 0,
+          highlight: 1,
+        },
+      },
+      isNextSelected: 0,
+    },
+  },
+  "--borderStartEndWidth": {
+    type: "width",
+    value: {
+      default: {
+        selectionStyle: {
+          checkbox: 0,
+          highlight: 1,
+        },
+      },
+    },
+  },
+  // Highlight mode draws the gray row divider as the row's box-shadow (checkbox
+  // mode keeps it on the cell's bottom border), suppressed within a selected
+  // block via isNextSelected. Mirrors upstream's `boxShadow`.
+  boxShadow: {
+    selectionStyle: {
+      highlight: {
+        default: "[inset 0 -1px 0px var(--borderColorGray)]",
+        isNextSelected: "[inset 0 0 0 var(--borderColorGray)]",
+      },
+    },
+  },
 });
 
 const tableCell = style<
@@ -475,6 +618,7 @@ const tableCell = style<
     overflowMode?: TableOverflowMode;
     showDivider?: boolean;
     isTreeColumnWithNoChildren?: boolean;
+    selectionStyle?: TableSelectionStyle;
   }
 >({
   ...focusRing(),
@@ -515,7 +659,14 @@ const tableCell = style<
   },
   verticalAlign: "middle",
   borderWidth: 0,
-  borderBottomWidth: 1,
+  // Checkbox mode draws the gray row divider here; highlight mode draws it as the
+  // row's box-shadow instead, so the cell border is suppressed to avoid doubling.
+  borderBottomWidth: {
+    default: 1,
+    selectionStyle: {
+      highlight: 0,
+    },
+  },
   borderStyle: "solid",
   borderColor: "gray-300",
   borderEndWidth: {
@@ -605,6 +756,7 @@ const editableCell = style<
     overflowMode?: TableOverflowMode;
     showDivider?: boolean;
     isSaving?: boolean;
+    selectionStyle?: TableSelectionStyle;
   }
 >({
   ...focusRing(),
@@ -632,7 +784,14 @@ const editableCell = style<
   },
   verticalAlign: "middle",
   borderWidth: 0,
-  borderBottomWidth: 1,
+  // Checkbox mode draws the gray row divider here; highlight mode draws it as the
+  // row's box-shadow instead, so the cell border is suppressed to avoid doubling.
+  borderBottomWidth: {
+    default: 1,
+    selectionStyle: {
+      highlight: 0,
+    },
+  },
   borderStyle: "solid",
   borderColor: "gray-300",
   borderEndWidth: {
@@ -1157,6 +1316,7 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
 
 export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element {
   const context = useContext(TableContext);
+  const state = useContext(HeadlessTableStateContext);
   const [local, headlessProps] = splitProps(props, [
     "children",
     "class",
@@ -1165,8 +1325,32 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     "UNSAFE_style",
   ]);
   const rowKey = () => keyFromRowProps(headlessProps);
-  const className = (renderProps: TableRowRenderProps): string =>
-    [
+  // In highlight selection mode a contiguous run of selected rows draws a single
+  // rounded border "block" (see injectHighlightSelectionBorderCSS). Mirror
+  // upstream's isNextSelected/isPrevSelected helpers so the macro can suppress the
+  // inner edges and corner radii wherever the adjacent row is also selected. The
+  // reads below run inside useRenderProps' class memo, so toggling a neighbor's
+  // selection re-runs this row's class even though its own renderProps are stable.
+  const isKeySelected = (key: Key | null | undefined): boolean => {
+    if (key == null || !state) return false;
+    const selected = state.selectedKeys;
+    return selected === "all" || selected.has(key);
+  };
+  const isNextSelected = (): boolean => {
+    const k = rowKey();
+    if (k == null || !state) return false;
+    return isKeySelected(state.collection.getKeyAfter?.(k) ?? null);
+  };
+  const isPrevSelected = (): boolean => {
+    const k = rowKey();
+    if (k == null || !state) return false;
+    return isKeySelected(state.collection.getKeyBefore?.(k) ?? null);
+  };
+  const className = (renderProps: TableRowRenderProps): string => {
+    const highlight = context.selectionStyle === "highlight";
+    if (highlight) injectHighlightSelectionBorderCSS();
+    return [
+      highlight ? HIGHLIGHT_SELECTION_BORDER_CLASS : undefined,
       local.UNSAFE_className,
       local.class,
       mergeStyles(
@@ -1174,12 +1358,15 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
           ...renderProps,
           density: context.density,
           selectionStyle: context.selectionStyle,
+          isNextSelected: isNextSelected(),
+          isPrevSelected: isPrevSelected(),
         }),
         local.styles,
       ),
     ]
       .filter(Boolean)
       .join(" ");
+  };
 
   return (
     <HeadlessTableRow {...headlessProps} class={className} style={local.UNSAFE_style}>
@@ -1243,6 +1430,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
           overflowMode: context.overflowMode,
           showDivider: !!local.showDivider,
           isTreeColumnWithNoChildren: renderProps.isTreeColumn && !renderProps.hasChildItems,
+          selectionStyle: context.selectionStyle,
         }),
         local.styles,
       ),
@@ -1327,6 +1515,7 @@ export function EditableCell(props: EditableCellProps): JSX.Element {
           overflowMode: context.overflowMode,
           showDivider: !!local.showDivider,
           isSaving: !!local.isSaving,
+          selectionStyle: context.selectionStyle,
         }),
         local.styles,
       ),

@@ -100,6 +100,46 @@ function TestTable(props: {
   );
 }
 
+function HighlightTable(props: {
+  selectedKeys: Iterable<string>;
+  selectionStyle?: "checkbox" | "highlight";
+}) {
+  return (
+    <Table
+      aria-label="People"
+      items={rows}
+      columns={columns}
+      getKey={(row) => row.id}
+      selectionMode="multiple"
+      selectionStyle={props.selectionStyle ?? "highlight"}
+      defaultSelectedKeys={props.selectedKeys}
+    >
+      {() => (
+        <>
+          <TableHeader>
+            <TableColumn id="name">{() => <>Name</>}</TableColumn>
+            <TableColumn id="role">{() => <>Role</>}</TableColumn>
+            <TableColumn id="status">{() => <>Status</>}</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {(row) => (
+              <TableRow id={row.id} item={row}>
+                {() => (
+                  <>
+                    <TableCell>{() => <>{row.name}</>}</TableCell>
+                    <TableCell>{() => <>{row.role}</>}</TableCell>
+                    <TableCell>{() => <>{row.status}</>}</TableCell>
+                  </>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </>
+      )}
+    </Table>
+  );
+}
+
 describe("TableView (solid-spectrum)", () => {
   afterEach(() => cleanup());
 
@@ -319,6 +359,57 @@ describe("TableView (solid-spectrum)", () => {
     expect(alice).not.toHaveAttribute("data-selected");
     expect(bob).toHaveAttribute("data-selected", "true");
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["bob"]));
+  });
+
+  it("injects the highlight-selection block overlay and tags only highlight rows", () => {
+    render(() => <HighlightTable selectedKeys={["alice"]} />);
+
+    // The rounded blue block border can't be expressed by the style() macro
+    // (it's a pseudo-element), so it's injected once as a shared stylesheet that
+    // reads the per-row custom properties the macro sets.
+    const styleEl = document.getElementById("solid-spectrum-table-highlight-selection-style");
+    expect(styleEl).not.toBeNull();
+    const css = styleEl?.textContent ?? "";
+    expect(css).toContain(".solid-spectrum-table-highlight-selection::before");
+    expect(css).toContain("border-color: var(--borderColor)");
+    expect(css).toContain("border-start-start-radius: var(--borderTopRadius)");
+    expect(css).toContain("border-end-start-radius: var(--borderBottomRadius)");
+
+    const alice = screen.getByRole("row", { name: /Alice/ });
+    expect(alice.className).toContain("solid-spectrum-table-highlight-selection");
+
+    cleanup();
+
+    // Checkbox mode never opts into the overlay class, so its ::before stays inert.
+    render(() => <HighlightTable selectedKeys={["alice"]} selectionStyle="checkbox" />);
+    expect(screen.getByRole("row", { name: /Alice/ }).className).not.toContain(
+      "solid-spectrum-table-highlight-selection",
+    );
+  });
+
+  it("suppresses the inner block edges for contiguous selected rows", () => {
+    // Alice sits directly above Bob. Selecting both makes alice.isNextSelected
+    // and bob.isPrevSelected true, which the macro hashes into a different row
+    // class (suppressed inner border width + radius) than an isolated single-row
+    // selection. jsdom loads no macro CSS, so we assert the class changes.
+    const rowClass = (name: RegExp) => screen.getByRole("row", { name }).className;
+
+    render(() => <HighlightTable selectedKeys={["alice", "bob"]} />);
+    const aliceContiguous = rowClass(/Alice/);
+    const bobContiguous = rowClass(/Bob/);
+    cleanup();
+
+    render(() => <HighlightTable selectedKeys={["alice"]} />);
+    const aliceIsolated = rowClass(/Alice/);
+    cleanup();
+
+    render(() => <HighlightTable selectedKeys={["bob"]} />);
+    const bobIsolated = rowClass(/Bob/);
+
+    // Alice's bottom edge collapses once the row below is also selected.
+    expect(aliceContiguous).not.toBe(aliceIsolated);
+    // Bob's top edge collapses once the row above is also selected.
+    expect(bobContiguous).not.toBe(bobIsolated);
   });
 
   it("selects rows on pointer up by default to match S2 press timing", () => {
