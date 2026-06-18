@@ -26,6 +26,7 @@ function createBasicListState(
     selectionMode?: "none" | "single" | "multiple";
     defaultSelectedKeys?: Iterable<string>;
     disabledKeys?: Iterable<string>;
+    disabledBehavior?: "selection" | "all";
     disallowEmptySelection?: boolean;
   } = {},
 ) {
@@ -43,6 +44,7 @@ function createBasicListState(
     selectionMode: options.selectionMode ?? "single",
     defaultSelectedKeys: options.defaultSelectedKeys,
     disabledKeys: options.disabledKeys,
+    disabledBehavior: options.disabledBehavior,
     disallowEmptySelection: options.disallowEmptySelection,
   });
 }
@@ -497,6 +499,44 @@ describe("createListBox", () => {
         (listBoxProps.onKeyDown as any)?.(event);
 
         expect(state.focusedKey()).toBe("c");
+        dispose();
+      });
+    });
+
+    it("does not skip disabled items during navigation under disabledBehavior 'selection'", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({
+          disabledKeys: ["b"],
+          disabledBehavior: "selection",
+        });
+        const { listBoxProps } = createListBox({}, state);
+
+        state.setFocusedKey("a");
+        // b is disabled for selection only, so it stays focusable.
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowDown"));
+
+        expect(state.focusedKey()).toBe("b");
+        dispose();
+      });
+    });
+
+    it("still blocks selection of a disabled-for-selection item", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({
+          selectionMode: "multiple",
+          disabledKeys: ["b"],
+          disabledBehavior: "selection",
+        });
+        const { listBoxProps } = createListBox({}, state);
+
+        state.setFocusedKey("a");
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowDown"));
+        expect(state.focusedKey()).toBe("b");
+
+        // Space on the disabled-for-selection row must not select it.
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent(" "));
+        expect(state.selectedKeys()).not.toBe("all");
+        expect((state.selectedKeys() as Set<string>).has("b")).toBe(false);
         dispose();
       });
     });

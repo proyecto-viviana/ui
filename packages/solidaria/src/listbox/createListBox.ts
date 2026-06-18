@@ -87,6 +87,17 @@ export function getListBoxData(state: ListState): ListBoxData | undefined {
   return listBoxData.get(state);
 }
 
+/**
+ * Whether a key should be skipped during keyboard navigation. Disabled keys only
+ * block navigation under `disabledBehavior: "all"` (the default); under
+ * `"selection"` they stay focusable (selection is still blocked elsewhere).
+ * Mirrors `ListKeyboardDelegate.isDisabled` in React Aria, which gates the skip
+ * on the resolved `disabledBehavior` from the selection manager.
+ */
+function isNavigationDisabled<T>(state: ListState<T>, key: Key): boolean {
+  return state.isDisabled(key) && state.disabledBehavior() === "all";
+}
+
 function findNextEnabledKey<T>(
   state: ListState<T>,
   currentKey: Key | null,
@@ -102,13 +113,13 @@ function findNextEnabledKey<T>(
     direction === "next" ? () => collection.getFirstKey() : () => collection.getLastKey();
 
   let key = currentKey != null ? getAdjacentKey(currentKey) : getBoundaryKey();
-  while (key != null && state.isDisabled(key)) {
+  while (key != null && isNavigationDisabled(state, key)) {
     key = getAdjacentKey(key);
   }
 
   if (key == null && wrap) {
     key = getBoundaryKey();
-    while (key != null && state.isDisabled(key)) {
+    while (key != null && isNavigationDisabled(state, key)) {
       key = getAdjacentKey(key);
     }
   }
