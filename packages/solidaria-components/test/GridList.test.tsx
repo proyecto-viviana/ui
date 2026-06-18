@@ -566,6 +566,94 @@ describe("GridList", () => {
   });
 
   // ============================================
+  // ORIENTATION-AWARE ARROW NAVIGATION
+  // ============================================
+
+  describe("orientation-aware keyboard navigation", () => {
+    const renderNav = (props: { orientation?: "horizontal" | "vertical" } = {}): HTMLElement => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+          orientation={props.orientation}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+      const grid = screen.getByRole("grid", { name: "Fruits" });
+      // Focusing the empty-focus grid moves focus to the first row (roving
+      // tabindex: the focused row is the only tabbable one).
+      fireEvent.focus(grid);
+      return grid;
+    };
+
+    const focusedIndex = (): number =>
+      screen.getAllByRole("row").findIndex((row) => row.getAttribute("tabindex") === "0");
+
+    it("moves focus along the inline axis with Left/Right in a horizontal stack", () => {
+      // Mirrors upstream ListKeyboardDelegate: a horizontal stack promotes
+      // Left/Right to the primary axis (Right=next, Left=prev in LTR), while
+      // Up/Down keep working too.
+      const grid = renderNav({ orientation: "horizontal" });
+      expect(focusedIndex()).toBe(0);
+
+      fireEvent.keyDown(grid, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(1);
+
+      fireEvent.keyDown(grid, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(2);
+
+      fireEvent.keyDown(grid, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(1);
+
+      // The block axis still navigates in a horizontal stack.
+      fireEvent.keyDown(grid, { key: "ArrowDown" });
+      expect(focusedIndex()).toBe(2);
+      fireEvent.keyDown(grid, { key: "ArrowUp" });
+      expect(focusedIndex()).toBe(1);
+    });
+
+    it("leaves Left/Right inert in a vertical stack (default), keeping Up/Down primary", () => {
+      // Upstream strips getKeyLeftOf/getKeyRightOf for a vertical stack, so the
+      // inline arrows are no-ops; the block axis drives navigation.
+      const grid = renderNav();
+      expect(focusedIndex()).toBe(0);
+
+      fireEvent.keyDown(grid, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(0);
+      fireEvent.keyDown(grid, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(0);
+
+      fireEvent.keyDown(grid, { key: "ArrowDown" });
+      expect(focusedIndex()).toBe(1);
+    });
+
+    it("flips the inline axis under RTL in a horizontal stack", () => {
+      // Upstream feeds direction into the delegate so Right=prev / Left=next in
+      // RTL. resolveDirection falls back to document.dir in jsdom (computed
+      // `direction` isn't derived from the dir attribute there).
+      document.dir = "rtl";
+      try {
+        const grid = renderNav({ orientation: "horizontal" });
+        expect(focusedIndex()).toBe(0);
+
+        fireEvent.keyDown(grid, { key: "ArrowLeft" });
+        expect(focusedIndex()).toBe(1);
+
+        fireEvent.keyDown(grid, { key: "ArrowRight" });
+        expect(focusedIndex()).toBe(0);
+      } finally {
+        document.dir = "";
+      }
+    });
+  });
+
+  // ============================================
   // DISABLED KEYS
   // ============================================
 

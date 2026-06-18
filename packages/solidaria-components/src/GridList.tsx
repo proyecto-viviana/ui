@@ -359,6 +359,16 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     return keys;
   });
 
+  const orientation = (): Orientation => local.orientation ?? "vertical";
+  const resolveDirection = (): "ltr" | "rtl" => {
+    const el = ref();
+    if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+      const dir = window.getComputedStyle(el).direction;
+      if (dir === "rtl") return "rtl";
+    }
+    return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
+  };
+
   const state = createGridState<T, GridCollection<T>>(() => ({
     collection: collection(),
     disabledKeys: allDisabledKeys(),
@@ -379,14 +389,14 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       onAction: ariaProps.onAction,
       isDisabled: ariaProps.isDisabled,
       selectionBehavior: stateProps.selectionBehavior,
+      orientation: orientation(),
+      direction: resolveDirection(),
     }),
     () => state,
     ref,
   );
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
-
-  const orientation = (): Orientation => local.orientation ?? "vertical";
   const renderValues = createMemo<GridListRenderProps>(() => ({
     isFocused: state.isFocused || isFocused(),
     isFocusVisible: isFocusVisible(),
@@ -468,14 +478,6 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     const hooks = local.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => {
-      const el = ref();
-      if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-        const dir = window.getComputedStyle(el).direction;
-        if (dir === "rtl") return "rtl";
-      }
-      return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-    };
     const dropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??

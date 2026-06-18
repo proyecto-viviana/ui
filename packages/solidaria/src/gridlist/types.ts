@@ -28,6 +28,18 @@ export interface AriaGridListProps {
   selectionBehavior?: "replace" | "toggle";
   /** Whether the grid list is disabled. */
   isDisabled?: boolean;
+  /**
+   * The primary orientation of the items. In a horizontal stack the inline
+   * (left/right) axis becomes the primary keyboard-navigation axis.
+   * @default "vertical"
+   */
+  orientation?: "horizontal" | "vertical";
+  /**
+   * The text direction, used to flip the inline navigation axis in a horizontal
+   * orientation.
+   * @default "ltr"
+   */
+  direction?: "ltr" | "rtl";
 }
 
 /**

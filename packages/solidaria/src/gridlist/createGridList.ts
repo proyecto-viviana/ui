@@ -104,6 +104,32 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         }
         break;
       }
+      case "ArrowRight":
+      case "ArrowLeft": {
+        // Horizontal orientation promotes the inline axis to the primary
+        // navigation axis. Upstream's ListKeyboardDelegate strips
+        // getKeyLeftOf/getKeyRightOf for a vertical stack, so Left/Right stay
+        // no-ops there; in a horizontal stack they move prev/next, flipped
+        // under RTL (Right=next, Left=prev in LTR).
+        if (p.orientation !== "horizontal") break;
+        e.preventDefault();
+        const isRtl = p.direction === "rtl";
+        const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
+        if (focusedKey != null) {
+          const nextKey = forward
+            ? collection.getKeyAfter(focusedKey)
+            : collection.getKeyBefore(focusedKey);
+          if (nextKey != null) {
+            s.setFocusedKey(nextKey);
+          }
+        } else {
+          const firstKey = collection.getFirstKey();
+          if (firstKey != null) {
+            s.setFocusedKey(firstKey);
+          }
+        }
+        break;
+      }
       case "Home": {
         e.preventDefault();
         const firstKey = collection.getFirstKey();
