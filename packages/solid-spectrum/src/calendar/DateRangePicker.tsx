@@ -422,7 +422,11 @@ function DateRangeDisplay(props: {
   maxVisibleMonths?: number;
   minValue?: DateValue;
   maxValue?: DateValue;
-  isDateUnavailable?: (date: DateValue) => boolean;
+  // Anchor-aware, matching the RangeCalendar / RangeCalendarStateProps callback
+  // this forwards through (the second arg is the in-progress range's anchor date,
+  // null outside an active range selection). Mirrors upstream's
+  // useRangeCalendarState / DateRangePicker signature.
+  isDateUnavailable?: (date: DateValue, anchorDate: CalendarDate | null) => boolean;
   allowsNonContiguousRanges?: boolean;
   createCalendar?: HeadlessDateRangePickerProps["createCalendar"];
   firstDayOfWeek?: DateRangePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
