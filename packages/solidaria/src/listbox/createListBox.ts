@@ -225,9 +225,13 @@ export function createListBox<T>(
 
     switch (e.key) {
       case "ArrowDown": {
-        e.preventDefault();
+        // Only consume the key once a target exists. Mirrors
+        // useSelectableCollection (ArrowDown, 211-225): preventDefault is called
+        // inside `if (nextKey != null)`, so at the last item without wrap the
+        // arrow is left alone to bubble (e.g. to scroll an enclosing region).
         const nextKey = findNextEnabledKey(state, state.focusedKey(), "next", shouldWrap);
         if (nextKey != null) {
+          e.preventDefault();
           state.setFocusedKey(nextKey);
           if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
             state.replaceSelection(nextKey);
@@ -238,9 +242,9 @@ export function createListBox<T>(
         break;
       }
       case "ArrowUp": {
-        e.preventDefault();
         const prevKey = findNextEnabledKey(state, state.focusedKey(), "prev", shouldWrap);
         if (prevKey != null) {
+          e.preventDefault();
           state.setFocusedKey(prevKey);
           if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
             state.replaceSelection(prevKey);
@@ -258,7 +262,6 @@ export function createListBox<T>(
         // no-ops there; in a horizontal stack they move prev/next, flipped
         // under RTL (Right=next, Left=prev in LTR).
         if (p.orientation !== "horizontal") break;
-        e.preventDefault();
         const isRtl = p.direction === "rtl";
         const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
         const focusedKey = state.focusedKey();
@@ -268,7 +271,10 @@ export function createListBox<T>(
           focusedKey != null
             ? findNextEnabledKey(state, focusedKey, forward ? "next" : "prev", shouldWrap)
             : findNextEnabledKey(state, null, "next", false);
+        // As with the block axis, only swallow the key when it moves focus
+        // (useSelectableCollection ArrowLeft/Right, 243-280).
         if (nextKey != null) {
+          e.preventDefault();
           state.setFocusedKey(nextKey);
           if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
             state.replaceSelection(nextKey);
@@ -279,6 +285,10 @@ export function createListBox<T>(
         break;
       }
       case "Home": {
+        // Mirror useSelectableCollection (Home, 283-285): with nothing focused,
+        // Shift+Home has no anchor to extend a selection from, so leave the
+        // event alone (no focus move, no preventDefault).
+        if (state.focusedKey() == null && e.shiftKey) break;
         e.preventDefault();
         const firstKey = findNextEnabledKey(state, null, "next", false);
         if (firstKey != null) {
@@ -293,6 +303,8 @@ export function createListBox<T>(
         break;
       }
       case "End": {
+        // Mirror useSelectableCollection (End, 300-302): same anchor guard as Home.
+        if (state.focusedKey() == null && e.shiftKey) break;
         e.preventDefault();
         const lastKey = findNextEnabledKey(state, null, "prev", false);
         if (lastKey != null) {

@@ -628,6 +628,130 @@ describe("createListBox", () => {
       });
     });
 
+    it("prevents default on an arrow key that actually moves focus", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({}, state);
+
+        state.setFocusedKey("a");
+        const event = createMockKeyboardEvent("ArrowDown");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        expect(state.focusedKey()).toBe("b");
+        expect(event.preventDefault).toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("leaves ArrowDown alone at the last item when wrapping is off", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({ shouldFocusWrap: false }, state);
+
+        state.setFocusedKey("e");
+        const event = createMockKeyboardEvent("ArrowDown");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        // No target: the event must bubble (e.g. to scroll an enclosing region)
+        // instead of being swallowed.
+        expect(state.focusedKey()).toBe("e");
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("leaves ArrowUp alone at the first item when wrapping is off", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({ shouldFocusWrap: false }, state);
+
+        state.setFocusedKey("a");
+        const event = createMockKeyboardEvent("ArrowUp");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        expect(state.focusedKey()).toBe("a");
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("still consumes ArrowDown at the last item when wrapping is on", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({ shouldFocusWrap: true }, state);
+
+        state.setFocusedKey("e");
+        const event = createMockKeyboardEvent("ArrowDown");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        expect(state.focusedKey()).toBe("a");
+        expect(event.preventDefault).toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("leaves ArrowRight alone at the last item of a horizontal listbox without wrap", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({ orientation: "horizontal" }, state);
+
+        state.setFocusedKey("e");
+        const event = createMockKeyboardEvent("ArrowRight");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        expect(state.focusedKey()).toBe("e");
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("leaves Shift+Home alone when nothing is focused", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({ selectionMode: "multiple" });
+        const { listBoxProps } = createListBox({}, state);
+
+        expect(state.focusedKey()).toBeNull();
+        const event = createMockKeyboardEvent("Home", { shiftKey: true });
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        // No anchor to extend from: don't move focus and don't swallow the key.
+        expect(state.focusedKey()).toBeNull();
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("leaves Shift+End alone when nothing is focused", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({ selectionMode: "multiple" });
+        const { listBoxProps } = createListBox({}, state);
+
+        expect(state.focusedKey()).toBeNull();
+        const event = createMockKeyboardEvent("End", { shiftKey: true });
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        expect(state.focusedKey()).toBeNull();
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("still moves to the first item on Home with no focus and no shift", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { listBoxProps } = createListBox({}, state);
+
+        expect(state.focusedKey()).toBeNull();
+        const event = createMockKeyboardEvent("Home");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        // The guard is shift-specific: plain Home still enters at the first item.
+        expect(state.focusedKey()).toBe("a");
+        expect(event.preventDefault).toHaveBeenCalled();
+        dispose();
+      });
+    });
+
     it("does not toggle selection or fire action for disabled focused items", () => {
       createRoot((dispose) => {
         const onAction = vi.fn();
