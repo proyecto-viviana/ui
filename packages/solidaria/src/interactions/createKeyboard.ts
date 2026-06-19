@@ -46,10 +46,20 @@ function createEventHandler<T extends globalThis.KeyboardEvent>(
   return (e: T) => {
     let shouldStopPropagation = true;
 
+    // A nested createEventHandler may already have installed continuePropagation
+    // on this event; capture it so continuing here continues on the wrapper too.
+    const parentContinuePropagation = (e as { continuePropagation?: () => void })
+      .continuePropagation;
+
     // Create a wrapped event with continuePropagation
     const event = Object.assign(e, {
       continuePropagation() {
         shouldStopPropagation = false;
+        // Nested createEventHandler might have set continuePropagation, so we
+        // should continue propagation on the wrappers too.
+        if (typeof parentContinuePropagation === "function") {
+          parentContinuePropagation.call(e);
+        }
       },
     }) as KeyboardEvent;
 

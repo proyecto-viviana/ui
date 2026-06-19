@@ -108,7 +108,14 @@ export function createFormValidation(
   // Set custom validity on the native input
   createEffect(() => {
     const input = ref();
-    if (validationBehavior() === "native" && input && !input.disabled) {
+    // `'setCustomValidity' in input` guards refs that aren't true form elements
+    // (e.g. a custom element), matching upstream useFormValidation.
+    if (
+      validationBehavior() === "native" &&
+      input &&
+      "setCustomValidity" in input &&
+      !input.disabled
+    ) {
       const realtimeValidation = state.realtimeValidation();
       const errorMessage = realtimeValidation.isInvalid
         ? realtimeValidation.validationErrors.join(" ") || "Invalid value."

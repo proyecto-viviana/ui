@@ -209,6 +209,50 @@ describe("createKeyboard", () => {
       expect(onWrapperKeyDown).toHaveBeenCalledTimes(1);
       expect(onWrapperKeyUp).not.toHaveBeenCalled();
     });
+
+    it("forwards continuePropagation to a parent-wrapped event (nested createEventHandler)", () => {
+      // Simulate an event a parent createEventHandler already wrapped: it carries
+      // its own continuePropagation. When the inner handler continues, the parent's
+      // continuePropagation must fire too and the inner wrapper must not stop.
+      const parentContinuePropagation = vi.fn();
+      const stopPropagation = vi.fn();
+      const onKeyDown = vi.fn((e: KeyboardEvent) => e.continuePropagation());
+
+      const { keyboardProps } = createKeyboard({ onKeyDown });
+
+      const event = {
+        type: "keydown",
+        key: "A",
+        continuePropagation: parentContinuePropagation,
+        stopPropagation,
+      } as unknown as KeyboardEvent;
+
+      (keyboardProps.onKeyDown as unknown as (e: KeyboardEvent) => void)(event);
+
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(parentContinuePropagation).toHaveBeenCalledTimes(1);
+      expect(stopPropagation).not.toHaveBeenCalled();
+    });
+
+    it("leaves a parent continuePropagation untouched when the inner handler does not continue", () => {
+      const parentContinuePropagation = vi.fn();
+      const stopPropagation = vi.fn();
+      const onKeyDown = vi.fn(); // does not continue
+
+      const { keyboardProps } = createKeyboard({ onKeyDown });
+
+      const event = {
+        type: "keydown",
+        key: "A",
+        continuePropagation: parentContinuePropagation,
+        stopPropagation,
+      } as unknown as KeyboardEvent;
+
+      (keyboardProps.onKeyDown as unknown as (e: KeyboardEvent) => void)(event);
+
+      expect(parentContinuePropagation).not.toHaveBeenCalled();
+      expect(stopPropagation).toHaveBeenCalledTimes(1);
+    });
   });
 
   // ============================================

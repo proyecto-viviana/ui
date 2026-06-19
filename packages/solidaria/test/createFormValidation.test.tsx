@@ -71,6 +71,30 @@ describe("createFormValidation", () => {
       expect(input.validationMessage).toBe("");
     });
 
+    it("should not throw when the ref is not a native form element (no setCustomValidity)", () => {
+      // A ref attached to a non-form element (e.g. a custom element) has no
+      // setCustomValidity; the native-mode effect must skip it rather than throw.
+      const TestComponent = () => {
+        let divRef: HTMLDivElement | undefined;
+
+        const validationState = createFormValidationState({
+          value: "",
+          validate: () => "This field is required",
+          validationBehavior: "native",
+        });
+
+        createFormValidation(
+          { validationBehavior: "native" },
+          validationState,
+          () => divRef as unknown as ValidatableElement | undefined,
+        );
+
+        return <div ref={divRef} data-testid="not-a-form-element" />;
+      };
+
+      expect(() => render(() => <TestComponent />)).not.toThrow();
+    });
+
     it("should not set custom validity in aria mode", () => {
       const TestComponent = () => {
         let inputRef: HTMLInputElement | undefined;
