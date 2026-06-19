@@ -514,54 +514,30 @@ focused. Menu additionally handles PageDown/PageUp (geometry-based), which still
 deferred (see below), since it touches the `clientHeight` paging branch. ListBox has no
 Page keys at all (also deferred below).
 
-## Source-level behavioral sweep — open items (deferred)
+## Source-level behavioral sweep — open items (now ticketed)
 
-Carried-forward work the sweep has surfaced but **not** closed. These are tracked
-here so they aren't lost between aspects; tick the box + add the commit when done.
+The carried-forward sweep findings are now part of the **single backlog** in
+[upstream-release-audit.md](./upstream-release-audit.md) — tickets **T-51…T-55**
+(plus the typeahead capture-phase item folded into **T-35**, since the 1.19
+`useTypeSelect` refactor is exactly that capture/bubble work). This doc keeps the
+per-behavior **evidence** (the sections above); that doc holds the actionable tickets.
+No second checklist lives here anymore. Old item → ticket map:
 
-- [ ] **`replace`-mode action model (architectural epic).** Wire up upstream's
-  single-click-selects / double-click-acts split so the row action becomes the
-  *secondary* action under `selectionBehavior: 'replace'` with selection enabled.
-  Requires routing `gridlist/createGridListItem.ts`, `tree/createTreeItem.ts`, and
-  `table/createTableRow.ts` activation through a press-based path (not raw pointer
-  events), threading `hasPrimaryAction` / `hasSecondaryAction` + `pointerType`,
-  adding the `onDoubleClick` secondary action and the touch **long-press →
-  `setSelectionBehavior('toggle')`** switch. Full evidence in the
-  `selectionBehavior: 'replace'` section above ("Not yet ported"). **High risk /
-  cross-hook — scope and validate on its own before starting.**
-- [ ] **`select()` multiple-mode fidelity (minor).** Two small upstream-faithfulness
-  gaps in `createSelectionState.select()`: (a) it uses `ctrlKey || metaKey` instead
-  of upstream's platform-aware `isCtrlKeyPressed`; (b) it can't see `pointerType`, so
-  touch/virtual input doesn't force `toggleSelection` the way upstream's `onSelect`
-  does (`useSelectableItem.ts:174`). Both need a richer event param threaded from the
-  call sites. Low-risk, but bundle with the epic above since they share the plumbing.
-- [ ] **Typeahead true capture-phase binding (minor/structural).** Upstream
-  `useTypeSelect` binds `onKeyDownCapture` only, so Space is intercepted before the
-  collection's keydown. In Solid a capture handler passed through a
-  `{...typeSelectProps}` spread does not register as a working capture listener, so
-  `createTypeSelect` also binds the bubble `onKeyDown` (the path that fires) and relies
-  on `mergeProps` ordering for the space-before-selection precedence. Faithful capture
-  would need a ref-based `addEventListener(el, 'keydown', h, { capture: true })`
-  threaded through every consumer (createListBox/createMenu/createSelect spread the
-  props) — a small cross-consumer refactor. Validate the space-toggle precedence at the
-  ListBox/Menu integration level when closing this.
-- [x] **Typeahead collator-based matching (minor).** Done 2026-06-19 (`solidaria`):
-  `getKeyForSearch` now compares the leading substring with an `Intl.Collator`
-  (`usage: 'search'`, `sensitivity: 'base'`) from `createCollator`. See the typeahead
-  section above ("Resolved — collator matching").
-- [ ] **`escapeKeyBehavior` prop (minor).** Upstream exposes `escapeKeyBehavior:
-  'clearSelection' | 'none'` (default `'clearSelection'`) on `useSelectableCollection`
-  to opt out of Escape-clears-selection. Our `createListBox` hard-codes the default
-  path (see the "Escape key (ListBox)" section). Add the prop + thread it through the
-  ListBox component layers if a consumer needs the opt-out. Low-risk feature gap.
-- [ ] **PageUp/PageDown navigation (minor/structural).** Upstream
-  `useSelectableCollection` (315-332) delegates Page keys to
-  `delegate.getKeyPage{Above,Below}`, which `ListKeyboardDelegate` computes from item
-  heights + the scroll container's `clientHeight`, and only `preventDefault`s when
-  `manager.focusedKey != null` **and** a target is found. Two gaps: (a) `createListBox`
-  handles **neither** Page key — faithful support needs geometry the headless hook
-  doesn't currently measure (akin to the virtualizer work); (b) `createMenu` **does**
-  handle both via its own `clientHeight` paging, but still `preventDefault`s
-  unconditionally (no focused-key / found-target gate, unlike the arrow keys it now
-  gates). Gate Menu's Page keys + decide whether to share a real `getKeyPage{Above,Below}`
-  delegate across ListBox/Menu when a consumer needs paged navigation.
+- **T-51** — `replace`-mode action model (architectural epic). Evidence: the
+  `selectionBehavior: 'replace'` section above ("Not yet ported"). High risk /
+  cross-hook; shares the item-hook press-path migration with **T-34**
+  (`keyboardNavigationBehavior`) — sequence together.
+- **T-52** — `select()` multiple-mode fidelity (`ctrlKey||metaKey` → platform-aware
+  `isCtrlKeyPressed`; thread `pointerType` so touch/virtual forces `toggleSelection`,
+  per `useSelectableItem.ts:174`). Bundle with T-51.
+- **T-35** — typeahead true capture-phase binding (the bubble-vs-capture split through
+  the `{...typeSelectProps}` spread). Evidence: the typeahead section above.
+- **T-53** — `escapeKeyBehavior: 'clearSelection' | 'none'` opt-out. Evidence: the
+  "Escape key (ListBox)" section above.
+- **T-54** — PageUp/PageDown navigation gating (`createListBox` measures no paging
+  geometry; `createMenu` `preventDefault`s its `clientHeight` paging unconditionally).
+
+**Resolved:** typeahead collator-based matching — done 2026-06-19 (`solidaria`):
+`getKeyForSearch` compares the leading substring with an `Intl.Collator`
+(`usage: 'search'`, `sensitivity: 'base'`) from `createCollator`. See the typeahead
+section above ("Resolved — collator matching").
