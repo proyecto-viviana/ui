@@ -8,7 +8,12 @@
  */
 
 import { createMemo } from "solid-js";
-import { DateFormatter, isSameYear, toCalendarDate, type CalendarDate } from "@internationalized/date";
+import {
+  DateFormatter,
+  isSameYear,
+  toCalendarDate,
+  type CalendarDate,
+} from "@internationalized/date";
 import type { CalendarState, RangeCalendarState } from "@proyecto-viviana/solid-stately";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { useLocale } from "../i18n";
@@ -78,7 +83,10 @@ export function createCalendarYearPicker(
   const data = createMemo(() => {
     const focused = state.focusedDate();
     const fmt = formatter();
-    const visibleYears = getProps().visibleYears ?? 20;
+    // Falsy coercion (not `??`) mirrors upstream `props.visibleYears || 20`, so a
+    // `0`/`NaN` visibleYears falls back to the default 20 rather than producing an
+    // empty window.
+    const visibleYears = getProps().visibleYears || 20;
     let minDate = focused.subtract({ years: Math.floor(visibleYears / 2) });
     let maxDate = focused.add({ years: Math.ceil(visibleYears / 2) - 1 });
 
@@ -114,8 +122,7 @@ export function createCalendarYearPicker(
   });
 
   const ariaLabel = createMemo(
-    () =>
-      new Intl.DisplayNames(locale().locale, { type: "dateTimeField" }).of("year") ?? "year",
+    () => new Intl.DisplayNames(locale().locale, { type: "dateTimeField" }).of("year") ?? "year",
   );
 
   return {

@@ -42,7 +42,11 @@ async function waitForCalendarHydration() {
 // with locale-independent data hooks so assertions don't depend on month names.
 function renderMonths(picker: CalendarMonthPickerAria): JSX.Element {
   return (
-    <div data-testid="month-picker" aria-label={picker["aria-label"]} data-value={String(picker.value)}>
+    <div
+      data-testid="month-picker"
+      aria-label={picker["aria-label"]}
+      data-value={String(picker.value)}
+    >
       <For each={picker.items}>
         {(item) => (
           <button
@@ -61,7 +65,11 @@ function renderMonths(picker: CalendarMonthPickerAria): JSX.Element {
 
 function renderYears(picker: CalendarYearPickerAria): JSX.Element {
   return (
-    <div data-testid="year-picker" aria-label={picker["aria-label"]} data-value={String(picker.value)}>
+    <div
+      data-testid="year-picker"
+      aria-label={picker["aria-label"]}
+      data-value={String(picker.value)}
+    >
       <For each={picker.items}>
         {(item) => (
           <button
@@ -79,13 +87,16 @@ function renderYears(picker: CalendarYearPickerAria): JSX.Element {
   );
 }
 
-function TestCalendar(props: { calendarProps?: Partial<Parameters<typeof Calendar>[0]> }) {
+function TestCalendar(props: {
+  calendarProps?: Partial<Parameters<typeof Calendar>[0]>;
+  yearPickerProps?: Partial<Parameters<typeof CalendarYearPicker>[0]>;
+}) {
   return (
     <Calendar aria-label="Test Calendar" {...props.calendarProps}>
       <header>
         <CalendarButton slot="previous">◀</CalendarButton>
         <CalendarMonthPicker format="long">{renderMonths}</CalendarMonthPicker>
-        <CalendarYearPicker>{renderYears}</CalendarYearPicker>
+        <CalendarYearPicker {...props.yearPickerProps}>{renderYears}</CalendarYearPicker>
         <CalendarHeading />
         <CalendarButton slot="next">▶</CalendarButton>
       </header>
@@ -118,9 +129,7 @@ describe("CalendarMonthPicker / CalendarYearPicker", () => {
   describe("CalendarMonthPicker", () => {
     it("lists every month of the focused year with the focused month selected", async () => {
       render(() => (
-        <TestCalendar
-          calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 2, 15) }}
-        />
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 2, 15) }} />
       ));
       await waitForCalendarHydration();
 
@@ -139,9 +148,7 @@ describe("CalendarMonthPicker / CalendarYearPicker", () => {
 
     it("jumps the calendar's focus to the chosen month", async () => {
       render(() => (
-        <TestCalendar
-          calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 2, 15) }}
-        />
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 2, 15) }} />
       ));
       await waitForCalendarHydration();
 
@@ -159,9 +166,7 @@ describe("CalendarMonthPicker / CalendarYearPicker", () => {
   describe("CalendarYearPicker", () => {
     it("renders a centered window of 20 years with the focused year selected", async () => {
       render(() => (
-        <TestCalendar
-          calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 6, 15) }}
-        />
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 6, 15) }} />
       ));
       await waitForCalendarHydration();
 
@@ -180,9 +185,7 @@ describe("CalendarMonthPicker / CalendarYearPicker", () => {
 
     it("jumps the calendar's focus to the chosen year and recenters the window", async () => {
       render(() => (
-        <TestCalendar
-          calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 6, 15) }}
-        />
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 6, 15) }} />
       ));
       await waitForCalendarHydration();
 
@@ -218,14 +221,88 @@ describe("CalendarMonthPicker / CalendarYearPicker", () => {
       expect(picker.querySelector('[data-year-id="19"]')).toHaveTextContent("2025");
       expect(picker.querySelector('[data-year-id="19"]')).toHaveAttribute("data-pressed", "true");
     });
+
+    it("clamps the window to the calendar's minValue", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2025, 6, 15),
+            minValue: new CalendarDate(2020, 1, 1),
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const picker = screen.getByTestId("year-picker");
+      const years = within(picker).getAllByRole("button");
+      expect(years).toHaveLength(20);
+      // Window clamps to start at 2020 → 2020..2039 (minValue year included first).
+      expect(picker.querySelector('[data-year-id="0"]')).toHaveTextContent("2020");
+      expect(picker.querySelector('[data-year-id="19"]')).toHaveTextContent("2039");
+      expect(picker).toHaveAttribute("data-value", "5");
+      expect(picker.querySelector('[data-year-id="5"]')).toHaveAttribute("data-year", "2025");
+    });
+
+    it("includes both the minValue and maxValue years when both constrain the window", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2023, 6, 15),
+            minValue: new CalendarDate(2020, 1, 1),
+            maxValue: new CalendarDate(2026, 12, 31),
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const picker = screen.getByTestId("year-picker");
+      const years = within(picker).getAllByRole("button");
+      // Both bounds inclusive: 2026 - 2020 + 1 = 7 years (the maxValue off-by-one guard).
+      expect(years).toHaveLength(7);
+      expect(picker.querySelector('[data-year-id="0"]')).toHaveTextContent("2020");
+      expect(picker.querySelector('[data-year-id="6"]')).toHaveTextContent("2026");
+      expect(picker).toHaveAttribute("data-value", "3");
+    });
+
+    it("honors visibleYears: a single visible year shows only the focused year", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{ defaultFocusedValue: new CalendarDate(2026, 6, 15) }}
+          yearPickerProps={{ visibleYears: 1 }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const picker = screen.getByTestId("year-picker");
+      const years = within(picker).getAllByRole("button");
+      // floor(1/2) = 0 before, ceil(1/2) - 1 = 0 after → only the focused year.
+      expect(years).toHaveLength(1);
+      expect(picker.querySelector('[data-year-id="0"]')).toHaveTextContent("2026");
+      expect(picker).toHaveAttribute("data-value", "0");
+    });
+
+    it("treats a falsy visibleYears as the default 20 (matching upstream)", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{ defaultFocusedValue: new CalendarDate(2026, 6, 15) }}
+          yearPickerProps={{ visibleYears: 0 }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const picker = screen.getByTestId("year-picker");
+      const years = within(picker).getAllByRole("button");
+      // `visibleYears || 20`: a 0 falls back to the default window, not an empty one.
+      expect(years).toHaveLength(20);
+      expect(picker.querySelector('[data-year-id="0"]')).toHaveTextContent("2016");
+      expect(picker.querySelector('[data-year-id="19"]')).toHaveTextContent("2035");
+    });
   });
 
   describe("within a RangeCalendar", () => {
     it("reads the range calendar's focused date", async () => {
       render(() => (
-        <TestRangeCalendar
-          calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 2, 15) }}
-        />
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2025, 2, 15) }} />
       ));
       await waitForCalendarHydration();
 
