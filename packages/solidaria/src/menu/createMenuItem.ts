@@ -127,8 +127,10 @@ export function createMenuItem<T>(
       // Call item-specific onAction
       p.onAction?.();
 
-      // Call menu-level onAction
-      data?.onAction?.(key);
+      // Call menu-level onAction with the activated item's value, mirroring
+      // useMenuItem performAction: onAction(key, item?.value).
+      const item = state.collection().getItem(key);
+      data?.onAction?.(key, item?.value);
 
       // Close menu if closeOnSelect is not explicitly false
       // For link items, default to closing the menu

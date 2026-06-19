@@ -122,7 +122,9 @@ describe("Menu", () => {
 
       await user.click(within(menu).getByRole("menuitem", { name: "Copy" }));
 
-      expect(onAction).toHaveBeenCalledWith("copy");
+      // Static items carry no value (upstream MenuItem only sets `value` for
+      // dynamic collections), so the second onAction arg is undefined.
+      expect(onAction).toHaveBeenCalledWith("copy", undefined);
     });
 
     it("should render with default class", () => {
@@ -700,6 +702,9 @@ describe("Menu", () => {
 
       await user.click(screen.getByRole("menuitem", { name: "Cat" }));
       expect(onAction).toHaveBeenCalledTimes(1);
+      // Dynamic collections pass the item's data object as the second arg,
+      // mirroring useMenuItem performAction onAction(key, item?.value).
+      expect(onAction).toHaveBeenCalledWith("cat", testItems[0]);
       expect(itemAction).toHaveBeenCalledTimes(1);
     });
 
@@ -1021,14 +1026,14 @@ describe("Menu", () => {
       expect(bold).toHaveAttribute("data-focused");
 
       fireEvent.keyDown(menu, { key: "Enter" });
-      expect(onAction).toHaveBeenCalledWith("bold");
+      expect(onAction).toHaveBeenCalledWith("bold", undefined);
       expect(screen.getByRole("menu")).toBeInTheDocument();
 
       fireEvent.keyDown(menu, { key: "ArrowDown" });
       expect(deleteItem).toHaveAttribute("data-focused");
 
       fireEvent.keyDown(menu, { key: "Enter" });
-      expect(onAction).toHaveBeenCalledWith("delete");
+      expect(onAction).toHaveBeenCalledWith("delete", undefined);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
 
@@ -1239,7 +1244,7 @@ describe("Menu", () => {
       expect(items[0]).toHaveAttribute("data-focused");
 
       await user.keyboard("{Enter}");
-      expect(onAction).toHaveBeenCalledWith("cat");
+      expect(onAction).toHaveBeenCalledWith("cat", testItems[0]);
     });
   });
 
@@ -1502,7 +1507,7 @@ describe("MenuTrigger", () => {
       await user.click(screen.getByRole("button", { name: "Menu" }));
       expect(screen.getAllByRole("menuitem")).toHaveLength(3);
       await user.click(screen.getByRole("menuitem", { name: "Cat" }));
-      expect(onAction).toHaveBeenCalledWith("cat");
+      expect(onAction).toHaveBeenCalledWith("cat", testItems[0]);
     });
 
     it("should not close the menu when shouldCloseOnSelect is false", async () => {

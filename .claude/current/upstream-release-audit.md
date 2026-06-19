@@ -56,7 +56,7 @@ asserted role. The release notes are the only signal those happened — see the
 > already present internally (✅); the rest 🔍 (behavioral, reconcile per-ticket).
 > The bulk of the 496-file diff is mechanical noise with no port concern (removal of
 > `// @ts-ignore` before glob-JSON imports tree-wide, plus stories/docs/s2-docs/test
-> churn); `react-stately/src` carried only that noise. **No tickets are executed yet.**
+> churn); `react-stately/src` carried only that noise. **First ticket executed: T-38** (Menu `onAction(key, value)`, changeset `menu-onaction-value.md`); the rest pending.
 > Two unrelated gate repairs landed with the absorb (tooling, not ports): the RAC
 > barrel moved to `exports/index.ts` (`guard:rac-parity` / `guard:rac-export-gap` had
 > been silently crashing on the old `src/index.ts` path since ≥the 1.18 pin), and
@@ -168,7 +168,7 @@ published-package `src` changes. None executed yet.
 - [ ] **T-35** 🔍 RAC — **`useTypeSelect` 1.19 refactor.** Upstream splits the handler: Space-during-search stays on a dedicated **capture** path while character keys move to the **bubble** path (returns *both* `onKeyDownCapture` + `onKeyDown`); it now **bails on `e.altKey`** (which *reverses* our `dfd4d37b` "allow altKey"), `preventDefault`/`stopPropagation` **only** on a successful match, resets the search and returns when no match remains even after the retry-from-top, and cleans up the reset timeout on unmount (`useEffect`). Consequence wiring: `useSelect` drops its `onKeyDown = onKeyDownCapture` shim and `useComboBox` lets Tab `continuePropagation`. Touches our `createTypeSelect` + `createSelect`/`createMenu`/`createListBox` consumers. **Behavioral reconcile** — and the Solid spread-capture gotcha (`onKeyDownCapture` is inert through a `{...props}` spread; bubble `onKeyDown` is the live path) interacts with the capture/bubble split. ⇄ **supersedes** the former sweep-deferred "typeahead true capture-phase binding" item — the capture/bubble split is exactly that work, so it is tracked here now (not separately in upstream-sync.md).
 - [ ] **T-36** ⛔ RAC — **`useSelectableCollection` `UNSTABLE_focusOnEntry`** (`'first' | 'last'`, the private chat/thread entry-focus option) + the virtual-focus-first effect's deps change from `[manager.collection]` to `[firstKey, manager.collection.size]`. **Confirmed absent** — `focusOnEntry` greps to nothing.
 - [ ] **T-37** ⛔ RAC — **column-reverse `ListKeyboardDelegate`** (+49). New `isReversed(key)` (compares `getBoundingClientRect().top`); `getKeyBelow`/`getKeyAbove` flip and the Page-key math/fallback invert for a reversed (e.g. chat-log) column; needs a `getItemElement` helper. **Confirmed absent** — `isReversed` greps to nothing.
-- [ ] **T-38** ⛔ RAC — **Menu `onAction(key)` → `onAction(key, value)`** (passes `item?.value`). `useMenu`/`useMenuItem`/menu utils thread the second arg; `useComboBox`/`useSelect` set their inner listbox/menu `onAction: undefined`. **Confirmed absent** — our `createMenu` types `onAction?: (key: Key) => void` and `createMenuItem` calls `data?.onAction?.(key)` (1-arg).
+- [x] **T-38** ✔ RAC — **Menu `onAction(key)` → `onAction(key, value)`** (passes `item?.value`). **Was a confirmed gap** (our `createMenu` typed `onAction?: (key: Key) => void`, `createMenuItem` called `data?.onAction?.(key)`); **now ported** (changeset `menu-onaction-value.md`). Upstream `useMenu` types it `(key, value: T)` and threads `props.onAction` into the shared, type-erased `MenuData` (`menu/utils.ts`: `value: any`), where `useMenuItem` `performAction` fires `onAction(key, item?.value)`. **Two-call-site threading** (our architecture splits what upstream routes through a single `performAction`): `createMenuItem`'s press path now calls `data.onAction(key, item?.value)`, and `createMenu`'s keyboard-activation path passes `collection.getItem(focusedKey)?.value` — `AriaMenuProps` is now generic (`<T>`) and `MenuData.onAction` is type-erased (`value: unknown`) like upstream. **Static-vs-dynamic value decision:** RAC `Menu.tsx` auto-sets `MenuItem.value` **only for dynamic collections**; our static-JSX path uses a synthetic item descriptor with no data `value`, so `solidaria-components/Menu` forwards the real data item for dynamic collections and **suppresses `value` to `undefined` for static children** to match. **Inner `select`/`combobox` `onAction: undefined` is N/A by construction** — our `createSelect`/`createComboBox` never forward an `onAction` into an inner listbox/menu, so there is nothing to null out. Tests: `createMenu.test` (value = the data item, incl. a keyboard-Enter case), `solidaria-components/Menu.test` (dynamic = data item, static = `undefined`), `solid-spectrum/ActionMenu.test` (dynamic items + render-fn children = data item, static JSX = `undefined`); 206 menu tests green across the 4 suites.
 - [ ] **T-39** ⛔ RAC — **overlay `getTargetRect` override** (+27 `calculatePosition` / +14 `useOverlayPosition`). New `getTargetRect?: (target) => DOMRect | null` flows a `targetRect` override into `getOffset`/`getPosition` (position relative to a virtual target rather than the trigger's own box). **Confirmed absent** — `getTargetRect` greps to nothing. ⇄ includes the S2 **Popover** un-omit of `isNonModal` + `getTargetRect`. T-09 follow-up (our `calculatePosition` was a faithful post-#9343 port; this is the next overlay delta).
 - [ ] **T-40** 🔍 RAC — **`useAutocomplete` CJK/IME + inline nav** (+54). Composition events (`insertCompositionText` / `insertFromComposition` → `focusFirstItem`), `input` → `beforeinput`, deferred `autoFocusOnMount`, and Arrow inline-navigation. Reconcile against our `createAutocomplete`.
 - [ ] **T-41** 🔍 RAC — **DnD type/modality refinements** (`dnd/utils.ts` +31). `DragTypes.has()` accepts `DragType | DragType[]` and matches `*/*` and `type/*` wildcards; `mapModality` switches `'ontouchstart' in window` → `matchMedia('(pointer: coarse)')`. Reconcile against our `dnd/` utils.
@@ -239,9 +239,10 @@ joins the deferred sub-items called out per ticket.
 **T-34…T-55 is the active backlog** — one list now: **Train 6 (T-34…T-50)**, the
 RAC 1.18→1.19 / S2 1.4→1.5 release absorb, plus the **cross-train sweep tickets
 (T-51…T-55)** consolidated here from upstream-sync.md's old deferred checklist.
-Nothing executed yet. Work it like the earlier trains — confirmed ⛔ gaps **T-34**
+**T-38** (`onAction(key, value)`) has landed; the rest pending. Work it like the
+earlier trains — confirmed ⛔ gaps **T-34**
 (`keyboardNavigationBehavior`), **T-36** (`UNSTABLE_focusOnEntry`), **T-37**
-(column-reverse delegate), **T-38** (`onAction(key, value)`), **T-39** (overlay
+(column-reverse delegate), **T-39** (overlay
 `getTargetRect`), **T-51** (`replace`-mode action model), **T-53** (`escapeKeyBehavior`)
 are the real port tickets; the 🔍 set needs a source-vs-our-code reconcile before it
 resolves to ✔/✅/➖; **T-45** (CenterBaseline) is ✅ present internally. **Sequencing:**
@@ -249,4 +250,5 @@ resolves to ✔/✅/➖; **T-45** (CenterBaseline) is ✅ present internally. **
 prerequisite — migrating the gridlist/tree/table item hooks from raw-pointer to a
 press-based activation path — so scope and validate them together, on their own,
 before the smaller tickets. The low-risk reconciles (e.g. **T-42** CalendarYearPicker,
-**T-44**'s bundle, **T-38** `onAction` value) are the natural first execution targets.
+**T-44**'s bundle) are the natural next execution targets — **T-38** (`onAction`
+value) is done (changeset `menu-onaction-value.md`).

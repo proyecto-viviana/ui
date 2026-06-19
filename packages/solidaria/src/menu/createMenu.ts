@@ -57,7 +57,7 @@ function findNextNonDisabledKey<T>(
   return nextKey;
 }
 
-export interface AriaMenuProps {
+export interface AriaMenuProps<T = unknown> {
   /** An ID for the menu. */
   id?: string;
   /** Whether the menu is disabled. */
@@ -77,7 +77,7 @@ export interface AriaMenuProps {
   /** Handler called when the focus state changes. */
   onFocusChange?: (isFocused: boolean) => void;
   /** Handler called when an item is activated (pressed). */
-  onAction?: (key: Key) => void;
+  onAction?: (key: Key, value: T) => void;
   /** Handler called when the menu should close. */
   onClose?: () => void;
   /** Whether the menu should close when an item is selected. */
@@ -102,7 +102,9 @@ const menuData = new WeakMap<object, MenuData>();
 
 interface MenuData {
   id: string;
-  onAction?: (key: Key) => void;
+  // Type-erased like upstream menu/utils.ts MenuData (value: any): the WeakMap
+  // is keyed by an untyped state, so the item value flows through as unknown.
+  onAction?: (key: Key, value: unknown) => void;
   onClose?: () => void;
   isDisabled?: boolean;
 }
@@ -116,7 +118,7 @@ export function getMenuData(state: MenuState): MenuData | undefined {
  * A menu displays a list of actions or options that a user can choose.
  */
 export function createMenu<T>(
-  props: MaybeAccessor<AriaMenuProps>,
+  props: MaybeAccessor<AriaMenuProps<T>>,
   state: MenuState<T>,
   ref?: Accessor<HTMLElement | null>,
 ): MenuAria {
@@ -141,7 +143,7 @@ export function createMenu<T>(
     const p = getProps();
     menuData.set(state, {
       id,
-      onAction: p.onAction,
+      onAction: p.onAction as MenuData["onAction"],
       onClose: p.onClose,
       isDisabled: p.isDisabled,
     });
@@ -275,7 +277,9 @@ export function createMenu<T>(
         // check (SelectionManager.canSelectItem).
         if (focusedKey != null && !isDisabled(focusedKey)) {
           state.select(focusedKey, e, collection);
-          p.onAction?.(focusedKey);
+          // Pass the activated item's value as the second arg, mirroring
+          // useMenuItem performAction: onAction(key, item?.value).
+          p.onAction?.(focusedKey, collection.getItem(focusedKey)?.value as T);
           if (p.shouldCloseOnSelect !== false) {
             p.onClose?.();
           }

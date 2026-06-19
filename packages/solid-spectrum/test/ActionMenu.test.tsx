@@ -68,7 +68,8 @@ describe("ActionMenu (solid-spectrum)", () => {
     await user.click(screen.getByRole("button", { name: "More actions" }));
     await user.click(screen.getByRole("menuitem", { name: "Copy" }));
 
-    expect(onAction).toHaveBeenCalledWith("copy");
+    // Dynamic collection: menu-level onAction receives the activated item's value.
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
   });
 
   it("renders data-driven item descriptions, shortcuts, icons, disabled keys, and links", async () => {
@@ -129,7 +130,7 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(linkItem.querySelector('[slot="descriptor"]')).toBeInTheDocument();
 
     await user.click(openItem);
-    expect(onAction).toHaveBeenCalledWith("open");
+    expect(onAction).toHaveBeenCalledWith("open", richItems[0]);
 
     await user.click(disabledItem);
     expect(onAction).not.toHaveBeenCalledWith("disabled");
@@ -376,7 +377,7 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(onAction).not.toHaveBeenCalled();
 
     await user.click(within(menu).getByRole("menuitem", { name: "Copy" }));
-    expect(onAction).toHaveBeenCalledWith("copy");
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
   });
 
   it("supports render-function children for compositional menu item content", async () => {
@@ -404,7 +405,8 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     await user.click(screen.getByRole("menuitem", { name: "Copy" }));
 
-    expect(onAction).toHaveBeenCalledWith("copy");
+    // Render-function children over `items` is still a dynamic collection.
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
     expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 
@@ -454,7 +456,8 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     await user.click(screen.getByRole("menuitem", { name: "Copy" }));
 
-    expect(onAction).toHaveBeenCalledWith("copy");
+    // Static JSX children carry no upstream `value`, so it is undefined.
+    expect(onAction).toHaveBeenCalledWith("copy", undefined);
   });
 
   it("keeps static JSX menu children lazy until the ActionMenu opens", async () => {

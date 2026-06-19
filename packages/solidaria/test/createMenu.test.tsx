@@ -87,7 +87,37 @@ describe("createMenu", () => {
         preventDefault: vi.fn(),
       } as unknown as KeyboardEvent);
 
-      expect(onAction).toHaveBeenCalledWith("copy");
+      expect(onAction).toHaveBeenCalledWith("copy", items[0]);
+      dispose();
+    });
+  });
+
+  it("passes the activated item's value as the second onAction argument", () => {
+    createRoot((dispose) => {
+      const onAction = vi.fn();
+      const items = [
+        { key: "copy", label: "Copy", data: 1 },
+        { key: "paste", label: "Paste", data: 2 },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+
+      state.setFocusedKey("paste");
+
+      const { menuProps } = createMenu({ onAction, "aria-label": "Actions" }, state);
+
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      onKeyDown({
+        key: "Enter",
+        preventDefault: vi.fn(),
+      } as unknown as KeyboardEvent);
+
+      // Mirrors useMenuItem performAction onAction(key, item?.value): the value
+      // is the collection node's original data object.
+      expect(onAction).toHaveBeenCalledWith("paste", items[1]);
       dispose();
     });
   });
@@ -119,7 +149,7 @@ describe("createMenu", () => {
         preventDefault: vi.fn(),
       } as unknown as KeyboardEvent);
 
-      expect(onAction).toHaveBeenCalledWith("copy");
+      expect(onAction).toHaveBeenCalledWith("copy", items[0]);
       expect(onClose).not.toHaveBeenCalled();
       dispose();
     });
@@ -622,7 +652,7 @@ describe("createMenu - disabled key navigation", () => {
         preventDefault: vi.fn(),
       } as unknown as KeyboardEvent);
 
-      expect(onAction).toHaveBeenCalledWith("item2");
+      expect(onAction).toHaveBeenCalledWith("item2", items[1]);
       expect(state.isSelected("item2")).toBe(false);
       expect(onSelectionChange).not.toHaveBeenCalled();
       dispose();

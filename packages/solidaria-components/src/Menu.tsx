@@ -87,7 +87,7 @@ export interface MenuRenderProps {
 
 export interface MenuProps<T>
   extends
-    Omit<AriaMenuProps, "children">,
+    Omit<AriaMenuProps<T>, "children">,
     SlotProps,
     Pick<
       MenuStateProps<T>,
@@ -111,8 +111,8 @@ export interface MenuProps<T>
   disabledKeys?: Iterable<Key>;
   /** Whether disabled items can still receive focus. */
   disabledBehavior?: "selection" | "all";
-  /** Handler called when an item is activated. */
-  onAction?: (key: Key) => void;
+  /** Handler called when an item is activated, with the activated item's value. */
+  onAction?: (key: Key, value: T) => void;
   /** Handler called when the menu should close. */
   onClose?: () => void;
   /** The children of the component. A function may be provided to render each item. */
@@ -759,9 +759,14 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       return key == null ? undefined : itemCloseMap.get(key)?.();
     },
   };
-  const handleAction = (key: Key) => {
+  const handleAction = (key: Key, value?: T) => {
     sectionSelectionRegistry.selectItem(key);
-    stateProps.onAction?.(key);
+    // Forward the activated item's value, which `createMenuState` sets from the
+    // collection node. For dynamic collections this is the user's data item.
+    // Static children are modeled with an internal item descriptor that upstream
+    // RAC does not expose as `value` (MenuItem only carries `value` for dynamic
+    // collections), so it is suppressed there to match.
+    stateProps.onAction?.(key, (usesStaticChildren() ? undefined : value) as T);
   };
 
   const flatItems = createMemo<T[]>(() => {
