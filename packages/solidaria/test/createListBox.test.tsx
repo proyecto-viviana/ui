@@ -541,6 +541,27 @@ describe("createListBox", () => {
       });
     });
 
+    it("fires onAction but does not select a disabled-for-selection option on Enter", () => {
+      createRoot((dispose) => {
+        const onAction = vi.fn();
+        const state = createBasicListState({
+          selectionMode: "multiple",
+          disabledKeys: ["b"],
+          disabledBehavior: "selection",
+        });
+        const { listBoxProps } = createListBox({ onAction }, state);
+
+        // b is focusable under "selection": Enter fires onAction but must not
+        // select it (toggleSelection self-guards on the raw disabled check).
+        state.setFocusedKey("b");
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("Enter"));
+
+        expect(onAction).toHaveBeenCalledWith("b");
+        expect((state.selectedKeys() as Set<string>).has("b")).toBe(false);
+        dispose();
+      });
+    });
+
     it("wraps focus when shouldFocusWrap is true", () => {
       createRoot((dispose) => {
         const state = createBasicListState();

@@ -270,5 +270,29 @@ describe("createGridList disabled-key keyboard navigation", () => {
         dispose();
       });
     });
+
+    it("fires onAction but does not select a disabled row on Enter", () => {
+      createRoot((dispose) => {
+        const onAction = vi.fn();
+        const state = createRowGridState({
+          disabledKeys: ["b"],
+          disabledBehavior: "selection",
+        });
+        const { gridProps } = createGridList(
+          () => ({ onAction }),
+          () => state,
+          () => null,
+        );
+
+        // b is focusable under "selection": Enter fires onAction but must not
+        // select it (Space selection stays blocked independently).
+        state.setFocusedKey("b");
+        (gridProps.onKeyDown as any)?.(createMockKeyboardEvent("Enter"));
+
+        expect(onAction).toHaveBeenCalledWith("b");
+        expect(state.isSelected("b")).toBe(false);
+        dispose();
+      });
+    });
   });
 });

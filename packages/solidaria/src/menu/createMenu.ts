@@ -258,10 +258,13 @@ export function createMenu<T>(
       case "Enter": {
         e.preventDefault();
         const focusedKey = state.focusedKey();
-        // Don't activate disabled items. Activation uses the raw disabled check
-        // (not the navigation-gated one) so a key stays non-activatable
-        // regardless of disabledBehavior, matching SelectionManager.canSelectItem.
-        if (focusedKey != null && !state.isDisabled(focusedKey)) {
+        // Activation is gated on the navigation-disabled check, not the raw
+        // one: under disabledBehavior "selection" a focusable disabled item
+        // still fires onAction (and closes), mirroring useSelectableItem's
+        // allowsActions (manager.isDisabled is gated on "all"). Selection stays
+        // blocked independently — state.select self-guards on the raw disabled
+        // check (SelectionManager.canSelectItem).
+        if (focusedKey != null && !isDisabled(focusedKey)) {
           state.select(focusedKey, e, collection);
           p.onAction?.(focusedKey);
           if (p.shouldCloseOnSelect !== false) {

@@ -193,7 +193,12 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         break;
       }
       case "Enter": {
-        if (focusedKey != null && !s.isDisabled(focusedKey)) {
+        // Activation is gated on the navigation-disabled check, not the raw
+        // one: under disabledBehavior "selection" a focusable disabled row
+        // still fires onAction, mirroring useSelectableItem's allowsActions
+        // (manager.isDisabled is gated on "all"). Selection (Space) stays
+        // blocked independently.
+        if (focusedKey != null && !isNavigationDisabled(s, focusedKey)) {
           e.preventDefault();
           p.onAction?.(focusedKey);
         }

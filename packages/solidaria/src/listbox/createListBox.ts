@@ -310,7 +310,12 @@ export function createListBox<T>(
       case "Enter": {
         e.preventDefault();
         const focusedKey = state.focusedKey();
-        if (focusedKey != null && !state.isDisabled(focusedKey)) {
+        // Activation is gated on the navigation-disabled check, not the raw
+        // one: under disabledBehavior "selection" a focusable disabled option
+        // still fires onAction, mirroring useSelectableItem's allowsActions
+        // (manager.isDisabled is gated on "all"). Selection stays blocked —
+        // toggleSelection self-guards on the raw disabled check.
+        if (focusedKey != null && !isNavigationDisabled(state, focusedKey)) {
           if (state.selectionMode() !== "none") {
             state.toggleSelection(focusedKey);
           }

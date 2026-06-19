@@ -591,9 +591,10 @@ describe("createMenu - disabled key navigation", () => {
     });
   });
 
-  it("still does not activate a disabled-for-selection item on Enter", () => {
+  it("fires onAction but does not select a disabled-for-selection item on Enter", () => {
     createRoot((dispose) => {
       const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
       const items = [
         { key: "item1", label: "Item 1" },
         { key: "item2", label: "Item 2" },
@@ -602,13 +603,17 @@ describe("createMenu - disabled key navigation", () => {
       const state = createMenuState({
         items,
         getKey: (item) => item.key,
+        selectionMode: "single",
         disabledKeys: ["item2"],
         disabledBehavior: "selection",
+        onSelectionChange,
       });
 
       const { menuProps } = createMenu({ "aria-label": "Test menu", onAction }, state);
 
-      // item2 is focusable under "selection" but must not activate.
+      // item2 is focusable under "selection": activating it fires onAction
+      // (allowsActions is gated on the "all" behavior) but never selects it
+      // (canSelectItem keeps selection blocked).
       state.setFocusedKey("item2");
 
       const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
@@ -617,7 +622,9 @@ describe("createMenu - disabled key navigation", () => {
         preventDefault: vi.fn(),
       } as unknown as KeyboardEvent);
 
-      expect(onAction).not.toHaveBeenCalled();
+      expect(onAction).toHaveBeenCalledWith("item2");
+      expect(state.isSelected("item2")).toBe(false);
+      expect(onSelectionChange).not.toHaveBeenCalled();
       dispose();
     });
   });

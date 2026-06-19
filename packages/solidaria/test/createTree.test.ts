@@ -768,6 +768,34 @@ describe("createTree disabled key navigation parity", () => {
     });
   });
 
+  it("Enter fires onAction but does not select a disabled row under 'selection'", () => {
+    createRoot((dispose) => {
+      const onAction = vi.fn();
+      const state = createState({
+        defaultExpandedKeys: ["1"],
+        disabledKeys: ["1.1"],
+        disabledBehavior: "selection",
+        selectionMode: "single",
+      });
+      const [ref] = createSignal<HTMLDivElement | null>(null);
+      const { treeProps } = createTree(
+        () => ({ onAction }),
+        () => state,
+        ref,
+      );
+
+      // 1.1 is focusable under "selection": Enter fires onAction but must not
+      // select it (Space selection stays blocked independently).
+      state.setFocusedKey("1.1");
+      press(treeProps, "Enter");
+
+      expect(onAction).toHaveBeenCalledWith("1.1");
+      expect(state.isSelected("1.1")).toBe(false);
+
+      dispose();
+    });
+  });
+
   it("Home and End land on the first/last enabled row under 'all'", () => {
     createRoot((dispose) => {
       // Visible rows: 1 (disabled), 1.1, 1.2, 2 (disabled)
