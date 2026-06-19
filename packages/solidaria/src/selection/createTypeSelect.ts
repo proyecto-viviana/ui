@@ -8,6 +8,7 @@
 
 import type { JSX, Accessor } from "solid-js";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
+import { createCollator } from "../i18n/createCollator";
 
 /**
  * Controls how long to wait before clearing the typeahead buffer.
@@ -58,16 +59,17 @@ function getStringForKey(key: string): string {
 
 /**
  * Search for a key in the collection that matches the search string.
- * Starts searching from the key after `fromKey`, wrapping around if needed.
+ * Starts *at* `fromKey` (inclusive) and scans to the end, with no internal
+ * wrap; the caller retries from the top to cover earlier items. Matching is
+ * locale-aware via the supplied `collator`.
  */
 function getKeyForSearch<T>(
   collection: Collection<T>,
   search: string,
   fromKey: Key | null,
+  collator: Intl.Collator,
   isKeyDisabled?: (key: Key) => boolean,
 ): Key | null {
-  const searchLower = search.toLowerCase();
-
   // Collect all items in order
   const items: CollectionNode<T>[] = [];
   for (const item of collection) {
@@ -100,9 +102,14 @@ function getKeyForSearch<T>(
       continue;
     }
 
-    // Check if the text value starts with the search string
+    // Match the leading characters of the text value against the search string
+    // using locale-aware collation, mirroring upstream ListKeyboardDelegate
+    // (`collator.compare(textValue.slice(0, search.length), search) === 0`). The
+    // collator's `usage: 'search'` / `sensitivity: 'base'` makes this case- and
+    // diacritic-insensitive in a locale-aware way.
     const textValue = item.textValue || "";
-    if (textValue.toLowerCase().startsWith(searchLower)) {
+    const substring = textValue.slice(0, search.length);
+    if (textValue && collator.compare(substring, search) === 0) {
       return item.key;
     }
   }
@@ -130,6 +137,10 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
     search: "",
     timeout: undefined,
   };
+
+  // Locale-aware search collator, mirroring upstream useSelectableList's
+  // `useCollator({ usage: 'search', sensitivity: 'base' })`.
+  const collator = createCollator({ usage: "search", sensitivity: "base" });
 
   const onKeyDownCapture: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
     if (options.isDisabled) return;
@@ -166,12 +177,18 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
     const collection = options.collection();
     const currentKey = options.focusedKey();
 
-    // First, try to find a match starting after the current key
-    let key = getKeyForSearch(collection, state.search, currentKey, options.isKeyDisabled);
+    // First, search from the focused key (inclusive) to the end
+    let key = getKeyForSearch(
+      collection,
+      state.search,
+      currentKey,
+      collator(),
+      options.isKeyDisabled,
+    );
 
-    // If no match found, try from the beginning
+    // If no match found, retry from the top to cover items before the focus
     if (key == null && currentKey != null) {
-      key = getKeyForSearch(collection, state.search, null, options.isKeyDisabled);
+      key = getKeyForSearch(collection, state.search, null, collator(), options.isKeyDisabled);
     }
 
     if (key != null) {

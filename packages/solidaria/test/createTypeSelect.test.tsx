@@ -510,4 +510,42 @@ describe("createTypeSelect", () => {
     fireEvent.keyDown(container, { key: "B" });
     expect(onFocusedKeyChange).toHaveBeenCalledWith("b");
   });
+
+  it("matches diacritics with locale-aware collation", async () => {
+    // The search collator uses usage 'search' / sensitivity 'base', so an
+    // unaccented keystroke matches an accented item (upstream behavior). A naive
+    // toLowerCase().startsWith would miss this.
+    const onFocusedKeyChange = vi.fn();
+
+    const { getByTestId } = render(() => {
+      const accented = [
+        { key: "a", label: "Apple" },
+        { key: "e", label: "Éclair" },
+      ];
+      const collection = createMockCollection(accented);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(null);
+
+      const { typeSelectProps } = createTypeSelect({
+        collection: () => collection,
+        focusedKey,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
+      });
+
+      return (
+        <div {...typeSelectProps} data-testid="container" tabIndex={0}>
+          Content
+        </div>
+      );
+    });
+
+    const container = getByTestId("container");
+    container.focus();
+
+    // Plain 'e' should match the accented "Éclair"
+    fireEvent.keyDown(container, { key: "e" });
+    expect(onFocusedKeyChange).toHaveBeenCalledWith("e");
+  });
 });

@@ -437,13 +437,20 @@ fixes to `createTypeSelect`:
   old "capture for production, bubble for tests" comment was wrong, and the binding
   is unchanged (both kept) because capture-via-spread is inert, not double-firing.
 
-Tests in `createTypeSelect.test.tsx` (12) cover: stays-on-current-when-prefix-still-
+Tests in `createTypeSelect.test.tsx` cover: stays-on-current-when-prefix-still-
 matches, multi-char accumulation, from-top wrap when nothing at/after matches,
 Ctrl/Meta blocked but **Alt allowed**, and space-in-active-search appended +
 `defaultPrevented`. Changeset `typeahead-start-at-key.md` (patch solidaria).
 
-**Deferred (see backlog below):** true capture-phase binding (Solid spread inertness)
-and collator-based locale/diacritic-aware matching (`createCollator` already exists).
+**Resolved — collator matching** (`solidaria`, 2026-06-19). `getKeyForSearch` now
+compares the leading substring with an `Intl.Collator` (`usage: 'search'`,
+`sensitivity: 'base'`) created via the existing `createCollator`, mirroring upstream
+`ListKeyboardDelegate` / `useSelectableList` (`collator.compare(textValue.slice(0,
+search.length), search) === 0`). Was a naive `toLowerCase().startsWith`, which only
+folded ASCII case; now case- and diacritic-insensitive (a plain `e` matches "Éclair").
+A diacritic test covers it. Changeset `typeahead-collator-matching.md` (patch solidaria).
+
+**Deferred (see backlog below):** true capture-phase binding (Solid spread inertness).
 
 ## Source-level behavioral sweep — open items (deferred)
 
@@ -476,9 +483,7 @@ here so they aren't lost between aspects; tick the box + add the commit when don
   threaded through every consumer (createListBox/createMenu/createSelect spread the
   props) — a small cross-consumer refactor. Validate the space-toggle precedence at the
   ListBox/Menu integration level when closing this.
-- [ ] **Typeahead collator-based matching (minor).** `getKeyForSearch` matches with
-  `textValue.toLowerCase().startsWith(searchLower)` instead of upstream's
-  `Intl.Collator.compare(textValue.slice(0, search.length), search) === 0`
-  (locale/diacritic/case-aware via `usage: 'search'`, `sensitivity: 'base'`).
-  `solidaria`'s `createCollator` already exists, so this is tractable: thread a
-  collator accessor into `createTypeSelect` and compare prefixes with it. Low-risk.
+- [x] **Typeahead collator-based matching (minor).** Done 2026-06-19 (`solidaria`):
+  `getKeyForSearch` now compares the leading substring with an `Intl.Collator`
+  (`usage: 'search'`, `sensitivity: 'base'`) from `createCollator`. See the typeahead
+  section above ("Resolved — collator matching").
