@@ -319,16 +319,23 @@ props). Verified green: `tsc` exit 0; **246 tests / 8 files** (createTreeState,
 createGridState, createTableState, createTreeGridState, createTree,
 createGridList, createListBox, createMenu).
 
-**Deferred — the action-under-`'selection'` edge.** Upstream fires `onAction`
-for a `'selection'`-disabled item (`SelectionManager.isDisabled` is `'all'`-gated
-→ false here) while still blocking selection (`canSelectItem` raw-false). Our
-Enter/Space action guard uses the **raw** `state.isDisabled(focusedKey)`, so
-under `'selection'` we fire **neither** `onAction` nor selection — kept
-raw-blocked and consistent across all four while the nav-skip fix landed. The
-faithful fix is mechanical (gate the action guard on `isNavigationDisabled`
-instead of the raw check; `select()` already self-guards on `canSelectItem`, so
-selection stays blocked) but is its own scoped change (four components + tests +
-changeset) — **not yet done.**
+**Resolved — the action-under-`'selection'` edge** (`1a55ba70`, 2026-06-18).
+Upstream fires `onAction` for a `'selection'`-disabled item
+(`SelectionManager.isDisabled` is `'all'`-gated → false here) while still
+blocking selection (`canSelectItem` raw-false). Our Enter/Space **activation**
+guard used the raw `state.isDisabled(focusedKey)`, so under `'selection'` we
+fired **neither** `onAction` nor selection. Fix: gate the activation branch on
+the navigation-disabled check (`disabledBehavior === 'all'`) in all four
+components, mirroring `useSelectableItem`'s `allowsActions`. Selection stays
+blocked because the mutators (`select` / `toggleSelection` / `replaceSelection`)
+self-guard on the raw disabled check (`SelectionManager.canSelectItem`), so
+activating a disabled key fires `onAction` while `select()` no-ops. GridList and
+Tree keep their separate Space/selection branch raw (selection always blocked);
+Menu and ListBox share one Space/Enter branch that now fires `onAction` while the
+toggle no-ops. Added a per-component "Enter fires onAction but does not select"
+test (and flipped the Menu test that encoded the old behavior); changeset
+`disabled-selection-onaction.md` (patch solidaria). The four suites stay green
+(134 tests); `tsc` exit 0.
 
 **Also not yet plumbed:** the `disabledBehavior` prop through the
 `solidaria-components` / `solid-spectrum` GridList & Menu wrappers (state defaults
