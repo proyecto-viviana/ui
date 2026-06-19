@@ -222,4 +222,56 @@ describe("createAutocomplete", () => {
     const input = screen.getByTestId("input") as HTMLInputElement;
     expect(input.value).toBe("Apple");
   });
+
+  describe("forward-typing virtual focus (IME-aware)", () => {
+    // The hook reads inputType from `beforeinput` (set before onChange runs),
+    // then focuses the first item on forward typing and clears on edit/delete.
+    function setup() {
+      render(() => <TestAutocomplete />);
+      const input = screen.getByTestId("input");
+      const listbox = screen.getByTestId("listbox");
+      const focusSpy = vi.fn();
+      const clearSpy = vi.fn();
+      listbox.addEventListener("autocomplete:focus", (e) =>
+        focusSpy((e as CustomEvent).detail?.focusStrategy),
+      );
+      listbox.addEventListener("autocomplete:clearfocus", clearSpy);
+      return { input, focusSpy, clearSpy };
+    }
+
+    function type(input: HTMLElement, inputType: string, value: string) {
+      input.dispatchEvent(
+        new InputEvent("beforeinput", { inputType, bubbles: true, cancelable: true }),
+      );
+      fireEvent.input(input, { target: { value } });
+    }
+
+    it("focuses the first item on plain forward typing (insertText)", () => {
+      const { input, focusSpy, clearSpy } = setup();
+      type(input, "insertText", "a");
+      expect(focusSpy).toHaveBeenCalledWith("first");
+      expect(clearSpy).not.toHaveBeenCalled();
+    });
+
+    it("focuses the first item on IME composition (insertCompositionText)", () => {
+      const { input, focusSpy, clearSpy } = setup();
+      type(input, "insertCompositionText", "猫");
+      expect(focusSpy).toHaveBeenCalledWith("first");
+      expect(clearSpy).not.toHaveBeenCalled();
+    });
+
+    it("focuses the first item on committed IME composition (insertFromComposition)", () => {
+      const { input, focusSpy, clearSpy } = setup();
+      type(input, "insertFromComposition", "猫");
+      expect(focusSpy).toHaveBeenCalledWith("first");
+      expect(clearSpy).not.toHaveBeenCalled();
+    });
+
+    it("clears virtual focus on delete (deleteContentBackward)", () => {
+      const { input, focusSpy, clearSpy } = setup();
+      type(input, "deleteContentBackward", "");
+      expect(clearSpy).toHaveBeenCalled();
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+  });
 });

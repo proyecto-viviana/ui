@@ -152,19 +152,21 @@ export function createAutocomplete<T = unknown>(
   const [shouldUseVirtualFocus] = createSignal(!disableVirtualFocus);
   let lastInputType = "";
 
-  // Track the input type for determining focus behavior
-  const handleInput = (e: Event) => {
+  // Track the input type for determining focus behavior. We listen to
+  // `beforeinput` (not `input`) so `lastInputType` is set before the input's
+  // `onChange` runs, mirroring @react-aria/autocomplete.
+  const handleBeforeInput = (e: Event) => {
     const inputEvent = e as InputEvent;
     lastInputType = inputEvent.inputType || "";
   };
 
-  // Set up input event listener
+  // Set up beforeinput event listener
   createEffect(() => {
     const input = inputRef();
     if (input) {
-      input.addEventListener("input", handleInput);
+      input.addEventListener("beforeinput", handleBeforeInput);
       onCleanup(() => {
-        input.removeEventListener("input", handleInput);
+        input.removeEventListener("beforeinput", handleBeforeInput);
       });
     }
   });
@@ -200,8 +202,16 @@ export function createAutocomplete<T = unknown>(
 
   // Handle input value changes
   const onChange = (value: string) => {
-    // Focus first item when typing forward, clear when backspacing/pasting
-    if (lastInputType === "insertText" && !disableAutoFocusFirst) {
+    // Focus first item when typing forward, clear when backspacing/pasting.
+    // IME composition (e.g. CJK input) reports 'insertCompositionText'/
+    // 'insertFromComposition' instead of 'insertText'; treat those as forward
+    // typing so the first item still gets virtual focus.
+    if (
+      (lastInputType === "insertText" ||
+        lastInputType === "insertCompositionText" ||
+        lastInputType === "insertFromComposition") &&
+      !disableAutoFocusFirst
+    ) {
       focusFirstItem();
     } else if (
       lastInputType &&
