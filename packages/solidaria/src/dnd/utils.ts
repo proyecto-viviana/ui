@@ -4,12 +4,14 @@
 
 import type {
   DragItem,
+  DragType,
   DropItem,
   TextDropItem,
   FileDropItem,
   DirectoryDropItem,
   DropOperation,
 } from "@proyecto-viviana/solid-stately";
+import { DIRECTORY_DRAG_TYPE } from "@proyecto-viviana/solid-stately";
 
 // Native drag types that can be transferred between applications
 export const NATIVE_DRAG_TYPES: Set<string> = new Set(["text/plain", "text/uri-list", "text/html"]);
@@ -231,11 +233,33 @@ export class DragTypesImpl {
     this.includesUnknownTypes = !hasFiles && dataTransfer.types.includes("Files");
   }
 
-  has(type: string | symbol): boolean {
-    if (this.includesUnknownTypes || (typeof type === "symbol" && this.types.has(GENERIC_TYPE))) {
+  has(type: DragType | DragType[]): boolean {
+    if (Array.isArray(type)) {
+      return type.some((t) => this.has(t));
+    }
+
+    if (
+      this.includesUnknownTypes ||
+      (type === DIRECTORY_DRAG_TYPE && this.types.has(GENERIC_TYPE)) ||
+      type === "*/*"
+    ) {
       return true;
     }
-    return typeof type === "string" && this.types.has(type);
+
+    if (typeof type === "string") {
+      // Wildcard MIME match, e.g. "image/*" accepts "image/png".
+      if (type.endsWith("/*")) {
+        for (const key of this.types) {
+          if (key.startsWith(type.slice(0, -2))) {
+            return true;
+          }
+        }
+        return false;
+      }
+      return this.types.has(type);
+    }
+
+    return false;
   }
 }
 

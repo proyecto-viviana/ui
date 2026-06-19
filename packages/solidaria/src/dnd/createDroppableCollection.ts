@@ -12,6 +12,7 @@ import type {
   DropTarget,
   DropOperation,
   DropItem,
+  DragType,
   DragTypes,
   Key,
 } from "@proyecto-viviana/solid-stately";
@@ -390,7 +391,9 @@ export function createDroppableCollection(
           return { has: () => true };
         }
         return {
-          has: (type: string | symbol) => typeof type === "string" && draggingTypes.has(type),
+          // Keyboard drag mirrors upstream's raw Set<string> delegate: no
+          // wildcard expansion (that lives in the DataTransfer-backed DragTypes).
+          has: (type: DragType | DragType[]) => typeof type === "string" && draggingTypes.has(type),
         };
       };
       const isValidDropTarget = (target: DropTarget) =>

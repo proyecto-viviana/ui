@@ -205,10 +205,13 @@ export interface DroppableCollectionReorderEvent {
   target: ItemDropTarget;
 }
 
+/** A drag type: either a MIME type string or a symbol such as the directory drag type. */
+export type DragType = string | symbol;
+
 /** Interface for checking drag types. */
 export interface DragTypes {
   /** Returns whether the drag contains data of the given type. */
-  has(type: string | symbol): boolean;
+  has(type: DragType | DragType[]): boolean;
 }
 
 /** Delegate for determining drop targets within a collection. */

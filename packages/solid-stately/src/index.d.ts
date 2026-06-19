@@ -266,6 +266,7 @@ export {
   type DroppableCollectionRootDropEvent,
   type DroppableCollectionOnItemDropEvent,
   type DroppableCollectionReorderEvent,
+  type DragType,
   type DragTypes,
   type DropTargetDelegate,
   type DraggableCollectionStartEvent,
