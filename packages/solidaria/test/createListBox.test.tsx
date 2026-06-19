@@ -15,6 +15,7 @@ function createMockKeyboardEvent(key: string, options: Partial<KeyboardEvent> = 
   const mockElement = document.createElement("div");
   const event = new KeyboardEvent("keydown", { key, ...options });
   Object.defineProperty(event, "preventDefault", { value: vi.fn() });
+  Object.defineProperty(event, "stopPropagation", { value: vi.fn() });
   Object.defineProperty(event, "currentTarget", { value: mockElement });
   Object.defineProperty(event, "target", { value: mockElement });
   return event;
@@ -380,6 +381,43 @@ describe("createListBox", () => {
         (listBoxProps.onKeyDown as any)?.(event);
 
         expect(state.selectedKeys().size).toBe(1);
+        dispose();
+      });
+    });
+
+    it("clears on Escape and stops the event so an overlay does not also close", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({
+          selectionMode: "multiple",
+          defaultSelectedKeys: ["a", "b"],
+        });
+        const { listBoxProps } = createListBox({}, state);
+
+        const event = createMockKeyboardEvent("Escape");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        expect(state.selectedKeys().size).toBe(0);
+        // When it actually clears, it swallows the event (mirrors upstream).
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(event.stopPropagation).toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("leaves Escape alone when there is no selection to clear", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({ selectionMode: "multiple" });
+        const { listBoxProps } = createListBox({}, state);
+
+        expect(state.selectedKeys().size).toBe(0);
+
+        const event = createMockKeyboardEvent("Escape");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        // Nothing to clear: the event must bubble so an enclosing overlay
+        // (popover, combobox, dialog) can handle Escape itself.
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
         dispose();
       });
     });

@@ -452,6 +452,32 @@ A diacritic test covers it. Changeset `typeahead-collator-matching.md` (patch so
 
 **Deferred (see backlog below):** true capture-phase binding (Solid spread inertness).
 
+## Source-level behavioral sweep — Escape key (ListBox)
+
+Aspect of the sweep covering Escape in selectable collections. Upstream oracle:
+`react-aria/src/selection/useSelectableCollection.ts` Escape case (343-353). Our
+port: `solidaria/src/listbox/createListBox.ts`.
+
+**Contract.** Upstream only acts when `escapeKeyBehavior === 'clearSelection'` (the
+default) **and** `!disallowEmptySelection` **and** `manager.selectedKeys.size !== 0`;
+then it `stopPropagation()` + `preventDefault()` + `clearSelection()`. When there is
+nothing to clear (or empty is disallowed, or `escapeKeyBehavior === 'none'`) it does
+**nothing** — crucially no `preventDefault` — so Escape bubbles to an enclosing
+overlay (popover / combobox / dialog) to dismiss it.
+
+**Resolved — conditional Escape** (`solidaria`, 2026-06-19). `createListBox`
+previously called `e.preventDefault()` on **every** Escape and cleared whenever empty
+was allowed. That swallowed Escape inside overlays even with no selection (so the
+overlay couldn't close), and never `stopPropagation`'d, so an Escape that *did* clear
+could also bubble up and close the overlay. Now gated on `!disallowEmptySelection() &&
+!isEmpty()` with `stopPropagation` + `preventDefault` + `clearSelection` only on that
+path; otherwise Escape is left untouched. (`isEmpty()` returns false for select-all,
+matching upstream's `size !== 0`.) Menu (`onClose` on Escape) and ComboBox (`revert`
+only when open) have their own correct, overlay-specific Escape paths — unchanged.
+Tests in `createListBox.test.tsx` assert clear-path `preventDefault`+`stopPropagation`
+and the no-selection bubble-through. Changeset `listbox-escape-conditional.md` (patch
+solidaria).
+
 ## Source-level behavioral sweep — open items (deferred)
 
 Carried-forward work the sweep has surfaced but **not** closed. These are tracked
@@ -487,3 +513,8 @@ here so they aren't lost between aspects; tick the box + add the commit when don
   `getKeyForSearch` now compares the leading substring with an `Intl.Collator`
   (`usage: 'search'`, `sensitivity: 'base'`) from `createCollator`. See the typeahead
   section above ("Resolved — collator matching").
+- [ ] **`escapeKeyBehavior` prop (minor).** Upstream exposes `escapeKeyBehavior:
+  'clearSelection' | 'none'` (default `'clearSelection'`) on `useSelectableCollection`
+  to opt out of Escape-clears-selection. Our `createListBox` hard-codes the default
+  path (see the "Escape key (ListBox)" section). Add the prop + thread it through the
+  ListBox component layers if a consumer needs the opt-out. Low-risk feature gap.

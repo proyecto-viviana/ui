@@ -331,8 +331,15 @@ export function createListBox<T>(
         break;
       }
       case "Escape": {
-        e.preventDefault();
-        if (!state.disallowEmptySelection()) {
+        // Mirror useSelectableCollection (Escape, 343-353): only clear the
+        // selection — and swallow the event — when there is actually a selection
+        // to clear and empty selection is allowed. Otherwise leave Escape alone
+        // so an enclosing overlay (popover, dialog, combobox) can handle it. The
+        // upstream escapeKeyBehavior 'none' opt-out is not wired; this is the
+        // default 'clearSelection' path.
+        if (!state.disallowEmptySelection() && !state.isEmpty()) {
+          e.stopPropagation();
+          e.preventDefault();
           state.clearSelection();
         }
         break;
