@@ -10,6 +10,7 @@ import {
   setInteractionModality,
   addModalityListener,
   setupGlobalFocusListeners,
+  addWindowFocusTracking,
   type Modality,
 } from "../src/interactions/createInteractionModality";
 
@@ -206,6 +207,78 @@ describe("createInteractionModality", () => {
       expect(listener).toHaveBeenCalledTimes(1);
 
       cleanup();
+    });
+  });
+
+  describe("focus prototype patch", () => {
+    // Build an isolated fake window/document/element so we exercise
+    // setupGlobalFocusEvents without touching the real global listeners or the
+    // real HTMLElement.prototype.
+    function makeFakeTarget(focusDescriptor: PropertyDescriptor) {
+      const prototypeObj = {} as { focus: (...args: unknown[]) => void };
+      Object.defineProperty(prototypeObj, "focus", focusDescriptor);
+      const fakeWindow = {
+        HTMLElement: { prototype: prototypeObj },
+        PointerEvent: function () {},
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      };
+      const fakeDoc = {
+        defaultView: fakeWindow,
+        readyState: "complete",
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      };
+      const fakeElement = { ownerDocument: fakeDoc };
+      return { prototypeObj, fakeElement: fakeElement as unknown as HTMLElement };
+    }
+
+    it("installs the focus patch via defineProperty even when focus is a getter-only accessor", () => {
+      // Simulate a test library (e.g. user-event setup) that replaced focus with a
+      // getter-only accessor. Plain assignment to it throws; defineProperty must not,
+      // and must still install the wrapper.
+      const underlying = vi.fn();
+      const { prototypeObj, fakeElement } = makeFakeTarget({
+        configurable: true,
+        get: () => underlying,
+      });
+
+      let cleanup: (() => void) | undefined;
+      expect(() => {
+        cleanup = addWindowFocusTracking(fakeElement);
+      }).not.toThrow();
+
+      // The patch is installed as a data property (proves defineProperty, not assignment).
+      const patched = Object.getOwnPropertyDescriptor(prototypeObj, "focus");
+      expect(patched && typeof patched.value).toBe("function");
+      expect(patched!.value).not.toBe(underlying);
+
+      // The wrapper still delegates to the original focus implementation.
+      prototypeObj.focus.call({});
+      expect(underlying).toHaveBeenCalledTimes(1);
+
+      // Teardown restores the original focus implementation.
+      cleanup?.();
+      expect(Object.getOwnPropertyDescriptor(prototypeObj, "focus")!.value).toBe(underlying);
+    });
+
+    it("patches and restores a normal data-property focus", () => {
+      const underlying = vi.fn();
+      const { prototypeObj, fakeElement } = makeFakeTarget({
+        configurable: true,
+        writable: true,
+        value: underlying,
+      });
+
+      const cleanup = addWindowFocusTracking(fakeElement);
+
+      const patched = prototypeObj.focus;
+      expect(patched).not.toBe(underlying);
+      patched.call({});
+      expect(underlying).toHaveBeenCalledTimes(1);
+
+      cleanup();
+      expect(prototypeObj.focus).toBe(underlying);
     });
   });
 });

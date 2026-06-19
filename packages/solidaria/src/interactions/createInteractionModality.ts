@@ -40,7 +40,7 @@ const changeHandlers = new Set<Handler>();
 
 export let hasSetupGlobalListeners: Map<
   Window,
-  { focus: typeof window.HTMLElement.prototype.focus; canOverride: boolean }
+  { focus: typeof window.HTMLElement.prototype.focus }
 > = new Map();
 let hasEventBeforeFocus = false;
 let hasBlurredWindowRecently = false;
@@ -145,16 +145,21 @@ function setupGlobalFocusEvents(element?: HTMLElement | null) {
 
   const documentObject = getOwnerDocument(element);
 
+  // Programmatic focus() calls shouldn't affect the current input modality, so we
+  // patch HTMLElement.prototype.focus to record that an event preceded the focus.
+  // Use Reflect.defineProperty (not assignment) so this works even when `focus` is
+  // currently a getter-only accessor — e.g. when a test library's setup() has
+  // instrumented it. Plain assignment throws in that case; Reflect.defineProperty
+  // returns false rather than throwing (and succeeds on the configurable prototype).
   const originalFocus = windowObject.HTMLElement.prototype.focus;
-  let canOverride = true;
-  try {
-    windowObject.HTMLElement.prototype.focus = function () {
+  Reflect.defineProperty(windowObject.HTMLElement.prototype, "focus", {
+    configurable: true,
+    writable: true,
+    value: function () {
       hasEventBeforeFocus = true;
       originalFocus.apply(this, arguments as unknown as [options?: FocusOptions | undefined]);
-    };
-  } catch {
-    canOverride = false;
-  }
+    },
+  });
 
   documentObject.addEventListener("keydown", handleKeyboardEvent, true);
   documentObject.addEventListener("keyup", handleKeyboardEvent, true);
@@ -181,7 +186,7 @@ function setupGlobalFocusEvents(element?: HTMLElement | null) {
     { once: true },
   );
 
-  hasSetupGlobalListeners.set(windowObject, { focus: originalFocus, canOverride });
+  hasSetupGlobalListeners.set(windowObject, { focus: originalFocus });
 }
 
 function tearDownWindowFocusTracking(element?: HTMLElement | null, loadListener?: () => void) {
@@ -201,9 +206,13 @@ function tearDownWindowFocusTracking(element?: HTMLElement | null, loadListener?
   }
 
   const entry = hasSetupGlobalListeners.get(windowObject)!;
-  if (entry.canOverride) {
-    windowObject.HTMLElement.prototype.focus = entry.focus;
-  }
+  // Mirror the setup path: defineProperty (not assignment) restores the original
+  // focus even if it had been replaced with a getter-only accessor.
+  Reflect.defineProperty(windowObject.HTMLElement.prototype, "focus", {
+    configurable: true,
+    writable: true,
+    value: entry.focus,
+  });
 
   documentObject.removeEventListener("keydown", handleKeyboardEvent, true);
   documentObject.removeEventListener("keyup", handleKeyboardEvent, true);
