@@ -337,6 +337,17 @@ test (and flipped the Menu test that encoded the old behavior); changeset
 `disabled-selection-onaction.md` (patch solidaria). The four suites stay green
 (134 tests); `tsc` exit 0.
 
-**Also not yet plumbed:** the `disabledBehavior` prop through the
-`solidaria-components` / `solid-spectrum` GridList & Menu wrappers (state defaults
-to `'all'`, so behavior is correct; the knob just is not exposed downstream yet).
+**Resolved — wrapper plumbing** (`7de4ea89`, 2026-06-18): the `disabledBehavior`
+prop is now exposed and forwarded through the `solidaria-components` collection
+wrappers. `GridList` and `Menu` gained the prop (next to `disabledKeys`) and
+forward it to `createGridState` / `createMenuState`; `Table` already accepted it in
+its props type and split list but dropped it before `createTableState` — both
+ternary branches now forward it. `ListBox` and `Tree` already did, and `MenuSection`
+(Menu Path B) was already correct. The `solid-spectrum` styled wrappers need no
+change: each extends `Omit<Headless…Props>` (without omitting `disabledBehavior`)
+and spreads the rest onto the headless component, so the prop forwards transparently
+— and unlike the headless enumeration that bit Table, a spread-rest can't silently
+drop it. Discriminating wrapper tests focus a disabled-for-`'selection'` item
+(keyboard nav lands on it and `onAction` fires); they fail if the prop defaults back
+to `'all'`. Changeset `gridlist-menu-table-disabledbehavior.md` (patch
+solidaria-components).
