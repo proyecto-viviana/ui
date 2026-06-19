@@ -401,3 +401,25 @@ none implement touch **long-press → `setSelectionBehavior('toggle')`**. Closin
 faithfully means routing item activation through a press-based path and threading
 `hasPrimaryAction` / `hasSecondaryAction` + `pointerType` — a cross-hook epic, scoped
 separately from the bounded `select()` fix above.
+
+## Source-level behavioral sweep — open items (deferred)
+
+Carried-forward work the sweep has surfaced but **not** closed. These are tracked
+here so they aren't lost between aspects; tick the box + add the commit when done.
+
+- [ ] **`replace`-mode action model (architectural epic).** Wire up upstream's
+  single-click-selects / double-click-acts split so the row action becomes the
+  *secondary* action under `selectionBehavior: 'replace'` with selection enabled.
+  Requires routing `gridlist/createGridListItem.ts`, `tree/createTreeItem.ts`, and
+  `table/createTableRow.ts` activation through a press-based path (not raw pointer
+  events), threading `hasPrimaryAction` / `hasSecondaryAction` + `pointerType`,
+  adding the `onDoubleClick` secondary action and the touch **long-press →
+  `setSelectionBehavior('toggle')`** switch. Full evidence in the
+  `selectionBehavior: 'replace'` section above ("Not yet ported"). **High risk /
+  cross-hook — scope and validate on its own before starting.**
+- [ ] **`select()` multiple-mode fidelity (minor).** Two small upstream-faithfulness
+  gaps in `createSelectionState.select()`: (a) it uses `ctrlKey || metaKey` instead
+  of upstream's platform-aware `isCtrlKeyPressed`; (b) it can't see `pointerType`, so
+  touch/virtual input doesn't force `toggleSelection` the way upstream's `onSelect`
+  does (`useSelectableItem.ts:174`). Both need a richer event param threaded from the
+  call sites. Low-risk, but bundle with the epic above since they share the plumbing.
