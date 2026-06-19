@@ -280,10 +280,13 @@ export function createSelectionState(
     const behavior = selectionBehavior();
 
     if (mode === "single") {
-      if (behavior === "replace" || !isSelected(key)) {
+      // Mirrors useSelectableItem's onSelect: single mode ignores
+      // selectionBehavior. Re-selecting the current item deselects it when
+      // empty selection is allowed; otherwise it stays selected (replace).
+      if (isSelected(key) && !disallowEmptySelection()) {
+        toggleSelection(key);
+      } else {
         replaceSelection(key);
-      } else if (!disallowEmptySelection()) {
-        clearSelection();
       }
       return;
     }

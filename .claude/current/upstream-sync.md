@@ -351,3 +351,53 @@ drop it. Discriminating wrapper tests focus a disabled-for-`'selection'` item
 (keyboard nav lands on it and `onAction` fires); they fail if the prop defaults back
 to `'all'`. Changeset `gridlist-menu-table-disabledbehavior.md` (patch
 solidaria-components).
+
+## Source-level behavioral sweep — `selectionBehavior: 'replace'` (highlight selection)
+
+Next aspect of the sweep. Upstream oracle: `react-aria/src/selection/useSelectableItem.ts`.
+
+**Contract (`onSelect`, 144-182).** On activation: keyboard non-contiguous modifier
+→ toggle; `selectionMode === 'none'` → return; **single mode → ignore
+`selectionBehavior`** (`isSelected && !disallowEmptySelection ? toggle : replace`);
+`shiftKey` → extend; `selectionBehavior === 'toggle' || isCtrlKeyPressed || touch ||
+virtual` → toggle; else → replace. The action model (249-256): `hasPrimaryAction =
+allowsActions && (behavior === 'replace' ? !allowsSelection : !allowsSelection ||
+isEmpty)`; `hasSecondaryAction = allowsActions && allowsSelection && behavior ===
+'replace'`. Under `replace`, single-click **selects** (replace) and the row action
+is **secondary** — it fires on double-click (`onDoubleClick`, modality `mouse`,
+401-409). Touch long-press → `onSelect` + `setSelectionBehavior('toggle')`
+(411-422).
+
+**Resolved — single-mode `select()`** (`solid-stately`, 2026-06-19): our
+`createSelectionState.select()` (the consolidated `onSelect`, used by Menu / ListBox
+/ ActionGroup) short-circuited single mode on `behavior === 'replace'` and called
+`replaceSelection`, so a re-selected item stayed selected — a single-mode highlight
+ListBox/Menu could never clear by re-activating its row. Now it mirrors upstream:
+single mode ignores `selectionBehavior` (`isSelected && !disallowEmptySelection ?
+toggle : replace`). Tests in `collections.test.ts` cover re-select-deselects (empty
+allowed), re-select-keeps (empty disallowed), replace-on-different-key, and the
+multiple-mode replace/ctrl-toggle split. Changeset
+`selection-single-mode-replace.md` (patch solid-stately).
+
+**Not yet ported — the `replace`-mode action model (architectural).** Upstream's
+single-click-selects / double-click-acts split (where, under `replace` with
+selection enabled, the row action is the **secondary** action) is **not** wired up.
+Our collection item hooks that drive grids/trees/tables inline activation on **raw
+pointer events** rather than going through `select()` / upstream `usePress`:
+- `gridlist/createGridListItem.ts` `handleActivation` (45-89) and
+  `tree/createTreeItem.ts` (74-92) conflate selection with action — the `replace`
+  branch fires `onAction` on a single-click of the **sole-selected** row
+  (`isSelected() && selectedKeys.size === 1`) instead of `replaceSelection`, and have
+  no double-click path at all.
+- `table/createTableRow.ts` is further along — pointer-down/up disambiguation
+  (`didSelectOnPointer` / `didActionOnPointer`, 144-170), a `forceReplace` select
+  path (99/105), and an `onDblClick` (173-180) — but that dblclick only activates an
+  `href` link under `replace`; the general row action still fires on the **single**
+  activation (167-168) rather than as a double-click secondary action.
+
+None route through `select()` / `usePress`, none thread `pointerType` (touch/virtual
+⇒ toggle) into `select()` (its event param is only `shiftKey/ctrlKey/metaKey`), and
+none implement touch **long-press → `setSelectionBehavior('toggle')`**. Closing this
+faithfully means routing item activation through a press-based path and threading
+`hasPrimaryAction` / `hasSecondaryAction` + `pointerType` — a cross-hook epic, scoped
+separately from the bounded `select()` fix above.

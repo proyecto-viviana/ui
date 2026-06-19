@@ -217,6 +217,75 @@ describe("createSelectionState", () => {
       dispose();
     });
   });
+
+  it("select() in single mode deselects a re-selected item even with replace behavior", () => {
+    createRoot((dispose) => {
+      const state = createSelectionState({
+        selectionMode: "single",
+        selectionBehavior: "replace",
+        defaultSelectedKeys: ["a"],
+      });
+
+      // Single mode ignores selectionBehavior: re-selecting the current item
+      // toggles it off when empty selection is allowed, matching upstream
+      // useSelectableItem's onSelect.
+      state.select("a");
+      expect(state.selectedKeys().has("a")).toBe(false);
+      expect(state.selectedKeys().size).toBe(0);
+      dispose();
+    });
+  });
+
+  it("select() in single mode keeps a re-selected item when empty is disallowed", () => {
+    createRoot((dispose) => {
+      const state = createSelectionState({
+        selectionMode: "single",
+        selectionBehavior: "replace",
+        disallowEmptySelection: true,
+        defaultSelectedKeys: ["a"],
+      });
+
+      state.select("a");
+      expect(state.selectedKeys().has("a")).toBe(true);
+      dispose();
+    });
+  });
+
+  it("select() in single mode replaces when a different key is chosen", () => {
+    createRoot((dispose) => {
+      const state = createSelectionState({
+        selectionMode: "single",
+        selectionBehavior: "replace",
+        defaultSelectedKeys: ["a"],
+      });
+
+      state.select("b");
+      expect(state.selectedKeys().has("a")).toBe(false);
+      expect(state.selectedKeys().has("b")).toBe(true);
+      dispose();
+    });
+  });
+
+  it("select() in multiple mode replaces by default and toggles with a modifier", () => {
+    createRoot((dispose) => {
+      const state = createSelectionState({
+        selectionMode: "multiple",
+        selectionBehavior: "replace",
+        defaultSelectedKeys: ["a"],
+      });
+
+      // Plain select under replace behavior swaps the whole selection.
+      state.select("b");
+      expect(state.selectedKeys().has("a")).toBe(false);
+      expect(state.selectedKeys().has("b")).toBe(true);
+
+      // Ctrl/meta adds without clearing the rest.
+      state.select("c", { ctrlKey: true });
+      expect(state.selectedKeys().has("b")).toBe(true);
+      expect(state.selectedKeys().has("c")).toBe(true);
+      dispose();
+    });
+  });
 });
 
 describe("selection module compatibility aliases", () => {
