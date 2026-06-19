@@ -109,6 +109,8 @@ export interface MenuProps<T>
   getDisabled?: (item: T) => boolean;
   /** Keys of disabled items. */
   disabledKeys?: Iterable<Key>;
+  /** Whether disabled items can still receive focus. */
+  disabledBehavior?: "selection" | "all";
   /** Handler called when an item is activated. */
   onAction?: (key: Key) => void;
   /** Handler called when the menu should close. */
@@ -677,6 +679,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       "getTextValue",
       "getDisabled",
       "disabledKeys",
+      "disabledBehavior",
       "selectionMode",
       "selectionBehavior",
       "disallowEmptySelection",
@@ -792,6 +795,9 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     },
     get disabledKeys() {
       return stateProps.disabledKeys;
+    },
+    get disabledBehavior() {
+      return stateProps.disabledBehavior;
     },
     get selectionMode() {
       return stateProps.selectionMode;

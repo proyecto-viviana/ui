@@ -1213,6 +1213,34 @@ describe("Menu", () => {
       const items = screen.getAllByRole("menuitem");
       expect(items[1]).toHaveAttribute("aria-disabled", "true");
     });
+
+    it('forwards disabledBehavior="selection" so a disabled item stays focusable and actionable', async () => {
+      // Under the default "all" ArrowDown would skip "Cat" to "Dog" and Enter
+      // would never fire its action; "selection" keeps it focusable and fires
+      // onAction (selection stays blocked independently).
+      const onAction = vi.fn();
+      render(() => (
+        <Menu<TestItem>
+          aria-label="Test"
+          items={testItems}
+          getKey={(item) => item.id}
+          disabledKeys={["cat"]}
+          disabledBehavior="selection"
+          onAction={onAction}
+        >
+          {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+        </Menu>
+      ));
+
+      await user.tab();
+      await user.keyboard("{ArrowDown}");
+
+      const items = screen.getAllByRole("menuitem");
+      expect(items[0]).toHaveAttribute("data-focused");
+
+      await user.keyboard("{Enter}");
+      expect(onAction).toHaveBeenCalledWith("cat");
+    });
   });
 
   // ============================================

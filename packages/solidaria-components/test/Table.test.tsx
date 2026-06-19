@@ -2486,6 +2486,47 @@ describe("Table", () => {
       fireEvent.click(disabledRow);
       expect(disabledRow).toHaveAttribute("aria-selected", "false");
     });
+
+    it('forwards disabledBehavior="selection" so a disabled row stays focusable', async () => {
+      // Under the default "all" ArrowDown would skip the disabled Charizard row
+      // and land on Blastoise; "selection" keeps it focusable (just not
+      // selectable). This proves the prop reaches the table state.
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+          disabledKeys={[2]}
+          disabledBehavior="selection"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const table = screen.getByRole("grid", { name: "Pokemon" });
+      const rows = screen.getAllByRole("row");
+      rows[1].focus();
+      fireEvent.focus(rows[1]);
+      fireEvent.keyDown(table, { key: "ArrowDown" });
+      await Promise.resolve();
+
+      expect(document.activeElement).toBe(rows[2]);
+    });
   });
 
   // ============================================

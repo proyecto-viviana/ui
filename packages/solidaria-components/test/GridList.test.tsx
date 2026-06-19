@@ -699,6 +699,42 @@ describe("GridList", () => {
       const list = document.querySelector(".solidaria-GridList");
       expect(list).toBeTruthy();
     });
+
+    it('forwards disabledBehavior="selection" so a disabled row stays focusable and actionable', () => {
+      // Discriminates the prop actually reaching the grid state: under the
+      // default "all" the disabled row would be skipped in navigation and never
+      // fire its action; under "selection" it stays focusable (and actionable),
+      // while selection remains blocked.
+      const onAction = vi.fn();
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+          selectionMode="single"
+          disabledKeys={new Set([2])}
+          disabledBehavior="selection"
+          onAction={onAction}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const grid = screen.getByRole("grid", { name: "Fruits" });
+      const rows = screen.getAllByRole("row");
+      fireEvent.focus(grid); // lands on the first row (Apple)
+      fireEvent.keyDown(grid, { key: "ArrowDown" }); // -> Banana (skipped under "all")
+
+      expect(rows[1].getAttribute("tabindex")).toBe("0");
+
+      fireEvent.keyDown(grid, { key: "Enter" });
+      expect(onAction).toHaveBeenCalledWith(2);
+      expect(rows[1]).toHaveAttribute("aria-selected", "false");
+    });
   });
 
   // ============================================

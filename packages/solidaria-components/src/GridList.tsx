@@ -107,6 +107,8 @@ export interface GridListProps<T extends object>
   selectionBehavior?: "replace" | "toggle";
   /** Keys of disabled items. */
   disabledKeys?: Iterable<Key>;
+  /** Whether disabled items can still receive focus. */
+  disabledBehavior?: "selection" | "all";
   /** Currently selected keys (controlled). */
   selectedKeys?: "all" | Iterable<Key>;
   /** Default selected keys (uncontrolled). */
@@ -322,6 +324,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "getTextValue",
       "getDisabled",
       "disabledKeys",
+      "disabledBehavior",
       "selectionMode",
       "selectedKeys",
       "defaultSelectedKeys",
@@ -372,6 +375,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   const state = createGridState<T, GridCollection<T>>(() => ({
     collection: collection(),
     disabledKeys: allDisabledKeys(),
+    disabledBehavior: stateProps.disabledBehavior,
     selectionMode: stateProps.selectionMode,
     selectionBehavior: stateProps.selectionBehavior,
     selectedKeys: stateProps.selectedKeys,
