@@ -18,8 +18,10 @@ committed — but it is **pinned, not floating**. The pin lives in a tracked fil
 `scripts/upstream-pin.json`: release umbrella tag, commit SHA, and the resolved
 `@react-spectrum/s2` / `react-aria-components` versions.
 
-Current pin (2026-06-16): `@adobe/react-spectrum@3.47.1`, commit `791377f`,
-`@react-spectrum/s2@1.4.0`, `react-aria-components@1.18.0`.
+Current pin (2026-06-19): `@adobe/react-spectrum@3.47.2`, commit `1c84a49a`,
+`@react-spectrum/s2@1.5.0`, `react-aria-components@1.19.0`. The 1.18/1.4 → 1.19/1.5
+absorb backlog is **Train 6 (T-34…T-50)** in
+[upstream-release-audit.md](./upstream-release-audit.md).
 
 The tree is materialized as a **shallow checkout at the tag** (nested `.git`),
 which makes release-to-release diffing first-class. `guard:upstream-test-parity`

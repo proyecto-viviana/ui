@@ -1,10 +1,10 @@
 {
-  "release": "@adobe/react-spectrum@3.47.1",
-  "commit": "791377f0ad2093fb6ad36582e403289f13b0376b",
+  "release": "@adobe/react-spectrum@3.47.2",
+  "commit": "1c84a49a1faf50b571c84e00bcf9c60b22ddd03e",
   "tags": {
-    "@react-spectrum/s2": "1.4.0",
-    "react-aria-components": "1.18.0"
+    "@react-spectrum/s2": "1.5.0",
+    "react-aria-components": "1.19.0"
   },
-  "pinnedAt": "2026-06-16",
-  "notes": "The gitignored ./react-spectrum oracle is materialized at this upstream release. Bump it via the .claude/current/upstream-sync.md playbook, then re-run `vp run guard:upstream-test-parity` and triage the diff."
+  "pinnedAt": "2026-06-19",
+  "notes": "The gitignored ./react-spectrum oracle is materialized at this upstream release. Bump it via the .claude/current/upstream-sync.md playbook, then re-run `vp run guard:upstream-test-parity` and triage the diff. The 1.18/1.4 -> 1.19/1.5 absorb backlog is Train 6 in .claude/current/upstream-release-audit.md."
 }

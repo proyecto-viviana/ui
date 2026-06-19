@@ -3,7 +3,7 @@ kind: process
 status: current
 ---
 
-# Upstream release audit — RAC 1.14→1.18 / S2 1.0→1.4
+# Upstream release audit — RAC 1.14→1.19 / S2 1.0→1.5
 
 A backlog of **atomic tickets** distilled from Adobe's release notes across every
 train since we started porting (the S2 1.0.0 major) up to our current pin. Each
@@ -43,6 +43,31 @@ asserted role. The release notes are the only signal those happened — see the
 > gaining an `orientation` prop + `data-orientation`), and **S2 Toast animations ✔**
 > (the View Transitions API enter/exit/restack port). **No confirmed ⛔ gaps remain.**
 
+> **Train 6 — RAC 1.18→1.19 / S2 1.4→1.5 — backlog filed; execution pending.**
+> The single shared 1.19/1.5 train (one minor each, same commit `1c84a49a`,
+> published 2026-06-17) was absorbed via the lightweight single-train path in
+> [upstream-sync.md](./upstream-sync.md): oracle refreshed, pin bumped, the five
+> mechanical gates re-run clean (and two long-broken gates repaired — see below).
+> Its changes are filed as **T-34…T-50** below, grouped by feature, oldest-first.
+> Initial triage from the `git diff 791377f0..1c84a49a` over `src`+`test`: confirmed
+> gaps **T-34** (`keyboardNavigationBehavior`), **T-36** (`UNSTABLE_focusOnEntry`),
+> **T-37** (column-reverse `ListKeyboardDelegate`), **T-38** (`onAction(key, value)`),
+> **T-39** (overlay `getTargetRect`) — all greppably absent; **T-45** CenterBaseline
+> already present internally (✅); the rest 🔍 (behavioral, reconcile per-ticket).
+> The bulk of the 496-file diff is mechanical noise with no port concern (removal of
+> `// @ts-ignore` before glob-JSON imports tree-wide, plus stories/docs/s2-docs/test
+> churn); `react-stately/src` carried only that noise. **No tickets are executed yet.**
+> Two unrelated gate repairs landed with the absorb (tooling, not ports): the RAC
+> barrel moved to `exports/index.ts` (`guard:rac-parity` / `guard:rac-export-gap` had
+> been silently crashing on the old `src/index.ts` path since ≥the 1.18 pin), and
+> `guard:virtualizer-keyboard-parity` had been red since the 2026-04-30 formatting
+> baseline on a single-vs-double-quote regex literal (behavior was always intact).
+> **Newly surfaced by fixing `rac-export-gap`** (pre-existing, predates this train,
+> *not* a Train 6 item): RAC exports `CheckboxField`/`CheckboxButton`/`CheckboxFieldContext`,
+> `RadioField`/`RadioButton`/`RadioFieldContext`, `SwitchField`/`SwitchButton`/`SwitchFieldContext`
+> (the `*Field`/`*Button` form-field wrappers) that solidaria-components doesn't — track
+> separately as a backlog of unported RAC surface.
+
 ## Scope & sources
 
 | Train (date) | RAC | S2 | Notes (highlights) |
@@ -51,7 +76,8 @@ asserted role. The release notes are the only signal those happened — see the
 | 2026-02-04 | 1.15.0 | 1.1.0 | rac v1-15-0 · rs v1-1-0 |
 | 2026-03-04 | 1.16.0 | 1.2.0 | rac v1-16-0 · rs v1-2-0 |
 | 2026-04-15 | 1.17.0 | 1.3.0 | rac v1-17-0 · rs v1-3-0 |
-| 2026-05-30 | 1.18.0 | 1.4.0 | rac v1-18-0 · rs v1-4-0 ← **current pin** |
+| 2026-05-30 | 1.18.0 | 1.4.0 | rac v1-18-0 · rs v1-4-0 |
+| 2026-06-17 | 1.19.0 | 1.5.0 | rac v1-19-0 · rs v1-5-0 ← **current pin** |
 
 Tickets below are built from the **per-package GitHub Release highlights**
 (`gh release view '<pkg>@<ver>' --repo adobe/react-spectrum`). Those are summaries;
@@ -131,6 +157,31 @@ internal — not a port concern).
 - [x] **T-32** ✔ S2 — custom **prefixes** for ComboBox / TextField. **Now ported** (changeset `field-prefix.md`). Upstream hosts `prefix?: ReactNode` on the shared `FieldGroup` (`s2/src/Field.tsx`, with a `prefixId` + `aria-labelledby` association) and threads it into **ColorField, ComboBox, NumberField, TextField** (prefix-only; no `suffix`). We have no shared `FieldGroup` — each field composes its own group/input from its headless context — so the port adds a small shared helper `field/prefix.tsx`: `FieldPrefix` renders the prefix in a baseline-centered, icon-styled container (`CenterBaseline` gained an optional `id`) with a stable `id`, and `PrefixInputProvider` re-provides the field's own context through a proxy that appends that `id` to the input's `aria-labelledby` — preserving reactivity and each context's `inputProps` shape (object getter for TextField/NumberField/ColorField, function for ComboBox). All four fields now accept `prefix?: JSX.Element`; with no prefix the render path is byte-for-byte unchanged. 4 new tests (one per field) + typecheck + the parity guard stay green.
 - [x] **T-33** ✅ S2 — **LabeledValue** (display non-editable values). **Verified present**: `solid-spectrum/labeledvalue/`.
 
+## Train 6 — RAC 1.19.0 / S2 1.5.0 (2026-06-17, current pin)
+
+Filed from `git diff 791377f0..1c84a49a` over `src`+`test` (the 1.18/1.4 → 1.19/1.5
+delta), grouped by feature, oldest-first. Statuses are first-pass triage — reconcile
+each against upstream `src` + our code before closing, and land a changeset when a
+published-package `src` changes. None executed yet.
+
+- [ ] **T-34** ⛔ RAC — **`keyboardNavigationBehavior='tab'` collection keyboard model** (headline epic). Upstream `useGridListItem` (the big +141 change) gates child-element propagation so that, in `'tab'` mode, arrow keys inside a focusable row child are left to the browser (except Tab), extracts `handleTreeExpansionKeys()`, binds `onKeyDownCapture` only in `'arrow'` mode, wraps `rowProps.onKeyDown` (base `usePress` runs only if propagation wasn't stopped — fixes Space inside a textfield in a tree row), and adds `onPointerDown`/`onMouseDown` guards (stopPropagation when the target is a tabbable inside the row); `useGridList`/`useTree` thread the prop, and RAC `GridList`/`Tree` expose it (`Tree` drops its `Omit<…, 'keyboardNavigationBehavior'>`). **Confirmed absent** — `keyboardNavigationBehavior` greps to nothing in `packages/`. Cross-hook; scope on its own. ⇄ includes the S2 **ListView** / **TreeView** un-omit of `keyboardNavigationBehavior` (the styled surface of the same feature).
+- [ ] **T-35** 🔍 RAC — **`useTypeSelect` 1.19 refactor.** Upstream splits the handler: Space-during-search stays on a dedicated **capture** path while character keys move to the **bubble** path (returns *both* `onKeyDownCapture` + `onKeyDown`); it now **bails on `e.altKey`** (which *reverses* our `dfd4d37b` "allow altKey"), `preventDefault`/`stopPropagation` **only** on a successful match, resets the search and returns when no match remains even after the retry-from-top, and cleans up the reset timeout on unmount (`useEffect`). Consequence wiring: `useSelect` drops its `onKeyDown = onKeyDownCapture` shim and `useComboBox` lets Tab `continuePropagation`. Touches our `createTypeSelect` + `createSelect`/`createMenu`/`createListBox` consumers. **Behavioral reconcile** — and the Solid spread-capture gotcha (`onKeyDownCapture` is inert through a `{...props}` spread; bubble `onKeyDown` is the live path) interacts with the capture/bubble split. ⇄ revisits the deferred "typeahead true capture-phase binding" item in [upstream-sync.md](./upstream-sync.md).
+- [ ] **T-36** ⛔ RAC — **`useSelectableCollection` `UNSTABLE_focusOnEntry`** (`'first' | 'last'`, the private chat/thread entry-focus option) + the virtual-focus-first effect's deps change from `[manager.collection]` to `[firstKey, manager.collection.size]`. **Confirmed absent** — `focusOnEntry` greps to nothing.
+- [ ] **T-37** ⛔ RAC — **column-reverse `ListKeyboardDelegate`** (+49). New `isReversed(key)` (compares `getBoundingClientRect().top`); `getKeyBelow`/`getKeyAbove` flip and the Page-key math/fallback invert for a reversed (e.g. chat-log) column; needs a `getItemElement` helper. **Confirmed absent** — `isReversed` greps to nothing.
+- [ ] **T-38** ⛔ RAC — **Menu `onAction(key)` → `onAction(key, value)`** (passes `item?.value`). `useMenu`/`useMenuItem`/menu utils thread the second arg; `useComboBox`/`useSelect` set their inner listbox/menu `onAction: undefined`. **Confirmed absent** — our `createMenu` types `onAction?: (key: Key) => void` and `createMenuItem` calls `data?.onAction?.(key)` (1-arg).
+- [ ] **T-39** ⛔ RAC — **overlay `getTargetRect` override** (+27 `calculatePosition` / +14 `useOverlayPosition`). New `getTargetRect?: (target) => DOMRect | null` flows a `targetRect` override into `getOffset`/`getPosition` (position relative to a virtual target rather than the trigger's own box). **Confirmed absent** — `getTargetRect` greps to nothing. ⇄ includes the S2 **Popover** un-omit of `isNonModal` + `getTargetRect`. T-09 follow-up (our `calculatePosition` was a faithful post-#9343 port; this is the next overlay delta).
+- [ ] **T-40** 🔍 RAC — **`useAutocomplete` CJK/IME + inline nav** (+54). Composition events (`insertCompositionText` / `insertFromComposition` → `focusFirstItem`), `input` → `beforeinput`, deferred `autoFocusOnMount`, and Arrow inline-navigation. Reconcile against our `createAutocomplete`.
+- [ ] **T-41** 🔍 RAC — **DnD type/modality refinements** (`dnd/utils.ts` +31). `DragTypes.has()` accepts `DragType | DragType[]` and matches `*/*` and `type/*` wildcards; `mapModality` switches `'ontouchstart' in window` → `matchMedia('(pointer: coarse)')`. Reconcile against our `dnd/` utils.
+- [ ] **T-42** 🔍 RAC — **`useCalendarYearPicker` maxValue off-by-one** (+8): `Math.ceil(v/2)-1`, `visibleYears-1`, loop `<= 0` so the year window **includes** the `maxValue` year. Direct T-25 follow-up (our `createCalendarYearPicker`).
+- [ ] **T-43** 🔍 RAC — **detached-node / getter-only-focus crash fixes** (release-noted). `isElementVisible.ts` (+2) and `isFocusable.ts` (+3) use `getOwnerWindow(node)` for nodes detached from the main document; `useFocusVisible.ts` (+21) installs the `HTMLElement.prototype.focus` patch via `Reflect.defineProperty({configurable, writable, value})` (setup + teardown) so a getter-only `focus` no longer throws. Reconcile against our `createFocusVisible` + focusable utils.
+- [ ] **T-44** 🔍 RAC — **small behavioral fixes bundle.** `createEventHandler.ts` (+5): `continuePropagation()` also propagates to the wrapped event. `useFormValidation.ts` (+7): guard `'setCustomValidity' in ref.current`. `TabsKeyboardDelegate.ts` (+4): all-disabled infinite-loop guard (`key !== startKey`). `DragManager.ts` (+5): `onBlur` null-guard around `activateButton`. Reconcile each against our equivalents; split if any one needs its own changeset.
+- [ ] **T-45** ✅ S2 — **CenterBaseline public export + JSDoc.** Upstream promotes `CenterBaseline` to a documented public export (+17). **Have it internally** — `solid-spectrum/src/icon/center-baseline.tsx`, consumed across radio/calendar/color/searchfield/picker and given an optional `id` in T-32. Verify whether we should also surface it as a public export.
+- [ ] **T-46** 🔍 S2 — **TableView focus-ring + divider re-sync** (the big +112). `CellFocusRing` gains `top: var(--topFocusRing, 0)`; row dividers move from a `box-shadow` to a `borderBottom` that goes **transparent** under `isSelected`/`isNextSelected`. **Supersedes our `table-highlight-selection-block-border.md`** (we used the box-shadow-divider approach) — re-sync to the upstream borderBottom model. T-31 follow-up.
+- [ ] **T-47** 🔍 S2 — **ButtonGroup overflow.** `maxWidth: 'full'` + overflow detection (collapse behavior when the group exceeds its container). Reconcile against our S2 ButtonGroup.
+- [ ] **T-48** 🔍 S2 — **Disclosure styling** (+171, largely cosmetic): styling refactor + `StylesPropWithFont` `styles?` on `DisclosureTitle`. Reconcile against our S2 Disclosure.
+- [ ] **T-49** ➖ S2 — **Menu un-omit `dependencies`** (+9). Upstream re-exposes the `dependencies` array prop. **N/A by construction** — our collections are reactive (Solid signals), so there is no manual `dependencies` invalidation array to surface; verify nothing else in the un-omit matters.
+- [ ] **T-50** ➖ S2 — **Tabs stable `contentId`** (+11): derives a stable `contentId` from `baseId` to fix a DropZone-in-Tabs infinite render loop (React reconciliation artifact). **Likely N/A** in Solid's no-rerender model — verify there is no analogous loop, then close.
+
 ---
 
 ## Confirmed gaps (the actionable shortlist)
@@ -158,13 +209,23 @@ depth-verify of the 🔍/✅ tickets (oldest-first), highest-value first:
 
 **Minor follow-ups (not full tickets):** **T-06** — **✔ done** (changeset `tree-disabled-forcedcolors.md`): ported upstream's `treeCellGrid` / `expandButton` colors onto our merged `treeViewItem` + description + chevron — disabled content now carries `forcedColors: 'GrayText'`, the row gains `forcedColors: 'ButtonText'` + the highlight `'HighlightText'`, and the chevron defaults to `inherit` (also fixing disabled labels that kept the enabled `neutral-subdued` color). **T-05** — **✔ done** (test-only): a menu-in-popover render test now locks the architecture-immune popover-vs-inline decision (non-modal outer Popover). Writing it surfaced a **new minor follow-up** — a *modal* outer Popover's `FocusScope contain` collapses a nested *modal* menu overlay so the menu never renders; making that focus containment descendant-overlay aware (so a menu opened from inside a modal Popover stays open, as upstream allows) is its own item.
 
-**All passes complete.** Pass 1, the source-based depth-verify, and web pass 2 have
-each run; **no 🔍 tickets remain.** Every ticket is now ✔ done, ✅ verified-present,
-or ➖ n/a — **no ⛔ gaps remain.** The standalone S2 Toast-animations follow-up
-(item 7; not a numbered release-notes ticket) is **now done** (changeset
+**Trains 1–5 complete.** Pass 1, the source-based depth-verify, and web pass 2 have
+each run; for **T-01…T-33, no 🔍 tickets remain** — every one is ✔ done,
+✅ verified-present, or ➖ n/a, with **no ⛔ gaps**. The standalone S2 Toast-animations
+follow-up (item 7; not a numbered release-notes ticket) is **now done** (changeset
 `toast-view-transitions.md`), and the **T-06** HCM styling follow-up is **now
 done** (changeset `tree-disabled-forcedcolors.md`). The minor **T-05**
 menu-in-popover render test is **now done** (test-only, non-modal outer Popover);
 writing it surfaced one **new** minor follow-up — making a *modal* Popover's focus
 containment descendant-overlay aware so a nested *modal* menu can open — which
 joins the deferred sub-items called out per ticket.
+
+**Train 6 (T-34…T-50) is the active backlog** — the RAC 1.18→1.19 / S2 1.4→1.5
+absorb, filed above and not yet executed. Work it oldest-first like the earlier
+trains: confirmed ⛔ gaps **T-34** (`keyboardNavigationBehavior`), **T-36**
+(`UNSTABLE_focusOnEntry`), **T-37** (column-reverse delegate), **T-38**
+(`onAction(key, value)`), **T-39** (overlay `getTargetRect`) are the real port
+tickets; the 🔍 set needs a source-vs-our-code reconcile before it resolves to ✔/✅/➖;
+**T-45** (CenterBaseline) is ✅ present internally. Sequencing note: **T-34** is the
+high-risk cross-hook epic — it overlaps the deferred `replace`-mode action-model work
+tracked in [upstream-sync.md](./upstream-sync.md), so scope and validate it on its own.
