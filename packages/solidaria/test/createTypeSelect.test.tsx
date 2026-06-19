@@ -130,16 +130,18 @@ describe("createTypeSelect", () => {
     fireEvent.keyDown(container, { key: "c" });
     expect(onFocusedKeyChange).toHaveBeenLastCalledWith("ch");
 
-    // Type 'h' (now search is "ch") - search starts after Cherry,
-    // finds Chocolate (also matches "ch"), cycles to it
+    // Type 'h' (search is now "ch"): Cherry still matches the prefix, so focus
+    // stays on it rather than advancing — the search starts *at* the focused
+    // item, mirroring upstream ListKeyboardDelegate.getKeyForSearch.
     fireEvent.keyDown(container, { key: "h" });
-    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("choc");
+    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("ch");
 
-    // Type 'o' (now search is "cho") - still Chocolate
+    // Type 'o' (search is now "cho"): Cherry no longer matches, so the search
+    // advances to Chocolate.
     fireEvent.keyDown(container, { key: "o" });
     expect(onFocusedKeyChange).toHaveBeenLastCalledWith("choc");
 
-    // Type 'c' (now search is "choc") - still Chocolate (exact match)
+    // Type 'c' (search is now "choc"): Chocolate still matches, so it stays put.
     fireEvent.keyDown(container, { key: "c" });
     expect(onFocusedKeyChange).toHaveBeenLastCalledWith("choc");
   });
@@ -182,7 +184,10 @@ describe("createTypeSelect", () => {
     expect(onFocusedKeyChange).toHaveBeenLastCalledWith("b");
   });
 
-  it("wraps search from after current focused key", async () => {
+  it("stays on the focused item when it still matches the search", async () => {
+    // Upstream getKeyForSearch starts *at* the focused key (inclusive), so
+    // typing a character the current item already matches keeps focus on it
+    // instead of advancing to a later match.
     const onFocusedKeyChange = vi.fn();
 
     const { getByTestId } = render(() => {
@@ -214,9 +219,49 @@ describe("createTypeSelect", () => {
     const container = getByTestId("container");
     container.focus();
 
-    // Type 'a' when already focused on first Alpha should go to "Alpha Two"
+    // Type 'a' while focused on the first Alpha: it still matches, so focus
+    // stays on it rather than jumping to "Alpha Two".
     fireEvent.keyDown(container, { key: "a" });
-    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("4");
+    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("1");
+  });
+
+  it("wraps to an earlier item when nothing at or after the focus matches", async () => {
+    // When no item at or after the focused key matches, the search retries from
+    // the top of the collection (upstream useTypeSelect's second getKeyForSearch).
+    const onFocusedKeyChange = vi.fn();
+
+    const { getByTestId } = render(() => {
+      const wrapItems = [
+        { key: "1", label: "Apricot" },
+        { key: "2", label: "Banana" },
+        { key: "3", label: "Cherry" },
+      ];
+      const collection = createMockCollection(wrapItems);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>("3"); // Cherry
+
+      const { typeSelectProps } = createTypeSelect({
+        collection: () => collection,
+        focusedKey,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
+      });
+
+      return (
+        <div {...typeSelectProps} data-testid="container" tabIndex={0}>
+          Content
+        </div>
+      );
+    });
+
+    const container = getByTestId("container");
+    container.focus();
+
+    // Type 'b' while focused on Cherry: nothing at or after Cherry matches, so
+    // the search wraps from the top and lands on Banana.
+    fireEvent.keyDown(container, { key: "b" });
+    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("2");
   });
 
   it("skips disabled items", async () => {
@@ -252,17 +297,23 @@ describe("createTypeSelect", () => {
     expect(onFocusedKeyChange).not.toHaveBeenCalled();
   });
 
-  it("ignores modifier key combinations", async () => {
+  it("ignores Ctrl and Meta combinations but allows Alt", async () => {
+    // Upstream useTypeSelect guards only ctrlKey/metaKey. AltGr (right Alt)
+    // produces printable characters on many keyboard layouts, so altKey is
+    // allowed through to the search.
     const onFocusedKeyChange = vi.fn();
 
     const { getByTestId } = render(() => {
       const collection = createMockCollection(items);
-      const [focusedKey] = createSignal<Key | null>(null);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(null);
 
       const { typeSelectProps } = createTypeSelect({
         collection: () => collection,
         focusedKey,
-        onFocusedKeyChange,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
       });
 
       return (
@@ -279,13 +330,13 @@ describe("createTypeSelect", () => {
     fireEvent.keyDown(container, { key: "a", ctrlKey: true });
     expect(onFocusedKeyChange).not.toHaveBeenCalled();
 
-    // Alt+B should not trigger type-to-select
-    fireEvent.keyDown(container, { key: "b", altKey: true });
-    expect(onFocusedKeyChange).not.toHaveBeenCalled();
-
     // Meta+C should not trigger type-to-select
     fireEvent.keyDown(container, { key: "c", metaKey: true });
     expect(onFocusedKeyChange).not.toHaveBeenCalled();
+
+    // Alt+B *should* trigger type-to-select (AltGr emits characters)
+    fireEvent.keyDown(container, { key: "b", altKey: true });
+    expect(onFocusedKeyChange).toHaveBeenCalledWith("b");
   });
 
   it("ignores initial space character", async () => {
@@ -314,6 +365,56 @@ describe("createTypeSelect", () => {
     // Initial space should be ignored (common action key)
     fireEvent.keyDown(container, { key: " " });
     expect(onFocusedKeyChange).not.toHaveBeenCalled();
+  });
+
+  it("adds a space to an active search and suppresses its default action", async () => {
+    // Mirrors upstream "supports the space character in a search": once a search
+    // is in progress, Space is appended to the buffer and its default action is
+    // prevented so the collection doesn't treat it as a selection toggle.
+    const onFocusedKeyChange = vi.fn();
+
+    const { getByTestId } = render(() => {
+      const spaceItems = [
+        { key: "foo", label: "Foo" },
+        { key: "foobar", label: "Foo Bar" },
+      ];
+      const collection = createMockCollection(spaceItems);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(null);
+
+      const { typeSelectProps } = createTypeSelect({
+        collection: () => collection,
+        focusedKey,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
+      });
+
+      return (
+        <div {...typeSelectProps} data-testid="container" tabIndex={0}>
+          Content
+        </div>
+      );
+    });
+
+    const container = getByTestId("container");
+    container.focus();
+
+    // Build the search "foo" → Foo (both items match the prefix; the first wins)
+    fireEvent.keyDown(container, { key: "f" });
+    fireEvent.keyDown(container, { key: "o" });
+    fireEvent.keyDown(container, { key: "o" });
+    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("foo");
+
+    // Space continues the search ("foo ") → Foo Bar, and its default is prevented.
+    const spaceEvent = new KeyboardEvent("keydown", {
+      key: " ",
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(spaceEvent);
+    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("foobar");
+    expect(spaceEvent.defaultPrevented).toBe(true);
   });
 
   it("is disabled when isDisabled is true", async () => {

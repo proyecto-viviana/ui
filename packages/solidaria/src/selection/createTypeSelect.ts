@@ -78,19 +78,21 @@ function getKeyForSearch<T>(
 
   if (items.length === 0) return null;
 
-  // Find the starting index
+  // Find the starting index. Start *at* the currently focused item (inclusive),
+  // mirroring upstream ListKeyboardDelegate.getKeyForSearch (`key = fromKey ||
+  // getFirstKey()`): typing a prefix the focused item already matches keeps focus
+  // on it instead of advancing to the next match.
   let startIndex = 0;
   if (fromKey != null) {
     const fromIndex = items.findIndex((item) => item.key === fromKey);
     if (fromIndex !== -1) {
-      // Start searching from the item AFTER the current one
-      startIndex = (fromIndex + 1) % items.length;
+      startIndex = fromIndex;
     }
   }
 
-  // Search from startIndex, wrapping around
-  for (let i = 0; i < items.length; i++) {
-    const index = (startIndex + i) % items.length;
+  // Scan from startIndex to the end (no wrap). The caller retries from the top to
+  // cover items before the focused one, matching upstream useTypeSelect.
+  for (let index = startIndex; index < items.length; index++) {
     const item = items[index];
 
     // Skip disabled items
@@ -140,7 +142,6 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
       !character ||
       e.ctrlKey ||
       e.metaKey ||
-      e.altKey ||
       !e.currentTarget.contains(e.target as HTMLElement)
     ) {
       return;
@@ -187,14 +188,18 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
     }, TYPEAHEAD_DEBOUNCE_WAIT_MS);
   };
 
-  // Handler for bubble phase (used in test environments and as fallback)
+  // Upstream useTypeSelect binds `onKeyDownCapture` only, so the Spacebar
+  // handling runs before the collection's own keydown handler. In Solid, however,
+  // a capture handler delivered through a `{...typeSelectProps}` spread is not
+  // wired as a working capture listener, so we also bind the bubble-phase
+  // `onKeyDown` (the path that actually fires). True capture would need a
+  // ref-based addEventListener threaded through every consumer — see the
+  // typeahead follow-up in upstream-sync.md.
   const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = onKeyDownCapture;
 
   return {
     typeSelectProps: {
-      // Use capture phase to handle spacebar before other handlers in production
       onKeyDownCapture,
-      // Also attach to bubble phase for test environments
       onKeyDown,
     } as JSX.HTMLAttributes<HTMLElement>,
   };

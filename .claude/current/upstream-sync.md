@@ -402,6 +402,49 @@ faithfully means routing item activation through a press-based path and threadin
 `hasPrimaryAction` / `hasSecondaryAction` + `pointerType` — a cross-hook epic, scoped
 separately from the bounded `select()` fix above.
 
+## Source-level behavioral sweep — typeahead / `KeyboardDelegate` search
+
+Aspect of the sweep covering type-to-select. Upstream oracles:
+`react-aria/src/selection/useTypeSelect.ts` (the hook) and
+`react-aria/src/selection/ListKeyboardDelegate.ts` `getKeyForSearch` (330-351). Our
+port: `solidaria/src/selection/createTypeSelect.ts`.
+
+**Contract.** `getKeyForSearch(search, fromKey)`: `key = fromKey || getFirstKey()`
+— starts **at** `fromKey` *inclusive* — then iterates `getNextKey` with **no internal
+wrap**, matching via `Intl.Collator.compare(textValue.slice(0, search.length),
+search) === 0`. The hook (`useTypeSelect`) calls it once from the focused key, then,
+if that misses, **retries from the top** (`getKeyForSearch(search)` with no
+`fromKey`) — that retry is the only wrap. The keydown guard blocks on `!character ||
+ctrlKey || metaKey || !contains || (search.length === 0 && char === ' ')` — **no
+`altKey`** (AltGr emits characters). A space *within* a non-empty search is appended
+and `preventDefault`/`stopPropagation`'d so the collection doesn't toggle selection.
+Upstream binds **`onKeyDownCapture` only** (capture so space precedes the collection's
+own keydown).
+
+**Resolved — start-at + altKey + space** (`solidaria`, 2026-06-19). Three faithful
+fixes to `createTypeSelect`:
+- **Start *at* the focused key, no internal wrap.** Was `(fromIndex + 1) %
+  items.length` with a modulo-wrapping loop — i.e. start *after* the focus and wrap
+  inside `getKeyForSearch`. That advanced off an item the typed prefix still matched
+  (e.g. typing "F" on a focused "Foo" jumped to a later "Foo Bar"). Now starts at
+  `fromIndex` and scans to the end only; the hook's existing from-top retry
+  (`getKeyForSearch(collection, search, null, …)`) provides the wrap, mirroring
+  upstream.
+- **Removed the extra `altKey` guard** — upstream guards only `ctrlKey`/`metaKey`.
+- **Corrected the dual-handler comment** (no behavior change). In Solid a capture
+  handler delivered via `{...typeSelectProps}` spread is **not** wired as a working
+  capture listener, so the bubble `onKeyDown` is the path that actually fires — the
+  old "capture for production, bubble for tests" comment was wrong, and the binding
+  is unchanged (both kept) because capture-via-spread is inert, not double-firing.
+
+Tests in `createTypeSelect.test.tsx` (12) cover: stays-on-current-when-prefix-still-
+matches, multi-char accumulation, from-top wrap when nothing at/after matches,
+Ctrl/Meta blocked but **Alt allowed**, and space-in-active-search appended +
+`defaultPrevented`. Changeset `typeahead-start-at-key.md` (patch solidaria).
+
+**Deferred (see backlog below):** true capture-phase binding (Solid spread inertness)
+and collator-based locale/diacritic-aware matching (`createCollator` already exists).
+
 ## Source-level behavioral sweep — open items (deferred)
 
 Carried-forward work the sweep has surfaced but **not** closed. These are tracked
@@ -423,3 +466,19 @@ here so they aren't lost between aspects; tick the box + add the commit when don
   touch/virtual input doesn't force `toggleSelection` the way upstream's `onSelect`
   does (`useSelectableItem.ts:174`). Both need a richer event param threaded from the
   call sites. Low-risk, but bundle with the epic above since they share the plumbing.
+- [ ] **Typeahead true capture-phase binding (minor/structural).** Upstream
+  `useTypeSelect` binds `onKeyDownCapture` only, so Space is intercepted before the
+  collection's keydown. In Solid a capture handler passed through a
+  `{...typeSelectProps}` spread does not register as a working capture listener, so
+  `createTypeSelect` also binds the bubble `onKeyDown` (the path that fires) and relies
+  on `mergeProps` ordering for the space-before-selection precedence. Faithful capture
+  would need a ref-based `addEventListener(el, 'keydown', h, { capture: true })`
+  threaded through every consumer (createListBox/createMenu/createSelect spread the
+  props) — a small cross-consumer refactor. Validate the space-toggle precedence at the
+  ListBox/Menu integration level when closing this.
+- [ ] **Typeahead collator-based matching (minor).** `getKeyForSearch` matches with
+  `textValue.toLowerCase().startsWith(searchLower)` instead of upstream's
+  `Intl.Collator.compare(textValue.slice(0, search.length), search) === 0`
+  (locale/diacritic/case-aware via `usage: 'search'`, `sensitivity: 'base'`).
+  `solidaria`'s `createCollator` already exists, so this is tractable: thread a
+  collator accessor into `createTypeSelect` and compare prefixes with it. Low-risk.
