@@ -38,7 +38,7 @@ const results: CheckResult[] = [
     target: virtualizerPath,
     ok:
       has(virtualizerSource, /getKeyboardNavigationTarget\s*=\s*\(/) &&
-      has(virtualizerSource, /const\s+oppositeDirection:\s*'next'\s*\|\s*'previous'/) &&
+      has(virtualizerSource, /const\s+oppositeDirection:\s*["']next["']\s*\|\s*["']previous["']/) &&
       has(
         virtualizerSource,
         /scanFromIndex\(clampedStart\s*-\s*delta,\s*-delta,\s*oppositeDirection\)/,

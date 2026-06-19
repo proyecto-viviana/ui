@@ -7,7 +7,7 @@
 
 import { readFile } from "node:fs/promises";
 
-const RAC_INDEX = "react-spectrum/packages/react-aria-components/src/index.ts";
+const RAC_INDEX = "react-spectrum/packages/react-aria-components/exports/index.ts";
 const SOLIDARIA_INDEX = "packages/solidaria-components/src/index.ts";
 
 const REQUIRED_SYMBOLS = [
@@ -43,7 +43,10 @@ function parseNamedValueExports(source: string): Set<string> {
 
   while ((match = exportRegex.exec(source)) !== null) {
     const [, exportClause, fromPath] = match;
-    if (!fromPath.startsWith("./")) continue;
+    // Accept both "./" and "../" so the barrel's `../src/<module>` re-exports
+    // count as local module files; external siblings (react-aria/…,
+    // react-stately/…, @react-types/…) start without a dot and stay excluded.
+    if (!fromPath.startsWith(".")) continue;
     if (match[0].startsWith("export type")) continue;
 
     const specifiers = exportClause
