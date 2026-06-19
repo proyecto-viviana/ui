@@ -478,11 +478,12 @@ Tests in `createListBox.test.tsx` assert clear-path `preventDefault`+`stopPropag
 and the no-selection bubble-through. Changeset `listbox-escape-conditional.md` (patch
 solidaria).
 
-## Source-level behavioral sweep — navigation-key consumption (ListBox)
+## Source-level behavioral sweep — navigation-key consumption (ListBox + Menu)
 
 Aspect covering arrow/Home/End in selectable collections. Upstream oracle:
 `react-aria/src/selection/useSelectableCollection.ts` (Arrow* 211-280, Home 281-297,
-End 298-314). Our port: `solidaria/src/listbox/createListBox.ts`.
+End 298-314). Our ports: `solidaria/src/listbox/createListBox.ts` and
+`solidaria/src/menu/createMenu.ts`.
 
 **Contract.** For the arrow keys upstream computes the target key first and only calls
 `e.preventDefault()` **inside** `if (nextKey != null)` — at a boundary with no wrap (or
@@ -501,8 +502,15 @@ guard is shift-specific — plain Home/End still enters at the first/last item).
 `createListBox.test.tsx` assert the boundary no-`preventDefault` (Arrow + horizontal),
 the wrap-on still-consumes case, the positive moves-focus `preventDefault`, and the
 Shift+Home/Shift+End no-op. Changeset `listbox-nav-key-consumption.md` (patch solidaria).
-PageUp/PageDown remain unported (geometry-dependent `getKeyPage{Above,Below}`; deferred
-below).
+
+`createMenu` carried the identical unconditional-`preventDefault` on its ArrowDown/Up
+and Home/End (no ArrowLeft/Right here — submenu open/close lives in a separate trigger).
+Same gate applied (`menu-nav-key-consumption.md`, patch solidaria): arrows consume only
+when `findNextNonDisabledKey` returns a key; Home/End early-`break` on Shift with nothing
+focused. Menu additionally handles PageDown/PageUp (geometry-based), which still
+`preventDefault` unconditionally — gating those on a focused key + a found target is
+deferred (see below), since it touches the `clientHeight` paging branch. ListBox has no
+Page keys at all (also deferred below).
 
 ## Source-level behavioral sweep — open items (deferred)
 
@@ -544,16 +552,14 @@ here so they aren't lost between aspects; tick the box + add the commit when don
   to opt out of Escape-clears-selection. Our `createListBox` hard-codes the default
   path (see the "Escape key (ListBox)" section). Add the prop + thread it through the
   ListBox component layers if a consumer needs the opt-out. Low-risk feature gap.
-- [ ] **Menu navigation-key consumption (minor).** `createMenu` (`menu/createMenu.ts`,
-  ArrowDown/Up ~215-227, Home/End ~233-253) shares the same unconditional
-  `e.preventDefault()` that `createListBox` just shed (see "navigation-key consumption"
-  above): it consumes boundary arrows that move nothing and lacks the Shift+Home/End
-  no-anchor guard. Apply the same gate, but verify against the menu's overlay context
-  (submenu arrow handoff, typeahead space) before closing — Menu's handler has more
-  cases than ListBox's.
 - [ ] **PageUp/PageDown navigation (minor/structural).** Upstream
   `useSelectableCollection` (315-332) delegates Page keys to
   `delegate.getKeyPage{Above,Below}`, which `ListKeyboardDelegate` computes from item
-  heights + the scroll container's `clientHeight`. `createListBox` handles neither key.
-  Faithful support needs geometry the headless hook doesn't currently measure (akin to
-  the virtualizer work); defer until a consumer needs paged navigation.
+  heights + the scroll container's `clientHeight`, and only `preventDefault`s when
+  `manager.focusedKey != null` **and** a target is found. Two gaps: (a) `createListBox`
+  handles **neither** Page key — faithful support needs geometry the headless hook
+  doesn't currently measure (akin to the virtualizer work); (b) `createMenu` **does**
+  handle both via its own `clientHeight` paging, but still `preventDefault`s
+  unconditionally (no focused-key / found-target gate, unlike the arrow keys it now
+  gates). Gate Menu's Page keys + decide whether to share a real `getKeyPage{Above,Below}`
+  delegate across ListBox/Menu when a consumer needs paged navigation.

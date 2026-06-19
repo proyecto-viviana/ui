@@ -630,6 +630,100 @@ describe("createMenu - disabled key navigation", () => {
   });
 });
 
+describe("createMenu - navigation-key consumption", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const threeItems = () => [
+    { key: "item1", label: "Item 1" },
+    { key: "item2", label: "Item 2" },
+    { key: "item3", label: "Item 3" },
+  ];
+
+  it("prevents default on an arrow key that moves focus", () => {
+    createRoot((dispose) => {
+      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      state.setFocusedKey("item1");
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "ArrowDown", preventDefault } as unknown as KeyboardEvent);
+
+      expect(state.focusedKey()).toBe("item2");
+      expect(preventDefault).toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("leaves ArrowDown alone at the last item when wrapping is off", () => {
+    createRoot((dispose) => {
+      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      state.setFocusedKey("item3");
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "ArrowDown", preventDefault } as unknown as KeyboardEvent);
+
+      // No target: the key must bubble instead of being swallowed.
+      expect(state.focusedKey()).toBe("item3");
+      expect(preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("leaves ArrowUp alone at the first item when wrapping is off", () => {
+    createRoot((dispose) => {
+      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      state.setFocusedKey("item1");
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "ArrowUp", preventDefault } as unknown as KeyboardEvent);
+
+      expect(state.focusedKey()).toBe("item1");
+      expect(preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("leaves Shift+Home alone when nothing is focused", () => {
+    createRoot((dispose) => {
+      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      expect(state.focusedKey()).toBeNull();
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "Home", shiftKey: true, preventDefault } as unknown as KeyboardEvent);
+
+      expect(state.focusedKey()).toBeNull();
+      expect(preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("still moves to the first item on Home with no focus and no shift", () => {
+    createRoot((dispose) => {
+      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      expect(state.focusedKey()).toBeNull();
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "Home", preventDefault } as unknown as KeyboardEvent);
+
+      // The guard is shift-specific: plain Home still enters at the first item.
+      expect(state.focusedKey()).toBe("item1");
+      expect(preventDefault).toHaveBeenCalled();
+      dispose();
+    });
+  });
+});
+
 describe("createMenu - page navigation", () => {
   afterEach(() => {
     cleanup();

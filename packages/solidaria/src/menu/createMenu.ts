@@ -213,24 +213,31 @@ export function createMenu<T>(
 
     switch (e.key) {
       case "ArrowDown": {
-        e.preventDefault();
+        // Only consume the key once a target exists, mirroring
+        // useSelectableCollection (ArrowDown, 211-225): preventDefault is called
+        // inside `if (nextKey != null)`, so at the last item without wrap the
+        // arrow bubbles instead of being swallowed.
         const currentKey = state.focusedKey();
         const nextKey = findNextNonDisabledKey(collection, currentKey, "next", isDisabled, wrap);
         if (nextKey != null) {
+          e.preventDefault();
           state.setFocusedKey(nextKey);
         }
         break;
       }
       case "ArrowUp": {
-        e.preventDefault();
         const currentKey = state.focusedKey();
         const prevKey = findNextNonDisabledKey(collection, currentKey, "prev", isDisabled, wrap);
         if (prevKey != null) {
+          e.preventDefault();
           state.setFocusedKey(prevKey);
         }
         break;
       }
       case "Home": {
+        // Mirror useSelectableCollection (Home, 283-285): with nothing focused,
+        // Shift+Home has no anchor to extend from, so leave the event alone.
+        if (state.focusedKey() == null && e.shiftKey) break;
         e.preventDefault();
         // Find first non-disabled key
         let firstKey = collection.getFirstKey();
@@ -243,6 +250,8 @@ export function createMenu<T>(
         break;
       }
       case "End": {
+        // Mirror useSelectableCollection (End, 300-302): same anchor guard as Home.
+        if (state.focusedKey() == null && e.shiftKey) break;
         e.preventDefault();
         // Find last non-disabled key
         let lastKey = collection.getLastKey();
