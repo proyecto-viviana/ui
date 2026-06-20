@@ -16,7 +16,7 @@ logic through one shared hook, `useSelectableItem`, built on `usePress` +
 | --- | --- | --- |
 | **T-51** ⛔ | `replace`-mode action model: single-click selects, double-click acts (secondary action); touch long-press → `setSelectionBehavior('toggle')` | the shared press path |
 | **T-34** ⛔ | `keyboardNavigationBehavior='tab'` collection keyboard model (child-propagation gating, capture binding only in `'arrow'` mode, tabbable-target pointer guards) | the item-hook surface; sequence after/with the press path |
-| **T-52** 🔍 | `select()` can't see `pointerType` (touch/virtual ⇒ toggle) and uses `ctrlKey \|\| metaKey` instead of platform-aware `isCtrlKeyPressed` | foundational; lands first |
+| **T-52** 🔍 | We pulled the aria-layer modifier decision into stately's `select()` (uses `ctrlKey \|\| metaKey`, never sees `pointerType`). Fix = restore upstream's split: thin `select()` to pointerType+behavior, move modifiers up to an aria-layer `onSelect` | foundational; lands first |
 | **T-56** 🔍 | `disabledBehavior:'selection'` item fires `onAction` on keyboard but **not** on pointer click | falls out of the press path (item-hook `performAction` runs for pointer) |
 
 This is high-risk and cross-hook. **Scope and validate on its own before
@@ -88,15 +88,30 @@ and for link items opens the href via the router.
 2. **`select()` doesn't thread `pointerType`** and uses `ctrlKey || metaKey`
    (T-52). Needs a richer event param + platform-aware ctrl resolution.
 3. **No `isCtrlKeyPressed` / `isNonContiguousSelectionModifier` utils**, and a
-   **layer-boundary wrinkle**: upstream keeps `onSelect` (the toggle-vs-replace
-   decision) in the **aria** layer (`useSelectableItem`), where `isCtrlKeyPressed`
-   = `isMac() ? metaKey : ctrlKey` is available. We **consolidated `onSelect`
-   into `solid-stately`'s `select()`** (used by Menu / ListBox / ActionGroup),
-   but `solid-stately` depends only on `@internationalized/date` and sits *below*
-   solidaria, so it **cannot import** solidaria's `isMac`/`isAppleDevice`. T-52's
-   platform-aware fix therefore needs a layering decision (see "Open decision"
-   below) before it can land cleanly; `pointerType` threading alone is
-   layer-safe.
+   **self-inflicted divergence to revert**. Upstream splits the toggle-vs-replace
+   decision across exactly two layers:
+   - `react-stately` `SelectionManager.select(key, e)` knows **only**
+     `pointerType` + `selectionBehavior`: single-mode toggle/replace, then
+     `behavior === 'toggle' || pointerType ∈ {touch, virtual}` ⇒ toggle, else
+     replace. **No `ctrlKey`/`metaKey`/`shiftKey`/`isMac`/links.**
+   - `react-aria` `useSelectableItem` `onSelect(e)` owns everything
+     modifier/platform/link aware: keyboard `isNonContiguousSelectionModifier`
+     ⇒ toggle, link handling, single-mode, `shiftKey` ⇒ extend, then
+     `selectionBehavior === 'toggle' || isCtrlKeyPressed(e) || touch/virtual`
+     ⇒ toggle, else replace. `isCtrlKeyPressed = isMac() ? metaKey : ctrlKey` is
+     imported from the **aria-layer** util `react-aria/src/utils/keyboard`;
+     `isNonContiguousSelectionModifier` from `react-aria/src/selection/utils`.
+
+   We diverged by pulling the aria-layer modifier logic (`shiftKey`,
+   `ctrlKey || metaKey`) **down** into `solid-stately`'s `select()`, and our
+   `select()` does **not** yet check `pointerType`. That manufactured the
+   apparent "stately can't reach `isMac`" problem. The fix is to **restore the
+   upstream split**, not to work around it: revert `solid-stately`'s `select()`
+   to the `SelectionManager.select` shape (pointerType + behavior, layer-safe,
+   no platform util), and move the modifier/shift/link/keyboard decision up into
+   the aria layer (`createSelectableItem`'s `onSelect`), where `isMac` already
+   lives in `solidaria/src/utils/platform.ts`. Port `isCtrlKeyPressed` and
+   `isNonContiguousSelectionModifier` into solidaria as aria-layer utils.
 4. **Manager link surface absent.** `manager.canSelectItem`, `manager.isLink`,
    `manager.getItemProps`, and the `linkBehavior` axis do **not** exist on our
    selection state — we thread `href`/`onLinkAction` through item **props**
@@ -127,45 +142,58 @@ and for link items opens the href via the router.
 None route through `select()` or `createPress`; none thread `pointerType`; none
 implement long-press → toggle.
 
-## Open decision — where the platform-aware `onSelect` logic lives
+## Resolved — restore upstream's two-layer split (parity is the rule)
 
-T-52's platform-aware ctrl resolution (`isMac() ? metaKey : ctrlKey`) collides
-with our `onSelect` consolidation into `solid-stately`'s `select()` (gap #3).
-Three ways to resolve, in increasing faithfulness to upstream's layering:
+The earlier "where does the platform-aware modifier go" question was a false
+choice: every option tried to *preserve* our divergence. Parity is the governing
+rule (diverge only when React→Solid makes it impossible), and upstream already
+answers it cleanly, so we mirror it:
 
-- **(A) Duplicate a tiny `isMac`/`isCtrlKeyPressed` into `solid-stately/utils`.**
-  Smallest change; keeps `select()` whole. Cost: platform detection duplicated
-  across layers (mild "don't reinvent" smell; upstream has no platform util in
-  stately because `onSelect` isn't there).
-- **(B) Keep `select()` in stately but thread a pre-resolved modifier.** The
-  aria-layer call sites (all in solidaria, where `isMac` lives) compute the
-  platform-aware "is the non-contiguous modifier pressed" flag and pass it in
-  `select()`'s event param alongside `pointerType`. No duplication; `select()`
-  stays the single decision point. Cost: every call site wraps its event.
-- **(C) Move `onSelect` to the aria layer (upstream-faithful).** Phase 1's
-  `createSelectableItem` owns the toggle-vs-replace decision; `select()` is
-  retired or thinned to the stately primitives. Most faithful; largest blast
-  radius (re-points Menu / ListBox / ActionGroup too).
+- **`solid-stately` `select(key, e)`** ⇒ `SelectionManager.select` shape:
+  single-mode toggle/replace, then `behavior === 'toggle' || pointerType ∈
+  {touch, virtual}` ⇒ toggle, else replace. The `e` param carries `pointerType`.
+  No modifiers, no `shiftKey`, no `isMac` — so it stays layer-safe with only
+  `@internationalized/date` as a dependency.
+- **`solidaria` aria-layer `onSelect`** (the future `createSelectableItem`, and
+  the existing Menu / ListBox / ActionGroup paths) ⇒ `useSelectableItem.onSelect`
+  shape: keyboard `isNonContiguousSelectionModifier` ⇒ toggle, link handling,
+  single-mode, `shiftKey` ⇒ extend, `isCtrlKeyPressed || touch/virtual ||
+  toggle` ⇒ toggle, else replace. `isCtrlKeyPressed` / `isNonContiguousSelection
+  Modifier` are ported into solidaria (aria-layer utils; `isMac` already lives in
+  `solidaria/src/utils/platform.ts`).
 
-**Recommendation: (B)** for Phase 0 (unblocks T-52 with zero duplication and no
-restructure), then let Phase 1 reassess whether (C) is worth it once
-`createSelectableItem` exists. `pointerType` threading is needed under all three.
+This removes the layering problem entirely instead of working around it — the
+tell that it is the faithful structure.
 
 ## Proposed phasing
 
-**Phase 0 — foundations (low-risk, independently landable).**
-- T-52: thread `pointerType` into `select()`'s event param (touch/virtual ⇒
-  toggle); resolve platform-aware ctrl per the Open-decision outcome; add
-  `isNonContiguousSelectionModifier`. Unit-test the contract table
-  (touch/virtual ⇒ toggle; ctrl/meta platform-aware). Own changeset.
+**Phase 0 — restore the upstream two-layer split (T-52).**
+- Port `isCtrlKeyPressed` (aria-layer keyboard util) and
+  `isNonContiguousSelectionModifier` (aria-layer selection util) into solidaria,
+  built on the existing `solidaria/src/utils/platform.ts` `isMac`.
+- Add a shared aria-layer `onSelect`-shaped decision in solidaria, mirroring
+  `useSelectableItem.onSelect` (keyboard non-contiguous, single-mode, shift ⇒
+  extend, `isCtrlKeyPressed || touch/virtual || toggle` ⇒ toggle, else replace).
+  This becomes the seed of Phase 1's `createSelectableItem`.
+- Revert `solid-stately` `select(key, e)` to the `SelectionManager.select`
+  shape: single-mode + `behavior === 'toggle' || pointerType ∈ {touch, virtual}`
+  ⇒ toggle, else replace. Drop the `shiftKey`/`ctrlKey`/`metaKey` branch.
+- Repoint the existing call sites (`createMenuItem`, `createMenu`,
+  `createOption`, `createActionGroup`) to the solidaria `onSelect` so modifier /
+  shift multi-select keeps working after stately is thinned — sequence so the
+  collection regression (Menu / ListBox / ActionGroup) stays green throughout.
+- Unit-test the contract table (touch/virtual ⇒ toggle; ctrl/meta
+  platform-aware via `isMac`; shift ⇒ extend). Own changeset for each published
+  package touched (`solid-stately` + `solidaria`).
 
 **Phase 1 — build `createSelectableItem` in isolation.**
 - New `solidaria/src/selection/createSelectableItem.ts` mirroring the upstream
-  contract: `onSelect`, the action model (`hasPrimaryAction`/`hasSecondaryAction`/
-  `allowsSelection`/`allowsActions`), `createPress` wiring (press-up vs press,
-  keyboard Space/Enter split), `onDoubleClick` secondary action, `createLongPress`
-  → `setSelectionBehavior('toggle')`, `pointerType` threading, the
-  prop-threaded link model (decision in gap #4).
+  contract, **reusing the Phase 0 `onSelect`**: the action model
+  (`hasPrimaryAction`/`hasSecondaryAction`/`allowsSelection`/`allowsActions`),
+  `createPress` wiring (press-up vs press, keyboard Space/Enter split),
+  `onDoubleClick` secondary action, `createLongPress` →
+  `setSelectionBehavior('toggle')`, `pointerType` threading, the prop-threaded
+  link model (decision in gap #4).
 - Validate with a dedicated `createSelectableItem.test.tsx` against the contract
   **before** any consumer migrates — this is the de-risking gate.
 
