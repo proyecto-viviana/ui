@@ -29,6 +29,9 @@
       "@proyecto-viviana/solid-spectrum/style/runtime": [
         "./packages/solid-spectrum/src/style/runtime.ts"
       ],
+      "@proyecto-viviana/solid-spectrum/Disclosure": [
+        "./packages/solid-spectrum/src/disclosure-export.ts"
+      ],
       "@proyecto-viviana/solid-spectrum/*": ["./packages/solid-spectrum/src/*.ts"],
       "@proyecto-viviana/solidaria-test-utils": ["./packages/solidaria-test-utils/src/index.ts"],
       "@proyecto-viviana/solid-spectrum-test-utils": [
