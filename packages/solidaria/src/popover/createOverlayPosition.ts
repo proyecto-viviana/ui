@@ -94,6 +94,14 @@ export interface AriaPositionProps extends PositionProps {
    * @default 0
    */
   arrowBoundaryOffset?: number;
+  /**
+   * Overrides the target element's bounding rectangle. Useful for positioning relative to
+   * a specific point such as the mouse cursor (e.g. context menus) or text selection.
+   *
+   * @default target.getBoundingClientRect()
+   * @param target - The target element.
+   */
+  getTargetRect?: (target: Element) => DOMRect | null | undefined;
 }
 
 export interface PositionAria {
@@ -192,6 +200,7 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
       maxHeight: maxHeight(),
       arrowSize: arrowSize() ?? (arrowNode ? getRect(arrowNode, true).width : 0),
       arrowBoundaryOffset: arrowBoundaryOffset(),
+      targetRect: props.getTargetRect?.(targetNode),
     });
 
     if (!result.position) {

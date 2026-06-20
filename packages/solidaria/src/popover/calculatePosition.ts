@@ -78,6 +78,8 @@ export interface PositionOpts {
   crossOffset: number;
   maxHeight?: number;
   arrowBoundaryOffset?: number;
+  /** Overrides the target element's measured rect (e.g. position relative to a cursor point). */
+  targetRect?: Offset | null | undefined;
 }
 
 type HeightGrowthDirection = "top" | "bottom";
@@ -627,8 +629,12 @@ export function getRect(node: Element, ignoreScale: boolean) {
   return { top, left, width, height };
 }
 
-function getElementOffset(node: Element, ignoreScale: boolean): Offset {
-  const { top, left, width, height } = getRect(node, ignoreScale);
+function getElementOffset(
+  node: Element,
+  ignoreScale: boolean,
+  overrideRect?: Offset | null,
+): Offset {
+  const { top, left, width, height } = overrideRect || getRect(node, ignoreScale);
   const { scrollTop, scrollLeft, clientTop, clientLeft } = document.documentElement;
   return {
     top: top + scrollTop - clientTop,
@@ -638,13 +644,18 @@ function getElementOffset(node: Element, ignoreScale: boolean): Offset {
   };
 }
 
-function getPosition(node: Element, parent: Element, ignoreScale: boolean): Offset {
+function getPosition(
+  node: Element,
+  parent: Element,
+  ignoreScale: boolean,
+  overrideRect?: Offset | null,
+): Offset {
   const style = window.getComputedStyle(node);
   let offset: Offset;
   if (style.position === "fixed") {
-    offset = getRect(node, ignoreScale);
+    offset = overrideRect || getRect(node, ignoreScale);
   } else {
-    offset = getElementOffset(node, ignoreScale);
+    offset = getElementOffset(node, ignoreScale, overrideRect);
     const parentOffset = getElementOffset(parent, ignoreScale);
     const parentStyle = window.getComputedStyle(parent);
     parentOffset.top +=
@@ -712,6 +723,7 @@ export function calculatePosition(opts: PositionOpts): PositionResult {
     maxHeight,
     arrowSize,
     arrowBoundaryOffset = 0,
+    targetRect,
   } = opts;
 
   const visualViewport = getVisualViewport();
@@ -721,8 +733,8 @@ export function calculatePosition(opts: PositionOpts): PositionResult {
   const containerPositionStyle = window.getComputedStyle(container).position;
   const isContainerPositioned = !!containerPositionStyle && containerPositionStyle !== "static";
   const childOffset: Offset = isViewportContainer
-    ? getElementOffset(targetNode, false)
-    : getPosition(targetNode, container, false);
+    ? getElementOffset(targetNode, false, targetRect)
+    : getPosition(targetNode, container, false, targetRect);
 
   if (!isViewportContainer) {
     const { marginTop, marginLeft } = window.getComputedStyle(targetNode);

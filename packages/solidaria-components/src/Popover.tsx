@@ -113,6 +113,14 @@ export interface PopoverProps extends SlotProps, AriaLabelingProps {
    */
   boundaryElement?: Element;
   /**
+   * Overrides the target element's bounding rectangle. Useful for positioning relative to
+   * a specific point such as the mouse cursor (e.g. context menus) or text selection.
+   *
+   * @default target.getBoundingClientRect()
+   * @param target - The target element.
+   */
+  getTargetRect?: (target: Element) => DOMRect | null | undefined;
+  /**
    * A ref for the popover arrow element.
    */
   arrowRef?: () => Element | null;
@@ -258,6 +266,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     "shouldFlip",
     "maxHeight",
     "boundaryElement",
+    "getTargetRect",
     "arrowRef",
     "scrollRef",
     "isNonModal",
@@ -346,6 +355,9 @@ export function Popover(props: PopoverProps): JSX.Element {
       },
       get boundaryElement() {
         return local.boundaryElement;
+      },
+      get getTargetRect() {
+        return local.getTargetRect;
       },
       get arrowRef() {
         return local.arrowRef;
