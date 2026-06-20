@@ -20,6 +20,8 @@ export interface CollectionOptions {
   shouldUseVirtualFocus: boolean;
   /** Whether typeahead is disabled. */
   disallowTypeAhead: boolean;
+  /** Whether and where to focus an item when the collection mounts. */
+  autoFocus?: boolean | "first" | "last";
 }
 
 export interface AutocompleteInputProps {
@@ -150,6 +152,10 @@ export function createAutocomplete<T = unknown>(
 
   const collectionId = collectionIdProp ?? createId();
   const [shouldUseVirtualFocus] = createSignal(!disableVirtualFocus);
+  // When the first item should be focused but the collection hasn't mounted yet,
+  // defer it by threading autoFocus through collectionProps so the collection
+  // focuses on mount (mirrors upstream's autoFocusOnMount state).
+  const [autoFocusOnMount, setAutoFocusOnMount] = createSignal(false);
   let lastInputType = "";
 
   // Track the input type for determining focus behavior. We listen to
@@ -174,19 +180,25 @@ export function createAutocomplete<T = unknown>(
   // Focus first item in collection
   const focusFirstItem = () => {
     const collection = collectionRef();
-    if (collection) {
-      collection.dispatchEvent(
-        new CustomEvent(AUTOCOMPLETE_FOCUS_EVENT, {
-          cancelable: true,
-          bubbles: true,
-          detail: { focusStrategy: "first" },
-        }),
-      );
+    if (!collection) {
+      // Collection isn't mounted yet — defer focusing the first item to mount
+      // time via collectionProps.autoFocus instead of firing a focus event into
+      // a not-yet-rendered collection.
+      setAutoFocusOnMount(true);
+      return;
     }
+    collection.dispatchEvent(
+      new CustomEvent(AUTOCOMPLETE_FOCUS_EVENT, {
+        cancelable: true,
+        bubbles: true,
+        detail: { focusStrategy: "first" },
+      }),
+    );
   };
 
   // Clear virtual focus
   const clearVirtualFocus = (clearFocusKey = false) => {
+    setAutoFocusOnMount(false);
     state.setFocusedNodeId(null);
     const collection = collectionRef();
     if (collection) {
@@ -274,9 +286,15 @@ export function createAutocomplete<T = unknown>(
 
       case "ArrowLeft":
       case "ArrowRight":
-        // Clear activedescendant so screen reader announces cursor movement
-        clearVirtualFocus();
-        return;
+        // With no virtual focus, just let the arrow move the text cursor; stop
+        // propagation so it doesn't leak into the collection. With virtual focus,
+        // fall through to dispatch the key to the focused item below, then clear
+        // the active descendant only after the item has seen it.
+        if (!focusedNodeId) {
+          e.stopPropagation();
+          return;
+        }
+        break;
 
       case "Enter":
         // Trigger click on focused item
@@ -290,17 +308,32 @@ export function createAutocomplete<T = unknown>(
         return;
     }
 
-    // Forward keyboard events to collection/focused item
+    // Forward keyboard events to the focused item (or the collection when there
+    // is no virtual focus) so the collection can act on them, e.g. onAction.
     if (!e.defaultPrevented && collection) {
       e.stopPropagation();
 
+      let shouldPerformDefaultAction = true;
       if (focusedNodeId) {
         const item = ownerDocument?.getElementById(focusedNodeId);
         if (item) {
-          item.dispatchEvent(new KeyboardEvent(e.type, toKeyboardEventInit(e)));
+          shouldPerformDefaultAction = item.dispatchEvent(
+            new KeyboardEvent(e.type, toKeyboardEventInit(e)),
+          );
         }
       } else {
-        collection.dispatchEvent(new KeyboardEvent(e.type, toKeyboardEventInit(e)));
+        shouldPerformDefaultAction = collection.dispatchEvent(
+          new KeyboardEvent(e.type, toKeyboardEventInit(e)),
+        );
+      }
+
+      // After the focused item has seen ArrowLeft/ArrowRight, clear the active
+      // descendant so SR announcements aren't interrupted, but retain the
+      // collection's focused key so navigation restarts where it left off. If
+      // the item consumed the key (e.g. an expandable row collapsing), it
+      // cancels the event and we keep virtual focus.
+      if (shouldPerformDefaultAction && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        clearVirtualFocus();
       }
     }
   };
@@ -351,6 +384,9 @@ export function createAutocomplete<T = unknown>(
       "aria-label": collectionAriaLabel,
       shouldUseVirtualFocus: shouldUseVirtualFocus(),
       disallowTypeAhead: shouldUseVirtualFocus(),
+      get autoFocus() {
+        return autoFocusOnMount() ? "first" : false;
+      },
     },
     filter: filterFn,
   };
