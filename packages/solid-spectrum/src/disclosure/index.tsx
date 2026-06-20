@@ -17,6 +17,7 @@ import { createFocusRing, createHover, useLocale } from "@proyecto-viviana/solid
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
+import type { StylesPropWithFont } from "../s2-internal/style-utils";
 import {
   baseColor,
   centerPadding,
@@ -25,6 +26,7 @@ import {
   space,
   style,
 } from "../style" with { type: "macro" };
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { ActionButtonContext } from "../button/context";
 import type { ActionButtonSize } from "../button/group-context";
@@ -114,6 +116,11 @@ export interface DisclosureTitleProps
   extends
     Omit<JSX.HTMLAttributes<HTMLHeadingElement>, "children" | "class" | "style" | "slot" | "ref">,
     SpectrumStyleProps {
+  /**
+   * Spectrum-defined styles, returned by the `style()` macro. Only allows overriding
+   * `font`, `fontFamily`, `fontWeight`, `fontSize`, and `lineHeight`.
+   */
+  styles?: StylesPropWithFont;
   /** The heading level of the disclosure header. @default 3 */
   level?: number;
   /** The contents of the disclosure header. */
@@ -200,83 +207,86 @@ const headingStyles = style({
   minWidth: 0,
 });
 
-const buttonStyles = style<DisclosureButtonStyleProps>({
-  ...focusRing(),
-  outlineOffset: -2,
-  font: "heading",
-  color: {
-    default: baseColor("neutral"),
-    forcedColors: "ButtonText",
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  fontWeight: "bold",
-  fontSize: {
-    size: {
-      S: "title-sm",
-      M: "title",
-      L: "title-lg",
-      XL: "title-xl",
-    },
-  },
-  lineHeight: "ui",
-  display: "flex",
-  flexGrow: 1,
-  alignItems: "baseline",
-  paddingX: "[calc(self(minHeight) * 3/8 - 1px)]",
-  paddingY: centerPadding(),
-  gap: "[calc(self(minHeight) * 3/8 - 1px)]",
-  minHeight: {
-    size: {
-      S: {
-        density: {
-          compact: 18,
-          regular: 24,
-          spacious: 32,
-        },
-      },
-      M: {
-        density: {
-          compact: 24,
-          regular: 32,
-          spacious: 40,
-        },
-      },
-      L: {
-        density: {
-          compact: 32,
-          regular: 40,
-          spacious: 48,
-        },
-      },
-      XL: {
-        density: {
-          compact: 40,
-          regular: 48,
-          spacious: 56,
-        },
+const buttonStyles = style<DisclosureButtonStyleProps>(
+  {
+    ...focusRing(),
+    outlineOffset: -2,
+    font: "heading",
+    color: {
+      default: baseColor("neutral"),
+      forcedColors: "ButtonText",
+      isDisabled: {
+        default: "disabled",
+        forcedColors: "GrayText",
       },
     },
+    fontWeight: "bold",
+    fontSize: {
+      size: {
+        S: "title-sm",
+        M: "title",
+        L: "title-lg",
+        XL: "title-xl",
+      },
+    },
+    lineHeight: "ui",
+    display: "flex",
+    flexGrow: 1,
+    alignItems: "baseline",
+    paddingX: "[calc(self(minHeight) * 3/8 - 1px)]",
+    paddingY: centerPadding(),
+    gap: "[calc(self(minHeight) * 3/8 - 1px)]",
+    minHeight: {
+      size: {
+        S: {
+          density: {
+            compact: 18,
+            regular: 24,
+            spacious: 32,
+          },
+        },
+        M: {
+          density: {
+            compact: 24,
+            regular: 32,
+            spacious: 40,
+          },
+        },
+        L: {
+          density: {
+            compact: 32,
+            regular: 40,
+            spacious: 48,
+          },
+        },
+        XL: {
+          density: {
+            compact: 40,
+            regular: 48,
+            spacious: 56,
+          },
+        },
+      },
+    },
+    width: "full",
+    backgroundColor: {
+      default: "transparent",
+      isFocusVisible: lightDark("transparent-black-100", "transparent-white-100"),
+      isHovered: lightDark("transparent-black-100", "transparent-white-100"),
+      isPressed: lightDark("transparent-black-300", "transparent-white-300"),
+    },
+    transition: "default",
+    borderWidth: 0,
+    borderRadius: {
+      default: "none",
+      isFocusVisible: "default",
+      isQuiet: "default",
+    },
+    textAlign: "start",
+    disableTapHighlight: true,
   },
-  width: "full",
-  backgroundColor: {
-    default: "transparent",
-    isFocusVisible: lightDark("transparent-black-100", "transparent-white-100"),
-    isHovered: lightDark("transparent-black-100", "transparent-white-100"),
-    isPressed: lightDark("transparent-black-300", "transparent-white-300"),
-  },
-  transition: "default",
-  borderWidth: 0,
-  borderRadius: {
-    default: "none",
-    isFocusVisible: "default",
-    isQuiet: "default",
-  },
-  textAlign: "start",
-  disableTapHighlight: true,
-});
+  getAllowedOverrides({ font: true }),
+);
 
 const chevronStyles = style<ChevronStyleProps>({
   rotate: {
@@ -638,11 +648,7 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
       component={headingTag()}
       {...domProps}
       ref={mergeContextRefs(local.ref)}
-      class={classNames(
-        local.UNSAFE_className,
-        local.class,
-        mergeStyles(headingStyles, local.styles),
-      )}
+      class={classNames(local.UNSAFE_className, local.class, headingStyles)}
       style={styleAlias(local.UNSAFE_style, local.style)}
       data-rsp-slot="disclosure-title"
       data-level={level()}
@@ -651,15 +657,18 @@ function DisclosureTitleContent(props: DisclosureTitleProps): JSX.Element {
         {...hoverProps}
         onFocus={triggerFocusProps.onFocus}
         onBlur={triggerFocusProps.onBlur}
-        class={buttonStyles({
-          size: size(),
-          density: density(),
-          isQuiet: isQuiet(),
-          isDisabled: isDisabled(),
-          isHovered: isHovered(),
-          isPressed: isPressed(),
-          isFocusVisible: isFocusVisible(),
-        })}
+        class={buttonStyles(
+          {
+            size: size(),
+            density: density(),
+            isQuiet: isQuiet(),
+            isDisabled: isDisabled(),
+            isHovered: isHovered(),
+            isPressed: isPressed(),
+            isFocusVisible: isFocusVisible(),
+          },
+          local.styles,
+        )}
         data-rsp-slot="disclosure-trigger"
         data-size={size()}
         data-density={density()}

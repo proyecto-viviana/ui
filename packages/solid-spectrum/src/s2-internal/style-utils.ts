@@ -352,6 +352,14 @@ export const widthProperties = ["width", "minWidth", "maxWidth"] as const;
 
 export const heightProperties = ["size", "height", "minHeight", "maxHeight"] as const;
 
+export const fontProperties = [
+  "font",
+  "fontFamily",
+  "fontWeight",
+  "lineHeight",
+  "fontSize",
+] as const;
+
 export type StylesProp = StyleString<
   (typeof allowedOverrides)[number] | (typeof widthProperties)[number]
 >;
@@ -361,6 +369,7 @@ export type StylesPropWithHeight = StyleString<
   | (typeof heightProperties)[number]
 >;
 export type StylesPropWithoutWidth = StyleString<(typeof allowedOverrides)[number]>;
+export type StylesPropWithFont = StyleString<(typeof fontProperties)[number]>;
 export type UnsafeClassName = string & { properties?: never };
 export interface UnsafeStyles {
   /** Sets the CSS [className](https://developer.mozilla.org/en-US/docs/Web/API/Element/className) for the element. Only use as a **last resort**. Use the `style` macro via the `styles` prop instead. */
@@ -374,8 +383,9 @@ export interface StyleProps extends UnsafeStyles {
   styles?: StylesProp;
 }
 
-export function getAllowedOverrides({ width = true, height = false } = {}): string[] {
+export function getAllowedOverrides({ width = true, height = false, font = false } = {}): string[] {
   return (allowedOverrides as unknown as string[])
     .concat(width ? widthProperties : [])
-    .concat(height ? heightProperties : []);
+    .concat(height ? heightProperties : [])
+    .concat(font ? ["fontFamily", "fontWeight", "lineHeight", "fontSize"] : []);
 }
