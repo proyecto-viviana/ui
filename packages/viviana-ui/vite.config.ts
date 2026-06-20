@@ -1,6 +1,6 @@
 import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
-import macros from "unplugin-parcel-macros";
+import { vivianaMacros } from "./src/vite";
 
 // viviana-ui re-exports solid-spectrum and adds its own product components (the
 // relocated cards / feed / shell pieces, styled via the S2 `style()` macro
@@ -19,104 +19,11 @@ import macros from "unplugin-parcel-macros";
 //
 // Types come from a separate `tsc -p tsconfig.build.json` (see package.json).
 
-const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
-const macroCssImportPattern = /import\s+["']macro-[a-f0-9]+\.css["'];\n?/g;
-
-function getMacroCssFileName(id: string) {
-  const fileName = id.split("/").pop();
-  return fileName && macroCssIdPattern.test(fileName) ? fileName : null;
-}
-
-function removeMacroCssImports(code: string) {
-  return code.replace(macroCssImportPattern, "");
-}
-
-function getMacroCssContent(content: unknown) {
-  if (typeof content === "string") {
-    return content;
-  }
-
-  if (content && typeof content === "object" && "code" in content) {
-    const code = (content as { code: unknown }).code;
-    return typeof code === "string" ? code : null;
-  }
-
-  return null;
-}
-
-function s2Macros() {
-  const plugin = macros.rolldown();
-  const macroCssCache = new Map<string, string>();
-
-  const cacheMacroCss = (id: string, content: unknown) => {
-    const fileName = getMacroCssFileName(id);
-    const css = getMacroCssContent(content);
-    if (fileName && css != null) {
-      macroCssCache.set(fileName, css);
-    }
-    return css;
-  };
-
-  return {
-    ...plugin,
-    async transform(this: unknown, code: string, id: string) {
-      const result = await plugin.transform?.call(this, code, id);
-      const transformedCode =
-        typeof result === "string"
-          ? result
-          : result && typeof result === "object" && "code" in result
-            ? String(result.code)
-            : "";
-
-      for (const match of transformedCode.matchAll(/import\s+["'](macro-[a-f0-9]+\.css)["'];/g)) {
-        const content = await plugin.load?.call(this, match[1]);
-        cacheMacroCss(match[1], content);
-      }
-
-      return result;
-    },
-    async resolveId(this: unknown, id: string, importer?: string, options?: object) {
-      const resolved = await plugin.resolveId?.call(this, id, importer, options);
-      if (resolved) {
-        return resolved;
-      }
-      const fileName = getMacroCssFileName(id);
-      if (fileName && macroCssCache.has(fileName)) {
-        return fileName;
-      }
-      return resolved;
-    },
-    loadInclude(id: string) {
-      const fileName = getMacroCssFileName(id);
-      return (
-        (fileName != null && macroCssCache.has(fileName)) || (plugin.loadInclude?.(id) ?? false)
-      );
-    },
-    async load(this: unknown, id: string) {
-      if (plugin.loadInclude?.(id)) {
-        const content = await plugin.load?.call(this, id);
-        const css = cacheMacroCss(id, content);
-        if (css != null) {
-          return css;
-        }
-        return content;
-      }
-      const fileName = getMacroCssFileName(id);
-      if (fileName) {
-        return macroCssCache.get(fileName);
-      }
-      return null;
-    },
-    renderChunk(code: string) {
-      return removeMacroCssImports(code);
-    },
-  };
-}
-
 const entry = [
   "src/index.ts",
   "src/style.ts",
   "src/style/runtime.ts",
+  "src/vite.ts",
   "src/ActionButton.ts",
   "src/ActionMenu.ts",
   "src/Breadcrumbs.ts",
@@ -169,6 +76,10 @@ const deps = {
     /^solid-js(\/.*)?$/,
     /^@proyecto-viviana\/solid-spectrum(\/.*)?$/,
     /^@proyecto-viviana\/solidaria-components(\/.*)?$/,
+    // The macro preset (src/vite.ts) imports unplugin-parcel-macros; it's a
+    // peerDependency that must stay external so dist/vite.js uses the app's
+    // installed instance (the macro runs at the app's build, not ours).
+    /^unplugin-parcel-macros$/,
   ],
 };
 
@@ -214,7 +125,7 @@ export default defineConfig({
       fixedExtension: false,
       hash: false,
       css,
-      plugins: [s2Macros(), solid({ solid: { generate: "dom", hydratable: true } })],
+      plugins: [vivianaMacros(), solid({ solid: { generate: "dom", hydratable: true } })],
       deps,
       copy: copiedCssFiles,
     },
@@ -246,7 +157,7 @@ export default defineConfig({
           chunkFileNames: "[name].jsx",
         };
       },
-      plugins: [s2Macros()],
+      plugins: [vivianaMacros()],
       deps,
     },
   ],

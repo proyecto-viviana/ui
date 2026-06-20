@@ -288,6 +288,11 @@
       "import": "./dist/style/runtime.js",
       "default": "./dist/style/runtime.js"
     },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js",
+      "default": "./dist/vite.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -302,9 +307,16 @@
   },
   "devDependencies": {
     "@proyecto-viviana/solid-spectrum-test-utils": "workspace:*",
-    "solid-js": "^1.9.0"
+    "solid-js": "^1.9.0",
+    "unplugin-parcel-macros": "0.2.0"
   },
   "peerDependencies": {
-    "solid-js": "^1.9.0"
+    "solid-js": "^1.9.0",
+    "unplugin-parcel-macros": "^0.2.0"
+  },
+  "peerDependenciesMeta": {
+    "unplugin-parcel-macros": {
+      "optional": true
+    }
   }
 }

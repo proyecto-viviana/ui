@@ -298,7 +298,7 @@ A consumer/tool resolving via `default` (some SSR/CJS paths) silently gets an
 
 ---
 
-## UC-04 ⛔ — Supported Vite macro preset for app-authored `style()`
+## UC-04 ✔ — Supported Vite macro preset for app-authored `style()`
 
 ### Problem
 The package build pre-expands macros for the components it ships, but **cannot**
@@ -322,6 +322,36 @@ each app copies an `s2Macros()` wrapper plus internal-package exclusions.
   `@proyecto-viviana/ui/style` macro calls generate/load CSS in **DOM and SSR**.
 - The fixture imports the helper instead of a copied wrapper; the helper is
   documented as the supported path.
+
+### Resolution (2026-06-20)
+- **Shipped helper:** new `@proyecto-viviana/ui/vite` export returns
+  `vivianaMacros()` — the wrapper around `unplugin-parcel-macros`'
+  `macros.rolldown()` that downstream apps used to hand-copy. It caches the
+  macro-emitted CSS on transform, serves it through a `.css` virtual module
+  (resolveId/loadInclude/load), and strips the JS `import "macro-<hash>.css"` from
+  the server bundle (renderChunk) so SSR builds don't fail to resolve it. Lives in
+  `packages/viviana-ui/src/vite.ts`; the `./vite` subpath is a plain Node build
+  helper (no `solid` condition).
+- **Peer dependency:** `unplugin-parcel-macros` is declared an **optional** peer
+  (`peerDependenciesMeta`) and kept external in the helper's build (`neverBundle`),
+  so the app's own macro instance is the one that runs.
+- **In-repo fixture proves DOM + SSR:** `scripts/macro-preset-smoke.mjs`
+  (`vp run ui:macro-smoke`) builds an app-authored `style()` call
+  (`test/macro-preset/styled.jsx`, imported with `{ type: "macro" }` from
+  `@proyecto-viviana/ui/style`) through `vivianaMacros()`. It runs **in**-workspace
+  on purpose — the workspace pins `vite → @voidzero-dev/vite-plus-core`
+  (rolldown-vite), the same flavor the helper's `.rolldown()` targets and the real
+  apps build with. DOM build: asserts the macro sentinel (`abcdef`) lands in the
+  emitted CSS asset. SSR build: asserts the build resolves the stripped macro CSS
+  and the `style()` runtime class expands in the rendered HTML. The fixture imports
+  the **built** helper via the package's `./vite` export (asserting it points at
+  `./dist/vite.js`), not a copied wrapper.
+- **README** (`packages/viviana-ui/README.md`) documents `vivianaMacros()` as the
+  supported path: plugin order (before `vite-plugin-solid` and framework plugins),
+  the app-owned `optimizeDeps.exclude` / `ssr.noExternal` lists, and the peer
+  install. Points at the smoke as an executable reference.
+- Changeset: `.changeset/ui-vite-macro-preset.md` (`@proyecto-viviana/ui` minor —
+  new `./vite` export + `vivianaMacros()` preset).
 
 ---
 
@@ -388,7 +418,7 @@ cannot run here.
 | **UC-01** ✔ | Deep subpath export parity + `./style/runtime` | UC-00 (for tarball smoke) | **Done 2026-06-20.** Full parity (0 `solid-spectrum` subpaths missing); smoke asserts 185/185 export files + 44/44 JS subpaths resolve. Shared `./style*` surface still feeds **UC-02**; coupled to **UC-05**. |
 | **UC-02** ◑ | `./style` Viviana tokens + CSS-inventory reconcile | UC-00 | **Part A (CSS inventory) done 2026-06-20**; **Part B (token map) deferred — design decision, nothing to mirror.** |
 | **UC-03** ✔ | CSS + Provider contract + `default`-condition fix | UC-00 | **Done 2026-06-20.** `default→src` footgun closed (single dist target); README contract; smoke guards. |
-| **UC-04** | Vite macro preset + in-repo SSR/DOM fixture | UC-00 | Genuinely independent. |
+| **UC-04** ✔ | Vite macro preset + in-repo SSR/DOM fixture | UC-00 | **Done 2026-06-20.** `@proyecto-viviana/ui/vite` → `vivianaMacros()` (optional peer on `unplugin-parcel-macros`); `ui:macro-smoke` proves app-authored `style()` generates/loads CSS in DOM + SSR through the shipped helper. |
 | **UC-05** | Lower-package subpath exports (kill barrel bloat) | UC-00 | Design with **UC-01**. |
 | **UC-06** | `viviana-social` app migration | UC-00…UC-05 | Downstream, other repo. |
 

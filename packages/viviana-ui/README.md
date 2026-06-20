@@ -82,10 +82,29 @@ your app authors its own `style()` macro calls against
 import { style } from "@proyecto-viviana/ui/style" with { type: "macro" };
 ```
 
-That path needs `unplugin-parcel-macros` wired into the app's Vite config (the
-macro is compiled at the app's build) and the ui + solid-spectrum packages
-excluded from `optimizeDeps`. See the consume smoke
-(`scripts/consume-pack-smoke.mjs`) for the minimal pre-built-consumer Vite setup.
+That path needs the macro plugin in the app's Vite config (the macro is compiled
+at the app's build). The supported way is the `vivianaMacros()` preset from
+`@proyecto-viviana/ui/vite` — don't copy a wrapper:
+
+```ts
+import { defineConfig } from "vite";
+import solid from "vite-plugin-solid";
+import { vivianaMacros } from "@proyecto-viviana/ui/vite";
+
+export default defineConfig({
+  // vivianaMacros() must come before vite-plugin-solid (and framework plugins).
+  plugins: [vivianaMacros(), solid({ ssr: true })],
+  // Keep our Solid packages out of the optimizer and bundle them into SSR:
+  optimizeDeps: { exclude: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"] },
+  ssr: { noExternal: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"] },
+});
+```
+
+`vivianaMacros()` wraps `unplugin-parcel-macros` so the macro's emitted CSS
+resolves and loads under rolldown-vite; install `unplugin-parcel-macros` (a peer
+dependency) alongside it. The `optimizeDeps` / `ssr.noExternal` lists stay
+app-owned. `scripts/macro-preset-smoke.mjs` builds an app-authored `style()` call
+through this helper for both DOM and SSR as an executable reference.
 
 ## Status
 
