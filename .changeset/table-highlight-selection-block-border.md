@@ -22,8 +22,10 @@ This mirrors upstream S2's `TableView` faithfully:
   table state's `selectedKeys` and `collection.getKeyAfter`/`getKeyBefore`.
 - The gray row divider moves from the cell's bottom border to the row's
   `box-shadow` in highlight mode (suppressed within a selected block by
-  `isNextSelected`), exactly as upstream does. Checkbox mode keeps the divider on
-  the cell, so it stays byte-for-byte unchanged.
+  `isNextSelected`). Upstream draws this divider as a row `borderBottom`, which a
+  real `<table>` can't use — `border-collapse: separate` makes CSS ignore borders
+  set on `<tr>` — so the box-shadow is its faithful real-DOM realization. Checkbox
+  mode keeps the divider on the cell, so it stays byte-for-byte unchanged.
 
 The one upstream detail intentionally dropped is `z-index: 3` on the overlay — it
 exists only to paint above the S2 virtualizer's sticky cells, which our real-DOM

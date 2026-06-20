@@ -598,13 +598,20 @@ const tableRow = style<
       },
     },
   },
-  // Highlight mode draws the gray row divider as the row's box-shadow (checkbox
-  // mode keeps it on the cell's bottom border), suppressed within a selected
-  // block via isNextSelected. Mirrors upstream's `boxShadow`.
+  // Highlight mode draws the gray row divider as the row's box-shadow. A real
+  // `<tr>` border can't be used here: under `border-collapse: separate` CSS
+  // ignores borders set on `<tr>`, so upstream's row `borderBottom` has no
+  // real-DOM equivalent — the box-shadow is its faithful realization (checkbox
+  // mode keeps the divider on the cell's bottom border instead). The divider is
+  // suppressed under selection: when the row itself is selected, or the row
+  // below it is, the rounded blue highlight-block border paints that edge, so
+  // the gray line would otherwise double up. Mirrors upstream's divider
+  // `borderColor` going `transparent` on both `isSelected` and `isNextSelected`.
   boxShadow: {
     selectionStyle: {
       highlight: {
         default: "[inset 0 -1px 0px var(--borderColorGray)]",
+        isSelected: "[inset 0 0 0 var(--borderColorGray)]",
         isNextSelected: "[inset 0 0 0 var(--borderColorGray)]",
       },
     },
