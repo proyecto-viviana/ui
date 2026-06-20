@@ -50,6 +50,8 @@
     "comparison:deploy:dry-run": "vp run --filter @proyecto-viviana/comparison deploy:dry-run",
     "pack:local-chain": "vp run build:stately && vp run build:solidaria && vp run build:components && vp run build:solid-spectrum && vp run build:viviana-ui && node scripts/pack-local-chain.mjs",
     "pack:local-chain:skip-build": "node scripts/pack-local-chain.mjs",
+    "ui:consume-smoke": "node scripts/consume-pack-smoke.mjs",
+    "ui:smoke": "vp run pack:local-chain && node scripts/consume-pack-smoke.mjs",
     "test": "vp test packages",
     "test:run": "vp test run packages",
     "test:web": "vp test run --config apps/web/vitest.config.ts",

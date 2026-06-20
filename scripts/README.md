@@ -49,3 +49,25 @@ workspace dependencies still have to be part of the packed chain.
   lower `solidaria-components` chain.
 - Pokeforos consumes `viviana-ui`, so it exercises the wrapper plus SolidStart
   SSR and routing integration.
+
+## Out-of-workspace Consume Smoke (UC-00)
+
+`consume-pack-smoke.mjs` is the keystone of the client-readiness track
+(`.claude/current/ui-client-contract.md`). It proves a real external consumer can
+install `@proyecto-viviana/ui` from the packed tarballs — with no workspace
+symlinks — and build it for both targets:
+
+- Scaffolds a throwaway app under `/tmp/viviana-ui-consume-smoke`, depending on
+  `@proyecto-viviana/ui` via a `file:` tarball, with `overrides` redirecting the
+  whole closure to their `file:` tarballs (the rewritten concrete versions aren't
+  on any registry).
+- Runs a DOM `vite build` and an SSR `vite build --ssr` + render, asserting the
+  rendered `<button>` keeps its macro-expanded style classes.
+- Encodes two facts every consumer needs: a dual-target build uses
+  `solid({ ssr: true })`, and the SSR resolver must include the `solid` condition
+  (otherwise it grabs the DOM-compiled `.js` and crashes calling `template()` on
+  the server).
+
+Run `vp run ui:smoke` to pack the chain then consume it, or
+`vp run ui:consume-smoke` to reuse existing tarballs. Needs network (installs
+`vite` + `vite-plugin-solid` + `solid-js` into the throwaway app).

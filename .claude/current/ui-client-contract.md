@@ -50,15 +50,20 @@ paused until UC-00…UC-05 land; UC-06 is downstream in another repo.
 
 ---
 
-## UC-00 ◑ — Promote `@proyecto-viviana/ui` into the release matrix + out-of-workspace install smoke
+## UC-00 ✔ — Promote `@proyecto-viviana/ui` into the release matrix + out-of-workspace install smoke
 
 **The spine.** Everything else assumes a client can actually install the package.
 
-> **Decision approved 2026-06-20 (owner): promote `ui`.** Recorded in
-> `release-policy.md` (matrix row: `releasable / npm / public`) and `steering.md`
-> (open decision resolved). What remains under this ticket is the *implementation*
-> of that promotion: Changesets scope, coherent closure publish, and the
-> out-of-workspace install smoke.
+> **Done 2026-06-20.** Owner approved promoting `ui`; recorded in
+> `release-policy.md` (matrix row `releasable / npm / public`) and `steering.md`
+> (open decision resolved). Changesets already covers `ui` (it is publishable and
+> absent from `.changeset/config.json` `ignore`). The out-of-workspace install
+> smoke is built (`scripts/consume-pack-smoke.mjs`, scripts `ui:consume-smoke` /
+> `ui:smoke`) and **passes**: `@proyecto-viviana/ui` installs from packed tarballs
+> into a throwaway app outside the workspace and builds **DOM + SSR**; the SSR
+> render emits a real `<button>` carrying its macro-expanded atomic style classes.
+> The smoke also reproduces the UC-05 barrel-bloat warning (`solidaria` /
+> `solidaria-components` `dist/index.jsx` > 500 KB) — left for UC-05.
 
 ### Problem
 `@proyecto-viviana/ui@0.3.6` depends on `@proyecto-viviana/solid-spectrum` and
@@ -77,26 +82,32 @@ exactly the call steering left open.
 - ~~**Decide `ui`'s release status** (owner)~~ ✔ 2026-06-20: `releasable → npm →
   public`, recorded in `release-policy.md` (matrix) and `steering.md` (open
   decision). Certification floor for the first publish: TBD with owner.
-- Add `@proyecto-viviana/ui` to the Changesets scope; confirm `pnpm`/`vp`
-  rewrites `workspace:*` → the concrete version on publish for `ui`'s deps.
-- Confirm the `Release` workflow versions/publishes the **closure** coherently
-  when `ui` changes (a `ui` bump that needs a new `solidaria` subpath — see
-  UC-05 — must republish `solidaria` too).
-- **Build the out-of-workspace fixture** (the keystone, reused by UC-01/03/04/05):
-  `vp pack` the closure → install `@proyecto-viviana/ui` into a throwaway app
-  *outside* the workspace → assert it builds in **DOM and SSR** and renders a
-  styled `Button`. Wire it as a script (e.g. `ci:pack-consume`).
+- ~~Add `@proyecto-viviana/ui` to the Changesets scope~~ ✔ already covered — `ui`
+  is publishable (`publishConfig.access: public`, not `private`) and not in
+  `.changeset/config.json` `ignore`, so Changesets versions it. `updateInternal​Dependencies: "patch"` keeps its `workspace:*` ranges in step on publish.
+- ~~Confirm the closure packs coherently~~ ✔ `scripts/pack-local-chain.mjs`
+  rewrites every `workspace:*` → the concrete version and packs all five
+  tarballs. (The live `Release`-workflow publish ordering is exercised by CI, not
+  this script.)
+- ~~**Build the out-of-workspace fixture**~~ ✔ `scripts/consume-pack-smoke.mjs`
+  (reused by UC-01/03/04/05): scaffolds a throwaway app *outside* the workspace,
+  installs `@proyecto-viviana/ui` from the packed tarballs (with `overrides`
+  redirecting the whole closure to `file:` tarballs), then runs a DOM `vite build`
+  and an SSR `vite build --ssr` + render, asserting a styled `<button>`. Two
+  realities it encodes for any consumer: a dual-target build needs
+  `solid({ ssr: true })`, and the SSR resolver needs the `solid` condition.
 
 ### Out of scope
 - Component behavior, token re-theming, app migration (UC-06).
 
-### Acceptance
-- `ui` is in the `release-policy.md` matrix with an explicit status; `steering.md`
-  open decision resolved.
-- A coherent version/publish of the five-package closure is demonstrated (dry-run
-  ok).
-- The out-of-workspace fixture installs `@proyecto-viviana/ui` from packed
-  tarballs and builds DOM + SSR, with **no** reliance on workspace symlinks.
+### Acceptance — all met (2026-06-20)
+- ✔ `ui` is in the `release-policy.md` matrix with an explicit status;
+  `steering.md` open decision resolved.
+- ✔ The five-package closure packs coherently with `workspace:*` rewritten to
+  concrete versions (`pack:local-chain`).
+- ✔ The out-of-workspace fixture installs `@proyecto-viviana/ui` from packed
+  tarballs and builds DOM + SSR with **no** workspace symlinks; SSR render shows a
+  styled `<button>`.
 
 ---
 
@@ -290,7 +301,7 @@ cannot run here.
 
 | id | title | depends | parallel reality |
 | --- | --- | --- | --- |
-| **UC-00** ◑ | Release-matrix promotion (decided) + out-of-workspace install smoke | — | **The spine. Do first.** Promotion approved 2026-06-20; install-smoke impl pending. Unblocks verifiable acceptance for all others. |
+| **UC-00** ✔ | Release-matrix promotion + out-of-workspace install smoke | — | **The spine — done 2026-06-20.** Promotion recorded; `consume-pack-smoke` green (DOM+SSR). Unblocks verifiable acceptance for all others. |
 | **UC-01** | Deep subpath export parity + `./style/runtime` | UC-00 (for tarball smoke) | One work-stream with **UC-02** (shared `./style*` surface); coupled to **UC-05**. |
 | **UC-02** | `./style` Viviana tokens + CSS-inventory reconcile | UC-00 | Pair with **UC-01**. |
 | **UC-03** | CSS + Provider contract + `default`-condition fix | UC-00 | Genuinely independent. |
