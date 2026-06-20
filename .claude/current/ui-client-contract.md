@@ -62,8 +62,9 @@ paused until UC-00…UC-05 land; UC-06 is downstream in another repo.
 > `ui:smoke`) and **passes**: `@proyecto-viviana/ui` installs from packed tarballs
 > into a throwaway app outside the workspace and builds **DOM + SSR**; the SSR
 > render emits a real `<button>` carrying its macro-expanded atomic style classes.
-> The smoke also reproduces the UC-05 barrel-bloat warning (`solidaria` /
-> `solidaria-components` `dist/index.jsx` > 500 KB) — left for UC-05.
+> The `solidaria` / `solidaria-components` barrel-bloat warning the smoke once
+> reproduced is resolved by **UC-05** (thin re-export barrels); the residual
+> `solid-spectrum` barrel + `./style` over-size is tracked as **UC-07**.
 
 ### Problem
 `@proyecto-viviana/ui@0.3.6` depends on `@proyecto-viviana/solid-spectrum` and
@@ -355,7 +356,7 @@ each app copies an `s2Macros()` wrapper plus internal-package exclusions.
 
 ---
 
-## UC-05 ⛔ — Kill the transitive root-barrel bloat (subpath exports in lower packages)
+## UC-05 ✔ — Kill the transitive root-barrel bloat (subpath exports in lower packages)
 
 *Same "deep-subpath" fix as UC-01, one layer down — design together.*
 
@@ -383,6 +384,67 @@ The Babel 500 KB deopt warning is **not** the S2 macro. `solidaria` and
   `solidaria/dist/index.jsx` / `solidaria-components/dist/index.jsx` 500 KB
   warning, with **no** app-level `compact` workaround.
 - The barrel-regression guard runs in CI.
+
+### Resolution (2026-06-20)
+- **Build split, not a consumer rewire.** Both lower packages now build one entry
+  per public module (`solidaria` from each `src/<name>/index.ts`,
+  `solidaria-components` from each barrel `from "./X"` target), shared code hoisted
+  into `_chunk/`. `dist/index.jsx` is now a ~70-line thin re-export barrel and the
+  largest emitted `.jsx` is ~50 KB — so the deopt fires for **no** consumer, even
+  one that imports the barrel. The `consume-pack-smoke` (DOM+SSR, out-of-workspace
+  tarballs) is green with **no** 500 KB warning and **no** app-level `compact`.
+- **Subpath exports added:** `solidaria` (50) and `solidaria-components` (66) each
+  ship per-primitive `{types,solid,import,default}` subpaths; the `.` barrel is
+  preserved, so the change is additive — no consumer rewire was needed (the thin
+  barrel already defeats the deopt, and `sideEffects:false` keeps tree-shaking).
+- **Resolution gotcha (solidaria):** because solidaria's sources are directory
+  modules (`src/<name>/index.ts`), the impl must land **inside** the type directory
+  (`dist/<name>/index.jsx`), not as a flat `dist/<name>.jsx` sibling — a flat
+  sibling shadows the directory when TypeScript resolves the barrel's relative
+  `export … from "./<name>"`, collapsing every re-exported type to `{}`.
+- **Guard (better than the planned one):** `guard:jsx-deopt-size`
+  (`scripts/check-jsx-deopt-size.ts`) asserts no published `.jsx` exceeds the
+  500 KB Babel deopt threshold — the *actual* failure mode, more robust than the
+  "Provider.jsx must not import the barrel" import-path check (importing a thin
+  barrel is now harmless). It carries a documented allowlist for the two
+  solid-spectrum files tracked in **UC-07**.
+
+---
+
+## UC-07 ⛔ — Thin the `solid-spectrum` barrel + serve the JSX-free `./style` as `.js`
+
+*Surfaced by UC-05's `guard:jsx-deopt-size`; same class of fix, one layer up.*
+
+### Problem
+`guard:jsx-deopt-size` flags two `solid-spectrum` `.jsx` over 500 KB that a
+consumer would compile: `dist/index.jsx` (~520 KB) and `dist/style/index.jsx`
+(~1.26 MB). `viviana-ui` imports the `solid-spectrum` barrel 11× and `./style` /
+`./style/runtime`, so these reach published `@proyecto-viviana/ui` consumers.
+- The barrel is fat even though `solid-spectrum` is already per-primitive: its
+  `src/index.ts` re-exports **79** targets but only ~35 are build entries, so the
+  ~45 non-entry re-exports inline into `dist/index.jsx`.
+- `dist/style/index.jsx` is the S2 `style()` macro module (`csstype` +
+  `@parcel/macros` + generated tables) — JSX-free, so it should never be served
+  via the JSX-preserve `solid` condition; the pre-compiled `.js` is equivalent and
+  is not re-Babel'd.
+
+### Scope
+- Derive **all 79** barrel targets as `vite.config` entries so `dist/index.jsx`
+  becomes a thin re-export barrel (mirror UC-05).
+- Point the `./style` and `./style/runtime` `solid` export conditions (in
+  `solid-spectrum` and the re-exporting `viviana-ui`) at the `.js` output, since
+  those modules carry no Solid template code. Verify the `style()` macro still
+  expands at the app build (UC-04 path) after the condition change.
+- Remove the two entries from `KNOWN_LARGE` in `check-jsx-deopt-size.ts` once
+  resolved (the guard already fails if a listed file drops below the threshold).
+
+### Out of scope
+- Splitting the generated S2 token tables themselves; macro behavior.
+
+### Acceptance
+- `guard:jsx-deopt-size` passes with an **empty** `KNOWN_LARGE`.
+- `consume-pack-smoke` stays green (DOM+SSR), and the `style()` macro still
+  generates CSS through the UC-04 preset.
 
 ---
 
@@ -419,9 +481,12 @@ cannot run here.
 | **UC-02** ◑ | `./style` Viviana tokens + CSS-inventory reconcile | UC-00 | **Part A (CSS inventory) done 2026-06-20**; **Part B (token map) deferred — design decision, nothing to mirror.** |
 | **UC-03** ✔ | CSS + Provider contract + `default`-condition fix | UC-00 | **Done 2026-06-20.** `default→src` footgun closed (single dist target); README contract; smoke guards. |
 | **UC-04** ✔ | Vite macro preset + in-repo SSR/DOM fixture | UC-00 | **Done 2026-06-20.** `@proyecto-viviana/ui/vite` → `vivianaMacros()` (optional peer on `unplugin-parcel-macros`); `ui:macro-smoke` proves app-authored `style()` generates/loads CSS in DOM + SSR through the shipped helper. |
-| **UC-05** | Lower-package subpath exports (kill barrel bloat) | UC-00 | Design with **UC-01**. |
-| **UC-06** | `viviana-social` app migration | UC-00…UC-05 | Downstream, other repo. |
+| **UC-05** ✔ | Lower-package subpath exports (kill barrel bloat) | UC-00 | **Done 2026-06-20.** `solidaria`/`solidaria-components` `.` barrels split into per-primitive entries → thin re-export barrels (largest `.jsx` ~50 KB); 50+66 subpath exports added (barrel preserved, additive). `consume-pack-smoke` green with **no** 500 KB warning, no `compact`. New `guard:jsx-deopt-size` enforces the threshold. |
+| **UC-07** ⛔ | Thin `solid-spectrum` barrel + `./style` as `.js` | UC-05 | **Surfaced by UC-05's guard.** `solid-spectrum` `dist/index.jsx` (~520 KB, 79 re-exports / ~35 entries) + JSX-free `dist/style/index.jsx` (~1.26 MB) still deopt; reach consumers via `viviana-ui`. Allowlisted in the guard until fixed. |
+| **UC-06** | `viviana-social` app migration | UC-00…UC-05, UC-07 | Downstream, other repo. |
 
 **Waves:** (0) UC-00. (1) UC-01⊕UC-02 as one stream, UC-03, UC-04, UC-05 in
-parallel — all validated through the UC-00 fixture. (2) UC-06 in `viviana-social`.
-After UC-05 lands, resume the parity loop at `upstream-release-audit.md` T-57.
+parallel — all validated through the UC-00 fixture. (1b) UC-07 (`solid-spectrum`
+barrel + `./style`), surfaced by UC-05's guard. (2) UC-06 in `viviana-social`.
+With UC-05 landed (UC-07 the remaining barrel-bloat follow-up), resume the parity
+loop at `upstream-release-audit.md` T-57.

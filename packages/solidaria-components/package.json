@@ -31,7 +31,404 @@
       "solid": "./dist/index.jsx",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    }
+    },
+    "./ActionBar": {
+      "types": "./dist/ActionBar.d.ts",
+      "solid": "./dist/ActionBar.jsx",
+      "import": "./dist/ActionBar.js",
+      "default": "./dist/ActionBar.js"
+    },
+    "./ActionGroup": {
+      "types": "./dist/ActionGroup.d.ts",
+      "solid": "./dist/ActionGroup.jsx",
+      "import": "./dist/ActionGroup.js",
+      "default": "./dist/ActionGroup.js"
+    },
+    "./Alert": {
+      "types": "./dist/Alert.d.ts",
+      "solid": "./dist/Alert.jsx",
+      "import": "./dist/Alert.js",
+      "default": "./dist/Alert.js"
+    },
+    "./Autocomplete": {
+      "types": "./dist/Autocomplete.d.ts",
+      "solid": "./dist/Autocomplete.jsx",
+      "import": "./dist/Autocomplete.js",
+      "default": "./dist/Autocomplete.js"
+    },
+    "./Breadcrumbs": {
+      "types": "./dist/Breadcrumbs.d.ts",
+      "solid": "./dist/Breadcrumbs.jsx",
+      "import": "./dist/Breadcrumbs.js",
+      "default": "./dist/Breadcrumbs.js"
+    },
+    "./Button": {
+      "types": "./dist/Button.d.ts",
+      "solid": "./dist/Button.jsx",
+      "import": "./dist/Button.js",
+      "default": "./dist/Button.js"
+    },
+    "./Calendar": {
+      "types": "./dist/Calendar.d.ts",
+      "solid": "./dist/Calendar.jsx",
+      "import": "./dist/Calendar.js",
+      "default": "./dist/Calendar.js"
+    },
+    "./CalendarPicker": {
+      "types": "./dist/CalendarPicker.d.ts",
+      "solid": "./dist/CalendarPicker.jsx",
+      "import": "./dist/CalendarPicker.js",
+      "default": "./dist/CalendarPicker.js"
+    },
+    "./Checkbox": {
+      "types": "./dist/Checkbox.d.ts",
+      "solid": "./dist/Checkbox.jsx",
+      "import": "./dist/Checkbox.js",
+      "default": "./dist/Checkbox.js"
+    },
+    "./Collection": {
+      "types": "./dist/Collection.d.ts",
+      "solid": "./dist/Collection.jsx",
+      "import": "./dist/Collection.js",
+      "default": "./dist/Collection.js"
+    },
+    "./Color": {
+      "types": "./dist/Color.d.ts",
+      "solid": "./dist/Color.jsx",
+      "import": "./dist/Color.js",
+      "default": "./dist/Color.js"
+    },
+    "./ColorEditor": {
+      "types": "./dist/ColorEditor.d.ts",
+      "solid": "./dist/ColorEditor.jsx",
+      "import": "./dist/ColorEditor.js",
+      "default": "./dist/ColorEditor.js"
+    },
+    "./ComboBox": {
+      "types": "./dist/ComboBox.d.ts",
+      "solid": "./dist/ComboBox.jsx",
+      "import": "./dist/ComboBox.js",
+      "default": "./dist/ComboBox.js"
+    },
+    "./ContextualHelpTrigger": {
+      "types": "./dist/ContextualHelpTrigger.d.ts",
+      "solid": "./dist/ContextualHelpTrigger.jsx",
+      "import": "./dist/ContextualHelpTrigger.js",
+      "default": "./dist/ContextualHelpTrigger.js"
+    },
+    "./DateField": {
+      "types": "./dist/DateField.d.ts",
+      "solid": "./dist/DateField.jsx",
+      "import": "./dist/DateField.js",
+      "default": "./dist/DateField.js"
+    },
+    "./DatePicker": {
+      "types": "./dist/DatePicker.d.ts",
+      "solid": "./dist/DatePicker.jsx",
+      "import": "./dist/DatePicker.js",
+      "default": "./dist/DatePicker.js"
+    },
+    "./Dialog": {
+      "types": "./dist/Dialog.d.ts",
+      "solid": "./dist/Dialog.jsx",
+      "import": "./dist/Dialog.js",
+      "default": "./dist/Dialog.js"
+    },
+    "./Disclosure": {
+      "types": "./dist/Disclosure.d.ts",
+      "solid": "./dist/Disclosure.jsx",
+      "import": "./dist/Disclosure.js",
+      "default": "./dist/Disclosure.js"
+    },
+    "./DragAndDrop": {
+      "types": "./dist/DragAndDrop.d.ts",
+      "solid": "./dist/DragAndDrop.jsx",
+      "import": "./dist/DragAndDrop.js",
+      "default": "./dist/DragAndDrop.js"
+    },
+    "./DropZone": {
+      "types": "./dist/DropZone.d.ts",
+      "solid": "./dist/DropZone.jsx",
+      "import": "./dist/DropZone.js",
+      "default": "./dist/DropZone.js"
+    },
+    "./FieldError": {
+      "types": "./dist/FieldError.d.ts",
+      "solid": "./dist/FieldError.jsx",
+      "import": "./dist/FieldError.js",
+      "default": "./dist/FieldError.js"
+    },
+    "./FileTrigger": {
+      "types": "./dist/FileTrigger.d.ts",
+      "solid": "./dist/FileTrigger.jsx",
+      "import": "./dist/FileTrigger.js",
+      "default": "./dist/FileTrigger.js"
+    },
+    "./Focusable": {
+      "types": "./dist/Focusable.d.ts",
+      "solid": "./dist/Focusable.jsx",
+      "import": "./dist/Focusable.js",
+      "default": "./dist/Focusable.js"
+    },
+    "./Form": {
+      "types": "./dist/Form.d.ts",
+      "solid": "./dist/Form.jsx",
+      "import": "./dist/Form.js",
+      "default": "./dist/Form.js"
+    },
+    "./GridList": {
+      "types": "./dist/GridList.d.ts",
+      "solid": "./dist/GridList.jsx",
+      "import": "./dist/GridList.js",
+      "default": "./dist/GridList.js"
+    },
+    "./HiddenTimeInput": {
+      "types": "./dist/HiddenTimeInput.d.ts",
+      "solid": "./dist/HiddenTimeInput.jsx",
+      "import": "./dist/HiddenTimeInput.js",
+      "default": "./dist/HiddenTimeInput.js"
+    },
+    "./Icon": {
+      "types": "./dist/Icon.d.ts",
+      "solid": "./dist/Icon.jsx",
+      "import": "./dist/Icon.js",
+      "default": "./dist/Icon.js"
+    },
+    "./Keyboard": {
+      "types": "./dist/Keyboard.d.ts",
+      "solid": "./dist/Keyboard.jsx",
+      "import": "./dist/Keyboard.js",
+      "default": "./dist/Keyboard.js"
+    },
+    "./Landmark": {
+      "types": "./dist/Landmark.d.ts",
+      "solid": "./dist/Landmark.jsx",
+      "import": "./dist/Landmark.js",
+      "default": "./dist/Landmark.js"
+    },
+    "./Link": {
+      "types": "./dist/Link.d.ts",
+      "solid": "./dist/Link.jsx",
+      "import": "./dist/Link.js",
+      "default": "./dist/Link.js"
+    },
+    "./ListBox": {
+      "types": "./dist/ListBox.d.ts",
+      "solid": "./dist/ListBox.jsx",
+      "import": "./dist/ListBox.js",
+      "default": "./dist/ListBox.js"
+    },
+    "./Menu": {
+      "types": "./dist/Menu.d.ts",
+      "solid": "./dist/Menu.jsx",
+      "import": "./dist/Menu.js",
+      "default": "./dist/Menu.js"
+    },
+    "./Meter": {
+      "types": "./dist/Meter.d.ts",
+      "solid": "./dist/Meter.jsx",
+      "import": "./dist/Meter.js",
+      "default": "./dist/Meter.js"
+    },
+    "./Modal": {
+      "types": "./dist/Modal.d.ts",
+      "solid": "./dist/Modal.jsx",
+      "import": "./dist/Modal.js",
+      "default": "./dist/Modal.js"
+    },
+    "./NumberField": {
+      "types": "./dist/NumberField.d.ts",
+      "solid": "./dist/NumberField.jsx",
+      "import": "./dist/NumberField.js",
+      "default": "./dist/NumberField.js"
+    },
+    "./Popover": {
+      "types": "./dist/Popover.d.ts",
+      "solid": "./dist/Popover.jsx",
+      "import": "./dist/Popover.js",
+      "default": "./dist/Popover.js"
+    },
+    "./Pressable": {
+      "types": "./dist/Pressable.d.ts",
+      "solid": "./dist/Pressable.jsx",
+      "import": "./dist/Pressable.js",
+      "default": "./dist/Pressable.js"
+    },
+    "./ProgressBar": {
+      "types": "./dist/ProgressBar.d.ts",
+      "solid": "./dist/ProgressBar.jsx",
+      "import": "./dist/ProgressBar.js",
+      "default": "./dist/ProgressBar.js"
+    },
+    "./RadioGroup": {
+      "types": "./dist/RadioGroup.d.ts",
+      "solid": "./dist/RadioGroup.jsx",
+      "import": "./dist/RadioGroup.js",
+      "default": "./dist/RadioGroup.js"
+    },
+    "./RangeCalendar": {
+      "types": "./dist/RangeCalendar.d.ts",
+      "solid": "./dist/RangeCalendar.jsx",
+      "import": "./dist/RangeCalendar.js",
+      "default": "./dist/RangeCalendar.js"
+    },
+    "./RouterProvider": {
+      "types": "./dist/RouterProvider.d.ts",
+      "solid": "./dist/RouterProvider.jsx",
+      "import": "./dist/RouterProvider.js",
+      "default": "./dist/RouterProvider.js"
+    },
+    "./SearchField": {
+      "types": "./dist/SearchField.d.ts",
+      "solid": "./dist/SearchField.jsx",
+      "import": "./dist/SearchField.js",
+      "default": "./dist/SearchField.js"
+    },
+    "./Select": {
+      "types": "./dist/Select.d.ts",
+      "solid": "./dist/Select.jsx",
+      "import": "./dist/Select.js",
+      "default": "./dist/Select.js"
+    },
+    "./SelectionIndicator": {
+      "types": "./dist/SelectionIndicator.d.ts",
+      "solid": "./dist/SelectionIndicator.jsx",
+      "import": "./dist/SelectionIndicator.js",
+      "default": "./dist/SelectionIndicator.js"
+    },
+    "./Separator": {
+      "types": "./dist/Separator.d.ts",
+      "solid": "./dist/Separator.jsx",
+      "import": "./dist/Separator.js",
+      "default": "./dist/Separator.js"
+    },
+    "./SharedElementTransition": {
+      "types": "./dist/SharedElementTransition.d.ts",
+      "solid": "./dist/SharedElementTransition.jsx",
+      "import": "./dist/SharedElementTransition.js",
+      "default": "./dist/SharedElementTransition.js"
+    },
+    "./Slider": {
+      "types": "./dist/Slider.d.ts",
+      "solid": "./dist/Slider.jsx",
+      "import": "./dist/Slider.js",
+      "default": "./dist/Slider.js"
+    },
+    "./StepList": {
+      "types": "./dist/StepList.d.ts",
+      "solid": "./dist/StepList.jsx",
+      "import": "./dist/StepList.js",
+      "default": "./dist/StepList.js"
+    },
+    "./Switch": {
+      "types": "./dist/Switch.d.ts",
+      "solid": "./dist/Switch.jsx",
+      "import": "./dist/Switch.js",
+      "default": "./dist/Switch.js"
+    },
+    "./Table": {
+      "types": "./dist/Table.d.ts",
+      "solid": "./dist/Table.jsx",
+      "import": "./dist/Table.js",
+      "default": "./dist/Table.js"
+    },
+    "./Tabs": {
+      "types": "./dist/Tabs.d.ts",
+      "solid": "./dist/Tabs.jsx",
+      "import": "./dist/Tabs.js",
+      "default": "./dist/Tabs.js"
+    },
+    "./TagGroup": {
+      "types": "./dist/TagGroup.d.ts",
+      "solid": "./dist/TagGroup.jsx",
+      "import": "./dist/TagGroup.js",
+      "default": "./dist/TagGroup.js"
+    },
+    "./Text": {
+      "types": "./dist/Text.d.ts",
+      "solid": "./dist/Text.jsx",
+      "import": "./dist/Text.js",
+      "default": "./dist/Text.js"
+    },
+    "./TextField": {
+      "types": "./dist/TextField.d.ts",
+      "solid": "./dist/TextField.jsx",
+      "import": "./dist/TextField.js",
+      "default": "./dist/TextField.js"
+    },
+    "./TimeField": {
+      "types": "./dist/TimeField.d.ts",
+      "solid": "./dist/TimeField.jsx",
+      "import": "./dist/TimeField.js",
+      "default": "./dist/TimeField.js"
+    },
+    "./Toast": {
+      "types": "./dist/Toast.d.ts",
+      "solid": "./dist/Toast.jsx",
+      "import": "./dist/Toast.js",
+      "default": "./dist/Toast.js"
+    },
+    "./ToggleButton": {
+      "types": "./dist/ToggleButton.d.ts",
+      "solid": "./dist/ToggleButton.jsx",
+      "import": "./dist/ToggleButton.js",
+      "default": "./dist/ToggleButton.js"
+    },
+    "./ToggleButtonGroup": {
+      "types": "./dist/ToggleButtonGroup.d.ts",
+      "solid": "./dist/ToggleButtonGroup.jsx",
+      "import": "./dist/ToggleButtonGroup.js",
+      "default": "./dist/ToggleButtonGroup.js"
+    },
+    "./Toolbar": {
+      "types": "./dist/Toolbar.d.ts",
+      "solid": "./dist/Toolbar.jsx",
+      "import": "./dist/Toolbar.js",
+      "default": "./dist/Toolbar.js"
+    },
+    "./Tooltip": {
+      "types": "./dist/Tooltip.d.ts",
+      "solid": "./dist/Tooltip.jsx",
+      "import": "./dist/Tooltip.js",
+      "default": "./dist/Tooltip.js"
+    },
+    "./Tree": {
+      "types": "./dist/Tree.d.ts",
+      "solid": "./dist/Tree.jsx",
+      "import": "./dist/Tree.js",
+      "default": "./dist/Tree.js"
+    },
+    "./Virtualizer": {
+      "types": "./dist/Virtualizer.d.ts",
+      "solid": "./dist/Virtualizer.jsx",
+      "import": "./dist/Virtualizer.js",
+      "default": "./dist/Virtualizer.js"
+    },
+    "./VisuallyHidden": {
+      "types": "./dist/VisuallyHidden.d.ts",
+      "solid": "./dist/VisuallyHidden.jsx",
+      "import": "./dist/VisuallyHidden.js",
+      "default": "./dist/VisuallyHidden.js"
+    },
+    "./useDragAndDrop": {
+      "types": "./dist/useDragAndDrop.d.ts",
+      "solid": "./dist/useDragAndDrop.jsx",
+      "import": "./dist/useDragAndDrop.js",
+      "default": "./dist/useDragAndDrop.js"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "solid": "./dist/utils.jsx",
+      "import": "./dist/utils.js",
+      "default": "./dist/utils.js"
+    },
+    "./virtualizer/Layout": {
+      "types": "./dist/virtualizer/Layout.d.ts",
+      "solid": "./dist/virtualizer/Layout.jsx",
+      "import": "./dist/virtualizer/Layout.js",
+      "default": "./dist/virtualizer/Layout.js"
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"

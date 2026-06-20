@@ -75,6 +75,7 @@
     "guard:virtualizer-keyboard-parity": "vp exec tsx scripts/check-virtualizer-keyboard-parity.ts",
     "guard:upstream-test-parity": "vp exec tsx scripts/check-upstream-test-parity.ts",
     "guard:upstream-freshness": "vp exec tsx scripts/check-upstream-freshness.ts",
+    "guard:jsx-deopt-size": "vp exec tsx scripts/check-jsx-deopt-size.ts",
     "docs:check": "vp exec tsx scripts/check-docs-current.ts",
     "bench:bundle": "vp exec tsx benchmarks/bundle-size/analyze.ts",
     "bench:runtime": "vp test run benchmarks/runtime",
