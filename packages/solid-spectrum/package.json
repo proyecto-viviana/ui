@@ -238,13 +238,13 @@
     },
     "./style": {
       "types": "./dist/style/index.d.ts",
-      "solid": "./dist/style/index.jsx",
+      "solid": "./dist/style/index.js",
       "import": "./dist/style/index.js",
       "default": "./dist/style/index.js"
     },
     "./style/runtime": {
       "types": "./dist/style/runtime.d.ts",
-      "solid": "./dist/style/runtime.jsx",
+      "solid": "./dist/style/runtime.js",
       "import": "./dist/style/runtime.js",
       "default": "./dist/style/runtime.js"
     },

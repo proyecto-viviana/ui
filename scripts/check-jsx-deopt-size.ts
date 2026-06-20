@@ -33,17 +33,11 @@ const PACKAGES = [
 ];
 
 // Known-large `.jsx` that still exceed the limit, tracked as a follow-up rather
-// than failing the build today. UC-05 split the two lower packages' barrels; the
-// solid-spectrum barrel re-exports 79 targets but only ~35 are build entries, so
-// the ~45 non-entry re-exports still inline into `dist/index.jsx` — and
-// `dist/style/index.jsx` is the (JSX-free) S2 style macro module, which should be
-// served via the `.js` condition instead of recompiled. Both are out of UC-05's
-// approved "two lower packages" scope; see ui-client-contract.md UC-07. The guard
-// reports them so the debt stays visible, but only *new* offenders fail the build.
-const KNOWN_LARGE = new Set([
-  "packages/solid-spectrum/dist/index.jsx",
-  "packages/solid-spectrum/dist/style/index.jsx",
-]);
+// than failing the build today. Empty since UC-07 thinned the solid-spectrum
+// barrel (all of its re-export targets are build entries now) and switched the
+// JSX-free `./style` macro modules to the `.js` condition. Re-add an entry here
+// only with a tracked follow-up — every `.jsx` is expected under the limit.
+const KNOWN_LARGE = new Set<string>([]);
 
 function readDirSafe(dir: string) {
   try {

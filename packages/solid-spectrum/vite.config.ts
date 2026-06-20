@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
 import macros from "unplugin-parcel-macros";
@@ -96,7 +97,10 @@ function s2Macros() {
   };
 }
 
-const entry = [
+// Curated public surface: the `.` barrel, the hand-picked PascalCase component
+// aliases (each backed by a package.json subpath export), and the JSX-free style
+// macro modules. Keep in sync with package.json `exports`.
+const subpathEntries = [
   "src/index.ts",
   "src/ActionButton.ts",
   "src/Button.ts",
@@ -133,6 +137,47 @@ const entry = [
   "src/style/index.ts",
   "src/style/runtime.ts",
 ];
+
+// Every module the `.` barrel re-exports from, promoted to its own build entry so
+// `dist/index.jsx` stays a thin re-export barrel instead of inlining the whole
+// library — a bundled barrel runs past Solid's 500 KB compiler deopt threshold for
+// any consumer that touches it. Derived from the barrel's own `from "./…"`
+// specifiers so the entry set can't drift out of sync.
+//
+// vite preserves each entry's path relative to `src`, so `src/provider/index.tsx`
+// emits `dist/provider/index.jsx` right next to the `dist/provider/index.d.ts` that
+// `tsc -p tsconfig.build.json` emits — never a flat `dist/provider.jsx` sibling,
+// which would shadow the type directory when TypeScript resolves the barrel's
+// `export … from "./provider"` and collapse every re-exported type to `{}`.
+// Barrel targets deliberately left inlined rather than promoted to their own
+// entry. `src/icon/index.tsx` re-exports `* as s2wfIcons` — the full 410-icon set
+// — which the public barrel never re-exports. Promoting it to an entry would root
+// that namespace and defeat tree-shaking (a 631 KB chunk over the deopt limit);
+// inlining its used surface into the barrel lets the unused namespace drop. The
+// individual `./icon/s2wf-icons/<Name>` icons stay their own (tiny) entries.
+const inlineIntoBarrel = new Set(["src/icon/index.tsx"]);
+
+function barrelTargets(barrelPath: string): string[] {
+  const source = readFileSync(barrelPath, "utf8");
+  const targets = new Set<string>();
+  for (const match of source.matchAll(/from\s+"(\.\/[^"]+)"/g)) {
+    const base = `src/${match[1].slice(2)}`;
+    const file = [`${base}.tsx`, `${base}.ts`, `${base}/index.tsx`, `${base}/index.ts`].find(
+      existsSync,
+    );
+    if (file && !inlineIntoBarrel.has(file)) targets.add(file);
+  }
+  return [...targets];
+}
+
+// The style macro modules are JSX-free, so they're built only in the DOM (`.js`)
+// pass and served via the `import`/`solid` `.js` conditions. A `.jsx` copy would
+// only be re-compiled by every consumer's Solid plugin — and at ~1.26 MB it tripped
+// the 500 KB deopt for nothing. See `./style` in package.json.
+const styleEntries = ["src/style/index.ts", "src/style/runtime.ts"];
+
+const entry = [...new Set([...subpathEntries, ...barrelTargets("src/index.ts")])];
+const jsxEntry = entry.filter((e) => !styleEntries.includes(e));
 
 const deps = {
   alwaysBundle: [/^@adobe\/spectrum-tokens(\/.*)?$/],
@@ -172,6 +217,11 @@ export default defineConfig({
       fixedExtension: false,
       hash: false,
       css,
+      // Shared chunks routed to a reserved subdir so a `dist/<name>.js` chunk can
+      // never collide with a per-module output directory.
+      outputOptions(options) {
+        return { ...options, chunkFileNames: "_chunk/[name].js" };
+      },
       plugins: [s2Macros(), solid({ solid: { generate: "dom", hydratable: true } })],
       deps,
       copy: copiedCssFiles,
@@ -182,8 +232,8 @@ export default defineConfig({
       // or SSR per-environment, so no separate pre-built SSR bundle is needed.
       // The style() macro still runs here (style() -> class strings), so
       // consumers don't need the macro plugin; styles.css comes from the DOM
-      // build above.
-      entry,
+      // build above. The JSX-free style modules are excluded (served as `.js`).
+      entry: jsxEntry,
       format: ["esm"],
       target: "esnext",
       platform: "browser",
@@ -201,7 +251,7 @@ export default defineConfig({
         return {
           ...options,
           entryFileNames: "[name].jsx",
-          chunkFileNames: "[name].jsx",
+          chunkFileNames: "_chunk/[name].jsx",
         };
       },
       plugins: [s2Macros()],
