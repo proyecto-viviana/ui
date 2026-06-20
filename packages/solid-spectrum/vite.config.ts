@@ -100,6 +100,7 @@ const entry = [
   "src/index.ts",
   "src/ActionButton.ts",
   "src/Button.ts",
+  "src/CenterBaseline.ts",
   "src/ContrastIcon.ts",
   "src/FileTrigger.ts",
   "src/LightenIcon.ts",

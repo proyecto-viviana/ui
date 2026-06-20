@@ -362,6 +362,8 @@ export type {
 // Icons and illustrations
 export { createIcon, createIllustration, IconContext, IllustrationContext } from "./icon";
 export type { IconContextValue, SpectrumIconProps, SpectrumIllustrationProps } from "./icon";
+export { CenterBaseline } from "./icon/center-baseline";
+export type { CenterBaselineProps } from "./icon/center-baseline";
 export { default as BellIcon } from "./icon/s2wf-icons/BellIcon";
 export type { BellIconProps } from "./icon/s2wf-icons/BellIcon";
 export { default as CloseIcon } from "./icon/s2wf-icons/CloseIcon";

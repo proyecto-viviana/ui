@@ -46,6 +46,12 @@
       "import": "./dist/Button.js",
       "default": "./dist/Button.js"
     },
+    "./CenterBaseline": {
+      "types": "./dist/CenterBaseline.d.ts",
+      "solid": "./dist/CenterBaseline.jsx",
+      "import": "./dist/CenterBaseline.js",
+      "default": "./dist/CenterBaseline.js"
+    },
     "./ContrastIcon": {
       "types": "./dist/ContrastIcon.d.ts",
       "solid": "./dist/ContrastIcon.jsx",
