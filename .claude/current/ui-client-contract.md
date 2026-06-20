@@ -173,9 +173,17 @@ bloat. So "parity" here means **prefer deep subpaths**, not "rely on the barrel.
 
 ---
 
-## UC-02 ⛔ — `./style` Viviana-owned tokens + reconcile the built-CSS inventory
+## UC-02 ◑ — `./style` Viviana-owned tokens + reconcile the built-CSS inventory
 
 *Shares the `./style*` export surface with UC-01 — same work-stream.*
+
+> **Split state (2026-06-20).** This ticket has two independent halves:
+> **Part A — inventory reconciliation (✔ done)** and **Part B — the Viviana-owned
+> macro token map (⛔ deferred, needs a product decision).** Part A is shipped;
+> Part B is blocked on a design call (see *Part B status* below) — it is the one
+> place the port deliberately diverges from Spectrum, and there is **nothing
+> existing to mirror** (apps/web uses arbitrary `[var(--color-*)]`, not a macro
+> token override), so it cannot be resolved by the usual "copy upstream" rule.
 
 ### Problem
 `packages/viviana-ui/src/style.ts` bare-re-exports `solid-spectrum/style`, so app
@@ -199,16 +207,45 @@ must match what the build emits.
 - Make `theme.css` and generated macro CSS agree on `data-color-scheme`.
 
 ### Acceptance
-- `./style` no longer bare-re-exports `solid-spectrum/style`.
+- `./style` no longer bare-re-exports `solid-spectrum/style`. *(Part B — pending.)*
 - Macro smoke proves `style({ backgroundColor: "accent" })` / `style({ color:
   "accent" })` compile to Viviana-owned values/variables; existing
-  `[var(--color-*)]` colors keep working.
+  `[var(--color-*)]` colors keep working. *(Part B — pending.)*
 - The set of built stylesheets equals the set of exported-or-intentionally-internal
-  stylesheets (no orphans).
+  stylesheets (no orphans). *(Part A — ✔ done.)*
+
+### Part A resolution — inventory reconciliation (✔ 2026-06-20)
+- **Dropped the `style.css` orphan:** `vp pack` emits a per-entry CSS sidecar
+  `dist/style.css` (50 KB) for the `style` entry whose atomic rules are already
+  inlined into `styles.css`; nothing imports it (solid-spectrum ships the same
+  unexported 572 KB sidecar). `scripts/inline-macro-css.mjs` now `rm`s it, so the
+  built CSS set is `{components, font-faces, styles, theme, viviana-tokens}`.
+- **Classified `viviana-tokens.css` as intentionally internal:** it ships in
+  `dist` only so `theme.css`'s relative `@import "./viviana-tokens.css"` resolves;
+  it is **not** a public subpath (documented in the README). So: 4 exported sheets
+  + 1 intentionally-internal = the 5 built sheets, **zero orphans**.
+- Guarded by the smoke (asserts `dist/style.css` is absent from the install).
+
+### Part B status — Viviana-owned macro token map (⛔ deferred — design decision)
+Not a "copy upstream" task: the S2 `style()` macro bakes in its own color
+vocabulary (`accent`/`neutral`/`negative`/`positive`/`notice`/`gray`), while the
+Viviana palette (`viviana-tokens.css`) uses a *different* vocabulary
+(`accent`/`primary`/`danger`/`success`/`warning`/`text`/`surface`/…). Delivering
+this needs **two** decisions/efforts with real ambiguity and no existing override
+to mirror:
+1. **The cross-vocabulary mapping** — e.g. does S2 `accent` bind to Viviana
+   `--color-accent` or `--color-primary`? `negative→danger`, `positive→success`,
+   `notice→warning` are likely, but `neutral`/`gray` ramp and the bg/text/border
+   semantics are genuine product calls.
+2. **The implementation** — overriding the macro's baked-in color resolver (forking
+   or parameterizing the S2 `style()` color map in solidaria/solid-spectrum), a
+   non-trivial change to a published macro that changes token semantics for every
+   consuming app (hard to reverse).
+**→ Surfaced to the user as a decision before any token values are invented.**
 
 ---
 
-## UC-03 ⛔ — CSS + Provider contract, incl. the `default` export-condition hazard
+## UC-03 ✔ — CSS + Provider contract, incl. the `default` export-condition hazard
 
 ### Problem
 `Provider` sets context/attributes/classes but **loads no CSS** (verified: zero
@@ -239,6 +276,25 @@ A consumer/tool resolving via `default` (some SSR/CJS paths) silently gets an
   `components.css`, `theme.css`, `font-faces.css` and assert both `import` and
   `default` resolve to the **complete** sheet.
 - `Provider` docs/comments no longer imply it supplies CSS.
+
+### Resolution (2026-06-20)
+- **Footgun closed:** each CSS subpath now exports a **single** string target
+  (`"./dist/X.css"`) instead of `{ import: dist, default: src }`. There is no
+  longer any condition that resolves to the incomplete `src/*.css` build source —
+  every resolution path (import/default/style) yields the complete built sheet.
+- **README rewritten** (`packages/viviana-ui/README.md`): documents the explicit
+  CSS import contract (`theme.css` + `components.css`), the per-file roles table
+  (theme/components/styles/font-faces), that `viviana-tokens.css` is intentionally
+  internal, and that `Provider` is runtime context only — it injects **no** CSS.
+  (Provider confirmed to import zero `.css`.)
+- **Smoke extended** (UC-03 block in `consume-pack-smoke.mjs`): against the real
+  tarball install it asserts no export target points into `src/`, the dropped
+  `style.css` sidecar is absent, and the shipped `styles.css` is the *complete*
+  sheet (carries the inlined viviana macro CSS **and** the solid-spectrum
+  `@import`). Note: with a single target, `import` and `default` are the same
+  file by construction, which is the strongest form of "both resolve complete."
+- Changeset: `.changeset/ui-css-export-contract.md` (`@proyecto-viviana/ui`
+  patch — shared with UC-02's inventory reconciliation below).
 
 ---
 
@@ -330,8 +386,8 @@ cannot run here.
 | --- | --- | --- | --- |
 | **UC-00** ✔ | Release-matrix promotion + out-of-workspace install smoke | — | **The spine — done 2026-06-20.** Promotion recorded; `consume-pack-smoke` green (DOM+SSR). Unblocks verifiable acceptance for all others. |
 | **UC-01** ✔ | Deep subpath export parity + `./style/runtime` | UC-00 (for tarball smoke) | **Done 2026-06-20.** Full parity (0 `solid-spectrum` subpaths missing); smoke asserts 185/185 export files + 44/44 JS subpaths resolve. Shared `./style*` surface still feeds **UC-02**; coupled to **UC-05**. |
-| **UC-02** | `./style` Viviana tokens + CSS-inventory reconcile | UC-00 | Pair with **UC-01**. |
-| **UC-03** | CSS + Provider contract + `default`-condition fix | UC-00 | Genuinely independent. |
+| **UC-02** ◑ | `./style` Viviana tokens + CSS-inventory reconcile | UC-00 | **Part A (CSS inventory) done 2026-06-20**; **Part B (token map) deferred — design decision, nothing to mirror.** |
+| **UC-03** ✔ | CSS + Provider contract + `default`-condition fix | UC-00 | **Done 2026-06-20.** `default→src` footgun closed (single dist target); README contract; smoke guards. |
 | **UC-04** | Vite macro preset + in-repo SSR/DOM fixture | UC-00 | Genuinely independent. |
 | **UC-05** | Lower-package subpath exports (kill barrel bloat) | UC-00 | Design with **UC-01**. |
 | **UC-06** | `viviana-social` app migration | UC-00…UC-05 | Downstream, other repo. |

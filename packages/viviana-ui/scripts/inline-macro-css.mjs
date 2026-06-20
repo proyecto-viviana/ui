@@ -33,4 +33,13 @@ await writeFile(stylesPath, `${styles.trimEnd()}\n${banner}${macro}`, "utf8");
 // The macro CSS now lives inside styles.css; drop the redundant standalone file.
 await rm(macroPath, { force: true });
 
-console.log("inline-macro-css: appended viviana-components.css into dist/styles.css");
+// vp pack also emits a per-entry CSS sidecar for the `style` entry
+// (`dist/style.css`) holding the bundled product components' atomic rules — the
+// same rules just inlined into styles.css. Nothing imports it (it isn't in the
+// export map; solid-spectrum ships the identical unexported sidecar), so it's
+// redundant cruft. Drop it so the built CSS inventory matches what's exported.
+await rm(join(dist, "style.css"), { force: true });
+
+console.log(
+  "inline-macro-css: appended viviana-components.css into dist/styles.css; dropped style.css sidecar",
+);

@@ -311,7 +311,57 @@ if (probeResult.ok !== jsSubpaths.length) {
   process.exit(1);
 }
 
+// --- UC-03: CSS contract — no export resolves to an incomplete src sheet -------
+// The footgun was `{ import: ./dist/X.css, default: ./src/X.css }`: a consumer
+// resolving via `default` got the build *source* (e.g. src/styles.css is only the
+// unresolved `@import`, missing the inlined macro CSS). Assert no export target
+// anywhere points into src/, that every CSS subpath resolves to a single dist
+// target, and that the shipped styles.css is the *complete* sheet (the inlined
+// macro CSS + the solid-spectrum @import), not the partial source.
+process.stdout.write(`\n=== CSS + export-source contract ===\n`);
+const cssProblems = [];
+
+const srcTargets = [];
+const walk = (subpath, target) => {
+  if (typeof target === "string") {
+    if (target.includes("/src/")) srcTargets.push(`${subpath} -> ${target}`);
+  } else if (target && typeof target === "object") {
+    for (const [, v] of Object.entries(target)) walk(subpath, v);
+  }
+};
+for (const [subpath, target] of Object.entries(installedPkg.exports)) walk(subpath, target);
+if (srcTargets.length > 0) {
+  cssProblems.push(
+    `export map points into src/ (incomplete build sources):\n    ${srcTargets.join("\n    ")}`,
+  );
+}
+
+// The dropped sidecar (UC-02): style.css must not ship.
+if (existsSync(join(installedDir, "dist", "style.css"))) {
+  cssProblems.push(
+    "dist/style.css sidecar is still shipped (should be dropped as redundant cruft)",
+  );
+}
+
+// styles.css must be the complete dist sheet, not the partial src.
+const stylesCss = readFileSync(join(installedDir, "dist", "styles.css"), "utf8");
+if (!/viviana custom components/.test(stylesCss)) {
+  cssProblems.push("dist/styles.css is missing the inlined viviana macro CSS (partial sheet)");
+}
+if (!/@import\s+["']@proyecto-viviana\/solid-spectrum\/styles\.css["']/.test(stylesCss)) {
+  cssProblems.push("dist/styles.css is missing the solid-spectrum styles.css @import");
+}
+
+if (cssProblems.length > 0) {
+  process.stderr.write(`\nSMOKE FAILED — CSS contract:\n  - ${cssProblems.join("\n  - ")}\n`);
+  process.exit(1);
+}
+process.stdout.write(
+  `no src/ targets; style.css sidecar dropped; styles.css is the complete inlined sheet\n`,
+);
+
 process.stdout.write(
   `\n✓ Smoke passed: @proyecto-viviana/ui installed from tarballs out-of-workspace, built DOM + SSR, ` +
-    `rendered a styled <button>; all ${fileRefCount} export-map files exist and all ${jsSubpaths.length} JS subpaths resolve.\n`,
+    `rendered a styled <button>; all ${fileRefCount} export-map files exist, all ${jsSubpaths.length} JS subpaths resolve, ` +
+    `and the CSS export contract holds (complete dist sheets, no src/ leak).\n`,
 );
