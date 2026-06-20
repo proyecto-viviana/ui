@@ -263,9 +263,15 @@ The minors have all landed or dispositioned: **T-39** overlay `getTargetRect` an
 **T-53** `escapeKeyBehavior` ported; **T-37** column-reverse delegate ➖ N/A (no
 `ListKeyboardDelegate` class / no reversed-layout consumer); **T-36**
 `UNSTABLE_focusOnEntry` ➖ N/A (experimental private API, no `createSelectableCollection`;
-its deps-change half folds into the deferred Bucket D autocomplete bridge). The 🔍 set
-needs a source-vs-our-code reconcile before it
-resolves to ✔/✅/➖; **T-45** (CenterBaseline) is ✅ now surfaced as a public export, and **T-49**/**T-50** resolved ➖ N/A (reactive collections / Solid no-rerender). **Sequencing:**
+its deps-change half folds into the deferred Bucket D autocomplete bridge); and **T-54**
+PageUp/PageDown is now ◑ — `createMenu`'s Page keys gated on a focused key (changeset
+`menu-page-key-focus-gate.md`), with `createListBox`/`createGridList` page-nav deferred
+structural (needs the per-item layout-delegate geometry the headless hook can't measure,
+same family as T-37 Part a). The remaining 🔍 minors — **T-52** (`select()` multiple-mode
+fidelity, bundled with T-51), **T-55** (modal-Popover nested-overlay focus containment),
+**T-56** (pointer-path `onAction`, sequenced with the T-34/T-51 press-path cluster) —
+each need a source-vs-our-code reconcile before they
+resolve to ✔/✅/➖; **T-45** (CenterBaseline) is ✅ now surfaced as a public export, and **T-49**/**T-50** resolved ➖ N/A (reactive collections / Solid no-rerender). **Sequencing:**
 **T-34** and **T-51** are the two high-risk cross-hook epics and they share one
 prerequisite — migrating the gridlist/tree/table item hooks from raw-pointer to a
 press-based activation path — so scope and validate them together, on their own,
