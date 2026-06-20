@@ -925,6 +925,71 @@ describe("createMenu - page navigation", () => {
       dispose();
     });
   });
+
+  it("prevents default on PageDown that moves focus", () => {
+    createRoot((dispose) => {
+      const items = Array.from({ length: 15 }, (_, i) => ({
+        key: `item${i + 1}`,
+        label: `Item ${i + 1}`,
+      }));
+
+      const state = createMenuState({ items, getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      state.setFocusedKey("item1");
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "PageDown", preventDefault } as unknown as KeyboardEvent);
+
+      expect(state.focusedKey()).not.toBe("item1");
+      expect(preventDefault).toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("leaves PageDown alone when nothing is focused", () => {
+    createRoot((dispose) => {
+      const items = Array.from({ length: 15 }, (_, i) => ({
+        key: `item${i + 1}`,
+        label: `Item ${i + 1}`,
+      }));
+
+      const state = createMenuState({ items, getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      // Mirror useSelectableCollection: with no focused key the Page key is left
+      // alone (no focus move, no preventDefault) so it can scroll an enclosing region.
+      expect(state.focusedKey()).toBeNull();
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "PageDown", preventDefault } as unknown as KeyboardEvent);
+
+      expect(state.focusedKey()).toBeNull();
+      expect(preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("leaves PageUp alone when nothing is focused", () => {
+    createRoot((dispose) => {
+      const items = Array.from({ length: 15 }, (_, i) => ({
+        key: `item${i + 1}`,
+        label: `Item ${i + 1}`,
+      }));
+
+      const state = createMenuState({ items, getKey: (item) => item.key });
+      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+
+      expect(state.focusedKey()).toBeNull();
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      const preventDefault = vi.fn();
+      onKeyDown({ key: "PageUp", preventDefault } as unknown as KeyboardEvent);
+
+      expect(state.focusedKey()).toBeNull();
+      expect(preventDefault).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
 });
 
 describe("createMenu - accessibility warnings", () => {

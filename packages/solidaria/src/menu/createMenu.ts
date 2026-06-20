@@ -292,8 +292,14 @@ export function createMenu<T>(
         break;
       }
       case "PageDown": {
-        e.preventDefault();
+        // Mirror useSelectableCollection (PageDown, 324-332): only consume the
+        // key when an item is focused. A non-empty collection always yields a
+        // page target via getKeyPageBelow, so a focused key means focus moves
+        // and the event is swallowed; with nothing focused, leave it alone to
+        // bubble (e.g. to scroll an enclosing region).
         const currentKey = state.focusedKey();
+        if (currentKey == null) break;
+        e.preventDefault();
         const el = ref?.();
 
         if (el) {
@@ -358,8 +364,14 @@ export function createMenu<T>(
         break;
       }
       case "PageUp": {
-        e.preventDefault();
+        // Mirror useSelectableCollection (PageUp, 333-341): only consume the key
+        // when an item is focused. A non-empty collection always yields a page
+        // target via getKeyPageAbove, so a focused key means focus moves and the
+        // event is swallowed; with nothing focused, leave it alone to bubble
+        // (e.g. to scroll an enclosing region).
         const currentKey = state.focusedKey();
+        if (currentKey == null) break;
+        e.preventDefault();
         const el = ref?.();
 
         if (el) {
