@@ -33,7 +33,8 @@ truth for terms with reach.
 12. `ui-client-contract.md`
 13. `release-policy.md`
 14. `tech-debt.md`
-15. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
+15. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
+16. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
 
 ## Files
 
@@ -48,6 +49,7 @@ truth for terms with reach.
 | `tooling.md`        | The `vp` command layer, static gates, hooks, MCP servers, package-build migration.                                              |
 | `upstream-sync.md`  | How the vendored React Spectrum oracle is pinned, how new Adobe releases are absorbed, and the `guard:upstream-test-parity` contract-vocabulary diff. |
 | `upstream-release-audit.md` | Backlog of atomic tickets distilled from Adobe's release notes (RAC 1.14→1.18 / S2 1.0→1.4): which shipped changes we have, owe, or already ported. |
+| `press-path-epic.md` | Scope for the cross-hook item-hook press-path migration (T-34/T-51/T-52/T-56): the upstream `useSelectableItem` contract, our raw-pointer as-is, the missing `createSelectableItem`, phasing, and risks. |
 | `ui-client-contract.md` | `UC-NN` backlog making `@proyecto-viviana/ui` installable/usable by external client apps (`viviana-social`): release-matrix promotion, export/CSS/macro contract, barrel-bloat fix. Priority track, runs before the parity loop resumes. |
 | `release-policy.md` | Releasable packages, Changesets, CI gates, npm publishing.                                                                      |
 | `tech-debt.md`      | Known debt and temporary bridges, each with an exit.                                                                            |
