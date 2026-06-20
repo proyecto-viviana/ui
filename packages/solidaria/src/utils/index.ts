@@ -21,6 +21,8 @@ export {
   nodeContains,
   getEventTarget,
   isFocusable,
+  isTabbable,
+  isElementVisible,
   isValidKeyboardEvent,
   isValidInputKey,
   isHTMLAnchorLink,

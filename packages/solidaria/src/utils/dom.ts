@@ -63,38 +63,153 @@ export function getEventTarget<T extends EventTarget>(event: Event): T | null {
   return event.target as T | null;
 }
 
-/**
- * Checks if an element is a valid focusable element.
- */
-export function isFocusable(element: Element): boolean {
-  // Check if element is disabled
-  if ((element as HTMLInputElement).disabled) {
+// Ports @react-aria/utils `isElementVisible`/`isFocusable`/`isTabbable` (v3.34.1,
+// the version paired with our pinned RAC 1.19.0) so focusability matches upstream:
+// a candidate must match the focusable selector AND not be inside an `inert`
+// subtree AND be visible (unless `skipVisibilityCheck`). The previous `isFocusable`
+// was a simplified tagName/tabindex check with no visibility or `inert` filtering.
+// Owner-window lookups go through `getOwnerWindow`, which falls back to the global
+// window, so these stay robust on detached documents (`defaultView === null`).
+
+const supportsCheckVisibility =
+  typeof Element !== "undefined" && "checkVisibility" in Element.prototype;
+
+// Solid clones templates with the document that is global at creation time, so a
+// node portaled into another document (e.g. an iframe) keeps its original realm's
+// prototype even though `getOwnerWindow` now resolves to the other document's
+// window. Upstream React creates portal nodes with the container's `ownerDocument`,
+// so its single `instanceof getOwnerWindow(element)` check suffices; we also accept
+// the global realm's constructors so cross-document focus scopes still recognize
+// real elements. In the common same-realm case this is identical to upstream.
+function isHTMLOrSVGElement(element: Element): element is HTMLElement | SVGElement {
+  const windowObject = getOwnerWindow(element);
+  return (
+    element instanceof windowObject.HTMLElement ||
+    element instanceof windowObject.SVGElement ||
+    (typeof HTMLElement !== "undefined" && element instanceof HTMLElement) ||
+    (typeof SVGElement !== "undefined" && element instanceof SVGElement)
+  );
+}
+
+function isStyleVisible(element: Element): boolean {
+  if (!isHTMLOrSVGElement(element)) {
     return false;
   }
 
-  // Check native focusable elements
-  const tagName = element.tagName.toLowerCase();
-  if (["input", "select", "textarea", "button", "a", "area"].includes(tagName)) {
-    // For anchor elements, they must have href to be focusable
-    if (tagName === "a" || tagName === "area") {
-      return element.hasAttribute("href");
+  const { display, visibility } = element.style;
+
+  let isVisible = display !== "none" && visibility !== "hidden" && visibility !== "collapse";
+
+  if (isVisible) {
+    const { getComputedStyle } = getOwnerWindow(element);
+    const { display: computedDisplay, visibility: computedVisibility } = getComputedStyle(element);
+
+    isVisible =
+      computedDisplay !== "none" &&
+      computedVisibility !== "hidden" &&
+      computedVisibility !== "collapse";
+  }
+
+  return isVisible;
+}
+
+function isAttributeVisible(element: Element, childElement?: Element): boolean {
+  return (
+    !element.hasAttribute("hidden") &&
+    // Ignore HiddenSelect when tree walking.
+    !element.hasAttribute("data-react-aria-prevent-focus") &&
+    (element.nodeName === "DETAILS" && childElement && childElement.nodeName !== "SUMMARY"
+      ? element.hasAttribute("open")
+      : true)
+  );
+}
+
+/**
+ * Whether an element is visible, and so eligible for focus. Adapted from
+ * @react-aria/utils, which adapts testing-library/jest-dom and
+ * vue-test-utils-next (MIT): uses `checkVisibility` when supported, otherwise
+ * walks computed style and visibility-affecting attributes up the ancestor chain.
+ */
+export function isElementVisible(element: Element, childElement?: Element): boolean {
+  if (supportsCheckVisibility) {
+    return (
+      element.checkVisibility({ visibilityProperty: true }) &&
+      !element.closest("[data-react-aria-prevent-focus]")
+    );
+  }
+
+  return (
+    element.nodeName !== "#comment" &&
+    isStyleVisible(element) &&
+    isAttributeVisible(element, childElement) &&
+    (!element.parentElement || isElementVisible(element.parentElement, element))
+  );
+}
+
+const focusableElements = [
+  "input:not([disabled]):not([type=hidden])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "button:not([disabled])",
+  "a[href]",
+  "area[href]",
+  "summary",
+  "iframe",
+  "object",
+  "embed",
+  "audio[controls]",
+  "video[controls]",
+  '[contenteditable]:not([contenteditable^="false"])',
+  "permission",
+];
+
+const FOCUSABLE_ELEMENT_SELECTOR =
+  focusableElements.join(":not([hidden]),") + ",[tabindex]:not([disabled]):not([hidden])";
+
+focusableElements.push('[tabindex]:not([tabindex="-1"]):not([disabled])');
+const TABBABLE_ELEMENT_SELECTOR = focusableElements.join(':not([hidden]):not([tabindex="-1"]),');
+
+/**
+ * Checks if an element is a valid focusable element: it matches the focusable
+ * selector, is not inside an `inert` subtree, and is visible. A negative tabindex
+ * is programmatically focusable (matched here) but not tabbable. `skipVisibilityCheck`
+ * lets callers (e.g. the press-path `preventFocus` ancestor walk) skip the
+ * `isElementVisible` step, which also avoids touching layout on detached documents.
+ */
+export function isFocusable(
+  element: Element,
+  options?: { skipVisibilityCheck?: boolean },
+): boolean {
+  return (
+    element.matches(FOCUSABLE_ELEMENT_SELECTOR) &&
+    !isInert(element) &&
+    (options?.skipVisibilityCheck || isElementVisible(element))
+  );
+}
+
+/**
+ * Checks if an element is tabbable (reachable via the Tab key): focusable,
+ * visible, not inert, and not `tabindex="-1"`.
+ */
+export function isTabbable(element: Element): boolean {
+  return (
+    element.matches(TABBABLE_ELEMENT_SELECTOR) && isElementVisible(element) && !isInert(element)
+  );
+}
+
+function isInert(element: Element): boolean {
+  let node: Element | null = element;
+  while (node != null) {
+    // Realm-tolerant HTMLElement check (see isHTMLOrSVGElement): Solid-portaled
+    // nodes keep their creating realm's prototype, so also accept the global one.
+    const isHTMLElement =
+      node instanceof getOwnerWindow(node).HTMLElement ||
+      (typeof HTMLElement !== "undefined" && node instanceof HTMLElement);
+    if (isHTMLElement && (node as HTMLElement).inert) {
+      return true;
     }
-    return true;
-  }
 
-  // A negative tabIndex is not tabbable, but it is still programmatically focusable.
-  // React Aria's focusable selector includes all tabindex values for this reason.
-  const tabIndex = element.getAttribute("tabindex");
-  if (tabIndex != null) {
-    return true;
-  }
-
-  // Check for contenteditable
-  if (
-    element.hasAttribute("contenteditable") &&
-    element.getAttribute("contenteditable") !== "false"
-  ) {
-    return true;
+    node = node.parentElement;
   }
 
   return false;

@@ -8,7 +8,7 @@
 import { createSignal, onMount, onCleanup, type Accessor } from "solid-js";
 import { type MaybeAccessor, access } from "../utils";
 import { useLocale } from "../i18n";
-import { getOwnerDocument, isFocusable } from "../utils";
+import { getOwnerDocument, isFocusable, isTabbable } from "../utils";
 import { focusSafely } from "../utils/focus";
 
 export type Orientation = "horizontal" | "vertical";
@@ -48,17 +48,6 @@ interface FocusManager {
   focusPrevious(opts?: FocusManagerOptions): HTMLElement | null;
   focusFirst(opts?: FocusManagerOptions): HTMLElement | null;
   focusLast(opts?: FocusManagerOptions): HTMLElement | null;
-}
-
-function isTabbable(element: Element): boolean {
-  if (!isFocusable(element)) {
-    return false;
-  }
-  const tabIndex = element.getAttribute("tabindex");
-  if (tabIndex != null) {
-    return parseInt(tabIndex, 10) >= 0;
-  }
-  return true;
 }
 
 function getFocusableElements(root: Element, tabbable = false): HTMLElement[] {

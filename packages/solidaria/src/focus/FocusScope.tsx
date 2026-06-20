@@ -15,7 +15,7 @@ import {
   onMount,
 } from "solid-js";
 import { isServer } from "solid-js/web";
-import { getOwnerDocument, isFocusable } from "../utils";
+import { getOwnerDocument, isFocusable, isTabbable } from "../utils";
 import { focusSafely } from "../utils/focus";
 
 export interface FocusScopeProps {
@@ -71,23 +71,6 @@ const FocusScopeContext = createContext<FocusScopeContextValue | null>(null);
  */
 export function useFocusManager(): FocusManager | undefined {
   return useContext(FocusScopeContext)?.focusManager;
-}
-
-/**
- * Checks if an element is tabbable (focusable via Tab key).
- */
-function isTabbable(element: Element): boolean {
-  if (!isFocusable(element)) {
-    return false;
-  }
-
-  // Check tabIndex
-  const tabIndex = element.getAttribute("tabindex");
-  if (tabIndex != null) {
-    return parseInt(tabIndex, 10) >= 0;
-  }
-
-  return true;
 }
 
 /**
