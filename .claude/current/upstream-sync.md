@@ -525,6 +525,19 @@ Tests in `createListBox.test.tsx` assert clear-path `preventDefault`+`stopPropag
 and the no-selection bubble-through. Changeset `listbox-escape-conditional.md` (patch
 solidaria).
 
+**Resolved — `escapeKeyBehavior` opt-out (T-53)** (`solidaria`, 2026-06-20). The
+conditional Escape above was still hard-coded to the default `'clearSelection'`
+path. `createListBox` now takes the `escapeKeyBehavior: 'clearSelection' | 'none'`
+prop (default `'clearSelection'`), gating the clear branch on
+`(escapeKeyBehavior ?? 'clearSelection') === 'clearSelection'` so `'none'` leaves
+Escape entirely untouched (no clear, no `preventDefault`/`stopPropagation`). The
+headless `ListBox` component forwards it to the hook via its props rest-spread
+(not in the `local`/`stateProps` `splitProps` groups, so it lands in `ariaProps`),
+and `filterDOMProps` keeps it off the DOM; upstream S2 doesn't surface it at the
+styled layer, so neither does `solid-spectrum`. Two discriminating tests in
+`createListBox.test.tsx` ('none' doesn't clear/swallow; explicit 'clearSelection'
+does). Changeset `listbox-escape-key-behavior.md` (patch solidaria).
+
 ## Source-level behavioral sweep — navigation-key consumption (ListBox + Menu)
 
 Aspect covering arrow/Home/End in selectable collections. Upstream oracle:
@@ -581,8 +594,10 @@ No second checklist lives here anymore. Old item → ticket map:
   "Resolved — 1.19 keydown refactor (T-35)" note in the typeahead section above. _Only_ the
   true capture-phase binding (ref-based `addEventListener`) remains deferred — the live
   bubble path covers the observable behavior.
-- **T-53** — `escapeKeyBehavior: 'clearSelection' | 'none'` opt-out. Evidence: the
-  "Escape key (ListBox)" section above.
+- **T-53** — **✔ ported** (2026-06-20): `escapeKeyBehavior: 'clearSelection' | 'none'`
+  opt-out on `createListBox` (default `'clearSelection'`); `'none'` leaves Escape
+  untouched. Evidence: the "Resolved — `escapeKeyBehavior` opt-out (T-53)" note in
+  the "Escape key (ListBox)" section above. Changeset `listbox-escape-key-behavior.md`.
 - **T-54** — PageUp/PageDown navigation gating (`createListBox` measures no paging
   geometry; `createMenu` `preventDefault`s its `clientHeight` paging unconditionally).
 

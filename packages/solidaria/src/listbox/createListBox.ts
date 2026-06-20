@@ -63,6 +63,14 @@ export interface AriaListBoxProps {
    * @default "ltr"
    */
   direction?: "ltr" | "rtl";
+  /**
+   * Whether pressing the Escape key should clear selection in the listbox or not.
+   * Most experiences should not modify this option as it eliminates a keyboard
+   * user's ability to easily clear selection. Only use if the escape key is being
+   * handled externally or should not trigger selection clearing contextually.
+   * @default "clearSelection"
+   */
+  escapeKeyBehavior?: "clearSelection" | "none";
 }
 
 export interface ListBoxAria {
@@ -343,13 +351,17 @@ export function createListBox<T>(
         break;
       }
       case "Escape": {
-        // Mirror useSelectableCollection (Escape, 343-353): only clear the
-        // selection — and swallow the event — when there is actually a selection
-        // to clear and empty selection is allowed. Otherwise leave Escape alone
-        // so an enclosing overlay (popover, dialog, combobox) can handle it. The
-        // upstream escapeKeyBehavior 'none' opt-out is not wired; this is the
-        // default 'clearSelection' path.
-        if (!state.disallowEmptySelection() && !state.isEmpty()) {
+        // Mirror useSelectableCollection (Escape, 352-362): only clear the
+        // selection — and swallow the event — when escapeKeyBehavior is
+        // 'clearSelection', there is actually a selection to clear, and empty
+        // selection is allowed. With escapeKeyBehavior 'none', or otherwise,
+        // leave Escape alone so an enclosing overlay (popover, dialog, combobox)
+        // can handle it.
+        if (
+          (p.escapeKeyBehavior ?? "clearSelection") === "clearSelection" &&
+          !state.disallowEmptySelection() &&
+          !state.isEmpty()
+        ) {
           e.stopPropagation();
           e.preventDefault();
           state.clearSelection();

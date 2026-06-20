@@ -422,6 +422,46 @@ describe("createListBox", () => {
       });
     });
 
+    it("does not clear selection on Escape when escapeKeyBehavior is 'none'", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({
+          selectionMode: "multiple",
+          defaultSelectedKeys: ["a", "b"],
+        });
+        const { listBoxProps } = createListBox({ escapeKeyBehavior: "none" }, state);
+
+        expect(state.selectedKeys().size).toBe(2);
+
+        const event = createMockKeyboardEvent("Escape");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        // With 'none', Escape neither clears the selection nor swallows the
+        // event — an enclosing overlay can still handle it.
+        expect(state.selectedKeys().size).toBe(2);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
+        dispose();
+      });
+    });
+
+    it("clears on Escape when escapeKeyBehavior is explicitly 'clearSelection'", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({
+          selectionMode: "multiple",
+          defaultSelectedKeys: ["a", "b"],
+        });
+        const { listBoxProps } = createListBox({ escapeKeyBehavior: "clearSelection" }, state);
+
+        const event = createMockKeyboardEvent("Escape");
+        (listBoxProps.onKeyDown as any)?.(event);
+
+        expect(state.selectedKeys().size).toBe(0);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(event.stopPropagation).toHaveBeenCalled();
+        dispose();
+      });
+    });
+
     it("handles Ctrl+A to select all in multiple selection mode", () => {
       createRoot((dispose) => {
         const state = createBasicListState({ selectionMode: "multiple" });
