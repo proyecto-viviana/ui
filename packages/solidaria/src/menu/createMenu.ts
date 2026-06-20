@@ -8,6 +8,7 @@ import { createEffect, onCleanup, type JSX, type Accessor } from "solid-js";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
 import { createTypeSelect } from "../selection/createTypeSelect";
+import { selectItem } from "../selection/selectItem";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
@@ -276,7 +277,22 @@ export function createMenu<T>(
         // blocked independently — state.select self-guards on the raw disabled
         // check (SelectionManager.canSelectItem).
         if (focusedKey != null && !isDisabled(focusedKey)) {
-          state.select(focusedKey, e, collection);
+          // Route through the aria-layer onSelect so the platform-aware modifier
+          // resolution (isCtrlKeyPressed / non-contiguous modifier) and the
+          // shift-extend path are applied. Keyboard activation carries
+          // pointerType "keyboard".
+          selectItem(
+            state,
+            focusedKey,
+            {
+              pointerType: "keyboard",
+              shiftKey: e.shiftKey,
+              ctrlKey: e.ctrlKey,
+              metaKey: e.metaKey,
+              altKey: e.altKey,
+            },
+            collection,
+          );
           // Pass the activated item's value as the second arg, mirroring
           // useMenuItem performAction: onAction(key, item?.value).
           p.onAction?.(focusedKey, collection.getItem(focusedKey)?.value as T);

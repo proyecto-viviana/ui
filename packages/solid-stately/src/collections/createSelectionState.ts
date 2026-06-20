@@ -74,11 +74,24 @@ export interface SelectionState {
   /** Extend selection to a key (for shift-click). */
   extendSelection(toKey: Key, collection: Collection): void;
   /** Select a key based on interaction. */
-  select(
-    key: Key,
-    e?: { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean },
-    collection?: Collection,
-  ): void;
+  select(key: Key, e?: SelectionPressEvent): void;
+}
+
+/**
+ * The press/pointer interaction consulted by {@link SelectionState.select}.
+ * Mirrors react-stately's `SelectionManager.select(e)`: only `pointerType` is
+ * read here (touch / virtual force toggle, since those devices have no modifier
+ * keys). Modifier keys (ctrl / meta / shift) are resolved one layer up in the
+ * aria-layer `onSelect` (solidaria `selectItem`), matching upstream's split
+ * between react-stately and react-aria. The modifier fields are accepted so a
+ * full press/pointer event is assignable, but they are not read here.
+ */
+export interface SelectionPressEvent {
+  pointerType?: "mouse" | "pen" | "touch" | "keyboard" | "virtual";
+  shiftKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  altKey?: boolean;
 }
 
 /**
@@ -268,36 +281,30 @@ export function createSelectionState(
     updateSelection(new Set(rangeKeys));
   };
 
-  const select = (
-    key: Key,
-    e?: { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean },
-    collection?: Collection,
-  ) => {
-    if (isDisabled(key)) return;
+  const select = (key: Key, e?: SelectionPressEvent) => {
+    // Mirrors react-stately's SelectionManager.select: only pointerType +
+    // selectionBehavior are consulted here. Modifier-key handling (ctrl / meta
+    // ⇒ toggle, shift ⇒ extend) lives one layer up in solidaria's aria-layer
+    // `selectItem`, which is where the platform-aware isCtrlKeyPressed is
+    // available. The primitives self-guard disabled keys, so no guard is
+    // needed here (matching upstream).
     if (selectionMode() === "none") return;
 
-    const mode = selectionMode();
-    const behavior = selectionBehavior();
-
-    if (mode === "single") {
-      // Mirrors useSelectableItem's onSelect: single mode ignores
-      // selectionBehavior. Re-selecting the current item deselects it when
-      // empty selection is allowed; otherwise it stays selected (replace).
+    if (selectionMode() === "single") {
+      // Single mode ignores selectionBehavior. Re-selecting the current item
+      // deselects it when empty selection is allowed; otherwise it stays
+      // selected (replace).
       if (isSelected(key) && !disallowEmptySelection()) {
         toggleSelection(key);
       } else {
         replaceSelection(key);
       }
-      return;
-    }
-
-    // Multiple selection
-    if (e?.shiftKey && collection) {
-      extendSelection(key, collection);
-      return;
-    }
-
-    if (e?.ctrlKey || e?.metaKey || behavior === "toggle") {
+    } else if (
+      selectionBehavior() === "toggle" ||
+      (e != null && (e.pointerType === "touch" || e.pointerType === "virtual"))
+    ) {
+      // touch / virtual (VoiceOver) have no modifier keys, so multi-select is
+      // only reachable by toggling.
       toggleSelection(key);
     } else {
       replaceSelection(key);

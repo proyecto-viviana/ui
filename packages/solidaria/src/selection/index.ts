@@ -8,3 +8,5 @@ export {
   createScrollIntoViewOnFocus,
   type ScrollIntoViewOnFocusOptions,
 } from "./createScrollIntoViewOnFocus";
+export { selectItem } from "./selectItem";
+export { isNonContiguousSelectionModifier } from "./utils";

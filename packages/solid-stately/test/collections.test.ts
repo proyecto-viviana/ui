@@ -266,7 +266,7 @@ describe("createSelectionState", () => {
     });
   });
 
-  it("select() in multiple mode replaces by default and toggles with a modifier", () => {
+  it("select() in multiple mode replaces by default and toggles for touch/virtual", () => {
     createRoot((dispose) => {
       const state = createSelectionState({
         selectionMode: "multiple",
@@ -279,8 +279,12 @@ describe("createSelectionState", () => {
       expect(state.selectedKeys().has("a")).toBe(false);
       expect(state.selectedKeys().has("b")).toBe(true);
 
-      // Ctrl/meta adds without clearing the rest.
-      state.select("c", { ctrlKey: true });
+      // touch / virtual have no modifier keys, so select() toggles (adds without
+      // clearing the rest) regardless of replace behavior. Mirrors react-stately's
+      // SelectionManager.select — modifier-key handling (ctrl/meta ⇒ toggle,
+      // shift ⇒ extend) lives in the aria-layer onSelect (solidaria selectItem),
+      // not here.
+      state.select("c", { pointerType: "touch" });
       expect(state.selectedKeys().has("b")).toBe(true);
       expect(state.selectedKeys().has("c")).toBe(true);
       dispose();

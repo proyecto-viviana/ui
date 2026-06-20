@@ -53,6 +53,7 @@ export {
   createSelectionState,
   type SelectionStateProps,
   type SelectionState,
+  type SelectionPressEvent,
   createListState,
   createSingleSelectListState,
   type ListStateProps,

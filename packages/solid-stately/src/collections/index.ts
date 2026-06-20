@@ -20,6 +20,7 @@ export {
   createSelectionState,
   type SelectionStateProps,
   type SelectionState,
+  type SelectionPressEvent,
 } from "./createSelectionState";
 
 export {

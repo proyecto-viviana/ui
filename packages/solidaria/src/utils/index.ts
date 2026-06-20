@@ -56,6 +56,7 @@ export {
 } from "./events";
 
 export { disableTextSelection, restoreTextSelection } from "./textSelection";
+export { isCtrlKeyPressed } from "./keyboard";
 
 export { focusWithoutScrolling, focusSafely, preventFocus } from "./focus";
 

@@ -122,7 +122,11 @@ export function createMenuItem<T>(
       const key = p.key;
       const data = getData();
 
-      state.select(key, undefined, state.collection());
+      // Pointer activation of a menu item. select() consults pointerType +
+      // behavior; the modifier path isn't reachable from a menu-item press, so
+      // no event is threaded here (Phase 2 will route item presses through
+      // createSelectableItem with the press event).
+      state.select(key);
 
       // Call item-specific onAction
       p.onAction?.();
