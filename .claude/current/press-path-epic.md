@@ -86,9 +86,17 @@ and for link items opens the href via the router.
 1. **No shared `createSelectableItem`.** The central deliverable. Each row hook
    reimplements activation. There is no Solid analogue of `useSelectableItem`.
 2. **`select()` doesn't thread `pointerType`** and uses `ctrlKey || metaKey`
-   (T-52). Needs a richer event param + an `isCtrlKeyPressed` util.
-3. **No `isCtrlKeyPressed` / `isNonContiguousSelectionModifier` utils** in
-   `solidaria`/`solid-stately`.
+   (T-52). Needs a richer event param + platform-aware ctrl resolution.
+3. **No `isCtrlKeyPressed` / `isNonContiguousSelectionModifier` utils**, and a
+   **layer-boundary wrinkle**: upstream keeps `onSelect` (the toggle-vs-replace
+   decision) in the **aria** layer (`useSelectableItem`), where `isCtrlKeyPressed`
+   = `isMac() ? metaKey : ctrlKey` is available. We **consolidated `onSelect`
+   into `solid-stately`'s `select()`** (used by Menu / ListBox / ActionGroup),
+   but `solid-stately` depends only on `@internationalized/date` and sits *below*
+   solidaria, so it **cannot import** solidaria's `isMac`/`isAppleDevice`. T-52's
+   platform-aware fix therefore needs a layering decision (see "Open decision"
+   below) before it can land cleanly; `pointerType` threading alone is
+   layer-safe.
 4. **Manager link surface absent.** `manager.canSelectItem`, `manager.isLink`,
    `manager.getItemProps`, and the `linkBehavior` axis do **not** exist on our
    selection state — we thread `href`/`onLinkAction` through item **props**
@@ -119,11 +127,36 @@ and for link items opens the href via the router.
 None route through `select()` or `createPress`; none thread `pointerType`; none
 implement long-press → toggle.
 
+## Open decision — where the platform-aware `onSelect` logic lives
+
+T-52's platform-aware ctrl resolution (`isMac() ? metaKey : ctrlKey`) collides
+with our `onSelect` consolidation into `solid-stately`'s `select()` (gap #3).
+Three ways to resolve, in increasing faithfulness to upstream's layering:
+
+- **(A) Duplicate a tiny `isMac`/`isCtrlKeyPressed` into `solid-stately/utils`.**
+  Smallest change; keeps `select()` whole. Cost: platform detection duplicated
+  across layers (mild "don't reinvent" smell; upstream has no platform util in
+  stately because `onSelect` isn't there).
+- **(B) Keep `select()` in stately but thread a pre-resolved modifier.** The
+  aria-layer call sites (all in solidaria, where `isMac` lives) compute the
+  platform-aware "is the non-contiguous modifier pressed" flag and pass it in
+  `select()`'s event param alongside `pointerType`. No duplication; `select()`
+  stays the single decision point. Cost: every call site wraps its event.
+- **(C) Move `onSelect` to the aria layer (upstream-faithful).** Phase 1's
+  `createSelectableItem` owns the toggle-vs-replace decision; `select()` is
+  retired or thinned to the stately primitives. Most faithful; largest blast
+  radius (re-points Menu / ListBox / ActionGroup too).
+
+**Recommendation: (B)** for Phase 0 (unblocks T-52 with zero duplication and no
+restructure), then let Phase 1 reassess whether (C) is worth it once
+`createSelectableItem` exists. `pointerType` threading is needed under all three.
+
 ## Proposed phasing
 
 **Phase 0 — foundations (low-risk, independently landable).**
-- T-52: thread `pointerType` into `select()`; add `isCtrlKeyPressed` and use it.
-  Add `isNonContiguousSelectionModifier`. Unit-test the contract table
+- T-52: thread `pointerType` into `select()`'s event param (touch/virtual ⇒
+  toggle); resolve platform-aware ctrl per the Open-decision outcome; add
+  `isNonContiguousSelectionModifier`. Unit-test the contract table
   (touch/virtual ⇒ toggle; ctrl/meta platform-aware). Own changeset.
 
 **Phase 1 — build `createSelectableItem` in isolation.**
