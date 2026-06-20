@@ -1,6 +1,6 @@
 ---
 kind: scoping
-status: scoped (not started)
+status: Phase 0 landed; Phases 1–3 not started
 tickets: T-34, T-51, T-52, T-56
 oracle: react-spectrum/packages/react-aria/src/selection/useSelectableItem.ts
 ---
@@ -167,7 +167,17 @@ tell that it is the faithful structure.
 
 ## Proposed phasing
 
-**Phase 0 — restore the upstream two-layer split (T-52).**
+**Phase 0 — restore the upstream two-layer split (T-52). ✔ Landed.**
+As built (commit "Restore upstream's two-layer onSelect split for selection"):
+`solid-stately` `select(key, e?)` thinned to the `SelectionManager.select`
+shape (pointerType + behavior, new `SelectionPressEvent` type, no modifier/
+collection args); solidaria gained `selectItem` (aria-layer onSelect),
+`isCtrlKeyPressed`, `isNonContiguousSelectionModifier`; `createMenu`'s keyboard
+activation routes through `selectItem`. The stately test was re-pointed to the
+`SelectionManager.select` contract and a discriminating `selectItem` suite added
+(platform-aware ctrl/meta, shift-extend, touch/virtual toggle, single-mode
+replace). The link branch + pointer-event threading into menu-item/option
+presses are deferred to Phases 1–2. Original plan:
 - Port `isCtrlKeyPressed` (aria-layer keyboard util) and
   `isNonContiguousSelectionModifier` (aria-layer selection util) into solidaria,
   built on the existing `solidaria/src/utils/platform.ts` `isMac`.
