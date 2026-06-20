@@ -353,6 +353,11 @@ export const s2ButtonGroup = style(
   {
     display: "inline-flex",
     position: "relative",
+    // Cap the group at its container's width so an inline-flex row can actually
+    // overflow: without this the group grows to fit its buttons and the
+    // overflow→vertical switch in ButtonGroup never fires. Mirrors upstream's
+    // `maxWidth: 'full'`.
+    maxWidth: "full",
     gap: {
       size: {
         S: 8,
