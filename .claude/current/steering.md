@@ -34,6 +34,11 @@ strict React-vs-Solid tests.
 
 ## Now
 
+- **Client-readiness track (priority, runs first).** Make
+  `@proyecto-viviana/ui` installable and usable by the `viviana-social` apps:
+  the `UC-NN` backlog in `ui-client-contract.md`, starting with UC-00
+  (release-matrix promotion — decided 2026-06-20 — plus the out-of-workspace
+  install smoke). The parity loop below is paused until UC-00…UC-05 land.
 - Convert visual-state rows into current React/Solid pair-diff or
   computed-contract tests — hover, focus-visible, pressed, selected, invalid,
   disabled, open, dismiss, keyboard navigation. Do not reintroduce per-side
@@ -62,8 +67,11 @@ strict React-vs-Solid tests.
 ## Open Decisions
 
 - **Release readiness threshold.** What certification coverage gates a package
-  from "test bed" to a published, semver-promised release. `@proyecto-viviana/ui`
-  is public but absent from the release matrix; decide its status.
+  from "test bed" to a published, semver-promised release. _Resolved for
+  `@proyecto-viviana/ui` (2026-06-20): promote it into the release matrix as the
+  client-facing entry point — implementation tracked as UC-00 in
+  `ui-client-contract.md`._ The general per-package threshold question remains
+  open for the lower layers.
 - **Visual evidence policy.** Standardize on computed contracts + strict pair
   diffs over screenshots; decide when a thresholded screenshot is acceptable
   review evidence.

@@ -64,6 +64,11 @@ next task and which workstreams are live.
 
 ## Active workstreams
 
+- **Client-readiness for `@proyecto-viviana/ui`** _(priority — runs first)_ — the
+  `UC-NN` backlog in `ui-client-contract.md` making the package installable and
+  usable by the `viviana-social` apps. UC-00 (release-matrix promotion, decided
+  2026-06-20, + out-of-workspace install smoke) is the spine; the parity loop
+  (`upstream-release-audit.md` T-57+) is paused until UC-00…UC-05 land.
 - **Per-component certification** — the standing loop; collection/overlay
   families next.
 - **Support-export parity** — close the `22` missing S2 support exports; keep

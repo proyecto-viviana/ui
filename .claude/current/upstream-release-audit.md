@@ -5,6 +5,10 @@ status: current
 
 # Upstream release audit — RAC 1.14→1.19 / S2 1.0→1.5
 
+> **Loop paused (2026-06-20).** This parity backlog is on hold behind the
+> client-readiness track — the `UC-NN` tickets in `ui-client-contract.md` run
+> first. Resume here at **T-57** (focusable-utils port) once UC-00…UC-05 land.
+
 A backlog of **atomic tickets** distilled from Adobe's release notes across every
 train since we started porting (the S2 1.0.0 major) up to our current pin. Each
 ticket is a single "do we have this change, or not?" question. Working this list

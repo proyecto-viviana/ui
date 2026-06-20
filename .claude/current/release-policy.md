@@ -25,13 +25,20 @@ Update when: the release matrix, the Changesets flow, or the CI gates change.
 | `packages/solidaria`                 | releasable        | npm      | public  |
 | `packages/solidaria-components`      | releasable        | npm      | public  |
 | `packages/solid-spectrum`            | releasable        | npm      | public  |
+| `packages/viviana-ui`                | releasable        | npm      | public  |
 | `packages/solidaria-test-utils`      | private/test-only | none     | private |
 | `packages/solid-spectrum-test-utils` | private/test-only | none     | private |
 | `apps/web`                           | app-only          | none     | private |
 | `apps/comparison`                    | app-only          | none     | private |
 
-`@proyecto-viviana/ui` (dir `packages/viviana-ui`) is public but not yet in the
-release matrix — its promotion is an open decision (`steering.md`).
+`@proyecto-viviana/ui` (dir `packages/viviana-ui`) was promoted into the release
+matrix on 2026-06-20 (owner decision) — it is the client-facing entry point for the
+`viviana-social` apps. Its publish must version the **whole closure** coherently:
+`ui` depends on `solid-spectrum` + `solidaria-components` via `workspace:*`, which
+transitively pull `solidaria` + `solid-stately`, so a `ui` release that needs a new
+lower-package export must republish that package too. The implementation of the
+promotion (Changesets scope, coherent closure publish, out-of-workspace install
+smoke) is tracked as **UC-00** in `ui-client-contract.md`.
 
 ## Flow
 
