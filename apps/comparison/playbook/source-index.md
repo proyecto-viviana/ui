@@ -48,6 +48,20 @@ These are the first source of truth for parity:
 | Solid headless component port | `packages/solidaria-components/src`                      |
 | Solid styled S2 port          | `packages/solid-spectrum/src`                            |
 
+> **The installed `apps/comparison/node_modules` deps can lag the pin — verify
+> before trusting them.** They are resolved by the comparison app's own
+> dependency ranges, not by the upstream pin, so they drift behind. As of
+> 2026-06-20 the installed tree is **two trains behind**: s2 `1.3.0` / RAC
+> `1.17.0` / `@react-aria/utils` `3.33.0` vs the pin's s2 `1.5.0` / RAC `1.19.0`
+> / `@react-aria/utils` `3.34.1` (`scripts/upstream-pin.json`). The vendored
+> `./react-spectrum` monorepo **is** the pin (materialized at the pinned commit;
+> `vp run guard:upstream-pin` asserts it), so for any **pinned-parity** port read
+> the behavior there — e.g. `react-spectrum/packages/react-aria/src/...` and
+> `.../@react-aria/utils/src/...`. Two real near-misses came from porting the
+> stale installed dist instead of the pin: `isFocusable`'s `skipVisibilityCheck`
+> (added in utils 3.34.1; T-57) and `useAutocomplete`'s `autoFocusOnMount` (added
+> in autocomplete rc.8; T-58) are both absent from the installed copies.
+
 ## Adobe Docs
 
 Use these for intended public API, examples, interaction notes, release context,

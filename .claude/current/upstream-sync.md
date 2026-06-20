@@ -28,7 +28,7 @@ which makes release-to-release diffing first-class. `guard:upstream-test-parity`
 prints a **DRIFT** banner when the actual vendored versions don't match the pin —
 so "I don't think the vendored copy is the latest" is now a one-command check.
 
-Two distinct staleness checks, don't conflate them:
+Three distinct staleness axes, don't conflate them:
 
 - **tree vs. pin** (is the vendored checkout the one we pinned?) — the DRIFT
   banner above.
@@ -39,6 +39,18 @@ Two distinct staleness checks, don't conflate them:
   release surfaces as a ❌ cell on every PR instead of sitting unnoticed; run it
   by hand anytime with `vp run guard:upstream-freshness`. When it goes red, work
   the "Absorbing a new upstream release" steps below.
+- **installed comparison deps vs. pin** (does `apps/comparison/node_modules`
+  match the pin?) — **it usually doesn't.** Those deps are resolved by the
+  comparison app's own dependency ranges, not by the pin, so they lag. As of
+  2026-06-20 the installed tree is two trains behind: s2 `1.3.0` / RAC `1.17.0` /
+  `@react-aria/utils` `3.33.0` vs the pin's `1.5.0` / `1.19.0` / `3.34.1`. This
+  matters because `source-index.md` lists the installed `@react-aria` /
+  `@react-spectrum/s2` paths as the first parity authority — **for a pinned-parity
+  port, read the vendored `./react-spectrum` source instead** (or diff the
+  installed version against the pin first). Two real near-misses: `isFocusable`'s
+  `skipVisibilityCheck` (T-57) and `useAutocomplete`'s `autoFocusOnMount` (T-58)
+  exist at the pin but not in the stale installed copies. Same family as the
+  "confirm flags vs source" lesson — confirm the _version_, too.
 
 ### Materialize / re-materialize the tree
 
