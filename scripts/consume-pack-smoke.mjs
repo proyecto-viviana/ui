@@ -223,6 +223,95 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
+// --- UC-01: the export map is complete and coherent against a real install -----
+// Two checks, both against the *installed* package (not the source), and neither
+// evaluates component code — resolution is the contract here, not server-side
+// evaluability. (Importing a DOM-compiled .js in bare Node would evaluate its
+// hoisted top-level template() under solid-js/web's *server* build and throw
+// "Client-only API called on the server side" — an artifact of the runtime, not
+// a broken map. The DOM + SSR builds above already prove real evaluation works.)
+//
+//   1. Every file path referenced by every export condition (types/solid/import/
+//      default, plus the CSS subpaths) exists on disk in the installed package —
+//      catches a dangling .jsx/.d.ts/.css the build forgot to emit.
+//   2. Node's own resolver (import.meta.resolve) honors every JS subpath
+//      specifier — catches an export-map entry Node rejects (ERR_PACKAGE_*).
+process.stdout.write(`\n=== Export-map completeness + resolution ===\n`);
+const installedDir = join(consumerDir, "node_modules", "@proyecto-viviana", "ui");
+const installedPkg = readJson(join(installedDir, "package.json"));
+
+// (1) Every referenced file exists on disk.
+const missingFiles = [];
+let fileRefCount = 0;
+const checkFileRef = (subpath, condition, relPath) => {
+  if (typeof relPath !== "string") return;
+  fileRefCount += 1;
+  if (!existsSync(join(installedDir, relPath))) {
+    missingFiles.push(`${subpath} [${condition}] -> ${relPath}`);
+  }
+};
+for (const [subpath, target] of Object.entries(installedPkg.exports)) {
+  if (typeof target === "string") {
+    checkFileRef(subpath, "default", target);
+  } else if (target && typeof target === "object") {
+    for (const [condition, relPath] of Object.entries(target)) {
+      checkFileRef(subpath, condition, relPath);
+    }
+  }
+}
 process.stdout.write(
-  `\n✓ UC-00 smoke passed: @proyecto-viviana/ui installed from tarballs out-of-workspace, built DOM + SSR, rendered a styled <button>.\n`,
+  `every export file present: ${fileRefCount - missingFiles.length}/${fileRefCount}\n`,
+);
+if (missingFiles.length > 0) {
+  process.stderr.write(
+    `\nSMOKE FAILED — export map references missing files:\n  - ${missingFiles.join("\n  - ")}\n`,
+  );
+  process.exit(1);
+}
+
+// (2) Node resolves every JS subpath specifier (the import condition).
+const jsSubpaths = Object.entries(installedPkg.exports)
+  .filter(
+    ([key, value]) =>
+      key !== "./package.json" &&
+      value &&
+      typeof value === "object" &&
+      typeof value.import === "string" &&
+      value.import.endsWith(".js"),
+  )
+  .map(([key]) => key.replace(/^\.\/?/, ""))
+  .map((sub) => (sub === "" ? "@proyecto-viviana/ui" : `@proyecto-viviana/ui/${sub}`));
+
+const probeSource = `import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+const specs = ${JSON.stringify(jsSubpaths)};
+const ok = []; const bad = [];
+for (const spec of specs) {
+  try {
+    const path = fileURLToPath(import.meta.resolve(spec));
+    if (existsSync(path)) ok.push(spec);
+    else bad.push(spec + ": resolved to missing file " + path);
+  } catch (e) {
+    bad.push(spec + ": " + e.message);
+  }
+}
+process.stdout.write(JSON.stringify({ ok: ok.length, bad }));`;
+const probeResult = JSON.parse(capture("node", ["--input-type=module", "-e", probeSource]));
+process.stdout.write(`Node resolves JS subpaths: ${probeResult.ok}/${jsSubpaths.length}\n`);
+if (probeResult.bad.length > 0) {
+  process.stderr.write(
+    `\nSMOKE FAILED — unresolvable subpaths:\n  - ${probeResult.bad.join("\n  - ")}\n`,
+  );
+  process.exit(1);
+}
+if (probeResult.ok !== jsSubpaths.length) {
+  process.stderr.write(
+    `\nSMOKE FAILED: only ${probeResult.ok}/${jsSubpaths.length} subpaths resolved\n`,
+  );
+  process.exit(1);
+}
+
+process.stdout.write(
+  `\n✓ Smoke passed: @proyecto-viviana/ui installed from tarballs out-of-workspace, built DOM + SSR, ` +
+    `rendered a styled <button>; all ${fileRefCount} export-map files exist and all ${jsSubpaths.length} JS subpaths resolve.\n`,
 );

@@ -16,6 +16,9 @@
   "sideEffects": [
     "*.css"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -29,11 +32,83 @@
       "import": "./dist/ActionButton.js",
       "default": "./dist/ActionButton.js"
     },
+    "./ActionMenu": {
+      "types": "./dist/ActionMenu.d.ts",
+      "solid": "./dist/ActionMenu.jsx",
+      "import": "./dist/ActionMenu.js",
+      "default": "./dist/ActionMenu.js"
+    },
+    "./Breadcrumbs": {
+      "types": "./dist/Breadcrumbs.d.ts",
+      "solid": "./dist/Breadcrumbs.jsx",
+      "import": "./dist/Breadcrumbs.js",
+      "default": "./dist/Breadcrumbs.js"
+    },
     "./Button": {
       "types": "./dist/Button.d.ts",
       "solid": "./dist/Button.jsx",
       "import": "./dist/Button.js",
       "default": "./dist/Button.js"
+    },
+    "./Calendar": {
+      "types": "./dist/Calendar.d.ts",
+      "solid": "./dist/Calendar.jsx",
+      "import": "./dist/Calendar.js",
+      "default": "./dist/Calendar.js"
+    },
+    "./Card": {
+      "types": "./dist/Card.d.ts",
+      "solid": "./dist/Card.jsx",
+      "import": "./dist/Card.js",
+      "default": "./dist/Card.js"
+    },
+    "./CardView": {
+      "types": "./dist/CardView.d.ts",
+      "solid": "./dist/CardView.jsx",
+      "import": "./dist/CardView.js",
+      "default": "./dist/CardView.js"
+    },
+    "./CenterBaseline": {
+      "types": "./dist/CenterBaseline.d.ts",
+      "solid": "./dist/CenterBaseline.jsx",
+      "import": "./dist/CenterBaseline.js",
+      "default": "./dist/CenterBaseline.js"
+    },
+    "./ColorArea": {
+      "types": "./dist/ColorArea.d.ts",
+      "solid": "./dist/ColorArea.jsx",
+      "import": "./dist/ColorArea.js",
+      "default": "./dist/ColorArea.js"
+    },
+    "./ColorField": {
+      "types": "./dist/ColorField.d.ts",
+      "solid": "./dist/ColorField.jsx",
+      "import": "./dist/ColorField.js",
+      "default": "./dist/ColorField.js"
+    },
+    "./ColorSlider": {
+      "types": "./dist/ColorSlider.d.ts",
+      "solid": "./dist/ColorSlider.jsx",
+      "import": "./dist/ColorSlider.js",
+      "default": "./dist/ColorSlider.js"
+    },
+    "./ColorSwatch": {
+      "types": "./dist/ColorSwatch.d.ts",
+      "solid": "./dist/ColorSwatch.jsx",
+      "import": "./dist/ColorSwatch.js",
+      "default": "./dist/ColorSwatch.js"
+    },
+    "./ColorSwatchPicker": {
+      "types": "./dist/ColorSwatchPicker.d.ts",
+      "solid": "./dist/ColorSwatchPicker.jsx",
+      "import": "./dist/ColorSwatchPicker.js",
+      "default": "./dist/ColorSwatchPicker.js"
+    },
+    "./ColorWheel": {
+      "types": "./dist/ColorWheel.d.ts",
+      "solid": "./dist/ColorWheel.jsx",
+      "import": "./dist/ColorWheel.js",
+      "default": "./dist/ColorWheel.js"
     },
     "./ContrastIcon": {
       "types": "./dist/ContrastIcon.d.ts",
@@ -41,11 +116,23 @@
       "import": "./dist/ContrastIcon.js",
       "default": "./dist/ContrastIcon.js"
     },
+    "./Disclosure": {
+      "types": "./dist/Disclosure.d.ts",
+      "solid": "./dist/Disclosure.jsx",
+      "import": "./dist/Disclosure.js",
+      "default": "./dist/Disclosure.js"
+    },
     "./FileTrigger": {
       "types": "./dist/FileTrigger.d.ts",
       "solid": "./dist/FileTrigger.jsx",
       "import": "./dist/FileTrigger.js",
       "default": "./dist/FileTrigger.js"
+    },
+    "./GitHubIcon": {
+      "types": "./dist/GitHubIcon.d.ts",
+      "solid": "./dist/GitHubIcon.jsx",
+      "import": "./dist/GitHubIcon.js",
+      "default": "./dist/GitHubIcon.js"
     },
     "./LightenIcon": {
       "types": "./dist/LightenIcon.d.ts",
@@ -59,6 +146,18 @@
       "import": "./dist/LinkButton.js",
       "default": "./dist/LinkButton.js"
     },
+    "./ListView": {
+      "types": "./dist/ListView.d.ts",
+      "solid": "./dist/ListView.jsx",
+      "import": "./dist/ListView.js",
+      "default": "./dist/ListView.js"
+    },
+    "./Menu": {
+      "types": "./dist/Menu.d.ts",
+      "solid": "./dist/Menu.jsx",
+      "import": "./dist/Menu.js",
+      "default": "./dist/Menu.js"
+    },
     "./Picker": {
       "types": "./dist/Picker.d.ts",
       "solid": "./dist/Picker.jsx",
@@ -70,6 +169,12 @@
       "solid": "./dist/Provider.jsx",
       "import": "./dist/Provider.js",
       "default": "./dist/Provider.js"
+    },
+    "./RangeCalendar": {
+      "types": "./dist/RangeCalendar.d.ts",
+      "solid": "./dist/RangeCalendar.jsx",
+      "import": "./dist/RangeCalendar.js",
+      "default": "./dist/RangeCalendar.js"
     },
     "./SearchField": {
       "types": "./dist/SearchField.d.ts",
@@ -89,6 +194,12 @@
       "import": "./dist/Switch.js",
       "default": "./dist/Switch.js"
     },
+    "./Tabs": {
+      "types": "./dist/Tabs.d.ts",
+      "solid": "./dist/Tabs.jsx",
+      "import": "./dist/Tabs.js",
+      "default": "./dist/Tabs.js"
+    },
     "./TextArea": {
       "types": "./dist/TextArea.d.ts",
       "solid": "./dist/TextArea.jsx",
@@ -100,6 +211,12 @@
       "solid": "./dist/TextField.jsx",
       "import": "./dist/TextField.js",
       "default": "./dist/TextField.js"
+    },
+    "./TreeView": {
+      "types": "./dist/TreeView.d.ts",
+      "solid": "./dist/TreeView.jsx",
+      "import": "./dist/TreeView.js",
+      "default": "./dist/TreeView.js"
     },
     "./CalendarCard": {
       "types": "./dist/CalendarCard.d.ts",
@@ -176,7 +293,14 @@
       "solid": "./dist/style.jsx",
       "import": "./dist/style.js",
       "default": "./dist/style.js"
-    }
+    },
+    "./style/runtime": {
+      "types": "./dist/style/runtime.d.ts",
+      "solid": "./dist/style/runtime.jsx",
+      "import": "./dist/style/runtime.js",
+      "default": "./dist/style/runtime.js"
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"

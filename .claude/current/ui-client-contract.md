@@ -111,7 +111,7 @@ exactly the call steering left open.
 
 ---
 
-## UC-01 ⛔ — Export parity: deep subpaths for the full Spectrum surface + `./style/runtime`
+## UC-01 ✔ — Export parity: deep subpaths for the full Spectrum surface + `./style/runtime`
 
 ### Problem
 Precisely stated (the planning doc was slightly off): the root barrel is already
@@ -143,6 +143,33 @@ bloat. So "parity" here means **prefer deep subpaths**, not "rely on the barrel.
   exported.
 - A built-package import smoke (run against the **UC-00 tarball**) imports every
   UI subpath and fails on export-map/dist drift.
+
+### Resolution (2026-06-20)
+- Added passthrough barrels under `packages/viviana-ui/src` for every previously
+  missing `solid-spectrum` subpath (`ActionMenu`, `Breadcrumbs`, `Calendar`,
+  `Card`, `CardView`, `CenterBaseline`, the five `Color*` components,
+  `ColorSwatch*`, `ColorWheel`, `Disclosure`, `GitHubIcon`, `ListView`, `Menu`,
+  `RangeCalendar`, `Tabs`, `TreeView`) **plus `src/style/runtime.ts`** — each a
+  one-line `export * from "@proyecto-viviana/solid-spectrum/<X>"`.
+- Wired them into `vite.config.ts` (dual `.js`/`.jsx` packs) and regenerated
+  `package.json` `exports` (48 subpaths + `.` + `./package.json`); added top-level
+  `main`/`module`/`types` mirroring `solid-spectrum` for legacy resolvers.
+- **Parity proven by tooling, not eyeball:** a set-diff of the two `exports` maps
+  shows **0** `solid-spectrum` subpaths missing from `ui`; the 9 extras are
+  viviana's own product components (`CalendarCard`, `Chip`, `Conversation`,
+  `EventCard`, `Logo`, `PageLayout`, `ProfileCard`, `ProjectCard`,
+  `TimelineItem`) — no orphan native components, all build and export.
+- **Built-package smoke extended** (`scripts/consume-pack-smoke.mjs`): against the
+  real out-of-workspace tarball install it now asserts **every** file referenced
+  by **every** export condition (`types`/`solid`/`import`/`default` + CSS) exists
+  on disk (185/185) and that Node's own resolver honors **every** JS subpath
+  specifier (44/44). It deliberately checks *resolution + file presence*, not
+  evaluation — importing a DOM-compiled `.js` in bare Node would run its hoisted
+  top-level `template()` under `solid-js/web`'s **server** build and throw, a
+  runtime artifact, not export drift (the DOM+SSR build/render already proves real
+  evaluation). Latest run: green.
+- Changeset: `.changeset/ui-export-parity.md` (`@proyecto-viviana/ui` minor —
+  additive subpaths).
 
 ---
 
@@ -302,7 +329,7 @@ cannot run here.
 | id | title | depends | parallel reality |
 | --- | --- | --- | --- |
 | **UC-00** ✔ | Release-matrix promotion + out-of-workspace install smoke | — | **The spine — done 2026-06-20.** Promotion recorded; `consume-pack-smoke` green (DOM+SSR). Unblocks verifiable acceptance for all others. |
-| **UC-01** | Deep subpath export parity + `./style/runtime` | UC-00 (for tarball smoke) | One work-stream with **UC-02** (shared `./style*` surface); coupled to **UC-05**. |
+| **UC-01** ✔ | Deep subpath export parity + `./style/runtime` | UC-00 (for tarball smoke) | **Done 2026-06-20.** Full parity (0 `solid-spectrum` subpaths missing); smoke asserts 185/185 export files + 44/44 JS subpaths resolve. Shared `./style*` surface still feeds **UC-02**; coupled to **UC-05**. |
 | **UC-02** | `./style` Viviana tokens + CSS-inventory reconcile | UC-00 | Pair with **UC-01**. |
 | **UC-03** | CSS + Provider contract + `default`-condition fix | UC-00 | Genuinely independent. |
 | **UC-04** | Vite macro preset + in-repo SSR/DOM fixture | UC-00 | Genuinely independent. |

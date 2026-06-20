@@ -63,6 +63,9 @@ symlinks — and build it for both targets:
   on any registry).
 - Runs a DOM `vite build` and an SSR `vite build --ssr` + render, asserting the
   rendered `<button>` keeps its macro-expanded style classes.
+- Verifies export-map coherence (UC-01): every file referenced by every export
+  condition (`types`/`solid`/`import`/`default` + CSS) exists in the installed
+  package, and Node's resolver honors every JS subpath specifier.
 - Encodes two facts every consumer needs: a dual-target build uses
   `solid({ ssr: true })`, and the SSR resolver must include the `solid` condition
   (otherwise it grabs the DOM-compiled `.js` and crashes calling `template()` on
