@@ -9,4 +9,11 @@ export {
   type ScrollIntoViewOnFocusOptions,
 } from "./createScrollIntoViewOnFocus";
 export { selectItem } from "./selectItem";
+export {
+  createSelectableItem,
+  ITEM_ACTION_EVENT,
+  type CreateSelectableItemOptions,
+  type SelectableItemAria,
+  type LinkBehavior,
+} from "./createSelectableItem";
 export { isNonContiguousSelectionModifier } from "./utils";

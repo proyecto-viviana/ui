@@ -1,6 +1,6 @@
 ---
 kind: scoping
-status: Phase 0 landed; Phases 1–3 not started
+status: Phases 0–1 landed; Phases 2–3 not started
 tickets: T-34, T-51, T-52, T-56
 oracle: react-spectrum/packages/react-aria/src/selection/useSelectableItem.ts
 ---
@@ -196,16 +196,48 @@ presses are deferred to Phases 1–2. Original plan:
   platform-aware via `isMac`; shift ⇒ extend). Own changeset for each published
   package touched (`solid-stately` + `solidaria`).
 
-**Phase 1 — build `createSelectableItem` in isolation.**
-- New `solidaria/src/selection/createSelectableItem.ts` mirroring the upstream
-  contract, **reusing the Phase 0 `onSelect`**: the action model
-  (`hasPrimaryAction`/`hasSecondaryAction`/`allowsSelection`/`allowsActions`),
-  `createPress` wiring (press-up vs press, keyboard Space/Enter split),
-  `onDoubleClick` secondary action, `createLongPress` →
-  `setSelectionBehavior('toggle')`, `pointerType` threading, the prop-threaded
-  link model (decision in gap #4).
-- Validate with a dedicated `createSelectableItem.test.tsx` against the contract
-  **before** any consumer migrates — this is the de-risking gate.
+**Phase 1 — build `createSelectableItem` in isolation. ✔ Landed.**
+As built (commit "Add createSelectableItem shared press-path item hook"):
+`solidaria/src/selection/createSelectableItem.ts` mirrors the upstream contract,
+reusing the Phase 0 `selectItem` for the aria-layer onSelect. It ships the
+action model (`hasPrimaryAction`/`hasSecondaryAction`/`allowsSelection`/
+`allowsActions`/`hasAction`), the `createPress` wiring (select-on-press-up for
+`shouldSelectOnPressUp`/menus vs. select-on-press-down for rows, the
+`allowsDifferentPressOrigin` branch, keyboard Space-selects / Enter-acts split
+via the new `PressEvent.key`), the `onDblClick` secondary action gated on mouse
+modality, `createLongPress` → `onSelect` + `setSelectionBehavior('toggle')` for
+touch, `onDragStart` native-drag suppression, and `performAction` (onAction +
+bubbling `ITEM_ACTION_EVENT` CustomEvent + link open). Exported from
+`solidaria` (`createSelectableItem`, `ITEM_ACTION_EVENT`,
+`CreateSelectableItemOptions`, `SelectableItemAria`, `LinkBehavior`).
+
+Validated by `solidaria/test/createSelectableItem.test.tsx` (14 tests, the
+de-risking gate): the action model across plain/none/replace/toggle/disabled/
+link-override, plus the full press path (mouse press-down select, touch toggle,
+mouse primary action, Space select, Enter action, double-click secondary,
+long-press → toggle). Press-path tests run under fake timers, mirroring the
+`createPress` suite. No consumer migrates onto it in this phase.
+
+As-built adaptations from upstream (our `ListState` is thinner than
+`SelectionManager`) — record alongside gap #4 so they aren't read as port
+misses:
+- **`canSelectItem` computed locally** (`selectionMode() !== 'none' &&
+  !isDisabled(key)`), not read off `manager.canSelectItem`.
+- **Link model prop-threaded** (`isLink`/`href`/`routerOptions`/`linkBehavior`),
+  not `manager.isLink`/`getItemProps`; link open via the `openLink` util, no
+  router context.
+- **No `moveVirtualFocus`/`getCollectionId`** — virtual-focus updates set the
+  focused key directly; no `data-collection` id is emitted.
+- **`onDragStart` bubbles** (no capture-phase `onDragStartCapture`); merged via
+  `mergeProps` so it chains with `createPress`'s own `onDragStart`.
+- **`PressEvent.key` added** (`solidaria/src/interactions/PressEvent.ts`) to
+  carry the Space-vs-Enter distinction — a faithful parity fix (upstream's
+  `PressEvent` carries `key`), additive and back-compatible.
+- **No uncontrolled-`replace` `selectionBehavior`** in our state: setting the
+  prop makes it controlled and locks `setSelectionBehavior`. The long-press
+  toggle wiring is therefore asserted via the manager call, and consumers that
+  want long-press toggle must leave `selectionBehavior` uncontrolled
+  (state-layer gap, also noted under `disabledBehavior:'selection'`).
 
 **Phase 2 — migrate the three item hooks, one at a time.**
 - `createGridListItem` → `createTreeItem` → `createTableRow`, each its own

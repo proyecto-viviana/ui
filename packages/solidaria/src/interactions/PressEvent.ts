@@ -18,6 +18,11 @@ export interface PressEventSource {
   altKey?: boolean;
   clientX?: number;
   clientY?: number;
+  /**
+   * The key that triggered the event, present on keyboard interactions
+   * (the native `KeyboardEvent` is passed through unchanged).
+   */
+  key?: string;
 }
 
 export interface IPressEvent {
@@ -40,6 +45,11 @@ export interface IPressEvent {
   /** Y position of the press relative to the target element. */
   y: number;
   /**
+   * The key that triggered the press event, if it was triggered by a keyboard
+   * interaction. Useful for differentiating between Space and Enter key presses.
+   */
+  key?: string;
+  /**
    * By default, press events stop propagation to parent elements.
    * Call continuePropagation() to allow the event to bubble up.
    */
@@ -60,6 +70,7 @@ export class PressEvent implements IPressEvent {
   altKey: boolean;
   x: number;
   y: number;
+  key?: string;
 
   #shouldStopPropagation = true;
 
@@ -79,6 +90,9 @@ export class PressEvent implements IPressEvent {
     this.ctrlKey = originalEvent?.ctrlKey ?? false;
     this.metaKey = originalEvent?.metaKey ?? false;
     this.altKey = originalEvent?.altKey ?? false;
+    // Present only for keyboard interactions (the native KeyboardEvent carries
+    // `key`); pointer events leave this undefined, matching upstream.
+    this.key = originalEvent?.key;
 
     // Calculate position relative to target
     this.x = 0;

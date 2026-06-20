@@ -628,6 +628,13 @@ export {
 
 export { createTypeSelect, type TypeSelectOptions, type TypeSelectAria } from "./selection";
 export { createScrollIntoViewOnFocus, type ScrollIntoViewOnFocusOptions } from "./selection";
+export {
+  createSelectableItem,
+  ITEM_ACTION_EVENT,
+  type CreateSelectableItemOptions,
+  type SelectableItemAria,
+  type LinkBehavior,
+} from "./selection";
 
 export { mergeProps, filterDOMProps, focusSafely, type FilterDOMPropsOptions } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";
