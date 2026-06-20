@@ -119,6 +119,99 @@ function getActiveElement(doc: Document): Element | null {
 }
 
 /**
+ * A scope is identified by its (stable) scope-elements accessor; `null` is the
+ * tree root. Mirrors @react-aria/focus's `ScopeRef`.
+ */
+type ScopeRef = Accessor<Element[]> | null;
+
+interface FocusScopeTreeNode {
+  scopeRef: ScopeRef;
+  parent: FocusScopeTreeNode | null;
+  children: Set<FocusScopeTreeNode>;
+}
+
+/**
+ * A registry of the live FocusScopes and their parent/child relationships,
+ * mirroring @react-aria/focus's `focusScopeTree`. The DOM tree alone can't
+ * express scope nesting because a child scope (e.g. a menu opened from inside a
+ * modal popover) is rendered in a portal, outside its parent scope's subtree.
+ * The tree records that nesting so containment can recognize a portaled
+ * descendant scope as "inside".
+ */
+class FocusScopeTree {
+  root: FocusScopeTreeNode;
+  private fastMap = new Map<ScopeRef, FocusScopeTreeNode>();
+
+  constructor() {
+    this.root = { scopeRef: null, parent: null, children: new Set() };
+    this.fastMap.set(null, this.root);
+  }
+
+  getTreeNode(scopeRef: ScopeRef): FocusScopeTreeNode | undefined {
+    return this.fastMap.get(scopeRef);
+  }
+
+  addTreeNode(scopeRef: ScopeRef, parent: ScopeRef): void {
+    const parentNode = this.fastMap.get(parent) ?? this.root;
+    const node: FocusScopeTreeNode = { scopeRef, parent: parentNode, children: new Set() };
+    parentNode.children.add(node);
+    this.fastMap.set(scopeRef, node);
+  }
+
+  removeTreeNode(scopeRef: ScopeRef): void {
+    // never remove the root
+    if (scopeRef === null) return;
+    const node = this.fastMap.get(scopeRef);
+    if (!node) return;
+    const parentNode = node.parent;
+    if (parentNode) {
+      parentNode.children.delete(node);
+      // Re-parent any children so a mid-tree unmount doesn't orphan descendants.
+      for (const child of node.children) {
+        child.parent = parentNode;
+        parentNode.children.add(child);
+      }
+    }
+    this.fastMap.delete(scopeRef);
+  }
+
+  // Pre-order depth-first; skips the null-scoped root, like upstream.
+  *traverse(node: FocusScopeTreeNode = this.root): Generator<FocusScopeTreeNode> {
+    if (node.scopeRef != null) {
+      yield node;
+    }
+    for (const child of node.children) {
+      yield* this.traverse(child);
+    }
+  }
+}
+
+const focusScopeTree = new FocusScopeTree();
+
+/**
+ * Whether the element is inside `scope` or any of its descendant scopes.
+ *
+ * `isElementInScope`'s `node.contains` already covers descendant scopes that
+ * are DOM children, but not those rendered in a portal. Walking the scope
+ * subtree closes that gap so focus moving into a portaled child scope still
+ * counts as "inside". Mirrors @react-aria/focus's `isElementInChildScope`.
+ */
+function isElementInChildScope(element: Element, scope: ScopeRef = null): boolean {
+  // Always allow focus to move into a top-layer element (e.g. toasts).
+  if (element instanceof Element && element.closest("[data-react-aria-top-layer]")) {
+    return true;
+  }
+
+  for (const node of focusScopeTree.traverse(focusScopeTree.getTreeNode(scope))) {
+    if (node.scopeRef && isElementInScope(element, node.scopeRef())) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * A FocusScope manages focus for its descendants. It supports containing focus inside
  * the scope, restoring focus to the previously focused element on unmount, and auto
  * focusing children on mount. It also acts as a container for a programmatic focus
@@ -133,6 +226,11 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   let startRef: HTMLSpanElement | undefined;
   let endRef: HTMLSpanElement | undefined;
   const [scopeElements, setScopeElements] = createSignal<Element[]>([]);
+
+  // The nearest enclosing FocusScope (through context, which Solid propagates
+  // across portals) is this scope's parent in the focus-scope tree. Read it
+  // before we shadow the context with our own provider below.
+  const parentScopeRef = useContext(FocusScopeContext)?.scopeRef ?? null;
 
   // Store the element that was focused when the scope mounted
   let nodeToRestore: Element | null = null;
@@ -255,6 +353,16 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     setScopeElements(nodes);
   });
 
+  // Register this scope in the focus-scope tree so containment can recognize a
+  // portaled descendant scope as "inside" it. The scope-elements accessor is a
+  // stable identity, so it works as the tree key even before it's populated.
+  onMount(() => {
+    focusScopeTree.addTreeNode(scopeElements, parentScopeRef);
+  });
+  onCleanup(() => {
+    focusScopeTree.removeTreeNode(scopeElements);
+  });
+
   // Save the currently focused element for restoration (must happen before autoFocus/contain effects run).
   onMount(() => {
     if (!props.restoreFocus) return;
@@ -336,6 +444,12 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       const target = e.target as Element;
 
       if (isElementInScope(target, scope)) {
+        focusedNode = target;
+      } else if (isElementInChildScope(target, scopeElements)) {
+        // Focus moved into a descendant scope — e.g. a menu opened from inside
+        // this modal popover, rendered in a portal outside this scope's DOM
+        // subtree. Track it but don't pull focus back, which would tear the
+        // nested overlay down.
         focusedNode = target;
       } else if (focusedNode) {
         // Focus escaped the scope, bring it back

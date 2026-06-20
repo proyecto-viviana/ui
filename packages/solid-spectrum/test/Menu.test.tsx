@@ -140,9 +140,9 @@ describe("Menu (solid-spectrum)", () => {
       //
       // The outer Popover is non-modal here: that is the common shape for a
       // popover that hosts a menu button, and it keeps the test focused on the
-      // popover-vs-inline decision. (A *modal* outer popover contains focus,
-      // which currently collapses a nested modal menu overlay — tracked as a
-      // separate follow-up in the release audit.)
+      // popover-vs-inline decision. The *modal* outer-popover case (whose focus
+      // containment used to collapse the nested overlay) is covered separately
+      // by "keeps a nested menu open inside a modal Popover" below.
       const user = setupUser();
       render(() => (
         <PopoverTrigger defaultOpen>
@@ -175,6 +175,43 @@ describe("Menu (solid-spectrum)", () => {
 
       // Its nearest popover ancestor is the MenuTrigger's, never the outer PopoverTrigger's.
       expect(menu.closest("[data-trigger]")?.getAttribute("data-trigger")).toBe("MenuTrigger");
+    });
+
+    it("keeps a nested menu open inside a modal Popover", async () => {
+      // T-55: a *modal* outer Popover contains focus. The menu overlay is
+      // portaled out of the outer popover's DOM subtree, so the outer
+      // FocusScope used to treat the menu gaining focus as "focus escaped" and
+      // yank it back, collapsing the menu before it could render. Containment is
+      // now descendant-scope aware (focusScopeTree), so a menu opened from
+      // inside a modal popover renders and stays open — matching upstream.
+      // (The non-modal variant above never exercised this yank-back path.)
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger defaultOpen>
+          <Button>Open settings</Button>
+          <Popover>
+            <MenuTrigger>
+              <MenuButton>Actions</MenuButton>
+              <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
+                {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
+              </Menu>
+            </MenuTrigger>
+          </Popover>
+        </PopoverTrigger>
+      ));
+
+      // The outer Popover is modal: it renders role="dialog" and contains focus.
+      const outerPopover = document.querySelector("[data-trigger='PopoverTrigger']");
+      expect(outerPopover).toHaveAttribute("role", "dialog");
+
+      const trigger = within(outerPopover as HTMLElement).getByRole("button", {
+        name: "Actions",
+      });
+      await user.click(trigger);
+
+      // The menu renders and survives the outer scope's focus containment.
+      const menu = await screen.findByRole("menu", { name: "Actions" });
+      expect(within(menu).getByRole("menuitem", { name: "Edit" })).toBeInTheDocument();
     });
   });
 
