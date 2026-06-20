@@ -698,7 +698,9 @@ function BreadcrumbMenu<T>(props: {
         </ActionButton>
         <Menu
           items={props.items}
-          onAction={props.onAction}
+          // Menu invokes onAction(key, value); Breadcrumbs' contract is key-only
+          // (matching upstream), so drop the leaked item value.
+          onAction={(key) => props.onAction?.(key)}
           size={context.size()}
           aria-label={label()}
         >
