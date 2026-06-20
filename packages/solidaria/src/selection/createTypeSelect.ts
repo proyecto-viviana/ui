@@ -6,6 +6,7 @@
  * item text values. Supports multi-character search with debouncing.
  */
 
+import { onCleanup } from "solid-js";
 import type { JSX, Accessor } from "solid-js";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
 import { createCollator } from "../i18n/createCollator";
@@ -142,42 +143,16 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
   // `useCollator({ usage: 'search', sensitivity: 'base' })`.
   const collator = createCollator({ usage: "search", sensitivity: "base" });
 
-  const onKeyDownCapture: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
-    if (options.isDisabled) return;
-
-    const character = getStringForKey(e.key);
-
-    // Ignore non-printable characters, modifier key combos,
-    // and events that didn't originate from within the element
-    if (
-      !character ||
-      e.ctrlKey ||
-      e.metaKey ||
-      !e.currentTarget.contains(e.target as HTMLElement)
-    ) {
-      return;
-    }
-
-    // Don't start search with space (common action key)
-    if (state.search.length === 0 && character === " ") {
-      return;
-    }
-
-    // If there's already search text and the user types a space,
-    // prevent it from triggering selection and include it in the search
-    if (character === " " && state.search.trim().length > 0) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    // Append to the search buffer
-    state.search += character;
-
-    // Find a matching key
+  // Append the search buffer, find a matching key (from the focused item,
+  // falling back to the whole list), focus it, and (re)start the debounce timer.
+  // Shared by both phase handlers below, mirroring the duplicated body in
+  // upstream useTypeSelect.
+  const searchAndFocus = (): Key | null => {
     const collection = options.collection();
     const currentKey = options.focusedKey();
 
-    // First, search from the focused key (inclusive) to the end
+    // Prioritize items at/after the focused item, then retry from the top to
+    // cover earlier ones (upstream's two getKeyForSearch calls).
     let key = getKeyForSearch(
       collection,
       state.search,
@@ -185,9 +160,7 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
       collator(),
       options.isKeyDisabled,
     );
-
-    // If no match found, retry from the top to cover items before the focus
-    if (key == null && currentKey != null) {
+    if (key == null) {
       key = getKeyForSearch(collection, state.search, null, collator(), options.isKeyDisabled);
     }
 
@@ -196,26 +169,92 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
       options.onTypeSelect?.(key);
     }
 
-    // Reset the debounce timer
-    if (state.timeout !== undefined) {
-      clearTimeout(state.timeout);
-    }
+    return key;
+  };
+
+  const restartDebounce = () => {
+    clearTimeout(state.timeout);
     state.timeout = setTimeout(() => {
       state.search = "";
     }, TYPEAHEAD_DEBOUNCE_WAIT_MS);
   };
 
-  // Upstream useTypeSelect binds `onKeyDownCapture` only, so the Spacebar
-  // handling runs before the collection's own keydown handler. In Solid, however,
-  // a capture handler delivered through a `{...typeSelectProps}` spread is not
-  // wired as a working capture listener, so we also bind the bubble-phase
-  // `onKeyDown` (the path that actually fires). True capture would need a
-  // ref-based addEventListener threaded through every consumer — see the
-  // typeahead follow-up in upstream-sync.md.
-  const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = onKeyDownCapture;
+  // Capture phase: mid-search a Spacebar is part of the query, not a selection
+  // action, so we consume it before the collection's own keydown handler can act
+  // on it. Mirrors upstream useTypeSelect's onKeyDownCapture.
+  const onKeyDownCapture: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
+    if (options.isDisabled) return;
+
+    if (state.search.length > 0 && e.key === " ") {
+      e.preventDefault();
+      // Upstream guards this with `!('continuePropagation' in e) ||
+      // !e.isPropagationStopped()`. Our raw DOM KeyboardEvents never carry
+      // `continuePropagation`, so the guard always holds — stop unconditionally.
+      e.stopPropagation();
+      state.search += " ";
+      searchAndFocus();
+      restartDebounce();
+    }
+  };
+
+  // Bubble phase: handles ordinary characters (and, in environments where the
+  // capture listener above is inert, mid-search Spacebar via its non-bailing
+  // branch). Mirrors upstream useTypeSelect's onKeyDown.
+  const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
+    if (options.isDisabled) return;
+
+    const character = getStringForKey(e.key);
+
+    // Ignore non-printable keys, Ctrl/Meta/Alt combos (Alt is excluded to match
+    // upstream — AltGr-only layouts shouldn't drive type-select), events from
+    // outside the element, and a leading Space (a common action key).
+    if (
+      !character ||
+      e.ctrlKey ||
+      e.metaKey ||
+      e.altKey ||
+      !e.currentTarget.contains(e.target as HTMLElement) ||
+      (state.search.length === 0 && character === " ")
+    ) {
+      return;
+    }
+
+    state.search += character;
+
+    const key = searchAndFocus();
+
+    if (key != null) {
+      e.preventDefault();
+      // Our raw DOM events never carry `continuePropagation`, so upstream's
+      // `if (!('continuePropagation' in e)) e.stopPropagation()` is unconditional.
+      e.stopPropagation();
+    } else {
+      // Nothing matched even after retrying from the top: type-to-select is done,
+      // so reset the buffer and let the key propagate normally.
+      state.search = "";
+      clearTimeout(state.timeout);
+      state.timeout = undefined;
+      return;
+    }
+
+    restartDebounce();
+  };
+
+  // Mirror upstream's unmount cleanup (a useEffect teardown) so a pending
+  // debounce timer never fires after the consumer is disposed.
+  onCleanup(() => {
+    clearTimeout(state.timeout);
+  });
 
   return {
     typeSelectProps: {
+      // Upstream binds `onKeyDownCapture` so Spacebar is handled before the
+      // collection's own keydown handler. In Solid a capture handler delivered
+      // through a `{...typeSelectProps}` spread is inert (it never fires), so the
+      // bubble-phase `onKeyDown` is the live path — and it also covers mid-search
+      // Space because its bail check only rejects a *leading* Space. True capture
+      // would need a ref-based addEventListener threaded through every consumer;
+      // see the typeahead follow-up in upstream-sync.md.
       onKeyDownCapture,
       onKeyDown,
     } as JSX.HTMLAttributes<HTMLElement>,

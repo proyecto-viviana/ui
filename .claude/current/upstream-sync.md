@@ -416,12 +416,17 @@ port: `solidaria/src/selection/createTypeSelect.ts`.
 wrap**, matching via `Intl.Collator.compare(textValue.slice(0, search.length),
 search) === 0`. The hook (`useTypeSelect`) calls it once from the focused key, then,
 if that misses, **retries from the top** (`getKeyForSearch(search)` with no
-`fromKey`) — that retry is the only wrap. The keydown guard blocks on `!character ||
-ctrlKey || metaKey || !contains || (search.length === 0 && char === ' ')` — **no
-`altKey`** (AltGr emits characters). A space *within* a non-empty search is appended
-and `preventDefault`/`stopPropagation`'d so the collection doesn't toggle selection.
-Upstream binds **`onKeyDownCapture` only** (capture so space precedes the collection's
-own keydown).
+`fromKey`) — that retry is the only wrap. In the **pinned 1.19** hook the keydown
+(bubble) guard blocks on `!character || ctrlKey || metaKey || **altKey** ||
+!contains || (search.length === 0 && char === ' ')` — i.e. it **does bail on
+`altKey`** — and on a successful char match it `preventDefault`/`stopPropagation`s,
+while on a no-match it resets the search + clears the timeout + returns. A space
+*within* a non-empty search is appended and `preventDefault`/`stopPropagation`'d so
+the collection doesn't toggle selection. The 1.19 refactor binds **both**
+`onKeyDownCapture` (Space-during-search only, so it precedes the collection's own
+keydown) **and** `onKeyDown` (characters), and cleans up the debounce timeout on
+unmount. (An earlier reading below claimed "no `altKey`" / "`onKeyDownCapture`
+only" — that was pre-1.19 and is superseded by the T-35 note.)
 
 **Resolved — start-at + altKey + space** (`solidaria`, 2026-06-19). Three faithful
 fixes to `createTypeSelect`:
@@ -432,7 +437,9 @@ fixes to `createTypeSelect`:
   `fromIndex` and scans to the end only; the hook's existing from-top retry
   (`getKeyForSearch(collection, search, null, …)`) provides the wrap, mirroring
   upstream.
-- **Removed the extra `altKey` guard** — upstream guards only `ctrlKey`/`metaKey`.
+- **Removed the extra `altKey` guard** — _later reverted by T-35_ (see below):
+  this read upstream as guarding only `ctrlKey`/`metaKey`, but pinned 1.19 _does_
+  bail on `altKey`, so T-35 re-added the guard.
 - **Corrected the dual-handler comment** (no behavior change). In Solid a capture
   handler delivered via `{...typeSelectProps}` spread is **not** wired as a working
   capture listener, so the bubble `onKeyDown` is the path that actually fires — the
@@ -441,8 +448,30 @@ fixes to `createTypeSelect`:
 
 Tests in `createTypeSelect.test.tsx` cover: stays-on-current-when-prefix-still-
 matches, multi-char accumulation, from-top wrap when nothing at/after matches,
-Ctrl/Meta blocked but **Alt allowed**, and space-in-active-search appended +
+Ctrl/Meta/Alt blocked (updated by T-35), and space-in-active-search appended +
 `defaultPrevented`. Changeset `typeahead-start-at-key.md` (patch solidaria).
+
+**Resolved — 1.19 keydown refactor (T-35)** (`solidaria`, 2026-06-19). Reconciled
+`createTypeSelect` against the pinned-1.19 `useTypeSelect`, landing the four
+behavioral deltas the earlier sweep notes hadn't: (a) **re-added the `altKey`
+bail** to the bubble guard — reversing the `dfd4d37b` allowance, since pinned 1.19
+bails on `ctrlKey || metaKey || altKey`; (b) `preventDefault()`/`stopPropagation()`
+on a **matching character** (previously only on Space-during-search); (c) on a
+**no-match** reset `search=''` + `clearTimeout` + `timeout=undefined` + return so
+the next keystroke starts fresh; (d) `onCleanup` clears the pending debounce on
+**unmount** (upstream's `useEffect` teardown). The handler is now a genuine
+capture/bubble split (matching upstream's two returned handlers) rather than one
+aliased function, with the search/focus + debounce-restart factored into shared
+helpers. **The capture handler stays inert through the spread** (Solid limitation),
+so the live bubble `onKeyDown` is the working path — and it also covers a mid-search
+Space because upstream's bubble bail only rejects a **leading** Space. Consumer
+shims are N/A (our `createSelect`/`createMenu`/`createListBox`/`createComboBox` only
+spread `typeSelectProps`; the alias lived solely in `createTypeSelect`), and raw DOM
+events never carry `continuePropagation`, so upstream's `!('continuePropagation' in
+e)` guards collapse to unconditional `stopPropagation`. New discriminating tests:
+Alt-bail (rewrote the former "allows Alt" case), `preventDefault` on a char match,
+and reset-on-no-match — all 3 fail against the pre-port source. Changeset
+`typeselect-keydown-faithful-parity.md` (patch solidaria).
 
 **Resolved — collator matching** (`solidaria`, 2026-06-19). `getKeyForSearch` now
 compares the leading substring with an `Intl.Collator` (`usage: 'search'`,
@@ -452,7 +481,11 @@ search.length), search) === 0`). Was a naive `toLowerCase().startsWith`, which o
 folded ASCII case; now case- and diacritic-insensitive (a plain `e` matches "Éclair").
 A diacritic test covers it. Changeset `typeahead-collator-matching.md` (patch solidaria).
 
-**Deferred (see backlog below):** true capture-phase binding (Solid spread inertness).
+**Still deferred:** _true_ capture-phase binding (a ref-based `addEventListener` so
+the capture handler actually fires before the collection's own keydown). T-35
+reproduced the capture/bubble split faithfully but the spread-delivered capture
+handler remains inert; the live bubble path covers the observable behavior
+(including mid-search Space). This is the only remaining typeahead gap.
 
 ## Source-level behavioral sweep — Escape key (ListBox)
 
@@ -530,8 +563,12 @@ No second checklist lives here anymore. Old item → ticket map:
 - **T-52** — `select()` multiple-mode fidelity (`ctrlKey||metaKey` → platform-aware
   `isCtrlKeyPressed`; thread `pointerType` so touch/virtual forces `toggleSelection`,
   per `useSelectableItem.ts:174`). Bundle with T-51.
-- **T-35** — typeahead true capture-phase binding (the bubble-vs-capture split through
-  the `{...typeSelectProps}` spread). Evidence: the typeahead section above.
+- **T-35** — **✔ ported** (2026-06-19): the 1.19 `useTypeSelect` refactor — capture/bubble
+  split, `altKey` bail, `preventDefault`/`stopPropagation` on a char match, reset-on-no-match,
+  unmount cleanup (changeset `typeselect-keydown-faithful-parity.md`). Evidence: the
+  "Resolved — 1.19 keydown refactor (T-35)" note in the typeahead section above. _Only_ the
+  true capture-phase binding (ref-based `addEventListener`) remains deferred — the live
+  bubble path covers the observable behavior.
 - **T-53** — `escapeKeyBehavior: 'clearSelection' | 'none'` opt-out. Evidence: the
   "Escape key (ListBox)" section above.
 - **T-54** — PageUp/PageDown navigation gating (`createListBox` measures no paging

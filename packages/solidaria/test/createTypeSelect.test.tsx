@@ -297,10 +297,9 @@ describe("createTypeSelect", () => {
     expect(onFocusedKeyChange).not.toHaveBeenCalled();
   });
 
-  it("ignores Ctrl and Meta combinations but allows Alt", async () => {
-    // Upstream useTypeSelect guards only ctrlKey/metaKey. AltGr (right Alt)
-    // produces printable characters on many keyboard layouts, so altKey is
-    // allowed through to the search.
+  it("ignores Ctrl, Meta, and Alt combinations", async () => {
+    // Upstream useTypeSelect bails on ctrlKey || metaKey || altKey, so none of
+    // these modifier combos drive type-to-select.
     const onFocusedKeyChange = vi.fn();
 
     const { getByTestId } = render(() => {
@@ -334,9 +333,88 @@ describe("createTypeSelect", () => {
     fireEvent.keyDown(container, { key: "c", metaKey: true });
     expect(onFocusedKeyChange).not.toHaveBeenCalled();
 
-    // Alt+B *should* trigger type-to-select (AltGr emits characters)
+    // Alt+B should not trigger type-to-select (matches upstream's altKey bail)
     fireEvent.keyDown(container, { key: "b", altKey: true });
+    expect(onFocusedKeyChange).not.toHaveBeenCalled();
+  });
+
+  it("prevents the default action on a matching character", async () => {
+    // Upstream useTypeSelect calls preventDefault (and stopPropagation) once a
+    // character matches, so the keystroke doesn't also reach the collection's own
+    // keydown handlers.
+    const onFocusedKeyChange = vi.fn();
+
+    const { getByTestId } = render(() => {
+      const collection = createMockCollection(items);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(null);
+
+      const { typeSelectProps } = createTypeSelect({
+        collection: () => collection,
+        focusedKey,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
+      });
+
+      return (
+        <div {...typeSelectProps} data-testid="container" tabIndex={0}>
+          Content
+        </div>
+      );
+    });
+
+    const container = getByTestId("container");
+    container.focus();
+
+    const matchEvent = new KeyboardEvent("keydown", {
+      key: "b",
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(matchEvent);
     expect(onFocusedKeyChange).toHaveBeenCalledWith("b");
+    expect(matchEvent.defaultPrevented).toBe(true);
+  });
+
+  it("resets the search buffer when nothing matches", async () => {
+    // Upstream useTypeSelect clears the search (and cancels the debounce) the
+    // moment a keystroke fails to match anything, so the next keystroke starts a
+    // fresh search instead of extending the stale buffer.
+    const onFocusedKeyChange = vi.fn();
+
+    const { getByTestId } = render(() => {
+      const collection = createMockCollection(items);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(null);
+
+      const { typeSelectProps } = createTypeSelect({
+        collection: () => collection,
+        focusedKey,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
+      });
+
+      return (
+        <div {...typeSelectProps} data-testid="container" tabIndex={0}>
+          Content
+        </div>
+      );
+    });
+
+    const container = getByTestId("container");
+    container.focus();
+
+    // 'x' matches nothing, so the buffer resets rather than holding "x".
+    fireEvent.keyDown(container, { key: "x" });
+    expect(onFocusedKeyChange).not.toHaveBeenCalled();
+
+    // The next keystroke (still inside the debounce window) therefore searches
+    // for "a", not "xa", and lands on Apple. With a stale buffer it would search
+    // "xa" and match nothing.
+    fireEvent.keyDown(container, { key: "a" });
+    expect(onFocusedKeyChange).toHaveBeenCalledWith("a");
   });
 
   it("ignores initial space character", async () => {
