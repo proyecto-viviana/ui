@@ -23,8 +23,10 @@ import {
   ComboBoxOption as HeadlessComboBoxOption,
   ComboBoxTag as HeadlessComboBoxTag,
   ComboBoxTagGroup as HeadlessComboBoxTagGroup,
+  ListBoxSection as HeadlessListBoxSection,
   Popover as HeadlessPopover,
   defaultContainsFilter,
+  type ListBoxSectionProps as HeadlessListBoxSectionProps,
   type ComboBoxButtonProps as HeadlessComboBoxButtonProps,
   type ComboBoxButtonRenderProps,
   type ComboBoxInputProps as HeadlessComboBoxInputProps,
@@ -67,6 +69,7 @@ import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { useProviderProps, useTheme } from "../provider";
+import { Divider } from "../divider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
 import {
   getSlottedContextProps,
@@ -1069,11 +1072,30 @@ export function ComboBoxTag(props: ComboBoxTagProps): JSX.Element {
   return <HeadlessComboBoxTag {...props} />;
 }
 
+export interface ComboBoxSectionProps<T>
+  extends Omit<HeadlessListBoxSectionProps, "style" | "class" | "render"> {}
+
+/**
+ * A section within a `<ComboBox>`, mirroring React S2's `ComboBoxSection`. Renders
+ * a headless list-box section followed by a size-matched `<Divider>`; the size is
+ * read from the internal combobox context.
+ */
+export function ComboBoxSection<T>(props: ComboBoxSectionProps<T>): JSX.Element {
+  const size = useContext(ComboBoxSizeContext);
+  return (
+    <>
+      <HeadlessListBoxSection {...props}>{props.children}</HeadlessListBoxSection>
+      <Divider size={size} />
+    </>
+  );
+}
+
 ComboBox.InputGroup = ComboBoxInputGroup;
 ComboBox.Input = ComboBoxInput;
 ComboBox.Button = ComboBoxButton;
 ComboBox.ListBox = ComboBoxListBox;
 ComboBox.Option = ComboBoxOption;
+ComboBox.Section = ComboBoxSection;
 ComboBox.TagGroup = ComboBoxTagGroup;
 ComboBox.Tag = ComboBoxTag;
 

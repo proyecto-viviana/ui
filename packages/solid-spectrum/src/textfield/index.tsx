@@ -305,9 +305,11 @@ function requiredIconStyle(size: S2TextFieldSize): JSX.CSSProperties {
 
 export function TextField(props: TextFieldProps): JSX.Element {
   const isInForm = useIsInForm();
-  const providerProps = useProviderProps(useFormProps(props));
+  // Slotted context props sit below explicit props; `useFormProps`/`useProviderProps`
+  // wrap the result so the form/Skeleton disabled-force stays outermost (mirrors
+  // upstream's `useSpectrumContextProps` → `useFormProps` order in TextField.tsx).
   const contextProps = getSlottedContextProps(useContext(TextFieldContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = useProviderProps(useFormProps(mergeProps(contextProps ?? {}, props)));
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",

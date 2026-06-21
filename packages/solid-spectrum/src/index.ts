@@ -4,7 +4,7 @@
 // should live outside the main S2 export path.
 
 // Provider
-export { Provider, useTheme } from "./provider";
+export { ColorSchemeContext, Provider, useTheme } from "./provider";
 export type {
   ColorScheme,
   ProviderContextValue,
@@ -142,11 +142,11 @@ export type {
   CalendarSize,
   DateValue,
 } from "./calendar/index";
-export { DateField } from "./calendar/DateField";
+export { DateField, DateFieldContext } from "./calendar/DateField";
 export type { DateFieldProps, DateFieldSize } from "./calendar/DateField";
-export { DatePicker } from "./calendar/DatePicker";
+export { DatePicker, DatePickerContext } from "./calendar/DatePicker";
 export type { DatePickerProps, DatePickerSize } from "./calendar/DatePicker";
-export { DateRangePicker } from "./calendar/DateRangePicker";
+export { DateRangePicker, DateRangePickerContext } from "./calendar/DateRangePicker";
 export type { DateRangePickerProps, DateRangePickerSize } from "./calendar/DateRangePicker";
 export { RangeCalendar, RangeCalendarContext } from "./calendar/RangeCalendar";
 export type {
@@ -155,7 +155,7 @@ export type {
   RangeCalendarSize,
   RangeValue,
 } from "./calendar/RangeCalendar";
-export { TimeField } from "./calendar/TimeField";
+export { TimeField, TimeFieldContext } from "./calendar/TimeField";
 export type { TimeFieldProps, TimeFieldSize, TimeValue } from "./calendar/TimeField";
 
 // Card
@@ -263,6 +263,7 @@ export {
   ComboBoxListBox,
   ComboBoxOption,
   ComboBoxOption as ComboBoxItem,
+  ComboBoxSection,
   defaultContainsFilter,
 } from "./combobox";
 export type {
@@ -272,6 +273,7 @@ export type {
   ComboBoxOptionProps,
   ComboBoxOptionProps as ComboBoxItemProps,
   ComboBoxProps,
+  ComboBoxSectionProps,
   ComboBoxSize,
   MenuTriggerAction,
 } from "./combobox";
@@ -425,12 +427,12 @@ export { Meter, MeterContext } from "./meter";
 export type { MeterProps } from "./meter";
 
 // NumberField
-export { NumberField } from "./numberfield";
+export { NumberField, NumberFieldContext } from "./numberfield";
 export type { NumberFieldProps, NumberFieldSize, NumberFieldState } from "./numberfield";
 
 // Picker
-export { Picker, PickerItem } from "./picker";
-export type { PickerItemProps, PickerProps, PickerSize } from "./picker";
+export { Picker, PickerContext, PickerItem, PickerSection } from "./picker";
+export type { PickerItemProps, PickerProps, PickerSectionProps, PickerSize } from "./picker";
 
 // Popover
 export { Popover, PopoverFooter, PopoverHeader, PopoverTrigger } from "./popover";
@@ -462,7 +464,7 @@ export type {
 } from "./progress/ProgressCircle";
 
 // RadioGroup
-export { Radio, RadioGroup } from "./radio";
+export { Radio, RadioGroup, RadioGroupContext } from "./radio";
 export type { RadioGroupOrientation, RadioGroupProps, RadioGroupSize, RadioProps } from "./radio";
 
 // SearchField
@@ -550,7 +552,7 @@ export { StatusLight, StatusLightContext } from "./statuslight";
 export type { StatusLightProps } from "./statuslight";
 
 // Switch
-export { Switch, TabSwitch, ToggleSwitch } from "./switch";
+export { Switch, SwitchContext, TabSwitch, ToggleSwitch } from "./switch";
 export type { SwitchProps, SwitchSize, TabSwitchProps, ToggleSwitchProps } from "./switch";
 
 // TableView
@@ -560,6 +562,7 @@ export {
   TableBody,
   TableCell,
   TableCell as Cell,
+  TableContext,
   EditableCell,
   TableColumn,
   TableColumn as Column,
@@ -610,7 +613,7 @@ export type {
 } from "./Tabs";
 
 // TagGroup
-export { Tag, TagGroup } from "./tag-group";
+export { Tag, TagGroup, TagGroupContext } from "./tag-group";
 export type {
   SelectionMode,
   TagGroupProps,
@@ -620,7 +623,7 @@ export type {
 } from "./tag-group";
 
 // Text fields
-export { TextArea, TextField } from "./textfield";
+export { TextArea, TextAreaContext, TextField, TextFieldContext } from "./textfield";
 export type {
   TextAreaProps,
   TextAreaSize,
@@ -698,3 +701,17 @@ export type {
   TreeRenderItemState,
   TreeSelectionStyle,
 } from "./tree";
+
+// Support exports — hooks, helpers, and collection data.
+// Mirrors React S2's re-exports of the underlying React Aria / React Stately
+// utilities; here they come from our equivalent workspace packages. The
+// list-data primitives keep their Solid `create*` names internally and are
+// re-exported under S2's `use*` names for parity with the upstream surface.
+export { mergeStyles } from "./style/runtime";
+export { Autocomplete } from "@proyecto-viviana/solidaria-components";
+export { useLocale } from "@proyecto-viviana/solidaria";
+export {
+  createListData as useListData,
+  createTreeData as useTreeData,
+  createAsyncList as useAsyncList,
+} from "@proyecto-viviana/solid-stately";

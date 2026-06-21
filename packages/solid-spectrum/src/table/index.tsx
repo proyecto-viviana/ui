@@ -80,7 +80,7 @@ import {
   type ActionButtonProps,
   type ActionButtonSize,
 } from "../button";
-import type { SpectrumContextValue } from "../button/spectrum-context";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { ButtonGroup } from "../buttongroup";
 import { CustomDialog, DialogContainer } from "../dialog";
 import Cross from "../icon/ui-icons/Cross";
@@ -103,13 +103,18 @@ interface TableContextValue {
   onLoadMore?: () => void | Promise<void>;
 }
 
-const TableContext = createContext<TableContextValue>({
+const InternalTableContext = createContext<TableContextValue>({
   density: "regular",
   isQuiet: false,
   overflowMode: "truncate",
   showSelectionCheckboxes: false,
   selectionStyle: "checkbox",
 });
+
+// Mirrors React S2's public `TableContext`: slotted props injected by an ancestor
+// provider. Distinct from `InternalTableContext` above (which shares row/density
+// state between the Table sub-components). No-op by default.
+export const TableContext = createContext<SpectrumContextValue<TableProps<any>>>(null);
 
 export interface TableProps<T extends object> extends Omit<
   HeadlessTableProps<T>,
@@ -1073,7 +1078,11 @@ function inlineStyle(
 
 export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
-  const mergedProps = mergeProps(providerProps, props);
+  const contextProps = getSlottedContextProps(
+    useContext(TableContext),
+    (props as { slot?: string }).slot,
+  );
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "density",
@@ -1200,11 +1209,11 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     </div>
   );
 
-  return <TableContext.Provider value={context()}>{renderFramed()}</TableContext.Provider>;
+  return <InternalTableContext.Provider value={context()}>{renderFramed()}</InternalTableContext.Provider>;
 }
 
 export function TableHeader(props: TableHeaderProps): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
   const [local, headlessProps] = splitProps(props, ["class", "styles", "UNSAFE_className"]);
   const className = () =>
     [local.UNSAFE_className, local.class, mergeStyles(tableHeader, local.styles)]
@@ -1220,7 +1229,7 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
 }
 
 export function TableColumn(props: TableColumnProps): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
   const [local, headlessProps] = splitProps(props, [
     "children",
     "align",
@@ -1268,7 +1277,7 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
 }
 
 export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
   const [local, headlessProps] = splitProps(props, [
     "class",
     "styles",
@@ -1322,7 +1331,7 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
 }
 
 export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
   const state = useContext(HeadlessTableStateContext);
   const [local, headlessProps] = splitProps(props, [
     "children",
@@ -1414,7 +1423,7 @@ function ExpandableRowChevron(props: { isExpanded?: boolean }): JSX.Element {
 }
 
 export function TableCell(props: TableCellProps): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
   const [local, headlessProps] = splitProps(props, [
     "children",
     "align",
@@ -1492,7 +1501,7 @@ interface EditableCellOwnProps {
  * `renderEditing`. Mirrors the React Spectrum S2 `EditableCell`.
  */
 export function EditableCell(props: EditableCellProps): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
   const [local, headlessProps] = splitProps(props, [
     "children",
     "align",
@@ -1824,7 +1833,7 @@ export function TableSelectionCheckbox(props: {
   isSelected?: boolean;
   isDisabled?: boolean;
 }): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
 
   return (
     <HeadlessTableCell
@@ -1852,7 +1861,7 @@ export function TableSelectionCheckbox(props: {
 }
 
 export function TableSelectAllCheckbox(): JSX.Element {
-  const context = useContext(TableContext);
+  const context = useContext(InternalTableContext);
   const state = useContext(HeadlessTableStateContext);
   const isSelected = () => state?.selectedKeys === "all";
   const isIndeterminate = () => {

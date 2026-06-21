@@ -423,9 +423,11 @@ function DateFieldContent(props: {
 export function DateField<T extends DateValue = CalendarDate>(
   props: DateFieldProps<T>,
 ): JSX.Element {
-  const providerProps = useProviderProps(useFormProps(props));
+  // Slotted context props sit below explicit props; `useFormProps`/`useProviderProps`
+  // wrap the result so the form/Skeleton disabled-force stays outermost (mirrors
+  // upstream's `useSpectrumContextProps` → `useFormProps` order).
   const contextProps = getSlottedContextProps(useContext(DateFieldContext), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = useProviderProps(useFormProps(mergeProps(contextProps ?? {}, props)));
   const isInForm = useIsInForm();
   const [local, rest] = splitProps(merged, [
     "size",

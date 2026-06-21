@@ -37,6 +37,11 @@ export type SwitchSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2SwitchSize = "S" | "M" | "L" | "XL";
 
 export interface ToggleSwitchProps extends Omit<AriaSwitchProps, "children"> {
+  /**
+   * A slot name, used to inject props from a parent slotted context (mirrors
+   * upstream's `SlotProps`; our headless `ToggleSwitchProps` already extends it).
+   */
+  slot?: string | null;
   /** The size of the Switch. */
   size?: SwitchSize;
   /** Whether the Switch should be displayed with an emphasized style. */

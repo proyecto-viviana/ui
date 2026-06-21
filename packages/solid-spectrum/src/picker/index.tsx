@@ -18,8 +18,10 @@ import {
   SelectValue as HeadlessSelectValue,
   SelectListBox as HeadlessSelectListBox,
   SelectOption as HeadlessSelectOption,
+  ListBoxSection as HeadlessListBoxSection,
   FieldError as HeadlessFieldError,
   Popover as HeadlessPopover,
+  type ListBoxSectionProps as HeadlessListBoxSectionProps,
   type SelectProps as HeadlessSelectProps,
   type SelectRenderProps,
   type SelectTriggerRenderProps,
@@ -57,6 +59,8 @@ import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import { useProviderProps, useTheme } from "../provider";
+import { Divider } from "../divider";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 
 export type PickerSize = "S" | "M" | "L" | "XL";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -141,6 +145,10 @@ interface PickerOptionStyleProps extends SelectOptionRenderProps {
 }
 
 const PickerSizeContext = createContext<S2PickerSize>("M");
+
+// Mirrors React S2's `PickerContext`: slotted props injected by an ancestor
+// provider. No-op by default (`getSlottedContextProps(null, …)` returns null).
+export const PickerContext = createContext<SpectrumContextValue<PickerProps<any>>>(null);
 
 const pickerRoot = style<PickerStyleProps>(
   {
@@ -767,7 +775,13 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
     align: "start",
     shouldFlip: true,
   };
-  const mergedProps = mergeProps(defaultProps, useProviderProps(props), props);
+  const contextProps = getSlottedContextProps(useContext(PickerContext), props.slot);
+  const mergedProps = mergeProps(
+    defaultProps,
+    useProviderProps(props),
+    contextProps ?? {},
+    props,
+  );
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "isQuiet",
@@ -1126,6 +1140,24 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
         </>
       )}
     </HeadlessSelectOption>
+  );
+}
+
+export interface PickerSectionProps<T>
+  extends Omit<HeadlessListBoxSectionProps, "style" | "class" | "render"> {}
+
+/**
+ * A section within a `<Picker>`, mirroring React S2's `PickerSection`. Renders a
+ * headless list-box section followed by a size-matched `<Divider>`; the size is
+ * read from the internal picker context.
+ */
+export function PickerSection<T>(props: PickerSectionProps<T>): JSX.Element {
+  const size = useContext(PickerSizeContext);
+  return (
+    <>
+      <HeadlessListBoxSection {...props}>{props.children}</HeadlessListBoxSection>
+      <Divider size={size} />
+    </>
   );
 }
 

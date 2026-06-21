@@ -78,6 +78,11 @@ const defaultThemeContext: ThemeContextValue = {
 };
 
 export const ThemeContext = createContext<ThemeContextValue>(defaultThemeContext);
+// Mirrors React S2's `ColorSchemeContext`: carries the resolved color scheme
+// (including `"light dark"`) down the tree so consumers can read it. Our nested
+// inheritance already flows through `ProviderContext` above, so this context is
+// provided with the resolved value rather than driving resolution itself.
+export const ColorSchemeContext = createContext<ColorScheme | null>(null);
 const ProviderContext = createContext<InternalProviderContextValue | null>(null);
 
 /**
@@ -264,7 +269,8 @@ export function Provider(props: ProviderProps): JSX.Element {
   return (
     <ProviderContext.Provider value={providerValue}>
       <ThemeContext.Provider value={providerValue}>
-        <I18nProvider locale={locale()}>
+        <ColorSchemeContext.Provider value={colorScheme()}>
+          <I18nProvider locale={locale()}>
           <ModalProvider>
             <ProviderRoot
               rest={rest as Record<string, unknown>}
@@ -276,7 +282,8 @@ export function Provider(props: ProviderProps): JSX.Element {
               {local.children}
             </ProviderRoot>
           </ModalProvider>
-        </I18nProvider>
+          </I18nProvider>
+        </ColorSchemeContext.Provider>
       </ThemeContext.Provider>
     </ProviderContext.Provider>
   );
