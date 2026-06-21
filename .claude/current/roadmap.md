@@ -141,11 +141,12 @@ selection / keyboard / `aria-describedby` bugs, and they gate
 ### Phase 1 — bounded correctness, no dependencies (now)
 
 1. **GridList Space double-toggle** (`upstream-parity-loop` ▸
-   `gridlist-double-toggle`) — **the first item.** Twin of the Table bug fixed
-   2026-06-19: the item hook and the grid hook both toggle on Space and neither
-   stops propagation. Evidence-first (see _The first item_ below). Fixed
-   per-widget now, subsumed by the spine port later — a conscious triage, not an
-   oversight: the latent bug ships today and the fix mirrors one already landed.
+   `gridlist-double-toggle`) — **DONE 2026-06-21 (commit d03dac43).** Twin of the
+   Table bug fixed 2026-06-19: the item hook and the grid hook both toggled on
+   Space and neither stopped propagation. Resolved evidence-first (see _The first
+   item_ below). Fixed per-widget now, subsumed by the spine port later — a
+   conscious triage, not an oversight: the latent bug shipped fixed today and the
+   fix mirrors one already landed.
 2. **`ts-nocheck-style`** (`certification-enforcement`) — drop `@ts-nocheck` from
    the 6 `style/` files and fix what surfaces. Independent, and the root
    type-hygiene enabler beneath the gate ladder. Natural parallel to (1).
@@ -216,19 +217,27 @@ exclusion and folds the separate lint type-check back into the gated run).
 - **Visual-state coverage** (349 tracked / 113 evidence / 56 pair-diff) is tracked
   coverage debt under `component-certification`, not a separate initiative.
 
-### The first item — GridList Space double-toggle
+### The first item — GridList Space double-toggle (DONE 2026-06-21)
 
-Evidence before code, per the recorded caveat (`tech-debt.md` and the
-`gridlist-space-double-toggle-followup` memory). Unlike Table — where focus moves
-to the row — GridList's grid container keeps `tabIndex: 0` and its `onFocus` never
-calls `element.focus()`, so it is **unverified** whether DOM focus rests on the
-item or the container in a real browser. If it rests on the container, deleting
-the grid-level Space handler would break selection entirely. So:
+**Resolved in commit d03dac43.** Evidence before code, per the recorded caveat
+(`tech-debt.md` and the `gridlist-space-double-toggle-followup` memory). The open
+question was whether real DOM focus rests on the row or the grid container after
+keyboard entry — if the container, deleting the grid-level Space handler would
+break selection. The browser evidence settled it: GridList **auto-advances focus
+into the first row on container focus** (RAC parity), and a Table-style
+focus-following effect now carries real focus onto the focused row by a stable
+`data-key`, so the row owns Space/Enter exactly as upstream. What was done:
 
-1. Reproduce in a real browser with a window-level `keydown` listener; record
-   where `document.activeElement` sits after arrow navigation and on Space.
-2. Only then mirror upstream `useSelectableCollection` (no Space/Enter case — the
-   item owns selection): remove the grid-level Space/Enter block and update
-   `GridList.test.tsx` to fire Space on the focused item, not the grid.
-3. Re-run the full suite plus the GridList comparison tests; record evidence in
-   the validation note, not only in chat.
+1. Reproduced in a real browser with window-level focus tracing. Finding: a real
+   `Tab` lands focus on the first row and it sticks; the apparent "focus stays on
+   the container" was a Playwright `locator.focus()` artifact (it re-asserts the
+   grid when the focus-following effect moves focus synchronously inside
+   `grid.focus()`), not a component bug.
+2. Mirrored upstream `useSelectableCollection` (no Space/Enter case — the item
+   owns selection): removed the grid-level Space/Enter block, added the
+   focus-following effect + `data-key`, and gave `createGridListItem` an
+   `"all"`-gated interaction guard. Updated the unit tests to fire on the focused
+   item, not the grid.
+3. Re-ran the full package suite (5384 passed) and `a11y:check` (all three
+   sub-gates green); added `apps/web/e2e/gridlist-focus.spec.ts` as the
+   browser-evidence contract (roving focus + single-toggle, real-Tab entry).
