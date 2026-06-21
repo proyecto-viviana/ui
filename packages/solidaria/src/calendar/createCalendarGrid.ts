@@ -9,6 +9,7 @@ import { createMemo } from "solid-js";
 import { DateFormatter, startOfWeek, today } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { CalendarState, CalendarDate } from "@proyecto-viviana/solid-stately";
+import { formatVisibleRangeDescription, getCalendarHookData } from "./utils";
 
 export interface AriaCalendarGridProps {
   /** The start date of the grid (defaults to start of focused month). */
@@ -156,17 +157,35 @@ export function createCalendarGrid<T extends CalendarState>(
     );
   };
 
+  // The grid's accessible name combines the calendar's label with a description
+  // of this grid's visible month/range, mirroring @react-aria/calendar
+  // useCalendarGrid (useVisibleRangeDescription over the grid's own start/end so
+  // multi-month calendars name each grid by its own month).
+  const visibleRangeDescription = createMemo(() => {
+    const gridProps = access(props);
+    const start = gridProps.startDate ?? state.visibleRange().start;
+    const end = gridProps.endDate ?? state.visibleRange().end;
+    return formatVisibleRangeDescription(start, end, state.timeZone, state.locale());
+  });
+
   // Grid props
-  const gridProps = createMemo(() => ({
-    role: "grid",
-    "aria-readonly": state.isReadOnly() || undefined,
-    "aria-disabled": state.isDisabled() || undefined,
-    "aria-multiselectable": isMultiSelectable() || undefined,
-    tabIndex: state.isFocused() ? 0 : -1,
-    onFocus: () => state.setFocused(true),
-    onBlur: () => state.setFocused(false),
-    onKeyDown: handleKeyDown,
-  }));
+  const gridProps = createMemo(() => {
+    const data = getCalendarHookData(state);
+    const gridLabel = [data?.ariaLabel, visibleRangeDescription()].filter(Boolean).join(", ");
+
+    return {
+      role: "grid",
+      "aria-label": gridLabel || undefined,
+      "aria-labelledby": data?.ariaLabelledBy,
+      "aria-readonly": state.isReadOnly() || undefined,
+      "aria-disabled": state.isDisabled() || undefined,
+      "aria-multiselectable": isMultiSelectable() || undefined,
+      tabIndex: state.isFocused() ? 0 : -1,
+      onFocus: () => state.setFocused(true),
+      onBlur: () => state.setFocused(false),
+      onKeyDown: handleKeyDown,
+    };
+  });
 
   // Header props are intentionally empty. Consumers render this on <thead>,
   // which already has correct table semantics.

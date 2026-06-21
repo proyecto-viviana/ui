@@ -227,4 +227,54 @@ describe("Calendar (solid-spectrum)", () => {
     expect(screen.getByText("May 2025")).toBeInTheDocument();
     expect(screen.getByText("June 2025")).toBeInTheDocument();
   });
+
+  it("names each grid with the calendar label and its own visible month", async () => {
+    render(() => (
+      <Calendar
+        aria-label="Appointment date"
+        value={new CalendarDate(2025, 2, 3)}
+        visibleMonths={2}
+      />
+    ));
+    await waitForCalendar();
+
+    // Mirrors @react-aria/calendar useCalendarGrid: gridProps aria-label is
+    // [calendar label, visible-range description].join(", "), per-grid so each
+    // month names itself.
+    expect(
+      screen.getByRole("grid", { name: "Appointment date, February 2025" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("grid", { name: "Appointment date, March 2025" })).toBeInTheDocument();
+  });
+
+  it("routes the selected-cell label through the localized string formatter", async () => {
+    // en-US: "<date> selected" (byte-identical to the prior hardcoded suffix).
+    render(() => <Calendar aria-label="Appointment date" value={new CalendarDate(2025, 2, 3)} />);
+    await waitForCalendar();
+    expect(
+      screen.getByRole("button", { name: /February 3, 2025 selected/i }),
+    ).toBeInTheDocument();
+    cleanup();
+
+    // fr-FR: the suffix is localized ("sélectionné"), not appended in English.
+    render(() => (
+      <Provider locale="fr-FR">
+        <Calendar aria-label="Date de rendez-vous" value={new CalendarDate(2025, 2, 15)} />
+      </Provider>
+    ));
+    await waitForCalendar();
+    expect(
+      screen.getByRole("button", { name: /15 février 2025 sélectionné/i }),
+    ).toBeInTheDocument();
+    cleanup();
+
+    // ar-AE (RTL): the localized selected marker appears in the cell label.
+    render(() => (
+      <Provider locale="ar-AE">
+        <Calendar aria-label="تاريخ الموعد" value={new CalendarDate(2025, 2, 15)} />
+      </Provider>
+    ));
+    await waitForCalendar();
+    expect(screen.getByRole("button", { name: /المحدد/ })).toBeInTheDocument();
+  });
 });

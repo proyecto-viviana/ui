@@ -16,6 +16,7 @@ import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
 import { getCalendarHookData } from "./utils";
+import { formatCalendarLabel } from "./intl";
 
 export interface AriaCalendarCellProps {
   /** The date represented by the cell. */
@@ -175,9 +176,16 @@ export function createCalendarCell<T extends CalendarState>(
       day: "numeric",
       calendar: d.calendar.identifier,
     } as Intl.DateTimeFormatOptions);
+    // Mirror @react-aria/calendar useCalendarCell: route the selected/today
+    // suffix through the localized string formatter instead of hardcoding
+    // " selected" (which dropped "Today" and never localized).
     let label = formatter.format(d.toDate(timeZone));
-    if (isSelected()) {
-      label += " selected";
+    if (isToday()) {
+      label = formatCalendarLabel(locale(), isSelected() ? "todayDateSelected" : "todayDate", {
+        date: label,
+      });
+    } else if (isSelected()) {
+      label = formatCalendarLabel(locale(), "dateSelected", { date: label });
     }
     const errorMessageId = getCalendarHookData(state)?.errorMessageId;
 

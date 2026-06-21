@@ -137,7 +137,13 @@ tasks:
     roadmap: upstream-api-parity
     note: Landed in proof-batch PR #3
   - id: calendar-i18n-strings
-    title: Route calendar cell/grid/segment strings through createStringFormatter
+    title: Route calendar cell/grid strings through createStringFormatter
+    state: done
+    finished: 2026-06-21
+    roadmap: upstream-api-parity
+    note: Cell today/selected suffix + grid accessible name now localized; segment label split out to calendar-segment-i18n
+  - id: calendar-segment-i18n
+    title: Route the date/time segment field label through the i18n layer
     state: open
     roadmap: upstream-api-parity
 ---
@@ -265,6 +271,18 @@ whose only S2 prop is `onAction`; `viviana-ui` minted public names
 **Exit:** invented props are removed or documented as explicit local additions;
 public names-with-reach are owner-confirmed; `guard:rac-parity` covers the props.
 
+> **FLAGGED — needs owner decision (skipped by the autonomous parity pass).** The
+> *additive* half is already met for Picker: `PickerProps<T> extends
+> HeadlessSelectProps<T>`, so `selectedKey`/`onSelectionChange` are exposed today.
+> The remaining half — *removing* `value`/`defaultValue`/`onChange`/`renderValue`
+> (Picker) and `selectionStyle`/`renderActionBar`/`overflowMode` (TreeView) — is a
+> **breaking public-API change** that reaches live `@proyecto-viviana/ui` consumers
+> (the UC client contract; TreeView's grafted props back `viviana-social` CardView
+> usage). The exit explicitly allows the non-breaking branch ("documented as
+> explicit local additions"). Owner to choose: remove (major bump + downstream
+> migration) vs. document-as-local-additions. Until then the props stay; this is
+> the product/design call the overnight pass is instructed not to guess.
+
 ## Form-field split: monoliths kept primary, no `@deprecated` tags
 
 RAC 1.19 split Switch/Checkbox/Radio into a `*Field` wrapper + `*Button` control
@@ -287,14 +305,31 @@ errorMessage through real `TextContext` slots; the styled layer migrates onto th
 
 ## i18n strings hardcoded in the data/spectrum layers
 
-User-facing strings are hardcoded English instead of routed through the shipped ICU
-formatter: calendar cells append `" selected"` and omit "Today"
-(`createCalendarCell.ts:169-171`); date/time segments drop the field label; the
-calendar grid has no localized accessible name. `0` unit tests set a non-English
-locale, so the regression is unprotected.
+**Cell + grid facets DONE 2026-06-21 (`calendar-i18n-strings`).** The calendar
+cell label now routes the today/selected suffix through `formatCalendarLabel`
+(`createCalendarCell.ts` buttonProps) — mirroring `@react-aria/calendar`
+useCalendarCell, so today gains the "Today, …" prefix and the suffix localizes
+(en-US `… selected`, fr-FR `… sélectionné`, ar-AE `… المحدد`) instead of a
+hardcoded English `" selected"`. The calendar grid now carries a localized
+accessible name: `createCalendar`/`createRangeCalendar` publish `ariaLabel`/
+`ariaLabelledBy` into the shared `CalendarHookData`, and `createCalendarGrid`
+joins `[ariaLabel, visibleRangeDescription]` per-grid (each month names itself),
+matching useCalendarGrid. `Calendar.test.tsx` adds the contract test across en-US,
+fr-FR, and the RTL ar-AE locale plus the per-grid name assertion.
 
-**Exit:** these strings come from `createStringFormatter`/the i18n dictionaries; a
-contract test runs at least one non-English and one RTL locale.
+**Still open (`calendar-segment-i18n`):** the date/time segment `aria-label`
+still drops the field label — `createDateSegment.ts` sets it to just
+`getSegmentLabel(type)` where upstream useDateSegment is
+`${name}${ariaLabel ? ', ' + ariaLabel : ''}…`. Deferred deliberately: it spans
+5+ files (segment hook + DateField/TimeField/DatePicker plumbing of the field
+label down to each segment) and `getSegmentLabel` reads a hardcoded
+`SEGMENT_LABELS` table rather than the i18n dictionary, so closing it well means
+deciding whether to also move that table onto `createStringFormatter` — its own
+pass, not a rider on the cell/grid work.
+
+**Exit:** the segment field label is threaded through to each segment and the
+hardcoded `SEGMENT_LABELS` table is evaluated against the i18n dictionary; the
+existing non-English/RTL contract coverage extends to a segment assertion.
 
 ## viviana-ui boundary skips and dead natives
 

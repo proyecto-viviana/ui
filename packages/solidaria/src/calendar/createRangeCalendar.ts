@@ -86,6 +86,8 @@ export function createRangeCalendar<T extends RangeCalendarState>(
       initialProps.errorMessage || initialProps.errorMessageId
         ? errorMessageId
         : existingHookData?.errorMessageId,
+    ariaLabel: initialProps["aria-label"],
+    ariaLabelledBy: initialProps["aria-labelledby"],
     get selectedDateDescription() {
       return selectedDateDescription();
     },

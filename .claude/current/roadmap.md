@@ -175,8 +175,16 @@ selection / keyboard / `aria-describedby` bugs, and they gate
   (we did **not** add hard `@deprecated` tags — see tech-debt).
 - **`autocomplete-collection-bridge`** — wire `SearchField` / `Menu` onto the
   autocomplete contexts (Bucket D).
-- **`upstream-api-parity`** — `picker-api-upstream`, `treeview-api-upstream`,
-  `calendar-i18n-strings`.
+- **`upstream-api-parity`** — `calendar-i18n-strings` **DONE 2026-06-21** (cell
+  today/selected suffix + grid accessible name routed through
+  `formatCalendarLabel`/the shared `CalendarHookData`, mirroring useCalendarCell /
+  useCalendarGrid; contract test added across en-US, fr-FR, RTL ar-AE). The
+  segment field-label remainder is split out to `calendar-segment-i18n` (deferred —
+  5+ files + a `SEGMENT_LABELS`-vs-dictionary decision). `picker-api-upstream` /
+  `treeview-api-upstream` are **FLAGGED for the owner**: the additive
+  `selectedKey`/`onSelectionChange` half is already exposed, but *removing* the
+  invented props is a breaking public-API change to live consumers — a product
+  decision the autonomous pass leaves untouched (see tech-debt).
 - **`support-export-parity`** — **DONE 2026-06-21.** The 21 missing S2 support
   exports (`support-export-audit`): the slotted-props contexts, `PickerSection` /
   `ComboBoxSection`, and the helper/hook re-exports are wired and

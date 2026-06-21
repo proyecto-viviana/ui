@@ -88,6 +88,8 @@ export function createCalendar<T extends CalendarState>(
     setCalendarHookData(state, {
       errorMessageId:
         initialProps.errorMessage || initialProps.errorMessageId ? errorMessageId : undefined,
+      ariaLabel: initialProps["aria-label"],
+      ariaLabelledBy: initialProps["aria-labelledby"],
     });
   }
 

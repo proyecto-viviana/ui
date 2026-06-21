@@ -11,6 +11,10 @@ import { formatCalendarLabel } from "./intl";
 export interface CalendarHookData {
   errorMessageId?: string;
   selectedDateDescription?: string;
+  /** The calendar's accessible label, shared with each grid (mirrors @react-aria/calendar hookData.ariaLabel). */
+  ariaLabel?: string;
+  /** The id of an element labelling the calendar, shared with each grid (mirrors hookData.ariaLabelledBy). */
+  ariaLabelledBy?: string;
 }
 
 const hookData = new WeakMap<CalendarState | RangeCalendarState, CalendarHookData>();
