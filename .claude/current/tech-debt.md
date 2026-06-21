@@ -172,12 +172,15 @@ wires and `aria-describedby` is absent. Rule #4/#5.
 
 A live instance of "one bug recurs across many": both the collection hook and the
 item hook handle the selection key, so a focused-row Space toggles selection twice
-and nets no change. Fixed per-widget in Table (`createTable.ts` grid-level
-Space/Enter block removed, selection left to `createTableRow.ts`, 2026-06-19), but
-still latent in GridList — `createGridList.ts:186` and `createGridListItem.ts:123`
-both toggle on Space and neither stops propagation. Upstream
-`useSelectableCollection` has no Space/Enter case; the item owns selection. The
-spine port deletes the duplication instead of fixing it widget by widget.
+and nets no change. Now fixed per-widget in both Table (grid-level Space/Enter
+block removed, selection left to `createTableRow.ts`, 2026-06-19) and GridList
+(same removal from `createGridList.ts`, selection/activation left to
+`createGridListItem.ts`, plus a Table-style focus-following effect that carries
+browser focus onto the focused row by a stable `data-key` so the row's own
+handlers receive the keypress, 2026-06-21). Upstream `useSelectableCollection` has
+no Space/Enter case; the item owns selection. These remain stopgaps — the spine
+port should delete the duplication at its source instead of fixing it widget by
+widget.
 
 **Exit:** the three keystones (`SelectionManager`, `ListKeyboardDelegate`/
 `useSelectable*`, `useContextProps` + slot plumbing) are ported to their lowest

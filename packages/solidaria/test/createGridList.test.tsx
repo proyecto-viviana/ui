@@ -16,7 +16,7 @@ import {
   type GridNode,
   type Key,
 } from "../../solid-stately/src";
-import { createGridList } from "../src/gridlist";
+import { createGridList, createGridListItem } from "../src/gridlist";
 
 // Mock keyboard event with a stubbed preventDefault and currentTarget.
 function createMockKeyboardEvent(key: string, options: Partial<KeyboardEvent> = {}) {
@@ -254,18 +254,22 @@ describe("createGridList disabled-key keyboard navigation", () => {
           disabledKeys: ["b"],
           disabledBehavior: "selection",
         });
-        const { gridProps } = createGridList(
+        // Selection and activation live on the row hook now (mirroring
+        // useSelectableCollection, which has no Space/Enter case); the grid hook
+        // only drives navigation and registers actions.
+        createGridList(
           () => ({}),
           () => state,
           () => null,
         );
-
-        state.setFocusedKey("a");
-        (gridProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowDown"));
-        expect(state.focusedKey).toBe("b");
+        const item = createGridListItem(
+          () => ({ node: state.collection.getItem("b")! }),
+          () => state,
+          () => null,
+        );
 
         // Space on the disabled-for-selection row must not select it.
-        (gridProps.onKeyDown as any)?.(createMockKeyboardEvent(" "));
+        (item.rowProps.onKeyDown as any)?.(createMockKeyboardEvent(" "));
         expect(state.isSelected("b")).toBe(false);
         dispose();
       });
@@ -278,16 +282,22 @@ describe("createGridList disabled-key keyboard navigation", () => {
           disabledKeys: ["b"],
           disabledBehavior: "selection",
         });
-        const { gridProps } = createGridList(
+        // The grid hook registers onAction (via the gridlist data map) but no
+        // longer handles Enter — the row hook performs the action. Under
+        // "selection" b stays focusable, so Enter fires onAction; Space selection
+        // stays blocked independently.
+        createGridList(
           () => ({ onAction }),
           () => state,
           () => null,
         );
+        const item = createGridListItem(
+          () => ({ node: state.collection.getItem("b")! }),
+          () => state,
+          () => null,
+        );
 
-        // b is focusable under "selection": Enter fires onAction but must not
-        // select it (Space selection stays blocked independently).
-        state.setFocusedKey("b");
-        (gridProps.onKeyDown as any)?.(createMockKeyboardEvent("Enter"));
+        (item.rowProps.onKeyDown as any)?.(createMockKeyboardEvent("Enter"));
 
         expect(onAction).toHaveBeenCalledWith("b");
         expect(state.isSelected("b")).toBe(false);

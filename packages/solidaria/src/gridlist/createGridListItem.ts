@@ -36,6 +36,19 @@ export function createGridListItem<
     return s.isDisabled(p.node.key);
   });
 
+  // Disabled keys only block keyboard interaction under disabledBehavior "all".
+  // Under "selection" the row stays focusable and actionable; selection itself is
+  // still blocked (state.toggleSelection self-guards on the raw disabled set, and
+  // the Space branch below guards too). Mirrors SelectionManager.isDisabled /
+  // ListKeyboardDelegate.isDisabled in React Aria — and the grid hook's own
+  // navigation gate, now that selection/activation live here rather than on the
+  // grid container.
+  const isInteractionDisabled = createMemo(() => {
+    const s = state();
+    const p = props();
+    return s.isDisabled(p.node.key) && s.disabledBehavior === "all";
+  });
+
   const isFocused = createMemo(() => {
     const s = state();
     const p = props();
@@ -102,7 +115,7 @@ export function createGridListItem<
     const s = state();
     const p = props();
 
-    if (isDisabled()) return;
+    if (isInteractionDisabled()) return;
 
     if (e.key === "Enter") {
       // Get grid list metadata for actions
@@ -121,8 +134,11 @@ export function createGridListItem<
         }
       }
     } else if (e.key === " " || e.key === "Space" || e.key === "Spacebar") {
-      // Space toggles selection
-      if (s.selectionMode !== "none") {
+      // Space toggles selection. Guard on the raw disabled set so a row that is
+      // focusable-but-not-selectable (disabledBehavior "selection") treats Space
+      // as a no-op rather than preventing default scroll on a toggle that state
+      // would reject anyway.
+      if (s.selectionMode !== "none" && !s.isDisabled(p.node.key)) {
         e.preventDefault();
         s.toggleSelection(p.node.key);
       }

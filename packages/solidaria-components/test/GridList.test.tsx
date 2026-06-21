@@ -514,7 +514,12 @@ describe("GridList", () => {
       expect(list).toBeTruthy();
     });
 
-    it("supports keyboard selection from focused grid container with Space", () => {
+    it("toggles selection exactly once with Space on the focused row", () => {
+      // Regression guard for the grid/item double-toggle. Solid delegates keydown
+      // and replays bubbling up the composed path, so while both the row hook and
+      // the grid hook handled Space a focused row toggled twice — a net no-op.
+      // Selection now lives only on the row (mirroring useSelectableCollection,
+      // which has no Space case), so one press is one toggle.
       render(() => (
         <GridList
           items={testItems}
@@ -530,17 +535,20 @@ describe("GridList", () => {
         </GridList>
       ));
 
-      const grid = screen.getByRole("grid", { name: "Fruits" });
       const rows = screen.getAllByRole("row");
       expect(rows[0]).toHaveAttribute("aria-selected", "false");
 
-      fireEvent.focus(grid);
-      fireEvent.keyDown(grid, { key: " " });
+      // Pointer focus landing on the row sets it as the focused key — exactly the
+      // state in which the old grid-level Space handler also fired and doubled up.
+      fireEvent.focus(rows[0]);
+      fireEvent.keyDown(rows[0], { key: " " });
 
       expect(rows[0]).toHaveAttribute("aria-selected", "true");
     });
 
-    it("supports keyboard action from focused grid container with Enter", () => {
+    it("fires onAction exactly once with Enter on the focused row", () => {
+      // Parallel guard for Enter double-activation: with both hooks handling Enter
+      // a focused row fired onAction twice. Activation now lives only on the row.
       const onAction = vi.fn();
       render(() => (
         <GridList
@@ -557,10 +565,11 @@ describe("GridList", () => {
         </GridList>
       ));
 
-      const grid = screen.getByRole("grid", { name: "Fruits" });
-      fireEvent.focus(grid);
-      fireEvent.keyDown(grid, { key: "Enter" });
+      const rows = screen.getAllByRole("row");
+      fireEvent.focus(rows[0]);
+      fireEvent.keyDown(rows[0], { key: "Enter" });
 
+      expect(onAction).toHaveBeenCalledTimes(1);
       expect(onAction).toHaveBeenCalledWith(1);
     });
   });
@@ -731,7 +740,9 @@ describe("GridList", () => {
 
       expect(rows[1].getAttribute("tabindex")).toBe("0");
 
-      fireEvent.keyDown(grid, { key: "Enter" });
+      // Activation lives on the row now; under "selection" the disabled row stays
+      // actionable (Enter -> onAction) while selection itself stays blocked.
+      fireEvent.keyDown(rows[1], { key: "Enter" });
       expect(onAction).toHaveBeenCalledWith(2);
       expect(rows[1]).toHaveAttribute("aria-selected", "false");
     });

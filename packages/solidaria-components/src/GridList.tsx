@@ -829,6 +829,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       )}
       class={renderProps.class()}
       style={renderProps.style()}
+      data-key={local.id}
       data-selected={isSelected() || undefined}
       data-focused={isFocused() || undefined}
       data-focus-visible={(isFocusVisible() && isFocused()) || undefined}

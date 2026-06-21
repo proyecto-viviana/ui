@@ -3,11 +3,13 @@
  * Based on @react-aria/gridlist/useGridList.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo, createEffect, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { GridState, GridCollection, Key } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListProps, GridListAria } from "./types";
+import { scrollIntoViewport } from "../utils";
+import { getInteractionModality } from "../interactions/createInteractionModality";
 
 /**
  * Metadata stored for a grid list instance.
@@ -75,7 +77,7 @@ function findNextNavigableKey<T extends object, C extends GridCollection<T>>(
 export function createGridList<T extends object, C extends GridCollection<T> = GridCollection<T>>(
   props: Accessor<AriaGridListProps>,
   state: Accessor<GridState<T, C>>,
-  _ref: Accessor<HTMLElement | null>,
+  ref: Accessor<HTMLElement | null>,
 ): GridListAria {
   // Generate a unique ID for the grid list
   const gridListId = props().id ?? createId();
@@ -183,27 +185,13 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         }
         break;
       }
-      case " ":
-      case "Space":
-      case "Spacebar": {
-        if (focusedKey != null && s.selectionMode !== "none" && !s.isDisabled(focusedKey)) {
-          e.preventDefault();
-          s.toggleSelection(focusedKey);
-        }
-        break;
-      }
-      case "Enter": {
-        // Activation is gated on the navigation-disabled check, not the raw
-        // one: under disabledBehavior "selection" a focusable disabled row
-        // still fires onAction, mirroring useSelectableItem's allowsActions
-        // (manager.isDisabled is gated on "all"). Selection (Space) stays
-        // blocked independently.
-        if (focusedKey != null && !isNavigationDisabled(s, focusedKey)) {
-          e.preventDefault();
-          p.onAction?.(focusedKey);
-        }
-        break;
-      }
+      // Space (toggle selection) and Enter (onAction) are intentionally absent
+      // here. Upstream's useSelectableCollection has no Space/Enter case — the
+      // focused item owns both, via useSelectableItem. We follow browser focus
+      // onto the focused row (the effect below), so the row's own handlers in
+      // createGridListItem fire. Handling them here too would double-toggle a
+      // focused row, because Solid delegates keydown and bubbles the row event
+      // up to this grid handler.
       case "Escape": {
         if (s.selectionMode !== "none") {
           e.preventDefault();
@@ -233,6 +221,44 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     const s = state();
     s.setFocused(false);
   };
+
+  // Mirror React Aria's useSelectableCollection: once the roving tabindex for the
+  // focused key has been committed to the DOM, move browser focus onto that row
+  // from a post-commit effect, looking it up by its stable data-key rather than by
+  // transient tabindex. Selection and activation live on the row
+  // (createGridListItem) to match upstream, so keyboard nav has to carry focus
+  // there for the row's Space/Enter handlers to act on.
+  createEffect(() => {
+    const s = state();
+    const key = s.focusedKey;
+    const el = ref();
+    if (!el || key == null) {
+      return;
+    }
+
+    // Only manage focus while it already lives inside the grid — i.e. the user is
+    // navigating with the keyboard. Gate on the physical position of browser focus
+    // rather than the grid's logical isFocused signal: focus can land directly on a
+    // row (a pointer click) without ever firing the grid's own focus handler, and
+    // the contains() check keeps us from yanking focus back from elsewhere on the
+    // page when the focused key changes from a background interaction.
+    const active = document.activeElement;
+    if (!active || (active !== el && !el.contains(active))) {
+      return;
+    }
+
+    const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    if (target && target !== active) {
+      target.focus();
+
+      // Reveal the newly focused row when navigating with the keyboard, mirroring
+      // useSelectableCollection. Pointer-driven focus changes should not shift the
+      // scroll position under the user's finger.
+      if (getInteractionModality() !== "pointer") {
+        scrollIntoViewport(target, { containingElement: el });
+      }
+    }
+  });
 
   const gridProps = createMemo(() => {
     const p = props();

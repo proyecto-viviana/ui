@@ -316,6 +316,10 @@ test.describe("Playground Page", () => {
     await expect(grid).toHaveAttribute("tabindex", "0");
 
     await grid.focus();
+    // Selection lives on the row hook (matching upstream useSelectableCollection,
+    // which has no Space/Enter case), so ArrowDown first carries real DOM focus
+    // onto a row before Space toggles it.
+    await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Space");
 
     const selectedSummary = section.locator("p", { hasText: "Selected:" }).first();
