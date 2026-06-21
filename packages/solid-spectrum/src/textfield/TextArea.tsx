@@ -1,8 +1,10 @@
 // @ts-nocheck
 import {
   type JSX,
+  createContext,
   createEffect,
   createSignal,
+  mergeProps,
   onCleanup,
   onMount,
   Show,
@@ -10,10 +12,14 @@ import {
   useContext,
 } from "solid-js";
 import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
+import {
   Label as HeadlessLabel,
   TextArea as HeadlessTextArea,
   TextField as HeadlessTextField,
-  TextFieldContext,
+  TextFieldContext as HeadlessTextFieldContext,
   type TextFieldProps as HeadlessTextFieldProps,
   type TextFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
@@ -70,6 +76,8 @@ export interface TextAreaProps extends Omit<
   /** Whether required fields show an icon or text label. */
   necessityIndicator?: TextAreaNecessityIndicator;
 }
+
+export const TextAreaContext = createContext<SpectrumContextValue<TextAreaProps>>(null);
 
 interface TextAreaStyleProps extends TextFieldRenderProps {
   size?: S2TextAreaSize;
@@ -215,7 +223,7 @@ function TextAreaDescription(props: {
   class?: string;
   children?: JSX.Element;
 }): JSX.Element | null {
-  const context = useContext(TextFieldContext);
+  const context = useContext(HeadlessTextFieldContext);
   if (!context) return null;
   const descriptionProps = () => {
     const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
@@ -229,7 +237,7 @@ function TextAreaDescription(props: {
 }
 
 function TextAreaError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(TextFieldContext);
+  const context = useContext(HeadlessTextFieldContext);
   if (!context) return null;
   const errorMessageProps = () => {
     const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
@@ -308,7 +316,9 @@ function resizeTextArea(element: HTMLTextAreaElement | undefined) {
  * a sizable amount of text to enter.
  */
 export function TextArea(props: TextAreaProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(TextAreaContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { type JSX, createSignal, createUniqueId, splitProps, Show, useContext } from "solid-js";
+import { type JSX, createContext, createSignal, createUniqueId, mergeProps, splitProps, Show, useContext } from "solid-js";
 import {
   NumberField as HeadlessNumberField,
   NumberFieldLabel as HeadlessNumberFieldLabel,
@@ -7,7 +7,7 @@ import {
   NumberFieldInput as HeadlessNumberFieldInput,
   NumberFieldIncrementButton as HeadlessNumberFieldIncrementButton,
   NumberFieldDecrementButton as HeadlessNumberFieldDecrementButton,
-  NumberFieldContext,
+  NumberFieldContext as HeadlessNumberFieldContext,
   type NumberFieldProps as HeadlessNumberFieldProps,
   type NumberFieldRenderProps,
   type NumberFieldInputRenderProps,
@@ -29,6 +29,10 @@ import AddIcon from "../icon/ui-icons/Add";
 import DashIcon from "../icon/ui-icons/Dash";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import { useProviderProps } from "../provider";
+import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type NumberFieldSize = "S" | "M" | "L" | "XL";
 type S2NumberFieldSize = NumberFieldSize;
@@ -67,6 +71,8 @@ export interface NumberFieldProps extends Omit<
   /** An icon or text rendered before the input. */
   prefix?: JSX.Element;
 }
+
+export const NumberFieldContext = createContext<SpectrumContextValue<NumberFieldProps>>(null);
 
 interface NumberFieldStyleProps extends NumberFieldRenderProps {
   size?: S2NumberFieldSize;
@@ -320,7 +326,7 @@ function NumberFieldDescription(props: {
   class?: string;
   children?: JSX.Element;
 }): JSX.Element | null {
-  const context = useContext(NumberFieldContext);
+  const context = useContext(HeadlessNumberFieldContext);
   if (!context) return null;
   const descriptionProps = () => {
     const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
@@ -335,7 +341,7 @@ function NumberFieldDescription(props: {
 }
 
 function NumberFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(NumberFieldContext);
+  const context = useContext(HeadlessNumberFieldContext);
   if (!context) return null;
   const errorMessageProps = () => {
     const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
@@ -402,7 +408,9 @@ function stepperIconStyle(size: S2NumberFieldSize): JSX.CSSProperties {
  * NumberFields allow users to input number values with a keyboard or increment/decrement with step buttons.
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(NumberFieldContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "styles",
@@ -553,7 +561,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
               }
             >
               <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
-              <PrefixInputProvider context={NumberFieldContext} prefixId={prefixId}>
+              <PrefixInputProvider context={HeadlessNumberFieldContext} prefixId={prefixId}>
                 <HeadlessNumberFieldInput
                   class={inputClass}
                   placeholder={local.placeholder}

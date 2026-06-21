@@ -5,7 +5,10 @@ import {
   mergeProps as solidMergeProps,
   splitProps,
   type JSX,
+  useContext,
 } from "solid-js";
+import { getSlottedContextProps } from "../button/spectrum-context";
+import { SwitchContext } from ".";
 import {
   createFocusRing,
   createHover,
@@ -209,12 +212,13 @@ function switchHandlePressStyle(
  */
 export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(SwitchContext), props.slot);
   const locale = useLocale();
   const defaultProps: Partial<ToggleSwitchProps> = {
     size: "M",
   };
 
-  const merged = solidMergeProps(defaultProps, providerProps);
+  const merged = solidMergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "size",
     "isEmphasized",

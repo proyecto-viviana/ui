@@ -1,9 +1,11 @@
-import { type JSX, createMemo } from "solid-js";
+import { type JSX, createContext, createMemo } from "solid-js";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import {
   ToggleButtonGroup as HeadlessToggleButtonGroup,
   ToggleButton as HeadlessToggleButton,
 } from "@proyecto-viviana/solidaria-components";
+import { type SpectrumContextValue } from "../button/spectrum-context";
+import { type ToggleSwitchProps } from "./ToggleSwitch";
 
 export {
   ToggleSwitch,
@@ -12,6 +14,8 @@ export {
   type ToggleSwitchProps as SwitchProps,
   type SwitchSize,
 } from "./ToggleSwitch";
+
+export const SwitchContext = createContext<SpectrumContextValue<ToggleSwitchProps>>(null);
 
 interface SwitchOption {
   label: string;

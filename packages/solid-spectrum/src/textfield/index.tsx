@@ -1,13 +1,17 @@
 // @ts-nocheck
-import { type JSX, createUniqueId, mergeProps, splitProps, Show, useContext } from "solid-js";
+import { type JSX, createContext, createUniqueId, mergeProps, splitProps, Show, useContext } from "solid-js";
 import {
   TextField as HeadlessTextField,
   Label as HeadlessLabel,
   Input as HeadlessInput,
-  TextFieldContext,
+  TextFieldContext as HeadlessTextFieldContext,
   type TextFieldProps as HeadlessTextFieldProps,
   type TextFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
@@ -63,6 +67,8 @@ export interface TextFieldProps extends Omit<
   /** An icon or text rendered before the input, e.g. a unit or protocol. */
   prefix?: JSX.Element;
 }
+
+export const TextFieldContext = createContext<SpectrumContextValue<TextFieldProps>>(null);
 
 interface TextFieldStyleProps extends TextFieldRenderProps {
   size?: S2TextFieldSize;
@@ -230,7 +236,7 @@ function TextFieldDescription(props: {
   class?: string;
   children?: JSX.Element;
 }): JSX.Element | null {
-  const context = useContext(TextFieldContext);
+  const context = useContext(HeadlessTextFieldContext);
   if (!context) return null;
   const descriptionProps = () => {
     const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
@@ -244,7 +250,7 @@ function TextFieldDescription(props: {
 }
 
 function TextFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(TextFieldContext);
+  const context = useContext(HeadlessTextFieldContext);
   if (!context) return null;
   const errorMessageProps = () => {
     const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
@@ -257,7 +263,7 @@ function TextFieldError(props: { class?: string; children?: JSX.Element }): JSX.
   );
 }
 
-export { TextArea } from "./TextArea";
+export { TextArea, TextAreaContext } from "./TextArea";
 export type { TextAreaProps, TextAreaSize, TextAreaVariant } from "./TextArea";
 
 function normalizeTextFieldSize(size: TextFieldSize | undefined): S2TextFieldSize {
@@ -299,7 +305,9 @@ function requiredIconStyle(size: S2TextFieldSize): JSX.CSSProperties {
 
 export function TextField(props: TextFieldProps): JSX.Element {
   const isInForm = useIsInForm();
-  const mergedProps = useProviderProps(useFormProps(props));
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(TextFieldContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",
@@ -430,7 +438,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
           >
             <Show when={local.prefix} fallback={<HeadlessInput class={textFieldInput} />}>
               <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
-              <PrefixInputProvider context={TextFieldContext} prefixId={prefixId}>
+              <PrefixInputProvider context={HeadlessTextFieldContext} prefixId={prefixId}>
                 <HeadlessInput class={textFieldInput} />
               </PrefixInputProvider>
             </Show>

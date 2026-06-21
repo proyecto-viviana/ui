@@ -4,10 +4,15 @@ import {
   children as resolveChildren,
   createContext,
   createUniqueId,
+  mergeProps,
   splitProps,
   useContext,
   Show,
 } from "solid-js";
+import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 import {
   TagList as HeadlessTagList,
   Tag as HeadlessTag,
@@ -108,6 +113,8 @@ export interface TagProps extends Omit<HeadlessTagProps, "class" | "style" | "ch
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
 }
+
+export const TagGroupContext = createContext<SpectrumContextValue<TagGroupProps<any>>>(null);
 
 interface TagGroupContextValue {
   size: S2TagGroupSize;
@@ -506,7 +513,9 @@ export function Tag(props: TagProps): JSX.Element {
  * A tag group displays a collection of tags that can be selected and/or removed.
  */
 export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(TagGroupContext), props.slot);
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, listProps] = splitProps(mergedProps, [
     "label",
     "items",
