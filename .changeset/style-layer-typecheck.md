@@ -24,6 +24,13 @@ file-wide:
   `import * as` namespace carries a synthetic `default` (esModuleInterop), so
   the token key space now excludes it (`Exclude<keyof …, "default">`), fixing
   the `TS2345` that the previous `default`-unwrap ternary introduced.
+- The three `process.env` reads (`runtime.ts`, `style-macro.ts`,
+  `spectrum-theme.ts`) now go through the build-safe `globalThis` cast already
+  used in `image/` and `statuslight/`, instead of the bare `typeof process`
+  form. `tsconfig.typecheck.json` declares `types: ["node"]` but the dts build
+  (`tsconfig.build.json`) does not, so the bare form type-checked but broke the
+  declaration emit with `TS2591: Cannot find name 'process'`.
 
 No runtime or API change — the emitted CSS and token values are identical; the
-layer is now covered by `vp run typecheck`.
+layer is now covered by `vp run typecheck` and the dts build (`tsc -p
+tsconfig.build.json`).

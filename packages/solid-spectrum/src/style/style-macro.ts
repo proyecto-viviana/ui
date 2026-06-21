@@ -28,7 +28,12 @@ import type {
 } from "./types";
 import * as propertyInfo from "./properties.json";
 
-const env = typeof process !== "undefined" ? process.env : {};
+// Read process.env without depending on Node global types in the dts build
+// (tsconfig.build.json omits `types: ["node"]`) — mirrors the build-safe
+// globalThis cast already used in image/ and statuslight/.
+const env: Record<string, string | undefined> =
+  (globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } })
+    .process?.env ?? {};
 
 // Postfix all class names with version for now.
 const POSTFIX = "13";

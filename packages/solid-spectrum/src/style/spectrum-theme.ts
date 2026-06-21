@@ -47,7 +47,12 @@ interface MacroContext {
   addAsset(asset: { type: string; content: string }): void;
 }
 
-const env = typeof process !== "undefined" ? process.env : {};
+// Read process.env without depending on Node global types in the dts build
+// (tsconfig.build.json omits `types: ["node"]`) — mirrors the build-safe
+// globalThis cast already used in image/ and statuslight/.
+const env: Record<string, string | undefined> =
+  (globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } })
+    .process?.env ?? {};
 
 type GrayColorStop = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000;
 type ColorStop =

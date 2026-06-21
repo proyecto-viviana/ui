@@ -13,7 +13,12 @@
 import { StyleString } from "./types";
 // import {RuntimeStyleFunction, RenderProps} from './types';
 
-const env = typeof process !== "undefined" ? process.env : {};
+// Read process.env without depending on Node global types in the dts build
+// (tsconfig.build.json omits `types: ["node"]`) — mirrors the build-safe
+// globalThis cast already used in image/ and statuslight/.
+const env: Record<string, string | undefined> =
+  (globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } })
+    .process?.env ?? {};
 
 // taken from: https://stackoverflow.com/questions/51603250/typescript-3-parameter-list-intersection-type/51604379#51604379
 // type ArgTypes<T> = T extends (props: infer V) => any ? NullToObject<V> : never;
