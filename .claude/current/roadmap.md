@@ -174,7 +174,34 @@ selection / keyboard / `aria-describedby` bugs, and they gate
   typecheck + a11y green. The deprecated monolith wrappers stay the styled primaries
   (we did **not** add hard `@deprecated` tags — see tech-debt).
 - **`autocomplete-collection-bridge`** — wire `SearchField` / `Menu` onto the
-  autocomplete contexts (Bucket D).
+  autocomplete contexts (Bucket D). **FLAGGED for the owner — blocked on
+  `headless-spine-port`.** Scoped 2026-06-21: this is not the additive,
+  decision-free wiring the sequence assumed. Our controller (`createAutocomplete`)
+  is a faithful port that already dispatches `AUTOCOMPLETE_FOCUS_EVENT` /
+  `AUTOCOMPLETE_CLEAR_FOCUS_EVENT` and emits `collectionProps` (`filter`,
+  `autoFocus`, `shouldUseVirtualFocus`), but **no collection consumer can receive
+  them yet** because the bridge depends on three `headless-spine-port` keystones
+  that are open/inert:
+  1. `port-list-keyboard-delegate` — upstream wires the FOCUS/CLEAR-FOCUS
+     listeners + `autoFocus`-on-mount + virtual-focus nav inside
+     `useSelectableCollection` (699 lines). We have no `createSelectableCollection`;
+     collection nav is hand-rolled per widget (`createListBox.ts:226`,
+     `createMenu.ts:201`), so there is no shared hook to wire the bridge into —
+     only per-widget duplication, which tech-debt §"Shared headless spine" says to
+     delete, not extend.
+  2. `port-context-slots` — `useContextProps` is a non-reactive shallow merge with
+     zero call sites and `Provider` is a no-op, so `SearchField`/`TextField`/
+     `ListBox`/`Menu` can't consume `FieldInputContext`/`SelectableCollectionContext`
+     and merge refs the way upstream's `useContextProps(props, ref, ctx)` does.
+  3. Filtered list state — `createListState.ts` has no `filter` support;
+     upstream's `UNSTABLE_useFilteredListState` (consumed by `ListBox`/`Menu` to
+     apply `collectionProps.filter`) has no analog.
+  Landing it tonight would mean either doing those spine ports first (a separate
+  phase, decision-laden) or faking it with bespoke per-widget consumers + inert-
+  context workarounds — which parity-is-the-rule and the Bucket D note forbid
+  ("don't fake it with bespoke consumers asserting searchbox/menu"). Tracked as a
+  `headless-spine-port` task (`depends: port-list-keyboard-delegate,
+  port-context-slots`); resume it after the spine lands.
 - **`upstream-api-parity`** — `calendar-i18n-strings` **DONE 2026-06-21** (cell
   today/selected suffix + grid accessible name routed through
   `formatCalendarLabel`/the shared `CalendarHookData`, mirroring useCalendarCell /

@@ -197,10 +197,29 @@ no Space/Enter case; the item owns selection. These remain stopgaps — the spin
 port should delete the duplication at its source instead of fixing it widget by
 widget.
 
+**Downstream blocked here: `autocomplete-collection-bridge` (Bucket D).** Our
+`createAutocomplete` controller is a faithful port — it already dispatches
+`AUTOCOMPLETE_FOCUS_EVENT` / `AUTOCOMPLETE_CLEAR_FOCUS_EVENT` and emits
+`collectionProps` (`filter`, `autoFocus`, `shouldUseVirtualFocus`,
+`disallowTypeAhead`) — and `Autocomplete.tsx` provides the
+`AutocompleteContext` / `AutocompleteCollectionContext` / `AutocompleteStateContext`
+providers. But **no collection consumer can receive any of it**: upstream wires the
+FOCUS/CLEAR-FOCUS listeners + `autoFocus`-on-mount + virtual-focus nav inside
+`useSelectableCollection`, and consumes the contexts via
+`useContextProps(props, ref, FieldInputContext / SelectableCollectionContext)` plus
+a filtered-list state (`UNSTABLE_useFilteredListState`). We have none of those
+three: no shared selectable-collection hook (`port-list-keyboard-delegate`), a
+non-reactive zero-call-site `useContextProps` + no-op `Provider`
+(`port-context-slots`), and `createListState.ts` has no `filter`. So the bridge is
+not a consumer tweak — it depends on the spine keystones above and must not be
+faked with bespoke per-widget consumers (which would re-create the very
+duplication this section exists to remove). Resume `autocomplete-collection-bridge`
+after `port-list-keyboard-delegate` + `port-context-slots` land.
+
 **Exit:** the three keystones (`SelectionManager`, `ListKeyboardDelegate`/
 `useSelectable*`, `useContextProps` + slot plumbing) are ported to their lowest
 layer and the per-widget copies deleted; `aria-describedby` is emitted via the
-shared slot path.
+shared slot path; `autocomplete-collection-bridge` then wires onto them.
 
 ## Menu is not screen-reader-operable
 

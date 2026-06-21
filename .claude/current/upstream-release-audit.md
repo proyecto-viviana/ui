@@ -27,7 +27,16 @@ tasks:
   - id: autocomplete-collection-bridge
     title: Wire SearchField/Menu onto autocomplete contexts (Bucket D)
     state: open
+    depends: [port-list-keyboard-delegate, port-context-slots]
     roadmap: upstream-parity-loop
+    note: >-
+      FLAGGED for owner — blocked on headless-spine-port. Scoped 2026-06-21: not
+      additive wiring. Needs three keystones our repo lacks — a shared
+      useSelectableCollection (no createSelectableCollection; FOCUS/CLEAR-FOCUS +
+      autoFocus-on-mount live there upstream), live slot-capable useContextProps
+      (currently non-reactive, zero call sites; Provider is a no-op), and filtered
+      list state (createListState has no filter). Resume after the spine lands; do
+      NOT fake it with bespoke per-widget consumers.
 ---
 
 # Upstream release audit — RAC 1.14→1.19 / S2 1.0→1.5
@@ -46,6 +55,26 @@ Update when: a T-NN ticket changes state or a new upstream release is audited.
 > consumer honoring `collectionProps.autoFocus` / the focus-clear events is the
 > autocomplete consumer-wiring port already tracked in `upstream-sync.md`
 > (Bucket D), distinct from the T-51 `replace`-mode cluster.
+>
+> **`autocomplete-collection-bridge` scoped + FLAGGED (2026-06-21).** The
+> overnight pass reached this Bucket-D item and confirmed it is **not** the
+> additive wiring the plan assumed — it is **blocked on `headless-spine-port`**.
+> `createAutocomplete` is a faithful controller (it dispatches
+> `AUTOCOMPLETE_FOCUS_EVENT`/`AUTOCOMPLETE_CLEAR_FOCUS_EVENT` and emits
+> `collectionProps.{filter,autoFocus,shouldUseVirtualFocus}`) and
+> `Autocomplete.tsx` provides the contexts, but **no collection consumer can
+> receive any of it** without three spine keystones we lack: (1)
+> `port-list-keyboard-delegate` — upstream wires the FOCUS/CLEAR listeners +
+> `autoFocus`-on-mount + virtual-focus nav inside `useSelectableCollection`; we
+> have no `createSelectableCollection` (nav is hand-rolled per widget), so the
+> bridge has nowhere shared to attach; (2) `port-context-slots` — `useContextProps`
+> is a non-reactive zero-call-site merge and `Provider` is a no-op, so
+> `SearchField`/`ListBox`/`Menu` can't consume the contexts + merge refs the way
+> upstream does; (3) filtered list state — `createListState` has no `filter`
+> (upstream's `UNSTABLE_useFilteredListState`). Faking it with bespoke per-widget
+> consumers is explicitly out (parity-is-the-rule + the spine-duplication debt).
+> Resume after `port-list-keyboard-delegate` + `port-context-slots` land. See
+> tech-debt §"Shared headless spine is re-implemented per widget".
 
 A backlog of **atomic tickets** distilled from Adobe's release notes across every
 train since we started porting (the S2 1.0.0 major) up to our current pin. Each
