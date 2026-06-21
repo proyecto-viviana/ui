@@ -182,13 +182,20 @@ selection / keyboard / `aria-describedby` bugs, and they gate
   `autoFocus`, `shouldUseVirtualFocus`), but **no collection consumer can receive
   them yet** because the bridge depends on three `headless-spine-port` keystones
   that are open/inert:
-  1. `port-list-keyboard-delegate` — upstream wires the FOCUS/CLEAR-FOCUS
-     listeners + `autoFocus`-on-mount + virtual-focus nav inside
-     `useSelectableCollection` (699 lines). We have no `createSelectableCollection`;
-     collection nav is hand-rolled per widget (`createListBox.ts:226`,
-     `createMenu.ts:201`), so there is no shared hook to wire the bridge into —
-     only per-widget duplication, which tech-debt §"Shared headless spine" says to
-     delete, not extend.
+  1. `port-list-keyboard-delegate` — **DONE 2026-06-21.** `createSelectableCollection`
+     now wires the FOCUS/CLEAR-FOCUS listeners (on `selection/constants.ts`'s
+     canonical `FOCUS_EVENT` / `CLEAR_FOCUS_EVENT` = `react-aria-focus` /
+     `react-aria-clear-focus`, matching upstream's shared `@react-aria/selection`
+     constants) + `autoFocus`-on-mount + the virtual-focus-first bookkeeping inside
+     `useSelectableCollection`. The shared hook now exists; what remains is the
+     per-widget migration (`createListBox.ts:226`, `createMenu.ts:201`) onto it
+     (`migrate-listbox-spine` / `migrate-menu-spine`). **Bridge follow-up:** the
+     controller dispatches `AUTOCOMPLETE_FOCUS_EVENT` / `AUTOCOMPLETE_CLEAR_FOCUS_EVENT`
+     today; realign it to dispatch the selection layer's `FOCUS_EVENT` /
+     `CLEAR_FOCUS_EVENT` (one canonical pair, dispatcher + listener) when wiring the
+     bridge — that is the faithful upstream shape. The remaining
+     `moveVirtualFocus` / `dispatchVirtualFocus` AT-cursor movement is still a
+     documented gap.
   2. `port-context-slots` — `useContextProps` is a non-reactive shallow merge with
      zero call sites and `Provider` is a no-op, so `SearchField`/`TextField`/
      `ListBox`/`Menu` can't consume `FieldInputContext`/`SelectableCollectionContext`
@@ -233,10 +240,20 @@ Within `headless-spine-port`: `port-selection-manager` →
 collapsed engine into upstream's two layers — `createMultipleSelectionState`
 (raw state) + the collection-aware `SelectionManager` class — backing
 `createListState`, with the manager exposed on `ListState`/`ComboBoxState`/
-`SelectState`; `onSelectionChange` now emits a faithful `Selection`. **Next in
-flight: `port-list-keyboard-delegate`** (`createSelectableCollection` /
-`createSelectableItem` + `ListKeyboardDelegate` with RTL), which consumes the
-new `selectionManager` and unblocks the autocomplete bridge. The **press-path epic** is
+`SelectState`; `onSelectionChange` now emits a faithful `Selection`. **Keystone 2
+(`port-list-keyboard-delegate`) DONE 2026-06-21:** ported `ListKeyboardDelegate`
+(first/last/next/prev + disabled skipping + collator typeahead + orientation/RTL
+horizontal nav), `DOMLayoutDelegate` (+ `LayoutDelegate`/`Rect`/`Size`),
+`createSelectableCollection` (arrow/Home/End/PageUp-Down/Ctrl-A/Escape/Tab +
+typeahead + select-on-focus + roving tabIndex + autofocus/scroll-into-view, with
+React effects → `createEffect`s and `onFocus`/`onBlur` → `onFocusIn`/`onFocusOut`)
+and `createSelectableList` (default delegate derived from the manager in a
+`createMemo`). A stable `data-collection` id is shared container↔items, keyed by
+the (stable) `SelectionManager` since a Solid collection is rebuilt on items
+change; unregistered items omit the attribute so unmigrated snapshots are
+unchanged. **Next in flight: keystone 3 `port-context-slots`** (`useContextProps`
+→ a reactive Solid slot merge), then the migrations wire the components onto this
+spine. The **press-path epic** is
 the item-hook half of this same move, folded into `upstream-parity-loop` because
 it is ticket-driven: Phases 0–1 landed (`onSelect` split + `createSelectableItem`);
 **`press-path-phase2`** migrates the three item hooks

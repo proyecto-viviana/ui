@@ -35,7 +35,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { getOwnerDocument, getEventTarget, openLink } from "../utils/dom";
-import { isNonContiguousSelectionModifier } from "./utils";
+import { getCollectionId, isNonContiguousSelectionModifier } from "./utils";
 import { selectItem } from "./selectItem";
 
 /**
@@ -397,6 +397,10 @@ export function createSelectableItem<T>(
 
       const baseProps: Record<string, unknown> = {
         "data-key": String(k),
+        // Scopes this item to its collection for getItemElement. Resolves to a
+        // value only once a createSelectableCollection container has registered
+        // the manager; otherwise undefined (Solid omits the attribute).
+        "data-collection": getCollectionId(manager.selectionManager),
       };
 
       // Roving tabindex: only the focused item is tabbable. With virtual focus,

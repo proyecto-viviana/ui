@@ -471,3 +471,54 @@ export function willOpenKeyboard(target: Element | null): boolean {
 
   return false;
 }
+
+/**
+ * Returns the deepest active element, descending through open shadow roots.
+ * Mirrors @react-aria/utils' `getActiveElement`.
+ */
+export function getActiveElement(doc: Document = document): Element | null {
+  let activeElement = doc.activeElement;
+  while (activeElement?.shadowRoot?.activeElement) {
+    activeElement = activeElement.shadowRoot.activeElement;
+  }
+  return activeElement;
+}
+
+/**
+ * Whether the (deepest) active element is `element` or is contained within it.
+ * Mirrors @react-aria/utils' `isFocusWithin`.
+ */
+export function isFocusWithin(element: Element): boolean {
+  const activeElement = getActiveElement(getOwnerDocument(element));
+  return !!activeElement && nodeContains(element, activeElement);
+}
+
+/**
+ * Creates a `TreeWalker` that visits the focusable (or, when `tabbable`, the
+ * tabbable) descendants of `root`, skipping invisible and inert elements.
+ * Mirrors @react-aria/focus's `getFocusableTreeWalker`, minus the focus-scope
+ * containment filter (we don't model nested scopes here). Used to treat a
+ * selectable collection as a single tab stop.
+ */
+export function getFocusableTreeWalker(
+  root: Element,
+  opts?: { tabbable?: boolean; from?: Node },
+): TreeWalker {
+  const accept = (node: Element) => (opts?.tabbable ? isTabbable(node) : isFocusable(node));
+  const walker = getOwnerDocument(root).createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+    acceptNode(node) {
+      // Skip nodes inside the optional starting node.
+      if (opts?.from?.contains(node)) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      if (accept(node as Element)) {
+        return NodeFilter.FILTER_ACCEPT;
+      }
+      return NodeFilter.FILTER_SKIP;
+    },
+  });
+  if (opts?.from) {
+    walker.currentNode = opts.from;
+  }
+  return walker;
+}

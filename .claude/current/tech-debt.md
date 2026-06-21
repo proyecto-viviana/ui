@@ -180,11 +180,13 @@ every PR, so "green" means the documented bar passed.
 
 ## Shared headless spine is re-implemented per widget
 
-Upstream's shared machinery is missing or inert and hand-rolled inside each widget,
-so one bug recurs across many: `SelectionManager` is rewritten with a different
-anchor/current model (`createSelectionState.ts:241-269`); there is no
-`ListKeyboardDelegate`/`useSelectableCollection`, so each widget inlines arrow/Home/
-End (`createMenu.ts:201-406`); `useContextProps`/`useSlottedContext`/
+Upstream's shared machinery was missing or inert and hand-rolled inside each widget,
+so one bug recurs across many. Keystones 1–2 have now ported the lower layers (see
+**Spine progress** below), but they are not yet consumed, so the duplication is
+still live: `SelectionManager` had been rewritten with a different anchor/current
+model (`createSelectionState.ts:241-269`, now superseded by the port); the shared
+`createSelectableCollection` exists but each widget still inlines arrow/Home/End
+(`createMenu.ts:201-406`); `useContextProps`/`useSlottedContext`/
 `composeRenderProps` are exported with zero call sites; `TextContext` is
 `createContext<null>(null)` and cannot carry slots, so the description slot never
 wires and `aria-describedby` is absent. Rule #4/#5.
@@ -200,6 +202,35 @@ handlers receive the keypress, 2026-06-21). Upstream `useSelectableCollection` h
 no Space/Enter case; the item owns selection. These remain stopgaps — the spine
 port should delete the duplication at its source instead of fixing it widget by
 widget.
+
+**Spine progress.** Keystone 1 (`port-selection-manager`, commit 7c1708c4) and
+keystone 2 (`port-list-keyboard-delegate`, 2026-06-21) have landed: the shared
+`SelectionManager`, `ListKeyboardDelegate` / `DOMLayoutDelegate`,
+`createSelectableCollection`, and `createSelectableList` now exist. They are
+*additive* so far — no widget consumes them yet; the per-widget arrow/Home/End
+copies in `createMenu.ts` / `createListBox.ts` are still live and get deleted in
+the `migrate-*-spine` tasks (after keystone 3 `port-context-slots`). Three
+caveats carried by keystone 2:
+
+- **`data-collection` is dormant until a container registers it.** Items stamp a
+  `data-collection` id only when their `SelectionManager` has been registered by a
+  `createSelectableCollection` container (`getCollectionId` returns `undefined`
+  otherwise, and a `undefined` Solid attribute is omitted). So in today's
+  unmigrated widgets the attribute is absent and `getItemElement` falls back to an
+  unscoped `[data-key]` lookup — identical to before. The scoping activates per
+  widget as each migrates onto `createSelectableCollection`; until then no
+  snapshots change.
+- **Virtual-focus AT-cursor movement is a documented gap.** `createSelectableCollection`
+  preserves the focused-key bookkeeping around virtual focus (the FOCUS/CLEAR-FOCUS
+  listeners, `shouldVirtualFocusFirst`) but does **not** yet port upstream's
+  `moveVirtualFocus` / `dispatchVirtualFocus`, which move the actual AT cursor.
+  Consistent with the same gap in `createSelectableItem`; needed by the
+  autocomplete bridge's virtual-focus mode.
+- **`createTypeSelect` does its own collator search (focus-only).** It does not
+  route through the `ListKeyboardDelegate.getKeyForSearch`; this matches upstream
+  `useTypeSelect` (which also searches independently) and is a pre-existing
+  divergence kept as-is — the delegate's `getKeyForSearch` is exercised directly
+  by `ListKeyboardDelegate.test.ts`.
 
 **Downstream blocked here: `autocomplete-collection-bridge` (Bucket D).** Our
 `createAutocomplete` controller is a faithful port — it already dispatches

@@ -635,6 +635,24 @@ export {
   type SelectableItemAria,
   type LinkBehavior,
 } from "./selection";
+export {
+  createSelectableCollection,
+  createSelectableList,
+  ListKeyboardDelegate,
+  DOMLayoutDelegate,
+  getItemElement,
+  isNonContiguousSelectionModifier,
+  FOCUS_EVENT,
+  CLEAR_FOCUS_EVENT,
+  type CreateSelectableCollectionOptions,
+  type SelectableCollectionAria,
+  type CreateSelectableListOptions,
+  type SelectableListAria,
+  type ListKeyboardDelegateOptions,
+  type LayoutDelegate,
+  type Rect,
+  type Size,
+} from "./selection";
 
 export { mergeProps, filterDOMProps, focusSafely, type FilterDOMPropsOptions } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";
