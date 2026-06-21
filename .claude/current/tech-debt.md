@@ -66,8 +66,14 @@ tasks:
     roadmap: certification-enforcement
   - id: port-selection-manager
     title: Port SelectionManager/Selection to the upstream anchor+current model
-    state: open
+    state: done
+    finished: 2026-06-21
     roadmap: headless-spine-port
+    note: >-
+      Two-layer port landed. createMultipleSelectionState (raw) + SelectionManager
+      (collection-aware, anchor+current) now back createListState, exposed as
+      ListState/ComboBoxState/SelectState.selectionManager. onSelectionChange emits
+      a Selection (Set subclass) faithfully. Next keystone: port-list-keyboard-delegate.
   - id: port-list-keyboard-delegate
     title: Port ListKeyboardDelegate + useSelectableCollection/List/Item (with RTL)
     state: open

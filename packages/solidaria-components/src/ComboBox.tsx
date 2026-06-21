@@ -1270,6 +1270,7 @@ function createComboBoxListStateAdapter<T>(state: ComboBoxState<T>): ListState<T
 
   return {
     collection: state.collection,
+    selectionManager: state.selectionManager,
     isFocused: state.isFocused,
     setFocused: state.setFocused,
     focusedKey: state.focusedKey,

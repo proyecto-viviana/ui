@@ -73,6 +73,9 @@ export {
   useMultipleSelectionState,
   type MultipleSelectionStateProps,
   type MultipleSelectionState,
+  SelectionManager,
+  type SelectionManagerOptions,
+  type LayoutDelegate,
 } from "./selection";
 
 // Menu (module-compat aliases)

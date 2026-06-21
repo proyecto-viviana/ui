@@ -393,6 +393,91 @@ describe("createListState", () => {
 });
 
 // ============================================
+// createListState selection manager (collection-aware)
+// ============================================
+describe("createListState selectionManager", () => {
+  const items = [
+    { key: "a", label: "Apple" },
+    { key: "b", label: "Banana" },
+    { key: "c", label: "Cherry" },
+  ];
+
+  it("exposes a collection-aware selection manager", () => {
+    createRoot((dispose) => {
+      const state = createListState({ items, getKey: (i) => i.key, selectionMode: "multiple" });
+      expect(state.selectionManager).toBeDefined();
+      expect(state.selectionManager.collection.size).toBe(3);
+      dispose();
+    });
+  });
+
+  it("extends selection across a contiguous range from the anchor", () => {
+    createRoot((dispose) => {
+      const state = createListState({ items, getKey: (i) => i.key, selectionMode: "multiple" });
+      state.select("a"); // toggle adds 'a' and sets the anchor
+      state.extendSelection("c");
+      expect([...state.selectionManager.selectedKeys].sort()).toEqual(["a", "b", "c"]);
+      dispose();
+    });
+  });
+
+  it("materializes 'all' and reports select-all", () => {
+    createRoot((dispose) => {
+      const state = createListState({ items, getKey: (i) => i.key, selectionMode: "multiple" });
+      state.selectAll();
+      // The flattened surface keeps the raw value; the manager materializes it.
+      expect(state.selectedKeys()).toBe("all");
+      expect([...state.selectionManager.selectedKeys].sort()).toEqual(["a", "b", "c"]);
+      expect(state.isSelectAll()).toBe(true);
+      dispose();
+    });
+  });
+
+  it("reports select-all when every key is individually selected", () => {
+    createRoot((dispose) => {
+      const state = createListState({
+        items,
+        getKey: (i) => i.key,
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["a", "b", "c"],
+      });
+      expect(state.selectedKeys()).not.toBe("all");
+      expect(state.isSelectAll()).toBe(true);
+      dispose();
+    });
+  });
+
+  it("orders firstSelectedKey/lastSelectedKey by collection order", () => {
+    createRoot((dispose) => {
+      const state = createListState({
+        items,
+        getKey: (i) => i.key,
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["c", "a"],
+      });
+      expect(state.selectionManager.firstSelectedKey).toBe("a");
+      expect(state.selectionManager.lastSelectedKey).toBe("c");
+      dispose();
+    });
+  });
+
+  it("skips disabled keys when extending across a range", () => {
+    createRoot((dispose) => {
+      const state = createListState({
+        items,
+        getKey: (i) => i.key,
+        selectionMode: "multiple",
+        disabledKeys: ["b"],
+      });
+      state.select("a");
+      state.extendSelection("c"); // a..c, but 'b' is disabled
+      expect([...state.selectionManager.selectedKeys].sort()).toEqual(["a", "c"]);
+      dispose();
+    });
+  });
+});
+
+// ============================================
 // createMenuState tests
 // ============================================
 describe("createMenuState", () => {
@@ -446,7 +531,10 @@ describe("createMenuState", () => {
       expect(state.selectionMode()).toBe("multiple");
       expect(state.isSelected("copy")).toBe(true);
       expect(state.isSelected("paste")).toBe(true);
-      expect(onSelectionChange).toHaveBeenCalledWith(new Set(["copy", "paste"]));
+      // Faithful to upstream: onSelectionChange receives a `Selection` (a Set
+      // subclass carrying anchorKey/currentKey), so compare contents not class.
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["copy", "paste"]));
       dispose();
     });
   });

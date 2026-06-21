@@ -9,6 +9,7 @@ import { createListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
 import type { Key, CollectionNode, Collection } from "../collections/types";
 import type { SelectionMode, Selection } from "../collections/types";
+import type { SelectionManager } from "../selection/SelectionManager";
 
 export interface SelectStateProps<T = unknown> {
   /** The items to display in the select. */
@@ -50,6 +51,11 @@ export interface SelectStateProps<T = unknown> {
 export interface SelectState<T = unknown> {
   /** The collection of items. */
   readonly collection: Accessor<Collection<T>>;
+  /**
+   * The collection-aware selection manager. Mirrors upstream `useSelectState`,
+   * which spreads the underlying `useListState` (including its selection manager).
+   */
+  readonly selectionManager: SelectionManager<T>;
   /** Whether the select dropdown is open. */
   readonly isOpen: Accessor<boolean>;
   /** Open the select dropdown. */
@@ -258,6 +264,7 @@ export function createSelectState<T = unknown>(
   return {
     // Collection
     collection: listState.collection,
+    selectionManager: listState.selectionManager,
 
     // Focus management
     focusedKey: listState.focusedKey,

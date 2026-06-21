@@ -11,6 +11,7 @@ import { access, type MaybeAccessor } from "../utils";
 import { createListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
 import type { Key, CollectionNode, Collection, FocusStrategy } from "../collections/types";
+import type { SelectionManager } from "../selection/SelectionManager";
 
 export type MenuTriggerAction = "focus" | "input" | "manual";
 
@@ -78,6 +79,12 @@ export interface ComboBoxStateProps<T = unknown> {
 export interface ComboBoxState<T = unknown> {
   /** The collection of items (may be filtered). */
   readonly collection: Accessor<Collection<T>>;
+  /**
+   * The collection-aware selection manager. Mirrors upstream `useComboBoxState`,
+   * which returns the `useListState` selection manager bound to the unfiltered
+   * collection (selection spans all items; filtering is display-only).
+   */
+  readonly selectionManager: SelectionManager<T>;
   /** Whether the combobox dropdown is open. */
   readonly isOpen: Accessor<boolean>;
   /** Open the combobox dropdown. */
@@ -624,6 +631,7 @@ export function createComboBoxState<T = unknown>(
     inputValue,
     defaultInputValue: getProps().defaultInputValue ?? "",
     setInputValue,
+    selectionManager: listState.selectionManager,
     focusedKey: listState.focusedKey,
     setFocusedKey: listState.setFocusedKey,
     isFocused,

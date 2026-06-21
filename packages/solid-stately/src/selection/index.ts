@@ -11,6 +11,12 @@ export {
   type SelectionState,
 } from "../collections/createSelectionState";
 
+export {
+  SelectionManager,
+  type SelectionManagerOptions,
+  type LayoutDelegate,
+} from "./SelectionManager";
+
 export type {
   Key,
   Selection,

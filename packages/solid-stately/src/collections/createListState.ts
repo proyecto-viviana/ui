@@ -4,10 +4,12 @@
  * Based on @react-stately/list.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { ListCollection } from "./ListCollection";
-import { createSelectionState, type SelectionState } from "./createSelectionState";
+import type { SelectionState, SelectionPressEvent } from "./createSelectionState";
+import { createMultipleSelectionState } from "../selection/createMultipleSelectionState";
+import { SelectionManager } from "../selection/SelectionManager";
 import type {
   Collection,
   CollectionItemLike,
@@ -51,6 +53,8 @@ export interface ListStateProps<T = unknown> {
 export interface ListState<T = unknown> extends SelectionState {
   /** The collection of items. */
   readonly collection: Accessor<Collection<T>>;
+  /** The collection-aware selection manager (single source of truth for selection). */
+  readonly selectionManager: SelectionManager<T>;
   /** Whether the collection is focused. */
   readonly isFocused: Accessor<boolean>;
   /** Set the focused state. */
@@ -116,8 +120,9 @@ export function createListState<T = unknown>(
     return [...new Set([...propsDisabled, ...itemDisabled])];
   });
 
-  // Create selection state
-  const selectionState = createSelectionState({
+  // Raw selection + focus state (the lower layer). This owns the selected keys,
+  // focus, selection behavior, and disabled keys, but is not collection-aware.
+  const state = createMultipleSelectionState({
     get selectionMode() {
       return getProps().selectionMode;
     },
@@ -147,24 +152,50 @@ export function createListState<T = unknown>(
     },
   });
 
-  // Focus state
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [focusedKey, setFocusedKeyInternal] = createSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createSignal<FocusStrategy | null>(null);
-
-  const setFocusedKey = (key: Key | null, childStrategy?: FocusStrategy) => {
-    setFocusedKeyInternal(key);
-    setChildFocusStrategy(childStrategy ?? null);
-  };
+  // The collection-aware selection manager (the upper layer): the single source
+  // of truth for every selection operation. It reads the collection live so it
+  // stays reactive as the collection memo recomputes.
+  const selectionManager = new SelectionManager<T>(() => collection(), state);
 
   return {
     collection,
-    isFocused,
-    setFocused: setIsFocused,
-    focusedKey,
-    setFocusedKey,
-    childFocusStrategy,
-    ...selectionState,
+    selectionManager,
+
+    // Focus — delegate to the raw state (the single source of truth). The
+    // setter routes through the manager so it inherits the existence guard and
+    // the upstream 'first' child-focus default.
+    isFocused: () => state.isFocused,
+    setFocused: (isFocused: boolean) => state.setFocused(isFocused),
+    focusedKey: () => state.focusedKey,
+    setFocusedKey: (key: Key | null, childStrategy?: FocusStrategy) =>
+      selectionManager.setFocusedKey(key, childStrategy),
+    childFocusStrategy: () => state.childFocusStrategy,
+
+    // Flattened selection surface — delegates to the manager so the list path
+    // shares one faithful engine. extendSelection keeps its legacy second
+    // argument for back-compat, but ignores it (the manager reads the
+    // collection itself).
+    selectionMode: () => selectionManager.selectionMode,
+    selectionBehavior: () => selectionManager.selectionBehavior,
+    disallowEmptySelection: () => selectionManager.disallowEmptySelection,
+    selectedKeys: () => state.selectedKeys,
+    disabledKeys: () => selectionManager.disabledKeys,
+    disabledBehavior: () => selectionManager.disabledBehavior,
+    isEmpty: () => selectionManager.isEmpty,
+    isSelectAll: () => selectionManager.isSelectAll,
+    isSelected: (key: Key) => selectionManager.isSelected(key),
+    isDisabled: (key: Key) => selectionManager.isDisabled(key),
+    setSelectionBehavior: (behavior: SelectionBehavior) =>
+      selectionManager.setSelectionBehavior(behavior),
+    toggleSelection: (key: Key) => selectionManager.toggleSelection(key),
+    replaceSelection: (key: Key) => selectionManager.replaceSelection(key),
+    setSelectedKeys: (keys: Iterable<Key>) => selectionManager.setSelectedKeys(keys),
+    selectAll: () => selectionManager.selectAll(),
+    clearSelection: () => selectionManager.clearSelection(),
+    toggleSelectAll: () => selectionManager.toggleSelectAll(),
+    extendSelection: (toKey: Key, _collection?: Collection) =>
+      selectionManager.extendSelection(toKey),
+    select: (key: Key, e?: SelectionPressEvent) => selectionManager.select(key, e),
   };
 }
 

@@ -57,7 +57,7 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
 
     expect(starter).not.toHaveAttribute("data-selected");
     expect(pro).toHaveAttribute("data-selected", "true");
-    expect(onSelectionChange).toHaveBeenCalledWith(new Set(["pro"]));
+    expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["pro"]));
   });
 
   it("supports horizontal orientation and disabled state", async () => {
@@ -124,7 +124,8 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
 
     expect(starter).toHaveAttribute("data-selected", "true");
     expect(pro).not.toHaveAttribute("data-selected");
-    expect(onSelectionChange).toHaveBeenCalledWith(new Set(["starter"]));
+    // onSelectionChange receives a `Selection` (Set subclass); compare contents.
+    expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["starter"]));
   });
 
   it("supports disabledKeys without calling onSelectionChange", async () => {
@@ -224,7 +225,7 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
 
     expect(starter).not.toHaveAttribute("data-selected");
     expect(pro).toHaveAttribute("data-selected", "true");
-    expect(onSelectionChange).toHaveBeenCalledWith(new Set(["pro"]));
+    expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["pro"]));
   });
 
   it("merges SelectBoxGroupContext props", () => {

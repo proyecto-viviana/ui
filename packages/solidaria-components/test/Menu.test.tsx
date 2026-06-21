@@ -825,7 +825,8 @@ describe("Menu", () => {
       expect(cat).toHaveAttribute("aria-checked", "false");
       expect(dog).toHaveAttribute("aria-checked", "true");
       expect(dog).toHaveAttribute("data-selected", "true");
-      expect(onSelectionChange).toHaveBeenCalledWith(new Set(["dog"]));
+      // onSelectionChange receives a `Selection` (Set subclass); compare contents.
+      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["dog"]));
     });
 
     it("supports multiple selection semantics and toggling", async () => {
@@ -853,13 +854,14 @@ describe("Menu", () => {
 
       expect(cat).toHaveAttribute("aria-checked", "true");
       expect(dog).toHaveAttribute("aria-checked", "true");
-      expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["cat", "dog"]));
+      // onSelectionChange receives a `Selection` (Set subclass); compare contents.
+      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["cat", "dog"]));
 
       await user.click(cat);
 
       expect(cat).toHaveAttribute("aria-checked", "false");
       expect(dog).toHaveAttribute("aria-checked", "true");
-      expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["dog"]));
+      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["dog"]));
     });
 
     it("supports independent static MenuSection selection state", async () => {

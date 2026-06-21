@@ -183,7 +183,8 @@ describe("createMenu", () => {
 
       expect(state.isSelected("copy")).toBe(true);
       expect(state.isSelected("paste")).toBe(false);
-      expect(onSelectionChange).toHaveBeenCalledWith(new Set(["copy"]));
+      // onSelectionChange receives a `Selection` (Set subclass); compare contents.
+      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["copy"]));
       dispose();
     });
   });
