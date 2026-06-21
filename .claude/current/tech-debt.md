@@ -14,7 +14,8 @@ tasks:
     roadmap: package-build-migration
   - id: support-export-audit
     title: Audit the 22 missing S2 support exports
-    state: open
+    state: done
+    finished: 2026-06-21
     roadmap: support-export-parity
   - id: ci-gates-report-only
     title: Run the full gate ladder in CI as a non-blocking report
@@ -349,14 +350,31 @@ certified visually.
 **Exit:** every rendering-affecting state row has a computed contract or strict
 pair-diff test; screenshots remain review evidence only.
 
-## Support-export gap
+## Support-export gap — RESOLVED 2026-06-21
 
-`22` of `208` React S2 value exports are missing from `solid-spectrum` (contexts,
-slots, hooks, helpers, support values). Root catalogue export parity is complete;
-support-export parity is not.
+Root catalogue export parity and support-export parity are now both complete:
+`comparison:report:exports` reports `0` missing S2 value exports, `0` missing
+catalogue root exports, and `0` missing non-root/support exports against pinned
+S2 1.5.0. The closed surface added the slotted-props contexts (each defining +
+consuming its own `SpectrumContextValue`, additive by default via
+`getSlottedContextProps(null, …)`), `PickerSection` / `ComboBoxSection`, and the
+helper/hook re-exports under their upstream `use*` names.
 
-**Exit:** `comparison:report:exports` shows no missing S2 support exports, with
-any Solid-only exports documented as local additions.
+Two parity-restoring fixes landed alongside: the form fields that apply the
+Skeleton disabled-force (`TextField`/`DateField`/`TimeField`) merge the slotted
+context **below** explicit props so the force stays outermost (mirrors upstream's
+`useSpectrumContextProps` → `useFormProps` order); and `slot` was restored on
+`ToggleSwitchProps` (our redefinition had dropped the `SlotProps` the headless
+type carries). The public `TableContext` is distinct from the table's internal
+row/density state, now renamed `InternalTableContext`.
+
+Still genuinely unported (tracked as their own components/subsystems, not part of
+this gap): `LabeledValue`/`LabeledValueContext`, `DragPreview`, the drag-and-drop
+helpers (`useDragAndDrop`, `isFileDropItem`, …), and the `Collection` /
+`EditableCell` support values.
+
+**Exit:** met — `comparison:report:exports` shows no missing S2 support exports;
+Solid-only extras remain documented as local additions in the report output.
 
 ## License attribution incomplete (per-file headers)
 

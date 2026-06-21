@@ -9,8 +9,8 @@ items:
     docs: [work-queue.md, certification.md]
   - id: support-export-parity
     title: Support-export parity with React S2
-    status: open
-    window: { start: null, target: 2026-07-31 }
+    status: done
+    window: { start: null, target: 2026-07-31, finished: 2026-06-21 }
     docs: [tech-debt.md]
   - id: comparison-docs-overhaul
     title: Comparison docs-site rollout
@@ -85,8 +85,9 @@ sequence** at the foot of this page.
 
 - **component-certification** — the standing per-component certification loop;
   collection and overlay families next. Tasks in `work-queue.md`.
-- **support-export-parity** — close the missing React S2 support exports. Tracked
-  in `tech-debt.md`.
+- **support-export-parity** — **DONE 2026-06-21.** Closed the missing React S2
+  support exports (`comparison:report:exports` reports 0 missing). Tracked in
+  `tech-debt.md`.
 - **comparison-docs-overhaul** — roll the comparison app onto the S2 docs site.
   Tasks in `work-queue.md`.
 - **package-build-migration** — move every package onto native Vite Plus
@@ -176,8 +177,12 @@ selection / keyboard / `aria-describedby` bugs, and they gate
   autocomplete contexts (Bucket D).
 - **`upstream-api-parity`** — `picker-api-upstream`, `treeview-api-upstream`,
   `calendar-i18n-strings`.
-- **`support-export-parity`** — the 21 missing S2 support exports
-  (`support-export-audit`).
+- **`support-export-parity`** — **DONE 2026-06-21.** The 21 missing S2 support
+  exports (`support-export-audit`): the slotted-props contexts, `PickerSection` /
+  `ComboBoxSection`, and the helper/hook re-exports are wired and
+  `comparison:report:exports` reports 0 missing support exports. The two
+  parity-restoring fixes (Skeleton force-disable merge order on the form fields;
+  `slot` restored on `ToggleSwitchProps`) landed with it.
 
 ### Phase 3 — the shared-spine port (the load-bearing middle)
 
