@@ -766,3 +766,458 @@ export function Radio(props: RadioProps): JSX.Element {
     </Show>
   );
 }
+
+// ============================================================================
+// RadioField + RadioButton — the RAC form-field split (RAC 1.19)
+// ----------------------------------------------------------------------------
+// Upstream split the monolithic Radio into a RadioField wrapper (owns the radio
+// aria + optional description) containing a RadioButton control (the clickable
+// indicator + label). Mirrors react-aria-components/src/RadioGroup.tsx. The
+// legacy `Radio` above stays as the deprecated monolith for back-compat.
+//
+// Spine note: upstream wires the two halves with InternalRadioContext +
+// SelectionIndicatorContext + TextContext slots through `<Provider>`. Our
+// `<Provider>` is inert and TextContext carries no slots yet
+// (`port-context-slots`), so — exactly like RadioImpl already does — we use a
+// native Solid context and bridge `description`/`errorMessage` with explicit
+// ids. Like the legacy `Radio`, both halves require a surrounding RadioGroup.
+// ============================================================================
+
+export interface RadioFieldRenderProps {
+  /** Whether the radio is selected. */
+  isSelected: boolean;
+  /** Whether the radio is disabled. */
+  isDisabled: boolean;
+  /** Whether the radio is read only. */
+  isReadOnly: boolean;
+  /** Whether the radio is invalid. */
+  isInvalid: boolean;
+  /** Whether the radio is required. */
+  isRequired: boolean;
+}
+
+export interface RadioButtonRenderProps extends RadioRenderProps {}
+
+export interface RadioFieldProps extends Omit<AriaRadioProps, "children">, SlotProps {
+  /** The children of the component (typically a `RadioButton`). A function may receive render props. */
+  children?: RenderChildren<RadioFieldRenderProps>;
+  /** The CSS className for the element. */
+  class?: ClassNameOrFunction<RadioFieldRenderProps>;
+  /** The inline style for the element. */
+  style?: StyleOrFunction<RadioFieldRenderProps>;
+  /**
+   * A description for the radio. Bridged with explicit ids + aria-describedby
+   * until TextContext slots are live (`port-context-slots`).
+   */
+  description?: JSX.Element;
+  /** An error message for the radio. */
+  errorMessage?: JSX.Element;
+  /** Ref for the radio field root element. */
+  ref?: RefLike<HTMLDivElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
+}
+
+export interface RadioButtonProps extends SlotProps {
+  /** The children of the component. A function may receive render props. */
+  children?: RenderChildren<RadioButtonRenderProps>;
+  /** The CSS className for the element. */
+  class?: ClassNameOrFunction<RadioButtonRenderProps>;
+  /** The inline style for the element. */
+  style?: StyleOrFunction<RadioButtonRenderProps>;
+  /** Ref for the outer label element. */
+  ref?: RefLike<HTMLLabelElement>;
+  /** Handler called when hover starts. */
+  onHoverStart?: () => void;
+  /** Handler called when hover ends. */
+  onHoverEnd?: () => void;
+  /** Handler called when hover state changes. */
+  onHoverChange?: (isHovered: boolean) => void;
+}
+
+export interface RadioFieldContextValue extends Partial<RadioFieldProps> {
+  slots?: Record<string, Partial<RadioFieldProps>>;
+}
+export const RadioFieldContext = createContext<RadioFieldContextValue | null>(null);
+
+/** Carries the radio aria + state from a RadioField/Radio wrapper to its RadioButton. */
+interface InternalRadioContextValue {
+  isSelected: () => boolean;
+  isPressed: () => boolean;
+  isDisabled: () => boolean;
+  labelProps: () => JSX.LabelHTMLAttributes<HTMLLabelElement>;
+  inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
+  setInputRef: (el: HTMLInputElement) => void;
+  defaultClassName: string;
+}
+const InternalRadioContext = createContext<InternalRadioContextValue | null>(null);
+
+/**
+ * A RadioField represents an individual option within a radio group, containing a
+ * `RadioButton` and optional description. Must be rendered inside a `RadioGroup`.
+ *
+ * @example
+ * ```tsx
+ * <RadioGroup>
+ *   <RadioField value="a" description="The first option">
+ *     <RadioButton>Option A</RadioButton>
+ *   </RadioField>
+ * </RadioGroup>
+ * ```
+ */
+export function RadioField(props: RadioFieldProps): JSX.Element {
+  const getState = createMemo(() => useContext(RadioGroupStateContext));
+  return (
+    <Show when={getState()} fallback={null} keyed>
+      {(state) => <RadioFieldImpl fieldProps={props} state={state} />}
+    </Show>
+  );
+}
+
+function RadioFieldImpl(props: { fieldProps: RadioFieldProps; state: RadioGroupState }): JSX.Element {
+  const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
+  const { state } = props;
+  const contextProps = useContext(RadioFieldContext);
+  const contextSlotProps = contextProps?.slots?.[props.fieldProps.slot ?? "default"];
+  const contextBaseProps = createMemo<Partial<RadioFieldProps>>(() => {
+    if (!contextProps) return {};
+    const { slots: _slots, ...rest } = contextProps;
+    return rest;
+  });
+  const fieldProps = contextProps
+    ? (mergeProps(contextBaseProps(), contextSlotProps ?? {}, props.fieldProps) as RadioFieldProps)
+    : props.fieldProps;
+  const inputRefs = createMemo(
+    () =>
+      [contextBaseProps().inputRef, contextSlotProps?.inputRef, props.fieldProps.inputRef].filter(
+        Boolean,
+      ) as RefLike<HTMLInputElement>[],
+  );
+
+  // `children` is split out of ariaProps so neither the inputAriaProps key-copy
+  // loop nor the hook accessor spread eagerly reads it — reading a Solid
+  // `children` getter instantiates the nested RadioButton, and doing so OUTSIDE
+  // InternalRadioContext both breaks its binding and recurses.
+  const [local, ariaProps] = splitProps(fieldProps, [
+    "class",
+    "style",
+    "ref",
+    "inputRef",
+    "slot",
+    "description",
+    "errorMessage",
+    "children",
+  ]);
+  const descriptionId = createUniqueId();
+  const errorMessageId = createUniqueId();
+  const describedBy = () => {
+    const ids = [
+      ariaProps["aria-describedby"],
+      local.description ? descriptionId : undefined,
+      state.isInvalid && local.errorMessage ? errorMessageId : undefined,
+    ].filter(Boolean);
+    return ids.length ? ids.join(" ") : undefined;
+  };
+  const inputAriaProps = createMemo(() => {
+    const clean: Record<string, unknown> = {};
+    for (const key in ariaProps as Record<string, unknown>) {
+      if (!key.startsWith("data-")) {
+        clean[key] = (ariaProps as Record<string, unknown>)[key];
+      }
+    }
+    return clean as typeof ariaProps;
+  });
+
+  const radioAria = createRadio(
+    () => ({
+      ...inputAriaProps(),
+      "aria-describedby": describedBy(),
+      // The hook reads `children` only to decide if an aria-label is needed; the
+      // visible label lives in the RadioButton, so report presence as a literal.
+      children: true,
+    }),
+    state,
+    inputElement,
+  );
+
+  const setInputRef = (el: HTMLInputElement) => {
+    setInputElement(el);
+    el.addEventListener("invalid", (event) => {
+      state.updateValidation(getNativeValidation(el));
+      state.commitValidation();
+      el.focus();
+      event.preventDefault();
+    });
+    el.addEventListener("change", () => {
+      state.updateValidation(el.validity.valid ? validValidation : getNativeValidation(el));
+      state.commitValidation();
+    });
+    for (const ref of inputRefs()) {
+      assignRef(ref, el);
+    }
+  };
+  const setFieldRef = (el: HTMLDivElement) => {
+    assignRef(local.ref, el);
+  };
+
+  const internalContext: InternalRadioContextValue = {
+    isSelected: () => radioAria.isSelected(),
+    isPressed: () => radioAria.isPressed(),
+    isDisabled: () => radioAria.isDisabled,
+    labelProps: () => radioAria.labelProps,
+    inputProps: () => radioAria.inputProps,
+    setInputRef,
+    defaultClassName: "solidaria-RadioButton",
+  };
+
+  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+    isSelected: radioAria.isSelected,
+  }));
+
+  const renderValues = createMemo<RadioFieldRenderProps>(() => ({
+    isSelected: radioAria.isSelected(),
+    isDisabled: radioAria.isDisabled,
+    isReadOnly: state.isReadOnly,
+    isInvalid: state.isInvalid,
+    isRequired: state.isRequired,
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      children: fieldProps.children,
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-RadioField",
+    },
+    renderValues,
+  );
+
+  const domProps = createMemo(() => {
+    const filtered = filterDOMProps(ariaProps, { global: true });
+    delete (filtered as Record<string, unknown>).id;
+    delete (filtered as Record<string, unknown>).onClick;
+    return filtered;
+  });
+
+  // Children are accessed inside the providers (component-execution owner) so a
+  // nested RadioButton's useContext binds to InternalRadioContext.
+  const FieldChildren = () => {
+    const childRenderValues: RadioFieldRenderProps = {
+      get isSelected() {
+        return radioAria.isSelected();
+      },
+      get isDisabled() {
+        return radioAria.isDisabled;
+      },
+      get isReadOnly() {
+        return state.isReadOnly;
+      },
+      get isInvalid() {
+        return state.isInvalid;
+      },
+      get isRequired() {
+        return state.isRequired;
+      },
+    };
+    const renderedChildren = createMemo(() => {
+      const children = fieldProps.children;
+      return typeof children === "function" ? children(childRenderValues) : children;
+    });
+    return (
+      <>
+        {renderedChildren()}
+        <Show when={local.description}>
+          <span id={descriptionId} slot="description">
+            {local.description}
+          </span>
+        </Show>
+        <Show when={state.isInvalid && local.errorMessage}>
+          <span id={errorMessageId} slot="errorMessage">
+            {local.errorMessage}
+          </span>
+        </Show>
+      </>
+    );
+  };
+
+  return (
+    <div
+      {...domProps()}
+      ref={setFieldRef}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      slot={local.slot}
+      data-selected={radioAria.isSelected() || undefined}
+      data-disabled={radioAria.isDisabled || undefined}
+      data-readonly={state.isReadOnly || undefined}
+      data-invalid={state.isInvalid || undefined}
+      data-required={state.isRequired || undefined}
+    >
+      <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
+        <InternalRadioContext.Provider value={internalContext}>
+          <FieldChildren />
+        </InternalRadioContext.Provider>
+      </SelectionIndicatorContext.Provider>
+    </div>
+  );
+}
+
+/**
+ * A RadioButton is the clickable area of a radio, including the indicator and label.
+ * Must be rendered inside a `RadioField` (or the legacy `Radio`).
+ */
+export function RadioButton(props: RadioButtonProps): JSX.Element {
+  const getCtx = createMemo(() => useContext(InternalRadioContext));
+  const getState = createMemo(() => useContext(RadioGroupStateContext));
+  return (
+    <Show when={getCtx()} fallback={null} keyed>
+      {(ctx) => (
+        <Show when={getState()} fallback={null} keyed>
+          {(state) => <RadioButtonImpl buttonProps={props} ctx={ctx} state={state} />}
+        </Show>
+      )}
+    </Show>
+  );
+}
+
+function RadioButtonImpl(props: {
+  buttonProps: RadioButtonProps;
+  ctx: InternalRadioContextValue;
+  state: RadioGroupState;
+}): JSX.Element {
+  const { ctx, state } = props;
+
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return ctx.isDisabled() || state.isReadOnly;
+    },
+    onHoverStart: props.buttonProps.onHoverStart,
+    onHoverEnd: props.buttonProps.onHoverEnd,
+    onHoverChange: props.buttonProps.onHoverChange,
+  });
+
+  const renderValues = createMemo<RadioButtonRenderProps>(() => ({
+    isSelected: ctx.isSelected(),
+    isHovered: isHovered(),
+    isPressed: ctx.isPressed(),
+    isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
+    isDisabled: ctx.isDisabled(),
+    isReadOnly: state.isReadOnly,
+    isInvalid: state.isInvalid,
+    isRequired: state.isRequired,
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      children: props.buttonProps.children,
+      class: props.buttonProps.class,
+      style: props.buttonProps.style,
+      defaultClassName: ctx.defaultClassName,
+    },
+    renderValues,
+  );
+
+  const cleanLabelProps = () => {
+    const { ref: _ref1, ...rest } = ctx.labelProps() as Record<string, unknown>;
+    return rest;
+  };
+  const cleanHoverProps = () => {
+    const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanInputProps = () => {
+    const {
+      ref: _ref3,
+      onFocus: _onFocus,
+      onBlur: _onBlur,
+      ...rest
+    } = ctx.inputProps() as Record<string, unknown>;
+    return rest;
+  };
+  const cleanFocusProps = () => {
+    const {
+      ref: _ref4,
+      onFocus: _onFocus,
+      onBlur: _onBlur,
+      ...rest
+    } = focusProps as Record<string, unknown>;
+    return rest;
+  };
+  const handleInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
+    (
+      ctx.inputProps() as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+    ).onFocus?.(event);
+    (
+      focusProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+    ).onFocus?.(event);
+  };
+  const handleInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
+    (
+      ctx.inputProps() as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+    ).onBlur?.(event);
+    (focusProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
+      event,
+    );
+  };
+  const handleInputClick: JSX.EventHandler<HTMLInputElement, MouseEvent> = (event) => {
+    (
+      ctx.inputProps() as unknown as { onClick?: JSX.EventHandler<HTMLInputElement, MouseEvent> }
+    ).onClick?.(event);
+  };
+  const handleInputInvalid: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
+    state.updateValidation(getNativeValidation(event.currentTarget));
+    state.commitValidation();
+    event.currentTarget.focus();
+    event.preventDefault();
+  };
+  const handleInputChange: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
+    (
+      ctx.inputProps() as unknown as { onChange?: JSX.EventHandler<HTMLInputElement, Event> }
+    ).onChange?.(event);
+    state.updateValidation(
+      event.currentTarget.validity.valid
+        ? validValidation
+        : getNativeValidation(event.currentTarget),
+    );
+    state.commitValidation();
+  };
+  const setButtonRef = (el: HTMLLabelElement) => {
+    assignRef(props.buttonProps.ref, el);
+  };
+
+  return (
+    <label
+      {...cleanLabelProps()}
+      {...cleanHoverProps()}
+      ref={setButtonRef}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      slot={props.buttonProps.slot}
+      data-selected={ctx.isSelected() || undefined}
+      data-pressed={ctx.isPressed() || undefined}
+      data-hovered={isHovered() || undefined}
+      data-focused={isFocused() || undefined}
+      data-focus-visible={isFocusVisible() || undefined}
+      data-disabled={ctx.isDisabled() || undefined}
+      data-readonly={state.isReadOnly || undefined}
+      data-invalid={state.isInvalid || undefined}
+      data-required={state.isRequired || undefined}
+    >
+      <VisuallyHidden>
+        <input
+          ref={ctx.setInputRef}
+          {...cleanInputProps()}
+          {...cleanFocusProps()}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          onInvalid={handleInputInvalid}
+          onChange={handleInputChange}
+          onClick={handleInputClick}
+        />
+      </VisuallyHidden>
+      {renderProps.renderChildren()}
+    </label>
+  );
+}

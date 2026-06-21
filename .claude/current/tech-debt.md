@@ -264,6 +264,26 @@ whose only S2 prop is `onAction`; `viviana-ui` minted public names
 **Exit:** invented props are removed or documented as explicit local additions;
 public names-with-reach are owner-confirmed; `guard:rac-parity` covers the props.
 
+## Form-field split: monoliths kept primary, no `@deprecated` tags
+
+RAC 1.19 split Switch/Checkbox/Radio into a `*Field` wrapper + `*Button` control
+and marked the monolith wrappers deprecated. We added the nine split names
+(`rac-form-field-wrappers`, done 2026-06-21) but the monolith wrappers
+(`ToggleSwitch`, `Checkbox`, `Radio`) remain the **styled primaries** and carry
+**no hard `@deprecated` JSDoc tags** — two conscious divergences from upstream.
+Reason: our styled layer (`solid-spectrum`) still composes the monoliths, so
+deprecating them would cascade a refactor that is out of scope for an additive
+parity-absorption item. Separately, the field→button handoff uses a native
+`Internal*Context` (read inside the provider via `Show … keyed`) instead of
+upstream's `Provider values={[[…],[TextContext,{slots}]]}` because our `<Provider>`
+is a no-op and `TextContext` is inert — this is the same root cause tracked by
+`port-context-slots`, and the split should migrate to real slot-context once that
+lands.
+
+**Exit:** after `port-context-slots`, the `*Field` components route description /
+errorMessage through real `TextContext` slots; the styled layer migrates onto the
+`*Field`/`*Button` split and the monoliths get `@deprecated` tags (or are removed).
+
 ## i18n strings hardcoded in the data/spectrum layers
 
 User-facing strings are hardcoded English instead of routed through the shipped ICU

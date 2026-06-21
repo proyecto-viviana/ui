@@ -29,7 +29,9 @@ import {
 import {
   createToggleState,
   createCheckboxGroupState,
+  VALID_VALIDITY_STATE,
   type CheckboxGroupState,
+  type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
 import { VisuallyHidden } from "./VisuallyHidden";
 import {
@@ -41,6 +43,7 @@ import {
   filterDOMProps,
 } from "./utils";
 import { FormContext, type FormProps } from "./Form";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -673,6 +676,531 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       data-required={ariaProps.isRequired || undefined}
     >
       {labelChildren()}
+    </label>
+  );
+}
+
+// ============================================================================
+// CheckboxField + CheckboxButton — the RAC form-field split (RAC 1.19)
+// ----------------------------------------------------------------------------
+// Upstream split the monolithic Checkbox into a CheckboxField wrapper (owns
+// state, validation, and help text) containing a CheckboxButton control (the
+// clickable indicator + label). Mirrors react-aria-components/src/Checkbox.tsx.
+// The legacy `Checkbox` above stays as the deprecated monolith for back-compat.
+//
+// Spine note: upstream wires the two halves with InternalCheckboxContext +
+// TextContext slots through `<Provider>`. Our `<Provider>` is inert and
+// TextContext carries no slots yet (`port-context-slots`), so — exactly like
+// the monolith Checkbox and CheckboxGroup already do — we use a native Solid
+// context and bridge `description`/`errorMessage` with explicit ids.
+// ============================================================================
+
+export interface CheckboxFieldRenderProps {
+  /** Whether the checkbox is selected. */
+  isSelected: boolean;
+  /** Whether the checkbox is indeterminate. */
+  isIndeterminate: boolean;
+  /** Whether the checkbox is disabled. */
+  isDisabled: boolean;
+  /** Whether the checkbox is read only. */
+  isReadOnly: boolean;
+  /** Whether the checkbox is invalid. */
+  isInvalid: boolean;
+  /** Whether the checkbox is required. */
+  isRequired: boolean;
+}
+
+export interface CheckboxButtonRenderProps extends CheckboxRenderProps {}
+
+export interface CheckboxFieldProps
+  extends Omit<AriaCheckboxProps, "children" | "validationState">, SlotProps {
+  /** The children of the component (typically a `CheckboxButton`). A function may receive render props. */
+  children?: RenderChildren<CheckboxFieldRenderProps>;
+  /** The CSS className for the element. */
+  class?: ClassNameOrFunction<CheckboxFieldRenderProps>;
+  /** The inline style for the element. */
+  style?: StyleOrFunction<CheckboxFieldRenderProps>;
+  /** Whether the checkbox is indeterminate. */
+  isIndeterminate?: boolean;
+  /**
+   * A description for the checkbox. Bridged with explicit ids + aria-describedby
+   * until TextContext slots are live (`port-context-slots`).
+   */
+  description?: JSX.Element;
+  /** An error message for the checkbox. */
+  errorMessage?: JSX.Element;
+  /** Ref for the checkbox field root element. */
+  ref?: RefLike<HTMLDivElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
+}
+
+export interface CheckboxButtonProps extends SlotProps {
+  /** The children of the component. A function may receive render props. */
+  children?: RenderChildren<CheckboxButtonRenderProps>;
+  /** The CSS className for the element. */
+  class?: ClassNameOrFunction<CheckboxButtonRenderProps>;
+  /** The inline style for the element. */
+  style?: StyleOrFunction<CheckboxButtonRenderProps>;
+  /** Ref for the outer label element. */
+  ref?: RefLike<HTMLLabelElement>;
+  /** Handler called when hover starts. */
+  onHoverStart?: () => void;
+  /** Handler called when hover ends. */
+  onHoverEnd?: () => void;
+  /** Handler called when hover state changes. */
+  onHoverChange?: (isHovered: boolean) => void;
+}
+
+export interface CheckboxFieldContextValue extends CheckboxFieldProps {
+  slots?: Record<string, CheckboxFieldProps>;
+}
+export const CheckboxFieldContext = createContext<CheckboxFieldContextValue | null>(null);
+
+/** Carries the checkbox aria + state from a CheckboxField/Checkbox wrapper to its CheckboxButton. */
+interface InternalCheckboxContextValue {
+  isSelected: Accessor<boolean>;
+  isPressed: Accessor<boolean>;
+  isDisabled: Accessor<boolean>;
+  isReadOnly: Accessor<boolean>;
+  isInvalid: Accessor<boolean>;
+  isIndeterminate: Accessor<boolean>;
+  isRequired: Accessor<boolean>;
+  labelProps: () => JSX.LabelHTMLAttributes<HTMLLabelElement>;
+  inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
+  setInputRef: (el: HTMLInputElement) => void;
+  describedBy: () => string | undefined;
+  defaultClassName: string;
+}
+const InternalCheckboxContext = createContext<InternalCheckboxContextValue | null>(null);
+
+/**
+ * A checkbox allows a user to select an item, with support for validation and help text.
+ * Wraps a `CheckboxButton` and provides description/error wiring.
+ *
+ * @example
+ * ```tsx
+ * <CheckboxField description="Required to continue">
+ *   <CheckboxButton>Accept terms</CheckboxButton>
+ * </CheckboxField>
+ * ```
+ */
+export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
+  const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
+  const formContext = useContext(FormContext);
+  const contextProps = useContext(CheckboxFieldContext);
+  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextBaseProps = createMemo<CheckboxFieldProps>(() => {
+    if (!contextProps) return {};
+    const { slots: _slots, ...rest } = contextProps;
+    return rest;
+  });
+  const mergedProps = contextProps
+    ? (mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) as CheckboxFieldProps)
+    : props;
+  const propsWithFormBehavior = withFormValidationBehavior(mergedProps, formContext);
+  const inputRefs = createMemo(
+    () =>
+      [contextBaseProps().inputRef, contextSlotProps?.inputRef, props.inputRef].filter(
+        Boolean,
+      ) as RefLike<HTMLInputElement>[],
+  );
+
+  // `children` is split out of ariaProps so neither the inputAriaProps key-copy
+  // loop nor the hook accessor spread eagerly reads it — reading a Solid
+  // `children` getter instantiates the nested CheckboxButton, and doing so
+  // OUTSIDE InternalCheckboxContext both breaks its binding and recurses.
+  const [local, ariaProps] = splitProps(propsWithFormBehavior, [
+    "class",
+    "style",
+    "ref",
+    "inputRef",
+    "slot",
+    "isIndeterminate",
+    "description",
+    "errorMessage",
+    "children",
+  ]);
+  const descriptionId = createUniqueId();
+  const errorMessageId = createUniqueId();
+
+  const inputAriaProps = createMemo(() => {
+    const clean: Record<string, unknown> = {};
+    for (const key in ariaProps as Record<string, unknown>) {
+      if (!key.startsWith("data-")) {
+        clean[key] = (ariaProps as Record<string, unknown>)[key];
+      }
+    }
+    return clean as typeof ariaProps;
+  });
+
+  const groupState = useContext(CheckboxGroupStateContext);
+
+  let isSelected: Accessor<boolean>;
+  let isPressed: Accessor<boolean>;
+  let labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
+  let inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
+
+  if (groupState) {
+    const itemAria = createCheckboxGroupItem(
+      () => ({
+        ...inputAriaProps(),
+        value: inputAriaProps().value ?? "",
+        // The hook reads `children` only to decide if an aria-label is needed;
+        // the visible label lives in the CheckboxButton, so report presence.
+        children: true,
+      }),
+      groupState,
+      inputElement,
+    );
+    isSelected = itemAria.isSelected;
+    isPressed = itemAria.isPressed;
+    labelProps = itemAria.labelProps;
+    inputProps = () => itemAria.inputProps;
+  } else {
+    const state = createToggleState(() => ({
+      isSelected: ariaProps.isSelected,
+      defaultSelected: ariaProps.defaultSelected,
+      onChange: ariaProps.onChange,
+      isReadOnly: ariaProps.isReadOnly,
+    }));
+
+    const checkboxAria = createCheckbox(
+      () => ({
+        ...inputAriaProps(),
+        isIndeterminate: local.isIndeterminate,
+        children: true,
+      }),
+      state,
+      inputElement,
+    );
+    isSelected = checkboxAria.isSelected;
+    isPressed = checkboxAria.isPressed;
+    labelProps = checkboxAria.labelProps;
+    inputProps = () => checkboxAria.inputProps;
+  }
+  const isDisabled = () => inputProps().disabled === true;
+  const isReadOnly = () => inputProps()["aria-readonly"] === true;
+  const isInvalid = () => inputProps()["aria-invalid"] === true;
+  const isIndeterminate = () => local.isIndeterminate ?? false;
+  const isRequired = () => ariaProps.isRequired ?? false;
+
+  const describedBy = () => {
+    const ids = [
+      ariaProps["aria-describedby"],
+      local.description ? descriptionId : undefined,
+      isInvalid() && local.errorMessage ? errorMessageId : undefined,
+    ].filter(Boolean);
+    return ids.length ? ids.join(" ") : undefined;
+  };
+
+  const setInputRef = (el: HTMLInputElement) => {
+    setInputElement(el);
+    for (const ref of inputRefs()) {
+      assignRef(ref, el);
+    }
+  };
+  const setFieldRef = (el: HTMLDivElement) => {
+    assignRef(local.ref, el);
+  };
+
+  const internalContext: InternalCheckboxContextValue = {
+    isSelected,
+    isPressed,
+    isDisabled,
+    isReadOnly,
+    isInvalid,
+    isIndeterminate,
+    isRequired,
+    labelProps: () => labelProps,
+    inputProps,
+    setInputRef,
+    describedBy,
+    defaultClassName: "solidaria-CheckboxButton",
+  };
+
+  const renderValues = createMemo<CheckboxFieldRenderProps>(() => ({
+    isSelected: isSelected(),
+    isIndeterminate: isIndeterminate(),
+    isDisabled: isDisabled(),
+    isReadOnly: isReadOnly(),
+    isInvalid: isInvalid(),
+    isRequired: isRequired(),
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      children: mergedProps.children,
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-CheckboxField",
+    },
+    renderValues,
+  );
+
+  // In a CheckboxGroup, validation is handled at the group level — mirror
+  // upstream and provide no per-field FieldErrorContext there.
+  const fieldErrorContext: FieldErrorContextValue | null = groupState
+    ? null
+    : {
+        get validation(): ValidationResult {
+          return {
+            isInvalid: isInvalid(),
+            validationDetails: VALID_VALIDITY_STATE,
+            validationErrors: [],
+          };
+        },
+        get errorMessageProps() {
+          return { id: errorMessageId } as JSX.HTMLAttributes<HTMLElement>;
+        },
+      };
+
+  const domProps = createMemo(() => {
+    const filtered = filterDOMProps(ariaProps, { global: true });
+    delete (filtered as Record<string, unknown>).id;
+    delete (filtered as Record<string, unknown>).onClick;
+    return filtered;
+  });
+
+  // Children are accessed inside the providers (component-execution owner) so a
+  // nested CheckboxButton's useContext binds to InternalCheckboxContext.
+  const FieldChildren = () => {
+    const childRenderValues: CheckboxFieldRenderProps = {
+      get isSelected() {
+        return isSelected();
+      },
+      get isIndeterminate() {
+        return isIndeterminate();
+      },
+      get isDisabled() {
+        return isDisabled();
+      },
+      get isReadOnly() {
+        return isReadOnly();
+      },
+      get isInvalid() {
+        return isInvalid();
+      },
+      get isRequired() {
+        return isRequired();
+      },
+    };
+    const renderedChildren = createMemo(() => {
+      const children = mergedProps.children;
+      return typeof children === "function" ? children(childRenderValues) : children;
+    });
+    return (
+      <>
+        {renderedChildren()}
+        <Show when={local.description}>
+          <span id={descriptionId} slot="description">
+            {local.description}
+          </span>
+        </Show>
+        <Show when={isInvalid() && local.errorMessage}>
+          <span id={errorMessageId} slot="errorMessage">
+            {local.errorMessage}
+          </span>
+        </Show>
+      </>
+    );
+  };
+
+  const fieldDiv = (
+    <div
+      {...domProps()}
+      ref={setFieldRef}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      slot={local.slot}
+      data-selected={isSelected() || undefined}
+      data-indeterminate={isIndeterminate() || undefined}
+      data-disabled={isDisabled() || undefined}
+      data-readonly={isReadOnly() || undefined}
+      data-invalid={isInvalid() || undefined}
+      data-required={isRequired() || undefined}
+    >
+      <InternalCheckboxContext.Provider value={internalContext}>
+        <Show when={fieldErrorContext} fallback={<FieldChildren />} keyed>
+          {(ctx) => (
+            <FieldErrorContext.Provider value={ctx}>
+              <FieldChildren />
+            </FieldErrorContext.Provider>
+          )}
+        </Show>
+      </InternalCheckboxContext.Provider>
+    </div>
+  );
+
+  return fieldDiv;
+}
+
+/**
+ * A checkbox button is the clickable area of a checkbox, including the indicator and label.
+ * Must be rendered inside a `CheckboxField` (or the legacy `Checkbox`).
+ */
+export function CheckboxButton(props: CheckboxButtonProps): JSX.Element {
+  const getCtx = createMemo(() => useContext(InternalCheckboxContext));
+  return (
+    <Show when={getCtx()} fallback={null} keyed>
+      {(ctx) => <CheckboxButtonImpl buttonProps={props} ctx={ctx} />}
+    </Show>
+  );
+}
+
+function CheckboxButtonImpl(props: {
+  buttonProps: CheckboxButtonProps;
+  ctx: InternalCheckboxContextValue;
+}): JSX.Element {
+  const { ctx } = props;
+
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return ctx.isDisabled() || ctx.isReadOnly();
+    },
+    onHoverStart: props.buttonProps.onHoverStart,
+    onHoverEnd: props.buttonProps.onHoverEnd,
+    onHoverChange: props.buttonProps.onHoverChange,
+  });
+
+  const renderValues = createMemo<CheckboxButtonRenderProps>(() => ({
+    isSelected: ctx.isSelected(),
+    isIndeterminate: ctx.isIndeterminate(),
+    isHovered: isHovered(),
+    isPressed: ctx.isPressed(),
+    isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
+    isDisabled: ctx.isDisabled(),
+    isReadOnly: ctx.isReadOnly(),
+    isInvalid: ctx.isInvalid(),
+    isRequired: ctx.isRequired(),
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      children: props.buttonProps.children,
+      class: props.buttonProps.class,
+      style: props.buttonProps.style,
+      defaultClassName: ctx.defaultClassName,
+    },
+    renderValues,
+  );
+
+  const childRenderValues: CheckboxButtonRenderProps = {
+    get isSelected() {
+      return ctx.isSelected();
+    },
+    get isIndeterminate() {
+      return ctx.isIndeterminate();
+    },
+    get isHovered() {
+      return isHovered();
+    },
+    get isPressed() {
+      return ctx.isPressed();
+    },
+    get isFocused() {
+      return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible();
+    },
+    get isDisabled() {
+      return ctx.isDisabled();
+    },
+    get isReadOnly() {
+      return ctx.isReadOnly();
+    },
+    get isInvalid() {
+      return ctx.isInvalid();
+    },
+    get isRequired() {
+      return ctx.isRequired();
+    },
+  };
+
+  const cleanLabelProps = () => {
+    const { ref: _ref1, ...rest } = ctx.labelProps() as Record<string, unknown>;
+    return rest;
+  };
+  const cleanHoverProps = () => {
+    const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanInputProps = () => {
+    const {
+      ref: _ref3,
+      onFocus: _onFocus,
+      onBlur: _onBlur,
+      ...rest
+    } = ctx.inputProps() as Record<string, unknown>;
+    return rest;
+  };
+  const cleanFocusProps = () => {
+    const {
+      ref: _ref4,
+      onFocus: _onFocus,
+      onBlur: _onBlur,
+      ...rest
+    } = focusProps as Record<string, unknown>;
+    return rest;
+  };
+  const handleInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
+    (
+      ctx.inputProps() as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+    ).onFocus?.(event);
+    (
+      focusProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+    ).onFocus?.(event);
+  };
+  const handleInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
+    (
+      ctx.inputProps() as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
+    ).onBlur?.(event);
+    (focusProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
+      event,
+    );
+  };
+  const setButtonRef = (el: HTMLLabelElement) => {
+    assignRef(props.buttonProps.ref, el);
+  };
+
+  const buttonChildren = () => {
+    const children = props.buttonProps.children;
+    return typeof children === "function" ? children(childRenderValues) : children;
+  };
+
+  return (
+    <label
+      {...cleanLabelProps()}
+      {...cleanHoverProps()}
+      ref={setButtonRef}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      slot={props.buttonProps.slot}
+      data-selected={ctx.isSelected() || undefined}
+      data-indeterminate={ctx.isIndeterminate() || undefined}
+      data-pressed={ctx.isPressed() || undefined}
+      data-hovered={isHovered() || undefined}
+      data-focused={isFocused() || undefined}
+      data-focus-visible={isFocusVisible() || undefined}
+      data-disabled={ctx.isDisabled() || undefined}
+      data-readonly={ctx.isReadOnly() || undefined}
+      data-invalid={ctx.isInvalid() || undefined}
+      data-required={ctx.isRequired() || undefined}
+    >
+      <VisuallyHidden>
+        <input
+          ref={ctx.setInputRef}
+          {...cleanInputProps()}
+          {...cleanFocusProps()}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          aria-describedby={ctx.describedBy()}
+        />
+      </VisuallyHidden>
+      {buttonChildren()}
     </label>
   );
 }

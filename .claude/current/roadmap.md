@@ -162,8 +162,16 @@ selection / keyboard / `aria-describedby` bugs, and they gate
 
 - **`table-focus-ring`** (T-59) — TableView cell focus-ring `--topFocusRing`
   re-architecture; visual-regression risk, so isolate it.
-- **`rac-form-field-wrappers`** — absorb the 9 unported RAC Checkbox / Radio /
-  Switch `Field` / `Button` / `FieldContext` names.
+- **`rac-form-field-wrappers`** — **DONE 2026-06-21.** Absorbed the 9 unported RAC
+  Checkbox / Radio / Switch `Field` / `Button` / `FieldContext` names into
+  `solidaria-components`, mirroring upstream's 1.19 split (`*Field` owns state +
+  validation + help text; `*Button` is the clickable label + indicator). The
+  field→button handoff uses a native `Internal*Context` read inside the provider
+  (the `Show … keyed` owner pattern) because `<Provider>`/`TextContext` are inert
+  (`port-context-slots`); `description`/`errorMessage` bridged to `aria-describedby`
+  by hand. `guard:rac-export-gap` now reports 0 RAC names missing; 18 new tests +
+  typecheck + a11y green. The deprecated monolith wrappers stay the styled primaries
+  (we did **not** add hard `@deprecated` tags — see tech-debt).
 - **`autocomplete-collection-bridge`** — wire `SearchField` / `Menu` onto the
   autocomplete contexts (Bucket D).
 - **`upstream-api-parity`** — `picker-api-upstream`, `treeview-api-upstream`,
