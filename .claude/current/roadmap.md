@@ -39,7 +39,7 @@ items:
     docs: [tech-debt.md, certification.md]
   - id: headless-spine-port
     title: Port the shared headless spine
-    status: open
+    status: in-progress
     window: null
     docs: [tech-debt.md]
   - id: consumer-delivery
@@ -228,7 +228,15 @@ selection / keyboard / `aria-describedby` bugs, and they gate
 Within `headless-spine-port`: `port-selection-manager` →
 `port-list-keyboard-delegate` → `port-context-slots`, then the migrations
 (`migrate-menu-spine`, `migrate-listbox-spine`, `migrate-combobox-nav`,
-`migrate-describedby-slots`) and `port-submenu-state`. The **press-path epic** is
+`migrate-describedby-slots`) and `port-submenu-state`. **Keystone 1
+(`port-selection-manager`) DONE 2026-06-21 (commit 7c1708c4):** split the
+collapsed engine into upstream's two layers — `createMultipleSelectionState`
+(raw state) + the collection-aware `SelectionManager` class — backing
+`createListState`, with the manager exposed on `ListState`/`ComboBoxState`/
+`SelectState`; `onSelectionChange` now emits a faithful `Selection`. **Next in
+flight: `port-list-keyboard-delegate`** (`createSelectableCollection` /
+`createSelectableItem` + `ListKeyboardDelegate` with RTL), which consumes the
+new `selectionManager` and unblocks the autocomplete bridge. The **press-path epic** is
 the item-hook half of this same move, folded into `upstream-parity-loop` because
 it is ticket-driven: Phases 0–1 landed (`onSelect` split + `createSelectableItem`);
 **`press-path-phase2`** migrates the three item hooks
