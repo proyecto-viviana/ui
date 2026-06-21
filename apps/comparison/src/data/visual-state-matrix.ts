@@ -1535,7 +1535,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/treeview-visual.spec.ts",
-      note: "Highlight/wrap TreeView state compares icon slots, icon-only ActionButtonGroup item actions, href rows, disabled item state, load-more progress, single visible row labels, computed styles, and geometry against React Spectrum.",
+      note: "Highlight TreeView state compares icon slots, icon-only ActionButtonGroup item actions, href rows, disabled item state, load-more progress, single visible row labels, computed styles, and geometry against React Spectrum.",
     },
     {
       id: "styled.empty",
@@ -1575,7 +1575,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts",
-      note: "The docs/API controls drive recursive items, selection mode/style, overflow mode, selected/default/disabled keys, expanded/default keys, item count, icon/action slots, links, load-more state, and ActionBar into both stacks.",
+      note: "The docs/API controls drive recursive items, selection mode/style, selected/default/disabled keys, expanded/default keys, item count, icon/action slots, links, load-more state, and ActionBar into both stacks.",
     },
   ],
   skeleton: [
@@ -2641,7 +2641,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts; e2e/picker-visual.spec.ts",
-      note: "The docs-style prop controls drive controlled value/defaultValue selection, single/multiple selectionMode, label placement/alignment/necessity, contextual help, custom renderValue, form owner/name, validation behavior, async loading/onLoadMore, popover direction/alignment/width/flip, disabled item state, placeholder, size, quiet, description/error message, disabled, required, and invalid state into both stacks. The Picker visual spec also asserts the advanced routed state against React Spectrum; PickerSection and PickerItem link navigation remain validation-note blockers.",
+      note: "The docs-style prop controls drive controlled selectedKey/defaultSelectedKey (single) and selectedKeys/defaultSelectedKeys (multiple) selection, single/multiple selectionMode, label placement/alignment/necessity, contextual help, custom renderValue, form owner/name, validation behavior, async loading/onLoadMore, popover direction/alignment/width/flip, disabled item state, placeholder, size, quiet, description/error message, disabled, required, and invalid state into both stacks. The Picker visual spec also asserts the advanced routed state against React Spectrum; PickerSection and PickerItem link navigation remain validation-note blockers.",
     },
   ],
   rangeslider: [

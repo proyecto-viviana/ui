@@ -4,7 +4,6 @@ export { comparisonControlsEvent };
 
 export const treeViewSelectionModeOptions = ["none", "single", "multiple"] as const;
 export const treeViewSelectionStyleOptions = ["checkbox", "highlight"] as const;
-export const treeViewOverflowModeOptions = ["truncate", "wrap"] as const;
 export const treeViewSelectionSourceOptions = ["selectedKeys", "defaultSelectedKeys"] as const;
 export const treeViewExpandedSourceOptions = ["expandedKeys", "defaultExpandedKeys"] as const;
 export const treeViewItemCountOptions = ["3", "2", "0"] as const;
@@ -13,7 +12,6 @@ export const treeViewLoadingStateOptions = ["idle", "loadingMore"] as const;
 
 export type TreeViewSelectionMode = (typeof treeViewSelectionModeOptions)[number];
 export type TreeViewSelectionStyle = (typeof treeViewSelectionStyleOptions)[number];
-export type TreeViewOverflowMode = (typeof treeViewOverflowModeOptions)[number];
 export type TreeViewSelectionSource = (typeof treeViewSelectionSourceOptions)[number];
 export type TreeViewExpandedSource = (typeof treeViewExpandedSourceOptions)[number];
 export type TreeViewItemCount = (typeof treeViewItemCountOptions)[number];
@@ -94,7 +92,6 @@ export type TreeViewLinkItem = (typeof treeViewLinkItemOptions)[number];
 export interface TreeViewDemoProps {
   selectionMode: TreeViewSelectionMode;
   selectionStyle: TreeViewSelectionStyle;
-  overflowMode: TreeViewOverflowMode;
   selectionSource: TreeViewSelectionSource;
   expandedSource: TreeViewExpandedSource;
   itemCount: TreeViewItemCount;
@@ -115,7 +112,6 @@ export interface TreeViewDemoProps {
 export const treeViewDemoDefaults: TreeViewDemoProps = {
   selectionMode: "multiple",
   selectionStyle: "checkbox",
-  overflowMode: "truncate",
   selectionSource: "defaultSelectedKeys",
   expandedSource: "defaultExpandedKeys",
   itemCount: "3",
@@ -258,9 +254,6 @@ export function normalizeTreeViewDemoProps(
     selectionStyle: isOneOf(props.selectionStyle, treeViewSelectionStyleOptions)
       ? props.selectionStyle
       : treeViewDemoDefaults.selectionStyle,
-    overflowMode: isOneOf(props.overflowMode, treeViewOverflowModeOptions)
-      ? props.overflowMode
-      : treeViewDemoDefaults.overflowMode,
     selectionSource: isOneOf(props.selectionSource, treeViewSelectionSourceOptions)
       ? props.selectionSource
       : treeViewDemoDefaults.selectionSource,
@@ -362,9 +355,6 @@ export function treeViewDemoPropsFromSearch(search: string): TreeViewDemoProps {
     selectionStyle: isOneOf(params.get("selectionStyle"), treeViewSelectionStyleOptions)
       ? (params.get("selectionStyle") as TreeViewSelectionStyle)
       : treeViewDemoDefaults.selectionStyle,
-    overflowMode: isOneOf(params.get("overflowMode"), treeViewOverflowModeOptions)
-      ? (params.get("overflowMode") as TreeViewOverflowMode)
-      : treeViewDemoDefaults.overflowMode,
     selectionSource: isOneOf(params.get("selectionSource"), treeViewSelectionSourceOptions)
       ? (params.get("selectionSource") as TreeViewSelectionSource)
       : treeViewDemoDefaults.selectionSource,
@@ -409,7 +399,6 @@ export function serializeTreeViewDemoProps(props: TreeViewDemoProps) {
   return JSON.stringify({
     selectionMode: props.selectionMode,
     selectionStyle: props.selectionStyle,
-    overflowMode: props.overflowMode,
     selectionSource: props.selectionSource,
     expandedSource: props.expandedSource,
     itemCount: props.itemCount,

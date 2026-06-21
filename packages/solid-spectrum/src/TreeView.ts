@@ -21,7 +21,6 @@ export type {
   TreeItemProps,
   TreeLoadMoreItemProps,
   TreeLoadingState,
-  TreeOverflowMode,
   TreeProps,
   TreeRenderItemState,
   TreeSelectionStyle,

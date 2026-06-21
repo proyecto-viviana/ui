@@ -63,7 +63,6 @@ import {
 import { Text, TextContext } from "../text";
 
 export type TreeSelectionStyle = "checkbox" | "highlight";
-export type TreeOverflowMode = "truncate" | "wrap";
 export type TreeLoadingState =
   | "idle"
   | "loading"
@@ -82,8 +81,6 @@ export interface TreeProps<T extends object> extends Omit<
   items?: TreeItemData<T>[];
   /** Whether selection is shown with checkboxes or highlighted rows. @default 'checkbox' */
   selectionStyle?: TreeSelectionStyle;
-  /** Whether labels/descriptions truncate or wrap. @default 'truncate' */
-  overflowMode?: TreeOverflowMode;
   /** Loading state forwarded to load-more behavior. */
   loadingState?: TreeLoadingState;
   /** Provides an action bar when items are selected. */
@@ -197,13 +194,11 @@ interface StaticCollectionContextValue {
 
 interface TreeViewContextValue {
   selectionStyle: TreeSelectionStyle;
-  overflowMode: TreeOverflowMode;
 }
 
 export const TreeViewContext = createContext<SpectrumContextValue<TreeProps<object>>>(null);
 const InternalTreeViewContext = createContext<TreeViewContextValue>({
   selectionStyle: "checkbox",
-  overflowMode: "truncate",
 });
 const StaticTreeCollectionContext = createContext<StaticCollectionContextValue | null>(null);
 
@@ -270,7 +265,6 @@ const selectedActiveBackground = colorMix("gray-25", "gray-900", 10);
 type TreeRowLayerProps = Partial<TreeItemRenderProps> & {
   isLink?: boolean;
   selectionStyle?: TreeSelectionStyle;
-  overflowMode?: TreeOverflowMode;
 };
 
 const treeViewItem = style<TreeRowLayerProps>({
@@ -525,17 +519,8 @@ const treeLabel = style<TreeRowLayerProps>({
   font: controlFont(),
   color: "inherit",
   overflow: "hidden",
-  textOverflow: {
-    overflowMode: {
-      truncate: "ellipsis",
-    },
-  },
-  whiteSpace: {
-    overflowMode: {
-      truncate: "nowrap",
-      wrap: "normal",
-    },
-  },
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
 });
 
 const treeDescription = style<TreeRowLayerProps>({
@@ -551,17 +536,8 @@ const treeDescription = style<TreeRowLayerProps>({
     },
   },
   overflow: "hidden",
-  textOverflow: {
-    overflowMode: {
-      truncate: "ellipsis",
-    },
-  },
-  whiteSpace: {
-    overflowMode: {
-      truncate: "nowrap",
-      wrap: "normal",
-    },
-  },
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
 });
 
 const treeActions = style({
@@ -612,7 +588,6 @@ function applyItemSlotClasses(
   const state = {
     ...renderProps,
     selectionStyle: context.selectionStyle,
-    overflowMode: context.overflowMode,
   };
 
   const gridCell = root.querySelector('[role="gridcell"]');
@@ -720,7 +695,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     "children",
     "items",
     "selectionStyle",
-    "overflowMode",
     "loadingState",
     "renderActionBar",
     "styles",
@@ -735,7 +709,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     "onLoadMore",
   ]);
   const selectionStyle = (): TreeSelectionStyle => local.selectionStyle ?? "checkbox";
-  const overflowMode = (): TreeOverflowMode => local.overflowMode ?? "truncate";
   const isLoading = () => local.loadingState === "loading" || local.loadingState === "loadingMore";
   const [staticItems, setStaticItems] = createSignal<StaticTreeItem[]>([]);
   const [registrationVersion, setRegistrationVersion] = createSignal(0);
@@ -782,7 +755,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   };
   const treeContext = createMemo<TreeViewContextValue>(() => ({
     selectionStyle: selectionStyle(),
-    overflowMode: overflowMode(),
   }));
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -902,7 +874,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
         style={mergedUnsafeStyle()}
         data-tree-view=""
         data-selection-style={selectionStyle()}
-        data-overflow-mode={overflowMode()}
         data-loading-state={local.loadingState ?? undefined}
       >
         {(item: TreeItemData<T>, state: TreeRenderItemState) => renderItem(item, state)}
@@ -976,7 +947,6 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   const getRowLayerProps = (renderProps: TreeItemRenderProps): TreeRowLayerProps => ({
     ...renderProps,
     selectionStyle: context.selectionStyle,
-    overflowMode: context.overflowMode,
     isLink: !!local.href,
   });
   const getClassName = (renderProps: TreeItemRenderProps): string =>

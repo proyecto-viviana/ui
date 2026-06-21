@@ -208,10 +208,14 @@ selection / keyboard / `aria-describedby` bugs, and they gate
   useCalendarGrid; contract test added across en-US, fr-FR, RTL ar-AE). The
   segment field-label remainder is split out to `calendar-segment-i18n` (deferred —
   5+ files + a `SEGMENT_LABELS`-vs-dictionary decision). `picker-api-upstream` /
-  `treeview-api-upstream` are **FLAGGED for the owner**: the additive
-  `selectedKey`/`onSelectionChange` half is already exposed, but *removing* the
-  invented props is a breaking public-API change to live consumers — a product
-  decision the autonomous pass leaves untouched (see tech-debt).
+  `treeview-api-upstream` are **DONE 2026-06-21** — owner authorized the breaking
+  removal ("breaking doesn't matter, parity is priority"). The real invented
+  surface was narrower than the audit claimed: Picker dropped only
+  `value`/`defaultValue`/`onChange` (+ `PickerValue` + value⇄key helpers) and
+  **kept** the real S2 `renderValue`; TreeView dropped only `overflowMode` (+
+  `TreeOverflowMode` + `data-overflow-mode`) and **kept** the real S2
+  `onAction`/`renderActionBar`/`selectionStyle` (see tech-debt). Only the
+  `viviana-ui` public-names half of `upstream-api-parity` remains open.
 - **`support-export-parity`** — **DONE 2026-06-21.** The 21 missing S2 support
   exports (`support-export-audit`): the slotted-props contexts, `PickerSection` /
   `ComboBoxSection`, and the helper/hook re-exports are wired and

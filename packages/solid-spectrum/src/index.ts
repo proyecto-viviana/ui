@@ -695,7 +695,6 @@ export type {
   TreeLoadMoreItemProps,
   TreeLoadMoreItemProps as TreeViewLoadMoreItemProps,
   TreeLoadingState,
-  TreeOverflowMode,
   TreeProps,
   TreeProps as TreeViewProps,
   TreeRenderItemState,

@@ -38,42 +38,9 @@ describe("Picker (solid-spectrum)", () => {
     expect(onSelectionChange).toHaveBeenCalledWith("#api");
   });
 
-  it("supports the S2 value/defaultValue/onChange selection props", async () => {
+  it("supports multiple selection with selectedKeys/defaultSelectedKeys/onSelectionChangeKeys", async () => {
     const user = setupUser();
-    const onChange = vi.fn();
-    const { unmount } = render(() => (
-      <Picker<SectionItem>
-        aria-label="Table of contents"
-        defaultOpen
-        items={sections}
-        getKey={(item) => item.href}
-        getTextValue={(item) => item.label}
-        value="#page-title"
-        onChange={onChange}
-      />
-    ));
-
-    await user.click(screen.getByRole("option", { name: "API" }));
-    expect(onChange).toHaveBeenCalledWith("#api");
-
-    unmount();
-
-    render(() => (
-      <Picker<SectionItem>
-        aria-label="Table of contents"
-        items={sections}
-        getKey={(item) => item.href}
-        getTextValue={(item) => item.label}
-        defaultValue="#api"
-      />
-    ));
-
-    expect(screen.getByRole("button")).toHaveTextContent("API");
-  });
-
-  it("supports S2 multiple value/defaultValue/onChange selection props", async () => {
-    const user = setupUser();
-    const onChange = vi.fn();
+    const onSelectionChangeKeys = vi.fn();
     const { unmount } = render(() => (
       <Picker<SectionItem>
         aria-label="Table of contents"
@@ -82,8 +49,8 @@ describe("Picker (solid-spectrum)", () => {
         items={sections}
         getKey={(item) => item.href}
         getTextValue={(item) => item.label}
-        value={["#page-title"]}
-        onChange={onChange}
+        selectedKeys={["#page-title"]}
+        onSelectionChangeKeys={onSelectionChangeKeys}
       />
     ));
 
@@ -91,7 +58,7 @@ describe("Picker (solid-spectrum)", () => {
 
     await user.click(screen.getByRole("option", { name: "API" }));
 
-    expect(onChange).toHaveBeenLastCalledWith(["#page-title", "#api"]);
+    expect(onSelectionChangeKeys).toHaveBeenLastCalledWith(new Set(["#page-title", "#api"]));
 
     unmount();
 
@@ -102,7 +69,7 @@ describe("Picker (solid-spectrum)", () => {
         items={sections}
         getKey={(item) => item.href}
         getTextValue={(item) => item.label}
-        defaultValue={["#page-title", "#api"]}
+        defaultSelectedKeys={["#page-title", "#api"]}
         renderValue={(items) => <span>{items.map((item) => item.label).join(" + ")}</span>}
       />
     ));
@@ -163,7 +130,7 @@ describe("Picker (solid-spectrum)", () => {
         selectionMode="multiple"
         name="section"
         form="docs-form"
-        defaultValue={["#page-title", "#api"]}
+        defaultSelectedKeys={["#page-title", "#api"]}
         items={sections}
         getKey={(item) => item.href}
         getTextValue={(item) => item.label}

@@ -69,7 +69,6 @@ export type PickerLabelAlign = "start" | "end";
 export type PickerNecessityIndicator = "icon" | "label";
 export type PickerDirection = "bottom" | "top";
 export type PickerAlign = "start" | "end";
-export type PickerValue = Key | Key[] | null;
 export type PickerLoadingState =
   | "idle"
   | "loading"
@@ -100,9 +99,6 @@ export interface PickerProps<T> extends Omit<
   align?: PickerAlign;
   menuWidth?: number;
   shouldFlip?: boolean;
-  value?: PickerValue;
-  defaultValue?: PickerValue;
-  onChange?: (value: PickerValue) => void;
   loadingState?: PickerLoadingState;
   onLoadMore?: () => void | Promise<void>;
   renderValue?: (selectedItems: T[]) => JSX.Element;
@@ -692,47 +688,6 @@ function selectedValues<T>(valueProps: SelectValueRenderProps<T>): T[] {
     .filter((item): item is T => item != null);
 }
 
-function valueToSelectedKey(value: PickerValue | undefined): Key | null | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
-  }
-
-  return value;
-}
-
-function valueToSelectedKeys(value: PickerValue | undefined): Iterable<Key> | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (value == null) {
-    return [];
-  }
-
-  return Array.isArray(value) ? value : [value];
-}
-
-function keyForItem<T>(item: T, getKey: ((item: T) => Key) | undefined): Key {
-  const itemRecord = item as Record<string, unknown>;
-  return (getKey?.(item) ?? itemRecord.key ?? itemRecord.id ?? String(item)) as Key;
-}
-
-function selectionKeysToValue<T>(
-  keys: "all" | Set<Key>,
-  items: Iterable<T> | undefined,
-  getKey: ((item: T) => Key) | undefined,
-): Key[] {
-  if (keys === "all") {
-    return Array.from(items ?? [], (item) => keyForItem(item, getKey));
-  }
-
-  return Array.from(keys);
-}
-
 function pickerValueContent<T>(
   valueProps: SelectValueRenderProps<T>,
   renderValue: ((selectedItems: T[]) => JSX.Element) | undefined,
@@ -801,9 +756,6 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
     "align",
     "menuWidth",
     "shouldFlip",
-    "value",
-    "defaultValue",
-    "onChange",
     "loadingState",
     "onLoadMore",
     "renderValue",
@@ -823,36 +775,15 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   const isLoadingMore = () => local.loadingState === "loadingMore";
   const propsRecord = () => headlessProps as Record<string, unknown>;
   const isMultiple = () => propsRecord().selectionMode === "multiple";
-  const selectedKey = () =>
-    local.value !== undefined
-      ? valueToSelectedKey(local.value)
-      : (propsRecord().selectedKey as Key | null | undefined);
-  const defaultSelectedKey = () =>
-    local.defaultValue !== undefined
-      ? valueToSelectedKey(local.defaultValue)
-      : (propsRecord().defaultSelectedKey as Key | null | undefined);
-  const selectedKeys = () =>
-    local.value !== undefined
-      ? valueToSelectedKeys(local.value)
-      : (propsRecord().selectedKeys as "all" | Iterable<Key> | undefined);
+  const selectedKey = () => propsRecord().selectedKey as Key | null | undefined;
+  const defaultSelectedKey = () => propsRecord().defaultSelectedKey as Key | null | undefined;
+  const selectedKeys = () => propsRecord().selectedKeys as "all" | Iterable<Key> | undefined;
   const defaultSelectedKeys = () =>
-    local.defaultValue !== undefined
-      ? valueToSelectedKeys(local.defaultValue)
-      : (propsRecord().defaultSelectedKeys as "all" | Iterable<Key> | undefined);
-  const legacyOnSelectionChange = () =>
+    propsRecord().defaultSelectedKeys as "all" | Iterable<Key> | undefined;
+  const onSelectionChange = () =>
     propsRecord().onSelectionChange as ((key: Key | null) => void) | undefined;
-  const legacyOnSelectionChangeKeys = () =>
+  const onSelectionChangeKeys = () =>
     propsRecord().onSelectionChangeKeys as ((keys: "all" | Set<Key>) => void) | undefined;
-  const onSingleSelectionChange = (key: Key | null) => {
-    legacyOnSelectionChange()?.(key);
-    local.onChange?.(key);
-  };
-  const onMultipleSelectionChange = (keys: "all" | Set<Key>) => {
-    legacyOnSelectionChangeKeys()?.(keys);
-    const items = propsRecord().items as Iterable<T> | undefined;
-    const getKey = propsRecord().getKey as ((item: T) => Key) | undefined;
-    local.onChange?.(selectionKeysToValue(keys, items, getKey));
-  };
   const selectProps = mergeProps(headlessProps, {
     get selectedKey() {
       return isMultiple() ? undefined : selectedKey();
@@ -867,19 +798,10 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       return isMultiple() ? defaultSelectedKeys() : propsRecord().defaultSelectedKeys;
     },
     get onSelectionChange() {
-      const hasHandler =
-        typeof legacyOnSelectionChange() === "function" ||
-        (!isMultiple() && typeof local.onChange === "function");
-      return hasHandler ? onSingleSelectionChange : undefined;
+      return isMultiple() ? undefined : onSelectionChange();
     },
     get onSelectionChangeKeys() {
-      if (!isMultiple()) {
-        return legacyOnSelectionChangeKeys();
-      }
-
-      const hasHandler =
-        typeof legacyOnSelectionChangeKeys() === "function" || typeof local.onChange === "function";
-      return hasHandler ? onMultipleSelectionChange : undefined;
+      return isMultiple() ? onSelectionChangeKeys() : undefined;
     },
   });
   const descriptionId = createUniqueId();

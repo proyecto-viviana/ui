@@ -322,7 +322,6 @@ import {
   treeViewItemCountOptions,
   treeViewLinkItemOptions,
   treeViewLoadingStateOptions,
-  treeViewOverflowModeOptions,
   treeViewSelectionModeOptions,
   treeViewSelectionSourceOptions,
   treeViewSelectionStyleOptions,
@@ -4642,9 +4641,11 @@ const pickerControls: ComponentControlGroup = {
   ],
   apiProps: [
     "label",
-    "value",
-    "defaultValue",
-    "onChange",
+    "selectedKey",
+    "defaultSelectedKey",
+    "selectedKeys",
+    "defaultSelectedKeys",
+    "onSelectionChange",
     "selectionMode",
     "placeholder",
     "size",
@@ -4678,7 +4679,7 @@ const pickerControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 Picker docs and source. The viewer drives controlled value/defaultValue selection, single/multiple selectionMode, label placement/alignment/necessity, contextual help, custom renderValue, form submission props, validation behavior, async loading state/onLoadMore, popover placement/width/flip, disabled item state, quiet/disabled/required/invalid state, and S2 size into both stacks. Static PickerSection composition and PickerItem link navigation remain validation-note blockers.",
+  note: "Modeled from the S2 Picker docs and source. The viewer drives controlled selectedKey/defaultSelectedKey (single) and selectedKeys/defaultSelectedKeys (multiple) selection, single/multiple selectionMode, label placement/alignment/necessity, contextual help, custom renderValue, form submission props, validation behavior, async loading state/onLoadMore, popover placement/width/flip, disabled item state, quiet/disabled/required/invalid state, and S2 size into both stacks. Static PickerSection composition and PickerItem link navigation remain validation-note blockers.",
 };
 
 const comboBoxControls: ComponentControlGroup = {
@@ -6936,13 +6937,6 @@ const treeViewControls: ComponentControlGroup = {
       options: options(treeViewSelectionStyleOptions),
     },
     {
-      name: "overflowMode",
-      label: "overflowMode",
-      kind: "radio",
-      defaultValue: treeViewDemoDefaults.overflowMode,
-      options: options(treeViewOverflowModeOptions),
-    },
-    {
       name: "selectionSource",
       label: "selection source",
       kind: "radio",
@@ -7046,7 +7040,6 @@ const treeViewControls: ComponentControlGroup = {
     "Collection",
     "selectionMode",
     "selectionStyle",
-    "overflowMode",
     "selectedKeys",
     "defaultSelectedKeys",
     "expandedKeys",
@@ -7079,7 +7072,7 @@ const treeViewControls: ComponentControlGroup = {
     "aria-labelledby",
     "aria-describedby",
   ],
-  note: "Modeled from the S2 TreeView docs/API surface. The viewer drives dynamic recursive collections, checkbox/highlight selection style, wrap/truncate overflow, controlled/default selected and expanded keys, disabled keys/items, empty state, text/icon/action slot composition, links, onAction, load-more/progress state, and renderActionBar into both stacks.",
+  note: "Modeled from the S2 TreeView docs/API surface. The viewer drives dynamic recursive collections, checkbox/highlight selection style, controlled/default selected and expanded keys, disabled keys/items, empty state, text/icon/action slot composition, links, onAction, load-more/progress state, and renderActionBar into both stacks.",
 };
 
 const tableViewControls: ComponentControlGroup = {

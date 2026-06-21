@@ -123,13 +123,17 @@ tasks:
     state: open
     roadmap: consumer-delivery
   - id: picker-api-upstream
-    title: Drop invented Picker props; expose selectedKey/onSelectionChange
-    state: open
+    title: Drop invented Picker value/defaultValue/onChange aliases (keep real renderValue)
+    state: done
+    finished: 2026-06-21
     roadmap: upstream-api-parity
+    note: Removed value/defaultValue/onChange + PickerValue + translation helpers; renderValue is real S2 and stays. Consumers use selectedKey/onSelectionChange (single) + selectedKeys/onSelectionChangeKeys (multiple).
   - id: treeview-api-upstream
-    title: Drop grafted TreeView CardView props; expose only onAction
-    state: open
+    title: Drop invented TreeView overflowMode (keep real onAction/renderActionBar/selectionStyle)
+    state: done
+    finished: 2026-06-21
     roadmap: upstream-api-parity
+    note: Only overflowMode was invented (absent from S2 TreeView + RAC Tree). onAction/renderActionBar/selectionStyle are all real S2 and stay.
   - id: calendar-default-alignment
     title: Fix calendar start-vs-center default and rewrite the bug-asserting test
     state: done
@@ -280,27 +284,35 @@ with ones that fail on the real defect.
 
 ## Component APIs invented beyond upstream
 
-Upper-layer components add props upstream does not have, so they certify against
-nothing: Picker invents `value`/`defaultValue`/`onChange`/`renderValue`
-(`picker/index.tsx:99-104`) vs S2's `selectedKey`/`onSelectionChange`; TreeView
-grafts CardView's `selectionStyle`/`renderActionBar`/`overflowMode` onto a component
-whose only S2 prop is `onAction`; `viviana-ui` minted public names
-(`Header`/`NavHeader`/`LateralNav`) without owner sign-off (Rule #2/#3).
+Upper-layer components added a few props upstream does not have, so they certified
+against nothing. `viviana-ui` also minted public names (`Header`/`NavHeader`/
+`LateralNav`) without owner sign-off (Rule #2/#3) — still open.
 
 **Exit:** invented props are removed or documented as explicit local additions;
 public names-with-reach are owner-confirmed; `guard:rac-parity` covers the props.
 
-> **FLAGGED — needs owner decision (skipped by the autonomous parity pass).** The
-> *additive* half is already met for Picker: `PickerProps<T> extends
-> HeadlessSelectProps<T>`, so `selectedKey`/`onSelectionChange` are exposed today.
-> The remaining half — *removing* `value`/`defaultValue`/`onChange`/`renderValue`
-> (Picker) and `selectionStyle`/`renderActionBar`/`overflowMode` (TreeView) — is a
-> **breaking public-API change** that reaches live `@proyecto-viviana/ui` consumers
-> (the UC client contract; TreeView's grafted props back `viviana-social` CardView
-> usage). The exit explicitly allows the non-breaking branch ("documented as
-> explicit local additions"). Owner to choose: remove (major bump + downstream
-> migration) vs. document-as-local-additions. Until then the props stay; this is
-> the product/design call the overnight pass is instructed not to guess.
+> **DONE — Picker/TreeView invented props removed 2026-06-21 (commit pending).**
+> The owner authorized the breaking removal ("we don't have real users yet so
+> breaking doesn't matter, parity is priority"). What was actually invented was
+> *narrower* than this section previously claimed — the audit had over-counted:
+> - **Picker:** only the legacy controlled-value aliases `value`/`defaultValue`/
+>   `onChange` (plus the `PickerValue` type and the value⇄key translation helpers)
+>   were invented; **removed**. Consumers use the real S2 props
+>   `selectedKey`/`defaultSelectedKey`/`onSelectionChange` (single) and
+>   `selectedKeys`/`defaultSelectedKeys`/`onSelectionChangeKeys` (multiple).
+>   `renderValue` is **real S2** (S2 `Picker.tsx:161-166`) and was **kept** — the
+>   earlier "invents … `renderValue`" claim was wrong.
+> - **TreeView:** only `overflowMode` (plus the `TreeOverflowMode` type and the
+>   `data-overflow-mode` attribute) was invented — absent from S2 `TreeView.tsx`
+>   and RAC `Tree.tsx`; **removed**, the tree label/description now always
+>   truncate. `onAction`, `renderActionBar`, and `selectionStyle` are **all real
+>   S2** (S2 `TreeView.tsx:80/82/93`) and were **kept** — the earlier "grafts
+>   CardView's `selectionStyle`/`renderActionBar`/`overflowMode` … whose only S2
+>   prop is `onAction`" claim was wrong. `GridList`/`ListView`/`Table` keep their
+>   own legitimate `overflowMode`; only the tree's invented copy is gone.
+>
+> Tracked as `picker-api-upstream` + `treeview-api-upstream` (both done). The
+> `viviana-ui` public-names half of this item remains **open**.
 
 ## Form-field split: monoliths kept primary, no `@deprecated` tags
 

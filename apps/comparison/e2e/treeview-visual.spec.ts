@@ -178,7 +178,6 @@ test.describe("comparison TreeView visual parity", () => {
     expect(await controlProps(fixtures.reactRoot)).toMatchObject({
       selectionMode: "multiple",
       selectionStyle: "checkbox",
-      overflowMode: "truncate",
       selectionSource: "defaultSelectedKeys",
       expandedSource: "defaultExpandedKeys",
       itemCount: "3",
@@ -188,7 +187,6 @@ test.describe("comparison TreeView visual parity", () => {
     expect(await controlProps(fixtures.solidRoot)).toMatchObject({
       selectionMode: "multiple",
       selectionStyle: "checkbox",
-      overflowMode: "truncate",
       selectionSource: "defaultSelectedKeys",
       expandedSource: "defaultExpandedKeys",
       itemCount: "3",
@@ -224,7 +222,7 @@ test.describe("comparison TreeView visual parity", () => {
   test("highlight slots links and load more match current React Spectrum", async ({ page }) => {
     const fixtures = await treeViewFixtures(
       page,
-      "?selectionSource=selectedKeys&selectedKeys=budget&selectionStyle=highlight&overflowMode=wrap&showIcons=true&itemActionSlot=buttonGroup&linkItem=documents&disabledItem=image-1&expandedSource=expandedKeys&expandedKeys=documents,project,photos&showLoadMore=true&loadingState=loadingMore",
+      "?selectionSource=selectedKeys&selectedKeys=budget&selectionStyle=highlight&showIcons=true&itemActionSlot=buttonGroup&linkItem=documents&disabledItem=image-1&expandedSource=expandedKeys&expandedKeys=documents,project,photos&showLoadMore=true&loadingState=loadingMore",
     );
 
     await clearPointer(page);
@@ -238,7 +236,6 @@ test.describe("comparison TreeView visual parity", () => {
 
     expect(await controlProps(fixtures.reactRoot)).toMatchObject({
       selectionStyle: "highlight",
-      overflowMode: "wrap",
       showIcons: true,
       itemActionSlot: "buttonGroup",
       linkItem: "documents",
@@ -248,7 +245,6 @@ test.describe("comparison TreeView visual parity", () => {
     });
     expect(await controlProps(fixtures.solidRoot)).toMatchObject({
       selectionStyle: "highlight",
-      overflowMode: "wrap",
       showIcons: true,
       itemActionSlot: "buttonGroup",
       linkItem: "documents",

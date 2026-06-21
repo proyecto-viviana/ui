@@ -2406,9 +2406,6 @@ function SolidSpectrumTreeViewDemo() {
               get selectionStyle() {
                 return demoProps().selectionStyle;
               },
-              get overflowMode() {
-                return demoProps().overflowMode;
-              },
               get disabledKeys() {
                 return treeViewKeysFromValue(demoProps().disabledKeys, [], "multiple", itemKeys());
               },
@@ -7294,19 +7291,41 @@ function SolidSpectrumPickerDemo() {
               get label() {
                 return demoProps().label;
               },
-              get value() {
-                if (demoProps().selectionSource !== "value") {
+              get selectedKey() {
+                if (
+                  demoProps().selectionSource !== "value" ||
+                  demoProps().selectionMode === "multiple"
+                ) {
                   return undefined;
                 }
-                return demoProps().selectionMode === "multiple" ? selectedKeys() : selectedKey();
+                return selectedKey();
               },
-              get defaultValue() {
-                if (demoProps().selectionSource !== "defaultValue") {
+              get defaultSelectedKey() {
+                if (
+                  demoProps().selectionSource !== "defaultValue" ||
+                  demoProps().selectionMode === "multiple"
+                ) {
                   return undefined;
                 }
-                return demoProps().selectionMode === "multiple"
-                  ? pickerSelectedKeysForMode(demoProps().selectedKey, demoProps().selectionMode)
-                  : demoProps().selectedKey;
+                return demoProps().selectedKey;
+              },
+              get selectedKeys() {
+                if (
+                  demoProps().selectionSource !== "value" ||
+                  demoProps().selectionMode !== "multiple"
+                ) {
+                  return undefined;
+                }
+                return selectedKeys();
+              },
+              get defaultSelectedKeys() {
+                if (
+                  demoProps().selectionSource !== "defaultValue" ||
+                  demoProps().selectionMode !== "multiple"
+                ) {
+                  return undefined;
+                }
+                return pickerSelectedKeysForMode(demoProps().selectedKey, demoProps().selectionMode);
               },
               get selectionMode() {
                 return demoProps().selectionMode;
@@ -7389,12 +7408,33 @@ function SolidSpectrumPickerDemo() {
               get isInvalid() {
                 return demoProps().isInvalid;
               },
-              onChange: (nextValue: unknown) => {
-                const nextSelectedKeys = Array.isArray(nextValue)
-                  ? nextValue.map(String)
-                  : nextValue == null
-                    ? []
-                    : [String(nextValue)];
+              onSelectionChange: (nextValue: unknown) => {
+                if (demoProps().selectionMode === "multiple") {
+                  return;
+                }
+                const nextSelectedKeys = nextValue == null ? [] : [String(nextValue)];
+                if (nextSelectedKeys.length === 0) {
+                  return;
+                }
+                const nextSelectedKey = nextSelectedKeys[0] as PickerDemoProps["selectedKey"];
+                setSelectedKeys(nextSelectedKeys as Array<PickerDemoProps["selectedKey"]>);
+                setDemoProps((current: PickerDemoProps) => ({
+                  ...current,
+                  ...(current.selectionSource === "value"
+                    ? { selectedKey: nextSelectedKey as PickerDemoProps["selectedKey"] }
+                    : {}),
+                }));
+              },
+              onSelectionChangeKeys: (nextKeys: unknown) => {
+                if (demoProps().selectionMode !== "multiple") {
+                  return;
+                }
+                const nextSelectedKeys =
+                  nextKeys instanceof Set
+                    ? Array.from(nextKeys).map(String)
+                    : nextKeys === "all"
+                      ? []
+                      : [];
                 if (nextSelectedKeys.length === 0) {
                   return;
                 }

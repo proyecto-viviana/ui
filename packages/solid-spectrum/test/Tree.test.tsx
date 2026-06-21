@@ -119,7 +119,6 @@ describe("TreeView (solid-spectrum)", () => {
     const tree = screen.getByRole("treegrid", { name: "Files" });
     expect(tree).toHaveAttribute("data-tree-view");
     expect(tree).toHaveAttribute("data-selection-style", "checkbox");
-    expect(tree).toHaveAttribute("data-overflow-mode", "truncate");
     expect(tree.getAttribute("class")).not.toContain("bg-bg-400");
     expect(tree.getAttribute("class")).not.toContain("rounded-lg");
 
@@ -497,7 +496,6 @@ describe("TreeView (solid-spectrum)", () => {
         value={{
           "aria-label": "Context files",
           selectionStyle: "highlight",
-          overflowMode: "wrap",
           ref,
         }}
       >
@@ -509,7 +507,6 @@ describe("TreeView (solid-spectrum)", () => {
 
     const tree = screen.getByRole("treegrid", { name: "Context files" });
     expect(tree).toHaveAttribute("data-selection-style", "highlight");
-    expect(tree).toHaveAttribute("data-overflow-mode", "wrap");
     expect(ref).toHaveBeenCalledWith(tree);
   });
 });
