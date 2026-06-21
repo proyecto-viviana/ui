@@ -34,11 +34,14 @@ strict React-vs-Solid tests.
 
 ## Now
 
-- **Client-readiness track (priority, runs first).** Make
-  `@proyecto-viviana/ui` installable and usable by the `viviana-social` apps:
-  the `UC-NN` backlog in `ui-client-contract.md`, starting with UC-00
-  (release-matrix promotion — decided 2026-06-20 — plus the out-of-workspace
-  install smoke). The parity loop below is paused until UC-00…UC-05 land.
+- **Client-readiness track (largely landed 2026-06-20).** Making
+  `@proyecto-viviana/ui` installable and usable by the `viviana-social` apps —
+  the `UC-NN` backlog in `ui-client-contract.md` — is substantially done in-repo:
+  UC-00…UC-05 + UC-07 are ✔ (release-matrix promotion, deep-subpath export
+  parity, CSS/Provider contract, the supported Vite macro preset, and the
+  barrel-bloat fix). Only UC-02 Part B (deferred) and UC-06 (downstream in
+  `viviana-social`) remain, so the parity loop can now resume at
+  `upstream-release-audit.md` T-57.
 - Convert visual-state rows into current React/Solid pair-diff or
   computed-contract tests — hover, focus-visible, pressed, selected, invalid,
   disabled, open, dismiss, keyboard navigation. Do not reintroduce per-side

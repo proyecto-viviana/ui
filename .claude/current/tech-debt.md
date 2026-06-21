@@ -166,6 +166,15 @@ End (`createMenu.ts:201-406`); `useContextProps`/`useSlottedContext`/
 `createContext<null>(null)` and cannot carry slots, so the description slot never
 wires and `aria-describedby` is absent. Rule #4/#5.
 
+A live instance of "one bug recurs across many": both the collection hook and the
+item hook handle the selection key, so a focused-row Space toggles selection twice
+and nets no change. Fixed per-widget in Table (`createTable.ts` grid-level
+Space/Enter block removed, selection left to `createTableRow.ts`, 2026-06-19), but
+still latent in GridList — `createGridList.ts:186` and `createGridListItem.ts:123`
+both toggle on Space and neither stops propagation. Upstream
+`useSelectableCollection` has no Space/Enter case; the item owns selection. The
+spine port deletes the duplication instead of fixing it widget by widget.
+
 **Exit:** the three keystones (`SelectionManager`, `ListKeyboardDelegate`/
 `useSelectable*`, `useContextProps` + slot plumbing) are ported to their lowest
 layer and the per-widget copies deleted; `aria-describedby` is emitted via the
