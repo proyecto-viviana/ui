@@ -1,6 +1,6 @@
 // @ts-nocheck - style-system types need a dedicated pass; removing this would require
 // fixing style-definition type mismatches unrelated to component behavior.
-import { type JSX, Show, splitProps } from "solid-js";
+import { createContext, type JSX, mergeProps, Show, splitProps, useContext } from "solid-js";
 import {
   DateRangePicker as HeadlessDateRangePicker,
   DateRangePickerLabel as HeadlessDateRangePickerLabel,
@@ -38,6 +38,10 @@ import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps, useTheme } from "../provider";
 import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
+import {
   control,
   controlBorderRadius,
   controlFont,
@@ -70,6 +74,9 @@ export interface DateRangePickerProps<T extends DateValue = DateValue> extends O
   /** The day that starts the week. */
   firstDayOfWeek?: DateRangePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
+
+export const DateRangePickerContext =
+  createContext<SpectrumContextValue<DateRangePickerProps<any>>>(null);
 
 function normalizeDateRangePickerSize(
   size: DateRangePickerSize | undefined,
@@ -649,9 +656,14 @@ function DateRangeDisplay(props: {
 export function DateRangePicker<T extends DateValue = CalendarDate>(
   props: DateRangePickerProps<T>,
 ): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(
+    useContext(DateRangePickerContext),
+    (props as any).slot,
+  );
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, calendarProps, rest] = splitProps(
-    mergedProps,
+    merged,
     ["size", "class", "label", "description", "errorMessage", "isInvalid", "maxVisibleMonths"],
     [
       "minValue",

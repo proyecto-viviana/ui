@@ -1,6 +1,6 @@
 // @ts-nocheck - style-system types need a dedicated pass; removing this would require
 // fixing ~20 style-definition type mismatches unrelated to component behavior.
-import { type JSX, splitProps, Show } from "solid-js";
+import { createContext, type JSX, mergeProps, splitProps, Show, useContext } from "solid-js";
 import {
   DatePicker as HeadlessDatePicker,
   DatePickerLabel as HeadlessDatePickerLabel,
@@ -31,6 +31,10 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps, useTheme } from "../provider";
+import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 import {
   control,
   controlBorderRadius,
@@ -72,6 +76,8 @@ export interface DatePickerProps<T extends DateValue = DateValue> extends Omit<
   /** The day that starts the week. */
   firstDayOfWeek?: DatePickerFirstDayOfWeek | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
+
+export const DatePickerContext = createContext<SpectrumContextValue<DatePickerProps<any>>>(null);
 
 function normalizeDatePickerSize(size: DatePickerSize | undefined): NormalizedDatePickerSize {
   switch (size) {
@@ -423,9 +429,11 @@ const datePickerCalendarPopoverStyle: JSX.CSSProperties = {
 export function DatePicker<T extends DateValue = CalendarDate>(
   props: DatePickerProps<T>,
 ): JSX.Element {
-  const mergedProps = useProviderProps(props);
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(useContext(DatePickerContext), (props as any).slot);
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
   const [local, calendarProps, rest] = splitProps(
-    mergedProps,
+    merged,
     [
       "size",
       "class",

@@ -1,5 +1,5 @@
 // @ts-nocheck - style-system generics need the same dedicated pass as DateField.
-import { type JSX, Show, splitProps } from "solid-js";
+import { createContext, type JSX, mergeProps, Show, splitProps, useContext } from "solid-js";
 import {
   TimeField as HeadlessTimeField,
   TimeFieldLabel as HeadlessTimeFieldLabel,
@@ -29,6 +29,10 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type TimeFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2TimeFieldSize = "S" | "M" | "L" | "XL";
@@ -65,6 +69,8 @@ export interface TimeFieldProps<T extends TimeValue = TimeValue> extends Omit<
   /** Whether required fields show an icon or text label. */
   necessityIndicator?: TimeFieldNecessityIndicator;
 }
+
+export const TimeFieldContext = createContext<SpectrumContextValue<TimeFieldProps<any>>>(null);
 
 interface TimeFieldStyleProps extends TimeFieldRenderProps {
   size?: S2TimeFieldSize;
@@ -431,9 +437,11 @@ function TimeFieldContent(props: {
  * A time field allows users to enter and edit time values using a keyboard.
  */
 export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps<T>): JSX.Element {
-  const mergedProps = useProviderProps(useFormProps(props));
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(TimeFieldContext), props.slot);
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
   const isInForm = useIsInForm();
-  const [local, rest] = splitProps(mergedProps, [
+  const [local, rest] = splitProps(merged, [
     "size",
     "styles",
     "UNSAFE_className",

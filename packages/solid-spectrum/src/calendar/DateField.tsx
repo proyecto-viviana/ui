@@ -1,5 +1,5 @@
 // @ts-nocheck - style-system generics need the same dedicated pass as DatePicker.
-import { type JSX, Show, splitProps } from "solid-js";
+import { createContext, type JSX, mergeProps, Show, splitProps, useContext } from "solid-js";
 import {
   DateField as HeadlessDateField,
   DateFieldLabel as HeadlessDateFieldLabel,
@@ -30,6 +30,10 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import {
+  getSlottedContextProps,
+  type SpectrumContextValue,
+} from "../button/spectrum-context";
 
 export type DateFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2DateFieldSize = "S" | "M" | "L" | "XL";
@@ -66,6 +70,8 @@ export interface DateFieldProps<T extends DateValue = DateValue> extends Omit<
   /** Whether required fields show an icon or text label. */
   necessityIndicator?: DateFieldNecessityIndicator;
 }
+
+export const DateFieldContext = createContext<SpectrumContextValue<DateFieldProps<any>>>(null);
 
 interface DateFieldStyleProps extends DateFieldRenderProps {
   size?: S2DateFieldSize;
@@ -417,9 +423,11 @@ function DateFieldContent(props: {
 export function DateField<T extends DateValue = CalendarDate>(
   props: DateFieldProps<T>,
 ): JSX.Element {
-  const mergedProps = useProviderProps(useFormProps(props));
+  const providerProps = useProviderProps(useFormProps(props));
+  const contextProps = getSlottedContextProps(useContext(DateFieldContext), props.slot);
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
   const isInForm = useIsInForm();
-  const [local, rest] = splitProps(mergedProps, [
+  const [local, rest] = splitProps(merged, [
     "size",
     "styles",
     "UNSAFE_className",
