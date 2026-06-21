@@ -5,7 +5,7 @@ status: current
 
 # Tooling
 
-Status: Current source of truth.
+Status: live tooling guide.
 Update when: the command layer, static gates, hooks, MCP setup, or the
 package-build migration change.
 

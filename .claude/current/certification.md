@@ -3,22 +3,25 @@ kind: reference
 status: current
 ---
 
-# Certification
+# Evidence Bar
 
-Status: Current source of truth.
-Update when: the certification bar, evidence dimensions, gates, or gate commands
-change.
+Status: live reference.
+Update when: the evidence dimensions, acceptance gates, or gate commands change.
 
-This is the expansion of Rule #1 (`../../AGENTS.md`): _a certified port, or it
-isn't ported._ It defines what "ported" means and how it is proven. The
-per-component task runner is `../../apps/comparison/COMPONENT_PLAYBOOK.md`; the
-per-component checklist is `../../apps/comparison/playbook/acceptance-gates.md`.
-This page is the why and the ladder.
+This file keeps its historical name for link stability. It defines what
+"ported" means in this repo and what evidence has to exist before a component
+can be accepted as ported.
 
-## What "certified" means
+The per-component task runner is
+`../../apps/comparison/COMPONENT_PLAYBOOK.md`; the per-component checklist is
+`../../apps/comparison/playbook/acceptance-gates.md`. This page explains the
+bar those documents enforce.
+
+## What "ported" means
 
 A component is ported only when its behavior matches the upstream contract along
-**every** dimension below, and each is held by a test that can fail:
+**every** dimension below, with regression coverage that would fail if the
+behavior drifted:
 
 - **API** — props, defaults, slots, contexts, refs, exports, and unsupported
   branches map to upstream.
@@ -52,7 +55,7 @@ These are necessary and nowhere near sufficient. None is acceptance:
 - A **screenshot is stable** → a settled frame; it cannot see transitions,
   timing, or cleanup.
 
-## The gate ladder
+## Checks
 
 Floors (fast, run constantly):
 
@@ -62,7 +65,7 @@ vp run test:run           # package unit/integration suites (vitest)
 vp run a11y:check         # axe AA + comparison a11y + smoke
 ```
 
-The real bar (per component, the COMPONENT_PLAYBOOK path):
+Component-level evidence:
 
 ```bash
 vp run comparison:test:pair        # React-vs-Solid pair diffs
@@ -71,7 +74,7 @@ vp run comparison:test:a11y        # comparison axe + a11y surface
 vp run comparison:test:<component> # focused keyboard/focus/forms/announcements
 ```
 
-Current-gate guards and reports:
+Repo-level guards and reports:
 
 ```bash
 vp run comparison:report:parity:strict   # expected to pass; in-scope failure blocks
@@ -100,11 +103,10 @@ the evidence.
 `guard:upstream-test-parity` mechanizes a first-pass triage for **Gate 3 (Upstream
 React Source Parity)**: it diffs the ARIA-contract vocabulary our tests assert
 against the pinned upstream React Aria Components + S2 suites and ranks where we
-diverge. It is a discovery aid, not a floor — every flag is reconciled against the
+diverge. It is a discovery aid, not a floor. Every flag is reconciled against the
 authoritative source before a test changes (see `upstream-sync.md`, which also
 defines how new upstream releases are absorbed).
 
 ## Refresh
 
-Status is refreshed from these commands, never from memory; the snapshot lives in
-`status.md`.
+Status is refreshed from commands and reports; the snapshot lives in `status.md`.

@@ -5,7 +5,7 @@ status: current
 
 # Glossary
 
-Status: Current source of truth.
+Status: live reference.
 Update when: a term with reach is added, renamed, or redefined.
 
 Vocabulary that appears in conversations about the system. Names with reach are
@@ -13,6 +13,9 @@ owner-steered (Rule #3); do not mint one silently.
 
 ## Layers & packages
 
+- **Viviana UI** — Proyecto Viviana's open-source UI suite and design system.
+  Built on Solid, with `@proyecto-viviana/ui` as the client-facing design-system
+  package and the Solidaria/Solid Spectrum port stack beneath it.
 - **solid-stately** — `@proyecto-viviana/solid-stately`. State layer (signals,
   controlled/uncontrolled, collections, selection). Mirrors `@react-stately`.
 - **solidaria** — `@proyecto-viviana/solidaria`. Accessibility-hook layer (ARIA,
@@ -23,16 +26,16 @@ owner-steered (Rule #3); do not mint one silently.
 - **solid-spectrum** — `@proyecto-viviana/solid-spectrum`. Spectrum 2-compatible
   styled components. Mirrors `@react-spectrum/s2`. The only home for S2 component
   styling.
-- **viviana-ui** — directory name for `@proyecto-viviana/ui`, the product
-  design-system layer.
+- **viviana-ui** — package directory for `@proyecto-viviana/ui`, the Viviana
+  design-system package.
 
-## Certification
+## Port Acceptance
 
-- **Certified / ported** — meets every evidence dimension in `certification.md`,
-  each held by a test that can fail. The only meaning of "done."
-- **Evidence** — a test that can fail for the reason it exists. Export presence,
-  route render, green axe, and stable screenshot are _floors_, not evidence of
-  parity.
+- **Accepted / ported** — meets every evidence dimension in `certification.md`,
+  backed by regression coverage that would fail if the behavior drifted. The
+  only meaning of "done" for a component.
+- **Evidence** — proof tied to a real failure mode. Export presence, route
+  render, green axe, and stable screenshot are _floors_, not evidence of parity.
 - **Acceptance gate** — one of the ten additive gates in
   `../../apps/comparison/playbook/acceptance-gates.md`. `complete` / `partial` /
   `not-started` per gate; a component is `accepted` only when all in-scope gates

@@ -3,12 +3,12 @@ kind: reference
 status: current
 tasks:
   - id: cert-button
-    title: Certify Button visual + a11y states
+    title: Prove Button visual + a11y states
     state: in-progress
     roadmap: component-certification
     planned: { start: 2026-06-10, target: 2026-06-18 }
   - id: cert-checkbox
-    title: Certify Checkbox visual + a11y states
+    title: Prove Checkbox visual + a11y states
     state: next
     depends: [cert-button]
     roadmap: component-certification
@@ -28,7 +28,7 @@ tasks:
 
 # Work Queue
 
-Status: Current source of truth.
+Status: live queue.
 Update when: priorities, the pick order, or the active workstreams change.
 
 `steering.md` owns direction (now/next/later). This page owns how to choose the
@@ -37,12 +37,12 @@ next task and which workstreams are live.
 ## How to pick work
 
 1. Refresh the snapshot (`status.md`) — work from scripts, not memory.
-2. Pick the surface that moves a real certification gap, not a count. Depth over
-   breadth: certify an existing component before adding a new name.
+2. Pick the surface that moves a real evidence gap, not a count. Depth over
+   breadth: prove an existing component before adding a new name.
 3. Run it through `../../apps/comparison/COMPONENT_PLAYBOOK.md` — the per-component
    task runner. Gate outcomes land in the component's validation note under
    `../../apps/comparison/playbook/components/`.
-4. Prove it with the ladder in `certification.md`; record evidence in the
+4. Prove it with the checks in `certification.md`; record evidence in the
    validation note, not only in chat.
 
 ## Current priorities
@@ -69,8 +69,8 @@ next task and which workstreams are live.
   and usable by the `viviana-social` apps. UC-00…UC-05 + UC-07 are ✔; only
   UC-02 Part B (deferred) and UC-06 (downstream) remain, so the parity loop
   (`upstream-release-audit.md` T-57+) can now resume.
-- **Per-component certification** — the standing loop; collection/overlay
-  families next.
+- **Per-component acceptance** — the standing loop; collection/overlay families
+  next.
 - **Support-export parity** — close the `22` missing S2 support exports; keep
   Solid-only exports documented as local additions.
 - **comparison-docs-overhaul** — the comparison app's docs-site rollout

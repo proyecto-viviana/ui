@@ -31,14 +31,14 @@ function fail(message: string): void {
   failures.push(message);
 }
 
-// Spine docs use a trailing period ("Status: Current source of truth.") and a
-// colon header ("Update when: ..."), so match by prefix, not exact line.
+// Spine docs carry a visible status header ("Status: live ...") and a colon
+// update header ("Update when: ..."), so match by prefix, not exact line.
 const currentMarkdown = walk(currentDir).filter((file) => file.endsWith(".md"));
 for (const file of currentMarkdown) {
   const relative = toRepoPath(file);
   const lines = readFileSync(file, "utf8").split(/\r?\n/);
   const hasHeader =
-    lines.some((line) => line.startsWith("Status: Current source of truth")) &&
+    lines.some((line) => line.startsWith("Status: live ")) &&
     lines.some((line) => line.startsWith("Update when:"));
   if (!hasHeader) {
     fail(`Current doc lacks required status header: ${relative}`);

@@ -26,7 +26,7 @@ tasks:
 
 # Title
 
-Status: Current source of truth
+Status: live queue
 Update when: something changes.
 
 Body text with --- a fake fence inside.

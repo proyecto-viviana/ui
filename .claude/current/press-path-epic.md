@@ -7,7 +7,7 @@ oracle: react-spectrum/packages/react-aria/src/selection/useSelectableItem.ts
 
 # Item-hook press-path migration — epic scope
 
-Status: Current source of truth.
+Status: live epic.
 Update when: a phase lands, a ticket's scope changes, or the epic closes.
 
 The collection item hooks that drive grids, trees, and tables inline their
@@ -15,12 +15,12 @@ activation logic over **raw pointer/click events**. Upstream routes the same
 logic through one shared hook, `useSelectableItem`, built on `usePress` +
 `useLongPress`. Four backlog tickets all wait on that same architectural move:
 
-| Ticket | Gap | Depends on |
-| --- | --- | --- |
-| **T-51** ⛔ | `replace`-mode action model: single-click selects, double-click acts (secondary action); touch long-press → `setSelectionBehavior('toggle')` | the shared press path |
-| **T-34** ⛔ | `keyboardNavigationBehavior='tab'` collection keyboard model (child-propagation gating, capture binding only in `'arrow'` mode, tabbable-target pointer guards) | the item-hook surface; sequence after/with the press path |
-| **T-52** 🔍 | We pulled the aria-layer modifier decision into stately's `select()` (uses `ctrlKey \|\| metaKey`, never sees `pointerType`). Fix = restore upstream's split: thin `select()` to pointerType+behavior, move modifiers up to an aria-layer `onSelect` | foundational; lands first |
-| **T-56** 🔍 | `disabledBehavior:'selection'` item fires `onAction` on keyboard but **not** on pointer click | falls out of the press path (item-hook `performAction` runs for pointer) |
+| Ticket      | Gap                                                                                                                                                                                                                                                  | Depends on                                                               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **T-51** ⛔ | `replace`-mode action model: single-click selects, double-click acts (secondary action); touch long-press → `setSelectionBehavior('toggle')`                                                                                                         | the shared press path                                                    |
+| **T-34** ⛔ | `keyboardNavigationBehavior='tab'` collection keyboard model (child-propagation gating, capture binding only in `'arrow'` mode, tabbable-target pointer guards)                                                                                      | the item-hook surface; sequence after/with the press path                |
+| **T-52** 🔍 | We pulled the aria-layer modifier decision into stately's `select()` (uses `ctrlKey \|\| metaKey`, never sees `pointerType`). Fix = restore upstream's split: thin `select()` to pointerType+behavior, move modifiers up to an aria-layer `onSelect` | foundational; lands first                                                |
+| **T-56** 🔍 | `disabledBehavior:'selection'` item fires `onAction` on keyboard but **not** on pointer click                                                                                                                                                        | falls out of the press path (item-hook `performAction` runs for pointer) |
 
 This is high-risk and cross-hook. **Scope and validate on its own before
 starting** (the ticket's own directive). This file is the scope; nothing here is
@@ -115,6 +115,7 @@ and for link items opens the href via the router.
    the aria layer (`createSelectableItem`'s `onSelect`), where `isMac` already
    lives in `solidaria/src/utils/platform.ts`. Port `isCtrlKeyPressed` and
    `isNonContiguousSelectionModifier` into solidaria as aria-layer utils.
+
 4. **Manager link surface absent.** `manager.canSelectItem`, `manager.isLink`,
    `manager.getItemProps`, and the `linkBehavior` axis do **not** exist on our
    selection state — we thread `href`/`onLinkAction` through item **props**
@@ -148,21 +149,21 @@ implement long-press → toggle.
 ## Resolved — restore upstream's two-layer split (parity is the rule)
 
 The earlier "where does the platform-aware modifier go" question was a false
-choice: every option tried to *preserve* our divergence. Parity is the governing
+choice: every option tried to _preserve_ our divergence. Parity is the governing
 rule (diverge only when React→Solid makes it impossible), and upstream already
 answers it cleanly, so we mirror it:
 
 - **`solid-stately` `select(key, e)`** ⇒ `SelectionManager.select` shape:
   single-mode toggle/replace, then `behavior === 'toggle' || pointerType ∈
-  {touch, virtual}` ⇒ toggle, else replace. The `e` param carries `pointerType`.
+{touch, virtual}` ⇒ toggle, else replace. The `e` param carries `pointerType`.
   No modifiers, no `shiftKey`, no `isMac` — so it stays layer-safe with only
   `@internationalized/date` as a dependency.
 - **`solidaria` aria-layer `onSelect`** (the future `createSelectableItem`, and
   the existing Menu / ListBox / ActionGroup paths) ⇒ `useSelectableItem.onSelect`
   shape: keyboard `isNonContiguousSelectionModifier` ⇒ toggle, link handling,
   single-mode, `shiftKey` ⇒ extend, `isCtrlKeyPressed || touch/virtual ||
-  toggle` ⇒ toggle, else replace. `isCtrlKeyPressed` / `isNonContiguousSelection
-  Modifier` are ported into solidaria (aria-layer utils; `isMac` already lives in
+toggle` ⇒ toggle, else replace. `isCtrlKeyPressed` / `isNonContiguousSelection
+Modifier` are ported into solidaria (aria-layer utils; `isMac` already lives in
   `solidaria/src/utils/platform.ts`).
 
 This removes the layering problem entirely instead of working around it — the
@@ -181,6 +182,7 @@ activation routes through `selectItem`. The stately test was re-pointed to the
 (platform-aware ctrl/meta, shift-extend, touch/virtual toggle, single-mode
 replace). The link branch + pointer-event threading into menu-item/option
 presses are deferred to Phases 1–2. Original plan:
+
 - Port `isCtrlKeyPressed` (aria-layer keyboard util) and
   `isNonContiguousSelectionModifier` (aria-layer selection util) into solidaria,
   built on the existing `solidaria/src/utils/platform.ts` `isMac`.
@@ -224,8 +226,9 @@ long-press → toggle). Press-path tests run under fake timers, mirroring the
 As-built adaptations from upstream (our `ListState` is thinner than
 `SelectionManager`) — record alongside gap #4 so they aren't read as port
 misses:
+
 - **`canSelectItem` computed locally** (`selectionMode() !== 'none' &&
-  !isDisabled(key)`), not read off `manager.canSelectItem`.
+!isDisabled(key)`), not read off `manager.canSelectItem`.
 - **Link model prop-threaded** (`isLink`/`href`/`routerOptions`/`linkBehavior`),
   not `manager.isLink`/`getItemProps`; link open via the `openLink` util, no
   router context.
@@ -243,6 +246,7 @@ misses:
   (state-layer gap, also noted under `disabledBehavior:'selection'`).
 
 **Phase 2 — migrate the three item hooks, one at a time.**
+
 - `createGridListItem` → `createTreeItem` → `createTableRow`, each its own
   commit + parity tests, each green before the next. Reconcile each hook's
   keyboard handler and `gridCellProps`/`expandButtonProps` extras onto the
@@ -253,6 +257,7 @@ misses:
   `shouldSelectOnPressUp`).
 
 **Phase 3 — `keyboardNavigationBehavior` (T-34), layered on top.**
+
 - Thread the prop through `createGridList`/`createTree`; gate child-element
   propagation and capture binding by mode; extract `handleTreeExpansionKeys`;
   add the tabbable-target `onPointerDown`/`onMouseDown` guards. Un-omit

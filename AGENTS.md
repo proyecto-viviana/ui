@@ -1,22 +1,23 @@
-# Proyecto Viviana
+# Viviana UI
 
-## Rule #1 — A certified port, or it isn't ported
+## Rule #1 — Evidence-backed parity, or it isn't ported
 
-Proyecto Viviana is a published Solid library, and the deliverable is parity
-itself. A component is "ported" only when it is **certified**: real
-accessibility, real behavior, a full port — as tested and certified as possible.
-axe is not enough; a single unit test is not enough; coverage is comprehensive
-and strict.
+Viviana UI is Proyecto Viviana's published open-source UI suite and design
+system, built on Solid. Its lower packages form an unofficial port stack for
+Adobe's React Stately, React Aria, React Aria Components, and React Spectrum S2.
+A component in that stack is "ported" only when real evidence exists: real
+accessibility, real behavior, a full port. axe is not enough; a single unit test
+is not enough; coverage is comprehensive and strict.
 
-Every user-observable upstream branch is matched and held by a test that can
-fail — across API, ARIA/accessibility, keyboard/focus, forms/validation,
-behavior/timing, styling, visual parity, and i18n. An export that exists, a route
-that renders, a green axe run, and a stable screenshot are **floors**, never
-acceptance.
+Every user-observable upstream branch is matched and held by a regression test
+that would fail if the behavior drifted — across API, ARIA/accessibility,
+keyboard/focus, forms/validation, behavior/timing, styling, visual parity, and
+i18n. An export that exists, a route that renders, a green axe run, and a stable
+screenshot are **floors**, never acceptance.
 
-The full bar and the gate ladder live in `.claude/current/certification.md`; the
-per-component runner is `apps/comparison/COMPONENT_PLAYBOOK.md` and its ten
-acceptance gates in `apps/comparison/playbook/`.
+The evidence bar lives in `.claude/current/certification.md`. The per-component
+runner is `apps/comparison/COMPONENT_PLAYBOOK.md` and its ten acceptance gates in
+`apps/comparison/playbook/`.
 
 (Owner directive, 2026-06-14 — the #1 rule of this repo; it outranks everything
 below.)
@@ -30,7 +31,7 @@ name, a behavior, or a structure when an upstream answer exists.
 
 A Solid-specific export with no upstream counterpart (an alias or composition
 helper) is allowed only when it is explicit and documented as a _local addition_
-— never silent drift. This is the parity discipline that Rule #1 certifies.
+— never silent drift. This is the parity discipline that Rule #1 enforces.
 
 ## Rule #3 — The architecture lives in the owner; pull it out
 
@@ -87,22 +88,21 @@ with its spec is a suspected bug, not a stale doc. The report commands in
 
 ## Rule #7 — Tests prove behavior
 
-A test must be able to fail for the reason it exists: it proves behavior through a
-real failure mode. No tautologies, no tests whose named logic lives only in the
-test body, no silent environment skips. axe is smoke coverage — use Playwright for
-keyboard, focus, forms, computed name/description/value, validation, and
-announcements, and React-vs-Solid pair diffs or computed contracts for visual
-branches. This is how Rule #1 is enforced.
+A test proves behavior by naming a real failure mode. No tautologies, no tests
+whose named logic lives only in the test body, no silent environment skips. axe
+is smoke coverage — use Playwright for keyboard, focus, forms, computed
+name/description/value, validation, and announcements, and React-vs-Solid pair
+diffs or computed contracts for visual branches. This is how Rule #1 is
+enforced.
 
 ## What `ls` won't tell you
 
-- The five packages are one dependency chain, each adding one concern:
+- The five public packages are one dependency chain, each adding one concern:
   `solid-stately → solidaria → solidaria-components → solid-spectrum →
 @proyecto-viviana/ui`. The directory `packages/viviana-ui` publishes as
-  `@proyecto-viviana/ui` (dir name ≠ npm name). Four packages are releasable
-  (`solid-stately`, `solidaria`, `solidaria-components`, `solid-spectrum`);
-  `@proyecto-viviana/ui` is public but not yet in the release matrix; two
-  test-utils packages are private. See `.claude/current/release-policy.md`.
+  `@proyecto-viviana/ui` (dir name ≠ npm name). All five public packages are
+  releasable; two test-utils packages are private. See
+  `.claude/current/release-policy.md`.
 - `apps/comparison` is the verification harness, not a styling source — it mounts
   upstream React and the ported Solid component side by side and proves parity.
   `apps/comparison/COMPONENT_PLAYBOOK.md` and `apps/comparison/playbook/` are the

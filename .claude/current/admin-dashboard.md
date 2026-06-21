@@ -17,7 +17,7 @@ tasks:
 
 # Admin Dashboard
 
-Status: Current source of truth.
+Status: live admin spec.
 Update when: the dashboard panels, the tracking schema, or the docs:check gate change.
 
 A dev-only dashboard for steering the project from the `.claude/current` docs.

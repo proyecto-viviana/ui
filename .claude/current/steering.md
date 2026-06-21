@@ -5,32 +5,31 @@ status: current
 
 # Steering
 
-Status: Current source of truth.
-Update when: the north star, current focus, open decisions, non-goals, or gates
+Status: live reference.
+Update when: direction, current focus, open decisions, non-goals, or checks
 change.
 
-The leadership layer above the work queue. Short enough to read before choosing
-a task. The work queue owns implementation detail; this page owns what matters
-next and why.
+The short direction layer above the work queue. Read this before choosing a task;
+use `work-queue.md` for implementation detail.
 
-## North Star
+## Direction
 
-Proyecto Viviana is a **published Solid library**: a faithful, certified Solid
-port of Adobe's React Stately, React Aria, and React Spectrum S2 stacks. The
-deliverable is the port itself — something the Solid ecosystem can depend on for
-the same real accessibility and behavior Adobe ships, not an approximation.
+Viviana UI is Proyecto Viviana's published open-source UI suite and design
+system, built on Solid. Its foundation is the unofficial Solidaria and Solid
+Spectrum port stack for Adobe's React Stately, React Aria, React Aria
+Components, and React Spectrum S2.
 
-Parity is not a milestone on the way to a product. **Parity is the product.**
-The repo stays a parity port and test bed until the release policy says
-otherwise (`release-policy.md`), but the bar it is held to is shipping-library
-quality: a component is not "ported" until it is _certified_ (`certification.md`).
+The port stack stays strict about parity: the same public behavior,
+accessibility model, keyboard model, and S2 styling branches in Solid. A
+component should not be described as ported until the evidence bar in
+`certification.md` is met.
 
 ## Current Focus
 
 Catalogue and export-name parity are essentially closed. The work now is
 **depth, not breadth**: turning existing components from "the name exists and axe
-is green" into certified parity — real behavior and accessibility, proven by
-strict React-vs-Solid tests.
+is green" into evidence-backed parity through React-vs-Solid tests, accessibility
+tests, and behavior tests.
 
 ## Now
 
@@ -56,20 +55,20 @@ strict React-vs-Solid tests.
 - Support-export parity: contexts, slots, hooks, helpers, and support values
   still missing from `solid-spectrum` relative to S2. Root catalogue export
   parity is not complete API parity.
-- Continue per-component certification through
-  `apps/comparison/COMPONENT_PLAYBOOK.md`, component by component;
-  collection/overlay families next.
+- Continue per-component acceptance through
+  `apps/comparison/COMPONENT_PLAYBOOK.md`, component by component; collection
+  and overlay families next.
 
 ## Later
 
-- Promote packages from "parity port and test bed" toward released library
-  status as certification coverage justifies it (`release-policy.md`).
+- Tighten the release bar for each package as coverage justifies stronger semver
+  promises (`release-policy.md`).
 - Package-build migration to native Vite Plus packaging, one package at a time
   (`tech-debt.md`).
 
 ## Open Decisions
 
-- **Release readiness threshold.** What certification coverage gates a package
+- **Release readiness threshold.** What evidence coverage gates a package
   from "test bed" to a published, semver-promised release. _Resolved for
   `@proyecto-viviana/ui` (2026-06-20): promote it into the release matrix as the
   client-facing entry point — implementation tracked as UC-00 in
@@ -80,7 +79,7 @@ strict React-vs-Solid tests.
   review evidence.
 - **comparison-docs-overhaul.** The comparison app's own docs-site rollout
   (`docs/comparison-docs-overhaul/`) is in flight; decide its relationship to the
-  certification harness.
+  comparison harness.
 
 ## Non-Goals
 
@@ -93,16 +92,14 @@ strict React-vs-Solid tests.
 
 ## Gates
 
-The certification ladder and its commands live in `certification.md`.
+The evidence bar and its commands live in `certification.md`.
 `comparison:report:parity:strict` is expected to pass; treat an in-scope failure
 as a blocking regression. Status is refreshed from scripts (`status.md`), never
 from memory.
 
-## Leadership Ritual
+## Before A Task
 
-Before a task:
-
-- Which component or parity gap does this certify or move?
+- Which component or parity gap does this move toward acceptance?
 - What upstream behavior is the authority, and where is it in installed source?
 - Which gates prove it — beyond axe and export counts?
 

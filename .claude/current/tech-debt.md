@@ -18,7 +18,7 @@ tasks:
     finished: 2026-06-21
     roadmap: support-export-parity
   - id: ci-gates-report-only
-    title: Run the full gate ladder in CI as a non-blocking report
+    title: Run the full evidence checks in CI as a non-blocking report
     state: done
     finished: 2026-06-16
     roadmap: certification-enforcement
@@ -49,15 +49,9 @@ tasks:
     roadmap: certification-enforcement
     note: Landed in proof-batch PR #4
   - id: ci-gates-required
-    title: Flip the gate ladder from report-only to required
+    title: Flip the evidence checks from report-only to required
     state: open
-    depends:
-      [
-        ci-gates-report-only,
-        ts-nocheck-style,
-        ts-nocheck-components,
-        lint-rules-reenable,
-      ]
+    depends: [ci-gates-report-only, ts-nocheck-style, ts-nocheck-components, lint-rules-reenable]
     roadmap: certification-enforcement
   - id: contract-spec-burndown
     title: Keyboard/focus/announcement contract specs for the 59 visual-only components
@@ -160,15 +154,15 @@ tasks:
 
 # Tech Debt
 
-Status: Current source of truth.
+Status: live debt log.
 Update when: a debt is added, paid down, or its exit changes.
 
 Known debt and temporary bridges. Each entry names its exit so it does not become
 permanent.
 
-## Certification gates exist but nothing runs them
+## Evidence checks exist but nothing runs all of them
 
-The gate ladder (`vp run check`, `guard:*`, `comparison:report:parity:strict`,
+The check set (`vp run check`, `guard:*`, `comparison:report:parity:strict`,
 `comparison:test:pair`/`test:contract`, `docs:check`) is defined in `package.json`
 but no CI workflow invokes it, so any drift these guards and the pair/contract
 suites would catch can merge green. `vp run typecheck` _does_ run in CI (via
@@ -177,10 +171,10 @@ suites would catch can merge green. `vp run typecheck` _does_ run in CI (via
 `style/` subsystem is now checked (`ts-nocheck-style` paid down 2026-06-21), but
 the ~29 components still are not. This is the root enabler beneath the type-check, axe, and
 visual-coverage debts below (Rule #1/#7). A non-blocking `certification-gates.yml`
-workflow now projects the full ladder's status on every PR as the first step
+workflow now projects the full check set's status on every PR as the first step
 toward enforcement.
 
-**Exit:** a required CI job runs the full gate ladder (typecheck + `vp run check` +
+**Exit:** a required CI job runs the full check set (typecheck + `vp run check` +
 `comparison:test:contract`/`pair` + ungated axe + `guard:*` + `docs:check`) on
 every PR, so "green" means the documented bar passed.
 
@@ -274,7 +268,7 @@ about the `tsgolint` contract, not blanket suppression.
 **Exit:** no `@ts-nocheck` under `packages/*/src`; the `13` disabled rules are
 re-enabled or each justified inline; typecheck is green in CI.
 
-## Tests do not enforce the certification bar
+## Tests do not enforce the evidence bar
 
 Coverage is visual-shaped, not behavior-shaped: `59` of `69` components have
 visual-only e2e (no keyboard/focus/announcement contract); `5` WCAG axe scans
@@ -290,8 +284,8 @@ with ones that fail on the real defect.
 
 ## Component APIs invented beyond upstream
 
-Upper-layer components added a few props upstream does not have, so they certified
-against nothing. `viviana-ui` also minted public names (`Header`/`NavHeader`/
+Upper-layer components added a few props upstream does not have, so those props
+were judged against nothing. `viviana-ui` also minted public names (`Header`/`NavHeader`/
 `LateralNav`) without owner sign-off (Rule #2/#3) — still open.
 
 **Exit:** invented props are removed or documented as explicit local additions;
@@ -300,7 +294,8 @@ public names-with-reach are owner-confirmed; `guard:rac-parity` covers the props
 > **DONE — Picker/TreeView invented props removed 2026-06-21 (commit pending).**
 > The owner authorized the breaking removal ("we don't have real users yet so
 > breaking doesn't matter, parity is priority"). What was actually invented was
-> *narrower* than this section previously claimed — the audit had over-counted:
+> _narrower_ than this section previously claimed — the audit had over-counted:
+>
 > - **Picker:** only the legacy controlled-value aliases `value`/`defaultValue`/
 >   `onChange` (plus the `PickerValue` type and the value⇄key translation helpers)
 >   were invented; **removed**. Consumers use the real S2 props
@@ -417,7 +412,7 @@ not block PRs.
 The strict audit is green while visual-state coverage is partial: of `349`
 tracked states, `113` have current React/Solid visual evidence and `56` have
 strict pair-diff tests (`status.md`). No rows are _blocked_, but most are not yet
-certified visually.
+covered by visual evidence.
 
 **Exit:** every rendering-affecting state row has a computed contract or strict
 pair-diff test; screenshots remain review evidence only.

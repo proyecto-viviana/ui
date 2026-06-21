@@ -5,15 +5,16 @@ status: current
 
 # Architecture
 
-Status: Current source of truth.
+Status: live reference.
 Update when: layer boundaries, package roles, the styling boundary, or the
 harness role change.
 
 ## The five-layer chain
 
-Proyecto Viviana mirrors React Spectrum's layered architecture, adapted for
-SolidJS. Each layer adds exactly one concern and depends only on the layers
-below it:
+Viviana UI is built on a layered Solid stack. The lower four packages are the
+unofficial port stack; `@proyecto-viviana/ui` is the Viviana design-system
+package on top. Each layer adds exactly one concern and depends only on the
+layers below it:
 
 ```
 @proyecto-viviana/ui                    product design system (package dir: viviana-ui)
@@ -30,18 +31,18 @@ below it:
 
 Upstream mapping:
 
-| React Spectrum          | Proyecto Viviana       | npm name                                 |
+| Upstream / role         | Viviana layer          | npm name                                 |
 | ----------------------- | ---------------------- | ---------------------------------------- |
 | `@react-stately/*`      | `solid-stately`        | `@proyecto-viviana/solid-stately`        |
 | `@react-aria/*`         | `solidaria`            | `@proyecto-viviana/solidaria`            |
 | `react-aria-components` | `solidaria-components` | `@proyecto-viviana/solidaria-components` |
 | `@react-spectrum/s2`    | `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       |
-| product design system   | `viviana-ui`           | `@proyecto-viviana/ui`                   |
+| Viviana design system   | `viviana-ui`           | `@proyecto-viviana/ui`                   |
 
-`solid-stately`, `solidaria`, `solidaria-components`, and `solid-spectrum` are the
-four releasable public packages. `@proyecto-viviana/ui` is public but not yet in
-the release matrix (`release-policy.md`). `solidaria-test-utils` and
-`solid-spectrum-test-utils` are private.
+All five public packages are releasable: `solid-stately`, `solidaria`,
+`solidaria-components`, `solid-spectrum`, and `@proyecto-viviana/ui`
+(`release-policy.md`). `solidaria-test-utils` and `solid-spectrum-test-utils`
+are private.
 
 ## Where behavior goes
 

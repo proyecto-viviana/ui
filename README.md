@@ -1,38 +1,46 @@
-# Proyecto Viviana
+# Viviana UI
 
-A faithful, **certified** Solid port of Adobe's React Stately, React Aria, and
-React Spectrum S2 stacks — the same real accessibility and behavior, for SolidJS.
-Parity is not a step toward a product; **parity is the product**.
+Viviana UI is Proyecto Viviana's open-source UI suite and design system, built
+on Solid. Its foundation is an unofficial open-source port of Adobe's React
+Stately, React Aria, React Aria Components, and React Spectrum S2 through the
+Solidaria and Solid Spectrum packages. It is not affiliated with Adobe.
 
-| Package                | npm                                      | Role                                                                             |
-| ---------------------- | ---------------------------------------- | -------------------------------------------------------------------------------- |
-| `solid-stately`        | `@proyecto-viviana/solid-stately`        | State primitives. Port of `@react-stately`.                                      |
-| `solidaria`            | `@proyecto-viviana/solidaria`            | Accessibility hooks (ARIA, keyboard, focus, press/hover). Port of `@react-aria`. |
-| `solidaria-components` | `@proyecto-viviana/solidaria-components` | Headless components. Port of `react-aria-components`.                            |
-| `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       | Spectrum 2 styled components. Port of `@react-spectrum/s2`.                      |
-| `viviana-ui`           | `@proyecto-viviana/ui`                   | Product design-system layer.                                                     |
+The suite is built in layers: `solid-stately`, `solidaria`,
+`solidaria-components`, and `solid-spectrum` are the port stack;
+`@proyecto-viviana/ui` is the Viviana design-system package built on top of that
+stack.
+
+| Package                | npm                                      | Role                                                                 |
+| ---------------------- | ---------------------------------------- | -------------------------------------------------------------------- |
+| `viviana-ui`           | `@proyecto-viviana/ui`                   | Viviana design-system package and client-facing entry point.         |
+| `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       | Solid port of React Spectrum S2 styled components.                   |
+| `solidaria-components` | `@proyecto-viviana/solidaria-components` | Solid port of React Aria Components.                                 |
+| `solidaria`            | `@proyecto-viviana/solidaria`            | Solid port of React Aria hooks: ARIA, keyboard, focus, press, hover. |
+| `solid-stately`        | `@proyecto-viviana/solid-stately`        | Solid port of React Stately state primitives.                        |
 
 ## Status
 
-This is a parity port and test bed, not production-ready — use it as such until
-the release policy says otherwise. `solid-stately`, `solidaria`,
-`solidaria-components`, and `solid-spectrum` are the four releasable public
-packages; `@proyecto-viviana/ui` is public but not yet in the release matrix
-(`.claude/current/release-policy.md`).
+Viviana UI is published and in active development. Use it with the expectation
+that APIs, package boundaries, and component behavior are still being tightened.
 
-Export parity is not behavior parity. A component is not "ported" until it is
-**certified** — API, ARIA, keyboard/focus, forms/validation, behavior/timing,
-styling, visual parity, and i18n all matched and held by tests that can fail. The
-bar and the gate ladder are in `.claude/current/certification.md`; the current
-snapshot is `.claude/current/status.md` (refreshed from scripts, not memory).
+Current package status, coverage, and known gaps live in
+`.claude/current/status.md`; release rules live in
+`.claude/current/release-policy.md`; the component evidence bar lives in
+`.claude/current/certification.md`.
 
 ## Start here
 
-1. [`AGENTS.md`](AGENTS.md) — the operating rules (read first).
-2. [`.claude/current/README.md`](.claude/current/README.md) — index for the deep
-   docs: steering, certification, architecture, status, work queue.
-3. [`apps/comparison/COMPONENT_PLAYBOOK.md`](apps/comparison/COMPONENT_PLAYBOOK.md)
-   — the per-component parity runner.
+1. [`.claude/current/status.md`](.claude/current/status.md) — current parity,
+   coverage, and report output.
+2. [`.claude/current/architecture.md`](.claude/current/architecture.md) — package
+   boundaries and where behavior, ARIA, composition, and styling belong.
+3. [`.claude/current/certification.md`](.claude/current/certification.md) — the
+   evidence bar for accepting a component as ported.
+4. [`apps/comparison/COMPONENT_PLAYBOOK.md`](apps/comparison/COMPONENT_PLAYBOOK.md)
+   — the per-component parity workflow.
+
+`AGENTS.md` is the operating brief for coding agents and contributors working
+with them. Most readers want the docs above first.
 
 ## Quick start
 
@@ -56,7 +64,8 @@ vp run docs:check                       # docs frontmatter / tracking integrity
 ```
 
 `comparison:report:parity:strict` is expected to pass; treat an in-scope failure
-as a blocking regression. The full ladder is in `.claude/current/certification.md`.
+as a blocking regression. The full evidence checklist is in
+`.claude/current/certification.md`.
 
 ## Dev dashboard
 
@@ -68,7 +77,7 @@ task tracker, gantt, docs browser, architecture, and glossary — projecting the
 ## Repo layout
 
 ```text
-packages/                Solid ports (the five-layer chain) + private test-utils
+packages/                Viviana UI, the port stack, and private test-utils
 apps/web                 playground app + the dev-only /admin dashboard
 apps/comparison          React-vs-Solid parity verification harness
 docs/adr/                architecture decision records (ADR 0001 = S2 styling boundary)
@@ -87,8 +96,8 @@ docs/adr/                architecture decision records (ADR 0001 = S2 styling bo
 ## License & attribution
 
 - Our own work is [MIT](LICENSE) — deliberately permissive.
-- The packages are SolidJS ports of Adobe's React Spectrum stack (Apache-2.0).
-  That direct-license obligation is honored in [`NOTICE`](NOTICE) and
+- The port stack is an unofficial Solid port of Adobe's React Spectrum stack
+  (Apache-2.0). That direct-license obligation is honored in [`NOTICE`](NOTICE) and
   [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0); ported files keep their upstream
   headers.
 - [`CREDITS.md`](CREDITS.md) credits everything sourced, referenced, or

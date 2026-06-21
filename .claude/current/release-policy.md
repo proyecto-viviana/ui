@@ -5,7 +5,7 @@ status: current
 
 # Release Policy
 
-Status: Current source of truth.
+Status: live policy.
 Update when: the release matrix, the Changesets flow, or the CI gates change.
 
 ## Source of truth
