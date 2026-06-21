@@ -6,8 +6,9 @@
 import {
   type JSX,
   type Accessor,
+  type Context,
   type FlowComponent,
-  type ParentComponent,
+  createComponent,
   createContext,
   useContext,
   createMemo,
@@ -16,6 +17,7 @@ import {
   Show,
 } from "solid-js";
 import { isServer } from "solid-js/web";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 
 /**
  * Render props pattern - children can be a function that receives state
@@ -139,41 +141,177 @@ export function composeRenderProps<T extends object>(
   };
 }
 
-/**
- * Context value that can be null or the actual value
- */
-export type ContextValue<T> = T | null;
+/** A Solid ref target: a callback, a mutable `{ current }` object, or undefined. */
+export type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined;
+
+/** A value paired with an optional ref to merge onto the consuming element. */
+export type WithRef<T, E> = T & { ref?: RefLike<E> };
 
 /**
- * Creates a context with props and ref merging support
+ * A context value carrying named slots (mirrors react-aria-components'
+ * `SlottedValue`). Each entry under `slots` is the props object delivered to the
+ * component rendered with the matching `slot` name.
+ */
+export interface SlottedValue<T> {
+  slots?: Record<string, T>;
+}
+
+/** A slotted context value: a slots record, a bare value, or null/undefined. */
+export type SlottedContextValue<T> = SlottedValue<T> | T | null | undefined;
+
+/**
+ * The value type for a context consumed via {@link useContextProps}. Mirrors
+ * upstream `ContextValue<T, E>`: it may carry `slots` and an optional `ref` to
+ * merge onto the consuming element.
+ */
+export type ContextValue<T, E = HTMLElement> = SlottedContextValue<WithRef<T, E>>;
+
+/**
+ * Creates a context that can carry either a bare value or a `slots` record.
  */
 export function createSlottedContext<T>() {
-  return createContext<T | null>(null);
+  return createContext<SlottedContextValue<T>>(null);
+}
+
+/** Assigns an element to a Solid ref (callback or mutable `{ current }` object). */
+export function assignRef<T>(ref: RefLike<T>, el: T): void {
+  if (!ref) {
+    return;
+  }
+
+  if (typeof ref === "function") {
+    (ref as (el: T) => void)(el);
+  } else if (typeof ref === "object" && "current" in ref) {
+    (ref as { current?: T | null }).current = el;
+  }
+}
+
+/** Merges multiple Solid refs into one callback that forwards to each, once. */
+export function mergeRefs<T>(...refs: Array<RefLike<T>>): (el: T) => void {
+  return (el: T) => {
+    const seen = new Set<RefLike<T>>();
+    for (const ref of refs) {
+      if (!ref || seen.has(ref)) {
+        continue;
+      }
+
+      seen.add(ref);
+      assignRef(ref, el);
+    }
+  };
 }
 
 /**
- * Use context with null check
+ * Resolves a (possibly slotted) context value for the given slot name. Port of
+ * react-aria-components' `useSlottedContext`:
+ * - `slot === null` opts out of the context entirely (returns `null`);
+ * - if the context carries a `slots` record, the entry for `slot` (or
+ *   {@link DEFAULT_SLOT}) is returned, throwing on an unknown slot name;
+ * - otherwise the bare context value is returned.
  */
 export function useSlottedContext<T>(
-  context: ReturnType<typeof createContext<T | null>>,
-): T | null {
-  return useContext(context);
+  context: Context<SlottedContextValue<T>>,
+  slot?: string | null,
+): T | null | undefined {
+  const ctx = useContext(context);
+  if (slot === null) {
+    // An explicit `null` slot means: ignore this context.
+    return null;
+  }
+
+  if (ctx && typeof ctx === "object" && "slots" in ctx && ctx.slots) {
+    const slots = ctx.slots as Record<string, T>;
+    const slotName = slot || DEFAULT_SLOT;
+    const slotValue = slots[slotName];
+    if (!slotValue) {
+      const validSlots = Object.keys(slots)
+        .map((name) => `"${name}"`)
+        .join(", ");
+      throw new Error(
+        slot
+          ? `Invalid slot "${slot}". Valid slot names are ${validSlots}.`
+          : `A slot prop is required. Valid slot names are ${validSlots}.`,
+      );
+    }
+    return slotValue;
+  }
+
+  return ctx as T | null | undefined;
 }
 
-export function useContextProps<TProps extends object, TRef>(
+/**
+ * Merges context-provided props and a context ref into a component's own props
+ * and ref. Port of react-aria-components' `useContextProps`:
+ * - the context is resolved for `props.slot` via {@link useSlottedContext};
+ * - props win over context props (handler props are chained by `mergeProps`);
+ * - the component's own ref and the context's ref merge into one callback.
+ *
+ * The prop merge stays reactive (Solid `mergeProps` preserves getters), so prop
+ * changes keep flowing; the context value is read once at setup, matching a single
+ * upstream render.
+ */
+export function useContextProps<TProps extends SlotProps, TRef>(
   props: TProps,
-  ref: TRef,
-  context?: ContextValue<Partial<TProps>>,
-): [TProps, TRef] {
-  if (!context) return [props, ref];
-  return [{ ...(context as TProps), ...props }, ref];
+  ref: RefLike<TRef>,
+  context: Context<ContextValue<TProps, TRef>>,
+): [TProps, (el: TRef) => void] {
+  const ctx = (useSlottedContext(context, props.slot) ?? {}) as WithRef<Partial<TProps>, TRef>;
+  const { ref: contextRef, ...contextProps } = ctx;
+  const mergedRef = mergeRefs(ref, contextRef);
+  const mergedProps = mergeProps(contextProps as object, props as object) as unknown as TProps;
+  return [mergedProps, mergedRef];
 }
 
-export const Provider: ParentComponent<{
-  values: Array<[ReturnType<typeof createContext<unknown>>, unknown]>;
-}> = (props) => {
-  return props.children;
-};
+/**
+ * Detects whether slotted content was rendered into a placeholder, for the
+ * aria-label fallback pattern. Port of react-aria-components' `useSlot`: returns a
+ * ref callback to attach to the placeholder and an accessor that is `true` while
+ * an element is mounted there. The accessor flips to `false` after mount if the
+ * ref never ran (no slotted content was provided).
+ */
+export function useSlot(initialState = true): [(el: Element | null) => void, Accessor<boolean>] {
+  const [hasSlot, setHasSlot] = createSignal(initialState);
+  let hasRun = false;
+  const ref = (el: Element | null) => {
+    hasRun = true;
+    setHasSlot(!!el);
+  };
+  onMount(() => {
+    if (!hasRun) {
+      setHasSlot(false);
+    }
+  });
+  return [ref, hasSlot];
+}
+
+/**
+ * Nests a set of context providers around `children`. Port of
+ * react-aria-components' `Provider`: each `[Context, value]` pair wraps the
+ * previous result, so the LAST pair is the outermost provider — matching upstream's
+ * wrap-in-iteration-order.
+ *
+ * `children` is read through a lazy getter inside the innermost provider so child
+ * components are *created* within every provider's owner; Solid binds `useContext`
+ * at component-execution time, so eager children would miss these providers.
+ */
+export function Provider(props: {
+  values: Array<[Context<unknown>, unknown]>;
+  children: JSX.Element;
+}): JSX.Element {
+  const build = (index: number): JSX.Element => {
+    if (index < 0) {
+      return props.children;
+    }
+    const [context, value] = props.values[index];
+    return createComponent(context.Provider, {
+      value,
+      get children() {
+        return build(index - 1);
+      },
+    });
+  };
+  return build(props.values.length - 1);
+}
 
 /**
  * Converts boolean state values to data attributes

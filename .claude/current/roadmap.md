@@ -196,10 +196,15 @@ selection / keyboard / `aria-describedby` bugs, and they gate
      bridge — that is the faithful upstream shape. The remaining
      `moveVirtualFocus` / `dispatchVirtualFocus` AT-cursor movement is still a
      documented gap.
-  2. `port-context-slots` — `useContextProps` is a non-reactive shallow merge with
-     zero call sites and `Provider` is a no-op, so `SearchField`/`TextField`/
-     `ListBox`/`Menu` can't consume `FieldInputContext`/`SelectableCollectionContext`
-     and merge refs the way upstream's `useContextProps(props, ref, ctx)` does.
+  2. `port-context-slots` — **DONE 2026-06-21.** `useContextProps(props, ref, ctx)`
+     now resolves `props.slot` (via the faithful `useSlottedContext` slot-record
+     lookup), merges context props under the component's own (props win, handlers
+     chain via the reactive `mergeProps`) and merges the component ref with the
+     context ref; `Provider` nests the `[Context, value]` pairs (last outermost)
+     with lazy children so `useContext` binds inside the providers; `useSlot` +
+     `RefLike`/`SlottedValue`/`SlottedContextValue` + `assignRef`/`mergeRefs` added.
+     Still additive (zero functional consumers) — `SearchField`/`TextField`/
+     `ListBox`/`Menu` consume it in the `migrate-*-spine` tasks.
   3. Filtered list state — `createListState.ts` has no `filter` support;
      upstream's `UNSTABLE_useFilteredListState` (consumed by `ListBox`/`Menu` to
      apply `collectionProps.filter`) has no analog.
@@ -251,9 +256,21 @@ and `createSelectableList` (default delegate derived from the manager in a
 `createMemo`). A stable `data-collection` id is shared container↔items, keyed by
 the (stable) `SelectionManager` since a Solid collection is rebuilt on items
 change; unregistered items omit the attribute so unmigrated snapshots are
-unchanged. **Next in flight: keystone 3 `port-context-slots`** (`useContextProps`
-→ a reactive Solid slot merge), then the migrations wire the components onto this
-spine. The **press-path epic** is
+unchanged. **Keystone 3 (`port-context-slots`) DONE 2026-06-21:** made the
+headless `solidaria-components/utils.tsx` context machinery faithful — `Provider`
+nests the `[Context, value]` pairs (last outermost) with lazy children so
+`useContext` binds inside them; `useSlottedContext(ctx, slot)` resolves a `slots`
+record (DEFAULT_SLOT fallback, throws on unknown, `null` opts out);
+`useContextProps(props, ref, ctx)` resolves `props.slot`, merges context props
+under the component's own via the reactive handler-chaining `mergeProps`, and
+merges the component+context refs; plus `useSlot`, `RefLike`/`WithRef`/
+`SlottedValue`/`SlottedContextValue`/re-typed `ContextValue<T,E>`, and
+`assignRef`/`mergeRefs`. Additive (zero functional consumers; 40 components keep
+native `.Provider`), so snapshots are unchanged; `DEFAULT_SLOT` stays the string
+`"default"` to match the styled-layer `SpectrumContextValue` record contract.
+**Next in flight: the migrations** (`migrate-menu-spine`, `migrate-listbox-spine`,
+`migrate-combobox-nav`, `migrate-describedby-slots`) + `port-submenu-state`, which
+wire the components onto the now-complete spine. The **press-path epic** is
 the item-hook half of this same move, folded into `upstream-parity-loop` because
 it is ticket-driven: Phases 0–1 landed (`onSelect` split + `createSelectableItem`);
 **`press-path-phase2`** migrates the three item hooks

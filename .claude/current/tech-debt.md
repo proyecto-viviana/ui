@@ -70,12 +70,31 @@ tasks:
       a Selection (Set subclass) faithfully. Next keystone: port-list-keyboard-delegate.
   - id: port-list-keyboard-delegate
     title: Port ListKeyboardDelegate + useSelectableCollection/List/Item (with RTL)
-    state: open
+    state: done
+    finished: 2026-06-21
     roadmap: headless-spine-port
+    note: >-
+      Commit 4b3d6592. ListKeyboardDelegate (+ DOMLayoutDelegate/LayoutDelegate/
+      Rect/Size), createSelectableCollection, createSelectableList ported into
+      solidaria src/selection/. Additive — no widget consumes them yet; migrations
+      delete the per-widget copies. data-collection id is manager-keyed + dormant
+      until a container registers. Gaps: moveVirtualFocus/dispatchVirtualFocus
+      (AT cursor) still absent. Next keystone: port-context-slots.
   - id: port-context-slots
     title: Make useContextProps/useSlottedContext/composeRenderProps live and slot-capable
-    state: open
+    state: done
+    finished: 2026-06-21
     roadmap: headless-spine-port
+    note: >-
+      Faithful port of solidaria-components/utils.tsx context machinery: Provider
+      nests [Context, value] pairs (last outermost) with lazy children;
+      useSlottedContext resolves a slots record (DEFAULT_SLOT fallback, throws on
+      unknown, null opts out); useContextProps(props, ref, ctx) resolves props.slot,
+      merges context props under the component's own via the reactive handler-
+      chaining mergeProps, and merges component+context refs; + useSlot, RefLike/
+      WithRef/SlottedValue/SlottedContextValue, assignRef/mergeRefs. Additive (zero
+      functional consumers; 40 components keep native .Provider). DEFAULT_SLOT stays
+      the string "default" to match the styled SpectrumContextValue record contract.
   - id: port-submenu-state
     title: Add submenu state to createMenuState
     state: open
@@ -181,15 +200,16 @@ every PR, so "green" means the documented bar passed.
 ## Shared headless spine is re-implemented per widget
 
 Upstream's shared machinery was missing or inert and hand-rolled inside each widget,
-so one bug recurs across many. Keystones 1–2 have now ported the lower layers (see
+so one bug recurs across many. Keystones 1–3 have now ported the lower layers (see
 **Spine progress** below), but they are not yet consumed, so the duplication is
 still live: `SelectionManager` had been rewritten with a different anchor/current
 model (`createSelectionState.ts:241-269`, now superseded by the port); the shared
 `createSelectableCollection` exists but each widget still inlines arrow/Home/End
-(`createMenu.ts:201-406`); `useContextProps`/`useSlottedContext`/
-`composeRenderProps` are exported with zero call sites; `TextContext` is
-`createContext<null>(null)` and cannot carry slots, so the description slot never
-wires and `aria-describedby` is absent. Rule #4/#5.
+(`createMenu.ts:201-406`); `useContextProps`/`useSlottedContext`/`Provider` are now
+faithful (slot-record resolution, ref merge, nested providers) but still have zero
+functional consumers; `TextContext` is `createContext<null>(null)` and cannot carry
+slots, so the description slot never wires and `aria-describedby` is absent until it
+migrates to `createSlottedContext` (`migrate-describedby-slots`). Rule #4/#5.
 
 A live instance of "one bug recurs across many": both the collection hook and the
 item hook handle the selection key, so a focused-row Space toggles selection twice
@@ -203,14 +223,22 @@ no Space/Enter case; the item owns selection. These remain stopgaps — the spin
 port should delete the duplication at its source instead of fixing it widget by
 widget.
 
-**Spine progress.** Keystone 1 (`port-selection-manager`, commit 7c1708c4) and
-keystone 2 (`port-list-keyboard-delegate`, 2026-06-21) have landed: the shared
-`SelectionManager`, `ListKeyboardDelegate` / `DOMLayoutDelegate`,
-`createSelectableCollection`, and `createSelectableList` now exist. They are
-*additive* so far — no widget consumes them yet; the per-widget arrow/Home/End
-copies in `createMenu.ts` / `createListBox.ts` are still live and get deleted in
-the `migrate-*-spine` tasks (after keystone 3 `port-context-slots`). Three
-caveats carried by keystone 2:
+**Spine progress.** All three keystones have landed: keystone 1
+(`port-selection-manager`, commit 7c1708c4), keystone 2
+(`port-list-keyboard-delegate`, 2026-06-21), and keystone 3
+(`port-context-slots`, 2026-06-21). The shared `SelectionManager`,
+`ListKeyboardDelegate` / `DOMLayoutDelegate`, `createSelectableCollection`,
+`createSelectableList`, and now the faithful `solidaria-components/utils.tsx`
+context machinery (`Provider` nests `[Context, value]` pairs with lazy children;
+`useSlottedContext` resolves a `slots` record with the DEFAULT_SLOT fallback /
+throws on unknown / `null` opts out; `useContextProps(props, ref, ctx)` resolves
+`props.slot`, merges context props under the component's own via the reactive
+handler-chaining `mergeProps`, and merges the component+context refs; plus
+`useSlot`, `RefLike`/`SlottedValue`/`SlottedContextValue`, `assignRef`/`mergeRefs`)
+all exist. They are *additive* so far — no widget consumes them yet; the per-widget
+arrow/Home/End copies in `createMenu.ts` / `createListBox.ts` are still live and get
+deleted in the `migrate-*-spine` tasks, which are the next step now the spine is
+complete. Three caveats carried by keystone 2:
 
 - **`data-collection` is dormant until a container registers it.** Items stamp a
   `data-collection` id only when their `SelectionManager` has been registered by a
@@ -242,14 +270,18 @@ providers. But **no collection consumer can receive any of it**: upstream wires 
 FOCUS/CLEAR-FOCUS listeners + `autoFocus`-on-mount + virtual-focus nav inside
 `useSelectableCollection`, and consumes the contexts via
 `useContextProps(props, ref, FieldInputContext / SelectableCollectionContext)` plus
-a filtered-list state (`UNSTABLE_useFilteredListState`). We have none of those
-three: no shared selectable-collection hook (`port-list-keyboard-delegate`), a
-non-reactive zero-call-site `useContextProps` + no-op `Provider`
-(`port-context-slots`), and `createListState.ts` has no `filter`. So the bridge is
-not a consumer tweak — it depends on the spine keystones above and must not be
-faked with bespoke per-widget consumers (which would re-create the very
-duplication this section exists to remove). Resume `autocomplete-collection-bridge`
-after `port-list-keyboard-delegate` + `port-context-slots` land.
+a filtered-list state (`UNSTABLE_useFilteredListState`). Two of those three now
+exist: the shared selectable-collection hook (`port-list-keyboard-delegate`, DONE)
+and a faithful slot-resolving `useContextProps` + nested `Provider`
+(`port-context-slots`, DONE). What remains is (a) `createListState.ts` has no
+`filter` (the filtered-list-state item, still a `headless-spine-port` task), and
+(b) the actual consumer wiring — no collection widget yet *reads*
+`SelectableCollectionContext` / the autocomplete contexts through `useContextProps`
+(that happens in the `migrate-*-spine` tasks). So the bridge is still not a
+consumer tweak; resume `autocomplete-collection-bridge` after the filtered-list
+state lands and the menu/listbox migrations wire the contexts — and don't fake it
+with bespoke per-widget consumers (which would re-create the very duplication this
+section exists to remove).
 
 **Exit:** the three keystones (`SelectionManager`, `ListKeyboardDelegate`/
 `useSelectable*`, `useContextProps` + slot plumbing) are ported to their lowest
@@ -357,14 +389,17 @@ Reason: our styled layer (`solid-spectrum`) still composes the monoliths, so
 deprecating them would cascade a refactor that is out of scope for an additive
 parity-absorption item. Separately, the field→button handoff uses a native
 `Internal*Context` (read inside the provider via `Show … keyed`) instead of
-upstream's `Provider values={[[…],[TextContext,{slots}]]}` because our `<Provider>`
-is a no-op and `TextContext` is inert — this is the same root cause tracked by
-`port-context-slots`, and the split should migrate to real slot-context once that
-lands.
+upstream's `Provider values={[[…],[TextContext,{slots}]]}` because `TextContext` is
+`createContext<null>(null)` and cannot carry slots. The `<Provider>` blocker is now
+gone — `port-context-slots` made it a real nested-provider (2026-06-21) — so the
+remaining work is migrating `TextContext` (and the field contexts) to
+`createSlottedContext`, tracked by `migrate-describedby-slots`.
 
-**Exit:** after `port-context-slots`, the `*Field` components route description /
-errorMessage through real `TextContext` slots; the styled layer migrates onto the
-`*Field`/`*Button` split and the monoliths get `@deprecated` tags (or are removed).
+**Exit:** after `migrate-describedby-slots` routes `TextContext` through real slots,
+the `*Field` components carry description / errorMessage via `Provider values={[[…],
+[TextContext,{slots}]]}` (the now-functional `Provider`); the styled layer migrates
+onto the `*Field`/`*Button` split and the monoliths get `@deprecated` tags (or are
+removed).
 
 ## i18n strings hardcoded in the data/spectrum layers
 
