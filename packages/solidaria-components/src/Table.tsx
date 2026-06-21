@@ -14,6 +14,7 @@ import {
   createSignal,
   onCleanup,
   splitProps,
+  untrack,
   useContext,
   For,
   Show,
@@ -822,8 +823,18 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  // The root children function builds the structural `<TableHeader>`/`<TableBody>`
+  // subtree once. React re-invokes it on every render and reconciles the result, so
+  // reading focus-dependent render values (isFocused/isFocusVisible) there is cheap.
+  // Solid has no reconciliation: re-invoking recreates the entire thead/tbody subtree,
+  // which detaches the DOM-focused row and drops keyboard focus (Space/Enter never reach
+  // the row). So invoke it with an untracked snapshot of the render values — the insert
+  // below stays stable across focus changes while children still see current values at
+  // creation. Render values for collection structure are not reactive in practice.
   const tableChildren = () =>
-    typeof props.children === "function" ? props.children(renderValues()) : props.children;
+    typeof props.children === "function"
+      ? props.children(untrack(renderValues))
+      : props.children;
   const tableProps = () =>
     ({
       ref: (el: HTMLTableElement) => {
@@ -843,7 +854,6 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
       "data-empty": stateProps.items.length === 0 || undefined,
       "data-drop-target": isRootDropTarget() || undefined,
       slot: local.slot,
-      children: tableChildren(),
     }) as JSX.HTMLAttributes<HTMLTableElement>;
 
   return (
@@ -852,7 +862,11 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
         value={state as unknown as TableState<object, TableCollection<object>>}
       >
         <CollectionRendererContext.Provider value={collectionRenderer()}>
-          {local.render ? local.render(tableProps(), renderValues()) : <table {...tableProps()} />}
+          {local.render ? (
+            local.render({ ...tableProps(), children: tableChildren() }, renderValues())
+          ) : (
+            <table {...tableProps()}>{tableChildren()}</table>
+          )}
         </CollectionRendererContext.Provider>
       </TableStateContext.Provider>
     </TableContext.Provider>

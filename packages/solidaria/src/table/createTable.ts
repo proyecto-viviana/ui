@@ -147,6 +147,14 @@ export function createTable<T extends object>(
         return false;
       }
 
+      // A leading Spacebar is a selection/action key, not the start of a type-ahead
+      // search. Mirror upstream useTypeSelect (`search.length === 0 && character === ' '`)
+      // and let it fall through so the focused row's own Space handler toggles selection.
+      // Once a search is active, Space continues the query as normal.
+      if (e.key === " " && typeaheadBuffer.length === 0) {
+        return false;
+      }
+
       typeaheadBuffer += e.key.toLocaleLowerCase();
       if (typeaheadTimeout) {
         clearTimeout(typeaheadTimeout);
@@ -472,24 +480,12 @@ export function createTable<T extends object>(
         }
         return;
 
-      case " ":
-      case "Enter":
-        e.preventDefault();
-        // Toggle selection or trigger action
-        if (s.selectionMode !== "none") {
-          // For cells, select the parent row
-          const keyToSelect =
-            isCell(focusedItem) && focusedItem.parentKey != null
-              ? focusedItem.parentKey
-              : focusedKey;
-
-          if (e.shiftKey && s.selectionMode === "multiple") {
-            s.extendSelection(keyToSelect);
-          } else {
-            s.toggleSelection(keyToSelect);
-          }
-        }
-        return;
+      // NOTE: Space/Enter selection is intentionally NOT handled here. Upstream
+      // useSelectableCollection has no ' '/Enter case — keyboard selection is owned
+      // by the row (useSelectableItem, ported in createTableRow). Handling it here too
+      // double-toggled the selection (row toggles on, grid toggles back off → no-op),
+      // since the row handler does not stop propagation. Space/Enter fall through to
+      // the type-ahead path below, which ignores a leading Space and bails on Enter.
 
       default:
         if (runTypeahead(focusedKey, focusedItem)) {
