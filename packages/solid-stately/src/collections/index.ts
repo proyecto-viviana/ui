@@ -17,6 +17,14 @@ export type {
 export { ListCollection, createListCollection } from "./ListCollection";
 
 export {
+  getChildNodes,
+  getFirstItem,
+  getNthItem,
+  getLastItem,
+  compareNodeOrder,
+} from "./getChildNodes";
+
+export {
   createSelectionState,
   type SelectionStateProps,
   type SelectionState,
