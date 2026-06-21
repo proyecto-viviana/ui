@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -79,7 +78,7 @@ export class MappedProperty<T extends CSSValue>
       }
       return value;
     } else {
-      let res = this.mapping[String(value)];
+      let res = (this.mapping as Record<string, any>)[String(value)];
       if (res == null) {
         throw new Error("Invalid style value: " + value);
       }
@@ -95,7 +94,7 @@ export class ColorProperty<C extends string>
 {
   toCSSValue(value: Color<C>): PropertyValueDefinition<Value> {
     let [color, opacity] = value.split("/");
-    return mapConditionalValue(this.mapping[color], (value) => {
+    return mapConditionalValue((this.mapping as Record<string, any>)[color], (value) => {
       return opacity ? `rgb(from ${value} r g b / ${opacity}%)` : value;
     });
   }
@@ -229,9 +228,9 @@ function mapConditionalShorthand<T, C extends string, R extends RenderProps<stri
   fn: ShorthandProperty<T>,
 ): { [property: string]: StyleValue<Value, C, R> } {
   if (typeof value === "object") {
-    let res = {};
+    let res: Record<string, any> = {};
     for (let condition in value) {
-      let properties = mapConditionalShorthand(value[condition], fn);
+      let properties = mapConditionalShorthand((value as Record<string, any>)[condition], fn);
       for (let property in properties) {
         res[property] ??= {};
         res[property][condition] = properties[property];
@@ -260,11 +259,14 @@ export function parseArbitraryValue(value: Value): string | undefined {
 }
 
 function shortCSSPropertyName(property: string) {
-  return propertyInfo.properties[property] ?? generateArbitraryValueSelector(property, true);
+  return (
+    propertyInfo.properties[property as keyof typeof propertyInfo.properties] ??
+    generateArbitraryValueSelector(property, true)
+  );
 }
 
 function classNamePrefix(property: string, cssProperty: string) {
-  let className = propertyInfo.properties[cssProperty];
+  let className = propertyInfo.properties[cssProperty as keyof typeof propertyInfo.properties];
   if (className && property === "--" + className) {
     return "-" + className + "_-";
   }
@@ -661,7 +663,7 @@ export function createTheme<T extends Theme>(
         // Otherwise, wrap the rule in the condition (e.g. @media).
         // Top level layer is based on the priority of the rule, not the condition.
         // Also group in a sub-layer based on the condition so that lightningcss can more effectively deduplicate rules.
-        let layer = `${generateName(priority, true)}.${propertyInfo.conditions[prelude] || generateArbitraryValueSelector(condition, true)}`;
+        let layer = `${generateName(priority, true)}.${propertyInfo.conditions[prelude as keyof typeof propertyInfo.conditions] || generateArbitraryValueSelector(condition, true)}`;
         return new AtRule(rules, prelude, layer, condition);
       });
     }
@@ -734,7 +736,8 @@ export function createTheme<T extends Theme>(
                 let preludes = Array.isArray(prelude) ? prelude : [prelude];
                 for (let prelude of preludes) {
                   className +=
-                    propertyInfo.conditions[prelude] || generateArbitraryValueSelector(condition);
+                    propertyInfo.conditions[prelude as keyof typeof propertyInfo.conditions] ||
+                    generateArbitraryValueSelector(condition);
                 }
               }
             }
@@ -744,7 +747,9 @@ export function createTheme<T extends Theme>(
             }
 
             className +=
-              propertyInfo.values[cssProperty]?.[String(value)] ??
+              (propertyInfo.values as Record<string, Record<string, string>>)[cssProperty]?.[
+                String(value)
+              ] ??
               generateArbitraryValueSelector(String(value));
             className += POSTFIX;
             rules.push(

@@ -24,8 +24,15 @@ tasks:
     note: Landed as ticket/audit-scaffolding (certification-gates.yml)
   - id: ts-nocheck-style
     title: Remove @ts-nocheck from the 6 style/ files and fix surfaced errors
-    state: open
+    state: done
+    finished: 2026-06-21
     roadmap: certification-enforcement
+    note: >-
+      21 strict-mode errors (20× TS7053 string-index implicit-any, 1× TS7006
+      param) reconciled with minimal null-checked loose-lookup casts mirroring
+      upstream's noImplicitAny:false semantics; tokens.ts strip-default fix for
+      the synthetic esModuleInterop `default` key. typecheck + 5384 package
+      tests green. Changeset style-layer-typecheck.md.
   - id: ts-nocheck-components
     title: Remove @ts-nocheck from the ~29 component files (batched)
     state: open
@@ -148,9 +155,10 @@ The gate ladder (`vp run check`, `guard:*`, `comparison:report:parity:strict`,
 `comparison:test:pair`/`test:contract`, `docs:check`) is defined in `package.json`
 but no CI workflow invokes it, so any drift these guards and the pair/contract
 suites would catch can merge green. `vp run typecheck` _does_ run in CI (via
-`build` in `release-readiness`), but it passes only because 35 `solid-spectrum`
-files carry `@ts-nocheck` and `tsc` skips them — the styled layer is unchecked
-either way. This is the root enabler beneath the type-check, axe, and
+`build` in `release-readiness`), but it passes only because the remaining
+`solid-spectrum` component files carry `@ts-nocheck` and `tsc` skips them — the
+`style/` subsystem is now checked (`ts-nocheck-style` paid down 2026-06-21), but
+the ~29 components still are not. This is the root enabler beneath the type-check, axe, and
 visual-coverage debts below (Rule #1/#7). A non-blocking `certification-gates.yml`
 workflow now projects the full ladder's status on every PR as the first step
 toward enforcement.
@@ -215,11 +223,14 @@ package, not in-repo source.
 
 ## Styled layer ships type-unchecked
 
-`solid-spectrum` carries `@ts-nocheck` on `35` source files (the entire `style/`
-subsystem and ~29 components; `0` such files in the three lower packages), and
-`vite.config.ts:36-48` sets `13` lint rules to `"off"` (incl.
-`typescript/no-floating-promises`, `eslint/no-unused-vars`). With typecheck also
-absent from CI (above), prop/generic/variant drift in the styled layer is invisible.
+`solid-spectrum` carries `@ts-nocheck` on ~`29` source files (the components;
+`0` such files in the three lower packages, and the `style/` subsystem cleared
+2026-06-21 — `ts-nocheck-style`, with its 21 strict-mode errors reconciled by
+minimal null-checked loose-lookup casts mirroring upstream's
+`noImplicitAny:false` semantics). `vite.config.ts:36-48` still sets `13` lint
+rules to `"off"` (incl. `typescript/no-floating-promises`,
+`eslint/no-unused-vars`). With typecheck also absent from CI (above),
+prop/generic/variant drift in the remaining unchecked components is invisible.
 `TableView` and `Menu` compile clean without the pragma, so it is removable, not
 load-bearing. Distinct from "Lint type-checking runs separately" below, which is
 about the `tsgolint` contract, not blanket suppression.

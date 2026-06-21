@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -16,12 +15,11 @@ import * as originalTokens from "@adobe/spectrum-tokens/dist/json/variables.json
 
 // Vite's test runner exposes JSON imports as `{default: ...}` while the library
 // build inlines the object. Normalize once so token helpers are environment-safe.
-function keys<T extends Record<string, any>>(v: T): Record<keyof T, any> {
-  return v;
-}
-
-const tokenSource = "default" in originalTokens ? originalTokens.default : originalTokens;
-const tokens = keys(tokenSource);
+// The namespace import also carries a synthetic `default` key (esModuleInterop), so
+// strip it from the token key space and keep values loose to match the prior port.
+const tokenData: Record<string, any> =
+  "default" in originalTokens ? (originalTokens as any).default : originalTokens;
+const tokens = tokenData as Record<Exclude<keyof typeof originalTokens, "default">, any>;
 type TokenName = keyof typeof tokens;
 
 export function getToken(name: TokenName): string {
@@ -205,7 +203,7 @@ export function fontSizeToken(name: TokenName): number {
     name = token.ref.slice(1, -1) as TokenName;
   }
 
-  let index = indexes[name];
+  let index = indexes[name as keyof typeof indexes];
   if (index == null) {
     throw new Error("Unknown font size " + name);
   }
@@ -217,7 +215,7 @@ export function shadowToken(
   name: "drop-shadow-emphasized" | "drop-shadow-elevated" | "drop-shadow-dragged",
 ): string[] {
   let token = tokens[name];
-  return token.value.map((layer) => {
+  return token.value.map((layer: any) => {
     // Spread must also be zero, since filter: drop-shadow() does not support it.
     if (layer.spread !== "0px") {
       throw new Error(`Unsupported drop-shadow spread for ${name}: ${layer.spread}`);

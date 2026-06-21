@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -198,11 +197,11 @@ function resolveColorToken(token: string | ColorToken | ColorRef): ColorToken {
     return token;
   }
 
-  let lightToken = baseColors[token.light];
+  let lightToken = baseColors[token.light as BaseColor];
   if (!lightToken) {
     throw new Error(`${token.light} is not a valid color reference`);
   }
-  let darkToken = baseColors[token.dark];
+  let darkToken = baseColors[token.dark as BaseColor];
   if (!darkToken) {
     throw new Error(`${token.dark} is not a valid color reference`);
   }
@@ -240,8 +239,8 @@ function compareColorStopNames(a: string, b: string): number {
 let colorList = Object.keys(baseColors).sort(compareColorStopNames);
 function nextColorStop(name: string, token: string | ColorToken | ColorRef): ColorToken {
   if (typeof token === "object" && token.type === "ref") {
-    let light = nextColorStop(token.light, baseColors[token.light]);
-    let dark = nextColorStop(token.dark, baseColors[token.dark]);
+    let light = nextColorStop(token.light, baseColors[token.light as BaseColor]);
+    let dark = nextColorStop(token.dark, baseColors[token.dark as BaseColor]);
 
     return {
       type: "color",
@@ -261,7 +260,7 @@ function nextColorStop(name: string, token: string | ColorToken | ColorRef): Col
     throw new Error(`${name} does not support states`);
   }
 
-  return resolveColorToken(baseColors[key]);
+  return resolveColorToken(baseColors[key as BaseColor]);
 }
 
 class SpectrumColorProperty<C extends string> extends ArbitraryProperty<C> {
@@ -275,7 +274,9 @@ class SpectrumColorProperty<C extends string> extends ArbitraryProperty<C> {
   toCSSValue(value: Color<C>): PropertyValueDefinition<Value> {
     let [colorWithOpacity, state] = value.split(":");
     let [color, opacity] = colorWithOpacity.split("/");
-    let token: string | ColorToken | ColorRef = this.mapping[color];
+    let token: string | ColorToken | ColorRef = (
+      this.mapping as Record<string, string | ColorToken | ColorRef>
+    )[color];
     if (!token) {
       throw new Error("Invalid color " + value);
     }
@@ -350,7 +351,7 @@ export function color(value: SpectrumColor): string {
     return arbitrary;
   }
   let [colorValue, opacity] = value.split("/");
-  return colorTokenToString(resolveColorToken(baseColors[colorValue]), opacity);
+  return colorTokenToString(resolveColorToken(baseColors[colorValue as BaseColor]), opacity);
 }
 
 /**

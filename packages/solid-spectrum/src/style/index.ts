@@ -1,4 +1,3 @@
-// @ts-nocheck
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -181,13 +180,13 @@ export function iconStyle(
   let { size = "M", color, ...styles } = options;
 
   if (color) {
-    styles["--iconPrimary"] = {
+    (styles as Record<string, unknown>)["--iconPrimary"] = {
       type: "fill",
       value: color,
     };
   }
 
-  styles["size"] = iconSizes[size];
+  (styles as Record<string, unknown>)["size"] = iconSizes[size];
 
   // @ts-ignore
   return style.call(this, styles);

@@ -147,9 +147,16 @@ selection / keyboard / `aria-describedby` bugs, and they gate
    item_ below). Fixed per-widget now, subsumed by the spine port later — a
    conscious triage, not an oversight: the latent bug shipped fixed today and the
    fix mirrors one already landed.
-2. **`ts-nocheck-style`** (`certification-enforcement`) — drop `@ts-nocheck` from
-   the 6 `style/` files and fix what surfaces. Independent, and the root
-   type-hygiene enabler beneath the gate ladder. Natural parallel to (1).
+2. **`ts-nocheck-style`** (`certification-enforcement`) — **DONE 2026-06-21.**
+   Dropped `@ts-nocheck` from the 6 `style/` files. Removing it surfaced 21
+   strict-mode errors (20× `TS7053` string-index implicit-any, 1× `TS7006`
+   param) that upstream's `noImplicitAny:false` silently suppresses; reconciled
+   each faithfully with minimal null-checked loose-lookup casts (mirroring
+   upstream's effective `any`) plus a `tokens.ts` strip-default fix for the
+   synthetic `esModuleInterop` `default` key. `vp run typecheck` + 5384 package
+   tests green; type-only, no behavior change. The root type-hygiene enabler
+   beneath the gate ladder; the ~29 component files remain
+   (`ts-nocheck-components`, Phase 4).
 
 ### Phase 2 — standalone parity absorption (interleavable)
 
