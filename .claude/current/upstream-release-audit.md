@@ -75,6 +75,29 @@ Update when: a T-NN ticket changes state or a new upstream release is audited.
 > consumers is explicitly out (parity-is-the-rule + the spine-duplication debt).
 > Resume after `port-list-keyboard-delegate` + `port-context-slots` land. See
 > tech-debt §"Shared headless spine is re-implemented per widget".
+>
+> **Re-verified 2026-06-21 (owner cleared the breaking-change concern; bridge
+> still blocked structurally).** The owner's "breaking doesn't matter, parity is
+> priority" resolved the *picker/treeview* breaking flag but does **not** dissolve
+> this item — its blocker is a missing-primitive dependency, not a breaking-API
+> decision, and "parity is priority" argues *against* the per-widget shortcut. A
+> ground-truth source read confirmed the verdict with one correction: blockers A
+> (no shared `createSelectableCollection`; FOCUS/CLEAR + `autoFocus`-on-mount
+> absent from `createListBox`/`createMenu` — `createMenu` even declares an
+> `autoFocus` prop it never reads, `createListBox.ts`/`createMenu.ts:89`) and C
+> (`createListState` takes no `filter`, `solid-stately/.../createListState.ts`)
+> are **hard-confirmed MISSING**. Correction to blocker B: the slot-reading
+> infrastructure is **not** inert — `getSlottedContextProps`
+> (`solid-spectrum/src/button/spectrum-context.ts:15`) is a real, widely-used
+> utility, and `Autocomplete.tsx` already provides `AutocompleteContext` /
+> `AutocompleteCollectionContext` correctly. The genuine B gap is narrower: **no
+> consumer reads them** — `SearchField`/`ListBox`/`Menu` never call
+> `useAutocompleteInput()`/`useAutocompleteCollection()`. Doing the bridge
+> faithfully therefore still requires the shared selectable-collection + filtered
+> list-state spine (A + C), so the consumer wiring (B) has somewhere upstream-true
+> to attach instead of being scattered per-widget. **Verdict stands: cannot be
+> built faithfully today; remains gated on the Phase-3 spine port.** Whether to
+> pull that epic forward is a sequencing call for the owner.
 
 A backlog of **atomic tickets** distilled from Adobe's release notes across every
 train since we started porting (the S2 1.0.0 major) up to our current pin. Each
