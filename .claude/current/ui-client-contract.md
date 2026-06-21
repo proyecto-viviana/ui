@@ -5,6 +5,9 @@ status: current
 
 # `@proyecto-viviana/ui` client-readiness backlog (UC-NN)
 
+Status: Current source of truth.
+Update when: a UC-NN ticket changes state or a new client-readiness gap is found.
+
 The actionable ticket set for making **`@proyecto-viviana/ui`** consumable by
 external client apps (the `viviana-social` repo's `pokeforos` / `bord` /
 `tortafritapp`). This supersedes the `ticket/ui-contract-plan` planning PR (#12):

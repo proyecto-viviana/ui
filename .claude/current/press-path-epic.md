@@ -7,6 +7,9 @@ oracle: react-spectrum/packages/react-aria/src/selection/useSelectableItem.ts
 
 # Item-hook press-path migration — epic scope
 
+Status: Current source of truth.
+Update when: a phase lands, a ticket's scope changes, or the epic closes.
+
 The collection item hooks that drive grids, trees, and tables inline their
 activation logic over **raw pointer/click events**. Upstream routes the same
 logic through one shared hook, `useSelectableItem`, built on `usePress` +

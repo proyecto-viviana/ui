@@ -5,6 +5,9 @@ status: current
 
 # Upstream sync — pinning and absorbing React Spectrum releases
 
+Status: Current source of truth.
+Update when: the pinned upstream version changes or the absorption process changes.
+
 How the vendored upstream oracle is pinned, how a new Adobe release is absorbed,
 and how `guard:upstream-test-parity` mechanically maps our component tests onto
 the upstream React Aria Components + React Spectrum S2 executable spec.

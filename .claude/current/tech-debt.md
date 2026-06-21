@@ -19,6 +19,7 @@ tasks:
   - id: ci-gates-report-only
     title: Run the full gate ladder in CI as a non-blocking report
     state: done
+    finished: 2026-06-16
     roadmap: certification-enforcement
     note: Landed as ticket/audit-scaffolding (certification-gates.yml)
   - id: ts-nocheck-style
@@ -36,6 +37,7 @@ tasks:
   - id: replace-tautological-tests
     title: Replace the tautological live-region and private-component tests
     state: done
+    finished: 2026-06-15
     roadmap: certification-enforcement
     note: Landed in proof-batch PR #4
   - id: ci-gates-required
@@ -73,6 +75,7 @@ tasks:
   - id: menu-focus-roving
     title: Move real focus on focusedKey change in Menu
     state: done
+    finished: 2026-06-15
     roadmap: headless-spine-port
     note: Landed in proof-batch PR #6
   - id: migrate-menu-spine
@@ -122,6 +125,7 @@ tasks:
   - id: calendar-default-alignment
     title: Fix calendar start-vs-center default and rewrite the bug-asserting test
     state: done
+    finished: 2026-06-15
     roadmap: upstream-api-parity
     note: Landed in proof-batch PR #3
   - id: calendar-i18n-strings

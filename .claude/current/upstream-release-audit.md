@@ -1,9 +1,39 @@
 ---
 kind: process
 status: current
+tasks:
+  - id: gridlist-double-toggle
+    title: Fix GridList Space double-toggle (browser evidence, then faithful)
+    state: in-progress
+    roadmap: upstream-parity-loop
+  - id: press-path-phase2
+    title: Migrate the three item hooks onto createSelectableItem (T-51, T-56)
+    state: next
+    depends: [gridlist-double-toggle]
+    roadmap: upstream-parity-loop
+  - id: keyboard-nav-behavior
+    title: keyboardNavigationBehavior='tab' collection model (T-34)
+    state: open
+    depends: [press-path-phase2]
+    roadmap: upstream-parity-loop
+  - id: table-focus-ring
+    title: TableView cell focus-ring --topFocusRing re-architecture (T-59)
+    state: open
+    roadmap: upstream-parity-loop
+  - id: rac-form-field-wrappers
+    title: Absorb the 9 unported RAC Checkbox/Radio/Switch Field/Button/FieldContext names
+    state: open
+    roadmap: upstream-parity-loop
+  - id: autocomplete-collection-bridge
+    title: Wire SearchField/Menu onto autocomplete contexts (Bucket D)
+    state: open
+    roadmap: upstream-parity-loop
 ---
 
 # Upstream release audit — RAC 1.14→1.19 / S2 1.0→1.5
+
+Status: Current source of truth.
+Update when: a T-NN ticket changes state or a new upstream release is audited.
 
 > **Loop resumed (2026-06-20).** The client-readiness `UC-NN` track landed
 > (`ui-client-contract.md`), and **T-57** (focusable-utils port) and **T-58**
