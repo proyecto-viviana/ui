@@ -2153,8 +2153,14 @@ describe("Table", () => {
       expect(getFirstDataRow()).toBeTruthy();
       expect(getFirstDataRow()).toHaveAttribute("aria-selected", "false");
 
+      // Focusing the grid moves the roving tabindex onto the first row, so a real
+      // Space keypress targets that row. Selection is owned by the row (mirroring
+      // upstream useSelectableItem), not the grid element — firing Space on the
+      // grid itself no longer selects, matching useSelectableCollection.
       fireEvent.focus(grid);
-      fireEvent.keyDown(grid, { key: " " });
+      const firstRow = getFirstDataRow()!;
+      fireEvent.keyDown(firstRow, { key: " " });
+      fireEvent.keyUp(firstRow, { key: " " });
 
       expect(getFirstDataRow()).toHaveAttribute("aria-selected", "true");
     });
