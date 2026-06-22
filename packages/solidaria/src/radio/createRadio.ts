@@ -14,6 +14,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
+import { createSlotId } from "../ssr";
 import { type RadioGroupState, radioGroupSyncVersion } from "@proyecto-viviana/solid-stately";
 import { radioGroupData } from "./createRadioGroup";
 import { type PressEvent } from "../interactions/PressEvent";
@@ -62,6 +63,8 @@ export interface RadioAria {
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   /** Props for the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /** Props for the radio's description element, if any. */
+  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
   /** Whether the radio is disabled. */
   isDisabled: boolean;
   /** Whether the radio is currently selected. */
@@ -267,6 +270,10 @@ export function createRadio(
 
   const combinedIsPressed: Accessor<boolean> = () => isPressed() || isLabelPressed();
 
+  // The radio's own description slot id — resolves only once an element with
+  // this id is rendered (e.g. a `<Text slot="description">` child).
+  const descriptionId = createSlotId();
+
   return {
     labelProps: mergeProps(labelPressProps, {
       onClick: (e: MouseEvent) => e.preventDefault(),
@@ -276,9 +283,16 @@ export function createRadio(
       const p = getProps();
       const groupData = getGroupData();
 
+      // Order mirrors upstream useRadio: the user's aria-describedby, then the
+      // radio's own description, then the group's error message (when invalid)
+      // and the group's shared description.
       const describedByIds: string[] = [];
       if (p["aria-describedby"]) {
         describedByIds.push(p["aria-describedby"]);
+      }
+      const ownDescriptionId = descriptionId();
+      if (ownDescriptionId) {
+        describedByIds.push(ownDescriptionId);
       }
       if (state.isInvalid && groupData?.errorMessageId) {
         describedByIds.push(groupData.errorMessageId);
@@ -301,6 +315,9 @@ export function createRadio(
         onChange,
         "aria-describedby": ariaDescribedBy,
       }) as JSX.InputHTMLAttributes<HTMLInputElement>;
+    },
+    get descriptionProps() {
+      return { id: descriptionId() };
     },
     isDisabled: isDisabled(),
     isSelected,

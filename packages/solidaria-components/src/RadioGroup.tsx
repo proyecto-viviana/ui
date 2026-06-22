@@ -8,6 +8,7 @@
 import {
   type JSX,
   type ParentProps,
+  type Context,
   createContext,
   createMemo,
   createSignal,
@@ -43,9 +44,11 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  Provider,
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { TextContext } from "./Text";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -805,13 +808,6 @@ export interface RadioFieldProps extends Omit<AriaRadioProps, "children">, SlotP
   class?: ClassNameOrFunction<RadioFieldRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<RadioFieldRenderProps>;
-  /**
-   * A description for the radio. Bridged with explicit ids + aria-describedby
-   * until TextContext slots are live (`port-context-slots`).
-   */
-  description?: JSX.Element;
-  /** An error message for the radio. */
-  errorMessage?: JSX.Element;
   /** Ref for the radio field root element. */
   ref?: RefLike<HTMLDivElement>;
   /** Ref for the underlying input element. */
@@ -855,12 +851,16 @@ const InternalRadioContext = createContext<InternalRadioContextValue | null>(nul
 /**
  * A RadioField represents an individual option within a radio group, containing a
  * `RadioButton` and optional description. Must be rendered inside a `RadioGroup`.
+ * Per-option help text is wired through a TextContext description slot — render it
+ * with `<Text slot="description">`. (Radios have no per-option error slot; errors
+ * are reported at the group level.)
  *
  * @example
  * ```tsx
  * <RadioGroup>
- *   <RadioField value="a" description="The first option">
+ *   <RadioField value="a">
  *     <RadioButton>Option A</RadioButton>
+ *     <Text slot="description">The first option</Text>
  *   </RadioField>
  * </RadioGroup>
  * ```
@@ -904,20 +904,8 @@ function RadioFieldImpl(props: { fieldProps: RadioFieldProps; state: RadioGroupS
     "ref",
     "inputRef",
     "slot",
-    "description",
-    "errorMessage",
     "children",
   ]);
-  const descriptionId = createUniqueId();
-  const errorMessageId = createUniqueId();
-  const describedBy = () => {
-    const ids = [
-      ariaProps["aria-describedby"],
-      local.description ? descriptionId : undefined,
-      state.isInvalid && local.errorMessage ? errorMessageId : undefined,
-    ].filter(Boolean);
-    return ids.length ? ids.join(" ") : undefined;
-  };
   const inputAriaProps = createMemo(() => {
     const clean: Record<string, unknown> = {};
     for (const key in ariaProps as Record<string, unknown>) {
@@ -931,7 +919,6 @@ function RadioFieldImpl(props: { fieldProps: RadioFieldProps; state: RadioGroupS
   const radioAria = createRadio(
     () => ({
       ...inputAriaProps(),
-      "aria-describedby": describedBy(),
       // The hook reads `children` only to decide if an aria-label is needed; the
       // visible label lives in the RadioButton, so report presence as a literal.
       children: true,
@@ -939,6 +926,19 @@ function RadioFieldImpl(props: { fieldProps: RadioFieldProps; state: RadioGroupS
     state,
     inputElement,
   );
+
+  // The hook mints the description slot id and bakes the combined aria-describedby
+  // (own description + the group's shared description/error) into the input; the
+  // field exposes that id through TextContext so a `<Text slot="description">`
+  // child resolves it. Mirrors react-aria-components' RadioField Provider value
+  // list (description slot only — radios have no per-option error slot).
+  const textSlots = {
+    slots: {
+      get description() {
+        return radioAria.descriptionProps;
+      },
+    },
+  };
 
   const setInputRef = (el: HTMLInputElement) => {
     setInputElement(el);
@@ -1023,21 +1023,7 @@ function RadioFieldImpl(props: { fieldProps: RadioFieldProps; state: RadioGroupS
       const children = fieldProps.children;
       return typeof children === "function" ? children(childRenderValues) : children;
     });
-    return (
-      <>
-        {renderedChildren()}
-        <Show when={local.description}>
-          <span id={descriptionId} slot="description">
-            {local.description}
-          </span>
-        </Show>
-        <Show when={state.isInvalid && local.errorMessage}>
-          <span id={errorMessageId} slot="errorMessage">
-            {local.errorMessage}
-          </span>
-        </Show>
-      </>
-    );
+    return <>{renderedChildren()}</>;
   };
 
   return (
@@ -1055,7 +1041,9 @@ function RadioFieldImpl(props: { fieldProps: RadioFieldProps; state: RadioGroupS
     >
       <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
         <InternalRadioContext.Provider value={internalContext}>
-          <FieldChildren />
+          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            <FieldChildren />
+          </Provider>
         </InternalRadioContext.Provider>
       </SelectionIndicatorContext.Provider>
     </div>

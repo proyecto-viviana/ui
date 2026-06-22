@@ -254,11 +254,12 @@ describe("RadioField + RadioButton", () => {
     expect(screen.getByText("A-on")).toBeInTheDocument();
   });
 
-  it("bridges a per-option description to aria-describedby", () => {
+  it("links a per-option description to aria-describedby via a TextContext slot", () => {
     render(() => (
       <RadioGroup aria-label="Choice">
-        <RadioField value="a" description="The first option">
+        <RadioField value="a">
           <RadioButton>Option A</RadioButton>
+          <Text slot="description">The first option</Text>
         </RadioField>
       </RadioGroup>
     ));
@@ -277,8 +278,9 @@ describe("RadioField + RadioButton", () => {
   it("has no a11y violations", async () => {
     const { container } = render(() => (
       <RadioGroup aria-label="Choice">
-        <RadioField value="a" description="The first option">
+        <RadioField value="a">
           <RadioButton>Option A</RadioButton>
+          <Text slot="description">The first option</Text>
         </RadioField>
         <RadioField value="b">
           <RadioButton>Option B</RadioButton>
