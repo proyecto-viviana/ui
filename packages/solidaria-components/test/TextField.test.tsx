@@ -99,6 +99,30 @@ describe("TextField", () => {
       expect(screen.getByText("Test")).toHaveAttribute("class", "solidaria-Label");
     });
 
+    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", () => {
+      // TextField provides descriptionProps as a TextContext slot, so the
+      // <Text slot="description"> picks up the id the input's aria-describedby
+      // references — the faithful upstream wiring path.
+      render(() => (
+        <TextField description="Help text">
+          {() => (
+            <>
+              <Label>Test</Label>
+              <Input />
+              <Text slot="description">Help text</Text>
+            </>
+          )}
+        </TextField>
+      ));
+
+      const input = screen.getByRole("textbox");
+      const describedById = input.getAttribute("aria-describedby");
+      expect(describedById).toBeTruthy();
+      const description = document.getElementById(describedById!);
+      expect(description).toHaveTextContent("Help text");
+      expect(description).toHaveClass("solidaria-Text");
+    });
+
     it("should support slot", () => {
       render(() => (
         <TextFieldContext.Provider value={{ slots: { test: { "aria-label": "test" } } }}>

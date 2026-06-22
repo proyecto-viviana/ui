@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Context,
   createContext,
   useContext,
   createMemo,
@@ -38,7 +39,9 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  Provider,
 } from "./utils";
+import { TextContext } from "./Text";
 
 export interface TextFieldRenderProps {
   /** Whether the text field is disabled. */
@@ -599,6 +602,26 @@ export function TextField(props: TextFieldProps): JSX.Element {
       const children = local.children;
       return typeof children === "function" ? children(childRenderValues) : children;
     });
+  // Provide the description / errorMessage props as `TextContext` slots (mirrors
+  // react-aria-components' TextField), so a `<Text slot="description">` /
+  // `<Text slot="errorMessage">` child picks up the `id` its `aria-describedby`
+  // references. Additive: existing consumers reading these off `TextFieldContext`
+  // are unaffected.
+  const textSlots = {
+    slots: {
+      get description() {
+        return textFieldAria.descriptionProps as JSX.HTMLAttributes<HTMLElement>;
+      },
+      get errorMessage() {
+        return textFieldAria.errorMessageProps as JSX.HTMLAttributes<HTMLElement>;
+      },
+    },
+  };
+  const FieldChildrenSlotted = () => (
+    <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+      <FieldChildren />
+    </Provider>
+  );
   const rootProps = () =>
     ({
       ...domProps(),
@@ -617,7 +640,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   const customRootProps = () =>
     ({
       ...rootProps(),
-      children: <FieldChildren />,
+      children: <FieldChildrenSlotted />,
     }) as JSX.HTMLAttributes<HTMLDivElement>;
 
   return (
@@ -627,7 +650,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
           local.render(customRootProps(), renderValues())
         ) : (
           <div {...rootProps()}>
-            <FieldChildren />
+            <FieldChildrenSlotted />
           </div>
         )}
       </TextFieldContext.Provider>
