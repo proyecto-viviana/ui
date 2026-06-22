@@ -22,6 +22,7 @@ import {
   TimeInput,
   TimeSegment,
 } from "../src/TimeField";
+import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -105,6 +106,26 @@ describe("TimeField", () => {
 
       const field = document.querySelector(".my-time-field");
       expect(field).toBeInTheDocument();
+    });
+
+    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", async () => {
+      // TimeField provides descriptionProps as a TextContext slot, so the
+      // <Text slot="description"> picks up the id the group's aria-describedby
+      // references — the faithful upstream wiring path.
+      render(() => (
+        <TimeField aria-label="Test Time" description="Help text">
+          <TimeInput>{(segment) => <TimeSegment segment={segment} />}</TimeInput>
+          <Text slot="description">Help text</Text>
+        </TimeField>
+      ));
+      await waitForTimeFieldHydration();
+
+      const group = screen.getByRole("group", { name: "Test Time" });
+      const describedById = group.getAttribute("aria-describedby");
+      expect(describedById).toBeTruthy();
+      const description = document.getElementById(describedById!);
+      expect(description).toHaveTextContent("Help text");
+      expect(description).toHaveClass("solidaria-Text");
     });
 
     it("should render hidden form input when name is provided", async () => {

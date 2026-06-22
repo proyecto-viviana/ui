@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Context,
   createContext,
   createEffect,
   createMemo,
@@ -39,7 +40,9 @@ import {
   useRenderProps,
   dataAttr,
   useIsHydrated,
+  Provider,
 } from "./utils";
+import { TextContext } from "./Text";
 import { HiddenDateInput } from "./HiddenDateInput";
 import { FormContext, type FormProps } from "./Form";
 import {
@@ -309,6 +312,17 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
     formContext?.validationBehavior ??
     "native";
 
+  const textSlots = {
+    slots: {
+      get description() {
+        return fieldAria.descriptionProps;
+      },
+      get errorMessage() {
+        return fieldAria.errorMessageProps;
+      },
+    },
+  };
+
   return (
     <DateFieldStateContext.Provider value={state as unknown as DateFieldState<DateValue>}>
       <DateFieldContext.Provider
@@ -332,7 +346,9 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
           data-required={dataAttr(state.isRequired())}
           data-invalid={dataAttr(state.isInvalid())}
         >
-          {local.children as JSX.Element}
+          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            {local.children as JSX.Element}
+          </Provider>
         </div>
         <Show when={(rest as Record<string, unknown>).name}>
           <HiddenDateInput

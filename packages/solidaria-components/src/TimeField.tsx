@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Context,
   createContext,
   createMemo,
   createSignal,
@@ -36,7 +37,9 @@ import {
   useRenderProps,
   dataAttr,
   useIsHydrated,
+  Provider,
 } from "./utils";
+import { TextContext } from "./Text";
 import { HiddenTimeInput } from "./HiddenTimeInput";
 import { FormContext, type FormProps } from "./Form";
 
@@ -281,6 +284,17 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
     formContext?.validationBehavior ??
     "native";
 
+  const textSlots = {
+    slots: {
+      get description() {
+        return fieldAria.descriptionProps;
+      },
+      get errorMessage() {
+        return fieldAria.errorMessageProps;
+      },
+    },
+  };
+
   return (
     <TimeFieldStateContext.Provider value={state as unknown as TimeFieldState<TimeValue>}>
       <TimeFieldContext.Provider
@@ -304,7 +318,9 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
           data-required={dataAttr(state.isRequired())}
           data-invalid={dataAttr(state.isInvalid())}
         >
-          {local.children as JSX.Element}
+          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            {local.children as JSX.Element}
+          </Provider>
         </div>
         <Show when={(rest as Record<string, unknown>).name}>
           <HiddenTimeInput

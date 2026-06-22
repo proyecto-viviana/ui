@@ -12,6 +12,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { DateField, DateFieldErrorMessage, DateInput, DateSegment } from "../src/DateField";
+import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import { CalendarDate } from "@internationalized/date";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -103,6 +104,26 @@ describe("DateField", () => {
 
       const field = document.querySelector(".my-date-field");
       expect(field).toBeInTheDocument();
+    });
+
+    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", async () => {
+      // DateField provides descriptionProps as a TextContext slot, so the
+      // <Text slot="description"> picks up the id the group's aria-describedby
+      // references — the faithful upstream wiring path.
+      render(() => (
+        <DateField aria-label="Test Date Field" description="Help text">
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          <Text slot="description">Help text</Text>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      const group = screen.getByRole("group", { name: "Test Date Field" });
+      const describedById = group.getAttribute("aria-describedby");
+      expect(describedById).toBeTruthy();
+      const description = document.getElementById(describedById!);
+      expect(description).toHaveTextContent("Help text");
+      expect(description).toHaveClass("solidaria-Text");
     });
 
     it("should render hidden form input when name is provided", async () => {
