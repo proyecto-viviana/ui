@@ -1,17 +1,15 @@
 # @proyecto-viviana/ui
 
-The viviana brand's design system.
+Viviana UI's design-system package, built on Solid.
 
-It **re-exports `@proyecto-viviana/solid-spectrum`** — every Spectrum component is
-available from the root barrel and from a deep `@proyecto-viviana/ui/<Component>`
-subpath — and adds viviana's own product components (cards, chips, conversation,
-page layout, logo, timeline). This is the package the
-`@proyecto-viviana/social` apps depend on, and the point from which viviana
-diverges from Spectrum.
+It builds on `@proyecto-viviana/solid-spectrum`, so Spectrum components are
+available from the root package and from deep component subpaths. It also ships
+Viviana components, tokens, and product patterns such as cards, chips,
+conversation, layout, logo, and timeline pieces.
 
-Keeping in sync with solid-spectrum (which files to check, the update plan when a
-new React Spectrum release is ported) is documented in
-**[UPSTREAM.md](./UPSTREAM.md)**.
+This package is part of Viviana UI, an unofficial open-source Solid port and
+design-system suite built from Adobe's React Stately, React Aria, React Aria
+Components, and React Spectrum S2. It is not affiliated with Adobe.
 
 ## Install
 
@@ -21,70 +19,68 @@ npm install @proyecto-viviana/ui solid-js
 
 ```tsx
 import { Provider, Button } from "@proyecto-viviana/ui";
-// Prefer deep subpaths in app code (smaller graphs, no root-barrel pull):
 import { TextField } from "@proyecto-viviana/ui/TextField";
 
-// Load the design system's CSS once, at the app entry (see "Styling" below):
 import "@proyecto-viviana/ui/theme.css";
 import "@proyecto-viviana/ui/components.css";
 
 export function App() {
   return (
     <Provider colorScheme="dark">
+      <TextField label="Name" />
       <Button variant="accent">Save</Button>
     </Provider>
   );
 }
 ```
 
+Deep imports such as `@proyecto-viviana/ui/TextField` are preferred in app code.
+The root barrel is convenient for examples and shared entry points.
+
 ## Styling
 
-The design system's CSS is **not** injected by any component — `Provider`
-establishes runtime context (color scheme, locale, router) and sets the matching
-attributes/classes, but it imports **no** stylesheet. Apps must import the CSS
-explicitly, once, at their entry. Pick one of two equivalent shapes:
+Components do not inject CSS. Import the design-system CSS once at your app
+entry.
 
-- `@proyecto-viviana/ui/components.css` — the umbrella: font faces **plus** the
-  atomic/macro component rules. Import this and you have everything except tokens.
-- or `@proyecto-viviana/ui/font-faces.css` **and**
-  `@proyecto-viviana/ui/styles.css` separately — the two halves of
-  `components.css`, for apps that manage font loading themselves.
+Most apps should import:
 
-In both cases also import `@proyecto-viviana/ui/theme.css` — the theme layer:
-solid-spectrum's color-scheme tokens **plus** viviana's brand token variables
-(`--color-*`), which the viviana product components reference. Without it those
-components render unstyled colors.
+```ts
+import "@proyecto-viviana/ui/theme.css";
+import "@proyecto-viviana/ui/components.css";
+```
 
-### File roles
+`theme.css` contains the color-scheme tokens and Viviana brand variables.
+`components.css` contains font faces plus the generated component styles.
+
+Apps that manage font loading themselves can import the two component-style
+halves separately:
+
+```ts
+import "@proyecto-viviana/ui/theme.css";
+import "@proyecto-viviana/ui/font-faces.css";
+import "@proyecto-viviana/ui/styles.css";
+```
 
 | Subpath          | Contents                                                   |
 | ---------------- | ---------------------------------------------------------- |
-| `theme.css`      | Color-scheme tokens + viviana brand `--color-*` variables. |
-| `components.css` | `font-faces.css` + `styles.css` (the all-in-one).          |
-| `styles.css`     | Atomic/macro component rules (no font faces, no tokens).   |
-| `font-faces.css` | `@font-face` declarations only.                            |
+| `theme.css`      | Color-scheme tokens + Viviana brand `--color-*` variables. |
+| `components.css` | `font-faces.css` + `styles.css`.                           |
+| `styles.css`     | Generated component rules, without font faces or tokens.   |
+| `font-faces.css` | Font-face declarations only.                               |
 
-Every CSS subpath resolves to the **built** `dist/*.css` through a single export
-target — there is no condition that yields the incomplete `src/*.css` build
-sources. The set of built stylesheets equals the set of exported sheets, except
-`viviana-tokens.css`, which is intentionally internal: it ships in `dist` only so
-`theme.css`'s relative `@import "./viviana-tokens.css"` resolves, and is not a
-public subpath.
+## Authoring `style()`
 
-## Authoring `style()` macros in an app
+Using the published components does not require a macro plugin. Their styles are
+already generated in the package build.
 
-Consuming the pre-built components needs **no** macro plugin — their `style()`
-calls are already expanded in the published build. A plugin is only required if
-your app authors its own `style()` macro calls against
+You only need the macro setup if your app writes its own `style()` calls from
 `@proyecto-viviana/ui/style`:
 
 ```ts
 import { style } from "@proyecto-viviana/ui/style" with { type: "macro" };
 ```
 
-That path needs the macro plugin in the app's Vite config (the macro is compiled
-at the app's build). The supported way is the `vivianaMacros()` preset from
-`@proyecto-viviana/ui/vite` — don't copy a wrapper:
+For Vite apps, use the package helper:
 
 ```ts
 import { defineConfig } from "vite";
@@ -92,22 +88,28 @@ import solid from "vite-plugin-solid";
 import { vivianaMacros } from "@proyecto-viviana/ui/vite";
 
 export default defineConfig({
-  // vivianaMacros() must come before vite-plugin-solid (and framework plugins).
   plugins: [vivianaMacros(), solid({ ssr: true })],
-  // Keep our Solid packages out of the optimizer and bundle them into SSR:
-  optimizeDeps: { exclude: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"] },
-  ssr: { noExternal: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"] },
+  optimizeDeps: {
+    exclude: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
+  },
+  ssr: {
+    noExternal: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
+  },
 });
 ```
 
-`vivianaMacros()` wraps `unplugin-parcel-macros` so the macro's emitted CSS
-resolves and loads under rolldown-vite; install `unplugin-parcel-macros` (a peer
-dependency) alongside it. The `optimizeDeps` / `ssr.noExternal` lists stay
-app-owned. `scripts/macro-preset-smoke.mjs` builds an app-authored `style()` call
-through this helper for both DOM and SSR as an executable reference.
+`vivianaMacros()` uses `unplugin-parcel-macros`, which is an optional peer. Add it
+as a dev dependency when you use the helper:
+
+```bash
+npm install -D unplugin-parcel-macros
+```
 
 ## Status
 
-Published build: dual `.js` (DOM-compiled) / `.jsx` (JSX-preserved, the `solid`
-export condition) packs with `.d.ts` types, consumable out-of-workspace from the
-packed tarballs (proven by `scripts/consume-pack-smoke.mjs`). Releasable on npm.
+`@proyecto-viviana/ui` is published and in active development. Expect APIs,
+package boundaries, and component behavior to keep tightening while the suite
+settles.
+
+The package ships ESM, preserved-JSX `solid` exports, and TypeScript
+declarations.

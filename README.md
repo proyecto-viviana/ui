@@ -18,31 +18,42 @@ stack.
 | `solidaria`            | `@proyecto-viviana/solidaria`            | Solid port of React Aria hooks: ARIA, keyboard, focus, press, hover. |
 | `solid-stately`        | `@proyecto-viviana/solid-stately`        | Solid port of React Stately state primitives.                        |
 
+## Install
+
+```bash
+npm install @proyecto-viviana/ui solid-js
+```
+
+```tsx
+import { Provider, Button } from "@proyecto-viviana/ui";
+import { TextField } from "@proyecto-viviana/ui/TextField";
+
+import "@proyecto-viviana/ui/theme.css";
+import "@proyecto-viviana/ui/components.css";
+
+export function App() {
+  return (
+    <Provider colorScheme="dark">
+      <TextField label="Name" />
+      <Button variant="accent">Save</Button>
+    </Provider>
+  );
+}
+```
+
+Components do not inject CSS. Import the theme and component styles once at the
+app entry. See [`packages/viviana-ui/README.md`](packages/viviana-ui/README.md)
+for styling details, deep imports, and the Vite macro helper.
+
 ## Status
 
 Viviana UI is published and in active development. Use it with the expectation
 that APIs, package boundaries, and component behavior are still being tightened.
 
-Current package status, coverage, and known gaps live in
-`.claude/current/status.md`; release rules live in
-`.claude/current/release-policy.md`; the component evidence bar lives in
-`.claude/current/certification.md`.
+The lower packages are available directly for lower-level Solid ports and
+experiments, but most apps should start with `@proyecto-viviana/ui`.
 
-## Start here
-
-1. [`.claude/current/status.md`](.claude/current/status.md) — current parity,
-   coverage, and report output.
-2. [`.claude/current/architecture.md`](.claude/current/architecture.md) — package
-   boundaries and where behavior, ARIA, composition, and styling belong.
-3. [`.claude/current/certification.md`](.claude/current/certification.md) — the
-   evidence bar for accepting a component as ported.
-4. [`apps/comparison/COMPONENT_PLAYBOOK.md`](apps/comparison/COMPONENT_PLAYBOOK.md)
-   — the per-component parity workflow.
-
-`AGENTS.md` is the operating brief for coding agents and contributors working
-with them. Most readers want the docs above first.
-
-## Quick start
+## Development
 
 ```bash
 vp install
@@ -51,51 +62,18 @@ vp run comparison:dev   # apps/comparison parity harness
 vp run check            # format + lint + typecheck
 ```
 
-## Common gates
-
-```bash
-vp run check                            # format + lint + typecheck
-vp test run packages                    # package unit/integration suites
-vp run a11y:check                       # axe AA + comparison a11y + smoke
-vp run comparison:report:parity:strict  # strict S2 audit (expected to pass)
-vp run comparison:report:gaps
-vp run comparison:report:exports
-vp run docs:check                       # docs frontmatter / tracking integrity
-```
-
-`comparison:report:parity:strict` is expected to pass; treat an in-scope failure
-as a blocking regression. The full evidence checklist is in
-`.claude/current/certification.md`.
-
-## Dev dashboard
-
-`/admin` (dev only, in `apps/web`) is the internal operating surface — roadmap,
-task tracker, gantt, docs browser, architecture, and glossary — projecting the
-`.claude/current/` frontmatter. It never ships. Run `vp run dev` and open
-`http://localhost:3000/admin`.
-
 ## Repo layout
 
 ```text
 packages/                Viviana UI, the port stack, and private test-utils
-apps/web                 playground app + the dev-only /admin dashboard
+apps/web                 playground app
 apps/comparison          React-vs-Solid parity verification harness
 docs/adr/                architecture decision records (ADR 0001 = S2 styling boundary)
-.claude/current/         the live deep-docs surface (index: README.md)
 ```
-
-## Guidelines
-
-- Check `git status --short` before edits. Use `vp` for repo work (raw `pnpm`
-  only when debugging the package manager). Never add a dependency without
-  explicit approval.
-- Docs-only changes need no Changeset; releasable package code usually does.
-- Git history is the archive — retired docs are removed from `main`, recoverable
-  from the commit that removed them.
 
 ## License & attribution
 
-- Our own work is [MIT](LICENSE) — deliberately permissive.
+- Our own work is [MIT](LICENSE).
 - The port stack is an unofficial Solid port of Adobe's React Spectrum stack
   (Apache-2.0). That direct-license obligation is honored in [`NOTICE`](NOTICE) and
   [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0); ported files keep their upstream
