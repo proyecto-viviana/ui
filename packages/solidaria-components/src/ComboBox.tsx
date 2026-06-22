@@ -8,6 +8,7 @@
 import {
   type JSX,
   type Accessor,
+  type Context,
   createContext,
   createEffect,
   createMemo,
@@ -46,7 +47,9 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  Provider,
 } from "./utils";
+import { TextContext } from "./Text";
 import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
@@ -562,6 +565,17 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       ? (local.children as (values: ComboBoxRenderProps) => JSX.Element)(renderValues())
       : local.children;
 
+  const textSlots = {
+    slots: {
+      get description() {
+        return comboBoxAria.descriptionProps;
+      },
+      get errorMessage() {
+        return comboBoxAria.errorMessageProps;
+      },
+    },
+  };
+
   return (
     <ComboBoxContext.Provider
       value={
@@ -638,7 +652,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
               value={state.selectedKey()?.toString() ?? ""}
             />
           </Show>
-          <ComboBoxChildren />
+          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            <ComboBoxChildren />
+          </Provider>
         </div>
       </ComboBoxStateContext.Provider>
     </ComboBoxContext.Provider>

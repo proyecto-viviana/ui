@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Context,
   createContext,
   createEffect,
   createMemo,
@@ -53,7 +54,9 @@ import {
   useRenderProps,
   dataAttr,
   useIsHydrated,
+  Provider,
 } from "./utils";
+import { TextContext } from "./Text";
 import { DateFieldContext } from "./DateField";
 import { CalendarContext } from "./Calendar";
 import { RangeCalendarContext } from "./RangeCalendar";
@@ -535,7 +538,27 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
               data-invalid={dataAttr(isInvalid())}
               data-open={dataAttr(overlayState.isOpen)}
             >
-              {props.children}
+              <Provider
+                values={
+                  [
+                    [
+                      TextContext,
+                      {
+                        slots: {
+                          get description() {
+                            return pickerAria.descriptionProps;
+                          },
+                          get errorMessage() {
+                            return pickerAria.errorMessageProps;
+                          },
+                        },
+                      },
+                    ],
+                  ] as Array<[Context<unknown>, unknown]>
+                }
+              >
+                {props.children}
+              </Provider>
             </div>
             <Show when={(rest as Record<string, unknown>).name}>
               <HiddenDateInput
@@ -828,7 +851,27 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
             data-invalid={dataAttr(isInvalid())}
             data-open={dataAttr(overlayState.isOpen)}
           >
-            {props.children}
+            <Provider
+              values={
+                [
+                  [
+                    TextContext,
+                    {
+                      slots: {
+                        get description() {
+                          return pickerAria.descriptionProps;
+                        },
+                        get errorMessage() {
+                          return pickerAria.errorMessageProps;
+                        },
+                      },
+                    },
+                  ],
+                ] as Array<[Context<unknown>, unknown]>
+              }
+            >
+              {props.children}
+            </Provider>
           </div>
           <Show when={(rest as Record<string, unknown>).startName}>
             <HiddenDateInput

@@ -15,6 +15,7 @@ import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/te
 import { createSignal } from "solid-js";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
 import { DateInput, DateSegment } from "../src/DateField";
+import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import {
   Calendar,
@@ -87,6 +88,27 @@ describe("DatePicker", () => {
 
       const segments = screen.getAllByRole("spinbutton");
       expect(segments.length).toBe(3); // month, day, year
+    });
+
+    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", async () => {
+      // DatePicker provides descriptionProps as a TextContext slot, so the
+      // <Text slot="description"> picks up the id the group's aria-describedby
+      // references — the faithful upstream wiring path.
+      render(() => (
+        <DatePicker aria-label="Test Date Picker" description="Help text">
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          <DatePickerButton>📅</DatePickerButton>
+          <Text slot="description">Help text</Text>
+        </DatePicker>
+      ));
+      await waitForDatePickerHydration();
+
+      const group = screen.getByRole("group", { name: "Test Date Picker" });
+      const describedById = group.getAttribute("aria-describedby");
+      expect(describedById).toBeTruthy();
+      const description = document.getElementById(describedById!);
+      expect(description).toHaveTextContent("Help text");
+      expect(description).toHaveClass("solidaria-Text");
     });
 
     it("should not apply popup trigger ARIA attrs to DateInput container", async () => {

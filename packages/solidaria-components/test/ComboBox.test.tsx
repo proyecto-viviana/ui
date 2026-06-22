@@ -25,6 +25,7 @@ import {
   ComboBoxTag,
 } from "../src/ComboBox";
 import { SelectionIndicator } from "../src/SelectionIndicator";
+import { Text } from "../src/Text";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
@@ -115,6 +116,35 @@ describe("ComboBox", () => {
 
       const combobox = document.querySelector(".my-combobox");
       expect(combobox).toBeInTheDocument();
+    });
+
+    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", () => {
+      // ComboBox provides descriptionProps as a TextContext slot, so the
+      // <Text slot="description"> picks up the id the input's aria-describedby
+      // references — the faithful upstream wiring path.
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          description="Help text"
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox>
+            {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+          </ComboBoxListBox>
+          <Text slot="description">Help text</Text>
+        </ComboBox>
+      ));
+
+      const input = screen.getByRole("combobox");
+      const describedById = input.getAttribute("aria-describedby");
+      expect(describedById).toBeTruthy();
+      const description = document.getElementById(describedById!);
+      expect(description).toHaveTextContent("Help text");
+      expect(description).toHaveClass("solidaria-Text");
     });
 
     it("should expose isReadOnly in root render props", () => {
