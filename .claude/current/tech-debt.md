@@ -122,9 +122,22 @@ tasks:
     roadmap: headless-spine-port
   - id: migrate-describedby-slots
     title: Wire aria-describedby across components onto the ported slot path
-    state: in-progress  # field/toggle components done (hybrid + pure-slot); RadioGroup/CheckboxGroup/Select/ColorField remain
+    state: in-progress  # foundational slice done; the 2 remaining parity closures split out below
     depends: [port-context-slots]
     roadmap: headless-spine-port
+    note: Done = the 10 field/toggle *Field components (7 hybrid keep props + add slots; SwitchField/CheckboxField/RadioField pure-slot, props dropped). Remaining work is the two parity divergences tracked as describedby-slots-group-redesign + rac-field-prop-divergence. The shared createField hook must stay prop-conditional (a createSlotId swap dangles ~9 non-reactive consumers — see memory).
+  - id: describedby-slots-group-redesign
+    title: Drop description/errorMessage props from RadioGroup/CheckboxGroup/Select/ColorField; wire TextContext + FieldErrorContext slots
+    state: open
+    depends: [migrate-describedby-slots]
+    roadmap: headless-spine-port
+    note: Owner-authorized breaking (parity > breaking, no real users yet). These 4 are the last prop-based holdouts in our RAC layer (solidaria-components). Faithful target = react-aria-components RadioGroup (Omit description/errorMessage; provide [TextContext,{slots}] + [FieldErrorContext, validation]). Bounded path = mint createSlotId in EACH group hook (createRadioGroup/createCheckboxGroup/createSelect — one consumer each) + bind the group aria-describedby reactively; do NOT touch shared createField. One component at a time, gate each, revert red.
+  - id: rac-field-prop-divergence
+    title: Drop description/errorMessage props from the 7 hybrid field components for full RAC slot parity
+    state: open
+    depends: [migrate-describedby-slots]
+    roadmap: headless-spine-port
+    note: Parity divergence (ours, not upstream's). react-aria-components is uniformly slot-based — TextField/SearchField/NumberField/DateField/TimeField/ComboBox/DatePicker all Omit description/errorMessage and expose TextContext slots; the props belong only to the S2/solid-spectrum layer (extends HelpTextProps). Our versions are hybrid (kept the props AND added the slots — green but divergent). Full parity = drop the props via the same per-hook createSlotId + reactive-binding technique. Breaking, owner-authorized.
   - id: macro-route-styled
     title: Route the 14 hand-authored components through style(); delete local-utilities.css
     state: open
@@ -238,11 +251,16 @@ though, and the field/toggle components DO wire description/error slots through 
 faithful nested `Provider` (`<Provider values={[[TextContext, {slots}]]}>`) — TextField/
 SearchField/NumberField/DateField/TimeField/ComboBox/DatePicker keep their props and
 add slots (hybrid), while SwitchField/CheckboxField/RadioField dropped the props for
-the pure upstream slot path (DOM-probed `createSlotId` + reactive binding). Still
-prop-based: RadioGroup/CheckboxGroup/Select/ColorField. NOTE: the shared `createField`
-hook must stay prop-conditional — swapping it to emit `createSlotId` ids unconditionally
-dangles refs in its ~9 non-reactive consumers (see the migrate-describedby-slots memory).
-Rule #4/#5.
+the pure upstream slot path (DOM-probed `createSlotId` + reactive binding). Upstream
+`react-aria-components` is UNIFORMLY slot-based at this layer (every field hook `Omit`s
+description/errorMessage and exposes `TextContext` slots; the props live only in the S2
+layer), so two of our states are parity divergences — now tracked as tasks: the 7 hybrids
+still CARRY the props (`rac-field-prop-divergence`), and RadioGroup/CheckboxGroup/Select/
+ColorField are still fully prop-based (`describedby-slots-group-redesign`). Both are
+owner-authorized breaking closures (parity > breaking; no real users yet). NOTE: the
+shared `createField` hook must stay prop-conditional — swapping it to emit `createSlotId`
+ids unconditionally dangles refs in its ~9 non-reactive consumers (see the
+migrate-describedby-slots memory). Rule #4/#5.
 
 A live instance of "one bug recurs across many": both the collection hook and the
 item hook handle the selection key, so a focused-row Space toggles selection twice
