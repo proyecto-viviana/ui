@@ -169,6 +169,33 @@ tasks:
     title: Route the date/time segment field label through the i18n layer
     state: open
     roadmap: upstream-api-parity
+  - id: picker-popover-anchor
+    title: Anchor Popover to its trigger — make popoverRef a signal so position computes
+    state: open
+    roadmap: consumer-delivery
+    note: >-
+      Found consuming Picker in Tortafritapp (admin role picker). The popover renders
+      at the createOverlayPosition fallback (position:fixed; top:0; left:0;
+      z-index:100000; max-height:100vh), never the anchored result. Confirmed against
+      source: Popover.tsx:283 holds `let popoverRef!: HTMLDivElement` and passes
+      `popoverRef: () => popoverRef ?? null` to createPopover (:336) — a non-reactive
+      local ref, while the sibling groupRef (:284) is already a createSignal. Solid
+      local-var ref assignment isn't reactive, so positioning can run before the
+      portal node exists and never re-runs. Likely fix = setPopoverRef signal threaded
+      into createPopover (+ optional updatePosition after portal mount). Confirm
+      against React Aria useOverlayPosition first (parity rule).
+  - id: picker-item-checkmark
+    title: Show the PickerItem checkmark only on the selected option
+    state: open
+    roadmap: consumer-delivery
+    note: >-
+      Found consuming Picker in Tortafritapp. ARIA correct (one aria-selected) but the
+      SVG checkmark shows on every row. Refined against source: the base style is right
+      — pickerCheckmark (picker/index.tsx:435) already declares visibility
+      {default:hidden, isSelected:visible}. So the defect is the isSelected condition
+      resolving truthy for all rows, not a missing base style; renderProps.isSelected
+      threading (HeadlessSelectOption, :1046-1051) and/or the S2 macro is/allows
+      condition compile is the suspect. Diff both against upstream S2 before patching.
 ---
 
 # Tech Debt
@@ -442,6 +469,50 @@ so `import … from "@proyecto-viviana/ui/Tabs"` throws for an installed consume
 **Exit:** an unstyled Button passthrough exists in `solid-spectrum` and natives
 import from there; the `19` sub-paths are exported (or intentionally private); dead
 natives are deleted or wired to a consumer.
+
+## Picker ships broken to installed consumers (popover unanchored + checkmark on every row)
+
+Two consumer-facing Picker defects found consuming `@proyecto-viviana/ui` in
+Tortafritapp (admin role picker). An app-level workaround was applied there, but both
+fixes belong upstream in `solidaria-components` `Popover` and `solid-spectrum`
+`PickerItem`. Tracked as `picker-popover-anchor` and `picker-item-checkmark`. Both
+suspected causes were checked against our source while filing; neither is yet fixed,
+and both must be diffed against React Aria / S2 before implementing (parity rule).
+
+**Popover never receives the computed anchored position.** The popover renders with
+the `createOverlayPosition` fallback (`position: fixed; top: 0; left: 0; z-index:
+100000; max-height: 100vh`) at the viewport origin instead of anchored to the
+trigger; the trigger itself renders correctly elsewhere. Confirmed against source:
+`Popover.tsx:283` holds the ref as a plain local (`let popoverRef!: HTMLDivElement`)
+and passes `popoverRef: () => popoverRef ?? null` into `createPopover` (`:336`),
+whereas the sibling `groupRef` (`:284`) is already a `createSignal`. A Solid
+local-variable ref assignment is not reactive, so `createOverlayPosition` can read
+the ref before the portal node exists and never re-runs when `ref={popoverRef}`
+(`:575`) assigns it — the `current ? "absolute" : "fixed"` / `top/left: 0` fallback
+stays latched. This is the same local/destructured-ref reactivity freeze already
+recorded for the spine port. Likely fix (verify against React Aria
+`useOverlayPosition` / `Popover` first): make the ref a signal (`const [popoverRef,
+setPopoverRef] = createSignal(...)`), pass it into `createPopover`, set it via
+`ref={setPopoverRef}`, and optionally call `popoverAria.updatePosition?.()` after
+portal mount.
+
+**Checkmark shows on every option.** ARIA is correct — only the selected option
+carries `aria-selected` / `data-selected="true"` — but the SVG checkmark is visible
+on every row. The base style is *not* the cause (the report's first guess): the macro
+`pickerCheckmark` (`picker/index.tsx:435`) already declares `visibility { default:
+hidden, isSelected: visible }`. The real defect is the `isSelected` condition
+resolving truthy for all rows, so the suspect is how `renderProps.isSelected` is
+threaded into `pickerCheckmark({ ...renderProps, size })` inside `HeadlessSelectOption`
+(`:1046-1051`) and/or how the S2 macro `is`/`allows` condition compiles (the same
+macro-condition surface behind the earlier SSR-crash fix). Diff both against upstream
+S2 `PickerItem` before patching, and preserve row spacing so layout does not shift on
+selection.
+
+**Exit:** the popover opens anchored to its trigger (not viewport `0,0`), including
+portal-mounted popovers, and updates on resize/scroll; only the selected option shows
+the checkmark (unselected `visibility: hidden`, selected `visibility: visible`) with
+no layout shift; ARIA state is unchanged; both stay consistent with React Aria / S2
+Picker parity.
 
 ## Package-build migration incomplete
 
