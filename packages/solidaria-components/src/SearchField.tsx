@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Context,
   createContext,
   createMemo,
   onCleanup,
@@ -38,7 +39,9 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  Provider,
 } from "./utils";
+import { TextContext } from "./Text";
 
 export interface SearchFieldRenderProps {
   /** Whether the search field is empty. */
@@ -544,6 +547,21 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     const children = local.children;
     return typeof children === "function" ? children(childRenderValues) : children;
   };
+  // Provide the description / errorMessage props as `TextContext` slots (mirrors
+  // react-aria-components' SearchField), so a `<Text slot="description">` /
+  // `<Text slot="errorMessage">` child picks up the `id` its `aria-describedby`
+  // references. Additive: existing consumers reading these off
+  // `SearchFieldContext` are unaffected.
+  const textSlots = {
+    slots: {
+      get description() {
+        return searchFieldAria.descriptionProps;
+      },
+      get errorMessage() {
+        return searchFieldAria.errorMessageProps;
+      },
+    },
+  };
 
   return (
     <FieldErrorContext.Provider value={fieldErrorContext}>
@@ -559,7 +577,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
           data-required={ariaProps.isRequired || undefined}
           data-readonly={ariaProps.isReadOnly || undefined}
         >
-          {fieldChildren()}
+          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            {fieldChildren()}
+          </Provider>
         </div>
       </SearchFieldContext.Provider>
     </FieldErrorContext.Provider>

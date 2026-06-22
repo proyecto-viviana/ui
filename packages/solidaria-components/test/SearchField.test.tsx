@@ -20,6 +20,7 @@ import {
 } from "../src/SearchField";
 import { FieldError } from "../src/FieldError";
 import { Form } from "../src/Form";
+import { Text } from "../src/Text";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -85,6 +86,29 @@ describe("SearchField", () => {
       ));
 
       expect(screen.getByText("Search")).toBeInTheDocument();
+    });
+
+    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", () => {
+      // SearchField provides descriptionProps as a TextContext slot, so the
+      // <Text slot="description"> picks up the id the input's aria-describedby
+      // references — the faithful upstream wiring path.
+      render(() => (
+        <SearchField aria-label="Search" description="Help text">
+          {() => (
+            <>
+              <SearchFieldInput />
+              <Text slot="description">Help text</Text>
+            </>
+          )}
+        </SearchField>
+      ));
+
+      const input = screen.getByRole("searchbox");
+      const describedById = input.getAttribute("aria-describedby");
+      expect(describedById).toBeTruthy();
+      const description = document.getElementById(describedById!);
+      expect(description).toHaveTextContent("Help text");
+      expect(description).toHaveClass("solidaria-Text");
     });
 
     it("should render with custom class", () => {

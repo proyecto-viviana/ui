@@ -5,7 +5,7 @@
  * Port of react-aria-components/src/NumberField.tsx
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { type JSX, type Context, createContext, createMemo, splitProps, useContext } from "solid-js";
 import {
   createNumberField,
   createButton,
@@ -22,7 +22,9 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  Provider,
 } from "./utils";
+import { TextContext } from "./Text";
 
 export interface NumberFieldRenderProps {
   /** Whether the number field is disabled. */
@@ -366,6 +368,21 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     },
     setInputRef,
   };
+  // Provide the description / errorMessage props as `TextContext` slots (mirrors
+  // react-aria-components' NumberField), so a `<Text slot="description">` /
+  // `<Text slot="errorMessage">` child picks up the `id` its `aria-describedby`
+  // references. Additive: existing consumers reading these off
+  // `NumberFieldContext` are unaffected.
+  const textSlots = {
+    slots: {
+      get description() {
+        return numberFieldAria.descriptionProps;
+      },
+      get errorMessage() {
+        return numberFieldAria.errorMessageProps;
+      },
+    },
+  };
 
   return (
     <NumberFieldStateContext.Provider value={state}>
@@ -379,7 +396,9 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
           data-required={ariaProps.isRequired || undefined}
           data-readonly={ariaProps.isReadOnly || undefined}
         >
-          {fieldChildren()}
+          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            {fieldChildren()}
+          </Provider>
         </div>
       </NumberFieldContext.Provider>
     </NumberFieldStateContext.Provider>

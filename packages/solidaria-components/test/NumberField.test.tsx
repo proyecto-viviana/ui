@@ -20,6 +20,7 @@ import {
   NumberFieldIncrementButton,
   NumberFieldDecrementButton,
 } from "../src/NumberField";
+import { Text } from "../src/Text";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -83,6 +84,31 @@ describe("NumberField", () => {
       // Buttons have aria-labels like "Increase Test Number" and "Decrease Test Number"
       expect(screen.getByRole("button", { name: /increase/i })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /decrease/i })).toBeInTheDocument();
+    });
+
+    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", () => {
+      // NumberField provides descriptionProps as a TextContext slot, so the
+      // <Text slot="description"> picks up the id the input's aria-describedby
+      // references — the faithful upstream wiring path.
+      render(() => (
+        <NumberField aria-label="Quantity" description="Help text">
+          {() => (
+            <>
+              <NumberFieldGroup>
+                <NumberFieldInput />
+              </NumberFieldGroup>
+              <Text slot="description">Help text</Text>
+            </>
+          )}
+        </NumberField>
+      ));
+
+      const input = screen.getByRole("textbox");
+      const describedById = input.getAttribute("aria-describedby");
+      expect(describedById).toBeTruthy();
+      const description = document.getElementById(describedById!);
+      expect(description).toHaveTextContent("Help text");
+      expect(description).toHaveClass("solidaria-Text");
     });
 
     it("should render with label", () => {
