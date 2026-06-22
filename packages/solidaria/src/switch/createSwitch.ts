@@ -21,6 +21,10 @@ export interface SwitchAria {
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   /** Props for the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /** Props for the switch description element, if any. */
+  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
+  /** Props for the switch error message element, if any. */
+  errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
   /** Whether the switch is selected. */
   isSelected: Accessor<boolean>;
   /** Whether the switch is in a pressed state. */
@@ -55,6 +59,12 @@ export function createSwitch(
         role: "switch" as const,
         checked: toggle.isSelected(),
       };
+    },
+    get descriptionProps() {
+      return toggle.descriptionProps;
+    },
+    get errorMessageProps() {
+      return toggle.errorMessageProps;
     },
     isSelected: toggle.isSelected,
     isPressed: toggle.isPressed,

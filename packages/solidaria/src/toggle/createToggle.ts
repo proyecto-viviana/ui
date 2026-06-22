@@ -13,6 +13,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
+import { createSlotId } from "../ssr";
 import { type ToggleState } from "@proyecto-viviana/solid-stately";
 import { type PressEvent } from "../interactions/PressEvent";
 
@@ -84,6 +85,10 @@ export interface ToggleAria {
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   /** Props to be spread on the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /** Props for the description element, if any. */
+  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
+  /** Props for the error message element, if any. */
+  errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
   /** Whether the toggle is selected. */
   isSelected: Accessor<boolean>;
   /** Whether the toggle is in a pressed state. */
@@ -233,6 +238,12 @@ export function createToggle(
   // Combined pressed state
   const combinedIsPressed: Accessor<boolean> = () => isPressed() || isLabelPressed();
 
+  // Mint ids for the description and error message slots. Copied from createField
+  // because we don't want the label behavior that provides — the id resolves only
+  // once an element with that id is actually rendered (e.g. via TextContext slots).
+  const descriptionId = createSlotId();
+  const errorMessageId = createSlotId();
+
   return {
     labelProps: mergeProps(labelPressProps, {
       onClick: (e: MouseEvent) => e.preventDefault(),
@@ -244,6 +255,10 @@ export function createToggle(
         "aria-errormessage": p["aria-errormessage"],
         "aria-controls": p["aria-controls"],
         "aria-readonly": isReadOnly() || undefined,
+        "aria-describedby":
+          [descriptionId(), errorMessageId(), p["aria-describedby"]]
+            .filter(Boolean)
+            .join(" ") || undefined,
         onChange,
         disabled: isDisabled(),
         ...(p.value == null ? {} : { value: p.value }),
@@ -255,6 +270,12 @@ export function createToggle(
         // which would prevent the checkbox from toggling in JSDOM/testing-library environments
         onClick: (e: MouseEvent) => e.stopPropagation(),
       }) as JSX.InputHTMLAttributes<HTMLInputElement>;
+    },
+    get descriptionProps() {
+      return { id: descriptionId() };
+    },
+    get errorMessageProps() {
+      return { id: errorMessageId() };
     },
     isSelected: state.isSelected,
     isPressed: combinedIsPressed,

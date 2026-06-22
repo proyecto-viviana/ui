@@ -9,6 +9,7 @@
 
 import {
   type JSX,
+  type Context,
   createContext,
   createMemo,
   createSignal,
@@ -39,9 +40,11 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  Provider,
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { TextContext } from "./Text";
 
 export interface ToggleSwitchRenderProps {
   /** Whether the switch is selected. */
@@ -276,12 +279,11 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
 // label + indicator). Mirrors react-aria-components/src/Switch.tsx. The legacy
 // `ToggleSwitch` above stays as the deprecated monolith for back-compat.
 //
-// Spine note: react-aria-components passes its InternalSwitchContext +
-// description/error wiring through a `<Provider values=…>` and TextContext
-// slots. Our `<Provider>` (utils) is inert and TextContext carries no slots yet
-// (the tracked `port-context-slots` work), so — exactly like RadioGroup and
-// ToggleSwitch already do — we wire the two halves with a native Solid context
-// and bridge `description`/`errorMessage` with explicit ids + aria-describedby.
+// Help text wiring mirrors upstream exactly: SwitchField has NO description /
+// errorMessage props. createSwitch mints descriptionProps / errorMessageProps
+// (slot ids) and bakes the combined aria-describedby into inputProps, and the
+// field provides those ids through TextContext slots. Consumers render the help
+// text themselves with `<Text slot="description">` / `<FieldError>`.
 // ============================================================================
 
 export interface SwitchFieldRenderProps {
@@ -311,13 +313,6 @@ export interface SwitchFieldProps extends Omit<AriaSwitchProps, "children">, Slo
   class?: ClassNameOrFunction<SwitchFieldRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<SwitchFieldRenderProps>;
-  /**
-   * A description for the switch. Bridged with explicit ids + aria-describedby
-   * until TextContext slots are live (`port-context-slots`).
-   */
-  description?: JSX.Element;
-  /** An error message for the switch. */
-  errorMessage?: JSX.Element;
 }
 
 export interface SwitchButtonProps extends SlotProps {
@@ -345,7 +340,6 @@ interface InternalSwitchContextValue {
   switchAria: SwitchAria;
   state: ToggleState;
   setInputElement: (el: HTMLInputElement | null) => void;
-  describedBy: () => string | undefined;
   defaultClassName: string;
   isRequired: boolean;
 }
@@ -481,12 +475,7 @@ function SwitchButtonImpl(props: {
       data-required={ctx.isRequired || undefined}
     >
       <VisuallyHidden>
-        <input
-          ref={ctx.setInputElement}
-          {...cleanInputProps()}
-          {...cleanFocusProps()}
-          aria-describedby={ctx.describedBy()}
-        />
+        <input ref={ctx.setInputElement} {...cleanInputProps()} {...cleanFocusProps()} />
       </VisuallyHidden>
       {switchChildren}
     </label>
@@ -495,12 +484,14 @@ function SwitchButtonImpl(props: {
 
 /**
  * A switch allows a user to turn a setting on or off, with support for validation and help text.
- * Wraps a `SwitchButton` and provides description/error wiring.
+ * Wraps a `SwitchButton` and provides description/error wiring through
+ * TextContext slots — render help text with `<Text slot="description">`.
  *
  * @example
  * ```tsx
- * <SwitchField description="Sync across devices">
+ * <SwitchField>
  *   <SwitchButton>Enable sync</SwitchButton>
+ *   <Text slot="description">Sync across devices</Text>
  * </SwitchField>
  * ```
  */
@@ -521,16 +512,7 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
   // spread does not eagerly read it — reading a Solid `children` getter
   // instantiates the nested SwitchButton, and doing so OUTSIDE the
   // InternalSwitchContext provider both breaks its context binding and recurses.
-  const [local, ariaProps] = splitProps(merged, [
-    "class",
-    "style",
-    "slot",
-    "description",
-    "errorMessage",
-    "children",
-  ]);
-  const descriptionId = createUniqueId();
-  const errorMessageId = createUniqueId();
+  const [local, ariaProps] = splitProps(merged, ["class", "style", "slot", "children"]);
 
   const state = createToggleState(() => ({
     isSelected: ariaProps.isSelected,
@@ -550,23 +532,28 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
     inputElement,
   );
 
-  const describedBy = () => {
-    const ids = [
-      ariaProps["aria-describedby"],
-      local.description ? descriptionId : undefined,
-      switchAria.isInvalid && local.errorMessage ? errorMessageId : undefined,
-    ].filter(Boolean);
-    return ids.length ? ids.join(" ") : undefined;
-  };
-
   const internalContext: InternalSwitchContextValue = {
     switchAria,
     state,
     setInputElement,
-    describedBy,
     defaultClassName: "solidaria-SwitchButton",
     get isRequired() {
       return ariaProps.isRequired || false;
+    },
+  };
+
+  // The hook mints the description/error slot ids and bakes the combined
+  // aria-describedby into the input; the field exposes those ids through
+  // TextContext so a `<Text slot="description">` / `<FieldError>` child resolves
+  // them. Mirrors react-aria-components' Switch Provider value list.
+  const textSlots = {
+    slots: {
+      get description() {
+        return switchAria.descriptionProps;
+      },
+      get errorMessage() {
+        return switchAria.errorMessageProps;
+      },
     },
   };
 
@@ -598,7 +585,7 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
       };
     },
     get errorMessageProps() {
-      return { id: errorMessageId } as JSX.HTMLAttributes<HTMLElement>;
+      return switchAria.errorMessageProps as JSX.HTMLAttributes<HTMLElement>;
     },
   };
 
@@ -637,21 +624,7 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
       const children = merged.children;
       return typeof children === "function" ? children(childRenderValues) : children;
     });
-    return (
-      <>
-        {renderedChildren()}
-        <Show when={local.description}>
-          <span id={descriptionId} slot="description">
-            {local.description}
-          </span>
-        </Show>
-        <Show when={switchAria.isInvalid && local.errorMessage}>
-          <span id={errorMessageId} slot="errorMessage">
-            {local.errorMessage}
-          </span>
-        </Show>
-      </>
-    );
+    return <>{renderedChildren()}</>;
   };
 
   return (
@@ -668,7 +641,9 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
           data-invalid={switchAria.isInvalid || undefined}
           data-required={(ariaProps.isRequired || false) || undefined}
         >
-          <FieldChildren />
+          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            <FieldChildren />
+          </Provider>
         </div>
       </FieldErrorContext.Provider>
     </InternalSwitchContext.Provider>

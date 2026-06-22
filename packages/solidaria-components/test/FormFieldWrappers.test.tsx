@@ -18,6 +18,8 @@ import {
   RadioGroup,
   RadioField,
   RadioButton,
+  Text,
+  FieldError,
   type SwitchButtonRenderProps,
   type CheckboxButtonRenderProps,
   type RadioButtonRenderProps,
@@ -82,10 +84,12 @@ describe("SwitchField + SwitchButton", () => {
     expect(screen.getByText("On")).toBeInTheDocument();
   });
 
-  it("bridges description and error message to aria-describedby", () => {
+  it("links description and error message to aria-describedby via TextContext slots", () => {
     render(() => (
-      <SwitchField aria-label="Sync" isInvalid description="Syncs across devices" errorMessage="Required">
+      <SwitchField aria-label="Sync" isInvalid>
         <SwitchButton>Enable</SwitchButton>
+        <Text slot="description">Syncs across devices</Text>
+        <FieldError>Required</FieldError>
       </SwitchField>
     ));
     expect(describedText(screen.getByRole("switch"))).toBe("Syncs across devices Required");
@@ -104,8 +108,9 @@ describe("SwitchField + SwitchButton", () => {
 
   it("has no a11y violations", async () => {
     const { container } = render(() => (
-      <SwitchField aria-label="Sync" description="Syncs across devices">
+      <SwitchField aria-label="Sync">
         <SwitchButton>Enable</SwitchButton>
+        <Text slot="description">Syncs across devices</Text>
       </SwitchField>
     ));
     await assertNoA11yViolations(container);
