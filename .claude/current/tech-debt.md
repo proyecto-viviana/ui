@@ -122,7 +122,7 @@ tasks:
     roadmap: headless-spine-port
   - id: migrate-describedby-slots
     title: Wire aria-describedby across components onto the ported slot path
-    state: open
+    state: in-progress  # field/toggle components done (hybrid + pure-slot); RadioGroup/CheckboxGroup/Select/ColorField remain
     depends: [port-context-slots]
     roadmap: headless-spine-port
   - id: macro-route-styled
@@ -232,11 +232,17 @@ so one bug recurs across many. Keystones 1–3 have now ported the lower layers 
 still live: `SelectionManager` had been rewritten with a different anchor/current
 model (`createSelectionState.ts:241-269`, now superseded by the port); the shared
 `createSelectableCollection` exists but each widget still inlines arrow/Home/End
-(`createMenu.ts:201-406`); `useContextProps`/`useSlottedContext`/`Provider` are now
-faithful (slot-record resolution, ref merge, nested providers) but still have zero
-functional consumers; `TextContext` is `createContext<null>(null)` and cannot carry
-slots, so the description slot never wires and `aria-describedby` is absent until it
-migrates to `createSlottedContext` (`migrate-describedby-slots`). Rule #4/#5.
+(`createMenu.ts:201-406`); the collection widgets do not yet consume
+`useContextProps`/`useSlottedContext`. `migrate-describedby-slots` is now IN PROGRESS,
+though, and the field/toggle components DO wire description/error slots through the
+faithful nested `Provider` (`<Provider values={[[TextContext, {slots}]]}>`) — TextField/
+SearchField/NumberField/DateField/TimeField/ComboBox/DatePicker keep their props and
+add slots (hybrid), while SwitchField/CheckboxField/RadioField dropped the props for
+the pure upstream slot path (DOM-probed `createSlotId` + reactive binding). Still
+prop-based: RadioGroup/CheckboxGroup/Select/ColorField. NOTE: the shared `createField`
+hook must stay prop-conditional — swapping it to emit `createSlotId` ids unconditionally
+dangles refs in its ~9 non-reactive consumers (see the migrate-describedby-slots memory).
+Rule #4/#5.
 
 A live instance of "one bug recurs across many": both the collection hook and the
 item hook handle the selection key, so a focused-row Space toggles selection twice
@@ -414,18 +420,20 @@ and marked the monolith wrappers deprecated. We added the nine split names
 **no hard `@deprecated` JSDoc tags** — two conscious divergences from upstream.
 Reason: our styled layer (`solid-spectrum`) still composes the monoliths, so
 deprecating them would cascade a refactor that is out of scope for an additive
-parity-absorption item. Separately, the field→button handoff uses a native
-`Internal*Context` (read inside the provider via `Show … keyed`) instead of
-upstream's `Provider values={[[…],[TextContext,{slots}]]}` because `TextContext` is
-`createContext<null>(null)` and cannot carry slots. The `<Provider>` blocker is now
-gone — `port-context-slots` made it a real nested-provider (2026-06-21) — so the
-remaining work is migrating `TextContext` (and the field contexts) to
-`createSlottedContext`, tracked by `migrate-describedby-slots`.
+parity-absorption item. The field→button STATE handoff uses a native
+`Internal*Context` (read inside the provider via `Show … keyed`). The description /
+errorMessage handoff, however, now DOES use upstream's nested
+`Provider values={[[…],[TextContext,{slots}]]}` — `port-context-slots` made the
+`Provider` a real nested-provider (2026-06-21), and SwitchField/CheckboxField/
+RadioField now drop the description/errorMessage props and wire those ids through it
+(`migrate-describedby-slots`, IN PROGRESS, commits ff17912a/e2a8850c/374d3ad8). No
+`createSlottedContext` migration was needed — the nested Provider carries the slots
+record directly.
 
-**Exit:** after `migrate-describedby-slots` routes `TextContext` through real slots,
-the `*Field` components carry description / errorMessage via `Provider values={[[…],
-[TextContext,{slots}]]}` (the now-functional `Provider`); the styled layer migrates
-onto the `*Field`/`*Button` split and the monoliths get `@deprecated` tags (or are
+**Exit:** the `*Field` components already carry description / errorMessage via
+`Provider values={[[…],[TextContext,{slots}]]}` (the now-functional `Provider`); what
+remains is the styled layer migrating onto the `*Field`/`*Button` split and the
+monoliths getting `@deprecated` tags (or are
 removed).
 
 ## i18n strings hardcoded in the data/spectrum layers
