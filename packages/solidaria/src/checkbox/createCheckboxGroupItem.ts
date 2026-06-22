@@ -80,22 +80,18 @@ export function createCheckboxGroupItem(
       const baseInputProps = result.inputProps;
       const groupData = getGroupData();
 
-      const describedByIds: string[] = [];
-
-      const propsDescribedBy = getProps()["aria-describedby"];
-      if (propsDescribedBy) {
-        describedByIds.push(propsDescribedBy);
-      }
-
-      if (state.isInvalid && groupData?.errorMessageId) {
-        describedByIds.push(groupData.errorMessageId);
-      }
-
-      if (groupData?.descriptionId) {
-        describedByIds.push(groupData.descriptionId);
-      }
-
-      const ariaDescribedBy = describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
+      // Mirror upstream useCheckboxGroupItem: keep the checkbox's own
+      // aria-describedby (its description/error slot ids from createCheckbox/
+      // createToggle, which already fold in the user's aria-describedby) and append
+      // the group's shared description/error ids.
+      const ariaDescribedBy =
+        [
+          baseInputProps["aria-describedby"],
+          state.isInvalid && groupData?.errorMessageId ? groupData.errorMessageId : null,
+          groupData?.descriptionId,
+        ]
+          .filter(Boolean)
+          .join(" ") || undefined;
 
       return {
         ...baseInputProps,

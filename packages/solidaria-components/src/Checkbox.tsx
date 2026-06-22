@@ -7,6 +7,7 @@
 
 import {
   type JSX,
+  type Context,
   type Accessor,
   createContext,
   useContext,
@@ -39,11 +40,13 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  Provider,
   useRenderProps,
   filterDOMProps,
 } from "./utils";
 import { FormContext, type FormProps } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
+import { TextContext } from "./Text";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -688,11 +691,13 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
 // clickable indicator + label). Mirrors react-aria-components/src/Checkbox.tsx.
 // The legacy `Checkbox` above stays as the deprecated monolith for back-compat.
 //
-// Spine note: upstream wires the two halves with InternalCheckboxContext +
-// TextContext slots through `<Provider>`. Our `<Provider>` is inert and
-// TextContext carries no slots yet (`port-context-slots`), so — exactly like
-// the monolith Checkbox and CheckboxGroup already do — we use a native Solid
-// context and bridge `description`/`errorMessage` with explicit ids.
+// Help text wiring mirrors upstream exactly: CheckboxField has NO description /
+// errorMessage props. createCheckbox (via createToggle) mints descriptionProps /
+// errorMessageProps (slot ids) and bakes the combined aria-describedby into
+// inputProps; the field provides those ids through TextContext slots. Consumers
+// render the help text themselves with `<Text slot="description">` / `<FieldError>`.
+// The field/button handoff still uses a native InternalCheckboxContext (read inside
+// the provider via `Show … keyed`), but the slot wiring is now faithful.
 // ============================================================================
 
 export interface CheckboxFieldRenderProps {
@@ -722,13 +727,6 @@ export interface CheckboxFieldProps
   style?: StyleOrFunction<CheckboxFieldRenderProps>;
   /** Whether the checkbox is indeterminate. */
   isIndeterminate?: boolean;
-  /**
-   * A description for the checkbox. Bridged with explicit ids + aria-describedby
-   * until TextContext slots are live (`port-context-slots`).
-   */
-  description?: JSX.Element;
-  /** An error message for the checkbox. */
-  errorMessage?: JSX.Element;
   /** Ref for the checkbox field root element. */
   ref?: RefLike<HTMLDivElement>;
   /** Ref for the underlying input element. */
@@ -769,7 +767,6 @@ interface InternalCheckboxContextValue {
   labelProps: () => JSX.LabelHTMLAttributes<HTMLLabelElement>;
   inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
   setInputRef: (el: HTMLInputElement) => void;
-  describedBy: () => string | undefined;
   defaultClassName: string;
 }
 const InternalCheckboxContext = createContext<InternalCheckboxContextValue | null>(null);
@@ -780,8 +777,9 @@ const InternalCheckboxContext = createContext<InternalCheckboxContextValue | nul
  *
  * @example
  * ```tsx
- * <CheckboxField description="Required to continue">
+ * <CheckboxField>
  *   <CheckboxButton>Accept terms</CheckboxButton>
+ *   <Text slot="description">Required to continue</Text>
  * </CheckboxField>
  * ```
  */
@@ -817,12 +815,8 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     "inputRef",
     "slot",
     "isIndeterminate",
-    "description",
-    "errorMessage",
     "children",
   ]);
-  const descriptionId = createUniqueId();
-  const errorMessageId = createUniqueId();
 
   const inputAriaProps = createMemo(() => {
     const clean: Record<string, unknown> = {};
@@ -840,6 +834,8 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
   let isPressed: Accessor<boolean>;
   let labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   let inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
+  let getDescriptionProps: () => JSX.HTMLAttributes<HTMLElement>;
+  let getErrorMessageProps: () => JSX.HTMLAttributes<HTMLElement>;
 
   if (groupState) {
     const itemAria = createCheckboxGroupItem(
@@ -857,6 +853,8 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     isPressed = itemAria.isPressed;
     labelProps = itemAria.labelProps;
     inputProps = () => itemAria.inputProps;
+    getDescriptionProps = () => itemAria.descriptionProps;
+    getErrorMessageProps = () => itemAria.errorMessageProps;
   } else {
     const state = createToggleState(() => ({
       isSelected: ariaProps.isSelected,
@@ -878,21 +876,14 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     isPressed = checkboxAria.isPressed;
     labelProps = checkboxAria.labelProps;
     inputProps = () => checkboxAria.inputProps;
+    getDescriptionProps = () => checkboxAria.descriptionProps;
+    getErrorMessageProps = () => checkboxAria.errorMessageProps;
   }
   const isDisabled = () => inputProps().disabled === true;
   const isReadOnly = () => inputProps()["aria-readonly"] === true;
   const isInvalid = () => inputProps()["aria-invalid"] === true;
   const isIndeterminate = () => local.isIndeterminate ?? false;
   const isRequired = () => ariaProps.isRequired ?? false;
-
-  const describedBy = () => {
-    const ids = [
-      ariaProps["aria-describedby"],
-      local.description ? descriptionId : undefined,
-      isInvalid() && local.errorMessage ? errorMessageId : undefined,
-    ].filter(Boolean);
-    return ids.length ? ids.join(" ") : undefined;
-  };
 
   const setInputRef = (el: HTMLInputElement) => {
     setInputElement(el);
@@ -915,8 +906,21 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     labelProps: () => labelProps,
     inputProps,
     setInputRef,
-    describedBy,
     defaultClassName: "solidaria-CheckboxButton",
+  };
+
+  // Slot the description/error message ids onto a TextContext so a child
+  // `<Text slot="description">` / `<FieldError>` resolves the id the input's
+  // baked aria-describedby references — mirrors upstream CheckboxField.
+  const textSlots = {
+    slots: {
+      get description() {
+        return getDescriptionProps();
+      },
+      get errorMessage() {
+        return getErrorMessageProps();
+      },
+    },
   };
 
   const renderValues = createMemo<CheckboxFieldRenderProps>(() => ({
@@ -951,7 +955,7 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
           };
         },
         get errorMessageProps() {
-          return { id: errorMessageId } as JSX.HTMLAttributes<HTMLElement>;
+          return getErrorMessageProps() as JSX.HTMLAttributes<HTMLElement>;
         },
       };
 
@@ -989,21 +993,7 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
       const children = mergedProps.children;
       return typeof children === "function" ? children(childRenderValues) : children;
     });
-    return (
-      <>
-        {renderedChildren()}
-        <Show when={local.description}>
-          <span id={descriptionId} slot="description">
-            {local.description}
-          </span>
-        </Show>
-        <Show when={isInvalid() && local.errorMessage}>
-          <span id={errorMessageId} slot="errorMessage">
-            {local.errorMessage}
-          </span>
-        </Show>
-      </>
-    );
+    return <>{renderedChildren()}</>;
   };
 
   const fieldDiv = (
@@ -1021,13 +1011,15 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
       data-required={isRequired() || undefined}
     >
       <InternalCheckboxContext.Provider value={internalContext}>
-        <Show when={fieldErrorContext} fallback={<FieldChildren />} keyed>
-          {(ctx) => (
-            <FieldErrorContext.Provider value={ctx}>
-              <FieldChildren />
-            </FieldErrorContext.Provider>
-          )}
-        </Show>
+        <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+          <Show when={fieldErrorContext} fallback={<FieldChildren />} keyed>
+            {(ctx) => (
+              <FieldErrorContext.Provider value={ctx}>
+                <FieldChildren />
+              </FieldErrorContext.Provider>
+            )}
+          </Show>
+        </Provider>
       </InternalCheckboxContext.Provider>
     </div>
   );
@@ -1197,7 +1189,6 @@ function CheckboxButtonImpl(props: {
           {...cleanFocusProps()}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
-          aria-describedby={ctx.describedBy()}
         />
       </VisuallyHidden>
       {buttonChildren()}

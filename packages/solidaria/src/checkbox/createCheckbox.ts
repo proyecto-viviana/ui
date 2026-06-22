@@ -37,6 +37,10 @@ export interface CheckboxAria {
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   /** Props for the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /** Props for the checkbox description element, if any. */
+  descriptionProps: JSX.HTMLAttributes<HTMLElement>;
+  /** Props for the checkbox error message element, if any. */
+  errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
   /** Whether the checkbox is selected. */
   isSelected: Accessor<boolean>;
   /** Whether the checkbox is in a pressed state. */
@@ -117,6 +121,12 @@ export function createCheckbox(
         "aria-required": (isRequired && validationBehavior === "aria") || undefined,
         required: isRequired && validationBehavior === "native",
       }) as JSX.InputHTMLAttributes<HTMLInputElement>;
+    },
+    get descriptionProps() {
+      return toggleResult.descriptionProps;
+    },
+    get errorMessageProps() {
+      return toggleResult.errorMessageProps;
     },
     isSelected,
     isPressed,

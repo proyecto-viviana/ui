@@ -162,10 +162,12 @@ describe("CheckboxField + CheckboxButton", () => {
     expect(screen.getByText("mixed")).toBeInTheDocument();
   });
 
-  it("bridges description and error message to aria-describedby", () => {
+  it("links description and error message to aria-describedby via TextContext slots", () => {
     render(() => (
-      <CheckboxField aria-label="Terms" isInvalid description="You must accept" errorMessage="Required">
+      <CheckboxField aria-label="Terms" isInvalid>
         <CheckboxButton>Accept</CheckboxButton>
+        <Text slot="description">You must accept</Text>
+        <FieldError>Required</FieldError>
       </CheckboxField>
     ));
     expect(describedText(screen.getByRole("checkbox"))).toBe("You must accept Required");
@@ -184,8 +186,9 @@ describe("CheckboxField + CheckboxButton", () => {
 
   it("has no a11y violations", async () => {
     const { container } = render(() => (
-      <CheckboxField aria-label="Terms" description="You must accept">
+      <CheckboxField aria-label="Terms">
         <CheckboxButton>Accept</CheckboxButton>
+        <Text slot="description">You must accept</Text>
       </CheckboxField>
     ));
     await assertNoA11yViolations(container);
