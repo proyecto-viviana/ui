@@ -17,10 +17,12 @@ import {
 } from "./solid/chrome/styles";
 
 export interface Props {
+  isMobileNavigationEnabled?: boolean;
+  isSearchEnabled?: boolean;
   reactSpectrumUrl?: string;
 }
 
-const { reactSpectrumUrl } = Astro.props;
+const { isMobileNavigationEnabled = true, isSearchEnabled = true, reactSpectrumUrl } = Astro.props;
 const topBarRootClass = staticClassName(docsTopBarRoot);
 const brandLinkClass = staticClassName(docsBrandLink);
 const brandMarkClass = staticClassName(docsBrandMark);
@@ -41,21 +43,37 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
     <span class:list={["s2-brand-mark", brandMarkClass]} aria-hidden="true">S</span>
     <span>Solid Spectrum</span>
   </a>
-  <div class:list={["s2-search", searchRootClass]}>
-    <button
-      class:list={["s2-search-trigger", searchButtonClass]}
-      type="button"
-      aria-label="Search Solid Spectrum"
-      aria-haspopup="dialog"
-      aria-expanded="false"
-    >
-      <svg class="s2-search-icon" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
-        <path d="m18.53027,17.46973l-5.08325-5.08325c.96936-1.20142,1.55298-2.72644,1.55298-4.38647,0-3.85938-3.14062-7-7-7S1,4.14062,1,8s3.14062,7,7,7c1.66003,0,3.18506-.58362,4.38647-1.55298l5.08325,5.08325c.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973c.29297-.29297.29297-.76758,0-1.06055Zm-10.53027-3.96973c-3.03223,0-5.5-2.46777-5.5-5.5s2.46777-5.5,5.5-5.5,5.5,2.46777,5.5,5.5-2.46777,5.5-5.5,5.5Z" fill="var(--iconPrimary, currentColor)"></path>
-      </svg>
-      <span class="s2-search-label">Search Solid Spectrum</span>
-      <kbd class:list={["s2-search-shortcut", searchKeyboardClass]}>&#8984;K</kbd>
-    </button>
-  </div>
+  {
+    isSearchEnabled ? (
+      <div class:list={["s2-search", searchRootClass]}>
+        <button
+          class:list={["s2-search-trigger", searchButtonClass]}
+          type="button"
+          aria-label="Search Solid Spectrum"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+        >
+          <svg
+            class="s2-search-icon"
+            aria-hidden="true"
+            focusable="false"
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+          >
+            <path
+              d="m18.53027,17.46973l-5.08325-5.08325c.96936-1.20142,1.55298-2.72644,1.55298-4.38647,0-3.85938-3.14062-7-7-7S1,4.14062,1,8s3.14062,7,7,7c1.66003,0,3.18506-.58362,4.38647-1.55298l5.08325,5.08325c.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973c.29297-.29297.29297-.76758,0-1.06055Zm-10.53027-3.96973c-3.03223,0-5.5-2.46777-5.5-5.5s2.46777-5.5,5.5-5.5,5.5,2.46777,5.5,5.5-2.46777,5.5-5.5,5.5Z"
+              fill="var(--iconPrimary, currentColor)"
+            ></path>
+          </svg>
+          <span class="s2-search-label">Search Solid Spectrum</span>
+          <kbd class:list={["s2-search-shortcut", searchKeyboardClass]}>&#8984;K</kbd>
+        </button>
+      </div>
+    ) : (
+      <div class:list={["s2-search", searchRootClass]} aria-hidden="true"></div>
+    )
+  }
   <div class:list={["s2-top-actions", topActionsRootClass]}>
     <nav class:list={["s2-topnav", topNavRootClass]} aria-label="Top navigation">
       <a href="/" class={topNavLinkClass}>Docs</a>
@@ -78,17 +96,34 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
       <span class="s2-visually-hidden" data-theme-toggle-icon>System</span>
     </button>
   </div>
-  <button
-    class:list={["s2-shell-action s2-mobile-nav-button", shellActionClass, mobileNavButtonClass]}
-    type="button"
-    aria-label="Navigation"
-  >
-    <span class="s2-menu-icon" aria-hidden="true">
-      <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
-        <path d="M17.25,5.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z" fill="var(--iconPrimary, currentColor)"></path>
-        <path d="M17.25,10.75H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z" fill="var(--iconPrimary, currentColor)"></path>
-        <path d="M17.25,16H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z" fill="var(--iconPrimary, currentColor)"></path>
-      </svg>
-    </span>
-  </button>
+  {
+    isMobileNavigationEnabled ? (
+      <button
+        class:list={[
+          "s2-shell-action s2-mobile-nav-button",
+          shellActionClass,
+          mobileNavButtonClass,
+        ]}
+        type="button"
+        aria-label="Navigation"
+      >
+        <span class="s2-menu-icon" aria-hidden="true">
+          <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20">
+            <path
+              d="M17.25,5.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
+              fill="var(--iconPrimary, currentColor)"
+            ></path>
+            <path
+              d="M17.25,10.75H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
+              fill="var(--iconPrimary, currentColor)"
+            ></path>
+            <path
+              d="M17.25,16H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
+              fill="var(--iconPrimary, currentColor)"
+            ></path>
+          </svg>
+        </span>
+      </button>
+    ) : null
+  }
 </div>

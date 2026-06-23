@@ -1,6 +1,6 @@
 ---
-import DocsFooterMount from "@comparison/components/DocsFooterMount.astro";
-import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
+import DocsFooterFallback from "@comparison/components/DocsFooterFallback.astro";
+import DocsTopBarFallback from "@comparison/components/DocsTopBarFallback.astro";
 import "@comparison/styles/global.css";
 
 export interface Props {
@@ -69,13 +69,17 @@ const s2PrimaryFontPreloadUrl =
       })();
     </script>
 
-    <DocsTopBarMount reactSpectrumUrl={reactSpectrumUrl} tocVariant="index" />
+    <DocsTopBarFallback
+      isMobileNavigationEnabled={false}
+      isSearchEnabled={false}
+      reactSpectrumUrl={reactSpectrumUrl}
+    />
 
     <main class="s2-marketing-main">
       <slot />
     </main>
 
-    <DocsFooterMount />
+    <DocsFooterFallback />
 
     <script>
       import "@comparison/scripts/docs-theme";

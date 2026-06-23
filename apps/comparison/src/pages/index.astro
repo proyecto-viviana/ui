@@ -1,11 +1,11 @@
 ---
-import MarketingCtaMount from "@comparison/components/MarketingCtaMount.astro";
-import MarketingHeroMount from "@comparison/components/MarketingHeroMount.astro";
+import MarketingCtaFallback from "@comparison/components/MarketingCtaFallback.astro";
+import MarketingHeroFallback from "@comparison/components/MarketingHeroFallback.astro";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
 import MarketingLayout from "@comparison/layouts/MarketingLayout.astro";
 ---
 
 <MarketingLayout reactSpectrumUrl={reactSpectrumCatalogueSource.url} title="Solid Spectrum">
-  <MarketingHeroMount />
-  <MarketingCtaMount />
+  <MarketingHeroFallback />
+  <MarketingCtaFallback />
 </MarketingLayout>
