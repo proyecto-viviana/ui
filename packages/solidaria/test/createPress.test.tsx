@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPress, type PressEvent } from "../src/interactions/createPress";
 import { Dynamic } from "solid-js/web";
-import type { JSX, Component } from "solid-js";
+import { createSignal, type JSX, type Component } from "solid-js";
 import { setupUser, createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser and pointer helpers are consolidated in solidaria-test-utils.
@@ -330,6 +330,43 @@ describe("createPress", () => {
       const el = screen.getByTestId("test-element");
       fireEvent(el, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
 
+      expect(onPressStart).toHaveBeenCalledTimes(1);
+      expect(onPressStart).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "pressstart",
+          pointerType: "mouse",
+        }),
+      );
+    });
+
+    it("keeps parent press active when a child pointer handler replaces the event target", () => {
+      const onPressStart = vi.fn();
+
+      const ReplacingChild: Component = () => {
+        const [replaced, setReplaced] = createSignal(false);
+        const { pressProps } = createPress({ onPressStart });
+
+        return (
+          <div {...pressProps} data-testid="parent">
+            <button type="button" onPointerDown={() => setReplaced(true)}>
+              {replaced() ? (
+                <span data-testid="replacement">replacement</span>
+              ) : (
+                <span data-testid="target">target</span>
+              )}
+            </button>
+          </div>
+        );
+      };
+
+      render(() => <ReplacingChild />);
+
+      fireEvent(
+        screen.getByTestId("target"),
+        pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }),
+      );
+
+      expect(screen.queryByTestId("target")).not.toBeInTheDocument();
       expect(onPressStart).toHaveBeenCalledTimes(1);
       expect(onPressStart).toHaveBeenCalledWith(
         expect.objectContaining({

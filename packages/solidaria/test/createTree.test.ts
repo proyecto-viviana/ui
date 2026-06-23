@@ -57,6 +57,42 @@ function createState(
   }));
 }
 
+function createRowKeyboardEvent(key: string, currentTarget: HTMLElement, target: HTMLElement) {
+  const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+  let stopped = false;
+  Object.defineProperty(event, "cancelBubble", {
+    configurable: true,
+    get: () => stopped,
+    set: (value: boolean) => {
+      stopped = value;
+    },
+  });
+  Object.defineProperty(event, "preventDefault", { value: vi.fn() });
+  Object.defineProperty(event, "stopPropagation", {
+    value: vi.fn(() => {
+      stopped = true;
+    }),
+  });
+  Object.defineProperty(event, "currentTarget", { value: currentTarget });
+  Object.defineProperty(event, "target", { value: target });
+  return event;
+}
+
+function createRowPointerEvent(
+  type: "pointerdown" | "mousedown",
+  currentTarget: HTMLElement,
+  target: HTMLElement,
+) {
+  const event =
+    type === "pointerdown" && typeof PointerEvent === "function"
+      ? new PointerEvent(type, { bubbles: true, cancelable: true })
+      : new MouseEvent(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "stopPropagation", { value: vi.fn() });
+  Object.defineProperty(event, "currentTarget", { value: currentTarget });
+  Object.defineProperty(event, "target", { value: target });
+  return event;
+}
+
 describe("createTree", () => {
   it("should return treeProps with correct role", () => {
     createRoot((dispose) => {
@@ -148,7 +184,7 @@ describe("createTree", () => {
     });
   });
 
-  it("toggles selection with Space from focused tree container", () => {
+  it("leaves Space selection to the focused tree item", () => {
     createRoot((dispose) => {
       const state = createState({ selectionMode: "multiple" });
       const [ref] = createSignal<HTMLDivElement | null>(null);
@@ -169,14 +205,14 @@ describe("createTree", () => {
         preventDefault,
       } as unknown as KeyboardEvent);
 
-      expect(preventDefault).toHaveBeenCalled();
-      expect(state.isSelected("1")).toBe(true);
+      expect(preventDefault).not.toHaveBeenCalled();
+      expect(state.isSelected("1")).toBe(false);
 
       dispose();
     });
   });
 
-  it("calls onAction with Enter from focused tree container", () => {
+  it("leaves Enter activation to the focused tree item", () => {
     createRoot((dispose) => {
       const onAction = vi.fn();
       const state = createState();
@@ -196,8 +232,8 @@ describe("createTree", () => {
         preventDefault,
       } as unknown as KeyboardEvent);
 
-      expect(preventDefault).toHaveBeenCalled();
-      expect(onAction).toHaveBeenCalledWith("1");
+      expect(preventDefault).not.toHaveBeenCalled();
+      expect(onAction).not.toHaveBeenCalled();
 
       dispose();
     });
@@ -712,6 +748,68 @@ describe("createTreeItem ARIA parity", () => {
       dispose();
     });
   });
+
+  it('stops tabbable child keyboard and pointer events in "tab" mode', () => {
+    createRoot((dispose) => {
+      const onAction = vi.fn();
+      const state = createState({ selectionMode: "multiple" });
+      const row = document.createElement("div");
+      const input = document.createElement("input");
+      const button = document.createElement("button");
+      row.append(input, button);
+      document.body.append(row);
+
+      createTree(
+        () => ({ keyboardNavigationBehavior: "tab", onAction }),
+        () => state,
+        () => null,
+      );
+
+      state.setFocused(true);
+      state.setFocusedKey("1");
+
+      const item = createTreeItem(
+        () => ({ node: state.collection.getItem("1")! }),
+        () => state,
+        () => row,
+      );
+
+      input.focus();
+
+      const space = createRowKeyboardEvent(" ", row, input);
+      (item.rowProps.onKeyDown as any)?.(space);
+
+      expect(space.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(state.isSelected("1")).toBe(false);
+      expect(onAction).not.toHaveBeenCalled();
+
+      const enter = createRowKeyboardEvent("Enter", row, input);
+      (item.rowProps.onKeyDown as any)?.(enter);
+
+      expect(enter.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(onAction).not.toHaveBeenCalled();
+
+      const tab = createRowKeyboardEvent("Tab", row, input);
+      (item.rowProps.onKeyDown as any)?.(tab);
+
+      expect(tab.stopPropagation).toHaveBeenCalledTimes(1);
+
+      const pointerDown = createRowPointerEvent("pointerdown", row, input);
+      (item.rowProps.onPointerDown as any)?.(pointerDown);
+
+      expect(pointerDown.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(state.isSelected("1")).toBe(false);
+
+      const mouseDown = createRowPointerEvent("mousedown", row, input);
+      (item.rowProps.onMouseDown as any)?.(mouseDown);
+
+      expect(mouseDown.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(state.isSelected("1")).toBe(false);
+
+      row.remove();
+      dispose();
+    });
+  });
 });
 
 describe("createTree disabled key navigation parity", () => {
@@ -768,7 +866,7 @@ describe("createTree disabled key navigation parity", () => {
     });
   });
 
-  it("Enter fires onAction but does not select a disabled row under 'selection'", () => {
+  it("leaves disabled-row Enter activation to the item under 'selection'", () => {
     createRoot((dispose) => {
       const onAction = vi.fn();
       const state = createState({
@@ -784,12 +882,12 @@ describe("createTree disabled key navigation parity", () => {
         ref,
       );
 
-      // 1.1 is focusable under "selection": Enter fires onAction but must not
-      // select it (Space selection stays blocked independently).
+      // 1.1 is focusable under "selection"; activation is item-owned so the
+      // collection handler does not also fire onAction when row events bubble.
       state.setFocusedKey("1.1");
       press(treeProps, "Enter");
 
-      expect(onAction).toHaveBeenCalledWith("1.1");
+      expect(onAction).not.toHaveBeenCalled();
       expect(state.isSelected("1.1")).toBe(false);
 
       dispose();

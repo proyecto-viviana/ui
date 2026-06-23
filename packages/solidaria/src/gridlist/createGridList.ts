@@ -19,6 +19,12 @@ interface GridListData {
   gridListId: string;
   /** How selection should behave when pressing an item. */
   selectionBehavior: "replace" | "toggle";
+  /** Whether row selection should occur on press up. */
+  shouldSelectOnPressUp: boolean;
+  /** How keyboard navigation behaves within row children. */
+  keyboardNavigationBehavior: "arrow" | "tab";
+  /** Text direction for row-child arrow navigation. */
+  direction: "ltr" | "rtl";
   /** Actions registered for the grid list. */
   actions: {
     onAction?: (key: Key) => void;
@@ -87,6 +93,15 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     gridListId,
     get selectionBehavior() {
       return props().selectionBehavior ?? "replace";
+    },
+    get shouldSelectOnPressUp() {
+      return props().shouldSelectOnPressUp ?? false;
+    },
+    get keyboardNavigationBehavior() {
+      return props().keyboardNavigationBehavior ?? "arrow";
+    },
+    get direction() {
+      return props().direction ?? "ltr";
     },
     actions: {
       get onAction() {

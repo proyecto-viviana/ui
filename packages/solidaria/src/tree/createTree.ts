@@ -3,11 +3,13 @@
  * Based on @react-aria/tree/useTree.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TreeState, TreeCollection, Key } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeProps, TreeAria } from "./types";
+import { scrollIntoViewport } from "../utils";
+import { getInteractionModality } from "../interactions/createInteractionModality";
 
 /**
  * Metadata stored for a tree instance.
@@ -15,6 +17,10 @@ import type { AriaTreeProps, TreeAria } from "./types";
 interface TreeData {
   /** The generated ID for the tree. */
   treeId: string;
+  /** How keyboard navigation behaves within row children. */
+  keyboardNavigationBehavior: "arrow" | "tab";
+  /** Text direction for row-child arrow navigation and tree expansion keys. */
+  direction: "ltr" | "rtl";
   /** Actions registered for the tree. */
   actions: {
     onAction?: (key: Key) => void;
@@ -73,7 +79,7 @@ function findNextNavigableKey<T extends object, C extends TreeCollection<T>>(
 export function createTree<T extends object, C extends TreeCollection<T> = TreeCollection<T>>(
   props: Accessor<AriaTreeProps>,
   state: Accessor<TreeState<T, C>>,
-  _ref: Accessor<HTMLDivElement | null>,
+  ref: Accessor<HTMLDivElement | null>,
 ): TreeAria {
   // Generate a unique ID for the tree
   const treeId = props().id ?? createId();
@@ -81,6 +87,12 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
   // Store tree data for child components
   const treeData: TreeData = {
     treeId,
+    get keyboardNavigationBehavior() {
+      return props().keyboardNavigationBehavior ?? "arrow";
+    },
+    get direction() {
+      return props().direction ?? "ltr";
+    },
     actions: {
       get onAction() {
         return props().onAction;
@@ -187,27 +199,11 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
         }
         break;
       }
-      case " ":
-      case "Space":
-      case "Spacebar": {
-        if (focusedKey != null && s.selectionMode !== "none" && !s.isDisabled(focusedKey)) {
-          e.preventDefault();
-          s.toggleSelection(focusedKey);
-        }
-        break;
-      }
-      case "Enter": {
-        // Activation is gated on the navigation-disabled check, not the raw
-        // one: under disabledBehavior "selection" a focusable disabled row
-        // still fires onAction, mirroring useSelectableItem's allowsActions
-        // (manager.isDisabled is gated on "all"). Selection (Space) stays
-        // blocked independently.
-        if (focusedKey != null && !isNavigationDisabled(s, focusedKey)) {
-          e.preventDefault();
-          p.onAction?.(focusedKey);
-        }
-        break;
-      }
+      // Space (selection) and Enter (action) are intentionally absent here.
+      // Upstream's useSelectableCollection leaves activation to useSelectableItem.
+      // The focus effect below moves DOM focus onto the focused row, so the row's
+      // own createSelectableItem handlers receive those keys without duplicating
+      // work in the bubbling tree handler.
       case "Escape": {
         if (s.selectionMode !== "none") {
           e.preventDefault();
@@ -263,6 +259,29 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     const s = state();
     s.setFocused(false);
   };
+
+  createEffect(() => {
+    const s = state();
+    const key = s.focusedKey;
+    const el = ref();
+    if (!el || key == null) {
+      return;
+    }
+
+    const active = document.activeElement;
+    if (!active || (active !== el && !el.contains(active))) {
+      return;
+    }
+
+    const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    if (target && target !== active) {
+      target.focus();
+
+      if (getInteractionModality() !== "pointer") {
+        scrollIntoViewport(target, { containingElement: el });
+      }
+    }
+  });
 
   const treeProps = createMemo(() => {
     const p = props();

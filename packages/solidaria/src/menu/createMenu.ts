@@ -108,6 +108,7 @@ interface MenuData {
   onAction?: (key: Key, value: unknown) => void;
   onClose?: () => void;
   isDisabled?: boolean;
+  shouldCloseOnSelect?: boolean;
 }
 
 export function getMenuData(state: MenuState): MenuData | undefined {
@@ -147,6 +148,7 @@ export function createMenu<T>(
       onAction: p.onAction as MenuData["onAction"],
       onClose: p.onClose,
       isDisabled: p.isDisabled,
+      shouldCloseOnSelect: p.shouldCloseOnSelect,
     });
   };
 
@@ -268,6 +270,7 @@ export function createMenu<T>(
       }
       case " ":
       case "Enter": {
+        if (e.target !== e.currentTarget) break;
         e.preventDefault();
         const focusedKey = state.focusedKey();
         // Activation is gated on the navigation-disabled check, not the raw
@@ -296,7 +299,11 @@ export function createMenu<T>(
           // Pass the activated item's value as the second arg, mirroring
           // useMenuItem performAction: onAction(key, item?.value).
           p.onAction?.(focusedKey, collection.getItem(focusedKey)?.value as T);
-          if (p.shouldCloseOnSelect !== false) {
+          const item = collection.getItem(focusedKey);
+          const isLink = !!item?.props?.href;
+          const shouldClose =
+            p.shouldCloseOnSelect ?? (e.key === "Enter" || state.selectionMode() === "none" || isLink);
+          if (shouldClose) {
             p.onClose?.();
           }
         }

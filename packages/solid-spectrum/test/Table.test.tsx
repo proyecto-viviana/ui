@@ -2,6 +2,7 @@ import { createSignal } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import {
   Cell,
   Column,
@@ -39,6 +40,15 @@ const rows: Person[] = [
 
 function normalizeKeys(keys: "all" | Set<unknown>) {
   return keys === "all" ? new Set(rows.map((row) => row.id)) : new Set(Array.from(keys, String));
+}
+
+const pointerEvent = createPointerEvent;
+
+function pressWithMouse(target: HTMLElement, init: Record<string, unknown> = {}): void {
+  const pointerInit = { pointerId: 1, pointerType: "mouse", ...init };
+  fireEvent(target, pointerEvent("pointerdown", pointerInit));
+  fireEvent(target, pointerEvent("pointerup", pointerInit));
+  fireEvent.click(target, init);
 }
 
 function TestTable(props: {
@@ -216,8 +226,7 @@ describe("TableView (solid-spectrum)", () => {
     expect(screen.getByRole("grid", { name: "People" })).toHaveAttribute("data-density", "regular");
   });
 
-  it("supports controlled multiple selection with S2 toggle behavior by default", async () => {
-    const user = setupUser();
+  it("supports controlled multiple selection with S2 toggle behavior by default", () => {
     const onSelectionChange = vi.fn();
 
     function Demo() {
@@ -269,13 +278,13 @@ describe("TableView (solid-spectrum)", () => {
     const bob = screen.getByRole("row", { name: /Bob/ });
     expect(alice).toHaveAttribute("data-selected", "true");
 
-    await user.click(bob);
+    pressWithMouse(bob);
 
     expect(alice).toHaveAttribute("data-selected", "true");
     expect(bob).toHaveAttribute("data-selected", "true");
     expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["alice", "bob"]));
 
-    await user.click(alice);
+    pressWithMouse(alice);
 
     expect(alice).not.toHaveAttribute("data-selected");
     expect(bob).toHaveAttribute("data-selected", "true");
@@ -293,8 +302,7 @@ describe("TableView (solid-spectrum)", () => {
     expect(within(alice).getByRole("checkbox", { name: "Select" })).toBeTruthy();
   });
 
-  it("supports highlight selection with replace behavior and no checkboxes", async () => {
-    const user = setupUser();
+  it("supports highlight selection with replace behavior and no checkboxes", () => {
     const onSelectionChange = vi.fn();
 
     function Demo() {
@@ -354,7 +362,7 @@ describe("TableView (solid-spectrum)", () => {
     expect(alice).toHaveAttribute("data-selected", "true");
 
     // Replace behavior: clicking another row replaces the selection rather than adding to it.
-    await user.click(bob);
+    pressWithMouse(bob);
 
     expect(alice).not.toHaveAttribute("data-selected");
     expect(bob).toHaveAttribute("data-selected", "true");
@@ -412,7 +420,7 @@ describe("TableView (solid-spectrum)", () => {
     expect(bobContiguous).not.toBe(bobIsolated);
   });
 
-  it("selects rows on pointer up by default to match S2 press timing", () => {
+  it("selects rows on pointer down by default to match RAC table timing", () => {
     const onSelectionChange = vi.fn();
 
     function Demo() {
@@ -463,8 +471,7 @@ describe("TableView (solid-spectrum)", () => {
     const alice = screen.getByRole("row", { name: /Alice/ });
     const bob = screen.getByRole("row", { name: /Bob/ });
 
-    fireEvent.pointerUp(bob, { pointerType: "mouse" });
-    fireEvent.click(bob);
+    fireEvent(bob, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
 
     expect(alice).toHaveAttribute("data-selected", "true");
     expect(bob).toHaveAttribute("data-selected", "true");

@@ -6,8 +6,8 @@
  */
 
 import { createSignal, createEffect, createMemo, on, type Accessor } from "solid-js";
-import type { TreeState, TreeStateOptions, TreeCollection, TreeNode } from "./types";
-import type { Key, FocusStrategy } from "../collections/types";
+import type { TreeState, TreeStateOptions, TreeCollection } from "./types";
+import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";
 
 /**
  * Creates state management for a tree component.
@@ -66,9 +66,27 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   });
 
   const selectionMode = createMemo(() => getOptions().selectionMode ?? "none");
-  const selectionBehavior = createMemo(() => getOptions().selectionBehavior ?? "toggle");
+  const selectionBehaviorProp = (): SelectionBehavior => getOptions().selectionBehavior ?? "toggle";
+  const [selectionBehaviorState, setSelectionBehaviorState] = createSignal<SelectionBehavior>(
+    selectionBehaviorProp(),
+  );
+  const selectionBehavior = createMemo(() => selectionBehaviorState());
   const disallowEmptySelection = createMemo(() => getOptions().disallowEmptySelection ?? false);
   const disabledBehavior = createMemo(() => getOptions().disabledBehavior ?? "all");
+
+  createEffect(on(selectionBehaviorProp, (behavior) => setSelectionBehaviorState(behavior)));
+
+  createEffect(() => {
+    const keys = selectedKeys();
+    if (
+      selectionBehaviorProp() === "replace" &&
+      selectionBehaviorState() === "toggle" &&
+      keys !== "all" &&
+      keys.size === 0
+    ) {
+      setSelectionBehaviorState("replace");
+    }
+  });
 
   // Set focused key
   const setFocusedKey = (key: Key | null, strategy: FocusStrategy = "first") => {
@@ -210,6 +228,10 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
 
     updateSelection(new Set([key]));
     setAnchorKey(key);
+  };
+
+  const setSelectedKeys = (keys: Selection | Iterable<Key>) => {
+    updateSelection(normalizeSelection(keys));
   };
 
   const extendSelection = (toKey: Key) => {
@@ -356,6 +378,9 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
     get selectionBehavior() {
       return selectionBehavior();
     },
+    get disallowEmptySelection() {
+      return disallowEmptySelection();
+    },
     get selectedKeys() {
       return selectedKeys();
     },
@@ -366,6 +391,8 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
     setFocused: setIsFocused,
     toggleSelection,
     replaceSelection,
+    setSelectedKeys,
+    setSelectionBehavior: setSelectionBehaviorState,
     extendSelection,
     selectAll,
     clearSelection,

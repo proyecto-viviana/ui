@@ -28,7 +28,7 @@ import type {
   DragTypes,
   DropOperation,
 } from "@proyecto-viviana/solid-stately";
-import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { createSignal } from "solid-js";
 
 interface TestItem {
@@ -86,6 +86,14 @@ function createSectionedTreeItems() {
       ],
     },
   ] as const;
+}
+
+const pointerEvent = createPointerEvent;
+
+function pressWithMouse(target: HTMLElement): void {
+  fireEvent(target, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+  fireEvent(target, pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+  fireEvent.click(target);
 }
 
 describe("Tree", () => {
@@ -1014,21 +1022,151 @@ describe("Tree", () => {
       expect(rows[0]).toHaveAttribute("data-selected");
     });
 
-    it("updates row aria-selected when selecting from focused tree with keyboard", () => {
+    it("toggles selection exactly once with Space on the focused row", () => {
       render(() => (
         <Tree items={createTestItems()} aria-label="Test Tree" selectionMode="multiple">
           {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
         </Tree>
       ));
 
-      const tree = screen.getByRole("treegrid", { name: "Test Tree" });
       const rows = screen.getAllByRole("row");
       expect(rows[0]).toHaveAttribute("aria-selected", "false");
 
-      fireEvent.focus(tree);
-      fireEvent.keyDown(tree, { key: " " });
+      fireEvent.focus(rows[0]);
+      fireEvent.keyDown(rows[0], { key: " " });
 
       expect(rows[0]).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("selects but does not action a selected row on single click in replace mode", () => {
+      const onAction = vi.fn();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="multiple"
+          selectionBehavior="replace"
+          defaultSelectedKeys={["item-1"]}
+          onAction={onAction}
+        >
+          {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+        </Tree>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+
+      pressWithMouse(rows[0]);
+
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+      expect(onAction).not.toHaveBeenCalled();
+    });
+
+    it("performs the secondary row action on mouse double click in replace mode", () => {
+      const onAction = vi.fn();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="multiple"
+          selectionBehavior="replace"
+          onAction={onAction}
+        >
+          {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+        </Tree>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      fireEvent(rows[0], pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+      expect(onAction).not.toHaveBeenCalled();
+
+      fireEvent.dblClick(rows[0]);
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledWith("item-1");
+    });
+
+    it("fires onAction exactly once with Enter key up on the focused row", () => {
+      const onAction = vi.fn();
+      render(() => (
+        <Tree items={createTestItems()} aria-label="Test Tree" onAction={onAction}>
+          {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+        </Tree>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      fireEvent.focus(rows[0]);
+      fireEvent.keyDown(rows[0], { key: "Enter" });
+      fireEvent.keyUp(rows[0], { key: "Enter" });
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledWith("item-1");
+    });
+
+    it('keeps child controls from selecting, acting, or expanding in keyboardNavigationBehavior="tab"', () => {
+      const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
+
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Editable tree"
+          selectionMode="multiple"
+          keyboardNavigationBehavior="tab"
+          onAction={onAction}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <TreeItem id={item.key}>
+              <input aria-label={`Edit ${item.textValue}`} />
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      const input = screen.getByLabelText("Edit Item 1");
+      input.focus();
+
+      fireEvent.keyDown(input, { key: " " });
+      fireEvent.keyUp(input, { key: " " });
+      fireEvent.keyDown(input, { key: "Enter" });
+      fireEvent.keyUp(input, { key: "Enter" });
+      fireEvent.keyDown(input, { key: "ArrowRight" });
+      fireEvent(input, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+
+      expect(rows[0]).toHaveAttribute("aria-selected", "false");
+      expect(rows[0]).toHaveAttribute("aria-expanded", "false");
+      expect(screen.getAllByRole("row")).toHaveLength(3);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onAction).not.toHaveBeenCalled();
+    });
+
+    it("keeps disabledBehavior selection rows actionable but not selectable", () => {
+      const onAction = vi.fn();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="single"
+          disabledKeys={["item-1"]}
+          disabledBehavior="selection"
+          onAction={onAction}
+        >
+          {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+        </Tree>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      expect(rows[0]).not.toHaveAttribute("aria-disabled");
+      expect(rows[0]).not.toHaveAttribute("aria-selected");
+
+      pressWithMouse(rows[0]);
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledWith("item-1");
+      expect(rows[0]).not.toHaveAttribute("aria-selected");
     });
 
     it("updates TreeSelectionCheckbox checked state when item selection changes", () => {

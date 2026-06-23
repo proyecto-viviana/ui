@@ -131,6 +131,20 @@ export class SelectionManager<T = unknown> {
     return this.state.selectedKeys;
   }
 
+  /** Last selection payload emitted through onSelectionChange. @internal */
+  get lastSelectionEvent(): SelectionValue | null {
+    return this.state.lastSelectionEvent;
+  }
+
+  /** Re-emits a selection payload without recomputing selection. @internal */
+  emitDuplicateSelectionEvent(keys: SelectionValue | null = this.state.lastSelectionEvent): void {
+    if (keys == null || this.selectionMode === "none") {
+      return;
+    }
+
+    this.state.emitDuplicateSelectionEvent(keys);
+  }
+
   /** Returns whether a key is selected. */
   isSelected(key: Key): boolean {
     if (this.state.selectionMode === "none") {

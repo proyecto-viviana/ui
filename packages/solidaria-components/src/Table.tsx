@@ -1630,7 +1630,12 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   const isPressed = () => rowAria.isPressed;
   const isInteractive = () => {
     const tableData = getTableData(state as TableState<object, TableCollection<object>>);
-    return state.selectionMode !== "none" || !!tableData?.actions.onRowAction || !!local.onAction;
+    return (
+      state.selectionMode !== "none" ||
+      !!tableData?.actions.onRowAction ||
+      !!local.onAction ||
+      !!local.href
+    );
   };
 
   const { isHovered, hoverProps } = createHover({
@@ -2162,6 +2167,11 @@ export function TableSelectionCheckbox(props: TableSelectionCheckboxProps): JSX.
       style={props.style}
       tabIndex={props.excludeFromTabOrder ? -1 : selectionCheckboxAria.checkboxProps.tabIndex}
       aria-label={props["aria-label"] ?? selectionCheckboxAria.checkboxProps["aria-label"]}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+      onKeyUp={(event) => event.stopPropagation()}
+      onPointerDown={(event) => event.stopPropagation()}
+      onPointerUp={(event) => event.stopPropagation()}
     />
   );
 }

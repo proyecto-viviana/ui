@@ -5,7 +5,7 @@
 
 import { createSignal, createEffect, createMemo, on, type Accessor } from "solid-js";
 import type { GridState, GridStateOptions, GridCollection, GridNode } from "./types";
-import type { Key, FocusStrategy } from "../collections/types";
+import type { Key, FocusStrategy, SelectionBehavior, Selection } from "../collections/types";
 
 /**
  * Creates state management for a grid component.
@@ -40,11 +40,32 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   });
 
   const selectionMode = createMemo(() => getOptions().selectionMode ?? "none");
-  const selectionBehavior = createMemo(() => getOptions().selectionBehavior ?? "toggle");
+  const selectionBehaviorProp = (): SelectionBehavior => getOptions().selectionBehavior ?? "toggle";
+  const [selectionBehaviorState, setSelectionBehaviorState] =
+    createSignal<SelectionBehavior>(selectionBehaviorProp());
+  const selectionBehavior = createMemo(() => selectionBehaviorState());
   const disallowEmptySelection = createMemo(() => getOptions().disallowEmptySelection ?? false);
   const disabledBehavior = createMemo(() => getOptions().disabledBehavior ?? "all");
 
   const focusMode = createMemo(() => getOptions().focusMode ?? "row");
+
+  createEffect(
+    on(selectionBehaviorProp, (behavior) => {
+      setSelectionBehaviorState(behavior);
+    }),
+  );
+
+  createEffect(() => {
+    const keys = selectedKeys();
+    if (
+      selectionBehaviorProp() === "replace" &&
+      selectionBehaviorState() === "toggle" &&
+      keys !== "all" &&
+      keys.size === 0
+    ) {
+      setSelectionBehaviorState("replace");
+    }
+  });
 
   const setFocusedKey = (key: Key | null, strategy: FocusStrategy = "first") => {
     const opts = getOptions();
@@ -216,6 +237,10 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     setAnchorKey(key);
   };
 
+  const setSelectedKeys = (keys: Selection | Iterable<Key>) => {
+    updateSelection(normalizeSelection(keys));
+  };
+
   const extendSelection = (toKey: Key) => {
     if (isDisabled(toKey)) return;
     if (selectionMode() !== "multiple") {
@@ -295,6 +320,9 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     get selectionBehavior() {
       return selectionBehavior();
     },
+    get disallowEmptySelection() {
+      return disallowEmptySelection();
+    },
     get selectedKeys() {
       return selectedKeys();
     },
@@ -302,8 +330,10 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     isDisabled,
     setFocusedKey,
     setFocused: setIsFocused,
+    setSelectionBehavior: setSelectionBehaviorState,
     toggleSelection,
     replaceSelection,
+    setSelectedKeys,
     extendSelection,
     selectAll,
     clearSelection,

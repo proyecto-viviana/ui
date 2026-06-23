@@ -959,6 +959,31 @@ describe("ListBox", () => {
       expect(onSelectionChange).not.toHaveBeenCalled();
     });
 
+    it('keeps disabledBehavior="selection" options actionable but not selectable on click', async () => {
+      const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TestListBox
+          listBoxProps={{
+            selectionMode: "multiple",
+            disabledKeys: ["dog"],
+            disabledBehavior: "selection",
+            onAction,
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      const dogOption = screen.getByText("Dog");
+      expect(dogOption).not.toHaveAttribute("aria-disabled");
+      expect(dogOption).not.toHaveAttribute("data-disabled");
+
+      await user.click(dogOption);
+
+      expect(onAction).toHaveBeenCalledWith("dog");
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
     it("should skip disabled items during keyboard navigation", async () => {
       render(() => (
         <TestListBox
@@ -1174,12 +1199,29 @@ describe("ListBox", () => {
       expect(onSelectionChange).toHaveBeenCalledTimes(1);
     });
 
-    it("does not select on pointer down by default", () => {
+    it("selects on pointer down by default", () => {
       const onSelectionChange = vi.fn();
       render(() => (
         <TestListBox
           listBoxProps={{
             selectionMode: "single",
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      const option = screen.getByText("Cat");
+      firePointerDown(option);
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    });
+
+    it("defers selection to pointer up when shouldSelectOnPressUp is true", () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TestListBox
+          listBoxProps={{
+            selectionMode: "single",
+            shouldSelectOnPressUp: true,
             onSelectionChange,
           }}
         />

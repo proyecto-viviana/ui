@@ -22,6 +22,16 @@ export interface AriaTreeProps {
   isVirtualized?: boolean;
   /** Handler called when an item action is triggered. */
   onAction?: (key: Key) => void;
+  /**
+   * How keyboard navigation should behave within rows.
+   *
+   * `"arrow"` treats the tree as a single tab stop and uses arrow keys to move
+   * through row children. `"tab"` lets tabbable row children participate in
+   * normal tab order and stops child key events before tree navigation.
+   *
+   * @default "arrow"
+   */
+  keyboardNavigationBehavior?: "arrow" | "tab";
   /** Whether the tree is disabled. */
   isDisabled?: boolean;
   /** The writing direction for the tree. Determines expand/collapse key mapping. */

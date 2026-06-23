@@ -14,11 +14,11 @@
  *   `manager.isLink`/`manager.getItemProps`, so link items pass `isLink` /
  *   `href` / `routerOptions` via options and navigation goes through
  *   {@link openLink} (we have no `RouterProvider` context).
- * - **`canSelectItem`** is computed locally as `selectionMode !== 'none' &&
- *   !manager.isDisabled(key)`. Our selection state only models
- *   `disabledBehavior: 'all'`; the per-item `disabledBehavior: 'selection'`
- *   override is a state-layer gap (tracked in the press-path epic), not this
- *   hook's concern.
+ * - **Selection manager shape is structural.** ListState passes its
+ *   SelectionManager; grid-like states pass an adapter with the same observable
+ *   surface. `canSelectItem` is read from that surface when available so
+ *   `disabledBehavior: 'selection'` keeps actions enabled while selection stays
+ *   blocked.
  * - **Virtual focus** guards real DOM focus and updates the focused key on
  *   press; we have no `moveVirtualFocus`, so no AT cursor move is dispatched.
  * - **`onDragStart`** is bubble phase (upstream uses capture to beat `useDrag`);
@@ -28,7 +28,14 @@
  */
 
 import { createEffect, createUniqueId, type Accessor, type JSX } from "solid-js";
-import type { Collection, Key, ListState } from "@proyecto-viviana/solid-stately";
+import type {
+  Collection,
+  DisabledBehavior,
+  FocusStrategy,
+  Key,
+  Selection,
+  SelectionBehavior,
+} from "@proyecto-viviana/solid-stately";
 import { createPress, type PressEvent } from "../interactions/createPress";
 import { createLongPress } from "../interactions/createLongPress";
 import { mergeProps } from "../utils/mergeProps";
@@ -36,7 +43,7 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { getOwnerDocument, getEventTarget, openLink } from "../utils/dom";
 import { getCollectionId, isNonContiguousSelectionModifier } from "./utils";
-import { selectItem } from "./selectItem";
+import { selectItem, type SelectItemState } from "./selectItem";
 
 /**
  * DOM event dispatched when an item action is performed. Mirrors upstream's
@@ -75,7 +82,7 @@ export interface CreateSelectableItemOptions {
    * Handler called when the user performs an action on the item. The triggering
    * event depends on the collection's `selectionBehavior` and the modality.
    */
-  onAction?: () => void;
+  onAction?: (event: PressEvent | MouseEvent) => void;
   /**
    * The behavior of links in the collection.
    * - `action`: link behaves like onAction.
@@ -115,6 +122,49 @@ export interface SelectableItemAria {
   hasAction: Accessor<boolean>;
 }
 
+export interface SelectableItemState<T> extends SelectItemState {
+  /** The collection the item belongs to. */
+  readonly collection: Accessor<Collection<T>>;
+  /** Whether the collection is currently focused. */
+  readonly isFocused: Accessor<boolean>;
+  /** Sets whether the collection is focused. */
+  setFocused(isFocused: boolean): void;
+  /** The currently focused key in the collection. */
+  readonly focusedKey: Accessor<Key | null>;
+  /** The strategy for child focus, when applicable. */
+  readonly childFocusStrategy?: Accessor<FocusStrategy | null>;
+  /** Sets the focused key. */
+  setFocusedKey(key: Key | null, childFocusStrategy?: FocusStrategy): void;
+  /** The currently selected keys. */
+  readonly selectedKeys: Accessor<Selection>;
+  /** Disabled keys for the collection. */
+  readonly disabledKeys: Accessor<Set<Key>>;
+  /** How disabled keys behave. */
+  readonly disabledBehavior: Accessor<DisabledBehavior>;
+  /** Whether selection is empty. */
+  readonly isEmpty: Accessor<boolean>;
+  /** Whether all selectable items are selected. */
+  readonly isSelectAll?: Accessor<boolean>;
+  /** Whether the key is fully disabled for interaction. */
+  isDisabled(key: Key): boolean;
+  /** Whether the key may be selected. Defaults to SelectionManager when present. */
+  canSelectItem?(key: Key): boolean;
+  /** Set the selection behavior for the collection. */
+  setSelectionBehavior(behavior: SelectionBehavior): void;
+  /** Set multiple selected keys. */
+  setSelectedKeys(keys: Iterable<Key>): void;
+  /** Select all selectable keys. */
+  selectAll(): void;
+  /** Clear selection. */
+  clearSelection(): void;
+  /** Toggle select all. */
+  toggleSelectAll(): void;
+  /** Optional stable object used by selectable collections for DOM scoping. */
+  readonly selectionManager?: {
+    canSelectItem?(key: Key): boolean;
+  } & object;
+}
+
 const isActionKey = (key: string | undefined) => key === "Enter";
 const isSelectionKey = (key: string | undefined) => key === " ";
 
@@ -124,7 +174,7 @@ const isSelectionKey = (key: string | undefined) => key === " ";
  */
 export function createSelectableItem<T>(
   options: MaybeAccessor<CreateSelectableItemOptions>,
-  manager: ListState<T>,
+  manager: SelectableItemState<T>,
   ref: () => HTMLElement | null,
 ): SelectableItemAria {
   const getOptions = () => access(options);
@@ -143,8 +193,17 @@ export function createSelectableItem<T>(
   // Final disabled state: explicitly disabled, or disabled by the collection.
   const isDisabled = () => getOptions().isDisabled === true || manager.isDisabled(key());
 
-  // Mirrors SelectionManager.canSelectItem for our supported disabledBehavior.
-  const canSelectItem = () => manager.selectionMode() !== "none" && !manager.isDisabled(key());
+  // Mirrors SelectionManager.canSelectItem, while allowing grid/table/tree
+  // adapters to expose the raw selection-disabled check separately from
+  // interaction disabled.
+  const canSelectItem = () => {
+    const k = key();
+    return (
+      manager.canSelectItem?.(k) ??
+      manager.selectionManager?.canSelectItem?.(k) ??
+      (manager.selectionMode() !== "none" && !manager.isDisabled(k))
+    );
+  };
 
   const isLinkOverride = () => isLink() && linkBehavior() === "override";
   const isActionOverride = () =>
@@ -212,10 +271,10 @@ export function createSelectableItem<T>(
     selectItem(manager, k, e, collection());
   };
 
-  const performAction = (e: PressEvent) => {
+  const performAction = (e: PressEvent | MouseEvent) => {
     const o = getOptions();
     if (o.onAction) {
-      o.onAction();
+      o.onAction(e);
       ref()?.dispatchEvent(new CustomEvent(ITEM_ACTION_EVENT, { bubbles: true }));
     }
 
@@ -400,7 +459,7 @@ export function createSelectableItem<T>(
         // Scopes this item to its collection for getItemElement. Resolves to a
         // value only once a createSelectableCollection container has registered
         // the manager; otherwise undefined (Solid omits the attribute).
-        "data-collection": getCollectionId(manager.selectionManager),
+        "data-collection": getCollectionId(manager.selectionManager ?? manager),
       };
 
       // Roving tabindex: only the focused item is tabbable. With virtual focus,

@@ -19,12 +19,51 @@ import {
 import { createGridList, createGridListItem } from "../src/gridlist";
 
 // Mock keyboard event with a stubbed preventDefault and currentTarget.
-function createMockKeyboardEvent(key: string, options: Partial<KeyboardEvent> = {}) {
-  const mockElement = document.createElement("div");
+function createMockKeyboardEvent(
+  key: string,
+  options: Partial<KeyboardEvent> = {},
+  mockElement = document.createElement("div"),
+) {
   const event = new KeyboardEvent("keydown", { key, ...options });
   Object.defineProperty(event, "preventDefault", { value: vi.fn() });
   Object.defineProperty(event, "currentTarget", { value: mockElement });
   Object.defineProperty(event, "target", { value: mockElement });
+  return event;
+}
+
+function createRowKeyboardEvent(key: string, currentTarget: HTMLElement, target: HTMLElement) {
+  const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+  let stopped = false;
+  Object.defineProperty(event, "cancelBubble", {
+    configurable: true,
+    get: () => stopped,
+    set: (value: boolean) => {
+      stopped = value;
+    },
+  });
+  Object.defineProperty(event, "preventDefault", { value: vi.fn() });
+  Object.defineProperty(event, "stopPropagation", {
+    value: vi.fn(() => {
+      stopped = true;
+    }),
+  });
+  Object.defineProperty(event, "currentTarget", { value: currentTarget });
+  Object.defineProperty(event, "target", { value: target });
+  return event;
+}
+
+function createRowPointerEvent(
+  type: "pointerdown" | "mousedown",
+  currentTarget: HTMLElement,
+  target: HTMLElement,
+) {
+  const event =
+    type === "pointerdown" && typeof PointerEvent === "function"
+      ? new PointerEvent(type, { bubbles: true, cancelable: true })
+      : new MouseEvent(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "stopPropagation", { value: vi.fn() });
+  Object.defineProperty(event, "currentTarget", { value: currentTarget });
+  Object.defineProperty(event, "target", { value: target });
   return event;
 }
 
@@ -297,12 +336,82 @@ describe("createGridList disabled-key keyboard navigation", () => {
           () => null,
         );
 
-        (item.rowProps.onKeyDown as any)?.(createMockKeyboardEvent("Enter"));
+        const keyboardTarget = document.createElement("div");
+        (item.rowProps.onKeyDown as any)?.(createMockKeyboardEvent("Enter", {}, keyboardTarget));
+        (item.rowProps.onKeyUp as any)?.(createMockKeyboardEvent("Enter", {}, keyboardTarget));
 
         expect(onAction).toHaveBeenCalledWith("b");
         expect(state.isSelected("b")).toBe(false);
         dispose();
       });
+    });
+  });
+});
+
+describe("createGridList keyboardNavigationBehavior", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('stops tabbable child keyboard and pointer events in "tab" mode', () => {
+    createRoot((dispose) => {
+      const onAction = vi.fn();
+      const state = createRowGridState({ selectionMode: "multiple" });
+      const row = document.createElement("div");
+      const input = document.createElement("input");
+      const button = document.createElement("button");
+      row.append(input, button);
+      document.body.append(row);
+
+      createGridList(
+        () => ({ keyboardNavigationBehavior: "tab", onAction }),
+        () => state,
+        () => null,
+      );
+
+      state.setFocused(true);
+      state.setFocusedKey("a");
+
+      const item = createGridListItem(
+        () => ({ node: state.collection.getItem("a")! }),
+        () => state,
+        () => row,
+      );
+
+      input.focus();
+
+      const space = createRowKeyboardEvent(" ", row, input);
+      (item.rowProps.onKeyDown as any)?.(space);
+
+      expect(space.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(state.isSelected("a")).toBe(false);
+      expect(onAction).not.toHaveBeenCalled();
+
+      const enter = createRowKeyboardEvent("Enter", row, input);
+      (item.rowProps.onKeyDown as any)?.(enter);
+
+      expect(enter.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(onAction).not.toHaveBeenCalled();
+
+      const tab = createRowKeyboardEvent("Tab", row, input);
+      (item.rowProps.onKeyDown as any)?.(tab);
+
+      expect(tab.stopPropagation).toHaveBeenCalledTimes(1);
+
+      const pointerDown = createRowPointerEvent("pointerdown", row, input);
+      (item.rowProps.onPointerDown as any)?.(pointerDown);
+
+      expect(pointerDown.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(state.isSelected("a")).toBe(false);
+
+      const mouseDown = createRowPointerEvent("mousedown", row, input);
+      (item.rowProps.onMouseDown as any)?.(mouseDown);
+
+      expect(mouseDown.stopPropagation).toHaveBeenCalledTimes(1);
+      expect(state.isSelected("a")).toBe(false);
+
+      row.remove();
+      dispose();
     });
   });
 });

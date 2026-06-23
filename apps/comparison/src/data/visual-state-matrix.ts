@@ -219,7 +219,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/menu-contract.spec.ts",
-      note: "Menu route mounts both stacks with the official MenuTrigger + ActionButton + Menu composition and asserts trigger size, menu size, placement axes, shouldFlip, disabled trigger state, action dispatch, selection mode state, omitted-prop reset, and cleanup.",
+      note: "Menu route mounts both stacks with the official MenuTrigger + ActionButton + Menu composition and asserts trigger size, menu size, placement axes, shouldFlip, disabled trigger state, action dispatch, selection mode state, omitted-prop reset, cleanup, and the upstream different-origin mouse press release selection branch.",
     },
     {
       id: "styled.a11y-semantics",

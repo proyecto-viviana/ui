@@ -1,6 +1,6 @@
 ---
 kind: scoping
-status: Phases 0–1 landed; Phases 2–3 not started
+status: Phases 0–2 landed (GridList + Tree + Table + ListBox option + Menu item migrated); Phase 3 not started
 tickets: T-34, T-51, T-52, T-56
 oracle: react-spectrum/packages/react-aria/src/selection/useSelectableItem.ts
 ---
@@ -17,14 +17,14 @@ logic through one shared hook, `useSelectableItem`, built on `usePress` +
 
 | Ticket      | Gap                                                                                                                                                                                                                                                  | Depends on                                                               |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **T-51** ⛔ | `replace`-mode action model: single-click selects, double-click acts (secondary action); touch long-press → `setSelectionBehavior('toggle')`                                                                                                         | the shared press path                                                    |
+| **T-51** ✔ | `replace`-mode action model: single-click selects, double-click acts (secondary action); touch long-press → `setSelectionBehavior('toggle')`                                                                                                         | landed through the shared press path                                     |
 | **T-34** ⛔ | `keyboardNavigationBehavior='tab'` collection keyboard model (child-propagation gating, capture binding only in `'arrow'` mode, tabbable-target pointer guards)                                                                                      | the item-hook surface; sequence after/with the press path                |
-| **T-52** 🔍 | We pulled the aria-layer modifier decision into stately's `select()` (uses `ctrlKey \|\| metaKey`, never sees `pointerType`). Fix = restore upstream's split: thin `select()` to pointerType+behavior, move modifiers up to an aria-layer `onSelect` | foundational; lands first                                                |
-| **T-56** 🔍 | `disabledBehavior:'selection'` item fires `onAction` on keyboard but **not** on pointer click                                                                                                                                                        | falls out of the press path (item-hook `performAction` runs for pointer) |
+| **T-52** ✔ | We pulled the aria-layer modifier decision into stately's `select()` (uses `ctrlKey \|\| metaKey`, never sees `pointerType`). Fix = restore upstream's split: thin `select()` to pointerType+behavior, move modifiers up to an aria-layer `onSelect` | landed as Phase 0                                                        |
+| **T-56** ✔ | `disabledBehavior:'selection'` item fires `onAction` on keyboard but **not** on pointer click                                                                                                                                                        | landed through the shared press path (item-hook `performAction`)         |
 
 This is high-risk and cross-hook. **Scope and validate on its own before
-starting** (the ticket's own directive). This file is the scope; nothing here is
-implemented yet.
+starting** (the ticket's own directive). This file is the scope; implementation
+status is tracked by phase below.
 
 ## The upstream contract (`useSelectableItem`, pinned 1.19)
 
@@ -73,9 +73,9 @@ on those devices), and it uses `isCtrlKeyPressed(e)` not `e.ctrlKey || e.metaKey
 Calls `onAction()`, dispatches a bubbling `react-aria-item-action` CustomEvent,
 and for link items opens the href via the router.
 
-## What we have vs. what's missing
+## Original gap inventory
 
-**Primitives present** — no new dependencies needed:
+**Initial primitives present** — no new dependencies needed:
 
 - `solidaria/src/interactions/createPress.ts` — `onPress`/`onPressStart`/
   `onPressUp`, `PressEvent.pointerType`. ✓
@@ -84,15 +84,17 @@ and for link items opens the href via the router.
   `setSelectionBehavior`, `selectionBehavior`, `disallowEmptySelection`, `isEmpty`,
   `toggle/replace/extendSelection`. ✓
 
-**Missing — to build:**
+**Dispositioned gaps:**
 
-1. **No shared `createSelectableItem`.** The central deliverable. Each row hook
-   reimplements activation. There is no Solid analogue of `useSelectableItem`.
-2. **`select()` doesn't thread `pointerType`** and uses `ctrlKey || metaKey`
-   (T-52). Needs a richer event param + platform-aware ctrl resolution.
-3. **No `isCtrlKeyPressed` / `isNonContiguousSelectionModifier` utils**, and a
-   **self-inflicted divergence to revert**. Upstream splits the toggle-vs-replace
-   decision across exactly two layers:
+1. **No shared `createSelectableItem`.** ✔ Built in Phase 1, then adopted by
+   GridList, Tree, Table, ListBox option, and Menu item in Phase 2.
+2. **`select()` didn't thread `pointerType`** and used `ctrlKey || metaKey`
+   (T-52). ✔ Restored upstream's two-layer split in Phase 0.
+3. **No `isCtrlKeyPressed` / `isNonContiguousSelectionModifier` utils**, plus a
+   **self-inflicted divergence to revert**. ✔ Resolved in Phase 0 by porting the
+   aria-layer utils into solidaria and removing modifier/platform logic from
+   stately. Upstream splits the toggle-vs-replace decision across exactly two
+   layers:
    - `react-stately` `SelectionManager.select(key, e)` knows **only**
      `pointerType` + `selectionBehavior`: single-mode toggle/replace, then
      `behavior === 'toggle' || pointerType ∈ {touch, virtual}` ⇒ toggle, else
@@ -105,28 +107,23 @@ and for link items opens the href via the router.
      imported from the **aria-layer** util `react-aria/src/utils/keyboard`;
      `isNonContiguousSelectionModifier` from `react-aria/src/selection/utils`.
 
-   We diverged by pulling the aria-layer modifier logic (`shiftKey`,
-   `ctrlKey || metaKey`) **down** into `solid-stately`'s `select()`, and our
-   `select()` does **not** yet check `pointerType`. That manufactured the
-   apparent "stately can't reach `isMac`" problem. The fix is to **restore the
-   upstream split**, not to work around it: revert `solid-stately`'s `select()`
-   to the `SelectionManager.select` shape (pointerType + behavior, layer-safe,
-   no platform util), and move the modifier/shift/link/keyboard decision up into
-   the aria layer (`createSelectableItem`'s `onSelect`), where `isMac` already
-   lives in `solidaria/src/utils/platform.ts`. Port `isCtrlKeyPressed` and
-   `isNonContiguousSelectionModifier` into solidaria as aria-layer utils.
+   The fix was to **restore the upstream split**, not to work around it:
+   `solid-stately` `select()` now follows the `SelectionManager.select` shape
+   (pointerType + behavior, layer-safe, no platform util), and
+   `createSelectableItem` owns the aria-layer modifier/shift/link/keyboard
+   decision.
 
-4. **Manager link surface absent.** `manager.canSelectItem`, `manager.isLink`,
+4. **Manager link surface absent.** Adapted in Phase 1. `manager.canSelectItem`,
+   `manager.isLink`,
    `manager.getItemProps`, and the `linkBehavior` axis do **not** exist on our
    selection state — we thread `href`/`onLinkAction` through item **props**
-   instead (e.g. `createTableRow` reads `p.href`, calls `p.onLinkAction`). The
-   port must either add a link registry to the manager or adapt
-   `createSelectableItem` to the prop-threaded link model we already use.
-   Recommend the latter (smaller, matches our collection-builder design) and
-   record the divergence.
-5. **`keyboardNavigationBehavior` is absent entirely** (T-34) — greps to nothing.
+   instead (e.g. `createTableRow` reads `p.href`, calls `p.onLinkAction`).
+   `createSelectableItem` therefore adapts upstream's link behavior to our
+   prop-threaded link model rather than adding a manager registry.
+5. **`keyboardNavigationBehavior` is absent entirely** (T-34). Still open for
+   Phase 3.
 
-## As-is, per item hook (the migration targets)
+## Original as-is, per item hook (pre-migration)
 
 - **`gridlist/createGridListItem.ts`** — `handleActivation` (45–89) conflates
   selection + action; the `replace` branch fires `onAction` on a single click of
@@ -223,17 +220,20 @@ mouse primary action, Space select, Enter action, double-click secondary,
 long-press → toggle). Press-path tests run under fake timers, mirroring the
 `createPress` suite. No consumer migrates onto it in this phase.
 
-As-built adaptations from upstream (our `ListState` is thinner than
-`SelectionManager`) — record alongside gap #4 so they aren't read as port
+As-built adaptations from upstream (our collection manager shapes are thinner
+than `SelectionManager`) — record alongside gap #4 so they aren't read as port
 misses:
 
-- **`canSelectItem` computed locally** (`selectionMode() !== 'none' &&
-!isDisabled(key)`), not read off `manager.canSelectItem`.
+- **Selection manager shape is structural.** List-like states pass the
+  `selectionManager`; grid-like states pass adapters. `canSelectItem` is read
+  from the adapter / selection manager when present; the fallback remains
+  `selectionMode() !== 'none' && !isDisabled(key)`.
 - **Link model prop-threaded** (`isLink`/`href`/`routerOptions`/`linkBehavior`),
   not `manager.isLink`/`getItemProps`; link open via the `openLink` util, no
   router context.
-- **No `moveVirtualFocus`/`getCollectionId`** — virtual-focus updates set the
-  focused key directly; no `data-collection` id is emitted.
+- **No `moveVirtualFocus`** — virtual-focus updates set the focused key
+  directly. `data-collection` is emitted when a collection manager id is
+  available, and adapters fall back to their own object identity.
 - **`onDragStart` bubbles** (no capture-phase `onDragStartCapture`); merged via
   `mergeProps` so it chains with `createPress`'s own `onDragStart`.
 - **`PressEvent.key` added** (`solidaria/src/interactions/PressEvent.ts`) to
@@ -245,16 +245,68 @@ misses:
   want long-press toggle must leave `selectionBehavior` uncontrolled
   (state-layer gap, also noted under `disabledBehavior:'selection'`).
 
-**Phase 2 — migrate the three item hooks, one at a time.**
+**Phase 2 — migrate the row hooks, then sibling option hooks. ✔ Landed.**
 
-- `createGridListItem` → `createTreeItem` → `createTableRow`, each its own
-  commit + parity tests, each green before the next. Reconcile each hook's
-  keyboard handler and `gridCellProps`/`expandButtonProps` extras onto the
-  shared base. **T-56 falls out here** (the press path runs `performAction` on
-  pointer for selection-disabled-but-actionable items).
-- Audit the sibling option hooks (`createListBoxOption`, `createMenuItem`) for
-  the same click gap; migrate or document why they differ (menus use
-  `shouldSelectOnPressUp`).
+As built (2026-06-23, changeset `gridlist-press-path.md`):
+`createGridListItem`, `createTreeItem`, and `createTableRow` now route row
+selection/actions through `createSelectableItem`. The slice includes
+`replace`-mode single-click-selects / mouse-double-click-acts evidence,
+Enter-on-keyup alignment, Space-selects on the focused row without container
+double-toggle, and `disabledBehavior="selection"` rows that remain
+pointer/keyboard-actionable while blocked from selection. `solid-stately` grid,
+tree, and table state expose the selection-behavior surface needed for
+long-press toggle state; `solidaria-components` GridList and Table pass the
+resolved `selectionBehavior` / `shouldSelectOnPressUp` data through; Tree's row
+activation mirrors upstream `useTreeItem` by delegating to the shared selectable
+item path and keeping expansion-specific behavior on the expand button /
+no-action row branch.
+
+The Table migration also fixed a Solid-specific press containment failure found
+by the comparison app: a child cell `pointerdown` handler could synchronously
+replace the original event target before the row press handler ran. `createPress`
+now accepts events whose original composed path contains the press target, which
+preserves upstream's containment intent under Solid's synchronous updates. S2
+`TableView` also no longer forces `shouldSelectOnPressUp` to `true`; upstream RAC
+only uses pointer-up selection when drag selection is active.
+
+ListBox's option hook is now on the same item path too:
+`listbox/createOption` delegates selection/action timing to
+`createSelectableItem`, defaults plain ListBox back to upstream's pointer-down
+selection timing, and keeps the upstream picker/combobox overrides in the
+wrappers (`shouldSelectOnPressUp`, virtual focus, hover focus, link/action item
+behavior). `disabledBehavior="selection"` options remain pointer-actionable but
+unselectable, covered at both hook and component layers. The larger
+`createSelectableCollection`/keyboard-delegate spine is still deferred: the
+ListBox root keyboard/navigation code remains local, with bubbled item
+Space/Enter ignored so item-level press handling does not double-activate.
+
+Menu's item hook is now on the same shared selection path as upstream:
+`menu/createMenuItem` composes `createSelectableItem` with
+`shouldSelectOnPressUp: true`, `allowsDifferentPressOrigin: true`, and
+`linkBehavior: "none"`. The menu-specific layer stays separate, matching
+upstream: item/menu `onAction` dispatch, submenu trigger behavior, and the
+close-on-select matrix live in `createMenuItem`/`createMenu`, not in the shared
+selection hook. Covered branches include disabled-for-selection pointer action,
+different-origin pointer release, Enter-vs-pointer close defaults in multiple
+selection, mouse release selection without synthetic-click final-state feedback,
+upstream duplicate selection callbacks for that release path,
+and the root keyboard path's no-double-activation guard.
+
+- `createGridListItem` → `createTreeItem` → `createTableRow` →
+  `listbox/createOption` → `menu/createMenuItem` are migrated. **T-56 falls out
+  here** for the migrated row/option/menu hooks: the press path runs
+  `performAction` on pointer for selection-disabled-but-actionable items while
+  selection remains blocked.
+- The Menu source reconcile found two Solid timing adapters, documented in
+  `.claude/reference/patterns.md`: an intentional keyboard `.click()` can pass
+  through `createPress` as `virtual` before the menu action layer reads the
+  intended keyboard modality, and the upstream different-origin mouse
+  `target.click()` can otherwise feed back into selectable-item virtual
+  selection after press-up already selected the release target. The mouse guard
+  suppresses the destructive second state mutation but replays React's duplicate
+  selection callback with the original press-up payload. Both guards live in
+  `createMenuItem` and are scoped to matching upstream's user-observable
+  close/action/selection behavior, not a global press monkey patch.
 
 **Phase 3 — `keyboardNavigationBehavior` (T-34), layered on top.**
 
@@ -284,5 +336,11 @@ misses:
 Per phase: faithful unit/parity tests that **discriminate** (fail against the
 pre-change hook), then the full collection regression — `Table`, `GridList`,
 `Tree`, `ListView`, `TreeView`, `Menu`, `ListBox` across `solidaria` /
-`solidaria-components` / `solid-spectrum` — green before committing. Keep the
-contract evidence here and in the per-ticket audit entries.
+`solidaria-components` / `solid-spectrum` — green before committing. The
+comparison app now has a focused collection gate,
+`vp run comparison:test:collections`, for the styled `ListView` / `TableView` /
+`TreeView` visual specs. Menu's comparison contract also covers the upstream
+different-origin mouse press release selection branch for
+`shouldSelectOnPressUp` + `allowsDifferentPressOrigin`, including the duplicate
+selection callback count React emits before the menu action. Keep the contract
+evidence here and in the per-ticket audit entries.

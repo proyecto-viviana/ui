@@ -5,6 +5,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, For } from "solid-js";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { Button } from "../src/Button";
 import { Checkbox } from "../src/Checkbox";
 import { RouterProvider } from "../src/RouterProvider";
@@ -36,6 +37,15 @@ const testData = [
   { id: 2, name: "Charizard", type: "Fire", level: 45 },
   { id: 3, name: "Blastoise", type: "Water", level: 42 },
 ];
+
+const pointerEvent = createPointerEvent;
+
+function pressWithMouse(target: HTMLElement, init: Record<string, unknown> = {}): void {
+  const pointerInit = { pointerId: 1, pointerType: "mouse", ...init };
+  fireEvent(target, pointerEvent("pointerdown", pointerInit));
+  fireEvent(target, pointerEvent("pointerup", pointerInit));
+  fireEvent.click(target, init);
+}
 
 function setupIntersectionObserverMock() {
   const originalIntersectionObserver = globalThis.IntersectionObserver;
@@ -2048,7 +2058,7 @@ describe("Table", () => {
         expect(item).toHaveAttribute("data-href");
       }
 
-      fireEvent.click(items[0]);
+      pressWithMouse(items[0] as HTMLElement);
       expect(navigate).toHaveBeenCalledWith("/pikachu", undefined);
     });
 
@@ -2064,7 +2074,7 @@ describe("Table", () => {
           expect(item).toHaveAttribute("data-href");
         }
 
-        fireEvent.click(items[0]);
+        pressWithMouse(items[0] as HTMLElement);
         expect(navigate).toHaveBeenCalledWith("/pikachu", undefined);
         expect(items[0]).toHaveAttribute("aria-selected", "false");
 
@@ -2096,7 +2106,7 @@ describe("Table", () => {
           expect(item).toHaveAttribute("data-href");
         }
 
-        fireEvent.click(items[0]);
+        pressWithMouse(items[0] as HTMLElement);
         expect(navigate).not.toHaveBeenCalled();
         expect(items[0]).toHaveAttribute("aria-selected", "true");
 
@@ -3442,8 +3452,7 @@ describe("Table", () => {
 
       const row = screen.getByText("Charizard").closest('[role="row"]')!;
 
-      fireEvent.pointerUp(row, { pointerType: "mouse" });
-      fireEvent.click(row);
+      pressWithMouse(row);
 
       expect(onRowAction).toHaveBeenCalledTimes(1);
       expect(onRowAction).toHaveBeenCalledWith(2);
@@ -3553,6 +3562,8 @@ describe("Table", () => {
       fireEvent.pointerDown(row, { pointerType: "mouse" });
       expect(onSelectionChange).not.toHaveBeenCalled();
       fireEvent.pointerUp(row, { pointerType: "mouse" });
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      fireEvent.click(row);
       expect(onSelectionChange).toHaveBeenCalledTimes(1);
     });
 
@@ -3588,12 +3599,12 @@ describe("Table", () => {
       const row = screen.getByText("Charizard").closest('[role="row"]')!;
       expect(row).toHaveAttribute("aria-selected", "false");
 
-      fireEvent.pointerDown(row, { pointerType: "mouse" });
+      pressWithMouse(row);
       expect(row).toHaveAttribute("aria-selected", "true");
       expect(row).toHaveAttribute("data-selected");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([2]));
 
-      fireEvent.pointerDown(row, { pointerType: "mouse" });
+      pressWithMouse(row);
       expect(row).toHaveAttribute("aria-selected", "false");
       expect(row).not.toHaveAttribute("data-selected");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
@@ -3631,16 +3642,16 @@ describe("Table", () => {
       const row1 = screen.getByText("Pikachu").closest('[role="row"]')!;
       const row2 = screen.getByText("Charizard").closest('[role="row"]')!;
 
-      fireEvent.pointerDown(row2, { pointerType: "mouse", ctrlKey: true });
+      pressWithMouse(row2, { ctrlKey: true });
       expect(row2).toHaveAttribute("aria-selected", "true");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([2]));
 
-      fireEvent.pointerDown(row1, { pointerType: "mouse", ctrlKey: true });
+      pressWithMouse(row1, { ctrlKey: true });
       expect(row1).toHaveAttribute("aria-selected", "true");
       expect(row2).toHaveAttribute("aria-selected", "true");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1, 2]));
 
-      fireEvent.pointerDown(row1, { pointerType: "mouse", ctrlKey: true });
+      pressWithMouse(row1, { ctrlKey: true });
       expect(row1).toHaveAttribute("aria-selected", "false");
       expect(row2).toHaveAttribute("aria-selected", "true");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([2]));
@@ -3678,16 +3689,16 @@ describe("Table", () => {
       const row1 = screen.getByText("Pikachu").closest('[role="row"]')!;
       const row2 = screen.getByText("Charizard").closest('[role="row"]')!;
 
-      fireEvent.pointerDown(row2, { pointerType: "mouse" });
+      pressWithMouse(row2);
       expect(row2).toHaveAttribute("aria-selected", "true");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([2]));
 
-      fireEvent.pointerDown(row1, { pointerType: "mouse" });
+      pressWithMouse(row1);
       expect(row1).toHaveAttribute("aria-selected", "true");
       expect(row2).toHaveAttribute("aria-selected", "false");
       expect(onSelectionChange).toHaveBeenLastCalledWith(new Set([1]));
 
-      fireEvent.pointerDown(row1, { pointerType: "mouse" });
+      pressWithMouse(row1);
       expect(row1).toHaveAttribute("aria-selected", "true");
       expect(onSelectionChange).toHaveBeenCalledTimes(2);
     });
@@ -3722,7 +3733,7 @@ describe("Table", () => {
         </Table>
       ));
 
-      fireEvent.click(screen.getByText("Pikachu").closest('[role="row"]')!);
+      pressWithMouse(screen.getByText("Pikachu").closest('[role="row"]')!);
       expect(onAction).toHaveBeenCalledTimes(1);
     });
   });

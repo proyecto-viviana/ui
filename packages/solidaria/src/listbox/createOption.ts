@@ -4,13 +4,16 @@
  */
 
 import { type JSX, type Accessor } from "solid-js";
-import { createPress } from "../interactions/createPress";
 import { createHover, type HoverEvents } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { getListBoxData } from "./createListBox";
 import type { ListState, Key } from "@proyecto-viviana/solid-stately";
+import {
+  createSelectableItem,
+  type SelectableItemState,
+} from "../selection/createSelectableItem";
 
 export interface AriaOptionProps {
   /** The unique key for the option. */
@@ -27,6 +30,8 @@ export interface AriaOptionProps {
   shouldFocusOnHover?: boolean;
   /** Whether the option should use virtual focus instead of receiving DOM focus. */
   shouldUseVirtualFocus?: boolean;
+  /** Whether the option is contained in a virtual scrolling listbox. */
+  isVirtualized?: boolean;
   /** Whether press-up may occur without the press starting on this option. */
   allowsDifferentPressOrigin?: boolean;
   /** Handler called when hover starts. */
@@ -58,6 +63,10 @@ export interface OptionAria {
   isHovered: Accessor<boolean>;
   /** Whether the option is disabled. */
   isDisabled: Accessor<boolean>;
+  /** Whether the option may be selected. */
+  allowsSelection: Accessor<boolean>;
+  /** Whether the option has an action. */
+  hasAction: Accessor<boolean>;
 }
 
 /**
@@ -72,80 +81,69 @@ export function createOption<T>(
 
   const getData = () => getListBoxData(state);
 
-  const isDisabled: Accessor<boolean> = () => {
-    return Boolean(
-      getData()?.isDisabled || getProps().isDisabled || state.isDisabled(getProps().key),
-    );
-  };
-
-  const isSelected: Accessor<boolean> = () => {
-    return state.isSelected(getProps().key);
-  };
-
-  const isFocused: Accessor<boolean> = () => {
-    return state.focusedKey() === getProps().key;
-  };
-
   const shouldSelectOnPressUp = () => {
-    return getProps().shouldSelectOnPressUp ?? getData()?.shouldSelectOnPressUp ?? true;
+    return getProps().shouldSelectOnPressUp ?? getData()?.shouldSelectOnPressUp;
+  };
+
+  const shouldFocusOnHover = () => {
+    return getProps().shouldFocusOnHover ?? getData()?.shouldFocusOnHover ?? false;
   };
 
   const shouldUseVirtualFocus = () => {
-    return getProps().shouldUseVirtualFocus ?? false;
+    return getProps().shouldUseVirtualFocus ?? getData()?.shouldUseVirtualFocus ?? false;
+  };
+
+  const isVirtualized = () => {
+    return getProps().isVirtualized ?? getData()?.isVirtualized ?? false;
   };
 
   const allowsDifferentPressOrigin = () => {
-    return getProps().allowsDifferentPressOrigin ?? false;
+    return (
+      getProps().allowsDifferentPressOrigin ??
+      Boolean(shouldSelectOnPressUp() && shouldFocusOnHover())
+    );
   };
 
-  const selectAndAction = () => {
-    const key = getProps().key;
-    if (state.selectionMode() !== "none") {
-      state.select(key);
-    }
-    getProps().onAction?.();
-    getData()?.onAction?.(key);
+  const isDisabledProp = () => {
+    return Boolean(getData()?.isDisabled || getProps().isDisabled);
   };
 
-  const { pressProps, isPressed } = createPress({
-    get isDisabled() {
-      return isDisabled();
+  const optionId = () => getProps().optionId ?? String(getProps().key);
+
+  const selectableItem = createSelectableItem<T>(
+    () => {
+      const key = getProps().key;
+      const hasAction = getProps().onAction != null || getData()?.onAction != null;
+
+      return {
+        key,
+        id: optionId(),
+        isDisabled: isDisabledProp(),
+        shouldSelectOnPressUp: shouldSelectOnPressUp(),
+        allowsDifferentPressOrigin: allowsDifferentPressOrigin(),
+        isVirtualized: isVirtualized(),
+        shouldUseVirtualFocus: shouldUseVirtualFocus(),
+        onAction: hasAction
+          ? () => {
+              getProps().onAction?.();
+              getData()?.onAction?.(key);
+            }
+          : undefined,
+        linkBehavior: getData()?.linkBehavior,
+        UNSTABLE_itemBehavior: getData()?.UNSTABLE_itemBehavior,
+      };
     },
-    get preventFocusOnPress() {
-      return shouldUseVirtualFocus();
-    },
-    onPressStart(e) {
-      if (!shouldSelectOnPressUp() && e.pointerType !== "keyboard" && e.pointerType !== "virtual") {
-        selectAndAction();
-      }
-    },
-    onPressUp(e) {
-      if (shouldSelectOnPressUp() && allowsDifferentPressOrigin() && e.pointerType === "mouse") {
-        selectAndAction();
-      }
-    },
-    onPress(e) {
-      if (
-        (shouldSelectOnPressUp() && !allowsDifferentPressOrigin()) ||
-        (shouldSelectOnPressUp() &&
-          allowsDifferentPressOrigin() &&
-          e.pointerType !== "keyboard" &&
-          e.pointerType !== "mouse") ||
-        e.pointerType === "keyboard" ||
-        e.pointerType === "virtual"
-      ) {
-        selectAndAction();
-      }
-    },
-  });
+    state as SelectableItemState<T>,
+    () => _ref?.() ?? null,
+  );
 
   const { hoverProps, isHovered } = createHover({
     get isDisabled() {
-      return isDisabled();
+      return selectableItem.isDisabled();
     },
     onHoverStart(e) {
-      const shouldFocus = getProps().shouldFocusOnHover ?? getData()?.shouldFocusOnHover;
-      if (shouldFocus) {
+      if (shouldFocusOnHover() && !isFocusVisible()) {
+        state.setFocused(true);
         state.setFocusedKey(getProps().key);
       }
       getProps().onHoverStart?.(e);
@@ -170,24 +168,22 @@ export function createOption<T>(
       const ariaLabel = getProps()["aria-label"];
 
       return mergeProps(
-        pressProps as Record<string, unknown>,
+        selectableItem.itemProps as Record<string, unknown>,
         hoverProps as Record<string, unknown>,
         focusProps as Record<string, unknown>,
         {
           role: "option",
-          id: getProps().optionId ?? String(key),
-          "data-key": String(key),
-          "aria-selected": selectionMode !== "none" ? isSelected() : undefined,
-          "aria-disabled": isDisabled() || undefined,
+          id: optionId(),
+          "aria-selected": selectionMode !== "none" ? selectableItem.isSelected() : undefined,
+          "aria-disabled": selectableItem.isDisabled() || undefined,
           "aria-label": ariaLabel,
           "aria-labelledby": !ariaLabel ? labelId : undefined,
           "aria-describedby": descriptionId,
-          tabIndex: shouldUseVirtualFocus() ? undefined : isFocused() ? 0 : -1,
-          "data-selected": isSelected() || undefined,
-          "data-focused": isFocused() || undefined,
-          "data-focus-visible": isFocusVisible() || undefined,
-          "data-pressed": isPressed() || undefined,
-          "data-disabled": isDisabled() || undefined,
+          "data-selected": selectableItem.isSelected() || undefined,
+          "data-focused": selectableItem.isFocused() || undefined,
+          "data-focus-visible": (selectableItem.isFocused() && isFocusVisible()) || undefined,
+          "data-pressed": selectableItem.isPressed() || undefined,
+          "data-disabled": selectableItem.isDisabled() || undefined,
           "data-hovered": isHovered() || undefined,
         } as Record<string, unknown>,
       ) as JSX.HTMLAttributes<HTMLElement>;
@@ -198,11 +194,13 @@ export function createOption<T>(
     descriptionProps: {
       id: descriptionId,
     },
-    isSelected,
-    isFocused,
-    isFocusVisible: () => isFocused() && isFocusVisible(),
-    isPressed,
+    isSelected: selectableItem.isSelected,
+    isFocused: selectableItem.isFocused,
+    isFocusVisible: () => selectableItem.isFocused() && isFocusVisible(),
+    isPressed: selectableItem.isPressed,
     isHovered,
-    isDisabled,
+    isDisabled: selectableItem.isDisabled,
+    allowsSelection: selectableItem.allowsSelection,
+    hasAction: selectableItem.hasAction,
   };
 }

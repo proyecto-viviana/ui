@@ -1163,7 +1163,6 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     <HeadlessTable
       {...headlessProps}
       selectionBehavior={selectionBehavior()}
-      shouldSelectOnPressUp={headlessProps.shouldSelectOnPressUp ?? true}
       showSelectionCheckboxes={showSelectionCheckboxes()}
       onRowAction={local.onAction ?? local.onRowAction}
       onSelectionChange={onSelectionChange}

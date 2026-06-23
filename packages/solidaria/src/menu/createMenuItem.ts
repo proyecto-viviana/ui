@@ -3,24 +3,33 @@
  * Based on @react-aria/menu useMenuItem.
  */
 
-import { createEffect, type JSX, type Accessor } from "solid-js";
-import { createPress } from "../interactions/createPress";
+import { type JSX, type Accessor } from "solid-js";
+import { createPress, type PressEvent } from "../interactions/createPress";
 import { createHover } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
+import { createSelectableItem } from "../selection/createSelectableItem";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import { focusSafely } from "../utils/focus";
-import { getOwnerDocument } from "../utils/dom";
+import { getEventTarget } from "../utils/dom";
+import { isVirtualClick } from "../utils/events";
 import { getMenuData } from "./createMenu";
-import type { MenuState, Key, SelectionMode } from "@proyecto-viviana/solid-stately";
+import type { MenuState, Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
 
 export interface AriaMenuItemProps {
   /** The unique key for the menu item. */
   key: Key;
+  /** Optional DOM id for the menu item. Defaults to the key. */
+  id?: string;
   /** Whether the menu item is disabled. */
   isDisabled?: boolean;
   /** An accessible label for the menu item. */
   "aria-label"?: string;
+  /** Element controlled by this menu item, for submenu triggers. */
+  "aria-controls"?: string;
+  /** Whether this menu item opens a submenu or subdialog. */
+  "aria-haspopup"?: string | boolean;
+  /** Whether the submenu or subdialog is expanded. */
+  "aria-expanded"?: boolean | "true" | "false";
   /** Handler called when the menu item is selected. */
   onAction?: () => void;
   /** Whether to close the menu when this item is selected. */
@@ -71,38 +80,13 @@ export function createMenuItem<T>(
   // Get shared data from menu
   const getData = () => getMenuData(state);
 
-  // Computed states
+  // Computed states. `state.isDisabled` is SelectionManager.isDisabled, which
+  // already respects disabledBehavior="selection"; these items stay actionable
+  // while SelectionManager.canSelectItem keeps selection blocked.
   const isDisabled: Accessor<boolean> = () => {
     return Boolean(
       getData()?.isDisabled || getProps().isDisabled || state.isDisabled(getProps().key),
     );
-  };
-
-  const isFocused: Accessor<boolean> = () => {
-    return state.focusedKey() === getProps().key;
-  };
-
-  // Move real DOM focus onto the associated node when this item becomes the
-  // collection's focused key. The tabIndex 0/-1 swap below is only the
-  // declarative half of roving tabindex; without imperatively focusing the
-  // element here, keyboard navigation updates state but never moves the actual
-  // focus or the assistive-technology cursor. Mirrors @react-aria/selection's
-  // useSelectableItem, which focuses the item element when `key === manager.focusedKey`.
-  createEffect(() => {
-    if (!isFocused() || !state.isFocused()) return;
-
-    const element = ref?.();
-    if (!element) return;
-
-    // Avoid redundantly re-focusing an element that already has focus.
-    const ownerDocument = getOwnerDocument(element);
-    if (ownerDocument.activeElement !== element) {
-      focusSafely(element);
-    }
-  });
-
-  const isSelected: Accessor<boolean> = () => {
-    return selectionMode() !== "none" && state.isSelected(getProps().key);
   };
 
   const selectionMode: Accessor<SelectionMode> = () => {
@@ -111,38 +95,224 @@ export function createMenuItem<T>(
 
   // Whether this is a link item
   const isLink = () => !!getProps().href;
+  const isTrigger = () => !!getProps()["aria-haspopup"];
 
-  // Handle press
+  const selectableItem = createSelectableItem(
+    () => {
+      const p = getProps();
+      return {
+        key: p.key,
+        id: p.id ?? String(p.key),
+        isDisabled: isDisabled(),
+        isLink: isLink(),
+        href: p.href,
+        shouldSelectOnPressUp: true,
+        allowsDifferentPressOrigin: true,
+        linkBehavior: "none",
+      };
+    },
+    state,
+    () => ref?.() ?? null,
+  );
+
+  const isFocused: Accessor<boolean> = () => selectableItem.isFocused();
+
+  const isSelected: Accessor<boolean> = () => {
+    return !isTrigger() && selectableItem.isSelected();
+  };
+
+  type MenuInteraction = {
+    pointerType: PressEvent["pointerType"];
+    key?: string;
+  };
+
+  let interaction: MenuInteraction | null = null;
+  let isMenuPressActive = false;
+  let isDispatchingKeyboardClick = false;
+  let isDispatchingMenuSyntheticClick = false;
+  let selectionEventBeforeMenuPressUp: Selection | null = null;
+  let hasSelectionEventBeforeMenuPressUp = false;
+  let pendingSyntheticClickSelectionEvent: Selection | null = null;
+  let suppressNextKeyboardClick = false;
+
+  const getShouldClose = (): boolean => {
+    const p = getProps();
+    const explicitClose = p.closeOnSelect ?? getData()?.shouldCloseOnSelect;
+    if (explicitClose !== undefined) {
+      return explicitClose;
+    }
+
+    if (interaction?.pointerType === "keyboard") {
+      return interaction.key === "Enter" || selectionMode() === "none" || isLink();
+    }
+
+    return selectionMode() !== "multiple" || isLink();
+  };
+
+  const performMenuAction = (event: MouseEvent) => {
+    if (isDisabled()) {
+      event.preventDefault();
+      return;
+    }
+
+    if (suppressNextKeyboardClick && interaction == null) {
+      suppressNextKeyboardClick = false;
+      return;
+    }
+
+    const p = getProps();
+    const key = p.key;
+    const data = getData();
+
+    // Submenu triggers open their submenu via the local item action, but do not
+    // fire the parent menu onAction or close the menu.
+    if (isTrigger()) {
+      p.onAction?.();
+      interaction = null;
+      return;
+    }
+
+    // Call item-specific onAction.
+    p.onAction?.();
+
+    // Call menu-level onAction with the activated item's value, mirroring
+    // useMenuItem performAction: onAction(key, item?.value).
+    const item = state.collection().getItem(key);
+    data?.onAction?.(key, item?.value);
+
+    if (getShouldClose()) {
+      data?.onClose?.();
+    }
+
+    interaction = null;
+  };
+
+  // Menu-specific press handling is separate from selectable-item selection,
+  // matching upstream useMenuItem: useSelectableItem owns selection/focus
+  // timing; the menu layer owns pressed state, different-origin release, action,
+  // links, and close behavior.
   const { pressProps, isPressed } = createPress({
     get isDisabled() {
       return isDisabled();
     },
-    onPress() {
-      const p = getProps();
-      const key = p.key;
-      const data = getData();
+    onPressChange(isPressed) {
+      isMenuPressActive = isPressed;
+    },
+    onPressUp(e) {
+      if (e.pointerType !== "keyboard" && !isDispatchingKeyboardClick) {
+        interaction = { pointerType: e.pointerType };
+      }
 
-      // Pointer activation of a menu item. select() consults pointerType +
-      // behavior; the modifier path isn't reachable from a menu-item press, so
-      // no event is threaded here (Phase 2 will route item presses through
-      // createSelectableItem with the press event).
-      state.select(key);
+      // Native menus allow pressing the trigger, dragging to an item, and
+      // releasing to activate it. Upstream useMenuItem synthesizes a click in
+      // this different-origin mouse case.
+      if (e.pointerType === "mouse" && !isMenuPressActive && e.target instanceof HTMLElement) {
+        const selectionEventAfterPressUp = state.selectionManager.lastSelectionEvent;
+        pendingSyntheticClickSelectionEvent =
+          hasSelectionEventBeforeMenuPressUp &&
+          selectionEventAfterPressUp != null &&
+          selectionEventAfterPressUp !== selectionEventBeforeMenuPressUp
+            ? selectionEventAfterPressUp
+            : null;
 
-      // Call item-specific onAction
-      p.onAction?.();
-
-      // Call menu-level onAction with the activated item's value, mirroring
-      // useMenuItem performAction: onAction(key, item?.value).
-      const item = state.collection().getItem(key);
-      data?.onAction?.(key, item?.value);
-
-      // Close menu if closeOnSelect is not explicitly false
-      // For link items, default to closing the menu
-      if (p.closeOnSelect !== false) {
-        data?.onClose?.();
+        isDispatchingMenuSyntheticClick = true;
+        try {
+          e.target.click();
+        } finally {
+          isDispatchingMenuSyntheticClick = false;
+          hasSelectionEventBeforeMenuPressUp = false;
+          selectionEventBeforeMenuPressUp = null;
+          pendingSyntheticClickSelectionEvent = null;
+        }
       }
     },
   });
+
+  const captureSelectionEventBeforeMenuPressUp = () => {
+    selectionEventBeforeMenuPressUp = state.selectionManager.lastSelectionEvent;
+    hasSelectionEventBeforeMenuPressUp = true;
+  };
+
+  const withMenuPressUpSelectionSnapshot = <EventType extends Event>(handler: unknown) => {
+    if (typeof handler !== "function") {
+      return handler;
+    }
+
+    return (event: EventType) => {
+      captureSelectionEventBeforeMenuPressUp();
+      (handler as (event: EventType) => void)(event);
+    };
+  };
+
+  const selectableItemProps = () => {
+    const props = selectableItem.itemProps as Record<string, unknown>;
+    const onClick = props.onClick;
+
+    return {
+      ...props,
+      onPointerUp: withMenuPressUpSelectionSnapshot<PointerEvent>(props.onPointerUp),
+      onMouseUp: withMenuPressUpSelectionSnapshot<MouseEvent>(props.onMouseUp),
+      onClick:
+        typeof onClick === "function"
+          ? (event: MouseEvent) => {
+              // The menu layer's upstream-compatible target.click() should activate
+              // the menu item, not feed back into selectable-item virtual selection.
+              if (isDispatchingMenuSyntheticClick && isVirtualClick(event)) {
+                if (pendingSyntheticClickSelectionEvent != null) {
+                  state.selectionManager.emitDuplicateSelectionEvent(
+                    pendingSyntheticClickSelectionEvent,
+                  );
+                  pendingSyntheticClickSelectionEvent = null;
+                }
+                return;
+              }
+
+              (onClick as (event: MouseEvent) => void)(event);
+            }
+          : onClick,
+    };
+  };
+
+  const menuPressProps = () => {
+    const {
+      onKeyDown: _onKeyDown,
+      onKeyUp: _onKeyUp,
+      ...props
+    } = pressProps as Record<string, unknown>;
+    return props;
+  };
+
+  const keyboardProps = {
+    onKeyDown: (event: KeyboardEvent) => {
+      if (isDisabled() || event.repeat) {
+        return;
+      }
+
+      if (event.key !== " " && event.key !== "Enter") {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      interaction = { pointerType: "keyboard", key: event.key };
+
+      const target = getEventTarget<HTMLElement>(event) ?? ref?.();
+      if (target instanceof HTMLElement) {
+        suppressNextKeyboardClick = true;
+        isDispatchingKeyboardClick = true;
+        try {
+          target.click();
+        } finally {
+          isDispatchingKeyboardClick = false;
+        }
+      }
+    },
+    onKeyUp: (event: KeyboardEvent) => {
+      if (event.key === " " || event.key === "Enter") {
+        suppressNextKeyboardClick = false;
+      }
+    },
+  };
 
   // Handle hover
   const { hoverProps } = createHover({
@@ -169,21 +339,26 @@ export function createMenuItem<T>(
       const ariaLabel = p["aria-label"];
       const mode = selectionMode();
       const selected = isSelected();
+      const trigger = isTrigger();
 
       const baseProps: Record<string, unknown> = {
         role:
-          mode === "single"
+          trigger
+            ? "menuitem"
+            : mode === "single"
             ? "menuitemradio"
             : mode === "multiple"
               ? "menuitemcheckbox"
               : "menuitem",
-        id: String(key),
+        id: p.id ?? String(key),
         "aria-disabled": isDisabled() || undefined,
-        "aria-checked": mode !== "none" ? selected : undefined,
+        "aria-checked": mode !== "none" && !trigger ? selected : undefined,
         "aria-label": ariaLabel,
         "aria-labelledby": !ariaLabel ? labelId : undefined,
-        "aria-describedby": descriptionId,
-        tabIndex: isFocused() ? 0 : -1,
+        "aria-describedby": [descriptionId, keyboardId].filter(Boolean).join(" "),
+        "aria-controls": p["aria-controls"],
+        "aria-haspopup": p["aria-haspopup"],
+        "aria-expanded": p["aria-expanded"],
         "data-selected": selected || undefined,
         "data-focused": isFocused() || undefined,
         "data-focus-visible": isFocusVisible() || undefined,
@@ -202,9 +377,12 @@ export function createMenuItem<T>(
       }
 
       return mergeProps(
-        pressProps as Record<string, unknown>,
+        selectableItemProps(),
+        menuPressProps(),
         hoverProps as Record<string, unknown>,
         focusProps as Record<string, unknown>,
+        keyboardProps,
+        { onClick: performMenuAction },
         baseProps,
       ) as JSX.HTMLAttributes<HTMLElement>;
     },

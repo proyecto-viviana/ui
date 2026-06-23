@@ -70,6 +70,119 @@ createEffect(() => {
 });
 ```
 
+## DOM Event Paths vs Synchronous Updates (IMPORTANT)
+
+Solid signal updates can mutate the live DOM while a native event is still
+bubbling. React Aria often uses this ownership check in press and interaction
+hooks:
+
+```typescript
+nodeContains(e.currentTarget, getEventTarget(e));
+```
+
+That is the right upstream rule: ignore events that did not originate inside the
+current press target. In React, the synthetic event system and batching usually
+mean the original target node is still attached while parent handlers run. In
+Solid, a child `onPointerDown` can synchronously replace or remove that target
+before the parent handler sees the same event. A live DOM containment check then
+returns `false` even though the user's press really started inside the parent.
+
+Use a dispatch-path fallback only for this same-event ownership question:
+
+```typescript
+function eventPathContains(parent: EventTarget | null | undefined, event: Event): boolean {
+  const target = getEventTarget(event);
+  if (parent instanceof Node && target instanceof Node && nodeContains(parent, target)) {
+    return true;
+  }
+
+  return typeof event.composedPath === "function" && event.composedPath().includes(parent);
+}
+```
+
+Rules for using this pattern:
+
+1. Keep the upstream `nodeContains(parent, getEventTarget(event))` check first.
+2. Use `composedPath()` only to answer "was this target in the browser dispatch
+   path for this event?" not as a general replacement for live DOM containment.
+3. The parent/current target must appear in the composed path, so outside events
+   and portal-bubbled events are still rejected.
+4. Add a regression where a child pointer handler synchronously replaces the
+   original target before the parent press handler runs.
+
+Current application: `solidaria/src/interactions/createPress.ts` uses this to
+keep parent presses active when Solid replaces a child target during
+`pointerdown`. This is a Solid timing adapter, not a behavioral fork: the same
+user action should produce the same press/selection behavior as upstream React
+Aria.
+
+## Synthetic Keyboard Clicks and Press Modality (IMPORTANT)
+
+React Aria sometimes funnels keyboard activation through the same downstream
+click/press path as pointer activation. Menu items are one example: Space/Enter
+keyboard handling can call `target.click()` so item action, selection, and close
+logic share the same path.
+
+In Solid, native event handlers run synchronously and our `createPress` sees
+that synthetic click before later menu action code runs. `createPress` correctly
+classifies the click as `virtual`, but Menu close defaults distinguish keyboard
+activation from pointer/virtual activation (for example, Enter in a
+multiple-selection menu closes by default, while a pointer click stays open).
+Without a scoped guard, the intentional keyboard click can overwrite the
+keyboard modality before the menu action layer reads it.
+
+Rules for this pattern:
+
+1. Do not monkey-patch `click()` or `createPress` globally.
+2. Let `createPress` keep classifying real virtual clicks as virtual; this is
+   needed for assistive technology and non-pointer activation.
+3. For an intentional keyboard `.click()`, preserve the keyboard modality only
+   around that dispatch and reset the guard in `finally`.
+4. Add a modality-dependent regression: e.g. in Menu multiple selection, Enter
+   closes by default but pointer click does not.
+
+Current application: `solidaria/src/menu/createMenuItem.ts` wraps its deliberate
+keyboard `.click()` so the menu-specific action/close layer observes the same
+keyboard user action upstream React Aria does. This is a local event-order
+adapter, not a behavioral fork.
+
+## Synthetic Menu Mouse Clicks and Selection Feedback (IMPORTANT)
+
+React Aria menu items also synthesize a click for the native menu interaction
+where a user presses on the trigger, drags into the open menu, and releases on
+an item. Upstream `useMenuItem` handles the release target by calling
+`target.click()` in the different-origin mouse `onPressUp` branch, while
+`useSelectableItem` selects that same target on mouse press-up.
+
+In Solid, those native handlers run synchronously on the same element. The
+selectable hook first selects the release target from `onPressUp`, then the
+menu layer's intentional `target.click()` can re-enter the selectable press
+handler as a virtual click. In a multiple-selection menu, that second virtual
+selection toggles the release target back off even though the menu action still
+fires. Upstream React still emits two public `onSelectionChange` callbacks in
+this path because both selection requests compute from the same pre-render
+controlled selection snapshot.
+
+Rules for this pattern:
+
+1. Keep upstream's `target.click()` behavior in the menu layer; it is the native
+   menu drag-release activation path.
+2. Do not change `createPress`'s global virtual-click behavior; assistive
+   technology and programmatic activation still need it.
+3. Suppress only the selectable-item state mutation during the menu layer's
+   deliberate different-origin mouse click, replay the duplicate selection
+   notification with the first press-up payload, and still allow the menu action
+   click handler to run.
+4. Hold the behavior with a React-vs-Solid comparison regression: the release
+   target stays selected, React's duplicate selection callback count is matched,
+   and action fires once.
+
+Current application: `solidaria/src/menu/createMenuItem.ts` wraps the
+`createSelectableItem` click handler while dispatching its deliberate mouse
+`target.click()`, and replays the first press-up selection payload through the
+lower selection state. This is a scoped Solid event-order adapter, not a monkey
+patch.
+
 ## Controlled Components Pattern
 
 React re-renders force DOM state. SolidJS needs explicit sync:

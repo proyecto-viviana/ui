@@ -69,6 +69,9 @@ export function createMenuState<T = unknown>(
     get selectionBehavior() {
       return getProps().selectionBehavior;
     },
+    get allowDuplicateSelectionEvents() {
+      return getProps().allowDuplicateSelectionEvents;
+    },
   });
 
   const close = () => {

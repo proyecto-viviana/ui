@@ -3,11 +3,23 @@
  * Based on @react-aria/gridlist/useGridListItem.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
-import type { GridState, GridCollection } from "@proyecto-viviana/solid-stately";
+import type {
+  Collection,
+  GridState,
+  GridCollection,
+  Key,
+  Selection,
+} from "@proyecto-viviana/solid-stately";
 import type { AriaGridListItemProps, GridListItemAria } from "./types";
 import { getGridListData } from "./createGridList";
+import {
+  createSelectableItem,
+  type SelectableItemState,
+} from "../selection/createSelectableItem";
+import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
+import { mergeProps } from "../utils/mergeProps";
 
 /**
  * Creates accessibility props for a grid list item.
@@ -18,175 +30,80 @@ export function createGridListItem<
 >(
   props: Accessor<AriaGridListItemProps>,
   state: Accessor<GridState<T, C>>,
-  _ref: Accessor<HTMLElement | null>,
+  ref: Accessor<HTMLElement | null>,
 ): GridListItemAria {
-  const [isPressed, setIsPressed] = createSignal(false);
-  let isPointerPressed = false;
-  let ignoreNextClick = false;
-
   const isSelected = createMemo(() => {
     const s = state();
     const p = props();
     return s.isSelected(p.node.key);
   });
 
-  const isDisabled = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.isDisabled(p.node.key);
-  });
-
-  // Disabled keys only block keyboard interaction under disabledBehavior "all".
-  // Under "selection" the row stays focusable and actionable; selection itself is
-  // still blocked (state.toggleSelection self-guards on the raw disabled set, and
-  // the Space branch below guards too). Mirrors SelectionManager.isDisabled /
-  // ListKeyboardDelegate.isDisabled in React Aria — and the grid hook's own
-  // navigation gate, now that selection/activation live here rather than on the
-  // grid container.
-  const isInteractionDisabled = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.isDisabled(p.node.key) && s.disabledBehavior === "all";
-  });
-
-  const isFocused = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.focusedKey === p.node.key;
-  });
-
-  const handleActivation = (e: MouseEvent | PointerEvent) => {
-    const s = state();
-    const p = props();
-
-    if (isDisabled()) return;
-
-    // Get grid list metadata for actions
-    const gridListData = getGridListData(s);
-    const onAction = gridListData?.actions.onAction;
-
-    // Handle selection
-    if (s.selectionMode !== "none") {
-      if (e.shiftKey && s.selectionMode === "multiple") {
-        s.extendSelection(p.node.key);
-      } else if (p.selectionBehavior === "toggle" || e.ctrlKey || e.metaKey) {
-        s.toggleSelection(p.node.key);
-      } else {
-        // Replace selection or toggle if already selected
-        if (isSelected() && s.selectedKeys !== "all") {
-          const selectedKeys = s.selectedKeys as Set<unknown>;
-          if (selectedKeys.size === 1) {
-            // Single selection, trigger action
-            if (onAction) {
-              onAction(p.node.key);
-            }
-            if (p.onAction) {
-              p.onAction();
-            }
-          } else {
-            s.replaceSelection(p.node.key);
-          }
-        } else {
-          s.replaceSelection(p.node.key);
-        }
-      }
-    } else {
-      // No selection mode, just trigger action
-      if (onAction) {
-        onAction(p.node.key);
-      }
-      if (p.onAction) {
-        p.onAction();
-      }
-    }
+  const selectableState: SelectableItemState<T> = {
+    collection: () => state().collection as unknown as Collection<T>,
+    isFocused: () => state().isFocused,
+    setFocused: (focused: boolean) => state().setFocused(focused),
+    focusedKey: () => state().focusedKey,
+    childFocusStrategy: () => state().childFocusStrategy,
+    setFocusedKey: (key: Key | null, strategy) => state().setFocusedKey(key, strategy),
+    selectionMode: () => state().selectionMode,
+    selectionBehavior: () => props().selectionBehavior ?? state().selectionBehavior,
+    disallowEmptySelection: () => state().disallowEmptySelection,
+    selectedKeys: () => state().selectedKeys as Selection,
+    disabledKeys: () => state().disabledKeys,
+    disabledBehavior: () => state().disabledBehavior,
+    isEmpty: () => {
+      const keys = state().selectedKeys;
+      return keys !== "all" && keys.size === 0;
+    },
+    isSelectAll: () => state().selectedKeys === "all",
+    isSelected: (key: Key) => state().isSelected(key),
+    isDisabled: (key: Key) => {
+      const s = state();
+      const item = s.collection.getItem(key);
+      return (
+        s.disabledBehavior === "all" &&
+        s.isDisabled(key) &&
+        item?.props?.disabledBehavior !== "selection"
+      );
+    },
+    canSelectItem: (key: Key) => {
+      const s = state();
+      return s.selectionMode !== "none" && !s.isDisabled(key);
+    },
+    setSelectionBehavior: (behavior) => state().setSelectionBehavior(behavior),
+    toggleSelection: (key: Key) => state().toggleSelection(key),
+    replaceSelection: (key: Key) => state().replaceSelection(key),
+    setSelectedKeys: (keys: Iterable<Key>) => state().setSelectedKeys(keys),
+    selectAll: () => state().selectAll(),
+    clearSelection: () => state().clearSelection(),
+    toggleSelectAll: () => state().toggleSelectAll(),
+    extendSelection: (toKey: Key, _collection: Collection<T>) => state().extendSelection(toKey),
   };
 
-  // Handle click/press for selection and actions.
-  const onClick = (e: MouseEvent) => {
-    if (ignoreNextClick) {
-      ignoreNextClick = false;
-      return;
-    }
-
-    handleActivation(e);
-  };
-
-  const onKeyDown = (e: KeyboardEvent) => {
-    const s = state();
-    const p = props();
-
-    if (isInteractionDisabled()) return;
-
-    if (e.key === "Enter") {
-      // Get grid list metadata for actions
+  const selectableItem = createSelectableItem<T>(
+    () => {
+      const s = state();
+      const p = props();
       const gridListData = getGridListData(s);
       const onAction = gridListData?.actions.onAction;
 
-      if (onAction || p.onAction) {
-        e.preventDefault();
-
-        if (onAction) {
-          onAction(p.node.key);
-        }
-
-        if (p.onAction) {
-          p.onAction();
-        }
-      }
-    } else if (e.key === " " || e.key === "Space" || e.key === "Spacebar") {
-      // Space toggles selection. Guard on the raw disabled set so a row that is
-      // focusable-but-not-selectable (disabledBehavior "selection") treats Space
-      // as a no-op rather than preventing default scroll on a toggle that state
-      // would reject anyway.
-      if (s.selectionMode !== "none" && !s.isDisabled(p.node.key)) {
-        e.preventDefault();
-        s.toggleSelection(p.node.key);
-      }
-    }
-  };
-
-  const onFocus = () => {
-    const s = state();
-    const p = props();
-    s.setFocusedKey(p.node.key);
-  };
-
-  const onPointerDown = () => {
-    if (isDisabled()) return;
-    isPointerPressed = true;
-    setIsPressed(true);
-  };
-
-  const onPointerUp = (e: PointerEvent) => {
-    const wasPointerPressed = isPointerPressed;
-    isPointerPressed = false;
-    setIsPressed(false);
-
-    if (!wasPointerPressed || isDisabled()) return;
-
-    const currentTarget = e.currentTarget;
-    const target = e.target;
-    if (
-      currentTarget instanceof HTMLElement &&
-      target instanceof Node &&
-      !currentTarget.contains(target)
-    ) {
-      return;
-    }
-
-    ignoreNextClick = true;
-    handleActivation(e);
-  };
-
-  const onPointerCancel = () => {
-    isPointerPressed = false;
-    setIsPressed(false);
-  };
-
-  const onPointerLeave = () => {
-    isPointerPressed = false;
-    setIsPressed(false);
-  };
+      return {
+        key: p.node.key,
+        id: `${gridListData?.gridListId ?? "gridlist"}-row-${String(p.node.key)}`,
+        isVirtualized: p.isVirtualized,
+        shouldSelectOnPressUp: gridListData?.shouldSelectOnPressUp ?? false,
+        onAction:
+          onAction || p.onAction
+            ? () => {
+                p.onAction?.();
+                onAction?.(p.node.key);
+              }
+            : undefined,
+      };
+    },
+    selectableState,
+    ref,
+  );
 
   const rowProps = createMemo(() => {
     const s = state();
@@ -196,15 +113,7 @@ export function createGridListItem<
     const baseProps: Record<string, unknown> = {
       role: "row",
       "aria-selected": s.selectionMode !== "none" ? isSelected() : undefined,
-      "aria-disabled": isDisabled() || undefined,
-      tabIndex: isFocused() ? 0 : -1,
-      onClick,
-      onKeyDown,
-      onFocus,
-      onPointerDown,
-      onPointerUp,
-      onPointerCancel,
-      onPointerLeave,
+      "aria-disabled": selectableItem.isDisabled() || undefined,
     };
 
     // Add aria-rowindex for virtualized lists
@@ -212,7 +121,17 @@ export function createGridListItem<
       baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
     }
 
-    return baseProps as JSX.HTMLAttributes<HTMLElement>;
+    const gridListData = getGridListData(s);
+    const mergedProps = mergeProps<JSX.HTMLAttributes<HTMLElement>>(
+      selectableItem.itemProps,
+      baseProps,
+    );
+
+    return mergeCollectionRowInteractionProps(mergedProps, {
+      ref,
+      keyboardNavigationBehavior: () => gridListData?.keyboardNavigationBehavior ?? "arrow",
+      direction: () => gridListData?.direction ?? "ltr",
+    });
   });
 
   const gridCellProps = createMemo(() => {
@@ -232,10 +151,10 @@ export function createGridListItem<
       return isSelected();
     },
     get isDisabled() {
-      return isDisabled();
+      return selectableItem.isDisabled();
     },
     get isPressed() {
-      return isPressed();
+      return selectableItem.isPressed();
     },
   };
 }

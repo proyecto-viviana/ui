@@ -28,14 +28,15 @@ public reach.
 6. `glossary.md`
 7. `work-queue.md`
 8. `tooling.md`
-9. `upstream-sync.md`
-10. `upstream-release-audit.md`
-11. `ui-client-contract.md`
-12. `release-policy.md`
-13. `tech-debt.md`
-14. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
-15. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
-16. `../../AGENTS.md` when handing work to coding agents
+9. `../reference/patterns.md` when adapting React patterns to Solid idioms
+10. `upstream-sync.md`
+11. `upstream-release-audit.md`
+12. `ui-client-contract.md`
+13. `release-policy.md`
+14. `tech-debt.md`
+15. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
+16. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
+17. `../../AGENTS.md` when handing work to coding agents
 
 ## Files
 
@@ -48,6 +49,7 @@ public reach.
 | `status.md`                 | Current parity/coverage snapshot, refreshed from scripts.                                                                                                                                                                                |
 | `work-queue.md`             | Current priorities, how to pick work, active workstreams.                                                                                                                                                                                |
 | `tooling.md`                | The `vp` command layer, static gates, hooks, MCP servers, package-build migration.                                                                                                                                                       |
+| `../reference/patterns.md`  | SolidJS porting idioms that outlive a single plan: accessors/getters, children/context timing, splitProps forwarding, SSR-safe render patterns, and event-path timing differences.                                                       |
 | `upstream-sync.md`          | How the vendored React Spectrum oracle is pinned, how new Adobe releases are absorbed, and the `guard:upstream-test-parity` contract-vocabulary diff.                                                                                    |
 | `upstream-release-audit.md` | Backlog of atomic tickets distilled from Adobe's release notes (RAC 1.14→1.18 / S2 1.0→1.4): which shipped changes we have, owe, or already ported.                                                                                      |
 | `press-path-epic.md`        | Scope for the cross-hook item-hook press-path migration (T-34/T-51/T-52/T-56): the upstream `useSelectableItem` contract, our raw-pointer as-is, the missing `createSelectableItem`, phasing, and risks.                                 |

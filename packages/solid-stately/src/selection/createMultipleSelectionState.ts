@@ -51,8 +51,12 @@ export interface MultipleSelectionState {
   setFocusedKey(key: Key | null, childFocusStrategy?: FocusStrategy): void;
   /** The currently selected keys in the collection. */
   readonly selectedKeys: Selection;
+  /** The last selection payload emitted through onSelectionChange. @internal */
+  readonly lastSelectionEvent: Selection | null;
   /** Sets the selected keys in the collection. */
   setSelectedKeys(keys: Selection): void;
+  /** Re-emits a selection payload without recomputing or mutating selection. @internal */
+  emitDuplicateSelectionEvent(keys?: Selection): void;
   /** The currently disabled keys in the collection. */
   readonly disabledKeys: Set<Key>;
   /** Whether `disabledKeys` applies to all interactions, or only selection. */
@@ -158,6 +162,13 @@ export function createMultipleSelectionState(
     return keys ? new Set<Key>(keys) : new Set<Key>();
   });
 
+  let lastSelectionEvent: Selection | null = null;
+
+  const emitSelectionEvent = (keys: Selection) => {
+    lastSelectionEvent = keys;
+    getProps().onSelectionChange?.(keys);
+  };
+
   const setSelectedKeys = (keys: Selection) => {
     const p = getProps();
     const current = selectedKeys();
@@ -175,7 +186,15 @@ export function createMultipleSelectionState(
     if (p.selectedKeys === undefined) {
       setUncontrolledSelectedKeys(keys);
     }
-    p.onSelectionChange?.(keys);
+    emitSelectionEvent(keys);
+  };
+
+  const emitDuplicateSelectionEvent = (keys?: Selection) => {
+    const eventKeys = keys ?? lastSelectionEvent;
+    if (eventKeys == null) {
+      return;
+    }
+    emitSelectionEvent(eventKeys);
   };
 
   return {
@@ -210,7 +229,11 @@ export function createMultipleSelectionState(
     get selectedKeys() {
       return selectedKeys();
     },
+    get lastSelectionEvent() {
+      return lastSelectionEvent;
+    },
     setSelectedKeys,
+    emitDuplicateSelectionEvent,
     get disabledKeys() {
       return disabledKeys();
     },

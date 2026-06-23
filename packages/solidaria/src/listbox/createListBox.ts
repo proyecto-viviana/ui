@@ -42,6 +42,17 @@ export interface AriaListBoxProps {
   shouldSelectOnPressUp?: boolean;
   /** Whether to focus items on hover. */
   shouldFocusOnHover?: boolean;
+  /** Whether the listbox uses virtual scrolling. */
+  isVirtualized?: boolean;
+  /** Whether options should use virtual focus instead of receiving DOM focus. */
+  shouldUseVirtualFocus?: boolean;
+  /** The behavior of links in the collection. */
+  linkBehavior?: "action" | "selection" | "override" | "none";
+  /**
+   * Unstable upstream override that forces items with actions to prefer
+   * selection or action behavior.
+   */
+  UNSTABLE_itemBehavior?: "selection" | "action";
   /**
    * Whether keyboard focus movement should also update selection in single selection mode.
    * @default true
@@ -88,7 +99,11 @@ interface ListBoxData {
   onAction?: (key: Key) => void;
   shouldSelectOnPressUp?: boolean;
   shouldFocusOnHover?: boolean;
+  isVirtualized?: boolean;
+  shouldUseVirtualFocus?: boolean;
   isDisabled?: boolean;
+  linkBehavior?: "action" | "selection" | "override" | "none";
+  UNSTABLE_itemBehavior?: "selection" | "action";
 }
 
 export function getListBoxData(state: ListState): ListBoxData | undefined {
@@ -163,12 +178,23 @@ export function createListBox<T>(
 
   const updateSharedData = () => {
     const p = getProps();
+    const selectionBehavior = state.selectionBehavior();
+    let linkBehavior =
+      p.linkBehavior ?? (selectionBehavior === "replace" ? "action" : "override");
+    if (selectionBehavior === "toggle" && linkBehavior === "action") {
+      linkBehavior = "override";
+    }
+
     listBoxData.set(state, {
       id,
       onAction: p.onAction,
       shouldSelectOnPressUp: p.shouldSelectOnPressUp,
       shouldFocusOnHover: p.shouldFocusOnHover,
+      isVirtualized: p.isVirtualized,
+      shouldUseVirtualFocus: p.shouldUseVirtualFocus,
       isDisabled: p.isDisabled,
+      linkBehavior,
+      UNSTABLE_itemBehavior: p.UNSTABLE_itemBehavior,
     });
   };
 
@@ -328,6 +354,10 @@ export function createListBox<T>(
       }
       case " ":
       case "Enter": {
+        if (e.target !== e.currentTarget) {
+          break;
+        }
+
         e.preventDefault();
         const focusedKey = state.focusedKey();
         // Activation is gated on the navigation-disabled check, not the raw

@@ -12,6 +12,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createSignal,
   onCleanup,
   splitProps,
   useContext,
@@ -586,7 +587,12 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           buttonProps: () => comboBoxAria.buttonProps,
           listBoxProps: () => ({
             ...comboBoxAria.listBoxProps,
-            onAction: runOptionAction,
+            onAction: undefined,
+            shouldUseVirtualFocus: true,
+            shouldSelectOnPressUp: true,
+            shouldFocusOnHover: true,
+            linkBehavior: "selection",
+            UNSTABLE_itemBehavior: "action",
           }),
           labelProps: () => comboBoxAria.labelProps,
           descriptionProps: () => comboBoxAria.descriptionProps,
@@ -1066,6 +1072,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   }
   const state = stateContext as ComboBoxState<T>;
   const listState = (comboBoxContext as ComboBoxContextValue<T>).listState;
+  const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
   const optionId = () => {
     const listBoxId = getComboBoxData(state as ComboBoxState<unknown>)?.listBoxId;
     return listBoxId ? `${listBoxId}-option-${local.id}` : String(local.id);
@@ -1110,6 +1117,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       },
     },
     listState,
+    () => ref(),
   );
 
   const isOptionFocusVisible = () =>
@@ -1147,6 +1155,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
       <li
+        ref={setRef}
         {...cleanOptionProps()}
         class={renderProps.class()}
         style={renderProps.style()}

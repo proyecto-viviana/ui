@@ -33,6 +33,7 @@
     "comparison:test:buttons": "vp run --filter @proyecto-viviana/comparison test:buttons",
     "comparison:test:catalogue": "vp run --filter @proyecto-viviana/comparison test:catalogue",
     "comparison:test:calendar": "vp run --filter @proyecto-viviana/comparison test:calendar",
+    "comparison:test:collections": "vp run --filter @proyecto-viviana/comparison test:collections",
     "comparison:test:contract": "vp run --filter @proyecto-viviana/comparison test:contract",
     "comparison:test:default": "vp run --filter @proyecto-viviana/comparison test:default",
     "comparison:test:pair": "vp run --filter @proyecto-viviana/comparison test:pair",

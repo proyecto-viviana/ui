@@ -3,12 +3,24 @@
  * Based on @react-aria/tree/useTreeItem.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import { createId } from "@proyecto-viviana/solid-stately";
-import type { TreeState, TreeCollection } from "@proyecto-viviana/solid-stately";
+import type {
+  Collection,
+  Key,
+  Selection,
+  TreeState,
+  TreeCollection,
+} from "@proyecto-viviana/solid-stately";
 import type { AriaTreeItemProps, TreeItemAria } from "./types";
 import { getTreeData } from "./createTree";
+import {
+  createSelectableItem,
+  type SelectableItemState,
+} from "../selection/createSelectableItem";
+import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
+import { mergeProps } from "../utils/mergeProps";
 
 /**
  * Creates accessibility props for a tree item.
@@ -16,28 +28,20 @@ import { getTreeData } from "./createTree";
 export function createTreeItem<T extends object, C extends TreeCollection<T> = TreeCollection<T>>(
   props: Accessor<AriaTreeItemProps<T>>,
   state: Accessor<TreeState<T, C>>,
-  _ref: Accessor<HTMLElement | null>,
+  ref: Accessor<HTMLElement | null>,
 ): TreeItemAria {
-  const [isPressed, setIsPressed] = createSignal(false);
-  const rowId = createId();
+  const fallbackRowId = createId();
   const expandButtonId = createId();
+
+  const rowId = createMemo(() => {
+    const treeData = getTreeData(state());
+    return treeData ? `${treeData.treeId}-row-${String(props().node.key)}` : fallbackRowId;
+  });
 
   const isSelected = createMemo(() => {
     const s = state();
     const p = props();
     return s.isSelected(p.node.key);
-  });
-
-  const isDisabled = createMemo(() => {
-    const s = state();
-    const p = props();
-    return p.isDisabled === true || s.isDisabled(p.node.key);
-  });
-
-  const isFocused = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.focusedKey === p.node.key;
   });
 
   const isExpanded = createMemo(() => {
@@ -56,97 +60,77 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     return p.node.level;
   });
 
-  // Handle click/press for selection and actions
-  const onClick = (e: MouseEvent) => {
-    const s = state();
-    const p = props();
-
-    if (isDisabled()) return;
-
-    // Get tree metadata for actions
-    const treeData = getTreeData(s);
-    const onAction = treeData?.actions.onAction;
-
-    // Handle selection
-    if (s.selectionMode !== "none") {
-      if (e.shiftKey && s.selectionMode === "multiple") {
-        s.extendSelection(p.node.key);
-      } else if (p.selectionBehavior === "toggle" || e.ctrlKey || e.metaKey) {
-        s.toggleSelection(p.node.key);
-      } else {
-        // Replace selection or toggle if already selected
-        if (isSelected() && s.selectedKeys !== "all") {
-          const selectedKeys = s.selectedKeys as Set<unknown>;
-          if (selectedKeys.size === 1) {
-            // Single selection, trigger action
-            if (onAction) {
-              onAction(p.node.key);
-            }
-            if (p.onAction) {
-              p.onAction();
-            }
-          } else {
-            s.replaceSelection(p.node.key);
-          }
-        } else {
-          s.replaceSelection(p.node.key);
-        }
-      }
-    } else {
-      // No selection mode, just trigger action
-      if (onAction) {
-        onAction(p.node.key);
-      }
-      if (p.onAction) {
-        p.onAction();
-      }
-    }
+  const selectableState: SelectableItemState<T> = {
+    collection: () => state().collection as unknown as Collection<T>,
+    isFocused: () => state().isFocused,
+    setFocused: (focused: boolean) => state().setFocused(focused),
+    focusedKey: () => state().focusedKey,
+    childFocusStrategy: () => state().childFocusStrategy,
+    setFocusedKey: (key: Key | null, strategy) => state().setFocusedKey(key, strategy),
+    selectionMode: () => state().selectionMode,
+    selectionBehavior: () => props().selectionBehavior ?? state().selectionBehavior,
+    disallowEmptySelection: () => state().disallowEmptySelection,
+    selectedKeys: () => state().selectedKeys as Selection,
+    disabledKeys: () => state().disabledKeys,
+    disabledBehavior: () => state().disabledBehavior,
+    isEmpty: () => {
+      const keys = state().selectedKeys;
+      return keys !== "all" && keys.size === 0;
+    },
+    isSelectAll: () => state().selectedKeys === "all",
+    isSelected: (key: Key) => state().isSelected(key),
+    isDisabled: (key: Key) => {
+      const s = state();
+      const item = s.collection.getItem(key);
+      return (
+        s.disabledBehavior === "all" &&
+        s.isDisabled(key) &&
+        item?.props?.disabledBehavior !== "selection"
+      );
+    },
+    canSelectItem: (key: Key) => {
+      const s = state();
+      return s.selectionMode !== "none" && !s.isDisabled(key);
+    },
+    setSelectionBehavior: (behavior) => state().setSelectionBehavior(behavior),
+    toggleSelection: (key: Key) => state().toggleSelection(key),
+    replaceSelection: (key: Key) => state().replaceSelection(key),
+    setSelectedKeys: (keys: Iterable<Key>) => state().setSelectedKeys(keys),
+    selectAll: () => state().selectAll(),
+    clearSelection: () => state().clearSelection(),
+    toggleSelectAll: () => state().toggleSelectAll(),
+    extendSelection: (toKey: Key, _collection: Collection<T>) => state().extendSelection(toKey),
   };
 
-  const onKeyDown = (e: KeyboardEvent) => {
-    const s = state();
-    const p = props();
-
-    if (isDisabled()) return;
-
-    if (e.key === "Enter") {
-      // Get tree metadata for actions
+  const selectableItem = createSelectableItem<T>(
+    () => {
+      const s = state();
+      const p = props();
       const treeData = getTreeData(s);
-      const onAction = treeData?.actions.onAction;
+      const treeAction = treeData?.actions.onAction;
+      const shouldToggleOnAction =
+        !treeAction && !p.onAction && s.selectionMode === "none" && isExpandable();
 
-      if (onAction || p.onAction) {
-        e.preventDefault();
-
-        if (onAction) {
-          onAction(p.node.key);
-        }
-
-        if (p.onAction) {
-          p.onAction();
-        }
-      }
-    } else if (e.key === " " || e.key === "Space" || e.key === "Spacebar") {
-      // Space toggles selection
-      if (s.selectionMode !== "none") {
-        e.preventDefault();
-        s.toggleSelection(p.node.key);
-      }
-    }
-  };
-
-  const onFocus = () => {
-    const s = state();
-    const p = props();
-    s.setFocusedKey(p.node.key);
-  };
-
-  const onPointerDown = () => {
-    setIsPressed(true);
-  };
-
-  const onPointerUp = () => {
-    setIsPressed(false);
-  };
+      return {
+        key: p.node.key,
+        id: rowId(),
+        isVirtualized: p.isVirtualized,
+        isDisabled: p.isDisabled,
+        onAction:
+          treeAction || p.onAction || shouldToggleOnAction
+            ? () => {
+                p.onAction?.();
+                treeAction?.(p.node.key);
+                if (shouldToggleOnAction) {
+                  s.toggleKey(p.node.key);
+                }
+              }
+            : undefined,
+      };
+    },
+    selectableState,
+    ref,
+  );
 
   // Compute sibling position (aria-posinset/aria-setsize)
   const siblingInfo = createMemo(() => {
@@ -175,7 +159,6 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
   });
 
   const rowProps = createMemo(() => {
-    const s = state();
     const p = props();
     const node = p.node;
     const { posinset, setsize } = siblingInfo();
@@ -185,20 +168,13 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
 
     const baseProps: Record<string, unknown> = {
       role: "row",
-      id: rowId,
       "aria-label": textValue || undefined,
-      "aria-selected": s.selectionMode !== "none" ? isSelected() : undefined,
-      "aria-disabled": isDisabled() || undefined,
+      "aria-selected": selectableState.canSelectItem?.(node.key) ? isSelected() : undefined,
+      "aria-disabled": selectableItem.isDisabled() || undefined,
       "aria-expanded": isExpandable() ? isExpanded() : undefined,
       "aria-level": node.level + 1, // 1-based for ARIA
       "aria-posinset": posinset,
       "aria-setsize": setsize,
-      tabIndex: isFocused() ? 0 : -1,
-      onClick,
-      onKeyDown,
-      onFocus,
-      onPointerDown,
-      onPointerUp,
     };
 
     // Add aria-rowindex for virtualized trees
@@ -206,12 +182,23 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
     }
 
-    return baseProps as JSX.HTMLAttributes<HTMLDivElement>;
+    const treeData = getTreeData(state());
+    const mergedProps = mergeProps<JSX.HTMLAttributes<HTMLDivElement>>(
+      selectableItem.itemProps,
+      baseProps,
+    );
+
+    return mergeCollectionRowInteractionProps(mergedProps, {
+      ref,
+      keyboardNavigationBehavior: () => treeData?.keyboardNavigationBehavior ?? "arrow",
+      direction: () => treeData?.direction ?? "ltr",
+    });
   });
 
   const gridCellProps = createMemo(() => {
     return {
       role: "gridcell",
+      "aria-colindex": 1,
     } as JSX.HTMLAttributes<HTMLDivElement>;
   });
 
@@ -221,7 +208,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     const s = state();
     const p = props();
 
-    if (isDisabled()) return;
+    if (selectableItem.isDisabled()) return;
 
     s.toggleKey(p.node.key);
   };
@@ -237,7 +224,8 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       type: "button",
       id: expandButtonId,
       "aria-label": isExpanded() ? "Collapse" : "Expand",
-      "aria-labelledby": isExpandable() ? `${expandButtonId} ${rowId}` : undefined,
+      "aria-labelledby": isExpandable() ? `${expandButtonId} ${rowId()}` : undefined,
+      "data-react-aria-prevent-focus": true,
       onClick: onExpandClick,
       onPointerDown: stopPointerPropagation,
       onPointerUp: stopPointerPropagation,
@@ -264,10 +252,10 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       return isSelected();
     },
     get isDisabled() {
-      return isDisabled();
+      return selectableItem.isDisabled();
     },
     get isPressed() {
-      return isPressed();
+      return selectableItem.isPressed();
     },
     get isExpanded() {
       return isExpanded();

@@ -864,6 +864,97 @@ describe("Menu", () => {
       expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["dog"]));
     });
 
+    it("matches upstream duplicate selection callbacks when mouse release starts elsewhere", () => {
+      const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Format</MenuButton>
+          <Menu<TestItem>
+            aria-label="Test"
+            items={testItems}
+            getKey={(item) => item.id}
+            selectionMode="multiple"
+            defaultSelectedKeys={["cat", "kangaroo"]}
+            onAction={onAction}
+            onSelectionChange={onSelectionChange}
+          >
+            {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const cat = screen.getByRole("menuitemcheckbox", { name: "Cat" });
+      const dog = screen.getByRole("menuitemcheckbox", { name: "Dog" });
+      const kangaroo = screen.getByRole("menuitemcheckbox", { name: "Kangaroo" });
+
+      expect(cat).toHaveAttribute("aria-checked", "true");
+      expect(dog).toHaveAttribute("aria-checked", "false");
+      expect(kangaroo).toHaveAttribute("aria-checked", "true");
+
+      fireEvent.pointerUp(dog, { pointerType: "mouse", button: 0, pointerId: 1 });
+
+      expect(cat).toHaveAttribute("aria-checked", "true");
+      expect(dog).toHaveAttribute("aria-checked", "true");
+      expect(kangaroo).toHaveAttribute("aria-checked", "true");
+      expect(onSelectionChange).toHaveBeenCalledTimes(2);
+      expect(new Set(onSelectionChange.mock.calls[0]?.[0])).toEqual(
+        new Set(["cat", "dog", "kangaroo"]),
+      );
+      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(
+        new Set(["cat", "dog", "kangaroo"]),
+      );
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledWith("dog", testItems[1]);
+    });
+
+    it("keeps a multiple-selection menu open after pointer selection by default", async () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Format</MenuButton>
+          <Menu<TestItem>
+            aria-label="Test"
+            items={testItems}
+            getKey={(item) => item.id}
+            selectionMode="multiple"
+          >
+            {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      await user.click(screen.getByRole("menuitemcheckbox", { name: "Cat" }));
+
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+      expect(screen.getByRole("menuitemcheckbox", { name: "Cat" })).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
+    });
+
+    it("closes a multiple-selection menu on Enter by default", async () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <MenuButton>Format</MenuButton>
+          <Menu<TestItem>
+            aria-label="Test"
+            items={testItems}
+            getKey={(item) => item.id}
+            selectionMode="multiple"
+          >
+            {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const menu = screen.getByRole("menu");
+      menu.focus();
+      await user.keyboard("{ArrowDown}");
+      await user.keyboard("{Enter}");
+
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
+
     it("supports independent static MenuSection selection state", async () => {
       const onStyleSelectionChange = vi.fn();
       const onAlignmentSelectionChange = vi.fn();
@@ -1247,6 +1338,35 @@ describe("Menu", () => {
 
       await user.keyboard("{Enter}");
       expect(onAction).toHaveBeenCalledWith("cat", testItems[0]);
+    });
+
+    it('keeps disabledBehavior="selection" items actionable but not selectable on pointer click', async () => {
+      const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <Menu<TestItem>
+          aria-label="Test"
+          items={testItems}
+          getKey={(item) => item.id}
+          selectionMode="single"
+          disabledKeys={["cat"]}
+          disabledBehavior="selection"
+          onAction={onAction}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+        </Menu>
+      ));
+
+      const cat = screen.getByRole("menuitemradio", { name: "Cat" });
+      expect(cat).not.toHaveAttribute("aria-disabled");
+      expect(cat).not.toHaveAttribute("data-disabled");
+
+      await user.click(cat);
+
+      expect(onAction).toHaveBeenCalledWith("cat", testItems[0]);
+      expect(cat).toHaveAttribute("aria-checked", "false");
+      expect(onSelectionChange).not.toHaveBeenCalled();
     });
   });
 
@@ -1766,7 +1886,7 @@ describe("MenuTrigger", () => {
           <MenuButton>Open</MenuButton>
           <Menu<TestItem> aria-label="Test" items={[testItems[0]]} getKey={(item) => item.id}>
             {(item) => (
-              <MenuItem id={item.id} href="https://example.com">
+              <MenuItem id={item.id} href="#menu-link-click">
                 {item.name}
               </MenuItem>
             )}
@@ -1787,7 +1907,7 @@ describe("MenuTrigger", () => {
           <MenuButton>Open</MenuButton>
           <Menu<TestItem> aria-label="Test" items={[testItems[0]]} getKey={(item) => item.id}>
             {(item) => (
-              <MenuItem id={item.id} href="https://example.com">
+              <MenuItem id={item.id} href="#menu-link-keyboard">
                 {item.name}
               </MenuItem>
             )}
@@ -1803,7 +1923,7 @@ describe("MenuTrigger", () => {
       await user.keyboard("{Enter}");
 
       // The item should still be an anchor with the correct href
-      expect(item).toHaveAttribute("href", "https://example.com");
+      expect(item).toHaveAttribute("href", "#menu-link-keyboard");
     });
 
     it("MenuItem without href renders without anchor", () => {

@@ -994,6 +994,9 @@ describe("createOption", () => {
         expect(isFocusedB()).toBe(false);
 
         state.setFocusedKey("a");
+        expect(isFocusedA()).toBe(false);
+
+        state.setFocused(true);
         expect(isFocusedA()).toBe(true);
         expect(isFocusedB()).toBe(false);
 
@@ -1026,6 +1029,7 @@ describe("createOption", () => {
           disabledKeys: ["b"],
         });
 
+        state.setFocused(true);
         state.setFocusedKey("c");
 
         const optionA = createOption({ key: "a" }, state);

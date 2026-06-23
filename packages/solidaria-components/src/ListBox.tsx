@@ -304,6 +304,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       },
     },
     state,
+    () => listRef(),
   );
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();

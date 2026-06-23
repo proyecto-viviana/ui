@@ -3,12 +3,23 @@
  * Based on @react-aria/table/useTableRow.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
-import type { Key, TableState, TableCollection } from "@proyecto-viviana/solid-stately";
+import type {
+  Collection,
+  Key,
+  Selection,
+  TableState,
+  TableCollection,
+} from "@proyecto-viviana/solid-stately";
 import type { AriaTableRowProps, TableRowAria, ExpandButtonProps } from "./types";
 import { getTableData } from "./createTable";
 import { useLocale } from "../i18n";
+import {
+  createSelectableItem,
+  type SelectableItemState,
+} from "../selection/createSelectableItem";
+import { mergeProps } from "../utils/mergeProps";
 
 /**
  * Arrow keys that expand/collapse a tree-grid row, mirroring `@react-aria/table`.
@@ -25,12 +36,9 @@ const EXPANSION_KEYS = {
 export function createTableRow<T extends object>(
   props: Accessor<AriaTableRowProps>,
   state: Accessor<TableState<T, TableCollection<T>>>,
-  _ref: Accessor<HTMLTableRowElement | null>,
+  ref: Accessor<HTMLTableRowElement | null>,
 ): TableRowAria {
-  const [isPressed, setIsPressed] = createSignal(false);
   const locale = useLocale();
-  let didSelectOnPointer = false;
-  let didActionOnPointer = false;
 
   // Tree-grid (expandable rows): only active when the collection has a tree column.
   const isTreeRow = createMemo(() => state().treeColumn != null);
@@ -68,118 +76,80 @@ export function createTableRow<T extends object>(
     return s.isSelected(p.node.key);
   });
 
-  const isDisabled = createMemo(() => {
-    const s = state();
-    const p = props();
-    return !!p.isDisabled || s.isDisabled(p.node.key);
-  });
-
-  const isFocused = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.focusedKey === p.node.key;
-  });
-
-  const isInteractive = () => {
-    const s = state();
-    const p = props();
-    const tableData = getTableData(s);
-    return (
-      s.selectionMode !== "none" || !!tableData?.actions.onRowAction || !!p.onAction || !!p.href
-    );
+  const selectableState: SelectableItemState<T> = {
+    collection: () => state().collection as unknown as Collection<T>,
+    isFocused: () => state().isFocused,
+    setFocused: (focused: boolean) => state().setFocused(focused),
+    focusedKey: () => state().focusedKey,
+    childFocusStrategy: () => state().childFocusStrategy,
+    setFocusedKey: (key: Key | null, strategy) => state().setFocusedKey(key, strategy),
+    selectionMode: () => state().selectionMode,
+    selectionBehavior: () => state().selectionBehavior,
+    disallowEmptySelection: () => state().disallowEmptySelection,
+    selectedKeys: () => state().selectedKeys as Selection,
+    disabledKeys: () => state().disabledKeys,
+    disabledBehavior: () => state().disabledBehavior,
+    isEmpty: () => {
+      const keys = state().selectedKeys;
+      return keys !== "all" && keys.size === 0;
+    },
+    isSelectAll: () => state().selectedKeys === "all",
+    isSelected: (key: Key) => state().isSelected(key),
+    isDisabled: (key: Key) => {
+      const s = state();
+      const item = s.collection.getItem(key);
+      return (
+        s.disabledBehavior === "all" &&
+        s.isDisabled(key) &&
+        item?.props?.disabledBehavior !== "selection"
+      );
+    },
+    canSelectItem: (key: Key) => {
+      const s = state();
+      return s.selectionMode !== "none" && !s.isDisabled(key);
+    },
+    setSelectionBehavior: (behavior) => state().setSelectionBehavior(behavior),
+    toggleSelection: (key: Key) => state().toggleSelection(key),
+    replaceSelection: (key: Key) => state().replaceSelection(key),
+    setSelectedKeys: (keys: Iterable<Key>) => state().setSelectedKeys(keys),
+    selectAll: () => state().selectAll(),
+    clearSelection: () => state().clearSelection(),
+    toggleSelectAll: () => state().toggleSelectAll(),
+    extendSelection: (toKey: Key, _collection: Collection<T>) => state().extendSelection(toKey),
   };
 
-  const selectRow = (e: MouseEvent | PointerEvent | KeyboardEvent, forceReplace = false) => {
-    const s = state();
-    const p = props();
+  const selectableItem = createSelectableItem<T>(
+    () => {
+      const s = state();
+      const p = props();
+      const tableData = getTableData(s);
+      const onRowAction = tableData?.actions.onRowAction;
+      const hasAction = !!p.onAction || !!onRowAction || !!p.href;
 
-    if (s.selectionMode !== "none") {
-      if (e.shiftKey && s.selectionMode === "multiple") {
-        s.extendSelection(p.node.key);
-      } else if (!forceReplace && (e.ctrlKey || e.metaKey || s.selectionBehavior === "toggle")) {
-        s.toggleSelection(p.node.key);
-      } else if (!forceReplace && s.selectionMode === "single" && s.isSelected(p.node.key)) {
-        s.toggleSelection(p.node.key);
-      } else {
-        // Replace selection
-        s.replaceSelection(p.node.key);
-      }
-    }
-  };
+      return {
+        key: p.node.key,
+        id: `${tableData?.tableId ?? "table"}-row-${String(p.node.key)}`,
+        isVirtualized: p.isVirtualized,
+        shouldSelectOnPressUp: tableData?.shouldSelectOnPressUp ?? false,
+        isDisabled: !!p.isDisabled || s.collection.size === 0,
+        onAction: hasAction
+          ? (event) => {
+              p.onAction?.();
+              onRowAction?.(p.node.key);
+              if (p.href) {
+                p.onLinkAction?.(event);
+              }
+            }
+          : undefined,
+      };
+    },
+    selectableState,
+    ref,
+  );
 
-  const activateLink = (e: MouseEvent | KeyboardEvent) => {
-    props().onLinkAction?.(e);
-  };
+  const isDisabled = () => selectableItem.isDisabled();
 
-  const runRowAction = (p: AriaTableRowProps, onRowAction: ((key: Key) => void) | undefined) => {
-    if (onRowAction) {
-      onRowAction(p.node.key);
-    }
-
-    if (p.onAction) {
-      p.onAction();
-    }
-  };
-
-  const isFromInteractiveElement = (e: Event) => {
-    const target = e.target;
-    if (!(target instanceof Element)) return false;
-    return !!target.closest(
-      'a[href],button,input,select,textarea,[role="button"],[role="checkbox"],[role="link"]',
-    );
-  };
-
-  // Handle click/press for selection
-  const onClick = (e: MouseEvent) => {
-    const s = state();
-    const p = props();
-
-    if (isDisabled()) return;
-
-    // Get table metadata for actions
-    const tableData = getTableData(s);
-    const onRowAction = tableData?.actions.onRowAction;
-
-    if (isFromInteractiveElement(e)) {
-      didSelectOnPointer = false;
-      didActionOnPointer = false;
-      return;
-    }
-
-    if (p.href) {
-      if (s.selectionBehavior === "replace" && s.selectionMode !== "none") {
-        if (!didSelectOnPointer) {
-          selectRow(e, true);
-        }
-      } else if (!didActionOnPointer) {
-        activateLink(e);
-      }
-      didSelectOnPointer = false;
-      didActionOnPointer = false;
-      return;
-    }
-
-    if (!didSelectOnPointer) {
-      selectRow(e);
-    }
-    didSelectOnPointer = false;
-
-    if (!didActionOnPointer) {
-      runRowAction(p, onRowAction);
-    }
-    didActionOnPointer = false;
-  };
-
-  const onDblClick = (e: MouseEvent) => {
-    const s = state();
-    const p = props();
-
-    if (isDisabled() || !p.href || s.selectionBehavior !== "replace") return;
-
-    activateLink(e);
-  };
-
-  const onKeyDown = (e: KeyboardEvent) => {
+  const onTreeGridKeyDown = (e: KeyboardEvent) => {
     const s = state();
     const p = props();
 
@@ -221,93 +191,6 @@ export function createTableRow<T extends object>(
         }
       }
     }
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      // Get table metadata for actions
-      const tableData = getTableData(s);
-      const onRowAction = tableData?.actions.onRowAction;
-
-      if (p.href) {
-        activateLink(e);
-        return;
-      }
-
-      // Handle selection
-      if (s.selectionMode !== "none") {
-        selectRow(e);
-      }
-
-      // Call action handler
-      if (onRowAction) {
-        onRowAction(p.node.key);
-      }
-
-      if (p.onAction) {
-        p.onAction();
-      }
-    }
-
-    if (e.key === " " || e.key === "Space" || e.key === "Spacebar") {
-      e.preventDefault();
-
-      if (p.href && s.selectionMode !== "none") {
-        selectRow(e, s.selectionBehavior === "replace");
-        return;
-      }
-
-      if (p.href) {
-        activateLink(e);
-        return;
-      }
-
-      if (s.selectionMode !== "none") {
-        selectRow(e);
-      }
-    }
-  };
-
-  const onFocus = () => {
-    const s = state();
-    const p = props();
-    s.setFocusedKey(p.node.key);
-  };
-
-  const onPointerDown = (e: PointerEvent) => {
-    if (isInteractive() && !isDisabled()) {
-      setIsPressed(true);
-    }
-    const s = state();
-    const tableData = getTableData(s);
-    if (s.selectionMode !== "none" && !tableData?.shouldSelectOnPressUp && !isDisabled()) {
-      selectRow(e);
-      didSelectOnPointer = true;
-    }
-  };
-
-  const onPointerUp = (e: PointerEvent) => {
-    const s = state();
-    const p = props();
-    const tableData = getTableData(s);
-    if (s.selectionMode !== "none" && tableData?.shouldSelectOnPressUp && !isDisabled()) {
-      selectRow(e);
-      didSelectOnPointer = true;
-    }
-    if (
-      s.selectionMode === "none" &&
-      tableData?.shouldSelectOnPressUp &&
-      !isDisabled() &&
-      !isFromInteractiveElement(e)
-    ) {
-      if (p.href) {
-        activateLink(e);
-      } else {
-        runRowAction(p, tableData?.actions.onRowAction);
-      }
-      didActionOnPointer = true;
-    }
-    setIsPressed(false);
   };
 
   const rowProps = createMemo(() => {
@@ -319,13 +202,6 @@ export function createTableRow<T extends object>(
       role: "row",
       "aria-selected": s.selectionMode !== "none" ? isSelected() : undefined,
       "aria-disabled": isDisabled() || undefined,
-      tabIndex: isFocused() ? 0 : -1,
-      onClick,
-      onDblClick,
-      onKeyDown,
-      onFocus,
-      onPointerDown,
-      onPointerUp,
     };
 
     // Tree-grid rows expose their nesting depth, position and expansion state.
@@ -335,6 +211,7 @@ export function createTableRow<T extends object>(
       baseProps["aria-level"] = node.level + 1; // 1-based
       baseProps["aria-posinset"] = posinset;
       baseProps["aria-setsize"] = setsize;
+      baseProps.onKeyDown = onTreeGridKeyDown;
     }
 
     // Add aria-rowindex for virtualized tables. Tree grids omit it (matches upstream).
@@ -342,7 +219,10 @@ export function createTableRow<T extends object>(
       baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
     }
 
-    return baseProps as JSX.HTMLAttributes<HTMLTableRowElement>;
+    return mergeProps<JSX.HTMLAttributes<HTMLTableRowElement>>(
+      selectableItem.itemProps as unknown as JSX.HTMLAttributes<HTMLTableRowElement>,
+      baseProps,
+    );
   });
 
   // Chevron button for expanding/collapsing a tree-grid row. Press-based so it flows through
@@ -381,7 +261,7 @@ export function createTableRow<T extends object>(
       return isDisabled();
     },
     get isPressed() {
-      return isPressed();
+      return selectableItem.isPressed();
     },
     get isExpanded() {
       return isExpanded();

@@ -161,6 +161,18 @@ describe("createSelectableItem — action model", () => {
     });
   });
 
+  it('disabledBehavior "selection" blocks selection without disabling actions', () => {
+    withItem(
+      { key: "a", onAction: () => {} },
+      { selectionMode: "multiple", disabledKeys: ["a"], disabledBehavior: "selection" },
+      (api) => {
+        expect(api.isDisabled()).toBe(false);
+        expect(api.allowsSelection()).toBe(false);
+        expect(api.hasAction()).toBe(true);
+      },
+    );
+  });
+
   it("a link with linkBehavior 'override' is not selectable", () => {
     withItem(
       { key: "a", href: "/x", linkBehavior: "override" },
@@ -201,6 +213,33 @@ describe("createSelectableItem — press path", () => {
     );
 
     fireEvent(el, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+    expect(state.isSelected("a")).toBe(true);
+  });
+
+  it("defers mouse selection to press up when shouldSelectOnPressUp is true", () => {
+    const { state, el } = renderItem(
+      { key: "a", shouldSelectOnPressUp: true },
+      { selectionMode: "multiple", selectionBehavior: "replace" },
+    );
+
+    fireEvent(el, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+    expect(state.isSelected("a")).toBe(false);
+
+    fireEvent(el, pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+    fireEvent.click(el);
+    vi.runAllTimers();
+
+    expect(state.isSelected("a")).toBe(true);
+  });
+
+  it("allows press-up selection when the press started on a different target", () => {
+    const { state, el } = renderItem(
+      { key: "a", shouldSelectOnPressUp: true, allowsDifferentPressOrigin: true },
+      { selectionMode: "multiple", selectionBehavior: "replace" },
+    );
+
+    fireEvent(el, pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+
     expect(state.isSelected("a")).toBe(true);
   });
 

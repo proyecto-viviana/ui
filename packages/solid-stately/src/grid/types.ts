@@ -3,7 +3,7 @@
  * Based on @react-types/grid.
  */
 
-import type { Key, FocusStrategy } from "../collections/types";
+import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";
 
 /**
  * Represents the type of a grid node.
@@ -140,7 +140,9 @@ export interface GridState<T, C extends GridCollection<T> = GridCollection<T>> {
   /** The selection mode. */
   readonly selectionMode: "none" | "single" | "multiple";
   /** The selection behavior. */
-  readonly selectionBehavior: "toggle" | "replace";
+  readonly selectionBehavior: SelectionBehavior;
+  /** Whether empty selection is disallowed. */
+  readonly disallowEmptySelection: boolean;
   /** The currently selected keys. */
   readonly selectedKeys: "all" | Set<Key>;
   /** Check if a key is selected. */
@@ -151,10 +153,14 @@ export interface GridState<T, C extends GridCollection<T> = GridCollection<T>> {
   setFocusedKey(key: Key | null, childFocusStrategy?: FocusStrategy): void;
   /** Set focused state. */
   setFocused(isFocused: boolean): void;
+  /** Set the selection behavior. */
+  setSelectionBehavior(behavior: SelectionBehavior): void;
   /** Toggle selection for a key. */
   toggleSelection(key: Key): void;
   /** Replace selection with a key. */
   replaceSelection(key: Key): void;
+  /** Set multiple selected keys. */
+  setSelectedKeys(keys: Selection | Iterable<Key>): void;
   /** Extend selection to a key (shift-click). */
   extendSelection(toKey: Key): void;
   /** Select all rows. */
@@ -182,7 +188,7 @@ export interface GridStateOptions<T, C extends GridCollection<T> = GridCollectio
   /** Selection mode. */
   selectionMode?: "none" | "single" | "multiple";
   /** Selection behavior. */
-  selectionBehavior?: "toggle" | "replace";
+  selectionBehavior?: SelectionBehavior;
   /** Whether empty selection is disallowed. */
   disallowEmptySelection?: boolean;
   /** Currently selected keys (controlled). */

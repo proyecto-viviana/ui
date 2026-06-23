@@ -1072,6 +1072,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
   }
   const state = context as SelectState<T>;
   const selectContext = useContext(SelectContext) as SelectContextValue<T> | null;
+  const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
 
   const optionAria = createOption<T>(
     {
@@ -1126,6 +1127,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
         }
       },
     },
+    () => ref(),
   );
   const isOptionFocusVisible = () =>
     optionAria.isFocused() && (selectContext?.isFocusVisible() ?? optionAria.isFocusVisible());
@@ -1200,6 +1202,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
       <li
+        ref={setRef}
         {...cleanOptionProps()}
         class={renderProps.class()}
         style={renderProps.style()}

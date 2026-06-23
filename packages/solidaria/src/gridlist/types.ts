@@ -26,6 +26,16 @@ export interface AriaGridListProps {
   shouldSelectOnPressUp?: boolean;
   /** How selection should behave when pressing an item. */
   selectionBehavior?: "replace" | "toggle";
+  /**
+   * How keyboard navigation should behave within rows.
+   *
+   * `"arrow"` treats the collection as a single tab stop and uses arrow keys to
+   * move through row children. `"tab"` lets tabbable row children participate in
+   * normal tab order and stops child key events before collection navigation.
+   *
+   * @default "arrow"
+   */
+  keyboardNavigationBehavior?: "arrow" | "tab";
   /** Whether the grid list is disabled. */
   isDisabled?: boolean;
   /**

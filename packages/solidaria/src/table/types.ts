@@ -7,6 +7,13 @@ import type { JSX } from "solid-js";
 import type { Key, GridNode } from "@proyecto-viviana/solid-stately";
 import type { AriaButtonProps } from "../button/types";
 
+export interface TableRowLinkActionEvent {
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+}
+
 /**
  * Props for a tree-grid row's expand/collapse chevron button.
  *
@@ -106,7 +113,7 @@ export interface AriaTableRowProps {
   /** Link href for row activation. */
   href?: string;
   /** Handler for link row activation. */
-  onLinkAction?: (event: MouseEvent | KeyboardEvent) => void;
+  onLinkAction?: (event: TableRowLinkActionEvent) => void;
 }
 
 /**

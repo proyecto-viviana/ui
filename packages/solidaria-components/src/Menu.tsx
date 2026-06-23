@@ -159,7 +159,9 @@ export interface MenuItemRenderProps {
   isOpen: boolean;
 }
 
-export interface MenuItemProps<T> extends Omit<AriaMenuItemProps, "children" | "key">, SlotProps {
+export interface MenuItemProps<T>
+  extends Omit<AriaMenuItemProps, "children" | "key" | "id">,
+    SlotProps {
   /** The unique key for the item. */
   id: Key;
   /** The item value. */
@@ -1449,6 +1451,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const itemAria = createMenuItem<T>(
     {
       key: local.id,
+      get id() {
+        return contextProps().id as string | undefined;
+      },
       get isDisabled() {
         return Boolean(
           ariaProps.isDisabled ||
@@ -1458,6 +1463,15 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       },
       get "aria-label"() {
         return ariaProps["aria-label"] ?? local.textValue;
+      },
+      get "aria-controls"() {
+        return contextProps()["aria-controls"] as string | undefined;
+      },
+      get "aria-haspopup"() {
+        return contextProps()["aria-haspopup"] as string | boolean | undefined;
+      },
+      get "aria-expanded"() {
+        return contextProps()["aria-expanded"] as boolean | "true" | "false" | undefined;
       },
       get onAction() {
         return combinedOnAction;

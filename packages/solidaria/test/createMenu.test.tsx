@@ -4,8 +4,8 @@
 
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createRoot } from "solid-js";
-import { cleanup } from "@solidjs/testing-library";
-import { createMenuState, createOverlayTriggerState } from "../../solid-stately/src";
+import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
+import { createMenuState, createOverlayTriggerState, type MenuState } from "../../solid-stately/src";
 import { createMenu, createMenuItem, createMenuTrigger } from "../src/menu";
 
 describe("createMenu", () => {
@@ -46,6 +46,45 @@ describe("createMenu", () => {
       expect(menuProps["aria-disabled"]).toBe(true);
       dispose();
     });
+  });
+
+  it('keeps disabledBehavior="selection" items actionable but not selectable on click', () => {
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
+
+    let state!: MenuState<(typeof items)[number]>;
+    let itemRef!: HTMLDivElement;
+    render(() => {
+      state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "single",
+        disabledKeys: ["copy"],
+        disabledBehavior: "selection",
+        onSelectionChange,
+      });
+      createMenu({ onAction, "aria-label": "Actions" }, state);
+      const item = createMenuItem({ key: "copy" }, state, () => itemRef);
+      return (
+        <div ref={itemRef} {...item.menuItemProps}>
+          <span {...item.labelProps}>Copy</span>
+        </div>
+      );
+    });
+
+    const item = screen.getByRole("menuitemradio", { name: "Copy" });
+    expect(item).not.toHaveAttribute("aria-disabled");
+    expect(item).not.toHaveAttribute("data-disabled");
+
+    fireEvent.click(item);
+
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
+    expect(state.isSelected("copy")).toBe(false);
+    expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
   it("has tabIndex 0 when not disabled", () => {
@@ -286,6 +325,7 @@ describe("createMenuItem", () => {
       expect(isFocusedCopy()).toBe(false);
       expect(isFocusedPaste()).toBe(false);
 
+      state.setFocused(true);
       state.setFocusedKey("copy");
       expect(isFocusedCopy()).toBe(true);
       expect(isFocusedPaste()).toBe(false);

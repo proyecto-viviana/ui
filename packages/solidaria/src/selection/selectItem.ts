@@ -10,15 +10,27 @@
  * non-link items.
  */
 
+import type { Accessor } from "solid-js";
 import type {
   Collection,
   Key,
+  SelectionBehavior,
+  SelectionMode,
   SelectionPressEvent,
-  SelectionState,
 } from "@proyecto-viviana/solid-stately";
 
 import { isCtrlKeyPressed } from "../utils/keyboard";
 import { isNonContiguousSelectionModifier } from "./utils";
+
+export interface SelectItemState {
+  readonly selectionMode: Accessor<SelectionMode>;
+  readonly selectionBehavior: Accessor<SelectionBehavior>;
+  readonly disallowEmptySelection: Accessor<boolean>;
+  isSelected(key: Key): boolean;
+  toggleSelection(key: Key): void;
+  replaceSelection(key: Key): void;
+  extendSelection(toKey: Key, collection: Collection): void;
+}
 
 /**
  * Resolve a press/keyboard interaction into a selection mutation on `manager`,
@@ -26,7 +38,7 @@ import { isNonContiguousSelectionModifier } from "./utils";
  * shift-extend (contiguous range) path.
  */
 export function selectItem(
-  manager: SelectionState,
+  manager: SelectItemState,
   key: Key,
   e: SelectionPressEvent,
   collection: Collection,

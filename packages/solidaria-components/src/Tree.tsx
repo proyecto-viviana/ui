@@ -895,6 +895,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       isVirtualized: ariaProps.isVirtualized,
       onAction: ariaProps.onAction,
       isDisabled: ariaProps.isDisabled,
+      keyboardNavigationBehavior: ariaProps.keyboardNavigationBehavior,
       direction: treeDirection(),
     }),
     () => state,

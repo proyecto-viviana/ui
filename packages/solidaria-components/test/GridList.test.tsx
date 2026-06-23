@@ -4,6 +4,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import {
   GridList,
   GridListItem,
@@ -19,6 +20,14 @@ const testItems = [
   { id: 2, name: "Banana" },
   { id: 3, name: "Cherry" },
 ];
+
+const pointerEvent = createPointerEvent;
+
+function pressWithMouse(target: HTMLElement): void {
+  fireEvent(target, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+  fireEvent(target, pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+  fireEvent.click(target);
+}
 
 describe("GridList", () => {
   afterEach(() => {
@@ -514,6 +523,68 @@ describe("GridList", () => {
       expect(list).toBeTruthy();
     });
 
+    it("selects but does not action a selected row on single click in replace mode", () => {
+      // Upstream useSelectableItem keeps onAction secondary under highlight
+      // selection. The old GridList row press path accidentally fired action on
+      // a selected row's single mouse click.
+      const onAction = vi.fn();
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+          selectionMode="multiple"
+          selectionBehavior="replace"
+          defaultSelectedKeys={new Set([1])}
+          onAction={onAction}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+
+      pressWithMouse(rows[0]);
+
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+      expect(onAction).not.toHaveBeenCalled();
+    });
+
+    it("performs the secondary row action on mouse double click in replace mode", () => {
+      const onAction = vi.fn();
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+          selectionMode="multiple"
+          selectionBehavior="replace"
+          onAction={onAction}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      fireEvent(rows[0], pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+      expect(onAction).not.toHaveBeenCalled();
+
+      fireEvent.dblClick(rows[0]);
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledWith(1);
+    });
+
     it("toggles selection exactly once with Space on the focused row", () => {
       // Regression guard for the grid/item double-toggle. Solid delegates keydown
       // and replays bubbling up the composed path, so while both the row hook and
@@ -546,9 +617,10 @@ describe("GridList", () => {
       expect(rows[0]).toHaveAttribute("aria-selected", "true");
     });
 
-    it("fires onAction exactly once with Enter on the focused row", () => {
+    it("fires onAction exactly once with Enter key up on the focused row", () => {
       // Parallel guard for Enter double-activation: with both hooks handling Enter
-      // a focused row fired onAction twice. Activation now lives only on the row.
+      // a focused row fired onAction twice. Activation now lives only on the row
+      // and follows upstream useSelectableItem: Enter actions occur on key up.
       const onAction = vi.fn();
       render(() => (
         <GridList
@@ -568,9 +640,47 @@ describe("GridList", () => {
       const rows = screen.getAllByRole("row");
       fireEvent.focus(rows[0]);
       fireEvent.keyDown(rows[0], { key: "Enter" });
+      fireEvent.keyUp(rows[0], { key: "Enter" });
 
       expect(onAction).toHaveBeenCalledTimes(1);
       expect(onAction).toHaveBeenCalledWith(1);
+    });
+
+    it('keeps child controls from selecting or acting in keyboardNavigationBehavior="tab"', () => {
+      const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
+
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Editable fruits"
+          selectionMode="multiple"
+          keyboardNavigationBehavior="tab"
+          onAction={onAction}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <input aria-label={`Edit ${item.name}`} />
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      const input = screen.getByLabelText("Edit Apple");
+      input.focus();
+
+      fireEvent.keyDown(input, { key: " " });
+      fireEvent.keyUp(input, { key: " " });
+      fireEvent.keyDown(input, { key: "Enter" });
+      fireEvent.keyUp(input, { key: "Enter" });
+      fireEvent(input, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+
+      expect(rows[0]).toHaveAttribute("aria-selected", "false");
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onAction).not.toHaveBeenCalled();
     });
   });
 
@@ -741,8 +851,38 @@ describe("GridList", () => {
       expect(rows[1].getAttribute("tabindex")).toBe("0");
 
       // Activation lives on the row now; under "selection" the disabled row stays
-      // actionable (Enter -> onAction) while selection itself stays blocked.
+      // actionable (Enter key up -> onAction) while selection itself stays blocked.
       fireEvent.keyDown(rows[1], { key: "Enter" });
+      fireEvent.keyUp(rows[1], { key: "Enter" });
+      expect(onAction).toHaveBeenCalledWith(2);
+      expect(rows[1]).toHaveAttribute("aria-selected", "false");
+    });
+
+    it('keeps disabledBehavior="selection" rows actionable through mouse press', () => {
+      const onAction = vi.fn();
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+          selectionMode="single"
+          disabledKeys={new Set([2])}
+          disabledBehavior="selection"
+          onAction={onAction}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const rows = screen.getAllByRole("row");
+
+      pressWithMouse(rows[1]);
+
+      expect(onAction).toHaveBeenCalledTimes(1);
       expect(onAction).toHaveBeenCalledWith(2);
       expect(rows[1]).toHaveAttribute("aria-selected", "false");
     });

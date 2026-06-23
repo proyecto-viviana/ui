@@ -83,6 +83,28 @@ function isPressedValue(isPressed: Accessor<boolean> | boolean | undefined): boo
   return isPressed ?? false;
 }
 
+function eventPathContains(parent: EventTarget | null | undefined, event: Event): boolean {
+  if (!parent) {
+    return false;
+  }
+
+  const target = getEventTarget(event);
+  if (
+    typeof Node !== "undefined" &&
+    parent instanceof Node &&
+    target instanceof Node &&
+    nodeContains(parent, target)
+  ) {
+    return true;
+  }
+
+  if (typeof event.composedPath === "function") {
+    return event.composedPath().includes(parent);
+  }
+
+  return false;
+}
+
 // Track which links have been programmatically clicked to avoid double activation
 const linkClickedSet = new WeakSet<HTMLElement>();
 
@@ -280,7 +302,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
   const onPointerDown: JSX.EventHandler<HTMLElement, PointerEvent> = (e) => {
     // Only handle left clicks, and ignore events that bubbled through portals
     const button = e.button ?? 0;
-    if (button !== 0 || !nodeContains(e.currentTarget, getEventTarget(e))) {
+    if (button !== 0 || !eventPathContains(e.currentTarget, e)) {
       return;
     }
 
@@ -316,7 +338,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
   // Mouse down handler when using pointer events - only prevents focus, doesn't trigger press
   const onMouseDownPointer: JSX.EventHandler<HTMLElement, MouseEvent> = (e) => {
-    if (!nodeContains(e.currentTarget, getEventTarget(e))) {
+    if (!eventPathContains(e.currentTarget, e)) {
       return;
     }
 
@@ -341,7 +363,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       return;
     }
 
-    const isOverTarget = nodeContains(pressState.target, getEventTarget(e) as Element);
+    const isOverTarget = eventPathContains(pressState.target, e);
     if (isOverTarget && pressState.pointerType != null && pressState.pointerType !== "virtual") {
       // Pointer released over target - wait for onClick to complete the press sequence.
       // This matches React-Aria's behavior for compatibility with DOM mutations and third-party libraries.
@@ -400,7 +422,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
   };
 
   const onPointerUpTarget: JSX.EventHandler<HTMLElement, PointerEvent> = (e) => {
-    if (!nodeContains(e.currentTarget, getEventTarget(e)) || pressState.pointerType === "virtual") {
+    if (!eventPathContains(e.currentTarget, e) || pressState.pointerType === "virtual") {
       return;
     }
 
@@ -781,7 +803,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
   const onClick: JSX.EventHandler<HTMLElement, MouseEvent> = (e) => {
     // Don't handle click if it's not on the target
-    if (!nodeContains(e.currentTarget, e.target as Element)) {
+    if (!eventPathContains(e.currentTarget, e)) {
       return;
     }
 

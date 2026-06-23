@@ -139,6 +139,55 @@ async function expectSelectionLifecycle(
   await expect(page.getByRole("menu")).toHaveCount(0);
 }
 
+async function mouseDownThenReleaseOn(page: Page, pressStart: Locator, pressEnd: Locator) {
+  const startBox = await pressStart.boundingBox();
+  const endBox = await pressEnd.boundingBox();
+
+  if (!startBox || !endBox) {
+    throw new Error("Menu items must be visible before testing different-origin press release.");
+  }
+
+  await page.mouse.move(startBox.x + startBox.width / 2, startBox.y + startBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(endBox.x + endBox.width / 2, endBox.y + endBox.height / 2);
+  await page.mouse.up();
+}
+
+async function differentOriginPressReleaseState(
+  page: Page,
+  panel: Awaited<ReturnType<typeof frameworkPanel>>,
+  root: Locator,
+) {
+  const trigger = panel.getByRole("button", { name: "Layer actions" });
+  const menu = await openMenu(page, trigger);
+  const copyItem = menu.getByRole("menuitemcheckbox", { name: /Copy/ });
+  const deleteItem = menu.getByRole("menuitemcheckbox", { name: /Delete/ });
+
+  await expect(copyItem).toHaveAttribute("aria-checked", "true");
+  await expect(deleteItem).toHaveAttribute("aria-checked", "false");
+
+  await mouseDownThenReleaseOn(page, copyItem, deleteItem);
+
+  await expect(root).toHaveAttribute("data-comparison-selected-keys", "copy,delete,duplicate");
+  await expect(copyItem).toHaveAttribute("aria-checked", "true");
+  await expect(deleteItem).toHaveAttribute("aria-checked", "true");
+
+  const state = {
+    actionCount: await root.getAttribute("data-comparison-action-count"),
+    lastAction: await root.getAttribute("data-comparison-last-action"),
+    lastOpenState: await root.getAttribute("data-comparison-last-open-state"),
+    selectionChangeCount: await root.getAttribute("data-comparison-selection-change-count"),
+    selectedKeys: await root.getAttribute("data-comparison-selected-keys"),
+    copyChecked: await copyItem.getAttribute("aria-checked"),
+    deleteChecked: await deleteItem.getAttribute("aria-checked"),
+  };
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+
+  return state;
+}
+
 test.describe("comparison Menu route contract", () => {
   test("Menu route mounts the React and Solid styled references", async ({ page }) => {
     const { reactPanel, solidPanel, reactRoot, solidRoot } = await menuFixtures(page);
@@ -278,5 +327,28 @@ test.describe("comparison Menu route contract", () => {
 
     await expectSelectionLifecycle(page, selection.reactPanel, selection.reactRoot);
     await expectSelectionLifecycle(page, selection.solidPanel, selection.solidRoot);
+  });
+
+  test("Menu selects the item under mouse release when press starts elsewhere", async ({ page }) => {
+    const selection = await menuFixtures(page, { selectionMode: "multiple" });
+
+    const reactState = await differentOriginPressReleaseState(
+      page,
+      selection.reactPanel,
+      selection.reactRoot,
+    );
+    const solidState = await differentOriginPressReleaseState(
+      page,
+      selection.solidPanel,
+      selection.solidRoot,
+    );
+
+    expect(reactState).toMatchObject({
+      lastAction: "delete",
+      selectedKeys: "copy,delete,duplicate",
+      copyChecked: "true",
+      deleteChecked: "true",
+    });
+    expect(solidState).toEqual(reactState);
   });
 });

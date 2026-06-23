@@ -105,6 +105,9 @@ export function createTableState<
     get selectionBehavior() {
       return gridState.selectionBehavior;
     },
+    get disallowEmptySelection() {
+      return gridState.disallowEmptySelection;
+    },
     get selectedKeys() {
       return gridState.selectedKeys;
     },
@@ -116,6 +119,8 @@ export function createTableState<
     setFocused: gridState.setFocused,
     toggleSelection: gridState.toggleSelection,
     replaceSelection: gridState.replaceSelection,
+    setSelectionBehavior: gridState.setSelectionBehavior,
+    setSelectedKeys: gridState.setSelectedKeys,
     extendSelection: gridState.extendSelection,
     selectAll: gridState.selectAll,
     clearSelection: gridState.clearSelection,

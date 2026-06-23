@@ -1,11 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "types": ["vitest/globals"],
-    "paths": {
-      "@proyecto-viviana/solid-stately": ["../solid-stately/src/index.ts"]
-    }
-  },
-  "include": ["src/**/*", "test/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "extends": "../../tsconfig.typecheck.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "test-utils"]
 }
