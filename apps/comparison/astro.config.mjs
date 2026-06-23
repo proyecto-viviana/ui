@@ -7,7 +7,12 @@ import solid from "@astrojs/solid-js";
 import reactVitePlugin from "@vitejs/plugin-react";
 import macros from "unplugin-parcel-macros";
 
-const oneLineWarningFilters = ["`transformWithEsbuild` is deprecated"];
+const oneLineWarningFilters = [
+  "`transformWithEsbuild` is deprecated",
+  '`optimizeDeps.esbuildOptions` option was specified by "astro:dev-toolbar" plugin',
+  "You or a plugin you are using have set `optimizeDeps.esbuildOptions`",
+  "`resolve.alias` contains an alias with `customResolver` option",
+];
 
 const comparisonWarningFilters = [
   "[PLUGIN_TIMINGS]",

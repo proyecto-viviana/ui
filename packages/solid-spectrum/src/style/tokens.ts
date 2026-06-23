@@ -11,16 +11,17 @@
  */
 
 // eslint-disable-next-line rulesdir/imports
-import * as originalTokens from "@adobe/spectrum-tokens/dist/json/variables.json";
+import originalTokens from "@adobe/spectrum-tokens/dist/json/variables.json";
 
-// Vite's test runner exposes JSON imports as `{default: ...}` while the library
-// build inlines the object. Normalize once so token helpers are environment-safe.
-// The namespace import also carries a synthetic `default` key (esModuleInterop), so
-// strip it from the token key space and keep values loose to match the prior port.
+// Vite's test runner can expose JSON imports as `{default: ...}` while the
+// library build inlines the object. Normalize once so token helpers are
+// environment-safe. Keep the values intentionally loose: deriving TokenName from
+// the full upstream JSON makes TypeScript materialize a megabyte-scale literal
+// type during declaration emit.
 const tokenData: Record<string, any> =
-  "default" in originalTokens ? (originalTokens as any).default : originalTokens;
-const tokens = tokenData as Record<Exclude<keyof typeof originalTokens, "default">, any>;
-type TokenName = keyof typeof tokens;
+  "default" in (originalTokens as any) ? (originalTokens as any).default : originalTokens;
+type TokenName = string;
+const tokens = tokenData as Record<TokenName, any>;
 
 export function getToken(name: TokenName): string {
   return (tokens[name] as any).value;
@@ -34,7 +35,7 @@ export interface ColorToken {
 }
 
 export function colorToken(name: TokenName): ColorToken | ColorRef {
-  let token = tokens[name] as (typeof tokens)["gray-25"];
+  let token = tokens[name];
   if ("ref" in token) {
     return {
       type: "ref",
@@ -51,7 +52,7 @@ export function colorToken(name: TokenName): ColorToken | ColorRef {
 }
 
 export function rawColorToken(name: TokenName): string {
-  let token = tokens[name] as (typeof tokens)["gray-25"];
+  let token = tokens[name];
   return `light-dark(${token.sets.light.value}, ${token.sets.dark.value})`;
 }
 
@@ -63,7 +64,7 @@ export interface ColorRef {
 }
 
 export function weirdColorToken(name: TokenName): ColorRef {
-  let token = tokens[name] as (typeof tokens)["accent-background-color-default"];
+  let token = tokens[name];
   return {
     type: "ref",
     light: token.sets.light.ref.slice(1, -1).replace("-color", ""),

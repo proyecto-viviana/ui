@@ -9,6 +9,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
+      "@adobe/spectrum-tokens/dist/json/variables.json": [
+        "./src/style/spectrum-tokens-json.d.ts"
+      ],
       "@proyecto-viviana/solid-stately": ["../solid-stately/dist/index.d.ts"],
       "@proyecto-viviana/solidaria": ["../solidaria/dist/index.d.ts"],
       "@proyecto-viviana/solidaria-components": ["../solidaria-components/dist/index.d.ts"]

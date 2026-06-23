@@ -7,10 +7,18 @@ import PortingNote from "@comparison/components/PortingNote.astro";
 import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
 
 export function getStaticPaths() {
-  return comparisonEntries.map((entry) => ({
-    params: { slug: entry.slug },
-    props: { entry },
-  }));
+  const explicitComponentPageSlugs = new Set(
+    Object.keys(import.meta.glob("./*.astro"))
+      .map((filePath) => filePath.match(/^\.\/(.+)\.astro$/)?.[1])
+      .filter((slug): slug is string => slug != null && slug !== "[slug]"),
+  );
+
+  return comparisonEntries
+    .filter((entry) => !explicitComponentPageSlugs.has(entry.slug))
+    .map((entry) => ({
+      params: { slug: entry.slug },
+      props: { entry },
+    }));
 }
 
 const { entry } = Astro.props as { entry: ComparisonEntry };
