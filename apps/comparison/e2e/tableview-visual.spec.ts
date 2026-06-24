@@ -119,6 +119,85 @@ async function tableViewState(root: Locator) {
   });
 }
 
+async function focusBodyRow(page: Page, root: Locator, name: RegExp) {
+  const row = root.getByRole("row", { name }).first();
+  await page.keyboard.press("Tab");
+  await row.focus();
+  await expect
+    .poll(() => row.evaluate((element) => element.hasAttribute("data-focus-visible")))
+    .toBe(true);
+  return row;
+}
+
+async function focusBodyRowHeader(page: Page, root: Locator, name: RegExp) {
+  const row = root.getByRole("row", { name }).first();
+  const cell = row.getByRole("rowheader").first();
+  await page.keyboard.press("Tab");
+  await cell.focus();
+  await expect
+    .poll(() => cell.evaluate((element) => element.hasAttribute("data-focus-visible")))
+    .toBe(true);
+  return cell;
+}
+
+async function rowFocusRingContract(row: Locator) {
+  return row.evaluate((element) => {
+    const style = window.getComputedStyle(element);
+    const after = window.getComputedStyle(element, "::after");
+
+    return {
+      focusVisible: element.hasAttribute("data-focus-visible"),
+      topFocusRing: style.getPropertyValue("--topFocusRing").trim(),
+      bottomPosition: style.getPropertyValue("--bottomPosition").trim(),
+      focusRingColor: style.getPropertyValue("--focusRingColor").trim(),
+      afterContent: after.content,
+      afterPosition: after.position,
+      afterTop: after.top,
+      afterBottom: after.bottom,
+      afterZIndex: after.zIndex,
+      afterOutlineStyle: after.outlineStyle,
+      afterOutlineWidth: after.outlineWidth,
+      afterOutlineOffset: after.outlineOffset,
+      afterPointerEvents: after.pointerEvents,
+    };
+  });
+}
+
+async function cellFocusRingContract(cell: Locator) {
+  return cell.evaluate((element) => {
+    const row = element.closest<HTMLElement>('[role="row"]');
+    const directPresentationChildren = Array.from(element.children).filter(
+      (child) => child.getAttribute("role") === "presentation",
+    );
+    const ring =
+      directPresentationChildren.find(
+        (child): child is HTMLElement =>
+          child instanceof HTMLElement && window.getComputedStyle(child).position === "absolute",
+      ) ?? null;
+    const cellRect = element.getBoundingClientRect();
+    const ringRect = ring?.getBoundingClientRect() ?? null;
+    const ringStyle = ring ? window.getComputedStyle(ring) : null;
+    const rowStyle = row ? window.getComputedStyle(row) : null;
+
+    return {
+      focusVisible: element.hasAttribute("data-focus-visible"),
+      presentationChildCount: directPresentationChildren.length,
+      topFocusRing: rowStyle?.getPropertyValue("--topFocusRing").trim() ?? "",
+      bottomPosition: rowStyle?.getPropertyValue("--bottomPosition").trim() ?? "",
+      ringPosition: ringStyle?.position ?? null,
+      ringPointerEvents: ringStyle?.pointerEvents ?? null,
+      ringOutlineStyle: ringStyle?.outlineStyle ?? null,
+      ringOutlineWidth: ringStyle?.outlineWidth ?? null,
+      ringOutlineOffset: ringStyle?.outlineOffset ?? null,
+      ringTop: ringStyle?.top ?? null,
+      ringBottom: ringStyle?.bottom ?? null,
+      ringTopDelta: ringRect != null ? Number((ringRect.top - cellRect.top).toFixed(2)) : null,
+      ringBottomDelta:
+        ringRect != null ? Number((ringRect.bottom - cellRect.bottom).toFixed(2)) : null,
+    };
+  });
+}
+
 function expectTableViewStateToMatch(
   solid: Awaited<ReturnType<typeof tableViewState>>,
   react: Awaited<ReturnType<typeof tableViewState>>,
@@ -246,6 +325,73 @@ test.describe("comparison TableView visual parity", () => {
     const solidState = await tableViewState(fixtures.solidRoot);
     expect(solidState.resizerCount).toBe(reactState.resizerCount);
     expectTableViewStateToMatch(solidState, reactState);
+  });
+
+  test("focus ring overlay geometry follows the vendored upstream branch", async ({ page }) => {
+    const fixtures = await tableViewFixtures(page, "?selectionMode=none&showDividers=true");
+    const budgetRow = /Budget\.xlsx/;
+
+    // The vendored upstream source for this port is S2 1.5. The comparison app
+    // still installs S2 1.3, which has CellFocusRing but not row focusIndicator
+    // vars, so this guards the fixture drift instead of claiming false equality.
+    const reactRow = await focusBodyRow(page, fixtures.reactRoot, budgetRow);
+    const reactRowFocusRing = await rowFocusRingContract(reactRow);
+    await reactRow.evaluate((element) => element.blur());
+
+    const solidRow = await focusBodyRow(page, fixtures.solidRoot, budgetRow);
+    const solidRowFocusRing = await rowFocusRingContract(solidRow);
+    await solidRow.evaluate((element) => element.blur());
+
+    expect(reactRowFocusRing.focusVisible).toBe(true);
+    expect(reactRowFocusRing.topFocusRing).toBe("");
+    expect(reactRowFocusRing.bottomPosition).toBe("");
+    expect(reactRowFocusRing.afterContent).toBe("none");
+    expect(reactRowFocusRing.afterPosition).toBe("static");
+
+    expect(solidRowFocusRing.focusVisible).toBe(true);
+    expect(solidRowFocusRing.topFocusRing).toBe("-1px");
+    expect(solidRowFocusRing.bottomPosition).toBe("-1px");
+    expect(solidRowFocusRing.afterContent).not.toBe("none");
+    expect(solidRowFocusRing.afterPosition).toBe("absolute");
+    expect(solidRowFocusRing.afterTop).toBe("-1px");
+    expect(solidRowFocusRing.afterBottom).toBe("-1px");
+    expect(solidRowFocusRing.afterZIndex).toBe("3");
+    expect(solidRowFocusRing.afterOutlineWidth).toBe("2px");
+    expect(solidRowFocusRing.afterOutlineOffset).toBe("-2px");
+    expect(solidRowFocusRing.afterPointerEvents).toBe("none");
+
+    const reactCell = await focusBodyRowHeader(page, fixtures.reactRoot, budgetRow);
+    const reactCellFocusRing = await cellFocusRingContract(reactCell);
+    await reactCell.evaluate((element) => element.blur());
+
+    const solidCell = await focusBodyRowHeader(page, fixtures.solidRoot, budgetRow);
+    const solidCellFocusRing = await cellFocusRingContract(solidCell);
+
+    expect(reactCellFocusRing.focusVisible).toBe(true);
+    expect(reactCellFocusRing.presentationChildCount).toBe(1);
+    expect(reactCellFocusRing.topFocusRing).toBe("");
+    expect(reactCellFocusRing.bottomPosition).toBe("");
+    expect(reactCellFocusRing.ringTop).toBe("0px");
+    expect(reactCellFocusRing.ringTopDelta).toBe(0);
+
+    expect(solidCellFocusRing.focusVisible).toBe(reactCellFocusRing.focusVisible);
+    expect(solidCellFocusRing.presentationChildCount).toBe(
+      reactCellFocusRing.presentationChildCount,
+    );
+    expect(solidCellFocusRing.ringPosition).toBe(reactCellFocusRing.ringPosition);
+    expect(solidCellFocusRing.ringPointerEvents).toBe(reactCellFocusRing.ringPointerEvents);
+    expect(solidCellFocusRing.ringOutlineStyle).toBe(reactCellFocusRing.ringOutlineStyle);
+    expect(solidCellFocusRing.ringOutlineWidth).toBe(reactCellFocusRing.ringOutlineWidth);
+    expect(solidCellFocusRing.ringOutlineOffset).toBe(reactCellFocusRing.ringOutlineOffset);
+    expect(solidCellFocusRing.ringBottom).toBe(reactCellFocusRing.ringBottom);
+    expect(solidCellFocusRing.ringBottomDelta).toBe(reactCellFocusRing.ringBottomDelta);
+    expect(solidCellFocusRing.topFocusRing).toBe("-1px");
+    expect(solidCellFocusRing.bottomPosition).toBe("-1px");
+    expect(solidCellFocusRing.ringTop).toBe("-1px");
+    expect(solidCellFocusRing.ringPosition).toBe("absolute");
+    expect(solidCellFocusRing.ringOutlineWidth).toBe("2px");
+    expect(solidCellFocusRing.ringOutlineOffset).toBe("-2px");
+    expect(solidCellFocusRing.ringTopDelta).toBe(-1);
   });
 
   test("empty state and ActionBar are wired on both stacks", async ({ page }) => {

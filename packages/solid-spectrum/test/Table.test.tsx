@@ -51,6 +51,12 @@ function pressWithMouse(target: HTMLElement, init: Record<string, unknown> = {})
   fireEvent.click(target, init);
 }
 
+function focusFromKeyboard(target: HTMLElement): void {
+  fireEvent.keyDown(document, { key: "Tab" });
+  target.focus();
+  fireEvent.focus(target);
+}
+
 function TestTable(props: {
   density?: "compact" | "regular" | "spacious";
   size?: "sm" | "md" | "lg";
@@ -418,6 +424,76 @@ describe("TableView (solid-spectrum)", () => {
     expect(aliceContiguous).not.toBe(aliceIsolated);
     // Bob's top edge collapses once the row above is also selected.
     expect(bobContiguous).not.toBe(bobIsolated);
+  });
+
+  it("uses the S2 row focus indicator overlay and first-row top offset state", () => {
+    render(() => <TestTable selectionMode="none" />);
+
+    const alice = screen.getByRole("row", { name: /Alice/ });
+    const bob = screen.getByRole("row", { name: /Bob/ });
+
+    focusFromKeyboard(alice);
+
+    expect(alice).toHaveAttribute("data-focus-visible");
+    expect(alice.className).toContain("solid-spectrum-table-row-focus-indicator");
+
+    const styleEl = document.getElementById("solid-spectrum-table-row-focus-indicator-style");
+    expect(styleEl).not.toBeNull();
+    const css = styleEl?.textContent ?? "";
+    expect(css).toContain(".solid-spectrum-table-row-focus-indicator::after");
+    expect(css).toContain("top: var(--topFocusRing)");
+    expect(css).toContain("bottom: var(--bottomPosition)");
+    expect(css).toContain("outline-offset: -2px");
+
+    const firstRowFocusClass = alice.className;
+    fireEvent.blur(alice);
+    focusFromKeyboard(bob);
+
+    // The macro class must distinguish upstream's `isFirstItem` branch:
+    // first row uses top 0, later rows inherit the -1px overlap.
+    expect(bob.className).not.toBe(firstRowFocusClass);
+  });
+
+  it("renders S2 presentational focus rings for focused headers and body cells", () => {
+    render(() => <TestTable selectionMode="none" />);
+
+    const header = screen.getByRole("columnheader", { name: /Name/ });
+    expect(header.querySelector('[role="presentation"]')).toBeNull();
+
+    focusFromKeyboard(header);
+
+    expect(header).toHaveAttribute("data-focus-visible");
+    expect(header.querySelectorAll('[role="presentation"]')).toHaveLength(1);
+    expect(header.querySelector('[role="presentation"]')?.className).not.toBe("");
+
+    fireEvent.blur(header);
+
+    const bob = screen.getByRole("row", { name: /Bob/ });
+    const bobNameCell = within(bob).getByRole("rowheader", { name: "Bob" });
+    expect(bobNameCell.querySelector('[role="presentation"]')).toBeNull();
+
+    focusFromKeyboard(bobNameCell);
+
+    expect(bobNameCell).toHaveAttribute("data-focus-visible");
+    expect(bobNameCell.querySelectorAll('[role="presentation"]')).toHaveLength(1);
+    expect(bobNameCell.querySelector('[role="presentation"]')?.className).not.toBe("");
+  });
+
+  it("renders the S2 presentational focus ring for focused selection cells", () => {
+    render(() => <TestTable selectionMode="multiple" />);
+
+    const alice = screen.getByRole("row", { name: /Alice/ });
+    const selectionCell = within(alice)
+      .getByRole("checkbox")
+      .closest('[role="gridcell"], [role="rowheader"]') as HTMLElement;
+    expect(selectionCell).not.toBeNull();
+    expect(selectionCell.querySelector('[role="presentation"]')).toBeNull();
+
+    focusFromKeyboard(selectionCell);
+
+    expect(selectionCell).toHaveAttribute("data-focus-visible");
+    expect(selectionCell.querySelectorAll('[role="presentation"]')).toHaveLength(1);
+    expect(selectionCell.querySelector('[role="presentation"]')?.className).not.toBe("");
   });
 
   it("selects rows on pointer down by default to match RAC table timing", () => {

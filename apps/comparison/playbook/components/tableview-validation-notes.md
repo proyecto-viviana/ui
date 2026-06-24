@@ -53,7 +53,9 @@ Status: accepted with tracked S2 API backlog
       clear-selection behavior are covered.
 - [x] Style source-to-computed parity: browser evidence compares React/Solid
       screenshots and computed grid colors, border radii, row colors, row
-      heights, checkbox/link/resizer counts, and quiet/wrap/divider geometry.
+      heights, checkbox/link/resizer counts, quiet/wrap/divider geometry, the
+      shared focused cell ring structure, and Solid's vendored-upstream
+      focused row/cell focus-ring overlay geometry.
 - [x] React-vs-Solid comparison harness parity: React and Solid fixtures share
       `tableview-demo.ts` defaults, route props, visible columns, item data,
       event channel, serialized markers, visible side-panel controls, hidden

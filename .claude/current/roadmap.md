@@ -161,8 +161,14 @@ selection / keyboard / `aria-describedby` bugs, and they gate
 
 ### Phase 2 — standalone parity absorption (interleavable)
 
-- **`table-focus-ring`** (T-59) — TableView cell focus-ring `--topFocusRing`
-  re-architecture; visual-regression risk, so isolate it.
+- **`table-focus-ring`** (T-59) — **DONE 2026-06-24.** Ported S2's TableView
+  focus-ring overlay model: rows now publish `--topFocusRing`/`--bottomPosition`
+  and the raw `::after` row focus indicator, while headers, body cells, selection
+  cells, and EditableCell render upstream's presentational `CellFocusRing` child
+  (`top: var(--topFocusRing, 0)`, `bottom: 0`). Unit coverage plus
+  comparison-app browser coverage exercise the current React fixture's shared
+  `CellFocusRing` structure and Solid's vendored-upstream asymmetric
+  non-first-row overlap.
 - **`rac-form-field-wrappers`** — **DONE 2026-06-21.** Absorbed the 9 unported RAC
   Checkbox / Radio / Switch `Field` / `Button` / `FieldContext` names into
   `solidaria-components`, mirroring upstream's 1.19 split (`*Field` owns state +

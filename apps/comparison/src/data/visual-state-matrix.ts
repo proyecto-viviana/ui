@@ -1476,6 +1476,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       note: "Quiet wrap state compares dynamic visible columns/add-row data, sorting, resizable column affordances, dividers, disabled rows, computed styles, and geometry against React Spectrum.",
     },
     {
+      id: "styled.focus-ring",
+      label: "Focused row and cell focus rings",
+      kind: "interaction",
+      react: "asserted",
+      solid: "asserted",
+      pairDiff: "na",
+      spec: "e2e/tableview-visual.spec.ts; packages/solid-spectrum/test/Table.test.tsx; packages/solid-spectrum/test/EditableCell.test.tsx",
+      note: "Focused Budget row and rowheader cells exercise the browser focus path. The installed React S2 fixture asserts the shared presentational CellFocusRing structure and guards the pre-1.5 row-var drift; the Solid side asserts the vendored upstream --topFocusRing/--bottomPosition row overlay and CellFocusRing offset geometry.",
+    },
+    {
       id: "styled.empty",
       label: "Empty state",
       kind: "interaction",

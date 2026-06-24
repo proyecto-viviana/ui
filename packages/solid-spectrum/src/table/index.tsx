@@ -460,16 +460,48 @@ function injectHighlightSelectionBorderCSS(): void {
   highlightSelectionBorderInjected = true;
 }
 
+// Upstream S2 draws the row-level focus/drop indicator as raw `&::after`
+// (`focusIndicator`) so it can overlap row boundaries asymmetrically via
+// --topFocusRing/--bottomPosition. Keep the same overlay model rather than a
+// direct outline, which can't express the non-first-row -1px top extension.
+const ROW_FOCUS_INDICATOR_CLASS = "solid-spectrum-table-row-focus-indicator";
+let rowFocusIndicatorInjected = false;
+function injectRowFocusIndicatorCSS(): void {
+  if (rowFocusIndicatorInjected || typeof document === "undefined") return;
+  const style = document.createElement("style");
+  style.id = "solid-spectrum-table-row-focus-indicator-style";
+  style.textContent = `.${ROW_FOCUS_INDICATOR_CLASS}::after {
+  content: "";
+  top: var(--topFocusRing);
+  bottom: var(--bottomPosition);
+  z-index: 3;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  border-radius: 5px;
+  position: absolute;
+  outline-style: solid;
+  outline-color: var(--focusRingColor);
+  outline-width: 2px;
+  outline-offset: -2px;
+  pointer-events: none;
+}`;
+  document.head.appendChild(style);
+  rowFocusIndicatorInjected = true;
+}
+
 const tableRow = style<
   TableRowRenderProps & {
     density?: TableDensity;
     selectionStyle?: TableSelectionStyle;
+    isFirstItem?: boolean;
     isNextSelected?: boolean;
     isPrevSelected?: boolean;
   }
 >({
   outlineStyle: "none",
   position: "relative",
+  isolation: "isolate",
+  forcedColorAdjust: "none",
   minHeight: {
     density: rowHeight,
   },
@@ -536,6 +568,32 @@ const tableRow = style<
     value: {
       default: "transparent",
       isSelected: "--borderColorBlue",
+    },
+  },
+  "--focusRingColor": {
+    type: "outlineColor",
+    value: {
+      default: "focus-ring",
+      forcedColors: "Highlight",
+    },
+  },
+  "--topFocusRing": {
+    type: "top",
+    value: {
+      default: "[-1px]",
+      isFirstItem: 0,
+    },
+  },
+  "--bottomPosition": {
+    type: "bottom",
+    value: {
+      selectionStyle: {
+        checkbox: {
+          default: "[-1px]",
+          isNextSelected: 0,
+        },
+        highlight: "[-1px]",
+      },
     },
   },
   "--borderTopRadius": {
@@ -633,8 +691,6 @@ const tableCell = style<
     selectionStyle?: TableSelectionStyle;
   }
 >({
-  ...focusRing(),
-  outlineOffset: -2,
   outlineStyle: "none",
   position: "relative",
   color: "inherit",
@@ -685,6 +741,28 @@ const tableCell = style<
     showDivider: 1,
   },
 });
+
+const tableCellFocusRing = style({
+  outlineStyle: "solid",
+  outlineOffset: -2,
+  outlineWidth: 2,
+  outlineColor: {
+    default: "focus-ring",
+    forcedColors: "Highlight",
+  },
+  borderRadius: "[5px]",
+  zIndex: 2,
+  position: "absolute",
+  top: "var(--topFocusRing, 0)",
+  bottom: 0,
+  insetStart: 0,
+  insetEnd: 0,
+  pointerEvents: "none",
+});
+
+function CellFocusRing(): JSX.Element {
+  return <div role="presentation" class={tableCellFocusRing} />;
+}
 
 const tableCellContent = style<{
   align?: "start" | "center" | "end";
@@ -771,8 +849,6 @@ const editableCell = style<
     selectionStyle?: TableSelectionStyle;
   }
 >({
-  ...focusRing(),
-  outlineOffset: -2,
   outlineStyle: "none",
   position: "relative",
   color: {
@@ -1208,7 +1284,11 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     </div>
   );
 
-  return <InternalTableContext.Provider value={context()}>{renderFramed()}</InternalTableContext.Provider>;
+  return (
+    <InternalTableContext.Provider value={context()}>
+      {renderFramed()}
+    </InternalTableContext.Provider>
+  );
 }
 
 export function TableHeader(props: TableHeaderProps): JSX.Element {
@@ -1259,17 +1339,20 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
   return (
     <HeadlessTableColumn {...headlessProps} class={className} style={local.UNSAFE_style}>
       {(renderProps: TableColumnRenderProps) => (
-        <span class={tableColumnContent({ align: align(), overflowMode: context.overflowMode })}>
-          {renderProps.isSortable && renderProps.sortDirection ? (
-            <SortIcon direction={renderProps.sortDirection} />
-          ) : null}
-          <span>
-            {typeof local.children === "function" ? local.children(renderProps) : local.children}
+        <>
+          <span class={tableColumnContent({ align: align(), overflowMode: context.overflowMode })}>
+            {renderProps.isSortable && renderProps.sortDirection ? (
+              <SortIcon direction={renderProps.sortDirection} />
+            ) : null}
+            <span>
+              {typeof local.children === "function" ? local.children(renderProps) : local.children}
+            </span>
+            {renderProps.allowsResizing && props.id != null ? (
+              <ColumnResizer column={{ key: props.id }} />
+            ) : null}
           </span>
-          {renderProps.allowsResizing && props.id != null ? (
-            <ColumnResizer column={{ key: props.id }} />
-          ) : null}
-        </span>
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
       )}
     </HeadlessTableColumn>
   );
@@ -1361,10 +1444,17 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     if (k == null || !state) return false;
     return isKeySelected(state.collection.getKeyBefore?.(k) ?? null);
   };
+  const isFirstItem = (): boolean => {
+    const k = rowKey();
+    if (k == null || !state) return false;
+    return state.collection.getFirstKey?.() === k;
+  };
   const className = (renderProps: TableRowRenderProps): string => {
     const highlight = context.selectionStyle === "highlight";
     if (highlight) injectHighlightSelectionBorderCSS();
+    if (renderProps.isFocusVisible) injectRowFocusIndicatorCSS();
     return [
+      renderProps.isFocusVisible ? ROW_FOCUS_INDICATOR_CLASS : undefined,
       highlight ? HIGHLIGHT_SELECTION_BORDER_CLASS : undefined,
       local.UNSAFE_className,
       local.class,
@@ -1373,6 +1463,7 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
           ...renderProps,
           density: context.density,
           selectionStyle: context.selectionStyle,
+          isFirstItem: isFirstItem(),
           isNextSelected: isNextSelected(),
           isPrevSelected: isPrevSelected(),
         }),
@@ -1464,15 +1555,18 @@ export function TableCell(props: TableCellProps): JSX.Element {
   return (
     <HeadlessTableCell {...headlessProps} class={className} style={local.UNSAFE_style}>
       {(renderProps: TableCellRenderProps) => (
-        <Show
-          when={renderProps.isTreeColumn && renderProps.hasChildItems}
-          fallback={content(renderProps)}
-        >
-          <div class={treeCellInner}>
-            <ExpandableRowChevron isExpanded={renderProps.isExpanded} />
-            {content(renderProps)}
-          </div>
-        </Show>
+        <>
+          <Show
+            when={renderProps.isTreeColumn && renderProps.hasChildItems}
+            fallback={content(renderProps)}
+          >
+            <div class={treeCellInner}>
+              <ExpandableRowChevron isExpanded={renderProps.isExpanded} />
+              {content(renderProps)}
+            </div>
+          </Show>
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
       )}
     </HeadlessTableCell>
   );
@@ -1591,7 +1685,12 @@ export function EditableCell(props: EditableCellProps): JSX.Element {
       class={className}
       style={local.UNSAFE_style}
     >
-      {(renderProps: TableCellRenderProps) => renderInner(renderProps)}
+      {(renderProps: TableCellRenderProps) => (
+        <>
+          {renderInner(renderProps)}
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
+      )}
     </HeadlessTableCell>
   );
 }
@@ -1841,20 +1940,25 @@ export function TableSelectionCheckbox(props: {
         selectionCell({ ...renderProps, density: context.density })
       }
     >
-      <span class={selectionCheckbox} data-rsp-slot="selection-indicator">
-        <HeadlessTableSelectionCheckbox rowKey={props.rowKey} class={selectionCheckboxInput} />
-        <span
-          class={selectionCheckboxBox({
-            isSelected: !!props.isSelected,
-            isDisabled: !!props.isDisabled,
-          })}
-          aria-hidden="true"
-        >
-          {props.isSelected ? (
-            <Checkmark size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
-          ) : null}
-        </span>
-      </span>
+      {(renderProps: TableCellRenderProps) => (
+        <>
+          <span class={selectionCheckbox} data-rsp-slot="selection-indicator">
+            <HeadlessTableSelectionCheckbox rowKey={props.rowKey} class={selectionCheckboxInput} />
+            <span
+              class={selectionCheckboxBox({
+                isSelected: !!props.isSelected,
+                isDisabled: !!props.isDisabled,
+              })}
+              aria-hidden="true"
+            >
+              {props.isSelected ? (
+                <Checkmark size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
+              ) : null}
+            </span>
+          </span>
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
+      )}
     </HeadlessTableCell>
   );
 }

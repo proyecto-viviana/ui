@@ -83,6 +83,12 @@ function EditableTable(props: {
   );
 }
 
+function focusFromKeyboard(target: HTMLElement): void {
+  fireEvent.keyDown(document, { key: "Tab" });
+  target.focus();
+  fireEvent.focus(target);
+}
+
 /** Force the `(hover: hover) and (pointer: fine)` media query that picks the popover vs dialog path. */
 function mockMatchMedia(matches: boolean): void {
   window.matchMedia = vi.fn(
@@ -110,6 +116,20 @@ describe("EditableCell (solid-spectrum)", () => {
 
   describe("desktop (fine pointer)", () => {
     beforeEach(() => mockMatchMedia(true));
+
+    it("renders the S2 presentational focus ring on a focus-visible editable cell", () => {
+      render(() => <EditableTable />);
+
+      const editableCell = screen.getByText("Apples").closest('[role="rowheader"]') as HTMLElement;
+      expect(editableCell).not.toBeNull();
+      expect(editableCell.querySelector('[role="presentation"]')).toBeNull();
+
+      focusFromKeyboard(editableCell);
+
+      expect(editableCell).toHaveAttribute("data-focus-visible");
+      expect(editableCell.querySelectorAll('[role="presentation"]')).toHaveLength(1);
+      expect(editableCell.querySelector('[role="presentation"]')?.className).not.toBe("");
+    });
 
     it("opens an editor popover from the edit button and submits", async () => {
       const user = setupUser();
