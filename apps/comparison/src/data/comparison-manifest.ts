@@ -250,11 +250,11 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     title: "Toast",
     category: "Components",
     summary:
-      "Toast route mounted on both stacks with S2 ToastContainer/ToastQueue primitives, variant methods, placement, multi-toast stack controls, action, close-on-action, timeout, and Notifications landmark controls.",
+      "Toast route mounted on both stacks with S2 ToastContainer/ToastQueue primitives, docs-style trigger buttons, active React/Solid stack selection, placement, multi-toast stack controls, action, close-on-action, timeout, and Notifications landmark controls.",
     styledSummary:
       "React Spectrum ToastContainer/ToastQueue vs Solid Spectrum ToastContainer/ToastQueue.",
     styledNote:
-      "React uses @react-spectrum/s2 ToastContainer and ToastQueue directly; Solid uses @proyecto-viviana/solid-spectrum ToastContainer and ToastQueue on top of Solidaria/Solid Stately toast primitives with S2 variant mapping, S2-localized Show all/Clear all/Collapse controls, default bottom placement, collapsed/expanded stack controls, the Notifications F6 landmark, Solid top-layer overlay/live-region exclusion marker, focus transfer/restoration on removed toasts, DOM option passthrough, clear-without-onClose parity, 5s minimum auto-dismiss, actionable-toast no-auto-dismiss behavior, and bounded default-surface React-vs-Solid pair-diff evidence. The comparison viewer still needs toast-comparison-viewer to replace prop-driven auto-queueing with docs-style trigger buttons and a single active React/Solid stack.",
+      "React uses @react-spectrum/s2 ToastContainer and ToastQueue directly; Solid uses @proyecto-viviana/solid-spectrum ToastContainer and ToastQueue on top of Solidaria/Solid Stately toast primitives with S2 variant mapping, docs-style neutral/positive/negative/info trigger buttons, a single active React/Solid stack, S2-localized Show all/Clear all/Collapse controls, default bottom placement, collapsed/expanded stack controls, the Notifications F6 landmark, Solid top-layer overlay/live-region exclusion marker, focus transfer/restoration on removed toasts, DOM option passthrough, clear-without-onClose parity, 5s minimum auto-dismiss, actionable-toast no-auto-dismiss behavior, and bounded default-surface React-vs-Solid pair-diff evidence.",
   }),
 
   provider: {

@@ -122,7 +122,7 @@ describe("Toast (solid-spectrum)", () => {
       expect(onClose).not.toHaveBeenCalled();
     });
 
-    it("localizes S2 stack controls and close label from Provider locale", () => {
+    it("localizes S2 stack controls and dismiss label from Provider locale", () => {
       render(() => (
         <Provider locale="es-ES">
           <ToastContainer portal={false} />
@@ -136,7 +136,7 @@ describe("Toast (solid-spectrum)", () => {
 
       expect(screen.getByRole("button", { name: "Borrar todo" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Contraer" })).toBeInTheDocument();
-      expect(screen.getAllByRole("button", { name: "Cerrar" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "Descartar" }).length).toBeGreaterThan(0);
     });
 
     it("collapses the expanded stack on Escape", () => {
@@ -338,7 +338,7 @@ describe("Toast (solid-spectrum)", () => {
   });
 
   describe("close button", () => {
-    it("renders close button with Close aria-label and S2 CloseIcon SVG", () => {
+    it("renders dismiss button with S2 CloseIcon SVG", () => {
       render(() => (
         <ToastProvider useGlobalQueue>
           <ToastRegion portal={false} />
@@ -349,7 +349,7 @@ describe("Toast (solid-spectrum)", () => {
 
       const region = screen.getByRole("region");
       const toastEl = region.querySelector('[data-type="info"]')!;
-      const closeBtn = toastEl.querySelector('button[aria-label="Close"]');
+      const closeBtn = toastEl.querySelector('button[aria-label="Dismiss"]');
       expect(closeBtn).toBeInTheDocument();
       const svg = closeBtn!.querySelector("svg");
       expect(svg).toBeInTheDocument();

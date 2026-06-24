@@ -40,6 +40,7 @@ import {
   mergeContextUnsafeStyle,
   type RefLike,
 } from "./spectrum-context";
+import { getSingleTextChild } from "./text-child";
 
 type RuntimeButtonProps = ButtonProps & {
   onHoverChange?: (isHovered: boolean) => void;
@@ -171,13 +172,14 @@ export function Button(props: ButtonProps): JSX.Element {
     function ResolvedContent() {
       const resolvedChildren = resolveChildren(() => local.children);
       const content = () => resolvedChildren();
+      const textChild = () => getSingleTextChild(content());
 
-      return typeof content() === "string" ? (
+      return textChild() !== undefined ? (
         <span
           class={`${s2ButtonText({ isProgressVisible: isProgressVisible() })} ${style({ order: 1 })}`}
           data-rsp-slot="text"
         >
-          {content()}
+          {textChild()}
         </span>
       ) : (
         content()

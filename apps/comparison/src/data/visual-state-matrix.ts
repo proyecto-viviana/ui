@@ -3143,7 +3143,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "visual",
       pairDiff: "asserted",
       spec: "e2e/toast-visual.spec.ts",
-      note: "The route mounts React and Solid ToastContainer/ToastQueue stacks with the S2 default bottom placement, neutral variant, close button, Notifications landmark, top-layer markers, and a bounded React-vs-Solid screenshot pair diff.",
+      note: "The route mounts React and Solid ToastContainer/ToastQueue stacks with the S2 default bottom placement, docs-style neutral trigger, close button, Notifications landmark, top-layer markers, a single active stack, and a bounded React-vs-Solid screenshot pair diff.",
     },
     {
       id: "styled.toast.variants",
@@ -3153,7 +3153,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/toast-visual.spec.ts; packages/solid-spectrum/test/Toast.test.tsx",
-      note: "Neutral, positive, negative, and info route states are asserted for queue method mapping, icon contract, variant attributes, and rendered message text.",
+      note: "Neutral, positive, negative, and info trigger buttons are asserted for queue method mapping, icon contract, variant attributes, and rendered message text.",
     },
     {
       id: "styled.toast.action",
@@ -3173,7 +3173,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/toast-visual.spec.ts; packages/solid-spectrum/test/Toast.test.tsx",
-      note: "Multiple queued toasts collapse behind the main toast, expose Show all, expand to reveal all messages, and expose Clear all/Collapse controls on both stacks.",
+      note: "Multiple clicked trigger buttons queue real toasts, newest toast remains visible in the collapsed stack, Show all expands the stack, one selected toast can be dismissed without clearing siblings, and Clear all/Collapse controls work on both stacks.",
     },
     {
       id: "styled.toast.landmark-focus",
@@ -3203,7 +3203,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts + e2e/toast-visual.spec.ts",
-      note: "The current modeled controls drive content, ToastQueue variant method, ToastContainer placement, queued count, action label, close-on-action, auto-dismiss timeout, and region aria-label into both stacks. Docs-style in-canvas trigger buttons, click-driven stacking, one-at-a-time dismissal, and a single active React/Solid stack are tracked by toast-comparison-viewer.",
+      note: "The modeled controls drive active React/Solid stack selection, content, ToastContainer placement, action label, close-on-action, auto-dismiss timeout, and region aria-label into both stacks. Variant and count remain hidden legacy route props while the in-canvas trigger buttons own docs-style queueing.",
     },
   ],
   dialog: [

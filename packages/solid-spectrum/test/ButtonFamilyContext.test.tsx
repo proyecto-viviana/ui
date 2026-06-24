@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createSignal } from "solid-js";
+import { createSignal, type JSX } from "solid-js";
 import { render, screen } from "@solidjs/testing-library";
 import {
   ActionButton,
@@ -22,6 +22,10 @@ import {
   ToggleButtonGroupContext,
 } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+
+function solidHelperTextChild(label: string): JSX.Element {
+  return [label] as unknown as JSX.Element;
+}
 
 describe("button-family S2 contexts", () => {
   it("applies ButtonGroupContext to grouped Button and LinkButton children", () => {
@@ -102,6 +106,27 @@ describe("button-family S2 contexts", () => {
     expect(avatar).not.toBeNull();
     expect(button).toContainElement(image);
     expect(screen.getByText("2")).toBeInTheDocument();
+  });
+
+  it("wraps Solid helper string-array children in S2 text slots", () => {
+    render(() => (
+      <>
+        <Button>{solidHelperTextChild("Save")}</Button>
+        <LinkButton href="/docs">{solidHelperTextChild("Docs")}</LinkButton>
+        <ActionButton>{solidHelperTextChild("Inspect")}</ActionButton>
+        <ToggleButton>{solidHelperTextChild("Bold")}</ToggleButton>
+      </>
+    ));
+
+    const button = screen.getByRole("button", { name: "Save" });
+    const link = screen.getByRole("link", { name: "Docs" });
+    const actionButton = screen.getByRole("button", { name: "Inspect" });
+    const toggleButton = screen.getByRole("button", { name: "Bold" });
+
+    expect(button.querySelector('[data-rsp-slot="text"]')?.textContent).toBe("Save");
+    expect(link.querySelector('[data-rsp-slot="text"]')?.textContent).toBe("Docs");
+    expect(actionButton.querySelector('[data-rsp-slot="text"]')?.textContent).toBe("Inspect");
+    expect(toggleButton.querySelector('[data-rsp-slot="text"]')?.textContent).toBe("Bold");
   });
 
   it("localizes Button family pending progress labels from S2 intl strings", () => {

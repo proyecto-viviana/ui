@@ -633,6 +633,7 @@ import {
   normalizeToastDemoProps,
   serializeToastDemoProps,
   toastDemoPropsFromWindow,
+  type ToastDemoVariant,
   type ToastDemoProps,
 } from "@comparison/data/toast-demo";
 import {
@@ -6586,6 +6587,38 @@ function solidToastQueueOptions(
   };
 }
 
+const solidToastTriggerConfigs = [
+  {
+    variant: "neutral",
+    label: "Show Neutral Toast",
+    buttonVariant: "secondary",
+    message: (demoProps: ToastDemoProps) => demoProps.children,
+  },
+  {
+    variant: "positive",
+    label: "Show Positive Toast",
+    buttonVariant: "primary",
+    message: () => "Toast is done!",
+  },
+  {
+    variant: "negative",
+    label: "Show Negative Toast",
+    buttonVariant: "negative",
+    message: () => "Toast is burned!",
+  },
+  {
+    variant: "info",
+    label: "Show Info Toast",
+    buttonVariant: "accent",
+    message: () => "Toasting…",
+  },
+] as const satisfies ReadonlyArray<{
+  variant: ToastDemoVariant;
+  label: string;
+  buttonVariant: "secondary" | "primary" | "negative" | "accent";
+  message: (demoProps: ToastDemoProps) => string;
+}>;
+
 function SolidSpectrumToastDemo() {
   const [demoProps, setDemoProps] = createSignal<ToastDemoProps>(toastDemoPropsFromWindow());
   const [actionCount, setActionCount] = createSignal(0);
@@ -6606,10 +6639,48 @@ function SolidSpectrumToastDemo() {
       setCloseCount((count) => count + 1);
     }
   };
+  const triggerToast = (variant: ToastDemoVariant) => {
+    const currentProps = demoProps();
+    const config = solidToastTriggerConfigs.find((item) => item.variant === variant);
+    if (!config || currentProps.activeSide !== "solid") {
+      return;
+    }
+
+    let trackedClose = () => {};
+    const closeToast = SolidSpectrumToastQueue[variant](
+      config.message(currentProps),
+      solidToastQueueOptions(
+        currentProps,
+        () => setActionCount((count) => count + 1),
+        () => {
+          closeToasts = closeToasts.filter((close) => close !== trackedClose);
+          handleToastClose();
+        },
+      ),
+    );
+    trackedClose = () => closeToast();
+    closeToasts = [...closeToasts, trackedClose];
+  };
+  const solidToastTriggers = () =>
+    hc(
+      SolidSpectrumButtonGroup,
+      {},
+      solidToastTriggerConfigs.map((config) =>
+        hc(
+          SolidSpectrumButton,
+          {
+            variant: config.buttonVariant,
+            onPress: () => triggerToast(config.variant),
+          },
+          [config.label],
+        ),
+      ),
+    );
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "toast") {
+        closeExistingToasts();
         setActionCount(0);
         setCloseCount(0);
         setDemoProps(normalizeToastDemoProps(event.detail.props ?? {}));
@@ -6627,23 +6698,6 @@ function SolidSpectrumToastDemo() {
     onCleanup(() => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
-  });
-
-  createEffect(() => {
-    const currentProps = demoProps();
-    closeExistingToasts();
-    closeToasts = Array.from({ length: currentProps.count }, (_item, index) =>
-      SolidSpectrumToastQueue[currentProps.variant](
-        currentProps.count > 1 ? `${currentProps.children} ${index + 1}` : currentProps.children,
-        solidToastQueueOptions(
-          currentProps,
-          () => setActionCount((count) => count + 1),
-          handleToastClose,
-        ),
-      ),
-    );
-    onCleanup(() => {
       closeExistingToasts();
     });
   });
@@ -6662,13 +6716,19 @@ function SolidSpectrumToastDemo() {
         "div",
         {
           class: "comparison-toast-stage",
-          style: { "max-width": "100%", "min-height": "96px", width: "360px" },
+          style: { "max-width": "100%", "min-height": "160px", width: "420px" },
           "data-comparison-control-root": "toast",
           get "data-comparison-control-props"() {
             return serializeToastDemoProps(demoProps());
           },
           get "data-comparison-toast-props"() {
             return serializeToastDemoProps(demoProps());
+          },
+          get "data-comparison-toast-active-side"() {
+            return demoProps().activeSide;
+          },
+          get "data-comparison-toast-is-active"() {
+            return String(demoProps().activeSide === "solid");
           },
           get "data-comparison-toast-action-count"() {
             return String(actionCount());
@@ -6678,15 +6738,25 @@ function SolidSpectrumToastDemo() {
           },
         },
         [
-          h(SolidSpectrumToastContainer, {
+          // ToastContainer owns global queue subscriptions; only the trigger surface is inactive.
+          hc(SolidSpectrumToastContainer, {
             get placement() {
               return demoProps().placement;
             },
             get "aria-label"() {
               return demoProps()["aria-label"];
             },
-            portal: false,
+            PRIVATE_forceReducedMotion: true,
           }),
+          hc(
+            "div",
+            {
+              get hidden() {
+                return demoProps().activeSide !== "solid" ? true : undefined;
+              },
+            },
+            [solidToastTriggers()],
+          ),
         ],
       ),
     ],
@@ -7325,7 +7395,10 @@ function SolidSpectrumPickerDemo() {
                 ) {
                   return undefined;
                 }
-                return pickerSelectedKeysForMode(demoProps().selectedKey, demoProps().selectionMode);
+                return pickerSelectedKeysForMode(
+                  demoProps().selectedKey,
+                  demoProps().selectionMode,
+                );
               },
               get selectionMode() {
                 return demoProps().selectionMode;

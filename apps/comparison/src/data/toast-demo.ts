@@ -4,12 +4,15 @@ export { comparisonControlsEvent };
 
 export const toastVariantOptions = ["neutral", "positive", "negative", "info"] as const;
 export const toastPlacementOptions = ["top", "top end", "bottom", "bottom end"] as const;
+export const toastActiveSideOptions = ["react", "solid"] as const;
 
 export type ToastDemoVariant = (typeof toastVariantOptions)[number];
 export type ToastDemoPlacement = (typeof toastPlacementOptions)[number];
+export type ToastDemoActiveSide = (typeof toastActiveSideOptions)[number];
 
 export interface ToastDemoProps {
   children: string;
+  activeSide: ToastDemoActiveSide;
   variant: ToastDemoVariant;
   placement: ToastDemoPlacement;
   count: number;
@@ -23,6 +26,7 @@ export interface ToastDemoProps {
 
 export const toastDemoDefaults: ToastDemoProps = {
   children: "Toast available",
+  activeSide: "react",
   variant: "neutral",
   placement: "bottom",
   count: 1,
@@ -58,6 +62,7 @@ export function normalizeToastDemoProps(
   props: Partial<Record<keyof ToastDemoProps, unknown>>,
 ): ToastDemoProps {
   const variant = String(props.variant ?? "");
+  const activeSide = String(props.activeSide ?? "");
   const placement = String(props.placement ?? "");
   const children = typeof props.children === "string" ? props.children.trim() : "";
   const actionLabel = typeof props.actionLabel === "string" ? props.actionLabel.trim() : "";
@@ -65,6 +70,9 @@ export function normalizeToastDemoProps(
 
   return {
     children: children || toastDemoDefaults.children,
+    activeSide: isOneOf(activeSide, toastActiveSideOptions)
+      ? activeSide
+      : toastDemoDefaults.activeSide,
     variant: isOneOf(variant, toastVariantOptions) ? variant : toastDemoDefaults.variant,
     placement: isOneOf(placement, toastPlacementOptions) ? placement : toastDemoDefaults.placement,
     count: Math.min(
@@ -96,6 +104,7 @@ export function toastDemoPropsFromSearch(search: string): ToastDemoProps {
 
   return normalizeToastDemoProps({
     children: params.get("children") ?? undefined,
+    activeSide: params.get("activeSide") ?? undefined,
     variant: params.get("variant") ?? undefined,
     placement: params.get("placement") ?? undefined,
     count: params.get("count") ?? undefined,
@@ -123,6 +132,7 @@ export function toastDemoPropsFromDocument(): ToastDemoProps | null {
   const data = new FormData(form);
   return normalizeToastDemoProps({
     children: data.get("children") ?? toastDemoDefaults.children,
+    activeSide: data.get("activeSide") ?? toastDemoDefaults.activeSide,
     variant: data.get("variant") ?? toastDemoDefaults.variant,
     placement: data.get("placement") ?? toastDemoDefaults.placement,
     count: data.get("count") ?? toastDemoDefaults.count,
@@ -151,6 +161,7 @@ export function toastDemoPropsFromWindow(): ToastDemoProps {
 export function serializeToastDemoProps(props: ToastDemoProps) {
   return JSON.stringify({
     children: props.children,
+    activeSide: props.activeSide,
     variant: props.variant,
     placement: props.placement,
     count: props.count,

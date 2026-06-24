@@ -266,8 +266,6 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
     },
     renderValues,
   );
-  const renderedChildren = createMemo(() => renderProps.renderChildren());
-
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
@@ -341,7 +339,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
         style={mergedStyle()}
         data-placement={normalizedPlacement()}
       >
-        {renderedChildren()}
+        {renderProps.renderChildren()}
       </div>
     );
   };

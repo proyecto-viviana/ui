@@ -31,6 +31,20 @@ copies React ref timing by assumption, or leaves lifecycle cleanup unproven.
     child accessor only inside the provider boundary.
   - Test static JSX children and render-function children when upstream supports
     both.
+- Plain text children passed through Solid helpers may arrive as a one-item
+  array rather than the string shape React sees. If upstream branches on
+  `typeof children === "string"` to apply slot styling, normalize the Solid
+  helper shape in the component layer and prove the text slot remains present.
+- Stateful providers/containers stay mounted under the owner that should own
+  their subscriptions. In React, conditional rendering re-renders a subtree; in
+  Solid, a keyed `Show` or zero-argument dynamic child can dispose and recreate
+  the child owner. If that child subscribes to state that changes during normal
+  use, gating the child itself can turn internal updates into owner teardown.
+  - Gate the visible trigger/control surface when upstream behavior only toggles
+    user access, and keep queue/listener-owning containers mounted.
+  - Toast comparison uses this pattern: `ToastContainer` owns the global queue
+    subscription, so active React/Solid side selection hides only the trigger
+    buttons while the selected container remains a stable top-layer owner.
 - Context values remain live when they represent changing state.
   - Use accessors, getters, signals, stores, or provider values that preserve the
     same update behavior as upstream.

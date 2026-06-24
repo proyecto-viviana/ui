@@ -407,7 +407,12 @@ import {
   tooltipPlacementOptions,
   tooltipTriggerOptions,
 } from "./tooltip-demo";
-import { toastDemoDefaults, toastPlacementOptions, toastVariantOptions } from "./toast-demo";
+import {
+  toastActiveSideOptions,
+  toastDemoDefaults,
+  toastPlacementOptions,
+  toastVariantOptions,
+} from "./toast-demo";
 import { textAreaDemoDefaults, textAreaSizeOptions } from "./textarea-demo";
 import { textFieldDemoDefaults, textFieldSizeOptions } from "./textfield-demo";
 import {
@@ -7737,11 +7742,19 @@ const toastControls: ComponentControlGroup = {
       defaultValue: toastDemoDefaults.children,
     },
     {
+      name: "activeSide",
+      label: "active stack",
+      kind: "radio",
+      defaultValue: toastDemoDefaults.activeSide,
+      options: options(toastActiveSideOptions),
+    },
+    {
       name: "variant",
       label: "variant",
       kind: "radio",
       defaultValue: toastDemoDefaults.variant,
       options: options(toastVariantOptions),
+      isHidden: true,
     },
     {
       name: "placement",
@@ -7755,6 +7768,7 @@ const toastControls: ComponentControlGroup = {
       label: "queued toasts",
       kind: "text",
       defaultValue: toastDemoDefaults.count,
+      isHidden: true,
     },
     {
       name: "showAction",
@@ -7800,6 +7814,7 @@ const toastControls: ComponentControlGroup = {
     "ToastQueue.negative",
     "ToastQueue.info",
     "children",
+    "activeSide",
     "variant",
     "placement",
     "count",
@@ -7810,7 +7825,7 @@ const toastControls: ComponentControlGroup = {
     "onClose",
     "aria-label",
   ],
-  note: "Current modeled route mounts ToastContainer once per stack and drives ToastQueue variant methods, placement, multi-toast stack controls, actionable toasts, close-on-action behavior, auto-dismiss timeout rules, and the Notifications landmark label into both stacks. The top-priority toast-comparison-viewer task replaces this auto-queued prop model with docs-style in-canvas trigger buttons and a single active React/Solid stack.",
+  note: "Modeled from the S2 Toast docs example: the active comparison stack renders in-canvas neutral/positive/negative/info trigger buttons, click-driven ToastQueue stacking, placement, actionable toasts, close-on-action behavior, auto-dismiss timeout rules, and the Notifications landmark label. The React/Solid active-side control keeps only one stack live at a time; legacy variant/count route props remain hidden compatibility plumbing.",
 };
 
 export const componentControlGroups = {

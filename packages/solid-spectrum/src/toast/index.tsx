@@ -297,6 +297,8 @@ function startViewTransition(fn: () => void, type: string): void {
   }
 }
 
+globalToastQueue.setWrapUpdate((fn, action) => startViewTransition(fn, `toast-${action}`));
+
 /** A toast's view-transition-name; prefixed so the numeric queue keys remain valid CSS idents. */
 function toastViewTransitionName(key: string, suffix = ""): string {
   return `toast-${key}${suffix}`;
@@ -369,15 +371,6 @@ interface ToastContainerContextValue {
 }
 
 const ToastContainerContext = createContext<ToastContainerContextValue | null>(null);
-
-const toastAriaIntlStrings = {
-  "en-US": {
-    close: "Close",
-  },
-  "es-ES": {
-    close: "Cerrar",
-  },
-};
 
 const toastRegion = style<{ placement: ToastEdge; align: ToastAlign; isExpanded?: boolean }>({
   ...focusRing(),
@@ -851,10 +844,6 @@ export function ToastContainer(props: ToastContainerProps): JSX.Element {
     });
   });
 
-  // Animate every global-queue mutation (add/remove/clear) with a view transition.
-  globalToastQueue.setWrapUpdate((fn, action) => startViewTransition(fn, `toast-${action}`));
-  onCleanup(() => globalToastQueue.setWrapUpdate(undefined));
-
   const unsubscribe = globalToastQueue.subscribe((toasts) => {
     if (toasts.length === 0) {
       setIsExpanded(false);
@@ -905,7 +894,6 @@ export function Toast(props: ToastProps): JSX.Element {
   const state = useToastContext();
   const containerCtx = useContext(ToastContainerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
-  const ariaStringFormatter = createStringFormatter(toastAriaIntlStrings);
   const content = () => local.toast.content;
   const contentDomProps = () => filterDOMProps(content() as Record<string, unknown>);
   const variant = () => normalizeVariant(content().variant, content().type);
@@ -1042,7 +1030,7 @@ export function Toast(props: ToastProps): JSX.Element {
                 ? `${closeButtonStyles({})} toast-close`
                 : closeButtonStyles({})
             }
-            aria-label={ariaStringFormatter().format("close")}
+            aria-label={stringFormatter().format("dialog.dismiss")}
           >
             <CloseIcon aria-hidden="true" />
           </HeadlessToastCloseButton>

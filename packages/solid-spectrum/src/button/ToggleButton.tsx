@@ -34,6 +34,7 @@ import {
   mergeContextUnsafeStyle,
   type RefLike,
 } from "./spectrum-context";
+import { getSingleTextChild } from "./text-child";
 
 export type ToggleButtonSize = ActionButtonSize;
 
@@ -213,10 +214,11 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     function ResolvedContent() {
       const resolvedChildren = resolveChildren(() => local.children);
       const content = () => resolvedChildren();
+      const textChild = () => getSingleTextChild(content());
 
-      return typeof content() === "string" ? (
+      return textChild() !== undefined ? (
         <span class={`${s2ToggleButtonText} ${style({ order: 1 })}`} data-rsp-slot="text">
-          {content()}
+          {textChild()}
         </span>
       ) : (
         content()

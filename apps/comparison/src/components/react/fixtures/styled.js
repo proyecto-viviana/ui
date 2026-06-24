@@ -6015,6 +6015,33 @@ function toastQueueOptions(demoProps, onAction, onClose) {
   };
 }
 
+const toastTriggerConfigs = [
+  {
+    variant: "neutral",
+    label: "Show Neutral Toast",
+    buttonVariant: "secondary",
+    message: (demoProps) => demoProps.children,
+  },
+  {
+    variant: "positive",
+    label: "Show Positive Toast",
+    buttonVariant: "primary",
+    message: () => "Toast is done!",
+  },
+  {
+    variant: "negative",
+    label: "Show Negative Toast",
+    buttonVariant: "negative",
+    message: () => "Toast is burned!",
+  },
+  {
+    variant: "info",
+    label: "Show Info Toast",
+    buttonVariant: "accent",
+    message: () => "Toasting…",
+  },
+];
+
 function ReactToastDemo() {
   const [demoProps, setDemoProps] = useState(toastDemoPropsFromWindow);
   const [actionCount, setActionCount] = useState(0);
@@ -6027,10 +6054,38 @@ function ReactToastDemo() {
       setCloseCount((count) => count + 1);
     }
   };
+  const closeExistingToasts = () => {
+    suppressCloseCountRef.current = true;
+    closeRefs.current.forEach((close) => close());
+    closeRefs.current = [];
+    suppressCloseCountRef.current = false;
+  };
+  const triggerToast = (variant) => {
+    const config = toastTriggerConfigs.find((item) => item.variant === variant);
+    if (!config || demoProps.activeSide !== "react") {
+      return;
+    }
+
+    let trackedClose = () => {};
+    const closeToast = SpectrumToastQueue[variant](
+      config.message(demoProps),
+      toastQueueOptions(
+        demoProps,
+        () => setActionCount((count) => count + 1),
+        () => {
+          closeRefs.current = closeRefs.current.filter((close) => close !== trackedClose);
+          handleToastClose();
+        },
+      ),
+    );
+    trackedClose = () => closeToast();
+    closeRefs.current = [...closeRefs.current, trackedClose];
+  };
 
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "toast") {
+        closeExistingToasts();
         setActionCount(0);
         setCloseCount(0);
         setDemoProps(normalizeToastDemoProps(event.detail.props ?? {}));
@@ -6038,43 +6093,49 @@ function ReactToastDemo() {
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     setDemoProps(toastDemoPropsFromWindow());
-    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      closeExistingToasts();
+    };
   }, []);
 
-  useEffect(() => {
-    suppressCloseCountRef.current = true;
-    closeRefs.current.forEach((close) => close());
-    closeRefs.current = [];
-    suppressCloseCountRef.current = false;
-    closeRefs.current = Array.from({ length: demoProps.count }, (_item, index) =>
-      SpectrumToastQueue[demoProps.variant](
-        demoProps.count > 1 ? `${demoProps.children} ${index + 1}` : demoProps.children,
-        toastQueueOptions(demoProps, () => setActionCount((count) => count + 1), handleToastClose),
-      ),
-    );
-
-    return () => {
-      suppressCloseCountRef.current = true;
-      closeRefs.current.forEach((close) => close());
-      closeRefs.current = [];
-      suppressCloseCountRef.current = false;
-    };
-  }, [demoProps]);
+  const isActive = demoProps.activeSide === "react";
 
   return renderReactSpectrumReference(
     jsx("div", {
       className: "comparison-toast-stage",
-      style: { maxWidth: "100%", minHeight: 96, width: 360 },
+      style: { maxWidth: "100%", minHeight: 160, width: 420 },
       "data-comparison-control-root": "toast",
       "data-comparison-control-props": serializeToastDemoProps(demoProps),
       "data-comparison-toast-props": serializeToastDemoProps(demoProps),
+      "data-comparison-toast-active-side": demoProps.activeSide,
+      "data-comparison-toast-is-active": String(isActive),
       "data-comparison-toast-action-count": String(actionCount),
       "data-comparison-toast-close-count": String(closeCount),
-      children: jsx(SpectrumToastContainer, {
-        placement: demoProps.placement,
-        "aria-label": demoProps["aria-label"],
-        PRIVATE_forceReducedMotion: true,
-      }),
+      children: isActive
+        ? jsxs(Fragment, {
+            children: [
+              jsx(SpectrumToastContainer, {
+                placement: demoProps.placement,
+                "aria-label": demoProps["aria-label"],
+                PRIVATE_forceReducedMotion: true,
+              }),
+              jsx(SpectrumButtonGroup, {
+                children: toastTriggerConfigs.map((config) =>
+                  jsx(
+                    SpectrumButton,
+                    {
+                      variant: config.buttonVariant,
+                      onPress: () => triggerToast(config.variant),
+                      children: config.label,
+                    },
+                    config.variant,
+                  ),
+                ),
+              }),
+            ],
+          })
+        : null,
     }),
     colorScheme,
   );
