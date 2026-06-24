@@ -132,6 +132,31 @@ async function regionPlacementContract(region: Locator) {
   });
 }
 
+async function toastViewportContract(region: Locator) {
+  return alertToast(region).evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      centerX: Math.round(rect.left + rect.width / 2),
+      viewportCenterX: Math.round(window.innerWidth / 2),
+    };
+  });
+}
+
+async function toastListPerspectiveContract(region: Locator) {
+  return region
+    .locator("ol, [data-solid-spectrum-toast-list]")
+    .first()
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        perspective: style.perspective,
+        perspectiveOrigin: style.perspectiveOrigin,
+        transitionProperty: style.transitionProperty,
+        transitionDuration: style.transitionDuration,
+      };
+    });
+}
+
 function stackFor(fixtures: Awaited<ReturnType<typeof toastFixtures>>, side: ToastDemoActiveSide) {
   return side === "react" ? fixtures.react : fixtures.solid;
 }
@@ -211,6 +236,7 @@ test.describe("Toast comparison route", () => {
     await expect(reactFixtures.solid.region).toHaveCount(0);
 
     const reactStyle = await toastStyleContract(reactFixtures.react.region);
+    const reactListPerspective = await toastListPerspectiveContract(reactFixtures.react.region);
     const reactPng = await normalizedElementScreenshot(alertToast(reactFixtures.react.region));
 
     const solidFixtures = await toastFixtures(page, { activeSide: "solid" });
@@ -234,6 +260,7 @@ test.describe("Toast comparison route", () => {
     await expect(solidFixtures.react.region).toHaveCount(0);
 
     const solidStyle = await toastStyleContract(solidFixtures.solid.region);
+    const solidListPerspective = await toastListPerspectiveContract(solidFixtures.solid.region);
     const solidPng = await normalizedElementScreenshot(alertToast(solidFixtures.solid.region));
 
     expect(reactStyle.backgroundColor).toBe(solidStyle.backgroundColor);
@@ -244,6 +271,7 @@ test.describe("Toast comparison route", () => {
     expect(Number.parseFloat(solidStyle.borderRadius)).toBeGreaterThan(0);
     expect(Number.parseFloat(reactStyle.minHeight)).toBeGreaterThanOrEqual(56);
     expect(Number.parseFloat(solidStyle.minHeight)).toBeGreaterThanOrEqual(56);
+    expect(solidListPerspective).toEqual(reactListPerspective);
 
     await expectScreenshotDiffWithin(page, reactPng, solidPng, toastDefaultPairDiff);
   });
@@ -293,6 +321,13 @@ test.describe("Toast comparison route", () => {
           expect(contract.top).toBeLessThan(contract.viewportHeight / 2);
         } else {
           expect(contract.bottom).toBeGreaterThan(contract.viewportHeight / 2);
+        }
+
+        if (placement === "top" || placement === "bottom") {
+          const toastContract = await toastViewportContract(stack.region);
+          expect(
+            Math.abs(toastContract.centerX - toastContract.viewportCenterX),
+          ).toBeLessThanOrEqual(4);
         }
       }
     }

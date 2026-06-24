@@ -201,6 +201,45 @@ describe("Toast", () => {
     });
   });
 
+  describe("ToastRegion placement styles", () => {
+    function renderRegion(className?: string) {
+      render(() => (
+        <ToastProvider useGlobalQueue>
+          <ToastRegion portal={false} class={className}>
+            {(renderProps) => (
+              <For each={renderProps.visibleToasts()}>
+                {(toast) => <DefaultToast toast={toast} />}
+              </For>
+            )}
+          </ToastRegion>
+        </ToastProvider>
+      ));
+
+      addToast({ title: "Placed toast", type: "info" });
+
+      return screen.getByRole("region", { name: "Notifications" });
+    }
+
+    it("keeps fallback placement styles for a bare region", () => {
+      const region = renderRegion();
+
+      expect(region.style.position).toBe("fixed");
+      expect(region.style.bottom).toBe("16px");
+      expect(region.style.left).toBe("50%");
+      expect(region.style.transform).toBe("translateX(-50%)");
+    });
+
+    it("lets caller-supplied classes own placement instead of adding inline geometry", () => {
+      const region = renderRegion("custom-toast-region");
+      const inlineStyle = region.getAttribute("style") ?? "";
+
+      expect(region).toHaveClass("custom-toast-region");
+      expect(inlineStyle).not.toContain("left: 50%");
+      expect(inlineStyle).not.toContain("transform:");
+      expect(inlineStyle).not.toContain("pointer-events: none");
+    });
+  });
+
   // ============================================
   // GLOBAL TOAST QUEUE
   // ============================================

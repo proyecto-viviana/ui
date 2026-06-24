@@ -316,14 +316,19 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
 
   const visibleToasts = () => state()?.visibleToasts() ?? [];
   const hasToasts = () => visibleToasts().length > 0;
+  const hasAuthoredRegionStyle = () => local.class != null || local.style != null;
 
   const regionContent = () => {
     if (!state()) return null;
 
-    // Merge styles - placement styles are base, renderProps.style() overrides
     const mergedStyle = () => {
-      const placement = placementStyles();
       const custom = renderProps.style();
+      // React Aria Components leaves ToastRegion unstyled. Keep this package's
+      // fallback placement only for bare regions so styled layers such as S2 can
+      // own fixed viewport geometry with their generated classes.
+      if (hasAuthoredRegionStyle()) return custom;
+
+      const placement = placementStyles();
       if (!custom) return placement;
       return { ...placement, ...custom } as JSX.CSSProperties;
     };

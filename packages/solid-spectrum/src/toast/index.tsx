@@ -14,6 +14,7 @@ import {
 } from "solid-js";
 import {
   FocusScope,
+  createHover,
   createPreventScroll,
   createStringFormatter,
   filterDOMProps,
@@ -591,6 +592,17 @@ const closeButtonStyles = style({
   },
 });
 
+function toastListPerspectiveStyle(placement: ToastEdge, isHovered: boolean): JSX.CSSProperties {
+  const origin = isHovered ? 95 : 55;
+
+  return {
+    perspective: "80px",
+    "perspective-origin":
+      placement === "top" ? `center calc(100% + ${origin}px)` : `center ${-origin}px`,
+    transition: "perspective-origin 400ms",
+  };
+}
+
 function normalizePlacement(placement?: ToastPlacement): {
   placement: ToastPlacement;
   edge: ToastEdge;
@@ -692,6 +704,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const containerContext = useContext(ToastContainerContext);
   const isExpanded = () => containerContext?.isExpanded() ?? false;
+  const { isHovered: isListHovered, hoverProps: listHoverProps } = createHover();
   createPreventScroll({
     get isDisabled() {
       return !isExpanded();
@@ -777,11 +790,13 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
                 />
               </Show>
               <div
+                {...listHoverProps}
                 class={[
                   isExpanded() ? "toast-list-expanded" : "toast-list-collapsed",
                   toastList({ placement: placement().edge, isExpanded: isExpanded() }),
                 ].join(" ")}
                 data-solid-spectrum-toast-list=""
+                style={toastListPerspectiveStyle(placement().edge, isListHovered())}
                 onClick={(event) => handleListClick(event, visibleToasts())}
               >
                 <For each={visibleToasts()}>

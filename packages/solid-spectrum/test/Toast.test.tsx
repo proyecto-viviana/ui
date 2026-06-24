@@ -77,6 +77,51 @@ describe("Toast (solid-spectrum)", () => {
       expect(screen.getByText("Queued from S2 API")).toBeInTheDocument();
     });
 
+    it("lets the S2 region class own viewport placement without headless inline geometry", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("Centered by S2 class");
+
+      const region = screen.getByRole("region", { name: "Notifications" });
+      const inlineStyle = region.getAttribute("style") ?? "";
+
+      expect(region.className).toContain("macro-dynamic");
+      expect(inlineStyle).not.toContain("left: 50%");
+      expect(inlineStyle).not.toContain("transform:");
+      expect(inlineStyle).not.toContain("pointer-events: none");
+    });
+
+    it("mirrors upstream ToastList perspective and hover origin", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("Stack perspective");
+
+      const list = document.querySelector<HTMLElement>("[data-solid-spectrum-toast-list]");
+      expect(list).toBeInTheDocument();
+      expect(list!.style.perspective).toBe("80px");
+      expect(list!.style.perspectiveOrigin).toBe("center -55px");
+      expect(list!.style.transition).toBe("perspective-origin 400ms");
+
+      fireEvent.pointerOver(list!, { pointerType: "mouse" });
+      fireEvent.mouseEnter(list!);
+      expect(list!.style.perspectiveOrigin).toBe("center -95px");
+
+      fireEvent.pointerOut(list!, { pointerType: "mouse" });
+      fireEvent.mouseLeave(list!);
+      expect(list!.style.perspectiveOrigin).toBe("center -55px");
+    });
+
+    it("mirrors upstream ToastList top-placement perspective origin", () => {
+      render(() => <ToastContainer portal={false} placement="top" />);
+
+      ToastQueue.neutral("Top stack perspective");
+
+      const list = document.querySelector<HTMLElement>("[data-solid-spectrum-toast-list]");
+      expect(list).toBeInTheDocument();
+      expect(list!.style.perspective).toBe("80px");
+      expect(list!.style.perspectiveOrigin).toBe("center calc(100% + 55px)");
+    });
+
     it("renders the S2 collapsed stack and expands with controls", () => {
       render(() => <ToastContainer portal={false} />);
 
