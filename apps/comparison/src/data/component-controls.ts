@@ -7810,7 +7810,7 @@ const toastControls: ComponentControlGroup = {
     "onClose",
     "aria-label",
   ],
-  note: "Modeled from the S2 Toast docs/API viewer. The route mounts ToastContainer once per stack and drives ToastQueue variant methods, placement, multi-toast stack controls, actionable toasts, close-on-action behavior, auto-dismiss timeout rules, and the Notifications landmark label into both stacks.",
+  note: "Current modeled route mounts ToastContainer once per stack and drives ToastQueue variant methods, placement, multi-toast stack controls, actionable toasts, close-on-action behavior, auto-dismiss timeout rules, and the Notifications landmark label into both stacks. The top-priority toast-comparison-viewer task replaces this auto-queued prop model with docs-style in-canvas trigger buttons and a single active React/Solid stack.",
 };
 
 export const componentControlGroups = {

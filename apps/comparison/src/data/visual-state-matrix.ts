@@ -3197,13 +3197,13 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
     },
     {
       id: "styled.props.controls",
-      label: "Interactive prop controls",
+      label: "Current modeled controls",
       kind: "interaction",
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
       spec: "e2e/modeled-controls-contract.spec.ts + e2e/toast-visual.spec.ts",
-      note: "The docs-style prop controls drive content, ToastQueue variant method, ToastContainer placement, queued count, action label, close-on-action, auto-dismiss timeout, and region aria-label into both stacks.",
+      note: "The current modeled controls drive content, ToastQueue variant method, ToastContainer placement, queued count, action label, close-on-action, auto-dismiss timeout, and region aria-label into both stacks. Docs-style in-canvas trigger buttons, click-driven stacking, one-at-a-time dismissal, and a single active React/Solid stack are tracked by toast-comparison-viewer.",
     },
   ],
   dialog: [

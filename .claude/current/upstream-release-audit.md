@@ -5,10 +5,12 @@ tasks:
   - id: gridlist-double-toggle
     title: Fix GridList Space double-toggle (browser evidence, then faithful)
     state: done
+    finished: 2026-06-23
     roadmap: upstream-parity-loop
   - id: press-path-phase2
     title: Migrate the three item hooks onto createSelectableItem (T-51, T-56)
     state: done
+    finished: 2026-06-23
     depends: [gridlist-double-toggle]
     roadmap: upstream-parity-loop
   - id: keyboard-nav-behavior

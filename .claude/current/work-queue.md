@@ -2,6 +2,11 @@
 kind: reference
 status: current
 tasks:
+  - id: toast-comparison-viewer
+    title: Rebuild Toast comparison viewer around docs-style trigger buttons
+    state: next
+    roadmap: comparison-docs-overhaul
+    planned: { start: 2026-06-24, target: 2026-06-25 }
   - id: cert-button
     title: Prove Button visual + a11y states
     state: in-progress
@@ -47,17 +52,21 @@ next task and which workstreams are live.
 
 ## Current priorities
 
-1. Convert visual-state rows into current React/Solid pair-diff or
+1. Fix the Toast comparison viewer before the next broad parity slice: make it a
+   docs-style trigger-button route with one visible trigger per variant,
+   user-clicked queueing, stacked toasts, one-at-a-time dismissal, and a
+   React/Solid active-side mode so only one stack is live at a time.
+2. Convert visual-state rows into current React/Solid pair-diff or
    computed-contract tests — hover, focus-visible, pressed, selected, invalid,
    disabled, open, dismiss, keyboard navigation. No per-side committed PNG
    baselines as acceptance gates.
-2. Keep accessibility proof broader than axe: keyboard, focus, forms, computed
+3. Keep accessibility proof broader than axe: keyboard, focus, forms, computed
    name/description/value, validation, and announcements via Playwright.
-3. Continue support-export parity — missing contexts, slots, hooks, helpers, and
+4. Continue support-export parity — missing contexts, slots, hooks, helpers, and
    support values. Root catalogue export parity is not complete API parity.
-4. Add behavior tests where export parity is already green. Do not add barrel
+5. Add behavior tests where export parity is already green. Do not add barrel
    names unless a report identifies a real missing upstream export.
-5. Keep component-internal S2 styling in `packages/solid-spectrum`. The
+6. Keep component-internal S2 styling in `packages/solid-spectrum`. The
    comparison app may consume `solid-spectrum` source and the S2 macro, but app
    CSS must not hand-author component colors, spacing, radius, or states
    (ADR 0001).
@@ -74,7 +83,8 @@ next task and which workstreams are live.
 - **Support-export parity** — close the `22` missing S2 support exports; keep
   Solid-only exports documented as local additions.
 - **comparison-docs-overhaul** — the comparison app's docs-site rollout
-  (`docs/comparison-docs-overhaul/`), in flight.
+  (`docs/comparison-docs-overhaul/`), in flight; top queued item is
+  `toast-comparison-viewer`.
 - **Package-build migration** — native Vite Plus packaging, one package at a time
   (`tech-debt.md`).
 

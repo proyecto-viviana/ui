@@ -7,26 +7,27 @@
 - Family or direct subcomponents: ToastContainer, ToastQueue, ToastRegion, Toast, DefaultToast, ToastTitle, ToastDescription.
 - Pass goal: current-gate parity for the S2 Toast API, comparison route, accessibility/runtime behavior, and known-defect ledger.
 - Date: 2026-05-24
-- Status: accepted, with the non-blocking release-hardening gaps listed below.
+- Status: accepted for component behavior; top-priority comparison-viewer rework pending as of 2026-06-24.
 
 ## Task Status
 
-| Task                   | Status   | Evidence                                                                                                        | Blocker or next action |
-| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| 0 Research             | complete | S2 Toast docs, React Aria Toast docs, installed `@react-spectrum/s2` and `@react-aria/toast` source.            | none                   |
-| 1 Baseline             | complete | `e2e/toast-visual.spec.ts`, package tests.                                                                      | none                   |
-| 2 Route harness        | complete | `apps/comparison/src/data/toast-demo.ts`, `e2e/toast-visual.spec.ts`.                                           | none                   |
-| 3 Source map/API       | complete | Solid Spectrum, Solidaria Components, Solidaria, Solid Stately toast files.                                     | none                   |
-| 4 Cross-layer audit    | complete | queue/container/headless/style rows below.                                                                      | none                   |
-| 5 Transitions          | partial  | static/reduced/lifecycle behavior is asserted; exact S2 View Transition choreography remains release-hardening. | Toast owner            |
-| 6 State                | complete | `packages/solid-stately/test/createToastState.test.ts`, Solid Spectrum tests.                                   | none                   |
-| 7 ARIA hooks           | complete | `packages/solidaria/test/createToast.test.tsx`.                                                                 | none                   |
-| 8 Headless             | complete | `packages/solidaria-components/test/Toast.test.tsx`.                                                            | none                   |
-| 9 Styled S2            | complete | `packages/solid-spectrum/test/Toast.test.tsx`, e2e pair diff.                                                   | none                   |
-| 10 Runtime lifecycle   | complete | focus, hover, timeout, action, close, stack, overlay/Escape tests.                                              | none                   |
-| 11 Harness integrity   | complete | mirrored React/Solid route assertions and modeled controls.                                                     | none                   |
-| 12 Comparison evidence | complete | visual matrix, manifest, reports.                                                                               | none                   |
-| 13 Acceptance          | complete | this note and command log.                                                                                      | none                   |
+| Task                        | Status   | Evidence                                                                                                             | Blocker or next action    |
+| --------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| 0 Research                  | complete | S2 Toast docs, React Aria Toast docs, installed `@react-spectrum/s2` and `@react-aria/toast` source.                 | none                      |
+| 1 Baseline                  | complete | `e2e/toast-visual.spec.ts`, package tests.                                                                           | none                      |
+| 2 Route harness             | partial  | `apps/comparison/src/data/toast-demo.ts`, `e2e/toast-visual.spec.ts`.                                                | `toast-comparison-viewer` |
+| 3 Source map/API            | complete | Solid Spectrum, Solidaria Components, Solidaria, Solid Stately toast files.                                          | none                      |
+| 4 Cross-layer audit         | complete | queue/container/headless/style rows below.                                                                           | none                      |
+| 5 Transitions               | partial  | static/reduced/lifecycle behavior is asserted; exact S2 View Transition choreography remains release-hardening.      | Toast owner               |
+| 6 State                     | complete | `packages/solid-stately/test/createToastState.test.ts`, Solid Spectrum tests.                                        | none                      |
+| 7 ARIA hooks                | complete | `packages/solidaria/test/createToast.test.tsx`.                                                                      | none                      |
+| 8 Headless                  | complete | `packages/solidaria-components/test/Toast.test.tsx`.                                                                 | none                      |
+| 9 Styled S2                 | complete | `packages/solid-spectrum/test/Toast.test.tsx`, e2e pair diff.                                                        | none                      |
+| 10 Runtime lifecycle        | complete | focus, hover, timeout, action, close, stack, overlay/Escape tests.                                                   | none                      |
+| 11 Harness integrity        | partial  | mirrored React/Solid route assertions and modeled controls.                                                          | `toast-comparison-viewer` |
+| 12 Comparison evidence      | partial  | visual matrix, manifest, reports.                                                                                    | `toast-comparison-viewer` |
+| 13 Acceptance               | partial  | this note and command log.                                                                                           | `toast-comparison-viewer` |
+| 14 Docs-style viewer rework | pending  | Owner priority 2026-06-24: current route auto-queues from side-panel controls instead of docs-style trigger buttons. | `toast-comparison-viewer` |
 
 ## Agent Workflow
 
@@ -45,9 +46,9 @@
 - [x] Live official S2 page opened and dated: official S2 Toast docs via MCP checked 2026-05-24.
 - [x] Primary docs example recorded: app-level `ToastContainer` with `ToastQueue` variant methods.
 - [x] Docs examples, slots, children, icons, collections, portals, and viewer canvas conditions inventoried.
-- [x] Interactive viewer controls inventoried: content, variant, placement, count, action, close-on-action, timeout, region aria-label.
-- [x] Comparison route default matches official example or deviation recorded.
-- [x] Side-panel controls match official viewer controls and selection semantics.
+- [ ] Interactive viewer model matches docs-style trigger buttons: pending `toast-comparison-viewer`.
+- [ ] Comparison route default matches official example or deviation recorded: current route auto-queues from side-panel controls.
+- [ ] Side-panel controls match official viewer controls and selection semantics: pending replacement with in-canvas variant triggers.
 - [x] Route tests assert visible defaults/options and mounted DOM changes.
 
 ### 2. External Authority And Standards
@@ -118,6 +119,7 @@
 - [x] Solid fixture imports package public API.
 - [x] Both fixtures receive the same props and environment settings.
 - [x] Focused route tests prove controls update mounted React and Solid DOM.
+- [ ] React/Solid active-side mode prevents both stacks from queuing toasts at once: pending `toast-comparison-viewer`.
 - [x] Computed style, a11y, geometry, runtime, and pair-diff evidence covers rendering-affecting branches.
 - [x] Shared serialized route props are route-plumbing evidence only and are not counted as implementation parity without DOM/style/a11y/interaction proof.
 - [x] Harness stability is proven.
@@ -139,7 +141,8 @@
 - [x] Focused Playwright/runtime tests.
 - [x] Comparison reports refreshed when status/evidence changed.
 - [x] `vp run check`.
-- [x] Final status is `accepted`.
+- [x] Final component behavior status is `accepted`.
+- [ ] Final docs-style comparison viewer status is `accepted`: pending `toast-comparison-viewer`.
 - [x] Remaining gaps listed by gate and owner.
 - [x] Blocker labels used where applicable.
 
@@ -147,16 +150,16 @@
 
 | Gate                                     | Outcome  | Evidence                                                                     | Blockers/owner                                    |
 | ---------------------------------------- | -------- | ---------------------------------------------------------------------------- | ------------------------------------------------- |
-| Official Docs And Viewer Parity          | accepted | S2 docs/source, comparison route controls, e2e route assertions.             | none                                              |
+| Official Docs And Viewer Parity          | pending  | S2 docs/source, comparison route controls, e2e route assertions.             | `toast-comparison-viewer`                         |
 | External Authority And Standards         | accepted | React Aria docs/source for Toast region/F6/focus recovery.                   | none                                              |
 | Upstream React Source Parity             | accepted | source branch ledger below.                                                  | exact animation choreography is release-hardening |
 | Solid Idiomatic Implementation           | accepted | reactive `ToastRegion`, Solid state wrapper, cleanup tests.                  | none                                              |
 | Accessibility And I18n                   | accepted | package/e2e tests for region, alertdialog, labels, top-layer, locale labels. | AT transcript is evidence backfill                |
-| Behavior State Machine                   | accepted | queue/action/timeout/stack/focus-removal tests.                              | none                                              |
+| Behavior State Machine                   | pending  | queue/action/timeout/stack/focus-removal tests.                              | viewer click/stack/dismiss actions pending        |
 | Style Source-To-Computed Parity          | accepted | S2 icon/classes/computed style/default pair-diff tests.                      | bounded pair diff, not zero tolerance             |
-| React-Vs-Solid Comparison Harness Parity | accepted | mirrored fixtures, serialized props, DOM/style/a11y assertions.              | none                                              |
-| Known Defects And Regression Protection  | accepted | known defect ledger below.                                                   | non-blocking release-hardening only               |
-| Evidence And Handoff                     | accepted | command log and refreshed reports.                                           | none                                              |
+| React-Vs-Solid Comparison Harness Parity | pending  | mirrored fixtures, serialized props, DOM/style/a11y assertions.              | active-side viewer mode pending                   |
+| Known Defects And Regression Protection  | pending  | known defect ledger below.                                                   | `toast-comparison-viewer`                         |
+| Evidence And Handoff                     | pending  | command log and refreshed reports.                                           | docs-style viewer evidence pending                |
 
 ## Research
 
@@ -173,14 +176,15 @@
 
 ## Official Docs And Viewer Parity
 
-| Docs item             | Official setting/example                                                | Route/control                                  | Status  | Evidence                           |
-| --------------------- | ----------------------------------------------------------------------- | ---------------------------------------------- | ------- | ---------------------------------- |
-| Container root        | `ToastContainer` mounted at app root                                    | comparison route mounts React and Solid stacks | matched | `toast-visual.spec.ts`             |
-| Default region        | aria-label defaults to `Notifications`, placement defaults to `bottom`  | default route                                  | matched | e2e/default assertions             |
-| Variant queue methods | neutral, positive, negative, info                                       | variant control                                | matched | e2e variants, Solid Spectrum tests |
-| Action                | `actionLabel`, `onAction`, `shouldCloseOnAction`                        | action controls                                | matched | e2e action tests                   |
-| Timeout               | min 5s, no auto-dismiss when actionable                                 | timeout/autoDismiss controls                   | matched | e2e/package tests                  |
-| Stack controls        | collapsed stack, show all, clear all, collapse, Escape/outside collapse | count control                                  | matched | e2e stack tests                    |
+| Docs item             | Official setting/example                                                | Route/control                                           | Status  | Evidence                           |
+| --------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------- | ------- | ---------------------------------- |
+| Container root        | `ToastContainer` mounted at app root                                    | comparison route mounts React and Solid stacks          | matched | `toast-visual.spec.ts`             |
+| Default region        | aria-label defaults to `Notifications`, placement defaults to `bottom`  | default route                                           | matched | e2e/default assertions             |
+| Docs-style triggers   | visible buttons invoke neutral, positive, negative, and info queues     | pending; current route auto-queues from props           | pending | `toast-comparison-viewer`          |
+| Variant queue methods | neutral, positive, negative, info                                       | side-panel variant control; trigger buttons pending     | partial | e2e variants, Solid Spectrum tests |
+| Action                | `actionLabel`, `onAction`, `shouldCloseOnAction`                        | action controls                                         | matched | e2e action tests                   |
+| Timeout               | min 5s, no auto-dismiss when actionable                                 | timeout/autoDismiss controls                            | matched | e2e/package tests                  |
+| Stack controls        | collapsed stack, show all, clear all, collapse, Escape/outside collapse | side-panel count control; click-driven stacking pending | partial | e2e stack tests                    |
 
 ## Source Branch Ledger
 
@@ -211,16 +215,20 @@
 
 ## Behavior State Machine
 
-| State/input                         | Expected React                            | Expected Solid | Evidence          | Status   |
-| ----------------------------------- | ----------------------------------------- | -------------- | ----------------- | -------- |
-| Add neutral toast                   | default surface and close button render   | same           | e2e default       | accepted |
-| Variant method                      | variant icon/message render               | same           | e2e/package tests | accepted |
-| Add multiple toasts                 | newest visible, stack collapses           | same           | e2e stack         | accepted |
-| Show all -> Collapse/Escape/outside | expanded list closes                      | same           | e2e stack         | accepted |
-| Clear all                           | queue empties without per-toast `onClose` | same           | e2e/package tests | accepted |
-| Action press                        | `onAction` fires, optional close          | same           | e2e/package tests | accepted |
-| Action with timeout                 | remains visible                           | same           | e2e timeout       | accepted |
-| Focused toast removed               | focus transfers/restores                  | same           | Solidaria tests   | accepted |
+| State/input                           | Expected React                                                                      | Expected Solid | Evidence          | Status   |
+| ------------------------------------- | ----------------------------------------------------------------------------------- | -------------- | ----------------- | -------- |
+| Add neutral toast                     | default surface and close button render                                             | same           | e2e default       | accepted |
+| Variant method                        | variant icon/message render                                                         | same           | e2e/package tests | accepted |
+| Add multiple toasts                   | newest visible, stack collapses                                                     | same           | e2e stack         | accepted |
+| Click variant trigger button          | clicked variant queues one toast                                                    | same           | pending           | pending  |
+| Click several variant trigger buttons | toasts queue and stack in click order                                               | same           | pending           | pending  |
+| Dismiss one stacked toast             | selected toast closes without clearing siblings                                     | same           | pending           | pending  |
+| Switch active comparison side         | only the selected React or Solid stack is live; inactive side does not queue toasts | same           | pending           | pending  |
+| Show all -> Collapse/Escape/outside   | expanded list closes                                                                | same           | e2e stack         | accepted |
+| Clear all                             | queue empties without per-toast `onClose`                                           | same           | e2e/package tests | accepted |
+| Action press                          | `onAction` fires, optional close                                                    | same           | e2e/package tests | accepted |
+| Action with timeout                   | remains visible                                                                     | same           | e2e timeout       | accepted |
+| Focused toast removed                 | focus transfers/restores                                                            | same           | Solidaria tests   | accepted |
 
 ## Style Source-To-Computed
 
@@ -234,12 +242,13 @@
 
 ## Known Defects And Regression Protection
 
-| Item                                                                                                                                  | Classification                | Acceptance impact                                                                                               | Owner                  |
-| ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| Zero-tolerance React-vs-Solid pixel pair diff is not accepted for Toast because portals/style engines produce small rendering deltas. | known visual delta            | non-blocking; bounded diff asserted                                                                             | comparison/Toast       |
-| Exact S2 View Transition animation choreography is not fully mirrored.                                                                | release-hardening gap         | non-blocking for public API/a11y/static behavior; must be fixed if animation parity becomes a signoff criterion | Toast                  |
-| Assistive-technology transcript rows are not captured.                                                                                | evidence backfill             | non-blocking; semantic/live-region/focus assertions exist                                                       | accessibility backfill |
-| Initial `comparison:typecheck` failed when run in parallel with build due shared `dist` cleanup.                                      | operator/harness interference | non-blocking; serial rerun passed                                                                               | none                   |
+| Item                                                                                                                                                                                                                                                           | Classification                | Acceptance impact                                                                                               | Owner                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| Toast comparison route is auto-driven by side-panel props/count and does not match the official docs-style viewer with visible trigger buttons, user-clicked queueing, multiple variant triggers, one-at-a-time dismissal, or a single active comparison side. | harness/viewer defect         | blocks current viewer parity until `toast-comparison-viewer` lands                                              | Toast comparison route |
+| Zero-tolerance React-vs-Solid pixel pair diff is not accepted for Toast because portals/style engines produce small rendering deltas.                                                                                                                          | known visual delta            | non-blocking; bounded diff asserted                                                                             | comparison/Toast       |
+| Exact S2 View Transition animation choreography is not fully mirrored.                                                                                                                                                                                         | release-hardening gap         | non-blocking for public API/a11y/static behavior; must be fixed if animation parity becomes a signoff criterion | Toast                  |
+| Assistive-technology transcript rows are not captured.                                                                                                                                                                                                         | evidence backfill             | non-blocking; semantic/live-region/focus assertions exist                                                       | accessibility backfill |
+| Initial `comparison:typecheck` failed when run in parallel with build due shared `dist` cleanup.                                                                                                                                                               | operator/harness interference | non-blocking; serial rerun passed                                                                               | none                   |
 
 ## Evidence Log
 
