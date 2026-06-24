@@ -1,6 +1,6 @@
 ---
 kind: scoping
-status: Phases 0–2 landed (GridList + Tree + Table + ListBox option + Menu item migrated); Phase 3 not started
+status: Phases 0–3 landed (GridList + Tree + Table + ListBox option + Menu item migrated; keyboardNavigationBehavior covered)
 tickets: T-34, T-51, T-52, T-56
 oracle: react-spectrum/packages/react-aria/src/selection/useSelectableItem.ts
 ---
@@ -15,12 +15,12 @@ activation logic over **raw pointer/click events**. Upstream routes the same
 logic through one shared hook, `useSelectableItem`, built on `usePress` +
 `useLongPress`. Four backlog tickets all wait on that same architectural move:
 
-| Ticket      | Gap                                                                                                                                                                                                                                                  | Depends on                                                               |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **T-51** ✔ | `replace`-mode action model: single-click selects, double-click acts (secondary action); touch long-press → `setSelectionBehavior('toggle')`                                                                                                         | landed through the shared press path                                     |
-| **T-34** ⛔ | `keyboardNavigationBehavior='tab'` collection keyboard model (child-propagation gating, capture binding only in `'arrow'` mode, tabbable-target pointer guards)                                                                                      | the item-hook surface; sequence after/with the press path                |
-| **T-52** ✔ | We pulled the aria-layer modifier decision into stately's `select()` (uses `ctrlKey \|\| metaKey`, never sees `pointerType`). Fix = restore upstream's split: thin `select()` to pointerType+behavior, move modifiers up to an aria-layer `onSelect` | landed as Phase 0                                                        |
-| **T-56** ✔ | `disabledBehavior:'selection'` item fires `onAction` on keyboard but **not** on pointer click                                                                                                                                                        | landed through the shared press path (item-hook `performAction`)         |
+| Ticket     | Gap                                                                                                                                                                                                                                                  | Depends on                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **T-51** ✔ | `replace`-mode action model: single-click selects, double-click acts (secondary action); touch long-press → `setSelectionBehavior('toggle')`                                                                                                         | landed through the shared press path                             |
+| **T-34** ✔ | `keyboardNavigationBehavior='tab'` collection keyboard model (child-propagation gating, capture binding only in `'arrow'` mode, tabbable-target pointer guards)                                                                                      | landed as Phase 3                                                |
+| **T-52** ✔ | We pulled the aria-layer modifier decision into stately's `select()` (uses `ctrlKey \|\| metaKey`, never sees `pointerType`). Fix = restore upstream's split: thin `select()` to pointerType+behavior, move modifiers up to an aria-layer `onSelect` | landed as Phase 0                                                |
+| **T-56** ✔ | `disabledBehavior:'selection'` item fires `onAction` on keyboard but **not** on pointer click                                                                                                                                                        | landed through the shared press path (item-hook `performAction`) |
 
 This is high-risk and cross-hook. **Scope and validate on its own before
 starting** (the ticket's own directive). This file is the scope; implementation
@@ -120,8 +120,10 @@ and for link items opens the href via the router.
    instead (e.g. `createTableRow` reads `p.href`, calls `p.onLinkAction`).
    `createSelectableItem` therefore adapts upstream's link behavior to our
    prop-threaded link model rather than adding a manager registry.
-5. **`keyboardNavigationBehavior` is absent entirely** (T-34). Still open for
-   Phase 3.
+5. **`keyboardNavigationBehavior`** (T-34) is ported in Phase 3. The prop is
+   threaded through `createGridList`/`createTree`, row child-key gating lives in
+   `createCollectionRowInteraction`, and S2 `ListView`/`TreeView` forward it
+   through their headless prop spreads.
 
 ## Original as-is, per item hook (pre-migration)
 
@@ -308,12 +310,20 @@ and the root keyboard path's no-double-activation guard.
   `createMenuItem` and are scoped to matching upstream's user-observable
   close/action/selection behavior, not a global press monkey patch.
 
-**Phase 3 — `keyboardNavigationBehavior` (T-34), layered on top.**
+**Phase 3 — `keyboardNavigationBehavior` (T-34), layered on top. Done.**
 
-- Thread the prop through `createGridList`/`createTree`; gate child-element
-  propagation and capture binding by mode; extract `handleTreeExpansionKeys`;
-  add the tabbable-target `onPointerDown`/`onMouseDown` guards. Un-omit
-  `keyboardNavigationBehavior` on S2 `ListView`/`TreeView`. Separate changeset.
+- Ported the upstream `useGridListItem` model into
+  `createCollectionRowInteraction`: in `tab` mode, keyboard events from tabbable
+  row children stop before collection selection/action/expansion; `Tab`
+  propagates only when leaving the row; capture binding is only installed for
+  `arrow` mode; tabbable-child `pointerdown`/`mousedown` guards are unconditional
+  like upstream. The prop is exposed by `createGridList`/`createTree`,
+  forwarded by RAC `GridList`/`Tree`, and covered at the S2 `ListView`/`TreeView`
+  wrapper surface.
+- Evidence (2026-06-24): `vp test packages/solidaria/test/createGridList.test.tsx
+packages/solidaria/test/createTree.test.ts packages/solidaria-components/test/GridList.test.tsx
+packages/solidaria-components/test/Tree.test.tsx packages/solid-spectrum/test/ListView.test.tsx
+packages/solid-spectrum/test/Tree.test.tsx` — 6 files, 172 tests.
 
 ## Risks
 

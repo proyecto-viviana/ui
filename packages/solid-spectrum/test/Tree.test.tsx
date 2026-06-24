@@ -3,7 +3,7 @@
  */
 import { createSignal } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import {
   Text,
@@ -486,6 +486,49 @@ describe("TreeView (solid-spectrum)", () => {
     ));
 
     expect(screen.getByTestId("selection-count")).toHaveTextContent("2 selected");
+  });
+
+  it('forwards keyboardNavigationBehavior="tab" so child controls do not select, act, or expand', () => {
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+
+    render(() => (
+      <TreeView
+        aria-label="Editable files"
+        items={files}
+        selectionMode="multiple"
+        keyboardNavigationBehavior="tab"
+        onAction={onAction}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => (
+          <TreeViewItem id={itemKey(item)} textValue={item.textValue}>
+            <TreeViewItemContent>
+              <Text slot="label">{item.value?.label ?? item.textValue}</Text>
+              <span slot="actions">
+                <input aria-label={`Edit ${item.textValue}`} />
+              </span>
+            </TreeViewItemContent>
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
+
+    const row = screen.getByRole("row", { name: /Projects/ });
+    const input = screen.getByLabelText("Edit Projects");
+    input.focus();
+
+    fireEvent.keyDown(input, { key: " " });
+    fireEvent.keyUp(input, { key: " " });
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.keyUp(input, { key: "Enter" });
+    fireEvent.keyDown(input, { key: "ArrowRight" });
+
+    expect(row).toHaveAttribute("aria-selected", "false");
+    expect(row).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getAllByRole("row")).toHaveLength(2);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it("merges TreeViewContext props", () => {

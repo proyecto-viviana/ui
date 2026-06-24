@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@solidjs/testing-library";
+import { fireEvent, render, screen, within } from "@solidjs/testing-library";
 import { ListView, ListViewContext, ListViewItem, Text, type ListViewSelectionStyle } from "../src";
 import * as listViewSubpath from "../src/ListView";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
@@ -310,6 +310,46 @@ describe("ListView (solid-spectrum)", () => {
     await user.click(screen.getByRole("row", { name: /Quarterly report/ }));
 
     expect(screen.getByTestId("selection")).toHaveTextContent("project-brief,quarterly-report");
+  });
+
+  it('forwards keyboardNavigationBehavior="tab" so child controls do not select or act', () => {
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+
+    render(() => (
+      <ListView
+        aria-label="Editable documents"
+        items={documents}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+        selectionMode="multiple"
+        keyboardNavigationBehavior="tab"
+        onAction={onAction}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => (
+          <ListViewItem id={item.id} textValue={item.name}>
+            <Text slot="label">{item.name}</Text>
+            <span slot="actions">
+              <input aria-label={`Edit ${item.name}`} />
+            </span>
+          </ListViewItem>
+        )}
+      </ListView>
+    ));
+
+    const row = screen.getByRole("row", { name: /Project brief/ });
+    const input = screen.getByLabelText("Edit Project brief");
+    input.focus();
+
+    fireEvent.keyDown(input, { key: " " });
+    fireEvent.keyUp(input, { key: " " });
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.keyUp(input, { key: "Enter" });
+
+    expect(row).toHaveAttribute("aria-selected", "false");
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it("renders link-out and child-item trailing metadata", () => {

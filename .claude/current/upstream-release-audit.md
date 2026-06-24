@@ -13,7 +13,8 @@ tasks:
     roadmap: upstream-parity-loop
   - id: keyboard-nav-behavior
     title: keyboardNavigationBehavior='tab' collection model (T-34)
-    state: open
+    state: done
+    finished: 2026-06-24
     depends: [press-path-phase2]
     roadmap: upstream-parity-loop
   - id: table-focus-ring
@@ -50,9 +51,10 @@ Update when: a T-NN ticket changes state or a new upstream release is audited.
 > are done. The GridList, Tree, and Table item hooks plus the ListBox option and
 > Menu item paths now route through `createSelectableItem`
 > (`gridlist-press-path.md`), closing the shared pointer-action gap (**T-56**).
-> **T-59** (table focus-ring) remains open, and **T-34**
-> (`keyboardNavigationBehavior`) is unblocked to layer on top of the shared
-> press path.
+> **T-34** (`keyboardNavigationBehavior`) is now done as press-path Phase 3:
+> GridList/Tree thread the prop, row interaction gates child keyboard events and
+> tabbable pointer targets like upstream, and S2 `ListView`/`TreeView` have
+> wrapper-surface evidence. **T-59** (table focus-ring) remains open.
 > Note: T-58's
 > autocomplete↔collection bridge is still unwired repo-wide — a collection
 > consumer honoring `collectionProps.autoFocus` / the focus-clear events is the
@@ -257,11 +259,11 @@ internal — not a port concern).
 ## Train 6 — RAC 1.19.0 / S2 1.5.0 (2026-06-17, current pin)
 
 Filed from `git diff 791377f0..1c84a49a` over `src`+`test` (the 1.18/1.4 → 1.19/1.5
-delta), grouped by feature, oldest-first. Statuses are first-pass triage — reconcile
-each against upstream `src` + our code before closing, and land a changeset when a
-published-package `src` changes. None executed yet.
+delta), grouped by feature, oldest-first. Statuses started as first-pass triage
+and are updated in place as each ticket is reconciled against upstream `src` +
+our code; land a changeset when a published-package `src` changes.
 
-- [ ] **T-34** ⛔ RAC — **`keyboardNavigationBehavior='tab'` collection keyboard model** (headline epic). Upstream `useGridListItem` (the big +141 change) gates child-element propagation so that, in `'tab'` mode, arrow keys inside a focusable row child are left to the browser (except Tab), extracts `handleTreeExpansionKeys()`, binds `onKeyDownCapture` only in `'arrow'` mode, wraps `rowProps.onKeyDown` (base `usePress` runs only if propagation wasn't stopped — fixes Space inside a textfield in a tree row), and adds `onPointerDown`/`onMouseDown` guards (stopPropagation when the target is a tabbable inside the row); `useGridList`/`useTree` thread the prop, and RAC `GridList`/`Tree` expose it (`Tree` drops its `Omit<…, 'keyboardNavigationBehavior'>`). **Confirmed absent** — `keyboardNavigationBehavior` greps to nothing in `packages/`. Cross-hook; scope on its own. ⇄ includes the S2 **ListView** / **TreeView** un-omit of `keyboardNavigationBehavior` (the styled surface of the same feature). ⇄ shares the item-hook press-path migration with **T-51** (`replace`-mode action model); sequence the two together. **Scoped 2026-06-20 in `press-path-epic.md`** (Phase 3 there).
+- [x] **T-34** ✔ RAC — **`keyboardNavigationBehavior='tab'` collection keyboard model** (headline epic) — **ported and evidenced.** Upstream `useGridListItem` gates child-element propagation so that, in `'tab'` mode, child controls keep Space/Enter/Arrow keys from row selection/action/expansion, allows `Tab` to leave the row only when no next tabbable child remains, extracts `handleTreeExpansionKeys()`, binds `onKeyDownCapture` only in `'arrow'` mode, and adds unconditional tabbable-target `onPointerDown`/`onMouseDown` guards. Local parity: `createGridList`/`createTree` expose and thread the prop; `createCollectionRowInteraction` centralizes the upstream row-child keyboard/pointer model; RAC `GridList`/`Tree` forward it; S2 `ListView`/`TreeView` inherit and forward through their headless prop spreads (no S2 omit remained to remove). Evidence added at the styled surface: `solid-spectrum/ListView.test` proves child Space/Enter do not select or act under `keyboardNavigationBehavior="tab"`; `solid-spectrum/Tree.test` proves child Space/Enter/ArrowRight do not select, act, or expand. Full T-34 gate green 2026-06-24: `vp test packages/solidaria/test/createGridList.test.tsx packages/solidaria/test/createTree.test.ts packages/solidaria-components/test/GridList.test.tsx packages/solidaria-components/test/Tree.test.tsx packages/solid-spectrum/test/ListView.test.tsx packages/solid-spectrum/test/Tree.test.tsx` — 6 files, 172 tests. See `press-path-epic.md` Phase 3.
 - [x] **T-35** ✔ RAC — **`useTypeSelect` 1.19 refactor — ported.** Upstream splits the handler into a dedicated **capture** path (Space-during-search only) and a **bubble** path (character keys), returning _both_ `onKeyDownCapture` + `onKeyDown`; it **bails on `e.altKey`**, `preventDefault`/`stopPropagation` **only** on a successful match, resets the search + clears the timeout + returns when no match remains even after the retry-from-top, and cleans up the reset timeout on unmount. **Ported all four behavioral deltas** into `createTypeSelect` (changeset `typeselect-keydown-faithful-parity.md`, `@proyecto-viviana/solidaria` patch): (a) re-added `e.altKey` to the bubble bail — **reverses `dfd4d37b`'s "allow altKey"** (pinned 1.19 _does_ bail on altKey); (b) `preventDefault()`/`stopPropagation()` on a matching character (previously only on Space-during-search); (c) reset `search=''` + `clearTimeout` + `timeout=undefined` + return on a no-match; (d) `onCleanup` clears the pending debounce on unmount (upstream's `useEffect` teardown). Search/focus + debounce-restart factored into shared helpers mirroring upstream's duplicated body; the bubble retry is now unconditional (`if (key == null)`) matching upstream (equivalent to our old `&& currentKey != null` guard). **Solid-divergent-by-necessity:** the capture/bubble split is faithfully reproduced, but a capture handler delivered through a `{...typeSelectProps}` spread is **inert** in Solid, so the live bubble `onKeyDown` is the working path — and it _also_ covers mid-search Space because upstream's bubble bail only rejects a **leading** Space (`search.length === 0 && ' '`). True capture-phase binding (ref-based `addEventListener` threaded through every consumer) stays deferred; the split here is the faithful realization within Solid's spread model. **Consumer shims N/A:** upstream's `useSelect` drops an `onKeyDown = onKeyDownCapture` shim and `useComboBox` lets Tab `continuePropagation`, but our `createSelect`/`createMenu`/`createListBox`/`createComboBox` only **spread** `typeSelectProps` (no per-consumer shim ever existed — the alias lived solely inside `createTypeSelect`), and our raw DOM events never carry `continuePropagation` (so upstream's `!('continuePropagation' in e)` guards collapse to unconditional `stopPropagation`). Tests: `createTypeSelect.test.tsx` — Alt-bail (rewrote the former "allows Alt" assertion), `preventDefault` on a matching char, and reset-on-no-match (`'x'` then `'a'` → Apple, proving the buffer reset); **all 3 confirmed discriminating** (exactly 3 fail / 12 pass against the pre-port source). 15/15 typeSelect + 213 type-select consumer tests (menu/listbox/select/combobox/autocomplete) green; fmt/lint/typecheck/guard clean. ⇄ **supersedes** the former sweep-deferred "typeahead true capture-phase binding" item — the capture/bubble split is exactly that work, so it is tracked here now (not separately in upstream-sync.md).
 - [x] **T-36** ➖ RAC — **`useSelectableCollection` `UNSTABLE_focusOnEntry`** (`'first' | 'last'`) + virtual-focus-first deps change — **N/A by construction / deferred to Bucket D, confirmed.** Two parts: **Part A (`UNSTABLE_focusOnEntry`) — N/A by construction.** Upstream's `useSelectableCollection.onFocus` gains an experimental `UNSTABLE_focusOnEntry: 'first' | 'last'` option that, on keyboard/virtual entry into the collection, **always** navigates to `delegate.getFirstKey()`/`getLastKey()` instead of restoring the last-focused key or detecting tab direction. It is a **private, single-consumer** API for Adobe's internal chat surface (its own comments name "the prompt field's attachment card", the "Thread", and seeing "the new prompt reply") — a consumer we do not have. We also have **no `createSelectableCollection`**: collection entry-focus is inlined per-hook (`createListBox`'s `createFocusWithin` `onFocusWithin` + the navigation hooks), with no strategy-driven navigate-on-entry to extend — `focusOnEntry`/`navigateToKey` grep only to `createAutocomplete` (the autocomplete's own virtual focus, a different layer). Nothing to port. **Part B (the deps change `[manager.collection]` → `[firstKey, manager.collection.size]`) — belongs to the deferred autocomplete↔collection bridge (Bucket D).** That tuple re-keys the `shouldVirtualFocusFirst` `useUpdateLayoutEffect`, which lives in upstream's `useSelectableCollection` but is **driven by the autocomplete `FOCUS_EVENT`** — i.e. the collection-consumer half of the autocomplete virtual-focus-first bridge. In our port the autocomplete **dispatches** `AUTOCOMPLETE_FOCUS_EVENT` (`detail.focusStrategy: "first"`) from `createAutocomplete`, but **no collection consumer listens + refocuses-first-on-update** — that wiring is the open **Bucket D** gap (`upstream-sync.md`), and there is no consumer-side effect in our tree to re-key. When Bucket D is built, the consumer effect should adopt this `[firstKey, collection.size]` deps shape from the start; it is not a standalone port now. User-confirmed lowest-value (experimental private API).
 - [x] **T-37** ➖ RAC — **column-reverse `ListKeyboardDelegate`** (+49) — **N/A by construction, confirmed.** Upstream adds reversed-column (chat-log) navigation to its `ListKeyboardDelegate` class: a private `isReversed(key)` that compares `getItemElement(ref, key).getBoundingClientRect().top` of the current vs next/prev item, `getKeyBelow`/`getKeyAbove` flipping `getNextKey`/`getPreviousKey` when reversed, and `getKeyPageAbove`/`getKeyPageBelow` inverting their `pageY` math (`itemRect.y - visibleRect.height` for the negative-y column-reverse case) and their `?? getFirstKey()/getLastKey()` fallback. **None of it has a host in our architecture:** (1) **We have no `ListKeyboardDelegate` class** — list/menu navigation is inlined per-hook over **collection order**, not a geometry-driven delegate: `createListBox`/`createGridList` navigate via `findNextEnabledKey` (`collection.getKeyAfter`/`getKeyBefore`), and `createMenu` via `findNextNonDisabledKey` + a **simplified `clientHeight`-accumulation** page model — none uses a `layoutDelegate`/`getItemRect`/`getVisibleRect`. (2) **The bulk (~40 of the 49 lines — the `getKeyPageAbove`/`getKeyPageBelow` reversed math) has no structural equivalent**: `createListBox`/`createGridList` have **no page navigation at all** (no PageUp/PageDown), and `createMenu`'s page-nav accumulates `clientHeight` rather than comparing `getItemRect.y` to `getVisibleRect`, so the negative-y column-reverse `pageY` arithmetic maps onto nothing. (3) **The `isReversed` flip is unreachable**: `createListBox`/`createGridList` receive **no root ref** (consumers call `createListBox(props, state)`; the `_ref` param is unused), so a `getItemElement(ref, key)` geometry read cannot run there, and `getBoundingClientRect()` is an **all-zero no-op in jsdom** regardless (same real-layout-only constraint as T-47's ButtonGroup overflow). (4) **No consumer exposes a reversed/`column-reverse` list/grid/menu layout** anywhere (grep-empty) — the feature's entire purpose is absent, it is nascent even upstream (its own `TODO: still need to see how this works with virtualizer once there is handling for the reverse layout`), and our virtualizer has no reverse-layout handling either (1D scroll-axis decomposition). **Deferred sliver:** if a reversed-layout list consumer is ever added, the minimal faithful realization would be an `isReversed` flip in `createListBox`/`createGridList` ArrowDown/ArrowUp — but that needs cross-layer root-ref threading + `getItemElement`, is jsdom-untestable, and has zero current consumers, so it is **not** ported now. Same disposition family as **T-49**/**T-50**/**T-41 Part B** (absent-by-architecture, not a behavioral miss).
@@ -343,11 +345,11 @@ joins the deferred sub-items called out per ticket.
 **T-34…T-59 is the active backlog** — one list now: **Train 6 (T-34…T-50)**, the
 RAC 1.18→1.19 / S2 1.4→1.5 release absorb, plus the **cross-train sweep tickets
 (T-51…T-59)** consolidated here from upstream-sync.md's old deferred checklist.
-**T-38** (`onAction(key, value)`) has landed. Work it like the earlier trains:
-the high-risk epic still open is **T-34** (`keyboardNavigationBehavior`), now
-that the shared item press path has landed. **T-51** (`replace`-mode action
-model) is ported for the three row hooks, and the ListBox option plus Menu item
-hooks are on the same shared item path.
+**T-38** (`onAction(key, value)`) has landed, and the high-risk
+**T-34** (`keyboardNavigationBehavior`) epic is now closed on top of the shared
+item press path. **T-51** (`replace`-mode action model) is ported for the three
+row hooks, and the ListBox option plus Menu item hooks are on the same shared
+item path.
 The minors have all landed or dispositioned: **T-39** overlay `getTargetRect` and
 **T-53** `escapeKeyBehavior` ported; **T-37** column-reverse delegate ➖ N/A (no
 `ListKeyboardDelegate` class / no reversed-layout consumer); **T-36**
@@ -369,10 +371,9 @@ selectable-item press path. **T-56** (pointer-path `onAction`) is now ✔ after
 the GridList + Tree + Table + ListBox + Menu Phase 2 slices all joined
 `createSelectableItem`. **T-45** (CenterBaseline) is ✅ now surfaced as a public export, and
 **T-49**/**T-50** resolved ➖ N/A (reactive collections / Solid no-rerender).
-**Sequencing:** press-path Phase 2 is complete. **T-34**
-(`keyboardNavigationBehavior`) can now layer on top of the shared press path.
-The low-risk reconciles are the natural next execution
-targets — **T-38** (`onAction` value) is done (changeset `menu-onaction-value.md`),
+**Sequencing:** press-path Phases 0–3 are complete; **T-34**
+(`keyboardNavigationBehavior`) is closed. The low-risk reconciles are the natural
+next execution targets — **T-38** (`onAction` value) is done (changeset `menu-onaction-value.md`),
 **T-42** (CalendarYearPicker) is done (already-faithful off-by-one + the
 `visibleYears` default aligned, changeset `calendar-year-picker-visible-years-default.md`),
 and **T-44** (small-fixes bundle) is done (2 of 4 ported — `createKeyboard`
@@ -413,4 +414,4 @@ level — the collection-consumer wiring stays a separate unwired-bridge ticket)
 done; the remaining **T-59** table focus-ring wants its own pass; **T-51**'s
 GridList + Tree + Table row-hook scope is ported, ListBox option and Menu item
 activation have joined the shared item path, **T-56** is closed, and **T-34**
-is the next high-risk shared-collection parity epic.
+is closed with lower-layer, RAC, and S2 wrapper evidence.
