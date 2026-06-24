@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/solidaria-components",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Pre-wired headless components for SolidJS - port of react-aria-components",
   "keywords": [
     "accessibility",
