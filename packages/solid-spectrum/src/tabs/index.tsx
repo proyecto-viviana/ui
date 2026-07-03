@@ -210,12 +210,6 @@ const tabsRoot = style<TabsStyleState>({
     },
   },
   font: "ui",
-  color: baseColor("neutral"),
-  minWidth: 0,
-  minHeight: 0,
-  opacity: {
-    isDisabled: 0.6,
-  },
 });
 
 const tabList = style<TabsStyleState>({
