@@ -499,7 +499,10 @@ function ModalContent(
   );
 
   return (
-    <FocusScope contain restoreFocus autoFocus>
+    // No autoFocus: react-aria's Overlay renders FocusScope with restoreFocus +
+    // contain only — initial focus is useDialog's job (it focuses the dialog
+    // element itself when nothing inside holds focus).
+    <FocusScope contain restoreFocus>
       <div
         {...domProps()}
         ref={modalRef}

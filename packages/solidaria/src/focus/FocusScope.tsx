@@ -460,12 +460,49 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       }
     };
 
+    let restoreRaf: number | null = null;
+
+    const onFocusOut = (e: FocusEvent) => {
+      const target = e.target as Element;
+      if (!isElementInScope(target, scopeElements())) return;
+
+      // Focus left an element inside the scope. Wait a frame (like upstream's
+      // onBlur) so a synchronous refocus elsewhere can settle; if focus ended
+      // up outside every scope (e.g. blur() to body), pull it back.
+      const win = doc.defaultView ?? window;
+      if (restoreRaf != null) win.cancelAnimationFrame(restoreRaf);
+      restoreRaf = win.requestAnimationFrame(() => {
+        restoreRaf = null;
+        const scope = scopeElements();
+        const activeElement = getActiveElement(doc);
+        if (
+          activeElement &&
+          (isElementInScope(activeElement, scope) ||
+            isElementInChildScope(activeElement, scopeElements))
+        ) {
+          return;
+        }
+
+        if (doc.body.contains(target)) {
+          focusedNode = target;
+          focusSafely(target as HTMLElement);
+        } else {
+          focusManager.focusFirst();
+        }
+      });
+    };
+
     doc.addEventListener("keydown", onKeyDown, true);
     doc.addEventListener("focusin", onFocusIn, true);
+    doc.addEventListener("focusout", onFocusOut, true);
 
     onCleanup(() => {
       doc.removeEventListener("keydown", onKeyDown, true);
       doc.removeEventListener("focusin", onFocusIn, true);
+      doc.removeEventListener("focusout", onFocusOut, true);
+      if (restoreRaf != null) {
+        (doc.defaultView ?? window).cancelAnimationFrame(restoreRaf);
+      }
     });
   });
 

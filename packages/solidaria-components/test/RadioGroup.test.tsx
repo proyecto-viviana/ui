@@ -1125,9 +1125,14 @@ describe("RadioGroup", () => {
         }
       };
 
-      await waitFor(() => {
-        expect(document.activeElement).toBe(radios[0]);
-      });
+      // Upstream leaves initial focus on the dialog itself (useDialog); no
+      // radio is focused until the user tabs into the group.
+      expectNotFocused(...labels);
+
+      await user.tab();
+      expect(document.activeElement).toBe(radios[0]);
+      expect(labels[0]).toHaveAttribute("data-focus-visible");
+      expect(labels[0]).toHaveClass("focus");
       expectNotFocused(labels[1], labels[2]);
 
       await user.tab();
