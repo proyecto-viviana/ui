@@ -169,7 +169,7 @@ export function Dialog(props: DialogProps): JSX.Element {
     ["role", "aria-label", "aria-labelledby", "aria-describedby"],
   );
 
-  let dialogRef!: HTMLDivElement;
+  let dialogRef!: HTMLElement;
 
   // Get trigger context for aria-labelledby fallback
   const triggerContext = useContext(DialogTriggerContext);
@@ -241,7 +241,7 @@ export function Dialog(props: DialogProps): JSX.Element {
 
   return (
     <DialogContext.Provider value={{ close, titleId: titleId() }}>
-      <div
+      <section
         {...dialogProps()}
         {...domProps()}
         ref={dialogRef}
@@ -254,7 +254,7 @@ export function Dialog(props: DialogProps): JSX.Element {
         >
           {renderProps.renderChildren()}
         </ButtonContext.Provider>
-      </div>
+      </section>
     </DialogContext.Provider>
   );
 }
