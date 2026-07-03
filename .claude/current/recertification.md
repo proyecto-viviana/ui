@@ -429,6 +429,72 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     `mergeStyles`) — Phase 2 Tabs item alongside the root
     `useFocusRing({within: true})` gap noted under D1.
 
+- D4 + D5 in flight (2026-07-03, session checkpoint — landed, pilots partially
+  red with real findings):
+  - Landed infrastructure (all committed):
+    - Fixture side: `apps/comparison/src/data/event-log.ts` re-emits component
+      callbacks (`onPress*`, `onSelectionChange`, `onOpenChange`) as bubbling
+      `comparison:callback` CustomEvents so they interleave exactly with
+      native events in the recorded log; wired into Button/Tabs/Dialog demos
+      in both `react/fixtures/styled.js` and `solid/fixtures/styled.tsx`.
+    - `e2e/drivers/dom-oracle.ts`: in-page `window.__comparisonOracle`
+      (installed per panel via `page.evaluate`, not `addInitScript`) —
+      document-level capture recorder + focus snapshots. Descriptors are
+      stack-agnostic (tag/role/name, never ids or `data-*`); targets classify
+      as panel/overlay/page/detached/outside with outside collapsed to a
+      sentinel. Entries serialize at dispatch time; only `defaultPrevented`
+      is re-read at flush (bubble-phase preventDefault). The `detached` scope
+      is deliberate signal: a stack that recreates DOM mid-gesture shows up
+      there.
+    - `e2e/drivers/events.ts` (D4): `registerEventSequenceDriver` +
+      `standardPressGestures` (mouse-click / keyboard-enter / keyboard-space /
+      touch-tap). Gestures use raw coordinates + protocol focus so disabled
+      targets can be driven; describe-level `test.use({hasTouch: true})`.
+    - `e2e/drivers/focus.ts` (D5): `registerFocusTrailDriver` — focus start,
+      press key sequence, snapshot activeElement descriptor + resolved
+      `aria-activedescendant` + full roving `[tabindex]` layout after each key.
+    - `walk.ts` gained `forEachScenarioPanel` (shared panel loop);
+      `scenario.ts` gained `events:`/`focus:` config + `driverCases`.
+    - Specs wired: Button (D4 accent-fill+disabled × 4 gestures, D5
+      tab-cycle), Tabs (D4 mouse/touch/arrow, D5 arrow-roving), Dialog (D4
+      close-button mouse+escape, D4-only trigger scenario recording the full
+      open→escape→close cycle, D5 trap-cycle).
+  - Pilot status: **Button 9/9 green (D4+D5). Tabs 0/4, Dialog 0/4 — real
+    findings, not driver bugs:**
+    1. **Dialog element**: upstream RAC renders `<section role="dialog">`
+       (`react-aria-components/src/Dialog.tsx:161`); ours rendered `<div>`.
+       Fixed in `solidaria-components/src/Dialog.tsx` (unit tests 38/38
+       green); **e2e not yet re-verified — rebuild `apps/comparison` first**
+       (preview serves the last build).
+    2. **Synthetic click invention**: our
+       `solidaria/src/interactions/createPress.ts:379-395` has an invented
+       80 ms `setTimeout` fallback that calls `pressState.target.focus()` +
+       `.click()` when no native click arrives — D4 logs it as
+       `click isTrusted:false pointerType:""` plus a late `focusin` where
+       React has a native trusted click. Diff against upstream
+       `react-spectrum/packages/react-aria/src/interactions/usePress.ts`
+       (consolidated package — NOT `@react-aria/interactions`, which is now a
+       re-export shim) and port the real onClick-completion path.
+    3. **Tab DOM recreation**: selecting a tab in Solid replaces the label
+       span mid-press (D4 shows the Solid `mousedown` hitting the tab div
+       while React's hits the span; the old span serializes as `detached`).
+       Chrome suppresses the native `click` when the mousedown target is
+       detached → finding 2's fallback fires. React updates the same nodes in
+       place. Likely the render-prop children memo recreating the Tab subtree
+       on selection state flip (the known Solid recreation gotcha).
+    4. **Press-start focus ordering**: React's log shows `focusin` on the tab
+       between `mousedown` and `pointerup` (upstream focuses + selects on
+       press start under automatic activation); ours doesn't focus until the
+       80 ms fallback. Likely fixed by 2+3, re-check after.
+  - Next session: fix findings 2–4 in `solidaria` (createPress vs upstream
+    usePress first — it's the root of both wrong orderings), rebuild
+    comparison, rerun `npx playwright test certified --grep "D4|D5"` until
+    17/17, then flip D4/D5 to ☑ and proceed to D6.
+  - Driver gotchas already burned in: `error-context.md` in test-results is
+    just a page snapshot — rerun the single test to capture the JSON diff;
+    e2e is NOT covered by `astro check` (tsconfig includes src only) — use
+    the standalone tsc line in the session log or add an e2e tsconfig later.
+
 Phase 2: not started — march order above is the queue; mark components here as
 `✓ name (date)` when certified, `blocked: name (reason)` otherwise.
 Phase 3: not started.
