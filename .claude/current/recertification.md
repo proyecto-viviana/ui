@@ -272,8 +272,8 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   - Shiki `github-dark` comment gray #6A737D on #24292E = 3.04:1 in docs code
     blocks; overridden in `global.css` to GitHub's current dark comment gray
     #8b949e (4.76:1).
-  Exit test met: rule enabled, gate green (71/71 routes, full-page + both
-  panels).
+    Exit test met: rule enabled, gate green (71/71 routes, full-page + both
+    panels).
 
 - 0.5 done 2026-07-03: CI-on-main hole closed. `release-readiness.yml` now
   triggers on pushes to `main` as well as PRs (concurrency-cancelled per ref),
@@ -291,7 +291,44 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☐ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+
+- D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
+  shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
+  `state-matrix.ts`) plus per-pilot specs in `apps/comparison/e2e/certified/`
+  (`test:certified` in the app, `comparison:test:certified` at the root — an
+  on-demand march gate, intentionally allowed red while findings burn down).
+  The walk is panel-major with a fresh load per panel (input modality resets,
+  so focus-visible drives identically), states run in canonical order
+  (focus-visible before any pointer event), and each state awaits a readiness
+  data-attribute before capture. Calibration met — the driver rediscovered
+  known findings and caught new ones:
+  - Button: 10/10 green (all states × themes).
+  - Tabs: red at `default` on every case — tab items miss upstream's
+    icon/text `gap` (React computes 5.99999px, ours `normal`). Sole surviving
+    red; the driver's focus-visible states went green after the tabs parity
+    fix below.
+  - Dialog: red twice — (a) modal surface styling diverges at the surface
+    element, (b) our `CloseButton` is a raw `<button onClick>` while upstream
+    S2's is a full RAC Button (focus ring, hover/pressed styling, pressScale,
+    localized label); it renders no interaction data-attributes so the walk
+    can't even drive focus-visible on it.
+  - Driving the pilots also exposed a real Tabs behavior divergence fixed in
+    the same unit (jsdom-confirmed, then browser-verified): the state layer
+    invented selection-follows-focus in `setFocusedKey` (upstream's automatic
+    activation lives only in the keyboard-nav path of the aria layer), tabs
+    never chained `onBlur` so the DOM-focus ring stuck, roving tabIndex
+    followed selectedKey instead of focusedKey, and the tab list wired React's
+    bubbling focus semantics onto Solid's non-bubbling `onFocus` (now
+    `onFocusIn`/`onFocusOut` per the spine convention). The invented tablist
+    `data-focused`/`data-focus-visible` + focus ring were removed — upstream
+    RAC TabList renders neither (its render props are only
+    `{orientation, state}`; root-level `useFocusRing({within: true})` +
+    `data-focused` live on upstream's Tabs root, which ours still lacks —
+    Phase 2 Tabs item).
+  Pilot findings queue (burn down before D3, which pixel-diffs the same
+  states): Tabs gap, Dialog surface, Dialog CloseButton.
+
 Phase 2: not started — march order above is the queue; mark components here as
 `✓ name (date)` when certified, `blocked: name (reason)` otherwise.
 Phase 3: not started.

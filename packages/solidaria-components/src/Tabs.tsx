@@ -102,10 +102,6 @@ export interface TabListRenderProps {
   orientation: TabOrientation;
   /** Whether the tab list is disabled. */
   isDisabled: boolean;
-  /** Whether the tab list has focus. */
-  isFocused: boolean;
-  /** Whether the tab list has visible focus. */
-  isFocusVisible: boolean;
 }
 
 export interface TabListProps<T> extends Omit<AriaTabListProps, "children">, SlotProps {
@@ -437,13 +433,9 @@ function TabListInner<T>(props: {
   // Create tab list aria props
   const { tabListProps } = createTabList<T>(props.ariaProps as AriaTabListProps, state);
 
-  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
-
   const renderValues = createMemo<TabListRenderProps>(() => ({
     orientation: state.orientation(),
     isDisabled: state.isDisabled(),
-    isFocused: state.isFocused() || isFocused(),
-    isFocusVisible: isFocusVisible(),
   }));
 
   const renderProps = useRenderProps(
@@ -455,42 +447,16 @@ function TabListInner<T>(props: {
     renderValues,
   );
 
-  // Helper to safely call event handlers that may be bound tuples
-  const callHandler = <E extends Event>(
-    handler: JSX.EventHandlerUnion<HTMLElement, E> | undefined,
-    event: E,
-  ) => {
-    if (!handler) return;
-    if (Array.isArray(handler)) {
-      handler[1].call(handler[0], event);
-      return;
-    }
-    if (typeof handler === "function") {
-      (handler as (evt: E) => void)(event);
-      return;
-    }
-    if (
-      typeof handler === "object" &&
-      "handleEvent" in handler &&
-      typeof handler.handleEvent === "function"
-    ) {
-      (handler.handleEvent as (evt: E) => void)(event);
-    }
-  };
-
-  // Combine event handlers
   const handleKeyDown = (e: KeyboardEvent) => {
     tabListProps.onKeyDown(e);
   };
 
   const handleFocus = (e: FocusEvent) => {
-    tabListProps.onFocus(e);
-    callHandler(focusProps.onFocus, e);
+    tabListProps.onFocusIn(e);
   };
 
   const handleBlur = (e: FocusEvent) => {
-    tabListProps.onBlur(e);
-    callHandler(focusProps.onBlur, e);
+    tabListProps.onFocusOut(e);
   };
 
   return (
@@ -503,10 +469,8 @@ function TabListInner<T>(props: {
       class={renderProps.class()}
       style={renderProps.style()}
       onKeyDown={handleKeyDown}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      data-focused={state.isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
+      onFocusIn={handleFocus}
+      onFocusOut={handleBlur}
       data-orientation={state.orientation()}
       data-disabled={state.isDisabled() || undefined}
     >
@@ -634,7 +598,7 @@ function TabInner(props: {
         aria-controls={tabAria.isSelected() ? tabAria.tabProps["aria-controls"] : undefined}
         aria-label={tabAria.tabProps["aria-label"]}
         aria-labelledby={tabAria.tabProps["aria-labelledby"]}
-        tabIndex={tabAria.isSelected() && !tabAria.isDisabled() ? 0 : -1}
+        tabIndex={tabAria.tabProps.tabIndex}
         class={renderProps.class()}
         style={renderProps.style()}
         onKeyDown={tabAria.tabProps.onKeyDown}
@@ -642,6 +606,7 @@ function TabInner(props: {
         onPointerDown={tabAria.tabProps.onPointerDown}
         onClick={tabAria.tabProps.onClick}
         onFocus={tabAria.tabProps.onFocus}
+        onBlur={tabAria.tabProps.onBlur}
         {...hoverProps}
         data-selected={tabAria.isSelected() || undefined}
         data-focused={tabAria.isFocused() || undefined}

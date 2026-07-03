@@ -69,7 +69,7 @@ describe("createTabListState", () => {
     });
   });
 
-  it("automatic activation selects focused key once when focus changes", () => {
+  it("setFocusedKey never changes selection (activation lives in the aria layer)", () => {
     createRoot((dispose) => {
       const onSelectionChange = vi.fn();
       const state = createTabListState({
@@ -81,9 +81,53 @@ describe("createTabListState", () => {
 
       state.setFocusedKey("tab2");
 
-      expect(state.selectedKey()).toBe("tab2");
-      expect(onSelectionChange).toHaveBeenCalledWith("tab2");
-      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(state.focusedKey()).toBe("tab2");
+      expect(state.selectedKey()).toBe("tab1");
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      dispose();
+    });
+  });
+
+  it("initializes focusedKey to the selected key", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: baseItems,
+        getKey: (item) => item.key,
+        defaultSelectedKey: "tab2",
+      });
+
+      expect(state.focusedKey()).toBe("tab2");
+      dispose();
+    });
+  });
+
+  it("moves focusedKey to a new selected key while the tab list is not focused", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: baseItems,
+        getKey: (item) => item.key,
+      });
+
+      state.setSelectedKey("tab3");
+
+      expect(state.focusedKey()).toBe("tab3");
+      dispose();
+    });
+  });
+
+  it("keeps focusedKey while the tab list is focused and selection changes", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: baseItems,
+        getKey: (item) => item.key,
+        keyboardActivation: "manual",
+      });
+
+      state.setFocused(true);
+      state.setFocusedKey("tab2");
+      state.setSelectedKey("tab3");
+
+      expect(state.focusedKey()).toBe("tab2");
       dispose();
     });
   });

@@ -14,6 +14,7 @@ import {
   createMemo,
   createSignal,
   onMount,
+  sharedConfig,
   Show,
 } from "solid-js";
 import { isServer } from "solid-js/web";
@@ -437,7 +438,12 @@ export const ClientOnly: FlowComponent<ClientOnlyProps> = (props) => {
     return <>{props.fallback}</>;
   }
 
-  // On client, track if we've hydrated
+  // Outside a hydration walk there is nothing to defer (see useIsHydrated).
+  if (!sharedConfig.context) {
+    return <>{props.children}</>;
+  }
+
+  // Hydrating: render the fallback until the walk completes.
   const [isHydrated, setIsHydrated] = createSignal(false);
 
   // onMount runs after hydration is complete
@@ -472,16 +478,28 @@ export function useIsHydrated(): Accessor<boolean> {
     return () => false;
   }
 
-  // On client, start false (so the first render matches the server, which
+  // Outside a hydration walk (pure CSR, or a remount created after hydration
+  // finished) the caller is already "hydrated" — report true immediately.
+  // Solid sets `sharedConfig.context` only while synchronously walking
+  // server-rendered DOM, so this is exactly the window the false→true flip
+  // exists for. A fresh per-instance false→true flip on every remount is not
+  // just wasted work: ancestor `children()`/`Context.Provider` resolution
+  // unwraps and tracks the <Show> accessor this hook gates, so the post-mount
+  // flip re-resolves those children, recreates the subtree (with another fresh
+  // signal), and loops forever — a stack overflow with no overlay rendered.
+  if (!sharedConfig.context) {
+    return () => true;
+  }
+
+  // Hydrating: start false (so the first render matches the server, which
   // emitted nothing for hydrated-gated content) and flip to true after mount.
   const [isHydrated, setIsHydrated] = createSignal(false);
 
   // onMount runs in the effect phase — *after* the synchronous hydration pass
   // has finished walking the server DOM — so flipping here renders the gated
   // content as a fresh client-side update (Portal: no getNextElement walk, no
-  // mismatch), yet fires synchronously under `render()` (unit tests / pure CSR)
-  // where requestAnimationFrame would never run. This mirrors the component
-  // gate above and is strictly earlier than a rAF tick.
+  // mismatch). This mirrors the component gate above and is strictly earlier
+  // than a rAF tick.
   onMount(() => {
     setIsHydrated(true);
   });

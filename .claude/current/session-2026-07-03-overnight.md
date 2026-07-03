@@ -35,20 +35,20 @@ workflow at a time; sonnet helpers for mechanical generation.
 Each checkpoint ends in a commit (or a recorded blocker here). Status values:
 `pending / in-progress / done(commit) / blocked(reason)`.
 
-| CP  | Unit                                                              | Status |
-| --- | ----------------------------------------------------------------- | ------ |
-| 0   | Verify + commit in-flight recertification 0.5                     | done (9df33f69) |
-| 1   | Recertification 0.6 — blocking axe gate includes color-contrast   | done |
-| 2   | This plan committed                                               | done (5c15d499) |
-| 3   | Driver D1 state-matrix computed-style pair diff + pilots green    | pending |
-| 4   | Driver D3 strict pixel pair diff riding the D1 state walk         | pending |
-| 5   | Drivers D4 event-sequence + D5 focus/keyboard trails              | pending |
-| 6   | Driver D6 AX tree + announcements                                 | pending |
-| 7   | Driver D2 motion (filmstrip a + metadata b + reduced-motion d)    | pending |
-| 8   | Drivers D7 contrast + D8 target size (derived from D1 walk)       | pending |
-| 9   | Phase 2 march: Tier 1 primitives, red→green, one commit each      | pending |
-| 10  | Idiomatic-Solid + Web-API review sweep over solid-spectrum stack  | pending |
-| F   | Wrap: queue/docs refresh, session summary, final commit           | pending |
+| CP  | Unit                                                             | Status          |
+| --- | ---------------------------------------------------------------- | --------------- |
+| 0   | Verify + commit in-flight recertification 0.5                    | done (9df33f69) |
+| 1   | Recertification 0.6 — blocking axe gate includes color-contrast  | done            |
+| 2   | This plan committed                                              | done (5c15d499) |
+| 3   | Driver D1 state-matrix computed-style pair diff + pilots green   | done            |
+| 4   | Driver D3 strict pixel pair diff riding the D1 state walk        | pending         |
+| 5   | Drivers D4 event-sequence + D5 focus/keyboard trails             | pending         |
+| 6   | Driver D6 AX tree + announcements                                | pending         |
+| 7   | Driver D2 motion (filmstrip a + metadata b + reduced-motion d)   | pending         |
+| 8   | Drivers D7 contrast + D8 target size (derived from D1 walk)      | pending         |
+| 9   | Phase 2 march: Tier 1 primitives, red→green, one commit each     | pending         |
+| 10  | Idiomatic-Solid + Web-API review sweep over solid-spectrum stack | pending         |
+| F   | Wrap: queue/docs refresh, session summary, final commit          | pending         |
 
 Driver order rationale: D1/D3 catch the styling-divergence class the owner
 found by hand (highest hit rate); D4/D5/D6 are the behavior + a11y core;
@@ -85,3 +85,27 @@ empties.
   green 71/71. Filed the same dead-color pattern found at 4 port empty-state
   sites for the Phase 2 march (details in recertification.md 0.6 note).
   **Phase 0 is complete.**
+- 09:5x CP3 done: D1 landed — shared walk harness
+  (`e2e/drivers/scenario.ts|walk.ts|state-matrix.ts`) + three pilot specs
+  under `e2e/certified/`, run via `comparison:test:certified` (on-demand
+  march gate, allowed red while findings burn down). Certified state at
+  commit: Button 10/10 green; Tabs 6 red = one finding (missing tab icon/text
+  `gap`, React 5.99999px vs ours `normal`); Dialog 4 red = two findings
+  (surface styling diverges; `CloseButton` is a raw `<button onClick>` vs
+  upstream's full RAC Button — no focus/hover/press attrs or styling at all).
+  Driving the pilots exposed real Tabs behavior divergences, fixed + verified
+  (unit 5522 green incl. snapshot without `-u`, certified focus-visible
+  states flipped green in-browser): state-layer invented
+  selection-follows-focus (upstream: automatic activation only in the aria
+  layer's keyboard-nav path; state layer syncs focusedKey from selectedKey
+  behind an `isFocused` guard), missing tab `onBlur` chain, roving tabIndex
+  keyed on selectedKey instead of focusedKey, tablist focus wired to Solid's
+  non-bubbling `onFocus` (now `onFocusIn`/`onFocusOut`), and an unguarded
+  DOM-focus alignment effect that could steal focus document-wide. Removed
+  the invented tablist `data-focused`/`data-focus-visible` + ring (upstream
+  TabList has neither; upstream puts a `within` ring on the Tabs ROOT — ours
+  lacks it, filed for the march). Also in this unit: dialog fixture
+  `renderKey` fix, `DialogTriggerChildren` fix, `useIsHydrated`/`ClientOnly`
+  hydration guard in solidaria-components utils. Next: burn down the three
+  pilot findings (Tabs gap → Dialog surface → Dialog CloseButton port), then
+  CP4/D3.

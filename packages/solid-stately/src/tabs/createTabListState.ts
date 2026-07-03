@@ -199,17 +199,19 @@ export function createTabListState<T = unknown>(
   const setFocusedKey = (key: Key | null, childStrategy?: FocusStrategy) => {
     setFocusedKeyInternal(key);
     setChildFocusStrategy(childStrategy ?? null);
-
-    // In automatic mode, selecting follows focus
-    if (
-      keyboardActivation() === "automatic" &&
-      key !== null &&
-      key !== selectedKey() &&
-      !isKeyDisabled(key)
-    ) {
-      setSelectedKey(key);
-    }
   };
+
+  // If the tab list doesn't have focus and the selected key changes, or if there
+  // isn't a focused key yet, move the focused key to the selected key so the
+  // roving tabIndex stays on the selected tab (mirrors useTabListState's effect).
+  let lastSelectedKey: Key | null = selectedKey();
+  createComputed(() => {
+    const sel = selectedKey();
+    if ((sel !== null && focusedKey() === null) || (!isFocused() && sel !== lastSelectedKey)) {
+      setFocusedKey(sel);
+    }
+    lastSelectedKey = sel;
+  });
 
   // Keep uncontrolled selection valid as items/disabled keys change.
   createComputed(() => {

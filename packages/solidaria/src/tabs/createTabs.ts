@@ -54,8 +54,10 @@ export interface TabListAria {
     "aria-labelledby"?: string;
     "aria-describedby"?: string;
     onKeyDown: (e: KeyboardEvent) => void;
-    onFocus: (e: FocusEvent) => void;
-    onBlur: (e: FocusEvent) => void;
+    // React's bubbling onFocus/onBlur map to focusin/focusout in Solid; the
+    // tab list must observe focus entering/leaving its child tabs.
+    onFocusIn: (e: FocusEvent) => void;
+    onFocusOut: (e: FocusEvent) => void;
   };
 }
 
@@ -80,12 +82,13 @@ export interface TabAria {
     "aria-controls": string | undefined;
     "aria-label"?: string;
     "aria-labelledby"?: string;
-    tabIndex: number;
+    tabIndex: number | undefined;
     onKeyDown: (e: KeyboardEvent) => void;
     onMouseDown: (e: MouseEvent) => void;
     onPointerDown: (e: PointerEvent) => void;
     onClick: (e: MouseEvent) => void;
     onFocus: (e: FocusEvent) => void;
+    onBlur: (e: FocusEvent) => void;
   };
   /** Whether the tab is selected. */
   isSelected: Accessor<boolean>;
@@ -269,6 +272,11 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
     if (nextKey !== null) {
       e.preventDefault();
       state.setFocusedKey(nextKey);
+      // Selection follows focus only for keyboard navigation in automatic mode
+      // (mirrors useSelectableCollection's selectOnFocus in navigateToKey).
+      if (keyboardActivation() === "automatic") {
+        state.setSelectedKey(nextKey);
+      }
     }
   };
 
@@ -297,8 +305,8 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
       "aria-labelledby": props["aria-labelledby"],
       "aria-describedby": props["aria-describedby"],
       onKeyDown: handleKeyDown,
-      onFocus: handleFocus,
-      onBlur: handleBlur,
+      onFocusIn: handleFocus,
+      onFocusOut: handleBlur,
     },
   };
 }
@@ -319,10 +327,13 @@ export function createTab<T>(
     return state.isKeyDisabled(key());
   });
 
-  const isFocused = createMemo(() => state.focusedKey() === key());
+  // Whether this tab is the roving-focus target (state layer), used for the
+  // roving tabIndex and DOM focus alignment. The returned isFocused is the
+  // DOM-focus-based ring state, matching upstream's useFocusRing semantics.
+  const isKeyFocused = createMemo(() => state.focusedKey() === key());
 
   // Focus ring
-  const { isFocusVisible, focusProps } = createFocusRing();
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
   // Press handling
   const { isPressed, pressProps } = createPress({
@@ -330,14 +341,11 @@ export function createTab<T>(
       return isDisabled();
     },
     onPress: () => {
+      // Pressing a tab always selects it, in both activation modes (mirrors
+      // useSelectableItem's replaceSelection on select).
       const tabKey = key();
-      const wasSelected = state.selectedKey() === tabKey;
-
       state.setFocusedKey(tabKey);
-
-      if (state.keyboardActivation() === "manual" || wasSelected) {
-        state.setSelectedKey(tabKey);
-      }
+      state.setSelectedKey(tabKey);
     },
   });
 
@@ -369,6 +377,10 @@ export function createTab<T>(
     callHandler(focusProps.onFocus, e);
   };
 
+  const handleBlur = (e: FocusEvent) => {
+    callHandler(focusProps.onBlur, e);
+  };
+
   // Combine all handlers
   const handleKeyDown = (e: KeyboardEvent) => {
     callHandler(pressProps.onKeyDown, e);
@@ -386,10 +398,13 @@ export function createTab<T>(
     callHandler(pressProps.onClick, e);
   };
 
-  // Keep DOM focus aligned with focusedKey updates from keyboard delegate.
+  // Keep DOM focus aligned with focusedKey updates from keyboard navigation.
+  // Only while the tab list itself is focused (mirrors useSelectableItem's
+  // manager.isFocused guard), so programmatic selection changes don't steal
+  // focus from elsewhere in the document.
   createEffect(() => {
     const element = ref?.();
-    if (!isFocused() || !element) return;
+    if (!state.isFocused() || !isKeyFocused() || !element) return;
 
     const activeElement = element.ownerDocument?.activeElement;
     if (activeElement !== element) {
@@ -413,13 +428,17 @@ export function createTab<T>(
       "aria-label": props["aria-label"],
       "aria-labelledby": props["aria-labelledby"],
       get tabIndex() {
-        return isSelected() && !isDisabled() ? 0 : -1;
+        // Roving tabIndex follows the focused key (mirrors useSelectableItem);
+        // disabled tabs get no tabIndex at all (mirrors useTab).
+        if (isDisabled()) return undefined;
+        return isKeyFocused() ? 0 : -1;
       },
       onKeyDown: handleKeyDown,
       onMouseDown: handleMouseDown,
       onPointerDown: handlePointerDown,
       onClick: handleClick,
       onFocus: handleFocus,
+      onBlur: handleBlur,
     },
     isSelected,
     isDisabled,

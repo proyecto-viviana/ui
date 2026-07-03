@@ -1,4 +1,4 @@
-import { type JSX, Show, children, createContext, splitProps, useContext } from "solid-js";
+import { type JSX, Show, createContext, splitProps, useContext } from "solid-js";
 import {
   Dialog as HeadlessDialog,
   DialogContext as HeadlessDialogContext,
@@ -756,20 +756,19 @@ function DialogTriggerContent(props: {
 }
 
 function DialogTriggerChildren(props: DialogTriggerProps): JSX.Element {
-  const resolvedChildren = children(() => props.children);
-
+  // Pick the API by prop shape without resolving children. Resolving with the
+  // `children()` helper unwraps the dialog subtree down to ModalOverlay's
+  // <Show> accessor and tracks it, so every open (and each remount's
+  // useIsHydrated flip) recreated the entire trigger+dialog subtree — an
+  // infinite recreation loop in the browser (stack overflow, no dialog).
+  if ("children" in props) {
+    return <>{props.children}</>;
+  }
   return (
-    <Show
-      when={resolvedChildren()}
-      fallback={
-        <>
-          {props.trigger}
-          <DialogTriggerContent content={props.content} />
-        </>
-      }
-    >
-      {(resolved) => resolved()}
-    </Show>
+    <>
+      {props.trigger}
+      <DialogTriggerContent content={props.content} />
+    </>
   );
 }
 

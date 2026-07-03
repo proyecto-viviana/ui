@@ -108,6 +108,87 @@ describe("Tabs (solid-spectrum S2)", () => {
     expect(screen.getByRole("tabpanel")).toHaveTextContent("Content 2");
   });
 
+  it("does not change selection when a tab is focused programmatically", async () => {
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <Tabs
+        aria-label="Focus sections"
+        selectedKey="tab1"
+        onSelectionChange={(key) => onSelectionChange(key)}
+      >
+        <TabList>
+          <Tab id="tab1">First</Tab>
+          <Tab id="tab2">Second</Tab>
+        </TabList>
+        <TabPanel id="tab1">Content 1</TabPanel>
+        <TabPanel id="tab2">Content 2</TabPanel>
+      </Tabs>
+    ));
+
+    const second = screen.getByRole("tab", { name: "Second" });
+    second.focus();
+    await Promise.resolve();
+
+    expect(document.activeElement).toBe(second);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(screen.getByRole("tab", { name: "First" })).toHaveAttribute("aria-selected", "true");
+    expect(second).toHaveAttribute("aria-selected", "false");
+  });
+
+  it("keeps the controlled selectedKey when the change callback does not apply it", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <Tabs
+        aria-label="Rejecting sections"
+        selectedKey="tab1"
+        onSelectionChange={(key) => onSelectionChange(key)}
+      >
+        <TabList>
+          <Tab id="tab1">First</Tab>
+          <Tab id="tab2">Second</Tab>
+        </TabList>
+        <TabPanel id="tab1">Content 1</TabPanel>
+        <TabPanel id="tab2">Content 2</TabPanel>
+      </Tabs>
+    ));
+
+    await user.click(screen.getByRole("tab", { name: "Second" }));
+
+    expect(onSelectionChange).toHaveBeenCalledWith("tab2");
+    expect(screen.getByRole("tab", { name: "First" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Content 1");
+  });
+
+  it("sets and clears the focus ring as keyboard focus enters and leaves a tab", async () => {
+    const user = setupUser();
+    render(() => <TestTabs />);
+
+    const first = screen.getByRole("tab", { name: "First" });
+    await user.tab();
+    expect(document.activeElement).toBe(first);
+    expect(first).toHaveAttribute("data-focused", "true");
+    expect(first).toHaveAttribute("data-focus-visible", "true");
+
+    first.blur();
+    await Promise.resolve();
+    expect(first).not.toHaveAttribute("data-focused");
+    expect(first).not.toHaveAttribute("data-focus-visible");
+  });
+
+  it("roves tabIndex with the focused tab", async () => {
+    render(() => <TestTabs />);
+
+    const [first, second] = screen.getAllByRole("tab");
+    expect(first).toHaveAttribute("tabindex", "0");
+    expect(second).toHaveAttribute("tabindex", "-1");
+
+    second.focus();
+    await Promise.resolve();
+    expect(first).toHaveAttribute("tabindex", "-1");
+    expect(second).toHaveAttribute("tabindex", "0");
+  });
+
   it("maps density and labelBehavior onto stable DOM state", () => {
     const { container } = render(() => <TestTabs density="compact" labelBehavior="hide" />);
     const root = container.querySelector(".solidaria-Tabs") as HTMLElement;

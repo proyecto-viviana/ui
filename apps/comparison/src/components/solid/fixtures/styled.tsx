@@ -4279,11 +4279,15 @@ function SolidSpectrumTabsDemo() {
       selectedKey: selectedKey() as TabsDemoProps["selectedKey"],
     }),
   );
+  // Mirrors the React fixture's renderKey: remount only on structural control
+  // changes. The live `selectedKey()` signal must NOT be in the key — keying on
+  // it remounted the whole Tabs subtree on every user selection, destroying the
+  // focused tab node (focus fell to body, data-focus-visible lost) while the
+  // React panel updated in place via the controlled prop.
   const renderKey = createMemo(() =>
     [
       demoProps().selectionSource,
       demoProps().defaultSelectedKey,
-      demoProps().selectionSource === "selectedKey" ? selectedKey() : "",
       demoProps().composition,
       demoProps().disabledKey,
       demoProps().labelBehavior,
