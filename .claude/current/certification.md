@@ -85,6 +85,7 @@ vp run guard:rac-export-gap
 vp run guard:dnd-keyboard-parity
 vp run guard:virtualizer-keyboard-parity
 vp run guard:upstream-test-parity   # contract-vocabulary diff vs the pinned upstream test suites
+vp run guard:spectrum-tokens-pin    # @adobe/spectrum-tokens matches the pinned S2's exact version
 ```
 
 ## The acceptance gates

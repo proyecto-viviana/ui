@@ -32,7 +32,7 @@ which makes release-to-release diffing first-class. `guard:upstream-test-parity`
 prints a **DRIFT** banner when the actual vendored versions don't match the pin —
 so "I don't think the vendored copy is the latest" is now a one-command check.
 
-Three distinct staleness axes, don't conflate them:
+Four distinct staleness axes, don't conflate them:
 
 - **tree vs. pin** (is the vendored checkout the one we pinned?) — the DRIFT
   banner above.
@@ -58,6 +58,15 @@ Three distinct staleness axes, don't conflate them:
   and `useAutocomplete`'s `autoFocusOnMount` (T-58) existed at the pin but not
   in the then-installed copies. Same family as the "confirm flags vs source"
   lesson — confirm the _version_, too.
+- **spectrum-tokens vs. pin** (does solid-spectrum's `@adobe/spectrum-tokens`
+  match what the pinned S2 builds against?) — `guard:spectrum-tokens-pin`
+  (`scripts/check-spectrum-tokens-pin.ts`), added 2026-07-03 (recertification
+  0.3). Upstream declares an exact devDependency (currently `14.0.0`); ours
+  must be the same exact version, because our style macro reads the token JSON
+  and a floating range had silently drifted 357 used token values ahead of the
+  oracle. The guard fails on any declared/installed/vendored mismatch or a
+  non-exact spec; on every absorb, re-check the pinned S2's
+  `@adobe/spectrum-tokens` devDependency and move ours with it.
 
 ### Materialize / re-materialize the tree
 
@@ -142,7 +151,11 @@ When Adobe ships a new `@react-spectrum/s2` / `react-aria-components`:
    `../../apps/comparison/playbook/components/`.
 
 7. **Bump `scripts/upstream-pin.json`** (tag, commit, versions, `pinnedAt`) in the
-   same change, so the pin and the tree never drift silently.
+   same change, so the pin and the tree never drift silently. Two companion
+   bumps ride along (both are staleness axes above): the `apps/comparison`
+   manifest's exact upstream versions, and — if the pinned S2's
+   `@adobe/spectrum-tokens` devDependency moved — solid-spectrum's matching
+   exact pin (`guard:spectrum-tokens-pin` fails until it moves).
 
 > The upstream **test surface itself moves between releases.** By `s2@1.4.0` the
 > old `@react-spectrum/<area>/test/*.test.js` per-component V3 suites were

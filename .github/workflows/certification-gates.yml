@@ -82,6 +82,14 @@ jobs:
         continue-on-error: true
         run: pnpm run guard:upstream-freshness
 
+      # Keeps solid-spectrum's @adobe/spectrum-tokens on the exact version the
+      # pinned S2 builds against (the vendored-oracle leg skips here — the
+      # ./react-spectrum tree is not materialized in CI).
+      - name: guard spectrum-tokens-pin
+        id: guard_tokens_pin
+        continue-on-error: true
+        run: pnpm run guard:spectrum-tokens-pin
+
       - name: guard docs-routes
         id: guard_docs_routes
         continue-on-error: true
@@ -135,6 +143,7 @@ jobs:
           O_GUARD_DND: ${{ steps.guard_dnd_keyboard.outcome }}
           O_GUARD_VIRTUALIZER: ${{ steps.guard_virtualizer_keyboard.outcome }}
           O_GUARD_FRESHNESS: ${{ steps.guard_upstream_freshness.outcome }}
+          O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
           O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
@@ -165,6 +174,7 @@ jobs:
             echo "| \`guard:dnd-keyboard-parity\` | $(icon "$O_GUARD_DND") |"
             echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
             echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") |"
+            echo "| \`guard:spectrum-tokens-pin\` | $(icon "$O_GUARD_TOKENS_PIN") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"

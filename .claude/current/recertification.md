@@ -57,8 +57,11 @@ The oracle and the baseline must be trustworthy before anything else.
 | 0.5 | Close the CI-on-main hole: run `ci:release-readiness` (or a trimmed floor set) on pushes to `main`, not only PRs                                                                                                                                 | a main push runs build+test                                                    |
 | 0.6 | Make the blocking a11y gate include axe `color-contrast` on comparison routes (currently excluded — no contrast bug can fail CI today)                                                                                                           | rule enabled, gate green                                                       |
 
-Exit criteria: all 17 ground-truth gates green on a clean `main`, comparison
-app serves the pinned upstream.
+Exit criteria: all 18 ground-truth gates green on a clean `main` (the
+`certification-gates.yml` ladder — 14 steps after 0.3 added
+`guard:spectrum-tokens-pin` — plus `test:run`, `a11y:check`,
+`guard:upstream-test-parity`, `guard:jsx-deopt-size`), comparison app serves
+the pinned upstream.
 
 ## Phase 1 — Drivers (one-time, ~one driver per session)
 
@@ -199,7 +202,7 @@ When the ledger is empty, the machinery has provably subsumed the audit.
 
 ## Queue
 
-Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☐ 0.4 ☐ 0.5 ☐ 0.6 ☐`
+Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☐ 0.5 ☐ 0.6 ☐`
 
 - 0.1 done 2026-07-03: oracle at s2 1.5.1 (Train 7 = T-60, closed on arrival —
   see `upstream-release-audit.md`); `guard:upstream-freshness` green.
@@ -211,6 +214,14 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☐ 0.4 ☐ 0.5 ☐ 0.6 ☐`
   `transparent-overlay-1000`. Build + contract suite green except 0.4's known
   ActionButton pointer red; `source-index.md` authority paths repointed at the
   vendored pin.
+
+- 0.3 done 2026-07-03: `@adobe/spectrum-tokens` pinned exact `14.0.0` in
+  solid-spectrum — the version the pinned S2 builds against. The old `^14.5.0`
+  range had drifted five minors ahead of the oracle (357 used token values
+  differed; all 158 token names we consume exist in 14.0.0, so no code
+  changes). New `guard:spectrum-tokens-pin` (script + `certification-gates.yml`
+  row) fails on any declared/installed/oracle version mismatch or a non-exact
+  spec. Suite green except 0.4's known six snapshots.
 
 Phase 1: `D1 ☐ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 Phase 2: not started — march order above is the queue; mark components here as
