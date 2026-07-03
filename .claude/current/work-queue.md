@@ -53,6 +53,10 @@ next task and which workstreams are live.
 
 ## Current priorities
 
+0. The recertification program (`recertification.md`) is the plan of record:
+   Phase 0 foundations → Phase 1 pair-oracle drivers → the per-component
+   red→green march. Pick its topmost unchecked item before anything below;
+   the priorities below are subsumed by it and remain as context.
 1. Convert visual-state rows into current React/Solid pair-diff or
    computed-contract tests — hover, focus-visible, pressed, selected, invalid,
    disabled, open, dismiss, keyboard navigation. No per-side committed PNG

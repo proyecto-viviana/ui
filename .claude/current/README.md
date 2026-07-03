@@ -25,18 +25,19 @@ public reach.
 3. `architecture.md`
 4. `steering.md`
 5. `certification.md`
-6. `glossary.md`
-7. `work-queue.md`
-8. `tooling.md`
-9. `../reference/patterns.md` when adapting React patterns to Solid idioms
-10. `upstream-sync.md`
-11. `upstream-release-audit.md`
-12. `ui-client-contract.md`
-13. `release-policy.md`
-14. `tech-debt.md`
-15. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
-16. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
-17. `../../AGENTS.md` when handing work to coding agents
+6. `recertification.md`
+7. `glossary.md`
+8. `work-queue.md`
+9. `tooling.md`
+10. `../reference/patterns.md` when adapting React patterns to Solid idioms
+11. `upstream-sync.md`
+12. `upstream-release-audit.md`
+13. `ui-client-contract.md`
+14. `release-policy.md`
+15. `tech-debt.md`
+16. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
+17. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
+18. `../../AGENTS.md` when handing work to coding agents
 
 ## Files
 
@@ -44,6 +45,7 @@ public reach.
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `steering.md`               | Direction, current focus, now/next/later, open decisions, non-goals, checks.                                                                                                                                                             |
 | `certification.md`          | Evidence required before a component can be accepted as ported: dimensions, floors, checks, acceptance gates.                                                                                                                            |
+| `recertification.md`        | Plan of record: the pair-oracle driver harness (computed styles, filmstrip motion diff, events, focus, AX, contrast, RTL, timing) and the strict per-component red→green march that mechanically enforces the certification bar.          |
 | `architecture.md`           | The five-layer chain, what each package owns, the behavior-vs-styling boundary, and the comparison harness as verifier.                                                                                                                  |
 | `glossary.md`               | Owner-steered vocabulary: layer names, _accepted_, _evidence_, _local addition_, styled-component statuses, _pair diff_.                                                                                                                 |
 | `status.md`                 | Current parity/coverage snapshot, refreshed from scripts.                                                                                                                                                                                |
