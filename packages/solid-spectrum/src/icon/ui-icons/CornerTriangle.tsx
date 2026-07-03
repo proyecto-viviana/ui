@@ -1,10 +1,13 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the shipped @react-spectrum/s2 dist assets (SVGO-
+ * optimized — pixel parity requires the shipped path data, not the raw
+ * vendored .svg sources). Variants absent from the dist (Arrow, Gripper)
+ * fall back to the vendored sources.
  * Do not edit by hand.
  */
 
 import { type JSX } from "solid-js";
-import { createIcon } from "../spectrum-icon";
+import { createUIIcon } from "../spectrum-icon";
 
 export type CornerTriangleProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "S" | "M" | "L" | "XL";
@@ -22,8 +25,8 @@ function CornerTriangle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="m.76379,4.48791L4.48941.76228c.18901-.18901.51219-.05511.51213.2122l-.00069,3.2759c-.00009.41417-.33587.74986-.75004.74984l-3.27491-.00018c-.26726-.00001-.4011-.32315-.21212-.51213Z"
         fill="var(--iconPrimary, #222)"
+        d="M.764 4.488 4.489.762a.3.3 0 0 1 .513.212L5 4.25a.75.75 0 0 1-.75.75H.976a.3.3 0 0 1-.212-.512"
       />
     </svg>
   );
@@ -41,8 +44,8 @@ function CornerTriangle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="m.15411,4.14619L4.14677.15375c.31502-.315.85364-.09183.85354.35367l-.00079,3.7427c-.00009.41417-.33587.74986-.75004.74984l-3.74186-.00021c-.44545-.00002-.6685-.53859-.35352-.85356Z"
         fill="var(--iconPrimary, #222)"
+        d="M.154 4.146 4.147.154A.5.5 0 0 1 5 .507V4.25a.75.75 0 0 1-.75.75H.507a.5.5 0 0 1-.354-.854"
       />
     </svg>
   );
@@ -60,8 +63,8 @@ function CornerTriangle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="m.82619,5.14621L5.14704.8256c.31502-.315.85364-.09183.85354.35367l-.00086,4.07089c-.00009.41417-.33587.74986-.75004.74984l-4.06998-.00023c-.44545-.00002-.6685-.53859-.35352-.85356Z"
         fill="var(--iconPrimary, #222)"
+        d="M.826 5.146 5.147.826a.5.5 0 0 1 .854.353L6 5.25a.75.75 0 0 1-.75.75H1.18a.5.5 0 0 1-.354-.854"
       />
     </svg>
   );
@@ -71,8 +74,6 @@ function CornerTriangle_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
   const { class: className, width: _width, height: _height, ...rest } = props;
   return (
     <svg
-      id="e"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="7"
       height="7"
@@ -81,18 +82,17 @@ function CornerTriangle_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
       class={className}
     >
       <path
-        d="m.82095,6.14616L6.1465.82091c.31502-.315.85364-.09183.85354.35367l-.00107,5.07559c-.00009.41417-.33587.74986-.75004.74984l-5.07447-.00028c-.44545-.00002-.6685-.53859-.35352-.85356Z"
         fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        d="M.821 6.146 6.147.821A.5.5 0 0 1 7 1.175L6.999 6.25a.75.75 0 0 1-.75.75H1.174a.5.5 0 0 1-.353-.854"
       />
     </svg>
   );
 }
 
-const CornerTriangle_S = createIcon(CornerTriangle_SSvg);
-const CornerTriangle_M = createIcon(CornerTriangle_MSvg);
-const CornerTriangle_L = createIcon(CornerTriangle_LSvg);
-const CornerTriangle_XL = createIcon(CornerTriangle_XLSvg);
+const CornerTriangle_S = createUIIcon(CornerTriangle_SSvg);
+const CornerTriangle_M = createUIIcon(CornerTriangle_MSvg);
+const CornerTriangle_L = createUIIcon(CornerTriangle_LSvg);
+const CornerTriangle_XL = createUIIcon(CornerTriangle_XLSvg);
 
 export default function CornerTriangle(props: CornerTriangleProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;

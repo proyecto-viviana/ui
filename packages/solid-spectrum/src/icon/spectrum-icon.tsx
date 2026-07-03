@@ -84,6 +84,18 @@ const iconBaseStyles = style(
   iconAllowedOverrides,
 );
 
+// UI icons (chevrons, checkmarks, crosses, …) render at their per-size asset
+// dimensions — upstream's ui-icon width/height maps equal the SVG intrinsic
+// sizes exactly, so the width/height attributes on the generated variants are
+// the faithful size source. Only workflow icons get the 20px base above
+// (upstream Icon.tsx).
+const uiIconBaseStyles = style(
+  {
+    flexShrink: 0,
+  },
+  iconAllowedOverrides,
+);
+
 const illustrationBaseStyles = style(
   {
     size: {
@@ -95,6 +107,21 @@ const illustrationBaseStyles = style(
 );
 
 export function createIcon(Component: Component<SpectrumSvgComponentProps>, context = IconContext) {
+  return createIconForBase(Component, context, iconBaseStyles);
+}
+
+export function createUIIcon(
+  Component: Component<SpectrumSvgComponentProps>,
+  context = IconContext,
+) {
+  return createIconForBase(Component, context, uiIconBaseStyles);
+}
+
+function createIconForBase(
+  Component: Component<SpectrumSvgComponentProps>,
+  context: typeof IconContext,
+  baseStyles: typeof iconBaseStyles,
+) {
   return (props: SpectrumIconProps): JSX.Element => {
     const ctx = useContext(context);
     const [local, rest] = splitProps(props, [
@@ -119,7 +146,7 @@ export function createIcon(Component: Component<SpectrumSvgComponentProps>, cont
     const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
     const inertRef = useInertAttribute(isSkeleton);
     const skeletonStyles = useSkeletonIcon(() =>
-      mergeStyles(iconBaseStyles(null, local.styles), contextStyles()),
+      mergeStyles(baseStyles(null, local.styles), contextStyles()),
     );
     const skeletonRef = (element: SVGSVGElement) => {
       skeletonAnimationRef(element);

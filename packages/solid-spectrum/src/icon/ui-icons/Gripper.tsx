@@ -1,10 +1,13 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the shipped @react-spectrum/s2 dist assets (SVGO-
+ * optimized — pixel parity requires the shipped path data, not the raw
+ * vendored .svg sources). Variants absent from the dist (Arrow, Gripper)
+ * fall back to the vendored sources.
  * Do not edit by hand.
  */
 
 import { type JSX } from "solid-js";
-import { createIcon } from "../spectrum-icon";
+import { createUIIcon } from "../spectrum-icon";
 
 export type GripperProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "M";
@@ -32,7 +35,7 @@ function Gripper_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   );
 }
 
-const Gripper_M = createIcon(Gripper_MSvg);
+const Gripper_M = createUIIcon(Gripper_MSvg);
 
 export default function Gripper(props: GripperProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;

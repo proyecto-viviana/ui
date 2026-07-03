@@ -1,10 +1,13 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the shipped @react-spectrum/s2 dist assets (SVGO-
+ * optimized — pixel parity requires the shipped path data, not the raw
+ * vendored .svg sources). Variants absent from the dist (Arrow, Gripper)
+ * fall back to the vendored sources.
  * Do not edit by hand.
  */
 
 import { type JSX } from "solid-js";
-import { createIcon } from "../spectrum-icon";
+import { createUIIcon } from "../spectrum-icon";
 
 export type AddProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "XS" | "S" | "M" | "L" | "XL";
@@ -14,8 +17,6 @@ function Add_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, width: _width, height: _height, ...rest } = props;
   return (
     <svg
-      id="g"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="8"
       height="8"
@@ -24,9 +25,8 @@ function Add_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m6.625,3.07812h-1.70312v-1.70312c0-.50879-.41309-.92188-.92188-.92188s-.92188.41309-.92188.92188v1.70312h-1.70312c-.50879,0-.92188.41309-.92188.92188s.41309.92188.92188.92188h1.70312v1.70312c0,.50879.41309.92188.92188.92188s.92188-.41309.92188-.92188v-1.70312h1.70312c.50879,0,.92188-.41309.92188-.92188s-.41309-.92188-.92188-.92188Z"
         fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        d="M6.625 3.078H4.922V1.375a.922.922 0 0 0-1.844 0v1.703H1.375a.922.922 0 0 0 0 1.844h1.703v1.703a.922.922 0 0 0 1.844 0V4.922h1.703a.922.922 0 0 0 0-1.844"
       />
     </svg>
   );
@@ -36,8 +36,6 @@ function Add_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, width: _width, height: _height, ...rest } = props;
   return (
     <svg
-      id="g"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="8"
       height="8"
@@ -46,9 +44,8 @@ function Add_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m7,3.04004h-2.04004V1c0-.53027-.42969-.95996-.95996-.95996s-.95996.42969-.95996.95996v2.04004H1C.46973,3.04004.04004,3.46973.04004,4s.42969.95996.95996.95996h2.04004v2.04004c0,.53027.42969.95996.95996.95996s.95996-.42969.95996-.95996v-2.04004h2.04004c.53027,0,.95996-.42969.95996-.95996s-.42969-.95996-.95996-.95996Z"
         fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        d="M7 3.04H4.96V1a.96.96 0 1 0-1.92 0v2.04H1a.96.96 0 1 0 0 1.92h2.04V7a.96.96 0 1 0 1.92 0V4.96H7a.96.96 0 1 0 0-1.92"
       />
     </svg>
   );
@@ -58,8 +55,6 @@ function Add_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, width: _width, height: _height, ...rest } = props;
   return (
     <svg
-      id="g"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="10"
       height="10"
@@ -68,9 +63,8 @@ function Add_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m8.5,4h-2.5V1.5c0-.55273-.44727-1-1-1s-1,.44727-1,1v2.5H1.5c-.55273,0-1,.44727-1,1s.44727,1,1,1h2.5v2.5c0,.55273.44727,1,1,1s1-.44727,1-1v-2.5h2.5c.55273,0,1-.44727,1-1s-.44727-1-1-1Z"
         fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        d="M8.5 4H6V1.5a1 1 0 1 0-2 0V4H1.5a1 1 0 1 0 0 2H4v2.5a1 1 0 1 0 2 0V6h2.5a1 1 0 1 0 0-2"
       />
     </svg>
   );
@@ -80,8 +74,6 @@ function Add_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, width: _width, height: _height, ...rest } = props;
   return (
     <svg
-      id="g"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="12"
       height="12"
@@ -90,9 +82,8 @@ function Add_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m10.02148,4.95898h-2.98047V1.97852c0-.5752-.46582-1.04102-1.04102-1.04102s-1.04102.46582-1.04102,1.04102v2.98047H1.97852c-.5752,0-1.04102.46582-1.04102,1.04102s.46582,1.04102,1.04102,1.04102h2.98047v2.98047c0,.5752.46582,1.04102,1.04102,1.04102s1.04102-.46582,1.04102-1.04102v-2.98047h2.98047c.5752,0,1.04102-.46582,1.04102-1.04102s-.46582-1.04102-1.04102-1.04102Z"
         fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        d="M10.021 4.959h-2.98v-2.98a1.04 1.04 0 1 0-2.082 0v2.98h-2.98a1.04 1.04 0 1 0 0 2.082h2.98v2.98a1.04 1.04 0 1 0 2.082 0v-2.98h2.98a1.04 1.04 0 1 0 0-2.082"
       />
     </svg>
   );
@@ -102,8 +93,6 @@ function Add_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, width: _width, height: _height, ...rest } = props;
   return (
     <svg
-      id="g"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="12"
       height="12"
@@ -112,19 +101,18 @@ function Add_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m10.61035,4.91504h-3.52539V1.38965c0-.59961-.48535-1.08496-1.08496-1.08496s-1.08496.48535-1.08496,1.08496v3.52539H1.38965c-.59961,0-1.08496.48535-1.08496,1.08496s.48535,1.08496,1.08496,1.08496h3.52539v3.52539c0,.59961.48535,1.08496,1.08496,1.08496s1.08496-.48535,1.08496-1.08496v-3.52539h3.52539c.59961,0,1.08496-.48535,1.08496-1.08496s-.48535-1.08496-1.08496-1.08496Z"
         fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        d="M10.61 4.915H7.085V1.39a1.084 1.084 0 1 0-2.17 0v3.525H1.39a1.084 1.084 0 1 0 0 2.17h3.525v3.525a1.084 1.084 0 1 0 2.17 0V7.085h3.525a1.084 1.084 0 1 0 0-2.17"
       />
     </svg>
   );
 }
 
-const Add_XS = createIcon(Add_XSSvg);
-const Add_S = createIcon(Add_SSvg);
-const Add_M = createIcon(Add_MSvg);
-const Add_L = createIcon(Add_LSvg);
-const Add_XL = createIcon(Add_XLSvg);
+const Add_XS = createUIIcon(Add_XSSvg);
+const Add_S = createUIIcon(Add_SSvg);
+const Add_M = createUIIcon(Add_MSvg);
+const Add_L = createUIIcon(Add_LSvg);
+const Add_XL = createUIIcon(Add_XLSvg);
 
 export default function Add(props: AddProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;

@@ -1,10 +1,13 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the shipped @react-spectrum/s2 dist assets (SVGO-
+ * optimized — pixel parity requires the shipped path data, not the raw
+ * vendored .svg sources). Variants absent from the dist (Arrow, Gripper)
+ * fall back to the vendored sources.
  * Do not edit by hand.
  */
 
 import { type JSX } from "solid-js";
-import { createIcon } from "../spectrum-icon";
+import { createUIIcon } from "../spectrum-icon";
 
 export type ArrowProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "M" | "XXL";
@@ -48,8 +51,8 @@ function Arrow_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   );
 }
 
-const Arrow_M = createIcon(Arrow_MSvg);
-const Arrow_XXL = createIcon(Arrow_XXLSvg);
+const Arrow_M = createUIIcon(Arrow_MSvg);
+const Arrow_XXL = createUIIcon(Arrow_XXLSvg);
 
 export default function Arrow(props: ArrowProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
