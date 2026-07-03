@@ -346,23 +346,23 @@ function Playground() {
                   <Button variant="negative" onPress={() => setLastAction("Danger clicked!")}>
                     Danger
                   </Button>
-                  <Button variant="positive" onPress={() => setLastAction("Success clicked!")}>
-                    Success
+                  <Button variant="accent" onPress={() => setLastAction("Accent clicked!")}>
+                    Accent
                   </Button>
                   <Button isDisabled>Disabled</Button>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                  <Button buttonStyle="outline" variant="primary">
+                  <Button fillStyle="outline" variant="primary">
                     Outline Primary
                   </Button>
-                  <Button buttonStyle="outline" variant="secondary">
+                  <Button fillStyle="outline" variant="secondary">
                     Outline Secondary
                   </Button>
-                  <Button buttonStyle="outline" variant="negative">
+                  <Button fillStyle="outline" variant="negative">
                     Outline Danger
                   </Button>
-                  <Button buttonStyle="outline" variant="positive">
-                    Outline Success
+                  <Button fillStyle="outline" variant="accent">
+                    Outline Accent
                   </Button>
                 </div>
               </div>
@@ -516,7 +516,7 @@ function Playground() {
                 <div>
                   <p class="text-sm text-primary-300 mb-3">Custom Delay (500ms)</p>
                   <TooltipTrigger delay={500}>
-                    <Button variant="secondary" buttonStyle="outline">
+                    <Button variant="secondary" fillStyle="outline">
                       Delayed tooltip
                     </Button>
                     <Tooltip>This tooltip has a 500ms delay</Tooltip>
@@ -540,7 +540,7 @@ function Playground() {
                     <PopoverTrigger>
                       <Button
                         variant="secondary"
-                        buttonStyle="outline"
+                        fillStyle="outline"
                         data-testid="popover-bottom-trigger"
                       >
                         Bottom
@@ -554,7 +554,7 @@ function Playground() {
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
-                      <Button variant="secondary" buttonStyle="outline">
+                      <Button variant="secondary" fillStyle="outline">
                         Top
                       </Button>
                       <Popover placement="top">
@@ -563,7 +563,7 @@ function Playground() {
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
-                      <Button variant="secondary" buttonStyle="outline">
+                      <Button variant="secondary" fillStyle="outline">
                         Left
                       </Button>
                       <Popover placement="left">
@@ -572,7 +572,7 @@ function Playground() {
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
-                      <Button variant="secondary" buttonStyle="outline">
+                      <Button variant="secondary" fillStyle="outline">
                         Right
                       </Button>
                       <Popover placement="right">
@@ -595,10 +595,10 @@ function Playground() {
                         description="Are you sure you want to proceed with this action?"
                       />
                       <PopoverFooter>
-                        <Button variant="secondary" buttonStyle="outline" size="sm">
+                        <Button variant="secondary" fillStyle="outline" size="S">
                           Cancel
                         </Button>
-                        <Button variant="primary" size="sm">
+                        <Button variant="primary" size="S">
                           Confirm
                         </Button>
                       </PopoverFooter>
@@ -610,7 +610,7 @@ function Playground() {
                   <p class="text-sm text-primary-300 mb-3">Size Variants</p>
                   <div class="flex flex-wrap gap-3">
                     <PopoverTrigger>
-                      <Button variant="secondary" buttonStyle="outline">
+                      <Button variant="secondary" fillStyle="outline">
                         Small
                       </Button>
                       <Popover placement="bottom" size="S">
@@ -618,7 +618,7 @@ function Playground() {
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
-                      <Button variant="secondary" buttonStyle="outline">
+                      <Button variant="secondary" fillStyle="outline">
                         Medium
                       </Button>
                       <Popover placement="bottom" size="M">
@@ -626,7 +626,7 @@ function Playground() {
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
-                      <Button variant="secondary" buttonStyle="outline">
+                      <Button variant="secondary" fillStyle="outline">
                         Large
                       </Button>
                       <Popover placement="bottom" size="L">
@@ -982,7 +982,7 @@ function Playground() {
                     </Button>
                     <Button
                       variant="secondary"
-                      buttonStyle="outline"
+                      fillStyle="outline"
                       onPress={() => setLastAction("Message!")}
                     >
                       Message
@@ -1096,7 +1096,7 @@ function Playground() {
                         SolidJS components inspired by React Spectrum.
                       </p>
                       <DialogFooter>
-                        <Button variant="primary" buttonStyle="outline" onPress={close}>
+                        <Button variant="primary" fillStyle="outline" onPress={close}>
                           Cancel
                         </Button>
                         <Button
@@ -1119,7 +1119,7 @@ function Playground() {
                     <Dialog title="Confirmation" size="sm" isDismissable={true} onClose={close}>
                       <p class="mb-4">Are you sure you want to continue?</p>
                       <DialogFooter>
-                        <Button variant="primary" buttonStyle="outline" onPress={close}>
+                        <Button variant="primary" fillStyle="outline" onPress={close}>
                           No
                         </Button>
                         <Button
@@ -1146,7 +1146,7 @@ function Playground() {
                         <TextField label="Email" placeholder="Enter email" type="email" />
                       </div>
                       <DialogFooter>
-                        <Button variant="primary" buttonStyle="outline" onPress={close}>
+                        <Button variant="primary" fillStyle="outline" onPress={close}>
                           Cancel
                         </Button>
                         <Button

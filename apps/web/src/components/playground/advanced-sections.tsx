@@ -78,6 +78,7 @@ import {
   Disclosure as HeadlessDisclosure,
   DisclosureTrigger as HeadlessDisclosureTrigger,
   DisclosurePanel as HeadlessDisclosurePanel,
+  DropZone as HeadlessDropZone,
   Table,
   TableHeader,
   TableColumn,
@@ -593,7 +594,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             </Button>
             <Button
               variant="secondary"
-              buttonStyle="outline"
+              fillStyle="outline"
               onPress={() => toastInfo("New features are available!")}
             >
               Info Toast
@@ -602,7 +603,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
           <div class="flex flex-wrap gap-3">
             <Button
               variant="secondary"
-              buttonStyle="outline"
+              fillStyle="outline"
               onPress={() =>
                 addToast(
                   {
@@ -618,7 +619,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             </Button>
             <Button
               variant="secondary"
-              buttonStyle="outline"
+              fillStyle="outline"
               onPress={() =>
                 addToast(
                   {
@@ -653,21 +654,23 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             data-testid="dropzone-active"
             aria-label="Upload files drop zone"
             onDrop={() => props.onLastAction("DropZone: drop event")}
-            class="min-h-[120px] flex items-center justify-center"
+            UNSAFE_className="min-h-[120px] flex items-center justify-center"
           >
             <div class="text-center">
               <p class="text-primary-200 font-medium">Drop files here</p>
               <p class="text-primary-400 text-sm mt-1">or drag items over this area</p>
             </div>
           </DropZone>
-          <DropZone
+          {/* S2 DropZone has no isDisabled (upstream drops it); demo the disabled
+              state on the headless layer instead. */}
+          <HeadlessDropZone
             data-testid="dropzone-disabled"
             aria-label="Disabled drop zone"
             isDisabled
             class="min-h-[80px] flex items-center justify-center"
           >
             <p class="text-primary-300 text-sm">Disabled drop zone</p>
-          </DropZone>
+          </HeadlessDropZone>
         </div>
       </Section>
 
@@ -692,7 +695,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             <Button variant="primary">Choose file</Button>
           </FileTrigger>
           <FileTrigger disabled>
-            <Button variant="secondary" buttonStyle="outline">
+            <Button variant="secondary" fillStyle="outline">
               Disabled picker
             </Button>
           </FileTrigger>
@@ -1686,16 +1689,15 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
 
   return (
     <div class="space-y-8">
-      {/* Underline variant (default) */}
+      {/* Controlled selection (regular density, the default) */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Underline Variant</h4>
+        <h4 class="text-sm font-medium text-primary-200 mb-3">Controlled Selection</h4>
         <StyledTabs<TabItem>
           items={tabItems}
           getKey={(item: TabItem) => item.id}
           getTextValue={(item: TabItem) => item.label}
           selectedKey={selectedKey()}
           onSelectionChange={handleChange}
-          variant="underline"
           aria-label="Styled tab variants"
         >
           <StyledTabList>
@@ -1710,16 +1712,16 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
         </StyledTabs>
       </div>
 
-      {/* Pill variant */}
+      {/* Compact density */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Pill Variant</h4>
+        <h4 class="text-sm font-medium text-primary-200 mb-3">Compact Density</h4>
         <StyledTabs<TabItem>
           items={tabItems}
           getKey={(item: TabItem) => item.id}
           getTextValue={(item: TabItem) => item.label}
           defaultSelectedKey="features"
-          variant="pill"
-          aria-label="Pill tab example"
+          density="compact"
+          aria-label="Compact tab example"
         >
           <StyledTabList>
             {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
@@ -1730,69 +1732,66 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
         </StyledTabs>
       </div>
 
-      {/* Boxed variant with sizes */}
+      {/* Densities and orientation */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Boxed Variant with Sizes</h4>
+        <h4 class="text-sm font-medium text-primary-200 mb-3">Densities and Orientation</h4>
         <div class="grid gap-6 sm:grid-cols-3">
-          {/* Small */}
+          {/* Regular density */}
           <StyledTabs<TabItem>
             items={tabItems.slice(0, 3)}
             getKey={(item: TabItem) => item.id}
             getTextValue={(item: TabItem) => item.label}
             defaultSelectedKey="overview"
-            variant="boxed"
-            size="sm"
-            aria-label="Small boxed tabs"
+            density="regular"
+            aria-label="Regular density tabs"
           >
             <StyledTabList>
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
             </StyledTabList>
             <StyledTabPanel>
-              <p class="text-primary-400 text-sm">Small tabs content</p>
+              <p class="text-primary-400 text-sm">Regular density content</p>
             </StyledTabPanel>
           </StyledTabs>
 
-          {/* Medium */}
+          {/* Compact density */}
           <StyledTabs<TabItem>
             items={tabItems.slice(0, 3)}
             getKey={(item: TabItem) => item.id}
             getTextValue={(item: TabItem) => item.label}
             defaultSelectedKey="overview"
-            variant="boxed"
-            size="md"
-            aria-label="Medium boxed tabs"
+            density="compact"
+            aria-label="Compact density tabs"
           >
             <StyledTabList>
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
             </StyledTabList>
             <StyledTabPanel>
-              <p class="text-primary-300">Medium tabs content</p>
+              <p class="text-primary-300">Compact density content</p>
             </StyledTabPanel>
           </StyledTabs>
 
-          {/* Large */}
+          {/* Vertical orientation */}
           <StyledTabs<TabItem>
             items={tabItems.slice(0, 3)}
             getKey={(item: TabItem) => item.id}
             getTextValue={(item: TabItem) => item.label}
             defaultSelectedKey="overview"
-            variant="boxed"
-            size="lg"
-            aria-label="Large boxed tabs"
+            orientation="vertical"
+            aria-label="Vertical tabs"
           >
             <StyledTabList>
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
             </StyledTabList>
             <StyledTabPanel>
-              <p class="text-primary-200">Large tabs content</p>
+              <p class="text-primary-200">Vertical orientation content</p>
             </StyledTabPanel>
           </StyledTabs>
         </div>
       </div>
 
       <p class="text-xs text-primary-400">
-        Pre-styled Tabs with variants (underline, pill, boxed) and sizes (sm, md, lg). Use arrow
-        keys to navigate between tabs.
+        Pre-styled Tabs with regular/compact densities and horizontal/vertical orientation. Use
+        arrow keys to navigate between tabs.
       </p>
     </div>
   );
@@ -2169,19 +2168,6 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
         </div>
       </div>
 
-      {/* Without search icon */}
-      <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Hidden Search Icon</h4>
-        <div class="max-w-md">
-          <StyledSearchField
-            label="Filter"
-            placeholder="Filter items..."
-            hideSearchIcon
-            onSubmit={handleSubmit}
-          />
-        </div>
-      </div>
-
       <p class="text-xs text-primary-400">
         SearchField with clear button. Press Enter to submit, Escape to clear. The clear button
         appears when there's text in the field.
@@ -2536,21 +2522,21 @@ function ActionGroupDemo(props: { onLastAction: (value: string) => void }) {
       <div class="flex flex-wrap gap-2">
         <Button
           variant={selectionMode() === "none" ? "primary" : "secondary"}
-          size="sm"
+          size="S"
           onPress={() => setSelectionMode("none")}
         >
           No selection
         </Button>
         <Button
           variant={selectionMode() === "single" ? "primary" : "secondary"}
-          size="sm"
+          size="S"
           onPress={() => setSelectionMode("single")}
         >
           Single
         </Button>
         <Button
           variant={selectionMode() === "multiple" ? "primary" : "secondary"}
-          size="sm"
+          size="S"
           onPress={() => setSelectionMode("multiple")}
         >
           Multiple
@@ -2644,20 +2630,20 @@ function ActionBarDemo(props: { onLastAction: (value: string) => void }) {
     <div class="space-y-4">
       <div class="flex flex-wrap gap-2">
         <Button
-          size="sm"
+          size="S"
           variant="secondary"
           onPress={() => setSelectedCount((c) => Math.max(c - 1, 0))}
         >
           -1 selected
         </Button>
         <Button
-          size="sm"
+          size="S"
           variant="secondary"
           onPress={() => setSelectedCount((c) => Math.min(c + 1, 9))}
         >
           +1 selected
         </Button>
-        <Button size="sm" variant="secondary" onPress={clearSelection}>
+        <Button size="S" variant="secondary" onPress={clearSelection}>
           Clear all
         </Button>
       </div>

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vp dev",
     "build": "vp build",
+    "typecheck": "tsc --noEmit",
     "start": "vp preview",
     "deploy": "vp build && vp exec wrangler deploy"
   },

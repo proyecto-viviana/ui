@@ -69,13 +69,13 @@ function App() {
         <div class="space-y-3">
           <div class="p-3 rounded border border-primary-700/30">
             <p class="text-xs text-primary-500 mb-2">scale: "medium" (default)</p>
-            <Button variant="secondary" size="md">
+            <Button variant="secondary" size="M">
               Medium Scale
             </Button>
           </div>
           <div class="p-3 rounded border border-primary-700/30">
             <p class="text-xs text-primary-500 mb-2">scale: "large" (touch-optimized)</p>
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="L">
               Large Scale
             </Button>
           </div>

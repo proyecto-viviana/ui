@@ -35,20 +35,20 @@ function ButtonPage() {
       <Example
         title="Styles"
         description="Each variant can be rendered in fill (default) or outline style."
-        code={`<Button variant="primary" buttonStyle="fill">Fill</Button>
-<Button variant="primary" buttonStyle="outline">Outline</Button>`}
+        code={`<Button variant="primary" fillStyle="fill">Fill</Button>
+<Button variant="primary" fillStyle="outline">Outline</Button>`}
       >
         <div class="flex flex-wrap gap-3">
-          <Button variant="primary" buttonStyle="fill">
+          <Button variant="primary" fillStyle="fill">
             Fill
           </Button>
-          <Button variant="primary" buttonStyle="outline">
+          <Button variant="primary" fillStyle="outline">
             Outline
           </Button>
-          <Button variant="secondary" buttonStyle="fill">
+          <Button variant="secondary" fillStyle="fill">
             Fill
           </Button>
-          <Button variant="secondary" buttonStyle="outline">
+          <Button variant="secondary" fillStyle="outline">
             Outline
           </Button>
         </div>
@@ -97,12 +97,12 @@ function ButtonPage() {
         props={[
           {
             name: "variant",
-            type: "'primary' | 'secondary' | 'accent' | 'negative'",
+            type: "'primary' | 'secondary' | 'accent' | 'negative' | 'premium' | 'genai'",
             default: "'primary'",
             description: "Visual style variant",
           },
           {
-            name: "buttonStyle",
+            name: "fillStyle",
             type: "'fill' | 'outline'",
             default: "'fill'",
             description: "Background fill style",

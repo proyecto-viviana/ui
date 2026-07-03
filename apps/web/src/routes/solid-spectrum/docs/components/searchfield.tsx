@@ -104,16 +104,6 @@ function SearchFieldPage() {
         </div>
       </Example>
 
-      <Example
-        title="Hidden Search Icon"
-        description="Omit the search icon for a cleaner filter-style input."
-        code={`<SearchField label="Filter" placeholder="Filter items..." hideSearchIcon />`}
-      >
-        <div class="max-w-sm">
-          <SearchField label="Filter" placeholder="Filter items..." hideSearchIcon />
-        </div>
-      </Example>
-
       <PropsTable
         props={[
           { name: "label", type: "string", description: "Visible label for the field" },
@@ -161,12 +151,6 @@ function SearchFieldPage() {
           },
           { name: "errorMessage", type: "string", description: "Validation error message" },
           { name: "description", type: "string", description: "Helper text below the field" },
-          {
-            name: "hideSearchIcon",
-            type: "boolean",
-            default: "false",
-            description: "Hides the leading search icon",
-          },
         ]}
       />
 

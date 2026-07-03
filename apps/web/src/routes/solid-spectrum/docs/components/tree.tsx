@@ -79,8 +79,8 @@ function TreePage() {
   onExpandedChange={setExpandedKeys}
 >
   {(item) => (
-    <TreeItem id={item.key} textValue={item.textValue}>
-      {item.value.name}
+    <TreeItem id={item.key!} textValue={item.textValue}>
+      {item.value!.name}
     </TreeItem>
   )}
 </Tree>`}
@@ -93,8 +93,8 @@ function TreePage() {
             onExpandedChange={(keys) => setExpandedKeys(new Set(keys))}
           >
             {(item) => (
-              <TreeItem id={item.key} textValue={item.textValue}>
-                {item.value.name}
+              <TreeItem id={item.key!} textValue={item.textValue}>
+                {item.value!.name}
               </TreeItem>
             )}
           </Tree>
@@ -112,8 +112,8 @@ function TreePage() {
   onSelectionChange={setSelectedKeys}
 >
   {(item) => (
-    <TreeItem id={item.key} textValue={item.textValue}>
-      {item.value.name}
+    <TreeItem id={item.key!} textValue={item.textValue}>
+      {item.value!.name}
     </TreeItem>
   )}
 </Tree>`}
@@ -129,7 +129,7 @@ function TreePage() {
                 const allKeys = new Set<Key>();
                 function collectKeys(nodes: TreeItemData<FileNode>[]) {
                   for (const node of nodes) {
-                    allKeys.add(node.key);
+                    allKeys.add(node.key!);
                     if (node.children) collectKeys(node.children);
                   }
                 }
@@ -142,8 +142,8 @@ function TreePage() {
             defaultExpandedKeys={new Set(["ceo", "cto", "cfo", "cmo"])}
           >
             {(item) => (
-              <TreeItem id={item.key} textValue={item.textValue}>
-                {item.value.name}
+              <TreeItem id={item.key!} textValue={item.textValue}>
+                {item.value!.name}
               </TreeItem>
             )}
           </Tree>

@@ -370,7 +370,7 @@ function TreeDemo() {
         class="text-sm"
       >
         {(item, state) => (
-          <TreeItem id={item.key} class="group">
+          <TreeItem id={item.key!} class="group">
             {() => (
               <div
                 class="flex items-center gap-1 px-2 py-1 rounded hover:bg-bg-300 data-[selected]:bg-accent-600/20"
@@ -381,8 +381,8 @@ function TreeDemo() {
                 ) : (
                   <span class="w-4" />
                 )}
-                <span class="text-primary-300">{item.value.icon}</span>
-                <span class="text-primary-200">{item.value.name}</span>
+                <span class="text-primary-300">{item.value!.icon}</span>
+                <span class="text-primary-200">{item.value!.name}</span>
               </div>
             )}
           </TreeItem>

@@ -202,7 +202,7 @@ When the ledger is empty, the machinery has provably subsumed the audit.
 
 ## Queue
 
-Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☐ 0.6 ☐`
+Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☐`
 
 - 0.1 done 2026-07-03: oracle at s2 1.5.1 (Train 7 = T-60, closed on arrival —
   see `upstream-release-audit.md`); `guard:upstream-freshness` green.
@@ -251,6 +251,22 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☐ 0.6 ☐`
     `packages/*/test-utils`, `scripts`), which is why the invalid placement
     literal — a genuine TS error against `ToastPlacement` — never failed a
     gate.
+
+- 0.5 done 2026-07-03: CI-on-main hole closed. `release-readiness.yml` now
+  triggers on pushes to `main` as well as PRs (concurrency-cancelled per ref),
+  and `ci:release-readiness` runs the new root `typecheck:apps` (apps/web
+  `tsc --noEmit` + apps/comparison `astro check`) between build and tests;
+  stale `typecheck:web` removed, `typecheck:all` = build + apps. Making
+  apps/web typecheck was the bulk: 54 errors → 0, almost all app-side invented
+  API fixed to real S2 API (stale Button props, invented Tabs
+  `variant`/`size` → `density`/`orientation`, invented SearchField
+  `hideSearchIcon`, DropZone `class`/`isDisabled` misuse →
+  `UNSAFE_className`/headless DropZone, 0.4's `"bottom-end"` literal also in
+  docs pages) plus `TreeItemData` optional-field strictness (non-null
+  assertions where the page builds complete items). `apps/comparison` needed
+  `@types/react`/`@types/react-dom` declared as devDependencies — already in
+  the store via `@astrojs/react`, resolution-only. Root `check` stays
+  packages-fast; apps coverage rides CI.
 
 Phase 1: `D1 ☐ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 Phase 2: not started — march order above is the queue; mark components here as
