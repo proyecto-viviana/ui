@@ -344,15 +344,21 @@ export function createSelect<T>(
 
   // Handle focus events
   const handleFocus = (e: FocusEvent) => {
-    state.setFocused(true);
     getProps().onFocus?.(e);
     getProps().onFocusChange?.(true);
+    state.setFocused(true);
   };
 
   const handleBlur = (e: FocusEvent) => {
-    state.setFocused(false);
+    // Focus moving into the open listbox is not a select blur; the menu's own
+    // onBlur clears the state when focus leaves the listbox entirely.
+    if (state.isOpen()) {
+      return;
+    }
+
     getProps().onBlur?.(e);
     getProps().onFocusChange?.(false);
+    state.setFocused(false);
   };
 
   return {
@@ -410,6 +416,16 @@ export function createSelect<T>(
         "aria-labelledby": buttonId,
         "aria-multiselectable": state.selectionMode() === "multiple" ? true : undefined,
         tabIndex: -1,
+        onBlur: (e: FocusEvent) => {
+          // Only a blur that leaves the listbox entirely blurs the select.
+          if ((e.currentTarget as Node | null)?.contains(e.relatedTarget as Node)) {
+            return;
+          }
+
+          getProps().onBlur?.(e);
+          getProps().onFocusChange?.(false);
+          state.setFocused(false);
+        },
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {

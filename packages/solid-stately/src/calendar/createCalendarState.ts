@@ -410,7 +410,7 @@ export function createCalendarState<
     if (isDisabled() || isReadOnly()) return;
 
     const oldValue = sourceValue();
-    const referenceValue = Array.isArray(oldValue) ? oldValue[0] ?? null : oldValue;
+    const referenceValue = Array.isArray(oldValue) ? (oldValue[0] ?? null) : oldValue;
 
     let nextValue: T | T[] | null;
     if (newValue == null) {

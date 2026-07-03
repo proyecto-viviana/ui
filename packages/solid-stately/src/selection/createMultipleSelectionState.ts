@@ -81,7 +81,9 @@ function convertSelection(
   selection: "all" | Iterable<Key> | null | undefined,
   defaultValue: Selection,
 ): Selection;
-function convertSelection(selection: "all" | Iterable<Key> | null | undefined): Selection | undefined;
+function convertSelection(
+  selection: "all" | Iterable<Key> | null | undefined,
+): Selection | undefined;
 function convertSelection(
   selection: "all" | Iterable<Key> | null | undefined,
   defaultValue?: Selection,
@@ -125,12 +127,10 @@ export function createMultipleSelectionState(
   // Selection behavior is seeded from the prop but kept in internal state so
   // that `setSelectionBehavior` (e.g. the long-press-to-select touch flow) can
   // override it. Two reactive rules mirror upstream's render-time logic.
-  const selectionBehaviorProp = (): SelectionBehavior =>
-    getProps().selectionBehavior ?? "toggle";
+  const selectionBehaviorProp = (): SelectionBehavior => getProps().selectionBehavior ?? "toggle";
 
-  const [selectionBehavior, setSelectionBehaviorState] = createSignal<SelectionBehavior>(
-    selectionBehaviorProp(),
-  );
+  const [selectionBehavior, setSelectionBehaviorState] =
+    createSignal<SelectionBehavior>(selectionBehaviorProp());
 
   // If the selectionBehavior prop is 'replace' but the current state is 'toggle'
   // (e.g. due to a long press to enter selection mode on touch) and the

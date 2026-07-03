@@ -52,8 +52,7 @@ function appendLabelledBy(
   prefixId: string,
 ): Record<string, unknown> {
   const base = inputProps?.["aria-labelledby"];
-  const labelledBy =
-    typeof base === "string" && base.length > 0 ? `${base} ${prefixId}` : prefixId;
+  const labelledBy = typeof base === "string" && base.length > 0 ? `${base} ${prefixId}` : prefixId;
   return { ...inputProps, "aria-labelledby": labelledBy };
 }
 

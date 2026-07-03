@@ -57,7 +57,9 @@ function redispatchCollectionArrowKey(row: HTMLElement, event: KeyboardEvent): v
 function shouldIgnoreRowEvent(event: Event, row: HTMLElement): boolean {
   const target = getEventTarget<Element>(event);
   const currentTarget = event.currentTarget as Element | null;
-  return !target || !currentTarget || !nodeContains(currentTarget, target) || !nodeContains(row, target);
+  return (
+    !target || !currentTarget || !nodeContains(currentTarget, target) || !nodeContains(row, target)
+  );
 }
 
 export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
@@ -155,11 +157,7 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
     const activeElement = getActiveElement(row?.ownerDocument);
 
     if (row && target && activeElement && !shouldIgnoreRowEvent(event, row)) {
-      if (
-        options.keyboardNavigationBehavior() === "tab" &&
-        target !== row &&
-        event.key !== "Tab"
-      ) {
+      if (options.keyboardNavigationBehavior() === "tab" && target !== row && event.key !== "Tab") {
         event.stopPropagation();
         return;
       }

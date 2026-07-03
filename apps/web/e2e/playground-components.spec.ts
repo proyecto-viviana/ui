@@ -605,7 +605,8 @@ test.describe("Playground Page", () => {
     }
     await expect(toast.locator(`#${describedBy}`)).toHaveCount(1);
 
-    await toast.getByRole("button", { name: "Close" }).click();
+    // Upstream S2's toast close button is labelled "Dismiss" (dialog.dismiss).
+    await toast.getByRole("button", { name: "Dismiss" }).click();
     await expect(page.getByRole("alertdialog").filter({ hasText: "Custom Toast" })).toHaveCount(0);
 
     await checkNoHydrationErrors(errors);

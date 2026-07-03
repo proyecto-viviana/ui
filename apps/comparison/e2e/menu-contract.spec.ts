@@ -329,7 +329,9 @@ test.describe("comparison Menu route contract", () => {
     await expectSelectionLifecycle(page, selection.solidPanel, selection.solidRoot);
   });
 
-  test("Menu selects the item under mouse release when press starts elsewhere", async ({ page }) => {
+  test("Menu selects the item under mouse release when press starts elsewhere", async ({
+    page,
+  }) => {
     const selection = await menuFixtures(page, { selectionMode: "multiple" });
 
     const reactState = await differentOriginPressReleaseState(

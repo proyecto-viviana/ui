@@ -639,7 +639,7 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
           data-disabled={switchAria.isDisabled || undefined}
           data-readonly={switchAria.isReadOnly || undefined}
           data-invalid={switchAria.isInvalid || undefined}
-          data-required={(ariaProps.isRequired || false) || undefined}
+          data-required={ariaProps.isRequired || false || undefined}
         >
           <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
             <FieldChildren />

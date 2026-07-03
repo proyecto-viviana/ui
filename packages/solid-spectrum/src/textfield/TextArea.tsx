@@ -11,10 +11,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import {
-  getSlottedContextProps,
-  type SpectrumContextValue,
-} from "../button/spectrum-context";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {
   Label as HeadlessLabel,
   TextArea as HeadlessTextArea,

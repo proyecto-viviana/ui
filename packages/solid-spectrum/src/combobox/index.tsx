@@ -1072,8 +1072,10 @@ export function ComboBoxTag(props: ComboBoxTagProps): JSX.Element {
   return <HeadlessComboBoxTag {...props} />;
 }
 
-export interface ComboBoxSectionProps<T>
-  extends Omit<HeadlessListBoxSectionProps, "style" | "class" | "render"> {}
+export interface ComboBoxSectionProps<T> extends Omit<
+  HeadlessListBoxSectionProps,
+  "style" | "class" | "render"
+> {}
 
 /**
  * A section within a `<ComboBox>`, mirroring React S2's `ComboBoxSection`. Renders

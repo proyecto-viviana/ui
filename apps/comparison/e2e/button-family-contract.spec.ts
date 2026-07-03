@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { waitForComparisonRouteReady } from "./comparison-page";
+import { checkControl, waitForComparisonRouteReady } from "./comparison-page";
 
 type Framework = "React Spectrum stack" | "Solidaria stack";
 
@@ -171,9 +171,9 @@ test.describe("comparison button-family behavior contracts", () => {
     const cards = await buttonFamilyCards(page, "actionbutton");
 
     await page.locator('input[name="children"]').fill("Inspect item");
-    await page.locator('input[name="size"][value="XL"]').check();
-    await page.locator('input[name="staticColor"][value="white"]').check();
-    await page.locator('input[name="isQuiet"]').check();
+    await checkControl(page, "size", "XL");
+    await checkControl(page, "staticColor", "white");
+    await checkControl(page, "isQuiet");
     await expect(page).toHaveURL(/children=Inspect\+item/);
     await expect(page).toHaveURL(/size=XL/);
     await expect(page).toHaveURL(/staticColor=white/);

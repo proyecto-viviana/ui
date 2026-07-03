@@ -15,10 +15,7 @@ import type {
 import type { AriaTableRowProps, TableRowAria, ExpandButtonProps } from "./types";
 import { getTableData } from "./createTable";
 import { useLocale } from "../i18n";
-import {
-  createSelectableItem,
-  type SelectableItemState,
-} from "../selection/createSelectableItem";
+import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeProps } from "../utils/mergeProps";
 
 /**

@@ -105,10 +105,14 @@ describe("ListKeyboardDelegate — disabled skipping", () => {
   });
 
   it("does not skip disabled keys when disabledBehavior is 'selection'", () => {
-    withDelegate({ disabledKeys: new Set(["b"]), disabledBehavior: "selection" }, {}, (delegate) => {
-      // 'selection' means disabled-for-selection only; navigation still lands on it.
-      expect(delegate.getKeyBelow("a")).toBe("b");
-    });
+    withDelegate(
+      { disabledKeys: new Set(["b"]), disabledBehavior: "selection" },
+      {},
+      (delegate) => {
+        // 'selection' means disabled-for-selection only; navigation still lands on it.
+        expect(delegate.getKeyBelow("a")).toBe("b");
+      },
+    );
   });
 });
 

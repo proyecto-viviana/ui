@@ -959,7 +959,9 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   );
 
   const renderValues = createMemo<SelectListBoxRenderProps>(() => ({
-    isFocused: state.isFocused(),
+    // Focus within the listbox itself (the selection manager's focus state),
+    // not the select-level trigger focus.
+    isFocused: state.selectionManager.isFocused,
   }));
 
   const renderProps = useRenderProps(
@@ -1004,7 +1006,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       {...cleanListBoxProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-focused={state.isFocused() || undefined}
+      data-focused={state.selectionManager.isFocused || undefined}
       data-empty={state.collection().size === 0 || undefined}
     >
       {state.collection().size === 0 && local.renderEmptyState ? (
@@ -1258,8 +1260,11 @@ function createSelectListStateAdapter<T>(state: SelectState<T>): ListState<T> {
   return {
     collection: state.collection,
     selectionManager: state.selectionManager,
-    isFocused: state.isFocused,
-    setFocused: state.setFocused,
+    // Collection-level focus (the selection manager's), not the select-level
+    // trigger focus — upstream listbox internals only ever read
+    // state.selectionManager.isFocused.
+    isFocused: () => state.selectionManager.isFocused,
+    setFocused: (isFocused) => state.selectionManager.setFocused(isFocused),
     focusedKey: state.focusedKey,
     setFocusedKey: (key) => state.setFocusedKey(key ?? null),
     childFocusStrategy: () => null,

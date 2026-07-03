@@ -12,7 +12,7 @@ inheriting the row's. This ports upstream's `treeCellGrid` / `expandButton`
 colors faithfully:
 
 - the merged row/cell color now carries `isDisabled: { default: 'disabled',
-  forcedColors: 'GrayText' }` (so disabled labels dim too, not only the
+forcedColors: 'GrayText' }` (so disabled labels dim too, not only the
   description — previously a disabled label kept the enabled `neutral-subdued`
   color because the label `inherit`s a row color that had no disabled branch),
   plus the `forcedColors: 'ButtonText'` base and the `selectionStyle.highlight`

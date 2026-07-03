@@ -113,9 +113,9 @@ describe("utils — context/slot machinery", () => {
       render(() => (
         <Provider
           values={
-            [
-              [Ctx, { slots: { default: { name: "def" }, label: { name: "lbl" } } }],
-            ] as Array<[Context<unknown>, unknown]>
+            [[Ctx, { slots: { default: { name: "def" }, label: { name: "lbl" } } }]] as Array<
+              [Context<unknown>, unknown]
+            >
           }
         >
           <Consumer />
@@ -137,9 +137,9 @@ describe("utils — context/slot machinery", () => {
       render(() => (
         <Provider
           values={
-            [
-              [Ctx, { slots: { default: { name: "def" }, label: { name: "lbl" } } }],
-            ] as Array<[Context<unknown>, unknown]>
+            [[Ctx, { slots: { default: { name: "def" }, label: { name: "lbl" } } }]] as Array<
+              [Context<unknown>, unknown]
+            >
           }
         >
           <Consumer />
@@ -206,9 +206,7 @@ describe("utils — context/slot machinery", () => {
 
       render(() => (
         <Provider
-          values={
-            [[Ctx, { id: "ctxId", "data-src": "ctx" }]] as Array<[Context<unknown>, unknown]>
-          }
+          values={[[Ctx, { id: "ctxId", "data-src": "ctx" }]] as Array<[Context<unknown>, unknown]>}
         >
           <Consumer id="propId" />
         </Provider>
@@ -231,7 +229,9 @@ describe("utils — context/slot machinery", () => {
 
       render(() => (
         <Provider
-          values={[[Ctx, { onClick: () => calls.push("ctx") }]] as Array<[Context<unknown>, unknown]>}
+          values={
+            [[Ctx, { onClick: () => calls.push("ctx") }]] as Array<[Context<unknown>, unknown]>
+          }
         >
           <Consumer onClick={() => calls.push("prop")} />
         </Provider>

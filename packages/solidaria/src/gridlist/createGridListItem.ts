@@ -14,10 +14,7 @@ import type {
 } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListItemProps, GridListItemAria } from "./types";
 import { getGridListData } from "./createGridList";
-import {
-  createSelectableItem,
-  type SelectableItemState,
-} from "../selection/createSelectableItem";
+import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
 import { mergeProps } from "../utils/mergeProps";
 

@@ -5,7 +5,11 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createRoot } from "solid-js";
 import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
-import { createMenuState, createOverlayTriggerState, type MenuState } from "../../solid-stately/src";
+import {
+  createMenuState,
+  createOverlayTriggerState,
+  type MenuState,
+} from "../../solid-stately/src";
 import { createMenu, createMenuItem, createMenuTrigger } from "../src/menu";
 
 describe("createMenu", () => {

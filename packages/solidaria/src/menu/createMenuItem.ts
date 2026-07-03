@@ -342,10 +342,9 @@ export function createMenuItem<T>(
       const trigger = isTrigger();
 
       const baseProps: Record<string, unknown> = {
-        role:
-          trigger
-            ? "menuitem"
-            : mode === "single"
+        role: trigger
+          ? "menuitem"
+          : mode === "single"
             ? "menuitemradio"
             : mode === "multiple"
               ? "menuitemcheckbox"

@@ -11,7 +11,7 @@ autocomplete bridge) can build on a faithful base.
 
 - **`createMultipleSelectionState`** — the raw lower layer (port of
   `useMultipleSelectionState`): owns selected keys, focus, selection behavior,
-  and disabled keys, but is *not* collection-aware. Includes the faithful
+  and disabled keys, but is _not_ collection-aware. Includes the faithful
   `selectionBehavior` sync rules (long-press-to-select reset, prop changes).
 - **`SelectionManager`** — the collection-aware upper layer (port of the
   `SelectionManager` class): toggle / replace / extend-range / select-all /
@@ -28,7 +28,7 @@ autocomplete bridge) can build on a faithful base.
 
 Faithful behavior change: `onSelectionChange` now receives a `Selection` (a
 `Set` subclass carrying `anchorKey` / `currentKey`) instead of a plain `Set`,
-exactly as upstream does. A `Selection` *is* a `Set`, so `.has`, iteration,
+exactly as upstream does. A `Selection` _is_ a `Set`, so `.has`, iteration,
 `.size`, spread and `instanceof Set` all behave identically — the anchor/current
 metadata is what lets controlled consumers continue shift-click ranges across a
 round-trip. Tests that asserted an exact plain-`Set` instance now compare

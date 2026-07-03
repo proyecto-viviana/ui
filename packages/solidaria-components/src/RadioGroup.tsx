@@ -874,7 +874,10 @@ export function RadioField(props: RadioFieldProps): JSX.Element {
   );
 }
 
-function RadioFieldImpl(props: { fieldProps: RadioFieldProps; state: RadioGroupState }): JSX.Element {
+function RadioFieldImpl(props: {
+  fieldProps: RadioFieldProps;
+  state: RadioGroupState;
+}): JSX.Element {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const { state } = props;
   const contextProps = useContext(RadioFieldContext);

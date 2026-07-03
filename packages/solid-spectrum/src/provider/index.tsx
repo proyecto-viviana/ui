@@ -271,17 +271,17 @@ export function Provider(props: ProviderProps): JSX.Element {
       <ThemeContext.Provider value={providerValue}>
         <ColorSchemeContext.Provider value={colorScheme()}>
           <I18nProvider locale={locale()}>
-          <ModalProvider>
-            <ProviderRoot
-              rest={rest as Record<string, unknown>}
-              class={classes()}
-              style={mergedStyle()}
-              colorScheme={colorScheme()}
-              background={local.background}
-            >
-              {local.children}
-            </ProviderRoot>
-          </ModalProvider>
+            <ModalProvider>
+              <ProviderRoot
+                rest={rest as Record<string, unknown>}
+                class={classes()}
+                style={mergedStyle()}
+                colorScheme={colorScheme()}
+                background={local.background}
+              >
+                {local.children}
+              </ProviderRoot>
+            </ModalProvider>
           </I18nProvider>
         </ColorSchemeContext.Provider>
       </ThemeContext.Provider>

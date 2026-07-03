@@ -5,7 +5,14 @@
  * Port of react-aria-components/src/NumberField.tsx
  */
 
-import { type JSX, type Context, createContext, createMemo, splitProps, useContext } from "solid-js";
+import {
+  type JSX,
+  type Context,
+  createContext,
+  createMemo,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   createNumberField,
   createButton,

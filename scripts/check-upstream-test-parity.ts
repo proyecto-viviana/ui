@@ -95,32 +95,158 @@ const MODIFIERS = new Set(["shift", "control", "ctrl", "alt", "meta", "command",
 // substring of `react-aria-components`, and stray object keys never masquerade
 // as contract divergences.
 const ARIA_ROLES = new Set([
-  "alert", "alertdialog", "application", "article", "banner", "blockquote", "button", "caption",
-  "cell", "checkbox", "code", "columnheader", "combobox", "complementary", "contentinfo",
-  "definition", "deletion", "dialog", "directory", "document", "emphasis", "feed", "figure",
-  "form", "generic", "grid", "gridcell", "group", "heading", "img", "insertion", "link", "list",
-  "listbox", "listitem", "log", "main", "marquee", "math", "menu", "menubar", "menuitem",
-  "menuitemcheckbox", "menuitemradio", "meter", "navigation", "none", "note", "option",
-  "paragraph", "presentation", "progressbar", "radio", "radiogroup", "region", "row", "rowgroup",
-  "rowheader", "scrollbar", "search", "searchbox", "separator", "slider", "spinbutton", "status",
-  "strong", "subscript", "superscript", "switch", "tab", "table", "tablist", "tabpanel", "term",
-  "textbox", "timer", "toolbar", "tooltip", "tree", "treegrid", "treeitem",
+  "alert",
+  "alertdialog",
+  "application",
+  "article",
+  "banner",
+  "blockquote",
+  "button",
+  "caption",
+  "cell",
+  "checkbox",
+  "code",
+  "columnheader",
+  "combobox",
+  "complementary",
+  "contentinfo",
+  "definition",
+  "deletion",
+  "dialog",
+  "directory",
+  "document",
+  "emphasis",
+  "feed",
+  "figure",
+  "form",
+  "generic",
+  "grid",
+  "gridcell",
+  "group",
+  "heading",
+  "img",
+  "insertion",
+  "link",
+  "list",
+  "listbox",
+  "listitem",
+  "log",
+  "main",
+  "marquee",
+  "math",
+  "menu",
+  "menubar",
+  "menuitem",
+  "menuitemcheckbox",
+  "menuitemradio",
+  "meter",
+  "navigation",
+  "none",
+  "note",
+  "option",
+  "paragraph",
+  "presentation",
+  "progressbar",
+  "radio",
+  "radiogroup",
+  "region",
+  "row",
+  "rowgroup",
+  "rowheader",
+  "scrollbar",
+  "search",
+  "searchbox",
+  "separator",
+  "slider",
+  "spinbutton",
+  "status",
+  "strong",
+  "subscript",
+  "superscript",
+  "switch",
+  "tab",
+  "table",
+  "tablist",
+  "tabpanel",
+  "term",
+  "textbox",
+  "timer",
+  "toolbar",
+  "tooltip",
+  "tree",
+  "treegrid",
+  "treeitem",
 ]);
 const ARIA_ATTRS = new Set([
-  "aria-activedescendant", "aria-atomic", "aria-autocomplete", "aria-busy", "aria-checked",
-  "aria-colcount", "aria-colindex", "aria-colindextext", "aria-colspan", "aria-controls",
-  "aria-current", "aria-describedby", "aria-description", "aria-details", "aria-disabled",
-  "aria-errormessage", "aria-expanded", "aria-flowto", "aria-haspopup", "aria-hidden",
-  "aria-invalid", "aria-keyshortcuts", "aria-label", "aria-labelledby", "aria-level", "aria-live",
-  "aria-modal", "aria-multiline", "aria-multiselectable", "aria-orientation", "aria-owns",
-  "aria-placeholder", "aria-posinset", "aria-pressed", "aria-readonly", "aria-relevant",
-  "aria-required", "aria-roledescription", "aria-rowcount", "aria-rowindex", "aria-rowindextext",
-  "aria-rowspan", "aria-selected", "aria-setsize", "aria-sort", "aria-valuemax", "aria-valuemin",
-  "aria-valuenow", "aria-valuetext",
+  "aria-activedescendant",
+  "aria-atomic",
+  "aria-autocomplete",
+  "aria-busy",
+  "aria-checked",
+  "aria-colcount",
+  "aria-colindex",
+  "aria-colindextext",
+  "aria-colspan",
+  "aria-controls",
+  "aria-current",
+  "aria-describedby",
+  "aria-description",
+  "aria-details",
+  "aria-disabled",
+  "aria-errormessage",
+  "aria-expanded",
+  "aria-flowto",
+  "aria-haspopup",
+  "aria-hidden",
+  "aria-invalid",
+  "aria-keyshortcuts",
+  "aria-label",
+  "aria-labelledby",
+  "aria-level",
+  "aria-live",
+  "aria-modal",
+  "aria-multiline",
+  "aria-multiselectable",
+  "aria-orientation",
+  "aria-owns",
+  "aria-placeholder",
+  "aria-posinset",
+  "aria-pressed",
+  "aria-readonly",
+  "aria-relevant",
+  "aria-required",
+  "aria-roledescription",
+  "aria-rowcount",
+  "aria-rowindex",
+  "aria-rowindextext",
+  "aria-rowspan",
+  "aria-selected",
+  "aria-setsize",
+  "aria-sort",
+  "aria-valuemax",
+  "aria-valuemin",
+  "aria-valuenow",
+  "aria-valuetext",
 ]);
 const KEYS = new Set([
-  "arrowup", "arrowdown", "arrowleft", "arrowright", "enter", "escape", "esc", "space", "spacebar",
-  "tab", "home", "end", "pageup", "pagedown", "backspace", "delete", "del", "insert",
+  "arrowup",
+  "arrowdown",
+  "arrowleft",
+  "arrowright",
+  "enter",
+  "escape",
+  "esc",
+  "space",
+  "spacebar",
+  "tab",
+  "home",
+  "end",
+  "pageup",
+  "pagedown",
+  "backspace",
+  "delete",
+  "del",
+  "insert",
 ]);
 
 /** Testing-Library `getByRole(role, { state })` options → the aria-* they assert. */
@@ -224,7 +350,7 @@ function canon(basename: string): string {
   return ALIASES[n] ?? n;
 }
 
-const isOurTest = (f: string) => /\.test\.tsx$/.test(f) && !/\.(ssr|hydrate)\.test\.tsx$/.test(f);
+const isOurTest = (f: string) => f.endsWith(".test.tsx") && !/\.(ssr|hydrate)\.test\.tsx$/.test(f);
 const isUpstreamTest = (f: string) =>
   /\.(test\.jsx?|test\.tsx|test-util\.tsx)$/.test(f) && !/\.ssr\./.test(f);
 
@@ -233,10 +359,7 @@ interface Side {
   files: string[];
 }
 
-async function collect(
-  roots: string[],
-  keep: (f: string) => boolean,
-): Promise<Map<string, Side>> {
+async function collect(roots: string[], keep: (f: string) => boolean): Promise<Map<string, Side>> {
   const byKey = new Map<string, Side>();
   for (const root of roots) {
     for (const file of await walk(path.join(ROOT, root))) {
@@ -265,9 +388,7 @@ const diff = (a: Set<string>, b: Set<string>) => [...a].filter((x) => !b.has(x))
  * substring match either direction, so we don't flag `/Close/` against `Close`. */
 function nameDiff(ours: Set<string>, theirs: Set<string>): string[] {
   const them = [...theirs];
-  return [...ours]
-    .filter((n) => !them.some((t) => t.includes(n) || n.includes(t)))
-    .sort();
+  return [...ours].filter((n) => !them.some((t) => t.includes(n) || n.includes(t))).sort();
 }
 
 interface Row {
@@ -343,21 +464,30 @@ rows.sort((a, b) => b.score - a.score || a.key.localeCompare(b.key));
 // ---- report ----
 const sVer = vendored("react-spectrum/packages/@react-spectrum/s2/package.json");
 const rVer = vendored("react-spectrum/packages/react-aria-components/package.json");
-const drift =
-  sVer !== pin.tags["@react-spectrum/s2"] || rVer !== pin.tags["react-aria-components"];
+const drift = sVer !== pin.tags["@react-spectrum/s2"] || rVer !== pin.tags["react-aria-components"];
 
 console.log("Upstream test-parity oracle");
-console.log(`- pinned release: ${pin.release} (s2 ${pin.tags["@react-spectrum/s2"]}, rac ${pin.tags["react-aria-components"]})`);
+console.log(
+  `- pinned release: ${pin.release} (s2 ${pin.tags["@react-spectrum/s2"]}, rac ${pin.tags["react-aria-components"]})`,
+);
 console.log(`- vendored tree:  s2 ${sVer ?? "?"}, rac ${rVer ?? "?"}`);
 if (drift) {
-  console.log("  ⚠ DRIFT: vendored ./react-spectrum does not match the pin — re-materialize it (see .claude/current/upstream-sync.md).");
+  console.log(
+    "  ⚠ DRIFT: vendored ./react-spectrum does not match the pin — re-materialize it (see .claude/current/upstream-sync.md).",
+  );
 }
-console.log(`- matched components: ${rows.length}  |  ours-without-upstream: ${ourOnly.length}  |  upstream-without-ours: ${upstreamOnly.length}`);
+console.log(
+  `- matched components: ${rows.length}  |  ours-without-upstream: ${ourOnly.length}  |  upstream-without-ours: ${upstreamOnly.length}`,
+);
 
 const suspects = rows.filter((r) => r.score > 0);
 const roleSuspects = suspects.filter((r) => r.weRoles.length);
-console.log(`\n══ RANKED SUSPECTS — our tests assert a shape upstream never asserts (${suspects.length}) ══`);
-console.log(`   ${roleSuspects.length} have a ROLE divergence (the high-signal "wrong shape" bucket); the rest are aria/key-only (usually broader coverage).`);
+console.log(
+  `\n══ RANKED SUSPECTS — our tests assert a shape upstream never asserts (${suspects.length}) ══`,
+);
+console.log(
+  `   ${roleSuspects.length} have a ROLE divergence (the high-signal "wrong shape" bucket); the rest are aria/key-only (usually broader coverage).`,
+);
 for (const r of suspects) {
   console.log(`\n● ${r.key}  [score ${r.score}]`);
   console.log(`  ours:     ${r.ours.files.join(", ")}`);
@@ -368,14 +498,18 @@ for (const r of suspects) {
     console.log(`  ARIA   we-only {${fmt(r.weAria)}}   ‖   upstream-only {${fmt(r.upAria)}}`);
   if (r.weKeys.length) console.log(`  KEYS   we-only {${fmt(r.weKeys)}}`);
   if (r.weNames.length)
-    console.log(`  names  we-only: ${fmt(r.weNames.slice(0, 10))}${r.weNames.length > 10 ? ` (+${r.weNames.length - 10})` : ""}`);
+    console.log(
+      `  names  we-only: ${fmt(r.weNames.slice(0, 10))}${r.weNames.length > 10 ? ` (+${r.weNames.length - 10})` : ""}`,
+    );
 }
 
 const gaps = rows
   .filter((r) => r.score === 0 && (r.upRoles.length || r.upAria.length || r.upKeys.length))
   .map((r) => ({ ...r, gap: r.upRoles.length * 5 + r.upAria.length * 2 + r.upKeys.length }))
   .sort((a, b) => b.gap - a.gap);
-console.log(`\n══ COVERAGE GAPS — clean on suspects; upstream asserts shapes we don't (${gaps.length}) ══`);
+console.log(
+  `\n══ COVERAGE GAPS — clean on suspects; upstream asserts shapes we don't (${gaps.length}) ══`,
+);
 for (const r of gaps.slice(0, 20)) {
   const parts = [
     r.upRoles.length ? `roles: ${fmt(r.upRoles)}` : "",
@@ -387,7 +521,13 @@ for (const r of gaps.slice(0, 20)) {
 if (gaps.length > 20) console.log(`  …and ${gaps.length - 20} more`);
 
 console.log(`\n══ UNMATCHED ══`);
-console.log(`  ours, no upstream oracle (bespoke / S2-only / internal): ${ourOnly.sort().join(", ") || "—"}`);
-console.log(`  upstream, no port-level test of ours:                    ${upstreamOnly.join(", ") || "—"}`);
+console.log(
+  `  ours, no upstream oracle (bespoke / S2-only / internal): ${ourOnly.sort().join(", ") || "—"}`,
+);
+console.log(
+  `  upstream, no port-level test of ours:                    ${upstreamOnly.join(", ") || "—"}`,
+);
 
-console.log(`\nReport-only (exit 0). Reconcile each suspect against the authoritative upstream source before changing a test.`);
+console.log(
+  `\nReport-only (exit 0). Reconcile each suspect against the authoritative upstream source before changing a test.`,
+);

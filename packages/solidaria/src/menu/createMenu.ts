@@ -302,7 +302,8 @@ export function createMenu<T>(
           const item = collection.getItem(focusedKey);
           const isLink = !!item?.props?.href;
           const shouldClose =
-            p.shouldCloseOnSelect ?? (e.key === "Enter" || state.selectionMode() === "none" || isLink);
+            p.shouldCloseOnSelect ??
+            (e.key === "Enter" || state.selectionMode() === "none" || isLink);
           if (shouldClose) {
             p.onClose?.();
           }

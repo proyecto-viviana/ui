@@ -731,12 +731,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
     shouldFlip: true,
   };
   const contextProps = getSlottedContextProps(useContext(PickerContext), props.slot);
-  const mergedProps = mergeProps(
-    defaultProps,
-    useProviderProps(props),
-    contextProps ?? {},
-    props,
-  );
+  const mergedProps = mergeProps(defaultProps, useProviderProps(props), contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "isQuiet",
@@ -1065,8 +1060,10 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   );
 }
 
-export interface PickerSectionProps<T>
-  extends Omit<HeadlessListBoxSectionProps, "style" | "class" | "render"> {}
+export interface PickerSectionProps<T> extends Omit<
+  HeadlessListBoxSectionProps,
+  "style" | "class" | "render"
+> {}
 
 /**
  * A section within a `<Picker>`, mirroring React S2's `PickerSection`. Renders a

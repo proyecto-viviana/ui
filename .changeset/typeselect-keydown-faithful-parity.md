@@ -19,4 +19,4 @@ behavior more faithfully:
 The capture-phase Spacebar handler and the bubble-phase character handler are
 now split to match upstream's two-handler shape. In Solid a capture listener
 delivered through a `{...props}` spread is inert, so the live bubble handler
-also covers a mid-search Spacebar (its bail only rejects a *leading* Space).
+also covers a mid-search Spacebar (its bail only rejects a _leading_ Space).

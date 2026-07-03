@@ -341,8 +341,7 @@ export class TableCollection<T = unknown> implements ITableCollection<T> {
     getKey?: (item: T) => Key,
     getTextValue?: (item: T, column: ColumnDefinition<T>) => string,
   ): { topLevelRows: GridNode<T>[]; flattenedRows: GridNode<T>[] } {
-    const isExpanded = (key: Key): boolean =>
-      expandedKeys === "all" || expandedKeys.has(key);
+    const isExpanded = (key: Key): boolean => expandedKeys === "all" || expandedKeys.has(key);
 
     // Build the full tree structure without touching the key map. `index` is the row's
     // position among its same-level siblings, so aria-posinset/aria-setsize read directly.

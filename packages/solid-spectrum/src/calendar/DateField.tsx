@@ -30,10 +30,7 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
-import {
-  getSlottedContextProps,
-  type SpectrumContextValue,
-} from "../button/spectrum-context";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 
 export type DateFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2DateFieldSize = "S" | "M" | "L" | "XL";

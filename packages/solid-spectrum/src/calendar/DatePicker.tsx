@@ -31,10 +31,7 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps, useTheme } from "../provider";
-import {
-  getSlottedContextProps,
-  type SpectrumContextValue,
-} from "../button/spectrum-context";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {
   control,
   controlBorderRadius,

@@ -28,8 +28,10 @@ import {
   type SelectableCollectionAria,
 } from "./createSelectableCollection";
 
-export interface CreateSelectableListOptions<T = unknown>
-  extends Omit<CreateSelectableCollectionOptions<T>, "keyboardDelegate"> {
+export interface CreateSelectableListOptions<T = unknown> extends Omit<
+  CreateSelectableCollectionOptions<T>,
+  "keyboardDelegate"
+> {
   /**
    * A delegate object that implements behavior for keyboard focus movement.
    * Defaults to a {@link ListKeyboardDelegate} derived from the selection manager.

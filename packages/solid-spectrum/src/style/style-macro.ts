@@ -754,8 +754,7 @@ export function createTheme<T extends Theme>(
             className +=
               (propertyInfo.values as Record<string, Record<string, string>>)[cssProperty]?.[
                 String(value)
-              ] ??
-              generateArbitraryValueSelector(String(value));
+              ] ?? generateArbitraryValueSelector(String(value));
             className += POSTFIX;
             rules.push(
               new StyleRule(

@@ -67,9 +67,8 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
 
   const selectionMode = createMemo(() => getOptions().selectionMode ?? "none");
   const selectionBehaviorProp = (): SelectionBehavior => getOptions().selectionBehavior ?? "toggle";
-  const [selectionBehaviorState, setSelectionBehaviorState] = createSignal<SelectionBehavior>(
-    selectionBehaviorProp(),
-  );
+  const [selectionBehaviorState, setSelectionBehaviorState] =
+    createSignal<SelectionBehavior>(selectionBehaviorProp());
   const selectionBehavior = createMemo(() => selectionBehaviorState());
   const disallowEmptySelection = createMemo(() => getOptions().disallowEmptySelection ?? false);
   const disabledBehavior = createMemo(() => getOptions().disabledBehavior ?? "all");

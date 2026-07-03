@@ -1,5 +1,14 @@
 // @ts-nocheck
-import { type JSX, createContext, createSignal, createUniqueId, mergeProps, splitProps, Show, useContext } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createSignal,
+  createUniqueId,
+  mergeProps,
+  splitProps,
+  Show,
+  useContext,
+} from "solid-js";
 import {
   NumberField as HeadlessNumberField,
   NumberFieldLabel as HeadlessNumberFieldLabel,
@@ -29,10 +38,7 @@ import AddIcon from "../icon/ui-icons/Add";
 import DashIcon from "../icon/ui-icons/Dash";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import { useProviderProps } from "../provider";
-import {
-  getSlottedContextProps,
-  type SpectrumContextValue,
-} from "../button/spectrum-context";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 
 export type NumberFieldSize = "S" | "M" | "L" | "XL";
 type S2NumberFieldSize = NumberFieldSize;

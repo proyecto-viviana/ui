@@ -160,8 +160,7 @@ export interface MenuItemRenderProps {
 }
 
 export interface MenuItemProps<T>
-  extends Omit<AriaMenuItemProps, "children" | "key" | "id">,
-    SlotProps {
+  extends Omit<AriaMenuItemProps, "children" | "key" | "id">, SlotProps {
   /** The unique key for the item. */
   id: Key;
   /** The item value. */

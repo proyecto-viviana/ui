@@ -1198,7 +1198,7 @@ function Playground() {
             </Show>
           </div>
         </main>
-        <ToastContainer placement="bottom-end" />
+        <ToastContainer placement="bottom end" />
       </PageLayout>
     </ToastProvider>
   );

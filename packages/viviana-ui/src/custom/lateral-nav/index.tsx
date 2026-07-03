@@ -46,7 +46,10 @@ const link = style<{ isActive: boolean }>({
 
 export function NavLink(props: NavLinkProps) {
   return (
-    <a href={props.href} class={`${link({ isActive: props.active ?? false })} ${props.class ?? ""}`}>
+    <a
+      href={props.href}
+      class={`${link({ isActive: props.active ?? false })} ${props.class ?? ""}`}
+    >
       {props.children}
     </a>
   );

@@ -96,10 +96,7 @@ describe("createToast", () => {
         const state = { close: vi.fn() } as any;
         const aria = createToast({ toast, state });
         return (
-          <div
-            {...aria.toastProps}
-            data-testid="toast-container"
-          >
+          <div {...aria.toastProps} data-testid="toast-container">
             <div {...aria.contentProps}>Toast message</div>
           </div>
         );

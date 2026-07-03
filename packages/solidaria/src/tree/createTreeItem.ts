@@ -15,10 +15,7 @@ import type {
 } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeItemProps, TreeItemAria } from "./types";
 import { getTreeData } from "./createTree";
-import {
-  createSelectableItem,
-  type SelectableItemState,
-} from "../selection/createSelectableItem";
+import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
 import { mergeProps } from "../utils/mergeProps";
 

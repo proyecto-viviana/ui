@@ -10,7 +10,7 @@ grid element's own non-bubbling `focus`/`blur` handlers, so it never became true
 when focus landed directly on a row (a pointer click, or programmatic row
 focus) — unlike upstream React Aria, whose focusin-based `onFocus` fires for
 descendant focus too. As a result, ArrowDown/End/PageDown updated the focused
-*key* (and the roving tabindex) without ever moving the browser's focus to the
+_key_ (and the roving tabindex) without ever moving the browser's focus to the
 target row.
 
 The bridge now gates on the physical position of focus

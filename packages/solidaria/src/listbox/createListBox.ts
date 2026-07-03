@@ -179,8 +179,7 @@ export function createListBox<T>(
   const updateSharedData = () => {
     const p = getProps();
     const selectionBehavior = state.selectionBehavior();
-    let linkBehavior =
-      p.linkBehavior ?? (selectionBehavior === "replace" ? "action" : "override");
+    let linkBehavior = p.linkBehavior ?? (selectionBehavior === "replace" ? "action" : "override");
     if (selectionBehavior === "toggle" && linkBehavior === "action") {
       linkBehavior = "override";
     }
@@ -216,7 +215,10 @@ export function createListBox<T>(
     onBlurWithin: (e) => getProps().onBlur?.(e),
     onFocusWithinChange: (isFocused) => {
       getProps().onFocusChange?.(isFocused);
-      state.setFocused(isFocused);
+      // Collection focus lives on the selection manager (upstream tracks it in
+      // useSelectableCollection); the ListState-level setFocused may be a
+      // widget-level focus state (e.g. Select's trigger focus).
+      state.selectionManager.setFocused(isFocused);
     },
   });
 

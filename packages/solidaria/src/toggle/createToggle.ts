@@ -256,9 +256,8 @@ export function createToggle(
         "aria-controls": p["aria-controls"],
         "aria-readonly": isReadOnly() || undefined,
         "aria-describedby":
-          [descriptionId(), errorMessageId(), p["aria-describedby"]]
-            .filter(Boolean)
-            .join(" ") || undefined,
+          [descriptionId(), errorMessageId(), p["aria-describedby"]].filter(Boolean).join(" ") ||
+          undefined,
         onChange,
         disabled: isDisabled(),
         ...(p.value == null ? {} : { value: p.value }),

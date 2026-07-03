@@ -54,7 +54,7 @@ The oracle and the baseline must be trustworthy before anything else.
 | 0.2 | Upgrade `apps/comparison` installed deps to the pin (today S2 1.3.0 / RAC 1.17.0 — two trains stale). The pair oracle is invalid until this lands                                                                                                | installed versions == pin                                                      |
 | 0.3 | Align `@adobe/spectrum-tokens` (installed `^14.5.0` vs vendored exact `14.0.0`); add a guard so the two cannot drift silently                                                                                                                    | new `guard:spectrum-tokens-pin` green                                          |
 | 0.4 | Baseline hygiene: format the 70 drifted files; refresh the 6 stale regression snapshots; fix the real FocusManagement Escape-restore bug; fix the ActionButton label-intercepts-pointer contract failure; fix the 2 Toast playground a11y smokes | `vp run check`, `test:run`, `comparison:test:contract`, `a11y:check` all green |
-| 0.5 | Close the CI-on-main hole: run `ci:release-readiness` (or a trimmed floor set) on pushes to `main`, not only PRs                                                                                                                                 | a main push runs build+test                                                    |
+| 0.5 | Close the CI-on-main hole: run `ci:release-readiness` (or a trimmed floor set) on pushes to `main`, not only PRs; include `apps/*` in typecheck scope (`tsconfig.typecheck.json` covers only packages+scripts today)                             | a main push runs build+test                                                    |
 | 0.6 | Make the blocking a11y gate include axe `color-contrast` on comparison routes (currently excluded — no contrast bug can fail CI today)                                                                                                           | rule enabled, gate green                                                       |
 
 Exit criteria: all 18 ground-truth gates green on a clean `main` (the
@@ -202,7 +202,7 @@ When the ledger is empty, the machinery has provably subsumed the audit.
 
 ## Queue
 
-Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☐ 0.5 ☐ 0.6 ☐`
+Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☐ 0.6 ☐`
 
 - 0.1 done 2026-07-03: oracle at s2 1.5.1 (Train 7 = T-60, closed on arrival —
   see `upstream-release-audit.md`); `guard:upstream-freshness` green.
@@ -222,6 +222,35 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☐ 0.5 ☐ 0.6 ☐`
   changes). New `guard:spectrum-tokens-pin` (script + `certification-gates.yml`
   row) fails on any declared/installed/oracle version mismatch or a non-exact
   spec. Suite green except 0.4's known six snapshots.
+
+- 0.4 done 2026-07-03: baseline green — `vp run check`, `test:run` (5504
+  passed), `comparison:test:contract` (84/84), `a11y:check` (smoke 44/44).
+  Format sweep + 6 snapshot refreshes, plus four real fixes:
+  - FocusManagement Escape-restore: `createSelectState` shared the selection
+    manager's focus signal with the trigger, so trigger focus re-armed the
+    item roving-focus effect and stole focus back. Upstream keeps them apart —
+    trigger focus is now its own signal; listbox/option focus routes through
+    `selectionManager`; `createSelect` gains upstream's focus/blur ordering,
+    the isOpen blur guard, and menu-level onBlur.
+  - ActionButton contract red was the spec, not the component: Playwright has
+    no label-association allowance in its hit-target check, so `.check()` on a
+    label-wrapped visually-hidden input can never pass — even against upstream
+    RAC's own DOM (ours is byte-faithful). New `checkControl` helper clicks
+    the wrapping label like a user. Remaining `input.check()` call sites live
+    in visual specs outside the contract gate; sweep them as Phase 2 reaches
+    those components.
+  - Toast smokes: the playground passed `placement="bottom-end"` — S2's
+    `ToastPlacement` is space-separated only, and the unmatched macro variant
+    left the fixed region at its static position below the page (unreachable).
+    App fixed to `"bottom end"`; component verified faithful (the headless
+    layer's hyphen normalization is intentional and separate). Second smoke
+    expected a "Close" button — upstream labels it "Dismiss"
+    (`dialog.dismiss`); spec fixed.
+  - Surfaced for 0.5: `apps/*` are never typechecked
+    (`tsconfig.typecheck.json` includes only `packages/*/src`,
+    `packages/*/test-utils`, `scripts`), which is why the invalid placement
+    literal — a genuine TS error against `ToastPlacement` — never failed a
+    gate.
 
 Phase 1: `D1 ☐ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 Phase 2: not started — march order above is the queue; mark components here as

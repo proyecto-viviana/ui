@@ -56,8 +56,7 @@ export class IncompleteDate {
     this.minute = dateValue?.minute ?? null;
     this.second = dateValue?.second ?? null;
     this.millisecond = dateValue?.millisecond ?? null;
-    this.offset =
-      "offset" in (dateValue ?? {}) ? (dateValue as { offset: number }).offset : null;
+    this.offset = "offset" in (dateValue ?? {}) ? (dateValue as { offset: number }).offset : null;
 
     // Convert the hour from 24 hour time to the given hour cycle.
     if (this.hour != null) {
@@ -94,9 +93,7 @@ export class IncompleteDate {
         const [dayPeriod, hour] = toHourCycle(dt.hour, this.hourCycle);
         return this.dayPeriod === dayPeriod && this.hour === hour;
       }
-      return (
-        this[segment as keyof IncompleteDate] === dt[segment as keyof DateValue]
-      );
+      return this[segment as keyof IncompleteDate] === dt[segment as keyof DateValue];
     });
   }
 
@@ -155,8 +152,7 @@ export class IncompleteDate {
         res.dayPeriod = dayPeriod;
         res.hour = hour;
       } else {
-        (res as unknown as Record<string, unknown>)[field] =
-          placeholder[field as keyof DateValue];
+        (res as unknown as Record<string, unknown>)[field] = placeholder[field as keyof DateValue];
       }
       if (field === "year" && res.era == null) {
         res.era = placeholder.era;
@@ -197,9 +193,7 @@ export class IncompleteDate {
       case "hour": {
         // if date is fully defined or it is just a time field, and we have a time zone, use toValue to get a ZonedDateTime to cycle
         // so DST fallback is properly handled
-        const hasDateSegements = displaySegments.some((s) =>
-          ["year", "month", "day"].includes(s),
-        );
+        const hasDateSegements = displaySegments.some((s) => ["year", "month", "day"].includes(s));
         if (
           "timeZone" in placeholder &&
           (!hasDateSegements || (res.year != null && res.month != null && res.day != null))
@@ -346,7 +340,13 @@ export class IncompleteDate {
   }
 }
 
-function cycleValue(value: number, amount: number, min: number, max: number, round = false): number {
+function cycleValue(
+  value: number,
+  amount: number,
+  min: number,
+  max: number,
+  round = false,
+): number {
   if (round) {
     value += Math.sign(amount);
 

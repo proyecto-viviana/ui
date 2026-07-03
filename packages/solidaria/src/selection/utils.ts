@@ -14,10 +14,7 @@ import { createId } from "../ssr";
  * `@react-aria/selection`'s `getItemElement`, adapted to take a Solid ref
  * accessor instead of a React ref object.
  */
-export function getItemElement(
-  ref: Accessor<HTMLElement | null>,
-  key: Key,
-): HTMLElement | null {
+export function getItemElement(ref: Accessor<HTMLElement | null>, key: Key): HTMLElement | null {
   const root = ref();
   if (!root) {
     return null;

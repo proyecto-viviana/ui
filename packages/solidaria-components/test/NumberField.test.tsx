@@ -86,7 +86,7 @@ describe("NumberField", () => {
       expect(screen.getByRole("button", { name: /decrease/i })).toBeInTheDocument();
     });
 
-    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", () => {
+    it('links aria-describedby to a <Text slot="description"> via TextContext slots', () => {
       // NumberField provides descriptionProps as a TextContext slot, so the
       // <Text slot="description"> picks up the id the input's aria-describedby
       // references — the faithful upstream wiring path.

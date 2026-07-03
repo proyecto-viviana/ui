@@ -57,3 +57,20 @@ export async function frameworkCanvas(section: Locator, framework: FrameworkName
   await expect(canvas).toBeVisible();
   return canvas;
 }
+
+/**
+ * Checks a radio/checkbox in the prop-control panel. The S2 controls wrap a
+ * visually hidden input in a pressable label (upstream RAC structure), so
+ * `input.check()` fails Playwright's hit-target check; click the label like a
+ * user instead, then assert the input state.
+ */
+export async function checkControl(page: Page, name: string, value?: string) {
+  const input = page.locator(
+    value === undefined ? `input[name="${name}"]` : `input[name="${name}"][value="${value}"]`,
+  );
+  if (await input.isChecked()) {
+    return;
+  }
+  await page.locator("label").filter({ has: input }).click();
+  await expect(input).toBeChecked();
+}

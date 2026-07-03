@@ -9,7 +9,7 @@ Disabled tree keys now follow React Aria's split between navigation and
 selection, instead of conflating the two:
 
 - **Keyboard navigation skips disabled rows under the default `disabledBehavior:
-  "all"`.** `createTree`'s `ArrowDown`/`ArrowUp`/`Home`/`End` handlers (and the
+"all"`.** `createTree`'s `ArrowDown`/`ArrowUp`/`Home`/`End` handlers (and the
   focus-in entry point) previously landed on disabled rows; they now walk past
   them to the next/previous/first/last enabled row, mirroring
   `ListKeyboardDelegate.getKeyBelow`/`getKeyAbove`/`getFirstKey`/`getLastKey`.

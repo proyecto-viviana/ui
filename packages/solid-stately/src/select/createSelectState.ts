@@ -240,6 +240,12 @@ export function createSelectState<T = unknown>(
     },
   });
 
+  // The select's own focus state (the trigger), separate from the collection's
+  // focus-within state on the selection manager — upstream useSelectState keeps
+  // these apart with a dedicated useState. Sharing the manager's signal makes
+  // trigger focus re-arm the item roving-focus effect and steal focus back.
+  const [isFocused, setFocused] = createSignal(false);
+
   // Get the selected item from the collection (memoized)
   const selectedItem: Accessor<CollectionNode<T> | null> = createMemo(() => {
     const key = selectedKey();
@@ -269,8 +275,8 @@ export function createSelectState<T = unknown>(
     // Focus management
     focusedKey: listState.focusedKey,
     setFocusedKey: listState.setFocusedKey,
-    isFocused: listState.isFocused,
-    setFocused: listState.setFocused,
+    isFocused,
+    setFocused,
 
     // Overlay state
     isOpen: overlayState.isOpen,

@@ -832,9 +832,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   // below stays stable across focus changes while children still see current values at
   // creation. Render values for collection structure are not reactive in practice.
   const tableChildren = () =>
-    typeof props.children === "function"
-      ? props.children(untrack(renderValues))
-      : props.children;
+    typeof props.children === "function" ? props.children(untrack(renderValues)) : props.children;
   const tableProps = () =>
     ({
       ref: (el: HTMLTableElement) => {

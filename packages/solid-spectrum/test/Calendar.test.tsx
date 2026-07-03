@@ -251,9 +251,7 @@ describe("Calendar (solid-spectrum)", () => {
     // en-US: "<date> selected" (byte-identical to the prior hardcoded suffix).
     render(() => <Calendar aria-label="Appointment date" value={new CalendarDate(2025, 2, 3)} />);
     await waitForCalendar();
-    expect(
-      screen.getByRole("button", { name: /February 3, 2025 selected/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /February 3, 2025 selected/i })).toBeInTheDocument();
     cleanup();
 
     // fr-FR: the suffix is localized ("sélectionné"), not appended in English.

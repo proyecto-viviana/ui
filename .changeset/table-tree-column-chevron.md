@@ -13,7 +13,7 @@ S2 rather than relying on the consumer to draw the chevron themselves.
   tree column of rows that have children (`hasChildItems && isTreeColumn`),
   matching the gating S2's `Cell` uses. It is the **headless** Button on the
   row's `chevron` slot (so it picks up the press-to-toggle/`Expand`/`Collapse`
-  props), wrapped in a flex container *inside* the real `<td>` — making the td
+  props), wrapped in a flex container _inside_ the real `<td>` — making the td
   itself a flex container would break our fixed table-layout column widths.
 - The chevron draws the ui-icon `Chevron` glyph and rotates 90° when expanded.
   Upstream rotates the button via `transform`; we use the `rotate` shorthand to

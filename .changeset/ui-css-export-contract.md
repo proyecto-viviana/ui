@@ -6,7 +6,7 @@ Fix the CSS export contract and drop a redundant built stylesheet
 
 Each CSS subpath (`styles.css`, `components.css`, `theme.css`, `font-faces.css`)
 previously exported `{ import: ./dist/X.css, default: ./src/X.css }`. The
-`src/*.css` are build *sources* — `src/styles.css` is only the unresolved
+`src/*.css` are build _sources_ — `src/styles.css` is only the unresolved
 `@import "@proyecto-viviana/solid-spectrum/styles.css"` and is missing the macro
 CSS that the build inlines — so any consumer or tool resolving via the `default`
 condition silently got an incomplete sheet. Each CSS subpath now resolves to its

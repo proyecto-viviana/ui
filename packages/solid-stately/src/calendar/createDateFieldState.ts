@@ -382,7 +382,10 @@ export function createDateFieldState<T extends DateValue = DateValue>(
   const setValue = (newValue: T | IncompleteDate | null) => {
     if (isDisabled() || isReadOnly()) return;
 
-    if (newValue == null || (newValue instanceof IncompleteDate && newValue.isCleared(displaySegments))) {
+    if (
+      newValue == null ||
+      (newValue instanceof IncompleteDate && newValue.isCleared(displaySegments))
+    ) {
       commitDate(null);
       setDisplayValue(new IncompleteDate(calendar, hourCycle, null));
       return;

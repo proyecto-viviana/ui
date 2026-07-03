@@ -220,7 +220,11 @@ export class ListKeyboardDelegate<T> implements KeyboardDelegate {
     }
   }
 
-  private getNextColumn(key: Key, right: boolean, options?: { includeDisabled?: boolean }): Key | null {
+  private getNextColumn(
+    key: Key,
+    right: boolean,
+    options?: { includeDisabled?: boolean },
+  ): Key | null {
     return right ? this.getPreviousKey(key, options) : this.getNextKey(key, options);
   }
 

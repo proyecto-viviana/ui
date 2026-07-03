@@ -13,7 +13,7 @@ spans an unavailable day unless `allowsNonContiguousRanges` is set).
 `createRangeCalendarState` now mirrors upstream `useRangeCalendarState`:
 
 - `isDateUnavailable` widens to `(date: DateValue, anchorDate: CalendarDate | null)
-  => boolean`. The second argument is the current selection anchor, so consumers
+=> boolean`. The second argument is the current selection anchor, so consumers
   can adjust availability based on the user's first pick. (Single-argument
   callbacks remain assignable, so existing callers are unchanged.)
 - While anchored, an available range is derived via `nextUnavailableDate` — walking

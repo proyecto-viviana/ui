@@ -10,10 +10,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { getListBoxData } from "./createListBox";
 import type { ListState, Key } from "@proyecto-viviana/solid-stately";
-import {
-  createSelectableItem,
-  type SelectableItemState,
-} from "../selection/createSelectableItem";
+import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 
 export interface AriaOptionProps {
   /** The unique key for the option. */
@@ -143,8 +140,8 @@ export function createOption<T>(
     },
     onHoverStart(e) {
       if (shouldFocusOnHover() && !isFocusVisible()) {
-        state.setFocused(true);
-        state.setFocusedKey(getProps().key);
+        state.selectionManager.setFocused(true);
+        state.selectionManager.setFocusedKey(getProps().key);
       }
       getProps().onHoverStart?.(e);
     },

@@ -31,9 +31,7 @@ interface Pin {
   tags: Record<string, string>;
 }
 
-const pin: Pin = JSON.parse(
-  readFileSync(path.join(ROOT, "scripts", "upstream-pin.json"), "utf8"),
-);
+const pin: Pin = JSON.parse(readFileSync(path.join(ROOT, "scripts", "upstream-pin.json"), "utf8"));
 
 type SemVer = [number, number, number];
 
@@ -72,9 +70,7 @@ try {
   });
 } catch {
   console.log("Upstream freshness check");
-  console.log(
-    "- could not reach the Adobe remote (offline?) — skipping, treated as up to date.",
-  );
+  console.log("- could not reach the Adobe remote (offline?) — skipping, treated as up to date.");
   process.exit(0);
 }
 
@@ -103,9 +99,7 @@ for (const pkg of PACKAGES) {
 if (behind) {
   console.log("");
   console.log("A newer upstream release exists. Absorb it via the playbook:");
-  console.log(
-    '  .claude/current/upstream-sync.md  →  "Absorbing a new upstream release"',
-  );
+  console.log('  .claude/current/upstream-sync.md  →  "Absorbing a new upstream release"');
   process.exit(1);
 }
 

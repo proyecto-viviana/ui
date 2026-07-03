@@ -14,7 +14,7 @@ unchanged; the `migrate-*-spine` tasks wire components onto this.
 - **`Provider`** — was a no-op; now nests each `[Context, value]` pair around the
   children, last pair outermost (matching upstream's wrap-in-iteration-order).
   Children render through a lazy getter inside the innermost provider so child
-  components are *created* within every provider's owner — Solid binds
+  components are _created_ within every provider's owner — Solid binds
   `useContext` at component-execution time, so eager children would miss the
   providers.
 - **`useSlottedContext(context, slot)`** — resolves a `slots` record: `slot`

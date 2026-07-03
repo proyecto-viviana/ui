@@ -1,5 +1,13 @@
 // @ts-nocheck
-import { type JSX, createContext, createUniqueId, mergeProps, splitProps, Show, useContext } from "solid-js";
+import {
+  type JSX,
+  createContext,
+  createUniqueId,
+  mergeProps,
+  splitProps,
+  Show,
+  useContext,
+} from "solid-js";
 import {
   TextField as HeadlessTextField,
   Label as HeadlessLabel,
@@ -8,10 +16,7 @@ import {
   type TextFieldProps as HeadlessTextFieldProps,
   type TextFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import {
-  getSlottedContextProps,
-  type SpectrumContextValue,
-} from "../button/spectrum-context";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };

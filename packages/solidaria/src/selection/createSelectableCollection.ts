@@ -163,9 +163,7 @@ export function createSelectableCollection<T = unknown>(
       case "ArrowDown": {
         if (d.getKeyBelow) {
           let nextKey =
-            manager.focusedKey != null
-              ? d.getKeyBelow(manager.focusedKey)
-              : d.getFirstKey?.();
+            manager.focusedKey != null ? d.getKeyBelow(manager.focusedKey) : d.getFirstKey?.();
           if (nextKey == null && shouldFocusWrap) {
             nextKey = d.getFirstKey?.(manager.focusedKey ?? undefined);
           }
@@ -179,9 +177,7 @@ export function createSelectableCollection<T = unknown>(
       case "ArrowUp": {
         if (d.getKeyAbove) {
           let nextKey =
-            manager.focusedKey != null
-              ? d.getKeyAbove(manager.focusedKey)
-              : d.getLastKey?.();
+            manager.focusedKey != null ? d.getKeyAbove(manager.focusedKey) : d.getLastKey?.();
           if (nextKey == null && shouldFocusWrap) {
             nextKey = d.getLastKey?.(manager.focusedKey ?? undefined);
           }
@@ -195,9 +191,7 @@ export function createSelectableCollection<T = unknown>(
       case "ArrowLeft": {
         if (d.getKeyLeftOf) {
           let nextKey =
-            manager.focusedKey != null
-              ? d.getKeyLeftOf(manager.focusedKey)
-              : d.getFirstKey?.();
+            manager.focusedKey != null ? d.getKeyLeftOf(manager.focusedKey) : d.getFirstKey?.();
           if (nextKey == null && shouldFocusWrap) {
             nextKey =
               direction() === "rtl"
@@ -214,9 +208,7 @@ export function createSelectableCollection<T = unknown>(
       case "ArrowRight": {
         if (d.getKeyRightOf) {
           let nextKey =
-            manager.focusedKey != null
-              ? d.getKeyRightOf(manager.focusedKey)
-              : d.getFirstKey?.();
+            manager.focusedKey != null ? d.getKeyRightOf(manager.focusedKey) : d.getFirstKey?.();
           if (nextKey == null && shouldFocusWrap) {
             nextKey =
               direction() === "rtl"
@@ -565,7 +557,13 @@ export function createSelectableCollection<T = unknown>(
 
     // If the focused key became null (e.g. the last item was deleted), focus the
     // whole collection.
-    if (!shouldUseVirtualFocus && isFocused && focusedKey == null && lastFocusedKey != null && root) {
+    if (
+      !shouldUseVirtualFocus &&
+      isFocused &&
+      focusedKey == null &&
+      lastFocusedKey != null &&
+      root
+    ) {
       focusSafely(root);
     }
 

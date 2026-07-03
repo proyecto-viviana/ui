@@ -24,12 +24,7 @@ export {
   type Orientation,
   type Direction,
 } from "./ListKeyboardDelegate";
-export {
-  DOMLayoutDelegate,
-  type LayoutDelegate,
-  type Rect,
-  type Size,
-} from "./DOMLayoutDelegate";
+export { DOMLayoutDelegate, type LayoutDelegate, type Rect, type Size } from "./DOMLayoutDelegate";
 export {
   createSelectableCollection,
   type CreateSelectableCollectionOptions,

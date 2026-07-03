@@ -90,7 +90,7 @@ describe("DatePicker", () => {
       expect(segments.length).toBe(3); // month, day, year
     });
 
-    it("links aria-describedby to a <Text slot=\"description\"> via TextContext slots", async () => {
+    it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
       // DatePicker provides descriptionProps as a TextContext slot, so the
       // <Text slot="description"> picks up the id the group's aria-describedby
       // references — the faithful upstream wiring path.

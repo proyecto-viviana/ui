@@ -83,8 +83,7 @@ export function createCalendarMonthPicker(
   });
 
   const ariaLabel = createMemo(
-    () =>
-      new Intl.DisplayNames(locale().locale, { type: "dateTimeField" }).of("month") ?? "month",
+    () => new Intl.DisplayNames(locale().locale, { type: "dateTimeField" }).of("month") ?? "month",
   );
 
   return {

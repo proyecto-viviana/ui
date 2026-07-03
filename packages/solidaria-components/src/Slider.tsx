@@ -137,7 +137,8 @@ export interface SliderFillRenderProps {
 }
 
 export interface SliderFillProps
-  extends SlotProps,
+  extends
+    SlotProps,
     HoverEvents,
     Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children"> {
   /** The offset from which to start the fill. Defaults to the slider's minValue. */
@@ -564,9 +565,7 @@ export function SliderFill(props: SliderFillProps): JSX.Element {
   };
 
   const offset = () =>
-    local.offset != null
-      ? clampFill(local.offset, state.minValue, state.maxValue)
-      : state.minValue;
+    local.offset != null ? clampFill(local.offset, state.minValue, state.maxValue) : state.minValue;
   const start = () => percentOf(offset());
   const end = () => state.getValuePercent() * 100;
   const startPercent = () => Math.min(start(), end());

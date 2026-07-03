@@ -122,7 +122,7 @@ tasks:
     roadmap: headless-spine-port
   - id: migrate-describedby-slots
     title: Wire aria-describedby across components onto the ported slot path
-    state: in-progress  # foundational slice done; the 2 remaining parity closures split out below
+    state: in-progress # foundational slice done; the 2 remaining parity closures split out below
     depends: [port-context-slots]
     roadmap: headless-spine-port
     note: Done = the 10 field/toggle *Field components (7 hybrid keep props + add slots; SwitchField/CheckboxField/RadioField pure-slot, props dropped). Remaining work is the two parity divergences tracked as describedby-slots-group-redesign + rac-field-prop-divergence. The shared createField hook must stay prop-conditional (a createSlotId swap dangles ~9 non-reactive consumers — see memory).
@@ -281,12 +281,12 @@ widget.
 `ListKeyboardDelegate` / `DOMLayoutDelegate`, `createSelectableCollection`,
 `createSelectableList`, and now the faithful `solidaria-components/utils.tsx`
 context machinery (`Provider` nests `[Context, value]` pairs with lazy children;
-`useSlottedContext` resolves a `slots` record with the DEFAULT_SLOT fallback /
+`useSlottedContext` resolves a `slots` record with the `DEFAULT_SLOT` fallback /
 throws on unknown / `null` opts out; `useContextProps(props, ref, ctx)` resolves
 `props.slot`, merges context props under the component's own via the reactive
 handler-chaining `mergeProps`, and merges the component+context refs; plus
 `useSlot`, `RefLike`/`SlottedValue`/`SlottedContextValue`, `assignRef`/`mergeRefs`)
-all exist. They are *additive* so far — no widget consumes them yet; the per-widget
+all exist. They are _additive_ so far — no widget consumes them yet; the per-widget
 arrow/Home/End copies in `createMenu.ts` / `createListBox.ts` are still live and get
 deleted in the `migrate-*-spine` tasks, which are the next step now the spine is
 complete. Three caveats carried by keystone 2:
@@ -326,7 +326,7 @@ exist: the shared selectable-collection hook (`port-list-keyboard-delegate`, DON
 and a faithful slot-resolving `useContextProps` + nested `Provider`
 (`port-context-slots`, DONE). What remains is (a) `createListState.ts` has no
 `filter` (the filtered-list-state item, still a `headless-spine-port` task), and
-(b) the actual consumer wiring — no collection widget yet *reads*
+(b) the actual consumer wiring — no collection widget yet _reads_
 `SelectableCollectionContext` / the autocomplete contexts through `useContextProps`
 (that happens in the `migrate-*-spine` tasks). So the bridge is still not a
 consumer tweak; resume `autocomplete-collection-bridge` after the filtered-list
@@ -524,7 +524,7 @@ portal mount.
 
 **Checkmark shows on every option.** ARIA is correct — only the selected option
 carries `aria-selected` / `data-selected="true"` — but the SVG checkmark is visible
-on every row. The base style is *not* the cause (the report's first guess): the macro
+on every row. The base style is _not_ the cause (the report's first guess): the macro
 `pickerCheckmark` (`picker/index.tsx:435`) already declares `visibility { default:
 hidden, isSelected: visible }`. The real defect is the `isSelected` condition
 resolving truthy for all rows, so the suspect is how `renderProps.isSelected` is

@@ -156,9 +156,7 @@ export class SelectionManager<T = unknown> {
       return false;
     }
     const selectedKeys = this.state.selectedKeys;
-    return selectedKeys === "all"
-      ? this.canSelectItem(mappedKey)
-      : selectedKeys.has(mappedKey);
+    return selectedKeys === "all" ? this.canSelectItem(mappedKey) : selectedKeys.has(mappedKey);
   }
 
   /** Whether the selection is empty. */
