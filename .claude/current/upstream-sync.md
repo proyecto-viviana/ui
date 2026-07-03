@@ -44,17 +44,20 @@ Three distinct staleness axes, don't conflate them:
   by hand anytime with `vp run guard:upstream-freshness`. When it goes red, work
   the "Absorbing a new upstream release" steps below.
 - **installed comparison deps vs. pin** (does `apps/comparison/node_modules`
-  match the pin?) — **it usually doesn't.** Those deps are resolved by the
-  comparison app's own dependency ranges, not by the pin, so they lag. As of
-  2026-06-20 the installed tree is two trains behind: s2 `1.3.0` / RAC `1.17.0` /
-  `@react-aria/utils` `3.33.0` vs the pin's `1.5.1` / `1.19.0` / `3.34.1`. This
-  matters because `source-index.md` lists the installed `@react-aria` /
-  `@react-spectrum/s2` paths as the first parity authority — **for a pinned-parity
-  port, read the vendored `./react-spectrum` source instead** (or diff the
-  installed version against the pin first). Two real near-misses: `isFocusable`'s
-  `skipVisibilityCheck` (T-57) and `useAutocomplete`'s `autoFocusOnMount` (T-58)
-  exist at the pin but not in the stale installed copies. Same family as the
-  "confirm flags vs source" lesson — confirm the _version_, too.
+  match the pin?) — aligned 2026-07-03 (recertification 0.2): the app manifest
+  pins exact versions (s2 `1.5.1` / RAC `1.19.0` / react-aria `3.50.0` /
+  react-stately `3.48.0`), so installed == pin today. Those deps are still
+  resolved by the app's own manifest, not by `upstream-pin.json`, so **bumping
+  the pin means bumping the app manifest too** — re-check here on every
+  absorb. Two shape notes from the alignment: react-aria `3.50.0` is
+  upstream's consolidated single package (no separate `@react-aria/*` /
+  `@react-stately/*` installs anymore), and installed RAC ships only compiled
+  `dist` — **for a pinned-parity port, read the vendored `./react-spectrum`
+  source** (`apps/comparison/playbook/source-index.md` agrees). Two real
+  near-misses from the stale era: `isFocusable`'s `skipVisibilityCheck` (T-57)
+  and `useAutocomplete`'s `autoFocusOnMount` (T-58) existed at the pin but not
+  in the then-installed copies. Same family as the "confirm flags vs source"
+  lesson — confirm the _version_, too.
 
 ### Materialize / re-materialize the tree
 

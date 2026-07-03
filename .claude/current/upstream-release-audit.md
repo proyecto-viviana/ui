@@ -307,10 +307,15 @@ metadata bump of Adobe's unported chat-components package (pre-existing at
       `baseColor("transparent-overlay-800")` here — an invented value matching
       neither 1.5.0 nor 1.5.1 — and now mirrors the 1.5.1 shape exactly
       (`s2-button-styles.ts`). Button suites 182/182 green; the parity guards show
-      no new flags. Note: the sibling `s2-action-button-styles.ts` still carries
-      `baseColor("transparent-overlay-800")` — that is the pre-existing
-      ActionButton/ToggleButton divergence the 2026-07 audit flagged, owned by the
-      recertification march (Tier 1), not this train.
+      no new flags. The sibling `s2-action-button-styles.ts` carried the same
+      drift as its static-color _text_ color (the pre-existing
+      ActionButton/ToggleButton divergence the 2026-07 audit flagged) — closed
+      2026-07-03 during recertification 0.2, when the pin-aligned comparison
+      deps turned it into a red `staticColor` contract test: now
+      `'transparent-overlay-1000'` per upstream (changeset
+      `actionbutton-staticcolor-text-overlay.md`). The background's
+      `isSelected: baseColor('transparent-overlay-800')` is upstream-faithful
+      and stays.
 
 ## Cross-train behavioral tickets (source-level sweep)
 

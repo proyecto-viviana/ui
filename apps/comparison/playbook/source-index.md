@@ -8,7 +8,8 @@ a general standards review.
 
 When sources disagree, use this order:
 
-1. Installed upstream source for the exact version in this repo.
+1. Pinned upstream source (the vendored `./react-spectrum` tree at
+   `scripts/upstream-pin.json`; the installed deps match it as of 2026-07-03).
 2. React Aria and S2 docs, testing docs, blog posts, release notes, and examples.
 3. W3C and WHATWG technical specifications.
 4. APG patterns and examples.
@@ -19,48 +20,51 @@ When sources disagree, use this order:
 Record the disagreement and chosen authority in the research notes or runtime
 evidence. APG, ARIA-AT, WCAG, platform explainers, and blog posts can identify
 risks, test obligations, and browser behavior to verify. They do not override
-installed upstream behavior or formal specifications unless we explicitly
+pinned upstream behavior or formal specifications unless we explicitly
 choose and document a deviation.
 
 Documentation validation is required, but documentation authority is layered:
 
 - official Adobe docs define the public examples, viewer controls, caveats, and
   testing expectations users see;
-- installed upstream source defines the exact behavior we are porting when docs
+- pinned upstream source defines the exact behavior we are porting when docs
   and source disagree;
 - formal specs define the platform and accessibility floor;
 - APG, ARIA-AT, WCAG, Chrome/web.dev, MDN, and respected articles help discover
   risk, but each discovered obligation must map back to source, specs, current
   React behavior, or a reproducible browser assertion before it blocks parity.
 
-## Installed Source
+## Upstream Source (pinned)
 
 These are the first source of truth for parity:
 
-| Need                          | Source path                                              |
-| ----------------------------- | -------------------------------------------------------- |
-| Styled S2 implementation      | `apps/comparison/node_modules/@react-spectrum/s2/src`    |
-| Headless RAC implementation   | `apps/comparison/node_modules/react-aria-components/src` |
-| React Aria hook behavior      | `apps/comparison/node_modules/@react-aria`               |
-| React Stately behavior        | `apps/comparison/node_modules/@react-stately`            |
-| Solid state port              | `packages/solid-stately/src`                             |
-| Solid ARIA hook port          | `packages/solidaria/src`                                 |
-| Solid headless component port | `packages/solidaria-components/src`                      |
-| Solid styled S2 port          | `packages/solid-spectrum/src`                            |
+| Need                          | Source path                                         |
+| ----------------------------- | --------------------------------------------------- |
+| Styled S2 implementation      | `react-spectrum/packages/@react-spectrum/s2/src`    |
+| Headless RAC implementation   | `react-spectrum/packages/react-aria-components/src` |
+| React Aria hook behavior      | `react-spectrum/packages/@react-aria/<pkg>/src`     |
+| React Stately behavior        | `react-spectrum/packages/@react-stately/<pkg>/src`  |
+| Solid state port              | `packages/solid-stately/src`                        |
+| Solid ARIA hook port          | `packages/solidaria/src`                            |
+| Solid headless component port | `packages/solidaria-components/src`                 |
+| Solid styled S2 port          | `packages/solid-spectrum/src`                       |
 
-> **The installed `apps/comparison/node_modules` deps can lag the pin — verify
-> before trusting them.** They are resolved by the comparison app's own
-> dependency ranges, not by the upstream pin, so they drift behind. As of
-> 2026-06-20 the installed tree is **two trains behind**: s2 `1.3.0` / RAC
-> `1.17.0` / `@react-aria/utils` `3.33.0` vs the pin's s2 `1.5.0` / RAC `1.19.0`
-> / `@react-aria/utils` `3.34.1` (`scripts/upstream-pin.json`). The vendored
-> `./react-spectrum` monorepo **is** the pin (materialized at the pinned commit;
-> `vp run guard:upstream-pin` asserts it), so for any **pinned-parity** port read
-> the behavior there — e.g. `react-spectrum/packages/react-aria/src/...` and
-> `.../@react-aria/utils/src/...`. Two real near-misses came from porting the
-> stale installed dist instead of the pin: `isFocusable`'s `skipVisibilityCheck`
-> (added in utils 3.34.1; T-57) and `useAutocomplete`'s `autoFocusOnMount` (added
-> in autocomplete rc.8; T-58) are both absent from the installed copies.
+> **Read upstream source from the vendored `./react-spectrum` monorepo — it
+> is the pin** (materialized at the pinned commit in
+> `scripts/upstream-pin.json`; `vp run guard:upstream-test-parity` prints a
+> DRIFT banner when the tree does not match). The
+> installed `apps/comparison/node_modules` deps were aligned to the pin on
+> 2026-07-03 (recertification 0.2: s2 `1.5.1` / RAC `1.19.0` / react-aria
+> `3.50.0` / react-stately `3.48.0`, exact versions), but they are still
+> resolved by the app's own manifest, so re-verify after any pin bump. Two
+> shape caveats on the installed tree: react-aria `3.50.0` is upstream's
+> consolidated single package — the separate `@react-aria/*` /
+> `@react-stately/*` packages are no longer installed (their hooks live inside
+> `react-aria` / `react-stately`); and RAC `1.19.0` ships only compiled `dist`
+> plus subpath entries, no `src` (only the s2 tarball still ships `src`). Two
+> real near-misses came from porting a then-stale installed dist instead of
+> the pin: `isFocusable`'s `skipVisibilityCheck` (T-57) and `useAutocomplete`'s
+> `autoFocusOnMount` (T-58) were both absent from the installed copies.
 
 ## Adobe Docs
 
@@ -141,12 +145,12 @@ component contract by themselves.
 
 - Source expansion is allowed only when it answers a current task question.
 - Prefer exact component pages over general guides.
-- Prefer installed source over remembered behavior.
+- Prefer pinned upstream source over remembered behavior.
 - Record `none found` when no related blog, release note, testing page, APG
   example, or ARIA-AT report exists.
 - Use independent blog posts as prompts for source/spec/browser checks, not as
   standalone acceptance criteria.
 - Use Chrome/web.dev/MDN to choose assertions and understand browser behavior;
-  resolve conflicts against installed source, specs, or current React behavior.
+  resolve conflicts against pinned upstream source, specs, or current React behavior.
 - Do not block a component on manual assistive-technology testing unless the
   pass explicitly calls for it; record it as a risk or follow-up.

@@ -266,7 +266,7 @@ export const s2ActionButtonStaticColor = style<S2ActionButtonStyleProps>(
       },
     },
     color: {
-      default: baseColor("transparent-overlay-800"),
+      default: "transparent-overlay-1000",
       isSelected: "auto",
       isDisabled: "transparent-overlay-400",
       forcedColors: {

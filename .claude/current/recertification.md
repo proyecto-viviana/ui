@@ -199,10 +199,18 @@ When the ledger is empty, the machinery has provably subsumed the audit.
 
 ## Queue
 
-Phase 0: `0.1 ☑ 0.2 ☐ 0.3 ☐ 0.4 ☐ 0.5 ☐ 0.6 ☐`
+Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☐ 0.4 ☐ 0.5 ☐ 0.6 ☐`
 
 - 0.1 done 2026-07-03: oracle at s2 1.5.1 (Train 7 = T-60, closed on arrival —
   see `upstream-release-audit.md`); `guard:upstream-freshness` green.
+- 0.2 done 2026-07-03: `apps/comparison` pins exact s2 1.5.1 / RAC 1.19.0 /
+  react-aria 3.50.0 / react-stately 3.48.0 (react-aria 3.50 is upstream's
+  consolidated single package — no separate `@react-aria/*` installs). The
+  fresh oracle immediately exposed one real divergence — ActionButton /
+  ToggleButton static-color text color — fixed to upstream's
+  `transparent-overlay-1000`. Build + contract suite green except 0.4's known
+  ActionButton pointer red; `source-index.md` authority paths repointed at the
+  vendored pin.
 
 Phase 1: `D1 ☐ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 Phase 2: not started — march order above is the queue; mark components here as
