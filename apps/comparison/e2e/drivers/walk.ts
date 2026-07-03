@@ -85,17 +85,19 @@ async function resetGestureState(ctx: PanelContext, target: Locator, state: Gest
   }
 }
 
-export async function walkScenario(
+/**
+ * The shared per-panel skeleton: pin theme → load the case route fresh →
+ * neutralize the pointer → resolve the framework canvas → beforePanel →
+ * `visit` → afterPanel, for React then Solid. Interaction drivers (D4/D5)
+ * use it directly; `walkScenario` layers the gesture-state loop on top.
+ */
+export async function forEachScenarioPanel(
   page: Page,
   scenario: DriverScenario,
   caseDef: DriverCase,
   theme: ComparisonColorScheme,
-  collect: (step: WalkStepContext) => Promise<void>,
+  visit: (ctx: PanelContext) => Promise<void>,
 ) {
-  const requested = new Set(scenarioStates(scenario, caseDef));
-  const states = allGestureStates.filter((state) => requested.has(state));
-  const settle = scenario.settleMs ?? defaultSettleMs;
-
   for (const framework of ["react", "solid"] as const) {
     await pinComparisonTheme(page, theme);
     await page.goto(scenarioRoute(scenario, caseDef));
@@ -107,6 +109,23 @@ export async function walkScenario(
     const ctx: PanelContext = { page, canvas, framework };
 
     await scenario.beforePanel?.(ctx);
+    await visit(ctx);
+    await scenario.afterPanel?.(ctx);
+  }
+}
+
+export async function walkScenario(
+  page: Page,
+  scenario: DriverScenario,
+  caseDef: DriverCase,
+  theme: ComparisonColorScheme,
+  collect: (step: WalkStepContext) => Promise<void>,
+) {
+  const requested = new Set(scenarioStates(scenario, caseDef));
+  const states = allGestureStates.filter((state) => requested.has(state));
+  const settle = scenario.settleMs ?? defaultSettleMs;
+
+  await forEachScenarioPanel(page, scenario, caseDef, theme, async (ctx) => {
     const target = scenario.target(ctx);
     await expect(target).toBeVisible();
 
@@ -116,7 +135,5 @@ export async function walkScenario(
       await collect({ ...ctx, scenario, caseDef, theme, state, target });
       await resetGestureState(ctx, target, state);
     }
-
-    await scenario.afterPanel?.(ctx);
-  }
+  });
 }

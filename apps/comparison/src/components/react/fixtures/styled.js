@@ -220,6 +220,10 @@ import {
   serializeButtonDemoProps,
 } from "@comparison/data/button-demo";
 import {
+  dispatchComparisonCallback,
+  pressCallbackLoggers,
+} from "@comparison/data/event-log";
+import {
   checkboxDemoPropsFromWindow,
   initialCheckboxDemoSelected,
   normalizeCheckboxDemoProps,
@@ -2487,6 +2491,7 @@ function ReactButtonDemo() {
   const demoProps = useButtonDemoControls();
   const colorScheme = useComparisonResolvedTheme();
   const locale = buttonDemoLocaleFromWindow();
+  const pressLog = pressCallbackLoggers("button");
   return renderReactSpectrumReference(
     jsx("div", {
       "data-comparison-action-count": String(actionCount),
@@ -2503,7 +2508,11 @@ function ReactButtonDemo() {
           isDisabled: demoProps.isDisabled,
           isPending: demoProps.isPending,
           "aria-label": demoProps.iconPlacement === "only" ? demoProps.children : void 0,
-          onPress: () => setActionCount((count) => count + 1),
+          ...pressLog,
+          onPress: (event) => {
+            pressLog.onPress(event);
+            setActionCount((count) => count + 1);
+          },
           children: renderButtonChildren(demoProps),
         }),
       }),
@@ -3913,7 +3922,13 @@ function ReactTabsDemo() {
         keyboardActivation: demoProps.keyboardActivation,
         disabledKeys: tabsDemoDisabledKeys(demoProps),
         isDisabled: demoProps.isDisabled,
-        onSelectionChange: (key) => setSelectedKey(String(key)),
+        onSelectionChange: (key) => {
+          dispatchComparisonCallback("tabs", "onSelectionChange", {
+            target: document.activeElement,
+            value: key,
+          });
+          setSelectedKey(String(key));
+        },
         ...selectionProps,
         children: [renderReactTabList(demoProps), renderReactTabPanels(demoProps)],
       }),
@@ -5091,6 +5106,10 @@ function ReactDialogDemo() {
       children: jsxs(SpectrumDialogTrigger, {
         isOpen,
         onOpenChange: (nextOpen) => {
+          dispatchComparisonCallback("dialog", "onOpenChange", {
+            target: document.activeElement,
+            value: nextOpen,
+          });
           setIsOpen(nextOpen);
           setDemoProps((current) => ({ ...current, isOpen: nextOpen }));
         },

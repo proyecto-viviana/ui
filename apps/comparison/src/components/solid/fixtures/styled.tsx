@@ -233,6 +233,10 @@ import {
   type ButtonDemoProps,
 } from "@comparison/data/button-demo";
 import {
+  dispatchComparisonCallback,
+  pressCallbackLoggers,
+} from "@comparison/data/event-log";
+import {
   checkboxDemoPropsFromWindow,
   initialCheckboxDemoSelected,
   normalizeCheckboxDemoProps,
@@ -4305,7 +4309,13 @@ function SolidSpectrumTabsDemo() {
       keyboardActivation: props.keyboardActivation,
       disabledKeys: tabsDemoDisabledKeys(props),
       isDisabled: props.isDisabled,
-      onSelectionChange: (key: string) => setSelectedKey(String(key)),
+      onSelectionChange: (key: string) => {
+        dispatchComparisonCallback("tabs", "onSelectionChange", {
+          target: document.activeElement,
+          value: key,
+        });
+        setSelectedKey(String(key));
+      },
     };
 
     if (props.selectionSource === "defaultSelectedKey") {
@@ -4669,6 +4679,7 @@ function SolidSpectrumSkeletonDemo() {
 function SolidSpectrumButtonDemo() {
   const [actionCount, setActionCount] = createSignal(0);
   const [demoProps, setDemoProps] = createSignal(buttonDemoPropsFromWindow());
+  const pressLog = pressCallbackLoggers("button");
   const locale = buttonDemoLocaleFromWindow();
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
@@ -4734,7 +4745,9 @@ function SolidSpectrumButtonDemo() {
         size: props.size,
         staticColor: props.staticColor,
         ...(props.iconPlacement === "only" ? { "aria-label": props.children } : {}),
-        onPress: (_event: unknown) => {
+        ...pressLog,
+        onPress: (event: unknown) => {
+          pressLog.onPress(event as { target?: unknown; pointerType?: string });
           if (!props.isPending) {
             setActionCount((count) => count + 1);
           }
@@ -4965,6 +4978,10 @@ function SolidSpectrumDialogDemo() {
   );
 
   const handleOpenChange = (nextOpen: boolean) => {
+    dispatchComparisonCallback("dialog", "onOpenChange", {
+      target: document.activeElement,
+      value: nextOpen,
+    });
     setIsOpen(nextOpen);
     setDemoProps((current) => ({ ...current, isOpen: nextOpen }));
   };

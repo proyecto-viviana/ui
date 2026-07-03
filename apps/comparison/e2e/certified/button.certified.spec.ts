@@ -1,5 +1,7 @@
-import type { DriverScenario } from "../drivers/scenario";
+import { registerEventSequenceDriver, standardPressGestures } from "../drivers/events";
+import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
+import type { DriverScenario } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 
 /**
@@ -19,7 +21,21 @@ const buttonScenario: DriverScenario = {
     { id: "size-s", params: { size: "S" } },
     { id: "disabled", params: { isDisabled: "true" }, states: ["default"] },
   ],
+  // D4: full press-gesture matrix on the canonical case, plus the disabled
+  // case, where the whole point is which events do NOT fire (no press
+  // callbacks, no click, no focus on mousedown).
+  events: {
+    cases: ["accent-fill", "disabled"],
+    gestures: standardPressGestures,
+  },
+  // D5: Tab enters/leaves the button identically in both panels; everything
+  // beyond the canvas collapses to the outside sentinel.
+  focus: {
+    walks: [{ id: "tab-cycle", keys: ["Tab", "Shift+Tab", "Shift+Tab"] }],
+  },
 };
 
 registerStateMatrixDriver(buttonScenario);
 registerPixelDriver(buttonScenario);
+registerEventSequenceDriver(buttonScenario);
+registerFocusTrailDriver(buttonScenario);

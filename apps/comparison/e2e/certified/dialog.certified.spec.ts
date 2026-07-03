@@ -1,4 +1,6 @@
 import { expect } from "@playwright/test";
+import { mouseClickGesture, registerEventSequenceDriver } from "../drivers/events";
+import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -74,9 +76,63 @@ const closeButtonScenario: DriverScenario = {
       .first(),
   settleMs: 400,
   cases: [{ id: "modal-close-button" }],
+  // D4: closing gestures from inside the open dialog — the log must show the
+  // same dismissal path (press events on the close button vs a bare Escape
+  // keydown), the same onOpenChange(false) position, and the same focus
+  // restoration to the trigger.
+  events: {
+    gestures: [
+      { ...mouseClickGesture, settleMs: 700 },
+      {
+        id: "escape-close",
+        run: async ({ page }) => {
+          await page.keyboard.press("Escape");
+        },
+        settleMs: 700,
+      },
+    ],
+  },
+  // D5: the focus trap — Tab cycles inside the dialog and must never escape
+  // to the page behind it.
+  focus: {
+    walks: [{ id: "trap-cycle", keys: ["Tab", "Tab", "Tab", "Shift+Tab"] }],
+  },
+};
+
+/**
+ * D4-only scenario: the full open → close cycle recorded from the trigger.
+ * No `beforePanel` — the gesture itself opens the dialog, so the log captures
+ * trigger press events, onOpenChange(true), focus moving into the dialog,
+ * the Escape dismissal, onOpenChange(false), and focus restoration, all in
+ * one ordered sequence.
+ */
+const triggerScenario: DriverScenario = {
+  slug: "dialog",
+  title: "Dialog trigger",
+  target: ({ canvas }) => canvas.getByRole("button", { name: "Open Dialog" }).first(),
+  cases: [{ id: "modal-trigger" }],
+  events: {
+    gestures: [
+      {
+        id: "open-escape-close",
+        run: async ({ page, target }) => {
+          await target.focus();
+          await page.keyboard.press("Enter");
+          await expect(page.getByRole("dialog", { name: dialogTitle })).toBeVisible();
+          await page.waitForTimeout(600);
+          await page.keyboard.press("Escape");
+          await expect(page.getByRole("dialog")).toHaveCount(0);
+        },
+        settleMs: 700,
+      },
+    ],
+  },
 };
 
 registerStateMatrixDriver(surfaceScenario);
 registerStateMatrixDriver(closeButtonScenario);
 registerPixelDriver(surfaceScenario);
 registerPixelDriver(closeButtonScenario);
+registerEventSequenceDriver(closeButtonScenario);
+registerEventSequenceDriver(triggerScenario);
+registerFocusTrailDriver(closeButtonScenario);

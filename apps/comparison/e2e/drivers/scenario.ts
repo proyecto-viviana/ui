@@ -32,6 +32,37 @@ export interface PanelContext {
 
 export type TargetResolver = (ctx: PanelContext) => Locator;
 
+export interface EventGestureContext extends PanelContext {
+  /** The resolved gesture target (gesture override or scenario target). */
+  target: Locator;
+}
+
+/**
+ * A scripted input gesture for the D4 event-sequence driver. Gestures use
+ * raw coordinates / protocol-level focus (not `locator.click()`) so they run
+ * identically against disabled targets, which Playwright's actionability
+ * checks would otherwise refuse.
+ */
+export interface EventGesture {
+  /** Stable id used in test titles. */
+  id: string;
+  /** Element the gesture drives; defaults to the scenario target. */
+  target?: TargetResolver;
+  run: (ctx: EventGestureContext) => Promise<void>;
+  /** Milliseconds to wait after the gesture before collecting the log. */
+  settleMs?: number;
+}
+
+/** A keyboard walk for the D5 focus-trail driver. */
+export interface FocusWalk {
+  /** Stable id used in test titles. */
+  id: string;
+  /** Element focused before the walk; defaults to the scenario target. */
+  start?: TargetResolver;
+  /** Keys pressed in order (Playwright key names); focus is snapshot after each. */
+  keys: readonly string[];
+}
+
 export interface DriverCase {
   /** Stable id used in test titles and waiver matching. */
   id: string;
@@ -96,6 +127,14 @@ export interface DriverScenario {
   beforePanel?: (ctx: PanelContext) => Promise<void>;
   afterPanel?: (ctx: PanelContext) => Promise<void>;
   pixel?: { waivers?: readonly PixelWaiver[] };
+  /**
+   * D4 event-sequence driver config. Interaction logs are theme-independent,
+   * so D4 runs the first scenario theme only; `cases` defaults to the first
+   * scenario case.
+   */
+  events?: { cases?: readonly string[]; gestures: readonly EventGesture[] };
+  /** D5 focus/keyboard-trail driver config; same case/theme defaults as D4. */
+  focus?: { cases?: readonly string[]; walks: readonly FocusWalk[] };
 }
 
 export const defaultStateReadiness: Record<GestureStateId, string | null> = {
@@ -125,6 +164,23 @@ export function scenarioRoute(scenario: DriverScenario, caseDef: DriverCase): st
   const params = new URLSearchParams(caseDef.params ?? {});
   const query = params.toString();
   return `/components/${scenario.slug}/${query ? `?${query}` : ""}`;
+}
+
+/**
+ * Resolves the case subset an interaction driver runs: the listed ids, or
+ * just the first (canonical) case when none are listed.
+ */
+export function driverCases(scenario: DriverScenario, ids?: readonly string[]): DriverCase[] {
+  if (!ids) {
+    return [scenario.cases[0]];
+  }
+  return ids.map((id) => {
+    const caseDef = scenario.cases.find((candidate) => candidate.id === id);
+    if (!caseDef) {
+      throw new Error(`Unknown case id "${id}" for scenario "${scenario.slug}"`);
+    }
+    return caseDef;
+  });
 }
 
 export function readinessAttribute(scenario: DriverScenario, state: GestureStateId): string | null {
