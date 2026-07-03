@@ -15,6 +15,7 @@ import {
   createSignal,
   onMount,
   sharedConfig,
+  untrack,
   Show,
 } from "solid-js";
 import { isServer } from "solid-js/web";
@@ -76,6 +77,19 @@ export interface RenderPropsResult<T> {
    *   {renderProps.renderChildren()}
    */
   renderChildren: () => JSX.Element;
+  /**
+   * Render a render-prop child ONCE over a reactive view of the values,
+   * mirroring how React reconciles a render prop's returned tree in place.
+   *
+   * Prefer this over `renderChildren()` for interactive leaf components (a
+   * Tab, a toggle segment) whose child wraps the pressable element: re-invoking
+   * the render function on every values() change recreates that DOM subtree,
+   * which detaches the pointer/press target mid-gesture and makes the browser
+   * suppress the native `click` (createPress then has to synthesize an
+   * untrusted fallback click — a visible parity break vs React). Static (non
+   * function) children are returned untouched, exactly like `renderChildren`.
+   */
+  renderChildrenStable: () => JSX.Element;
   /** The raw children prop (function or JSX) - use renderChildren() in most cases */
   children: RenderChildren<T> | undefined;
   /** The render props values accessor */
@@ -137,6 +151,36 @@ export function useRenderProps<T extends object>(
       return typeof children === "function" && children.length > 0
         ? children(values())
         : (children as JSX.Element);
+    },
+    renderChildrenStable: () => {
+      const children = props.children;
+      if (typeof children !== "function" || children.length === 0) {
+        return children as JSX.Element;
+      }
+      // Invoke the render function exactly once, over a getter view of the
+      // values, so the returned DOM is created a single time and only the
+      // reactive reads inside it (JSX bindings, component props) re-run on a
+      // values() change — React's reconciliation, not Solid's recreation.
+      //
+      // `untrack` keeps the enclosing insert from tracking values() (so it
+      // never re-runs and never recreates), but does NOT change the owner:
+      // this still executes inside the caller's insert scope, so any slotted
+      // context the render prop reads binds against the surrounding provider.
+      //
+      // The value keys are read once here (untracked). Render-state memos in
+      // this codebase return a fixed-shape object, so the key set is stable.
+      return untrack(() => {
+        const snapshot = values();
+        const view = {} as T;
+        for (const key of Object.keys(snapshot) as Array<keyof T & string>) {
+          Object.defineProperty(view, key, {
+            enumerable: true,
+            configurable: true,
+            get: () => values()[key],
+          });
+        }
+        return (children as (renderProps: T) => JSX.Element)(view);
+      });
     },
     get children() {
       return props.children;

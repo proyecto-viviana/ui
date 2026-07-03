@@ -619,7 +619,7 @@ function TabInner(props: {
         data-hovered={isHovered() || undefined}
         data-disabled={tabAria.isDisabled() || undefined}
       >
-        {renderProps.renderChildren()}
+        {renderProps.renderChildrenStable()}
       </div>
     </SelectionIndicatorContext.Provider>
   );
