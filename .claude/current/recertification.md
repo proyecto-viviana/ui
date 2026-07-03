@@ -291,7 +291,7 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
@@ -383,6 +383,51 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     creation one owner level above the accessor-reading effect. Permanent
     regression coverage in `packages/solid-spectrum/test/TabsFixtureRepro.test.tsx`
     (bare-h wiring kept as `it.fails` documenting the upstream limitation).
+
+- D3 done 2026-07-03: strict pixel pair diff landed
+  (`apps/comparison/e2e/drivers/pixel.ts`), riding `walkScenario` so every
+  D1 case × theme × gesture state is also pixel-compared. Policy: exact
+  match (zero tolerance); the only escape is an explicit `PixelWaiver`
+  citing a tracked burn-down entry here. Suite is 20/20 green (Button 10,
+  Dialog 4, Tabs 6) with **zero waivers**.
+  - Capture technique: `clonedElementScreenshot` clones the pixel target
+    into a `popover="manual"` frame and shows it via `showPopover()` — the
+    top layer paints above every z-index/stacking context (the comparison
+    frame's `isolation: isolate` and the topbar's `z-index: 50` polluted
+    naive element screenshots), is viewport-anchored for stable clipping,
+    and has no focus/inert side effects, so gesture states survive capture.
+  - Calibration caught two real classes of divergence:
+    1. ui-icons rendered from the wrong ground truth. First, every ui-icon
+       went through `createIcon`'s `size: 20` base (Dialog close cross drew
+       20×20; 180px diff) — split into `createUIIcon`, which carries no
+       size: the per-variant width/height attributes are the faithful size
+       source. The residual 18px was **SVGO dist-vs-source divergence**:
+       upstream's Parcel build runs SVGO over the ui-icon assets, so the
+       shipped paths (3-decimal precision, elliptical-arc corner rounding)
+       rasterize differently from the raw vendored `.svg` sources
+       (full-precision cubic beziers) at glyph tips. Pixel parity requires
+       regenerating from the shipped dist
+       (`@react-spectrum/s2/dist/private/S2_*.mjs`) — 44/47 variants
+       regenerated (a4af8519); Arrow ×2 + Gripper ×1 are tree-shaken out of
+       the dist and stay on the vendored sources. Rule for future icon
+       work: **the shipped dist, not the vendored source, is the pixel
+       oracle** whenever upstream's build pipeline transforms assets.
+    2. Invented Tabs styles. Root `tabsRoot` carried invented
+       `color`/`minWidth`/`minHeight`/`opacity isDisabled: 0.6` (the
+       opacity double-dimmed disabled-all: 3071px diff); the tab style
+       carried invented `minWidth`/`paddingY`/`borderStyle`/`userSelect`/
+       `whiteSpace`/`forcedColorAdjust`/root `--iconPrimary`; and the label
+       span carried an invented `truncate` whose `overflow: hidden` clipped
+       the final glyph's antialiased column on every tab label (the last
+       11–13px). All removed to match upstream S2 Tabs.tsx (fddc1407,
+       af925990); per-tab disabled color threading was verified already
+       faithful (`createTabListState.isKeyDisabled` disables all keys when
+       the root is disabled, exactly like upstream TabList's
+       `allKeysDisabled`).
+  - Deferred with a tracked home: upstream `tabs`/`tab` take
+    `getAllowedOverrides()` (ours still funnels `styles` through
+    `mergeStyles`) — Phase 2 Tabs item alongside the root
+    `useFocusRing({within: true})` gap noted under D1.
 
 Phase 2: not started — march order above is the queue; mark components here as
 `✓ name (date)` when certified, `blocked: name (reason)` otherwise.
