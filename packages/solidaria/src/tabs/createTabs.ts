@@ -335,17 +335,28 @@ export function createTab<T>(
   // Focus ring
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
-  // Press handling
+  // Press handling. Selection timing mirrors useSelectableItem's default
+  // (non-shouldSelectOnPressUp) path: mouse selects on press start and
+  // keyboard on key down, while touch, pen, and virtual pointers select on
+  // press up.
+  const selectTab = () => {
+    const tabKey = key();
+    state.setFocusedKey(tabKey);
+    state.setSelectedKey(tabKey);
+  };
   const { isPressed, pressProps } = createPress({
     get isDisabled() {
       return isDisabled();
     },
-    onPress: () => {
-      // Pressing a tab always selects it, in both activation modes (mirrors
-      // useSelectableItem's replaceSelection on select).
-      const tabKey = key();
-      state.setFocusedKey(tabKey);
-      state.setSelectedKey(tabKey);
+    onPressStart: (e) => {
+      if (e.pointerType === "mouse" || e.pointerType === "keyboard") {
+        selectTab();
+      }
+    },
+    onPress: (e) => {
+      if (e.pointerType === "touch" || e.pointerType === "pen" || e.pointerType === "virtual") {
+        selectTab();
+      }
     },
   });
 

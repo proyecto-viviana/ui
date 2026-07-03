@@ -1,4 +1,6 @@
 import h from "solid-js/h";
+import { createMemo } from "solid-js";
+import { createComponent } from "solid-js/web";
 
 type ComponentLike = string | ((props: never) => unknown);
 type Props = Record<string, unknown>;
@@ -8,9 +10,25 @@ type MarkedRenderProp<T> = ((item: T) => unknown) & {
   readonly __comparisonRenderProp: true;
 };
 const RENDER_PROP_MARKER = "__comparisonRenderProp";
+const HC_THUNK = Symbol("comparison-hc-thunk");
+
+type HcThunk = (() => unknown) & { [HC_THUNK]?: true };
 
 /**
  * Comparison-app wrapper around `solid-js/h`.
+ *
+ * Intrinsic elements delegate to `h`. Solid components do NOT: `solid-js/h`
+ * defers component creation into thunks that dom-expressions unwraps inside a
+ * shared array render effect, so the effect that CREATES sibling components is
+ * the same tracked scope that READS their returned reactive accessors (e.g. a
+ * `Show`-rooted TabPanel). When one accessor flips, the effect re-runs,
+ * disposes every sibling it owns, and `h`'s one-shot thunks hand back the same
+ * dead nodes — connected DOM whose reactivity is permanently disposed.
+ *
+ * Instead, components mirror compiled-JSX semantics: `createComponent` plus a
+ * lazy `children` getter that eagerly instantiates hc component children and
+ * memo-wraps plain function children, so creation always happens one owner
+ * level above the accessor-unwrapping insert effect.
  *
  * For Solid components, pass child thunks as arrays. A zero-argument function
  * child is ambiguous in `solid-js/h`: it can look like a render prop while also
@@ -23,22 +41,70 @@ export function hc(
 ) {
   const normalizedProps = normalizeCallbackProps(component, props);
 
-  if (typeof children === "function") {
-    if (children[RENDER_PROP_MARKER] === true) {
-      return h(component as never, normalizedProps ?? {}, children);
-    }
-
+  if (typeof children === "function" && children[RENDER_PROP_MARKER] !== true) {
     throw new TypeError("Use child arrays, or renderProp(fn) for intentional render props.");
   }
 
-  if (children === undefined) {
-    return h(component as never, normalizedProps ?? {});
+  if (typeof component === "string") {
+    if (typeof children === "function") {
+      return h(component as never, normalizedProps ?? {}, children);
+    }
+    if (children === undefined) {
+      return h(component as never, normalizedProps ?? {});
+    }
+    return h(component as never, normalizedProps ?? {}, [...children]);
   }
 
-  const propsWithChildren =
-    typeof component === "string" ? (normalizedProps ?? {}) : cloneProps(normalizedProps);
+  const builtProps = cloneProps(normalizedProps);
+  if (typeof children === "function") {
+    builtProps.children = children;
+  } else if (children !== undefined) {
+    const slots = [...children];
+    Object.defineProperty(builtProps, "children", {
+      configurable: true,
+      enumerable: true,
+      get: () => resolveChildSlots(slots),
+    });
+  }
 
-  return h(component as never, propsWithChildren, [...children]);
+  const thunk: HcThunk = () =>
+    createComponent(component as (props: unknown) => unknown, builtProps);
+  Object.defineProperty(thunk, HC_THUNK, { value: true, enumerable: false });
+  return thunk as unknown as ReturnType<typeof h>;
+}
+
+/**
+ * Resolve a component's child slots at `props.children` access time, i.e.
+ * inside the parent's insert effect (correct context, stable owner):
+ * - hc component thunks are instantiated eagerly, exactly like compiled JSX
+ *   instantiates static component children; their returned accessors are left
+ *   intact for the insert machinery to track in its own downstream effect.
+ * - plain zero-argument functions (dynamic expressions, `h` element thunks,
+ *   tree-building closures) are wrapped in a memo, exactly like compiled JSX
+ *   memo-wraps `{expression}` children, so their tracked reads re-run only the
+ *   memo — never the shared effect that owns sibling components.
+ */
+function resolveChildSlots(slots: readonly Child[]) {
+  const resolved = slots.map((child) => {
+    if (typeof child !== "function") {
+      return child;
+    }
+    if ((child as HcThunk)[HC_THUNK] === true) {
+      return (child as HcThunk)();
+    }
+    return createMemo(() => resolveDeep((child as () => unknown)()));
+  });
+  return resolved.length === 1 ? resolved[0] : resolved;
+}
+
+function resolveDeep(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(resolveDeep);
+  }
+  if (typeof value === "function" && (value as HcThunk)[HC_THUNK] === true) {
+    return resolveDeep((value as HcThunk)());
+  }
+  return value;
 }
 
 export function renderProp<T>(fn: (item: T) => unknown) {

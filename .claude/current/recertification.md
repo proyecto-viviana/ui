@@ -326,8 +326,25 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     `{orientation, state}`; root-level `useFocusRing({within: true})` +
     `data-focused` live on upstream's Tabs root, which ours still lacks —
     Phase 2 Tabs item).
-  Pilot findings queue (burn down before D3, which pixel-diffs the same
-  states): Tabs gap, Dialog surface, Dialog CloseButton.
+    Pilot findings queue (burn down before D3, which pixel-diffs the same
+    states): ~~Tabs gap~~ (resolved 2026-07-03, certified tabs 6/6 green),
+    Dialog surface, Dialog CloseButton.
+  - Tabs gap resolution (2026-07-03) bundled four fixes in one unit: the
+    icon/text `gap` moved onto the tab style itself (invented `tabContent`
+    wrapper span + its style deleted, stray `outlineStyle` keys removed);
+    selection now fires on press start for mouse/keyboard like upstream
+    `useTabs`; and the comparison app's `hc()` wrapper was rewritten to fix a
+    zombie-DOM freeze inherent to bare `solid-js/h`: h's one-shot component
+    thunks are unwrapped inside a shared array insert effect, so the scope
+    that creates sibling components also tracks their returned accessors —
+    TabPanel's root `Show` flip re-ran the effect, disposed the TabList
+    subtree, and the one-shot thunks handed back the same dead nodes
+    (attributes frozen while still connected). `hc` now mirrors compiled-JSX
+    semantics (`createComponent` + lazy children getter; hc component
+    children instantiate eagerly, plain function children memo-wrap), keeping
+    creation one owner level above the accessor-reading effect. Permanent
+    regression coverage in `packages/solid-spectrum/test/TabsFixtureRepro.test.tsx`
+    (bare-h wiring kept as `it.fails` documenting the upstream limitation).
 
 Phase 2: not started — march order above is the queue; mark components here as
 `✓ name (date)` when certified, `blocked: name (reason)` otherwise.

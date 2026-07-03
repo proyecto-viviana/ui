@@ -339,6 +339,7 @@ const tab = style<TabsStyleState>({
   paddingY: 0,
   borderStyle: "none",
   borderRadius: "sm",
+  gap: "text-to-visual",
   color: {
     default: baseColor("neutral-subdued"),
     isSelected: baseColor("neutral"),
@@ -354,23 +355,11 @@ const tab = style<TabsStyleState>({
   textDecoration: "none",
   flexShrink: 0,
   transition: "default",
-  outlineStyle: "none",
   forcedColorAdjust: "none",
   disableTapHighlight: true,
   "--iconPrimary": {
     type: "fill",
     value: "currentColor",
-  },
-});
-
-const tabContent = style<TabsStyleState>({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  minWidth: 0,
-  gap: {
-    isLabelHidden: 0,
-    default: "text-to-visual",
   },
 });
 
@@ -448,7 +437,6 @@ const tabPanels = style({
 const tabPanel = style<TabsStyleState>({
   ...focusRing(),
   color: "gray-800",
-  outlineStyle: "none",
   minWidth: 0,
   minHeight: 0,
   flexGrow: 1,
@@ -813,22 +801,14 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
             {(item) => (
               <div class={measurementTabClass(item)} data-tabs-measure-tab>
                 <span
-                  class={tabContent({
+                  class={tabText({
                     orientation: context.orientation,
                     density: context.density,
                     isLabelHidden: context.labelBehavior === "hide",
                   })}
+                  data-rsp-slot="text"
                 >
-                  <span
-                    class={tabText({
-                      orientation: context.orientation,
-                      density: context.density,
-                      isLabelHidden: context.labelBehavior === "hide",
-                    })}
-                    data-rsp-slot="text"
-                  >
-                    {item.textValue}
-                  </span>
+                  {item.textValue}
                 </span>
               </div>
             )}
@@ -971,15 +951,7 @@ export function Tab(props: TabProps): JSX.Element {
         />
         <IconContext.Provider value={iconContextValue}>
           <TextContext.Provider value={textContextValue}>
-            <span
-              class={tabContent({
-                orientation: context.orientation,
-                density: context.density,
-                isLabelHidden: labelHidden(),
-              })}
-            >
-              <ResolvedTabContent />
-            </span>
+            <ResolvedTabContent />
           </TextContext.Provider>
         </IconContext.Provider>
       </>
