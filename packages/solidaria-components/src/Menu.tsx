@@ -608,7 +608,9 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-MenuButton",
@@ -1521,7 +1523,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Menu-item",

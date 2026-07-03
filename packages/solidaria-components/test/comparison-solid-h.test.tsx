@@ -237,10 +237,10 @@ describe("comparison Solid h helper", () => {
               defaultValue: "compact",
               onChange: setSelectedKey,
             },
-            renderProp(() => [
+            [
               hc(Radio, { value: "compact" }, ["Compact"]),
               hc(Radio, { value: "comfortable" }, ["Comfortable"]),
-            ]),
+            ],
           ),
         ],
       )();
@@ -434,11 +434,11 @@ describe("comparison Solid h helper", () => {
                 setClearCount((count) => count + 1);
               },
             },
-            renderProp(() => [
+            [
               hc(SearchFieldLabel, {}, ["Search"]),
               hc(SearchFieldInput, {}),
               hc(SearchFieldClearButton, {}, ["Clear"]),
-            ]),
+            ],
           ),
         ],
       )();
@@ -472,21 +472,17 @@ describe("comparison Solid h helper", () => {
           },
         },
         [
-          hc(
-            Toolbar,
-            { "aria-label": "Formatting tools" },
-            renderProp(() => [
-              hc(
-                ToggleButton,
-                {
-                  "aria-label": "Bold",
-                  isSelected: pressed,
-                  onChange: setPressed,
-                },
-                ["Bold"],
-              ),
-            ]),
-          ),
+          hc(Toolbar, { "aria-label": "Formatting tools" }, [
+            hc(
+              ToggleButton,
+              {
+                "aria-label": "Bold",
+                isSelected: pressed,
+                onChange: setPressed,
+              },
+              ["Bold"],
+            ),
+          ]),
         ],
       )();
     }

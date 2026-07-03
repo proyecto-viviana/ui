@@ -497,7 +497,9 @@ export function TextField(props: TextFieldProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-TextField",

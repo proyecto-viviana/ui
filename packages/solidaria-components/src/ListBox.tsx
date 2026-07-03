@@ -755,7 +755,9 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ListBox-option",
@@ -878,7 +880,9 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
 
   const renderProps = useRenderProps(
     {
-      children: props.children ?? (() => (isLoading() ? "Loading more..." : "Load more")),
+      get children() {
+        return props.children ?? (() => (isLoading() ? "Loading more..." : "Load more"));
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-ListBox-loadMore",

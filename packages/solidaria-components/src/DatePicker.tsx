@@ -914,7 +914,9 @@ export function DatePickerButton(props: DatePickerButtonProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-DatePickerButton",
@@ -957,7 +959,9 @@ export function DateRangePickerButton(props: DateRangePickerButtonProps): JSX.El
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-DateRangePickerButton",

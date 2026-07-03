@@ -234,7 +234,9 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-SharedElement",

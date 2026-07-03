@@ -118,9 +118,25 @@ export function useRenderProps<T extends object>(
     class: computedClass,
     style: computedStyle,
     renderChildren: () => {
-      const currentValues = values();
       const children = props.children;
-      return typeof children === "function" ? children(currentValues) : children;
+      // Only read values() for render-prop children. Static JSX children must
+      // not track the render-state memo: re-running the insertion effect
+      // recreates real DOM nodes on every hover/press/focus flip (React keeps
+      // them stable via vdom diffing), which detaches the pressed node
+      // mid-press and suppresses the browser's native click.
+      //
+      // A render prop takes the values argument, so classify by arity — the
+      // same convention `solid-js/h` uses for dynamic props. A zero-arg
+      // function child is an accessor (a compiled `{expression}` child, a
+      // solid-refresh dev wrapper, a one-shot `solid-js/h` element thunk):
+      // return it untouched so the insert machinery unwraps it in its own
+      // nested effect. Calling it here would track its reads in the shared
+      // insertion effect, and every re-run disposes the child computations
+      // that effect owns — a one-shot h thunk then hands back the same
+      // disposed node, leaving connected DOM whose reactivity is dead.
+      return typeof children === "function" && children.length > 0
+        ? children(values())
+        : (children as JSX.Element);
     },
     get children() {
       return props.children;

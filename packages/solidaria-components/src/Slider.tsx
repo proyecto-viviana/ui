@@ -280,7 +280,9 @@ export function Slider(props: SliderProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Slider",
@@ -391,7 +393,9 @@ export function SliderTrack(props: SliderTrackProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Slider-track",
@@ -459,7 +463,9 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Slider-thumb",
@@ -580,7 +586,9 @@ export function SliderFill(props: SliderFillProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Slider-fill",
@@ -643,7 +651,9 @@ export function SliderOutput(props: SliderOutputProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Slider-output",

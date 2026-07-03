@@ -258,7 +258,9 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-RadioGroup",

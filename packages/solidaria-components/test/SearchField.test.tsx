@@ -88,6 +88,22 @@ describe("SearchField", () => {
       expect(screen.getByText("Search")).toBeInTheDocument();
     });
 
+    it("should render static JSX children (no render function)", () => {
+      // Regression: an eager `children:` read in the useRenderProps opts
+      // literal instantiated static children during the component body —
+      // before SearchFieldContext.Provider mounted — and crashed.
+      render(() => (
+        <SearchField aria-label="Search">
+          <SearchFieldLabel>Search</SearchFieldLabel>
+          <SearchFieldInput />
+          <SearchFieldClearButton>×</SearchFieldClearButton>
+        </SearchField>
+      ));
+
+      expect(screen.getByRole("searchbox")).toBeInTheDocument();
+      expect(screen.getByText("Search")).toBeInTheDocument();
+    });
+
     it('links aria-describedby to a <Text slot="description"> via TextContext slots', () => {
       // SearchField provides descriptionProps as a TextContext slot, so the
       // <Text slot="description"> picks up the id the input's aria-describedby

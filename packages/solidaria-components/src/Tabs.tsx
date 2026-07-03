@@ -315,7 +315,9 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     {
       class: local.class,
       style: local.style,
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       defaultClassName: "solidaria-Tabs",
     },
     renderValues,
@@ -575,7 +577,9 @@ function TabInner(props: {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: props.local.class,
       style: props.local.style,
       defaultClassName: "solidaria-Tab",
@@ -715,7 +719,9 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-TabPanel",

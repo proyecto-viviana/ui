@@ -574,7 +574,9 @@ function TooltipContent(
     {
       class: props.class,
       style: props.style,
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       defaultClassName: "solidaria-Tooltip",
     },
     values,

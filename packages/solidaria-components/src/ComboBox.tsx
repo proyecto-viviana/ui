@@ -765,7 +765,9 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ComboBox-input",
@@ -828,7 +830,9 @@ export function ComboBoxValue(props: ComboBoxValueProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-ComboBox-value",
@@ -885,7 +889,9 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ComboBox-button",
@@ -1135,7 +1141,9 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ComboBox-option",

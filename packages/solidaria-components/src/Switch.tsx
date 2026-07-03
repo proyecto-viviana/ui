@@ -164,7 +164,9 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ToggleSwitch",

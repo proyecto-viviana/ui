@@ -1570,7 +1570,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Tree-item",
@@ -1810,7 +1812,9 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children ?? (() => (isLoading() ? "Loading more..." : "Load more")),
+      get children() {
+        return props.children ?? (() => (isLoading() ? "Loading more..." : "Load more"));
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-Tree-loadMore",
@@ -1863,7 +1867,9 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
     },
     () => context,
   );

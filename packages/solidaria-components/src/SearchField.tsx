@@ -459,7 +459,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-SearchField",
@@ -778,7 +780,9 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-SearchField-clear",

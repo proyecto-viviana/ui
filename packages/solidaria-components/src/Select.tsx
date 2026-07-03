@@ -766,7 +766,9 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Select-trigger",
@@ -871,7 +873,9 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children ?? defaultSelectValueChildren,
+      get children() {
+        return props.children ?? defaultSelectValueChildren;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Select-value",
@@ -1145,7 +1149,9 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Select-option",

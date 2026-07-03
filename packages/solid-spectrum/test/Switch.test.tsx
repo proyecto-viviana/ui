@@ -217,7 +217,11 @@ describe("TabSwitch", () => {
     user = setupUser();
   });
 
-  it("renders two options as buttons", () => {
+  it("renders two options as radios in a radiogroup", () => {
+    // Single-selection ToggleButtonGroup renders radiogroup/radio semantics
+    // (upstream useToggleButtonGroup). The buttons only fell back to plain
+    // role=button while an eager children read created them outside the
+    // group's context provider.
     render(() => (
       <TabSwitch
         options={[
@@ -227,8 +231,9 @@ describe("TabSwitch", () => {
       />
     ));
 
-    expect(screen.getByRole("button", { name: "List" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Grid" })).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "View mode" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "List" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Grid" })).toBeInTheDocument();
   });
 
   it("calls onChange with selected value", async () => {
@@ -244,7 +249,7 @@ describe("TabSwitch", () => {
       />
     ));
 
-    await user.click(screen.getByRole("button", { name: "Grid" }));
+    await user.click(screen.getByRole("radio", { name: "Grid" }));
     expect(onChange).toHaveBeenCalledWith("grid");
   });
 });

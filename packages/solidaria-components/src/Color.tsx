@@ -288,7 +288,9 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorSlider",
@@ -422,7 +424,9 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorSlider-track",
@@ -494,7 +498,9 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorSlider-thumb",
@@ -739,7 +745,9 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorArea",
@@ -825,7 +833,9 @@ export function ColorAreaGradient(props: ColorAreaGradientProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorArea-gradient",
@@ -895,7 +905,9 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorArea-thumb",
@@ -1144,7 +1156,9 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorWheel",
@@ -1211,7 +1225,9 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorWheel-track",
@@ -1281,7 +1297,9 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorWheel-thumb",
@@ -1548,7 +1566,9 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorField",
@@ -1677,7 +1697,9 @@ export function ColorFieldInput(props: ColorFieldInputProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorField-input",
@@ -1790,7 +1812,9 @@ export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorSwatch",
@@ -1958,7 +1982,9 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorPicker",
@@ -2381,7 +2407,9 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-ColorSwatchPickerItem",

@@ -55,7 +55,7 @@ export function hc(
     return h(component as never, normalizedProps ?? {}, [...children]);
   }
 
-  const builtProps = cloneProps(normalizedProps);
+  const builtProps = unwrapAccessorProps(cloneProps(normalizedProps));
   if (typeof children === "function") {
     builtProps.children = children;
   } else if (children !== undefined) {
@@ -144,6 +144,31 @@ function normalizeCallbackProps(component: ComponentLike, props?: Props | null) 
 
 function isCallbackProp(key: string) {
   return key.startsWith("on") || key.startsWith("render");
+}
+
+/**
+ * Mirror `solid-js/h`'s dynamic-prop convention on the component path: a
+ * zero-argument function prop is a reactive accessor and becomes a getter that
+ * calls it. Callback-shaped keys (`on*`/`render*`), `ref`, and `children` stay
+ * raw — normalizeCallbackProps already pinned the callbacks, and children are
+ * handled by the slot machinery.
+ */
+function unwrapAccessorProps(props: Props): Props {
+  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(props))) {
+    if (key === "ref" || key === "children" || isCallbackProp(key)) {
+      continue;
+    }
+    const accessor = descriptor.value;
+    if (typeof accessor !== "function" || accessor.length !== 0) {
+      continue;
+    }
+    Object.defineProperty(props, key, {
+      configurable: true,
+      enumerable: true,
+      get: () => (accessor as () => unknown)(),
+    });
+  }
+  return props;
 }
 
 function cloneProps(props?: Props | null) {

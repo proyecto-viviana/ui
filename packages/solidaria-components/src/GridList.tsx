@@ -793,7 +793,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-GridList-item",
@@ -911,7 +913,9 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
 
   const renderProps = useRenderProps(
     {
-      children: props.children ?? (() => (isLoading() ? "Loading more..." : "Load more")),
+      get children() {
+        return props.children ?? (() => (isLoading() ? "Loading more..." : "Load more"));
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-GridList-loadMore",

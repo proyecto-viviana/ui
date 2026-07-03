@@ -253,7 +253,9 @@ export function Section(props: SectionProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Section",
@@ -289,7 +291,9 @@ export function Header(props: HeaderProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Header",
@@ -325,7 +329,9 @@ export function Group(props: GroupProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: local.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Group",

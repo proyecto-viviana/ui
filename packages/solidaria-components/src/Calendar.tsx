@@ -411,7 +411,9 @@ export function CalendarHeading(props: CalendarHeadingProps): JSX.Element {
   }));
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-CalendarHeading",
@@ -638,7 +640,9 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: props.children,
+      get children() {
+        return props.children;
+      },
       class: props.class,
       style: props.style,
       defaultClassName: "solidaria-CalendarCell",
