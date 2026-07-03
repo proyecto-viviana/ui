@@ -1,4 +1,5 @@
 import type { DriverScenario } from "../drivers/scenario";
+import { registerPixelDriver } from "../drivers/pixel";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 
 /**
@@ -26,3 +27,4 @@ const tabsScenario: DriverScenario = {
 };
 
 registerStateMatrixDriver(tabsScenario);
+registerPixelDriver(tabsScenario);

@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 
@@ -42,6 +43,11 @@ const surfaceScenario: DriverScenario = {
   beforePanel: openDialogWithPointer,
   afterPanel: closeDialog,
   target: ({ page }) => page.getByRole("dialog", { name: dialogTitle }),
+  // The dialog portals outside the panel canvas, so the canvas default would
+  // miss it entirely. Shoot the dialog's parent — the modal element — because
+  // that is where both stacks paint the surface (--s2-container-bg: layer-2,
+  // border radius, elevation shadow); role=dialog itself is transparent.
+  pixelTarget: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
   states: ["default"],
   settleMs: 400,
   cases: [{ id: "modal-open" }],
@@ -61,9 +67,16 @@ const closeButtonScenario: DriverScenario = {
       .getByRole("dialog", { name: dialogTitle })
       .getByRole("button", { name: /dismiss|close/i })
       .first(),
+  pixelTarget: ({ page }) =>
+    page
+      .getByRole("dialog", { name: dialogTitle })
+      .getByRole("button", { name: /dismiss|close/i })
+      .first(),
   settleMs: 400,
   cases: [{ id: "modal-close-button" }],
 };
 
 registerStateMatrixDriver(surfaceScenario);
 registerStateMatrixDriver(closeButtonScenario);
+registerPixelDriver(surfaceScenario);
+registerPixelDriver(closeButtonScenario);
