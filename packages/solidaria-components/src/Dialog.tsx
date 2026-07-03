@@ -27,7 +27,9 @@ import {
   type OverlayTriggerState,
 } from "@proyecto-viviana/solid-stately";
 import { DialogTriggerContext, useOverlayTriggerState } from "./contexts";
+import { ButtonContext } from "./Button";
 import {
+  DEFAULT_SLOT,
   type RenderChildren,
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -247,7 +249,11 @@ export function Dialog(props: DialogProps): JSX.Element {
         style={renderProps.style()}
         slot={local.slot}
       >
-        {renderProps.renderChildren()}
+        <ButtonContext.Provider
+          value={{ slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } }}
+        >
+          {renderProps.renderChildren()}
+        </ButtonContext.Provider>
       </div>
     </DialogContext.Provider>
   );

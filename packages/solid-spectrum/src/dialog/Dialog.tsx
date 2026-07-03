@@ -1,5 +1,7 @@
 import { type JSX, Show, createContext, splitProps, useContext } from "solid-js";
 import {
+  Button as HeadlessButton,
+  ButtonContext as HeadlessButtonContext,
   Dialog as HeadlessDialog,
   DialogContext as HeadlessDialogContext,
   DialogTrigger as HeadlessDialogTrigger,
@@ -7,9 +9,20 @@ import {
   Modal as HeadlessModal,
   ModalOverlay as HeadlessModalOverlay,
   useDialogTrigger,
+  type ButtonRenderProps,
   type DialogProps as HeadlessDialogProps,
 } from "@proyecto-viviana/solidaria-components";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import CrossIcon from "../icon/ui-icons/Cross";
+import { s2IntlStrings } from "../intl";
+import { pressScale } from "../pressScale";
+import { mergeStyles } from "../style/runtime";
+import type { StaticColor } from "../button/types";
+import {
+  controlSize,
+  getAllowedOverrides,
+  staticColor,
+} from "../s2-internal/style-utils" with { type: "macro" };
 import { useTheme, type ColorScheme } from "../provider";
 import { ImageContext, type ImageProps } from "../image";
 import { ButtonGroupContext, type ButtonGroupContextValue } from "../button";
@@ -91,16 +104,24 @@ export interface DialogContainerProps {
   onDismiss: () => void;
 }
 
-export interface CloseButtonProps extends Omit<
-  JSX.ButtonHTMLAttributes<HTMLButtonElement>,
-  "class" | "style" | "children" | "onClick"
-> {
+export interface CloseButtonProps {
+  /**
+   * The size of the CloseButton.
+   *
+   * @default 'M'
+   */
+  size?: "S" | "M" | "L" | "XL";
+  /** The static color style to apply. Useful when the Button appears over a color background. */
+  staticColor?: StaticColor;
+  /** Whether the button is disabled. */
+  isDisabled?: boolean;
+  /** Handler called when the button is pressed. */
+  onPress?: () => void;
+  /** Spectrum-defined generated classes. */
   styles?: StyleString | (() => StyleString | undefined);
-  class?: string;
   UNSAFE_className?: string;
   UNSAFE_style?: JSX.CSSProperties;
-  children?: JSX.Element;
-  onClick?: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>;
+  "aria-label"?: string;
 }
 
 export interface FullscreenDialogProps extends Omit<
@@ -201,30 +222,90 @@ const dialogOverlay = style<{ colorScheme: ColorScheme }>({
   position: "fixed",
   inset: 0,
   zIndex: 1999,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: baseColor("transparent-overlay-500"),
+  isolation: "isolate",
+  backgroundColor: "transparent-black-500",
 });
 
-const dialogModalViewport = style({
+// Upstream Modal.tsx modalWrapper. Fixed instead of sticky because our overlay
+// portals with a fixed strategy rather than upstream's page-height absolute
+// overlay. pointerEvents none is required for outside-click dismissal: our
+// headless ModalOverlay only dismisses when the pointerdown lands on the
+// overlay element itself, so this full-viewport wrapper must let clicks
+// through (the modal surface restores pointerEvents auto).
+const dialogModalWrapper = style<{ size: ModalDialogSize }>({
   position: "fixed",
   inset: 0,
   zIndex: 2000,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
   width: "full",
   height: "[var(--visual-viewport-height,100vh)]",
+  display: "flex",
+  alignItems: {
+    default: "center",
+    size: {
+      fullscreenTakeover: "start",
+    },
+  },
+  justifyContent: "center",
   pointerEvents: "none",
 });
 
-const dialogModalHost = style({
-  position: "relative",
+// Upstream Modal.tsx RACModal styles minus the entering/exiting motion flips
+// (those land with the motion driver).
+const dialogModal = style<{ size: ModalDialogSize }>({
   display: "flex",
-  maxWidth: "full",
-  maxHeight: "full",
+  flexDirection: "column",
   pointerEvents: "auto",
+  borderRadius: {
+    default: "xl",
+    size: {
+      fullscreenTakeover: "none",
+    },
+  },
+  width: {
+    size: {
+      S: 400,
+      M: 480,
+      L: 640,
+      XL: 960,
+      fullscreen: "[calc(100% - 40px)]",
+      fullscreenTakeover: "full",
+    },
+  },
+  height: {
+    size: {
+      fullscreen: "[calc(100% - 40px)]",
+      fullscreenTakeover: "full",
+    },
+  },
+  maxWidth: {
+    default: "[90vw]",
+    size: {
+      fullscreen: "none",
+      fullscreenTakeover: "none",
+    },
+  },
+  maxHeight: {
+    default: "[90%]",
+    size: {
+      fullscreen: "none",
+      fullscreenTakeover: "none",
+    },
+  },
+  paddingBottom: {
+    size: {
+      // Extend background behind the iOS Safari toolbar and keyboard.
+      fullscreenTakeover: "[100vh]",
+    },
+  },
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: "layer-2",
+  },
+  backgroundColor: "--s2-container-bg",
+  // Transparent outline for WHCM.
+  outlineStyle: "solid",
+  outlineWidth: 1,
+  outlineColor: "transparent",
 });
 
 function dialogOverlayLayoutStyle(colorScheme: ColorScheme): JSX.CSSProperties {
@@ -237,73 +318,26 @@ function dialogOverlayLayoutStyle(colorScheme: ColorScheme): JSX.CSSProperties {
   } as JSX.CSSProperties;
 }
 
-function dialogModalViewportLayoutStyle(colorScheme: ColorScheme): JSX.CSSProperties {
+function dialogModalWrapperLayoutStyle(colorScheme: ColorScheme): JSX.CSSProperties {
   return {
     position: "fixed",
     inset: "0px",
     "z-index": 2000,
+    "container-type": "size",
     "--s2-color-scheme": colorScheme,
     "color-scheme": colorScheme,
   } as JSX.CSSProperties;
 }
 
-const dialogSurface = style<{ size: ModalDialogSize }>({
-  boxSizing: "border-box",
-  display: "flex",
-  flexDirection: "column",
-  width: {
-    size: {
-      S: 400,
-      M: 480,
-      L: 640,
-      XL: 960,
-      fullscreen: "[calc(100vw - 40px)]",
-      fullscreenTakeover: "full",
-    },
-  },
-  height: {
-    size: {
-      S: "auto",
-      M: "auto",
-      L: "auto",
-      XL: "auto",
-      fullscreen: "[calc(var(--visual-viewport-height,100vh) - 40px)]",
-      fullscreenTakeover: "[var(--visual-viewport-height,100vh)]",
-    },
-  },
-  maxWidth: {
-    default: "[90vw]",
-    size: {
-      fullscreen: "none",
-      fullscreenTakeover: "none",
-    },
-  },
-  maxHeight: {
-    default: "[90vh]",
-    size: {
-      fullscreen: "none",
-      fullscreenTakeover: "none",
-    },
-  },
-  overflow: "hidden",
-  borderRadius: {
-    default: "xl",
-    size: {
-      fullscreenTakeover: "none",
-    },
-  },
-  backgroundColor: "layer-2",
-  boxShadow: "emphasized",
-  color: "neutral",
-  outlineStyle: "none",
-});
-
 const dialogInner = style({
   display: "flex",
   flexDirection: "column",
+  flexGrow: 1,
   maxHeight: "inherit",
-  font: "body",
+  boxSizing: "border-box",
   outlineStyle: "none",
+  fontFamily: "sans",
+  borderRadius: "inherit",
   overflow: "auto",
 });
 
@@ -357,37 +391,71 @@ const dialogHeader = style({
   color: "body",
 });
 
-const closeButton = style({
-  ...focusRing(),
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 32,
-  height: 32,
-  flexShrink: 0,
-  marginBottom: 12,
-  padding: 0,
-  borderStyle: "none",
-  borderRadius: "full",
-  cursor: "default",
-  backgroundColor: {
-    default: "transparent",
-    isHovered: "gray-100",
-    isPressed: "gray-200",
+const closeButtonHoverBackground = {
+  default: "gray-200",
+  isStaticColor: "transparent-overlay-200",
+} as const;
+
+const closeButton = style<
+  CloseButtonProps & {
+    isHovered: boolean;
+    isFocusVisible: boolean;
+    isPressed: boolean;
+    isDisabled: boolean;
+    isStaticColor: boolean;
+  }
+>(
+  {
+    ...focusRing(),
+    ...staticColor(),
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    size: controlSize(),
+    flexShrink: 0,
+    borderRadius: "full",
+    padding: 0,
+    borderStyle: "none",
+    transition: "default",
+    backgroundColor: {
+      default: "transparent",
+      isHovered: closeButtonHoverBackground,
+      isFocusVisible: closeButtonHoverBackground,
+      isPressed: closeButtonHoverBackground,
+    },
+    "--iconPrimary": {
+      type: "color",
+      value: {
+        default: baseColor("neutral"),
+        isDisabled: "disabled",
+        isStaticColor: {
+          default: "white",
+          isDisabled: "transparent-overlay-400",
+        },
+        forcedColors: {
+          default: "ButtonText",
+          isDisabled: "GrayText",
+        },
+      },
+    },
+    outlineColor: {
+      default: "focus-ring",
+      isStaticColor: "transparent-overlay-1000",
+      forcedColors: "Highlight",
+    },
+    disableTapHighlight: true,
   },
-  color: baseColor("neutral"),
-  "--iconPrimary": {
-    type: "fill",
-    value: baseColor("neutral"),
-  },
-});
+  getAllowedOverrides(),
+);
+
+const dialogCloseButtonMargin = style({ marginBottom: 12 });
 
 const dialogContent = style({
   flexGrow: 1,
   minHeight: 0,
   overflowY: "auto",
   paddingX: 32,
-  color: "body",
+  font: "body",
 });
 
 const dialogFooterWrapper = style({
@@ -447,10 +515,20 @@ const fullscreenDialogContent = style({
 const customDialog = style<{ padding: "default" | "none" }>({
   padding: {
     padding: {
-      default: 32,
+      default: {
+        default: 24,
+        sm: 32,
+      },
       none: 0,
     },
   },
+  boxSizing: "border-box",
+  outlineStyle: "none",
+  borderRadius: "inherit",
+  overflow: "auto",
+  position: "relative",
+  size: "full",
+  maxSize: "[inherit]",
 });
 
 interface DialogModalProps {
@@ -474,12 +552,12 @@ function DialogModal(props: DialogModalProps): JSX.Element {
       class={dialogOverlay({ colorScheme: theme.colorScheme })}
       style={() => dialogOverlayLayoutStyle(theme.colorScheme)}
     >
-      <HeadlessModal
-        class={dialogModalViewport}
-        style={() => dialogModalViewportLayoutStyle(theme.colorScheme)}
+      <div
+        class={dialogModalWrapper({ size: props.size })}
+        style={dialogModalWrapperLayoutStyle(theme.colorScheme)}
       >
-        <div class={dialogModalHost}>{props.children}</div>
-      </HeadlessModal>
+        <HeadlessModal class={dialogModal({ size: props.size })}>{props.children}</HeadlessModal>
+      </div>
     </HeadlessModalOverlay>
   );
 }
@@ -677,7 +755,6 @@ export function Dialog(props: DialogProps): JSX.Element {
   const className = () =>
     joinClass(
       "comparison-spectrum-Dialog",
-      dialogSurface({ size: size() }),
       dialogInner,
       resolveStyles(local.styles),
       local.UNSAFE_className,
@@ -705,40 +782,44 @@ export function Dialog(props: DialogProps): JSX.Element {
 
           return (
             <DialogContext.Provider value={{ close: handleDismiss }}>
-              <Show
-                when={!hasLegacyTitle()}
-                fallback={
-                  <>
-                    <div class={dialogTop({ isDismissible: isDismissible() })}>
-                      <div class={dialogHeaderWrapper}>
-                        <HeadlessDialogHeading level={2} class={dialogHeading}>
-                          {local.title}
-                        </HeadlessDialogHeading>
-                      </div>
-                      <Show when={isDismissible()}>
-                        <CloseButton />
-                      </Show>
-                    </div>
-                    <div class={dialogContent}>{renderedChildren()}</div>
-                  </>
-                }
+              <HeadlessButtonContext.Provider
+                value={{ slots: { default: {}, close: { onPress: () => handleDismiss() } } }}
               >
-                <DialogImageSlots>{renderedChildren()}</DialogImageSlots>
-                <div class={dialogTop({ isDismissible: isDismissible() })}>
-                  <div class={dialogHeaderWrapper}>
-                    <DialogHeaderSlots>{renderedChildren()}</DialogHeaderSlots>
+                <Show
+                  when={!hasLegacyTitle()}
+                  fallback={
+                    <>
+                      <div class={dialogTop({ isDismissible: isDismissible() })}>
+                        <div class={dialogHeaderWrapper}>
+                          <HeadlessDialogHeading level={2} class={dialogHeading}>
+                            {local.title}
+                          </HeadlessDialogHeading>
+                        </div>
+                        <Show when={isDismissible()}>
+                          <CloseButton styles={dialogCloseButtonMargin} />
+                        </Show>
+                      </div>
+                      <div class={dialogContent}>{renderedChildren()}</div>
+                    </>
+                  }
+                >
+                  <DialogImageSlots>{renderedChildren()}</DialogImageSlots>
+                  <div class={dialogTop({ isDismissible: isDismissible() })}>
+                    <div class={dialogHeaderWrapper}>
+                      <DialogHeaderSlots>{renderedChildren()}</DialogHeaderSlots>
+                    </div>
+                    <Show when={isDismissible()}>
+                      <CloseButton styles={dialogCloseButtonMargin} />
+                    </Show>
                   </div>
-                  <Show when={isDismissible()}>
-                    <CloseButton />
-                  </Show>
-                </div>
-                <DialogContentSlots>{renderedChildren()}</DialogContentSlots>
-                <div class={dialogFooterWrapper}>
-                  <DialogFooterSlots isDismissible={isDismissible()}>
-                    {renderedChildren()}
-                  </DialogFooterSlots>
-                </div>
-              </Show>
+                  <DialogContentSlots>{renderedChildren()}</DialogContentSlots>
+                  <div class={dialogFooterWrapper}>
+                    <DialogFooterSlots isDismissible={isDismissible()}>
+                      {renderedChildren()}
+                    </DialogFooterSlots>
+                  </div>
+                </Show>
+              </HeadlessButtonContext.Provider>
             </DialogContext.Provider>
           );
         }}
@@ -805,39 +886,53 @@ export function DialogContainer(props: DialogContainerProps): JSX.Element {
   );
 }
 
+const closeButtonIconSize = { S: "L", M: "XL", L: "XXL", XL: "XXXL" } as const;
+
+/**
+ * A CloseButton allows a user to dismiss a dialog.
+ */
 export function CloseButton(props: CloseButtonProps): JSX.Element {
   const [local, buttonProps] = splitProps(props, [
+    "size",
+    "staticColor",
     "styles",
-    "class",
     "UNSAFE_className",
     "UNSAFE_style",
-    "children",
-    "onClick",
     "aria-label",
   ]);
-  const context = useDialogContext();
-  const className = () =>
-    joinClass(closeButton({}), resolveStyles(local.styles), local.UNSAFE_className, local.class);
+  let buttonElement: HTMLButtonElement | undefined;
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+
+  const getClassName = (renderProps: ButtonRenderProps): string =>
+    joinClass(
+      local.UNSAFE_className,
+      mergeStyles(
+        closeButton({
+          ...renderProps,
+          size: local.size ?? "M",
+          staticColor: local.staticColor,
+          isStaticColor: !!local.staticColor,
+        }),
+        resolveStyles(local.styles),
+      ),
+    );
+
+  const getPressScaleStyle = (renderProps: ButtonRenderProps): JSX.CSSProperties =>
+    pressScale(() => buttonElement, local.UNSAFE_style)(renderProps);
 
   return (
-    <button
+    <HeadlessButton
       {...buttonProps}
-      type={buttonProps.type ?? "button"}
-      class={className()}
-      style={local.UNSAFE_style}
-      aria-label={local["aria-label"] ?? "Dismiss"}
-      onClick={(event) => {
-        const onClick = local.onClick as
-          | JSX.EventHandler<HTMLButtonElement, MouseEvent>
-          | undefined;
-        onClick?.(event);
-        if (!event.defaultPrevented) {
-          context?.close();
-        }
+      slot="close"
+      ref={(element: HTMLButtonElement) => {
+        buttonElement = element;
       }}
+      aria-label={local["aria-label"] ?? stringFormatter().format("dialog.dismiss")}
+      class={getClassName}
+      style={getPressScaleStyle}
     >
-      {local.children ?? <CrossIcon size="XL" aria-hidden="true" />}
-    </button>
+      <CrossIcon size={closeButtonIconSize[local.size ?? "M"]} aria-hidden="true" />
+    </HeadlessButton>
   );
 }
 
@@ -857,7 +952,6 @@ export function FullscreenDialog(props: FullscreenDialogProps): JSX.Element {
   const className = () =>
     joinClass(
       "comparison-spectrum-FullscreenDialog",
-      dialogSurface({ size: size() }),
       fullscreenDialogInner,
       resolveStyles(local.styles),
       local.UNSAFE_className,
@@ -884,13 +978,17 @@ export function FullscreenDialog(props: FullscreenDialogProps): JSX.Element {
 
           return (
             <DialogContext.Provider value={{ close: handleDismiss }}>
-              <div class={fullscreenDialogHeader}>
-                <DialogHeaderSlots>{renderedChildren()}</DialogHeaderSlots>
-                <DialogFooterSlots>{renderedChildren()}</DialogFooterSlots>
-              </div>
-              <div class={fullscreenDialogContent}>
-                <DialogContentSlots>{renderedChildren()}</DialogContentSlots>
-              </div>
+              <HeadlessButtonContext.Provider
+                value={{ slots: { default: {}, close: { onPress: () => handleDismiss() } } }}
+              >
+                <div class={fullscreenDialogHeader}>
+                  <DialogHeaderSlots>{renderedChildren()}</DialogHeaderSlots>
+                  <DialogFooterSlots>{renderedChildren()}</DialogFooterSlots>
+                </div>
+                <div class={fullscreenDialogContent}>
+                  <DialogContentSlots>{renderedChildren()}</DialogContentSlots>
+                </div>
+              </HeadlessButtonContext.Provider>
             </DialogContext.Provider>
           );
         }}
@@ -923,8 +1021,6 @@ export function CustomDialog(props: CustomDialogProps): JSX.Element {
   const className = () =>
     joinClass(
       "comparison-spectrum-CustomDialog",
-      dialogSurface({ size: size() }),
-      dialogInner,
       customDialog({ padding: local.padding ?? "default" }),
       resolveStyles(local.styles),
       local.UNSAFE_className,
@@ -952,7 +1048,11 @@ export function CustomDialog(props: CustomDialogProps): JSX.Element {
 
           return (
             <DialogContext.Provider value={{ close: handleDismiss }}>
-              <DialogTitleSlots>{renderedChildren()}</DialogTitleSlots>
+              <HeadlessButtonContext.Provider
+                value={{ slots: { default: {}, close: { onPress: () => handleDismiss() } } }}
+              >
+                <DialogTitleSlots>{renderedChildren()}</DialogTitleSlots>
+              </HeadlessButtonContext.Provider>
             </DialogContext.Provider>
           );
         }}

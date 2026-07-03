@@ -328,7 +328,45 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     Phase 2 Tabs item).
     Pilot findings queue (burn down before D3, which pixel-diffs the same
     states): ~~Tabs gap~~ (resolved 2026-07-03, certified tabs 6/6 green),
-    Dialog surface, Dialog CloseButton.
+    ~~Dialog surface~~, ~~Dialog CloseButton~~ (both resolved 2026-07-03,
+    certified dialog green — queue empty, D3 unblocked).
+  - Dialog surface resolution (2026-07-03): the modal chain now mirrors
+    upstream Modal.tsx — overlay (`isolation`, `transparent-black-500`) →
+    full-viewport wrapper div (`container-type: size`, alignItems flips to
+    `start` for fullscreenTakeover, pointerEvents none so outside-click
+    dismissal still reaches the overlay) → the RAC modal carrying upstream's
+    RACModal styles (size-keyed width/height, `--s2-container-bg: layer-2`,
+    transparent WHCM outline); the invented `dialogSurface`/host div pair is
+    gone, and dialogInner/customDialog/dialogContent were realigned to
+    upstream Dialog.tsx (borderRadius inherit, `font: body` on content,
+    responsive customDialog padding). Known residuals, each deferred with a
+    tracked home: entering/exiting motion flips land with D2 (CP7);
+    FullscreenDialog still uses the shared `dialogInner` rather than
+    upstream's fullscreen variant; `dialogFooterWrapper`'s invented borderTop
+    stays pending a design read; upstream's content `flexShrink` @container
+    rules were dropped (our wrapper is the size container, needs a follow-up
+    read); `data-size` attributes wait for D6.
+  - Dialog CloseButton resolution (2026-07-03): rebuilt as a real RAC Button
+    (upstream CloseButton.tsx) — HeadlessButton + focusRing/staticColor/
+    controlSize macros, hover/pressed/focus-visible backgrounds, pressScale,
+    disabled + forcedColors icon colors, and the localized "Dismiss" label via
+    `createStringFormatter(s2IntlStrings)`; Dialog provides it through a
+    ButtonContext `close` slot like upstream, so the walk can drive its
+    focus-visible/hover/pressed states.
+  - Sweep fallout worth recording (2026-07-03): the D1 burn-down exposed that
+    73 `useRenderProps` call sites across 37 solidaria-components files read
+    `children:` eagerly in the opts literal — instantiating static JSX
+    children during the component body, before the component's own context
+    providers mount (SearchField crashed on plain static children; TabSwitch's
+    single-select ToggleButtonGroup silently lost its radiogroup/radio
+    semantics). All 73 sites now forward a lazy `get children()`, and shared
+    `renderChildren` classifies render props by arity (`length > 0`) — a
+    zero-arg function child is an accessor (compiled `{expression}` child,
+    solid-refresh dev wrapper, one-shot `solid-js/h` element thunk) and is
+    returned raw for the insert machinery to unwrap in its own nested effect,
+    keeping child ownership out of the shared insertion effect (the h zombie
+    class documented above). Regression coverage: SearchField static-children
+    test, Switch radiogroup tests, Select h-composition tests.
   - Tabs gap resolution (2026-07-03) bundled four fixes in one unit: the
     icon/text `gap` moved onto the tab style itself (invented `tabContent`
     wrapper span + its style deleted, stray `outlineStyle` keys removed);
