@@ -21,10 +21,11 @@ committed — but it is **pinned, not floating**. The pin lives in a tracked fil
 `scripts/upstream-pin.json`: release umbrella tag, commit SHA, and the resolved
 `@react-spectrum/s2` / `react-aria-components` versions.
 
-Current pin (2026-06-19): `@adobe/react-spectrum@3.47.2`, commit `1c84a49a`,
-`@react-spectrum/s2@1.5.0`, `react-aria-components@1.19.0`. The 1.18/1.4 → 1.19/1.5
-absorb backlog is **Train 6 (T-34…T-50)** in
-[upstream-release-audit.md](./upstream-release-audit.md).
+Current pin (2026-07-03): `@react-spectrum/s2@1.5.1`, commit `c4de1e22`,
+`react-aria-components@1.19.0` — an S2-only patch train, so there is no new
+`@adobe/react-spectrum` umbrella tag (the last umbrella release stays 3.47.2).
+Absorb backlog: **Train 6 (T-34…T-50)** and **Train 7 (T-60, closed on
+arrival)** in [upstream-release-audit.md](./upstream-release-audit.md).
 
 The tree is materialized as a **shallow checkout at the tag** (nested `.git`),
 which makes release-to-release diffing first-class. `guard:upstream-test-parity`
@@ -46,7 +47,7 @@ Three distinct staleness axes, don't conflate them:
   match the pin?) — **it usually doesn't.** Those deps are resolved by the
   comparison app's own dependency ranges, not by the pin, so they lag. As of
   2026-06-20 the installed tree is two trains behind: s2 `1.3.0` / RAC `1.17.0` /
-  `@react-aria/utils` `3.33.0` vs the pin's `1.5.0` / `1.19.0` / `3.34.1`. This
+  `@react-aria/utils` `3.33.0` vs the pin's `1.5.1` / `1.19.0` / `3.34.1`. This
   matters because `source-index.md` lists the installed `@react-aria` /
   `@react-spectrum/s2` paths as the first parity authority — **for a pinned-parity
   port, read the vendored `./react-spectrum` source instead** (or diff the
@@ -60,7 +61,7 @@ Three distinct staleness axes, don't conflate them:
 For a fresh clone, or after the pin moves and the tree is stale:
 
 ```bash
-git clone --depth 1 --branch '@react-spectrum/s2@1.4.0' \
+git clone --depth 1 --branch '@react-spectrum/s2@1.5.1' \
   https://github.com/adobe/react-spectrum react-spectrum
 ```
 

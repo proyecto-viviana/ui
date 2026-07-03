@@ -48,14 +48,14 @@ and it keeps meaning that on every future commit.
 
 The oracle and the baseline must be trustworthy before anything else.
 
-| # | Task | Exit test |
-|---|------|-----------|
-| 0.1 | Absorb S2 1.5.1 into the vendored `./react-spectrum`; bump the `guard:upstream-test-parity` pin; run the release-audit train process for the 1.5.0→1.5.1 delta | `vp run guard:upstream-freshness` green |
-| 0.2 | Upgrade `apps/comparison` installed deps to the pin (today S2 1.3.0 / RAC 1.17.0 — two trains stale). The pair oracle is invalid until this lands | installed versions == pin |
-| 0.3 | Align `@adobe/spectrum-tokens` (installed `^14.5.0` vs vendored exact `14.0.0`); add a guard so the two cannot drift silently | new `guard:spectrum-tokens-pin` green |
+| #   | Task                                                                                                                                                                                                                                             | Exit test                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| 0.1 | Absorb S2 1.5.1 into the vendored `./react-spectrum`; bump the `guard:upstream-test-parity` pin; run the release-audit train process for the 1.5.0→1.5.1 delta                                                                                   | `vp run guard:upstream-freshness` green                                        |
+| 0.2 | Upgrade `apps/comparison` installed deps to the pin (today S2 1.3.0 / RAC 1.17.0 — two trains stale). The pair oracle is invalid until this lands                                                                                                | installed versions == pin                                                      |
+| 0.3 | Align `@adobe/spectrum-tokens` (installed `^14.5.0` vs vendored exact `14.0.0`); add a guard so the two cannot drift silently                                                                                                                    | new `guard:spectrum-tokens-pin` green                                          |
 | 0.4 | Baseline hygiene: format the 70 drifted files; refresh the 6 stale regression snapshots; fix the real FocusManagement Escape-restore bug; fix the ActionButton label-intercepts-pointer contract failure; fix the 2 Toast playground a11y smokes | `vp run check`, `test:run`, `comparison:test:contract`, `a11y:check` all green |
-| 0.5 | Close the CI-on-main hole: run `ci:release-readiness` (or a trimmed floor set) on pushes to `main`, not only PRs | a main push runs build+test |
-| 0.6 | Make the blocking a11y gate include axe `color-contrast` on comparison routes (currently excluded — no contrast bug can fail CI today) | rule enabled, gate green |
+| 0.5 | Close the CI-on-main hole: run `ci:release-readiness` (or a trimmed floor set) on pushes to `main`, not only PRs                                                                                                                                 | a main push runs build+test                                                    |
+| 0.6 | Make the blocking a11y gate include axe `color-contrast` on comparison routes (currently excluded — no contrast bug can fail CI today)                                                                                                           | rule enabled, gate green                                                       |
 
 Exit criteria: all 17 ground-truth gates green on a clean `main`, comparison
 app serves the pinned upstream.
@@ -68,20 +68,20 @@ the march starts. Each driver exposes one function a per-component spec calls
 with a scenario descriptor; all assertions are pair-oracle (React output vs
 Solid output).
 
-| ID | Driver | Signal compared across stacks |
-|----|--------|-------------------------------|
-| D1 | State-matrix style diff | `getComputedStyle` allowlist (color, background, border, radius, outline, shadow, font-*, spacing, transition-*) per state (default/hover/focus-visible/pressed/disabled/selected/invalid/pending) × theme (light+dark) × size, states driven by real input |
-| D2 | Motion | See breakdown below — the animation/video tier |
-| D3 | Strict pixel diff | `exactPairDiff` (0-mismatch) screenshots per D1 state; every loose threshold becomes a tracked waiver with a burn-down list in this doc |
-| D4 | Event-sequence oracle | Ordered log of pointerdown/up/click/focus/keydown(+defaultPrevented)/onPress*(+pointerType) for scripted mouse, keyboard, and touch gestures |
-| D5 | Focus & keyboard trails | `document.activeElement` trail + roving tabindex + `aria-activedescendant` through Tab/Shift+Tab/arrows/Home/End/typeahead walks |
-| D6 | AX tree & announcements | CDP accessibility snapshot (role/name/description/state) + MutationObserver transcript of live-region text and timing |
-| D7 | Contrast | Computed fg/bg ratio per text node per D1 state and theme; AA asserts, AAA reported |
-| D8 | Target size | Bounding box of every interactive element ≥ 24px (WCAG 2.5.8 assert), 44px (2.5.5 report), across sizes |
-| D9 | Forced colors | D1 re-run under `forcedColors: 'active'`, comparing resolved system-color keywords |
-| D10 | RTL / i18n | D1 + D5 re-run under `dir="rtl"` + `ar-AE` locale; icon mirroring, arrow inversion, date/number formatting equality |
-| D11 | Timing | Tooltip warmup/cooldown, toast auto-dismiss/pause, long-press thresholds under Playwright's mocked clock |
-| D12 | SSR / hydration | Astro island server HTML vs hydrated DOM; stable ids, no mismatch |
+| ID  | Driver                  | Signal compared across stacks                                                                                                                                                                                                                                   |
+| --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | State-matrix style diff | `getComputedStyle` allowlist (color, background, border, radius, outline, shadow, `font-*`, spacing, `transition-*`) per state (default/hover/focus-visible/pressed/disabled/selected/invalid/pending) × theme (light+dark) × size, states driven by real input |
+| D2  | Motion                  | See breakdown below — the animation/video tier                                                                                                                                                                                                                  |
+| D3  | Strict pixel diff       | `exactPairDiff` (0-mismatch) screenshots per D1 state; every loose threshold becomes a tracked waiver with a burn-down list in this doc                                                                                                                         |
+| D4  | Event-sequence oracle   | Ordered log of pointerdown/up/click/focus/keydown(+defaultPrevented)/`onPress*`(+pointerType) for scripted mouse, keyboard, and touch gestures                                                                                                                  |
+| D5  | Focus & keyboard trails | `document.activeElement` trail + roving tabindex + `aria-activedescendant` through Tab/Shift+Tab/arrows/Home/End/typeahead walks                                                                                                                                |
+| D6  | AX tree & announcements | CDP accessibility snapshot (role/name/description/state) + MutationObserver transcript of live-region text and timing                                                                                                                                           |
+| D7  | Contrast                | Computed fg/bg ratio per text node per D1 state and theme; AA asserts, AAA reported                                                                                                                                                                             |
+| D8  | Target size             | Bounding box of every interactive element ≥ 24px (WCAG 2.5.8 assert), 44px (2.5.5 report), across sizes                                                                                                                                                         |
+| D9  | Forced colors           | D1 re-run under `forcedColors: 'active'`, comparing resolved system-color keywords                                                                                                                                                                              |
+| D10 | RTL / i18n              | D1 + D5 re-run under `dir="rtl"` + `ar-AE` locale; icon mirroring, arrow inversion, date/number formatting equality                                                                                                                                             |
+| D11 | Timing                  | Tooltip warmup/cooldown, toast auto-dismiss/pause, long-press thresholds under Playwright's mocked clock                                                                                                                                                        |
+| D12 | SSR / hydration         | Astro island server HTML vs hydrated DOM; stable ids, no mismatch                                                                                                                                                                                               |
 
 ### D2 Motion — the animation/video tier
 
@@ -199,7 +199,11 @@ When the ledger is empty, the machinery has provably subsumed the audit.
 
 ## Queue
 
-Phase 0: `0.1 ☐ 0.2 ☐ 0.3 ☐ 0.4 ☐ 0.5 ☐ 0.6 ☐`
+Phase 0: `0.1 ☑ 0.2 ☐ 0.3 ☐ 0.4 ☐ 0.5 ☐ 0.6 ☐`
+
+- 0.1 done 2026-07-03: oracle at s2 1.5.1 (Train 7 = T-60, closed on arrival —
+  see `upstream-release-audit.md`); `guard:upstream-freshness` green.
+
 Phase 1: `D1 ☐ D2 ☐ D3 ☐ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 Phase 2: not started — march order above is the queue; mark components here as
 `✓ name (date)` when certified, `blocked: name (reason)` otherwise.

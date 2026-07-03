@@ -43,7 +43,7 @@ tasks:
       NOT fake it with bespoke per-widget consumers.
 ---
 
-# Upstream release audit — RAC 1.14→1.19 / S2 1.0→1.5
+# Upstream release audit — RAC 1.14→1.19 / S2 1.0→1.5.1
 
 Status: live audit.
 Update when: a T-NN ticket changes state or a new upstream release is audited.
@@ -245,7 +245,7 @@ internal — not a port concern).
 - [x] **T-21** ✔ S2 — **window scrolling** in collection components. ⇄ **dedup of T-17** — the S2-styled collections (`ListBox` / `Table` / `Tree` / `Menu` / …) inherit the default-on window scrolling through the shared `solidaria-components` `Virtualizer`; covered by the same changeset (`virtualizer-window-scrolling.md`), and the S2 collection suites (85 tests) stay green.
 - [x] **T-22** ✔ S2 — updated **workflow icons** set. **Done by us** (changeset `workflow-icons-regen.md`). Not actually a S2 1.2.0 release-notes item (the 1.2.0 notes mention no icons; the new icons landed across later trains). Copied the 8 missing upstream `_20_N` SVGs — `ArrowCurved`, `ArrowUpSend`, `BookmarkSingleFilled`, `PremiumIcon`, `StopProcessing`, `ZoomFitToHeight`, `ZoomFitToScreen`, `ZoomFitToWidth` — into `assets/s2wf-icons` and reran `scripts/generate-solid-spectrum-icons.mjs` (then `vp fmt`), bringing our s2wf set to **410 of upstream's 410** with a generated `.tsx` + `s2wfIcons` barrel export for each (`PremiumIcon` → `PremiumIconIcon` under our `<Pascal>Icon` scheme). No API/behavioral work.
 
-## Train 5 — RAC 1.18.0 / S2 1.4.0 (2026-05-30, current pin)
+## Train 5 — RAC 1.18.0 / S2 1.4.0 (2026-05-30)
 
 - [x] **T-23** ✔ RAC — **Calendar multiple date selection** (changeset `calendar-multiple-selection.md`). `selectionMode="multiple"` ported across `solid-stately` (defaulted `M` generic + `CalendarValueType`, array value, `isSameDay` toggle, `setValue(null)→[]`), `solidaria` (`aria-multiselectable` on the grid), and `solidaria-components` (`Calendar` generic over `M`, threads `selectionMode`). ⇄ same feature as the S2 1.4 Calendar note; the S2 styled `Calendar` (`@ts-nocheck`) already forwards `selectionMode` through to the headless component.
 - [x] **T-24** ✅ RAC — **CalendarHeading** component. **Verified present**: `CalendarHeading` in Calendar + RangeCalendar across solidaria-components and solid-spectrum.
@@ -259,7 +259,7 @@ internal — not a port concern).
 - [x] **T-32** ✔ S2 — custom **prefixes** for ComboBox / TextField. **Now ported** (changeset `field-prefix.md`). Upstream hosts `prefix?: ReactNode` on the shared `FieldGroup` (`s2/src/Field.tsx`, with a `prefixId` + `aria-labelledby` association) and threads it into **ColorField, ComboBox, NumberField, TextField** (prefix-only; no `suffix`). We have no shared `FieldGroup` — each field composes its own group/input from its headless context — so the port adds a small shared helper `field/prefix.tsx`: `FieldPrefix` renders the prefix in a baseline-centered, icon-styled container (`CenterBaseline` gained an optional `id`) with a stable `id`, and `PrefixInputProvider` re-provides the field's own context through a proxy that appends that `id` to the input's `aria-labelledby` — preserving reactivity and each context's `inputProps` shape (object getter for TextField/NumberField/ColorField, function for ComboBox). All four fields now accept `prefix?: JSX.Element`; with no prefix the render path is byte-for-byte unchanged. 4 new tests (one per field) + typecheck + the parity guard stay green.
 - [x] **T-33** ✅ S2 — **LabeledValue** (display non-editable values). **Verified present**: `solid-spectrum/labeledvalue/`.
 
-## Train 6 — RAC 1.19.0 / S2 1.5.0 (2026-06-17, current pin)
+## Train 6 — RAC 1.19.0 / S2 1.5.0 (2026-06-17)
 
 Filed from `git diff 791377f0..1c84a49a` over `src`+`test` (the 1.18/1.4 → 1.19/1.5
 delta), grouped by feature, oldest-first. Statuses started as first-pass triage
@@ -286,6 +286,31 @@ our code; land a changeset when a published-package `src` changes.
 - [x] **T-48** ✔ S2 — **Disclosure styling** (+171, largely cosmetic): styling refactor + `StylesPropWithFont` `styles?` on `DisclosureTitle`. **The style objects were already at full parity** (`headingStyles`/`buttonStyles`/`chevronStyles` mirror upstream values); the one real behavioral delta was **where `DisclosureTitle.styles` is applied**. Upstream routes it to the trigger `Button` as a `style()` override gated by `getAllowedOverrides({font: true})` (`Disclosure.tsx:325` — `buttonStyles({...renderProps, size, density, isQuiet}, styles)`), with the prop typed `StylesPropWithFont`. Our port merged it onto the **outer `<Heading>` wrapper** via `mergeStyles(headingStyles, local.styles)` — which (a) can't affect the title's own font (the font lives on the inner button) so a font override silently no-op'd, and (b) is unfiltered, so any non-font override leaked through. **Fix** (`packages/solid-spectrum/src/disclosure/index.tsx`): pass `local.styles` as the runtime override to `buttonStyles({...}, local.styles)`, define `buttonStyles` with `getAllowedOverrides({font: true})`, drop `local.styles` from the heading (now just `headingStyles`), and narrow `DisclosureTitleProps.styles` to `StylesPropWithFont` + the upstream JSDoc. Added the supporting `font` option to `getAllowedOverrides` plus `fontProperties`/`StylesPropWithFont` exports in `s2-internal/style-utils.ts`. **Discrimination probe** (override = `style({fontWeight:'black', paddingTop:8})`, with/without via `git stash`): `fontWeight:black` (`xf13`) and `paddingTop:8` (`Tt13`) — **old** heading carried both unfiltered + button carried neither; **new** heading carries neither, button carries `xf13` (overriding the base `xd13` fontWeight:bold) and **drops** the disallowed `Tt13` (base `pt13` paddingTop retained). Proves both the heading→button routing and the font allowlist are live and surgical. Disclosure 5/5; fmt/lint/typecheck/guard clean (changeset `disclosure-title-styles-font-override.md`, `@proyecto-viviana/solid-spectrum` patch).
 - [x] **T-49** ➖ S2 — **Menu un-omit `dependencies`** (+9) — **N/A by construction, confirmed.** Upstream re-exposes the `dependencies` array prop (RAC's collection-invalidation deps array). In the pinned upstream, `@react-spectrum/s2` `MenuProps` `Omit`s only `'children' | 'style' | 'className' | 'render' | 'renderEmptyState' | keyof GlobalDOMAttributes` from `AriaMenuProps` — `dependencies` is already _not_ omitted. We never had the omit because we never had the prop: our collections invalidate **reactively via Solid signals** (any signal read inside an item render is auto-tracked), so there is no manual `dependencies` array to surface — `dependencies` is grep-empty across our `menu`/`solidaria`. Nothing else in the un-omit applies.
 - [x] **T-50** ➖ S2 — **Tabs stable `contentId`** (+11) — **N/A in Solid's no-rerender model, confirmed.** Upstream's S2 `Tab` (`@react-spectrum/s2/src/Tabs.tsx`) derives `contentId = \`${baseId ?? fallbackId}-content-${props.id ?? fallbackId}\``from a shared`baseId`(on`InternalTabsContext`), used as the text `id`and in`aria-labelledby`for the`labelBehavior === 'hide'`case; the comment states it "Prevents infinite loop when rendering across multiple CollectionBuilder portals" — a React reconciliation artifact where`useId()`re-derives a changing id across the portal double-render. Our`Tab` (`solid-spectrum/src/tabs/index.tsx`) uses `const contentId = createUniqueId()`**once** in the component body (Solid runs the body once → stable for the instance's lifetime), and both the text`id={contentId}`and`aria-labelledby={…contentId…}`read the **same closure variable**, so they are internally consistent. With no re-render and no portal double-render producing a changing id, neither the infinite loop nor an aria mismatch can occur; the upstream`baseId`-derivation exists purely to be deterministic across React's double render, which we don't have. (The aria-hook id path is separately faithful: our `getTabListId`WeakMap +`${baseId}-tab/tabpanel-${key}`mirrors upstream`generateId`.)
+
+## Train 7 — S2 1.5.1 (2026-06-24, current pin)
+
+S2-only patch train: no RAC release and no `@adobe/react-spectrum` umbrella tag
+(RAC stays 1.19.0); no GitHub release notes are published for patch trains, so
+the diff is the record. Filed from `git diff 1c84a49a..c4de1e22`. The entire
+component-facing delta is one file — `s2/src/Button.tsx`; the rest is docs/dev
+tooling (the style-macro test churn is only the package-version suffix in
+generated class hashes, `…15` → `…151`), and `@react-spectrum/ai@0.1.1` is a
+metadata bump of Adobe's unported chat-components package (pre-existing at
+1.5.0, not something we ship).
+
+- [x] **T-60** ✔ S2 — **Button static-color secondary/outline text color** —
+      ported (changeset `button-staticcolor-secondary-overlay.md`, patch
+      solid-spectrum). Upstream 1.5.1 changes `color.isStaticColor.fillStyle`'s
+      secondary-fill and outline-default values from `'white'` to a state-invariant
+      explicit object (`transparent-overlay-1000` for
+      default/isHovered/isFocusVisible/isPressed). Our port had drifted to
+      `baseColor("transparent-overlay-800")` here — an invented value matching
+      neither 1.5.0 nor 1.5.1 — and now mirrors the 1.5.1 shape exactly
+      (`s2-button-styles.ts`). Button suites 182/182 green; the parity guards show
+      no new flags. Note: the sibling `s2-action-button-styles.ts` still carries
+      `baseColor("transparent-overlay-800")` — that is the pre-existing
+      ActionButton/ToggleButton divergence the 2026-07 audit flagged, owned by the
+      recertification march (Tier 1), not this train.
 
 ## Cross-train behavioral tickets (source-level sweep)
 
@@ -348,6 +373,7 @@ joins the deferred sub-items called out per ticket.
 **T-34…T-59 is the active backlog** — one list now: **Train 6 (T-34…T-50)**, the
 RAC 1.18→1.19 / S2 1.4→1.5 release absorb, plus the **cross-train sweep tickets
 (T-51…T-59)** consolidated here from upstream-sync.md's old deferred checklist.
+**Train 7 (T-60)** — the S2 1.5.1 patch absorb — closed on arrival (2026-07-03).
 **T-38** (`onAction(key, value)`) has landed, and the high-risk
 **T-34** (`keyboardNavigationBehavior`) epic is now closed on top of the shared
 item press path. **T-51** (`replace`-mode action model) is ported for the three

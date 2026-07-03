@@ -194,7 +194,12 @@ export const s2Button = style<S2ButtonStyleProps>(
           fill: {
             variant: {
               primary: "auto",
-              secondary: baseColor("transparent-overlay-800"),
+              secondary: {
+                default: "transparent-overlay-1000",
+                isHovered: "transparent-overlay-1000",
+                isFocusVisible: "transparent-overlay-1000",
+                isPressed: "transparent-overlay-1000",
+              },
               premium: "white",
               genai: "white",
             },
@@ -204,7 +209,12 @@ export const s2Button = style<S2ButtonStyleProps>(
               premium: "white",
               genai: "white",
             },
-            default: baseColor("transparent-overlay-800"),
+            default: {
+              default: "transparent-overlay-1000",
+              isHovered: "transparent-overlay-1000",
+              isFocusVisible: "transparent-overlay-1000",
+              isPressed: "transparent-overlay-1000",
+            },
           },
         },
         isDisabled: "transparent-overlay-400",
