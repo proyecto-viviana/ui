@@ -44,7 +44,14 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
         key[2] === key[2]?.toUpperCase()
       ) {
         setResultValue(key, chainHandlers(existingValue as Function, value as Function));
-      } else if (key === "class" || key === "className") {
+      } else if (
+        (key === "class" || key === "className" || key === "UNSAFE_className") &&
+        typeof existingValue === "string" &&
+        typeof value === "string"
+      ) {
+        // Join only when both sides are plain strings (react-aria mergeProps
+        // semantics); a render-prop class function must pass through intact,
+        // not be coerced to its source text.
         setResultValue(key, mergeClassNames(existingValue, value));
       } else if (
         key === "style" &&
