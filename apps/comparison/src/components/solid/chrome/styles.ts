@@ -71,8 +71,8 @@ export const docsBrandLink = style({
     default: "transparent",
     ":hover": "gray-100",
   },
-  color: "neutral",
   font: "ui-lg",
+  color: "neutral",
   fontWeight: "bold",
   textDecoration: "none",
 });
@@ -85,8 +85,8 @@ export const docsBrandMark = style({
   height: 26,
   borderRadius: "sm",
   backgroundColor: "informative",
-  color: "white",
   font: "ui-sm",
+  color: "white",
   fontWeight: "black",
 });
 
@@ -135,8 +135,8 @@ export const docsSearchButton = style({
     default: "gray-25",
     ":hover": "gray-50",
   },
-  color: "neutral-subdued",
   font: "ui-lg",
+  color: "neutral-subdued",
   cursor: "text",
   justifyContent: "start",
 });
@@ -162,8 +162,8 @@ export const docsShellAction = style({
     default: "transparent",
     ":hover": "gray-100",
   },
-  color: "neutral",
   font: "ui",
+  color: "neutral",
   cursor: "pointer",
 });
 
@@ -201,8 +201,8 @@ export const docsSearchKeyboard = style({
   borderColor: "gray-300",
   borderRadius: "xl",
   backgroundColor: "layer-1",
-  color: "neutral-subdued",
   font: "detail",
+  color: "neutral-subdued",
   pointerEvents: "none",
 });
 
@@ -211,8 +211,8 @@ export const docsTopNavRoot = style({
   alignItems: "center",
   justifyContent: "end",
   gap: 4,
-  color: "neutral-subdued",
   font: "ui",
+  color: "neutral-subdued",
 });
 
 export const docsTopNavLink = style({
@@ -300,8 +300,8 @@ export const docsSearchDialogHeader = style({
 
 export const docsSearchDialogTitle = style({
   margin: 0,
-  color: "neutral",
   font: "title",
+  color: "neutral",
 });
 
 export const docsSearchDialogField = style({
@@ -334,22 +334,22 @@ export const docsSearchResultLink = style({
 });
 
 export const docsSearchResultTitle = style({
-  color: "neutral",
   font: "ui",
+  color: "neutral",
   fontWeight: "bold",
 });
 
 export const docsSearchResultMeta = style({
-  color: "neutral-subdued",
   font: "detail",
+  color: "neutral-subdued",
 });
 
 export const docsSearchEmpty = style({
   margin: 0,
   paddingX: 12,
   paddingY: "[18px]",
-  color: "neutral-subdued",
   font: "ui",
+  color: "neutral-subdued",
 });
 
 export const docsMobileNavButton = style({
@@ -425,8 +425,8 @@ export const docsMobileNavHeader = style({
 });
 
 export const docsMobileNavTitle = style({
-  color: "neutral",
   font: "title",
+  color: "neutral",
 });
 
 export const docsLayoutRoot = style({
@@ -581,8 +581,8 @@ export const docsFooterRoot = style({
   marginX: "auto",
   marginTop: 32,
   paddingY: 12,
-  color: "neutral-subdued",
   font: "body-2xs",
+  color: "neutral-subdued",
 });
 
 export const docsFooterDivider = style({
@@ -661,8 +661,8 @@ export const docsNavSectionSummary = style({
   alignItems: "center",
   minHeight: 32,
   paddingX: 4,
-  color: "neutral",
   font: "ui",
+  color: "neutral",
   fontWeight: "bold",
   cursor: "pointer",
   listStyleType: "none",
@@ -701,12 +701,12 @@ export const docsNavLink = style({
   minHeight: 32,
   paddingX: 4,
   borderRadius: "default",
+  font: "ui",
+  fontWeight: "normal",
   color: {
     default: "neutral",
     ":hover": "neutral",
   },
-  font: "ui",
-  fontWeight: "normal",
   textDecoration: "none",
   transition: "default",
 });
@@ -779,8 +779,8 @@ export const docsTocHeading = style({
   minHeight: 32,
   paddingX: 12,
   marginBottom: 4,
-  color: "neutral",
   font: "title",
+  color: "neutral",
 });
 
 export const docsTocLink = style({
@@ -792,11 +792,11 @@ export const docsTocLink = style({
   minHeight: 32,
   paddingX: 4,
   borderRadius: "default",
+  font: "ui",
   color: {
     default: "neutral-subdued",
     ":hover": "neutral",
   },
-  font: "ui",
   textDecoration: "none",
   scrollMarginTop: 64,
 });

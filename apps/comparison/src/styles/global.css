@@ -623,6 +623,14 @@ html[data-theme="dark"] body.s2-docs {
   outline-offset: -2px;
 }
 
+/* Shiki's github-dark comment gray (#6A737D) is 3.04:1 on the #24292E code
+   background — below WCAG AA 4.5:1. Lift it to GitHub's own current
+   dark-mode comment gray (4.76:1). !important is required to beat Shiki's
+   inline style attribute. */
+.astro-code span[style*="#6A737D" i] {
+  color: #8b949e !important;
+}
+
 .s2-example-controls {
   position: relative;
   grid-area: controls;

@@ -10,7 +10,6 @@ import { clearPointer, pinComparisonTheme } from "./visual-diff";
 import { comparisonEntries } from "../src/data/comparison-manifest";
 
 const comparisonAxeTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] as const;
-const includeColorContrast = process.env.AXE_INCLUDE_CONTRAST === "1";
 const routeFilter = new Set(
   (process.env.COMPARISON_AXE_ROUTES ?? "")
     .split(",")
@@ -78,7 +77,7 @@ async function markAxeScope(target: Locator, scope: string) {
 
 async function runAxe(page: Page, selector: string) {
   return page.evaluate(
-    async ({ contextSelector, tags, rules }) => {
+    async ({ contextSelector, tags }) => {
       const axeRunner = (
         window as unknown as {
           axe: {
@@ -86,7 +85,6 @@ async function runAxe(page: Page, selector: string) {
               context: string,
               options: {
                 runOnly: { type: "tag"; values: string[] };
-                rules: Record<string, { enabled: boolean }>;
               },
             ) => Promise<{
               violations: Array<{
@@ -102,7 +100,6 @@ async function runAxe(page: Page, selector: string) {
 
       const results = await axeRunner.run(contextSelector, {
         runOnly: { type: "tag", values: tags },
-        rules,
       });
 
       return results.violations.map((violation) => ({
@@ -119,7 +116,6 @@ async function runAxe(page: Page, selector: string) {
     {
       contextSelector: selector,
       tags: [...comparisonAxeTags],
-      rules: includeColorContrast ? {} : { "color-contrast": { enabled: false } },
     },
   );
 }

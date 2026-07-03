@@ -202,7 +202,7 @@ When the ledger is empty, the machinery has provably subsumed the audit.
 
 ## Queue
 
-Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☐`
+Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complete**
 
 - 0.1 done 2026-07-03: oracle at s2 1.5.1 (Train 7 = T-60, closed on arrival —
   see `upstream-release-audit.md`); `guard:upstream-freshness` green.
@@ -251,6 +251,29 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☐`
     `packages/*/test-utils`, `scripts`), which is why the invalid placement
     literal — a genuine TS error against `ToastPlacement` — never failed a
     gate.
+
+- 0.6 done 2026-07-03: axe `color-contrast` now always on in the blocking
+  comparison gate (`comparison-axe.spec.ts` no longer gates it behind
+  `AXE_INCLUDE_CONTRAST`; the env knob is gone there and `a11y:full` dropped
+  the now-meaningless prefix). A full 69-route sweep with contrast enabled
+  found ZERO panel-scoped violations — both component stacks were already
+  contrast-clean — and exactly two app-chrome bugs, both fixed:
+  - Chrome styles wrote `color:` before the `font:` shorthand. The S2 macro
+    expands `font` to include an implied `color` ('body' for ui fonts) and
+    later object keys win, so every such explicit color was dead. The brand
+    mark's dead `white` rendered as body gray-800 (#dbdbdb) on informative
+    blue = 3.25:1. Reordered all 16 blocks in
+    `apps/comparison/.../chrome/styles.ts` (font first, color after —
+    upstream S2's own convention). Same latent pattern exists at 4 sites in
+    the port (table/gridlist/tag-group/tree empty states) — dead code, zero
+    render change; left for those components' Phase 2 march since the
+    faithful fix needs a per-site upstream diff (upstream TableView styles no
+    color/font on its wrapper at all; TagGroup uses `font: 'ui'` only).
+  - Shiki `github-dark` comment gray #6A737D on #24292E = 3.04:1 in docs code
+    blocks; overridden in `global.css` to GitHub's current dark comment gray
+    #8b949e (4.76:1).
+  Exit test met: rule enabled, gate green (71/71 routes, full-page + both
+  panels).
 
 - 0.5 done 2026-07-03: CI-on-main hole closed. `release-readiness.yml` now
   triggers on pushes to `main` as well as PRs (concurrency-cancelled per ref),

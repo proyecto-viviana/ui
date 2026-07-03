@@ -38,8 +38,8 @@ Each checkpoint ends in a commit (or a recorded blocker here). Status values:
 | CP  | Unit                                                              | Status |
 | --- | ----------------------------------------------------------------- | ------ |
 | 0   | Verify + commit in-flight recertification 0.5                     | done (9df33f69) |
-| 1   | Recertification 0.6 — blocking axe gate includes color-contrast   | in-progress |
-| 2   | This plan committed                                               | in-progress |
+| 1   | Recertification 0.6 — blocking axe gate includes color-contrast   | done |
+| 2   | This plan committed                                               | done (5c15d499) |
 | 3   | Driver D1 state-matrix computed-style pair diff + pilots green    | pending |
 | 4   | Driver D3 strict pixel pair diff riding the D1 state walk         | pending |
 | 5   | Drivers D4 event-sequence + D5 focus/keyboard trails              | pending |
@@ -76,3 +76,12 @@ empties.
   unless `AXE_INCLUDE_CONTRAST=1`; blocking `a11y:check` never sets it.
   Plan: rebuild comparison, run axe with contrast on, fix reds, flip the
   default so the blocking gate always includes contrast.
+- 08:0x CP1 done: full 69-route contrast sweep (temporary collector spec,
+  deleted after) → zero panel-scoped violations, two app-chrome bug classes.
+  Root-caused the header brand mark to the macro's `font` shorthand implied
+  color clobbering an earlier explicit `color:` (later key wins) — reordered
+  all 16 chrome style blocks; Shiki github-dark comment gray overridden to
+  #8b949e. Contrast permanently enabled in `comparison-axe.spec.ts`; gate
+  green 71/71. Filed the same dead-color pattern found at 4 port empty-state
+  sites for the Phase 2 march (details in recertification.md 0.6 note).
+  **Phase 0 is complete.**
