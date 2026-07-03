@@ -457,7 +457,7 @@ function ModalContent(
 
     const hideOutside = () => {
       if (cancelled || !modalRef?.isConnected) return;
-      cleanup = ariaHideOutside([modalRef]);
+      cleanup = ariaHideOutside([modalRef], { shouldUseInert: true });
     };
 
     if (modalRef.isConnected) {

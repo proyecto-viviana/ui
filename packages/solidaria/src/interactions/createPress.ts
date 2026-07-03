@@ -25,6 +25,7 @@ import {
   isMac,
   createGlobalListeners,
   setEventTarget,
+  focusWithoutScrolling,
 } from "../utils";
 
 export { PressEvent, type PointerType } from "./PressEvent";
@@ -388,7 +389,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
             cancel(e);
           } else {
             // Click didn't happen (probably due to stopPropagation), trigger it manually
-            pressState.target.focus();
+            focusWithoutScrolling(pressState.target);
             pressState.target.click();
           }
         }

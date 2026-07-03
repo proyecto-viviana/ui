@@ -291,7 +291,7 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☑ D5 ☑ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
@@ -429,8 +429,12 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     `mergeStyles`) — Phase 2 Tabs item alongside the root
     `useFocusRing({within: true})` gap noted under D1.
 
-- D4 + D5 in flight (2026-07-03, session checkpoint — landed, pilots partially
-  red with real findings):
+- D4 + D5 done 2026-07-03: both drivers landed, proven on Button, and
+  calibrated. Pilot status: **17 D4+D5 cases → 13 green, 4 red.** D5 fully
+  green (Button + Tabs + Dialog). D4 green except 4 cases that all fail on one
+  characterized, deferred root cause (the event-ordering epic below). Every
+  real port defect the drivers surfaced this session is fixed; the 4 reds are
+  a scheduling-model difference, not a driver bug. Detail:
   - Landed infrastructure (all committed):
     - Fixture side: `apps/comparison/src/data/event-log.ts` re-emits component
       callbacks (`onPress*`, `onSelectionChange`, `onOpenChange`) as bubbling
@@ -459,37 +463,73 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☐ D5 ☐ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
       tab-cycle), Tabs (D4 mouse/touch/arrow, D5 arrow-roving), Dialog (D4
       close-button mouse+escape, D4-only trigger scenario recording the full
       open→escape→close cycle, D5 trap-cycle).
-  - Pilot status: **Button 9/9 green (D4+D5). Tabs 0/4, Dialog 0/4 — real
-    findings, not driver bugs:**
-    1. **Dialog element**: upstream RAC renders `<section role="dialog">`
-       (`react-aria-components/src/Dialog.tsx:161`); ours rendered `<div>`.
-       Fixed in `solidaria-components/src/Dialog.tsx` (unit tests 38/38
-       green); **e2e not yet re-verified — rebuild `apps/comparison` first**
-       (preview serves the last build).
-    2. **Synthetic click invention**: our
-       `solidaria/src/interactions/createPress.ts:379-395` has an invented
-       80 ms `setTimeout` fallback that calls `pressState.target.focus()` +
-       `.click()` when no native click arrives — D4 logs it as
-       `click isTrusted:false pointerType:""` plus a late `focusin` where
-       React has a native trusted click. Diff against upstream
-       `react-spectrum/packages/react-aria/src/interactions/usePress.ts`
-       (consolidated package — NOT `@react-aria/interactions`, which is now a
-       re-export shim) and port the real onClick-completion path.
-    3. **Tab DOM recreation**: selecting a tab in Solid replaces the label
-       span mid-press (D4 shows the Solid `mousedown` hitting the tab div
-       while React's hits the span; the old span serializes as `detached`).
-       Chrome suppresses the native `click` when the mousedown target is
-       detached → finding 2's fallback fires. React updates the same nodes in
-       place. Likely the render-prop children memo recreating the Tab subtree
-       on selection state flip (the known Solid recreation gotcha).
-    4. **Press-start focus ordering**: React's log shows `focusin` on the tab
-       between `mousedown` and `pointerup` (upstream focuses + selects on
-       press start under automatic activation); ours doesn't focus until the
-       80 ms fallback. Likely fixed by 2+3, re-check after.
-  - Next session: fix findings 2–4 in `solidaria` (createPress vs upstream
-    usePress first — it's the root of both wrong orderings), rebuild
-    comparison, rerun `npx playwright test certified --grep "D4|D5"` until
-    17/17, then flip D4/D5 to ☑ and proceed to D6.
+  - Findings the pilots surfaced, and their resolution:
+    1. **Dialog element** — DONE. Upstream RAC renders `<section
+       role="dialog">`; ours rendered `<div>`. Fixed in
+       `solidaria-components/src/Dialog.tsx`, e2e-confirmed after rebuild.
+    2. **Tab DOM recreation → synthetic untrusted click** — DONE (commit
+       `aab498f6`). Selecting a tab in Solid re-invoked the render-prop child
+       on the `isPressed` flip, recreating the Tab label span mid-press;
+       Chrome suppresses the native `click` when the `mousedown` target is
+       detached, so `createPress`'s fallback synthesised an untrusted click
+       and a late `focusin`. Fix = additive `renderChildrenStable()` in
+       `solidaria-components/src/utils.tsx` (call the render-prop child ONCE
+       over a reactive getter-view instead of re-invoking it on every state
+       flip) + `Tabs.tsx` TabInner uses it. Resolves the old findings 3 and 4
+       (press-start focus ordering) together; Tabs mouse-click D4 now green.
+    3. **createPress 80 ms fallback is FAITHFUL, not an invention** —
+       CORRECTED. Earlier notes framed `createPress.ts` 379–395 as an
+       invented synthetic-click path; it is a line-for-line port of upstream
+       `react-aria@3.50 usePress.ts` (`onPointerUp` → 80 ms `setTimeout` →
+       `clicked ? cancel : focusWithoutScrolling+click`, same issue links,
+       same capturing click listener). It only *fired* here because finding 2
+       detached the target; with 2 fixed it no longer fires. One genuine
+       fidelity gap fixed while confirming this: the fallback used plain
+       `.focus()`; upstream uses `focusWithoutScrolling` — now matched.
+    4. **Modal background not `inert`** — DONE. `Modal.tsx:460` called
+       `ariaHideOutside([modalRef])`; upstream `react-aria@3.50
+       useModalOverlay` passes `{ shouldUseInert: true }` (our
+       `ariaHideOutside` already supported it, and `createPopover` already
+       passed it). Without it the modal only set `aria-hidden` on the
+       background, leaving it in the tab order; D5's focus-trail snapshot saw
+       Tab escape to the page-nav `<a>` links. Fixed → Solid now marks the
+       same 7 background containers `inert` as React, D5 trap-cycle green.
+       (ComboBox intentionally omits `shouldUseInert`, matching upstream — it
+       is non-modal.)
+    5. **D5 oracle over-counted hidden `[tabindex]`** — DONE (driver
+       calibration). `dom-oracle.ts snapshotFocus()` queried raw
+       `[tabindex]`, so it counted elements a keyboard user can never reach
+       (e.g. the Tabs overflow picker `<select>`/`<button>` that stays
+       CSS-hidden until collapse). Now filtered by `Element.checkVisibility`
+       + inert-ancestor check, so the roving snapshot reflects the real tab
+       order. Fixed the false Tabs D5 divergence.
+  - Open items handed forward:
+    - **D4 event-ordering epic (deferred — the 4 remaining reds).** All four
+      (Tabs touch-tap, Tabs arrow-next-from-selected, Dialog escape-close,
+      Dialog open-escape-close) fail on ONE root cause: React Aria fires
+      state-change callbacks (`onSelectionChange`, `onOpenChange`) and moves
+      focus through React's batched render + post-commit effects, which run
+      *after* the triggering native event finishes dispatching; our Solid
+      port runs those synchronously inside the event handler (Solid reactive
+      updates are synchronous). So the callback and the focus `focusout`/
+      `focusin` interleave differently with `keydown`/`keyup` — e.g. Solid's
+      `onOpenChange(false)` + `focusout` land before `keyup`, React's after.
+      End state is identical; only the intra-gesture ordering differs. Two
+      candidate resolutions, both non-trivial and NOT to be rushed into the
+      selection/overlay machinery (it is green on units + D1 + D3): (a) defer
+      Solid callback dispatch + focus movement to a post-event microtask to
+      match React's timing, or (b) decide bit-exact native/callback ordering
+      is over-strict and normalise batching-artifact ordering in the D4
+      oracle. Pick during the Tabs/Dialog Phase-2 march.
+    - **Tabs always renders the overflow picker (Phase 2, Tabs).** Upstream
+      S2 `Tabs` renders the collapse `Picker` only when collapsed (`if
+      (showItems) <RACTabs> else <picker>`); overflow is measured via an
+      `inert`+`visibility:hidden` `HiddenTabs` container of plain divs. Ours
+      always renders `TabsMenu` (`<select>` + `<button>Project tabs</button>`)
+      and CSS-hides it (`solid-spectrum/src/tabs/index.tsx:813`). Not a
+      runtime a11y bug (hidden → not focusable, and D5 now filters it), but a
+      real DOM divergence — gate `TabsMenu` behind `<Show when={!showTabs()}>`
+      when the Tabs component is certified.
   - Driver gotchas already burned in: `error-context.md` in test-results is
     just a page snapshot — rerun the single test to capture the JSON diff;
     e2e is NOT covered by `astro check` (tsconfig includes src only) — use

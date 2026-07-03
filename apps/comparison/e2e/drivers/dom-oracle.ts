@@ -275,6 +275,30 @@ export function comparisonOracleInit(): void {
         activeDescendant = el ? describe(el) : null;
       }
       const roving = Array.from(document.querySelectorAll("[tabindex]"))
+        .filter((el) => {
+          // The roving snapshot must reflect the tab order a keyboard user
+          // actually traverses — not raw DOM tabindex attributes. Skip inert
+          // subtrees and anything hidden (display:none / visibility:hidden /
+          // content-visibility), e.g. an overflow picker that stays
+          // CSS-hidden until the tab list collapses. A hidden [tabindex]
+          // element is not sequentially focusable, so counting it produces
+          // false focus-trail divergences.
+          if (el.closest("[inert]")) {
+            return false;
+          }
+          const candidate = el as unknown as {
+            checkVisibility?: (options?: unknown) => boolean;
+            offsetParent?: Element | null;
+          };
+          if (typeof candidate.checkVisibility === "function") {
+            return candidate.checkVisibility({
+              contentVisibilityAuto: true,
+              opacityProperty: false,
+              visibilityProperty: true,
+            });
+          }
+          return candidate.offsetParent != null;
+        })
         .map((el) => describe(el))
         .filter((entry) => entry.scope === "panel" || entry.scope === "overlay");
       return { active, activeDescendant, roving };
