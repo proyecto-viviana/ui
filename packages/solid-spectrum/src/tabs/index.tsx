@@ -42,7 +42,7 @@ import type {
   TabOrientation,
 } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
+import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
@@ -306,7 +306,6 @@ const tab = style<TabsStyleState>({
   position: "relative",
   display: "flex",
   alignItems: "center",
-  minWidth: 0,
   height: {
     orientation: {
       horizontal: {
@@ -330,8 +329,6 @@ const tab = style<TabsStyleState>({
   paddingX: {
     isLabelHidden: "[6px]",
   },
-  paddingY: 0,
-  borderStyle: "none",
   borderRadius: "sm",
   gap: "text-to-visual",
   color: {
@@ -344,24 +341,15 @@ const tab = style<TabsStyleState>({
     },
   },
   cursor: "default",
-  userSelect: "none",
-  whiteSpace: "nowrap",
   textDecoration: "none",
   flexShrink: 0,
   transition: "default",
-  forcedColorAdjust: "none",
   disableTapHighlight: true,
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
 });
 
 const tabText = style<TabsStyleState>({
   order: 1,
-  truncate: true,
   display: {
-    default: "inline",
     isLabelHidden: "none",
   },
 });
@@ -442,13 +430,16 @@ const tabPanel = style<TabsStyleState>({
 });
 
 const iconStyles = style({
-  size: fontRelative(20),
+  display: "block",
   flexShrink: 0,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
 });
 
 const iconRenderStyles = style({
   order: 0,
-  flexShrink: 0,
 });
 
 function requireTabsLabel(props: { "aria-label"?: string; "aria-labelledby"?: string }): void {
