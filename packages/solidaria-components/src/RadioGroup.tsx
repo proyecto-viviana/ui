@@ -150,6 +150,15 @@ export interface RadioGroupProps
   description?: JSX.Element;
   /** An error message for the radio group. */
   errorMessage?: JSX.Element;
+  /**
+   * Whether this component renders the visible description/error help-text nodes.
+   * Defaults to `true`. A styled layer (e.g. solid-spectrum) passes `false` to keep
+   * the id-minting and `aria-describedby` wiring here (so child radios inherit the
+   * group's shared description via `radioGroupData`) while owning the visible node
+   * itself — mirroring RAC, where the group exposes a `TextContext`/`FieldError`
+   * slot rather than rendering its own help text.
+   */
+  renderHelpText?: boolean;
 }
 
 export interface RadioProps extends Omit<AriaRadioProps, "children">, SlotProps {
@@ -216,7 +225,14 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
         props,
       ) as ParentProps<RadioGroupProps>)
     : props;
-  const [local, ariaProps] = splitProps(mergedProps, ["class", "style", "render", "ref", "slot"]);
+  const [local, ariaProps] = splitProps(mergedProps, [
+    "class",
+    "style",
+    "render",
+    "ref",
+    "slot",
+    "renderHelpText",
+  ]);
 
   const state = createRadioGroupState(() => ({
     value: mergedProps.value,
@@ -371,12 +387,12 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     return (
       <>
         {renderedChildren()}
-        <Show when={mergedProps.description}>
+        <Show when={(local.renderHelpText ?? true) && mergedProps.description}>
           <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
             {mergedProps.description}
           </div>
         </Show>
-        <Show when={isInvalid() && mergedProps.errorMessage}>
+        <Show when={(local.renderHelpText ?? true) && isInvalid() && mergedProps.errorMessage}>
           <div {...(groupAria.errorMessageProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
             {mergedProps.errorMessage}
           </div>

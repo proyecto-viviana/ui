@@ -17,6 +17,11 @@ import {
   type RadioGroupRenderProps,
   type RadioRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+// Single source of truth for the group's description/error ids: the headless
+// createRadioGroup mints them (via createField) and threads them onto both the
+// group node and every child radio's aria-describedby; the styled help-text
+// nodes below read the same ids back so the associations resolve identically.
+import { radioGroupData } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
 import {
@@ -26,6 +31,7 @@ import {
   fieldLabel,
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
+import { Text } from "../text";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
@@ -163,6 +169,9 @@ const radioGroupLabelWrapper = style<RadioGroupStyleState>({
     labelPosition: {
       top: "inline-size",
     },
+    // Upstream FieldLabel passes `isQuiet` on group labels so the label affects
+    // the group's width; when quiet, containment is disabled (last-match-wins).
+    isQuiet: "none",
   },
 });
 
@@ -179,7 +188,11 @@ const radioGroupItems = style<RadioGroupStyleState>({
       horizontal: "row",
     },
   },
-  flexWrap: "wrap",
+  flexWrap: {
+    orientation: {
+      horizontal: "wrap",
+    },
+  },
   columnGap: 16,
   rowGap: "--field-gap",
 });
@@ -187,7 +200,6 @@ const radioGroupItems = style<RadioGroupStyleState>({
 const radioGroupHelpText = style<RadioGroupStyleState>({
   gridArea: "helptext",
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
   font: controlFont(),
@@ -363,8 +375,6 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
   const idBase = createUniqueId();
   const labelId = `${idBase}-label`;
-  const descriptionId = `${idBase}-description`;
-  const errorId = `${idBase}-error`;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
@@ -372,15 +382,6 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-
-  const ariaDescribedBy = () => {
-    const ids = [
-      headlessProps["aria-describedby"],
-      local.description ? descriptionId : undefined,
-      local.errorMessage && headlessProps.isInvalid ? errorId : undefined,
-    ].filter(Boolean);
-    return ids.length ? ids.join(" ") : undefined;
-  };
 
   const getClassName = (renderProps: RadioGroupRenderProps): string =>
     [
@@ -409,6 +410,8 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
             size: size(),
             labelPosition: labelPosition(),
             labelAlign: labelAlign(),
+            // Upstream always renders the group label as a quiet FieldLabel.
+            isQuiet: true,
           })}
         >
           <span id={labelId} class={radioGroupLabel({ ...renderProps, size: size() })}>
@@ -466,18 +469,34 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
           </RadioContext.Provider>
         </FormContext.Provider>
       </div>
+      {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
+          RAC `<Text slot="description">` (a `<span>`), not a `<div>`. The id is
+          the single-source id minted by the headless createRadioGroup (also
+          threaded onto the group node and every child radio's aria-describedby). */}
       <Show when={local.description && !renderProps.isInvalid}>
-        <div id={descriptionId} class={radioGroupHelpText({ ...renderProps, size: size() })}>
+        <Text
+          slot="description"
+          id={radioGroupData.get(renderProps.state)?.descriptionId}
+          styles={radioGroupHelpText({ ...renderProps, size: size() })}
+        >
           {local.description}
-        </div>
+        </Text>
       </Show>
+      {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
+          is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
+          (RAC FieldError carries no alert role; the group's `aria-describedby`
+          points here for the association). */}
       <Show when={local.errorMessage && renderProps.isInvalid}>
-        <div id={errorId} role="alert" class={radioGroupHelpText({ ...renderProps, size: size() })}>
+        <Text
+          slot="errorMessage"
+          id={radioGroupData.get(renderProps.state)?.errorMessageId}
+          styles={radioGroupHelpText({ ...renderProps, size: size() })}
+        >
           <CenterBaseline>
             <AlertTriangleIcon aria-hidden="true" />
           </CenterBaseline>
           <span>{local.errorMessage}</span>
-        </div>
+        </Text>
       </Show>
     </>
   );
@@ -503,8 +522,14 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
         isRequired={headlessProps.isRequired}
         isInvalid={headlessProps.isInvalid}
         orientation={local.orientation}
+        // Pass the help text down so createRadioGroup mints the description/error
+        // ids (shared with every child radio via radioGroupData) and sets the
+        // group's aria-describedby; renderHelpText={false} keeps the visible node
+        // ours (the styled help-text divs above) to match RAC's slot model.
+        description={local.description}
+        errorMessage={local.errorMessage}
+        renderHelpText={false}
         aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
-        aria-describedby={ariaDescribedBy()}
         ref={(element) => assignRootRef(element)}
         slot={local.slot ?? undefined}
         class={getClassName}

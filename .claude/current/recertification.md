@@ -758,15 +758,16 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 certified, `blocked: name (reason)` otherwise.
 
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
-(2026-07-04) · ✓ Switch (2026-07-04)` — in progress. Queue: RadioGroup, TextField,
-TextArea, SearchField, NumberField, Slider, RangeSlider, Form, FieldError/HelpText,
-LabeledValue. Same marking rule. NOTE the remaining Field-composite units (RadioGroup
-and every field that shows a label/description/error row) still benefit from the
-shared FieldLabel + HelpText/FieldError extraction (`helptext-fielderror-visual-port`,
-tech-debt) — but CheckboxGroup showed the group surface can be realigned to upstream
-output byte-for-byte in-place and certified now, with the extraction tracked as
-follow-up rather than a hard gate. The headless is now the single source of truth for
-group description/error ids (`renderHelpText={false}` + `checkboxGroupData`).
+(2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04)` — in progress.
+Queue: TextField, TextArea, SearchField, NumberField, Slider, RangeSlider, Form,
+FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
+Field-composite units (every field that shows a label/description/error row) still
+benefit from the shared FieldLabel + HelpText/FieldError extraction
+(`helptext-fielderror-visual-port`, tech-debt) — but CheckboxGroup and RadioGroup both
+showed the group surface can be realigned to upstream output byte-for-byte in-place and
+certified now, with the extraction tracked as follow-up rather than a hard gate. The
+headless is now the single source of truth for group description/error ids
+(`renderHelpText={false}` + `checkboxGroupData`/`radioGroupData`).
 
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
@@ -1679,5 +1680,57 @@ group description/error ids (`renderHelpText={false}` + `checkboxGroupData`).
     `ref`/`inputRef` forwarding because the headless `SwitchField`/`SwitchButton` don't
     accept it (the pre-split monolith didn't forward either, and no cert/demo exercises
     it); filed as follow-up `headless-switch-ref-forwarding`.
+
+- ✓ **RadioGroup done 2026-07-04 (CP9.18 — fourth Tier-2 unit, group Field composite):**
+  certified `43/43` green across D1/D3/D5/D6/D7 (`radiogroup.certified.spec.ts`) on the
+  **first** cert run. The RadioGroup hand-roll carried the SAME three self-inflicted
+  Field-composite divergences CheckboxGroup did, reverted here identically so the output
+  realigns with upstream `RadioGroup.tsx` byte-for-byte (the shared FieldLabel/HelpText
+  *extraction* stays tracked — `helptext-fielderror-visual-port`):
+  1. **`radioGroupItems` wrapped unconditionally** → `flexWrap:{orientation:
+     {horizontal:'wrap'}}`; the default (vertical) group now computes `flex-wrap:nowrap`.
+     Certified by D1 on the `items` part (default + horizontal).
+  2. **`radioGroupLabelWrapper` missing `contain:{isQuiet:'none'}`** → added + threaded
+     `isQuiet:true` on the wrapper call; upstream renders the FieldLabel with `isQuiet`
+     ("label affects the group's width"), so it computes `contain:none` (was the
+     size-contained `inline-size`). Certified by D1 on the `labelWrapper` part + the
+     `field` grid geometry, plus D3 pixels.
+  3. **description/error rendered `<div>`s (error with `role="alert"`)** → RAC `<Text
+     slot="description">` / `<Text slot="errorMessage">` (both `<span>`, no alert role);
+     dropped a hand-roll-only `margin:0` from `radioGroupHelpText`. AND the ids were made
+     **single-source** exactly as CheckboxGroup: the wrapper now passes
+     `description`/`errorMessage` DOWN to the headless (which mints the id and threads it
+     onto the group + EVERY radio's `aria-describedby`, mirroring `useRadioGroup.ts:148`
+     storing `descriptionId` in `radioGroupData` + `useRadio.ts:186-191` threading it)
+     with `renderHelpText={false}` on the headless `RadioGroup` (suppresses its own plain
+     `<div>`; the visible node is our styled `<Text>`, reading the id back from the
+     exported `radioGroupData` WeakMap via `renderProps.state`). The wrapper had been
+     minting its OWN `${idBase}-description` for the visible node while NEVER passing the
+     description to the headless, so the headless minted no id and the child radios lost
+     the group description entirely — now group node, all three radio inputs, and the
+     `<Text>` resolve to ONE id, byte-identical to upstream. Certified by D6 (both
+     `default` and `disabled`, full described-element set incl. the propagation onto each
+     radio input).
+  - **Group label left as `<span>`** (NOT a divergence — RAC supplies `LabelContext
+    elementType:'span'`; a radio group is not a labelable element, so the group label is a
+    `<span>` associated by `aria-labelledby`, which the port already matched).
+  - **D5 certifies ROVING TABINDEX + arrow navigation** — unlike CheckboxGroup (three
+    independent tab stops, walked Tab-through), a RadioGroup is a SINGLE tab stop and
+    ArrowDown/Up move focus AND selection within it. The `arrow-nav` walk (start first
+    radio, `ArrowDown/ArrowDown/ArrowUp`) certified the port's roving-tabindex layout and
+    arrow-selection model match upstream entry-for-entry — a direct exercise of the
+    ported `createRadioGroup`/`createSelectableList` roving, green on first run.
+  - **D6 uses the realistic `default` (starter-selected) case** — unlike Checkbox (whose
+    CHECKED box renders a decorative Checkmark `<svg>`, the tracked
+    `ui-icon-decorative-ax-node` divergence, forcing that unit onto all-unchecked cases),
+    a radio's selected indicator is a CSS-drawn `<div>` circle with no decorative AX node,
+    so the selected state certifies directly.
+  - **Still deferred to `helptext-fielderror-visual-port`:** the `isInvalid` error row
+    (the `<Text slot="errorMessage">` AlertIcon-sized error + `aria-invalid` re-flowing
+    the `field` grid), same as Checkbox/CheckboxGroup. The `role="alert"` removal is
+    landed in source now so the markup is faithful when that unit certifies invalid cases;
+    this unit certifies the valid (description) composite where reverts (1)+(2) live. The
+    single-source `renderHelpText` wiring is now on RadioGroup too — the second down
+    payment on that port after CheckboxGroup.
 
 Phase 3: not started.

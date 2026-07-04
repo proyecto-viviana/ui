@@ -246,7 +246,16 @@ tasks:
       `<Text>` reading the id back. This fixed a real a11y gap (child inputs had lost the
       group description) and establishes the headless as the single source of truth — the
       pattern the shared HelpText/FieldError port should generalize (RAC's TextContext slot).
-      STILL OPEN: (a) the `isInvalid` row for Checkbox AND CheckboxGroup (the `<Text
+      SECOND DOWN PAYMENT (the RadioGroup recertification, CP9.18, DONE 2026-07-04):
+      RadioGroup is now certified 43/43 (D1/D3/D5/D6/D7) with the IDENTICAL three-divergence
+      revert + single-source `renderHelpText={false}` wiring applied to the radio hand-roll
+      (`solid-spectrum/src/radio/index.tsx` + `solidaria-components/src/RadioGroup.tsx`),
+      threading the group descriptionId onto every radio input via the exported
+      `radioGroupData` WeakMap (mirroring `useRadioGroup.ts:148` + `useRadio.ts:186-191`).
+      Two of the four group holdouts named in `describedby-slots-group-redesign` (RadioGroup,
+      CheckboxGroup) now realign their OUTPUT to upstream and route ids through the headless;
+      Select + ColorField remain.
+      STILL OPEN: (a) the `isInvalid` row for Checkbox AND CheckboxGroup AND RadioGroup (the `<Text
       slot="errorMessage">` AlertIcon-sized error + `aria-invalid` re-flowing the field
       grid — measured 18px→52px etc.), and (b) the shared FieldLabel + HelpText/FieldError
       *extraction* itself (de-duplicate the hand-rolls across Checkbox/CheckboxGroup/
