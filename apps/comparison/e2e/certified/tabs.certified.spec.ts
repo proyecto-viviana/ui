@@ -1,10 +1,12 @@
 import { registerAxTreeDriver } from "../drivers/ax";
+import { registerContrastDriver } from "../drivers/contrast";
 import { mouseClickGesture, registerEventSequenceDriver, touchTapGesture } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
+import { registerTargetSizeDriver } from "../drivers/target-size";
 
 /**
  * Recertification pilot: Tabs. The gesture target is the initially
@@ -101,6 +103,20 @@ const tabsScenario: DriverScenario = {
   ax: {
     cases: ["horizontal-regular"],
   },
+  // D7: tab-label contrast (selected vs unselected carry different token
+  // colors) plus the tabpanel body text, across all gesture states — pressing
+  // the Parity tab selects it, so the walk also measures the post-selection
+  // color. Both themes; a positive control against the certified Tabs colors.
+  contrast: {
+    cases: ["horizontal-regular"],
+  },
+  // D8: every `role=tab` hit box at regular and compact density. The always-
+  // rendered overflow picker is CSS-hidden, so `checkVisibility` filters it out
+  // of the measured set — D8 confirms it contributes no phantom target (the
+  // same T-B gate D6 watches for on the AX side).
+  targetSize: {
+    cases: ["horizontal-regular", "vertical-compact"],
+  },
 };
 
 registerStateMatrixDriver(tabsScenario);
@@ -109,3 +125,5 @@ registerEventSequenceDriver(tabsScenario);
 registerFocusTrailDriver(tabsScenario);
 registerMotionDriver(tabsScenario);
 registerAxTreeDriver(tabsScenario);
+registerContrastDriver(tabsScenario);
+registerTargetSizeDriver(tabsScenario);

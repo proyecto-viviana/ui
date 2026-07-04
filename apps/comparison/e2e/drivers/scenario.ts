@@ -153,6 +153,40 @@ export interface AxConfig {
   knownDivergences?: Record<string, string>;
 }
 
+/**
+ * D7 contrast driver config. Every text node's foreground/effective-background
+ * contrast ratio is captured per D1 gesture state × theme and pair-diffed
+ * (port == upstream). The WCAG AA floor (and AAA target) is computed and
+ * reported per stack — the parity rule forbids diverging from upstream, so a
+ * ratio that falls below AA in *both* stacks is a reported upstream note, not a
+ * port defect (a port-only drop is already caught by the pair diff). The
+ * absolute AA assertion is reserved for Tier-6 custom surfaces (no upstream
+ * pair), enabled via `assertAA`.
+ */
+export interface ContrastConfig {
+  cases?: readonly string[];
+  /** Subtree whose text nodes are measured; defaults to `pixelTarget ?? canvas`. */
+  root?: TargetResolver;
+  /** Hard-fail on any sub-AA node (Tier-6 custom surfaces with no oracle). */
+  assertAA?: boolean;
+}
+
+/**
+ * D8 target-size driver config. Every interactive element's border-box is
+ * captured across the scenario's size cases and pair-diffed (port == upstream).
+ * The WCAG 2.5.8 (24px) floor and 2.5.5 (44px) target are reported per stack
+ * for the same parity reason as D7; `assert24` makes the 24px floor a hard
+ * assertion for Tier-6 custom surfaces. Theme/state-independent, so it runs the
+ * first theme at the default state only.
+ */
+export interface TargetSizeConfig {
+  cases?: readonly string[];
+  /** Subtree whose interactive elements are measured; defaults to `pixelTarget ?? canvas`. */
+  root?: TargetResolver;
+  /** Hard-fail on any sub-24px target (Tier-6 custom surfaces with no oracle). */
+  assert24?: boolean;
+}
+
 /** A keyboard walk for the D5 focus-trail driver. */
 export interface FocusWalk {
   /** Stable id used in test titles. */
@@ -239,6 +273,10 @@ export interface DriverScenario {
   motion?: MotionConfig;
   /** D6 AX-tree + announcements driver config; runs the first theme only. */
   ax?: AxConfig;
+  /** D7 contrast driver config; runs all scenario states × themes like D1. */
+  contrast?: ContrastConfig;
+  /** D8 target-size driver config; runs the first theme at default state. */
+  targetSize?: TargetSizeConfig;
 }
 
 export const defaultStateReadiness: Record<GestureStateId, string | null> = {

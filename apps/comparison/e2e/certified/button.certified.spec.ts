@@ -1,10 +1,12 @@
 import { registerAxTreeDriver } from "../drivers/ax";
+import { registerContrastDriver } from "../drivers/contrast";
 import { registerEventSequenceDriver, standardPressGestures } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
+import { registerTargetSizeDriver } from "../drivers/target-size";
 import { clearPointer } from "../visual-diff";
 
 /**
@@ -63,6 +65,19 @@ const buttonScenario: DriverScenario = {
   ax: {
     cases: ["accent-fill", "disabled"],
   },
+  // D7: the "Save" label's contrast on the accent fill (white on accent-800),
+  // the outline variant (accent text on the page background), and the disabled
+  // fill — all four gesture states, both themes. Positive control: the port and
+  // upstream carry identical color tokens, so every ratio must match to 2dp.
+  contrast: {
+    cases: ["accent-fill", "primary-outline", "disabled"],
+  },
+  // D8: the button hit box across the M (accent-fill) and S (size-s) sizes.
+  // A single button per canvas; both stacks must render the identical
+  // border-box, and the 24px/44px floors are reported.
+  targetSize: {
+    cases: ["accent-fill", "size-s", "disabled"],
+  },
 };
 
 registerStateMatrixDriver(buttonScenario);
@@ -71,3 +86,5 @@ registerEventSequenceDriver(buttonScenario);
 registerFocusTrailDriver(buttonScenario);
 registerMotionDriver(buttonScenario);
 registerAxTreeDriver(buttonScenario);
+registerContrastDriver(buttonScenario);
+registerTargetSizeDriver(buttonScenario);

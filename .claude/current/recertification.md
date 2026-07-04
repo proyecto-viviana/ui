@@ -291,7 +291,7 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
@@ -679,6 +679,75 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     for the AX-tree half. Typecheck clean via the same standalone
     `tsc -p <scratchpad tsconfig>` line (e2e still outside `astro check`).
     Suite: 3 passed (Button ×2, Tabs ×1), 1 tracked-fixme (Dialog modal-open).
+
+- D7 + D8 done 2026-07-03 (CP8): the two cheap derived drivers landed together
+  (`apps/comparison/e2e/drivers/contrast.ts`, `target-size.ts`, + `contrast`/
+  `targetSize` configs on `DriverScenario`). Both ride the existing walk engine
+  and are pair-oracle first: the hard gate is byte-identical JSON of the port vs
+  upstream capture; the WCAG floors are **reported** (via `testInfo.annotations`),
+  not hard-failed, for paired components — a shared floor miss is an upstream
+  note, and a port-only regression is already caught by the pair diff. An
+  absolute WCAG assert is reserved for Tier-6 custom surfaces with no upstream
+  pair, gated behind the opt-in `assertAA` (D7) / `assert24` (D8) flags.
+  - **D7 contrast.** `captureContrast(root)` walks every text-bearing element,
+    composites the effective background up the ancestor chain via the alpha
+    `over` operator (bailing to `ratio: null` if any layer paints a
+    `background-image`, which a numeric ratio can't model), computes the WCAG
+    contrast ratio of the composited fg over bg, and classifies large text
+    (≥24px, or ≥18.66px & weight ≥700) for the 3.0 vs 4.5 AA floor. Rides
+    `walkScenario` per case × theme × gesture-state; asserts ≥1 text node
+    measured (guards a bad root resolver) and diffs the full entry list per
+    state. Pilots: Button (accent-fill/primary-outline/disabled — white-on-accent
+    is the opaque positive control), Tabs (selected vs unselected label tokens +
+    panel body), Dialog (heading/body/action labels on `layer-2`). All green,
+    both themes: the port and upstream share color tokens, so every ratio matches
+    to 2dp — the positive control D7 is meant to be. No pilot text dropped below
+    AA (disabled labels clear it), so the sub-AA annotation path stays quiet here;
+    it is exercised for real in the march (low-emphasis/quiet surfaces).
+  - **D8 target size.** `captureTargetSizes(root)` measures the border-box of
+    every interactive element (`button`, `a[href]`, form controls, and the
+    ARIA widget roles) that passes `checkVisibility`, rounds to 2dp, and sorts by
+    descriptor. Uses `forEachScenarioPanel` (default state, first theme — hit
+    boxes are state/theme-invariant). Reports the 24px (2.5.8) and 44px (2.5.5)
+    floors. Pilots: Button (M/S/disabled), Tabs (regular/compact density —
+    confirms the CSS-hidden overflow picker contributes no phantom target), Dialog
+    (CloseButton + the injected dismiss sentinel + footer actions). All green.
+  - Calibration — **D8 rediscovered a real port defect on the Dialog pilot and
+    it was fixed here** (meeting the "≥1 finding on pilots" bar; unlike the D2/D6
+    findings this one's blast radius was small enough to fix in-checkpoint rather
+    than defer). RAC's `Modal` injects a screen-reader **dismiss sentinel**
+    (`tabindex=-1`, `aria-label="Dismiss"`, no visible content) so VoiceOver users
+    can dismiss. Upstream renders it faithfully to `react-aria`'s `DismissButton`:
+    a `<VisuallyHidden>` **`div` wrapper** (carrying the full clip/offscreen
+    reset) around a *bare* `<button style={{width:1,height:1}}>` — the button
+    keeps its intrinsic UA border-box (~16×6) but is clipped invisible by the
+    wrapper. The port instead **inlined** the whole visually-hidden reset
+    (`position:absolute; padding:0; border:0; overflow:hidden; clip:…`) directly
+    onto the button, collapsing it to a strict **1×1** box. Both are invisible to
+    sighted users, but D8 measured the divergence (React 16×6 vs Solid 1×1) as a
+    pair-oracle red. Fix (`packages/solidaria-components/src/Modal.tsx`): wrap the
+    sentinel in the port's existing `<VisuallyHidden elementType="div">` and give
+    the button only `width/height:1px`, mirroring upstream exactly → sentinel now
+    measures identically in both stacks → green. All 268 unit-test files stay
+    green; the change is structure-only (no behavior/handler touched), so D1/D3/D6
+    for the dialog surface are unaffected.
+  - **Finding T-D (open, CP9 overlay march):** `Popover.tsx`'s `PopoverDismissButton`
+    (both the leading and trailing sentinels of the two-sentinel popover pattern)
+    has the *same* self-inflicted divergence — it applies `style={visuallyHiddenStyles}`
+    directly on the button instead of upstream's `<VisuallyHidden>`-wrapper +
+    bare-button structure. Not fixed here (no D8 pilot exercises Popover yet, and
+    the fix should land in the Popover march unit with its own re-baseline). Same
+    one-line-structure fix as Modal when reached. (A broader latent note: the
+    port's shared `VisuallyHidden` defaults `elementType` to `span` where upstream
+    defaults to `div` — harmless for the sentinels since we pass `elementType="div"`
+    explicitly, but worth auditing when the `VisuallyHidden` primitive itself is
+    certified.)
+  - Suite after CP8: full certified pilot run = **76 passed, 3 skipped, 4 red** —
+    the 4 reds are exactly the pre-existing **deferred D4 event-ordering epic**
+    (Tabs touch-tap, Tabs arrow-next-from-selected, Dialog escape-close, Dialog
+    open-escape-close), unchanged by this work. D7 (10 cases) + D8 (6 cases) all
+    green. Typecheck clean via the standalone e2e `tsc -p` line (contrast.ts +
+    target-size.ts added to the scratchpad tsconfig include list).
 
 Phase 2: not started — march order above is the queue; mark components here as
 `✓ name (date)` when certified, `blocked: name (reason)` otherwise.

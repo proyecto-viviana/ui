@@ -39,6 +39,7 @@ import {
   OverlayTriggerStateContext,
   type OverlayTriggerState,
 } from "./contexts";
+import { VisuallyHidden } from "./VisuallyHidden";
 
 /**
  * Internal context to signal that Modal is wrapped in ModalOverlay.
@@ -557,23 +558,22 @@ function ModalContent(props: ModalProps): JSX.Element {
         data-exiting={dataAttr(isModalExiting())}
       >
         <Show when={isDismissable()}>
-          <button
-            type="button"
-            aria-label="Dismiss"
-            tabIndex={-1}
-            onClick={close}
-            style={{
-              position: "absolute",
-              width: "1px",
-              height: "1px",
-              padding: 0,
-              margin: "-1px",
-              overflow: "hidden",
-              clip: "rect(0, 0, 0, 0)",
-              "white-space": "nowrap",
-              border: 0,
-            }}
-          />
+          {/* Faithful to react-aria's DismissButton: a bare button carrying
+              only `width/height: 1px` inside a VisuallyHidden `div` wrapper —
+              NOT the hidden styles inlined onto the button. The wrapper clips
+              it out of sight while the button keeps its intrinsic UA border-box,
+              which is exactly what upstream renders (and what D8 target-size
+              measures against the pair oracle). Inlining the reset onto the
+              button instead collapsed it to a 1x1 box, diverging from
+              upstream's ~16x6 sentinel. */}
+          <VisuallyHidden elementType="div">
+            <button
+              aria-label="Dismiss"
+              tabIndex={-1}
+              onClick={close}
+              style={{ width: "1px", height: "1px" }}
+            />
+          </VisuallyHidden>
         </Show>
         {renderProps.renderChildren()}
       </div>

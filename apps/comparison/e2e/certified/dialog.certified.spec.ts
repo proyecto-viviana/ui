@@ -1,11 +1,13 @@
 import { expect } from "@playwright/test";
 import { registerAxTreeDriver } from "../drivers/ax";
+import { registerContrastDriver } from "../drivers/contrast";
 import { mouseClickGesture, registerEventSequenceDriver } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
+import { registerTargetSizeDriver } from "../drivers/target-size";
 
 /**
  * Recertification pilot: Dialog — the overlay/portal proof for the walk
@@ -89,6 +91,24 @@ const surfaceScenario: DriverScenario = {
         "in recertification.md D6 finding T-C; global fix deferred to CP9 " +
         "(Tier-1 Icon surfaces).",
     },
+  },
+  // D7: contrast of every text node inside the open dialog — the heading, the
+  // body copy, and the action-button labels — against their composited
+  // surface (`--s2-container-bg: layer-2`). Root is the portaled dialog
+  // (`pixelTarget`, the modal surface), which `beforePanel` opens.
+  contrast: {
+    root: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
+  },
+  // D8: every interactive control inside the open dialog — the visible
+  // CloseButton, the footer action buttons, AND RAC's injected screen-reader
+  // "dismiss sentinel" (tabindex=-1, aria-label="Dismiss"), measured for its
+  // hit box. The 24px/44px floors are reported. This pilot rediscovered +
+  // fixed a real port divergence (recertification.md CP8): the port had inlined
+  // the visually-hidden reset onto the sentinel button (collapsing it to 1x1)
+  // where upstream wraps a bare button (~16x6) in a VisuallyHidden div — now
+  // mirrored faithfully in Modal.tsx, so the sentinel measures identically.
+  targetSize: {
+    root: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
   },
 };
 
@@ -204,3 +224,5 @@ registerEventSequenceDriver(triggerScenario);
 registerFocusTrailDriver(closeButtonScenario);
 registerMotionDriver(motionScenario);
 registerAxTreeDriver(surfaceScenario);
+registerContrastDriver(surfaceScenario);
+registerTargetSizeDriver(surfaceScenario);
