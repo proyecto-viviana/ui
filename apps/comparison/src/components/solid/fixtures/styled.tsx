@@ -9354,22 +9354,27 @@ function SolidSpectrumToggleButtonDemo() {
 
   const renderedToggleButton = createMemo(() => {
     const props = demoProps();
-    const isSelected = selected();
+    // Pass `isSelected` as the reactive `selected` accessor (hc unwraps a
+    // zero-arg function prop into a reactive getter) rather than reading
+    // `selected()` here. Reading it inside this memo would retrack it, so every
+    // toggle would recompute the memo and rebuild the whole element — unmounting
+    // the live <button> and dropping keyboard focus to <body>. Deferring the
+    // read keeps the same instance and updates `isSelected` in place, matching
+    // compiled JSX `isSelected={selected()}` and React's controlled reconcile.
     return hc(
       SolidSpectrumToggleButton,
       {
         "data-comparison-control-root": "togglebutton",
-        "data-comparison-control-props": serializeToggleButtonDemoProps({
-          ...props,
-          isSelected,
-        }),
+        get "data-comparison-control-props"() {
+          return serializeToggleButtonDemoProps({ ...props, isSelected: selected() });
+        },
         size: props.size,
         staticColor: props.staticColor,
         isQuiet: props.isQuiet,
         isEmphasized: props.isEmphasized,
         isDisabled: props.isDisabled,
         "aria-label": props.iconPlacement === "only" ? props.children : undefined,
-        isSelected,
+        isSelected: selected,
         onChange: setSelected,
       },
       solidSingleButtonFamilyChildren(

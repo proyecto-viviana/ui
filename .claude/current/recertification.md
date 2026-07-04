@@ -749,6 +749,47 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     green. Typecheck clean via the standalone e2e `tsc -p` line (contrast.ts +
     target-size.ts added to the scratchpad tsconfig include list).
 
-Phase 2: not started — march order above is the queue; mark components here as
-`✓ name (date)` when certified, `blocked: name (reason)` otherwise.
+Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03)` — remaining
+march order above is the queue; mark components here as `✓ name (date)` when
+certified, `blocked: name (reason)` otherwise.
+
+- ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
+  through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
+  cases (default, selected, emphasized-selected, quiet, quiet-selected, size-s,
+  size-xl, disabled, disabled-selected) × the applicable driver set = **60
+  tests, all green**. D6 confirms `[pressed]` appears only on the selected node
+  and `[disabled]` on the disabled node; D2 hover-transition is a matching
+  positive control (shared `s2-action-button-styles` `transition: 'default'`);
+  D7 (6 cases) + D8 (4 sizes) green to the strict floors.
+  - **D4 rediscovered a real focus-loss divergence — root-caused to the
+    comparison *fixture*, not the port.** On the `default` case all four press
+    gestures (mouse-click, keyboard-enter, keyboard-space, touch-tap) showed
+    Solid firing an extra trailing native `focusout` the React oracle did not.
+    A throwaway focus probe pinned it: after a toggle the Solid `<button>` node
+    was *gone from the DOM* (`document.activeElement` fell back to `<body>`),
+    while React kept the same node focused. Cause: `SolidSpectrumToggleButtonDemo`
+    instantiated `hc(SolidSpectrumToggleButton, …)` **inside a `createMemo` that
+    read `selected()`** — so every toggle retracked the signal, recomputed the
+    memo, and rebuilt the whole element, unmounting the live button and dropping
+    keyboard focus. This is an idiomatic-Solid violation (component instantiation
+    keyed on a hot signal), *not* a port defect: real compiled JSX
+    `isSelected={selected()}` reconciles the same node the way React does.
+  - **Fix (fixture only):** pass `isSelected: selected` — the raw accessor,
+    which `hc`'s `unwrapAccessorProps` turns into a reactive getter — instead of
+    reading `selected()` in the memo, and make `data-comparison-control-props` a
+    getter for the same reason. The memo no longer tracks the toggle signal, so
+    the button instance is kept and `aria-pressed` flips in place, matching
+    React's controlled reconcile. Verified: probe now reports
+    `probeStillInDom: true`, `activeTag: BUTTON`, `probePressed: "true"` after
+    the toggle. The port's `ToggleButton.tsx` / headless `ToggleButton.tsx` were
+    already faithful (single `<button>`, reactive spreads, no node recreation).
+  - **Watch-list for later stateful units:** the memo-rebuild anti-pattern can
+    recur in any fixture that instantiates a controlled component inside a memo
+    keyed on its own state signal — ToggleButtonGroup, Switch, Checkbox,
+    RadioGroup, Picker, ComboBox demos. D4 catches it every time; fix the same
+    way (pass the accessor, don't read it in the creation scope).
+  - Regression guard: full package suite green (5522 passed / 1 expected xfail),
+    Button certified still 42/42 (shared `styled.tsx` unaffected). No net change
+    to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2).
+
 Phase 3: not started.
