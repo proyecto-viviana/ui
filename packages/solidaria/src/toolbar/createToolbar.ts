@@ -281,20 +281,18 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
       return;
     }
 
-    // Let modified shortcuts pass through.
-    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
-      return;
-    }
+    const doc = getOwnerDocument(root);
 
-    // Text entry controls should keep arrow/home/end for caret/value navigation.
+    // Text entry controls keep the arrow keys for caret/value navigation.
+    // Upstream useToolbar has no such guard; a text input placed inside a
+    // toolbar would otherwise lose caret movement. Kept (narrowed to arrows)
+    // as a suspected divergence pending a dedicated ActionBar/Toolbar cert.
     if (isTextInputLikeElement(target)) {
       switch (e.key) {
         case "ArrowRight":
         case "ArrowLeft":
         case "ArrowDown":
         case "ArrowUp":
-        case "Home":
-        case "End":
           return;
       }
     }
@@ -338,18 +336,18 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
           handled = true;
         }
         break;
-      case "Home":
-        focusManager.focusFirst({ tabbable: true });
-        handled = true;
-        break;
-      case "End":
-        focusManager.focusLast({ tabbable: true });
-        handled = true;
-        break;
       case "Tab":
-        // Store the last focused element for re-entry
-        lastFocusedElement = e.target as Element;
-        break;
+        // Move focus to the first/last child so the browser's own Tab handling
+        // then carries focus OUT of the whole toolbar. Faithful to upstream
+        // useToolbar: there is no roving tabindex — every item stays tabbable,
+        // so a bare Tab would otherwise step to the next item instead of leaving.
+        lastFocusedElement = getActiveElement(doc);
+        if (e.shiftKey) {
+          focusManager.focusFirst({ tabbable: true });
+        } else {
+          focusManager.focusLast({ tabbable: true });
+        }
+        return;
     }
 
     if (handled) {
@@ -358,24 +356,36 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
     }
   };
 
-  // Focus handler - restore last focused element when re-entering
-  const onFocus = (e: FocusEvent) => {
-    if (isInToolbar()) return;
-
-    // Only restore if focus is coming from outside the toolbar
+  // Record the last focused child when focus moves out of the toolbar.
+  const onBlur = (e: FocusEvent) => {
     const root = toolbarRef;
     if (!root) return;
+    if (isInToolbar()) return;
 
-    const relatedTarget = e.relatedTarget as Element | null;
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!(relatedTarget && root.contains(relatedTarget)) && !lastFocusedElement) {
+      lastFocusedElement = e.target as Element;
+    }
+  };
 
-    // If focus came from outside and we have a last focused element
+  // Restore focus to the last focused child when focus returns into the toolbar.
+  // If that element was removed, focus() is a no-op and the browser lands on the
+  // first/last child per direction — matching upstream useToolbar.
+  const onFocus = (e: FocusEvent) => {
+    const root = toolbarRef;
+    if (!root) return;
+    if (isInToolbar()) return;
+
+    const relatedTarget = e.relatedTarget as Node | null;
+    const target = e.target;
     if (
       lastFocusedElement &&
-      root.contains(lastFocusedElement) &&
-      (!relatedTarget || !root.contains(relatedTarget))
+      !(relatedTarget && root.contains(relatedTarget)) &&
+      target instanceof Node &&
+      root.contains(target)
     ) {
-      // Restore focus to the last focused element
       focusSafely(lastFocusedElement as HTMLElement);
+      lastFocusedElement = null;
     }
   };
 
@@ -383,13 +393,15 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
   const setRef = (el: HTMLElement) => {
     toolbarRef = el;
 
-    // Use capture phase for keyboard events
+    // Use capture phase so container handlers run before the focused child's.
     el.addEventListener("keydown", onKeyDown, true);
     el.addEventListener("focus", onFocus, true);
+    el.addEventListener("blur", onBlur, true);
 
     onCleanup(() => {
       el.removeEventListener("keydown", onKeyDown, true);
       el.removeEventListener("focus", onFocus, true);
+      el.removeEventListener("blur", onBlur, true);
     });
   };
 

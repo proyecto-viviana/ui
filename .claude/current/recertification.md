@@ -750,8 +750,9 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     target-size.ts added to the scratchpad tsconfig include list).
 
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
-(2026-07-04)` — remaining march order above is the queue; mark components here as
-`✓ name (date)` when certified, `blocked: name (reason)` otherwise.
+(2026-07-04) · ✓ ToggleButtonGroup (2026-07-04)` — remaining march order above is
+the queue; mark components here as `✓ name (date)` when certified, `blocked: name
+(reason)` otherwise.
 
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
@@ -871,5 +872,75 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
     let the port's slot machinery own the delay; D6 catches it. The
     `steadyState: false` flag is the tool for any case whose steady render is
     time-dependent.
+
+- ✓ **ToggleButtonGroup done 2026-07-04 (CP9.3):** third new Tier-1 unit certified
+  through all 8 landed drivers. Spec `togglebuttongroup.certified.spec.ts` — 10
+  prop cases (default, multiple, vertical, compact, quiet, emphasized, justified,
+  size-s, size-xl, disabled) × the applicable driver set = **70 tests, all green**.
+  The march surfaced two real port divergences (both D5), both in the shared
+  `createToolbar` primitive, both self-inflicted and reverted per parity Rule #1.
+  - **Role polymorphism confirmed by D6.** Single `selectionMode` → group
+    `role="radiogroup"` with items `role="radio"` + `aria-checked`; `multiple` →
+    group `role="toolbar"` with items `role="button"` + `aria-pressed`. Both AX
+    cases match the React oracle exactly. This mirrors upstream
+    `useToggleButtonGroup` (single-select overrides the toolbar role to
+    `radiogroup`; `useToggleButtonGroupItem` overrides item role to `radio`).
+  - **Fixture memo-rebuild fix (the watch-listed anti-pattern, D4).** The
+    `SolidSpectrumToggleButtonGroupDemo` `renderedGroup` memo read the raw
+    `selectedKeys` state inside the creation scope, so every toggle rebuilt the
+    whole group and unmounted the focused item — the exact ToggleButton failure
+    the CP9.1 watch-list predicted. Fixed the same way: thread `selectedKeys` as
+    the raw accessor + expose the control-props data-attrs as getters, so the memo
+    stops tracking the selection signal and items reconcile in place. D4 went
+    12/12 green after this. Port components (`button/ToggleButtonGroup.tsx`,
+    headless) were already faithful — fixture-only change.
+  - **D5 found two real `createToolbar` divergences — no roving tabindex.** First
+    established via source read (react-aria 3.50.0, vendored + pinned
+    node_modules) that upstream `useToggleButtonGroupItem` sets **no `tabIndex`**
+    — every item is a natively-tabbable `<button>`, and `useToolbar` keeps Tab
+    from stepping into the next item purely via a Tab handler that jumps focus to
+    the first/last child and lets the browser's own Tab then carry focus *out* of
+    the toolbar. The port's `createToolbar` had drifted from that contract in two
+    self-inflicted ways, both caught by the D5 focus-trail driver:
+    - **tab-cycle red:** after Tab from the center item, React left the group
+      (`(outside)`) but Solid landed on the next in-panel item. Cause: the port's
+      Tab case only stored state (no exit dance) **and** an invented modifier
+      early-return (`if (e.altKey||e.ctrlKey||e.metaKey||e.shiftKey) return`)
+      blocked Shift+Tab entirely.
+    - **arrow-roving red:** after Home/End, React stayed put (upstream binds
+      neither) but Solid moved. Cause: the port invented `Home`/`End` cases.
+  - **Fix (real, port — `packages/solidaria/src/toolbar/createToolbar.ts`).** Made
+    `createToolbar` a faithful mirror of upstream `useToolbar`: (1) removed the
+    invented modifier early-return; (2) removed the invented `Home`/`End` cases;
+    (3) replaced the inert `Tab` case with upstream's exit dance —
+    `lastFocusedElement = getActiveElement(doc); e.shiftKey ? focusFirst() :
+    focusLast(); return` (no `preventDefault`, so the browser's default Tab then
+    exits the whole toolbar); (4) added the faithful `onBlur`/`onFocus` capture
+    pair (record last-focused child on leave, restore it on re-entry, both gated
+    on `!isInToolbar`) + the matching `blur` capture listener. Arrow branches were
+    already faithful and left untouched. D5 went green (2/2 → full 70/70).
+  - **Consumer test fallout (fixed).** Removing the invented `Home`/`End` broke
+    four `createToolbar`-consumer suites that codified the invented navigation —
+    `solidaria-components` Toolbar + ActionBar, `solid-spectrum` Toolbar +
+    ActionBar. Each was updated to the faithful contract (Home/End are no-ops;
+    arrow navigation + Tab exit dance retained), and `createToolbar`'s own unit
+    test now asserts the no-op Home/End plus the Tab / Shift+Tab exit dance.
+    `createActionGroup` and other components with their *own* Home/End handling
+    (Menu, ListBox, Slider, Table, Calendar, TagGroup, Tabs, NumberField, Select)
+    were confirmed unrelated and left untouched.
+  - **Tracked divergence (deferred) — text-input arrow guard.** `createToolbar`
+    keeps a guard that lets a text input inside a toolbar retain the arrow keys
+    for caret/value movement; upstream `useToolbar` has no such guard. It was
+    *narrowed* to arrows only (Home/End dropped) but not removed, because
+    ToggleButtonGroup never exercises it and removing it unverified risks a
+    regression in a real ActionBar/Toolbar text-input surface. Flagged for a
+    dedicated ActionBar/Toolbar cert — see tech-debt `toolbar-text-input-guard`.
+  - Regression guard: `togglebuttongroup.certified.spec.ts` **70/70**; full
+    `createToolbar` blast radius (solidaria + solidaria-components + solid-spectrum)
+    **231 files / 4633 passed / 1 expected xfail / 8 skipped**; the 5 toolbar/
+    actionbar consumer suites **89/89**; `createToggleButtonGroup` +
+    `createActionGroup` units **15/15**. No net change to the 4 pre-existing
+    deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated
+    `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.

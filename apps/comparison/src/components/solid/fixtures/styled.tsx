@@ -9482,12 +9482,21 @@ function SolidSpectrumToggleButtonGroupDemo() {
   });
 
   const renderedGroup = createMemo(() => {
+    // Read only the control-panel props here so this memo re-runs — rebuilding
+    // the group and its ToggleButton children — ONLY on a control edit, never on
+    // a selection change. Reading `selectedKeys()`/`selectedKeyText()` in this
+    // creation scope would retrack the selection signal, so every toggle would
+    // recompute the memo and unmount the pressed button, dropping keyboard focus
+    // (the memo-rebuild anti-pattern D4 catches — see the ToggleButton unit).
+    // Selection is threaded reactively instead: `selectedKeys` is passed as the
+    // raw accessor (hc's `unwrapAccessorProps` turns it into a live getter, the
+    // way compiled JSX binds `selectedKeys={selectedKeys()}`), and the serialized
+    // control-props data attributes are getters that read the current selection
+    // lazily — both update in place without rebuilding, matching React's
+    // controlled reconcile.
     const props = groupProps();
-    const selectedText = selectedKeyText();
-    const serializedProps = serializeToggleButtonGroupDemoProps({
-      ...props,
-      selectedKeys: selectedText,
-    });
+    const serializeWithSelection = () =>
+      serializeToggleButtonGroupDemoProps({ ...props, selectedKeys: selectedKeyText() });
 
     return hc(
       SolidSpectrumToggleButtonGroup,
@@ -9495,8 +9504,12 @@ function SolidSpectrumToggleButtonGroupDemo() {
         "aria-label": "Text alignment",
         "data-comparison-group-root": "togglebuttongroup",
         "data-comparison-control-root": "togglebuttongroup",
-        "data-comparison-group-props": serializedProps,
-        "data-comparison-control-props": serializedProps,
+        get "data-comparison-group-props"() {
+          return serializeWithSelection();
+        },
+        get "data-comparison-control-props"() {
+          return serializeWithSelection();
+        },
         selectionMode: props.selectionMode,
         disallowEmptySelection: props.disallowEmptySelection,
         size: props.size,
@@ -9507,7 +9520,7 @@ function SolidSpectrumToggleButtonGroupDemo() {
         isJustified: props.isJustified,
         isDisabled: props.isDisabled,
         staticColor: props.staticColor,
-        selectedKeys: selectedKeys(),
+        selectedKeys: selectedKeys,
         onSelectionChange: (keys: Set<string | number>) =>
           setSelectedKeys(new Set(Array.from(keys, String))),
       },

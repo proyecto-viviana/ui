@@ -540,6 +540,34 @@ the checkmark (unselected `visibility: hidden`, selected `visibility: visible`) 
 no layout shift; ARIA state is unchanged; both stay consistent with React Aria / S2
 Picker parity.
 
+## createToolbar keeps an invented text-input arrow guard (`toolbar-text-input-guard`)
+
+`packages/solidaria/src/toolbar/createToolbar.ts` guards arrow keys when the
+focused descendant is a text-entry control (`isTextInputLikeElement`): inputs of
+a text-ish type, `role="textbox"`, `contenteditable`, `<textarea>`, `<select>`
+retain ArrowLeft/Right/Up/Down for caret/value movement instead of the toolbar
+consuming them for roving focus. **Upstream `useToolbar` (react-aria 3.50.0) has
+no such guard.** During the ToggleButtonGroup cert (CP9.3, 2026-07-04) the guard
+was *narrowed* to arrows only — the invented `Home`/`End` handling it also
+covered was removed as a self-inflicted parity divergence (Rule #1) — but the
+arrow guard itself was **kept**, because ToggleButtonGroup contains no text input
+so its D5 focus-trail driver never exercises it, and removing it unverified could
+regress a real ActionBar/Toolbar text-input surface (e.g. a search field in a
+toolbar) with no cert to catch the break.
+
+This is a suspected divergence, not a confirmed-correct one: upstream may rely on
+the text input's own `stopPropagation`, or may genuinely let the toolbar steal
+the arrows. Resolve it in a dedicated ActionBar/Toolbar Phase-2 cert unit that
+includes a text-input child case: diff the port against upstream `useToolbar` +
+the real S2 ActionBar/Toolbar behaviour, then either delete the guard (if
+upstream steals the arrows) or keep it with a validation note proving the
+divergence is forced. Until then the guard is live and the comment in
+`createToolbar.ts` (`onKeyDown`) points here.
+
+**Exit:** a toolbar cert with a text-input child case decides the guard's fate
+against upstream evidence; `createToolbar` either drops the guard or documents it
+as a forced React→Solid divergence in a validation note.
+
 ## Package-build migration incomplete
 
 Package builds are mid-migration to native Vite Plus packaging. Only

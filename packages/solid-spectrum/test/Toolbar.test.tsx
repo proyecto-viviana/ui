@@ -46,7 +46,7 @@ describe("Toolbar (solid-spectrum)", () => {
     expect(container.querySelector(".vui-toolbar")).toHaveClass("flex-col");
   });
 
-  it("supports arrow and Home/End keyboard navigation", () => {
+  it("supports arrow navigation (Home/End are no-ops, upstream useToolbar parity)", () => {
     render(() => (
       <Toolbar aria-label="Formatting tools">
         <button>Bold</button>
@@ -57,16 +57,16 @@ describe("Toolbar (solid-spectrum)", () => {
 
     const bold = screen.getByRole("button", { name: "Bold" });
     const italic = screen.getByRole("button", { name: "Italic" });
-    const underline = screen.getByRole("button", { name: "Underline" });
 
     bold.focus();
     fireEvent.keyDown(bold, { key: "ArrowRight" });
     expect(document.activeElement).toBe(italic);
 
+    // Upstream useToolbar only binds Arrow keys and Tab; Home/End do not move focus.
     fireEvent.keyDown(italic, { key: "End" });
-    expect(document.activeElement).toBe(underline);
+    expect(document.activeElement).toBe(italic);
 
-    fireEvent.keyDown(underline, { key: "Home" });
-    expect(document.activeElement).toBe(bold);
+    fireEvent.keyDown(italic, { key: "Home" });
+    expect(document.activeElement).toBe(italic);
   });
 });

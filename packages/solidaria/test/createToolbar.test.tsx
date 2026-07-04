@@ -139,7 +139,7 @@ describe("createToolbar", () => {
       expect(document.activeElement).toBe(buttons[0]);
     });
 
-    it("should navigate to first and last with Home/End", () => {
+    it("should not handle Home/End (upstream useToolbar parity)", () => {
       render(() => (
         <TestToolbar aria-label="Tools">
           <button>Cut</button>
@@ -152,10 +152,44 @@ describe("createToolbar", () => {
       buttons[1].focus();
       expect(document.activeElement).toBe(buttons[1]);
 
+      // Upstream's useToolbar only binds Arrow keys and Tab; Home/End fall through
+      // to the browser default, so toolbar focus does not move.
       fireEvent.keyDown(buttons[1], { key: "End" });
-      expect(document.activeElement).toBe(buttons[2]);
+      expect(document.activeElement).toBe(buttons[1]);
 
-      fireEvent.keyDown(buttons[2], { key: "Home" });
+      fireEvent.keyDown(buttons[1], { key: "Home" });
+      expect(document.activeElement).toBe(buttons[1]);
+    });
+
+    it("should jump to the last child on Tab so the browser then exits the toolbar", () => {
+      render(() => (
+        <TestToolbar aria-label="Tools">
+          <button>Cut</button>
+          <button>Copy</button>
+          <button>Paste</button>
+        </TestToolbar>
+      ));
+
+      const buttons = screen.getAllByRole("button");
+      buttons[1].focus();
+
+      fireEvent.keyDown(buttons[1], { key: "Tab" });
+      expect(document.activeElement).toBe(buttons[2]);
+    });
+
+    it("should jump to the first child on Shift+Tab so the browser then exits the toolbar", () => {
+      render(() => (
+        <TestToolbar aria-label="Tools">
+          <button>Cut</button>
+          <button>Copy</button>
+          <button>Paste</button>
+        </TestToolbar>
+      ));
+
+      const buttons = screen.getAllByRole("button");
+      buttons[1].focus();
+
+      fireEvent.keyDown(buttons[1], { key: "Tab", shiftKey: true });
       expect(document.activeElement).toBe(buttons[0]);
     });
 

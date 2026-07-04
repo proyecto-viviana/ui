@@ -188,7 +188,7 @@ describe("Toolbar", () => {
     expect(document.activeElement).toBe(alignLeft);
   });
 
-  it("supports Home/End keyboard navigation", async () => {
+  it("does not handle Home/End (upstream useToolbar parity)", async () => {
     const user = setupUser();
 
     render(() => (
@@ -203,18 +203,18 @@ describe("Toolbar", () => {
       </Toolbar>
     ));
 
-    const cut = screen.getByRole("button", { name: "Cut" });
     const copy = screen.getByRole("button", { name: "Copy" });
-    const paste = screen.getByRole("button", { name: "Paste" });
 
     copy.focus();
     expect(document.activeElement).toBe(copy);
 
+    // Upstream useToolbar only binds Arrow keys and Tab; Home/End fall through
+    // to the browser default, so toolbar focus does not move.
     await user.keyboard("{End}");
-    expect(document.activeElement).toBe(paste);
+    expect(document.activeElement).toBe(copy);
 
     await user.keyboard("{Home}");
-    expect(document.activeElement).toBe(cut);
+    expect(document.activeElement).toBe(copy);
   });
 
   it("supports keyboard navigation vertical", async () => {

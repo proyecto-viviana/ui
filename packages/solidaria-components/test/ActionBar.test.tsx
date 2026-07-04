@@ -199,7 +199,7 @@ describe("ActionBar (headless)", () => {
       expect(onClear).not.toHaveBeenCalled();
     });
 
-    it("supports toolbar arrow and Home/End navigation between actions", () => {
+    it("supports toolbar arrow navigation (Home/End are no-ops, upstream useToolbar parity)", () => {
       render(() => (
         <ActionBar selectedItemCount={5} onClearSelection={() => {}}>
           <button>Edit</button>
@@ -210,17 +210,17 @@ describe("ActionBar (headless)", () => {
 
       const edit = screen.getByRole("button", { name: "Edit" });
       const duplicate = screen.getByRole("button", { name: "Duplicate" });
-      const del = screen.getByRole("button", { name: "Delete" });
 
       edit.focus();
       fireEvent.keyDown(edit, { key: "ArrowRight" });
       expect(document.activeElement).toBe(duplicate);
 
+      // Upstream useToolbar only binds Arrow keys and Tab; Home/End do not move focus.
       fireEvent.keyDown(duplicate, { key: "End" });
-      expect(document.activeElement).toBe(del);
+      expect(document.activeElement).toBe(duplicate);
 
-      fireEvent.keyDown(del, { key: "Home" });
-      expect(document.activeElement).toBe(edit);
+      fireEvent.keyDown(duplicate, { key: "Home" });
+      expect(document.activeElement).toBe(duplicate);
     });
 
     it("calls user onKeyDown handler and respects defaultPrevented", () => {

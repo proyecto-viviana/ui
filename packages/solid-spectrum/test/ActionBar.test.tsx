@@ -317,7 +317,7 @@ describe("ActionBar (solid-spectrum)", () => {
       expect(onClear).toHaveBeenCalledOnce();
     });
 
-    it("supports toolbar arrow and Home/End navigation", () => {
+    it("supports toolbar arrow navigation (Home/End are no-ops, upstream useToolbar parity)", () => {
       render(() => (
         <ActionBar selectedItemCount={3} onClearSelection={() => {}}>
           <button>Edit</button>
@@ -325,7 +325,6 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBar>
       ));
 
-      const clear = screen.getByRole("button", { name: "Clear selection" });
       const edit = screen.getByRole("button", { name: "Edit" });
       const del = screen.getByRole("button", { name: "Delete" });
 
@@ -333,10 +332,11 @@ describe("ActionBar (solid-spectrum)", () => {
       fireEvent.keyDown(edit, { key: "ArrowRight" });
       expect(document.activeElement).toBe(del);
 
+      // Upstream useToolbar only binds Arrow keys and Tab; Home/End do not move focus.
       fireEvent.keyDown(del, { key: "Home" });
-      expect(document.activeElement).toBe(clear);
+      expect(document.activeElement).toBe(del);
 
-      fireEvent.keyDown(clear, { key: "End" });
+      fireEvent.keyDown(del, { key: "End" });
       expect(document.activeElement).toBe(del);
     });
   });
