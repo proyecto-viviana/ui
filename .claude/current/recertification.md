@@ -762,8 +762,10 @@ Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGrou
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
 (2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04) · ✓ Form
 (2026-07-04) · ✓ FieldError/HelpText (2026-07-04) · ✓ LabeledValue (2026-07-04)` —
-**Tier 2 complete.** Next in the Phase 2 march: Tier 3 (overlays) — Tooltip is the
-topmost unit. Same marking rule. NOTE the remaining
+**Tier 2 complete.**
+
+Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)` — **Tier 3 started.** Next:
+Popover. Same marking rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
 (`helptext-fielderror-visual-port`, tech-debt) — but CheckboxGroup and RadioGroup both
@@ -2159,5 +2161,52 @@ headless is now the single source of truth for group description/error ids
      semantics, exactly like Form's generic `<form>`. Registering D6 would assert an empty subtree.
      No focusable element, no hit target, no event contract, no motion — the rest matrix (8 cases ×
      2 themes) is the entire certifiable surface.
+
+- ✓ **Tooltip done 2026-07-04 (CP9.28 — FIRST Tier-3 overlay unit):** certified `19/19` green
+  (D1×8, D3×8, D6×1, D7×2) — `tooltip.certified.spec.ts`. This certifies the styled tooltip SURFACE
+  the S2 `Tooltip` paints (the byte-copied `tooltip` `style()` — colorScheme, maxWidth 160, minHeight
+  24, ui-sm, gray-25 on `neutral`, edge-to-text/centerPadding — plus the directional arrow `<svg>`
+  styled by the byte-copied `arrowStyles`: fill gray-800, 10×5, rotate top 0 / bottom 180deg / left
+  -90deg / right 90deg, translateX left −25% / right 25%) against upstream S2 `Tooltip.tsx`
+  (`@react-spectrum/s2@1.5.1`).
+  1. **Overlay open pattern — hover with `delay:0`, panel-major.** The tooltip portals to a page-level
+     `OverlayContainer`, so targets resolve from `page.getByRole("tooltip")` (NOT `canvas`, mirroring
+     the dialog template). Both panels share the route, so `beforePanel` opens ONE panel's tooltip at a
+     time: it HOVERS this panel's trigger with the warmup pinned to `delay:0` (a case param both
+     fixtures thread), and `forEachScenarioPanel`'s per-panel fresh `page.goto` guarantees isolation.
+     Hover — the demo's canonical trigger — is the gesture both stacks reliably open on; programmatic
+     `.focus()` is not focus-visible, so RAC and the port both HOLD the tooltip closed on it (this is
+     the correct, faithful behavior, and the reason the first cert draft's focus-open failed). The
+     first hover fires `onOpenChange(true)`, flipping the demo to controlled-open so the surface stays
+     up through measurement. Cases pin `shouldFlip:false` so each of the four placements renders where
+     requested. **This is the reusable open recipe for the rest of the Tier-3 overlay march.**
+  2. **D6 AX — reverted a self-inflicted `aria-hidden` divergence (parity fix, in production code).**
+     Upstream wraps the arrow in `<OverlayArrow className="">` with NO `aria-hidden`, so the arrow
+     `<svg>` surfaces as a `role="img"` node inside the tooltip's AX subtree
+     (`tooltip "Tooltip content" › img + text`). The port had hand-hidden its arrow wrapper
+     (`aria-hidden="true"`) — a self-inflicted divergence — so its AX subtree collapsed to just the
+     name. Per the parity rule (revert self-inflicted divergences, don't build around them), removed
+     the `aria-hidden` in `solid-spectrum/src/tooltip/index.tsx`; the arrow wrapper `<div>` now
+     collapses to `generic` identically to upstream's OverlayArrow div, so the svg surfaces as `img`
+     and D6 matches byte-for-byte. (Mirrors an upstream a11y quirk — an unlabeled decorative img in the
+     tooltip — logged in tech-debt as an upstream-faithful mirror, not an independent improvement.)
+     Tooltip unit suite still 23/23.
+  3. **D3 pixel — top/bottom byte-exact; left/right carry a tight bounded waiver
+     (`tooltip-arrow-overlayarrow-subpixel`).** top/bottom are exact — the arrow centers horizontally
+     (`left:50%;translateX(-50%)` over a 10px-wide frame lands on an integer pixel). left/right diff by
+     ~19/13728 px, confined to the arrow bounds: the port positions the arrow with a hand-rolled
+     `top:50%;translateY(-50%)` frame (`arrowFrameStyle`) that lands the 5px-tall frame on a fractional
+     half-pixel, where upstream's `<OverlayArrow>` consumes a JS-computed INTEGER `top` from React
+     Aria's `useOverlayPosition` `arrowProps`. Waived at `maxMismatchRatio:0.003` (≈1.6× the observed
+     ~0.0013), all states/themes, left/right only. **Same root cause as the deferred D2 motion cert:**
+     the headless `solidaria-components/Tooltip.tsx` is a from-scratch positioning rewrite
+     (`updatePosition()` + homegrown flip) that exposes no `arrowProps`, so it cannot drive a real
+     `<OverlayArrow>`. Closing the arrow to byte-exact (and unblocking D2) is the tracked
+     **headless-overlay realignment** (tech-debt).
+  4. **D2/D4/D5/D8 out of scope for the surface unit.** D2 (enter/exit opacity+translate motion) is
+     blocked on the same headless positioning/animation rewrite. D4/D5 (open-on-hover/focus,
+     close-on-Escape/leave, focus restoration) are `TooltipTrigger` behaviors — a separate interaction
+     unit — not the surface's. D8: the tooltip surface is not an interactive hit target (the trigger
+     ActionButton is certified by its own unit).
 
 Phase 3: not started.

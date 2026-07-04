@@ -209,6 +209,46 @@ tasks:
       resolving truthy for all rows, not a missing base style; renderProps.isSelected
       threading (HeadlessSelectOption, :1046-1051) and/or the S2 macro is/allows
       condition compile is the suspect. Diff both against upstream S2 before patching.
+  - id: tooltip-arrow-overlayarrow
+    title: Port the Tooltip arrow onto the real RAC <OverlayArrow> + arrowProps (headless-overlay realignment)
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the Tooltip recertification (CP9.28). Upstream S2 Tooltip.tsx
+      (:216) renders the arrow as `<OverlayArrow className=""><svg
+      className={arrowStyles(...)}/></OverlayArrow>`, positioned by React Aria's
+      `useOverlayPosition` `arrowProps` (a JS-computed INTEGER pixel `top`/`left`)
+      with `arrowBoundaryOffset={borderRadius}` read from the tooltip's own
+      computed border-radius. The port hand-rolls the arrow instead: a
+      `<div data-rsp-slot="tooltip-arrow" style={arrowFrameStyle(placement)}>`
+      wrapper with PERCENT centering (`top/left:50%` + `translateX/Y(-50%)`),
+      wrapping the byte-identical svg, and hardcodes `arrowBoundaryOffset={8}`
+      (solid-spectrum/src/tooltip/index.tsx). Consequence certified: top/bottom
+      placements are byte-exact, but left/right land the 5px-tall frame on a
+      fractional half-pixel → a ~1px vertical arrow-tip shift (~19/13728 px),
+      waived in tooltip.certified.spec.ts as `tooltip-arrow-overlayarrow-subpixel`.
+      ROOT BLOCKER: the headless `solidaria-components/Tooltip.tsx` is a
+      from-scratch positioning rewrite (`updatePosition()` + homegrown
+      `maybeFlipPlacement`) that exposes NO `arrowProps`, so the styled layer
+      cannot drive a real `<OverlayArrow>`. Realigning the headless layer to RAC's
+      `useOverlayPosition`/`OverlayArrow` machinery is the shared fix that (a)
+      makes the arrow byte-exact on all placements and (b) UNBLOCKS the deferred
+      D2 motion cert (enter/exit opacity+translate, currently driven by a
+      hand-rolled `getAnimations()` state machine, not RAC's `useEnterAnimation`).
+      Confirm against React Aria `useOverlayPosition` first (parity rule).
+  - id: tooltip-arrow-aria-exposed
+    title: Tooltip arrow svg is exposed as role=img (upstream-faithful mirror, not an improvement)
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Documented during CP9.28 so it is not "fixed" back to a divergence later.
+      Upstream S2 leaves the arrow `<OverlayArrow>` svg with NO `aria-hidden`, so
+      it surfaces to AT as an unlabeled `role="img"` inside the tooltip subtree —
+      arguably an upstream a11y quirk (a decorative arrow need not be exposed). The
+      port previously hand-hid it (`aria-hidden="true"`); CP9.28 REMOVED that to
+      match upstream byte-for-byte under D6 (parity rule #1 — revert self-inflicted
+      divergences). If upstream later adds `aria-hidden` to the arrow, mirror it;
+      do NOT re-introduce the hide unilaterally as a lone "improvement."
   - id: helptext-fielderror-visual-port
     title: Port the faithful S2 Field composite (FieldLabel + HelpText/FieldError) so label/description/isInvalid rows match upstream
     state: open

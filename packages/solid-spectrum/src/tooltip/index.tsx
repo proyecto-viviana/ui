@@ -193,8 +193,12 @@ export function Tooltip(props: TooltipProps): JSX.Element {
       {(renderProps: TooltipRenderProps) => (
         <>
           <Show when={showArrow()}>
+            {/* Faithful to upstream S2 `<OverlayArrow className="">`, which wraps
+                the arrow `<svg>` with NO `aria-hidden` — so the svg surfaces as a
+                `role="img"` node inside the tooltip's AX subtree (verified against
+                `@react-spectrum/s2@1.5.1`). An earlier port hand-hid the arrow
+                (`aria-hidden`), a self-inflicted divergence from upstream. */}
             <div
-              aria-hidden="true"
               data-rsp-slot="tooltip-arrow"
               style={arrowFrameStyle(renderProps.placement ?? "top")}
             >
