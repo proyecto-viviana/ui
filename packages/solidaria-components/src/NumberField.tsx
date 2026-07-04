@@ -427,14 +427,25 @@ export function NumberFieldLabel(props: {
     throw new Error("NumberFieldLabel must be used within a NumberField");
   }
 
+  // Upstream RAC/S2 renders the NumberField label as a native `<label>` (the field's
+  // `labelElementType` is the default `'label'`), so `labelProps` carries `for=inputId`.
+  // This was a `<span>` — a self-inflicted divergence dropping the native for/label
+  // semantics; reverted to `<label>` to match the shipped React DOM byte-for-byte.
+  // (Mirror SearchFieldLabel: `labelProps` is typed for a generic element, so strip the
+  // `ref` and spread the rest onto the `<label>` intrinsic.)
+  const cleanLabelProps = () => {
+    const { ref: _ref, ...rest } = context.labelProps as Record<string, unknown>;
+    return rest;
+  };
+
   return (
-    <span
-      {...context.labelProps}
+    <label
+      {...cleanLabelProps()}
       class={props.class ?? "solidaria-NumberField-label"}
       style={props.style}
     >
       {props.children}
-    </span>
+    </label>
   );
 }
 

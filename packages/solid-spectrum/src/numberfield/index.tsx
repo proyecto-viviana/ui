@@ -27,6 +27,7 @@ import { baseColor, focusRing, fontRelative, space, style } from "../style" with
 import {
   control,
   controlBorderRadius,
+  controlFont,
   field,
   fieldInput,
   fieldLabel,
@@ -187,7 +188,11 @@ const numberFieldInput = style({
   width: "full",
   outlineStyle: "none",
   borderStyle: "none",
-  textAlign: "start",
+  // Upstream S2 NumberField renders the shared `<Input>` from `Field.tsx`, whose style
+  // ends in `truncate: true` (→ overflow:hidden; text-overflow:ellipsis; white-space:nowrap)
+  // — NOT `textAlign: 'start'`. The hardcoded `textAlign` was a self-inflicted divergence
+  // that dropped truncation; reverted to `truncate` to match the shared Input byte-for-byte.
+  truncate: true,
 });
 
 const stepperContainer = style<NumberFieldStyleProps>({
@@ -273,17 +278,14 @@ const iconStyles = style({
 const helpTextStyles = style<NumberFieldStyleProps>({
   gridArea: "helptext",
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
-  fontSize: {
-    default: "ui-sm",
-    size: {
-      S: "ui-xs",
-      L: "ui",
-      XL: "ui-lg",
-    },
-  },
+  // Faithful to upstream `helpTextStyles` (S2 Field.tsx) which uses `font: controlFont()`
+  // — the full font shorthand (family, size, weight, line-height), not a bare fontSize
+  // map. The prior fontSize-only map left family/weight/line-height to cascade, producing
+  // a subpixel help-text rendering divergence (D3) vs React. Mirrors green `textFieldInput`
+  // helpTextStyles.
+  font: controlFont(),
   color: {
     default: "neutral-subdued",
     isInvalid: {
@@ -301,6 +303,10 @@ const helpTextStyles = style<NumberFieldStyleProps>({
   },
   contain: "inline-size",
   paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
 });
 
 const fieldErrorIcon = style({
@@ -328,36 +334,42 @@ const noWrap = style({
   whiteSpace: "nowrap",
 });
 
+// Upstream S2 renders help text via the shared `<HelpText>`, whose description is a
+// `<Text slot="description">` (a `<span>`), NOT a `<p>`: a `<p>` carries the UA
+// `margin` the hand-roll then had to zero out (see `helpTextStyles` — upstream's has
+// none), and an implicit `paragraph` role that a `<span>` does not. Reverted to match.
 function NumberFieldDescription(props: {
   class?: string;
   children?: JSX.Element;
 }): JSX.Element | null {
   const context = useContext(HeadlessNumberFieldContext);
-  if (!context) return null;
+  if (!context?.descriptionProps) return null;
   const descriptionProps = () => {
     const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
     return rest;
   };
 
   return (
-    <p {...descriptionProps()} class={props.class}>
+    <span {...descriptionProps()} slot="description" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
+// Upstream S2's `<HelpText>` renders the error message via `<FieldError>` →
+// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
 function NumberFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
   const context = useContext(HeadlessNumberFieldContext);
-  if (!context) return null;
+  if (!context?.errorMessageProps) return null;
   const errorMessageProps = () => {
     const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
     return rest;
   };
 
   return (
-    <p {...errorMessageProps()} class={props.class}>
+    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -398,18 +410,6 @@ function buttonPressScaleStyle(
   return pressStyle;
 }
 
-function iconSize(size: S2NumberFieldSize) {
-  return size === "S" ? "XS" : size;
-}
-
-function stepperIconStyle(size: S2NumberFieldSize): JSX.CSSProperties {
-  const pixelSize = size === "S" ? 8 : size === "M" || size === "L" ? 10 : 12;
-  return {
-    width: `${pixelSize}px`,
-    height: `${pixelSize}px`,
-  };
-}
-
 /**
  * NumberFields allow users to input number values with a keyboard or increment/decrement with step buttons.
  */
@@ -444,13 +444,18 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   let decrementButtonElement: HTMLDivElement | undefined;
   let incrementButtonElement: HTMLDivElement | undefined;
 
-  const rootClassName = (renderProps: NumberFieldRenderProps) =>
+  // Match upstream's root style INVOCATION args exactly: S2 `NumberField.tsx` passes
+  // only `{ isInForm: !!formContext, labelPosition, size }` to `style(field(), …)(…)`
+  // — NOT the render-prop bag. `isDisabled`/`isFocused`/… are threaded DOWN to the
+  // FieldGroup/label/help text, not applied to the field grid. The grid's `field()` has
+  // no such conditions today, but spreading `…renderProps` here would silently light any
+  // future one; keep the arg set faithful (same lesson as SearchField's root-color fix).
+  const rootClassName = (_renderProps: NumberFieldRenderProps) =>
     [
       local.UNSAFE_className,
       local.class,
       numberFieldRoot(
         {
-          ...renderProps,
           size: size(),
           labelPosition: labelPosition(),
           isInForm: false,
@@ -587,11 +592,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
                     buttonPressScaleStyle(decrementButtonElement, buttonRenderProps)
                   }
                 >
-                  <DashIcon
-                    size={iconSize(size())}
-                    class={iconStyles}
-                    style={stepperIconStyle(size())}
-                  />
+                  <DashIcon size={size()} class={iconStyles} />
                 </HeadlessNumberFieldDecrementButton>
                 <HeadlessNumberFieldIncrementButton
                   ref={incrementButtonElement}
@@ -600,11 +601,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
                     buttonPressScaleStyle(incrementButtonElement, buttonRenderProps)
                   }
                 >
-                  <AddIcon
-                    size={iconSize(size())}
-                    class={iconStyles}
-                    style={stepperIconStyle(size())}
-                  />
+                  <AddIcon size={size()} class={iconStyles} />
                 </HeadlessNumberFieldIncrementButton>
               </div>
             </Show>

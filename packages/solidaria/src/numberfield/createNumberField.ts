@@ -109,15 +109,31 @@ export function createNumberField(
     get "aria-labelledby"() {
       return getProps()["aria-labelledby"];
     },
-    labelElementType: "span",
+    // Upstream react-aria `useNumberField` → `useField` → `useLabel` with the DEFAULT
+    // `labelElementType: 'label'`: the S2 NumberField label is a native `<label htmlFor>`
+    // (verified against the shipped React DOM: `<label id for=inputId>`). This hardcoded
+    // `"span"` was a self-inflicted divergence — it dropped the `for` association and made
+    // `NumberFieldLabel` render a `<span>`. Reverted to `"label"` so `createLabel` emits
+    // `for: inputId` (the input still also carries `aria-labelledby`, exactly as upstream).
+    labelElementType: "label",
   });
 
-  // Get the label text for button aria-labels
-  const getLabelText = (): string => {
-    const p = getProps();
-    if (p["aria-label"]) return p["aria-label"];
-    if (typeof p.label === "string") return p.label;
-    return "value";
+  // Increment/decrement button labels — a 1:1 port of upstream `useNumberField`'s
+  // four-case logic. Upstream RAC's `NumberField` component feeds `useNumberField` a
+  // BOOLEAN slot for `label` (from `useSlot`), never the label string, so a visible
+  // label is NEVER concatenated into the button `aria-label`. Instead: with a visible
+  // label the button reads `aria-label: "Increase"` PLUS `aria-labelledby: "<selfId>
+  // <labelId>"`; only an explicit `aria-label` (and no visible label) changes the text
+  // (`"Increase <aria-label>"`). The prior `Increase ${getLabelText()}` was a
+  // self-inflicted divergence that produced "Increase Quantity" where S2 ships
+  // "Increase". `fieldLabel` mirrors upstream: `props['aria-label'] || ''` — the visible
+  // label string is intentionally excluded (it arrives as a boolean slot in RAC).
+  const fieldLabel = (): string => getProps()["aria-label"] ?? "";
+  const buttonLabelledBy = (): string | undefined => {
+    if (fieldLabel()) return undefined;
+    return getProps().label != null
+      ? (labelProps.id as string | undefined)
+      : getProps()["aria-labelledby"];
   };
 
   // Filter DOM props
@@ -313,6 +329,14 @@ export function createNumberField(
           autoComplete: "off",
           autoCorrect: "off",
           spellcheck: false,
+          // Upstream routes the input through useFormattedTextField → useTextField →
+          // useFocusable, which "always set[s] a tabIndex so that Safari allows
+          // focusing native buttons and inputs": `excludeFromTabOrder ? -1 : 0`, then
+          // `undefined` when disabled. The input is never excluded, so the rendered
+          // DOM carries `tabindex="0"` (absent only when disabled). We hand-roll
+          // inputProps (see the spinbutton-override note below) so we must replay that
+          // one focusable prop here to stay byte-identical to React's tab order.
+          tabIndex: isDisabled ? undefined : 0,
           // Upstream useNumberField wraps useSpinButton but deliberately
           // overrides its output: role=spinbutton can't be focused with
           // VoiceOver, so the input is a plain textbox (inside the role=group
@@ -320,7 +344,14 @@ export function createNumberField(
           // aria-roledescription. The formatted value is still announced via the
           // input's own value. Mirror that contract instead of leaking the raw
           // spinbutton semantics.
-          "aria-roledescription": "number field",
+          //
+          // The string MUST match upstream's `stringFormatter.format('numberField')`,
+          // whose en-US value is `Number field` (capitalised) — not a lowercase
+          // hand-roll. Full locale routing via `createStringFormatter` (as
+          // `createDateField` does) is tracked as `intl-roledescription-hardcodes`
+          // (also covers the ColorArea/ColorSwatch English hardcodes); this keeps the
+          // en-US roledescription byte-identical to React Spectrum in the meantime.
+          "aria-roledescription": "Number field",
           "aria-invalid": p.isInvalid || undefined,
           "aria-required": p.isRequired || undefined,
           "aria-describedby": getAriaDescribedBy(),
@@ -344,10 +375,12 @@ export function createNumberField(
       ) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get incrementButtonProps() {
+      const labelledBy = buttonLabelledBy();
       return {
         id: incrementId,
         type: "button",
-        "aria-label": `Increase ${getLabelText()}`,
+        "aria-label": `Increase ${fieldLabel()}`.trim(),
+        "aria-labelledby": labelledBy ? `${incrementId} ${labelledBy}` : undefined,
         "aria-controls": inputId,
         excludeFromTabOrder: true,
         preventFocusOnPress: true,
@@ -366,10 +399,12 @@ export function createNumberField(
       } as AriaButtonProps;
     },
     get decrementButtonProps() {
+      const labelledBy = buttonLabelledBy();
       return {
         id: decrementId,
         type: "button",
-        "aria-label": `Decrease ${getLabelText()}`,
+        "aria-label": `Decrease ${fieldLabel()}`.trim(),
+        "aria-labelledby": labelledBy ? `${decrementId} ${labelledBy}` : undefined,
         "aria-controls": inputId,
         excludeFromTabOrder: true,
         preventFocusOnPress: true,

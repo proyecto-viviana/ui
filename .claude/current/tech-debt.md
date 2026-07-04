@@ -354,6 +354,24 @@ tasks:
       lands in a D3-certified surface may carry the same drift and needs the per-icon shipped-path
       swap. (UI-icons under ui-icons/*.tsx are already generated from the shipped dist — this is
       workflow-icon-only.)
+  - id: intl-roledescription-hardcodes
+    title: English aria-roledescription / stepper labels are hardcoded, not routed through createStringFormatter
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the NumberField recertification (CP9.22): `createNumberField.ts` hardcodes
+      the input `aria-roledescription: "Number field"` and the stepper button `aria-label`s
+      `"Increase"`/`"Decrease"`, where upstream `useNumberField` reads them from
+      `stringFormatter.format('numberField' | 'increase' | 'decrease', {fieldLabel})` — a
+      localized dictionary. The hardcodes are deliberately kept BYTE-IDENTICAL to React's
+      en-US output ("Number field", "Increase", "Decrease"), so every en-US cert (D5/D6) is
+      green and this is invisible in the default locale; it only diverges under a non-English
+      `I18nProvider`. Same class of debt as ColorArea/ColorSwatch's English hardcodes and the
+      still-open `calendar-segment-i18n` (see "i18n strings hardcoded" prose section). Faithful
+      exit: route these through `createStringFormatter` (as `createDateField`/`createCalendar`
+      already do) with the react-aria en-US/`intl/*.json` values, then extend the non-English/RTL
+      contract coverage to a NumberField roledescription + stepper-label assertion. Low priority
+      until localized number-field consumers exist; the en-US surface is already faithful.
 ---
 
 # Tech Debt

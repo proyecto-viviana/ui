@@ -759,8 +759,9 @@ certified, `blocked: name (reason)` otherwise.
 
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
-(2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04)` — in progress.
-Queue: NumberField, Slider, RangeSlider, Form,
+(2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
+(2026-07-04)` — in progress.
+Queue: Slider, RangeSlider, Form,
 FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -1881,5 +1882,70 @@ headless is now the single source of truth for group description/error ids
      `<Show when={!isEmpty()}>`s its body — so the rendered DOM matches for every value/read-only
      combo. Same `states:["default"]` split-control scope and same `isInvalid` deferral to
      `helptext-fielderror-visual-port` as the rest of the field family.
+
+- ✓ **NumberField done 2026-07-04 (CP9.22 — eighth Tier-2 unit, input + `−`/`+` stepper buttons):**
+  certified `38/38` green across D1/D3/D5/D6/D7 (`numberfield.certified.spec.ts`). NumberField is a
+  TextField-shaped composite (upstream S2 `NumberField.tsx` → `AriaNumberField` + shared
+  `<Input>`/FieldLabel/FieldGroup/HelpText) whose FieldGroup additionally holds a trailing
+  `stepperContainer` with two `StepButton`s (`Dash`/`Add` ui-icons). Seven self-inflicted
+  divergences reverted, every fix byte-identical to upstream:
+  1. **The field-family help-text + label reverts (fifth re-use of that finding).** Description/error
+     rendered as `<p>` + hand-roll-only `margin:0` → reverted to `<span slot="description">` /
+     `<span slot="errorMessage">` with `margin` dropped; the visible label rendered as `<span>` →
+     reverted to `<label>` (headless `labelElementType: "span"` → the default `"label"`, so
+     `createLabel` emits `for=inputId`). Same fixes TextField/TextArea/SearchField took.
+  2. **D1 input `truncate` (the shared-`<Input>` divergence).** `numberFieldInput` hardcoded
+     `textAlign:"start"` where upstream renders the SHARED `<Input>` from `Field.tsx`, whose style
+     ends in `truncate:true` (→ `overflow:hidden; text-overflow:ellipsis; white-space:nowrap`).
+     Swapped to `truncate:true`. **This was the D1 timeout root cause** — the state-matrix asserts
+     parts in order and the input part failed first, masking the description divergence below.
+  3. **D1/D3 help-text `font` (the subpixel font-shorthand divergence — the D3 `default` fix).**
+     `helpTextStyles` used a bare `fontSize` map (`{default:"ui-sm", size:{S:"ui-xs",…}}`) where
+     upstream (`Field.tsx` `helpTextStyles`, and the green `textFieldInput`) uses `font: controlFont()`
+     — the FULL font shorthand (family/size/weight/line-height). The size-only map left the other
+     three metrics to cascade, so the help-text glyphs rendered a hair differently (~1.7% of pixels
+     in the help-text row, invisible to the eye) → D3 `default` reds. Also added the missing
+     `cursor:{default:"text", isDisabled:"default"}` upstream carries. **Reusable lesson: help text
+     is `font: controlFont()`, never a `fontSize` map — a fontSize-only "port" is a subpixel D3 trap
+     that D1 can mask when an earlier part fails first.**
+  4. **D3 stepper-icon size (the icon-remap + inline-override divergence — the size-s/size-l reds).**
+     The port passed `size={iconSize(size())}` (a hand-rolled `S→XS` remap) PLUS an inline
+     `style={stepperIconStyle(size())}` (hardcoded `{S:8,M:10,L:10,XL:12}px`) to `Dash`/`Add`.
+     Upstream renders `<Dash size={size} className={iconStyles} />` — the RAW size, no inline
+     width/height; the per-size native SVG dims apply (XS 8, S 8, M 10, **L 12**, XL 12). So at S the
+     port drew the XS glyph (different path data, same 8px) and at L it shrank the native 12px icon
+     to 10px — both subpixel D3 reds in the stepper strip; M matched by luck (native 10, forced 10),
+     which is why `default` passed and only size-s/size-l failed. Fix: pass raw `size()`, drop the
+     inline style, delete both helpers. **Reusable: never remap a ui-icon's `size` or force its
+     width/height inline — the icon component's per-size variant already carries the shipped dims.**
+  5. **D5 input `tabindex="0"` (the `useFocusable` contract).** The tab-cycle trail showed React's
+     input carrying `tabindex="0"` (present in the roving-tabindex snapshot) where the port's had no
+     tabindex attribute. Upstream routes the input through `useFormattedTextField → useTextField →
+     useFocusable`, which "always set[s] a tabIndex so that Safari allows focusing native buttons and
+     inputs": `excludeFromTabOrder ? -1 : 0`, then `undefined` when disabled. The port hand-rolls
+     `inputProps` (to replay upstream's deliberate spinbutton-role override), so it must ALSO replay
+     that one focusable prop — added `tabIndex: isDisabled ? undefined : 0`. **Reusable: any hand-rolled
+     react-aria input must carry `tabIndex:0` (undefined when disabled) — it comes from `useFocusable`,
+     not the field hook, so a bespoke `inputProps` that skips the focusable layer silently drops it.**
+  6. **The stepper `aria-label` contract (bare "Increase"/"Decrease").** The port appended the field
+     label (`Increase ${getLabelText()}` → "Increase Quantity") where S2 ships bare "Increase". RAC's
+     `NumberField` feeds `useNumberField` a BOOLEAN slot for `label` (from `useSlot`), never the
+     string, so a visible label is never concatenated; instead the button gets `aria-label:"Increase"`
+     + `aria-labelledby:"<selfId> <labelId>"`. Ported the exact four-case logic
+     (`fieldLabel = props['aria-label'] || ''`; `buttonLabelledBy` picks labelId / aria-labelledby /
+     none). Also fixed the input `aria-roledescription` casing `"number field"` → `"Number field"` to
+     match `stringFormatter.format('numberField')`.
+  7. **`rootClassName` drops `...renderProps` (same SearchField root-invocation lesson).** S2
+     `NumberField.tsx` invokes the root `style(field(),…)` with only `{isInForm, labelPosition, size}`
+     — the render-prop bag (`isDisabled`/`isFocused`/…) is threaded DOWN to FieldGroup/label/help
+     text, never the grid. Removed the `...renderProps` spread so no future `field()` condition lights
+     silently.
+  - **D6 scoped to `hide-stepper`** — routes D6 around the tracked `ui-icon-decorative-ax-node`
+     divergence (the `Dash`/`Add` glyphs are ui-icons whose decorative child node the port hides but
+     Chromium exposes on React), exactly as Checkbox/RadioGroup/SearchField scoped theirs. With the
+     steppers hidden the tree is the clean spinless textbox + `role="group"` + label + description.
+     `states:["default"]`, `isInvalid` deferred to `helptext-fielderror-visual-port` as the rest of
+     the field family. The English roledescription + "Increase"/"Decrease" hardcodes are the tracked
+     `intl-roledescription-hardcodes` (en-US byte-identical to React in the meantime).
 
 Phase 3: not started.
