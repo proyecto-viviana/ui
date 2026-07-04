@@ -752,7 +752,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
 (2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04) · ✓ Divider
-(2026-07-04) · ✓ StatusLight (2026-07-04)` — remaining
+(2026-07-04) · ✓ StatusLight (2026-07-04) · ✓ Meter (2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1241,5 +1241,59 @@ certified, `blocked: name (reason)` otherwise.
     clean (added `statuslight.certified.spec.ts` to the scratchpad include list).
     No net change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
     Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **Meter done 2026-07-04 (CP9.10):** tenth new Tier-1 unit certified — a
+  **labelled value-bar** display primitive, the static-value sibling of
+  ProgressBar (shares upstream's `useProgressBar` spine via `useMeter`/
+  `createMeter`). Spec `meter.certified.spec.ts` — 10 prop cases (default,
+  positive, notice, negative, size-s, size-xl, label-side, value-label,
+  custom-range, static-white) × the applicable driver set = **49 tests, all green
+  on the first run, no port change required.** Fourth byte-identical unit in a row.
+  - **Structure + macros verified byte-identical to upstream** (`s2/src/Meter.tsx`
+    + `bar-utils.ts`): the port's `wrapperStyles` reproduces the shared `bar()`
+    macro line-for-line — including the **deliberate 2-column / 3-area `side`
+    grid** (`gridTemplateColumns.side: ['auto','1fr']` against
+    `gridTemplateAreas.side: ['label bar value']`, so the third "value" column is
+    implicit — the port matches this exactly, not a bug); `trackStyles` = `track()`
+    + the `{S:4,M:6,L:8,XL:10}` height scale; `fillStyles` = the `lightDark`
+    variant colour table; `valueStyles`/`labelStyles` = `fieldLabel()`. The label
+    region is `<div class=labelWrapper><span>` on both — upstream's `FieldLabel`
+    renders through RAC `Label` whose `LabelContext` (set by RAC `Meter`) forces
+    `elementType: 'span'`, so it is a `<span>` not a `<label>`, matching the port.
+    `Text` → `<span data-rsp-slot="text">` on both, and `SkeletonWrapper` emits no
+    wrapper outside a `<Skeleton>` provider on both, so the track is a direct
+    child. So the wrapper is the D1 `target` and the four grid children are diffed
+    `parts`: `label`, `value`, `track`, `fill`.
+  - **D1** captured the grid layout via `styleProps.add` (the ProgressBar longhand
+    set minus `transform-origin` — a Meter fill never animates): grid-template-
+    columns/areas, grid-area, overflow, min/max-width, position, isolation,
+    z-index. The variant `fill` `background-color` (already allowlisted) is the
+    colour headline; `label-side` exercises the alternate grid template. D3 pixel
+    clean across all 10 cases in both themes.
+  - **D6** pins role=meter + the `aria-labelledby` name wiring (the label span
+    text "Storage" becomes the meter's accessible name) + `aria-valuenow`/
+    `aria-valuetext`; `custom-range` proves the (30/10/50) min/max triple + 50%
+    math, `value-label` proves the override wins in `aria-valuetext` — all
+    identical on both stacks. D7 measured the label + value text (a shared
+    `fieldLabel()` token — the variant recolours only the fill, not the text) plus
+    the staticColor overlay ramp, to 2dp in both themes. D2/D4/D5/D8 N/A (no
+    animation, not focusable/pressable, no hit box) — rationale in the spec header.
+  - **KNOWN, TRACKED DIVERGENCE — role token (`meter-role-fallback-token`, filed
+    in tech-debt.md).** Upstream `useMeter` deliberately emits the ARIA fallback
+    token list `role="meter progressbar"` (documented browser-fallback safety net);
+    the port emits single-token `role="meter"` (hardcoded on the wrapper *and* in
+    `createMeter`), and the comparison's React fixture patches upstream's native
+    `"meter progressbar"` DOM attribute *down* to `"meter"` so the panels match.
+    That normalization **masks** a self-inflicted divergence (Rule #1) — both token
+    lists resolve to the same `meter` role, so D6 is green either way and cannot see
+    it. Deferred (not force-fixed here) because the faithful fix touches solidaria's
+    `createMeter` (a dist rebuild) + must be re-validated against the web a11y/axe
+    gate, both outside this e2e-only unit. Everything else certified is honest
+    byte-identical parity; the mask is documented, not accepted silently.
+  - Regression guard: `meter.certified.spec.ts` **49/49**; no source changed, so
+    neighbouring certs are untouched by construction; standalone e2e `tsc -p` clean
+    (added `meter.certified.spec.ts` to the scratchpad include list). No net change
+    to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2).
+    Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.

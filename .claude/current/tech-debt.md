@@ -568,6 +568,47 @@ divergence is forced. Until then the guard is live and the comment in
 against upstream evidence; `createToolbar` either drops the guard or documents it
 as a forced React→Solid divergence in a validation note.
 
+## Meter emits single-token `role="meter"` instead of upstream's `"meter progressbar"` (`meter-role-fallback-token`)
+
+Upstream `useMeter` (react-aria 3.50.0) deliberately emits the ARIA **fallback
+token list** `role="meter progressbar"`, with an in-source rationale: Chrome/
+Firefox historically fall back from the `meter` role (Chromium #944542, Bugzilla
+#1460378), so the trailing `progressbar` token is a safety net for assistive tech
+that does not support `meter`. The port diverges in two places:
+
+- `packages/solidaria/src/meter/createMeter.ts` returns `role: "meter"` (single
+  token), and
+- `packages/solid-spectrum/src/meter/index.tsx` **hardcodes** `role="meter"` on
+  the wrapper div *after* spreading `meterProps`, so even a fixed `createMeter`
+  would be overridden.
+
+The comparison's React fixture (`apps/comparison/src/components/react/fixtures/
+styled.js`, `ReactMeterDemo`) then patches upstream's native `"meter progressbar"`
+DOM attribute *down* to `"meter"` via a `useEffect`, so the two panels match. That
+normalization **masks** the divergence: the Meter cert (CP9.10) is green because
+both token lists resolve to the same `meter` role in the accessibility tree
+(`ariaSnapshot()` reports `meter` either way), so D6 cannot see it. This is a
+self-inflicted divergence (Rule #1), not a forced one — upstream ships
+`"meter progressbar"` and passes its own axe.
+
+**Why deferred, not fixed in CP9.10:** the faithful fix is three coordinated
+edits — `createMeter` → `"meter progressbar"`, drop the hardcoded `role="meter"`
+in the Meter component so `meterProps.role` flows through (mirroring upstream S2,
+which spreads and never hardcodes), and delete the React fixture's normalization
+`useEffect` — and it touches **solidaria**, which the comparison app consumes from
+`dist` (a package rebuild), *and* it must be re-validated against the blocking web
+a11y/axe gate (`aria-allowed-role` on a multi-token role), which is outside the
+Meter cert's harness. Low-risk (multi-token roles are valid ARIA and upstream
+passes axe), but it is a build+gate change, not an e2e-only cert edit, so it is
+filed rather than force-landed in an autonomous session.
+
+**Exit:** flip `createMeter` to `"meter progressbar"`, remove the port's hardcoded
+`role="meter"`, delete the React fixture normalization, rebuild solidaria + the
+comparison app, and confirm (a) the Meter cert D6 stays green (both panels now
+carry the native token list, both resolve to `meter`) and (b) `a11y:smoke` stays
+green on the web Meter route. Then the fixture no longer masks anything and the
+role is faithful.
+
 ## Package-build migration incomplete
 
 Package builds are mid-migration to native Vite Plus packaging. Only
