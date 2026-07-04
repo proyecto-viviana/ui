@@ -284,15 +284,29 @@ tasks:
       stacks (guarded by `tagName === "TEXTAREA"`), measuring the perceptual text a textarea shows
       rather than its DOM representation; every non-textarea spec is byte-unchanged (TextField
       re-run 35/35).
-      STILL OPEN: (a) the `isInvalid` row for Checkbox AND CheckboxGroup AND RadioGroup AND
-      TextField AND TextArea (the `<span slot="errorMessage">`/`<Text slot="errorMessage">`
-      AlertIcon-sized error + `aria-invalid` re-flowing the field grid — measured 18px→52px etc.),
-      and (b) the
+      FIFTH DOWN PAYMENT — INVALID BRANCH CERTIFIED (the FieldError/HelpText recertification,
+      CP9.26, DONE 2026-07-04): the deferred `isInvalid` composite is now certified on TextField —
+      the canonical single-input FieldGroup — via `fielderror.certified.spec.ts`, 30/30
+      (D1×12 / D3×12 / D6×2 / D7×4) with ZERO port fixes. It drives the shared TextField fixture
+      with `?isInvalid=true` across `invalid`, the `size-*` ramp, `invalid-required`, and
+      `invalid-disabled` (colors → `disabled`, group error icon SUPPRESSED via `!isDisabled` while
+      the error `<span>` still renders). This PROVES part (a) below is a COVERAGE gap, not a
+      correctness gap: the inline `helpTextStyles` (byte-identical to upstream Field.tsx 378-405,
+      incl. the `isInvalid → negative` color branch), `fieldErrorIcon` (matches upstream
+      `FieldErrorIcon` 471-503), and `TextFieldError` (`<span slot="errorMessage">`) copies render
+      byte-faithful DOM/CSS/pixels AND a matching AX tree — the decorative AlertTriangle added no
+      divergent AX node, and `aria-invalid` + error-description wiring matched. The shared machinery
+      (helpTextStyles / fieldErrorIcon / TextFieldError, composed by every input field via
+      `TextFieldBase`) is therefore certified once here.
+      STILL OPEN: (a) the per-field invalid CASES for the toggle/group family (Checkbox,
+      CheckboxGroup, RadioGroup) and the remaining input fields (TextArea, NumberField, SearchField)
+      — same now-certified machinery, so low risk, but their own spec files don't yet exercise it;
+      add the invalid cases when each is next touched. And (b) the
       shared FieldLabel + HelpText/FieldError *extraction* itself (de-duplicate the hand-rolls
       across Checkbox/CheckboxGroup/RadioGroup/the field units; byte-copy the upstream Field.tsx
       style() objects; RAC Label/Text/FieldError element types). Do (b) so the group hand-roll is
-      replaced by the shared component producing the same now-certified output, then certify the
-      deferred invalid/description cases on top.
+      replaced by the shared component producing the same now-certified output — the invalid
+      composite is now the certified reference for that extraction.
   - id: headless-switch-ref-forwarding
     title: Headless SwitchField/SwitchButton do not accept ref/inputRef — styled Switch cannot forward either
     state: open

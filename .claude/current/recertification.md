@@ -761,8 +761,8 @@ Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGrou
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
 (2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04) · ✓ Form
-(2026-07-04)` — in progress.
-Queue: FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
+(2026-07-04) · ✓ FieldError/HelpText (2026-07-04)` — in progress.
+Queue: LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
 (`helptext-fielderror-visual-port`, tech-debt) — but CheckboxGroup and RadioGroup both
@@ -2038,6 +2038,48 @@ headless is now the single source of truth for group description/error ids
      `<input type=range>`), and the broader **RangeSlider-duplicates-Slider-styles** debt — the
      faithful end state shares Slider's spine/styles rather than copying them. Tracked, not fixed in
      this unit.
+
+- ✓ **FieldError/HelpText done 2026-07-04 (CP9.26 — twelfth Tier-2 unit, field-annotation
+  composite, invalid branch):** certified `30/30` green (D1×12, D3×12, D6×2, D7×4) —
+  `fielderror.certified.spec.ts` — with **zero port fixes.** Upstream S2 `Field.tsx` `HelpText()`
+  renders exactly one of two rows in the `gridArea:'helptext'` slot: valid+description →
+  `<Text slot="description">`, invalid → a RAC `<FieldError>` (`<span slot="errorMessage">`) styled
+  by the SAME `helpTextStyles` on its `isInvalid` (`negative`) color branch, plus a separate
+  `FieldErrorIcon` (`AlertTriangle` `<svg>`) inside the input FieldGroup. The **description branch is
+  already certified by the TextField unit**; the TextField unit explicitly DEFERRED the **invalid
+  branch** (the error row + group icon + `aria-invalid` re-flow) to `helptext-fielderror-visual-port`.
+  This unit certifies that deferred branch by driving the shared TextField fixture
+  (`slug:"textfield"`) with `?isInvalid=true` across `invalid`, the `size-*` ramp, `invalid-required`,
+  and `invalid-disabled`.
+  1. **The invalid composite is byte-faithful — a coverage gap, not a correctness gap.** The port's
+     inline `helpTextStyles` (`textfield/index.tsx` 185-212) is byte-identical to upstream
+     `Field.tsx` 378-405 including the `isInvalid → negative` color; `fieldErrorIcon` (214-226)
+     matches upstream `FieldErrorIcon` 471-503 (`size:fontRelative(20)`,
+     `marginStart:'text-to-visual'`, `marginEnd:fontRelative(-2)`, `flexShrink:0`, `--iconPrimary`
+     fill `negative`), gated `isInvalid && !isDisabled` like upstream's `!isDisabled && <AlertIcon/>`;
+     and the error row is a `<span slot="errorMessage">` (RAC `<FieldError>`), NOT a `<p>`. D1 asserts
+     the label color → `negative`, the FieldGroup `data-invalid` border → negative, and the error
+     `<span>`'s `helpTextStyles`; D3 asserts the whole composite incl. the error ICON pixels (its
+     size/margins/fill are only rendered-pixel-asserted here); D7 confirms the error-text contrast +
+     text content pair-diff. **This confirms the deferral note across the field family: the
+     `<span>`/`slot` error markup landed during CP9.15-9.20 was already faithful — no fix was ever
+     pending, only the cert coverage.**
+  2. **D6 clean on the invalid tree.** `aria-invalid` + the accessible error-description wiring
+     (`aria-describedby` → the error `<span>`) matched React, AND the decorative AlertTriangle added
+     NO divergent AX node — so the port's error icon is already `aria-hidden`-faithful (no
+     `ui-icon-decorative-ax-node` red here). Certified on `invalid` + `invalid-disabled` (the edge
+     where the group icon is suppressed).
+  3. **`invalid-disabled` certifies the compose edge:** colors switch to the `disabled` token (which
+     wins over `isInvalid` in `helpTextStyles`' color order) and the group error icon is SUPPRESSED
+     via `!isDisabled`, while the error `<span>` still renders — matching upstream's `HelpText`
+     (`isInvalid` gates the FieldError regardless of `disabled`). Both stacks identical.
+  4. **Scope + remaining debt:** D5/D8/D4/D2 not registered (`isInvalid` adds no gesture/navigation
+     to the single tab stop TextField already certifies). The shared machinery
+     (`helpTextStyles`/`fieldErrorIcon`/`TextFieldError`, composed by every input field via
+     `TextFieldBase`) is certified once here; the per-field invalid CASES on the other fields
+     (Checkbox/CheckboxGroup/RadioGroup/TextArea/NumberField/SearchField) and the DRY **extraction**
+     of the hand-rolled copies remain tracked as `helptext-fielderror-visual-port` (a refactor now
+     that parity is proven, not a correctness gap).
 
 - ✓ **Form done 2026-07-04 (CP9.25 — eleventh Tier-2 unit, grid + context-provider container):**
   certified `44/44` green (D1×20, D3×20, D7×4) — `form.certified.spec.ts`. **Zero port fixes: Form
