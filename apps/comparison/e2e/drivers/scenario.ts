@@ -206,6 +206,21 @@ export interface DriverCase {
   states?: readonly GestureStateId[];
   /** Themes for this case; defaults to the scenario themes. */
   themes?: readonly ComparisonColorScheme[];
+  /**
+   * Whether this case is a steady state the style/pixel drivers (D1/D3) may
+   * capture. Defaults to true. Set false for a case whose rendered output is
+   * non-deterministic in wall-clock time — e.g. an ActionButton `isPending`
+   * spinner that only mounts after a 1s delay, so the two panels' captures
+   * could straddle the 1s boundary and disagree. Such a case is still exercised
+   * by the interaction drivers (D4 press suppression, D6 pre-spinner aria state)
+   * that reference it explicitly and capture at a deterministic moment.
+   */
+  steadyState?: boolean;
+}
+
+/** Cases the steady-state capture drivers (D1/D3) may screenshot/measure. */
+export function steadyStateCases(scenario: DriverScenario): DriverCase[] {
+  return scenario.cases.filter((caseDef) => caseDef.steadyState !== false);
 }
 
 export interface PixelWaiver {

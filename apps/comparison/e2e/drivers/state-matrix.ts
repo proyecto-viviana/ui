@@ -1,6 +1,7 @@
 import { expect, test, type Locator } from "@playwright/test";
 import {
   scenarioThemes,
+  steadyStateCases,
   type DriverScenario,
   type GestureStateId,
   type PanelFramework,
@@ -122,7 +123,7 @@ export function registerStateMatrixDriver(scenario: DriverScenario) {
   const properties = resolveStyleAllowlist(scenario);
 
   test.describe(`D1 state matrix — ${scenario.title}`, () => {
-    for (const caseDef of scenario.cases) {
+    for (const caseDef of steadyStateCases(scenario)) {
       for (const theme of scenarioThemes(scenario, caseDef)) {
         test(`${caseDef.id} · ${theme}`, async ({ page }) => {
           test.setTimeout(120_000);

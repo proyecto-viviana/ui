@@ -36,6 +36,12 @@ import {
 import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
 import { ProgressBarContext } from "./ProgressBar";
 
+// Events preserved when `isPending` is true (for tooltips and other overlays),
+// mirroring RAC Button's `PRESERVED_EVENT_PATTERN`. Every other `on*` handler
+// is stripped so a pending-but-focusable button cannot be activated.
+const pendingPreservedEventPattern =
+  /Focus|Blur|Hover|Pointer(Enter|Leave|Over|Out)|Mouse(Enter|Leave|Over|Out)/;
+
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
 function assignRef<T>(ref: RefLike<T>, el: T): void {
@@ -294,8 +300,17 @@ export function Button(props: ButtonProps): JSX.Element {
       get onClick() {
         return resolvePending() ? undefined : ariaProps.onClick;
       },
+      // Mirror React Aria's RAC `Button`: `useButton` is called with the base
+      // `isDisabled` WITHOUT `isPending`, so a pending-focusable button stays a
+      // non-disabled native `<button>` — keeping `useFocusable`'s always-on
+      // `tabIndex={0}` (the Safari focus workaround) and no native `disabled`
+      // attribute. The pending "disabled" semantics are layered ON TOP:
+      // `aria-disabled="true"` below and `disablePendingInteractions` stripping
+      // the press handlers post-hoc (RAC's `useDisableInteractions`). Folding
+      // `isPending` in here instead would make the focusable hook drop
+      // `tabIndex`, diverging from upstream's pending button (D4).
       get isDisabled() {
-        return resolveDisabled() || resolvePending();
+        return resolveDisabled();
       },
     }),
   );
@@ -447,7 +462,12 @@ export function Button(props: ButtonProps): JSX.Element {
 
     const next = { ...props };
     for (const key of Object.keys(next)) {
-      if (key.startsWith("on") && !key.includes("Focus") && !key.includes("Blur")) {
+      // Mirror RAC's `useDisableInteractions`: when pending, strip every event
+      // handler except the ones overlays/tooltips still need — focus/blur,
+      // hover, and pointer/mouse enter-leave-over-out. Press handlers
+      // (click/pointerdown/keydown/…) are removed so the focusable button
+      // cannot be activated while pending.
+      if (key.startsWith("on") && !pendingPreservedEventPattern.test(key)) {
         next[key] = undefined;
       }
     }

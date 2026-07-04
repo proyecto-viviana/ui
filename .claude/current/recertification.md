@@ -749,9 +749,9 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     green. Typecheck clean via the standalone e2e `tsc -p` line (contrast.ts +
     target-size.ts added to the scratchpad tsconfig include list).
 
-Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03)` — remaining
-march order above is the queue; mark components here as `✓ name (date)` when
-certified, `blocked: name (reason)` otherwise.
+Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
+(2026-07-04)` — remaining march order above is the queue; mark components here as
+`✓ name (date)` when certified, `blocked: name (reason)` otherwise.
 
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
@@ -791,5 +791,85 @@ certified, `blocked: name (reason)` otherwise.
   - Regression guard: full package suite green (5522 passed / 1 expected xfail),
     Button certified still 42/42 (shared `styled.tsx` unaffected). No net change
     to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2).
+
+- ✓ **ActionButton done 2026-07-04 (CP9.2):** second new Tier-1 unit certified
+  through all 8 landed drivers. Spec `actionbutton.certified.spec.ts` — 6 prop
+  cases (default, quiet `isQuiet`, size-s, size-xl, disabled `isDisabled`,
+  pending `isPending`) × the applicable driver set = **48 tests, all green**.
+  The march surfaced two divergences — one real port bug, one fixture
+  asymmetry — both root-caused against RAC/S2 source, plus a small driver
+  enhancement to model the deliberately non-deterministic pending case.
+  - **New driver capability — `steadyState` case flag.** ActionButton's pending
+    state is the first case whose steady output is non-deterministic in
+    wall-clock time: `isPending` mounts a ProgressCircle only after a **1s**
+    delay (`createPendingState`), so the React and Solid panels' D1/D3 captures
+    could straddle the 1s boundary and disagree for reasons unrelated to parity.
+    Added `steadyState?: boolean` to `DriverCase` (default true) and
+    `steadyStateCases(scenario)` — a `caseDef.steadyState !== false` filter now
+    wrapping the D1 (`state-matrix.ts`) and D3 (`pixel.ts`) case loops. The
+    pending case sets `steadyState: false`, so the *capture* drivers skip it
+    while the *interaction* drivers that reference it at a deterministic moment
+    (D4 press-suppression at t≈0, D6 pre-spinner aria state at t≈120ms) still
+    exercise it. Additive; every existing case defaults to captured.
+  - **D4 found a real port bug — pending button dropped its `tabindex`.** On the
+    `pending` case all four press gestures showed the React oracle's button as
+    `{ "disabled": true, "tabindex": "0" }` (S2/RAC keep a pending button
+    *focusable* — `aria-disabled` semantics, not a native `disabled`), while the
+    Solid button had only `"disabled": true` and **no `tabindex`**, so it fell
+    out of the tab order. Root cause: `packages/solidaria-components/Button.tsx`
+    folded `resolvePending()` into the `createButton` `isDisabled` getter
+    (`resolveDisabled() || resolvePending()`), so the focusable layer saw the
+    button as disabled and `useFocusable` dropped its always-on `tabIndex={0}`
+    (the Safari native-button focus workaround, `useFocusable.mjs:64`).
+  - **Fix (real, port):** mirror RAC `Button` exactly — `useButton`/`createButton`
+    is called with the base `isDisabled` **without** `isPending`, so the pending
+    button stays a non-disabled native `<button>` (keeps `tabIndex=0`, no native
+    `disabled` attr). Pending "disabled" is layered on top as it is upstream:
+    `aria-disabled="true"` + `disablePendingInteractions` stripping the press
+    handlers. Also aligned that stripper to RAC's `PRESERVED_EVENT_PATTERN`
+    (`/Focus|Blur|Hover|Pointer(Enter|Leave|Over|Out)|Mouse(Enter|Leave|Over|Out)/`)
+    instead of the looser `!includes("Focus")/!includes("Blur")`, so hover/pointer
+    handlers survive for tooltips exactly as upstream keeps them. This only
+    changes the pending path (`resolveDisabled()` is identical when not pending),
+    so Button (no pending case) and ToggleButton (no pending) certs are
+    unaffected; verified below.
+  - **D6 found a fixture asymmetry — pending button lost its accessible name.**
+    Before the fix above landed, the pending AX capture showed React as
+    `button "Inspect" [disabled]` but Solid as an **unnamed** disabled button:
+    the fixture hand-built a `<span>` with `s2ActionButtonText({ isProgressVisible:
+    props.isPending })`, hiding the label *immediately* on pending rather than on
+    the component's own 1s delay. Because `getSingleTextChild` doesn't unwrap a
+    hand-built span, the port never got to own the delayed visibility, so the
+    label was `visibility:hidden` at the t≈120ms AX capture — before the spinner
+    mounts, i.e. exactly when the visible text should still be naming the button.
+  - **Fix (fixture only):** new `solidActionButtonFamilyChildren` helper mirrors
+    the React fixture's `renderSingleButtonFamilyChildren` shape — a **bare
+    string** for the text case and `SpectrumText` for the icon-start case —
+    instead of a pre-classed span. The port's `getSingleTextChild` re-wraps the
+    bare string in the component's own delayed `s2ActionButtonText({
+    isProgressVisible })` span (and `Text` reads the component's `TextContext`),
+    so the 1s delay is owned by the component the way S2's `Text`/`TextContext`
+    owns it under React. The port's `button/ActionButton.tsx` was already
+    faithful (delayed `TextContext.Provider`, `pendingAccessibleLabel`,
+    `isPendingFocusable`); only the shared `solidSingleButtonFamilyChildren`
+    caller was wrong, and Button/ToggleButton/ActionButtonGroup keep using it
+    untouched. All 3 D6 AX cases (default, disabled, pending) now match.
+  - Regression guard: `actionbutton.certified.spec.ts` **48/48**; neighbouring
+    `button` + `togglebutton` certs **102/102** (proves the Button.tsx pending
+    fix left the non-pending paths byte-identical); `vp test run button` unit
+    suite **214/214**; full package suite **5526 passed / 1 expected xfail / 8
+    skipped**. No net change to the 4 pre-existing deferred D4 event-ordering
+    reds (Tabs ×2, Dialog ×2). Standalone e2e `tsc -p` clean. (Pre-existing,
+    unrelated: `apps/comparison` `astro check` reports one long-standing error at
+    `solid-h.ts:71` — a generic `createComponent` cast in a file this unit never
+    touched; confirmed identical WITH and WITHOUT this unit's `styled.tsx`, so
+    it is not a regression from this work.)
+  - **Watch-list for later stateful units:** the immediate-vs-delayed fixture
+    asymmetry recurs wherever a fixture pre-computes a visibility/label class the
+    component is supposed to own on a timer (any `isPending`/announcement-delayed
+    surface — Button pending, ProgressCircle, toasts). Pass the plain child and
+    let the port's slot machinery own the delay; D6 catches it. The
+    `steadyState: false` flag is the tool for any case whose steady render is
+    time-dependent.
 
 Phase 3: not started.

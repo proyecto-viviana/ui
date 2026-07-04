@@ -4,6 +4,7 @@ import { clonedElementScreenshot, compareScreenshots, exactPairDiff } from "../v
 import {
   pixelThresholdFor,
   scenarioThemes,
+  steadyStateCases,
   type DriverScenario,
   type GestureStateId,
   type PanelFramework,
@@ -31,7 +32,7 @@ function pixelTargetFor(step: WalkStepContext): Locator {
 
 export function registerPixelDriver(scenario: DriverScenario) {
   test.describe(`D3 pixel diff — ${scenario.title}`, () => {
-    for (const caseDef of scenario.cases) {
+    for (const caseDef of steadyStateCases(scenario)) {
       for (const theme of scenarioThemes(scenario, caseDef)) {
         test(`${caseDef.id} · ${theme}`, async ({ page }) => {
           test.setTimeout(180_000);

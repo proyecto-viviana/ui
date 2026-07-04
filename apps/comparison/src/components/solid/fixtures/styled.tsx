@@ -941,6 +941,42 @@ function solidSingleButtonFamilyChildren(
   ];
 }
 
+/**
+ * ActionButton children, mirroring the React fixture's
+ * `renderSingleButtonFamilyChildren` shape exactly (bare string for the
+ * text-only case, `SpectrumText` for the icon-start case). Unlike the plain
+ * button/toggle helper above, ActionButton must NOT hand-build a `<span>` with
+ * a pre-computed text visibility class: `isPending` swaps the label for a
+ * ProgressCircle on a deliberate 1s delay, and only the component owns that
+ * delayed `isProgressVisible` signal. Passing a bare string lets the port's
+ * `getSingleTextChild` re-wrap it in the component's own delayed
+ * `s2ActionButtonText({isProgressVisible})` span, and passing `SolidSpectrumText`
+ * lets it read the component's `TextContext` — the same way React lets S2's
+ * `Text`/`TextContext` own the delayed visibility. Hard-coding `props.isPending`
+ * in the fixture instead would hide the label immediately (defeating the 1s
+ * delay) and drop the accessible name before the spinner mounts.
+ */
+function solidActionButtonFamilyChildren(
+  label: () => string,
+  iconPlacement: () => SingleButtonIconPlacement,
+) {
+  return [
+    () => {
+      const placement = iconPlacement();
+
+      if (placement === "start") {
+        return [h(SolidNewIcon, { "aria-hidden": "true" }), h(SolidSpectrumText, {}, label())];
+      }
+
+      if (placement === "only") {
+        return h(SolidNewIcon, { "aria-hidden": "true" });
+      }
+
+      return label();
+    },
+  ];
+}
+
 export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixture>> = {
   provider: () => h(SolidSpectrumProviderDemo, {}),
   accordion: () => h(SolidSpectrumAccordionDemo, {}),
@@ -8974,8 +9010,9 @@ function SolidSpectrumActionButtonDemo() {
           }
         },
       },
-      solidSingleButtonFamilyChildren(props.children, props.iconPlacement, () =>
-        s2ActionButtonText({ isProgressVisible: props.isPending }),
+      solidActionButtonFamilyChildren(
+        () => props.children,
+        () => props.iconPlacement,
       ),
     );
   });
