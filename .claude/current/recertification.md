@@ -751,7 +751,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
 
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
-(2026-07-04)` — remaining
+(2026-07-04) · ✓ Badge (2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1035,5 +1035,47 @@ certified, `blocked: name (reason)` otherwise.
     (added `avatar.certified.spec.ts` to the scratchpad include list). No net change
     to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2).
     Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **Badge done 2026-07-04 (CP9.6):** sixth new Tier-1 unit certified, and the
+  first display primitive that carries **text** — so the D7 contrast driver
+  re-enters the set that Avatar had narrowed away. Spec `badge.certified.spec.ts`
+  — 8 prop cases (default, bold-negative, bold-yellow, subtle-accent,
+  outline-positive, size-xl, truncate, icon-start) × the applicable driver set =
+  **44 tests, all green on the first run, no port change required.**
+  - **Applicable driver set is D1/D3/D6/D7.** Badge renders
+    `<span role="presentation" class=badge><Text>…</Text></span>` identically in
+    both stacks (verified against upstream `s2/src/Badge.tsx`, incl. the whole
+    `badge` macro), so the badge span is the D1 `target` and the inner `<Text>`
+    span is a diffed `part`. The interaction/derived drivers are skipped, with the
+    reason recorded in the spec header: **D2** (no interaction-triggered
+    transition on a static label), **D4/D5** (`role="presentation"`, not
+    focusable/pressable), **D8** (not an interactive target — no hit box).
+  - **D7 is the point of this unit.** The bold fill uses white text on every
+    variant *except* notice/orange/yellow/chartreuse/celery, which flip to black
+    (light backgrounds); the subtle/outline fills use `gray-1000`. The contrast
+    pair diff confirms the port reproduces upstream's exact fg/bg token choice to
+    2dp across both themes — `bold-yellow` exercises the black-text exception and
+    `outline-positive` the per-variant coloured border. All five contrast cases
+    matched.
+  - **`overflowMode` lives on the text child, not the badge span, and is
+    invisible to the pixel side for a non-overflowing label** (wrap vs truncate
+    render identically until the text actually overflows). To certify it, the
+    `<Text>` span is diffed as a `part` and the D1 allowlist is extended
+    (`styleProps.add`) with `white-space`, `text-overflow`, `overflow-x/y`, and
+    `order` — none of which are in the default allowlist — so the pair diff sees
+    `white-space: normal` (wrap) vs `nowrap` (truncate) and the icon/text flex
+    order. Reusable whenever a treatment sits on a styled descendant.
+  - **DOM-prop passthrough is symmetric.** The fixture threads `hidden` + four
+    `aria-*` props + `id` onto the Badge on *both* stacks; each Badge calls
+    `filterDOMProps` with no opts, so `global`/`labelable` are false and only `id`
+    + `data-*` survive (`hidden`/`aria-*` stripped) — the badge stays visible and
+    `[data-comparison-control-root="badge"]` resolves it on both panels. D6
+    confirms the resulting AX is the identical single `text` node (default and
+    `icon-start`, where the leading icon is correctly `aria-hidden`).
+  - Regression guard: `badge.certified.spec.ts` **44/44**; no source changed, so
+    neighbouring certs are untouched by construction; standalone e2e `tsc -p`
+    clean (added `badge.certified.spec.ts` to the scratchpad include list). No net
+    change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
+    Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.
