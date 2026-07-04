@@ -93,11 +93,11 @@ const progressBarIndeterminateLtr = keyframes(`
 
 const progressBarIndeterminateRtl = keyframes(`
   0% {
-    transform: translateX(70%) scaleX(0.7);
+    transform: translateX(100%) scaleX(0.7);
   }
 
   100% {
-    transform: translateX(-100%) scaleX(0.7);
+    transform: translateX(-70%) scaleX(0.7);
   }
 `);
 
@@ -229,7 +229,13 @@ const fillStyles = style<ProgressBarStyleState>({
     isStaticColor: "transparent-overlay-900",
     forcedColors: "ButtonText",
   },
-  transformOrigin: "left",
+  // Mirror upstream `fill`: the origin only matters for the indeterminate sweep
+  // (translateX/scaleX). Applying it unconditionally shifts the determinate
+  // bar's computed `transform-origin` off centre with no visual effect — a
+  // self-inflicted divergence D1 flags on the `fill` part.
+  transformOrigin: {
+    isIndeterminate: "left",
+  },
 });
 
 function clamp(value: number, min: number, max: number): number {

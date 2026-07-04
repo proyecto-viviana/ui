@@ -751,7 +751,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
 
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
-(2026-07-04) · ✓ Badge (2026-07-04)` — remaining
+(2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1077,5 +1077,71 @@ certified, `blocked: name (reason)` otherwise.
     clean (added `badge.certified.spec.ts` to the scratchpad include list). No net
     change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
     Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **ProgressBar done 2026-07-04 (CP9.7):** seventh new Tier-1 unit certified,
+  and the first primitive whose **headline parity surface is ARIA value
+  semantics** (D6) rather than press/focus/text-contrast. Spec
+  `progressbar.certified.spec.ts` — 10 prop cases (default, value-25,
+  custom-range, value-label, size-s, size-xl, label-side, format-currency,
+  static-white, indeterminate) × the applicable driver set = **47 tests, all
+  green** after two source-read faithfulness fixes to the port.
+  - **Structure is byte-identical to upstream.** Upstream S2 `ProgressBar` (over
+    RAC `useProgressBar`) and the port both render
+    `<div role="progressbar" aria-value* aria-labelledby class=wrapper(grid)>` with
+    an optional `<div class=labelWrapper><span id class=fieldLabel>{label}</span></div>`,
+    an optional determinate value `<span class=fieldLabel+value>{valueText}</span>`,
+    and `<div class=track><div class=fill style="width:N%"/></div>`. Verified the
+    label renders a **`<span>` on both stacks** because RAC's `ProgressBar` pins
+    `LabelContext` `elementType: 'span'` (so the S2 `FieldLabel` `Label` is a span),
+    and the port hand-rolls the same `<div><span>`. The `bar()`/`track()`/
+    `fieldLabel()` macros the port inlines match `s2/src/bar-utils.ts` +
+    `Field.tsx`. So the `role="progressbar"` div is the D1 `target` and the grid
+    children (`label`, `value`, `track`, `fill`) are diffed `parts`.
+  - **Applicable driver set is D1/D3/D6/D7** with the rest recorded N/A in the spec
+    header: **D2** (the only animation is the *indeterminate* fill keyframe — runs
+    infinitely from load with no gesture trigger to freeze, and its `keyframes()`
+    identifier is build-time-hashed differently per stack by construction, so a raw
+    `animation-name` pair-diff would be a false positive; the keyframe *content* +
+    timing `1000ms cubic-bezier(.37,0,.63,1) infinite` are verified byte-identical
+    by source read instead), **D4/D5** (`role="progressbar"`, no tabindex/press —
+    not interactive), **D8** (not an interactive target — no hit box).
+  - **D6 is the point of this unit.** Five AX cases pin the value contract:
+    `default` + `custom-range` prove `aria-valuenow/min/max/valuetext` (custom-range
+    is the `(30-10)/(50-10)=50%` triple — same valuetext as default but a distinct
+    now/min/max, proving the percentage math is independent of the raw value);
+    `value-label` proves the `valueLabel` override wins in both the value span and
+    `aria-valuetext`; `format-currency` proves the non-percent formatter path
+    (RAC/port both branch `style === 'percent' ? percentage : clampedValue`, so a
+    currency formatter formats the clamped **value** 50 → `$50`, not the fraction);
+    and `indeterminate` proves `aria-valuenow`/`aria-valuetext` are **dropped**
+    (and the value span omitted) while `aria-labelledby` stays wired — identically
+    on both stacks.
+  - **Two self-inflicted divergences found by source read and fixed** (parity
+    rule — diverge only when React→Solid forces it):
+    1. **`fill` `transformOrigin` was unconditional `'left'`** where upstream's S2
+       `fill` applies `transformOrigin: {isIndeterminate: 'left'}`. On the
+       untransformed determinate bar this is visually inert (no transform to
+       anchor), but it shifts the computed `transform-origin` off centre — a real
+       computed-style divergence. **Surfaced as a genuine red→green in the harness:**
+       adding `transform-origin` to the D1 allowlist and diffing the `fill` part
+       flagged all 18 determinate cases (port `0px …` vs upstream centre e.g.
+       `84px 3px`) before the fix; making it `{isIndeterminate: 'left'}` turned them
+       green. The `transform-origin` allowlist entry stays as a **permanent guard**.
+    2. **The RTL indeterminate keyframe did not mirror the LTR one** (port
+       `progressBarIndeterminateRtl` was `70% → -100%`; upstream `indeterminateRTL`
+       is `100% → -70%`, the mirror of LTR `-70% → 100%`). Not reachable by the
+       LTR-only harness (the comparison app has no RTL ProgressBar variant), so it
+       is a **source-verified** fix, corrected to match upstream exactly.
+  - **Port fix touched only the determinate `fill` computed style**, so the
+    regression snapshot delta is scoped exactly to the ProgressBar determinate fill
+    div dropping the `_0e13` (`transform-origin: left`) atomic (+ its
+    `-macro-dynamic-*` hash recompute); verified via `git diff --word-diff` that no
+    other component snapshot and no other progressbar node changed. Guards:
+    `progressbar.certified.spec.ts` **47/47**; `vp test run ProgressBar` 45 passed;
+    `vp test run regression -u` 51 passed (1 snapshot updated, scoped as above);
+    standalone e2e `tsc -p` clean (added `progressbar.certified.spec.ts` to the
+    scratchpad include list). No net change to the 4 pre-existing deferred D4
+    event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated
+    `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.
