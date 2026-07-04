@@ -751,7 +751,8 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
 
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
-(2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04)` — remaining
+(2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04) · ✓ Divider
+(2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1143,5 +1144,57 @@ certified, `blocked: name (reason)` otherwise.
     scratchpad include list). No net change to the 4 pre-existing deferred D4
     event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated
     `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **Divider done 2026-07-04 (CP9.8):** eighth new Tier-1 unit certified, a
+  non-interactive **text-less separator** — so it takes the same narrowed set as
+  Avatar (D1/D3/D6, no D7). Spec `divider.certified.spec.ts` — 7 prop cases
+  (default, size-s, size-l, vertical, vertical-l, static-white, static-white-l) ×
+  the applicable driver set = **30 tests, all green on the first run, no port
+  change required.** Like Badge, the port is already byte-identical; the value is
+  the permanent guard + the documented driver-set rationale.
+  - **The `divider`/`dividerStyles` `style()` macro is byte-identical between the
+    two source files** (`s2/src/Divider.tsx` vs the port) — same colour table
+    (`gray-200`, size-L `gray-800`, `transparent-overlay-200`/`-800` for
+    staticColor, `ButtonBorder` forced-colors), same emulated-border geometry
+    (horizontal `height` 2/1/4px, vertical `width` 2/1/4px), same allowed
+    overrides. So the parity surface reduces to computed box (D1/D3) + separator
+    semantics (D6). The seven cases sweep the **full colour table** (default
+    gray-200, size-l gray-800, static-white overlay-200, static-white-l
+    overlay-800) across **both orientations** and **all three sizes**.
+  - **Element/AX structure verified against RAC `Separator` + `useSeparator`**,
+    which the port's headless `Separator` + `createSeparator` mirror line-for-line.
+    S2 `Divider` never passes `elementType`, so both stacks default it to
+    `undefined`; `Separator` renders `<hr>` for that default and switches to
+    `<div>` only for `orientation:'vertical'`. Because the aria hook branches on
+    the *raw* `elementType` (`undefined !== 'hr'`), **both stacks add an explicit
+    `role="separator"`** in every case, plus `aria-orientation="vertical"` on the
+    vertical `<div>` (horizontal omits it — `separator`'s default orientation is
+    already horizontal). So horizontal ⇒ `<hr role="separator">`, vertical ⇒
+    `<div role="separator" aria-orientation="vertical">`, identical on both.
+  - **D1 allowlist extended for the flex-child longhands.** A divider's defining
+    box is `alignSelf:'stretch'` + `flexGrow:0` + `flexShrink:0`, none of which
+    are in the default allowlist, so `styleProps.add` pulls in `align-self`,
+    `flex-grow`, `flex-shrink` (width/height/background-color/border-radius/margin
+    are already covered) — the stretch/grow/shrink behaviour is now part of the
+    pair diff.
+  - **D6 has teeth, verified empirically.** An inline probe confirmed
+    `ariaSnapshot()` yields `- separator` for **both** the horizontal `<hr>` (its
+    implicit role) and the vertical `<div>` (its explicit `role="separator"`), so
+    the `vertical` case genuinely guards the port's explicit role attribute — if
+    the port dropped it, the `<div>` would fall to a generic node and the solid
+    snapshot would diverge from react. `ariaSnapshot()` does not render
+    `aria-orientation`, so that attribute is asserted faithful by the shared,
+    unit-tested `createSeparator` ↔ `useSeparator` port instead (both emit
+    `aria-orientation="vertical"` only for vertical). The rest of the driver set
+    is N/A with the reason recorded in the spec header: **D2** (no
+    transition/animation), **D4/D5** (`role="separator"`, not focusable/pressable),
+    **D7** (no text — its non-text graphical contrast is the same shared token
+    already asserted by D1's `background-color`), **D8** (not an interactive
+    target).
+  - Regression guard: `divider.certified.spec.ts` **30/30**; no source changed, so
+    neighbouring certs are untouched by construction; standalone e2e `tsc -p`
+    clean (added `divider.certified.spec.ts` to the scratchpad include list). No
+    net change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
+    Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.
