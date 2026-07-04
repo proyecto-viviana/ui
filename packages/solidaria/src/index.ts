@@ -657,3 +657,8 @@ export {
 export { mergeProps, filterDOMProps, focusSafely, type FilterDOMPropsOptions } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";
 export { createDescription, type DescriptionProps } from "./utils";
+export {
+  createEnterAnimation,
+  createExitAnimation,
+  type ElementAccessor,
+} from "./utils";

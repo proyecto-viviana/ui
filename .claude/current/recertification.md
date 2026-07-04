@@ -291,7 +291,7 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☑ D5 ☑ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
@@ -340,7 +340,8 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☑ D5 ☑ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     gone, and dialogInner/customDialog/dialogContent were realigned to
     upstream Dialog.tsx (borderRadius inherit, `font: body` on content,
     responsive customDialog padding). Known residuals, each deferred with a
-    tracked home: entering/exiting motion flips land with D2 (CP7);
+    tracked home: ~~entering/exiting motion flips~~ (landed with D2 2026-07-03 —
+    see the D2 entry below; overlay/modal enter+exit transitions now match);
     FullscreenDialog still uses the shared `dialogInner` rather than
     upstream's fullscreen variant; `dialogFooterWrapper`'s invented borderTop
     stays pending a design read; upstream's content `flexShrink` @container
@@ -383,6 +384,81 @@ Phase 1: `D1 ☑ D2 ☐ D3 ☑ D4 ☑ D5 ☑ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     creation one owner level above the accessor-reading effect. Permanent
     regression coverage in `packages/solid-spectrum/test/TabsFixtureRepro.test.tsx`
     (bare-h wiring kept as `it.fails` documenting the upstream limitation).
+
+- D2 done 2026-07-03: motion driver landed (`apps/comparison/e2e/drivers/motion.ts`
+  + the `motion` config on `DriverScenario`). Tiers: D2a filmstrip (diagnostic,
+  behind `MOTION_FILMSTRIP=1`), D2b metadata (the exact pair-oracle gate —
+  per-animation count/keyframes/computed-timing diffed as JSON via the
+  `snapshotAnimations` oracle), D2c side-by-side video (opt-in `MOTION_REVIEW=1`,
+  config-level `video`, never committed), D2d reduced-motion (re-run D2b under
+  `reducedMotion: 'reduce'`). Capture rides a page-side rAF "freezer" that pauses
+  every in-scope animation each frame — started **before** the Node-side trigger,
+  so a one-shot enter transition is caught + paused on its first frame;
+  `stopAnimationFreezer` **resumes** the paused animations (else upstream's
+  `useExitAnimation` hangs awaiting `getAnimations().map(a => a.finished)`).
+  Animations are bucketed by `classify()` scope (panel/overlay/page/detached/
+  outside); portal overlays (Dialog) capture `overlay` only so the trigger
+  control's own press transitions never leak in. Calibration — the driver
+  rediscovered a real port gap and its pilot fix went red→green:
+  - Button: green (D2b + D2d) — motion-token-free positive control.
+  - Dialog: red→green. **Finding (fixed 2026-07-03):** the enter transition
+    never ran. Upstream RAC Modal drives `data-entering`/`data-exiting` via
+    `useEnterAnimation`/`useExitAnimation`; our `Modal.tsx` accepted
+    `isEntering`/`isExiting` as props but never computed them, and S2's
+    `dialogOverlay`/`dialogModal` styles had dropped the motion tokens and pinned
+    the class as a static string (so render-prop conditions never reached the
+    macro). Faithful fix: a new shared primitive
+    `packages/solidaria/src/utils/animation.ts`
+    (`createEnterAnimation`/`createExitAnimation`) — a SolidJS port of
+    react-aria's `animation.ts` (mirrors upstream's shared util), with
+    signal-backed ref accessors so the effect re-runs when the element mounts and
+    `isReady = isOpen` so the enter state doesn't resolve before the always-mounted
+    Solid overlay's element exists. `Modal.tsx` now wires overlay-enter/
+    overlay-exit/modal-exit on the overlay and modal-enter on the content (combined
+    exit flag threaded through `InternalModalContext`), and `Dialog.tsx` restores
+    the exact S2 tokens (overlay: opacity {isEntering/isExiting:0} + transition
+    opacity, dur {250, exit 130}; modal: opacity + translateY {isEntering:20} +
+    transition [opacity, translate], dur {250, exit 130}, delay {160, exit 0})
+    applied as render-prop functions. Solid now emits the three confirmed React
+    enter transitions (overlay opacity 0→1 dur 250 delay 0; modal opacity 0→1 dur
+    250 delay 160; modal translate 20px→0 dur 250 delay 160) — D2b + D2d green.
+    No-regression check: the exit animation now delays FocusScope unmount, so the
+    full Dialog certified suite (D1/D3/D4/D5 + D2) was re-run — 12 green, and the
+    only reds are the two **pre-existing** D4 event-ordering epic cases
+    (escape-close, open-escape-close; same 12-pass count as the pre-D2 baseline).
+    Their event-log diff is identical membership (one each of keydown/callback/
+    keyup/focusout/focusin), only intra-gesture ordering + DOM-state-at-scope-
+    classification differ — the documented D4 epic, not a D2 regression.
+  - Tabs: two tracked findings keep the exact metadata red; registered as a
+    documented `knownDivergence` (the trigger renders `test.fixme` in D2b/D2d, so
+    the suite is green with the gap visible in reports, not silently passing).
+    Deferred to CP9 (Tier-1 march) as SharedElement-wide changes:
+    - **T-A — SelectionIndicator never FLIPs.** Upstream animates the indicator
+      `translate` (-86px→none) + `width` (54px→100%), both 200ms
+      `cubic-bezier(0,0,0.4,1)`; the port emits neither. Root cause: our faithful
+      `SharedElement` port (`solidaria-components/src/SharedElementTransition.tsx`)
+      stores its geometry snapshot in a **component-disposal** `onCleanup`, but
+      per-tab indicators are never disposed on selection change — only their
+      `isVisible` flips — so no snapshot is captured and the FLIP restore never
+      runs. React stores the snapshot in the **return of a layout effect keyed on
+      `isVisible`**, and its commit runs **all** effect destroys (snapshot stores)
+      before **all** effect creates (FLIP reads) — a two-phase guarantee Solid's
+      `createEffect` batch does not give (naively moving the cleanup inside the
+      effect makes the FLIP direction-dependent). Faithful fix = split a
+      store-phase (`createRenderEffect`/`createComputed`, runs before user
+      effects) from the FLIP-read `createEffect`; affects every SharedElement
+      consumer, so it needs its own verified unit.
+    - **T-B — phantom color transitions from the hidden measurement list.** On
+      selection change the port emits `color` transitions on **two** elements per
+      changed tab (the `role=tab` div **and** an `aria-hidden role=null` div),
+      upstream on one. The extra element is the always-rendered hidden
+      overflow-measurement `TabList` (`hiddenTabListFrame`, `aria-hidden` + `inert`),
+      whose `measurementTabClass` applies the full `tab` style including
+      `transition: default`, so the measurement copies cross-fade color in lockstep
+      with the real tabs. The color timing itself matches exactly (150ms,
+      `cubic-bezier(0.45,0,0.4,1)`). A facet of the tracked "Tabs always renders the
+      overflow picker" gate; fix = strip `transition` from measurement copies (or
+      gate the hidden list) when the overflow machinery is corrected.
 
 - D3 done 2026-07-03: strict pixel pair diff landed
   (`apps/comparison/e2e/drivers/pixel.ts`), riding `walkScenario` so every

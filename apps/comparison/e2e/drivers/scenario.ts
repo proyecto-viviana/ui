@@ -1,4 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
+import type { OracleScope } from "./dom-oracle";
 import type { ComparisonColorScheme, ScreenshotDiffThreshold } from "../visual-diff";
 
 /**
@@ -51,6 +52,56 @@ export interface EventGesture {
   run: (ctx: EventGestureContext) => Promise<void>;
   /** Milliseconds to wait after the gesture before collecting the log. */
   settleMs?: number;
+}
+
+export interface MotionTriggerContext extends PanelContext {
+  /** The resolved scenario target (for triggers that drive it directly). */
+  target: Locator;
+}
+
+/**
+ * A scripted interaction that drives an animation into existence for the D2
+ * motion driver: opening an overlay (enter transition), selecting a tab (the
+ * indicator slide), toggling a pending state (a spinner). The freezer is
+ * already running when `run` fires, so a transient enter transition is caught
+ * and paused on its first frame.
+ */
+export interface MotionTrigger {
+  /** Stable id used in test titles. */
+  id: string;
+  /**
+   * Oracle scopes the motion is captured from; defaults to
+   * `["panel","overlay"]`. Portal overlays (dialogs) capture from `overlay`
+   * only so the trigger control's own press transitions never leak in.
+   */
+  scopes?: readonly OracleScope[];
+  run: (ctx: MotionTriggerContext) => Promise<void>;
+  /** Undoes `run` (close the overlay, reset the state) before the next panel. */
+  cleanup?: (ctx: MotionTriggerContext) => Promise<void>;
+  /** Milliseconds for the freezer to catch + pause the motion before snapshot. */
+  settleMs?: number;
+  /** Element screenshot for the filmstrip diagnostic; defaults to `pixelTarget`. */
+  filmstripTarget?: TargetResolver;
+  /**
+   * A documented, tracked port gap that keeps this trigger's exact metadata
+   * assertion red. When set, the D2b/D2d metadata tests register as
+   * `test.fixme` with this reason (visible in reports, excluded from the
+   * pass/fail count) instead of silently passing. Reference the tracked
+   * finding so the marker is removed once the port is fixed.
+   */
+  knownDivergence?: string;
+}
+
+/**
+ * D2 motion driver config. Metadata (keyframes + computed timing) is the exact
+ * pair-oracle assertion; the same capture re-runs under reduced motion. Runs
+ * the first scenario theme only — motion tokens are theme-independent.
+ */
+export interface MotionConfig {
+  cases?: readonly string[];
+  triggers: readonly MotionTrigger[];
+  /** Filmstrip seek fractions (diagnostic); defaults to [0, .25, .5, .75, 1]. */
+  frames?: readonly number[];
 }
 
 /** A keyboard walk for the D5 focus-trail driver. */
@@ -135,6 +186,8 @@ export interface DriverScenario {
   events?: { cases?: readonly string[]; gestures: readonly EventGesture[] };
   /** D5 focus/keyboard-trail driver config; same case/theme defaults as D4. */
   focus?: { cases?: readonly string[]; walks: readonly FocusWalk[] };
+  /** D2 motion driver config; same case/theme defaults as D4/D5. */
+  motion?: MotionConfig;
 }
 
 export const defaultStateReadiness: Record<GestureStateId, string | null> = {

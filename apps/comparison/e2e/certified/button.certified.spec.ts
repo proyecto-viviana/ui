@@ -1,8 +1,10 @@
 import { registerEventSequenceDriver, standardPressGestures } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
+import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
+import { clearPointer } from "../visual-diff";
 
 /**
  * Recertification pilot: Button (Tier 1). Prop cases mirror the S2 docs
@@ -33,9 +35,30 @@ const buttonScenario: DriverScenario = {
   focus: {
     walks: [{ id: "tab-cycle", keys: ["Tab", "Shift+Tab", "Shift+Tab"] }],
   },
+  // D2: `transition: 'default'` on the button means hover animates the
+  // background/color. The port and upstream carry the same token, so the
+  // captured transition (property, duration, easing) must match — a positive
+  // control that proves the driver reports matching motion as green.
+  motion: {
+    cases: ["accent-fill"],
+    triggers: [
+      {
+        id: "hover-transition",
+        scopes: ["panel"],
+        run: async ({ target }) => {
+          await target.hover();
+        },
+        cleanup: async ({ page }) => {
+          await clearPointer(page);
+        },
+        settleMs: 160,
+      },
+    ],
+  },
 };
 
 registerStateMatrixDriver(buttonScenario);
 registerPixelDriver(buttonScenario);
 registerEventSequenceDriver(buttonScenario);
 registerFocusTrailDriver(buttonScenario);
+registerMotionDriver(buttonScenario);

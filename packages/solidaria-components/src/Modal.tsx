@@ -22,6 +22,8 @@ import {
   ariaHideOutside,
   FocusScope,
   useUNSAFE_PortalContext,
+  createEnterAnimation,
+  createExitAnimation,
 } from "@proyecto-viviana/solidaria";
 import {
   type RenderChildren,
@@ -45,6 +47,13 @@ import {
 interface InternalModalContextValue {
   isDismissable?: boolean;
   isKeyboardDismissDisabled?: boolean;
+  // Upstream's ModalOverlay owns the modal element's ref so it can watch the
+  // modal surface's exit animation alongside the overlay's (both must finish
+  // before the overlay unmounts). ModalContent registers its element here.
+  setModalRef?: (element: HTMLElement | null) => void;
+  // Combined exit flag (overlay OR modal still exiting). Both the overlay and
+  // the modal surface carry `data-exiting` off this so they fade out together.
+  isExiting?: () => boolean;
 }
 
 const InternalModalContext = createContext<InternalModalContextValue | null>(null);
@@ -177,9 +186,34 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
     toggle,
   };
 
+  // Enter/exit animation state (mirrors upstream's ModalOverlayWithForwardRef +
+  // ModalOverlayInner). The overlay stays mounted here even while closed, so the
+  // enter animation is gated on `isOpen` (isReady) — otherwise it would resolve
+  // to "done entering" before the element ever mounts. Exit is watched for BOTH
+  // the overlay and the modal surface; the modal registers its element via
+  // InternalModalContext (setModalRef) so we can await its exit too.
+  let overlayRef!: HTMLDivElement;
+  // Signal-backed so the enter/exit effects re-run once the element mounts — a
+  // plain closure over `overlayRef` would read `null` if the effect fired first
+  // and, with no reactive dep on the ref, never recover (stuck `data-entering`).
+  const [overlayEl, setOverlayEl] = createSignal<HTMLElement | null>(null);
+  const overlayRefAccessor = () => overlayEl();
+  const registerOverlayRef = (element: HTMLDivElement) => {
+    overlayRef = element;
+    setOverlayEl(element);
+  };
+  const [modalEl, setModalEl] = createSignal<HTMLElement | null>(null);
+
+  const isOverlayEntering = createEnterAnimation(overlayRefAccessor, isOpen);
+  const isOverlayExiting = createExitAnimation(overlayRefAccessor, isOpen);
+  const isModalExiting = createExitAnimation(() => modalEl(), isOpen);
+  const overlayEntering = () => isOverlayEntering() || (local.isEntering ?? false);
+  const combinedExiting = () =>
+    isOverlayExiting() || isModalExiting() || (local.isExiting ?? false);
+
   const renderValues = createMemo<ModalRenderProps>(() => ({
-    isEntering: local.isEntering ?? false,
-    isExiting: local.isExiting ?? false,
+    isEntering: overlayEntering(),
+    isExiting: combinedExiting(),
   }));
 
   // Resolve render props - don't pass children, we'll render props.children directly
@@ -200,10 +234,11 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
   const internalModalContext: InternalModalContextValue = {
     isDismissable: local.isDismissable,
     isKeyboardDismissDisabled: local.isKeyboardDismissDisabled,
+    setModalRef: setModalEl,
+    isExiting: combinedExiting,
   };
   const portalContext = useUNSAFE_PortalContext();
   const portalContainer = () => portalContext.getContainer?.() ?? undefined;
-  let overlayRef!: HTMLDivElement;
 
   const isTopMostModalInOverlay = () => {
     pruneDisconnectedModals();
@@ -246,17 +281,17 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
   };
 
   return (
-    <Show when={isHydrated() && (isOpen() || local.isExiting)}>
+    <Show when={isHydrated() && (isOpen() || combinedExiting())}>
       <Portal mount={portalContainer()}>
         <OverlayTriggerStateContext.Provider value={state}>
           <InternalModalContext.Provider value={internalModalContext}>
             <div
               {...domProps()}
-              ref={overlayRef}
+              ref={registerOverlayRef}
               class={renderProps.class()}
               style={renderProps.style()}
-              data-entering={dataAttr(local.isEntering)}
-              data-exiting={dataAttr(local.isExiting)}
+              data-entering={dataAttr(overlayEntering())}
+              data-exiting={dataAttr(combinedExiting())}
               onPointerDown={handleOverlayPointerDown}
             >
               {resolveChildren()}
@@ -305,26 +340,17 @@ function ModalContentWithAutoOverlay(props: ModalProps): JSX.Element {
   // Check for InternalModalContext - if present, we're inside a ModalOverlay
   const internalContext = useContext(InternalModalContext);
 
-  // If wrapped in ModalOverlay, just render the content
+  // If wrapped in ModalOverlay, just render the content. ModalContent reads the
+  // overlay's InternalModalContext itself (via useContext), so nothing needs
+  // threading — in both branches ModalContent renders inside a provider.
   if (internalContext) {
-    return (
-      <ModalContent {...modalProps} internalContext={internalContext}>
-        {props.children}
-      </ModalContent>
-    );
+    return <ModalContent {...modalProps}>{props.children}</ModalContent>;
   }
 
-  // For standalone usage, wrap in ModalOverlay
-  const standaloneContext: InternalModalContextValue = {
-    isDismissable: overlayProps.isDismissable,
-    isKeyboardDismissDisabled: overlayProps.isKeyboardDismissDisabled,
-  };
-
+  // For standalone usage, wrap in ModalOverlay.
   return (
     <ModalOverlay {...overlayProps}>
-      <ModalContent {...modalProps} internalContext={standaloneContext}>
-        {props.children}
-      </ModalContent>
+      <ModalContent {...modalProps}>{props.children}</ModalContent>
     </ModalOverlay>
   );
 }
@@ -333,9 +359,7 @@ function ModalContentWithAutoOverlay(props: ModalProps): JSX.Element {
  * Internal component that renders the actual modal content.
  * Used by both standalone Modal and Modal wrapped in ModalOverlay.
  */
-function ModalContent(
-  props: ModalProps & { internalContext: InternalModalContextValue },
-): JSX.Element {
+function ModalContent(props: ModalProps): JSX.Element {
   if (isServer) {
     return <>{props.children}</>;
   }
@@ -351,25 +375,46 @@ function ModalContent(
     "isKeyboardDismissDisabled",
     "isEntering",
     "isExiting",
-    "internalContext",
   ]);
 
   let modalRef!: HTMLDivElement;
   const modalRefAccessor = () => modalRef ?? null;
+  // Signal-backed element for the enter animation, so the effect re-runs when
+  // the surface mounts (see the overlay's note); the plain `modalRef` var still
+  // backs the synchronous consumers (focus stack, interact-outside, aria-hide).
+  const [modalEl, setModalEl] = createSignal<HTMLElement | null>(null);
 
   // Get state from parent OverlayTriggerStateContext (provided by ModalOverlay)
   const parentState = useContext(OverlayTriggerStateContext);
 
+  // The overlay (auto or user-provided) always wraps this content, so it owns
+  // the InternalModalContext: dismissal settings, the modal-ref registration
+  // sink, and the combined exit flag.
+  const internalContext = useContext(InternalModalContext);
+
   // Get dismissable settings from internal context (set by ModalOverlay)
-  const isDismissable = () => local.internalContext?.isDismissable ?? local.isDismissable;
+  const isDismissable = () => internalContext?.isDismissable ?? local.isDismissable;
   const isKeyboardDismissDisabled = () =>
-    local.internalContext?.isKeyboardDismissDisabled ?? local.isKeyboardDismissDisabled;
+    internalContext?.isKeyboardDismissDisabled ?? local.isKeyboardDismissDisabled;
 
   // Determine if open from parent state
   const isOpen = (): boolean => {
     if (local.isOpen !== undefined) return local.isOpen;
     return parentState?.isOpen ?? false;
   };
+
+  // Register this element with the overlay so it can await the modal surface's
+  // exit animation (upstream threads modalRef down the same way). The overlay's
+  // combined exit flag drives this surface's `data-exiting`. The enter animation
+  // is local — the modal fades/slides in on its own timeline (delay 160 vs the
+  // overlay's 0).
+  const registerModalRef = (element: HTMLDivElement) => {
+    modalRef = element;
+    setModalEl(element);
+    internalContext?.setModalRef?.(element);
+  };
+  const isModalEntering = createEnterAnimation(() => modalEl(), isOpen);
+  const isModalExiting = () => internalContext?.isExiting?.() ?? (local.isExiting ?? false);
 
   // Keep this modal in a global stack so nested modals dismiss in top-down order.
   createEffect(() => {
@@ -473,8 +518,8 @@ function ModalContent(
   });
 
   const renderValues = createMemo<ModalRenderProps>(() => ({
-    isEntering: local.isEntering ?? false,
-    isExiting: local.isExiting ?? false,
+    isEntering: isModalEntering(),
+    isExiting: isModalExiting(),
   }));
 
   const renderProps = useRenderProps(
@@ -505,11 +550,11 @@ function ModalContent(
     <FocusScope contain restoreFocus>
       <div
         {...domProps()}
-        ref={modalRef}
+        ref={registerModalRef}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-entering={dataAttr(local.isEntering)}
-        data-exiting={dataAttr(local.isExiting)}
+        data-entering={dataAttr(isModalEntering())}
+        data-exiting={dataAttr(isModalExiting())}
       >
         <Show when={isDismissable()}>
           <button

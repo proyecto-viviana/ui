@@ -63,11 +63,44 @@ export interface OracleFocusSnapshot {
   roving: OracleElementDescriptor[];
 }
 
+/**
+ * One in-scope animation reduced to stack-agnostic motion data (D2 motion —
+ * recertification.md Phase 1). Everything here is derived from the WAAPI —
+ * `getAnimations()` + `effect.getKeyframes()` + `getComputedTiming()` — and
+ * normalized so React and Solid compare with plain JSON equality:
+ * - the CSS `@keyframes` name is a hashed style-macro output that differs
+ *   between stacks, so it is never captured; `property` (the transition
+ *   property) and the computed keyframe values ARE captured, since faithful
+ *   motion tokens produce identical values in the same Chromium.
+ * - `Infinity` (infinite iteration count / active duration) serializes to
+ *   `null` under `JSON.stringify`, losing the distinction from a finite value,
+ *   so it is mapped to the `"Infinity"` sentinel.
+ */
+export interface OracleAnimationSnapshot {
+  target: OracleElementDescriptor;
+  /** "transition" (CSSTransition) or "animation" (CSSAnimation / WAAPI). */
+  kind: "transition" | "animation";
+  /** The animated property for CSS transitions; null for keyframe animations. */
+  property: string | null;
+  duration: number | "Infinity";
+  delay: number;
+  endDelay: number;
+  iterations: number | "Infinity";
+  direction: string;
+  fill: string;
+  easing: string;
+  keyframes: Array<Record<string, unknown>>;
+}
+
 interface ComparisonOracle {
   setPanel(canvas: Element): void;
   start(types: readonly string[]): void;
   flush(): OracleRecordedEvent[];
   snapshotFocus(): OracleFocusSnapshot;
+  startFreezer(): void;
+  stopFreezer(): void;
+  snapshotAnimations(scopes: readonly OracleScope[]): OracleAnimationSnapshot[];
+  seekAnimations(scopes: readonly OracleScope[], fraction: number): void;
 }
 
 declare global {
@@ -159,6 +192,51 @@ export function comparisonOracleInit(): void {
       entry.tabindex = tabindex;
     }
     return entry;
+  };
+
+  // --- D2 motion capture ---------------------------------------------------
+  // The animated element of a WAAPI animation (KeyframeEffect.target). Returns
+  // null for effect-less animations, which we ignore.
+  const animationTarget = (anim: Animation): Element | null => {
+    const effect = anim.effect;
+    if (effect && "target" in effect) {
+      const target = (effect as KeyframeEffect).target;
+      return target instanceof Element ? target : null;
+    }
+    return null;
+  };
+
+  const inScopeAnimations = (scopes: readonly OracleScope[]): Animation[] => {
+    const wanted = new Set(scopes);
+    return document.getAnimations().filter((anim) => {
+      const target = animationTarget(anim);
+      return target !== null && wanted.has(classify(target));
+    });
+  };
+
+  const normInfinity = (value: number): number | "Infinity" =>
+    Number.isFinite(value) ? value : "Infinity";
+
+  // A CSS transition only exists as an `Animation` while it is running (a
+  // one-shot enter transition completes in a few hundred ms and vanishes from
+  // `getAnimations()`), so the freezer pauses every in-scope animation on each
+  // frame of a capture window: started before the interaction that triggers
+  // the motion, it catches the transition on the first frame it appears and
+  // holds it so the snapshot always sees it — even a delayed-start transition
+  // caught during its delay phase.
+  let freezing = false;
+  const freezeTick = () => {
+    if (!freezing) {
+      return;
+    }
+    for (const anim of inScopeAnimations(["panel", "overlay", "page"])) {
+      try {
+        anim.pause();
+      } catch {
+        // A finished/detached animation can throw on pause; ignore it.
+      }
+    }
+    requestAnimationFrame(freezeTick);
   };
 
   interface BufferedEvent {
@@ -303,6 +381,117 @@ export function comparisonOracleInit(): void {
         .filter((entry) => entry.scope === "panel" || entry.scope === "overlay");
       return { active, activeDescendant, roving };
     },
+
+    startFreezer() {
+      freezing = true;
+      requestAnimationFrame(freezeTick);
+    },
+
+    stopFreezer() {
+      freezing = false;
+      // Resume every animation the freezer paused. The snapshot and any
+      // filmstrip seeking both run while the freezer is still active (before
+      // this call), so nothing reads animation state after the stop — but a
+      // paused enter animation left behind would hang the trigger cleanup: an
+      // exit path that awaits `getAnimations().map(a => a.finished)` (React
+      // Aria's useExitAnimation) never settles while the enter animation sits
+      // paused mid-flight, so the overlay never unmounts. Playing them out lets
+      // the enter finish and the exit run normally.
+      for (const anim of inScopeAnimations(["panel", "overlay", "page"])) {
+        try {
+          anim.play();
+        } catch {
+          // A finished/detached animation can throw on play; ignore it.
+        }
+      }
+    },
+
+    snapshotAnimations(scopes: readonly OracleScope[]) {
+      const out: OracleAnimationSnapshot[] = [];
+      for (const anim of inScopeAnimations(scopes)) {
+        const target = animationTarget(anim);
+        const effect = anim.effect as KeyframeEffect | null;
+        if (!target || !effect) {
+          continue;
+        }
+        const timing = effect.getComputedTiming();
+        const isTransition =
+          typeof CSSTransition !== "undefined" && anim instanceof CSSTransition;
+        // `getKeyframes()` yields computed keyframes with stack-neutral values.
+        // Drop `composite`/`offset` (kept via `computedOffset`); the CSS
+        // `@keyframes` name never appears here, so no hashed macro name leaks.
+        const keyframes = effect.getKeyframes().map((frame) => {
+          const record = frame as Record<string, unknown> & {
+            composite?: unknown;
+            offset?: unknown;
+            computedOffset?: unknown;
+          };
+          const { composite: _composite, offset: _offset, computedOffset, ...rest } = record;
+          return { offset: computedOffset ?? null, ...rest };
+        });
+        out.push({
+          target: describe(target),
+          kind: isTransition ? "transition" : "animation",
+          property: isTransition ? (anim as CSSTransition).transitionProperty : null,
+          duration:
+            typeof timing.duration === "number" ? normInfinity(timing.duration) : 0,
+          delay: timing.delay ?? 0,
+          endDelay: timing.endDelay ?? 0,
+          iterations: normInfinity(timing.iterations ?? 1),
+          direction: (timing as { direction?: string }).direction ?? "normal",
+          fill: (timing as { fill?: string }).fill ?? "auto",
+          easing: (timing as { easing?: string }).easing ?? "linear",
+          keyframes,
+        });
+      }
+      // getAnimations() order is not stable across stacks; sort on the motion's
+      // own identity so equal motion sets compare equal regardless of order.
+      out.sort((a, b) => {
+        const keyOf = (entry: OracleAnimationSnapshot) =>
+          [
+            entry.target.scope,
+            entry.target.tag,
+            entry.target.role ?? "",
+            entry.target.name ?? "",
+            entry.kind,
+            entry.property ?? "",
+            String(entry.duration),
+            String(entry.delay),
+          ].join("|");
+        return keyOf(a).localeCompare(keyOf(b));
+      });
+      return out;
+    },
+
+    seekAnimations(scopes: readonly OracleScope[], fraction: number) {
+      for (const anim of inScopeAnimations(scopes)) {
+        const effect = anim.effect as KeyframeEffect | null;
+        if (!effect) {
+          continue;
+        }
+        const timing = effect.getComputedTiming();
+        const delay = timing.delay ?? 0;
+        const duration = typeof timing.duration === "number" ? timing.duration : 0;
+        // getComputedTiming returns plain ms numbers, but the DOM lib types
+        // activeDuration/endDelay as CSSNumberish; coerce so the arithmetic below
+        // is number-typed.
+        const activeDuration = Number(timing.activeDuration ?? 0);
+        const endDelay = Number(timing.endDelay ?? 0);
+        // For an infinite animation (or one whose active duration is infinite),
+        // seek within a single iteration; otherwise seek across the whole
+        // start-to-finish timeline so f=0 is the pre-delay start and f=1 the end.
+        const at =
+          !Number.isFinite(activeDuration) || !Number.isFinite(timing.iterations ?? 1)
+            ? delay + fraction * duration
+            : fraction * (delay + activeDuration + endDelay);
+        try {
+          anim.pause();
+          anim.currentTime = at;
+        } catch {
+          // Ignore animations that reject an explicit currentTime.
+        }
+      }
+    },
   };
 }
 
@@ -342,4 +531,39 @@ export async function flushEventLog(page: Page): Promise<OracleRecordedEvent[]> 
 
 export async function snapshotFocus(page: Page): Promise<OracleFocusSnapshot> {
   return page.evaluate(() => window.__comparisonOracle!.snapshotFocus());
+}
+
+/** Scopes the motion capture defaults to: the driven panel and its portals. */
+export const defaultMotionScopes: readonly OracleScope[] = ["panel", "overlay"];
+
+/** Begins pausing every in-scope animation each frame (D2 motion capture). */
+export async function startAnimationFreezer(page: Page): Promise<void> {
+  await page.evaluate(() => window.__comparisonOracle!.startFreezer());
+}
+
+/** Stops the freezer and resumes every animation it paused (snapshot/seek run before this). */
+export async function stopAnimationFreezer(page: Page): Promise<void> {
+  await page.evaluate(() => window.__comparisonOracle!.stopFreezer());
+}
+
+export async function snapshotAnimations(
+  page: Page,
+  scopes: readonly OracleScope[] = defaultMotionScopes,
+): Promise<OracleAnimationSnapshot[]> {
+  return page.evaluate(
+    (input) => window.__comparisonOracle!.snapshotAnimations(input),
+    [...scopes],
+  );
+}
+
+/** Pauses every in-scope animation and seeks it to `fraction` of its timeline. */
+export async function seekAnimations(
+  page: Page,
+  fraction: number,
+  scopes: readonly OracleScope[] = defaultMotionScopes,
+): Promise<void> {
+  await page.evaluate(
+    (input) => window.__comparisonOracle!.seekAnimations(input.scopes, input.fraction),
+    { scopes: [...scopes], fraction },
+  );
 }

@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { mouseClickGesture, registerEventSequenceDriver } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
+import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -129,6 +130,39 @@ const triggerScenario: DriverScenario = {
   },
 };
 
+/**
+ * D2-only scenario: the enter/exit motion. No `beforePanel` opens the dialog —
+ * the trigger opens it while the freezer is already running, so the transient
+ * enter transition (upstream Modal: overlay opacity + surface opacity/translate,
+ * driven by `useEnterAnimation`) is caught and paused on its first frame.
+ * Captured from the `overlay` scope only, so the trigger button's own
+ * `transition: 'default'` never leaks into the dialog's motion comparison.
+ */
+const motionScenario: DriverScenario = {
+  slug: "dialog",
+  title: "Dialog motion",
+  target: ({ canvas }) => canvas.getByRole("button", { name: "Open Dialog" }).first(),
+  pixelTarget: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
+  cases: [{ id: "modal-open" }],
+  motion: {
+    triggers: [
+      {
+        id: "open-enter",
+        scopes: ["overlay"],
+        run: async ({ canvas, page }) => {
+          await canvas.getByRole("button", { name: "Open Dialog" }).first().click();
+          await expect(page.getByRole("dialog", { name: dialogTitle })).toHaveCount(1);
+        },
+        cleanup: async ({ page }) => {
+          await page.keyboard.press("Escape");
+          await expect(page.getByRole("dialog")).toHaveCount(0);
+        },
+        settleMs: 260,
+      },
+    ],
+  },
+};
+
 registerStateMatrixDriver(surfaceScenario);
 registerStateMatrixDriver(closeButtonScenario);
 registerPixelDriver(surfaceScenario);
@@ -136,3 +170,4 @@ registerPixelDriver(closeButtonScenario);
 registerEventSequenceDriver(closeButtonScenario);
 registerEventSequenceDriver(triggerScenario);
 registerFocusTrailDriver(closeButtonScenario);
+registerMotionDriver(motionScenario);

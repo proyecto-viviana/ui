@@ -11,6 +11,7 @@ import {
   useDialogTrigger,
   type ButtonRenderProps,
   type DialogProps as HeadlessDialogProps,
+  type ModalRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import CrossIcon from "../icon/ui-icons/Cross";
@@ -217,13 +218,26 @@ function joinClass(...classes: Array<string | undefined | null | false>): string
   return classes.filter(Boolean).join(" ");
 }
 
-const dialogOverlay = style<{ colorScheme: ColorScheme }>({
+const dialogOverlay = style<
+  ModalRenderProps & { colorScheme: ColorScheme }
+>({
   ...setColorScheme(),
   position: "fixed",
   inset: 0,
   zIndex: 1999,
   isolation: "isolate",
   backgroundColor: "transparent-black-500",
+  // Upstream Modal.tsx modalOverlayStyles: the backdrop fades in/out. Duration
+  // 250 in, 130 out; no delay (the surface underneath carries the delay).
+  opacity: {
+    isEntering: 0,
+    isExiting: 0,
+  },
+  transition: "opacity",
+  transitionDuration: {
+    default: 250,
+    isExiting: 130,
+  },
 });
 
 // Upstream Modal.tsx modalWrapper. Fixed instead of sticky because our overlay
@@ -249,9 +263,9 @@ const dialogModalWrapper = style<{ size: ModalDialogSize }>({
   pointerEvents: "none",
 });
 
-// Upstream Modal.tsx RACModal styles minus the entering/exiting motion flips
-// (those land with the motion driver).
-const dialogModal = style<{ size: ModalDialogSize }>({
+// Upstream Modal.tsx RACModal styles, including the entering/exiting motion
+// flips (the surface fades + slides up 20px on enter; on exit it only fades).
+const dialogModal = style<ModalRenderProps & { size: ModalDialogSize }>({
   display: "flex",
   flexDirection: "column",
   pointerEvents: "auto",
@@ -306,6 +320,24 @@ const dialogModal = style<{ size: ModalDialogSize }>({
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: "transparent",
+  // Enter: fade in and slide up from 20px. Exit: fade only (no translate).
+  // Duration 250 in / 130 out; the surface waits 160ms so the backdrop leads.
+  opacity: {
+    isEntering: 0,
+    isExiting: 0,
+  },
+  translateY: {
+    isEntering: 20,
+  },
+  transition: "[opacity, translate]",
+  transitionDuration: {
+    default: 250,
+    isExiting: 130,
+  },
+  transitionDelay: {
+    default: 160,
+    isExiting: 0,
+  },
 });
 
 function dialogOverlayLayoutStyle(colorScheme: ColorScheme): JSX.CSSProperties {
@@ -549,14 +581,16 @@ function DialogModal(props: DialogModalProps): JSX.Element {
       onOpenChange={props.onOpenChange}
       isDismissable={props.isDismissible}
       isKeyboardDismissDisabled={props.isKeyboardDismissDisabled}
-      class={dialogOverlay({ colorScheme: theme.colorScheme })}
+      class={(rp: ModalRenderProps) => dialogOverlay({ ...rp, colorScheme: theme.colorScheme })}
       style={() => dialogOverlayLayoutStyle(theme.colorScheme)}
     >
       <div
         class={dialogModalWrapper({ size: props.size })}
         style={dialogModalWrapperLayoutStyle(theme.colorScheme)}
       >
-        <HeadlessModal class={dialogModal({ size: props.size })}>{props.children}</HeadlessModal>
+        <HeadlessModal class={(rp: ModalRenderProps) => dialogModal({ ...rp, size: props.size })}>
+          {props.children}
+        </HeadlessModal>
       </div>
     </HeadlessModalOverlay>
   );

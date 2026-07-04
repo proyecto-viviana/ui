@@ -74,3 +74,9 @@ export {
   getDescriptionNodeCount,
   clearDescriptionNodes,
 } from "./createDescription";
+
+export {
+  createEnterAnimation,
+  createExitAnimation,
+  type ElementAccessor,
+} from "./animation";
