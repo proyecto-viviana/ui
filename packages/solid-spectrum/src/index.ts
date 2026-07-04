@@ -397,6 +397,16 @@ export type { ImageCoordinatorProps, ImageProps } from "./image";
 export { InlineAlert, InlineAlertContext } from "./inlinealert";
 export type { InlineAlertFillStyle, InlineAlertProps, InlineAlertVariant } from "./inlinealert";
 
+// LabeledValue
+export { LabeledValue } from "./labeledvalue";
+export type {
+  LabeledValueLabelAlign,
+  LabeledValueLabelPosition,
+  LabeledValueProps,
+  LabeledValueSize,
+  LabeledValueValue,
+} from "./labeledvalue";
+
 // Link
 export { Link, LinkContext } from "./link";
 export type { LinkProps } from "./link";

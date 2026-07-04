@@ -761,8 +761,8 @@ Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGrou
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
 (2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04) · ✓ Form
-(2026-07-04) · ✓ FieldError/HelpText (2026-07-04)` — in progress.
-Queue: LabeledValue. Same marking rule. NOTE the remaining
+(2026-07-04) · ✓ FieldError/HelpText (2026-07-04) · ✓ LabeledValue (2026-07-04)` —
+**Tier 2 complete.** Queue: empty (Phase 2 done). Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
 (`helptext-fielderror-visual-port`, tech-debt) — but CheckboxGroup and RadioGroup both
@@ -2118,5 +2118,45 @@ headless is now the single source of truth for group description/error ids
      and re-hit the deferred field-family D6 items (`ui-icon-decorative-ax-node`,
      `intl-roledescription-hardcodes`) with no Form-specific signal. D5/D8/D4/D2 are likewise
      child/gesture concerns, out of scope for a static grid container.
+
+- ✓ **LabeledValue done 2026-07-04 (CP9.27 — thirteenth Tier-2 unit, read-only field display; LAST
+  Tier-2 unit — Tier 2 COMPLETE):** certified `34/34` green on the FIRST run (D1×16, D3×16, D7×2) —
+  `labeledvalue.certified.spec.ts`, zero reds to march. **The port was a Tailwind stub — a
+  self-inflicted divergence — and was rebuilt faithfully rather than recorded blocked (parity rule):
+  `packages/solid-spectrum/src/labeledvalue/index.tsx` now mirrors upstream S2 `LabeledValue.tsx`
+  byte-for-byte.** Upstream is a static read-only composite over the shared field grid: `fieldStyles =
+  style({...field()}, getAllowedOverrides())`, a `FieldLabel elementType="span"` (the label is a
+  `<span>`, NOT a `<label>` — the value is not a labelable form element — and `LabeledValueBaseProps`
+  OMITS `isRequired`/`necessityIndicator`, so there is no asterisk), and a value `<span>` styled
+  `valueStyles = style({...fieldInput(), minHeight:{isInForm:controlSize()}, display:'flex',
+  alignItems:'center', font: controlFont()})`. The port reuses the same byte-copied `field()` /
+  `fieldLabel()` / `fieldInput()` macro objects every other field composite already uses, and the same
+  FieldLabel wrapper `<div>` (gridArea label + text-align + `--field-gap` bottom pad + inline-size
+  containment on `labelPosition:top`) the TextField unit landed. Barrel export added; catalogue +
+  manifest + both styled fixtures + `labeledvalue-demo.ts` wired (73 comparison routes now).
+  1. **Value formatting certified byte-identical across the two i18n stacks — the real signal.**
+     Upstream formats the value with `useNumberFormatter` (numbers → `@internationalized/number`
+     `NumberFormatter`), `useListFormatter` (string arrays → `Intl.ListFormat`), strings/elements
+     as-is. The port mirrors this with `@proyecto-viviana/solidaria`'s `NumberFormatter` +
+     `Intl.ListFormat` directly (there is no `createListFormatter` — `Intl.ListFormat` is in-lib at
+     target ESNext), reactive to `useLocale()`. Both fixtures resolve the value through the SAME demo
+     helper (`resolveLabeledValueDemoValue`), so the `number` case (1234567.89 → `1,234,567.89`) and
+     `list` case (`["Adobe","Apple","Google"]` → `Adobe, Apple, and Google`) prove the two formatters
+     emit IDENTICAL text under D1 (computed style equal) AND D3 (pixel equal) — the whole reason the
+     value path was ported over the stub. Dates are the one documented gap (would need
+     `@internationalized/date` conversion) — tracked, not in this cert's value matrix.
+  2. **`label-side` needed NO half-pixel waiver — unlike Form, and for a principled reason.** Form's
+     side-label case parks the 18px label at a half-pixel Y because `field()`'s `alignItems:'baseline'`
+     aligns it against the TALLER 32px input row (`form-side-label-halfpixel-baseline`). LabeledValue
+     standalone is NOT in a form, so the value `<span>`'s `minHeight:{isInForm:controlSize()}` branch is
+     inactive — the value row is plain text at the label's own height, nothing taller to baseline-park
+     against — so `label-side` diffs pixel-exact with `pixelThreshold:0` on both themes. (Inside a Form
+     the in-form min-height would re-introduce the taller row; that composition is Form's concern, and
+     Form already carries the waiver.)
+  3. **D6/D5/D8/D4/D2 intentionally out of scope.** LabeledValue renders plain `<div>`/`<span>` text
+     with NO role, accessible name, or ARIA wiring — the label span and value span contribute zero AX
+     semantics, exactly like Form's generic `<form>`. Registering D6 would assert an empty subtree.
+     No focusable element, no hit target, no event contract, no motion — the rest matrix (8 cases ×
+     2 themes) is the entire certifiable surface.
 
 Phase 3: not started.

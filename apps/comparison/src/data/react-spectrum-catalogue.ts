@@ -56,6 +56,7 @@ export const reactSpectrumCatalogue = [
   component("Illustrations", "illustrations"),
   component("Image"),
   component("InlineAlert"),
+  component("LabeledValue"),
   component("Link"),
   component("LinkButton"),
   component("ListView"),

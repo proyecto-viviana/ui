@@ -66,6 +66,7 @@ import {
   IllustratedMessage as SolidSpectrumIllustratedMessage,
   InlineAlert as SolidSpectrumInlineAlert,
   Keyboard as SolidSpectrumKeyboard,
+  LabeledValue as SolidSpectrumLabeledValue,
   Link as SolidSpectrumLink,
   LinkButton as SolidSpectrumLinkButton,
   ListView as SolidSpectrumListView,
@@ -568,6 +569,13 @@ import {
   type TextFieldDemoProps,
 } from "@comparison/data/textfield-demo";
 import {
+  labeledValueDemoPropsFromWindow,
+  normalizeLabeledValueDemoProps,
+  resolveLabeledValueDemoValue,
+  serializeLabeledValueDemoProps,
+  type LabeledValueDemoProps,
+} from "@comparison/data/labeledvalue-demo";
+import {
   normalizeTextAreaDemoProps,
   serializeTextAreaDemoProps,
   textAreaDemoPropsFromWindow,
@@ -1042,6 +1050,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   taggroup: () => h(SolidSpectrumTagGroupDemo, {}),
   textarea: () => h(SolidSpectrumTextAreaDemo, {}),
   textfield: () => h(SolidSpectrumTextFieldDemo, {}),
+  labeledvalue: () => h(SolidSpectrumLabeledValueDemo, {}),
   tooltip: () => h(SolidSpectrumTooltipDemo, {}),
   toast: () => h(SolidSpectrumToastDemo, {}),
   togglebutton: () => h(SolidSpectrumToggleButtonDemo, {}),
@@ -6932,6 +6941,83 @@ function SolidSpectrumTextFieldDemo() {
                 ...current,
                 value: nextValue,
               }));
+            },
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumLabeledValueDemo() {
+  const [demoProps, setDemoProps] = createSignal<LabeledValueDemoProps>(
+    labeledValueDemoPropsFromWindow(),
+  );
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "labeledvalue") {
+        setDemoProps(normalizeLabeledValueDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const serializedProps = createMemo(() => serializeLabeledValueDemoProps(demoProps()));
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          get "data-comparison-color-scheme"() {
+            return colorScheme();
+          },
+          // The control-root marker sits on the wrapper (matching the field fixtures) so the
+          // LabeledValue field grid is `${root} > div` on both stacks.
+          "data-comparison-control-root": "labeledvalue",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
+        },
+        [
+          hc(SolidSpectrumLabeledValue, {
+            get label() {
+              return demoProps().label;
+            },
+            get value() {
+              return resolveLabeledValueDemoValue(demoProps());
+            },
+            get size() {
+              return demoProps().size;
+            },
+            get labelPosition() {
+              return demoProps().labelPosition;
+            },
+            get labelAlign() {
+              return demoProps().labelAlign;
             },
           }),
         ],

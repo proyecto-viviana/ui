@@ -861,6 +861,17 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 TextField directly; Solid uses @proyecto-viviana/solid-spectrum TextField with S2-derived label, field group, input, help text, and validation styling.",
   }),
 
+  labeledvalue: styledLiveOfficialEntry({
+    slug: "labeledvalue",
+    title: "LabeledValue",
+    category: "Components",
+    summary:
+      "Read-only labeled value display over the S2 field grid, with locale number/list formatting.",
+    styledSummary: "React Spectrum LabeledValue vs Solid Spectrum LabeledValue.",
+    styledNote:
+      "React uses @react-spectrum/s2 LabeledValue directly; Solid uses @proyecto-viviana/solid-spectrum LabeledValue with the S2-derived field grid, span label, value styling, and Intl-backed number/list formatting.",
+  }),
+
   textarea: styledLiveOfficialEntry({
     slug: "textarea",
     title: "TextArea",

@@ -939,9 +939,20 @@ type carries). The public `TableContext` is distinct from the table's internal
 row/density state, now renamed `InternalTableContext`.
 
 Still genuinely unported (tracked as their own components/subsystems, not part of
-this gap): `LabeledValue`/`LabeledValueContext`, `DragPreview`, the drag-and-drop
-helpers (`useDragAndDrop`, `isFileDropItem`, …), and the `Collection` /
-`EditableCell` support values.
+this gap): `DragPreview`, the drag-and-drop helpers (`useDragAndDrop`,
+`isFileDropItem`, …), and the `Collection` / `EditableCell` support values.
+
+`LabeledValue` itself is now ported and certified (recert CP9.27, 2026-07-04 — the
+faithful field-grid rebuild replacing the Tailwind stub). Two LabeledValue-scoped
+follow-ups remain, tracked here rather than blocking the cert (which covers the
+string/number/list value matrix byte-for-byte): (1) `LabeledValueContext` — the RAC
+slotted-props context is not yet defined/consumed (the port reads only `FormContext`
+via `useFormProps`; upstream additionally threads `LabeledValueContext`); (2) the
+`RangeValue<number>` and `date` / `RangeValue<DateValue>` value branches — the port
+currently formats only strings, numbers (via `NumberFormatter`), and string lists (via
+`Intl.ListFormat`); upstream additionally formats a numeric range (two `FormattedNumber`s)
+and dates/date-ranges (`FormattedDate`, needing `@internationalized/date` conversion).
+Neither is a rendered-output divergence for the certified value types; both are additive.
 
 **Exit:** met — `comparison:report:exports` shows no missing S2 support exports;
 Solid-only extras remain documented as local additions in the report output.

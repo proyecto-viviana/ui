@@ -43,6 +43,7 @@ import {
   IllustratedMessage as SpectrumIllustratedMessage,
   InlineAlert as SpectrumInlineAlert,
   Keyboard as SpectrumKeyboard,
+  LabeledValue as SpectrumLabeledValue,
   Link as SpectrumLink,
   LinkButton as SpectrumLinkButton,
   ListView as SpectrumListView,
@@ -515,6 +516,12 @@ import {
   textFieldDemoPropsFromWindow,
 } from "@comparison/data/textfield-demo";
 import {
+  labeledValueDemoPropsFromWindow,
+  normalizeLabeledValueDemoProps,
+  resolveLabeledValueDemoValue,
+  serializeLabeledValueDemoProps,
+} from "@comparison/data/labeledvalue-demo";
+import {
   normalizeTextAreaDemoProps,
   serializeTextAreaDemoProps,
   textAreaDemoPropsFromWindow,
@@ -782,6 +789,7 @@ export const reactStyledFixtures = {
   tabs: renderTabsDemo,
   textarea: () => jsx(ReactTextAreaDemo, {}),
   textfield: () => jsx(ReactTextFieldDemo, {}),
+  labeledvalue: () => jsx(ReactLabeledValueDemo, {}),
   checkbox: () => jsx(ReactCheckboxDemo, {}),
   checkboxgroup: () => jsx(ReactCheckboxGroupDemo, {}),
   colorarea: () => jsx(ReactColorAreaDemo, {}),
@@ -3981,6 +3989,36 @@ function ReactTextFieldDemo() {
           setValue(nextValue);
           setDemoProps((current) => ({ ...current, value: nextValue }));
         },
+      }),
+    }),
+    colorScheme,
+  );
+}
+
+function ReactLabeledValueDemo() {
+  const [demoProps, setDemoProps] = useState(labeledValueDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "labeledvalue") {
+        setDemoProps(normalizeLabeledValueDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsx("div", {
+      "data-comparison-control-root": "labeledvalue",
+      "data-comparison-control-props": serializeLabeledValueDemoProps(demoProps),
+      children: jsx(SpectrumLabeledValue, {
+        label: demoProps.label,
+        value: resolveLabeledValueDemoValue(demoProps),
+        size: demoProps.size,
+        labelPosition: demoProps.labelPosition,
+        labelAlign: demoProps.labelAlign,
       }),
     }),
     colorScheme,
