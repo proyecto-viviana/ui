@@ -753,7 +753,7 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
 (2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04) · ✓ Divider
 (2026-07-04) · ✓ StatusLight (2026-07-04) · ✓ Meter (2026-07-04) · ✓ ProgressCircle
-(2026-07-04)` — remaining
+(2026-07-04) · ✓ Icon (2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1360,5 +1360,58 @@ certified, `blocked: name (reason)` otherwise.
     spec to the scratchpad include list). No net change to the 4 pre-existing
     deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated
     `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **Icon done 2026-07-04 (CP9.12):** twelfth new Tier-1 unit certified — the
+  `createIcon` HOC that wraps a raw workflow-icon `<svg>` and stamps the S2 icon
+  contract onto it. Spec `icons.certified.spec.ts` — 2 prop cases (default,
+  hidden) × the applicable driver set = **10 tests green on the first run, a
+  confirmatory green** (no divergence existed; the wrapper/glyph/Button-IconContext
+  were already faithful). The cert now pins that parity against future drift.
+  - **Wrapper + glyph + Button coupling verified byte-identical to upstream**
+    (`s2/src/Icon.tsx` vs `icon/spectrum-icon.tsx`): both render the passed
+    `<Component>` svg with `role="img"`, `focusable={false}`, `data-slot`, the
+    same `aria-hidden` gate (`aria-label ? aria-hidden || undefined : true` —
+    labelled icons expose their name, unlabelled icons are `aria-hidden`), and the
+    same `iconStyles`/`iconBaseStyles` `style()` macro (`{size: 20, flexShrink: 0}`
+    over the same `allowedOverrides` list — deliberately **excluding** width/height/
+    flex so an icon never grows past its 20px square). The skeleton path is
+    DOM-equivalent: upstream wraps in `<SkeletonWrapper>` (renders **no** element
+    outside a `<Skeleton>` provider); the port applies the same `loadingStyle` +
+    `inert` + WAAPI ref directly on the svg — identical DOM when not loading. The
+    demo's two `createIcon((props) => <svg …>)` glyphs (React vs Solid) are
+    byte-identical (same `viewBox="0 0 20 20"`, same two `<path d=…>`, same
+    `fill: var(--iconPrimary, #222)`). The two Button `iconContextValue`s also
+    match byte-for-byte (`render: centerBaseline({slot:'icon', styles: order:0})`,
+    `styles: {size: fontRelative(20), marginStart: '--iconMargin', flexShrink: 0}`).
+  - **D1** diffed the pure-`createIcon` output as `target` (labelled icon) plus two
+    `parts`: `decorative` (the unlabelled `aria-hidden:true` branch, same box) and
+    `buttonIcon` (the svg inside an accent Button — proving the port's icon
+    **consumes** the Button's IconContext: the `fontRelative(20)` resize +
+    `--iconMargin` inline-start). `styleProps.add: ["flex-shrink"]` (size = width/
+    height and the Button-context margin are already in the default allowlist). Non-
+    vacuous: `Locator.evaluate()` throws on a 0-/multi-match, so every part resolved
+    to exactly one element and matched. D3 pixel clean on the non-animating labelled
+    target in both themes (so the page's skeleton shimmer never touched the capture).
+  - **D6** pins `img "Create item"` for the labelled icon in the `default` case and
+    its **absence** from the AX tree in the `hidden` case (`ariaHidden:"true"` flips
+    the gate); the decorative + skeleton icons are always absent (aria-hidden /
+    inert) and the accent Button composes as `button "Create"` — identically on both
+    stacks.
+  - **D2/D7 N/A, rationale in the spec header.** D2: the core icon has no animation;
+    the only motion on the page is the *skeleton* icon's shimmer, a WAAPI
+    `element.animate()` sweep of `background-position` (not a CSS keyframe, `startTime
+    = 0`, `2000ms ease-in-out infinite`, `100% → 0%`) that belongs to the Skeleton
+    unit and is verified byte-identical by source read — the skeleton icon is
+    deliberately **not** a D1/D3 part so its animated `background-position` never
+    destabilises the capture. D7: an icon has no text node (the accent Button's label
+    is the Button's surface, not the icon's). D4/D5/D8 N/A (`focusable={false}`, not
+    pressable, no hit box).
+  - Regression guard: `icons.certified.spec.ts` **10/10**; e2e-only addition (no
+    src change, no rebuild — ran against the current build); standalone e2e `tsc -p`
+    clean (added the spec to the scratchpad include list; caught + fixed a
+    self-inflicted `margin*/gridArea*/` glob in the header comment that closed the
+    JSDoc block early). No net change to the 4 pre-existing deferred D4
+    event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated `solid-h.ts:71`
+    astro-check error unchanged.
 
 Phase 3: not started.
