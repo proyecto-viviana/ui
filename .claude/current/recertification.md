@@ -770,9 +770,9 @@ upstream RAC 1.19 / S2 1.5.1 — faithful in every case; only the tests were rea
 (no source changed). Re-run `vp test run packages` locally after any direct-to-main
 certification landing to catch this rot early (`ci-main-push-skips-tests`).
 
-Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)` — **Tier 3
-in progress.** Next: Modal (Dialog already certified as the D1/D3/D6 overlay pilot), then
-AlertDialog, Menu, ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
+Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)`,
+`✓ Modal (2026-07-04)` — **Tier 3 in progress.** Next: AlertDialog, then Menu,
+ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
 rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -2277,5 +2277,28 @@ headless is now the single source of truth for group description/error ids
      lacks upstream's nested-`[role=dialog]` guard (`shouldBeDialog && !querySelector('[role=dialog]')`)
      — it always renders `role="dialog"` where upstream would suppress it if the content already carries
      one; harmless for the plain-content demo, noted for the trigger/Menu units.
+
+- ✓ **Modal done 2026-07-04 (CP9.30 — Tier-3 overlay):** certified `18/18` green on the FIRST run
+  (`apps/comparison/e2e/certified/modal.certified.spec.ts`) — **no port change required.** The Dialog
+  pilot (`dialog.certified.spec.ts`) already burned the modal chain down (the D8 dismiss-sentinel fix in
+  `Modal.tsx`, the `layer-2` surface) and certifies the CONTENT surface + the interaction/AX/motion
+  drivers at the single default size `M`. This unit reuses the SAME `dialog` route (no new fixture,
+  `?size=S|M|L|XL`) to close the two surfaces the pilot left uncovered:
+  1. **Modal box across the full size matrix (D1 + D3).** `dialogModal`'s size-keyed `width`
+     (S 400 / M 480 / L 640 / XL 960, `max-width: 90vw`) pair-diffs byte-identical React-vs-Solid at every
+     size × light/dark, and the D3 zero-tolerance pixel of the fully-painted box (heading + body + action
+     buttons) is exact at each width. Confirms the port's `dialogModal` size map matches upstream S2's
+     token-for-token (both panels wire the `size` URL param: React `SpectrumDialog size=` /
+     `styled.js:5160`, Solid `SolidSpectrumDialog size=` / `styled.tsx:5075`).
+  2. **Backdrop dim (D1).** The outermost `ModalOverlay` (`dialogOverlay`) — resolved
+     `role="dialog".locator("../../..")`, valid in BOTH stacks because upstream S2 `private/Modal.mjs`
+     nests identically (`ModalOverlay → div(modalWrapper) → Modal → Dialog`, verified). Its byte-copied
+     `background-color` (`transparent-black-500`) + `isolation: isolate` match exactly. `width`/`height`
+     are removed from the diff and `position`/`inset`/`z-index` stay out of the D1 allowlist — the port's
+     fixed-viewport overlay vs upstream's absolute page-height overlay is the documented `Dialog.tsx`
+     portal-strategy divergence (geometry, not paint), not asserted; no pixel driver on the backdrop.
+  3. **Deliberately NOT re-run: D2/D4/D5/D6/D7/D8** — all size-independent (motion tokens, open/close
+     event log, focus trap, AX tree, text-on-`layer-2` contrast, control hit boxes don't change with modal
+     width), so they stay owned by the Dialog pilot at `M`; re-running them per size would add no signal.
 
 Phase 3: not started.
