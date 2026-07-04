@@ -1,3 +1,4 @@
+import { registerAxTreeDriver } from "../drivers/ax";
 import { registerEventSequenceDriver, standardPressGestures } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
@@ -55,6 +56,13 @@ const buttonScenario: DriverScenario = {
       },
     ],
   },
+  // D6: the button's resting AX node — role "button", accessible name "Save",
+  // and the `[disabled]` state on the disabled case — must match. A plain
+  // button emits no announcements, so no `announce` triggers here; the
+  // announcement half is calibrated by ComboBox/Toast in the march.
+  ax: {
+    cases: ["accent-fill", "disabled"],
+  },
 };
 
 registerStateMatrixDriver(buttonScenario);
@@ -62,3 +70,4 @@ registerPixelDriver(buttonScenario);
 registerEventSequenceDriver(buttonScenario);
 registerFocusTrailDriver(buttonScenario);
 registerMotionDriver(buttonScenario);
+registerAxTreeDriver(buttonScenario);

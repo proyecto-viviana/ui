@@ -92,6 +92,28 @@ export interface OracleAnimationSnapshot {
   keyframes: Array<Record<string, unknown>>;
 }
 
+/**
+ * One screen-reader announcement observed during a D6 capture window — DOM
+ * text inserted into a live region. Everything here is stack-agnostic (the
+ * announced string, the region's politeness/role) so React and Solid compare
+ * with plain JSON equality. `atMs` is diagnostic only: insertion timing drifts
+ * between stacks (the announcer's lazy 100ms first-announce delay lands on
+ * different frames), so the D6 driver strips it from the byte-identical
+ * assertion — the same rationale that excludes hashed keyframe names in D2.
+ */
+export interface OracleAnnouncement {
+  /** The announced string (resolved through aria-labelledby for object messages). */
+  text: string;
+  /** The enclosing live region's politeness ("polite" | "assertive" | ""). */
+  live: string;
+  /** The message node's role, else the live region's role (null when neither). */
+  role: string | null;
+  /** Oracle scope of the live region (announcers portal to body → "overlay"). */
+  scope: OracleScope;
+  /** Ms from capture start to insertion; diagnostic — the driver excludes it. */
+  atMs: number;
+}
+
 interface ComparisonOracle {
   setPanel(canvas: Element): void;
   start(types: readonly string[]): void;
@@ -101,6 +123,8 @@ interface ComparisonOracle {
   stopFreezer(): void;
   snapshotAnimations(scopes: readonly OracleScope[]): OracleAnimationSnapshot[];
   seekAnimations(scopes: readonly OracleScope[], fraction: number): void;
+  startAnnouncements(): void;
+  flushAnnouncements(): OracleAnnouncement[];
 }
 
 declare global {
@@ -237,6 +261,71 @@ export function comparisonOracleInit(): void {
       }
     }
     requestAnimationFrame(freezeTick);
+  };
+
+  // --- D6 live-region announcements ----------------------------------------
+  // A screen-reader announcement is DOM text inserted into a live region — an
+  // element with aria-live polite/assertive, or an implicit-live role
+  // (status/alert/log/…). Both stacks route announcements through a
+  // structurally identical live-announcer (a [data-live-announcer] container
+  // prepended to body holding two role="log" regions) and every ported live
+  // region inserts its message as a child node, so a MutationObserver watching
+  // body for childList additions catches each announcement the same way on
+  // both stacks. The announced string is resolved through aria-labelledby for
+  // object messages (role="img" + labelledby), matching how a screen reader
+  // computes it.
+  const liveRoles = new Set(["log", "status", "alert", "timer", "marquee"]);
+  const liveRegionOf = (el: Element | null): Element | null => {
+    let cur: Element | null = el;
+    while (cur && cur !== document.body) {
+      const live = cur.getAttribute("aria-live");
+      if (live === "polite" || live === "assertive") {
+        return cur;
+      }
+      const role = cur.getAttribute("role");
+      if (role && liveRoles.has(role)) {
+        return cur;
+      }
+      if (cur.hasAttribute("data-live-announcer")) {
+        return cur;
+      }
+      cur = cur.parentElement;
+    }
+    return null;
+  };
+  const announcementText = (node: Element): string => {
+    const labelledBy = node.getAttribute("aria-labelledby");
+    if (labelledBy) {
+      const text = labelledBy
+        .split(/\s+/)
+        .map((id) => document.getElementById(id)?.textContent?.trim() ?? "")
+        .filter(Boolean)
+        .join(" ");
+      if (text) {
+        return text.replace(/\s+/g, " ").trim();
+      }
+    }
+    return (node.textContent ?? "").replace(/\s+/g, " ").trim();
+  };
+  let announcements: OracleAnnouncement[] = [];
+  let announceObserver: MutationObserver | null = null;
+  let announceStart = 0;
+  const recordAnnouncement = (node: Element) => {
+    const region = liveRegionOf(node);
+    if (!region) {
+      return;
+    }
+    const text = announcementText(node);
+    if (!text) {
+      return;
+    }
+    announcements.push({
+      text,
+      live: region.getAttribute("aria-live") ?? "",
+      role: node.getAttribute("role") ?? region.getAttribute("role"),
+      scope: classify(region),
+      atMs: Math.round(performance.now() - announceStart),
+    });
   };
 
   interface BufferedEvent {
@@ -492,6 +581,30 @@ export function comparisonOracleInit(): void {
         }
       }
     },
+
+    startAnnouncements() {
+      announcements = [];
+      announceStart = performance.now();
+      announceObserver?.disconnect();
+      announceObserver = new MutationObserver((records) => {
+        for (const record of records) {
+          for (const added of Array.from(record.addedNodes)) {
+            if (added instanceof Element) {
+              recordAnnouncement(added);
+            }
+          }
+        }
+      });
+      announceObserver.observe(document.body, { childList: true, subtree: true });
+    },
+
+    flushAnnouncements() {
+      announceObserver?.disconnect();
+      announceObserver = null;
+      const out = announcements;
+      announcements = [];
+      return out;
+    },
   };
 }
 
@@ -566,4 +679,14 @@ export async function seekAnimations(
     (input) => window.__comparisonOracle!.seekAnimations(input.scopes, input.fraction),
     { scopes: [...scopes], fraction },
   );
+}
+
+/** Begins recording live-region announcements (D6 announcement transcript). */
+export async function startAnnouncements(page: Page): Promise<void> {
+  await page.evaluate(() => window.__comparisonOracle!.startAnnouncements());
+}
+
+/** Stops recording and returns the ordered announcement transcript. */
+export async function flushAnnouncements(page: Page): Promise<OracleAnnouncement[]> {
+  return page.evaluate(() => window.__comparisonOracle!.flushAnnouncements());
 }

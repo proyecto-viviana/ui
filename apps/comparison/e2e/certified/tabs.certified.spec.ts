@@ -1,3 +1,4 @@
+import { registerAxTreeDriver } from "../drivers/ax";
 import { mouseClickGesture, registerEventSequenceDriver, touchTapGesture } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
@@ -91,6 +92,15 @@ const tabsScenario: DriverScenario = {
       },
     ],
   },
+  // D6: the canvas AX tree captures the tablist, each tab (with `[selected]`
+  // on the active one), and the active tabpanel. `aria-hidden` measurement
+  // copies are excluded from the AX tree by construction, but an always-rendered
+  // overflow picker (the T-B gate) would surface here as an extra node — exactly
+  // the kind of semantics drift D6 is meant to catch. Tabs emit no live-region
+  // announcements, so no `announce` triggers.
+  ax: {
+    cases: ["horizontal-regular"],
+  },
 };
 
 registerStateMatrixDriver(tabsScenario);
@@ -98,3 +108,4 @@ registerPixelDriver(tabsScenario);
 registerEventSequenceDriver(tabsScenario);
 registerFocusTrailDriver(tabsScenario);
 registerMotionDriver(tabsScenario);
+registerAxTreeDriver(tabsScenario);

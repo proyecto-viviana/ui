@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { registerAxTreeDriver } from "../drivers/ax";
 import { mouseClickGesture, registerEventSequenceDriver } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
@@ -57,6 +58,37 @@ const surfaceScenario: DriverScenario = {
   parts: {
     heading: ({ page }) =>
       page.getByRole("dialog", { name: dialogTitle }).getByRole("heading", { name: dialogTitle }),
+  },
+  // D6: the overlay AX proof. `beforePanel` opens the dialog, so the root is
+  // the portaled dialog itself (the canvas default would miss it). The subtree
+  // captures role=dialog + its accessible name, the heading, and the action
+  // buttons; the modal's `aria-modal`/focus semantics land in the D5 focus
+  // trap. No live-region announcement fires on dialog open, so no `announce`.
+  //
+  // Tracked port gap keeps the exact AX-tree assertion red (recertification.md
+  // D6 finding T-C): the CloseButton's Cross ui-icon is absent from the port's
+  // AX tree (`button "Dismiss"` exposes no child) while upstream exposes it as
+  // an unnamed `img`. Root cause is the port's `createUIIcon` forcing
+  // `role="img"` + auto `aria-hidden` on unlabeled ui-icons (upstream ships
+  // ui-icons as raw bare `<svg>` that Chromium surfaces as an unnamed `img`),
+  // compounded by `Dialog.tsx` passing an explicit `aria-hidden` to CrossIcon.
+  // The faithful fix is a global `createUIIcon` change whose blast radius spans
+  // the accordion/disclosure/statuslight/inline-alert chevron specs that assert
+  // the port's current `aria-hidden` — a Tier-1 Icon-surface unit, deferred to
+  // CP9.
+  ax: {
+    roots: {
+      dialog: ({ page }) => page.getByRole("dialog", { name: dialogTitle }),
+    },
+    knownDivergences: {
+      "modal-open":
+        "Dialog CloseButton's Cross ui-icon missing from the AX tree vs " +
+        "upstream's unnamed img — createUIIcon over-hides unlabeled ui-icons " +
+        "(role=img + auto aria-hidden) where upstream ships raw bare <svg>; " +
+        "compounded by Dialog.tsx's explicit CrossIcon aria-hidden. Tracked " +
+        "in recertification.md D6 finding T-C; global fix deferred to CP9 " +
+        "(Tier-1 Icon surfaces).",
+    },
   },
 };
 
@@ -171,3 +203,4 @@ registerEventSequenceDriver(closeButtonScenario);
 registerEventSequenceDriver(triggerScenario);
 registerFocusTrailDriver(closeButtonScenario);
 registerMotionDriver(motionScenario);
+registerAxTreeDriver(surfaceScenario);

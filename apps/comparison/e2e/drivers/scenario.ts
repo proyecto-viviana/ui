@@ -104,6 +104,55 @@ export interface MotionConfig {
   frames?: readonly number[];
 }
 
+/**
+ * A scripted interaction the D6 driver expects to emit a screen-reader
+ * announcement (a ComboBox result count, a Toast, a form-validation error).
+ * The live-region transcript captured during `run` on each panel is diffed.
+ */
+export interface AxAnnounceTrigger {
+  /** Stable id used in test titles. */
+  id: string;
+  run: (ctx: MotionTriggerContext) => Promise<void>;
+  /**
+   * Milliseconds to wait for the announcement to land. The live announcer is
+   * created lazily with a 100ms first-announce delay, so keep this generous
+   * (defaults to 500).
+   */
+  settleMs?: number;
+  /**
+   * A documented, tracked port gap that keeps this announcement red; registers
+   * the test as `test.fixme` (visible in reports, excluded from pass/fail)
+   * instead of silently passing. See `MotionTrigger.knownDivergence`.
+   */
+  knownDivergence?: string;
+}
+
+/**
+ * D6 AX-tree + announcements driver config. The AX tree (roles/names/states via
+ * `ariaSnapshot` + an accessible-description pass) is the resting-structure
+ * assertion; `announce` triggers exercise the live-region transcript. Runs the
+ * first scenario theme only — semantics are theme-independent.
+ */
+export interface AxConfig {
+  cases?: readonly string[];
+  /**
+   * Elements whose AX subtree is snapshotted, keyed by a stable label; defaults
+   * to the panel canvas. Overlay components point a root at their portal (e.g.
+   * `page.getByRole("dialog")`) since the portal renders outside the canvas.
+   */
+  roots?: Record<string, TargetResolver>;
+  /** Scripted interactions expected to emit live-region announcements. */
+  announce?: readonly AxAnnounceTrigger[];
+  /**
+   * Case ids whose AX-tree assertion is a documented, tracked port gap, mapped
+   * to the reason. Registers that case as `test.fixme` (visible in reports,
+   * excluded from pass/fail) instead of silently passing — the same mechanism
+   * as `MotionTrigger.knownDivergence`. Reference the tracked finding so the
+   * marker is removed once the port is fixed.
+   */
+  knownDivergences?: Record<string, string>;
+}
+
 /** A keyboard walk for the D5 focus-trail driver. */
 export interface FocusWalk {
   /** Stable id used in test titles. */
@@ -188,6 +237,8 @@ export interface DriverScenario {
   focus?: { cases?: readonly string[]; walks: readonly FocusWalk[] };
   /** D2 motion driver config; same case/theme defaults as D4/D5. */
   motion?: MotionConfig;
+  /** D6 AX-tree + announcements driver config; runs the first theme only. */
+  ax?: AxConfig;
 }
 
 export const defaultStateReadiness: Record<GestureStateId, string | null> = {

@@ -291,7 +291,7 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☐ D8 ☐ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
@@ -610,6 +610,75 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☐ D7 ☐ D8 ☐ D9 ☐ D10 ☐
     just a page snapshot — rerun the single test to capture the JSON diff;
     e2e is NOT covered by `astro check` (tsconfig includes src only) — use
     the standalone tsc line in the session log or add an e2e tsconfig later.
+
+- D6 done 2026-07-03: AX-tree + announcements driver landed
+  (`apps/comparison/e2e/drivers/ax.ts` + the `ax` config on `DriverScenario`,
+  backed by the oracle's new `startAnnouncements`/`flushAnnouncements`
+  MutationObserver transcript in `dom-oracle.ts`). Two exact pair-oracle halves:
+  - **AX tree (resting structure).** Per configured root, Playwright 1.58's
+    `locator.ariaSnapshot()` yields the Chromium accessibility tree as stable
+    YAML (roles + accessible names + bracketed states `[checked]`/`[expanded]`/
+    `[disabled]`/`[level=N]`/`[selected]`). `ariaSnapshot` drops the accessible
+    *description* (spec line 81), so a second `evaluate` pass captures
+    `{role, name, description}` for every element carrying
+    `aria-describedby`/`aria-description`, sorted for order-stability. Both
+    diffed as JSON. (Note: 1.58 removed `page.accessibility.snapshot`;
+    `ariaSnapshot` is the successor, natively locator-scoped so overlays snapshot
+    from their portal root.)
+  - **Announcements (live transcript).** Each `announce` trigger scripts an
+    interaction expected to speak; the oracle's `document.body` MutationObserver
+    records the ordered live-region transcript (text + politeness + role +
+    scope) on each panel, diffed text-for-text. Insertion `atMs` is stripped
+    (stack-dependent — the announcer's lazy 100ms first-announce delay lands on
+    different frames), the same way D2 excludes hashed keyframe names. No pilot
+    exercises an announcement yet (Button/Tabs/Dialog are silent); the half is
+    calibrated by ComboBox/Toast in the march.
+  - Semantics are theme-independent, so D6 runs the first scenario theme only.
+  - Calibration — the AX-tree half went red on Dialog with a real, newly
+    discovered port a11y gap (meeting the "≥1 finding on pilots" bar):
+    - Button: green (2/2) — role "button", name "Save", `[disabled]` on the
+      disabled case.
+    - Tabs: green (1/1) — tablist + tabs with `[selected]` on the active tab +
+      the active tabpanel; the `aria-hidden`+`inert` overflow-measurement list
+      is excluded from the AX tree by construction, so D6 confirms it does not
+      leak a phantom node (the T-B facet stays invisible here, as intended).
+    - Dialog: red → registered as a tracked `knownDivergence` (`test.fixme`,
+      visible in reports, excluded from pass/fail — same mechanism as Tabs D2
+      T-A/T-B). **Finding T-C (deferred to CP9, Tier-1 Icon surfaces):** the
+      dialog CloseButton's Cross ui-icon is absent from the port's AX tree
+      (`button "Dismiss"` exposes no child) while upstream exposes it as an
+      unnamed `img` (`button "Dismiss": - img`). Two self-inflicted layers hide
+      it: (1) `packages/solid-spectrum/src/dialog/Dialog.tsx` passes an explicit
+      `aria-hidden="true"` to `<CrossIcon>` (upstream `CloseButton.tsx` passes no
+      aria props); (2) more fundamentally, the port collapsed S2's **two** icon
+      families into one factory — `createUIIcon` and `createIcon` both delegate
+      to shared `createIconForBase`, which forces `role="img"` + auto
+      `aria-hidden` on any **unlabeled** icon. That is correct for workflow/
+      spectrum icons (upstream `Icon.tsx` `createIcon` does auto-hide unlabeled),
+      but wrong for ui-icons: upstream ships ui-icons (Cross, Chevron, Checkmark)
+      as **raw bare `<svg>`** pass-throughs with no role/no aria-hidden
+      (confirmed against `s2/dist/private/S2_CrossSize400.mjs`), which Chromium
+      surfaces as an unnamed `img`. Faithful fix = the `createUIIcon` path
+      renders bare (no forced `role="img"`, no auto `aria-hidden`) for unlabeled
+      ui-icons + drop Dialog's explicit `aria-hidden`. This also **avoids** an
+      axe `svg-img-alt` regression (that rule targets `svg[role=img]` without an
+      accessible name; a bare role-less `<svg>` is not flagged, but keeping
+      `role="img"` unlabeled would be). Deferred, not fixed here, because it is a
+      global factory change: the blast radius spans existing green visual specs
+      that assert the port's *current* auto-hide — `accordion-visual.spec.ts:97`
+      + `disclosure-visual.spec.ts:98` (`querySelector('svg[aria-hidden="true"]')`
+      on the chevron ui-icon), `statuslight-visual.spec.ts:50`,
+      `inline-alert-visual.spec.ts`, plus `[role="img"]` queries in
+      colorswatch/colorswatchpicker specs and the `Icon.test.tsx` unit test —
+      each needs per-component re-baselining against upstream, which is the
+      Tier-1 "Icon/Illustration surfaces" march unit, not driver-landing work.
+  - Driver mechanics: the AX config exposes `roots` (default `{panel: canvas}`;
+    overlays point at their portal), `announce` triggers, `cases`, and a
+    case-level `knownDivergences` map (case id → reason) that registers that
+    case as `test.fixme` — the exact analogue of `MotionTrigger.knownDivergence`
+    for the AX-tree half. Typecheck clean via the same standalone
+    `tsc -p <scratchpad tsconfig>` line (e2e still outside `astro check`).
+    Suite: 3 passed (Button ×2, Tabs ×1), 1 tracked-fixme (Dialog modal-open).
 
 Phase 2: not started — march order above is the queue; mark components here as
 `✓ name (date)` when certified, `blocked: name (reason)` otherwise.
