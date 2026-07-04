@@ -759,8 +759,8 @@ certified, `blocked: name (reason)` otherwise.
 
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
-(2026-07-04)` — in progress.
-Queue: TextArea, SearchField, NumberField, Slider, RangeSlider, Form,
+(2026-07-04) · ✓ TextArea (2026-07-04)` — in progress.
+Queue: SearchField, NumberField, Slider, RangeSlider, Form,
 FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -1788,5 +1788,40 @@ headless is now the single source of truth for group description/error ids
      `<span>`/`slot` error markup is landed in source now so it is faithful when that unit
      certifies invalid; this unit certifies the valid (description) composite where reverts
      (1)+(2) live.
+
+- ✓ **TextArea done 2026-07-04 (CP9.20 — sixth Tier-2 unit, multiline FieldGroup
+  composite):** certified `35/35` green across D1/D3/D5/D6/D7 (`textarea.certified.spec.ts`).
+  TextArea is the multiline sibling of TextField: upstream `TextArea` (S2 `TextField.tsx`)
+  composes the SAME `TextFieldBase` (→ `AriaTextField` + shared FieldLabel/FieldGroup/HelpText)
+  but swaps `<Input>` for a `<TextAreaInput>` (a `<textarea>` that auto-grows to its content
+  via inline `height = scrollHeight + (offsetHeight − clientHeight)` — byte-identical formula
+  upstream `onHeightChange` / port `resizeTextArea`) and overrides the FieldGroup css with
+  `{alignItems:'baseline', height:'auto'}` so the bordered container hugs the grown textarea.
+  The port keeps a separate `TextArea.tsx` carrying its OWN copies of the composite styles, so
+  it independently carried the **same two divergences TextField did** — both closed identically:
+  1. **help text `<p>` + hand-roll `margin:0`** → `<span slot="description">` /
+     `<span slot="errorMessage">`, `margin:0` dropped from `helpTextStyles` (see the TextField
+     note above for the full rationale — computed-style + AX revert).
+  2. **`FieldGroup` `<div>` with no `role`** → `role="presentation"` (the reusable input-family
+     finding: TextArea composes via `TextFieldBase` → `AriaTextField`, whose RAC `TextField`
+     seeds `GroupContext` with `{role:'presentation'}`, so the group is AX-flat — the textbox
+     stays a direct child of the field). D6 green, both cases; **this is the first re-use of the
+     TextField `role="presentation"` finding, confirming it holds across the input family.**
+  - **D7 DRIVER FIX (in-repo, principled — not a port change):** the first run failed D7 only —
+     React collected a `textarea:<value>` contrast entry the port did not. Root cause is a
+     **driver blind spot, not a port divergence**: React syncs a `<textarea>`'s value into a
+     child text node (implementation detail), while the port binds it idiomatically as the
+     `.value` DOM property (no child node). Same glyphs, same color, identical actual contrast
+     (D3 pixels + D6 AX both green) — but the driver walked text *nodes*, so it saw React's and
+     skipped the port's. Forcing the port to mirror React's child text node would be
+     un-idiomatic Solid built around a measurement artifact. Fix: `contrast.ts` now sources a
+     `<textarea>`'s text from `.value` on BOTH stacks (guarded strictly by `tagName ===
+     "TEXTAREA"`, so every other spec is byte-unchanged — TextField re-run confirms 35/35). This
+     makes D7 measure the *perceptual* text a textarea shows rather than its DOM representation.
+  - **D1 adds `min-height`** (the textarea's `controlSize()` floor, not in the default
+     allowlist) + the same grid/containment/flow props as TextField; the auto-grown `height` and
+     the `align-items:baseline`/`height:auto` group override are pinned by the default allowlist.
+     Same `states:["default"]` split-control scope, same `required`-excluded-from-D6 rationale,
+     and the same `isInvalid` deferral to `helptext-fielderror-visual-port` as TextField.
 
 Phase 3: not started.

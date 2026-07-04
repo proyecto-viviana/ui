@@ -164,7 +164,6 @@ const fieldGroupStyles = style<TextAreaStyleProps>({
 const helpTextStyles = style<TextAreaStyleProps>({
   gridArea: "helptext",
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
   font: controlFont(),
@@ -216,6 +215,10 @@ const noWrap = style({
   whiteSpace: "nowrap",
 });
 
+// Byte-faithful to upstream Field.tsx HelpText: the description renders a RAC
+// `<Text slot="description">` (a `<span>`), NOT a `<p>` (whose UA `margin` the
+// port previously had to zero out in `helpTextStyles`). The `slot` mirrors RAC's
+// Text; the id/aria wiring is read from the headless TextField context.
 function TextAreaDescription(props: {
   class?: string;
   children?: JSX.Element;
@@ -227,12 +230,14 @@ function TextAreaDescription(props: {
     return rest;
   };
   return (
-    <p {...descriptionProps()} class={props.class}>
+    <span {...descriptionProps()} slot="description" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
+// Upstream renders the invalid message through a RAC `<FieldError>`, which is a
+// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
 function TextAreaError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
   const context = useContext(HeadlessTextFieldContext);
   if (!context) return null;
@@ -241,9 +246,9 @@ function TextAreaError(props: { class?: string; children?: JSX.Element }): JSX.E
     return rest;
   };
   return (
-    <p {...errorMessageProps()} class={props.class}>
+    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -448,6 +453,13 @@ export function TextArea(props: TextAreaProps): JSX.Element {
           </Show>
 
           <div
+            // Upstream FieldGroup renders a RAC `<Group>`, but RAC's `TextField`
+            // (which TextArea composes via `TextFieldBase` → `AriaTextField`)
+            // seeds `GroupContext` with `{role: 'presentation'}` (TextField.mjs),
+            // so the multiline input's visual wrapper is presentation, keeping the
+            // AX tree flat (the textbox stays a direct child of the field, no
+            // redundant group node). Matches the certified TextField finding.
+            role="presentation"
             class={groupClass(renderProps)}
             onPointerDown={(event) => {
               if (event.pointerType === "mouse") {

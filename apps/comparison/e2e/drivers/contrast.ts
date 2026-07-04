@@ -31,6 +31,15 @@ import { walkScenario, type WalkStepContext } from "./walk";
  * node whose effective background carries a `background-image` (gradient,
  * sprite) is uncomputable and recorded as `bg: "image"` with a null ratio —
  * identically on both stacks, so the pair diff still holds on that marker.
+ *
+ * FORM-CONTROL VALUE TEXT: a `<textarea>`'s visible text is its `.value`, which
+ * may live either as a child text node (React syncs value → children as an
+ * implementation detail) or purely as the `.value` DOM property (the idiomatic
+ * SolidJS binding — no child node). Both paint identical glyphs with identical
+ * color, but a text-node walk only "sees" the former, so it would measure
+ * React's textarea and silently skip the port's. We therefore source a
+ * `<textarea>`'s text from `.value` on BOTH stacks (bypassing the child-node
+ * check for that element), so the pair diff compares the same perceptual text.
  */
 
 interface ContrastEntry {
@@ -135,17 +144,30 @@ async function captureContrast(root: Locator): Promise<ContrastEntry[]> {
     const norm = (value: string | null | undefined): string =>
       (value ?? "").replace(/\s+/g, " ").trim();
 
-    const descriptorOf = (node: Element): string => {
+    // A `<textarea>`'s displayed text is its `.value`, regardless of whether it
+    // is also mirrored into a child text node (React) or held only as the DOM
+    // property (idiomatic SolidJS). Return it as the text source so the pair
+    // diff measures the same glyphs on both stacks; null for any other element.
+    const formControlText = (node: Element): string | null =>
+      node.tagName === "TEXTAREA" ? (node as HTMLTextAreaElement).value : null;
+
+    const descriptorOf = (node: Element, textOverride?: string | null): string => {
       const tag = node.tagName.toLowerCase();
       const role = node.getAttribute("role");
-      const text = norm(node.textContent).slice(0, 32);
+      const text = norm(textOverride ?? node.textContent).slice(0, 32);
       return `${tag}${role ? `[${role}]` : ""}:${text}`;
     };
 
     const entries: ContrastEntry[] = [];
     const walk = [rootEl, ...Array.from(rootEl.querySelectorAll("*"))];
     for (const node of walk) {
-      if (!hasDirectText(node) || !isVisible(node)) {
+      const controlText = formControlText(node);
+      // Bear text either via a direct text-node child (normal elements) or via a
+      // form control's `.value` (textarea). Form controls bypass the child-node
+      // check so the port's property-bound value is measured like React's.
+      const bearsText =
+        controlText !== null ? controlText.trim().length > 0 : hasDirectText(node);
+      if (!bearsText || !isVisible(node)) {
         continue;
       }
       const style = getComputedStyle(node);
@@ -157,7 +179,7 @@ async function captureContrast(root: Locator): Promise<ContrastEntry[]> {
       const largeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
       if (bg === null) {
         entries.push({
-          descriptor: descriptorOf(node),
+          descriptor: descriptorOf(node, controlText),
           fg: rgbString(over(fgColor, white)),
           bg: "image",
           ratio: null,
@@ -173,7 +195,7 @@ async function captureContrast(root: Locator): Promise<ContrastEntry[]> {
       const aaFloor = largeText ? 3 : 4.5;
       const aaaFloor = largeText ? 4.5 : 7;
       entries.push({
-        descriptor: descriptorOf(node),
+        descriptor: descriptorOf(node, controlText),
         fg: rgbString(fg),
         bg: rgbString(bg),
         ratio: rounded,

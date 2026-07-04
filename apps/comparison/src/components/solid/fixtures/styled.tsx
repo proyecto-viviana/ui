@@ -7133,6 +7133,14 @@ function SolidSpectrumTextAreaDemo() {
       hc(
         "div",
         {
+          // The control-root marker sits on the wrapper (matching React and the
+          // other field fixtures) so the field grid is `${root} > div` on BOTH
+          // stacks; putting it on the component would land it on the grid root
+          // itself, shifting every child selector by one level vs React.
+          "data-comparison-control-root": "textarea",
+          get "data-comparison-control-props"() {
+            return serializedProps();
+          },
           get "data-comparison-color-scheme"() {
             return colorScheme();
           },
@@ -7142,10 +7150,6 @@ function SolidSpectrumTextAreaDemo() {
         },
         [
           hc(SolidSpectrumTextArea, {
-            "data-comparison-control-root": "textarea",
-            get "data-comparison-control-props"() {
-              return serializedProps();
-            },
             get label() {
               return demoProps().label;
             },
