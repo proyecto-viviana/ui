@@ -268,7 +268,6 @@ const clearButton = style<ClearButtonStyleProps>({
 const helpTextStyles = style<SearchFieldStyleProps>({
   gridArea: "helptext",
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
   font: controlFont(),
@@ -320,6 +319,10 @@ const noWrap = style({
   whiteSpace: "nowrap",
 });
 
+// Byte-faithful to upstream Field.tsx HelpText: the description renders a RAC
+// `<Text slot="description">` (a `<span>`), NOT a `<p>` (whose UA `margin` the
+// port previously had to zero out in `helpTextStyles`). The `slot` mirrors RAC's
+// Text; the id/aria wiring is read from the headless SearchField context.
 function SearchFieldDescription(props: {
   class?: string;
   children?: JSX.Element;
@@ -331,12 +334,14 @@ function SearchFieldDescription(props: {
     return rest;
   };
   return (
-    <p {...descriptionProps()} class={props.class}>
+    <span {...descriptionProps()} slot="description" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
+// Upstream renders the invalid message through a RAC `<FieldError>`, which is a
+// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
 function SearchFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
   const context = useContext(HeadlessSearchFieldContext);
   if (!context?.errorMessageProps) return null;
@@ -345,9 +350,9 @@ function SearchFieldError(props: { class?: string; children?: JSX.Element }): JS
     return rest;
   };
   return (
-    <p {...errorMessageProps()} class={props.class}>
+    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -437,14 +442,22 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     props.ref,
   );
 
-  const rootClassName = (renderProps: SearchFieldRenderProps) =>
+  // Upstream S2 SearchField.tsx invokes the root `style()(...)` with ONLY
+  // `{size, labelPosition, isInForm}` (lines 117-124) — it does NOT pass
+  // `isDisabled`, so the root's `color.isDisabled: 'disabled'` branch never
+  // activates and the root stays `baseColor('neutral')` even when disabled.
+  // (The render-prop `isDisabled` is threaded DOWN to FieldLabel/FieldGroup,
+  // not back into the root's own style call.) Spreading `...renderProps` here
+  // would light up that branch and diverge the root color (D1). Keep parity:
+  // pass only the same three style props upstream does. `renderProps` stays a
+  // param so the signature matches AriaSearchField's className callback shape.
+  const rootClassName = (_renderProps: SearchFieldRenderProps) =>
     [
       contextProps?.UNSAFE_className,
       props.UNSAFE_className,
       props.class,
       searchFieldRoot(
         {
-          ...renderProps,
           size: size(),
           labelPosition: labelPosition(),
           isInForm,
@@ -541,9 +554,14 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
           </Show>
 
           <div
-            // Mirrors S2's FieldGroup, which renders RAC <Group> (role="group")
-            // as the field shell around the icon, input, and clear button. The
-            // group is intentionally unnamed — the searchbox carries the label.
+            // Mirrors S2's FieldGroup, which renders RAC <Group> as the field
+            // shell around the icon, input, and clear button. This group IS
+            // role="group" (unlike TextField's, which is role="presentation"):
+            // RAC's SearchField seeds GroupContext with only {isInvalid,
+            // isDisabled} — NO role — (react-aria-components SearchField.mjs), so
+            // the inner <Group> falls back to its default role ?? 'group'.
+            // Verified against the rendered React AX tree (D6). The group is
+            // intentionally unnamed — the searchbox itself carries the label.
             role="group"
             class={groupClass(renderProps)}
             onPointerDown={(event) => {

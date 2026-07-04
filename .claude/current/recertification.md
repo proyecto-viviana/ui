@@ -759,8 +759,8 @@ certified, `blocked: name (reason)` otherwise.
 
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
-(2026-07-04) · ✓ TextArea (2026-07-04)` — in progress.
-Queue: SearchField, NumberField, Slider, RangeSlider, Form,
+(2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04)` — in progress.
+Queue: NumberField, Slider, RangeSlider, Form,
 FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -1823,5 +1823,63 @@ headless is now the single source of truth for group description/error ids
      the `align-items:baseline`/`height:auto` group override are pinned by the default allowlist.
      Same `states:["default"]` split-control scope, same `required`-excluded-from-D6 rationale,
      and the same `isInvalid` deferral to `helptext-fielderror-visual-port` as TextField.
+
+- ✓ **SearchField done 2026-07-04 (CP9.21 — seventh Tier-2 unit, input + leading search icon +
+  trailing clear button):** certified `34/34` green across D1/D3/D5/D6/D7
+  (`searchfield.certified.spec.ts`). SearchField is a TextField-shaped composite (upstream S2
+  `SearchField.tsx` → `AriaSearchField` + shared FieldLabel/FieldGroup/HelpText) whose FieldGroup
+  additionally holds a leading `SearchIcon` and a trailing `ClearButton`. The port's hand-rolled
+  `searchfield/index.tsx` carried the SAME help-text divergence the field family did (help text as
+  `<p>` + a hand-roll-only `margin:0`), reverted here to `<span slot="description">` /
+  `<span slot="errorMessage">` with `margin:0` dropped — the fourth re-use of that field-family
+  finding. **Three real port bugs closed, all with byte-identical upstream fixes:**
+  1. **D1 disabled root `color` (the subtle one — a threading bug, not a token bug).** Disabled dark
+     showed root `color: rgb(68,68,68)` (the `disabled` token) on the port vs `rgb(219,219,219)`
+     (`baseColor('neutral')`) on React. The root style DEFINITION is byte-identical
+     (`color: {default: baseColor('neutral'), isDisabled: {default:'disabled', forcedColors:'GrayText'}}`),
+     but upstream INVOKES that style with only `{size, labelPosition, isInForm}` (SearchField.tsx
+     lines 117-124) — it does NOT pass `isDisabled`, so the root's `isDisabled` color branch never
+     activates and the root stays neutral even when disabled (the render-prop `isDisabled` is
+     threaded DOWN to FieldLabel/FieldGroup, not back into the root's own style call). The port's
+     `rootClassName` spread `...renderProps` (incl. `isDisabled`) into the root call, lighting up
+     the dead branch. Fix: pass only the same three style props upstream does. **Reusable lesson:**
+     an S2 root style's condition set can be intentionally dead — match the runtime style
+     INVOCATION args, not just the style definition; a spread of the render-prop bag is a silent
+     over-application. (This is why the first probe was inconclusive: the throwaway probe passed
+     `frameworkCanvas(…, "Solid")`, but that resolver does an EXACT `=== "React Spectrum stack"`
+     check and falls to the solid branch otherwise, so `"React"` AND `"Solid"` both read the SOLID
+     panel — the probe compared Solid to itself. Use the real `FrameworkName` literals.)
+  2. **D3 search-icon glyph precision (the s2wf-icon provenance bug).** 9-px antialiasing drift in
+     the leading glyph. The port's `s2wf-icons/SearchIcon.tsx` was generated from the RAW vendored
+     `.svg` source (high decimal precision); the compiled React S2 SearchField renders the SHIPPED
+     `icons/Search.mjs` (SVGO-rounded). Fix: adopt the shipped `d` — the exact principle already
+     recorded on the Cross ui-icon ("pixel parity requires the shipped path data, not the raw
+     vendored sources"). Filed the systematic generator issue as `s2wf-icon-shipped-path-provenance`
+     (every workflow icon should regen from `icons/*.mjs`, not the raw sources).
+  3. **The `role="group"` FieldGroup correction (vs TextField's `presentation`).** IMPORTANT scope
+     to the TextField finding: SearchField's inner `<Group>` IS genuinely `role="group"`, NOT
+     presentation. RAC's `SearchField` seeds `GroupContext` with only `{isInvalid, isDisabled}` —
+     no `role` — so the group falls back to its default `role ?? 'group'`, UNLIKE RAC's `TextField`
+     which seeds `{role:'presentation'}`. The port's hand-roll already rendered `role="group"`
+     (correct); D6 certifies React exposes the `group` node here. **Lesson: the group role is
+     per-RAC-component — verify the `GroupContext` seed per component; do not assume the
+     `presentation` finding transfers across the input family.**
+  - **D6 scoped to `read-only` only** — the sole case whose clear button is absent, routing D6
+     around the tracked `ui-icon-decorative-ax-node` divergence exactly as Checkbox/RadioGroup did
+     (RadioGroup certifies its unchecked variant "so no decorative node enters the AX tree"). The
+     clear-button Cross is a ui-icon: bare `<svg>` upstream → Chromium exposes an unnamed `img`
+     child; the port's `createUIIcon` marks it `role="img"` + decorative `aria-hidden` → no child
+     node. The clear button's own role+name match on both stacks (`button "Clear search"`); only its
+     decorative child diverges, so nothing SearchField-specific is lost. The leading SearchIcon is a
+     WORKFLOW icon (`createIcon`, decorative-hidden on BOTH stacks) so it never enters the tree — the
+     read-only tree is the full clean searchbox + `role="group"` + description structure. The global
+     icon-policy flip stays owned by the future `ui-icon` unit (the port's hide is arguably the more
+     correct a11y AND keeps our axe gate green by not emitting image-alt violations — not flippable
+     inside a per-component commit).
+  - **The clear button is NOT a divergence:** upstream mounts it when `!isEmpty && !isReadOnly`; the
+     port renders `HeadlessSearchFieldClearButton` when `!isReadOnly` and the headless button itself
+     `<Show when={!isEmpty()}>`s its body — so the rendered DOM matches for every value/read-only
+     combo. Same `states:["default"]` split-control scope and same `isInvalid` deferral to
+     `helptext-fielderror-visual-port` as the rest of the field family.
 
 Phase 3: not started.

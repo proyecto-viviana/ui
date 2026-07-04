@@ -327,7 +327,33 @@ tasks:
       upstream's Icon rendering before changing — the right answer may be to match React's
       `img`-node exposure OR to confirm the port's aria-hidden is the more-correct WCAG
       reading and record it as an intentional, documented divergence (known-divergence
-      note on the affected drivers) rather than a bug.
+      note on the affected drivers) rather than a bug. RE-CONFIRMED cross-cutting by the
+      SearchField recertification (CP9.21): the clear-button Cross ui-icon shows the SAME
+      bare-`img`-vs-`aria-hidden` split; searchfield.certified.spec.ts scopes D6 to the
+      `read-only` case (clear button absent) to route around it, mirroring the Checkbox/
+      RadioGroup approach. When this is finally reconciled, weigh that the port's
+      aria-hidden also keeps our axe (a11y:smoke) gate green — exposing nameless `img`
+      nodes as upstream does would emit image-alt violations our blocking gate would fail,
+      so a global flip must also decide how to satisfy axe.
+  - id: s2wf-icon-shipped-path-provenance
+    title: Workflow (s2wf) icons are generated from raw vendored .svg sources, not the shipped SVGO dist paths
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the SearchField recertification (CP9.21): the port's workflow icons under
+      packages/solid-spectrum/src/icon/s2wf-icons/*.tsx carry the header "Auto-generated from
+      vendored React Spectrum S2 icon sources" and use the RAW `.svg` path data (high decimal
+      precision). But the compiled React S2 components render the SHIPPED `@react-spectrum/s2/
+      icons/*.mjs` paths, which SVGO rounds to lower precision. The higher-precision raw path
+      drifts sub-glyph antialiasing and fails D3 strict pixel diff (SearchIcon showed a 9-px
+      glyph delta). This is the SAME principle already recorded on the Cross ui-icon: pixel
+      parity requires the shipped path data, not the raw vendored sources. Fixed for SearchIcon
+      only (its `d` now matches `icons/Search.mjs`, header updated). Systematic exit: the icon
+      generator should source shipped `icons/*.mjs` `d` values (not the raw vendored .svg) for
+      EVERY workflow icon, then re-run affected D3 certs. Until then, any workflow icon that
+      lands in a D3-certified surface may carry the same drift and needs the per-icon shipped-path
+      swap. (UI-icons under ui-icons/*.tsx are already generated from the shipped dist — this is
+      workflow-icon-only.)
 ---
 
 # Tech Debt
