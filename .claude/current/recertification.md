@@ -753,7 +753,7 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
 (2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04) · ✓ Divider
 (2026-07-04) · ✓ StatusLight (2026-07-04) · ✓ Meter (2026-07-04) · ✓ ProgressCircle
-(2026-07-04) · ✓ Icon (2026-07-04)` — remaining
+(2026-07-04) · ✓ Icon (2026-07-04) · ✓ Illustration (2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1413,5 +1413,54 @@ certified, `blocked: name (reason)` otherwise.
     JSDoc block early). No net change to the 4 pre-existing deferred D4
     event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated `solid-h.ts:71`
     astro-check error unchanged.
+
+- ✓ **Illustration done 2026-07-04 (CP9.13):** thirteenth new Tier-1 unit
+  certified — the `createIllustration` HOC, sibling of `createIcon`, differing only
+  in the base macro: a three-step **size scale (S 48 / M 96 / L 160)** instead of
+  the icon's fixed 20. Spec `illustrations.certified.spec.ts` — 3 prop cases
+  (default, size-l, hidden) × the applicable driver set = **14 tests green on the
+  first run, a confirmatory green** (no divergence existed).
+  - **Wrapper + size macro + glyph verified byte-identical to upstream**
+    (`s2/src/Icon.tsx` vs `icon/spectrum-icon.tsx`): both render the passed
+    `<Component>` svg with `role="img"`, `focusable={false}`, `data-slot`, the
+    `size` passthrough, the `render` passthrough (`IllustrationContext.render`), and
+    the same `aria-hidden` gate (`aria-label ? aria-hidden || undefined : true`).
+    The port's `illustrationBaseStyles` is the same `style()` macro as upstream
+    `illustrationStyles` — `{size: {S: 48, M: 96, L: 160}, flexShrink: 0}` over the
+    same `allowedOverrides` list, default `M` via `size ?? ctx.size ?? "M"`. The
+    demo's three glyphs (Plan / DropZone / IllustratedMessage) are byte-identical
+    across stacks (same `viewBox`, `<rect>`/`<path>`/`<circle>` geometry, `fill:
+    var(--iconPrimary, #222)`). Skeleton path DOM-equivalent (upstream
+    `<SkeletonWrapper>` = no element outside a provider; port applies `loadingStyle`
+    + `inert` + WAAPI ref directly).
+  - **One driver-invisible DOM difference knowingly tolerated:** upstream's demo
+    glyph spreads `{...props}` so the `size` prop leaks onto the svg as an invalid
+    `size="S"` attribute; the port's glyph destructures `size` out. An unknown
+    `size` attribute on `<svg>` has no computed-style/pixel/AX effect (svg sizes
+    from width/height), so no driver observes it — and it is a demo-fixture artifact,
+    not a library divergence (the library `createIllustration` is byte-identical).
+  - **D1** diffed the labelled Plan illustration as `target` (S 48 in `default`, L
+    160 in `size-l`) plus the `decorative` DropZone part (M 96) — so the sweep
+    exercises the **whole size scale** across one default capture + the size-l case.
+    `styleProps.add: ["flex-shrink"]` (size = width/height already in the default
+    allowlist). Non-vacuous (part resolved to exactly one element). D3 pixel clean
+    on the byte-identical Plan glyph at S and L in both themes (the page's WAAPI
+    skeleton shimmer never touches the non-animating target). The `hidden` case
+    re-confirms the S box is invariant under the aria-hidden gate flip.
+  - **D6** pins `img "Planning illustration"` for the labelled illustration in
+    `default` and its **absence** from the AX tree in `hidden` (`ariaHidden:"true"`
+    flips the gate); the decorative + skeleton illustrations are always absent
+    (aria-hidden / inert) — identically on both stacks.
+  - **D2/D7 N/A, rationale in the spec header.** D2: the core illustration has no
+    animation; the only motion is the *skeleton* shimmer (WAAPI `background-position`
+    sweep, `2000ms ease-in-out infinite`, `100% → 0%` — Skeleton unit's, verified
+    byte-identical by source read; the skeleton illustration is not a D1/D3 part so
+    its animated `background-position` never destabilises the capture). D7: no text
+    node. D4/D5/D8 N/A (`focusable={false}`, not pressable, no hit box).
+  - Regression guard: `illustrations.certified.spec.ts` **14/14**; e2e-only addition
+    (no src change, no rebuild — ran against the current build); standalone e2e
+    `tsc -p` clean. No net change to the 4 pre-existing deferred D4 event-ordering
+    reds (Tabs ×2, Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check
+    error unchanged.
 
 Phase 3: not started.
