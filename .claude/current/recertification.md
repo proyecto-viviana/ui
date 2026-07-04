@@ -750,7 +750,8 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     target-size.ts added to the scratchpad tsconfig include list).
 
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
-(2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04)` — remaining
+(2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
+(2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -985,5 +986,54 @@ certified, `blocked: name (reason)` otherwise.
     clean (added `link.certified.spec.ts` to the scratchpad include list). No net
     change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
     Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **Avatar done 2026-07-04 (CP9.5):** fifth new Tier-1 unit certified, and the
+  first **non-interactive display** primitive — a static image, not a control.
+  Spec `avatar.certified.spec.ts` — 5 prop cases (default, size-16, size-96,
+  over-background, over-background-large) × the applicable driver set = **22
+  tests, all green on the first run, no port change required.** Avatar has no
+  `variant`/`isDisabled`/interactive state, so the case matrix is purely the
+  `size` scale (16 → 96) and the `isOverBackground` outline.
+  - **Applicable driver set is deliberately narrowed to D1/D3/D6** — this is the
+    honest set for a static image, and the omission is documented in the spec
+    header, not silent. **D2** is skipped: `avatarRoot` carries no `transition`;
+    the `<img>` opacity reveal (0 → 1 on load) is a one-shot load artifact
+    identical on both stacks, not an interaction-driven animation. **D4/D5** are
+    skipped: an avatar is neither pressable nor focusable (the wrapper is a plain
+    `<div>` — no tabindex, role, or press handling), so the memo-rebuild
+    focus-loss anti-pattern that D4 caught on ToggleButton/TBG cannot even arise.
+    **D7** is skipped: an image has no text nodes to measure contrast on. **D8**
+    is skipped: an avatar is not an interactive target (no button/link/role match),
+    so there is no hit box to floor-check.
+  - **Structure parity — why the port certified clean.** Upstream S2 `Avatar`
+    (`react-spectrum/…/s2/src/Avatar.tsx`) and the port
+    (`solid-spectrum/src/avatar/index.tsx`) both render `<Image>` with the *same*
+    style macro (`borderRadius: full`, the `size: 20` box overridden by the inline
+    `width/height = size/16 rem`, `outlineStyle` none→solid on `isOverBackground`,
+    `outlineWidth` 1→2 on `isLarge = size >= 64`, `centerBaselineBefore`). Both
+    `<Image>`s emit the byte-identical `<div slot="avatar" class=wrapper>…<img
+    role="img"></div>` — verified against upstream `s2/src/Image.tsx`. So the
+    wrapper div (which carries the avatar's own macro) is the D1 `target` and the
+    inner `<img>` is a diffed `part`; D1/D3 confirm the circle, size box, and both
+    outline widths match across every case and both themes.
+  - **Targeting note (reusable for wrapped-render primitives).** When a component's
+    style macro lands on a *wrapper* element and the semantic node is a *child*
+    (here: styles on the `<div slot="avatar">`, AX on the inner `<img>`), split the
+    scenario locators — `target` = `[slot="avatar"]` (the styled box), `parts.image`
+    = `getByRole("img", …)` (the AX/reveal node). Do not target the img for D1: it
+    only carries `imageStyles` (opacity/object-fit), not the avatar treatment.
+  - **D3 reveal-timing handling.** The `<img>` starts at opacity 0 and reveals on
+    load, with a 500ms opacity transition *only* when `loadTime > 200ms`. For the
+    cached ~2.5KB local fixture PNG the load is well under 200ms, so opacity snaps
+    to 1 with no transition; a `settleMs: 500` still guards a cold first load so
+    both panels capture fully revealed. No pixel waiver was needed.
+  - **D6 confirms `isOverBackground` is purely visual.** The AX tree for both the
+    default and over-background cases is the identical single `img "Avatar"` node —
+    the outline path leaks no role or accessible-name change.
+  - Regression guard: `avatar.certified.spec.ts` **22/22**; no source changed, so
+    neighbouring certs are untouched by construction; standalone e2e `tsc -p` clean
+    (added `avatar.certified.spec.ts` to the scratchpad include list). No net change
+    to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2).
+    Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.
