@@ -752,7 +752,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
 (2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04) · ✓ Divider
-(2026-07-04)` — remaining
+(2026-07-04) · ✓ StatusLight (2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1195,6 +1195,51 @@ certified, `blocked: name (reason)` otherwise.
     neighbouring certs are untouched by construction; standalone e2e `tsc -p`
     clean (added `divider.certified.spec.ts` to the scratchpad include list). No
     net change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
+    Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **StatusLight done 2026-07-04 (CP9.9):** ninth new Tier-1 unit certified — a
+  coloured **dot + label** display primitive, so (like Badge) it carries text and
+  D7 re-enters. Spec `statuslight.certified.spec.ts` — 9 prop cases (default,
+  informative, positive, notice, negative, seafoam, size-s, size-xl, status-role)
+  × the applicable driver set = **44 tests, all green on the first run, no port
+  change required.** Third byte-identical unit in a row (Badge, Divider,
+  StatusLight); the value is the permanent guard + driver-set rationale.
+  - **Structure + macros verified byte-identical to upstream** (`s2/src/
+    StatusLight.tsx`): the `wrapper` macro (`controlFont`, `gap: 'text-to-visual'`,
+    `width: 'fit'`, `alignItems: 'baseline'`, the neutral-only `gray-600`
+    text-colour branch, `disableTapHighlight`) and the `light` macro (the 8/10/12/
+    14 `size` scale + the full 19-variant `fill` colour table + `overflow: visible`)
+    match the two source files line-for-line. `CenterBaseline` is a `<div>` on both
+    and S2 `Text` is a `<span data-rsp-slot="text">` on both, so the wrapper is the
+    D1 `target` and the two children are diffed `parts`: `dot` (the `<svg>`) and
+    `text` (the label `<span>`). (The port adds an outer `<TextContext.Provider
+    value={{}}>` upstream lacks, but a provider emits no DOM and resolves to the
+    same "no slotted props", so the rendered tree is identical — confirmed green.)
+  - **The dot colour is an SVG `fill`, not `background-color`**, so it is not in
+    the default D1 allowlist. `styleProps.add` pulls in `fill` (+ the svg's
+    `overflow`) and the `dot` part is diffed — that is where the per-variant colour
+    table is actually asserted. The **label** colour is set on the wrapper
+    (`neutral` default; `gray-600` only for the neutral variant) and inherited by
+    the `text` span, so `color` (already allowlisted) captures it on both.
+  - **D6 is the semantic headline and is probe-verified to have teeth.** With no
+    role the wrapper is generic and only the label text is exposed; with
+    `role="status"` an inline probe confirmed `ariaSnapshot()` yields
+    `- status "StatusLight route label": Sync complete` — the wrapper becomes a
+    `status` live region whose accessible name is the fixture's `aria-label`. That
+    same probe confirmed the **`filterDOMProps` labelable gate**: with no role the
+    `aria-label` is *stripped* (`role=null aria-label=null`), so a labelled
+    StatusLight only keeps its label when `role` is set — identical on both stacks.
+  - D7: the label text contrast — `default` exercises the neutral variant's
+    `gray-600` branch; `positive`/`negative` prove the *label* stays the
+    high-contrast `neutral` token even as the dot takes the semantic colour. All
+    matched to 2dp in both themes. The rest of the set is N/A with the reason in
+    the spec header: **D2** (no transition/animation), **D4/D5** (not
+    focusable/pressable; `role="status"` is a live region, not a widget), **D8**
+    (not an interactive target).
+  - Regression guard: `statuslight.certified.spec.ts` **44/44**; no source changed,
+    so neighbouring certs are untouched by construction; standalone e2e `tsc -p`
+    clean (added `statuslight.certified.spec.ts` to the scratchpad include list).
+    No net change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
     Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.
