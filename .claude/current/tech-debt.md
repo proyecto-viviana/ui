@@ -255,14 +255,29 @@ tasks:
       Two of the four group holdouts named in `describedby-slots-group-redesign` (RadioGroup,
       CheckboxGroup) now realign their OUTPUT to upstream and route ids through the headless;
       Select + ColorField remain.
-      STILL OPEN: (a) the `isInvalid` row for Checkbox AND CheckboxGroup AND RadioGroup (the `<Text
-      slot="errorMessage">` AlertIcon-sized error + `aria-invalid` re-flowing the field
-      grid — measured 18px→52px etc.), and (b) the shared FieldLabel + HelpText/FieldError
-      *extraction* itself (de-duplicate the hand-rolls across Checkbox/CheckboxGroup/
-      RadioGroup/the field units; byte-copy the upstream Field.tsx style() objects; RAC
-      Label/Text/FieldError element types). Do (b) so the group hand-roll is replaced by the
-      shared component producing the same now-certified output, then certify the deferred
-      invalid/description cases on top.
+      THIRD DOWN PAYMENT (the TextField recertification, CP9.19, DONE 2026-07-04): TextField is
+      now certified 35/35 (D1/D3/D5/D6/D7). This is the first unit on the INPUT-WRAPPING side of
+      the field family (the `FieldGroup` composite, not the toggle/group hand-roll). Its id
+      wiring was already single-source (the port reads description/error ids off the headless
+      TextField context), so the reverts here were the help-text `<p>`→`<span slot>` + dropping a
+      hand-roll-only `margin:0`, and — the reusable find — the FieldGroup wrapper `<div>` role.
+      REUSABLE FINDING FOR THE WHOLE INPUT FAMILY: upstream's `FieldGroup` wrapper is
+      `role="presentation"`, NOT `role="group"`. RAC's `Group` defaults to `role ?? 'group'`, but
+      RAC's `TextField` seeds `GroupContext` with `{role:'presentation'}`
+      (`react-aria-components/dist/private/TextField.mjs:107-113`) so the input's visual wrapper is
+      marked presentation to keep the AX tree flat (textbox is a direct child of the field, no
+      redundant group node). A source-read first landed `role="group"`; the D6 cert + a DOM dump
+      of both stacks corrected it to `presentation`. Every remaining input-family hand-roll
+      (TextArea, SearchField, NumberField, DateField, TimeField, ComboBox, Picker) wraps its input
+      in the same FieldGroup and MUST render the wrapper `<div>` as `role="presentation"`.
+      STILL OPEN: (a) the `isInvalid` row for Checkbox AND CheckboxGroup AND RadioGroup AND
+      TextField (the `<span slot="errorMessage">`/`<Text slot="errorMessage">` AlertIcon-sized
+      error + `aria-invalid` re-flowing the field grid — measured 18px→52px etc.), and (b) the
+      shared FieldLabel + HelpText/FieldError *extraction* itself (de-duplicate the hand-rolls
+      across Checkbox/CheckboxGroup/RadioGroup/the field units; byte-copy the upstream Field.tsx
+      style() objects; RAC Label/Text/FieldError element types). Do (b) so the group hand-roll is
+      replaced by the shared component producing the same now-certified output, then certify the
+      deferred invalid/description cases on top.
   - id: headless-switch-ref-forwarding
     title: Headless SwitchField/SwitchButton do not accept ref/inputRef — styled Switch cannot forward either
     state: open

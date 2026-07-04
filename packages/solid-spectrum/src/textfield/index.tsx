@@ -185,7 +185,6 @@ const textFieldInput = style({
 const helpTextStyles = style<TextFieldStyleProps>({
   gridArea: "helptext",
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
   font: controlFont(),
@@ -237,6 +236,10 @@ const noWrap = style({
   whiteSpace: "nowrap",
 });
 
+// Byte-faithful to upstream Field.tsx HelpText: the description renders a RAC
+// `<Text slot="description">` (a `<span>`), NOT a `<p>` (whose UA `margin` the
+// port previously had to zero out in `helpTextStyles`). The `slot` mirrors RAC's
+// Text; the id/aria wiring is read from the headless TextField context.
 function TextFieldDescription(props: {
   class?: string;
   children?: JSX.Element;
@@ -248,12 +251,14 @@ function TextFieldDescription(props: {
     return rest;
   };
   return (
-    <p {...descriptionProps()} class={props.class}>
+    <span {...descriptionProps()} slot="description" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
+// Upstream renders the invalid message through a RAC `<FieldError>`, which is a
+// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
 function TextFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
   const context = useContext(HeadlessTextFieldContext);
   if (!context) return null;
@@ -262,9 +267,9 @@ function TextFieldError(props: { class?: string; children?: JSX.Element }): JSX.
     return rest;
   };
   return (
-    <p {...errorMessageProps()} class={props.class}>
+    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -431,6 +436,15 @@ export function TextField(props: TextFieldProps): JSX.Element {
           </Show>
 
           <div
+            // Upstream FieldGroup renders a RAC `<Group>`. RAC's `Group` defaults
+            // to `role={props.role ?? 'group'}`, but RAC's `TextField` seeds
+            // `GroupContext` with `{role: 'presentation'}` (TextField.mjs) — the
+            // input is directly labeled, so the visual wrapper is marked
+            // presentation to keep the AX tree flat (no redundant group node
+            // around the textbox). Verified against the rendered React DOM: the
+            // FieldGroup div is `role="presentation"`. The hand-rolled `<div>`
+            // must carry it to match both the DOM and the accessibility tree.
+            role="presentation"
             class={groupClass(renderProps)}
             onPointerDown={(event) => {
               if (event.pointerType === "mouse") {

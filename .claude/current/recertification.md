@@ -758,8 +758,9 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 certified, `blocked: name (reason)` otherwise.
 
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
-(2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04)` — in progress.
-Queue: TextField, TextArea, SearchField, NumberField, Slider, RangeSlider, Form,
+(2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
+(2026-07-04)` — in progress.
+Queue: TextArea, SearchField, NumberField, Slider, RangeSlider, Form,
 FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -1732,5 +1733,60 @@ headless is now the single source of truth for group description/error ids
     this unit certifies the valid (description) composite where reverts (1)+(2) live. The
     single-source `renderHelpText` wiring is now on RadioGroup too — the second down
     payment on that port after CheckboxGroup.
+
+- ✓ **TextField done 2026-07-04 (CP9.19 — fifth Tier-2 unit, single-input FieldGroup
+  composite):** certified `35/35` green across D1/D3/D5/D6/D7 (`textfield.certified.spec.ts`).
+  This is the first unit on the **input-wrapping** side of the field family: unlike the
+  toggle/group hand-rolls, the port already drove a headless `TextField`/`Label`/`Input`
+  and read the description/error id off the headless TextField context (RAC context-slot
+  model), so the id wiring was already single-source and the byte-copied `style()` objects
+  (`fieldGroupStyles`, the input style, `helpTextStyles`, `fieldLabel`) already matched. Two
+  structural DOM divergences the hand-roll still carried were closed, realigning OUTPUT to
+  upstream `TextField.tsx`/`Field.tsx` (the shared FieldLabel/HelpText/FieldGroup
+  *extraction* stays tracked — `helptext-fielderror-visual-port`):
+  1. **help text rendered `<p>` + a hand-roll-only `margin:0`** → `<span slot="description">`
+     (and error `<span slot="errorMessage">`, a RAC `<FieldError>`), and the stray
+     `margin:0` dropped from `helpTextStyles` (upstream's has none — the `<p>`'s only reason
+     for it was zeroing the UA paragraph margin). A `<p>` also carries an implicit
+     `paragraph` role a `<span>` does not, so both a computed-style and an AX revert.
+  2. **the `FieldGroup` (bordered input container) rendered `<div>` with no `role`** →
+     `role="presentation"`. **KEY EMPIRICAL CORRECTION (source-read was wrong):** I first
+     added `role="group"` reasoning that upstream's `FieldGroup` renders a RAC `<Group>`
+     whose default is `role={props.role ?? 'group'}`. The D6 cert failed — React's rendered
+     AX tree exposes NO group node (the textbox is a direct child of the field). A DOM dump
+     of both stacks settled it: React's FieldGroup div is literally `<div role="presentation"
+     data-rac="">`. Root cause: **RAC's `TextField` seeds `GroupContext` with `{role:
+     'presentation', isInvalid, isDisabled}`** (`react-aria-components/dist/private/
+     TextField.mjs:107-113`), so the FieldGroup's inner `<Group>` reads `presentation` from
+     context — the input is directly labeled, so the visual wrapper is deliberately marked
+     presentation to keep the AX tree flat. The port's hand-rolled `<div>` now carries
+     `role="presentation"`, matching both the DOM role attribute and the AX tree (D6 green,
+     both cases). **Reusable for the rest of the input family:** TextArea, SearchField,
+     NumberField, DateField, TimeField, ComboBox and Picker all wrap their input in the same
+     FieldGroup — each hand-rolled group `<div>` must be `role="presentation"`, NOT `group`.
+  - **NOT a divergence (verified):** the label wrapper's `contain` computes `inline-size` on
+     BOTH stacks. Unlike RadioGroup/CheckboxGroup, `TextFieldBase` does NOT render its
+     `FieldLabel` with `isQuiet`, so the `isQuiet:'none'` branch never triggers and
+     `labelPosition:top` resolves `inline-size` on both — no isQuiet threading needed here
+     (a real divergence for the *group* labels, a non-divergence for the *field* label).
+  - **Label left as `<label>`** (NOT a divergence — a text input IS a labelable element, so
+     upstream `<Label>` is a real `<label>`, which the port already matched; contrast the
+     group units whose label is a `<span>`).
+  - **D1/D3 run at `states:["default"]`** (the split-control justification, as
+     Checkbox/Switch): the focusable `<input>` is not the primary styled surface (that's the
+     separate `FieldGroup` `<div>`, whose border reacts to focus-within via a render-prop
+     class), so no single element is focusable-and-styled. The whole certifiable style
+     surface is the prop-driven rest matrix — cases default/size-S/L/XL/disabled/required/
+     read-only. **D5** is the single-input `tab-cycle` walk (focus lands on the input,
+     Tab exits, Shift+Tab returns). **`required` is in D1/D3 but excluded from D6** — its
+     necessity indicator is a decorative `AsteriskIcon` `<svg>` (the tracked
+     `ui-icon-decorative-ax-node`), same reason Checkbox kept decorative-svg cases out of D6;
+     D1/D3 still certify the asterisk's geometry + pixels.
+  - **Still deferred to `helptext-fielderror-visual-port`:** the `isInvalid` state (the
+     `<span slot="errorMessage">` error row + its `FieldErrorIcon` inside the group +
+     `aria-invalid` re-flowing the field grid), same as the other four Tier-2 units. The
+     `<span>`/`slot` error markup is landed in source now so it is faithful when that unit
+     certifies invalid; this unit certifies the valid (description) composite where reverts
+     (1)+(2) live.
 
 Phase 3: not started.
