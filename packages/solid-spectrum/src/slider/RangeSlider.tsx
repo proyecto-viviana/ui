@@ -13,7 +13,7 @@ import {
 } from "solid-js";
 import { useLocale } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, style } from "../style" with { type: "macro" };
+import { focusRing, style } from "../style" with { type: "macro" };
 import {
   controlFont,
   field,
@@ -103,6 +103,10 @@ const sliderRoot = style<RangeSliderStyleState>(
     ...field(),
     font: controlFont(),
     alignItems: {
+      // Upstream applies field() (align-items: baseline) + slider() as two
+      // separate classes; slider() only overrides for side layout. We merge
+      // both into one style(), so the baseline default must be restored here.
+      default: "baseline",
       labelPosition: {
         side: "center",
       },
@@ -161,6 +165,31 @@ const labelContainer = style<RangeSliderStyleState>({
 
 const sliderLabel = style<RangeSliderStyleState>({
   ...fieldLabel(),
+});
+
+// The FieldLabel outer wrapper `<div>` (upstream `Field.tsx` FieldLabel): an inline
+// box in the `label` grid cell that owns the label-align text-align + the top
+// paddingBottom(--field-gap) + contain(inline-size). RangeSlider never sets `isQuiet`,
+// so upstream's `contain.isQuiet:'none'` branch is a dead condition here and is omitted.
+const fieldLabelWrapper = style<RangeSliderStyleState>({
+  gridArea: "label",
+  display: "inline",
+  textAlign: {
+    labelAlign: {
+      start: "start",
+      end: "end",
+    },
+  },
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
+  },
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+  },
 });
 
 const outputStyle = style<RangeSliderStyleState>({
@@ -331,9 +360,10 @@ const upperTrack = style<{ isDisabled?: boolean; trackStyle?: RangeSliderTrackSt
   translateY: "-50%",
   width: "full",
   boxSizing: "border-box",
-  borderStyle: "solid",
-  borderWidth: "[.5px]",
-  borderColor: {
+  outlineStyle: "solid",
+  outlineWidth: "[.5px]",
+  outlineOffset: -0.5,
+  outlineColor: {
     default: "transparent",
     forcedColors: {
       default: "ButtonText",
@@ -363,7 +393,7 @@ const filledTrack = style<{
   position: "absolute",
   backgroundColor: {
     default: "gray-700",
-    isEmphasized: baseColor("accent-900"),
+    isEmphasized: "accent-900",
     isDisabled: "disabled",
     forcedColors: {
       default: "Highlight",
@@ -526,13 +556,32 @@ export function RangeSlider(props: RangeSliderProps): JSX.Element {
   const valuePercent = (value: number) => (value - minValue()) / (maxValue() - minValue());
   const startPercent = createMemo(() => clamp(valuePercent(startValue()), 0, 1));
   const endPercent = createMemo(() => clamp(valuePercent(endValue()), 0, 1));
-  const outputText = createMemo(
-    () => `${formatter().format(startValue())} – ${formatter().format(endValue())}`,
-  );
+  // Mirror react-stately `useSliderState.getFormattedValue` (dist switch on value
+  // arity): a lone number formats plainly, a [start, end] pair uses
+  // `Intl.NumberFormat.formatRange` — which yields an en-dash with NO surrounding
+  // spaces (e.g. "30–60"), not the manual "30 – 60" the port previously emitted.
+  // Both the visible output text and the reserve-width measurement route through
+  // this so the port matches RAC's `SliderOutput` default child + upstream
+  // `SliderBase` maxLabelLength byte-for-byte.
+  const getFormattedValue = (value: number | readonly [number, number]) => {
+    const fmt = formatter();
+    return typeof value === "number" ? fmt.format(value) : fmt.formatRange(value[0], value[1]);
+  };
+  const outputText = createMemo(() => getFormattedValue([startValue(), endValue()]));
+  // Upstream `SliderBase` (Slider.tsx) two-handle branch: reserve width =
+  // `max(len(getFormattedValue([min, min+step])), len(getFormattedValue([max-step,
+  // max])))`. Each argument is a 2-element array, so `getFormattedValue` routes it
+  // through `formatRange` (NOT `format([array])→NaN`). The prior hand-rolled
+  // `3 + max*2` over-reserved (9ch), forcing a wide output column that also narrowed
+  // the track and shifted the thumbs.
   const maxLabelLength = createMemo(() => {
-    const minLabelLength = [...formatter().format(minValue())].length;
-    const maxLabelLength = [...formatter().format(maxValue())].length;
-    return 3 + Math.max(minLabelLength, maxLabelLength) * 2;
+    const min = minValue();
+    const max = maxValue();
+    const stepValue = step();
+    return Math.max(
+      [...getFormattedValue([min, min + stepValue])].length,
+      [...getFormattedValue([max - stepValue, max])].length,
+    );
   });
 
   const [draggingThumb, setDraggingThumb] = createSignal<"start" | "end" | null>(null);
@@ -840,13 +889,15 @@ export function RangeSlider(props: RangeSliderProps): JSX.Element {
       style={mergedUnsafeStyle()}
     >
       <div class={labelContainer(labelStyleState())}>
-        <Show when={local.label || local.contextualHelp}>
-          <span id={labelId} class={sliderLabel(labelStyleState())}>
-            {local.label}
-          </span>
-          <Show when={local.contextualHelp}>
-            <span data-slot="contextualHelp">{local.contextualHelp}</span>
-          </Show>
+        <Show when={local.label}>
+          <div class={fieldLabelWrapper(labelStyleState())}>
+            <label id={labelId} class={sliderLabel(labelStyleState())}>
+              {local.label}
+            </label>
+            <Show when={local.contextualHelp}>
+              <span data-slot="contextualHelp">{local.contextualHelp}</span>
+            </Show>
+          </div>
         </Show>
         <Show when={labelPosition() === "top" && showOutput()}>
           <output
@@ -878,21 +929,19 @@ export function RangeSlider(props: RangeSliderProps): JSX.Element {
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
-          <div
-            class={upperTrack({ isDisabled: isDisabled(), trackStyle: trackStyle() })}
-            style={{ width: "100%" }}
-          />
-          <div
-            class={filledTrack({
-              isDisabled: isDisabled(),
-              isEmphasized: isEmphasized(),
-              trackStyle: trackStyle(),
-            })}
-            style={{
-              width: `${Math.abs(endPercent() - startPercent()) * 100}%`,
-              [cssDirection()]: `${Math.min(startPercent(), endPercent()) * 100}%`,
-            }}
-          />
+          <div class={upperTrack({ isDisabled: isDisabled(), trackStyle: trackStyle() })}>
+            <div
+              class={filledTrack({
+                isDisabled: isDisabled(),
+                isEmphasized: isEmphasized(),
+                trackStyle: trackStyle(),
+              })}
+              style={{
+                width: `${Math.abs(endPercent() - startPercent()) * 100}%`,
+                [cssDirection()]: `${Math.min(startPercent(), endPercent()) * 100}%`,
+              }}
+            />
+          </div>
           {renderThumb("start")}
           {renderThumb("end")}
         </div>

@@ -417,6 +417,29 @@ tasks:
       Playwright's own default). Revisit only if a future change lets the thumb edge
       rasterize byte-identically (e.g. the native-input realign above changes the thumb
       paint); otherwise it stays as the documented raster floor.
+  - id: rangeslider-duplicates-slider-spine
+    title: RangeSlider hand-copies Slider's styles + geometry instead of sharing the spine
+    state: open
+    roadmap: headless-spine-port
+    note: >-
+      Surfaced by the RangeSlider recertification (CP9.24): upstream S2 `RangeSlider.tsx`
+      is a thin wrapper that IMPORTS the shared style atoms from `./Slider`
+      (`filledTrack, SliderBase, thumb, thumbContainer, thumbHitArea, track, upperTrack`)
+      and the shared `SliderBase` layout, adding only the second thumb. The port's
+      `packages/solid-spectrum/src/slider/RangeSlider.tsx` (@ts-nocheck) instead
+      DUPLICATES every Slider style() block and hand-rolls its own pointer/keyboard math,
+      so it inherited all of Slider's self-inflicted divergences (the `align-items`
+      merge-clobber, the `border→outline` upperTrack, the `baseColor` filledTrack, the
+      bare-`<span>` label, the manual fill nesting) as independent copies that each had to
+      be re-fixed byte-for-byte in this cert rather than fixed once. It also re-implements
+      the output/reserve formatter (fixed here to route through `formatRange` via a
+      faithful `getFormattedValue`). Faithful exit: collapse RangeSlider onto Slider's
+      shared spine + style atoms (single source of truth for the track/thumb/fill/label),
+      so a future Slider fix propagates to RangeSlider automatically. Couple this with the
+      `slider-thumb-native-input-semantics` realign (both are the same headless-spine
+      track) and drop the hardcoded English "Minimum"/"Maximum" thumb aria-labels in favor
+      of the localized `slider.minimum`/`slider.maximum` strings upstream uses. Deferred
+      to headless-spine-port; the duplicated file is certified-green in the meantime.
 ---
 
 # Tech Debt

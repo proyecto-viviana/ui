@@ -760,8 +760,8 @@ certified, `blocked: name (reason)` otherwise.
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
-(2026-07-04) · ✓ Slider (2026-07-04)` — in progress.
-Queue: RangeSlider, Form,
+(2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04)` — in progress.
+Queue: Form,
 FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -2001,5 +2001,42 @@ headless is now the single source of truth for group description/error ids
      slider passes role/name but silently drops the AX value in Chromium — the value only rides the
      native `<input type=range>`, so an ARIA-div slider needs a `test.fixme` on D6 value until the
      input backs the semantics.**
+
+- ✓ **RangeSlider done 2026-07-04 (CP9.24 — tenth Tier-2 unit, two-thumb slider):** certified
+  `44/44` green (D1×20, D3×20, D7×4) + D6 `default` a tracked `test.fixme`
+  (`rangeslider.certified.spec.ts`). Structurally the two-handle sibling of Slider — same
+  `SliderBase` root, FieldLabel row (label + output), and `fieldInput` row, but with an
+  `upperTrack > filledTrack` spanning between the two thumbs. Since the port hand-rolls RangeSlider
+  as a full copy of Slider (its own pointer/keyboard math + DUPLICATED style() blocks), it inherited
+  every one of Slider's self-inflicted divergences; the same five presentational reverts +
+  `align-items:baseline` merge fix were re-applied here byte-for-byte. The unit-specific root cause
+  that turned all 44 reds green was the **output text + reserve-width formatter**:
+  1. **Output text must use `Intl.NumberFormat.formatRange`, not a manual join.** RAC 1.19
+     `SliderOutput` defaults its child to `state.getFormattedValue()`, and react-stately's
+     `getFormattedValue([start,end])` switches on arity → `formatter.formatRange(start, end)`, which
+     for en-US yields an en-dash with NO surrounding spaces (`"30–60"`). The port emitted a
+     hand-rolled `` `${format(start)} – ${format(end)}` `` = `"30 – 60"` (spaces). D7's `descriptor`
+     capture caught the text mismatch (`output:30–60` vs `output:30 – 60`) — the contrast driver
+     doubles as a text-content oracle on the `<output>` node. **Note the installed `.bun` RAC 1.15.1
+     still defaults to `getThumbValueLabel(0)` (only thumb 0); the app-pinned 1.19.0 switched the
+     default to the full-range `getFormattedValue()` — always read the app-resolved dist, not the
+     hoisted `.bun` copy, for output/formatter parity.**
+  2. **maxLabelLength routes each measurement array through `getFormattedValue`, i.e. `formatRange`
+     — NOT `format([array])→NaN`.** Upstream `SliderBase` two-handle branch measures
+     `max(len(getFormattedValue([min, min+step])), len(getFormattedValue([max-step, max])))`; each
+     argument is a 2-element array, so it formats a *range* (`"0–1"`, `"99–100"`), not a
+     NaN-coerced constant. The port's prior hand-rolled `3 + max*2` over-reserved `9ch`, widening the
+     output grid column, narrowing the track, and shifting both thumbs — cascading into the D1
+     `grid-template-columns` red and the D3 thumb-position red. A faithful `getFormattedValue`
+     helper (mirroring the react-stately dist switch) now backs both the visible output and the
+     reserve, and the grid columns + thumb positions match exactly. **Reusable: a slider's
+     `maxLabelLength` args are arrays that upstream routes through `getFormattedValue` (→ `formatRange`
+     for a pair); do NOT read `.format([array])` literally as NaN — it is a range format.**
+  3. **Same tracked structural gaps as Slider:** D3 `slider-thumb-antialias-1lsb` waiver
+     (`pixelThreshold:1`), D6 `default` = `slider-thumb-native-input-semantics` `test.fixme` (the
+     thumbs are `div[role=slider]` with hardcoded English "Minimum"/"Maximum" labels and no native
+     `<input type=range>`), and the broader **RangeSlider-duplicates-Slider-styles** debt — the
+     faithful end state shares Slider's spine/styles rather than copying them. Tracked, not fixed in
+     this unit.
 
 Phase 3: not started.
