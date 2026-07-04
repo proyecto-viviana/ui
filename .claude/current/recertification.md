@@ -752,7 +752,8 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
 (2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04) · ✓ Divider
-(2026-07-04) · ✓ StatusLight (2026-07-04) · ✓ Meter (2026-07-04)` — remaining
+(2026-07-04) · ✓ StatusLight (2026-07-04) · ✓ Meter (2026-07-04) · ✓ ProgressCircle
+(2026-07-04)` — remaining
 march order above is the queue; mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
@@ -1295,5 +1296,69 @@ certified, `blocked: name (reason)` otherwise.
     (added `meter.certified.spec.ts` to the scratchpad include list). No net change
     to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2).
     Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **ProgressCircle done 2026-07-04 (CP9.11):** eleventh new Tier-1 unit
+  certified — the **circular sibling of ProgressBar**: a pure-SVG determinate/
+  indeterminate spinner with **no text node** (shares upstream's `useProgressBar`
+  spine via `createProgressBar`). Spec `progresscircle.certified.spec.ts` — 7 prop
+  cases (default, value-25, custom-range, size-s, size-l, static-white,
+  indeterminate) × the applicable driver set = **27 tests green, with one
+  source-read faithfulness fix landed** (see below). Ends the four-unit
+  byte-identical streak with a real, harness-caught divergence.
+  - **Structure + macros verified byte-identical to upstream** (`s2/src/
+    ProgressCircle.tsx`): `<div role=progressbar>` → `<svg fill=none 100%×100%>` →
+    three concentric `<circle>` (hcm-stroke / track / fill). The port's `wrapper`/
+    `track`/`fill`/`hcmStroke` `style()` macros reproduce upstream line-for-line —
+    the `staticColor()` + `size {default:32,S:16,L:64}` + `aspectRatio:square`
+    wrapper, the `gray-300`/`transparent-overlay-300`/`Background` track stroke
+    table, the `blue-900`/`transparent-overlay-900`/`ButtonText` fill stroke with
+    `rotate:-90` + `transformOrigin:center`, and the `pxToRem`-driven stroke-width
+    scale (`0.1875`/`0.125`/`0.25`rem). `radiusForSize` matches upstream's
+    `calc(50% - {strokeWidth/2}rem)` table (S `0.0625` / M `0.09375` / L `0.125`rem).
+    The fill arc's dash geometry is identical: `pathLength=100`,
+    `stroke-dasharray="100 200"`, `stroke-dashoffset={100 - percentage}`,
+    `stroke-linecap=round`. So the `role=progressbar` div is the D1 `target` and
+    the `<svg>` + three circles are diffed `parts` (`svg`/`hcm`/`track`/`fill`).
+  - **SOURCE-READ FAITHFULNESS FIX (Rule #1 self-inflicted divergence).** The port's
+    `<svg>` omitted upstream's `style={{display: 'block'}}`. An inline SVG sits on
+    the text baseline and reserves line-box descender space, so `display:inline` vs
+    upstream's `block` is a genuine computed-style divergence — **caught red by D1**
+    (12 cases: `"display": "inline"` on the `svg` part vs upstream `"block"`).
+    Notably D3 pixel stayed green through the red (the `100%×100%` svg inside the
+    fixed aspect-ratio-square wrapper doesn't shift enough pixels to trip the
+    threshold), which is exactly why the computed-style driver earns its keep — it
+    pins the faithful value even where the rasteriser papers over it. One-line fix
+    (`packages/solid-spectrum/src/progress/ProgressCircle.tsx`: add
+    `style={{ display: "block" }}` to the `<svg>`) → **27/27 green**, port unit
+    tests still 5/5.
+  - **D1** captured the SVG longhands the default allowlist omits via `styleProps
+    .add`: `fill`, `stroke`, `stroke-width`, the fill arc's `stroke-dasharray`/
+    `stroke-dashoffset`/`stroke-linecap`, the `r`/`cx`/`cy` geometry attributes, the
+    fill's `rotate`/`transform-origin`, the wrapper's `aspect-ratio`, and (the fix
+    guard) `display`. D3 pixel clean across all 6 steady cases in both themes.
+  - **D6** pins role=progressbar + `aria-valuenow`/`min`/`max`/`valuetext` (the
+    accessible name is the fixture's `aria-label` "Loading…", since ProgressCircle
+    has no visible label); `custom-range` proves the (30/10/50) min/max triple +
+    50% math, and `indeterminate` proves `aria-valuenow`/`valuetext` are **dropped**
+    (name still wired) — identically on both stacks.
+  - **D2/D7 N/A, rationale in the spec header.** D2: the only animation is the
+    *indeterminate* spin (an infinite `rotationAnimation`+`dashoffsetAnimation`
+    pair under build-hashed `keyframes()` names that differ by construction, so a
+    metadata diff would be a false positive — same call the ProgressBar unit made);
+    the keyframe content + timing are verified byte-identical by source read
+    instead (rotation `0→360deg`, dash-offset `75→20` peak-at-30%, composed
+    `1s cubic-bezier(.6,.1,.3,.9)` + `1s cubic-bezier(.25,.1,.25,1.3)` infinite —
+    the port's `s2ProgressCircleIndeterminateAnimation` mirrors upstream's inline
+    literal exactly). The animated `indeterminate` case is `steadyState:false` so
+    it is excluded from the D1/D3 sweep and used only by D6. D7: no text node → no
+    fg/bg text pair to measure; the arc-vs-track colour is a shared-token `stroke`
+    already asserted byte-for-byte by D1. D4/D5/D8 N/A (not focusable/pressable, no
+    hit box).
+  - Regression guard: `progresscircle.certified.spec.ts` **27/27**; the one-line
+    src fix is additive-faithful and its only cert exposure is this unit (neighbour
+    certs don't import ProgressCircle); standalone e2e `tsc -p` clean (added the
+    spec to the scratchpad include list). No net change to the 4 pre-existing
+    deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated
+    `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.

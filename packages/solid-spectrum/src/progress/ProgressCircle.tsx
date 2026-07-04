@@ -241,7 +241,7 @@ export function ProgressCircle(props: ProgressCircleProps): JSX.Element {
       style={mergedUnsafeStyle()}
       slot={local.slot ?? undefined}
     >
-      <svg fill="none" width="100%" height="100%">
+      <svg fill="none" width="100%" height="100%" style={{ display: "block" }}>
         <circle cx="50%" cy="50%" r={radiusForSize(size())} class={hcmStrokeStyles(state())} />
         <circle cx="50%" cy="50%" r={radiusForSize(size())} class={trackStyles(state())} />
         <circle
