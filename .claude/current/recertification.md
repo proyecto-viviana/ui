@@ -758,7 +758,7 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 certified, `blocked: name (reason)` otherwise.
 
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · blocked: CheckboxGroup
-(Field-composite port) · → Switch (2026-07-04)` — in progress. Queue: RadioGroup,
+(Field-composite port) · ✓ Switch (2026-07-04)` — in progress. Queue: RadioGroup,
 TextField, TextArea, SearchField, NumberField, Slider, RangeSlider, Form,
 FieldError/HelpText, LabeledValue. Same marking rule. NOTE the Field-composite
 units (CheckboxGroup, RadioGroup, and every field that shows a label/description/
@@ -1622,5 +1622,56 @@ the shared FieldLabel + HelpText/FieldError first, then certify them together.
     together. The two pure-style bugs (1)(2) are held (not shipped unguarded) so the
     Field-composite unit fixes them under a green driver. Next green unit: **Switch**
     (Field-clean single toggle).
+
+- ✓ **Switch done 2026-07-04 (CP9.17 — second Tier-2 unit, Field-clean toggle):** the
+  standalone S2 switch, `49/49` green across D1/D3/D4/D5/D6/D7/D8 on the **first** cert
+  run — no red-to-green iteration needed because the port rebuild was a byte-for-byte
+  transcription of upstream `Switch.tsx`. Two self-inflicted divergences were reverted
+  in `switch/ToggleSwitch.tsx` as part of the rebuild:
+  1. **Structural — pre-split flex monolith → RAC-1.19 form-field split.** The port
+     rendered the whole control as a single `<label>` with `display:flex` as its root.
+     Upstream composes it from `SwitchField` (the grid **`field`** `<div>` root) wrapping
+     `SwitchButton` (the subgrid **`wrapper`** `<label>`) — imported from
+     `react-aria-components/Switch` — plus a (dormant) `HelpText`. Rebuilt onto the
+     faithful split, byte-copying upstream's `field`/`wrapper`/`track`/`handle` `style()`
+     macro objects (→ identical content-hashed classes → identical computed styles) and
+     threading the identical render-prop conditions (`isSelected`/`isEmphasized`/
+     `isDisabled`/`size`) + the identical inline handle transform
+     (`switchHandlePressStyle` == upstream `pressScale(handleRef, transformStyle)`).
+  2. **Track fill — custom `disabledSelectedTrackBackground` + wrong condition order.**
+     The port's `track.backgroundColor.isSelected` used a custom light-dark value AND
+     declared `isDisabled` **before** `isEmphasized`/`forcedColors`, so under
+     last-match-wins the disabled state was overridden by emphasized. Restored to
+     upstream's exact `{default: baseColor('neutral'), isEmphasized: baseColor('accent-900'),
+     forcedColors: 'Highlight', isDisabled: {default: 'gray-400', forcedColors: 'GrayText'}}`.
+     This is what the `disabled-selected` cert case pins (now `gray-400` on both stacks).
+  - **D1 target = the track `<div>`** (`root > div > label > div > div`), the fixed-size,
+    layout-neutral, most condition-dependent surface; `handle` + `wrapper` + `field`
+    captured as parts. The handle's non-`none` rest `transform` (a `perspective(...)
+    translateZ(...)` — and, when selected, `translateX(calc(--trackWidth - 100% - 4px))`)
+    computed to a **byte-identical `matrix3d`** on both stacks across every size, the one
+    capture I'd flagged as sub-pixel-risky; it held because both resolve from the same
+    byte-copied CSS with identically-resolved custom props. **Scope:** D1/D3 at
+    `states:["default"]` (the param-driven rest matrix) — same source justification as
+    Checkbox: the focusable element (visually-hidden `<input role=switch>`) is not the
+    styled surface (the separate track `<div>`; RAC state attrs live on the `<label>`), so
+    no single element is focusable-and-styled and per-gesture track capture is not
+    expressible for a split control. Selected/emphasized/disabled/size variation is
+    prop-driven and captured in full at rest.
+  - **D6 rooted at the `<input>`** (role `switch` / name "Wi-Fi" / `[checked]` /
+    `[disabled]`) — the switch carries no decorative-icon AX node (track/handle are bare
+    `<div>`s), but rooting at the input keeps the AX surface scoped to the switch's own
+    contract and mirrors Checkbox's rooting. **D7** (canvas walk → the `<label>`'s bare
+    "Wi-Fi" text, resting + disabled color) and **D8** (the hidden `input`, pair-equal
+    sub-floor size reported as an upstream note) both viable exactly as for Checkbox.
+    **D2 not registered:** no enter/mount animation; the only motion is `transition`
+    longhands already pinned by D1.
+  - **Fully green, no deferral:** unlike Checkbox (invalid/description cases scoped out to
+    the Field-composite port), the `switch-demo` exposes no `description`/`errorMessage`
+    and is never invalid, so upstream's `HelpText` is null in every case — the whole
+    demo surface certifies. One status-quo note (not a new divergence): the rebuild omits
+    `ref`/`inputRef` forwarding because the headless `SwitchField`/`SwitchButton` don't
+    accept it (the pre-split monolith didn't forward either, and no cert/demo exercises
+    it); filed as follow-up `headless-switch-ref-forwarding`.
 
 Phase 3: not started.

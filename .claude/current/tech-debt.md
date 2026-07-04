@@ -247,6 +247,22 @@ tasks:
       then have Checkbox AND CheckboxGroup/RadioGroup consume them exactly as upstream does.
       Unblocks the deferred Checkbox invalid/description cases AND the whole CheckboxGroup/
       RadioGroup group-level cert in one shot.
+  - id: headless-switch-ref-forwarding
+    title: Headless SwitchField/SwitchButton do not accept ref/inputRef — styled Switch cannot forward either
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the Switch recertification (CP9.17): upstream S2 Switch.tsx forwards a
+      DOM `ref` to the field and threads a handle ref through `pressScale`; the port's
+      headless `SwitchField`/`SwitchButton` (solidaria-components/src/Switch.tsx) expose
+      no `ref`/`inputRef` prop, so the styled `switch/ToggleSwitch.tsx` rebuild cannot
+      forward either. This is status-quo, NOT a regression — the pre-split flex monolith
+      also did not forward — and no cert or demo exercises a switch ref, so it did not
+      block the (fully green) CP9.17 cert. Faithful target = add `ref` (field root) +
+      `inputRef` (the visually-hidden `<input>`) forwarding to the headless
+      SwitchField/SwitchButton mirroring the RAC Switch ref surface, then thread both
+      through the styled Switch. Low priority; revisit when a consumer needs an imperative
+      switch handle or when the shared form-field ref surface is standardized.
   - id: ui-icon-decorative-ax-node
     title: Reconcile decorative-icon AX exposure — React shows a bare img node, the port stamps aria-hidden
     state: open

@@ -1,37 +1,27 @@
 // @ts-nocheck
-import {
-  children as resolveChildren,
-  createSignal,
-  mergeProps as solidMergeProps,
-  splitProps,
-  type JSX,
-  useContext,
-} from "solid-js";
-import { getSlottedContextProps } from "../button/spectrum-context";
+import { type JSX, splitProps, mergeProps, Show, useContext } from "solid-js";
+import { getSlottedContextProps, mergeContextStyles, mergeContextUnsafeStyle } from "../button/spectrum-context";
 import { SwitchContext } from ".";
+import { type AriaSwitchProps, type Direction, useLocale } from "@proyecto-viviana/solidaria";
 import {
-  createFocusRing,
-  createHover,
-  createSwitch,
-  type AriaSwitchProps,
-  type Direction,
-  useLocale,
-} from "@proyecto-viviana/solidaria";
-import {
-  VisuallyHidden,
-  filterDOMProps,
+  SwitchField as HeadlessSwitchField,
+  SwitchButton as HeadlessSwitchButton,
+  type SwitchFieldRenderProps,
+  type SwitchButtonRenderProps,
   type ToggleSwitchRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { createToggleState } from "@proyecto-viviana/solid-stately";
+import { Text } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
-import { mergeStyles } from "../style/runtime";
 import {
   controlFont,
   controlSize,
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
+import { CenterBaseline } from "../icon/center-baseline";
+import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import { useProviderProps } from "../provider";
+import { useFormProps, useIsInForm } from "../form";
 
 export type SwitchSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2SwitchSize = "S" | "M" | "L" | "XL";
@@ -54,6 +44,10 @@ export interface ToggleSwitchProps extends Omit<AriaSwitchProps, "children"> {
   UNSAFE_style?: JSX.CSSProperties;
   /** Additional CSS class name. */
   class?: string;
+  /** A description for the Switch. */
+  description?: JSX.Element;
+  /** An error message for the Switch (rendered when invalid). */
+  errorMessage?: JSX.Element;
   /** Label text for the Switch. */
   children?: JSX.Element;
 }
@@ -65,32 +59,59 @@ interface SwitchStyleProps {
 
 type SwitchStyleState = ToggleSwitchRenderProps & SwitchStyleProps;
 
-const disabledSelectedTrackBackground = "[light-dark(rgb(114, 114, 114), rgb(118, 118, 118))]";
-
-const wrapper = style<SwitchStyleState & { isInForm?: boolean }>(
+// The field grid — byte-faithful to upstream S2 `Switch.tsx` local `field`.
+// Unlike the Checkbox field, upstream Switch passes `isInForm` to the field, so
+// the `gridColumnStart:{isInForm:'field'}` branch is live here (dormant for the
+// demo, which is never in a Form).
+const switchFieldStyle = style<SwitchStyleState & { isInForm?: boolean; isNoVisibleLabel?: boolean }>(
   {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: {
+      default: ["max-content", "1fr"],
+      isNoVisibleLabel: ["max-content"],
+    },
     columnGap: "text-to-control",
-    alignItems: "baseline",
     width: "fit",
     font: controlFont(),
-    transition: "colors",
-    color: {
-      default: baseColor("neutral"),
-      forcedColors: "ButtonText",
-      isDisabled: {
-        default: "disabled",
-        forcedColors: "GrayText",
-      },
+    "--field-height": {
+      type: "height",
+      value: controlSize(),
     },
+    rowGap: "calc(var(--field-height) - 1lh)",
     gridColumnStart: {
       isInForm: "field",
     },
-    disableTapHighlight: true,
   },
   getAllowedOverrides(),
 );
 
+// The subgrid wrapper (SwitchButton `<label>`) — byte-faithful to upstream
+// `wrapper`. Plain style() (no getAllowedOverrides). Note: unlike the Checkbox
+// wrapper, the Switch wrapper has no `position:relative` and no isInForm branch;
+// upstream still calls it with `{...renderProps, isInForm, size}` (both ignored).
+const wrapper = style<SwitchStyleState & { isInForm?: boolean }>({
+  display: "grid",
+  gridTemplateColumns: "subgrid",
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
+  alignItems: "baseline",
+  transition: "colors",
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  disableTapHighlight: true,
+});
+
+// The track — byte-faithful to upstream `track`. The prior port carried a
+// self-inflicted divergence in `backgroundColor.isSelected`: a custom
+// `disabledSelectedTrackBackground` light-dark value AND an `isDisabled`-first
+// condition order (which, under last-match-wins, let disabled beat emphasized).
+// Reverted to upstream's exact `{default, isEmphasized, forcedColors, isDisabled}`
+// order + `gray-400` disabled-selected value.
 const track = style<SwitchStyleState>({
   ...focusRing(),
   borderRadius: "full",
@@ -122,23 +143,14 @@ const track = style<SwitchStyleState>({
     default: "gray-25",
     isSelected: {
       default: baseColor("neutral"),
-      isDisabled: {
-        default: disabledSelectedTrackBackground,
-        forcedColors: "GrayText",
-      },
       isEmphasized: baseColor("accent-900"),
       forcedColors: "Highlight",
+      isDisabled: {
+        default: "gray-400",
+        forcedColors: "GrayText",
+      },
     },
   },
-});
-
-const disabledSelectedTrack = style({
-  backgroundColor: disabledSelectedTrackBackground,
-});
-
-const centerBaselineWrapper = style({
-  display: "flex",
-  alignItems: "center",
 });
 
 const handle = style<SwitchStyleState>({
@@ -154,6 +166,42 @@ const handle = style<SwitchStyleState>({
     isSelected: "gray-25",
   },
   transition: "default",
+});
+
+// Individual help text. Byte-faithful to upstream Field.tsx `helpTextStyles`,
+// folding in the Switch's inline override (`gridColumnStart:1, paddingTop:0`).
+// Rendered through the field's `Text` description/errorMessage slot contract.
+// NOTE: the switch demo never sets description/errorMessage and is never invalid,
+// so upstream's `HelpText` is `null` in every cert case — this path is faithful
+// but dormant here (matches the Checkbox rebuild).
+const switchHelpText = style<SwitchStyleState & { isInvalid?: boolean; isDisabled?: boolean }>({
+  gridArea: "helptext",
+  display: "flex",
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+  gridColumnStart: 1,
+  paddingTop: 0,
 });
 
 function normalizeSwitchSize(size: SwitchSize | undefined): S2SwitchSize {
@@ -174,6 +222,10 @@ function normalizeSwitchSize(size: SwitchSize | undefined): S2SwitchSize {
   }
 }
 
+// Mirrors upstream's inline `transformStyle`. In the default state the handle is
+// 8px smaller than the track; when selected it grows to 6px smaller. CSS cannot
+// divide by a unit, so the scale is emulated with a 3d perspective transform
+// (scale = perspective / (perspective - translateZ), translateZ hard-coded -4px).
 function switchHandleTransform(isSelected: boolean, direction: Direction): JSX.CSSProperties {
   const placement =
     direction === "ltr"
@@ -187,26 +239,28 @@ function switchHandleTransform(isSelected: boolean, direction: Direction): JSX.C
   };
 }
 
+// Faithful reimplementation of upstream `pressScale(handleRef, transformStyle)`:
+// combines the base transform with a press-time perspective scale.
 function switchHandlePressStyle(
   element: HTMLDivElement | undefined,
   renderProps: ToggleSwitchRenderProps,
   direction: Direction,
 ): JSX.CSSProperties {
-  const style = {
+  const pressStyle = {
     ...switchHandleTransform(renderProps.isSelected, direction),
   } as JSX.CSSProperties;
-  const styleRecord = style as Record<string, string | number | undefined>;
+  const styleRecord = pressStyle as Record<string, string | number | undefined>;
   const willChange = styleRecord["will-change"] ?? "";
   styleRecord["will-change"] = `${willChange} transform`.trim();
 
   if (renderProps.isPressed && element) {
     const { width, height } = element.getBoundingClientRect();
     const perspective = Math.max(height, width / 3, 24);
-    style.transform =
-      `${style.transform ?? ""} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();
+    pressStyle.transform =
+      `${pressStyle.transform ?? ""} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();
   }
 
-  return style;
+  return pressStyle;
 }
 
 /**
@@ -214,16 +268,17 @@ function switchHandlePressStyle(
  * It is usually used to activate or deactivate a specific setting.
  *
  * Named "ToggleSwitch" to avoid conflict with SolidJS's built-in Switch component.
+ *
+ * Composes the RAC-1.19 form-field split faithfully to upstream S2 `Switch`:
+ * a `SwitchField` grid wrapper (owns state/validation/help text) containing a
+ * `SwitchButton` subgrid control (label + track/handle indicator) + `HelpText`.
  */
 export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const isInForm = useIsInForm();
+  const providerProps = useProviderProps(useFormProps(props));
   const contextProps = getSlottedContextProps(useContext(SwitchContext), props.slot);
-  const locale = useLocale();
-  const defaultProps: Partial<ToggleSwitchProps> = {
-    size: "M",
-  };
+  const merged = mergeProps(providerProps, contextProps ?? {}, props);
 
-  const merged = solidMergeProps(defaultProps, providerProps, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "size",
     "isEmphasized",
@@ -232,59 +287,37 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     "UNSAFE_style",
     "class",
     "children",
+    "description",
+    "errorMessage",
+    "slot",
   ]);
-  const resolvedChildren = resolveChildren(() => local.children);
+
+  const locale = useLocale();
   const size = () => normalizeSwitchSize(local.size);
-  const mergedStyles = () => mergeStyles(local.styles);
+  const isEmphasized = () => local.isEmphasized;
   const direction = () => locale().direction;
+  // Reading `local.children` never invokes a component thunk (a function is
+  // truthy as-is), so this is safe alongside the `{local.children}` render.
+  const hasLabel = () => !!local.children;
   let handleElement: HTMLDivElement | undefined;
-  const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
 
-  const state = createToggleState(() => ({
-    isSelected: headlessProps.isSelected,
-    defaultSelected: headlessProps.defaultSelected,
-    onChange: headlessProps.onChange,
-    isReadOnly: headlessProps.isReadOnly,
-  }));
+  const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
+  const mergedUnsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
 
-  const switchAria = createSwitch(
-    () => ({
-      ...headlessProps,
-      children: typeof local.children === "function" ? true : local.children,
-    }),
-    state,
-    inputElement,
-  );
-
-  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
-  const { isHovered, hoverProps } = createHover({
-    get isDisabled() {
-      return headlessProps.isDisabled || headlessProps.isReadOnly;
-    },
-  });
-
-  const renderState = (): ToggleSwitchRenderProps => ({
-    isSelected: switchAria.isSelected(),
-    isHovered: isHovered(),
-    isPressed: switchAria.isPressed(),
-    isFocused: isFocused(),
-    isFocusVisible: isFocusVisible(),
-    isDisabled: switchAria.isDisabled,
-    isReadOnly: switchAria.isReadOnly,
-    isInvalid: switchAria.isInvalid,
-    state,
-  });
-
-  const getClassName = (): string =>
+  // The field grid className. Mirrors upstream `field({...renderProps, isInForm,
+  // size, isNoVisibleLabel}, styles)`.
+  const getFieldClassName = (renderProps: SwitchFieldRenderProps): string =>
     [
-      local.UNSAFE_className,
-      local.class,
-      wrapper(
+      contextProps?.UNSAFE_className,
+      props.UNSAFE_className,
+      props.class,
+      switchFieldStyle(
         {
-          ...renderState(),
-          isInForm: false,
+          ...renderProps,
+          isInForm,
           size: size(),
-          isEmphasized: local.isEmphasized,
+          isNoVisibleLabel: !hasLabel(),
         },
         mergedStyles(),
       ),
@@ -292,79 +325,66 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
-  const domProps = () => {
-    const filtered = filterDOMProps(headlessProps, { global: true });
-    delete (filtered as Record<string, unknown>).id;
-    delete (filtered as Record<string, unknown>).onClick;
-    return filtered;
-  };
-
-  const cleanLabelProps = () => {
-    const { ref: _ref, ...rest } = switchAria.labelProps as Record<string, unknown>;
-    return rest;
-  };
-
-  const cleanHoverProps = () => {
-    const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
-
-  const cleanInputProps = () => {
-    const { ref: _ref, ...rest } = switchAria.inputProps as Record<string, unknown>;
-    return rest;
-  };
-
-  const cleanFocusProps = () => {
-    const { ref: _ref, ...rest } = focusProps as Record<string, unknown>;
-    return rest;
-  };
+  const renderHelpText = (fieldRenderProps: SwitchFieldRenderProps): JSX.Element => (
+    <>
+      <Show when={local.description && !fieldRenderProps.isInvalid}>
+        <Text
+          slot="description"
+          styles={switchHelpText({ size: size(), isDisabled: fieldRenderProps.isDisabled })}
+        >
+          {local.description}
+        </Text>
+      </Show>
+      <Show when={fieldRenderProps.isInvalid && local.errorMessage}>
+        <Text
+          slot="errorMessage"
+          styles={switchHelpText({
+            size: size(),
+            isInvalid: true,
+            isDisabled: fieldRenderProps.isDisabled,
+          })}
+        >
+          <CenterBaseline>
+            <AlertTriangleIcon aria-hidden="true" />
+          </CenterBaseline>
+          <span>{local.errorMessage}</span>
+        </Text>
+      </Show>
+    </>
+  );
 
   return (
-    <label
-      {...domProps()}
-      {...cleanLabelProps()}
-      {...cleanHoverProps()}
-      class={getClassName()}
-      style={local.UNSAFE_style}
-      data-selected={switchAria.isSelected() || undefined}
-      data-pressed={switchAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={switchAria.isDisabled || undefined}
-      data-readonly={switchAria.isReadOnly || undefined}
+    <HeadlessSwitchField
+      {...headlessProps}
+      slot={local.slot ?? undefined}
+      class={getFieldClassName}
+      style={mergedUnsafeStyle()}
     >
-      <VisuallyHidden>
-        <input ref={setInputElement} {...cleanInputProps()} {...cleanFocusProps()} />
-      </VisuallyHidden>
-      <div class={centerBaselineWrapper}>
-        <span aria-hidden="true" style={{ width: 0, visibility: "hidden" }}>
-          {"\u00A0"}
-        </span>
-        <div
-          class={mergeStyles(
-            track({
-              ...renderState(),
-              size: size(),
-              isEmphasized: local.isEmphasized,
-            }),
-            renderState().isSelected && renderState().isDisabled && !local.isEmphasized
-              ? disabledSelectedTrack
-              : undefined,
-          )}
-        >
-          <div
-            ref={handleElement}
-            class={handle({
-              ...renderState(),
-              size: size(),
-              isEmphasized: local.isEmphasized,
-            })}
-            style={switchHandlePressStyle(handleElement, renderState(), direction())}
-          />
-        </div>
-      </div>
-      {resolvedChildren()}
-    </label>
+      {(fieldRenderProps: SwitchFieldRenderProps) => (
+        <>
+          <HeadlessSwitchButton
+            class={(renderProps: SwitchButtonRenderProps) =>
+              wrapper({ ...renderProps, isInForm, size: size() })
+            }
+          >
+            {(renderProps: SwitchButtonRenderProps) => (
+              <>
+                <CenterBaseline>
+                  <div class={track({ ...renderProps, size: size(), isEmphasized: isEmphasized() })}>
+                    <div
+                      ref={handleElement}
+                      class={handle({ ...renderProps, size: size(), isEmphasized: isEmphasized() })}
+                      style={switchHandlePressStyle(handleElement, renderProps, direction())}
+                    />
+                  </div>
+                </CenterBaseline>
+                {local.children}
+              </>
+            )}
+          </HeadlessSwitchButton>
+          {renderHelpText(fieldRenderProps)}
+        </>
+      )}
+    </HeadlessSwitchField>
   );
 }
