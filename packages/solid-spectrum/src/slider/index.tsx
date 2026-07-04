@@ -12,6 +12,7 @@ import {
 import { useLocale } from "@proyecto-viviana/solidaria";
 import {
   Slider as HeadlessSlider,
+  SliderFill as HeadlessSliderFill,
   SliderOutput as HeadlessSliderOutput,
   SliderThumb as HeadlessSliderThumb,
   SliderTrack as HeadlessSliderTrack,
@@ -23,7 +24,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { type SliderOrientation } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, style } from "../style" with { type: "macro" };
+import { focusRing, style } from "../style" with { type: "macro" };
 import {
   controlFont,
   field,
@@ -90,6 +91,10 @@ const sliderRoot = style<SliderStyleState>(
     ...field(),
     font: controlFont(),
     alignItems: {
+      // Upstream applies field() (align-items: baseline) + slider() as two
+      // separate classes; slider() only overrides for side layout. We merge
+      // both into one style(), so the baseline default must be restored here.
+      default: "baseline",
       labelPosition: {
         side: "center",
       },
@@ -148,6 +153,31 @@ const labelContainer = style<SliderStyleState>({
 
 const sliderLabel = style<SliderStyleState>({
   ...fieldLabel(),
+});
+
+// The FieldLabel outer wrapper `<div>` (upstream `Field.tsx` FieldLabel): an inline
+// box in the `label` grid cell that owns the label-align text-align + the top
+// paddingBottom(--field-gap) + contain(inline-size). Slider never sets `isQuiet`, so
+// upstream's `contain.isQuiet:'none'` branch is a dead condition here and is omitted.
+const fieldLabelWrapper = style<SliderStyleState>({
+  gridArea: "label",
+  display: "inline",
+  textAlign: {
+    labelAlign: {
+      start: "start",
+      end: "end",
+    },
+  },
+  paddingBottom: {
+    labelPosition: {
+      top: "--field-gap",
+    },
+  },
+  contain: {
+    labelPosition: {
+      top: "inline-size",
+    },
+  },
 });
 
 const outputStyle = style<SliderStyleState>({
@@ -334,9 +364,10 @@ const upperTrack = style<{ isDisabled?: boolean; trackStyle?: SliderTrackStyle }
   translateY: "-50%",
   width: "full",
   boxSizing: "border-box",
-  borderStyle: "solid",
-  borderWidth: "[.5px]",
-  borderColor: {
+  outlineStyle: "solid",
+  outlineWidth: "[.5px]",
+  outlineOffset: -0.5,
+  outlineColor: {
     default: "transparent",
     forcedColors: {
       default: "ButtonText",
@@ -366,7 +397,7 @@ const filledTrack = style<{
   position: "absolute",
   backgroundColor: {
     default: "gray-700",
-    isEmphasized: baseColor("accent-900"),
+    isEmphasized: "accent-900",
     isDisabled: "disabled",
     forcedColors: {
       default: "Highlight",
@@ -477,7 +508,6 @@ export function Slider(props: SliderProps): JSX.Element {
     const maxLabelLength = [...formatter().format(maxValue())].length;
     return Math.max(minLabelLength, maxLabelLength);
   });
-  const cssDirection = () => (locale().direction === "rtl" ? "right" : "left");
 
   const rootClass = (renderProps: SliderRenderProps) =>
     [
@@ -516,8 +546,6 @@ export function Slider(props: SliderProps): JSX.Element {
       valuePercent: state()?.getValuePercent() ?? 0,
       orientation: state()?.orientation ?? orientation(),
     });
-    const currentValue = () =>
-      state()?.value() ?? headlessProps.value ?? headlessProps.defaultValue ?? minValue();
 
     const upperTrackStyle = (): JSX.CSSProperties | undefined =>
       trackRenderProps().orientation === "vertical"
@@ -529,35 +557,6 @@ export function Slider(props: SliderProps): JSX.Element {
           }
         : undefined;
 
-    const filledStyle = (): JSX.CSSProperties => {
-      const renderProps = trackRenderProps();
-
-      if (renderProps.orientation === "vertical") {
-        return {
-          height: `${renderProps.valuePercent * 100}%`,
-          bottom: 0,
-          width: trackStyle() === "thin" ? "4px" : "16px",
-          left: "50%",
-          transform: "translateX(-50%)",
-        };
-      }
-
-      const value = currentValue();
-      const fillOffset =
-        local.fillOffset === undefined
-          ? minValue()
-          : Math.min(maxValue(), Math.max(minValue(), local.fillOffset));
-      const valuePercent = (value - minValue()) / (maxValue() - minValue());
-      const offsetPercent = (fillOffset - minValue()) / (maxValue() - minValue());
-      const fillWidth = valuePercent - offsetPercent;
-      const offset = fillWidth > 0 ? offsetPercent : valuePercent;
-
-      return {
-        width: `${Math.abs(fillWidth) * 100}%`,
-        [cssDirection()]: `${offset * 100}%`,
-      };
-    };
-
     return (
       <>
         <div
@@ -566,15 +565,16 @@ export function Slider(props: SliderProps): JSX.Element {
             trackStyle: trackStyle(),
           })}
           style={upperTrackStyle()}
-        />
-        <div
-          class={filledTrack({
-            isDisabled: trackRenderProps().isDisabled,
-            isEmphasized: isEmphasized(),
-            trackStyle: trackStyle(),
-          })}
-          style={filledStyle()}
-        />
+        >
+          <HeadlessSliderFill
+            offset={local.fillOffset}
+            class={filledTrack({
+              isDisabled: trackRenderProps().isDisabled,
+              isEmphasized: isEmphasized(),
+              trackStyle: trackStyle(),
+            })}
+          />
+        </div>
         <HeadlessSliderThumb
           class={(thumbRenderProps: SliderThumbRenderProps) =>
             thumbContainer({ ...labelStyleState(props.rootRenderProps), ...thumbRenderProps })
@@ -616,13 +616,15 @@ export function Slider(props: SliderProps): JSX.Element {
       {(renderProps: SliderRenderProps) => (
         <>
           <div class={labelContainer(labelStyleState(renderProps))}>
-            <Show when={local.label || local.contextualHelp}>
-              <span id={labelId} class={sliderLabel(labelStyleState(renderProps))}>
-                {local.label}
-              </span>
-              <Show when={local.contextualHelp}>
-                <span data-slot="contextualHelp">{local.contextualHelp}</span>
-              </Show>
+            <Show when={local.label}>
+              <div class={fieldLabelWrapper(labelStyleState(renderProps))}>
+                <label id={labelId} class={sliderLabel(labelStyleState(renderProps))}>
+                  {local.label}
+                </label>
+                <Show when={local.contextualHelp}>
+                  <span data-slot="contextualHelp">{local.contextualHelp}</span>
+                </Show>
+              </div>
             </Show>
             <Show when={labelPosition() === "top" && showOutput()}>
               <HeadlessSliderOutput

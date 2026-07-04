@@ -760,8 +760,8 @@ certified, `blocked: name (reason)` otherwise.
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
-(2026-07-04)` — in progress.
-Queue: Slider, RangeSlider, Form,
+(2026-07-04) · ✓ Slider (2026-07-04)` — in progress.
+Queue: RangeSlider, Form,
 FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -1947,5 +1947,59 @@ headless is now the single source of truth for group description/error ids
      `states:["default"]`, `isInvalid` deferred to `helptext-fielderror-visual-port` as the rest of
      the field family. The English roledescription + "Increase"/"Decrease" hardcodes are the tracked
      `intl-roledescription-hardcodes` (en-US byte-identical to React in the meantime).
+
+- ✓ **Slider done 2026-07-04 (CP9.23 — ninth Tier-2 unit, single-thumb slider):** certified
+  `44/44` green (D1×18, D3×20, D7×4) + D6 `default` a tracked `test.fixme`
+  (`slider.certified.spec.ts`). Slider is a `SliderBase` (role="group") wrapping a FieldLabel
+  row (label + output) over a `fieldInput` row holding the `SliderTrack` (upperTrack + nested
+  `SliderFill`) and the `SliderThumb` (thumbContainer → thumbHitArea → thumb). One presentational
+  port fix landed; four earlier self-inflicted divergences were reverted in the same pass; two
+  structural gaps are tracked, not fixed:
+  1. **D1 root `align-items` (the merged-`field()` clobber — the fix that turned all 18 D1 reds
+     green).** Upstream composes the root className as TWO separate atomic classes,
+     `field()({labelPosition,isInForm}) + slider({…})`: `field()` sets `align-items: baseline`,
+     and `slider()` overrides `align-items` only for `labelPosition: side` (no `default`), so for
+     the `top` (default) layout the field's `baseline` survives. The port merges both into ONE
+     `style()` via `...field()` spread + a `sliderRoot` override, where the JS object spread means
+     the later `alignItems: {labelPosition:{side:"center"}}` key CLOBBERS the spread
+     `alignItems:"baseline"` — leaving `top` to resolve to CSS `normal`. Every D1 case failed on
+     the root `target` part (`baseline` vs `normal`), and the resulting sub-pixel text-baseline
+     shift also produced the D3 reds. Fix: restore `default:"baseline"` in the `sliderRoot`
+     `alignItems` override, reproducing upstream's net computed result within the single-style
+     merge. **Reusable lesson: when the port folds upstream's `field() + widget()` two-class root
+     into one `style(...field(), …)` call, any property the widget overrides must re-state
+     `field()`'s value as its `default` — the object spread silently drops the base branch that
+     upstream keeps alive as a separate atomic class.**
+  2. **The presentational reverts (done earlier in the march, re-verified here):** the nested
+     `SliderFill` (headless `SliderFill` with `offset`, `inset-inline-start`/`width`) replacing a
+     hand-rolled fill; the upperTrack `border*` → `outline*` set (upstream uses `outlineStyle/
+     Width/Offset/Color` for the forced-colors track edge, not a border); `filledTrack`
+     `isEmphasized` reverted from `baseColor("accent-900")` to the plain `"accent-900"` token; and
+     the FieldLabel wrapper (`gridArea:label` + `<label>` + contextualHelp span) replacing a bare
+     `<span>`. All byte-identical to upstream; verified via the DOM/structure dump.
+  3. **D3 waives one 8-bit LSB on the thumb edge (`slider-thumb-antialias-1lsb`).** After the
+     `align-items` fix the only sub-exact pixels are the thumb's curved, high-contrast circular
+     edge — a single grayscale LSB (Δ=1, e.g. 212 vs 211) that rounds differently between two
+     computed-identical subtrees (all D1 styles match; thumb CSS is byte-identical to upstream),
+     dark-mode-heavy because the edge is highest-contrast in dark. Scenario-wide `pixel.waivers`
+     `{maxMismatchRatio:0, maxDimensionDelta:0, pixelThreshold:1}` — tolerates one LSB per channel,
+     keeps dimensions exact, still fails hard on any real divergence (Δ≥2). Confirmed every failing
+     pixel across default/size-s/size-l/track-thick/fill-offset/label-side was Δ=1 at the thumb
+     before waiving. **Reusable: a Δ=1 grayscale pixel on a curved high-contrast edge, with D1 all
+     green, is rasterizer floor — waive with `pixelThreshold:1` (not a ratio), never chase it.**
+  4. **D6 `default` = known divergence (`slider-thumb-native-input-semantics`).** The port inverts
+     upstream's thumb semantics: `createSlider.ts` `thumbProps` makes the thumb `<div role=slider
+     aria-valuenow=40>` the a11y slider and `aria-hidden`s the native `<input type=range>`, where
+     RAC makes the native input the value-bearing slider (thumb `<div>` role-free, input in
+     `VisuallyHidden`). Chromium's AX tree surfaces the value ("40") for React's native range input
+     but NOT for the port's `div[role=slider]` despite correct `aria-valuenow`/`aria-valuetext`, so
+     the D6 snapshot diverges on the slider value only — role/name/`group`/`status` output all match
+     (confirmed by raw `ariaSnapshot`). Matching upstream's value output requires the native input
+     to back the semantics — a SHARED headless-spine change (createSlider + SliderThumb +
+     RangeSlider/ColorSlider/ColorArea), so `ax.knownDivergences.default` registers it as a visible
+     `test.fixme` rather than shimming per-widget. **Reusable: an inverted native-input-vs-ARIA-div
+     slider passes role/name but silently drops the AX value in Chromium — the value only rides the
+     native `<input type=range>`, so an ARIA-div slider needs a `test.fixme` on D6 value until the
+     input backs the semantics.**
 
 Phase 3: not started.

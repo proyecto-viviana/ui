@@ -372,6 +372,51 @@ tasks:
       already do) with the react-aria en-US/`intl/*.json` values, then extend the non-English/RTL
       contract coverage to a NumberField roledescription + stepper-label assertion. Low priority
       until localized number-field consumers exist; the en-US surface is already faithful.
+  - id: slider-thumb-native-input-semantics
+    title: Slider thumb inverts upstream's native-input semantics (div[role=slider] + aria-hidden input)
+    state: open
+    roadmap: headless-spine-port
+    note: >-
+      Surfaced by the Slider recertification (CP9.23): upstream RAC `useSliderThumb`
+      makes the native `<input type=range tabindex=0>` the focusable, value-bearing
+      slider and wraps it in `<VisuallyHidden>`, with the thumb `<div>` carrying NO
+      role. The port inverts this in `packages/solidaria/src/slider/createSlider.ts`:
+      `thumbProps` stamps `role="slider" + aria-valuemin/max/now/text + tabIndex:0` on
+      the thumb `<div>`, and `inputProps` marks the native `<input type=range>`
+      `aria-hidden + tabIndex:-1`. Consequences at cert time: (1) D6 — Chromium's AX
+      tree surfaces the value ("40") for React's native range input but NOT for the
+      port's `div[role=slider]` despite correct `aria-valuenow`/`aria-valuetext`, so
+      the D6 snapshot diverges on the slider value only (role/name/group/output all
+      match); registered as `ax.knownDivergences.default` in slider.certified.spec.ts.
+      (2) D5/D8 (not yet run for Slider) — focus lands on a different element and the
+      interactive target is a 1px hidden input upstream vs a sized div in the port.
+      This is a SHARED spine divergence: createSlider + the headless SliderThumb, and
+      by extension RangeSlider/ColorSlider/ColorArea, all ride the same inversion, so it
+      is NOT a per-component fix. Faithful exit: realign createSlider to upstream —
+      native `<input>` as the a11y slider inside `VisuallyHidden`, thumb `<div>`
+      role-free — then re-run Slider D5/D6/D8 and the color/range sliders. Deferred to
+      the headless-spine-port track; do not shim per-widget (parity argues against a
+      local hack). Also note `createSlider` leaks the input id onto the group via
+      `fieldProps` (`groupProps.id === inputId`) — fold that into the same realign.
+  - id: slider-thumb-antialias-1lsb
+    title: Slider D3 waives a single 8-bit LSB on the thumb's anti-aliased edge
+    state: open
+    roadmap: certification-enforcement
+    note: >-
+      Surfaced by the Slider recertification (CP9.23): the only sub-exact pixels in the
+      Slider D3 strict-pixel diff are on the thumb's curved, high-contrast circular
+      edge — a single grayscale LSB (Δ=1, e.g. React 212 vs Solid 211) that rounds
+      differently between two computed-identical DOM subtrees. All D1 computed styles
+      match and the thumb CSS is byte-identical to upstream, so this is irreducible
+      rasterizer rounding, not a style divergence — it is dark-mode-heavy precisely
+      because that edge is highest-contrast in dark. slider.certified.spec.ts carries a
+      scenario-wide `pixel.waivers` entry `{maxMismatchRatio:0, maxDimensionDelta:0,
+      pixelThreshold:1}`: it tolerates exactly one LSB per channel while keeping
+      dimensions exact and still failing hard on any real divergence (Δ≥2, or any size
+      change). This is the tightest waiver the D3 threshold supports (stricter than
+      Playwright's own default). Revisit only if a future change lets the thumb edge
+      rasterize byte-identically (e.g. the native-input realign above changes the thumb
+      paint); otherwise it stays as the documented raster floor.
 ---
 
 # Tech Debt
