@@ -750,9 +750,9 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     target-size.ts added to the scratchpad tsconfig include list).
 
 Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ ActionButton
-(2026-07-04) · ✓ ToggleButtonGroup (2026-07-04)` — remaining march order above is
-the queue; mark components here as `✓ name (date)` when certified, `blocked: name
-(reason)` otherwise.
+(2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04)` — remaining
+march order above is the queue; mark components here as `✓ name (date)` when
+certified, `blocked: name (reason)` otherwise.
 
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
@@ -942,5 +942,48 @@ the queue; mark components here as `✓ name (date)` when certified, `blocked: n
     `createActionGroup` units **15/15**. No net change to the 4 pre-existing
     deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing unrelated
     `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **Link done 2026-07-04 (CP9.4):** fourth new Tier-1 unit certified through all
+  8 landed drivers, and the first **navigational** primitive — a native
+  `<a role="link">`, not a `<button>`. Spec `link.certified.spec.ts` — 6 prop
+  cases (default primary, secondary, standalone, standalone-quiet, static-white,
+  static-black) × the applicable driver set = **41 tests, all green on the first
+  run, no port change required.** Link has no `size` and — matching S2 — no
+  `isDisabled` (the port's `LinkProps` `Omit`s `isDisabled`), so those axes are
+  intentionally absent; there is no interactive state signal, so the fixture's
+  `renderedLink` memo has nothing to over-track and the ToggleButton/TBG
+  memo-rebuild anti-pattern cannot occur here.
+  - **Why it certified clean.** The port `Link` (`solid-spectrum/src/link/index.tsx`
+    → headless `solidaria-components/src/Link.tsx`) already mirrors S2 `Link`
+    exactly: the `linkStyles` macro carries the same variant colors
+    (`baseColor("accent")` / `baseColor("neutral")`), the standalone `ui`
+    font + `medium` weight, the standalone-quiet "no underline until
+    hover/focus" decoration table, `transition: "default"`, and the two
+    `staticColor` overlays — all confirmed byte-identical by D1/D3 across every
+    gesture state and both themes, and by D2's hover-transition positive control.
+  - **New technique — anchor navigation neutralized for D4.** Link is the first
+    unit whose press *navigates*: a real click on an `<a href>` unloads the page
+    and destroys the event-log capture. Every case pins `href="#"` (threaded via
+    the case `params`, which the fixture reads through `linkDemoPropsFromSearch`),
+    so the four D4 gestures activate the anchor as a **same-document fragment
+    navigation** — no unload, log intact — and `href` affects no captured style,
+    AX node, or geometry. This is the reusable pattern for every later
+    navigational unit (LinkButton, breadcrumb links, menu-item links).
+  - **D4 parity point — Space must not activate a link.** `standardPressGestures`
+    includes keyboard-Space; a link (unlike a button) does **not** activate on
+    Space (Space scrolls). Both stacks correctly fire no press/click for Space and
+    the identical press+click log for mouse-click / keyboard-Enter / touch-tap —
+    proof the port threads RAC `useLink` (which, with no `RouterProvider`, does
+    not `preventDefault`, so native navigation proceeds) exactly as upstream.
+  - **D8 note — inline links are legitimately sub-24px.** An inline text link is
+    exempt from the S2 pointer-target floor (it is inline content), so its border
+    box is below 24px tall; the driver *reports* this (no `assert24`) and the hard
+    gate is the pair diff — both stacks render the identical anchor box for the
+    inline (default) and standalone treatments.
+  - Regression guard: `link.certified.spec.ts` **41/41**; no source changed, so
+    neighbouring certs are untouched by construction; standalone e2e `tsc -p`
+    clean (added `link.certified.spec.ts` to the scratchpad include list). No net
+    change to the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2,
+    Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.
