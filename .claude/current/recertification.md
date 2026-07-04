@@ -762,7 +762,13 @@ Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGrou
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
 (2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04) · ✓ Form
 (2026-07-04) · ✓ FieldError/HelpText (2026-07-04) · ✓ LabeledValue (2026-07-04)` —
-**Tier 2 complete.**
+**Tier 2 complete.** Unit/snapshot baselines reconciled to the certified source
+2026-07-04 (`859f4ce3`): the Tier-2 march landed certified source straight to main,
+and CI skips build+test on direct-to-main pushes, so 15 unit/snapshot assertions that
+encoded pre-certification behavior had gone stale. All 15 were oracle-verified against
+upstream RAC 1.19 / S2 1.5.1 — faithful in every case; only the tests were realigned
+(no source changed). Re-run `vp test run packages` locally after any direct-to-main
+certification landing to catch this rot early (`ci-main-push-skips-tests`).
 
 Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)` — **Tier 3
 in progress.** Next: Modal (Dialog already certified as the D1/D3/D6 overlay pilot), then
