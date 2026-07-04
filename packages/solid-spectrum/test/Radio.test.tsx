@@ -473,7 +473,10 @@ describe("RadioGroup", () => {
 
       const group = screen.getByRole("radiogroup");
       const error = screen.getByText("Please select an option");
-      const errorId = error.closest('[role="alert"]')?.getAttribute("id");
+      // Upstream renders the invalid message through a RAC <FieldError>, which is
+      // a plain <span slot="errorMessage" id=...> with NO role="alert" — the
+      // association is the group's aria-describedby pointing at that span's id.
+      const errorId = error.closest("[id]")?.getAttribute("id");
       expect(errorId).toBeTruthy();
       expect(group.getAttribute("aria-describedby") ?? "").toContain(errorId!);
     });

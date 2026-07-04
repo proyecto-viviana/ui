@@ -479,13 +479,18 @@ describe("Checkbox", () => {
     it("allows custom data attributes to be passed through", () => {
       render(() => <Checkbox aria-label="Test checkbox" data-testid="custom-checkbox" />);
       const checkbox = screen.getByRole("checkbox");
-      expect(checkbox.closest("label")).toHaveAttribute("data-testid", "custom-checkbox");
+      // Upstream S2/RAC route data-* through `filterDOMProps` onto the outer
+      // CheckboxField wrapper <div> (RAC private/Checkbox CheckboxField), NOT the
+      // inner CheckboxButton <label> — the label only carries its own internal
+      // props. Assert on the field wrapper the data attr actually lands on.
+      expect(checkbox.closest("[data-testid]")).toHaveAttribute("data-testid", "custom-checkbox");
     });
 
     it("allows custom data-foo attribute", () => {
       render(() => <Checkbox aria-label="Test checkbox" data-foo="bar" />);
       const checkbox = screen.getByRole("checkbox");
-      expect(checkbox.closest("label")).toHaveAttribute("data-foo", "bar");
+      // Same as above: data-* lands on the CheckboxField wrapper <div>.
+      expect(checkbox.closest("[data-foo]")).toHaveAttribute("data-foo", "bar");
     });
   });
 });

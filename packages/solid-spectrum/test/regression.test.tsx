@@ -191,7 +191,8 @@ describe("Regression: NumberField", () => {
     expect(input).toBeInTheDocument();
     expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
     expect(input.value).toBe("5");
-    expect(input).toHaveAttribute("aria-roledescription", "number field");
+    // Upstream's en-US roledescription is the capitalised "Number field".
+    expect(input).toHaveAttribute("aria-roledescription", "Number field");
     expect(screen.getByText("Quantity")).toBeInTheDocument();
     // Increment/decrement buttons present
     const buttons = screen.getAllByRole("button");

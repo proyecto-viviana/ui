@@ -215,7 +215,9 @@ describe("createNumberField", () => {
       render(() => <TestNumberField aria-label="Amount" />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("aria-roledescription", "number field");
+      // Upstream's stringFormatter.format('numberField') en-US value is the
+      // capitalised "Number field" (react-aria i18n/en-US) — byte-match it.
+      expect(input).toHaveAttribute("aria-roledescription", "Number field");
     });
 
     it("has aria-required when required", () => {

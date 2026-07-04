@@ -16,7 +16,11 @@ describe("RangeSlider (solid-spectrum)", () => {
     expect(sliders[1]).toHaveAttribute("aria-label", "Maximum");
     expect(sliders[0]).toHaveAttribute("aria-valuenow", "0");
     expect(sliders[1]).toHaveAttribute("aria-valuenow", "100");
-    expect(screen.getByText("0 – 100")).toBeInTheDocument();
+    // react-stately's getFormattedValue routes a [start, end] pair through
+    // Intl.NumberFormat.formatRange, whose en-US plain-number output is an
+    // en-dash with NO surrounding spaces ("0–100") — matching RAC's SliderOutput
+    // default child (currency ranges DO get spaces, as the controlled test below).
+    expect(screen.getByText("0–100")).toBeInTheDocument();
   });
 
   it("supports controlled values and localized formatting", () => {
