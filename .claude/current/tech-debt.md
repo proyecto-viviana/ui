@@ -209,6 +209,45 @@ tasks:
       resolving truthy for all rows, not a missing base style; renderProps.isSelected
       threading (HeadlessSelectOption, :1046-1051) and/or the S2 macro is/allows
       condition compile is the suspect. Diff both against upstream S2 before patching.
+  - id: helptext-fielderror-visual-port
+    title: Port a faithful S2 HelpText/FieldError so isInvalid/description render the real slot rows
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the Checkbox recertification (CP9.15): upstream S2 renders HelpText
+      UNCONDITIONALLY inside each field (Checkbox.tsx:228-289 wraps a CheckboxButton +
+      <HelpText size isInvalid description showErrorIcon>). Field.tsx (~407-446) shows
+      the shape: `!isInvalid && description` → description slot row; `isInvalid` → a
+      FieldError row with showErrorIcon (so even a bare isInvalid with no errorMessage
+      still renders an error-icon row that WIDENS/HEIGHTENS the field grid — measured
+      field height 18px→52px, grid-template-rows `16px 73px`→`16px 73px 0px`, plus a
+      canvas-width delta). The port only has a Tailwind stub, no faithful HelpText/
+      FieldError, so the invalid + description states can't be certified — both invalid
+      cases were DROPPED from checkbox.certified.spec.ts and deferred here. Cross-cutting:
+      the same gap blocks certifying isInvalid/description on Checkbox, Radio, Switch,
+      TextField and every other field. Faithful target = react-spectrum/@react-spectrum/
+      s2 Field.tsx HelpText/FieldError (byte-copy the style() objects → identical hashed
+      classes → identical computed styles), wired through the existing FieldErrorContext
+      slot. Unblocks the deferred invalid/description recert cases in one shot.
+  - id: ui-icon-decorative-ax-node
+    title: Reconcile decorative-icon AX exposure — React shows a bare img node, the port stamps aria-hidden
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the Checkbox recertification (CP9.15): upstream exposes the decorative
+      Checkmark/Dash <svg> inside the box as a bare `img` accessibility node, while the
+      port stamps `aria-hidden` on it so the node is absent from the AX tree. D6 (AX)
+      diverged on the `selected` + `indeterminate` cases only because of this (pixels
+      matched, so D3 was green for both). Worked around in checkbox.certified.spec.ts by
+      rooting D6 at the <input> (roots.control) so the checkbox's own [checked]/
+      [checked=mixed]/[disabled]/name/role semantics stay certified on every case,
+      sidestepping the icon-node exposure — but the underlying svg-attr divergence
+      (explicit-px / role / aria-hidden / focusable) is real and cross-cutting to every
+      component that renders a decorative S2 icon. Diff the port's ui-icon wrapper against
+      upstream's Icon rendering before changing — the right answer may be to match React's
+      `img`-node exposure OR to confirm the port's aria-hidden is the more-correct WCAG
+      reading and record it as an intentional, documented divergence (known-divergence
+      note on the affected drivers) rather than a bug.
 ---
 
 # Tech Debt

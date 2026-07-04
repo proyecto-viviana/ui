@@ -757,6 +757,10 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 (2026-07-04)` — **Tier 1 complete.** Mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
+Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04)` — in progress. Queue:
+CheckboxGroup, RadioGroup, Switch, TextField, TextArea, SearchField, NumberField,
+Slider, RangeSlider, Form, FieldError/HelpText, LabeledValue. Same marking rule.
+
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
   cases (default, selected, emphasized-selected, quiet, quiet-selected, size-s,
@@ -1523,6 +1527,64 @@ certified, `blocked: name (reason)` otherwise.
   - Regression guard: `skeleton.certified.spec.ts` **4/4**; e2e-only addition (no src
     change, no rebuild); standalone e2e `tsc -p` clean. No net change to the 4
     pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing
+    unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ✓ **Checkbox done 2026-07-04 (CP9.15 — first Tier-2 unit):** the standalone S2
+  checkbox. Upstream `Checkbox.tsx` composes it from the RAC-1.19 form-field split —
+  a `CheckboxField` (the grid **`field`** `<div>` root) wrapping a `CheckboxButton`
+  (the subgrid **`wrapper`** `<label>`, whose inner `<div><div>` is the drawn box that
+  holds the decorative Checkmark/Dash `<svg>`) plus an (unconditional) `HelpText`; the
+  port `checkbox/index.tsx` mirrors that composition with **byte-copied `style()`
+  objects** (identical macro input → identical content-hashed class → identical
+  computed styles). Spec `checkbox.certified.spec.ts` — **55 tests green**
+  (18 D1 + 18 D3 + 6 D4 + 1 D5 + 5 D6 + 4 D7 + 3 D8).
+  - **Targets are stack-neutral and chosen by role.** D1/D3 `target` = the drawn box
+    `<div>` (`${root} > label > div > div`), whose negative-border treatment is the
+    real visual surface and matched **byte-for-byte** across both stacks in every
+    steady case. `parts` diff the `wrapper` `<label>` (mouse/touch hit area), the
+    `field` `<div>` root, and the visible `<span>` label. D4 gestures hit the `<label>`
+    (mouse-click / touch-tap) and the `<input>` (keyboard-Space); D5 tab-cycle and D6
+    root both use the `<input>`.
+  - **D1/D3 9-case steady matrix** (`steadyStateCases`, shared by both drivers, no
+    per-driver split): default, selected, indeterminate, emphasized-selected, disabled,
+    disabled-selected, size-S/L/XL-selected — × 2 themes each. `states: ["default"]`
+    (the box's interactive pseudo-states are exercised live by D4, and the hover/focus
+    ring geometry is not a steady-capture surface). `styleProps.add` pins the grid/flex
+    plumbing that carries the box+label layout: `flex-shrink`, `box-sizing`,
+    `grid-template-columns`, `grid-column-start/-end`, `position`. All green both themes.
+  - **D6 is rooted at the `<input>` (`roots.control`), deliberately.** That certifies
+    the checkbox's own headline semantics — `[checked]` on `selected`,
+    `[checked=mixed]` on `indeterminate`, `[disabled]`, plus role/name — **live on
+    every case** (default, selected, indeterminate, disabled, required). Rooting at the
+    `panel` default instead would drag in the decorative box `<svg>`, which upstream
+    exposes as a bare `img` AX node while the port stamps `aria-hidden` (see DEFERRED);
+    that icon-node divergence is orthogonal to the checkbox contract, so scoping to the
+    input keeps the real semantics green **and asserted** rather than `fixme`-skipped.
+  - **D2 not registered:** the checkbox has no CSS-keyframe/transition motion of its own
+    beyond the shared press/hover treatments already positively controlled on the button
+    primitives; the box check/indeterminate flips are instantaneous state swaps that D4
+    (event sequence) and D1/D3 (steady geometry) already pin.
+  - **DEFERRED (two tracked gaps, tech-debt.md), each a real cross-cutting divergence,
+    neither a Checkbox port bug:**
+    1. **`isInvalid` / `description` states** — upstream renders `HelpText`
+       unconditionally (`Checkbox.tsx:228-289`; `Field.tsx` HelpText ~407-446), so bare
+       `isInvalid` still emits a `FieldError` **error-icon row** that widens/heightens
+       the `field` grid (measured field height `18px`→`52px`, rows `16px 73px`→`16px 73px
+       0px`, plus a canvas-width delta). The port has only a Tailwind stub, no faithful
+       `HelpText`/`FieldError`, so **both invalid cases were dropped** from the spec and
+       deferred to `helptext-fielderror-visual-port` (blocks invalid/description on
+       Checkbox, Radio, Switch, TextField alike). Note: only the **`field` part**
+       diverged — the drawn box byte-matched.
+    2. **Decorative icon AX node** — the box `<svg>` is a bare `img` node on React,
+       `aria-hidden` on the port (D6 `selected`/`indeterminate` were the only AX
+       divergence; **pixels matched**, so D3 stayed green). Sidestepped by the
+       input-root above; tracked as `ui-icon-decorative-ax-node` for a source-diff
+       decision (match React's `img` exposure vs. record the port's `aria-hidden` as an
+       intentional WCAG-correct divergence).
+  - Regression guard: `checkbox.certified.spec.ts` **55/55**; `checkbox/index.tsx`
+    rebuilt into the comparison dist (`comparison:build`) before the run; standalone
+    e2e `tsc -p` clean (spec added to the scratchpad tsconfig include). No net change to
+    the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing
     unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.

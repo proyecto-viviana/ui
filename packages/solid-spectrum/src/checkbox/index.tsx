@@ -1,6 +1,5 @@
 // @ts-nocheck
 import {
-  children as resolveChildren,
   createContext,
   createUniqueId,
   type JSX,
@@ -10,13 +9,17 @@ import {
   useContext,
 } from "solid-js";
 import {
-  Checkbox as HeadlessCheckbox,
+  CheckboxField as HeadlessCheckboxField,
+  CheckboxButton as HeadlessCheckboxButton,
   CheckboxGroup as HeadlessCheckboxGroup,
-  type CheckboxProps as HeadlessCheckboxProps,
+  CheckboxGroupStateContext as HeadlessCheckboxGroupStateContext,
+  type CheckboxFieldProps as HeadlessCheckboxFieldProps,
   type CheckboxGroupProps as HeadlessCheckboxGroupProps,
   type CheckboxRenderProps,
   type CheckboxGroupRenderProps,
+  type CheckboxFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+import { Text } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
 import {
@@ -58,8 +61,8 @@ interface CheckboxGroupStyleContextValue {
 const CheckboxGroupStyleContext = createContext<CheckboxGroupStyleContextValue>({});
 
 export interface CheckboxProps extends Omit<
-  HeadlessCheckboxProps,
-  "class" | "children" | "render" | "style" | "slot" | "ref" | "inputRef"
+  HeadlessCheckboxFieldProps,
+  "class" | "children" | "style" | "slot" | "ref" | "inputRef"
 > {
   /** The size of the checkbox. */
   size?: CheckboxSize;
@@ -75,10 +78,14 @@ export interface CheckboxProps extends Omit<
   class?: string;
   /** Label text for the checkbox. */
   children?: JSX.Element;
+  /** A description for the checkbox, displayed below the label. */
+  description?: JSX.Element;
+  /** An error message for the checkbox, displayed when invalid. */
+  errorMessage?: JSX.Element;
   /** Slot name when used in a Spectrum context. */
   slot?: string | null;
-  /** Ref for the underlying label element. */
-  ref?: RefLike<HTMLLabelElement>;
+  /** Ref for the underlying field (root `<div>`) element. */
+  ref?: RefLike<HTMLDivElement>;
   /** Ref for the underlying input element. */
   inputRef?: RefLike<HTMLInputElement>;
 }
@@ -230,29 +237,113 @@ const checkboxGroupNoWrap = style({
   whiteSpace: "nowrap",
 });
 
-const wrapper = style<CheckboxStyleState & { isInForm?: boolean }>(
+// The field grid — byte-faithful to upstream S2 `Checkbox.tsx` local `field`.
+// `gridColumnStart:{isInForm:'field'}` is deliberately dormant: upstream calls
+// field() with {size, isInCheckboxGroup, isNoVisibleLabel} and never passes
+// isInForm, so this branch never fires (isInForm is applied to the subgrid
+// wrapper below instead). Kept for byte-parity with the upstream style object.
+const checkboxFieldStyle = style<
+  CheckboxStyleState & { isInCheckboxGroup?: boolean; isNoVisibleLabel?: boolean }
+>(
   {
-    display: "flex",
-    position: "relative",
+    display: "grid",
+    gridTemplateColumns: {
+      default: ["max-content", "1fr"],
+      isNoVisibleLabel: ["max-content"],
+    },
     columnGap: "text-to-control",
-    alignItems: "baseline",
-    width: "fit",
+    alignContent: "start",
+    width: {
+      default: "fit",
+      isInCheckboxGroup: "auto",
+    },
     font: controlFont(),
-    transition: "colors",
-    color: {
-      default: baseColor("neutral"),
-      isDisabled: {
-        default: "disabled",
-        forcedColors: "GrayText",
+    "--field-height": {
+      type: "height",
+      value: controlSize(),
+    },
+    rowGap: {
+      default: "calc(var(--field-height) - 1lh)",
+      isInCheckboxGroup: {
+        size: {
+          S: space(1),
+          M: space(1),
+          L: 2,
+          XL: 2,
+        },
       },
     },
     gridColumnStart: {
       isInForm: "field",
     },
-    disableTapHighlight: true,
   },
   getAllowedOverrides(),
 );
+
+// The subgrid wrapper (CheckboxButton `<label>`) — byte-faithful to upstream
+// `wrapper`. No getAllowedOverrides (upstream's wrapper is a plain style()).
+const wrapper = style<CheckboxStyleState & { isInForm?: boolean }>({
+  display: "grid",
+  gridTemplateColumns: "subgrid",
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
+  position: "relative",
+  alignItems: "baseline",
+  transition: "colors",
+  color: {
+    default: baseColor("neutral"),
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  disableTapHighlight: true,
+});
+
+// The visible label span sits in the second grid column — upstream renders
+// `<span className={style({gridColumnStart: 2})}>{children}</span>`.
+const labelSpan = style({ gridColumnStart: 2 });
+
+// Individual-field help text. Byte-faithful to upstream Field.tsx
+// `helpTextStyles`, folding in the checkbox's inline override
+// (`gridColumnStart:{default:1,isInCheckboxGroup:2}, paddingTop:0`). Rendered
+// via the field's `Text` description/errorMessage slot contract. NOTE: the
+// checkbox demo never sets description/errorMessage, so upstream's `HelpText`
+// is `null` in every cert case — this path is faithful but dormant here.
+const checkboxHelpText = style<
+  CheckboxStyleState & { isInvalid?: boolean; isDisabled?: boolean; isInCheckboxGroup?: boolean }
+>({
+  gridArea: "helptext",
+  display: "flex",
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
+  color: {
+    default: "neutral-subdued",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
+  gridColumnStart: {
+    default: 1,
+    isInCheckboxGroup: 2,
+  },
+  paddingTop: 0,
+});
 
 const checkboxBox = style<CheckboxStyleState>({
   ...focusRing(),
@@ -385,6 +476,7 @@ function requiredIconStyle(size: S2CheckboxSize): JSX.CSSProperties {
 export function Checkbox(props: CheckboxProps): JSX.Element {
   const groupStyleContext = useContext(CheckboxGroupStyleContext);
   const isInForm = useIsInForm();
+  const isInCheckboxGroup = !!useContext(HeadlessCheckboxGroupStateContext);
   const providerProps = useProviderProps(useFormProps(props));
   const contextProps = getSlottedContextProps(useContext(CheckboxContext), props.slot);
   const merged = mergeProps(providerProps, contextProps ?? {}, props);
@@ -397,6 +489,8 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     "UNSAFE_style",
     "class",
     "children",
+    "description",
+    "errorMessage",
     "slot",
     "ref",
     "inputRef",
@@ -404,12 +498,19 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
 
   const size = () => normalizeCheckboxSize(local.size ?? groupStyleContext.size);
   const isEmphasized = () => local.isEmphasized ?? groupStyleContext.isEmphasized;
+  // Upstream checks `!children` for the truthiness — reading `local.children`
+  // never invokes a component thunk (a function is truthy as-is), so this is
+  // safe to read alongside the `<span>{local.children}</span>` render below.
+  const hasLabel = () => !!local.children;
+  // Upstream: `size={isInCheckboxGroup ? smallerSize[size] : size}` — `iconSize`
+  // is the port's `smallerSize` map.
+  const helpTextSize = () => (isInCheckboxGroup ? iconSize[size()] : size());
   let boxElement: HTMLDivElement | undefined;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const assignRootRef = mergeContextRefs(
-    (contextProps as { ref?: RefLike<HTMLLabelElement> } | null)?.ref,
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
   const assignInputRef = mergeContextRefs(
@@ -417,85 +518,128 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     props.inputRef,
   );
 
-  const getClassName = (renderProps: CheckboxRenderProps): string => {
-    return [
+  // The field grid className. Mirrors upstream `field({size, isInCheckboxGroup,
+  // isNoVisibleLabel}, styles)` — and deliberately does NOT pass `isInForm`, so
+  // the field's dormant `gridColumnStart:{isInForm:'field'}` stays inert
+  // (upstream passes isInForm to the wrapper subgrid instead).
+  const getFieldClassName = (_renderProps?: CheckboxFieldRenderProps): string =>
+    [
       contextProps?.UNSAFE_className,
       props.UNSAFE_className,
       props.class,
-      wrapper(
+      checkboxFieldStyle(
         {
-          ...renderProps,
           size: size(),
-          isEmphasized: isEmphasized(),
-          isInForm,
+          isInCheckboxGroup,
+          isNoVisibleLabel: !hasLabel(),
         },
         mergedStyles(),
       ),
     ]
       .filter(Boolean)
       .join(" ");
-  };
+
+  // Upstream: `isInvalid={isInCheckboxGroup ? false : isInvalid}` on the HelpText
+  // (in a group, validation is surfaced at the group level, not per-checkbox).
+  const invalidFor = (fieldRenderProps: CheckboxFieldRenderProps): boolean =>
+    isInCheckboxGroup ? false : fieldRenderProps.isInvalid;
+
+  const renderHelpText = (fieldRenderProps: CheckboxFieldRenderProps): JSX.Element => (
+    <>
+      <Show when={local.description && !invalidFor(fieldRenderProps)}>
+        <Text
+          slot="description"
+          styles={checkboxHelpText({
+            size: helpTextSize(),
+            isDisabled: fieldRenderProps.isDisabled,
+            isInCheckboxGroup,
+          })}
+        >
+          {local.description}
+        </Text>
+      </Show>
+      <Show when={invalidFor(fieldRenderProps) && local.errorMessage}>
+        <Text
+          slot="errorMessage"
+          styles={checkboxHelpText({
+            size: helpTextSize(),
+            isInvalid: true,
+            isDisabled: fieldRenderProps.isDisabled,
+            isInCheckboxGroup,
+          })}
+        >
+          <CenterBaseline>
+            <AlertTriangleIcon aria-hidden="true" />
+          </CenterBaseline>
+          <span>{local.errorMessage}</span>
+        </Text>
+      </Show>
+    </>
+  );
 
   return (
-    <HeadlessCheckbox
+    <HeadlessCheckboxField
       {...headlessProps}
-      isSelected={headlessProps.isSelected}
-      defaultSelected={headlessProps.defaultSelected}
-      onChange={headlessProps.onChange}
-      isDisabled={headlessProps.isDisabled}
-      isReadOnly={headlessProps.isReadOnly}
-      isInvalid={headlessProps.isInvalid}
-      isIndeterminate={headlessProps.isIndeterminate}
       ref={(element) => assignRootRef(element)}
       inputRef={(element) => assignInputRef(element)}
       slot={local.slot ?? undefined}
-      class={getClassName}
+      class={getFieldClassName}
       style={mergedUnsafeStyle()}
     >
-      {(renderProps: CheckboxRenderProps) => {
-        const checkbox = (
-          <div
-            ref={boxElement}
-            class={checkboxBox({
-              ...renderProps,
-              isSelected: renderProps.isSelected || renderProps.isIndeterminate,
-              size: size(),
-              isEmphasized: isEmphasized(),
-            })}
-            style={checkboxPressScaleStyle(boxElement, renderProps)}
+      {(fieldRenderProps: CheckboxFieldRenderProps) => (
+        <>
+          <HeadlessCheckboxButton
+            class={(renderProps: CheckboxRenderProps) =>
+              wrapper({ ...renderProps, isInForm, size: size() })
+            }
           >
-            <Show when={renderProps.isIndeterminate}>
-              <DashIcon
-                size={iconSize[size()]}
-                class={checkboxIcon}
-                style={checkboxIconSizeStyle(dashIconPixelSize[size()])}
-              />
-            </Show>
-            <Show when={renderProps.isSelected && !renderProps.isIndeterminate}>
-              <CheckmarkIcon
-                size={iconSize[size()]}
-                class={checkboxIcon}
-                style={checkboxIconSizeStyle(checkmarkIconPixelSize[size()])}
-              />
-            </Show>
-          </div>
-        );
+            {(renderProps: CheckboxRenderProps) => {
+              const checkbox = (
+                <div
+                  ref={boxElement}
+                  class={checkboxBox({
+                    ...renderProps,
+                    isSelected: renderProps.isSelected || renderProps.isIndeterminate,
+                    size: size(),
+                    isEmphasized: isEmphasized(),
+                  })}
+                  style={checkboxPressScaleStyle(boxElement, renderProps)}
+                >
+                  <Show when={renderProps.isIndeterminate}>
+                    <DashIcon
+                      size={iconSize[size()]}
+                      class={checkboxIcon}
+                      style={checkboxIconSizeStyle(dashIconPixelSize[size()])}
+                    />
+                  </Show>
+                  <Show when={renderProps.isSelected && !renderProps.isIndeterminate}>
+                    <CheckmarkIcon
+                      size={iconSize[size()]}
+                      class={checkboxIcon}
+                      style={checkboxIconSizeStyle(checkmarkIconPixelSize[size()])}
+                    />
+                  </Show>
+                </div>
+              );
 
-        const resolvedChildren = resolveChildren(() => local.children);
-        const content = () => resolvedChildren();
+              // Only render checkbox without center baseline if no label.
+              // This avoids expanding the checkbox height to the font's line height.
+              if (!hasLabel()) {
+                return checkbox;
+              }
 
-        if (!content()) {
-          return checkbox;
-        }
-
-        return (
-          <>
-            <CenterBaseline>{checkbox}</CenterBaseline>
-            {content()}
-          </>
-        );
-      }}
-    </HeadlessCheckbox>
+              return (
+                <>
+                  <CenterBaseline>{checkbox}</CenterBaseline>
+                  <span class={labelSpan}>{local.children}</span>
+                </>
+              );
+            }}
+          </HeadlessCheckboxButton>
+          {renderHelpText(fieldRenderProps)}
+        </>
+      )}
+    </HeadlessCheckboxField>
   );
 }
 
