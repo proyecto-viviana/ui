@@ -753,8 +753,8 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 (2026-07-04) · ✓ ToggleButtonGroup (2026-07-04) · ✓ Link (2026-07-04) · ✓ Avatar
 (2026-07-04) · ✓ Badge (2026-07-04) · ✓ ProgressBar (2026-07-04) · ✓ Divider
 (2026-07-04) · ✓ StatusLight (2026-07-04) · ✓ Meter (2026-07-04) · ✓ ProgressCircle
-(2026-07-04) · ✓ Icon (2026-07-04) · ✓ Illustration (2026-07-04)` — remaining
-march order above is the queue; mark components here as `✓ name (date)` when
+(2026-07-04) · ✓ Icon (2026-07-04) · ✓ Illustration (2026-07-04) · ✓ Skeleton
+(2026-07-04)` — **Tier 1 complete.** Mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
@@ -1462,5 +1462,67 @@ certified, `blocked: name (reason)` otherwise.
     `tsc -p` clean. No net change to the 4 pre-existing deferred D4 event-ordering
     reds (Tabs ×2, Dialog ×2). Pre-existing unrelated `solid-h.ts:71` astro-check
     error unchanged.
+
+- ✓ **Skeleton done 2026-07-04 (CP9.14 — last Tier-1 unit; Tier 1 COMPLETE):** the
+  loading placeholder. Unique among Tier-1 units in that `Skeleton` renders **no DOM
+  of its own** — a pure `<SkeletonContext.Provider value={isLoading}>` (upstream
+  `Skeleton.tsx` and port `skeleton/index.tsx`, byte-identical). The visible
+  treatment is applied by the **descendants** that consume the context (here the
+  demo's `Text` lines + one `Icon`), so this is a deliberately **scoped** cert of
+  Skeleton's deterministic surface. Spec `skeleton.certified.spec.ts` — 2 cases
+  (loading / loaded) × the applicable driver set = **4 tests green on the first run,
+  a confirmatory green** (no divergence existed).
+  - **Three skeleton helpers verified byte-identical to upstream** by source read
+    (`Skeleton.tsx` vs `skeleton/index.tsx`): (1) `loadingStyle` = `css()` (layer
+    'L') with `linear-gradient(to right, gray-100 33%, light-dark(gray-25, gray-300),
+    gray-100 66%)` at `background-size: 300%` + `* { visibility: hidden }` — the
+    template string is character-identical, so the style macro hashes it to the
+    **same class** (computed `background-image`/`background-size` guaranteed equal);
+    (2) `useSkeletonText` wraps children in an inert `<SkeletonText>` span
+    (`loadingStyle` + `{color: transparent, box-decoration-break: clone,
+    border-radius: sm}`) AND stamps `-webkit-text-fill-color: transparent` on the
+    outer `<Text>` span — both stacks render the same `span[data-rsp-slot=text][inert]
+    > span.loadingStyle[inert] > text`; (3) `useSkeletonIcon` + `createIcon`'s
+    skeleton branch merge `{border-radius: sm}` and append `loadingStyle` + `inert`
+    directly onto the single `<svg>` (upstream clones the svg inside
+    `<SkeletonWrapper>`, which renders no wrapping element — identical single-`<svg>`
+    DOM). The shimmer is the **Web Animations API** (`element.animate` of
+    `background-position`, `2000ms ease-in-out infinite`, `100% → 0%`, `startTime = 0`
+    to sync every loading element) — **not** a CSS keyframe; byte-identical source.
+  - **D1** pins the static skeleton treatment on the loading text/icon — `target` =
+    the title's inner `<SkeletonText>` line-box, plus 4 parts (the outer title
+    `<Text>` span carrying `-webkit-text-fill-color: transparent`, the body + meta
+    inner line-boxes, and the skeleton `<svg>`). The default allowlist already
+    covers `background-image`, the four `border-*-radius` corners, `color` and the
+    font longhands; `styleProps.add: ["background-size", "box-decoration-break",
+    "-webkit-text-fill-color", "flex-shrink"]`. **`background-position` is
+    deliberately NOT in the allowlist**, so the infinite WAAPI shimmer never
+    destabilises the capture. Green in both themes; **non-vacuous** (all 5 locators
+    resolved to exactly one element each — the driver's `.evaluate()` throws on
+    0/multi-match — and every skeleton longhand matched byte-for-byte).
+  - **D6** pins the headline a11y contract: while `loading`, the `inert` skeleton
+    content is **removed** from the AX tree (empty snapshot under the copy subtree);
+    when `loaded` (`isLoading=false`, `steadyState: false` so D1 skips it), the real
+    content (`Placeholder title` / the body copy / `Here is an icon.`) is **restored**
+    — identically on both stacks. Root scoped to `.comparison-skeleton-copy` so the
+    cert does not depend on the (deferred) Image's AX.
+  - **Not registered, each source-verified:** **D3** — the only visual is the
+    infinite WAAPI shimmer (`background-position`); a screenshot of an in-flight
+    infinite animation is frame-timing-dependent, while the underlying gradient +
+    geometry is already pinned byte-for-byte by D1. **D2** — the shimmer is WAAPI
+    (`element.animate`), so computed `animation` is `none`; D2 (CSS keyframes /
+    computed animation) cannot observe it, and its content/timing is verified
+    byte-identical. **D7** — skeleton text is `color: transparent`, no legible node.
+    **D4/D5** — content is `inert`, not interactive. **D8** — no interactive target.
+  - **Out of scope (documented, not a divergence):** the demo's leading `Image` is
+    excluded from every driver. Its skeleton path (a `SkeletonWrapper` clone of a
+    real `<img>` with its own load timing) is a future Image unit's concern; folding
+    it in would couple this cert to un-certified Image AX and image-load
+    non-determinism. The Skeleton library contract the Image exercises (the same
+    `loadingStyle` + `inert` + WAAPI ref) is already pinned here by the text + icon.
+  - Regression guard: `skeleton.certified.spec.ts` **4/4**; e2e-only addition (no src
+    change, no rebuild); standalone e2e `tsc -p` clean. No net change to the 4
+    pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing
+    unrelated `solid-h.ts:71` astro-check error unchanged.
 
 Phase 3: not started.
