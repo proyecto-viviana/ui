@@ -440,6 +440,32 @@ tasks:
       track) and drop the hardcoded English "Minimum"/"Maximum" thumb aria-labels in favor
       of the localized `slider.minimum`/`slider.maximum` strings upstream uses. Deferred
       to headless-spine-port; the duplicated file is certified-green in the meantime.
+  - id: form-side-label-halfpixel-baseline
+    title: Form D3 waives a 1px side-label baseline translation on labelPosition=side
+    state: open
+    roadmap: certification-enforcement
+    note: >-
+      Surfaced by the Form recertification (CP9.25), the first cert to pixel-test
+      `labelPosition:"side"` (TextField's own cert only exercises `top`). In S2's side
+      layout the field grid baseline-aligns the 18px-tall label against the 32px input
+      row (`field()`: `alignItems:'baseline'`, `gridTemplateRows:["auto","1fr"]`), which
+      parks the label's box at a HALF-PIXEL Y (measured label top 505.5 / wrapper 504.5,
+      identical in React and Solid). Two independent Playwright probes proved the port
+      reproduces upstream's geometry byte-for-byte — identical atomic class strings,
+      computed font/transform surface, text ink-range (505.5→520.5), and live AND cloned
+      bounding rects (label at 40.5 inside the pixel-driver clone for both frameworks. The
+      residual is a deterministic 1px PURE TRANSLATION of the label glyphs (per-row ink
+      histogram identical, only shifted one row) — a rasterizer baseline-rounding of the
+      half-pixel Y that lands one row apart between the two frameworks' subtrees, stable
+      across three `--repeat-each` runs. Nothing in the port's DOM/CSS can move it without
+      diverging from upstream's baseline-alignment design (D1 independently asserts the
+      exact side-layout grid template + `align-items`), so `form.certified.spec.ts` carries
+      a `label-side`-only `pixel.waivers` entry `{maxMismatchRatio:0.006, maxDimensionDelta:0,
+      pixelThreshold:0}` (worst observed 468/95400 = 0.49%; `maxDimensionDelta:0` still trips
+      on any real size regression). Same class of irreducible raster floor as
+      `slider-thumb-antialias-1lsb`, here a sub-pixel baseline rather than an anti-aliased
+      edge. Revisit only if a future field-label change re-rounds the side-layout label onto
+      a whole pixel; otherwise it stays as the documented raster floor.
 ---
 
 # Tech Debt

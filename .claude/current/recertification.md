@@ -760,9 +760,9 @@ certified, `blocked: name (reason)` otherwise.
 Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGroup
 (2026-07-04) · ✓ Switch (2026-07-04) · ✓ RadioGroup (2026-07-04) · ✓ TextField
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
-(2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04)` — in progress.
-Queue: Form,
-FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
+(2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04) · ✓ Form
+(2026-07-04)` — in progress.
+Queue: FieldError/HelpText, LabeledValue. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
 (`helptext-fielderror-visual-port`, tech-debt) — but CheckboxGroup and RadioGroup both
@@ -2038,5 +2038,43 @@ headless is now the single source of truth for group description/error ids
      `<input type=range>`), and the broader **RangeSlider-duplicates-Slider-styles** debt — the
      faithful end state shares Slider's spine/styles rather than copying them. Tracked, not fixed in
      this unit.
+
+- ✓ **Form done 2026-07-04 (CP9.25 — eleventh Tier-2 unit, grid + context-provider container):**
+  certified `44/44` green (D1×20, D3×20, D7×4) — `form.certified.spec.ts`. **Zero port fixes: Form
+  was already faithful.** Upstream S2 `Form.tsx` is a thin wrapper over RAC `<Form>` (`<form>`) doing
+  exactly two things — a CSS grid (`display:grid`, `grid-template-columns` by `labelPosition`,
+  `row-gap` by `size` S20/M24/L32/XL40, fixed `column-gap`) and a `FormContext.Provider` carrying
+  `{size, labelPosition, labelAlign, necessityIndicator, isRequired, isDisabled, isEmphasized}` that
+  every descendant field (and Button, via `useFormProps`) inherits for any undefined prop. The port's
+  `packages/solid-spectrum/src/form/index.tsx` mirrors both: `formStyles` is byte-identical to
+  upstream's grid `style()` and `useFormProps` merges context into undefined props (Skeleton forcing
+  `isDisabled`). The one structural difference is benign — the port nests `<FormContext.Provider>`
+  OUTSIDE `<form>` while upstream nests it inside; a provider renders no DOM and children resolve the
+  same value either way, so it is a no-op, not a "fix". This unit's real signal is **context
+  PROPAGATION**: D1 captures the child TextField root + submit `<button>` as `parts` and D3 diffs the
+  composed form end-to-end, so a dropped context value would shift the rendered children. All ten
+  cases (default · size-{S,L,XL} · label-side · align-end · disabled · required · required-label ·
+  emphasized) prove each context→child path threads through exactly.
+  1. **Side-label half-pixel-baseline waiver (`label-side`, both themes) — the only sub-exact D3.**
+     First cert to pixel-test `labelPosition:"side"` (TextField's own cert only exercises `top`). In
+     side layout the field grid baseline-aligns the 18px label against the 32px input row
+     (`field()`: `alignItems:'baseline'`), parking the label box at a HALF-PIXEL Y (measured 505.5).
+     Two Playwright probes proved the port reproduces upstream geometry byte-for-byte (identical
+     atomic classes, font surface, ink-range 505.5→520.5, and live + cloned bounding rects); the
+     residual is a deterministic 1px PURE TRANSLATION of the label glyphs (identical per-row ink
+     histogram, shifted one row) — an irreducible rasterizer baseline-rounding of the half-pixel Y,
+     stable across `--repeat-each=3`. Waived `label-side`-only `{maxMismatchRatio:0.006,
+     maxDimensionDelta:0, pixelThreshold:0}` (worst 468/95400 = 0.49%; dimension-exact so any real
+     size regression still trips), reason `form-side-label-halfpixel-baseline` (tech-debt). Same class
+     of raster floor as `slider-thumb-antialias-1lsb` — a sub-pixel baseline, not an AA edge.
+     **Reusable: S2's side-label layout parks the label at a half-pixel Y via baseline-alignment
+     against the taller input row → a deterministic cross-framework 1px baseline-rounding delta with
+     byte-identical geometry; waive per-case, don't chase it.**
+  2. **D6 intentionally out of scope.** A `<form>` with no accessible name is a generic container
+     that adds zero AX semantics — its only subtree nodes are the child textbox + button, whose AX
+     trees are certified in TextField/Button. Registering D6 here would only re-assert that coverage
+     and re-hit the deferred field-family D6 items (`ui-icon-decorative-ax-node`,
+     `intl-roledescription-hardcodes`) with no Form-specific signal. D5/D8/D4/D2 are likewise
+     child/gesture concerns, out of scope for a static grid container.
 
 Phase 3: not started.
