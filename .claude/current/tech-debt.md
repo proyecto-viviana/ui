@@ -226,27 +226,34 @@ tasks:
       cases were DROPPED from checkbox.certified.spec.ts and deferred here. Cross-cutting:
       the same gap blocks certifying isInvalid/description on Checkbox, Radio, Switch,
       TextField and every other field.
-      EXTENDED by the CheckboxGroup recertification (CP9.16, blocked): CheckboxGroup does
-      NOT reuse upstream's shared FieldLabel/HelpText — the port (checkbox/index.tsx:650)
-      hand-rolls the group label + help text inline, and that re-implementation diverges
-      from upstream S2 CheckboxGroup.tsx + Field.tsx on the DEFAULT case (the demo renders
-      a label + description by default, so these can't be scoped out like Checkbox's invalid
-      case): (1) `checkboxGroupItems` sets `flexWrap:'wrap'` unconditionally, upstream wraps
-      only when `orientation:horizontal` (default vertical → computed nowrap); (2)
-      `checkboxGroupLabelWrapper` omits the `contain:{isQuiet:'none'}` override — upstream
-      CheckboxGroup always passes isQuiet to FieldLabel, so upstream computes `contain:none`
-      on the default labelPosition=top while the port computes `contain:inline-size`; (3)
-      the label is a `<span id>`, upstream FieldLabel renders a RAC `<Label>` (`<label>`)
-      with fieldLabel() + necessity indicator + optional contextualHelp; (4) the group help
-      text is an inline `<div id>` / `<div role="alert">` vs upstream's `<Text
-      slot="description">` / `<FieldError>` (helpTextStyles adds no `margin`, the port adds
-      `margin:0` — harmless for computed margin but a symptom of the hand-roll).
-      Faithful target = port shared FieldLabel + HelpText/FieldError components mirroring
-      react-spectrum/@react-spectrum/s2 Field.tsx (byte-copy the style() objects → identical
-      hashed classes → identical computed styles; RAC Label/Text/FieldError element types),
-      then have Checkbox AND CheckboxGroup/RadioGroup consume them exactly as upstream does.
-      Unblocks the deferred Checkbox invalid/description cases AND the whole CheckboxGroup/
-      RadioGroup group-level cert in one shot.
+      PARTIALLY RESOLVED by the CheckboxGroup recertification (CP9.16, DONE 2026-07-04):
+      CheckboxGroup is now certified 43/43 (D1/D3/D5/D6/D7) — the group surface was
+      realigned to upstream OUTPUT byte-for-byte IN-PLACE (the hand-roll stays; the shared
+      extraction below is the remaining follow-up). The four divergences were fixed: (1)
+      `checkboxGroupItems` → `flexWrap:{orientation:{horizontal:'wrap'}}` (vertical computes
+      nowrap); (2) `checkboxGroupLabelWrapper` → added `contain:{isQuiet:'none'}` so the
+      always-`isQuiet` wrapper computes `contain:none`; (3) description/error → RAC `<Text
+      slot="description">`/`<Text slot="errorMessage">` (no `role="alert"`), dropped the
+      hand-roll `margin:0`, AND made the ids single-source (see below); (4) the label was
+      correctly left a `<span>` (RAC CheckboxGroup LabelContext elementType:'span' —
+      NOT a divergence; an earlier "revert" to `<label>` was undone).
+      DOWN PAYMENT on the shared port (the id source-of-truth): the styled CheckboxGroup now
+      passes `description`/`errorMessage` DOWN to the headless `CheckboxGroup` with a new
+      opt-in `renderHelpText={false}` (solidaria-components/src/Checkbox.tsx). The headless
+      mints the description/error id ONCE and threads it onto the group + every item's
+      `aria-describedby` (via the exported `checkboxGroupData` WeakMap — mirroring
+      `useCheckboxGroup`/`useCheckboxGroupItem`), while the visible node is the styled
+      `<Text>` reading the id back. This fixed a real a11y gap (child inputs had lost the
+      group description) and establishes the headless as the single source of truth — the
+      pattern the shared HelpText/FieldError port should generalize (RAC's TextContext slot).
+      STILL OPEN: (a) the `isInvalid` row for Checkbox AND CheckboxGroup (the `<Text
+      slot="errorMessage">` AlertIcon-sized error + `aria-invalid` re-flowing the field
+      grid — measured 18px→52px etc.), and (b) the shared FieldLabel + HelpText/FieldError
+      *extraction* itself (de-duplicate the hand-rolls across Checkbox/CheckboxGroup/
+      RadioGroup/the field units; byte-copy the upstream Field.tsx style() objects; RAC
+      Label/Text/FieldError element types). Do (b) so the group hand-roll is replaced by the
+      shared component producing the same now-certified output, then certify the deferred
+      invalid/description cases on top.
   - id: headless-switch-ref-forwarding
     title: Headless SwitchField/SwitchButton do not accept ref/inputRef — styled Switch cannot forward either
     state: open

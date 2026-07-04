@@ -105,6 +105,17 @@ export interface CheckboxGroupProps
   style?: StyleOrFunction<CheckboxGroupRenderProps>;
   /** Ref for the checkbox group root element. */
   ref?: RefLike<HTMLDivElement>;
+  /**
+   * Whether this component renders its own description/error-message elements.
+   * A styled layer (e.g. solid-spectrum) that renders its own HelpText via a
+   * `<Text slot>` sets this to `false`: the wiring stays here — the single source
+   * of truth that mints the description/error ids and threads them onto the group
+   * and every item's `aria-describedby` — while the visible node is owned by the
+   * styled layer. Mirrors RAC, where the group provides a `TextContext` slot and
+   * never renders its own description node.
+   * @default true
+   */
+  renderHelpText?: boolean;
 }
 
 export interface CheckboxProps extends Omit<AriaCheckboxProps, "children">, SlotProps {
@@ -219,6 +230,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     "ref",
     "description",
     "errorMessage",
+    "renderHelpText",
     "children",
   ]);
 
@@ -334,12 +346,15 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         data-invalid={groupAria.isInvalid || undefined}
       >
         <GroupChildren />
-        <Show when={local.description}>
+        {/* A styled layer can own the visible HelpText (renderHelpText={false});
+            the id wiring above still runs so the group and its items stay
+            associated. Default true keeps the bare headless self-sufficient. */}
+        <Show when={(local.renderHelpText ?? true) && local.description}>
           <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
             {local.description}
           </div>
         </Show>
-        <Show when={groupAria.isInvalid && local.errorMessage}>
+        <Show when={(local.renderHelpText ?? true) && groupAria.isInvalid && local.errorMessage}>
           <div {...(groupAria.errorMessageProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
             {local.errorMessage}
           </div>

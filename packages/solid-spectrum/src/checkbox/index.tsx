@@ -19,6 +19,12 @@ import {
   type CheckboxGroupRenderProps,
   type CheckboxFieldRenderProps,
 } from "@proyecto-viviana/solidaria-components";
+// The headless group is the single source of truth for the description/error ids
+// (minted by createField, threaded onto the group AND every item's
+// aria-describedby via this WeakMap). We render the visible HelpText ourselves
+// (renderHelpText={false}) but read the id back from here so all three — group
+// node, item inputs, and our <Text> — resolve to the same element.
+import { checkboxGroupData } from "@proyecto-viviana/solidaria";
 import { Text } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
@@ -170,10 +176,16 @@ const checkboxGroupLabelWrapper = style<CheckboxGroupStyleState>({
       top: "--field-gap",
     },
   },
+  // Byte-faithful to upstream Field.tsx FieldLabel outer `<div>` contain: the
+  // `isQuiet:'none'` branch is declared last, so when CheckboxGroup passes
+  // `isQuiet` (which it always does — see renderChildren) it wins under
+  // last-match-wins and the label wrapper computes `contain:none` on the default
+  // `labelPosition:top` (previously mis-computed `contain:inline-size`).
   contain: {
     labelPosition: {
       top: "inline-size",
     },
+    isQuiet: "none",
   },
 });
 
@@ -193,13 +205,19 @@ const checkboxGroupItems = style<CheckboxGroupStyleState>({
   lineHeight: "ui",
   rowGap: "--field-gap",
   columnGap: 16,
-  flexWrap: "wrap",
+  // Byte-faithful to upstream CheckboxGroup.tsx: only a horizontal group wraps.
+  // The previous unconditional `"wrap"` was a self-inflicted divergence — for a
+  // vertical group (the demo default) upstream computes `flex-wrap:nowrap`.
+  flexWrap: {
+    orientation: {
+      horizontal: "wrap",
+    },
+  },
 });
 
 const checkboxGroupHelpText = style<CheckboxGroupStyleState>({
   gridArea: "helptext",
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
   font: controlFont(),
@@ -684,8 +702,6 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
   const idBase = createUniqueId();
   const labelId = `${idBase}-label`;
-  const descriptionId = `${idBase}-description`;
-  const errorId = `${idBase}-error`;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
@@ -693,15 +709,6 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-
-  const ariaDescribedBy = () => {
-    const ids = [
-      headlessProps["aria-describedby"],
-      local.description ? descriptionId : undefined,
-      local.errorMessage && headlessProps.isInvalid ? errorId : undefined,
-    ].filter(Boolean);
-    return ids.length ? ids.join(" ") : undefined;
-  };
 
   const getClassName = (renderProps: CheckboxGroupRenderProps): string =>
     [
@@ -731,8 +738,18 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
             size: size(),
             labelPosition: labelPosition(),
             labelAlign: labelAlign(),
+            // Upstream FieldLabel is rendered by CheckboxGroup with `isQuiet`
+            // ("Make the label affect the width of the group"), so the wrapper's
+            // `contain` resolves to `none` (label width feeds the group), not the
+            // `inline-size` a bare labelPosition:top would give.
+            isQuiet: true,
           })}
         >
+          {/* Upstream renders the group label via RAC <Label>, but a group is not
+              a labelable element: RAC CheckboxGroup supplies LabelContext with
+              `elementType: 'span'`, so the group label is a <span> (associated to
+              the group by `aria-labelledby`, not `for`). The hand-roll matches that
+              output with a <span id>. */}
           <span id={labelId} class={checkboxGroupLabel({ ...renderProps, size: size() })}>
             {local.label}
             <Show when={headlessProps.isRequired || necessityIndicator() === "label"}>
@@ -788,22 +805,32 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
           </CheckboxContext.Provider>
         </FormContext.Provider>
       </div>
+      {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
+          RAC `<Text slot="description">` (a `<span>`), not a `<div>`. */}
       <Show when={local.description && !renderProps.isInvalid}>
-        <div id={descriptionId} class={checkboxGroupHelpText({ ...renderProps, size: size() })}>
+        <Text
+          slot="description"
+          id={checkboxGroupData.get(renderProps.state)?.descriptionId}
+          styles={checkboxGroupHelpText({ ...renderProps, size: size() })}
+        >
           {local.description}
-        </div>
+        </Text>
       </Show>
+      {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
+          is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
+          (RAC FieldError carries no alert role; the group's `aria-describedby`
+          points here for the association). */}
       <Show when={local.errorMessage && renderProps.isInvalid}>
-        <div
-          id={errorId}
-          role="alert"
-          class={checkboxGroupHelpText({ ...renderProps, size: size() })}
+        <Text
+          slot="errorMessage"
+          id={checkboxGroupData.get(renderProps.state)?.errorMessageId}
+          styles={checkboxGroupHelpText({ ...renderProps, size: size() })}
         >
           <CenterBaseline>
             <AlertTriangleIcon aria-hidden="true" />
           </CenterBaseline>
           <span>{local.errorMessage}</span>
-        </div>
+        </Text>
       </Show>
     </>
   );
@@ -828,8 +855,14 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         isReadOnly={headlessProps.isReadOnly}
         isRequired={headlessProps.isRequired}
         isInvalid={headlessProps.isInvalid}
+        // Pass the field content down so the headless mints the description/error
+        // ids and threads them onto the group and every item's aria-describedby —
+        // the single source of truth. renderHelpText={false} suppresses the
+        // headless's own plain div; we render the styled <Text> above.
+        description={local.description}
+        errorMessage={local.errorMessage}
+        renderHelpText={false}
         aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
-        aria-describedby={ariaDescribedBy()}
         ref={(element) => assignRootRef(element)}
         slot={local.slot ?? undefined}
         class={getClassName}
