@@ -210,7 +210,7 @@ tasks:
       threading (HeadlessSelectOption, :1046-1051) and/or the S2 macro is/allows
       condition compile is the suspect. Diff both against upstream S2 before patching.
   - id: helptext-fielderror-visual-port
-    title: Port a faithful S2 HelpText/FieldError so isInvalid/description render the real slot rows
+    title: Port the faithful S2 Field composite (FieldLabel + HelpText/FieldError) so label/description/isInvalid rows match upstream
     state: open
     roadmap: upstream-api-parity
     note: >-
@@ -225,10 +225,28 @@ tasks:
       FieldError, so the invalid + description states can't be certified — both invalid
       cases were DROPPED from checkbox.certified.spec.ts and deferred here. Cross-cutting:
       the same gap blocks certifying isInvalid/description on Checkbox, Radio, Switch,
-      TextField and every other field. Faithful target = react-spectrum/@react-spectrum/
-      s2 Field.tsx HelpText/FieldError (byte-copy the style() objects → identical hashed
-      classes → identical computed styles), wired through the existing FieldErrorContext
-      slot. Unblocks the deferred invalid/description recert cases in one shot.
+      TextField and every other field.
+      EXTENDED by the CheckboxGroup recertification (CP9.16, blocked): CheckboxGroup does
+      NOT reuse upstream's shared FieldLabel/HelpText — the port (checkbox/index.tsx:650)
+      hand-rolls the group label + help text inline, and that re-implementation diverges
+      from upstream S2 CheckboxGroup.tsx + Field.tsx on the DEFAULT case (the demo renders
+      a label + description by default, so these can't be scoped out like Checkbox's invalid
+      case): (1) `checkboxGroupItems` sets `flexWrap:'wrap'` unconditionally, upstream wraps
+      only when `orientation:horizontal` (default vertical → computed nowrap); (2)
+      `checkboxGroupLabelWrapper` omits the `contain:{isQuiet:'none'}` override — upstream
+      CheckboxGroup always passes isQuiet to FieldLabel, so upstream computes `contain:none`
+      on the default labelPosition=top while the port computes `contain:inline-size`; (3)
+      the label is a `<span id>`, upstream FieldLabel renders a RAC `<Label>` (`<label>`)
+      with fieldLabel() + necessity indicator + optional contextualHelp; (4) the group help
+      text is an inline `<div id>` / `<div role="alert">` vs upstream's `<Text
+      slot="description">` / `<FieldError>` (helpTextStyles adds no `margin`, the port adds
+      `margin:0` — harmless for computed margin but a symptom of the hand-roll).
+      Faithful target = port shared FieldLabel + HelpText/FieldError components mirroring
+      react-spectrum/@react-spectrum/s2 Field.tsx (byte-copy the style() objects → identical
+      hashed classes → identical computed styles; RAC Label/Text/FieldError element types),
+      then have Checkbox AND CheckboxGroup/RadioGroup consume them exactly as upstream does.
+      Unblocks the deferred Checkbox invalid/description cases AND the whole CheckboxGroup/
+      RadioGroup group-level cert in one shot.
   - id: ui-icon-decorative-ax-node
     title: Reconcile decorative-icon AX exposure — React shows a bare img node, the port stamps aria-hidden
     state: open

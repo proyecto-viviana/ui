@@ -757,9 +757,13 @@ Phase 2 (Tier 1): `✓ Button (pilot) · ✓ ToggleButton (2026-07-03) · ✓ Ac
 (2026-07-04)` — **Tier 1 complete.** Mark components here as `✓ name (date)` when
 certified, `blocked: name (reason)` otherwise.
 
-Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04)` — in progress. Queue:
-CheckboxGroup, RadioGroup, Switch, TextField, TextArea, SearchField, NumberField,
-Slider, RangeSlider, Form, FieldError/HelpText, LabeledValue. Same marking rule.
+Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · blocked: CheckboxGroup
+(Field-composite port) · → Switch (2026-07-04)` — in progress. Queue: RadioGroup,
+TextField, TextArea, SearchField, NumberField, Slider, RangeSlider, Form,
+FieldError/HelpText, LabeledValue. Same marking rule. NOTE the Field-composite
+units (CheckboxGroup, RadioGroup, and every field that shows a label/description/
+error row) are all gated on `helptext-fielderror-visual-port` (tech-debt) — port
+the shared FieldLabel + HelpText/FieldError first, then certify them together.
 
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
@@ -1586,5 +1590,37 @@ Slider, RangeSlider, Form, FieldError/HelpText, LabeledValue. Same marking rule.
     e2e `tsc -p` clean (spec added to the scratchpad tsconfig include). No net change to
     the 4 pre-existing deferred D4 event-ordering reds (Tabs ×2, Dialog ×2). Pre-existing
     unrelated `solid-h.ts:71` astro-check error unchanged.
+
+- ⛔ **CheckboxGroup blocked 2026-07-04 (CP9.16 — deferred to the Field-composite
+  port):** source-level triage (no cert written) found the port's `CheckboxGroup`
+  (`checkbox/index.tsx:650`) is a **hand-rolled re-implementation** of the group label +
+  help text, NOT a reuse of upstream's shared `FieldLabel`/`HelpText`, and it diverges
+  from upstream `CheckboxGroup.tsx` + `Field.tsx` on the **default** case. Because the
+  comparison demo (`checkboxgroup-demo.ts`) defaults `description` to a non-empty string
+  ("Select notification channels."), the help-text + label rows render on the default —
+  so unlike Checkbox's `invalid` case these divergences **cannot be scoped out**. The
+  four source-cited divergences:
+  1. **`checkboxGroupItems` wraps unconditionally** — port `flexWrap:'wrap'`; upstream
+     `flexWrap:{orientation:{horizontal:'wrap'}}`, so the default (vertical) computes
+     `flex-wrap:nowrap`. Self-inflicted.
+  2. **`checkboxGroupLabelWrapper` drops the `contain:{isQuiet:'none'}` override** —
+     upstream CheckboxGroup always passes `isQuiet` to FieldLabel, so upstream computes
+     `contain:none` on the default `labelPosition:top`; the port computes
+     `contain:inline-size`.
+  3. **Label element is a `<span id>`** — upstream FieldLabel renders a RAC `<Label>`
+     (`<label>`) with `fieldLabel()` + necessity indicator + optional contextualHelp.
+  4. **Help text is an inline `<div id>` / `<div role="alert">`** — upstream renders
+     `<Text slot="description">` / `<FieldError>` (RAC element types); the port's
+     `checkboxGroupHelpText` also adds a stray `margin:0` absent from upstream
+     `helpTextStyles` (computed margin still `0`, but a hand-roll tell).
+  - **Decision:** rather than a large mid-session Field port or a divergence-hiding
+    waivered cert, CheckboxGroup is deferred to `helptext-fielderror-visual-port`
+    (tech-debt), which is broadened to cover the shared **FieldLabel + HelpText/
+    FieldError** port. Port those faithfully (byte-copy the upstream `style()` objects;
+    RAC Label/Text/FieldError element types), then certify Checkbox's deferred
+    invalid/description cases AND the whole CheckboxGroup/RadioGroup group-level surface
+    together. The two pure-style bugs (1)(2) are held (not shipped unguarded) so the
+    Field-composite unit fixes them under a green driver. Next green unit: **Switch**
+    (Field-clean single toggle).
 
 Phase 3: not started.
