@@ -762,7 +762,8 @@ Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGrou
 (2026-07-04) · ✓ TextArea (2026-07-04) · ✓ SearchField (2026-07-04) · ✓ NumberField
 (2026-07-04) · ✓ Slider (2026-07-04) · ✓ RangeSlider (2026-07-04) · ✓ Form
 (2026-07-04) · ✓ FieldError/HelpText (2026-07-04) · ✓ LabeledValue (2026-07-04)` —
-**Tier 2 complete.** Queue: empty (Phase 2 done). Same marking rule. NOTE the remaining
+**Tier 2 complete.** Next in the Phase 2 march: Tier 3 (overlays) — Tooltip is the
+topmost unit. Same marking rule. NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
 (`helptext-fielderror-visual-port`, tech-debt) — but CheckboxGroup and RadioGroup both
