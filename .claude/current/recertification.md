@@ -764,8 +764,10 @@ Phase 2 (Tier 2 — form fields): `✓ Checkbox (2026-07-04) · ✓ CheckboxGrou
 (2026-07-04) · ✓ FieldError/HelpText (2026-07-04) · ✓ LabeledValue (2026-07-04)` —
 **Tier 2 complete.**
 
-Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)` — **Tier 3 started.** Next:
-Popover. Same marking rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
+Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)` — **Tier 3
+in progress.** Next: Modal (Dialog already certified as the D1/D3/D6 overlay pilot), then
+AlertDialog, Menu, ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
+rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
 (`helptext-fielderror-visual-port`, tech-debt) — but CheckboxGroup and RadioGroup both
@@ -2208,5 +2210,66 @@ headless is now the single source of truth for group description/error ids
      close-on-Escape/leave, focus restoration) are `TooltipTrigger` behaviors — a separate interaction
      unit — not the surface's. D8: the tooltip surface is not an interactive hit target (the trigger
      ActionButton is certified by its own unit).
+
+- ✓ **Popover done 2026-07-04 (CP9.29 — Tier-3 overlay):** certified `27/27` green
+  (D1×12, D3×12, D6×1, D7×2) — `popover.certified.spec.ts`, **ZERO waivers**. Certifies the styled
+  popover SURFACE the S2 `Popover` paints (the byte-copied `popoverStyles` — colorScheme, bg `layer-2`
+  / forced-colors `Background`, radius `lg`, elevation via `filter:elevated` when the arrow shows /
+  `boxShadow:elevated` when hidden, `outline` 1px transparent-white-25 / gray-200, `size` width
+  S336/M416/L576, `maxWidth calc(100vw-24px)`) plus the directional arrow `<svg>` (byte-copied
+  `arrowStyles`: fill `--s2-container-bg`, 18×9, rotate top 0 / bottom 180 / left -90 / right 90deg,
+  translateX left −25% / right 25%) against upstream S2 `Popover.tsx` (`@react-spectrum/s2@1.5.1`).
+  Six cases (placement top/bottom/left/right + size-m/size-l, all `shouldFlip:false`+`showForm:false`
+  for a deterministic 300px content box) × light/dark. Reused the Tier-3 open recipe (panel-major,
+  `page.getByRole("dialog")` since the popover portals page-level) adapted to **click-to-open** (the
+  `DialogTrigger` demo default) — `beforePanel` clicks THIS panel's `Feedback` trigger; per-panel fresh
+  `goto` isolates.
+  1. **Two-layer realignment — reverted the invented `padding` scale (parity fix, production code).**
+     The styled layer had merged an invented `padding: 'none'|'sm'|'md'|'lg'` (default `md`=16) onto the
+     SURFACE class. Upstream's exported `Popover` instead paints TWO nested divs: the `AriaPopover`
+     surface (PURE `popoverStyles` — bg/outline/radius/elevation/size width) and an inner content div
+     carrying `innerDivStyle` (byte-copied: `padding` default `'default'`=8 / `'none'`=0, boxSizing,
+     outlineStyle none, borderRadius inherit, overflow auto, position relative, width full, maxSize
+     inherit, with `getAllowedOverrides({height:true})`). Realigned `solid-spectrum/src/popover/index.tsx`
+     to this shape: surface class is now purely `popoverStyles`, `UNSAFE_*`/`class`/`styles` sink to the
+     inner div, and `style={{zIndex:undefined}}` strips `createOverlayPosition`'s z-index:100000 (relying
+     on `isolation:isolate`), matching `PopoverBase`. Removed the self-inflicted `padding:"none"` from
+     BOTH Solid fixture call sites so both stacks use the default 8px. `PopoverPadding` narrowed to
+     `'default'|'none'`.
+  2. **Arrow wrapper Tailwind class reverted.** The `PopoverArrow` wrapper had a Tailwind positioning
+     class (`absolute data-[placement=…]:…-full`); reverted to upstream's `<OverlayArrow className="">`
+     now that the headless `OverlayArrow` self-positions, and byte-matched the svg (viewBox `0 0 18 10`,
+     no width/height attrs, same path `d`, `transform="translate(0 -1)"`).
+  3. **THE PORT FIX (D3 red→green) — headless `OverlayArrow` was missing RAC's centering transform.**
+     D3 initially failed all 12 pixel cases, the mismatch confined in EVERY placement to the arrow band
+     (placement-bottom → top edge, placement-left → right edge, …). A diagnostic measuring the arrow's
+     offset relative to the surface showed **identical computed `left:158px` in both stacks but different
+     rendered position — React arrow at relLeft 149, Solid at 158 (a 9px gap = exactly half the 18px arrow
+     width)**. Root cause: React Aria's `OverlayArrow` sets
+     `transform: placement==='top'||'bottom' ? 'translateX(-50%)' : 'translateY(-50%)'` — the reported
+     `arrowProps.left`/`top` point at the arrow's CENTER, so the wrapper is pulled back by half its size
+     to center on that point. The port's headless `OverlayArrow` (`solidaria-components/src/Popover.tsx`)
+     omitted it, leaving the arrow half its width/height off. Added the faithful transform; re-measured →
+     both stacks relLeft 149 (identical) → D3 byte-exact. **Unlike Tooltip** (whose from-scratch headless
+     `createTooltip` exposes NO `arrowProps` and hand-positions the arrow on a fractional half-pixel,
+     forcing a left/right subpixel D3 waiver), `createPopover` exposes REAL `arrowProps`, so once the
+     centering transform is faithful the arrow is byte-exact in all four placements → **zero waivers**.
+     This is the payoff of the popover headless being spine-faithful; it also narrows the tracked
+     headless-overlay realignment scope to Tooltip only.
+  4. **D6 AX — arrow surfaces as `img`, matching upstream.** The `role="dialog"` subtree carries the
+     accessible name (`Feedback`), the two RAC-injected `Dismiss` sentinels, and the arrow svg as an
+     unnamed `img` (the OverlayArrow edit already dropped the port's self-inflicted
+     `aria-hidden`/`role="presentation"`, same revert class as Tooltip). Byte-identical to upstream.
+     Popover + ContextualHelpTrigger unit suites still 41/41.
+  5. **D2/D4/D5/D8 out of scope for the surface unit.** D2 (enter/exit opacity+translate) — the port
+     does not internally drive `isEntering`/`isExiting` (props, not a `useEnterAnimation` state machine),
+     so there is no default enter animation to diff; tracked under the shared headless-overlay
+     realignment follow-up. D4/D5 (open-on-press, close-on-Escape/interact-outside, underlay dismiss,
+     focus containment/restoration) are `PopoverTrigger`/`DialogTrigger` behaviors — a separate
+     interaction unit. D8: the surface is not a hit target; the dismiss sentinels are RAC-injected SR
+     controls (certified via Dialog). **Latent divergence NOT triggered by this demo:** the port surface
+     lacks upstream's nested-`[role=dialog]` guard (`shouldBeDialog && !querySelector('[role=dialog]')`)
+     — it always renders `role="dialog"` where upstream would suppress it if the content already carries
+     one; harmless for the plain-content demo, noted for the trigger/Menu units.
 
 Phase 3: not started.

@@ -9,14 +9,15 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
 import { lightDark, setColorScheme, style } from "../style" with { type: "macro" };
-import { mergeStyles } from "../style/runtime";
+import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { useTheme, type ColorScheme } from "../provider";
 
 export type PopoverPlacement = NonNullable<HeadlessPopoverProps["placement"]>;
 export type Placement = PopoverPlacement;
 export type PlacementAxis = NonNullable<PopoverRenderProps["placement"]>;
 export type PopoverSize = "S" | "M" | "L";
-export type PopoverPadding = "none" | "sm" | "md" | "lg";
+/** Mirrors upstream S2: padding is applied to the popover's inner content div. */
+export type PopoverPadding = "default" | "none";
 
 export interface PopoverTriggerProps extends HeadlessPopoverTriggerProps {
   /** The children of the popover trigger (trigger element and popover). */
@@ -134,12 +135,30 @@ const popoverStyles = style<
   },
 });
 
-const paddingStyles: Record<PopoverPadding, StyleString> = {
-  none: style({ padding: 0 }),
-  sm: style({ padding: 8 }),
-  md: style({ padding: 16 }),
-  lg: style({ padding: 24 }),
-};
+// Byte-copied from upstream S2 `Popover.tsx` `innerDivStyle`. In upstream the
+// exported `Popover` paints TWO nested divs: the `AriaPopover` surface (the
+// `popover()`/`popoverStyles` box — bg, outline, radius, shadow, size width)
+// and an inner content div carrying the padding + scroll. `padding` defaults to
+// `'default'` (8px), `'none'` is 0 — the whole `none|sm|md|lg` scale (and its
+// `md`=16 default merged onto the surface) was a self-inflicted divergence.
+const innerDivStyle = style<{ padding: PopoverPadding }>(
+  {
+    padding: {
+      padding: {
+        default: 8,
+        none: 0,
+      },
+    },
+    boxSizing: "border-box",
+    outlineStyle: "none",
+    borderRadius: "inherit",
+    overflow: "auto",
+    position: "relative",
+    width: "full",
+    maxSize: "inherit",
+  },
+  getAllowedOverrides({ height: true }),
+);
 
 const arrowStyles = style<PopoverRenderProps>({
   display: "block",
@@ -218,7 +237,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   ]);
 
   const placement = () => local.placement ?? "bottom";
-  const padding = () => local.padding ?? "md";
+  const padding = () => local.padding ?? "default";
   const offset = () => (local.offset ?? 8) + (local.hideArrow ? 0 : 8);
   const setArrowElement = (element: SVGSVGElement | null) => {
     arrowElement = element;
@@ -231,34 +250,44 @@ export function Popover(props: PopoverProps): JSX.Element {
       placement={placement()}
       offset={offset()}
       arrowRef={arrowRef}
-      class={(renderProps: PopoverRenderProps) => {
-        return [
-          local.UNSAFE_className,
-          local.class ?? "",
-          mergeStyles(
-            popoverStyles({
-              ...renderProps,
-              colorScheme: theme.colorScheme,
-              isArrowShown: !local.hideArrow,
-              isSubmenu: renderProps.trigger === "SubmenuTrigger",
-              size: local.size,
-              trigger: renderProps.trigger,
-            }),
-            paddingStyles[padding()],
-            local.styles,
-          ),
-        ]
-          .filter(Boolean)
-          .join(" ");
-      }}
-      style={local.UNSAFE_style}
+      // Mirror upstream `PopoverBase`: the surface class is PURELY `popoverStyles`
+      // (bg/outline/radius/shadow/size). `UNSAFE_className`/`class`/`styles` are
+      // NOT merged here — upstream routes them to the inner content div below.
+      class={(renderProps: PopoverRenderProps) =>
+        popoverStyles({
+          ...renderProps,
+          colorScheme: theme.colorScheme,
+          isArrowShown: !local.hideArrow,
+          isSubmenu: renderProps.trigger === "SubmenuTrigger",
+          size: local.size,
+          trigger: renderProps.trigger,
+        })
+      }
+      // Upstream sets `style={{...UNSAFE_style, zIndex: undefined}}` on the
+      // surface to strip the positioning z-index (our createOverlayPosition
+      // injects z-index:100000) and rely on `isolation: isolate` instead;
+      // `UNSAFE_style` itself moves to the inner div.
+      style={{ "z-index": undefined }}
     >
       {(renderProps: PopoverRenderProps) => (
         <>
           <Show when={!local.hideArrow}>
             <PopoverArrow placement={renderProps.placement} setArrowElement={setArrowElement} />
           </Show>
-          {props.children}
+          {/* Upstream's exported `Popover` inner content div: padding + scroll,
+              and the sink for UNSAFE/class/styles escape hatches. */}
+          <div
+            style={local.UNSAFE_style}
+            class={[
+              local.UNSAFE_className,
+              local.class,
+              innerDivStyle({ padding: padding() }, local.styles),
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {props.children}
+          </div>
         </>
       )}
     </HeadlessPopover>
@@ -274,33 +303,28 @@ interface PopoverArrowProps {
   placement: PlacementAxis | null;
   /** Sets the arrow element for positioning measurements. */
   setArrowElement: (element: SVGSVGElement | null) => void;
-  /** Additional CSS class. */
-  class?: string;
 }
 
 function PopoverArrow(props: PopoverArrowProps): JSX.Element {
   const placement = () => props.placement ?? "bottom";
 
+  // Mirror upstream `<OverlayArrow className=""><svg viewBox="0 0 18 10"
+  // className={arrow(renderProps)}>`. The headless `OverlayArrow` self-positions
+  // (position:absolute + `[placement]:100%` + arrowProps cross-offset), so no
+  // positioning class is passed here — upstream passes an empty string.
   return (
     <HeadlessOverlayArrow
-      class="absolute block data-[placement=bottom]:bottom-full data-[placement=top]:top-full data-[placement=left]:left-full data-[placement=right]:right-full"
+      class=""
       render={() => (
         <svg
           ref={props.setArrowElement}
-          width="18"
-          height="9"
           viewBox="0 0 18 10"
-          class={[
-            arrowStyles({
-              trigger: null,
-              placement: placement(),
-              isEntering: false,
-              isExiting: false,
-            }),
-            props.class ?? "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
+          class={arrowStyles({
+            trigger: null,
+            placement: placement(),
+            isEntering: false,
+            isExiting: false,
+          })}
         >
           <path
             transform="translate(0 -1)"

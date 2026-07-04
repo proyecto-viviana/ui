@@ -640,10 +640,33 @@ export function OverlayArrow(props: OverlayArrowProps): JSX.Element {
   const popoverContext = useContext(PopoverContext);
   const placement = () => popoverContext?.placement() ?? null;
 
-  const mergedStyle = () => {
+  // Mirror react-aria-components' OverlayArrow: the wrapper positions itself
+  // absolutely against the popover edge (`[placement]: '100%'`) and takes the
+  // cross-axis offset (`left`/`top`) from the overlay's computed `arrowProps`.
+  // No `aria-hidden`/`role="presentation"` — upstream leaves the arrow in the
+  // accessibility tree (the arrow SVG surfaces as an unlabeled `img`), matching
+  // S2's `<OverlayArrow className="">`. The styled layer therefore passes no
+  // positioning class of its own.
+  const mergedStyle = (): JSX.CSSProperties => {
+    const currentPlacement = placement();
+    // Mirror react-aria-components' OverlayArrow: the reported `arrowProps`
+    // offset (`left`/`top`) points at the arrow's CENTER, so the wrapper must be
+    // pulled back by half its size to center on that point — horizontally for
+    // top/bottom placements, vertically for left/right. Omitting this shifts the
+    // arrow off by half its width/height (a self-inflicted divergence).
+    const style: JSX.CSSProperties = {
+      position: "absolute",
+      transform:
+        currentPlacement === "top" || currentPlacement === "bottom"
+          ? "translateX(-50%)"
+          : "translateY(-50%)",
+    };
+    if (currentPlacement != null) {
+      (style as Record<string, string>)[currentPlacement] = "100%";
+    }
+
     const contextStyle = (popoverContext?.arrowProps() as Record<string, unknown> | undefined)
       ?.style as (JSX.CSSProperties & Record<string, unknown>) | undefined;
-    const style: JSX.CSSProperties = {};
     if (typeof contextStyle?.left === "string") {
       style.left = contextStyle.left;
     }
@@ -664,13 +687,7 @@ export function OverlayArrow(props: OverlayArrowProps): JSX.Element {
   };
 
   return (
-    <div
-      class={props.class}
-      style={mergedStyle()}
-      data-placement={placement()}
-      aria-hidden="true"
-      role="presentation"
-    >
+    <div class={props.class} style={mergedStyle()} data-placement={placement()}>
       {props.render ? props.render() : props.children}
     </div>
   );

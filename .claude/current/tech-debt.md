@@ -236,6 +236,15 @@ tasks:
       D2 motion cert (enter/exit opacity+translate, currently driven by a
       hand-rolled `getAnimations()` state machine, not RAC's `useEnterAnimation`).
       Confirm against React Aria `useOverlayPosition` first (parity rule).
+      UPDATE (CP9.29, Popover): the ARROW-POSITIONING half of this is separable and
+      is now DONE for the popover path — `createPopover` DOES expose real
+      `arrowProps`, and the only gap was the headless `OverlayArrow`
+      (solidaria-components/Popover.tsx) missing RAC's centering transform
+      (`translateX(-50%)` top/bottom, `translateY(-50%)` left/right; the reported
+      offset points at the arrow CENTER). Added it → the popover arrow is byte-exact
+      on ALL four placements with ZERO D3 waivers. So this entry's arrow scope is now
+      TOOLTIP-ONLY (its headless `createTooltip` still exposes no `arrowProps`). The
+      popover's remaining realignment gap is D2 motion only — see `popover-enter-motion`.
   - id: tooltip-arrow-aria-exposed
     title: Tooltip arrow svg is exposed as role=img (upstream-faithful mirror, not an improvement)
     state: open
@@ -249,6 +258,28 @@ tasks:
       match upstream byte-for-byte under D6 (parity rule #1 — revert self-inflicted
       divergences). If upstream later adds `aria-hidden` to the arrow, mirror it;
       do NOT re-introduce the hide unilaterally as a lone "improvement."
+  - id: popover-enter-motion
+    title: Popover has no internally-driven enter/exit animation (D2 deferred; isEntering is a prop, not a state machine)
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the Popover recertification (CP9.29). Upstream S2 `Popover`
+      (`popover` style()) fades in over 200ms — `opacity {isEntering/isExiting:0}` +
+      `translateY/X ±4` + `transition:[opacity,translate]` — where `isEntering`/
+      `isExiting` are driven by React Aria's `useEnterAnimation`/exit lifecycle in
+      RAC's `Popover`. The port's headless `Popover.tsx` treats `isEntering`/
+      `isExiting` as plain render props that are never internally flipped, so the
+      surface just appears (no default enter/exit motion). The styled `popoverStyles`
+      already carries the byte-copied motion tokens (opacity/translate/transition), so
+      the fix is purely headless: drive the enter/exit flags off the overlay-open
+      lifecycle (mirror RAC `useEnterAnimation` against `createOverlayPosition`
+      readiness), then land the D2 motion cert. Same family as the Tooltip
+      `getAnimations()` gap but a smaller surface (positioning is already faithful —
+      see `tooltip-arrow-overlayarrow`). Also noted while here: the port surface omits
+      upstream RAC's nested-`[role=dialog]` guard
+      (`shouldBeDialog && !ref.querySelector('[role=dialog]')`) — it always renders
+      `role="dialog"` where upstream suppresses it if the content already has one;
+      latent (harmless for plain content), fold into the trigger/Menu unit.
   - id: helptext-fielderror-visual-port
     title: Port the faithful S2 Field composite (FieldLabel + HelpText/FieldError) so label/description/isInvalid rows match upstream
     state: open

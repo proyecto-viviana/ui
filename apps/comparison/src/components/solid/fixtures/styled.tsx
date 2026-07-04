@@ -1639,7 +1639,6 @@ function SolidSpectrumPopoverDemo() {
     get size() {
       return popoverSize();
     },
-    padding: "none",
     get "aria-label"() {
       return demoProps().ariaLabel;
     },
@@ -1709,7 +1708,6 @@ function SolidSpectrumPopoverDemo() {
         get size() {
           return popoverSize();
         },
-        padding: "none",
         get "aria-label"() {
           return demoProps().ariaLabel;
         },
