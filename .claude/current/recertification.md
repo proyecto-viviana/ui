@@ -772,8 +772,8 @@ certification landing to catch this rot early (`ci-main-push-skips-tests`).
 
 Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)`,
 `✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)`, `✓ Menu (2026-07-04)`,
-`✓ ActionMenu (2026-07-04)` — **Tier 3 in progress.**
-Next: ContextualHelp, Toast, DropZone/FileTrigger. Same marking
+`✓ ActionMenu (2026-07-04)`, `✓ ContextualHelp (2026-07-05)` — **Tier 3 in progress.**
+Next: Toast, DropZone/FileTrigger. Same marking
 rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -2399,5 +2399,54 @@ headless is now the single source of truth for group description/error ids
   inherits CP9.32's tracked artifacts VERBATIM (`styleProps.remove:["outline-color"]` for the unobservable
   `<div>`-vs-`<ul>` computed quirk; deferred D6 two-context `Text` delegation; deferred D2 hand-rolled
   popover fade; D4/D5/D8 trigger-interaction behaviors). `vp test run actionmenu` `30/30` green.
+
+- ✓ **ContextualHelp done 2026-07-05 (CP9.34 — Tier-3 overlay):** certified `23/23` green
+  (`apps/comparison/e2e/certified/contextualhelp.certified.spec.ts`), **four faithful port reverts** to
+  `packages/solid-spectrum/src/contextualhelp/index.tsx` (all self-inflicted divergences, grounded in
+  `@react-spectrum/s2` `ContextualHelp.tsx` + `Dialog.tsx`). ContextualHelp = an icon-only quiet
+  `ActionButton` trigger (`HelpCircle`/`InfoCircle` glyph, `aria-haspopup="dialog"`, `contextualhelp.{help,info}`)
+  composed with a `hideArrow` S2 `Popover` whose body is a `wrappingDiv` FRAME → `dialogInner`-merge inner →
+  Heading(`heading-xs`)/Content(`body-sm`)/Footer(`body-sm`, marginTop 16). Two scenarios: **(1) trigger**
+  (closed, canvas-measured) — D1 + D3 across `variant`×`size` (help/info × XS/S = 4 cases), certifying the
+  `ContextualHelp.size`→`ActionButton.size` passthrough and the two byte-identical variant glyphs; **(2) content**
+  (opened, page-major overlay) — D1 + D3 on the frame/inner/heading/content/footer + D6 (ax: the `role="dialog"`
+  subtree) + D7 (contrast: help copy on `layer-2`, both themes). **The four reverts:**
+  (a) `contextualHelpFrame` was missing `height:'full'` (upstream `wrappingDiv`) → added;
+  (b) `contextualHelpInner` carried `font:'body-sm'`+`color:'neutral'` → reverted to `fontFamily:'sans'` only
+  (upstream merges `dialogInner`, which is `fontFamily:'sans'` alone; the body copy's font/color come from the
+  Content/Text/Footer contexts + inherited theme neutral);
+  (c) the popover's `aria-label={triggerLabel}` → reverted to upstream's unconditional `aria-labelledby={titleId}`;
+  (d) the `HeadingContext` DEFAULT slot carried `{id: titleId, level: 2}` → reverted to styles-ONLY (only the
+  explicit `title` slot mints the id + level 2, per upstream's `{[DEFAULT_SLOT]:{styles}, title:{id,styles,level:2}}`).
+  With the default slot a headless `<Heading>` (canonical story + this demo) renders `<h3>` (RAC default level) and
+  does NOT name the dialog — the popover's `aria-labelledby={titleId}` dangles, giving the SAME unnamed `<h3>`
+  dialog in BOTH stacks; the Solid fixture's stray `slot:"title"` was removed to match. Content targets therefore
+  address the dialog/heading by bare role (byte-identical, just anonymous, exactly like upstream).
+  **D3 sub-pixel waiver** (`help-xs`/`info-xs`/`info-s`, `maxMismatchRatio 0.0015`) — proven NOT a port divergence:
+  a geometry probe confirmed the port's button box, padding, border, min-width, box-sizing, rendered icon size AND
+  icon offset are byte-identical between panels; the SVG path data is byte-identical to the vendored asset; `help-s`
+  survives byte-exact (kept under strict zero-tolerance) and CP9.33's identical icon-only quiet trigger needed no
+  waiver. The residual ≤7/7056px (0.1%) edge drift is the comparison panels' sub-pixel x-phase mismatch (Solid at
+  a half-pixel viewport x vs React integer) rasterizing the two identical glyphs at different phases — a shared
+  measurement-layer concern tracked in **D3 sub-pixel burn-down** below, not this component. **Deferred structural
+  divergences (filed, NOT fixed):** (i) the port's `ContextualHelp` DUPLICATES the popover body inline instead of
+  delegating to `ContextualHelpPopover` (upstream `ContextualHelp` delegates to `<ContextualHelpPopover>`);
+  (ii) the port's `ContextualHelpPopover` hardcodes `trigger="SubmenuTrigger"` + placement defaults (`end top`,
+  offset -2, crossOffset -8) that upstream's plain `<Popover>` does not — both are structure/placement realignments
+  orthogonal to this unit's paint cert, tracked in `.claude/current/tech-debt.md` as `contextualhelp-popover-delegation`.
+  Not registered here: D2 (the popover fade = shared headless-overlay realignment) and D4/D5/D8 (open-on-press,
+  Escape/interact-outside close, focus containment/restoration, trigger hit-area — interaction behaviors; the quiet
+  ActionButton's own target size is certified in CP9.2). `playwright test contextualhelp.certified` `23/23` green.
+
+- **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
+  panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
+  x (409). `clonedElementScreenshot` pins the cloned frame at an integer viewport origin, but the residual
+  sub-pixel PHASE of a centered glyph still differs between panels, so phase-sensitive glyph edges antialias
+  differently — a ≤0.1% edge sliver on Tooltip (CP9.28 left/right arrow) and ContextualHelp (CP9.34 `?`/`i` at
+  XS/S). This is a byte-identical-input measurement artifact, not a port divergence (proven per-unit by geometry
+  probes + byte-identical SVG/geometry + the same glyph passing byte-exact at a luckier phase). Closing it to
+  zero-waiver needs the harness to snap both panels to the same sub-pixel x-phase before `clonedElementScreenshot`
+  (e.g. round each panel's measured origin, or offset the clone by the panel's fractional x). Scoped per-case
+  waivers keep every non-drifting case + theme under strict zero-tolerance so real regressions still fail.
 
 Phase 3: not started.

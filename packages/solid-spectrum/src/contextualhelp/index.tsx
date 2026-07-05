@@ -96,6 +96,10 @@ const contextualHelpFrame = style({
   width: 268,
   padding: 24,
   boxSizing: "border-box",
+  // Upstream `wrappingDiv` (ContextualHelp.tsx) sets `height: 'full'` so the
+  // frame fills the popover surface; the port had dropped it (a self-inflicted
+  // divergence D1 catches on the frame's computed height).
+  height: "full",
 });
 
 const contextualHelpInner = style({
@@ -108,8 +112,14 @@ const contextualHelpInner = style({
   overflow: "auto",
   borderRadius: "none",
   padding: 24,
-  font: "body-sm",
-  color: "neutral",
+  // Upstream's inner is `mergeStyles(dialogInner, {borderRadius:'none', margin,
+  // padding:24})`; `dialogInner` (Dialog.tsx) carries only `fontFamily: 'sans'`
+  // — NOT a `font: body-sm` shorthand and NO explicit `color`. The body copy's
+  // `body-sm` font + neutral color are delegated to the Content/Text/Footer
+  // contexts (and the inherited theme neutral), exactly as upstream. The port's
+  // `font:"body-sm"`+`color:"neutral"` on the inner div were self-inflicted
+  // (D1 catches the differing computed font/color on the inner element).
+  fontFamily: "sans",
 });
 
 const contextualHelpInnerStyle: JSX.CSSProperties = {
@@ -144,11 +154,16 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
   const popoverId = () => popoverProps.id ?? menuTriggerMenuProps()?.id;
   const ariaLabelledBy = () =>
     popoverProps["aria-labelledby"] ?? (popoverProps["aria-label"] ? undefined : titleId);
+  // Upstream `HeadingContext` (ContextualHelp.tsx): the DEFAULT slot carries
+  // styles ONLY — no id, no level — so a headless `<Heading>` (no slot) renders
+  // at the RAC default level (h3) and does NOT name the dialog (combobox/picker
+  // get the name from the field label). Only the explicit `title` slot (the
+  // unavailable-menu-item case) mints the id + level 2 that names the dialog.
+  // The port had put `{id, level:2}` on the default slot too — a self-inflicted
+  // divergence (it named the dialog and forced h2 in canonical default usage).
   const headingContext = {
     slots: {
       default: {
-        id: titleId,
-        level: 2 as const,
         styles: contextualHelpHeading,
       },
       title: {
@@ -251,11 +266,11 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
     (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
     props.ref,
   );
+  // Upstream default heading slot = styles only (no id/level); only the explicit
+  // `title` slot names the dialog. See ContextualHelpPopover above.
   const headingContext = {
     slots: {
       default: {
-        id: titleId,
-        level: 2 as const,
         styles: contextualHelpHeading,
       },
       title: {
@@ -314,7 +329,7 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
       </ActionButton>
       <Popover
         {...popoverProps}
-        aria-label={triggerLabel()}
+        aria-labelledby={titleId}
         hideArrow
         placement={popoverProps.placement ?? "bottom start"}
         containerPadding={popoverProps.containerPadding ?? 8}

@@ -280,6 +280,30 @@ tasks:
       (`shouldBeDialog && !ref.querySelector('[role=dialog]')`) — it always renders
       `role="dialog"` where upstream suppresses it if the content already has one;
       latent (harmless for plain content), fold into the trigger/Menu unit.
+  - id: contextualhelp-popover-delegation
+    title: ContextualHelp should delegate its popover to ContextualHelpPopover; ContextualHelpPopover hardcodes submenu-trigger/placement defaults
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the ContextualHelp recertification (CP9.34). Two structural
+      divergences, orthogonal to this unit's paint cert (which is green — the frame/
+      inner/heading/content/footer are byte-faithful), so filed rather than fixed:
+      (a) the port's `ContextualHelp` DUPLICATES the whole popover body inline
+      (`<Popover>…<div class={contextualHelpFrame}>…</div>`, contextualhelp/index.tsx
+      ~330-353) instead of delegating to the sibling `ContextualHelpPopover`
+      component. Upstream `@react-spectrum/s2` `ContextualHelp` renders
+      `<ContextualHelpPopover>` and lets IT own the frame/contexts, so the two paths
+      cannot drift; the port has two independent copies of the same Heading/Content/
+      Footer context wiring to keep in sync (this unit had to apply the four reverts
+      to BOTH copies). Fix = have `ContextualHelp` render `<ContextualHelpPopover>`.
+      (b) the port's `ContextualHelpPopover` hardcodes `trigger="SubmenuTrigger"` +
+      placement defaults (`end top`, offset -2, crossOffset -8) that upstream's plain
+      `<Popover padding="none" hideArrow>` does NOT set — those submenu-anchoring
+      defaults belong to the unavailable-menu-item (`SubmenuTrigger`) path, not the
+      general popover. Reconcile both against upstream `ContextualHelp.tsx` before
+      patching (parity rule #1). The `ContextualHelp` popover's own default placement
+      (`bottom start`, containerPadding 8, offset 8) is the standalone-trigger case
+      and is faithful.
   - id: helptext-fielderror-visual-port
     title: Port the faithful S2 Field composite (FieldLabel + HelpText/FieldError) so label/description/isInvalid rows match upstream
     state: open

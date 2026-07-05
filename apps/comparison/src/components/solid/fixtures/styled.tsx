@@ -6534,7 +6534,7 @@ function SolidSpectrumContextualHelpDemo() {
               },
             },
             [
-              hc(SolidSpectrumHeading, { slot: "title" }, [() => demoProps().heading]),
+              hc(SolidSpectrumHeading, {}, [() => demoProps().heading]),
               hc(SolidSpectrumContent, {}, [() => demoProps().content]),
               hc(SolidSpectrumFooter, {}, [
                 hc(SolidSpectrumLink, { isStandalone: true, href: "#", target: "_blank" }, [
