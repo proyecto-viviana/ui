@@ -1,8 +1,12 @@
 import { type JSX, Show, splitProps } from "solid-js";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { Button, type ButtonVariant } from "../button";
 import { ButtonGroup } from "../buttongroup";
-import AlertDiamondIcon from "../icon/s2wf-icons/AlertDiamondIcon";
-import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
+import { IconContext } from "../icon";
+import { CenterBaseline } from "../icon/center-baseline";
+import { AlertDiamondIcon } from "../icon/s2wf-icons/AlertDiamondIcon";
+import { AlertTriangleIcon } from "../icon/s2wf-icons/AlertTriangleIcon";
+import { s2IntlStrings } from "../intl";
 import { Content, Heading } from "../text";
 import { style } from "../style" with { type: "macro" };
 import { Dialog, DialogTrigger, type DialogRenderProps, type DialogSize } from "./Dialog";
@@ -39,8 +43,6 @@ export interface AlertDialogProps {
   isPrimaryActionDisabled?: boolean;
   /** Whether the secondary action button is disabled. */
   isSecondaryActionDisabled?: boolean;
-  /** Whether the cancel button is disabled. */
-  isCancelDisabled?: boolean;
   /** Which action button should receive initial focus. */
   autoFocusButton?: "primary" | "secondary" | "cancel";
   /** The size of the alert dialog. */
@@ -59,14 +61,17 @@ export interface AlertDialogProps {
   class?: string;
 }
 
-const alertDialogHeading = style({
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-});
-
-const alertDialogIcon = style({
-  flexShrink: 0,
+const icon = style<{ variant?: AlertDialogVariant }>({
+  marginEnd: 8,
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      variant: {
+        error: "negative",
+        warning: "notice",
+      },
+    },
+  },
 });
 
 function primaryVariant(variant: AlertDialogVariant): ButtonVariant {
@@ -103,7 +108,6 @@ export function AlertDialog(props: AlertDialogProps): JSX.Element {
     "onCancel",
     "isPrimaryActionDisabled",
     "isSecondaryActionDisabled",
-    "isCancelDisabled",
     "autoFocusButton",
     "size",
     "isOpen",
@@ -114,6 +118,7 @@ export function AlertDialog(props: AlertDialogProps): JSX.Element {
     "class",
   ]);
 
+  const formatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const variant = () => local.variant ?? "confirmation";
   const isDismissible = () => local.isDismissible ?? local.isDismissable ?? false;
   const primaryActionLabel = () => local.primaryActionLabel ?? "Confirm";
@@ -127,26 +132,35 @@ export function AlertDialog(props: AlertDialogProps): JSX.Element {
     >
       {({ close }: DialogRenderProps) => (
         <>
-          <Heading slot="title" UNSAFE_className={alertDialogHeading}>
-            <Show when={variant() === "error"}>
-              <AlertDiamondIcon class={alertDialogIcon} />
-            </Show>
-            <Show when={variant() === "warning"}>
-              <AlertTriangleIcon class={alertDialogIcon} />
-            </Show>
-            {local.title}
-          </Heading>
+          <IconContext.Provider value={{ styles: () => icon({ variant: variant() }) }}>
+            <Heading slot="title">
+              <CenterBaseline>
+                <Show when={variant() === "error"}>
+                  <AlertTriangleIcon
+                    UNSAFE_suppressDataSlot
+                    aria-label={formatter().format("dialog.alert")}
+                  />
+                </Show>
+                <Show when={variant() === "warning"}>
+                  <AlertDiamondIcon
+                    UNSAFE_suppressDataSlot
+                    aria-label={formatter().format("dialog.alert")}
+                  />
+                </Show>
+                {local.title}
+              </CenterBaseline>
+            </Heading>
+          </IconContext.Provider>
           <Content>{local.children}</Content>
           <ButtonGroup>
-            <Show when={local.cancelLabel !== undefined || local.onCancel}>
+            <Show when={local.cancelLabel}>
               <Button
                 variant="secondary"
                 fillStyle="outline"
-                isDisabled={local.isCancelDisabled}
                 autoFocus={local.autoFocusButton === "cancel"}
                 onPress={() => runAction(close, local.onCancel)}
               >
-                {local.cancelLabel ?? "Cancel"}
+                {local.cancelLabel}
               </Button>
             </Show>
             <Show when={local.secondaryActionLabel}>

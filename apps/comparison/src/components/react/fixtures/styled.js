@@ -31,6 +31,7 @@ import {
   Content as SpectrumContent,
   DateRangePicker as SpectrumDateRangePicker,
   DatePicker as SpectrumDatePicker,
+  AlertDialog as SpectrumAlertDialog,
   Dialog as SpectrumDialog,
   DialogTrigger as SpectrumDialogTrigger,
   Divider as SpectrumDivider,
@@ -5153,20 +5154,31 @@ function ReactDialogDemo() {
         },
         children: [
           jsx(SpectrumButton, { variant: "primary", children: demoProps.triggerLabel }),
-          jsxs(SpectrumDialog, {
-            isDismissible: demoProps.isDismissible,
-            isKeyboardDismissDisabled: demoProps.isKeyboardDismissDisabled,
-            role: demoProps.role,
-            size: demoProps.size,
-            children: [
-              jsx(SpectrumHeading, { slot: "title", children: demoProps.title }),
-              jsx(SpectrumContent, {
-                children: jsx(SpectrumText, {
-                  children: demoProps.body,
-                }),
+          demoProps.role === "alertdialog"
+            ? jsx(SpectrumAlertDialog, {
+                title: demoProps.title,
+                variant: demoProps.variant,
+                // AlertDialog is S | M | L only; fold XL onto L.
+                size: demoProps.size === "XL" ? "L" : demoProps.size,
+                primaryActionLabel: demoProps.primaryActionLabel,
+                secondaryActionLabel: demoProps.secondaryActionLabel || undefined,
+                cancelLabel: demoProps.cancelLabel || undefined,
+                children: demoProps.body,
+              })
+            : jsxs(SpectrumDialog, {
+                isDismissible: demoProps.isDismissible,
+                isKeyboardDismissDisabled: demoProps.isKeyboardDismissDisabled,
+                role: demoProps.role,
+                size: demoProps.size,
+                children: [
+                  jsx(SpectrumHeading, { slot: "title", children: demoProps.title }),
+                  jsx(SpectrumContent, {
+                    children: jsx(SpectrumText, {
+                      children: demoProps.body,
+                    }),
+                  }),
+                ],
               }),
-            ],
-          }),
         ],
       }),
     }),

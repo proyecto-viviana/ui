@@ -4,9 +4,17 @@ export { comparisonControlsEvent };
 
 export const dialogSizeOptions = ["S", "M", "L", "XL"] as const;
 export const dialogRoleOptions = ["dialog", "alertdialog"] as const;
+export const dialogVariantOptions = [
+  "confirmation",
+  "information",
+  "destructive",
+  "error",
+  "warning",
+] as const;
 
 export type DialogDemoSize = (typeof dialogSizeOptions)[number];
 export type DialogDemoRole = (typeof dialogRoleOptions)[number];
+export type DialogDemoVariant = (typeof dialogVariantOptions)[number];
 
 export interface DialogDemoProps {
   triggerLabel: string;
@@ -14,6 +22,14 @@ export interface DialogDemoProps {
   body: string;
   size: DialogDemoSize;
   role: DialogDemoRole;
+  /** AlertDialog visual variant (only meaningful when `role` is `alertdialog`). */
+  variant: DialogDemoVariant;
+  /** AlertDialog primary (confirm) button label. */
+  primaryActionLabel: string;
+  /** AlertDialog secondary button label; empty string omits the button. */
+  secondaryActionLabel: string;
+  /** AlertDialog cancel button label; empty string omits the button. */
+  cancelLabel: string;
   isOpen: boolean;
   isDismissible: boolean;
   isKeyboardDismissDisabled: boolean;
@@ -25,6 +41,10 @@ export const dialogDemoDefaults: DialogDemoProps = {
   body: "Dialog focus and dismissal are compared from this island.",
   size: "M",
   role: "dialog",
+  variant: "confirmation",
+  primaryActionLabel: "Save",
+  secondaryActionLabel: "",
+  cancelLabel: "Cancel",
   isOpen: false,
   isDismissible: true,
   isKeyboardDismissDisabled: false,
@@ -51,6 +71,19 @@ export function normalizeDialogDemoProps(props: Partial<DialogDemoProps> = {}): 
     body: typeof props.body === "string" && props.body ? props.body : dialogDemoDefaults.body,
     size: isOneOf(props.size, dialogSizeOptions) ? props.size : dialogDemoDefaults.size,
     role: isOneOf(props.role, dialogRoleOptions) ? props.role : dialogDemoDefaults.role,
+    variant: isOneOf(props.variant, dialogVariantOptions)
+      ? props.variant
+      : dialogDemoDefaults.variant,
+    primaryActionLabel:
+      typeof props.primaryActionLabel === "string" && props.primaryActionLabel
+        ? props.primaryActionLabel
+        : dialogDemoDefaults.primaryActionLabel,
+    secondaryActionLabel:
+      typeof props.secondaryActionLabel === "string"
+        ? props.secondaryActionLabel
+        : dialogDemoDefaults.secondaryActionLabel,
+    cancelLabel:
+      typeof props.cancelLabel === "string" ? props.cancelLabel : dialogDemoDefaults.cancelLabel,
     isOpen: props.isOpen === true,
     isDismissible: props.isDismissible !== false,
     isKeyboardDismissDisabled: props.isKeyboardDismissDisabled === true,
@@ -61,6 +94,7 @@ export function dialogDemoPropsFromSearch(search: string): DialogDemoProps {
   const params = new URLSearchParams(search);
   const size = params.get("size");
   const role = params.get("role");
+  const variant = params.get("variant");
 
   return normalizeDialogDemoProps({
     triggerLabel: params.get("triggerLabel") || dialogDemoDefaults.triggerLabel,
@@ -68,6 +102,11 @@ export function dialogDemoPropsFromSearch(search: string): DialogDemoProps {
     body: params.get("body") || dialogDemoDefaults.body,
     size: isOneOf(size, dialogSizeOptions) ? size : dialogDemoDefaults.size,
     role: isOneOf(role, dialogRoleOptions) ? role : dialogDemoDefaults.role,
+    variant: isOneOf(variant, dialogVariantOptions) ? variant : dialogDemoDefaults.variant,
+    primaryActionLabel: params.get("primaryActionLabel") ?? dialogDemoDefaults.primaryActionLabel,
+    secondaryActionLabel:
+      params.get("secondaryActionLabel") ?? dialogDemoDefaults.secondaryActionLabel,
+    cancelLabel: params.get("cancelLabel") ?? dialogDemoDefaults.cancelLabel,
     isOpen: booleanParam(params.get("isOpen")),
     isDismissible: params.has("isDismissible")
       ? booleanParam(params.get("isDismissible"))

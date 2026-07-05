@@ -771,8 +771,8 @@ upstream RAC 1.19 / S2 1.5.1 — faithful in every case; only the tests were rea
 certification landing to catch this rot early (`ci-main-push-skips-tests`).
 
 Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)`,
-`✓ Modal (2026-07-04)` — **Tier 3 in progress.** Next: AlertDialog, then Menu,
-ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
+`✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)` — **Tier 3 in progress.**
+Next: Menu, ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
 rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -2300,5 +2300,41 @@ headless is now the single source of truth for group description/error ids
   3. **Deliberately NOT re-run: D2/D4/D5/D6/D7/D8** — all size-independent (motion tokens, open/close
      event log, focus trap, AX tree, text-on-`layer-2` contrast, control hit boxes don't change with modal
      width), so they stay owned by the Dialog pilot at `M`; re-running them per size would add no signal.
+
+- ✓ **AlertDialog done 2026-07-04 (CP9.31 — Tier-3 overlay):** certified `9/9` green
+  (`apps/comparison/e2e/certified/alertdialog.certified.spec.ts`) — **red→green, 4 port bugs + 1 stale
+  icon asset fixed.** New fixture surface: the `dialog` route's second `DialogTrigger` child branches on
+  `role === "alertdialog"` to render the real `AlertDialog` (both stacks, `styled.tsx`/`styled.js`), driven
+  by new `variant`/`primaryActionLabel`/`secondaryActionLabel`/`cancelLabel` controls (`dialog-demo.ts`,
+  `component-controls.ts`). Scenarios: `alertHeading` (D1 + D3 on the heading + variant icon, cases
+  `variant-error`/`variant-warning`, `parts:{icon}`, `styleProps.add:["--iconPrimary","fill"]`) and
+  `alertAx` (D6, cases `variant-error`/`variant-confirmation`). The cert opened at `9 failed` (D1 ×4, D3
+  ×4, D6 ×1); the D6 diff was the smoking gun — the port heading was missing the `img "Alert"` node and
+  rendered an unfolded name (`"Review Changes"` vs upstream `"Alert Review Changes"`).
+  **Four self-inflicted `AlertDialog.tsx` divergences (rule #1), all reverted to upstream S2:**
+  1. **Swapped variant glyphs.** Port rendered `AlertDiamond` for `error` and `AlertTriangle` for
+     `warning` — upstream is the reverse (`error → AlertTriangleIcon`, `warning → AlertDiamondIcon`).
+  2. **No `--iconPrimary` variant tint.** Upstream tints the heading icon via an `IconContext.Provider`
+     carrying a `style<{variant}>()` macro (`--iconPrimary` fill: `error → negative`, `warning → notice`,
+     `marginEnd: 8`). Port had a plain inline-flex heading with no tint — added the gold-reference
+     `IconContext` + `CenterBaseline` pattern (mirrors InlineAlert).
+  3. **Missing icon accessible name.** Upstream labels the heading icon `aria-label={formatter.format(
+     "dialog.alert")}` (the `img "Alert"` D6 expected). Added the `dialog.alert` string to the intl bundle
+     (`en-US` "Alert" / `es-ES` "Alerta" / `S2IntlStrings`) and wired `createStringFormatter(s2IntlStrings,
+     "@react-spectrum/s2")` + `UNSAFE_suppressDataSlot`.
+  4. **Invented `isCancelDisabled` prop + `?? "Cancel"` default.** Removed from the interface, splitProps,
+     and the cancel button; cancel now renders faithfully under `<Show when={cancelLabel}>` (no default
+     label, no invented disabled wiring).
+  After those four, D1 + D6 + D3-`error` went green; D3-`warning` still failed by 10/43200px (ratio
+  0.00023) in an 8×13 patch of the AlertDiamond glyph. Root cause was **not** an AlertDialog bug: the
+  port's `AlertDiamondIcon` (`.tsx` artifact + `S2_Icon_AlertDiamond_20_N.svg` asset) was a **stale
+  full-precision outlier** (3 comma-separated paths, `fill=#222`) generated on the old icon pipeline,
+  while every sibling (incl. its own `AlertTriangleIcon`, which passed byte-perfect) ships the pinned
+  `@react-spectrum/s2@1.5.1` **svgo-optimized** glyph (2 space-separated paths, `light-dark(rgb(41,41,41),
+  rgb(219,219,219))` fill). Regenerated AlertDiamond to match — the correct fix per rule #1 (a waiver would
+  freeze a self-inflicted divergence), and it strictly *increases* consistency: the same glyph backs
+  InlineAlert's `notice` variant, whose React side already renders the optimized path, so this can only
+  improve InlineAlert parity, never regress it. `vp test run packages` stayed `268/268` green (no snapshot
+  captured the stale path). Final: `9/9` green.
 
 Phase 3: not started.

@@ -194,7 +194,12 @@ import {
   dateFieldSizeOptions,
   dateFieldValidationBehaviorOptions,
 } from "./datefield-demo";
-import { dialogDemoDefaults, dialogRoleOptions, dialogSizeOptions } from "./dialog-demo";
+import {
+  dialogDemoDefaults,
+  dialogRoleOptions,
+  dialogSizeOptions,
+  dialogVariantOptions,
+} from "./dialog-demo";
 import {
   timeFieldDemoDefaults,
   timeFieldGranularityOptions,
@@ -4412,6 +4417,31 @@ const dialogControls: ComponentControlGroup = {
       kind: "radio",
       defaultValue: dialogDemoDefaults.role,
       options: options(dialogRoleOptions),
+    },
+    {
+      name: "variant",
+      label: "variant (alertdialog)",
+      kind: "radio",
+      defaultValue: dialogDemoDefaults.variant,
+      options: options(dialogVariantOptions),
+    },
+    {
+      name: "primaryActionLabel",
+      label: "primaryActionLabel (alertdialog)",
+      kind: "text",
+      defaultValue: dialogDemoDefaults.primaryActionLabel,
+    },
+    {
+      name: "secondaryActionLabel",
+      label: "secondaryActionLabel (alertdialog)",
+      kind: "text",
+      defaultValue: dialogDemoDefaults.secondaryActionLabel,
+    },
+    {
+      name: "cancelLabel",
+      label: "cancelLabel (alertdialog)",
+      kind: "text",
+      defaultValue: dialogDemoDefaults.cancelLabel,
     },
     {
       name: "isOpen",

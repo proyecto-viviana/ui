@@ -54,6 +54,7 @@ import {
   DisclosureHeader as SolidSpectrumDisclosureHeader,
   DisclosurePanel as SolidSpectrumDisclosurePanel,
   DisclosureTitle as SolidSpectrumDisclosureTitle,
+  AlertDialog as SolidSpectrumAlertDialog,
   Dialog as SolidSpectrumDialog,
   DialogTrigger as SolidSpectrumDialogTrigger,
   Divider as SolidSpectrumDivider,
@@ -5069,37 +5070,63 @@ function SolidSpectrumDialogDemo() {
                   [() => demoProps().triggerLabel],
                 ),
               () =>
-                hc(
-                  SolidSpectrumDialog,
-                  {
-                    get size() {
-                      return demoProps().size;
-                    },
-                    get role() {
-                      return demoProps().role;
-                    },
-                    get isDismissible() {
-                      return demoProps().isDismissible;
-                    },
-                    get isKeyboardDismissDisabled() {
-                      return demoProps().isKeyboardDismissDisabled;
-                    },
-                  },
-                  [
-                    () => [
-                      hc(
-                        SolidSpectrumHeading,
-                        {
-                          slot: "title",
+                demoProps().role === "alertdialog"
+                  ? hc(
+                      SolidSpectrumAlertDialog,
+                      {
+                        get title() {
+                          return demoProps().title;
                         },
-                        [() => demoProps().title],
-                      ),
-                      hc(SolidSpectrumContent, {}, [
-                        () => hc(SolidSpectrumText, {}, [() => demoProps().body]),
-                      ]),
-                    ],
-                  ],
-                ),
+                        get variant() {
+                          return demoProps().variant;
+                        },
+                        get size() {
+                          // AlertDialog is S | M | L only; fold XL onto L.
+                          return demoProps().size === "XL" ? "L" : demoProps().size;
+                        },
+                        get primaryActionLabel() {
+                          return demoProps().primaryActionLabel;
+                        },
+                        get secondaryActionLabel() {
+                          return demoProps().secondaryActionLabel || undefined;
+                        },
+                        get cancelLabel() {
+                          return demoProps().cancelLabel || undefined;
+                        },
+                      },
+                      [() => demoProps().body],
+                    )
+                  : hc(
+                      SolidSpectrumDialog,
+                      {
+                        get size() {
+                          return demoProps().size;
+                        },
+                        get role() {
+                          return demoProps().role;
+                        },
+                        get isDismissible() {
+                          return demoProps().isDismissible;
+                        },
+                        get isKeyboardDismissDisabled() {
+                          return demoProps().isKeyboardDismissDisabled;
+                        },
+                      },
+                      [
+                        () => [
+                          hc(
+                            SolidSpectrumHeading,
+                            {
+                              slot: "title",
+                            },
+                            [() => demoProps().title],
+                          ),
+                          hc(SolidSpectrumContent, {}, [
+                            () => hc(SolidSpectrumText, {}, [() => demoProps().body]),
+                          ]),
+                        ],
+                      ],
+                    ),
             ],
           ),
         ],
