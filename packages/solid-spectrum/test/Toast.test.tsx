@@ -383,7 +383,7 @@ describe("Toast (solid-spectrum)", () => {
   });
 
   describe("close button", () => {
-    it("renders dismiss button with S2 CloseIcon SVG", () => {
+    it("renders dismiss button with the faithful S2 CloseButton (12px cross)", () => {
       render(() => (
         <ToastProvider useGlobalQueue>
           <ToastRegion portal={false} />
@@ -398,7 +398,9 @@ describe("Toast (solid-spectrum)", () => {
       expect(closeBtn).toBeInTheDocument();
       const svg = closeBtn!.querySelector("svg");
       expect(svg).toBeInTheDocument();
-      expect(svg).toHaveAttribute("viewBox", "0 0 20 20");
+      // Upstream S2 Toast uses `<CloseButton staticColor="white">`, whose glyph is
+      // the 12px ui-icon Cross (viewBox "0 0 12 12"), not the 20px workflow CloseIcon.
+      expect(svg).toHaveAttribute("viewBox", "0 0 12 12");
     });
   });
 

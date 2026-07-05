@@ -26,7 +26,6 @@ import {
   ToastContext,
   ToastTitle as HeadlessToastTitle,
   ToastDescription as HeadlessToastDescription,
-  ToastCloseButton as HeadlessToastCloseButton,
   globalToastQueue,
   addToast as headlessAddToast,
   useToastContext,
@@ -43,10 +42,11 @@ import {
   type ToastOptions as StatelyToastOptions,
 } from "@proyecto-viviana/solid-stately";
 import { ActionButton, Button } from "../button";
+import { CenterBaseline } from "../CenterBaseline";
+import { CloseButton } from "../dialog";
 import { AlertTriangleIcon } from "../icon/s2wf-icons/AlertTriangleIcon";
 import { CheckmarkCircleIcon } from "../icon/s2wf-icons/CheckmarkCircleIcon";
 import { ChevronDownIcon } from "../icon/s2wf-icons/ChevronDownIcon";
-import { CloseIcon } from "../icon/s2wf-icons/CloseIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 import { s2IntlStrings } from "../intl";
 import { createMediaQuery } from "../utils/createMediaQuery";
@@ -533,11 +533,6 @@ const toastDescription = style({
   marginTop: 2,
 });
 
-const toastIcon = style({
-  flexShrink: 0,
-  color: "white",
-});
-
 const toastAction = style({
   marginStart: "auto",
   gridArea: "action",
@@ -566,29 +561,6 @@ const toastControls = style<{ isExpanded?: boolean }>({
   opacity: {
     default: 0,
     isExpanded: 1,
-  },
-});
-
-const closeButtonStyles = style({
-  ...focusRing(),
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  flexShrink: 0,
-  width: 32,
-  height: 32,
-  borderRadius: "full",
-  borderWidth: 0,
-  padding: 0,
-  color: "white",
-  backgroundColor: {
-    default: "transparent",
-    isHovered: "transparent-overlay-100",
-    isPressed: "transparent-overlay-200",
-  },
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
   },
 });
 
@@ -940,6 +912,13 @@ export function Toast(props: ToastProps): JSX.Element {
       state.remove(local.toast.key);
     }
   };
+  // Mirrors the headless close-button delegation (close then finalize removal) so
+  // the faithful S2 CloseButton dismisses the toast without relying on the
+  // `[data-solidaria-toast-close-button]` click delegation it doesn't carry.
+  const handleCloseToast = () => {
+    state.close(local.toast.key);
+    state.remove(local.toast.key);
+  };
 
   const backgroundStyle = () =>
     ({
@@ -987,14 +966,13 @@ export function Toast(props: ToastProps): JSX.Element {
               .join(" ")
           }
         >
-          <div class={toastBody({ isSingle: shouldRenderAsSingle() })}>
-            <div class={useComponentTransition() ? `${toastContent} toast-content` : toastContent}>
+          <div role="presentation" class={toastBody({ isSingle: shouldRenderAsSingle() })}>
+            <div
+              class={useComponentTransition() ? `${toastContent} toast-content` : toastContent}
+              data-solidaria-toast-content=""
+            >
               <Show when={getVariantIcon(variant())}>
-                {(icon) => (
-                  <span class={toastIcon} data-solid-spectrum-toast-icon="">
-                    {icon()}
-                  </span>
-                )}
+                {(icon) => <CenterBaseline>{icon()}</CenterBaseline>}
               </Show>
               <div class={toastText}>
                 <Show when={title()}>
@@ -1038,17 +1016,12 @@ export function Toast(props: ToastProps): JSX.Element {
             </Show>
           </div>
 
-          <HeadlessToastCloseButton
-            toast={local.toast}
-            class={
-              useComponentTransition()
-                ? `${closeButtonStyles({})} toast-close`
-                : closeButtonStyles({})
-            }
+          <CloseButton
+            staticColor="white"
+            onPress={handleCloseToast}
+            UNSAFE_className={useComponentTransition() ? "toast-close" : undefined}
             aria-label={stringFormatter().format("dialog.dismiss")}
-          >
-            <CloseIcon aria-hidden="true" />
-          </HeadlessToastCloseButton>
+          />
         </HeadlessToast>
       }
     >
