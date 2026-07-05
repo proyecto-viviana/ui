@@ -771,8 +771,9 @@ upstream RAC 1.19 / S2 1.5.1 — faithful in every case; only the tests were rea
 certification landing to catch this rot early (`ci-main-push-skips-tests`).
 
 Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)`,
-`✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)`, `✓ Menu (2026-07-04)` — **Tier 3 in progress.**
-Next: ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
+`✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)`, `✓ Menu (2026-07-04)`,
+`✓ ActionMenu (2026-07-04)` — **Tier 3 in progress.**
+Next: ContextualHelp, Toast, DropZone/FileTrigger. Same marking
 rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -2383,5 +2384,20 @@ headless is now the single source of truth for group description/error ids
     `marginBottom` compensation.
   - **D4/D5/D8** (open-on-press, arrow roving, type-ahead, close, `onAction`, item hit-area) are
     `MenuTrigger`/collection/interaction behaviors → belong to a trigger interaction unit, not the list paint.
+
+- ✓ **ActionMenu done 2026-07-04 (CP9.33 — Tier-3 overlay):** certified `30/30` green on the FIRST run,
+  **zero port change** (`apps/comparison/e2e/certified/actionmenu.certified.spec.ts`). ActionMenu = an
+  icon-only `ActionButton` trigger (`More` "⋯" glyph, `aria-label` "More actions", `menu.moreActions`)
+  composed with the certified S2 `Menu`. Two scenarios: **(1) trigger** (closed, canvas-measured) — D1 ×8 +
+  D3 ×8 across `size` S/M/L + `isQuiet`, certifying the `ActionMenu.size`→`ActionButton.size` passthrough,
+  the quiet variant, and the byte-identical `More` glyph; **(2) list** (opened panel-major) — D1 ×6 + D3 ×6 +
+  D7 ×2 across `menuSize` S/M/L, proving faithful composition of the CP9.32-certified `s2-menu-styles`
+  (`menuPopover`/`menuFrame`/`menu`/`MenuItem`) through ActionMenu's `menuSize` prop + hand-rolled popover.
+  It went green immediately **because the port reuses the exact styles CP9.32 already realigned + the
+  CP9.2-certified ActionButton** — the two units share the `s2-menu-styles.ts` module, so Menu's three
+  reverts (overflow/menuItem-transition/description-transition) already covered ActionMenu. The list scenario
+  inherits CP9.32's tracked artifacts VERBATIM (`styleProps.remove:["outline-color"]` for the unobservable
+  `<div>`-vs-`<ul>` computed quirk; deferred D6 two-context `Text` delegation; deferred D2 hand-rolled
+  popover fade; D4/D5/D8 trigger-interaction behaviors). `vp test run actionmenu` `30/30` green.
 
 Phase 3: not started.
