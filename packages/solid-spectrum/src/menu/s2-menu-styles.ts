@@ -123,8 +123,13 @@ export const menu = style<MenuRenderProps & S2MenuStyleProps>({
   boxSizing: "border-box",
   maxHeight: "[inherit]",
   width: "full",
-  overflowY: "auto",
-  overflowX: "hidden",
+  // Upstream `menu` uses a single `overflow: {isPopover: 'auto'}` (both axes auto
+  // in the popover case). The port always renders the menu inside its popover, so
+  // `overflow: "auto"` matches byte-for-byte (`overflow-x`/`overflow-y` both
+  // resolve to `auto`); the previous `overflowX: "hidden"` was a self-inflicted
+  // divergence D1 caught. `maxWidth`/`padding` stay unconditional here (the
+  // isPopover gating is a tracked deferred divergence, D1-safe while in popover).
+  overflow: "auto",
   maxWidth: 320,
   padding: 8,
   fontFamily: "sans",
@@ -180,7 +185,10 @@ export const menuItem = style<S2MenuItemStyleProps>({
     default: "default",
     isLink: "pointer",
   },
-  transition: "default",
+  // Upstream `menuitem` uses `transition: 'transform'` (pressScale only), not the
+  // broad `'default'` property set — matched here so the item's
+  // `transition-property` computed value is identical (a D1 finding).
+  transition: "transform",
   forcedColorAdjust: "none",
 });
 
@@ -301,7 +309,8 @@ export const menuItemDescription = style<
       default: "inherit",
     },
   },
-  transition: "default",
+  // Upstream `description` has NO `transition` — the port's `transition: "default"`
+  // was self-inflicted (D1 caught the differing `transition-property`).
 });
 
 export const menuItemValue = style({

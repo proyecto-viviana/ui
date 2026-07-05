@@ -771,8 +771,8 @@ upstream RAC 1.19 / S2 1.5.1 — faithful in every case; only the tests were rea
 certification landing to catch this rot early (`ci-main-push-skips-tests`).
 
 Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)`,
-`✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)` — **Tier 3 in progress.**
-Next: Menu, ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
+`✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)`, `✓ Menu (2026-07-04)` — **Tier 3 in progress.**
+Next: ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger. Same marking
 rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -2336,5 +2336,52 @@ headless is now the single source of truth for group description/error ids
   InlineAlert's `notice` variant, whose React side already renders the optimized path, so this can only
   improve InlineAlert parity, never regress it. `vp test run packages` stayed `268/268` green (no snapshot
   captured the stale path). Final: `9/9` green.
+
+- ✓ **Menu done 2026-07-04 (CP9.32 — Tier-3 overlay):** certified `14/14` green
+  (`apps/comparison/e2e/certified/menu.certified.spec.ts`) — D1 ×6, D3 ×6, D7 ×2. Targets the
+  depth-independent `role="menu"` list + item parts (`item`/`label`/`description`/`keyboard`/`icon`)
+  across `size` S/M/L, `selectionMode:none`, opened panel-major from its `MenuTrigger` (reuses the Tier-3
+  open recipe: `beforePanel` clicks THIS panel's "Layer actions" trigger, `afterPanel` Escapes, targets
+  resolve from `page` since the menu portals). **Three self-inflicted `s2-menu-styles.ts` divergences
+  (rule #1), all reverted to upstream S2** (`@react-spectrum/s2` `Menu.tsx`):
+  1. **Menu overflow.** Port had `overflowX:"hidden", overflowY:"auto"` — upstream `menu` uses a single
+     `overflow:{isPopover:'auto'}` (both axes `auto` in the popover case, which the port always is). Set
+     `overflow:"auto"` → `overflow-x`/`overflow-y` both `auto`, matching byte-for-byte.
+  2. **Menu-item transition.** Port had `transition:"default"` (the broad property set) — upstream
+     `menuitem` uses `transition:"transform"` (pressScale only). Fixed so `transition-property` is
+     identical.
+  3. **Description transition.** Port's `menuItemDescription` had `transition:"default"` — upstream
+     `description` has NO `transition`. Removed the line.
+  After those three, D1's remaining red was `outline-color` (React `rgb(16,16,16)` theme-invariant vs Solid
+  `currentColor`). Root-caused via a matches-based rule probe: **neither element carries any outline-color
+  CSS rule and both compute `outline-style:none`** — the delta is a pure `<div>`(upstream RAC)-vs-`<ul>`(port)
+  UA computed-value quirk with **zero paint** (D3 confirms 6/6). Excluded via `styleProps.remove:
+  ["outline-color"]` (keeping `outline-style`/`outline-width`, both `none`/`0`, so the "no outline" contract
+  is still certified); the removal is dropped when the tracked `ul`→`div` refactor lands. `vp test run menu`
+  stayed `215/215` green (no snapshot captured the changed `transition`/`overflow` atomics).
+  **Deferred divergences (each tracked, none paint-affecting at this unit's scope):**
+  - **`ul`→`div` element-type parity.** Upstream RAC renders `<div role="menu">` + `<div role="menuitem">`;
+    the port renders `<ul role="menu">` (+ `<ul role="group">` sections, `<li>` items), compensated with
+    `margin:0`/`list-style-type:none` resets so the box paints identically. The faithful fix is the
+    structural `ul`/`li`→`div` swap in headless `Menu.tsx` (+ roving-focus refs + Menu/ActionMenu/submenu/
+    section snapshots) — its own unit + regression sweep, not an overlay commit. Owns the `outline-color`
+    artifact above.
+  - **D6 accessible description / two-context `Text` delegation.** Menu role/name + `menuitem` roles match,
+    but item accessible DESCRIPTION is absent (`aria-describedby` stripped; description/keyboard elements get
+    no ids). Faithful repair = restore upstream's two-context `Text`/`Keyboard` delegation (headless MenuItem
+    provides RAC-equivalent id contexts around children; S2 `Text`/`Keyboard` read them IN ADDITION to the S2
+    styling context). Touches shared `Text`/`Keyboard` infra that 8 certified field units consume →
+    cross-cutting, own unit + field-regression sweep. D6 registered when it lands.
+  - **Hand-rolled popover surface (D2 motion).** Port hand-rolls `menuPopover`+`menuFrame` instead of reusing
+    the certified S2 `Popover` (upstream `<Popover padding="none" hideArrow><div wrappingDiv>`); the enter/exit
+    fade is a surface concern the port doesn't internally drive (`isEntering`). Tracked with the shared
+    headless-overlay realignment follow-up.
+  - **Selection indicators + `isPopover` gating.** Single `menuItemCheckmark` (`aria-hidden`/`data-rsp-slot` +
+    accent) and multiple `menuItemCheckbox` (hand-rolled box vs upstream shared `box`) carry their own tracked
+    divergences → no selection case exercised. `maxWidth:320`/`padding:8` are unconditional in the port vs
+    upstream's `{isPopover:…}` gating (D1-safe while always-in-popover); `menuItemDescriptor` keeps a
+    `marginBottom` compensation.
+  - **D4/D5/D8** (open-on-press, arrow roving, type-ahead, close, `onAction`, item hit-area) are
+    `MenuTrigger`/collection/interaction behaviors → belong to a trigger interaction unit, not the list paint.
 
 Phase 3: not started.
