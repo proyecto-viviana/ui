@@ -148,10 +148,14 @@ March order (dependency/leverage; within a tier, top to bottom):
   FieldError/HelpText, LabeledValue
 - **Tier 3 — overlays:** Tooltip, Popover, Dialog, Modal, AlertDialog, Menu,
   ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger
-- **Tier 4 — collections:** ListBox, GridList, TagGroup, Picker/Select,
-  ComboBox, Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
-  ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its
-  hosts), DnD (via its hosts)
+- **Tier 4 — collections:** Picker/Select **first** (director pass 2026-07-06:
+  production-broken for installed consumers — `picker-popover-anchor` +
+  `picker-item-checkmark` in tech-debt; highest-value single certification),
+  then ListBox, GridList, TagGroup, ComboBox, Autocomplete, Tabs, Breadcrumbs,
+  Disclosure/Accordion, ActionBar, ActionGroup, Toolbar, TableView, TreeView,
+  StepList, Virtualizer (via its hosts), DnD (via its hosts). Two gates before
+  this tier starts: the D4 event-ordering policy decision and the D9/D10
+  sequencing decision (see "Director pass 2026-07-06" below).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor
@@ -386,22 +390,22 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     (bare-h wiring kept as `it.fails` documenting the upstream limitation).
 
 - D2 done 2026-07-03: motion driver landed (`apps/comparison/e2e/drivers/motion.ts`
-  + the `motion` config on `DriverScenario`). Tiers: D2a filmstrip (diagnostic,
-  behind `MOTION_FILMSTRIP=1`), D2b metadata (the exact pair-oracle gate —
-  per-animation count/keyframes/computed-timing diffed as JSON via the
-  `snapshotAnimations` oracle), D2c side-by-side video (opt-in `MOTION_REVIEW=1`,
-  config-level `video`, never committed), D2d reduced-motion (re-run D2b under
-  `reducedMotion: 'reduce'`). Capture rides a page-side rAF "freezer" that pauses
-  every in-scope animation each frame — started **before** the Node-side trigger,
-  so a one-shot enter transition is caught + paused on its first frame;
-  `stopAnimationFreezer` **resumes** the paused animations (else upstream's
-  `useExitAnimation` hangs awaiting `getAnimations().map(a => a.finished)`).
-  Animations are bucketed by `classify()` scope (panel/overlay/page/detached/
-  outside); portal overlays (Dialog) capture `overlay` only so the trigger
-  control's own press transitions never leak in. Calibration — the driver
-  rediscovered a real port gap and its pilot fix went red→green:
-  - Button: green (D2b + D2d) — motion-token-free positive control.
-  - Dialog: red→green. **Finding (fixed 2026-07-03):** the enter transition
+  - the `motion` config on `DriverScenario`). Tiers: D2a filmstrip (diagnostic,
+    behind `MOTION_FILMSTRIP=1`), D2b metadata (the exact pair-oracle gate —
+    per-animation count/keyframes/computed-timing diffed as JSON via the
+    `snapshotAnimations` oracle), D2c side-by-side video (opt-in `MOTION_REVIEW=1`,
+    config-level `video`, never committed), D2d reduced-motion (re-run D2b under
+    `reducedMotion: 'reduce'`). Capture rides a page-side rAF "freezer" that pauses
+    every in-scope animation each frame — started **before** the Node-side trigger,
+    so a one-shot enter transition is caught + paused on its first frame;
+    `stopAnimationFreezer` **resumes** the paused animations (else upstream's
+    `useExitAnimation` hangs awaiting `getAnimations().map(a => a.finished)`).
+    Animations are bucketed by `classify()` scope (panel/overlay/page/detached/
+    outside); portal overlays (Dialog) capture `overlay` only so the trigger
+    control's own press transitions never leak in. Calibration — the driver
+    rediscovered a real port gap and its pilot fix went red→green:
+  * Button: green (D2b + D2d) — motion-token-free positive control.
+  * Dialog: red→green. **Finding (fixed 2026-07-03):** the enter transition
     never ran. Upstream RAC Modal drives `data-entering`/`data-exiting` via
     `useEnterAnimation`/`useExitAnimation`; our `Modal.tsx` accepted
     `isEntering`/`isExiting` as props but never computed them, and S2's
@@ -429,7 +433,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     Their event-log diff is identical membership (one each of keydown/callback/
     keyup/focusout/focusin), only intra-gesture ordering + DOM-state-at-scope-
     classification differ — the documented D4 epic, not a D2 regression.
-  - Tabs: two tracked findings keep the exact metadata red; registered as a
+  * Tabs: two tracked findings keep the exact metadata red; registered as a
     documented `knownDivergence` (the trigger renders `test.fixme` in D2b/D2d, so
     the suite is green with the gap visible in reports, not silently passing).
     Deferred to CP9 (Tier-1 march) as SharedElement-wide changes:
@@ -539,73 +543,65 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
       tab-cycle), Tabs (D4 mouse/touch/arrow, D5 arrow-roving), Dialog (D4
       close-button mouse+escape, D4-only trigger scenario recording the full
       open→escape→close cycle, D5 trap-cycle).
-  - Findings the pilots surfaced, and their resolution:
-    1. **Dialog element** — DONE. Upstream RAC renders `<section
-       role="dialog">`; ours rendered `<div>`. Fixed in
-       `solidaria-components/src/Dialog.tsx`, e2e-confirmed after rebuild.
-    2. **Tab DOM recreation → synthetic untrusted click** — DONE (commit
-       `aab498f6`). Selecting a tab in Solid re-invoked the render-prop child
-       on the `isPressed` flip, recreating the Tab label span mid-press;
-       Chrome suppresses the native `click` when the `mousedown` target is
-       detached, so `createPress`'s fallback synthesised an untrusted click
-       and a late `focusin`. Fix = additive `renderChildrenStable()` in
-       `solidaria-components/src/utils.tsx` (call the render-prop child ONCE
-       over a reactive getter-view instead of re-invoking it on every state
-       flip) + `Tabs.tsx` TabInner uses it. Resolves the old findings 3 and 4
-       (press-start focus ordering) together; Tabs mouse-click D4 now green.
-    3. **createPress 80 ms fallback is FAITHFUL, not an invention** —
-       CORRECTED. Earlier notes framed `createPress.ts` 379–395 as an
-       invented synthetic-click path; it is a line-for-line port of upstream
-       `react-aria@3.50 usePress.ts` (`onPointerUp` → 80 ms `setTimeout` →
-       `clicked ? cancel : focusWithoutScrolling+click`, same issue links,
-       same capturing click listener). It only *fired* here because finding 2
-       detached the target; with 2 fixed it no longer fires. One genuine
-       fidelity gap fixed while confirming this: the fallback used plain
-       `.focus()`; upstream uses `focusWithoutScrolling` — now matched.
-    4. **Modal background not `inert`** — DONE. `Modal.tsx:460` called
-       `ariaHideOutside([modalRef])`; upstream `react-aria@3.50
-       useModalOverlay` passes `{ shouldUseInert: true }` (our
-       `ariaHideOutside` already supported it, and `createPopover` already
-       passed it). Without it the modal only set `aria-hidden` on the
-       background, leaving it in the tab order; D5's focus-trail snapshot saw
-       Tab escape to the page-nav `<a>` links. Fixed → Solid now marks the
-       same 7 background containers `inert` as React, D5 trap-cycle green.
-       (ComboBox intentionally omits `shouldUseInert`, matching upstream — it
-       is non-modal.)
-    5. **D5 oracle over-counted hidden `[tabindex]`** — DONE (driver
-       calibration). `dom-oracle.ts snapshotFocus()` queried raw
-       `[tabindex]`, so it counted elements a keyboard user can never reach
-       (e.g. the Tabs overflow picker `<select>`/`<button>` that stays
-       CSS-hidden until collapse). Now filtered by `Element.checkVisibility`
-       + inert-ancestor check, so the roving snapshot reflects the real tab
-       order. Fixed the false Tabs D5 divergence.
-  - Open items handed forward:
-    - **D4 event-ordering epic (deferred — the 4 remaining reds).** All four
-      (Tabs touch-tap, Tabs arrow-next-from-selected, Dialog escape-close,
-      Dialog open-escape-close) fail on ONE root cause: React Aria fires
-      state-change callbacks (`onSelectionChange`, `onOpenChange`) and moves
-      focus through React's batched render + post-commit effects, which run
-      *after* the triggering native event finishes dispatching; our Solid
-      port runs those synchronously inside the event handler (Solid reactive
-      updates are synchronous). So the callback and the focus `focusout`/
-      `focusin` interleave differently with `keydown`/`keyup` — e.g. Solid's
-      `onOpenChange(false)` + `focusout` land before `keyup`, React's after.
-      End state is identical; only the intra-gesture ordering differs. Two
-      candidate resolutions, both non-trivial and NOT to be rushed into the
-      selection/overlay machinery (it is green on units + D1 + D3): (a) defer
-      Solid callback dispatch + focus movement to a post-event microtask to
-      match React's timing, or (b) decide bit-exact native/callback ordering
-      is over-strict and normalise batching-artifact ordering in the D4
-      oracle. Pick during the Tabs/Dialog Phase-2 march.
-    - **Tabs always renders the overflow picker (Phase 2, Tabs).** Upstream
-      S2 `Tabs` renders the collapse `Picker` only when collapsed (`if
-      (showItems) <RACTabs> else <picker>`); overflow is measured via an
-      `inert`+`visibility:hidden` `HiddenTabs` container of plain divs. Ours
-      always renders `TabsMenu` (`<select>` + `<button>Project tabs</button>`)
-      and CSS-hides it (`solid-spectrum/src/tabs/index.tsx:813`). Not a
-      runtime a11y bug (hidden → not focusable, and D5 now filters it), but a
-      real DOM divergence — gate `TabsMenu` behind `<Show when={!showTabs()}>`
-      when the Tabs component is certified.
+  - Findings the pilots surfaced, and their resolution: 1. **Dialog element** — DONE. Upstream RAC renders `<section
+role="dialog">`; ours rendered `<div>`. Fixed in
+    `solidaria-components/src/Dialog.tsx`, e2e-confirmed after rebuild. 2. **Tab DOM recreation → synthetic untrusted click** — DONE (commit
+    `aab498f6`). Selecting a tab in Solid re-invoked the render-prop child
+    on the `isPressed` flip, recreating the Tab label span mid-press;
+    Chrome suppresses the native `click` when the `mousedown` target is
+    detached, so `createPress`'s fallback synthesised an untrusted click
+    and a late `focusin`. Fix = additive `renderChildrenStable()` in
+    `solidaria-components/src/utils.tsx` (call the render-prop child ONCE
+    over a reactive getter-view instead of re-invoking it on every state
+    flip) + `Tabs.tsx` TabInner uses it. Resolves the old findings 3 and 4
+    (press-start focus ordering) together; Tabs mouse-click D4 now green. 3. **createPress 80 ms fallback is FAITHFUL, not an invention** —
+    CORRECTED. Earlier notes framed `createPress.ts` 379–395 as an
+    invented synthetic-click path; it is a line-for-line port of upstream
+    `react-aria@3.50 usePress.ts` (`onPointerUp` → 80 ms `setTimeout` →
+    `clicked ? cancel : focusWithoutScrolling+click`, same issue links,
+    same capturing click listener). It only _fired_ here because finding 2
+    detached the target; with 2 fixed it no longer fires. One genuine
+    fidelity gap fixed while confirming this: the fallback used plain
+    `.focus()`; upstream uses `focusWithoutScrolling` — now matched. 4. **Modal background not `inert`** — DONE. `Modal.tsx:460` called
+    `ariaHideOutside([modalRef])`; upstream `react-aria@3.50
+useModalOverlay` passes `{ shouldUseInert: true }` (our
+    `ariaHideOutside` already supported it, and `createPopover` already
+    passed it). Without it the modal only set `aria-hidden` on the
+    background, leaving it in the tab order; D5's focus-trail snapshot saw
+    Tab escape to the page-nav `<a>` links. Fixed → Solid now marks the
+    same 7 background containers `inert` as React, D5 trap-cycle green.
+    (ComboBox intentionally omits `shouldUseInert`, matching upstream — it
+    is non-modal.) 5. **D5 oracle over-counted hidden `[tabindex]`** — DONE (driver
+    calibration). `dom-oracle.ts snapshotFocus()` queried raw
+    `[tabindex]`, so it counted elements a keyboard user can never reach
+    (e.g. the Tabs overflow picker `<select>`/`<button>` that stays
+    CSS-hidden until collapse). Now filtered by `Element.checkVisibility` - inert-ancestor check, so the roving snapshot reflects the real tab
+    order. Fixed the false Tabs D5 divergence.
+  - Open items handed forward: - **D4 event-ordering epic (deferred — the 4 remaining reds).** All four
+    (Tabs touch-tap, Tabs arrow-next-from-selected, Dialog escape-close,
+    Dialog open-escape-close) fail on ONE root cause: React Aria fires
+    state-change callbacks (`onSelectionChange`, `onOpenChange`) and moves
+    focus through React's batched render + post-commit effects, which run
+    _after_ the triggering native event finishes dispatching; our Solid
+    port runs those synchronously inside the event handler (Solid reactive
+    updates are synchronous). So the callback and the focus `focusout`/
+    `focusin` interleave differently with `keydown`/`keyup` — e.g. Solid's
+    `onOpenChange(false)` + `focusout` land before `keyup`, React's after.
+    End state is identical; only the intra-gesture ordering differs. Two
+    candidate resolutions, both non-trivial and NOT to be rushed into the
+    selection/overlay machinery (it is green on units + D1 + D3): (a) defer
+    Solid callback dispatch + focus movement to a post-event microtask to
+    match React's timing, or (b) decide bit-exact native/callback ordering
+    is over-strict and normalise batching-artifact ordering in the D4
+    oracle. Pick during the Tabs/Dialog Phase-2 march. - **Tabs always renders the overflow picker (Phase 2, Tabs).** Upstream
+    S2 `Tabs` renders the collapse `Picker` only when collapsed (`if
+(showItems) <RACTabs> else <picker>`); overflow is measured via an
+    `inert`+`visibility:hidden` `HiddenTabs` container of plain divs. Ours
+    always renders `TabsMenu` (`<select>` + `<button>Project tabs</button>`)
+    and CSS-hides it (`solid-spectrum/src/tabs/index.tsx:813`). Not a
+    runtime a11y bug (hidden → not focusable, and D5 now filters it), but a
+    real DOM divergence — gate `TabsMenu` behind `<Show when={!showTabs()}>`
+    when the Tabs component is certified.
   - Driver gotchas already burned in: `error-context.md` in test-results is
     just a page snapshot — rerun the single test to capture the JSON diff;
     e2e is NOT covered by `astro check` (tsconfig includes src only) — use
@@ -619,7 +615,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     `locator.ariaSnapshot()` yields the Chromium accessibility tree as stable
     YAML (roles + accessible names + bracketed states `[checked]`/`[expanded]`/
     `[disabled]`/`[level=N]`/`[selected]`). `ariaSnapshot` drops the accessible
-    *description* (spec line 81), so a second `evaluate` pass captures
+    _description_ (spec line 81), so a second `evaluate` pass captures
     `{role, name, description}` for every element carrying
     `aria-describedby`/`aria-description`, sorted for order-stability. Both
     diffed as JSON. (Note: 1.58 removed `page.accessibility.snapshot`;
@@ -665,13 +661,13 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
       accessible name; a bare role-less `<svg>` is not flagged, but keeping
       `role="img"` unlabeled would be). Deferred, not fixed here, because it is a
       global factory change: the blast radius spans existing green visual specs
-      that assert the port's *current* auto-hide — `accordion-visual.spec.ts:97`
-      + `disclosure-visual.spec.ts:98` (`querySelector('svg[aria-hidden="true"]')`
-      on the chevron ui-icon), `statuslight-visual.spec.ts:50`,
-      `inline-alert-visual.spec.ts`, plus `[role="img"]` queries in
-      colorswatch/colorswatchpicker specs and the `Icon.test.tsx` unit test —
-      each needs per-component re-baselining against upstream, which is the
-      Tier-1 "Icon/Illustration surfaces" march unit, not driver-landing work.
+      that assert the port's _current_ auto-hide — `accordion-visual.spec.ts:97`
+      - `disclosure-visual.spec.ts:98` (`querySelector('svg[aria-hidden="true"]')`
+        on the chevron ui-icon), `statuslight-visual.spec.ts:50`,
+        `inline-alert-visual.spec.ts`, plus `[role="img"]` queries in
+        colorswatch/colorswatchpicker specs and the `Icon.test.tsx` unit test —
+        each needs per-component re-baselining against upstream, which is the
+        Tier-1 "Icon/Illustration surfaces" march unit, not driver-landing work.
   - Driver mechanics: the AX config exposes `roots` (default `{panel: canvas}`;
     overlays point at their portal), `announce` triggers, `cases`, and a
     case-level `knownDivergences` map (case id → reason) that registers that
@@ -719,7 +715,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     (`tabindex=-1`, `aria-label="Dismiss"`, no visible content) so VoiceOver users
     can dismiss. Upstream renders it faithfully to `react-aria`'s `DismissButton`:
     a `<VisuallyHidden>` **`div` wrapper** (carrying the full clip/offscreen
-    reset) around a *bare* `<button style={{width:1,height:1}}>` — the button
+    reset) around a _bare_ `<button style={{width:1,height:1}}>` — the button
     keeps its intrinsic UA border-box (~16×6) but is clipped invisible by the
     wrapper. The port instead **inlined** the whole visually-hidden reset
     (`position:absolute; padding:0; border:0; overflow:hidden; clip:…`) directly
@@ -733,7 +729,7 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐
     for the dialog surface are unaffected.
   - **Finding T-D (open, CP9 overlay march):** `Popover.tsx`'s `PopoverDismissButton`
     (both the leading and trailing sentinels of the two-sentinel popover pattern)
-    has the *same* self-inflicted divergence — it applies `style={visuallyHiddenStyles}`
+    has the _same_ self-inflicted divergence — it applies `style={visuallyHiddenStyles}`
     directly on the button instead of upstream's `<VisuallyHidden>`-wrapper +
     bare-button structure. Not fixed here (no D8 pilot exercises Popover yet, and
     the fix should land in the Popover march unit with its own re-baseline). Same
@@ -786,6 +782,40 @@ certified now, with the extraction tracked as follow-up rather than a hard gate.
 headless is now the single source of truth for group description/error ids
 (`renderHelpText={false}` + `checkboxGroupData`/`radioGroupData`).
 
+### Director pass 2026-07-06 — march adjustments
+
+A full-project validation pass (parity / functionality / a11y / process) was run
+2026-07-06; findings live as tickets in `tech-debt.md` and the refreshed
+`status.md`/`steering.md`. What changes for THIS march:
+
+1. **Driver-applicability bar tightened for keyboard composites.** Menu
+   (CP9.32) and ActionMenu (CP9.33) certified without D5 focus-trail or D6
+   AX-tree coverage — the certified suite would not catch a regression of the
+   `menu-focus-roving` class of bug (real focus not following `focusedKey`).
+   Backfill both certs (`menu-actionmenu-d5-d6-backfill`) and treat D5+D6 as
+   mandatory for every keyboard-heavy composite from here on; propagate the
+   rule into `certification.md` gates when the backfill lands.
+2. **Tier 4 starts with Picker/Select** — it is production-broken for
+   installed consumers (`picker-popover-anchor`, `picker-item-checkmark`); its
+   certification is the highest-value single unit in the remaining march.
+3. **Two owner decisions gate the Tier 4 start** (steering.md Open Decisions):
+   the D4 event-ordering policy (`d4-event-ordering-decision` — microtask
+   deferral in the ports vs oracle normalization; collections multiply the
+   exposure, per-component waivers would rot), and D9/D10 sequencing
+   (`recert-drivers-d9-d12` — director recommendation: land forced-colors +
+   RTL drivers BEFORE Tier 4 and re-run the certified set, because certifying
+   Tier 4 first means re-marching Tiers 1–3 later).
+4. **D6 announcements have never had a passing assertion anywhere** — Toast
+   (in flight) is the calibration target (`d6-announcement-calibration`).
+   Landing its live-region pair evidence is part of finishing Toast, not
+   optional polish.
+5. **Live rot found on main** (`main-rot-burndown-2026-07`): 7 unit failures
+   (ContextualHelpTrigger ×5, Menu ×1, ActionMenu ×1 — likely one cluster from
+   the CP9.32–9.35 window), 2 a11y-smoke failures (Toolbar `End` / ActionBar
+   `Home` roving focus), 26-file code/spec format drift. Burn down before or alongside
+   the Toast finish; the deeper cause (CI never fires on direct-to-main) is
+   `ci-main-gate-wiring`.
+
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
   cases (default, selected, emphasized-selected, quiet, quiet-selected, size-s,
@@ -795,17 +825,17 @@ headless is now the single source of truth for group description/error ids
   positive control (shared `s2-action-button-styles` `transition: 'default'`);
   D7 (6 cases) + D8 (4 sizes) green to the strict floors.
   - **D4 rediscovered a real focus-loss divergence — root-caused to the
-    comparison *fixture*, not the port.** On the `default` case all four press
+    comparison _fixture_, not the port.** On the `default` case all four press
     gestures (mouse-click, keyboard-enter, keyboard-space, touch-tap) showed
     Solid firing an extra trailing native `focusout` the React oracle did not.
     A throwaway focus probe pinned it: after a toggle the Solid `<button>` node
-    was *gone from the DOM* (`document.activeElement` fell back to `<body>`),
+    was _gone from the DOM_ (`document.activeElement` fell back to `<body>`),
     while React kept the same node focused. Cause: `SolidSpectrumToggleButtonDemo`
     instantiated `hc(SolidSpectrumToggleButton, …)` **inside a `createMemo` that
     read `selected()`** — so every toggle retracked the signal, recomputed the
     memo, and rebuilt the whole element, unmounting the live button and dropping
     keyboard focus. This is an idiomatic-Solid violation (component instantiation
-    keyed on a hot signal), *not* a port defect: real compiled JSX
+    keyed on a hot signal), _not_ a port defect: real compiled JSX
     `isSelected={selected()}` reconciles the same node the way React does.
   - **Fix (fixture only):** pass `isSelected: selected` — the raw accessor,
     which `hc`'s `unwrapAccessorProps` turns into a reactive getter — instead of
@@ -840,14 +870,14 @@ headless is now the single source of truth for group description/error ids
     Added `steadyState?: boolean` to `DriverCase` (default true) and
     `steadyStateCases(scenario)` — a `caseDef.steadyState !== false` filter now
     wrapping the D1 (`state-matrix.ts`) and D3 (`pixel.ts`) case loops. The
-    pending case sets `steadyState: false`, so the *capture* drivers skip it
-    while the *interaction* drivers that reference it at a deterministic moment
+    pending case sets `steadyState: false`, so the _capture_ drivers skip it
+    while the _interaction_ drivers that reference it at a deterministic moment
     (D4 press-suppression at t≈0, D6 pre-spinner aria state at t≈120ms) still
     exercise it. Additive; every existing case defaults to captured.
   - **D4 found a real port bug — pending button dropped its `tabindex`.** On the
     `pending` case all four press gestures showed the React oracle's button as
     `{ "disabled": true, "tabindex": "0" }` (S2/RAC keep a pending button
-    *focusable* — `aria-disabled` semantics, not a native `disabled`), while the
+    _focusable_ — `aria-disabled` semantics, not a native `disabled`), while the
     Solid button had only `"disabled": true` and **no `tabindex`**, so it fell
     out of the tab order. Root cause: `packages/solidaria-components/Button.tsx`
     folded `resolvePending()` into the `createButton` `isDisabled` getter
@@ -870,7 +900,7 @@ headless is now the single source of truth for group description/error ids
     Before the fix above landed, the pending AX capture showed React as
     `button "Inspect" [disabled]` but Solid as an **unnamed** disabled button:
     the fixture hand-built a `<span>` with `s2ActionButtonText({ isProgressVisible:
-    props.isPending })`, hiding the label *immediately* on pending rather than on
+props.isPending })`, hiding the label _immediately_ on pending rather than on
     the component's own 1s delay. Because `getSingleTextChild` doesn't unwrap a
     hand-built span, the port never got to own the delayed visibility, so the
     label was `visibility:hidden` at the t≈120ms AX capture — before the spinner
@@ -880,7 +910,7 @@ headless is now the single source of truth for group description/error ids
     string** for the text case and `SpectrumText` for the icon-start case —
     instead of a pre-classed span. The port's `getSingleTextChild` re-wraps the
     bare string in the component's own delayed `s2ActionButtonText({
-    isProgressVisible })` span (and `Text` reads the component's `TextContext`),
+isProgressVisible })` span (and `Text` reads the component's `TextContext`),
     so the 1s delay is owned by the component the way S2's `Text`/`TextContext`
     owns it under React. The port's `button/ActionButton.tsx` was already
     faithful (delayed `TextContext.Provider`, `pendingAccessibleLabel`,
@@ -928,10 +958,10 @@ headless is now the single source of truth for group description/error ids
     headless) were already faithful — fixture-only change.
   - **D5 found two real `createToolbar` divergences — no roving tabindex.** First
     established via source read (react-aria 3.50.0, vendored + pinned
-    node_modules) that upstream `useToggleButtonGroupItem` sets **no `tabIndex`**
+    node*modules) that upstream `useToggleButtonGroupItem` sets **no `tabIndex`**
     — every item is a natively-tabbable `<button>`, and `useToolbar` keeps Tab
     from stepping into the next item purely via a Tab handler that jumps focus to
-    the first/last child and lets the browser's own Tab then carry focus *out* of
+    the first/last child and lets the browser's own Tab then carry focus \_out* of
     the toolbar. The port's `createToolbar` had drifted from that contract in two
     self-inflicted ways, both caught by the D5 focus-trail driver:
     - **tab-cycle red:** after Tab from the center item, React left the group
@@ -946,7 +976,7 @@ headless is now the single source of truth for group description/error ids
     invented modifier early-return; (2) removed the invented `Home`/`End` cases;
     (3) replaced the inert `Tab` case with upstream's exit dance —
     `lastFocusedElement = getActiveElement(doc); e.shiftKey ? focusFirst() :
-    focusLast(); return` (no `preventDefault`, so the browser's default Tab then
+focusLast(); return` (no `preventDefault`, so the browser's default Tab then
     exits the whole toolbar); (4) added the faithful `onBlur`/`onFocus` capture
     pair (record last-focused child on leave, restore it on re-entry, both gated
     on `!isInToolbar`) + the matching `blur` capture listener. Arrow branches were
@@ -957,13 +987,13 @@ headless is now the single source of truth for group description/error ids
     ActionBar. Each was updated to the faithful contract (Home/End are no-ops;
     arrow navigation + Tab exit dance retained), and `createToolbar`'s own unit
     test now asserts the no-op Home/End plus the Tab / Shift+Tab exit dance.
-    `createActionGroup` and other components with their *own* Home/End handling
+    `createActionGroup` and other components with their _own_ Home/End handling
     (Menu, ListBox, Slider, Table, Calendar, TagGroup, Tabs, NumberField, Select)
     were confirmed unrelated and left untouched.
   - **Tracked divergence (deferred) — text-input arrow guard.** `createToolbar`
     keeps a guard that lets a text input inside a toolbar retain the arrow keys
     for caret/value movement; upstream `useToolbar` has no such guard. It was
-    *narrowed* to arrows only (Home/End dropped) but not removed, because
+    _narrowed_ to arrows only (Home/End dropped) but not removed, because
     ToggleButtonGroup never exercises it and removing it unverified risks a
     regression in a real ActionBar/Toolbar text-input surface. Flagged for a
     dedicated ActionBar/Toolbar cert — see tech-debt `toolbar-text-input-guard`.
@@ -994,7 +1024,7 @@ headless is now the single source of truth for group description/error ids
     `staticColor` overlays — all confirmed byte-identical by D1/D3 across every
     gesture state and both themes, and by D2's hover-transition positive control.
   - **New technique — anchor navigation neutralized for D4.** Link is the first
-    unit whose press *navigates*: a real click on an `<a href>` unloads the page
+    unit whose press _navigates_: a real click on an `<a href>` unloads the page
     and destroys the event-log capture. Every case pins `href="#"` (threaded via
     the case `params`, which the fixture reads through `linkDemoPropsFromSearch`),
     so the four D4 gestures activate the anchor as a **same-document fragment
@@ -1009,7 +1039,7 @@ headless is now the single source of truth for group description/error ids
     not `preventDefault`, so native navigation proceeds) exactly as upstream.
   - **D8 note — inline links are legitimately sub-24px.** An inline text link is
     exempt from the S2 pointer-target floor (it is inline content), so its border
-    box is below 24px tall; the driver *reports* this (no `assert24`) and the hard
+    box is below 24px tall; the driver _reports_ this (no `assert24`) and the hard
     gate is the pair diff — both stacks render the identical anchor box for the
     inline (default) and standalone treatments.
   - Regression guard: `link.certified.spec.ts` **41/41**; no source changed, so
@@ -1038,23 +1068,23 @@ headless is now the single source of truth for group description/error ids
     so there is no hit box to floor-check.
   - **Structure parity — why the port certified clean.** Upstream S2 `Avatar`
     (`react-spectrum/…/s2/src/Avatar.tsx`) and the port
-    (`solid-spectrum/src/avatar/index.tsx`) both render `<Image>` with the *same*
+    (`solid-spectrum/src/avatar/index.tsx`) both render `<Image>` with the _same_
     style macro (`borderRadius: full`, the `size: 20` box overridden by the inline
     `width/height = size/16 rem`, `outlineStyle` none→solid on `isOverBackground`,
     `outlineWidth` 1→2 on `isLarge = size >= 64`, `centerBaselineBefore`). Both
     `<Image>`s emit the byte-identical `<div slot="avatar" class=wrapper>…<img
-    role="img"></div>` — verified against upstream `s2/src/Image.tsx`. So the
+role="img"></div>` — verified against upstream `s2/src/Image.tsx`. So the
     wrapper div (which carries the avatar's own macro) is the D1 `target` and the
     inner `<img>` is a diffed `part`; D1/D3 confirm the circle, size box, and both
     outline widths match across every case and both themes.
   - **Targeting note (reusable for wrapped-render primitives).** When a component's
-    style macro lands on a *wrapper* element and the semantic node is a *child*
+    style macro lands on a _wrapper_ element and the semantic node is a _child_
     (here: styles on the `<div slot="avatar">`, AX on the inner `<img>`), split the
     scenario locators — `target` = `[slot="avatar"]` (the styled box), `parts.image`
     = `getByRole("img", …)` (the AX/reveal node). Do not target the img for D1: it
     only carries `imageStyles` (opacity/object-fit), not the avatar treatment.
   - **D3 reveal-timing handling.** The `<img>` starts at opacity 0 and reveals on
-    load, with a 500ms opacity transition *only* when `loadTime > 200ms`. For the
+    load, with a 500ms opacity transition _only_ when `loadTime > 200ms`. For the
     cached ~2.5KB local fixture PNG the load is well under 200ms, so opacity snaps
     to 1 with no transition; a `settleMs: 500` still guards a cold first load so
     both panels capture fully revealed. No pixel waiver was needed.
@@ -1082,7 +1112,7 @@ headless is now the single source of truth for group description/error ids
     transition on a static label), **D4/D5** (`role="presentation"`, not
     focusable/pressable), **D8** (not an interactive target — no hit box).
   - **D7 is the point of this unit.** The bold fill uses white text on every
-    variant *except* notice/orange/yellow/chartreuse/celery, which flip to black
+    variant _except_ notice/orange/yellow/chartreuse/celery, which flip to black
     (light backgrounds); the subtle/outline fills use `gray-1000`. The contrast
     pair diff confirms the port reproduces upstream's exact fg/bg token choice to
     2dp across both themes — `bold-yellow` exercises the black-text exception and
@@ -1097,12 +1127,12 @@ headless is now the single source of truth for group description/error ids
     `white-space: normal` (wrap) vs `nowrap` (truncate) and the icon/text flex
     order. Reusable whenever a treatment sits on a styled descendant.
   - **DOM-prop passthrough is symmetric.** The fixture threads `hidden` + four
-    `aria-*` props + `id` onto the Badge on *both* stacks; each Badge calls
+    `aria-*` props + `id` onto the Badge on _both_ stacks; each Badge calls
     `filterDOMProps` with no opts, so `global`/`labelable` are false and only `id`
-    + `data-*` survive (`hidden`/`aria-*` stripped) — the badge stays visible and
-    `[data-comparison-control-root="badge"]` resolves it on both panels. D6
-    confirms the resulting AX is the identical single `text` node (default and
-    `icon-start`, where the leading icon is correctly `aria-hidden`).
+    - `data-*` survive (`hidden`/`aria-*` stripped) — the badge stays visible and
+      `[data-comparison-control-root="badge"]` resolves it on both panels. D6
+      confirms the resulting AX is the identical single `text` node (default and
+      `icon-start`, where the leading icon is correctly `aria-hidden`).
   - Regression guard: `badge.certified.spec.ts` **44/44**; no source changed, so
     neighbouring certs are untouched by construction; standalone e2e `tsc -p`
     clean (added `badge.certified.spec.ts` to the scratchpad include list). No net
@@ -1129,10 +1159,10 @@ headless is now the single source of truth for group description/error ids
     `Field.tsx`. So the `role="progressbar"` div is the D1 `target` and the grid
     children (`label`, `value`, `track`, `fill`) are diffed `parts`.
   - **Applicable driver set is D1/D3/D6/D7** with the rest recorded N/A in the spec
-    header: **D2** (the only animation is the *indeterminate* fill keyframe — runs
+    header: **D2** (the only animation is the _indeterminate_ fill keyframe — runs
     infinitely from load with no gesture trigger to freeze, and its `keyframes()`
     identifier is build-time-hashed differently per stack by construction, so a raw
-    `animation-name` pair-diff would be a false positive; the keyframe *content* +
+    `animation-name` pair-diff would be a false positive; the keyframe _content_ +
     timing `1000ms cubic-bezier(.37,0,.63,1) infinite` are verified byte-identical
     by source read instead), **D4/D5** (`role="progressbar"`, no tabindex/press —
     not interactive), **D8** (not an interactive target — no hit box).
@@ -1196,7 +1226,7 @@ headless is now the single source of truth for group description/error ids
     S2 `Divider` never passes `elementType`, so both stacks default it to
     `undefined`; `Separator` renders `<hr>` for that default and switches to
     `<div>` only for `orientation:'vertical'`. Because the aria hook branches on
-    the *raw* `elementType` (`undefined !== 'hr'`), **both stacks add an explicit
+    the _raw_ `elementType` (`undefined !== 'hr'`), **both stacks add an explicit
     `role="separator"`** in every case, plus `aria-orientation="vertical"` on the
     vertical `<div>` (horizontal omits it — `separator`'s default orientation is
     already horizontal). So horizontal ⇒ `<hr role="separator">`, vertical ⇒
@@ -1235,7 +1265,7 @@ headless is now the single source of truth for group description/error ids
   change required.** Third byte-identical unit in a row (Badge, Divider,
   StatusLight); the value is the permanent guard + driver-set rationale.
   - **Structure + macros verified byte-identical to upstream** (`s2/src/
-    StatusLight.tsx`): the `wrapper` macro (`controlFont`, `gap: 'text-to-visual'`,
+StatusLight.tsx`): the `wrapper` macro (`controlFont`, `gap: 'text-to-visual'`,
     `width: 'fit'`, `alignItems: 'baseline'`, the neutral-only `gray-600`
     text-colour branch, `disableTapHighlight`) and the `light` macro (the 8/10/12/
     14 `size` scale + the full 19-variant `fill` colour table + `overflow: visible`)
@@ -1243,7 +1273,7 @@ headless is now the single source of truth for group description/error ids
     and S2 `Text` is a `<span data-rsp-slot="text">` on both, so the wrapper is the
     D1 `target` and the two children are diffed `parts`: `dot` (the `<svg>`) and
     `text` (the label `<span>`). (The port adds an outer `<TextContext.Provider
-    value={{}}>` upstream lacks, but a provider emits no DOM and resolves to the
+value={{}}>` upstream lacks, but a provider emits no DOM and resolves to the
     same "no slotted props", so the rendered tree is identical — confirmed green.)
   - **The dot colour is an SVG `fill`, not `background-color`**, so it is not in
     the default D1 allowlist. `styleProps.add` pulls in `fill` (+ the svg's
@@ -1257,10 +1287,10 @@ headless is now the single source of truth for group description/error ids
     `- status "StatusLight route label": Sync complete` — the wrapper becomes a
     `status` live region whose accessible name is the fixture's `aria-label`. That
     same probe confirmed the **`filterDOMProps` labelable gate**: with no role the
-    `aria-label` is *stripped* (`role=null aria-label=null`), so a labelled
+    `aria-label` is _stripped_ (`role=null aria-label=null`), so a labelled
     StatusLight only keeps its label when `role` is set — identical on both stacks.
   - D7: the label text contrast — `default` exercises the neutral variant's
-    `gray-600` branch; `positive`/`negative` prove the *label* stays the
+    `gray-600` branch; `positive`/`negative` prove the _label_ stays the
     high-contrast `neutral` token even as the dot takes the semantic colour. All
     matched to 2dp in both themes. The rest of the set is N/A with the reason in
     the spec header: **D2** (no transition/animation), **D4/D5** (not
@@ -1280,20 +1310,20 @@ headless is now the single source of truth for group description/error ids
   custom-range, static-white) × the applicable driver set = **49 tests, all green
   on the first run, no port change required.** Fourth byte-identical unit in a row.
   - **Structure + macros verified byte-identical to upstream** (`s2/src/Meter.tsx`
-    + `bar-utils.ts`): the port's `wrapperStyles` reproduces the shared `bar()`
-    macro line-for-line — including the **deliberate 2-column / 3-area `side`
-    grid** (`gridTemplateColumns.side: ['auto','1fr']` against
-    `gridTemplateAreas.side: ['label bar value']`, so the third "value" column is
-    implicit — the port matches this exactly, not a bug); `trackStyles` = `track()`
-    + the `{S:4,M:6,L:8,XL:10}` height scale; `fillStyles` = the `lightDark`
-    variant colour table; `valueStyles`/`labelStyles` = `fieldLabel()`. The label
-    region is `<div class=labelWrapper><span>` on both — upstream's `FieldLabel`
-    renders through RAC `Label` whose `LabelContext` (set by RAC `Meter`) forces
-    `elementType: 'span'`, so it is a `<span>` not a `<label>`, matching the port.
-    `Text` → `<span data-rsp-slot="text">` on both, and `SkeletonWrapper` emits no
-    wrapper outside a `<Skeleton>` provider on both, so the track is a direct
-    child. So the wrapper is the D1 `target` and the four grid children are diffed
-    `parts`: `label`, `value`, `track`, `fill`.
+    - `bar-utils.ts`): the port's `wrapperStyles` reproduces the shared `bar()`
+      macro line-for-line — including the **deliberate 2-column / 3-area `side`
+      grid** (`gridTemplateColumns.side: ['auto','1fr']` against
+      `gridTemplateAreas.side: ['label bar value']`, so the third "value" column is
+      implicit — the port matches this exactly, not a bug); `trackStyles` = `track()`
+    - the `{S:4,M:6,L:8,XL:10}` height scale; `fillStyles` = the `lightDark`
+      variant colour table; `valueStyles`/`labelStyles` = `fieldLabel()`. The label
+      region is `<div class=labelWrapper><span>` on both — upstream's `FieldLabel`
+      renders through RAC `Label` whose `LabelContext` (set by RAC `Meter`) forces
+      `elementType: 'span'`, so it is a `<span>` not a `<label>`, matching the port.
+      `Text` → `<span data-rsp-slot="text">` on both, and `SkeletonWrapper` emits no
+      wrapper outside a `<Skeleton>` provider on both, so the track is a direct
+      child. So the wrapper is the D1 `target` and the four grid children are diffed
+      `parts`: `label`, `value`, `track`, `fill`.
   - **D1** captured the grid layout via `styleProps.add` (the ProgressBar longhand
     set minus `transform-origin` — a Meter fill never animates): grid-template-
     columns/areas, grid-area, overflow, min/max-width, position, isolation,
@@ -1311,9 +1341,9 @@ headless is now the single source of truth for group description/error ids
   - **KNOWN, TRACKED DIVERGENCE — role token (`meter-role-fallback-token`, filed
     in tech-debt.md).** Upstream `useMeter` deliberately emits the ARIA fallback
     token list `role="meter progressbar"` (documented browser-fallback safety net);
-    the port emits single-token `role="meter"` (hardcoded on the wrapper *and* in
+    the port emits single-token `role="meter"` (hardcoded on the wrapper _and_ in
     `createMeter`), and the comparison's React fixture patches upstream's native
-    `"meter progressbar"` DOM attribute *down* to `"meter"` so the panels match.
+    `"meter progressbar"` DOM attribute _down_ to `"meter"` so the panels match.
     That normalization **masks** a self-inflicted divergence (Rule #1) — both token
     lists resolve to the same `meter` role, so D6 is green either way and cannot see
     it. Deferred (not force-fixed here) because the faithful fix touches solidaria's
@@ -1335,7 +1365,7 @@ headless is now the single source of truth for group description/error ids
   source-read faithfulness fix landed** (see below). Ends the four-unit
   byte-identical streak with a real, harness-caught divergence.
   - **Structure + macros verified byte-identical to upstream** (`s2/src/
-    ProgressCircle.tsx`): `<div role=progressbar>` → `<svg fill=none 100%×100%>` →
+ProgressCircle.tsx`): `<div role=progressbar>` → `<svg fill=none 100%×100%>` →
     three concentric `<circle>` (hcm-stroke / track / fill). The port's `wrapper`/
     `track`/`fill`/`hcmStroke` `style()` macros reproduce upstream line-for-line —
     the `staticColor()` + `size {default:32,S:16,L:64}` + `aspectRatio:square`
@@ -1361,7 +1391,7 @@ headless is now the single source of truth for group description/error ids
     `style={{ display: "block" }}` to the `<svg>`) → **27/27 green**, port unit
     tests still 5/5.
   - **D1** captured the SVG longhands the default allowlist omits via `styleProps
-    .add`: `fill`, `stroke`, `stroke-width`, the fill arc's `stroke-dasharray`/
+.add`: `fill`, `stroke`, `stroke-width`, the fill arc's `stroke-dasharray`/
     `stroke-dashoffset`/`stroke-linecap`, the `r`/`cx`/`cy` geometry attributes, the
     fill's `rotate`/`transform-origin`, the wrapper's `aspect-ratio`, and (the fix
     guard) `display`. D3 pixel clean across all 6 steady cases in both themes.
@@ -1371,7 +1401,7 @@ headless is now the single source of truth for group description/error ids
     50% math, and `indeterminate` proves `aria-valuenow`/`valuetext` are **dropped**
     (name still wired) — identically on both stacks.
   - **D2/D7 N/A, rationale in the spec header.** D2: the only animation is the
-    *indeterminate* spin (an infinite `rotationAnimation`+`dashoffsetAnimation`
+    _indeterminate_ spin (an infinite `rotationAnimation`+`dashoffsetAnimation`
     pair under build-hashed `keyframes()` names that differ by construction, so a
     metadata diff would be a false positive — same call the ProgressBar unit made);
     the keyframe content + timing are verified byte-identical by source read
@@ -1427,9 +1457,9 @@ headless is now the single source of truth for group description/error ids
     inert) and the accent Button composes as `button "Create"` — identically on both
     stacks.
   - **D2/D7 N/A, rationale in the spec header.** D2: the core icon has no animation;
-    the only motion on the page is the *skeleton* icon's shimmer, a WAAPI
+    the only motion on the page is the _skeleton_ icon's shimmer, a WAAPI
     `element.animate()` sweep of `background-position` (not a CSS keyframe, `startTime
-    = 0`, `2000ms ease-in-out infinite`, `100% → 0%`) that belongs to the Skeleton
+= 0`, `2000ms ease-in-out infinite`, `100% → 0%`) that belongs to the Skeleton
     unit and is verified byte-identical by source read — the skeleton icon is
     deliberately **not** a D1/D3 part so its animated `background-position` never
     destabilises the capture. D7: an icon has no text node (the accent Button's label
@@ -1459,9 +1489,8 @@ headless is now the single source of truth for group description/error ids
     same `allowedOverrides` list, default `M` via `size ?? ctx.size ?? "M"`. The
     demo's three glyphs (Plan / DropZone / IllustratedMessage) are byte-identical
     across stacks (same `viewBox`, `<rect>`/`<path>`/`<circle>` geometry, `fill:
-    var(--iconPrimary, #222)`). Skeleton path DOM-equivalent (upstream
-    `<SkeletonWrapper>` = no element outside a provider; port applies `loadingStyle`
-    + `inert` + WAAPI ref directly).
+var(--iconPrimary, #222)`). Skeleton path DOM-equivalent (upstream
+    `<SkeletonWrapper>` = no element outside a provider; port applies `loadingStyle` - `inert` + WAAPI ref directly).
   - **One driver-invisible DOM difference knowingly tolerated:** upstream's demo
     glyph spreads `{...props}` so the `size` prop leaks onto the svg as an invalid
     `size="S"` attribute; the port's glyph destructures `size` out. An unknown
@@ -1481,7 +1510,7 @@ headless is now the single source of truth for group description/error ids
     flips the gate); the decorative + skeleton illustrations are always absent
     (aria-hidden / inert) — identically on both stacks.
   - **D2/D7 N/A, rationale in the spec header.** D2: the core illustration has no
-    animation; the only motion is the *skeleton* shimmer (WAAPI `background-position`
+    animation; the only motion is the _skeleton_ shimmer (WAAPI `background-position`
     sweep, `2000ms ease-in-out infinite`, `100% → 0%` — Skeleton unit's, verified
     byte-identical by source read; the skeleton illustration is not a D1/D3 part so
     its animated `background-position` never destabilises the capture). D7: no text
@@ -1504,27 +1533,23 @@ headless is now the single source of truth for group description/error ids
   - **Three skeleton helpers verified byte-identical to upstream** by source read
     (`Skeleton.tsx` vs `skeleton/index.tsx`): (1) `loadingStyle` = `css()` (layer
     'L') with `linear-gradient(to right, gray-100 33%, light-dark(gray-25, gray-300),
-    gray-100 66%)` at `background-size: 300%` + `* { visibility: hidden }` — the
+gray-100 66%)` at `background-size: 300%` + `* { visibility: hidden }` — the
     template string is character-identical, so the style macro hashes it to the
     **same class** (computed `background-image`/`background-size` guaranteed equal);
     (2) `useSkeletonText` wraps children in an inert `<SkeletonText>` span
     (`loadingStyle` + `{color: transparent, box-decoration-break: clone,
-    border-radius: sm}`) AND stamps `-webkit-text-fill-color: transparent` on the
+border-radius: sm}`) AND stamps `-webkit-text-fill-color: transparent` on the
     outer `<Text>` span — both stacks render the same `span[data-rsp-slot=text][inert]
-    > span.loadingStyle[inert] > text`; (3) `useSkeletonIcon` + `createIcon`'s
-    skeleton branch merge `{border-radius: sm}` and append `loadingStyle` + `inert`
-    directly onto the single `<svg>` (upstream clones the svg inside
-    `<SkeletonWrapper>`, which renders no wrapping element — identical single-`<svg>`
-    DOM). The shimmer is the **Web Animations API** (`element.animate` of
-    `background-position`, `2000ms ease-in-out infinite`, `100% → 0%`, `startTime = 0`
-    to sync every loading element) — **not** a CSS keyframe; byte-identical source.
+    > span.loadingStyle[inert] > text`; (3) `useSkeletonIcon`+`createIcon`'s
+    skeleton branch merge `{border-radius: sm}`and append`loadingStyle`+`inert`directly onto the single`<svg>`(upstream clones the svg inside`<SkeletonWrapper>`, which renders no wrapping element — identical single-`<svg>`
+    DOM). The shimmer is the **Web Animations API** (`element.animate`of`background-position`, `2000ms ease-in-out infinite`, `100% → 0%`, `startTime = 0` > to sync every loading element) — **not** a CSS keyframe; byte-identical source.
   - **D1** pins the static skeleton treatment on the loading text/icon — `target` =
     the title's inner `<SkeletonText>` line-box, plus 4 parts (the outer title
     `<Text>` span carrying `-webkit-text-fill-color: transparent`, the body + meta
     inner line-boxes, and the skeleton `<svg>`). The default allowlist already
     covers `background-image`, the four `border-*-radius` corners, `color` and the
     font longhands; `styleProps.add: ["background-size", "box-decoration-break",
-    "-webkit-text-fill-color", "flex-shrink"]`. **`background-position` is
+"-webkit-text-fill-color", "flex-shrink"]`. **`background-position` is
     deliberately NOT in the allowlist**, so the infinite WAAPI shimmer never
     destabilises the capture. Green in both themes; **non-vacuous** (all 5 locators
     resolved to exactly one element each — the driver's `.evaluate()` throws on
@@ -1590,22 +1615,20 @@ headless is now the single source of truth for group description/error ids
     primitives; the box check/indeterminate flips are instantaneous state swaps that D4
     (event sequence) and D1/D3 (steady geometry) already pin.
   - **DEFERRED (two tracked gaps, tech-debt.md), each a real cross-cutting divergence,
-    neither a Checkbox port bug:**
-    1. **`isInvalid` / `description` states** — upstream renders `HelpText`
-       unconditionally (`Checkbox.tsx:228-289`; `Field.tsx` HelpText ~407-446), so bare
-       `isInvalid` still emits a `FieldError` **error-icon row** that widens/heightens
-       the `field` grid (measured field height `18px`→`52px`, rows `16px 73px`→`16px 73px
-       0px`, plus a canvas-width delta). The port has only a Tailwind stub, no faithful
-       `HelpText`/`FieldError`, so **both invalid cases were dropped** from the spec and
-       deferred to `helptext-fielderror-visual-port` (blocks invalid/description on
-       Checkbox, Radio, Switch, TextField alike). Note: only the **`field` part**
-       diverged — the drawn box byte-matched.
-    2. **Decorative icon AX node** — the box `<svg>` is a bare `img` node on React,
-       `aria-hidden` on the port (D6 `selected`/`indeterminate` were the only AX
-       divergence; **pixels matched**, so D3 stayed green). Sidestepped by the
-       input-root above; tracked as `ui-icon-decorative-ax-node` for a source-diff
-       decision (match React's `img` exposure vs. record the port's `aria-hidden` as an
-       intentional WCAG-correct divergence).
+    neither a Checkbox port bug:** 1. **`isInvalid` / `description` states** — upstream renders `HelpText`
+    unconditionally (`Checkbox.tsx:228-289`; `Field.tsx` HelpText ~407-446), so bare
+    `isInvalid` still emits a `FieldError` **error-icon row** that widens/heightens
+    the `field` grid (measured field height `18px`→`52px`, rows `16px 73px`→`16px 73px
+0px`, plus a canvas-width delta). The port has only a Tailwind stub, no faithful
+    `HelpText`/`FieldError`, so **both invalid cases were dropped** from the spec and
+    deferred to `helptext-fielderror-visual-port` (blocks invalid/description on
+    Checkbox, Radio, Switch, TextField alike). Note: only the **`field` part**
+    diverged — the drawn box byte-matched. 2. **Decorative icon AX node** — the box `<svg>` is a bare `img` node on React,
+    `aria-hidden` on the port (D6 `selected`/`indeterminate` were the only AX
+    divergence; **pixels matched**, so D3 stayed green). Sidestepped by the
+    input-root above; tracked as `ui-icon-decorative-ax-node` for a source-diff
+    decision (match React's `img` exposure vs. record the port's `aria-hidden` as an
+    intentional WCAG-correct divergence).
   - Regression guard: `checkbox.certified.spec.ts` **55/55**; `checkbox/index.tsx`
     rebuilt into the comparison dist (`comparison:build`) before the run; standalone
     e2e `tsc -p` clean (spec added to the scratchpad tsconfig include). No net change to
@@ -1616,17 +1639,17 @@ headless is now the single source of truth for group description/error ids
   certified `43/43` green across D1/D3/D5/D6/D7 (`checkboxgroup.certified.spec.ts`).
   The earlier blocked triage was RE-EVALUATED rather than deferred wholesale: the
   group's OUTPUT was realigned to upstream byte-for-byte in-place (the hand-roll stays;
-  the shared FieldLabel/HelpText *extraction* remains tracked — see below), so the
+  the shared FieldLabel/HelpText _extraction_ remains tracked — see below), so the
   pair-oracle certifies the faithful output now. Four self-inflicted divergences fixed:
   1. **`checkboxGroupItems` wrapped unconditionally** → `flexWrap:{orientation:
-     {horizontal:'wrap'}}`; the default (vertical) now computes `flex-wrap:nowrap`.
+{horizontal:'wrap'}}`; the default (vertical) now computes `flex-wrap:nowrap`.
      Certified by D1 on the `items` part (default + horizontal).
   2. **`checkboxGroupLabelWrapper` missing `contain:{isQuiet:'none'}`** → added; the
      wrapper is rendered with `isQuiet` ("label affects the group's width"), so it
      computes `contain:none` (was the size-contained `inline-size`). Certified by D1 on
      the `labelWrapper` part + the `field` grid geometry, plus D3 pixels.
   3. **description/error rendered `<div>`s (error with `role="alert"`)** → RAC `<Text
-     slot="description">` / `<Text slot="errorMessage">` (both `<span>`, no alert role);
+slot="description">` / `<Text slot="errorMessage">` (both `<span>`, no alert role);
      dropped a hand-roll-only `margin:0`. AND the ids were made **single-source**: the
      wrapper now passes `description`/`errorMessage` DOWN to the headless (which mints
      the id and threads it onto the group + EVERY item's `aria-describedby`, mirroring
@@ -1642,7 +1665,7 @@ headless is now the single source of truth for group description/error ids
   - **Still deferred to `helptext-fielderror-visual-port`:** the `isInvalid` row (the
     `<Text slot="errorMessage">` AlertIcon-sized error + the group's `aria-invalid`
     re-flowing the `field` grid), and the shared **FieldLabel + HelpText/FieldError**
-    *extraction* (the group still hand-rolls these; the extraction would produce the same
+    _extraction_ (the group still hand-rolls these; the extraction would produce the same
     now-certified output internally and de-duplicate it across CheckboxGroup/RadioGroup/
     the field units). The `renderHelpText`-driven single-source wiring landed here is the
     first down payment on that port — the headless is now the id source of truth.
@@ -1667,12 +1690,12 @@ headless is now the single source of truth for group description/error ids
      declared `isDisabled` **before** `isEmphasized`/`forcedColors`, so under
      last-match-wins the disabled state was overridden by emphasized. Restored to
      upstream's exact `{default: baseColor('neutral'), isEmphasized: baseColor('accent-900'),
-     forcedColors: 'Highlight', isDisabled: {default: 'gray-400', forcedColors: 'GrayText'}}`.
+forcedColors: 'Highlight', isDisabled: {default: 'gray-400', forcedColors: 'GrayText'}}`.
      This is what the `disabled-selected` cert case pins (now `gray-400` on both stacks).
   - **D1 target = the track `<div>`** (`root > div > label > div > div`), the fixed-size,
     layout-neutral, most condition-dependent surface; `handle` + `wrapper` + `field`
     captured as parts. The handle's non-`none` rest `transform` (a `perspective(...)
-    translateZ(...)` — and, when selected, `translateX(calc(--trackWidth - 100% - 4px))`)
+translateZ(...)` — and, when selected, `translateX(calc(--trackWidth - 100% - 4px))`)
     computed to a **byte-identical `matrix3d`** on both stacks across every size, the one
     capture I'd flagged as sub-pixel-risky; it held because both resolve from the same
     byte-copied CSS with identically-resolved custom props. **Scope:** D1/D3 at
@@ -1703,9 +1726,9 @@ headless is now the single source of truth for group description/error ids
   **first** cert run. The RadioGroup hand-roll carried the SAME three self-inflicted
   Field-composite divergences CheckboxGroup did, reverted here identically so the output
   realigns with upstream `RadioGroup.tsx` byte-for-byte (the shared FieldLabel/HelpText
-  *extraction* stays tracked — `helptext-fielderror-visual-port`):
+  _extraction_ stays tracked — `helptext-fielderror-visual-port`):
   1. **`radioGroupItems` wrapped unconditionally** → `flexWrap:{orientation:
-     {horizontal:'wrap'}}`; the default (vertical) group now computes `flex-wrap:nowrap`.
+{horizontal:'wrap'}}`; the default (vertical) group now computes `flex-wrap:nowrap`.
      Certified by D1 on the `items` part (default + horizontal).
   2. **`radioGroupLabelWrapper` missing `contain:{isQuiet:'none'}`** → added + threaded
      `isQuiet:true` on the wrapper call; upstream renders the FieldLabel with `isQuiet`
@@ -1713,7 +1736,7 @@ headless is now the single source of truth for group description/error ids
      size-contained `inline-size`). Certified by D1 on the `labelWrapper` part + the
      `field` grid geometry, plus D3 pixels.
   3. **description/error rendered `<div>`s (error with `role="alert"`)** → RAC `<Text
-     slot="description">` / `<Text slot="errorMessage">` (both `<span>`, no alert role);
+slot="description">` / `<Text slot="errorMessage">` (both `<span>`, no alert role);
      dropped a hand-roll-only `margin:0` from `radioGroupHelpText`. AND the ids were made
      **single-source** exactly as CheckboxGroup: the wrapper now passes
      `description`/`errorMessage` DOWN to the headless (which mints the id and threads it
@@ -1729,7 +1752,7 @@ headless is now the single source of truth for group description/error ids
      `default` and `disabled`, full described-element set incl. the propagation onto each
      radio input).
   - **Group label left as `<span>`** (NOT a divergence — RAC supplies `LabelContext
-    elementType:'span'`; a radio group is not a labelable element, so the group label is a
+elementType:'span'`; a radio group is not a labelable element, so the group label is a
     `<span>` associated by `aria-labelledby`, which the port already matched).
   - **D5 certifies ROVING TABINDEX + arrow navigation** — unlike CheckboxGroup (three
     independent tab stops, walked Tab-through), a RadioGroup is a SINGLE tab stop and
@@ -1759,7 +1782,7 @@ headless is now the single source of truth for group description/error ids
   (`fieldGroupStyles`, the input style, `helpTextStyles`, `fieldLabel`) already matched. Two
   structural DOM divergences the hand-roll still carried were closed, realigning OUTPUT to
   upstream `TextField.tsx`/`Field.tsx` (the shared FieldLabel/HelpText/FieldGroup
-  *extraction* stays tracked — `helptext-fielderror-visual-port`):
+  _extraction_ stays tracked — `helptext-fielderror-visual-port`):
   1. **help text rendered `<p>` + a hand-roll-only `margin:0`** → `<span slot="description">`
      (and error `<span slot="errorMessage">`, a RAC `<FieldError>`), and the stray
      `margin:0` dropped from `helpTextStyles` (upstream's has none — the `<p>`'s only reason
@@ -1771,9 +1794,9 @@ headless is now the single source of truth for group description/error ids
      whose default is `role={props.role ?? 'group'}`. The D6 cert failed — React's rendered
      AX tree exposes NO group node (the textbox is a direct child of the field). A DOM dump
      of both stacks settled it: React's FieldGroup div is literally `<div role="presentation"
-     data-rac="">`. Root cause: **RAC's `TextField` seeds `GroupContext` with `{role:
-     'presentation', isInvalid, isDisabled}`** (`react-aria-components/dist/private/
-     TextField.mjs:107-113`), so the FieldGroup's inner `<Group>` reads `presentation` from
+data-rac="">`. Root cause: **RAC's `TextField` seeds `GroupContext` with `{role:
+'presentation', isInvalid, isDisabled}`** (`react-aria-components/dist/private/
+TextField.mjs:107-113`), so the FieldGroup's inner `<Group>` reads `presentation` from
      context — the input is directly labeled, so the visual wrapper is deliberately marked
      presentation to keep the AX tree flat. The port's hand-rolled `<div>` now carries
      `role="presentation"`, matching both the DOM role attribute and the AX tree (D6 green,
@@ -1781,29 +1804,29 @@ headless is now the single source of truth for group description/error ids
      NumberField, DateField, TimeField, ComboBox and Picker all wrap their input in the same
      FieldGroup — each hand-rolled group `<div>` must be `role="presentation"`, NOT `group`.
   - **NOT a divergence (verified):** the label wrapper's `contain` computes `inline-size` on
-     BOTH stacks. Unlike RadioGroup/CheckboxGroup, `TextFieldBase` does NOT render its
-     `FieldLabel` with `isQuiet`, so the `isQuiet:'none'` branch never triggers and
-     `labelPosition:top` resolves `inline-size` on both — no isQuiet threading needed here
-     (a real divergence for the *group* labels, a non-divergence for the *field* label).
+    BOTH stacks. Unlike RadioGroup/CheckboxGroup, `TextFieldBase` does NOT render its
+    `FieldLabel` with `isQuiet`, so the `isQuiet:'none'` branch never triggers and
+    `labelPosition:top` resolves `inline-size` on both — no isQuiet threading needed here
+    (a real divergence for the _group_ labels, a non-divergence for the _field_ label).
   - **Label left as `<label>`** (NOT a divergence — a text input IS a labelable element, so
-     upstream `<Label>` is a real `<label>`, which the port already matched; contrast the
-     group units whose label is a `<span>`).
+    upstream `<Label>` is a real `<label>`, which the port already matched; contrast the
+    group units whose label is a `<span>`).
   - **D1/D3 run at `states:["default"]`** (the split-control justification, as
-     Checkbox/Switch): the focusable `<input>` is not the primary styled surface (that's the
-     separate `FieldGroup` `<div>`, whose border reacts to focus-within via a render-prop
-     class), so no single element is focusable-and-styled. The whole certifiable style
-     surface is the prop-driven rest matrix — cases default/size-S/L/XL/disabled/required/
-     read-only. **D5** is the single-input `tab-cycle` walk (focus lands on the input,
-     Tab exits, Shift+Tab returns). **`required` is in D1/D3 but excluded from D6** — its
-     necessity indicator is a decorative `AsteriskIcon` `<svg>` (the tracked
-     `ui-icon-decorative-ax-node`), same reason Checkbox kept decorative-svg cases out of D6;
-     D1/D3 still certify the asterisk's geometry + pixels.
+    Checkbox/Switch): the focusable `<input>` is not the primary styled surface (that's the
+    separate `FieldGroup` `<div>`, whose border reacts to focus-within via a render-prop
+    class), so no single element is focusable-and-styled. The whole certifiable style
+    surface is the prop-driven rest matrix — cases default/size-S/L/XL/disabled/required/
+    read-only. **D5** is the single-input `tab-cycle` walk (focus lands on the input,
+    Tab exits, Shift+Tab returns). **`required` is in D1/D3 but excluded from D6** — its
+    necessity indicator is a decorative `AsteriskIcon` `<svg>` (the tracked
+    `ui-icon-decorative-ax-node`), same reason Checkbox kept decorative-svg cases out of D6;
+    D1/D3 still certify the asterisk's geometry + pixels.
   - **Still deferred to `helptext-fielderror-visual-port`:** the `isInvalid` state (the
-     `<span slot="errorMessage">` error row + its `FieldErrorIcon` inside the group +
-     `aria-invalid` re-flowing the field grid), same as the other four Tier-2 units. The
-     `<span>`/`slot` error markup is landed in source now so it is faithful when that unit
-     certifies invalid; this unit certifies the valid (description) composite where reverts
-     (1)+(2) live.
+    `<span slot="errorMessage">` error row + its `FieldErrorIcon` inside the group +
+    `aria-invalid` re-flowing the field grid), same as the other four Tier-2 units. The
+    `<span>`/`slot` error markup is landed in source now so it is faithful when that unit
+    certifies invalid; this unit certifies the valid (description) composite where reverts
+    (1)+(2) live.
 
 - ✓ **TextArea done 2026-07-04 (CP9.20 — sixth Tier-2 unit, multiline FieldGroup
   composite):** certified `35/35` green across D1/D3/D5/D6/D7 (`textarea.certified.spec.ts`).
@@ -1824,21 +1847,21 @@ headless is now the single source of truth for group description/error ids
      stays a direct child of the field). D6 green, both cases; **this is the first re-use of the
      TextField `role="presentation"` finding, confirming it holds across the input family.**
   - **D7 DRIVER FIX (in-repo, principled — not a port change):** the first run failed D7 only —
-     React collected a `textarea:<value>` contrast entry the port did not. Root cause is a
-     **driver blind spot, not a port divergence**: React syncs a `<textarea>`'s value into a
-     child text node (implementation detail), while the port binds it idiomatically as the
-     `.value` DOM property (no child node). Same glyphs, same color, identical actual contrast
-     (D3 pixels + D6 AX both green) — but the driver walked text *nodes*, so it saw React's and
-     skipped the port's. Forcing the port to mirror React's child text node would be
-     un-idiomatic Solid built around a measurement artifact. Fix: `contrast.ts` now sources a
-     `<textarea>`'s text from `.value` on BOTH stacks (guarded strictly by `tagName ===
-     "TEXTAREA"`, so every other spec is byte-unchanged — TextField re-run confirms 35/35). This
-     makes D7 measure the *perceptual* text a textarea shows rather than its DOM representation.
+    React collected a `textarea:<value>` contrast entry the port did not. Root cause is a
+    **driver blind spot, not a port divergence**: React syncs a `<textarea>`'s value into a
+    child text node (implementation detail), while the port binds it idiomatically as the
+    `.value` DOM property (no child node). Same glyphs, same color, identical actual contrast
+    (D3 pixels + D6 AX both green) — but the driver walked text _nodes_, so it saw React's and
+    skipped the port's. Forcing the port to mirror React's child text node would be
+    un-idiomatic Solid built around a measurement artifact. Fix: `contrast.ts` now sources a
+    `<textarea>`'s text from `.value` on BOTH stacks (guarded strictly by `tagName ===
+"TEXTAREA"`, so every other spec is byte-unchanged — TextField re-run confirms 35/35). This
+    makes D7 measure the _perceptual_ text a textarea shows rather than its DOM representation.
   - **D1 adds `min-height`** (the textarea's `controlSize()` floor, not in the default
-     allowlist) + the same grid/containment/flow props as TextField; the auto-grown `height` and
-     the `align-items:baseline`/`height:auto` group override are pinned by the default allowlist.
-     Same `states:["default"]` split-control scope, same `required`-excluded-from-D6 rationale,
-     and the same `isInvalid` deferral to `helptext-fielderror-visual-port` as TextField.
+    allowlist) + the same grid/containment/flow props as TextField; the auto-grown `height` and
+    the `align-items:baseline`/`height:auto` group override are pinned by the default allowlist.
+    Same `states:["default"]` split-control scope, same `required`-excluded-from-D6 rationale,
+    and the same `isInvalid` deferral to `helptext-fielderror-visual-port` as TextField.
 
 - ✓ **SearchField done 2026-07-04 (CP9.21 — seventh Tier-2 unit, input + leading search icon +
   trailing clear button):** certified `34/34` green across D1/D3/D5/D6/D7
@@ -1881,22 +1904,22 @@ headless is now the single source of truth for group description/error ids
      per-RAC-component — verify the `GroupContext` seed per component; do not assume the
      `presentation` finding transfers across the input family.**
   - **D6 scoped to `read-only` only** — the sole case whose clear button is absent, routing D6
-     around the tracked `ui-icon-decorative-ax-node` divergence exactly as Checkbox/RadioGroup did
-     (RadioGroup certifies its unchecked variant "so no decorative node enters the AX tree"). The
-     clear-button Cross is a ui-icon: bare `<svg>` upstream → Chromium exposes an unnamed `img`
-     child; the port's `createUIIcon` marks it `role="img"` + decorative `aria-hidden` → no child
-     node. The clear button's own role+name match on both stacks (`button "Clear search"`); only its
-     decorative child diverges, so nothing SearchField-specific is lost. The leading SearchIcon is a
-     WORKFLOW icon (`createIcon`, decorative-hidden on BOTH stacks) so it never enters the tree — the
-     read-only tree is the full clean searchbox + `role="group"` + description structure. The global
-     icon-policy flip stays owned by the future `ui-icon` unit (the port's hide is arguably the more
-     correct a11y AND keeps our axe gate green by not emitting image-alt violations — not flippable
-     inside a per-component commit).
+    around the tracked `ui-icon-decorative-ax-node` divergence exactly as Checkbox/RadioGroup did
+    (RadioGroup certifies its unchecked variant "so no decorative node enters the AX tree"). The
+    clear-button Cross is a ui-icon: bare `<svg>` upstream → Chromium exposes an unnamed `img`
+    child; the port's `createUIIcon` marks it `role="img"` + decorative `aria-hidden` → no child
+    node. The clear button's own role+name match on both stacks (`button "Clear search"`); only its
+    decorative child diverges, so nothing SearchField-specific is lost. The leading SearchIcon is a
+    WORKFLOW icon (`createIcon`, decorative-hidden on BOTH stacks) so it never enters the tree — the
+    read-only tree is the full clean searchbox + `role="group"` + description structure. The global
+    icon-policy flip stays owned by the future `ui-icon` unit (the port's hide is arguably the more
+    correct a11y AND keeps our axe gate green by not emitting image-alt violations — not flippable
+    inside a per-component commit).
   - **The clear button is NOT a divergence:** upstream mounts it when `!isEmpty && !isReadOnly`; the
-     port renders `HeadlessSearchFieldClearButton` when `!isReadOnly` and the headless button itself
-     `<Show when={!isEmpty()}>`s its body — so the rendered DOM matches for every value/read-only
-     combo. Same `states:["default"]` split-control scope and same `isInvalid` deferral to
-     `helptext-fielderror-visual-port` as the rest of the field family.
+    port renders `HeadlessSearchFieldClearButton` when `!isReadOnly` and the headless button itself
+    `<Show when={!isEmpty()}>`s its body — so the rendered DOM matches for every value/read-only
+    combo. Same `states:["default"]` split-control scope and same `isInvalid` deferral to
+    `helptext-fielderror-visual-port` as the rest of the field family.
 
 - ✓ **NumberField done 2026-07-04 (CP9.22 — eighth Tier-2 unit, input + `−`/`+` stepper buttons):**
   certified `38/38` green across D1/D3/D5/D6/D7 (`numberfield.certified.spec.ts`). NumberField is a
@@ -1936,7 +1959,7 @@ headless is now the single source of truth for group description/error ids
   5. **D5 input `tabindex="0"` (the `useFocusable` contract).** The tab-cycle trail showed React's
      input carrying `tabindex="0"` (present in the roving-tabindex snapshot) where the port's had no
      tabindex attribute. Upstream routes the input through `useFormattedTextField → useTextField →
-     useFocusable`, which "always set[s] a tabIndex so that Safari allows focusing native buttons and
+useFocusable`, which "always set[s] a tabIndex so that Safari allows focusing native buttons and
      inputs": `excludeFromTabOrder ? -1 : 0`, then `undefined` when disabled. The port hand-rolls
      `inputProps` (to replay upstream's deliberate spinbutton-role override), so it must ALSO replay
      that one focusable prop — added `tabIndex: isDisabled ? undefined : 0`. **Reusable: any hand-rolled
@@ -1946,22 +1969,22 @@ headless is now the single source of truth for group description/error ids
      label (`Increase ${getLabelText()}` → "Increase Quantity") where S2 ships bare "Increase". RAC's
      `NumberField` feeds `useNumberField` a BOOLEAN slot for `label` (from `useSlot`), never the
      string, so a visible label is never concatenated; instead the button gets `aria-label:"Increase"`
-     + `aria-labelledby:"<selfId> <labelId>"`. Ported the exact four-case logic
-     (`fieldLabel = props['aria-label'] || ''`; `buttonLabelledBy` picks labelId / aria-labelledby /
-     none). Also fixed the input `aria-roledescription` casing `"number field"` → `"Number field"` to
-     match `stringFormatter.format('numberField')`.
+     - `aria-labelledby:"<selfId> <labelId>"`. Ported the exact four-case logic
+       (`fieldLabel = props['aria-label'] || ''`; `buttonLabelledBy` picks labelId / aria-labelledby /
+       none). Also fixed the input `aria-roledescription` casing `"number field"` → `"Number field"` to
+       match `stringFormatter.format('numberField')`.
   7. **`rootClassName` drops `...renderProps` (same SearchField root-invocation lesson).** S2
      `NumberField.tsx` invokes the root `style(field(),…)` with only `{isInForm, labelPosition, size}`
      — the render-prop bag (`isDisabled`/`isFocused`/…) is threaded DOWN to FieldGroup/label/help
      text, never the grid. Removed the `...renderProps` spread so no future `field()` condition lights
      silently.
   - **D6 scoped to `hide-stepper`** — routes D6 around the tracked `ui-icon-decorative-ax-node`
-     divergence (the `Dash`/`Add` glyphs are ui-icons whose decorative child node the port hides but
-     Chromium exposes on React), exactly as Checkbox/RadioGroup/SearchField scoped theirs. With the
-     steppers hidden the tree is the clean spinless textbox + `role="group"` + label + description.
-     `states:["default"]`, `isInvalid` deferred to `helptext-fielderror-visual-port` as the rest of
-     the field family. The English roledescription + "Increase"/"Decrease" hardcodes are the tracked
-     `intl-roledescription-hardcodes` (en-US byte-identical to React in the meantime).
+    divergence (the `Dash`/`Add` glyphs are ui-icons whose decorative child node the port hides but
+    Chromium exposes on React), exactly as Checkbox/RadioGroup/SearchField scoped theirs. With the
+    steppers hidden the tree is the clean spinless textbox + `role="group"` + label + description.
+    `states:["default"]`, `isInvalid` deferred to `helptext-fielderror-visual-port` as the rest of
+    the field family. The English roledescription + "Increase"/"Decrease" hardcodes are the tracked
+    `intl-roledescription-hardcodes` (en-US byte-identical to React in the meantime).
 
 - ✓ **Slider done 2026-07-04 (CP9.23 — ninth Tier-2 unit, single-thumb slider):** certified
   `44/44` green (D1×18, D3×20, D7×4) + D6 `default` a tracked `test.fixme`
@@ -1988,7 +2011,7 @@ headless is now the single source of truth for group description/error ids
   2. **The presentational reverts (done earlier in the march, re-verified here):** the nested
      `SliderFill` (headless `SliderFill` with `offset`, `inset-inline-start`/`width`) replacing a
      hand-rolled fill; the upperTrack `border*` → `outline*` set (upstream uses `outlineStyle/
-     Width/Offset/Color` for the forced-colors track edge, not a border); `filledTrack`
+Width/Offset/Color` for the forced-colors track edge, not a border); `filledTrack`
      `isEmphasized` reverted from `baseColor("accent-900")` to the plain `"accent-900"` token; and
      the FieldLabel wrapper (`gridArea:label` + `<label>` + contextualHelp span) replacing a bare
      `<span>`. All byte-identical to upstream; verified via the DOM/structure dump.
@@ -2004,7 +2027,7 @@ headless is now the single source of truth for group description/error ids
      green, is rasterizer floor — waive with `pixelThreshold:1` (not a ratio), never chase it.**
   4. **D6 `default` = known divergence (`slider-thumb-native-input-semantics`).** The port inverts
      upstream's thumb semantics: `createSlider.ts` `thumbProps` makes the thumb `<div role=slider
-     aria-valuenow=40>` the a11y slider and `aria-hidden`s the native `<input type=range>`, where
+aria-valuenow=40>` the a11y slider and `aria-hidden`s the native `<input type=range>`, where
      RAC makes the native input the value-bearing slider (thumb `<div>` role-free, input in
      `VisuallyHidden`). Chromium's AX tree surfaces the value ("40") for React's native range input
      but NOT for the port's `div[role=slider]` despite correct `aria-valuenow`/`aria-valuetext`, so
@@ -2039,7 +2062,7 @@ headless is now the single source of truth for group description/error ids
   2. **maxLabelLength routes each measurement array through `getFormattedValue`, i.e. `formatRange`
      — NOT `format([array])→NaN`.** Upstream `SliderBase` two-handle branch measures
      `max(len(getFormattedValue([min, min+step])), len(getFormattedValue([max-step, max])))`; each
-     argument is a 2-element array, so it formats a *range* (`"0–1"`, `"99–100"`), not a
+     argument is a 2-element array, so it formats a _range_ (`"0–1"`, `"99–100"`), not a
      NaN-coerced constant. The port's prior hand-rolled `3 + max*2` over-reserved `9ch`, widening the
      output grid column, narrowing the track, and shifting both thumbs — cascading into the D1
      `grid-template-columns` red and the D3 thumb-position red. A faithful `getFormattedValue`
@@ -2121,7 +2144,7 @@ headless is now the single source of truth for group description/error ids
      residual is a deterministic 1px PURE TRANSLATION of the label glyphs (identical per-row ink
      histogram, shifted one row) — an irreducible rasterizer baseline-rounding of the half-pixel Y,
      stable across `--repeat-each=3`. Waived `label-side`-only `{maxMismatchRatio:0.006,
-     maxDimensionDelta:0, pixelThreshold:0}` (worst 468/95400 = 0.49%; dimension-exact so any real
+maxDimensionDelta:0, pixelThreshold:0}` (worst 468/95400 = 0.49%; dimension-exact so any real
      size regression still trips), reason `form-side-label-halfpixel-baseline` (tech-debt). Same class
      of raster floor as `slider-thumb-antialias-1lsb` — a sub-pixel baseline, not an AA edge.
      **Reusable: S2's side-label layout parks the label at a half-pixel Y via baseline-alignment
@@ -2140,11 +2163,11 @@ headless is now the single source of truth for group description/error ids
   self-inflicted divergence — and was rebuilt faithfully rather than recorded blocked (parity rule):
   `packages/solid-spectrum/src/labeledvalue/index.tsx` now mirrors upstream S2 `LabeledValue.tsx`
   byte-for-byte.** Upstream is a static read-only composite over the shared field grid: `fieldStyles =
-  style({...field()}, getAllowedOverrides())`, a `FieldLabel elementType="span"` (the label is a
+style({...field()}, getAllowedOverrides())`, a `FieldLabel elementType="span"` (the label is a
   `<span>`, NOT a `<label>` — the value is not a labelable form element — and `LabeledValueBaseProps`
   OMITS `isRequired`/`necessityIndicator`, so there is no asterisk), and a value `<span>` styled
   `valueStyles = style({...fieldInput(), minHeight:{isInForm:controlSize()}, display:'flex',
-  alignItems:'center', font: controlFont()})`. The port reuses the same byte-copied `field()` /
+alignItems:'center', font: controlFont()})`. The port reuses the same byte-copied `field()` /
   `fieldLabel()` / `fieldInput()` macro objects every other field composite already uses, and the same
   FieldLabel wrapper `<div>` (gridArea label + text-align + `--field-gap` bottom pad + inline-size
   containment on `labelPosition:top`) the TextField unit landed. Barrel export added; catalogue +
@@ -2323,23 +2346,23 @@ headless is now the single source of truth for group description/error ids
      `marginEnd: 8`). Port had a plain inline-flex heading with no tint — added the gold-reference
      `IconContext` + `CenterBaseline` pattern (mirrors InlineAlert).
   3. **Missing icon accessible name.** Upstream labels the heading icon `aria-label={formatter.format(
-     "dialog.alert")}` (the `img "Alert"` D6 expected). Added the `dialog.alert` string to the intl bundle
+"dialog.alert")}` (the `img "Alert"` D6 expected). Added the `dialog.alert` string to the intl bundle
      (`en-US` "Alert" / `es-ES` "Alerta" / `S2IntlStrings`) and wired `createStringFormatter(s2IntlStrings,
-     "@react-spectrum/s2")` + `UNSAFE_suppressDataSlot`.
+"@react-spectrum/s2")` + `UNSAFE_suppressDataSlot`.
   4. **Invented `isCancelDisabled` prop + `?? "Cancel"` default.** Removed from the interface, splitProps,
      and the cancel button; cancel now renders faithfully under `<Show when={cancelLabel}>` (no default
      label, no invented disabled wiring).
-  After those four, D1 + D6 + D3-`error` went green; D3-`warning` still failed by 10/43200px (ratio
-  0.00023) in an 8×13 patch of the AlertDiamond glyph. Root cause was **not** an AlertDialog bug: the
-  port's `AlertDiamondIcon` (`.tsx` artifact + `S2_Icon_AlertDiamond_20_N.svg` asset) was a **stale
-  full-precision outlier** (3 comma-separated paths, `fill=#222`) generated on the old icon pipeline,
-  while every sibling (incl. its own `AlertTriangleIcon`, which passed byte-perfect) ships the pinned
-  `@react-spectrum/s2@1.5.1` **svgo-optimized** glyph (2 space-separated paths, `light-dark(rgb(41,41,41),
-  rgb(219,219,219))` fill). Regenerated AlertDiamond to match — the correct fix per rule #1 (a waiver would
-  freeze a self-inflicted divergence), and it strictly *increases* consistency: the same glyph backs
-  InlineAlert's `notice` variant, whose React side already renders the optimized path, so this can only
-  improve InlineAlert parity, never regress it. `vp test run packages` stayed `268/268` green (no snapshot
-  captured the stale path). Final: `9/9` green.
+     After those four, D1 + D6 + D3-`error` went green; D3-`warning` still failed by 10/43200px (ratio
+     0.00023) in an 8×13 patch of the AlertDiamond glyph. Root cause was **not** an AlertDialog bug: the
+     port's `AlertDiamondIcon` (`.tsx` artifact + `S2_Icon_AlertDiamond_20_N.svg` asset) was a **stale
+     full-precision outlier** (3 comma-separated paths, `fill=#222`) generated on the old icon pipeline,
+     while every sibling (incl. its own `AlertTriangleIcon`, which passed byte-perfect) ships the pinned
+     `@react-spectrum/s2@1.5.1` **svgo-optimized** glyph (2 space-separated paths, `light-dark(rgb(41,41,41),
+rgb(219,219,219))` fill). Regenerated AlertDiamond to match — the correct fix per rule #1 (a waiver would
+     freeze a self-inflicted divergence), and it strictly _increases_ consistency: the same glyph backs
+     InlineAlert's `notice` variant, whose React side already renders the optimized path, so this can only
+     improve InlineAlert parity, never regress it. `vp test run packages` stayed `268/268` green (no snapshot
+     captured the stale path). Final: `9/9` green.
 
 - ✓ **Menu done 2026-07-04 (CP9.32 — Tier-3 overlay):** certified `14/14` green
   (`apps/comparison/e2e/certified/menu.certified.spec.ts`) — D1 ×6, D3 ×6, D7 ×2. Targets the
@@ -2356,14 +2379,14 @@ headless is now the single source of truth for group description/error ids
      identical.
   3. **Description transition.** Port's `menuItemDescription` had `transition:"default"` — upstream
      `description` has NO `transition`. Removed the line.
-  After those three, D1's remaining red was `outline-color` (React `rgb(16,16,16)` theme-invariant vs Solid
-  `currentColor`). Root-caused via a matches-based rule probe: **neither element carries any outline-color
-  CSS rule and both compute `outline-style:none`** — the delta is a pure `<div>`(upstream RAC)-vs-`<ul>`(port)
-  UA computed-value quirk with **zero paint** (D3 confirms 6/6). Excluded via `styleProps.remove:
-  ["outline-color"]` (keeping `outline-style`/`outline-width`, both `none`/`0`, so the "no outline" contract
-  is still certified); the removal is dropped when the tracked `ul`→`div` refactor lands. `vp test run menu`
-  stayed `215/215` green (no snapshot captured the changed `transition`/`overflow` atomics).
-  **Deferred divergences (each tracked, none paint-affecting at this unit's scope):**
+     After those three, D1's remaining red was `outline-color` (React `rgb(16,16,16)` theme-invariant vs Solid
+     `currentColor`). Root-caused via a matches-based rule probe: **neither element carries any outline-color
+     CSS rule and both compute `outline-style:none`** — the delta is a pure `<div>`(upstream RAC)-vs-`<ul>`(port)
+     UA computed-value quirk with **zero paint** (D3 confirms 6/6). Excluded via `styleProps.remove:
+["outline-color"]` (keeping `outline-style`/`outline-width`, both `none`/`0`, so the "no outline" contract
+     is still certified); the removal is dropped when the tracked `ul`→`div` refactor lands. `vp test run menu`
+     stayed `215/215` green (no snapshot captured the changed `transition`/`overflow` atomics).
+     **Deferred divergences (each tracked, none paint-affecting at this unit's scope):**
   - **`ul`→`div` element-type parity.** Upstream RAC renders `<div role="menu">` + `<div role="menuitem">`;
     the port renders `<ul role="menu">` (+ `<ul role="group">` sections, `<li>` items), compensated with
     `margin:0`/`list-style-type:none` resets so the box paints identically. The faithful fix is the
@@ -2454,7 +2477,7 @@ headless is now the single source of truth for group description/error ids
   was a bare `<span>` → wrapped in `<CenterBaseline>` (matches upstream, byte-identical);
   (d) the dismiss control was a hand-rolled `HeadlessToastCloseButton` + `closeButtonStyles`
   carrying the 20px workflow `CloseIcon` → reverted to the faithful `<CloseButton
-  staticColor="white">` (from `../dialog`), whose glyph is the 12px ui-icon Cross; wired
+staticColor="white">` (from `../dialog`), whose glyph is the 12px ui-icon Cross; wired
   `onPress` to `state.close(key)` + `state.remove(key)` (the pair the headless close-button
   click-delegation used to run, since the faithful `CloseButton` doesn't carry the
   delegated `[data-solidaria-toast-close-button]` attribute). Dead `toastIcon`/
@@ -2489,7 +2512,7 @@ headless is now the single source of truth for group description/error ids
      container, and upstream renders the toast body copy in a `<span>` while the port renders
      it in a `<div>`. This is almost certainly the DEFERRED `toastText`/title/description
      wrapper divergence already called out in the cert's doc comment (`<div
-     data-solidaria-toast-title>` vs upstream `<span slot="title">`) — but it was assumed
+data-solidaria-toast-title>` vs upstream `<span slot="title">`) — but it was assumed
      paint-identical and NOT contrast-descriptor-identical; the D7 driver apparently keys its
      descriptor on tag name, not just computed style, so this now blocks D7 even though pixel
      output matches. Two fixes to weigh: (i) make the port's title/description wrapper a
@@ -2508,22 +2531,22 @@ headless is now the single source of truth for group description/error ids
      with a wider viewport-integer pin. If confirmed cosmetic, add a scoped waiver
      (`pixel.waivers`) for the `info` case only, following the ContextualHelp precedent
      (`maxMismatchRatio` slightly above the observed ratio, `maxDimensionDelta:0`).
-  **Next steps for whoever resumes:** (1) fix the title/description wrapper to `<span>` and
-  re-run D7 — expect all 8 to go green and the deferred-divergence doc-comment note to be
-  removed; (2) investigate the neutral D6 failure directly (read the two AX snapshots in
-  `test-results/certified-toast.certified-D6-*neutral*/error-context.md` if still present,
-  or re-run `-g "D6 AX"`); (3) confirm/waive the `info`-only D3 sub-pixel diffs; (4) re-run
-  `vp exec playwright test e2e/certified/toast.certified.spec.ts --reporter=line` for a
-  clean 37/37 (note: use `vp exec playwright test ...`, not bare `npx playwright test` —
-  the latter was rejected mid-session for an unstated reason, `vp exec` is the toolchain
-  path used successfully here); (5) add a CP9.35 entry to this doc replacing this
-  "IN-FLIGHT" block, add tech-debt.md deferred entries for whatever's still deferred
-  (announce-transcript D6 oracle, ambiguous whether toastText wrapper survives once (1)
-  lands), update the queue marker to `✓ Toast (date)`, ONE commit (no attribution, no
-  push), mark task #50 complete. Preview server / build were confirmed fresh at the time
-  of the first run (`vp run comparison:build` succeeded, dist newer than the src edit) —
-  rebuild before resuming if `packages/solid-spectrum/src/toast/index.tsx` or the cert file
-  change again.
+     **Next steps for whoever resumes:** (1) fix the title/description wrapper to `<span>` and
+     re-run D7 — expect all 8 to go green and the deferred-divergence doc-comment note to be
+     removed; (2) investigate the neutral D6 failure directly (read the two AX snapshots in
+     `test-results/certified-toast.certified-D6-*neutral*/error-context.md` if still present,
+     or re-run `-g "D6 AX"`); (3) confirm/waive the `info`-only D3 sub-pixel diffs; (4) re-run
+     `vp exec playwright test e2e/certified/toast.certified.spec.ts --reporter=line` for a
+     clean 37/37 (note: use `vp exec playwright test ...`, not bare `npx playwright test` —
+     the latter was rejected mid-session for an unstated reason, `vp exec` is the toolchain
+     path used successfully here); (5) add a CP9.35 entry to this doc replacing this
+     "IN-FLIGHT" block, add tech-debt.md deferred entries for whatever's still deferred
+     (announce-transcript D6 oracle, ambiguous whether toastText wrapper survives once (1)
+     lands), update the queue marker to `✓ Toast (date)`, ONE commit (no attribution, no
+     push), mark task #50 complete. Preview server / build were confirmed fresh at the time
+     of the first run (`vp run comparison:build` succeeded, dist newer than the src edit) —
+     rebuild before resuming if `packages/solid-spectrum/src/toast/index.tsx` or the cert file
+     change again.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

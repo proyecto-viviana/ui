@@ -9,32 +9,40 @@ Status: live snapshot.
 Update when: a refresh run changes the snapshot. Refresh from the scripts below,
 never from memory.
 
-Last refreshed: 2026-06-21.
+Last refreshed: 2026-07-06 (director validation pass).
 
 ## Snapshot
 
-| Area                  | Current evidence                                                                                                         | What it means                                                                                                                                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| RAC exports           | `guard:rac-export-gap`: `9` missing named exports, `164` extra Solid exports                                             | `9` new upstream RAC names unmirrored — the Checkbox/Radio/Switch `Button`/`Field`/`FieldContext` family from a newer RAC release. Report-only, not blocking; the required tracker below is still green. Absorb via `upstream-release-audit.md`. |
-| Required RAC tracker  | `guard:rac-parity`: no missing tracked symbols                                                                           | Narrow required-symbol guard green. Warns `TreeHeader`/`TreeSection` are not in the upstream RAC index.                                                                                                                                          |
-| S2 catalogue          | `comparison:report:gaps`: `69` entries tracked, `69` live both sides, `0` gap                                            | Route/catalogue parity complete. Remaining work is visual-state hardening and support exports.                                                                                                                                                   |
-| Strict S2 audit       | `comparison:report:parity:strict`: modeled controls `69/69`, validation notes `69/69`, evidence `69/69`                  | Strict report green; keep it a required current-gate check.                                                                                                                                                                                      |
-| Visual-state coverage | `349` states tracked, `113` with current React/Solid visual evidence, `56` with strict pair-diff tests                   | No blocked visual-state rows; the remaining states are coverage debt (`tech-debt.md`).                                                                                                                                                           |
-| S2 export surface     | `comparison:report:exports`: `21` of `208` React S2 value exports missing; `70` extra Solid value exports (`257` public) | Root catalogue exports present; support exports (contexts, slots, hooks, helpers) still missing.                                                                                                                                                 |
+| Area                  | Current evidence                                                                                                                              | What it means                                                                                                                                                                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Required RAC tracker  | `guard:rac-parity`: no missing tracked symbols                                                                                                | Narrow required-symbol guard green.                                                                                                                                                                                                           |
+| RAC exports           | `guard:rac-export-gap`: `0` missing named exports, `168` extra Solid exports                                                                  | Name-surface parity with pinned RAC 1.19.0 is closed. Extras are documented local additions.                                                                                                                                                  |
+| S2 catalogue          | `comparison:report:gaps`: `70` entries live both sides, `0` gap; `351` visual states tracked, `0` blocked                                     | Route/catalogue parity complete.                                                                                                                                                                                                              |
+| S2 export surface     | `comparison:report:exports`: `7` of `208` React S2 value exports missing; `68` extra                                                          | The 7 missing are `LabeledValueContext` + six DnD names (`useDragAndDrop`, `DragPreview`, `DIRECTORY_DRAG_TYPE`, `is{Text,File,Directory}DropItem`) — the DnD subsystem is the one un-ported surface (`tech-debt.md` → `dnd-subsystem-port`). |
+| Strict S2 audit       | `comparison:report:parity:strict`: FAIL — `LabeledValue` alone missing validation note + current evidence                                     | One component from green (`tech-debt.md` → `labeledvalue-strict-parity`).                                                                                                                                                                     |
+| Recertification march | `comparison:test:certified`: `1277/1300` — Toast in flight (13 red, CP9.35), D4 event-ordering epic (5 deferred reds)                         | Tiers 1–2 certified (28 components), Tier 3 in progress. The march (`recertification.md`) is the depth-parity measure; ~35/70 styled components certified.                                                                                    |
+| Unit suite            | `vp run test:run`: FAIL — `7` failures (ContextualHelpTrigger ×5, Menu ×1, ActionMenu ×1)                                                     | Live rot on main (`tech-debt.md` → `main-rot-burndown-2026-07`).                                                                                                                                                                              |
+| Format/type gate      | `vp run check`: FAIL — 26-file format (oxfmt) drift blocks before typecheck                                                                   | Same rot ticket. Docs under `.claude/current/` were reformatted 2026-07-06; the remaining drift is code/spec files.                                                                                                                           |
+| A11y smoke            | `vp run a11y:check`: FAIL — `118/120` (Toolbar `End`, ActionBar `Home` roving focus)                                                          | Two real keyboard regressions (`tech-debt.md` → `main-rot-burndown-2026-07`).                                                                                                                                                                 |
+| Contract suite        | `comparison:test:contract`: `85/85` green                                                                                                     | ARIA-vocabulary contracts hold.                                                                                                                                                                                                               |
+| Pins                  | S2 `1.5.1` / RAC `1.19.0` / react-aria `3.50.0`; tokens `14.0.0` exact; freshness guard green                                                 | Vendored oracle and installed comparison deps aligned.                                                                                                                                                                                        |
+| CI / release          | CI dark since 2026-06-24 (main unpushed, 67 commits ahead); version PR #7 stuck; `101` changesets pending; npm one patch behind on 3 packages | Process gap, not code gap — the biggest current risk (`tech-debt.md` → `ci-main-gate-wiring`, `release-train-unjam`).                                                                                                                         |
 
 ## Refresh
 
 ```bash
 vp run guard:rac-parity
 vp run guard:rac-export-gap
-vp run comparison:report:parity
 vp run comparison:report:parity:strict
 vp run comparison:report:gaps
 vp run comparison:report:exports
-vp run comparison:test:a11y
+vp run comparison:test:certified
+vp run comparison:test:contract
+vp run test:run
 vp run a11y:check
 vp run check
 ```
 
-`comparison:report:parity:strict` is expected to pass. Treat a failure as a
+`comparison:report:parity:strict` and `comparison:test:certified` (minus reds
+recorded in `recertification.md`) are expected to pass. Treat a failure as a
 blocking regression before claiming current-gate component parity.

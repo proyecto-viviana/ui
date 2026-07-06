@@ -22,64 +22,76 @@ Components, and React Spectrum S2.
 The port stack stays strict about parity: the same public behavior,
 accessibility model, keyboard model, and S2 styling branches in Solid. A
 component should not be described as ported until the evidence bar in
-`certification.md` is met.
+`certification.md` is met — and the recertification march
+(`recertification.md`) is the mechanism that enforces that bar, component by
+component, against the live upstream oracle.
 
 ## Current Focus
 
-Catalogue and export-name parity are essentially closed. The work now is
-**depth, not breadth**: turning existing components from "the name exists and axe
-is green" into evidence-backed parity through React-vs-Solid tests, accessibility
-tests, and behavior tests.
+Name/surface parity is closed (all pin guards green). Depth parity is the
+recertification march: ~35/70 styled components certified (Tiers 1–2 done,
+Tier 3 in flight at Toast). The 2026-07-06 validation pass confirmed the
+certified tiers are genuinely strong — and found that the biggest current risk
+is **process, not code**: CI has been dark on main since 2026-06-24, the
+release train is jammed, and live rot (7 unit failures, 2 a11y smoke failures,
+format drift) has already accumulated unseen. Stabilize the pipeline first,
+then keep marching.
 
-## Now
+## Now (P0 — stabilization)
 
-- **Client-readiness track (largely landed 2026-06-20).** Making
-  `@proyecto-viviana/ui` installable and usable by the `viviana-social` apps —
-  the `UC-NN` backlog in `ui-client-contract.md` — is substantially done in-repo:
-  UC-00…UC-05 + UC-07 are ✔ (release-matrix promotion, deep-subpath export
-  parity, CSS/Provider contract, the supported Vite macro preset, and the
-  barrel-bloat fix). Only UC-02 Part B (deferred) and UC-06 (downstream in
-  `viviana-social`) remain, so the parity loop can now resume at
-  `upstream-release-audit.md` T-57.
-- Convert visual-state rows into current React/Solid pair-diff or
-  computed-contract tests — hover, focus-visible, pressed, selected, invalid,
-  disabled, open, dismiss, keyboard navigation. Do not reintroduce per-side
-  committed PNG baselines as acceptance gates.
-- Keep accessibility proof broader than axe: keyboard, focus, forms, computed
-  name/description/value, validation, and announcements via Playwright.
-- Add behavior tests where export parity is already green, rather than adding
-  more barrel names.
+- **Push main and wire CI to run on it** (`tech-debt.md` →
+  `ci-main-gate-wiring`): the gate ladder is PR-only and this repo commits
+  direct-to-main, so no gate has run in 12 days. Add a main-push workflow that
+  runs the certified suite too; wire the orphaned guards.
+- **Unjam the release train** (`release-train-unjam`): version PR #7, 101
+  pending changesets, npm one patch behind on 3 packages — the SSR hydration
+  fix has never reached installed consumers.
+- **Burn down live rot** (`main-rot-burndown-2026-07`): the
+  ContextualHelp/Menu/ActionMenu unit cluster, the Toolbar `End` / ActionBar
+  `Home` roving-focus regressions, the remaining code/spec format drift.
+- **Finish Toast** (recertification CP9.35, 24/37 → green) — first D6
+  announcement evidence lands with it.
 
-## Next
+## Next (P1 — before/into Tier 4)
 
-- Support-export parity: contexts, slots, hooks, helpers, and support values
-  still missing from `solid-spectrum` relative to S2. Root catalogue export
-  parity is not complete API parity.
-- Continue per-component acceptance through
-  `apps/comparison/COMPONENT_PLAYBOOK.md`, component by component; collection
-  and overlay families next.
+- **Backfill D5/D6 on Menu and ActionMenu** (`menu-actionmenu-d5-d6-backfill`):
+  both certified without focus-trail or AX-tree drivers; keyboard composites
+  must not certify on D1/D7 alone.
+- **Decide the D4 event-ordering epic** before Tier 4 (`recertification.md`
+  Open decisions): collections multiply intra-gesture ordering divergence; the
+  5 deferred reds need a policy (microtask deferral in ports vs oracle
+  normalization), not per-component waivers.
+- **Land D9 (forced-colors) + D10 (RTL) before the Tier 4 march** — zero
+  coverage repo-wide today; certifying Tier 4 first means re-running the whole
+  certified set later.
+- **Pull Picker first in Tier 4** (`picker-popover-anchor`,
+  `picker-item-checkmark`): it is production-broken for installed consumers —
+  highest-value single certification.
+- **`macro-route-styled`** (`tech-debt.md`): 14 components ship unstyled to
+  installed consumers; app CSS masks it in-repo. Consumer-delivery priority
+  alongside Picker.
 
 ## Later
 
-- Tighten the release bar for each package as coverage justifies stronger semver
-  promises (`release-policy.md`).
-- Package-build migration to native Vite Plus packaging, one package at a time
-  (`tech-debt.md`).
+- Tier 4–6 of the march (collections, overlays, date/time; then the long tail).
+- The DnD subsystem port (`dnd-subsystem-port`) — the one un-ported surface;
+  blocks TableView/TreeView DnD rows and the last 6 S2 support exports.
+- Headless-spine consumption: Menu/ListBox/ComboBox still run pre-spine
+  selection wiring; migrate as their march slots come up, not before.
+- Package-build migration; release-bar tightening per package
+  (`release-policy.md`).
 
 ## Open Decisions
 
-- **Release readiness threshold.** What evidence coverage gates a package
-  from "test bed" to a published, semver-promised release. _Resolved for
-  `@proyecto-viviana/ui` (2026-06-20): promote it into the release matrix as the
-  client-facing entry point — implementation tracked as UC-00 in
-  `ui-client-contract.md`._ The general per-package threshold question remains
-  open for the lower layers.
-- **Visual evidence policy.** Standardize on computed contracts + strict pair
-  diffs over screenshots; decide when a thresholded screenshot is acceptable
-  review evidence.
-- **comparison-docs-overhaul.** The comparison app's own docs-site rollout
-  (`docs/comparison-docs-overhaul/`) is in flight; decide its relationship to the
-  comparison harness.
+- **D4 event-ordering policy.** (a) microtask-defer Solid callbacks to match
+  React batching, (b) normalize orderings in the oracle and document the
+  divergence. Owner decision gates Tier 4.
+- **D9/D10 sequencing.** Land forced-colors + RTL drivers before Tier 4 (and
+  re-certify Tiers 1–3 against them), or after the march completes. Director
+  recommendation: before.
+- **Certification bar for keyboard composites.** Adopt "D5+D6 mandatory for
+  keyboard-heavy composites" into `certification.md` gates (Menu/ActionMenu
+  backfill is the test case).
 
 ## Non-Goals
 
@@ -89,13 +101,15 @@ tests, and behavior tests.
 - Hand-authored S2 component-surface CSS in the comparison app (ADR 0001).
 - Adding barrel names without a report identifying a real missing upstream
   export.
+- Relaunching fleet-census audits — the march supersedes them
+  (`recertification.md`).
 
 ## Gates
 
-The evidence bar and its commands live in `certification.md`.
-`comparison:report:parity:strict` is expected to pass; treat an in-scope failure
-as a blocking regression. Status is refreshed from scripts (`status.md`), never
-from memory.
+The evidence bar and its commands live in `certification.md`; the march harness
+in `recertification.md`. `comparison:report:parity:strict` and the certified
+suite are expected to pass. Status is refreshed from scripts (`status.md`),
+never from memory.
 
 ## Before A Task
 

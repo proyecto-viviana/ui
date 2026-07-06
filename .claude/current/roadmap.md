@@ -2,10 +2,15 @@
 kind: roadmap
 status: current
 items:
+  - id: recertification
+    title: Pair-oracle recertification march (plan of record)
+    status: in-progress
+    window: { start: 2026-07-03, target: null }
+    docs: [recertification.md, tech-debt.md]
   - id: component-certification
     title: Per-component acceptance
     status: in-progress
-    window: { start: 2026-05-20, target: 2026-07-15 }
+    window: { start: 2026-05-20, target: null }
     docs: [work-queue.md, certification.md]
   - id: support-export-parity
     title: Support-export parity with React S2
@@ -15,23 +20,23 @@ items:
   - id: comparison-docs-overhaul
     title: Comparison docs-site rollout
     status: in-progress
-    window: { start: 2026-06-01, target: 2026-06-30 }
+    window: { start: 2026-06-01, target: null }
     docs: [work-queue.md]
   - id: package-build-migration
     title: Native Vite Plus package builds
     status: in-progress
-    window: { start: 2026-05-10, target: 2026-06-25 }
+    window: { start: 2026-05-10, target: null }
     docs: [tech-debt.md, tooling.md]
   - id: admin-dashboard
     title: Dev-only admin dashboard
     status: in-progress
-    window: { start: 2026-06-13, target: 2026-06-20 }
+    window: { start: 2026-06-13, target: null }
     docs: [admin-dashboard.md]
   - id: ui-release-promotion
     title: Promote @proyecto-viviana/ui releases
-    status: open
-    window: null
-    docs: [release-policy.md, steering.md]
+    status: in-progress
+    window: { start: 2026-07-06, target: null }
+    docs: [release-policy.md, steering.md, tech-debt.md]
   - id: certification-enforcement
     title: Enforce the evidence checks in CI
     status: in-progress
@@ -83,8 +88,18 @@ sequence** at the foot of this page.
 
 ## Initiatives
 
-- **component-certification** — the standing per-component acceptance loop;
-  collection and overlay families next. Tasks in `work-queue.md`.
+- **recertification** — **the plan of record since 2026-07-03**
+  (`recertification.md`): the pair-oracle driver harness (D1–D8 landed, D9–D12
+  open) and the strict per-component red→green march against live upstream
+  React S2 1.5.1 / RAC 1.19.0. Tiers 1–2 complete (28 components), Tier 3 at
+  Toast; ~35/70 styled components certified. Also carries the 2026-07-06
+  stabilization tickets (`main-rot-burndown-2026-07`, driver backfills, the D4
+  policy decision) in `tech-debt.md`. Supersedes fleet-census auditing;
+  subsumes the depth half of `component-certification`.
+- **component-certification** — the standing per-component acceptance loop; the
+  depth work is executed by the recertification march, while this item keeps
+  the strict-parity report green (`labeledvalue-strict-parity`). Tasks in
+  `work-queue.md` and `tech-debt.md`.
 - **support-export-parity** — **DONE 2026-06-21.** Closed the missing React S2
   support exports (`comparison:report:exports` reports 0 missing). Tracked in
   `tech-debt.md`.
@@ -131,6 +146,11 @@ shared-spine port is the load-bearing middle most other tracks hang off, and the
 delivery/compliance/release chores trail because they gate on coverage, a product
 decision, or are pure housekeeping. Depth for every item already lives in the
 linked doc — this section sequences, it does not restate.
+
+**In flight right now (2026-07-06):** the `recertification` march (Toast,
+CP9.35) plus the P0 stabilization cluster it surfaced — `ci-main-gate-wiring`,
+`release-train-unjam`, `main-rot-burndown-2026-07`. The phases below are the
+longer program those interleave with.
 
 **Critical path.** `headless-spine-port` is the root enabler. Its three keystones
 (`SelectionManager`, `ListKeyboardDelegate` / `useSelectable*`, `useContextProps`
@@ -305,13 +325,21 @@ exclusion and folds the separate lint type-check back into the gated run).
 - **`ui-release-promotion`** — UC-02 Part B is **deferred** (needs a product/design
   decision on the Viviana-owned macro token map — nothing upstream to mirror);
   UC-06 is **downstream** (the `viviana-social` repo). The staged changesets are
-  ready to publish on the owner's call (`release-policy.md`).
+  ready to publish on the owner's call (`release-policy.md`). **2026-07-06: the
+  train is jammed** — version PR #7 stuck, 101 changesets pending, npm one patch
+  behind on 3 packages; `release-train-unjam` (tech-debt) is the P0 that moves
+  this item.
 
 ### Continuous (always running, not a phase)
 
-- **`component-certification`** — the standing per-component loop (`cert-button` in
-  flight, `cert-checkbox` next; collection / overlay families after). Visual-state
-  rows → pair-diff / contract tests.
+- **`recertification`** — the march is the standing spine of all component work
+  now: finish Toast, then DropZone/FileTrigger, then Tier 4 starting with
+  Picker (gated on the D4-policy and D9/D10-sequencing decisions —
+  `recertification.md` "Director pass 2026-07-06").
+- **`component-certification`** — `cert-button`/`cert-checkbox` completed via
+  the march (2026-07-03/04); what remains here is keeping
+  `comparison:report:parity:strict` green (`labeledvalue-strict-parity`) and
+  the visual-state coverage debt.
 - **`comparison-docs-overhaul`** — port the remaining collection / overlay pages
   to the docs site.
 - **`admin-dashboard`** — the `/admin` route and this tracking model itself.

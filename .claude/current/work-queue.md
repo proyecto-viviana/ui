@@ -10,15 +10,19 @@ tasks:
     planned: { start: 2026-06-24, target: 2026-06-25 }
   - id: cert-button
     title: Prove Button visual + a11y states
-    state: in-progress
+    state: done
+    finished: 2026-07-03
     roadmap: component-certification
     planned: { start: 2026-06-10, target: 2026-06-18 }
+    note: Superseded-and-completed by the recertification march — Button was the D1–D8 pilot (recertification.md Phase 1/CP series).
   - id: cert-checkbox
     title: Prove Checkbox visual + a11y states
-    state: next
+    state: done
+    finished: 2026-07-04
     depends: [cert-button]
     roadmap: component-certification
     planned: { start: 2026-06-18, target: 2026-06-25 }
+    note: Superseded-and-completed by the recertification march — Checkbox certified in the Tier 2 sweep (CP9, 2026-07-04).
   - id: comparison-docs-collections
     title: Port collection component pages to the docs site
     state: in-progress
@@ -45,50 +49,51 @@ next task and which workstreams are live.
 1. Refresh the snapshot (`status.md`) — work from scripts, not memory.
 2. Pick the surface that moves a real evidence gap, not a count. Depth over
    breadth: prove an existing component before adding a new name.
-3. Run it through `../../apps/comparison/COMPONENT_PLAYBOOK.md` — the per-component
-   task runner. Gate outcomes land in the component's validation note under
+3. For march units, `recertification.md` is the runner; for pre-march
+   components, `../../apps/comparison/COMPONENT_PLAYBOOK.md`. Gate outcomes land
+   in the component's validation note under
    `../../apps/comparison/playbook/components/`.
 4. Prove it with the checks in `certification.md`; record evidence in the
    validation note, not only in chat.
 
 ## Current priorities
 
-0. The recertification program (`recertification.md`) is the plan of record:
-   Phase 0 foundations → Phase 1 pair-oracle drivers → the per-component
-   red→green march. Pick its topmost unchecked item before anything below;
-   the priorities below are subsumed by it and remain as context.
-1. Convert visual-state rows into current React/Solid pair-diff or
-   computed-contract tests — hover, focus-visible, pressed, selected, invalid,
-   disabled, open, dismiss, keyboard navigation. No per-side committed PNG
-   baselines as acceptance gates.
-2. Keep accessibility proof broader than axe: keyboard, focus, forms, computed
-   name/description/value, validation, and announcements via Playwright.
-3. Continue support-export parity — missing contexts, slots, hooks, helpers, and
-   support values. Root catalogue export parity is not complete API parity.
-4. Add behavior tests where export parity is already green. Do not add barrel
-   names unless a report identifies a real missing upstream export.
-5. Keep component-internal S2 styling in `packages/solid-spectrum`. The
+0. **P0 stabilization first** (steering.md Now): `ci-main-gate-wiring`,
+   `release-train-unjam`, `main-rot-burndown-2026-07` (all in `tech-debt.md`),
+   and finishing Toast (CP9.35). Everything below waits on a green, CI-covered
+   main.
+1. The recertification program (`recertification.md`) is the plan of record:
+   the per-component red→green march, Tier 3 in flight. Pick its topmost
+   unchecked item; note the two owner decisions gating Tier 4 (D4 policy,
+   D9/D10 sequencing) and the Menu/ActionMenu D5-D6 backfill.
+2. Consumer-delivery cluster when a march slot allows: Picker fixes
+   (`picker-popover-anchor`, `picker-item-checkmark` — Picker is first in
+   Tier 4) and `macro-route-styled`.
+3. Keep accessibility proof broader than axe: keyboard, focus, forms, computed
+   name/description/value, validation, and announcements via the pair-oracle
+   drivers (D5/D6) and Playwright.
+4. Keep component-internal S2 styling in `packages/solid-spectrum`. The
    comparison app may consume `solid-spectrum` source and the S2 macro, but app
    CSS must not hand-author component colors, spacing, radius, or states
    (ADR 0001).
 
 ## Active workstreams
 
+- **Recertification march** — the plan of record (`recertification.md`): Tiers
+  1–2 complete (28 components), Tier 3 at Toast; then DropZone/FileTrigger,
+  then Tier 4 starting with Picker.
+- **Pipeline stabilization** _(opened 2026-07-06)_ — CI-on-main, release-train
+  unjam, live-rot burndown; tickets in `tech-debt.md`, direction in
+  `steering.md` Now.
 - **Client-readiness for `@proyecto-viviana/ui`** _(largely landed 2026-06-20)_ —
-  the `UC-NN` backlog in `ui-client-contract.md` making the package installable
-  and usable by the `viviana-social` apps. UC-00…UC-05 + UC-07 are ✔; only
-  UC-02 Part B (deferred) and UC-06 (downstream) remain, so the parity loop
-  (`upstream-release-audit.md` T-57+) can now resume.
-- **Per-component acceptance** — the standing loop; collection/overlay families
-  next.
-- **Support-export parity** — close the `22` missing S2 support exports; keep
-  Solid-only exports documented as local additions.
-- **comparison-docs-overhaul** — the comparison app's docs-site rollout
-  (`docs/comparison-docs-overhaul/`), in flight; the Toast docs-style viewer
-  landed 2026-06-24, so the next pick should come from the remaining process
-  backlog.
-- **Package-build migration** — native Vite Plus packaging, one package at a time
-  (`tech-debt.md`).
+  UC-00…UC-05 + UC-07 are ✔; only UC-02 Part B (deferred) and UC-06
+  (downstream) remain. The consumer-delivery debt (`macro-route-styled`,
+  Picker fixes, `viviana-ui-subpath-exports`) is the live remainder of this
+  track.
+- **comparison-docs-overhaul** — the comparison app's docs-site rollout;
+  collection/overlay pages still to port (`comparison-docs-collections`).
+- **Package-build migration** — native Vite Plus packaging, one package at a
+  time (`tech-debt.md`).
 
 ## Standing discipline
 

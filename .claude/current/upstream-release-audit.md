@@ -26,8 +26,10 @@ tasks:
     roadmap: upstream-parity-loop
   - id: rac-form-field-wrappers
     title: Absorb the 9 unported RAC Checkbox/Radio/Switch Field/Button/FieldContext names
-    state: open
+    state: done
+    finished: 2026-06-21
     roadmap: upstream-parity-loop
+    note: Landed 2026-06-21 (0c4d8765 + 229dbed8) — Switch/Checkbox/Radio split into *Field + *Button in solidaria-components, monoliths kept primary. guard:rac-export-gap now reports 0 missing. This entry was stale (still open) until the 2026-07-06 director pass.
   - id: autocomplete-collection-bridge
     title: Wire SearchField/Menu onto autocomplete contexts (Bucket D)
     state: open

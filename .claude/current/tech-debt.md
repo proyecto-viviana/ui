@@ -142,6 +142,11 @@ tasks:
     title: Route the 14 hand-authored components through style(); delete local-utilities.css
     state: open
     roadmap: consumer-delivery
+    note: >-
+      Director pass 2026-07-06: raised to consumer-delivery priority alongside the
+      Picker fixes — these 14 components (ListBox, Select, Toolbar, Well, StepList,
+      Separator, …) ship UNSTYLED to installed consumers; the apps/web
+      local-utilities.css backfill masks it in-repo and in the comparison harness.
   - id: viviana-ui-subpath-exports
     title: Add the 19 missing solid-spectrum sub-path exports to viviana-ui
     state: open
@@ -196,7 +201,10 @@ tasks:
       local-var ref assignment isn't reactive, so positioning can run before the
       portal node exists and never re-runs. Likely fix = setPopoverRef signal threaded
       into createPopover (+ optional updatePosition after portal mount). Confirm
-      against React Aria useOverlayPosition first (parity rule).
+      against React Aria useOverlayPosition first (parity rule). Director pass
+      2026-07-06: Picker is pulled FIRST in the Tier 4 march (recertification.md) —
+      it is production-broken for installed consumers, so this is the
+      highest-value single certification.
   - id: picker-item-checkmark
     title: Show the PickerItem checkmark only on the selected option
     state: open
@@ -209,6 +217,8 @@ tasks:
       resolving truthy for all rows, not a missing base style; renderProps.isSelected
       threading (HeadlessSelectOption, :1046-1051) and/or the S2 macro is/allows
       condition compile is the suspect. Diff both against upstream S2 before patching.
+      Director pass 2026-07-06: fix alongside picker-popover-anchor as part of the
+      Picker-first Tier 4 slot.
   - id: tooltip-arrow-overlayarrow
     title: Port the Tooltip arrow onto the real RAC <OverlayArrow> + arrowProps (headless-overlay realignment)
     state: open
@@ -575,6 +585,104 @@ tasks:
       `slider-thumb-antialias-1lsb`, here a sub-pixel baseline rather than an anti-aliased
       edge. Revisit only if a future field-label change re-rounds the side-layout label onto
       a whole pixel; otherwise it stays as the documented raster floor.
+  - id: ci-main-gate-wiring
+    title: Push main and run the gate ladder on main pushes; wire the orphaned checks
+    state: next
+    roadmap: certification-enforcement
+    note: >-
+      Director pass 2026-07-06: CI dark since 2026-06-24 — local main 67 commits ahead
+      of origin, and every gate workflow (certification-gates.yml, release-readiness)
+      triggers on PRs only while work lands direct-to-main, so no gate has fired at
+      all. comparison:test:certified is wired into no workflow; guard:jsx-deopt-size
+      and guard:upstream-test-parity are wired into no gate. Scope = push main, add a
+      push-to-main workflow running the full check set plus the certified suite, wire
+      the two orphaned guards. Exit criteria in the prose section.
+  - id: release-train-unjam
+    title: Unjam the release train — version PR #7, 101 changesets, npm one patch behind
+    state: next
+    roadmap: ui-release-promotion
+    note: >-
+      Director pass 2026-07-06: the changesets version PR #7 has been stuck ~20 days;
+      101 changesets pending; npm lags the repo one patch on solid-spectrum,
+      solidaria-components and viviana-ui — the SSR hydration fix has never been
+      published to installed consumers. Exit criteria in the prose section.
+  - id: main-rot-burndown-2026-07
+    title: Burn down live rot on main — 7 unit fails, 2 a11y-smoke fails, format drift
+    state: next
+    roadmap: recertification
+    note: >-
+      2026-07-06 gate run: `vp run test:run` fails 7 (ContextualHelpTrigger ×5, Menu ×1,
+      ActionMenu ×1 — smells like one regression cluster; bisect the CP9.32–9.35
+      window); `vp run a11y:check` fails 2/120 (Toolbar `End` + ActionBar `Home` no
+      longer land roving focus in apps/web/e2e/playground-components.spec.ts — real
+      keyboard regressions, triage regression-vs-latent before patching); `vp run
+      check` fails on 26-file format (oxfmt) drift before typecheck even runs (the
+      .claude/current docs were formatted 2026-07-06; code/spec files remain —
+      `vp check --fix` on them is part of this ticket). Exit:
+      check, test:run and a11y:check all green on main.
+  - id: menu-actionmenu-d5-d6-backfill
+    title: Backfill D5 focus-trail + D6 AX-tree evidence on the Menu and ActionMenu certifications
+    state: open
+    roadmap: recertification
+    note: >-
+      Menu (CP9.32, 14/14) and ActionMenu (CP9.33, 30/30) certified without D5/D6
+      coverage — for keyboard composites those are exactly the drivers that would
+      catch an SR-operability regression (the menu-focus-roving class of bug). Add
+      D5/D6 sections to both certified specs; adopt "D5+D6 mandatory for
+      keyboard-heavy composites" into the certification.md gates. Exit: both certs
+      green including D5/D6, and the bar text updated.
+  - id: recert-drivers-d9-d12
+    title: Land the remaining pair-oracle drivers — D9 forced-colors, D10 RTL, D11 timing, D12 SSR
+    state: open
+    roadmap: recertification
+    note: >-
+      D1–D8 are landed and calibrated; D9–D12 exist only as plan text, so
+      forced-colors and RTL have zero coverage repo-wide. Director recommendation:
+      land D9+D10 BEFORE the Tier 4 march and re-run the certified set against them
+      (certifying Tier 4 first means re-marching Tiers 1–3 later); D11/D12 can
+      follow. Owner sequencing decision tracked in steering.md Open Decisions.
+      Exit: drivers land with the same calibration discipline as D4/D5 (a pilot
+      component red→green each), and the certified suite runs them.
+  - id: d4-event-ordering-decision
+    title: Decide the D4 event-ordering policy before Tier 4 (microtask deferral vs oracle normalization)
+    state: open
+    roadmap: recertification
+    note: >-
+      The 5 deferred D4 reds (Tabs/Dialog) trace to React batched-effects vs Solid
+      synchronous updates interleaving callback/focus events differently
+      intra-gesture. Tier 4 collections multiply the exposure — pick a policy, not
+      per-component waivers: (a) microtask-defer port callbacks to match React
+      batching, or (b) normalize orderings in the D4 oracle and document the
+      divergence as structural. Owner decision; gates the Tier 4 march start.
+  - id: d6-announcement-calibration
+    title: First passing live-region announcement evidence — calibrate D6 announcements via Toast
+    state: open
+    roadmap: recertification
+    note: >-
+      Announcements have never had a passing test anywhere in the repo. Toast
+      (CP9.35 in flight) is the natural calibration target — live-region semantics
+      are its core a11y contract. Exit: a D6 announcement pair assertion green in
+      the Toast certified spec, and the technique documented in recertification.md
+      for reuse.
+  - id: dnd-subsystem-port
+    title: Port the drag-and-drop subsystem (6 missing S2 exports; TableView/TreeView/GridList DnD)
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      The last un-ported subsystem. useDragAndDrop, DragPreview, DIRECTORY_DRAG_TYPE
+      and isTextDropItem/isFileDropItem/isDirectoryDropItem are 6 of the 7 remaining
+      missing S2 exports (comparison:report:exports), and TableView/TreeView ship
+      without DnD rows. Epic — scope against upstream @react-aria/dnd + RAC
+      useDragAndDrop before the Tier 4/5 collection marches reach DnD states.
+  - id: labeledvalue-strict-parity
+    title: Close the LabeledValue strict-parity gap (validation note + evidence + LabeledValueContext)
+    state: open
+    roadmap: component-certification
+    note: >-
+      The single comparison:report:parity:strict failure: LabeledValue lacks
+      labeledvalue-validation-notes.md and current visual/asserted evidence; its
+      LabeledValueContext is also the one non-DnD missing S2 export. Exit: strict
+      report fully green, and the exports report shows only the 6 DnD names.
 ---
 
 # Tech Debt
@@ -599,9 +707,35 @@ visual-coverage debts below (Rule #1/#7). A non-blocking `certification-gates.ym
 workflow now projects the full check set's status on every PR as the first step
 toward enforcement.
 
-**Exit:** a required CI job runs the full check set (typecheck + `vp run check` +
-`comparison:test:contract`/`pair` + ungated axe + `guard:*` + `docs:check`) on
-every PR, so "green" means the documented bar passed.
+Sharpened by the 2026-07-06 director pass (`ci-main-gate-wiring`): "on every PR"
+is the wrong trigger for this repo. Work lands direct-to-main, so the PR-only
+ladder structurally never fires — CI had been dark since 2026-06-24 with main 67
+commits ahead of origin unpushed, and rot accumulated unseen
+(`main-rot-burndown-2026-07`). Additionally `comparison:test:certified` — the
+suite that actually enforces the recertification bar — is wired into no workflow
+at all, and `guard:jsx-deopt-size` / `guard:upstream-test-parity` are wired into
+no gate.
+
+**Exit:** main is pushed; a CI job runs the full check set (typecheck + `vp run
+check` + `comparison:test:contract` + `comparison:test:certified` + ungated axe +
+`guard:*` including jsx-deopt-size and upstream-test-parity + `docs:check`) **on
+push to main** as well as on PRs, so "green" means the documented bar passed on
+the branch people actually commit to. Validate by pushing a commit and watching
+the run fire.
+
+## Release train jammed — published packages lag the repo
+
+Found 2026-07-06 (`release-train-unjam`): the changesets version PR #7 has been
+stuck ~20 days, `101` changesets are pending, and npm is one patch behind the
+repo on `solid-spectrum`, `solidaria-components`, and `viviana-ui` — the SSR
+hydration fix has never reached installed consumers. The release pipeline exists
+(`release-policy.md`) but nothing moves it while commits bypass PRs.
+
+**Exit:** version PR merged (or the changesets flow re-run), pending changesets
+drained, npm versions match the repo's package versions, and a stated cadence in
+`release-policy.md` for when the train ships (e.g. on every certified-tier
+completion). Validate with `npm view <pkg> version` against the workspace
+manifests.
 
 ## Shared headless spine is re-implemented per widget
 
@@ -705,17 +839,69 @@ section exists to remove).
 layer and the per-widget copies deleted; `aria-describedby` is emitted via the
 shared slot path; `autocomplete-collection-bridge` then wires onto them.
 
-## Menu is not screen-reader-operable
+## Menu screen-reader operability — RESOLVED 2026-06-15; certification backfill open
 
-Arrow keys update `state.setFocusedKey` (`createMenu.ts:217-400`), which flips each
-item's `tabIndex` 0/-1 (`createMenuItem.ts:159`), but nothing calls
-`element.focus()` and there is no `aria-activedescendant` in the menu module — so
-navigation moves internal state without moving real DOM focus or the AT cursor. The
-roving-tabindex pattern is only half-wired.
+The original debt: arrow keys updated `state.setFocusedKey` and flipped `tabIndex`
+0/-1 but nothing moved real DOM focus, so the AT cursor never followed. Resolved
+by `menu-focus-roving` (proof-batch PR #6): the spine's `createSelectableItem`
+focuses the element whenever it becomes the collection's `focusedKey`
+(`createSelectableItem.ts:300-304`, mirroring upstream `useSelectableItem`), and
+the exit's Playwright contract exists and passes —
+`apps/web/e2e/menu-focus.spec.ts` asserts Arrow/Home/End land real focus
+(`toBeFocused()`), green in the 2026-07-06 a11y-smoke run. Adjudicated against
+code + the passing contract on 2026-07-06; this section previously still
+described the pre-fix state.
 
-**Exit:** focusedKey changes move real focus (imperative `.focus()` on the active
-item, or managed `aria-activedescendant`), proven by a Playwright keyboard +
-computed-focus contract test.
+What remains is certification-level, not operability-level: Menu and ActionMenu
+were recertified (CP9.32/9.33) without D5 focus-trail or D6 AX-tree drivers, so
+the certified suite would not catch a regression of exactly this bug. Tracked as
+`menu-actionmenu-d5-d6-backfill`.
+
+**Exit (backfill):** Menu and ActionMenu certified specs include D5+D6 sections
+and pass; `certification.md` gates state that keyboard-heavy composites do not
+certify on D1/D7 alone.
+
+## Pair-oracle drivers D9–D12 unlanded; D4 policy undecided; D6 announcements never green
+
+The recertification harness runs D1–D8 only. Consequences, found 2026-07-06:
+
+- **D9 forced-colors and D10 RTL have zero coverage repo-wide** — no test
+  anywhere renders a component under `forced-colors: active` or `dir="rtl"`.
+  Tracked as `recert-drivers-d9-d12`; the sequencing question (land before the
+  Tier 4 march and re-run the certified set, or after) is an owner decision in
+  `steering.md`. D11 timing / D12 SSR follow the same ticket.
+- **The D4 event-ordering epic needs a policy before Tier 4**
+  (`d4-event-ordering-decision`): 5 deferred reds on Tabs/Dialog trace to React
+  batched-effects vs Solid synchronous updates; collections multiply the
+  exposure, and per-component waivers would rot into noise.
+- **Live-region announcements have never had a passing test**
+  (`d6-announcement-calibration`): the D6 driver covers AX-tree shape but no
+  announcement assertion has ever gone green. Toast (in flight, CP9.35) is the
+  calibration target.
+
+**Exit:** each per the task notes above; collectively, the certified suite runs
+D1–D10 and at least one announcement pair assertion is green.
+
+## DnD subsystem is un-ported
+
+`useDragAndDrop`, `DragPreview`, `DIRECTORY_DRAG_TYPE`, and
+`isTextDropItem`/`isFileDropItem`/`isDirectoryDropItem` are 6 of the 7 remaining
+missing S2 exports, and TableView/TreeView ship without DnD rows — this is the
+one whole subsystem with no port. Tracked as `dnd-subsystem-port`; an epic to
+scope against upstream `@react-aria/dnd` + RAC `useDragAndDrop` before the
+Tier 4/5 collection marches reach DnD-dependent states.
+
+**Exit:** the exports report shows 0 missing; TableView/TreeView/GridList DnD
+states have pair-oracle evidence in their certified specs.
+
+## LabeledValue is the last strict-parity gap
+
+The single `comparison:report:parity:strict` failure: LabeledValue lacks a
+validation note and current evidence, and `LabeledValueContext` is the one
+non-DnD missing S2 export. Tracked as `labeledvalue-strict-parity`.
+
+**Exit:** `comparison:report:parity:strict` fully green;
+`comparison:report:exports` shows only the 6 DnD names missing.
 
 ## Styled components bypass the style macro (ship unstyled)
 
@@ -914,7 +1100,7 @@ a text-ish type, `role="textbox"`, `contenteditable`, `<textarea>`, `<select>`
 retain ArrowLeft/Right/Up/Down for caret/value movement instead of the toolbar
 consuming them for roving focus. **Upstream `useToolbar` (react-aria 3.50.0) has
 no such guard.** During the ToggleButtonGroup cert (CP9.3, 2026-07-04) the guard
-was *narrowed* to arrows only — the invented `Home`/`End` handling it also
+was _narrowed_ to arrows only — the invented `Home`/`End` handling it also
 covered was removed as a self-inflicted parity divergence (Rule #1) — but the
 arrow guard itself was **kept**, because ToggleButtonGroup contains no text input
 so its D5 focus-trail driver never exercises it, and removing it unverified could
@@ -945,12 +1131,12 @@ that does not support `meter`. The port diverges in two places:
 - `packages/solidaria/src/meter/createMeter.ts` returns `role: "meter"` (single
   token), and
 - `packages/solid-spectrum/src/meter/index.tsx` **hardcodes** `role="meter"` on
-  the wrapper div *after* spreading `meterProps`, so even a fixed `createMeter`
+  the wrapper div _after_ spreading `meterProps`, so even a fixed `createMeter`
   would be overridden.
 
 The comparison's React fixture (`apps/comparison/src/components/react/fixtures/
 styled.js`, `ReactMeterDemo`) then patches upstream's native `"meter progressbar"`
-DOM attribute *down* to `"meter"` via a `useEffect`, so the two panels match. That
+DOM attribute _down_ to `"meter"` via a `useEffect`, so the two panels match. That
 normalization **masks** the divergence: the Meter cert (CP9.10) is green because
 both token lists resolve to the same `meter` role in the accessibility tree
 (`ariaSnapshot()` reports `meter` either way), so D6 cannot see it. This is a
@@ -962,7 +1148,7 @@ edits — `createMeter` → `"meter progressbar"`, drop the hardcoded `role="met
 in the Meter component so `meterProps.role` flows through (mirroring upstream S2,
 which spreads and never hardcodes), and delete the React fixture's normalization
 `useEffect` — and it touches **solidaria**, which the comparison app consumes from
-`dist` (a package rebuild), *and* it must be re-validated against the blocking web
+`dist` (a package rebuild), _and_ it must be re-validated against the blocking web
 a11y/axe gate (`aria-allowed-role` on a multi-token role), which is outside the
 Meter cert's harness. Low-risk (multi-token roles are valid ARIA and upstream
 passes axe), but it is a build+gate change, not an e2e-only cert edit, so it is
