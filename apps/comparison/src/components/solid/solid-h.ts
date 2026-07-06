@@ -67,8 +67,7 @@ export function hc(
     });
   }
 
-  const thunk: HcThunk = () =>
-    createComponent(component as (props: unknown) => unknown, builtProps);
+  const thunk: HcThunk = () => createComponent(component as never, builtProps);
   Object.defineProperty(thunk, HC_THUNK, { value: true, enumerable: false });
   return thunk as unknown as ReturnType<typeof h>;
 }

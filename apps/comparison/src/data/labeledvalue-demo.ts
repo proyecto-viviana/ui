@@ -60,8 +60,19 @@ function isOneOf<T extends readonly string[]>(
   return value != null && options.includes(value);
 }
 
+/**
+ * Loose input to the normalizer: every field arrives as a raw string (URL
+ * params, CustomEvent detail) or is absent. The `isOneOf` / `typeof` guards
+ * below narrow each one to its strict union, so the parameter type must NOT be
+ * the strict `Partial<LabeledValueDemoProps>` — that would reject the very
+ * arbitrary strings this function exists to sanitize.
+ */
+export type LabeledValueDemoInput = {
+  [K in keyof LabeledValueDemoProps]?: string | null;
+};
+
 export function normalizeLabeledValueDemoProps(
-  props: Partial<LabeledValueDemoProps>,
+  props: LabeledValueDemoInput,
 ): LabeledValueDemoProps {
   return {
     label:
