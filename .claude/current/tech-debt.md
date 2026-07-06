@@ -430,8 +430,8 @@ tasks:
       switch handle or when the shared form-field ref surface is standardized.
   - id: ui-icon-decorative-ax-node
     title: Reconcile decorative-icon AX exposure — React shows a bare img node, the port stamps aria-hidden
-    state: resolved
-    resolved: 2026-07-06
+    state: done
+    finished: 2026-07-06
     roadmap: upstream-api-parity
     note: >-
       RESOLVED by Toast CP9.35 (2026-07-06), globally. Root cause confirmed exactly as
@@ -607,24 +607,21 @@ tasks:
       a whole pixel; otherwise it stays as the documented raster floor.
   - id: ci-main-gate-wiring
     title: Push main and run the gate ladder on main pushes; wire the orphaned checks
-    state: in-progress
+    state: done
+    finished: 2026-07-06
     roadmap: certification-enforcement
     note: >-
-      Director pass 2026-07-06: CI dark since 2026-06-24 — every gate workflow triggered
-      on PRs only while work lands direct-to-main, so no gate fired at all;
-      comparison:test:certified + guard:jsx-deopt-size + guard:upstream-test-parity were
-      wired into no workflow. PROGRESS 2026-07-06: (a) the "push main" leg is satisfied —
-      per the local origin/main ref, main was pushed to 3a3d5b69 (release-readiness.yml,
-      which already fires build+typecheck:apps+test:run on push-to-main, is live on the
-      remote); the "67 commits ahead" premise is stale. (b) certification-gates.yml
-      extended (this commit) to also trigger on push-to-main and to run the three
-      orphaned checks (comparison:test:certified — expected ❌ while the deferred D4 reds
-      stand; guard:jsx-deopt-size ✅; guard:upstream-test-parity ✅, both confirmed green
-      locally). It stays report-only (continue-on-error) — flipping to required is the
-      separate ci-gates-required task once the D4 policy lands. REMAINING: push this
-      commit and watch the certification-gates run fire on the main push (the exit's
-      final validation step) — blocked on an owner push (no push access from the working
-      env). Exit criteria in the prose section.
+      DONE 2026-07-06. certification-gates.yml + release-readiness.yml now both trigger on
+      push-to-main; the three previously-orphaned checks (comparison:test:certified,
+      guard:jsx-deopt-size, guard:upstream-test-parity) are wired into the report-only
+      ladder. VALIDATED END-TO-END: the first main pushes fired the gates for real —
+      release-readiness caught 5 latent typecheck:apps errors (solid-h createComponent cast +
+      labeledvalue-demo strict-input) that had accumulated unseen while CI was dark, they
+      were fixed faithfully (commit 73903a5b), and the re-run went green (run 28825943495).
+      This is exactly the rot the wiring exists to catch. certification-gates stays
+      report-only (continue-on-error) — flipping the certified suite to blocking is the
+      separate ci-gates-required task, gated on the D4 event-ordering policy. Follow-on:
+      release-train-unjam (still owner-gated).
   - id: release-train-unjam
     title: Unjam the release train — version PR #7, 101 changesets, npm one patch behind
     state: next
@@ -637,6 +634,7 @@ tasks:
   - id: main-rot-burndown-2026-07
     title: Burn down live rot on main — 7 unit fails, 2 a11y-smoke fails, format drift
     state: done
+    finished: 2026-07-06
     roadmap: recertification
     note: >-
       DONE 2026-07-06. All three parts were STALE TESTS, not source bugs — the port
@@ -761,18 +759,21 @@ push to main** as well as on PRs, so "green" means the documented bar passed on
 the branch people actually commit to. Validate by pushing a commit and watching
 the run fire.
 
-_Progress 2026-07-06:_ the wiring is drafted and committed locally.
-`release-readiness.yml` (blocking: `build` + `typecheck:apps` + `test:run`)
-already triggers on push-to-main. `certification-gates.yml` now also triggers on
-push-to-main and adds the three previously-orphaned checks —
-`comparison:test:certified`, `guard:jsx-deopt-size`, `guard:upstream-test-parity`
-— to its report-only ladder (it already ran typecheck + `vp check` + contract +
-`a11y:full` + the rest of the guards + `docs:check`). Between the two workflows
-the full check set now fires on push-to-main. It stays report-only until
+**DONE 2026-07-06.** `release-readiness.yml` (blocking: `build` +
+`typecheck:apps` + `test:run`) and `certification-gates.yml` (report-only, now
+carrying `comparison:test:certified`, `guard:jsx-deopt-size`,
+`guard:upstream-test-parity` alongside typecheck + `vp check` + contract +
+`a11y:full` + the rest of the guards + `docs:check`) both trigger on
+push-to-main. Between the two, the full check set fires on the branch people
+actually commit to. **Validated end-to-end:** the first main pushes fired the
+gates and immediately earned their keep — `release-readiness` failed on 5 latent
+`typecheck:apps` errors that had accumulated while CI was dark (a `createComponent`
+cast in `solid-h.ts` and the strict `Partial` input to
+`normalizeLabeledValueDemoProps`), they were fixed faithfully (commit `73903a5b`),
+and the re-run went green (run `28825943495`). It stays report-only until
 `ci-gates-required` (the D4 event-ordering policy gates flipping the certified
-suite to blocking). The one open step is the exit's own validation — **push the
-commit and confirm the certification-gates run fires on the main push** — which
-needs an owner push (no push access from the working env).
+suite to blocking). Remaining pipeline work is `release-train-unjam`, still
+owner-gated on a merge + npm publish.
 
 ## Release train jammed — published packages lag the repo
 

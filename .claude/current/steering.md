@@ -41,10 +41,13 @@ then keep marching.
 
 ## Now (P0 — stabilization)
 
-- **Push main and wire CI to run on it** (`tech-debt.md` →
-  `ci-main-gate-wiring`): the gate ladder is PR-only and this repo commits
-  direct-to-main, so no gate has run in 12 days. Add a main-push workflow that
-  runs the certified suite too; wire the orphaned guards.
+- ~~**Push main and wire CI to run on it**~~ (`tech-debt.md` →
+  `ci-main-gate-wiring`) — DONE 2026-07-06. Both `release-readiness.yml` and
+  `certification-gates.yml` now trigger on push-to-main, with the three orphaned
+  checks (certified suite, jsx-deopt-size, upstream-test-parity) wired in.
+  Validated end-to-end: the first main pushes caught 5 latent `typecheck:apps`
+  errors that had rotted in while CI was dark; fixed (`73903a5b`), re-run green.
+  Certified suite stays report-only until `ci-gates-required` (D4 policy).
 - **Unjam the release train** (`release-train-unjam`): version PR #7, 101
   pending changesets, npm one patch behind on 3 packages — the SSR hydration
   fix has never reached installed consumers.

@@ -58,11 +58,12 @@ next task and which workstreams are live.
 
 ## Current priorities
 
-0. **P0 stabilization first** (steering.md Now): `ci-main-gate-wiring` and
-   `release-train-unjam` (both in `tech-debt.md`) remain — both blocked on an
-   owner push/publish. `main-rot-burndown-2026-07` (done 2026-07-06) and Toast
-   CP9.35 (done 2026-07-06, 37/37) are cleared. Everything below waits on a
-   green, CI-covered main.
+0. **P0 stabilization first** (steering.md Now): `release-train-unjam`
+   (`tech-debt.md`) is the sole remaining P0 — owner-gated on merging version
+   PR #7 + npm publish. `ci-main-gate-wiring` (done 2026-07-06, validated green —
+   it caught 5 latent typecheck errors on the first main pushes),
+   `main-rot-burndown-2026-07`, Toast CP9.35, and DropZone CP9.36 are all
+   cleared. Main is now green and CI-covered on every push.
 1. The recertification program (`recertification.md`) is the plan of record:
    the per-component red→green march, Tiers 1–3 complete (Tier 3 closed
    2026-07-06 with DropZone/FileTrigger). Next is Tier 4, but note the two
