@@ -46,9 +46,11 @@ then keep marching.
 - **Unjam the release train** (`release-train-unjam`): version PR #7, 101
   pending changesets, npm one patch behind on 3 packages — the SSR hydration
   fix has never reached installed consumers.
-- **Burn down live rot** (`main-rot-burndown-2026-07`): the
-  ContextualHelp/Menu/ActionMenu unit cluster, the Toolbar `End` / ActionBar
-  `Home` roving-focus regressions, the remaining code/spec format drift.
+- ~~**Burn down live rot** (`main-rot-burndown-2026-07`)~~ — DONE 2026-07-06.
+  All three were stale tests, not source bugs: the ContextualHelp/Menu/ActionMenu
+  cluster asserted the pre-CP9.34 heading-slot divergence; the Toolbar `End` /
+  ActionBar `Home` tests asserted Home/End that CP9.3 removed as invented. Tests
+  realigned to upstream + format drift fixed. check / test:run / a11y:check green.
 - **Finish Toast** (recertification CP9.35, 24/37 → green) — first D6
   announcement evidence lands with it.
 
