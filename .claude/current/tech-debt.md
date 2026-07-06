@@ -608,18 +608,24 @@ tasks:
       published to installed consumers. Exit criteria in the prose section.
   - id: main-rot-burndown-2026-07
     title: Burn down live rot on main — 7 unit fails, 2 a11y-smoke fails, format drift
-    state: next
+    state: done
     roadmap: recertification
     note: >-
-      2026-07-06 gate run: `vp run test:run` fails 7 (ContextualHelpTrigger ×5, Menu ×1,
-      ActionMenu ×1 — smells like one regression cluster; bisect the CP9.32–9.35
-      window); `vp run a11y:check` fails 2/120 (Toolbar `End` + ActionBar `Home` no
-      longer land roving focus in apps/web/e2e/playground-components.spec.ts — real
-      keyboard regressions, triage regression-vs-latent before patching); `vp run
-      check` fails on 26-file format (oxfmt) drift before typecheck even runs (the
-      .claude/current docs were formatted 2026-07-06; code/spec files remain —
-      `vp check --fix` on them is part of this ticket). Exit:
-      check, test:run and a11y:check all green on main.
+      DONE 2026-07-06. All three parts were STALE TESTS, not source bugs — the port
+      was faithful in every case. (1) The 7 unit fails (ContextualHelpTrigger ×5,
+      Menu ×1, ActionMenu ×1) all asserted the pre-CP9.34 divergence where the
+      HeadingContext DEFAULT slot minted the dialog title id; CP9.34 (7a13361f)
+      correctly reverted that to match S2 ContextualHelp (default slot = styles only,
+      only `slot="title"` names the dialog). Fixed by adding `slot="title"` to the
+      test headings (Menu/ActionMenu, matching upstream stories exactly) and dropping
+      incidental `{ name }` dialog filters where the trigger label names the button,
+      not the dialog (commit 999f70a9, test-only). (2) The 2 a11y-smoke fails (Toolbar
+      `End`, ActionBar `Home`) asserted Home/End roving focus that CP9.3 (0ae50edf)
+      deliberately removed from createToolbar — upstream useToolbar binds neither, only
+      arrows + Tab. Realigned both e2e tests to arrow-nav and renamed the toolbar test
+      to drop the Home/End claim. (3) 26-file oxfmt drift (accumulated while CI dark)
+      fixed via `vp check --fix` — pure formatting, no semantic change. Verified green:
+      check (0 errors), test:run (5524 passed), a11y:check (44/44).
   - id: menu-actionmenu-d5-d6-backfill
     title: Backfill D5 focus-trail + D6 AX-tree evidence on the Menu and ActionMenu certifications
     state: open
