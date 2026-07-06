@@ -769,10 +769,8 @@ certification landing to catch this rot early (`ci-main-push-skips-tests`).
 Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)`,
 `✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)`, `✓ Menu (2026-07-04)`,
 `✓ ActionMenu (2026-07-04)`, `✓ ContextualHelp (2026-07-05)`,
-`⏳ Toast (2026-07-05, IN PROGRESS — port fixes + unit tests done, cert authored,
-first cert run 24/37 green, 13 red not yet triaged/fixed — see "Toast in-flight"
-below)` — **Tier 3 in progress.**
-Next: finish Toast, then DropZone/FileTrigger. Same marking
+`✓ Toast (2026-07-06 — CP9.35, 37/37 green)` — **Tier 3 in progress.**
+Next: DropZone/FileTrigger. Same marking
 rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -805,16 +803,18 @@ A full-project validation pass (parity / functionality / a11y / process) was run
    (`recert-drivers-d9-d12` — director recommendation: land forced-colors +
    RTL drivers BEFORE Tier 4 and re-run the certified set, because certifying
    Tier 4 first means re-marching Tiers 1–3 later).
-4. **D6 announcements have never had a passing assertion anywhere** — Toast
-   (in flight) is the calibration target (`d6-announcement-calibration`).
-   Landing its live-region pair evidence is part of finishing Toast, not
-   optional polish.
+4. **D6 announcements** — Toast (CP9.35, done 2026-07-06) certified the
+   `role="alert"` live region structurally in the AX snapshot, which was the
+   calibration target for `d6-announcement-calibration`. The live-_transcript_
+   oracle over a body-portaled toast (an announcement mechanism assertion, not
+   the live-region structure) remains tracked separately in tech-debt.md.
 5. **Live rot found on main** (`main-rot-burndown-2026-07`): 7 unit failures
    (ContextualHelpTrigger ×5, Menu ×1, ActionMenu ×1 — likely one cluster from
    the CP9.32–9.35 window), 2 a11y-smoke failures (Toolbar `End` / ActionBar
-   `Home` roving focus), 26-file code/spec format drift. Burn down before or alongside
-   the Toast finish; the deeper cause (CI never fires on direct-to-main) is
-   `ci-main-gate-wiring`.
+   `Home` roving focus), 26-file code/spec format drift. The 2 ActionMenu
+   assertions in that cluster were realigned as part of CP9.35 (the ui-icon
+   `aria-hidden` bare-svg fix); the rest of the burn-down still stands. The
+   deeper cause (CI never fires on direct-to-main) is `ci-main-gate-wiring`.
 
 - ✓ **ToggleButton done 2026-07-03 (CP9.1):** first new Tier-1 unit certified
   through all 8 landed drivers. Spec `togglebutton.certified.spec.ts` — 9 prop
@@ -2464,96 +2464,68 @@ rgb(219,219,219))` fill). Regenerated AlertDiamond to match — the correct fix 
   Escape/interact-outside close, focus containment/restoration, trigger hit-area — interaction behaviors; the quiet
   ActionButton's own target size is certified in CP9.2). `playwright test contextualhelp.certified` `23/23` green.
 
-- ⏳ **Toast IN-FLIGHT 2026-07-05 (CP9.35 — Tier-3 overlay, NOT DONE — resume here):**
-  Port fixes + unit test + snapshot are DONE and green; the cert
-  (`apps/comparison/e2e/certified/toast.certified.spec.ts`) is authored and has been
-  run ONCE: **24/37 green, 13 red, not yet triaged.** No commit has landed yet for
-  this unit — do not mark the queue/task done until the cert is green and committed.
-  **Port fixes already applied to `packages/solid-spectrum/src/toast/index.tsx`** (four
-  faithful reverts, grounded in `@react-spectrum/s2` `Toast.tsx`): (a) `toastBody` div
-  was missing `role="presentation"` (upstream sets it) → added; (b) the content div was
-  missing the ARIA live-region wiring → added `data-solidaria-toast-content` so the
-  headless effect applies upstream's `role="alert"`/`aria-atomic`; (c) the variant glyph
-  was a bare `<span>` → wrapped in `<CenterBaseline>` (matches upstream, byte-identical);
-  (d) the dismiss control was a hand-rolled `HeadlessToastCloseButton` + `closeButtonStyles`
-  carrying the 20px workflow `CloseIcon` → reverted to the faithful `<CloseButton
-staticColor="white">` (from `../dialog`), whose glyph is the 12px ui-icon Cross; wired
-  `onPress` to `state.close(key)` + `state.remove(key)` (the pair the headless close-button
-  click-delegation used to run, since the faithful `CloseButton` doesn't carry the
-  delegated `[data-solidaria-toast-close-button]` attribute). Dead `toastIcon`/
-  `closeButtonStyles` style consts removed. `packages/solid-spectrum/test/Toast.test.tsx`
-  updated (dismiss-button test now expects the 12×12 `viewBox`, was 20×20) —
-  `vp test run Toast` **102/102 green**. `regression.test.tsx.snap` regenerated
-  (`vp test run regression -u`): Toast's snapshot changed structurally (the fixes above);
-  ActionMenu + Menu snapshots also shifted but were verified PURE atomic-class-hash churn
-  (removing the two dead `style()` blocks re-densified the global atomic registry, shifting
-  unrelated `-macro-dynamic-*` tokens) — confirmed identical after stripping class tokens,
-  not a regression.
-  **Cert structure** (two scenarios, both panel-major via `beforePanel`/`afterPanel` since
-  Toast portals to `document.body`, not the canvas): scenario 1 `toast` — the
-  `role="alertdialog"` box across 4 variants (neutral/positive/negative/info), D1+D3+D6+D7,
-  `styleProps.add:["min-height","max-width","box-sizing"]`; scenario 2 `toast` (title
-  "Toast icon") — the variant glyph `<svg>` across 3 icon-bearing variants
-  (positive/negative/info; neutral has none), D1+D3. `beforePanel` (`openToast`) reads
-  `variant` back off the URL (the route/case sets it identically for both panels; only
-  `activeSide` differs, dispatched per-panel via the shared `comparison:controls-change`
-  event) then clicks the variant's trigger and awaits the `alertdialog` to appear;
-  `afterPanel` (`closeToast`) best-effort dismisses, never asserts.
-  **First run result — 24 passed, 13 failed, three DISTINCT failure shapes, none
-  triaged/fixed yet:**
-  1. **D6 AX — `neutral` (1 failure):** not yet inspected; likely the announce/live-region
-     AX-tree diff needs to see the neutral variant's icon-less structure (no `<svg>` before
-     the text) — check whether the AX snapshot includes a description of the (absent) icon,
-     or whether `neutral`'s title/description ids resolve differently than the other 3
-     variants already implicitly covered would suggest.
-  2. **D7 contrast — ALL 8 (every variant × both themes) fail with the SAME shape:**
-     `"descriptor": "span:Toasting…"` (React) vs `"descriptor": "div:Toasting…"` (Solid) —
-     the contrast driver's descriptor string encodes the element tag name of the text node's
-     container, and upstream renders the toast body copy in a `<span>` while the port renders
-     it in a `<div>`. This is almost certainly the DEFERRED `toastText`/title/description
-     wrapper divergence already called out in the cert's doc comment (`<div
-data-solidaria-toast-title>` vs upstream `<span slot="title">`) — but it was assumed
-     paint-identical and NOT contrast-descriptor-identical; the D7 driver apparently keys its
-     descriptor on tag name, not just computed style, so this now blocks D7 even though pixel
-     output matches. Two fixes to weigh: (i) make the port's title/description wrapper a
-     `<span>` to match upstream exactly (closes the deferred item AND fixes D7 in one edit —
-     probably the right call, since it's a small change and removes a filed deferral), or
-     (ii) special-case the D7 descriptor comparison to ignore tag name for this unit
-     (weaker, keeps the divergence). Option (i) should be tried first.
-  3. **D3 pixel — `info` variant only, BOTH scenarios (box AND icon), BOTH themes (4
-     failures), tiny sub-pixel ratio (~0.0013, 9/7056 px, localized to a small bounds box
-     near the glyph):** shape matches the already-documented **D3 sub-pixel burn-down**
-     measurement-layer artifact (see below) seen on Tooltip/ContextualHelp glyphs — but it
-     is suspicious that ONLY `info` fails and not `positive`/`negative` (same glyph
-     composition, just a different icon asset). Before waiving, confirm this is really the
-     shared sub-pixel-phase artifact and not an actual `InfoCircle`-specific glyph diff (e.g.
-     wrong icon asset/size) by diffing the two attached PNGs pixel-for-pixel or re-running
-     with a wider viewport-integer pin. If confirmed cosmetic, add a scoped waiver
-     (`pixel.waivers`) for the `info` case only, following the ContextualHelp precedent
-     (`maxMismatchRatio` slightly above the observed ratio, `maxDimensionDelta:0`).
-     **Next steps for whoever resumes:** (1) fix the title/description wrapper to `<span>` and
-     re-run D7 — expect all 8 to go green and the deferred-divergence doc-comment note to be
-     removed; (2) investigate the neutral D6 failure directly (read the two AX snapshots in
-     `test-results/certified-toast.certified-D6-*neutral*/error-context.md` if still present,
-     or re-run `-g "D6 AX"`); (3) confirm/waive the `info`-only D3 sub-pixel diffs; (4) re-run
-     `vp exec playwright test e2e/certified/toast.certified.spec.ts --reporter=line` for a
-     clean 37/37 (note: use `vp exec playwright test ...`, not bare `npx playwright test` —
-     the latter was rejected mid-session for an unstated reason, `vp exec` is the toolchain
-     path used successfully here); (5) add a CP9.35 entry to this doc replacing this
-     "IN-FLIGHT" block, add tech-debt.md deferred entries for whatever's still deferred
-     (announce-transcript D6 oracle, ambiguous whether toastText wrapper survives once (1)
-     lands), update the queue marker to `✓ Toast (date)`, ONE commit (no attribution, no
-     push), mark task #50 complete. Preview server / build were confirmed fresh at the time
-     of the first run (`vp run comparison:build` succeeded, dist newer than the src edit) —
-     rebuild before resuming if `packages/solid-spectrum/src/toast/index.tsx` or the cert file
-     change again.
+- ✓ **Toast done 2026-07-06 (CP9.35 — Tier-3 overlay):** certified **37/37 green**
+  (two scenarios: `toast` box × 4 variants D1+D3+D6+D7; `toast` icon × 3 icon-bearing
+  variants D1+D3). First run was 24/37; the 13 reds resolved in three groups, each a
+  faithful realignment to `@react-spectrum/s2` source (never an oracle relaxation).
+  The port fixes from the in-flight session (2026-07-05) stand: `toastBody`
+  `role="presentation"`, the `data-solidaria-toast-content` live-region wiring, the
+  `<CenterBaseline>` glyph wrap, and the faithful `<CloseButton staticColor="white">`
+  (from `../dialog`) replacing the hand-rolled dismiss control. This session closed
+  the remaining reds:
+  1. **D7 contrast — all 8 (`span:Toasting…` React vs `div:Toasting…` Solid):** the
+     deferred `toastText` wrapper divergence, fixed at the source (option (i)). Upstream
+     renders title/description via RAC `<Text slot=…>` = `<span>`; the port's
+     `ToastTitle`/`ToastDescription` (`solidaria-components/src/Toast.tsx`) were `<div>` →
+     changed to `<span>`. `toastText` (`solid-spectrum/src/toast/index.tsx`) gained
+     `display:flex; flex-direction:column` so the now-inline span children still stack
+     (title-only paints identically). Closes the filed deferral — no D7 descriptor
+     special-casing.
+  2. **D6 AX — `neutral` (React exposes the dismiss cross as `img`, Solid didn't):**
+     root-caused to a **systematic port divergence in `createUIIcon`**, not a Toast bug.
+     Upstream ui-icons (Cross, Chevron, Checkmark, Dash, Asterisk, LinkOut) are the RAW
+     imported svg asset — the generated component spreads `{...otherProps}` onto an asset
+     that carries **no `role` and no `aria-hidden`** (verified: `S2_CrossSize100.svg` et al.
+     are bare `<svg viewBox><path/></svg>`; upstream `CloseButton.tsx` → `<CrossIcon
+size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `img`
+     (why React shows the cross), but axe's `svg-img-alt` only flags an _explicit_
+     `svg[role="img"]`, so upstream stays clean. The port's `createIconForBase` forced
+     `role="img"` **and** auto-`aria-hidden` on every icon — for ui-icons that was doubly
+     wrong: the auto-hide dropped them from the AX tree (the D6 miss), and once un-hidden
+     the forced `role="img"` tripped axe. Fix: `createUIIcon` now renders **bare** (new
+     `bare` param on `createIconForBase` — no `role`, no auto-`aria-hidden`; only what a
+     call site passes). Also removed the invented `aria-hidden="true"` the port had added to
+     `dialog/Dialog.tsx` `CloseButton`'s Cross (upstream renders it raw). Workflow icons
+     (`createIcon`) and illustrations keep `role="img"`+auto-hide — upstream `Icon.tsx` does.
+     The explicit-hide ui-icon call sites upstream keeps were verified present in the port:
+     Disclosure chevron (`aria-hidden="true"`), all 12 Field-asterisk sites
+     (`aria-hidden="true"`), SelectBoxGroup checkmark (parent `<div aria-hidden>`).
+  3. **D3 pixel — `info` variant only, both scenarios, both themes (4):** confirmed the
+     shared **D3 sub-pixel burn-down** measurement-layer artifact (below), NOT an
+     `InfoCircle`-specific diff — the two crops render the byte-identical glyph (visually
+     identical PNGs; the other 3 variants, box AX/contrast/state all pass at threshold 0),
+     drift is ≤13/26760px (box) / ≤13/7056px (icon) on a 1px-wide edge column. Scoped
+     `pixel.waivers` for the `info` case only, `maxMismatchRatio 0.002` (above the observed
+     0.00184), `maxDimensionDelta:0` — ContextualHelp precedent.
+     **Blast radius of the `createUIIcon` bare-svg fix (global — every ui-icon):** verified
+     faithful, not just Toast-local. Regenerated 5 regression snapshots (Checkbox, NumberField,
+     SearchField, ComboBox, Breadcrumbs) — each upstream renders its ui-icon raw, so losing
+     `role="img"`/`aria-hidden` is faithful churn; 2 stale ActionMenu assertions (link-out +
+     submenu chevron) realigned to `.not.toHaveAttribute("aria-hidden")` (upstream Menu.tsx
+     renders both raw). Full unit suite **270 files / 5528 green**. Re-ran the 6 certified
+     ui-icon-bearing specs (Dialog/AlertDialog/Popover close button + Checkbox/NumberField/
+     SearchField) — **178 pass**, the only 2 reds are the pre-existing deferred D4
+     event-ordering epic (Dialog escape-close ×2), unchanged. `a11y:check` **44/44** (axe
+     `svg-img-alt` gone). The `createUIIcon` over-hide is now RESOLVED (was latent across the
+     whole styled set — see tech-debt).
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
   x (409). `clonedElementScreenshot` pins the cloned frame at an integer viewport origin, but the residual
   sub-pixel PHASE of a centered glyph still differs between panels, so phase-sensitive glyph edges antialias
-  differently — a ≤0.1% edge sliver on Tooltip (CP9.28 left/right arrow) and ContextualHelp (CP9.34 `?`/`i` at
-  XS/S). This is a byte-identical-input measurement artifact, not a port divergence (proven per-unit by geometry
+  differently — a ≤0.1% edge sliver on Tooltip (CP9.28 left/right arrow), ContextualHelp (CP9.34 `?`/`i` at
+  XS/S), and Toast (CP9.35 `info` InfoCircle glyph, box + icon crops, `maxMismatchRatio 0.002`). This is a
+  byte-identical-input measurement artifact, not a port divergence (proven per-unit by geometry
   probes + byte-identical SVG/geometry + the same glyph passing byte-exact at a luckier phase). Closing it to
   zero-waiver needs the harness to snap both panels to the same sub-pixel x-phase before `clonedElementScreenshot`
   (e.g. round each panel's measured origin, or offset the clone by the panel's fractional x). Scoped per-case

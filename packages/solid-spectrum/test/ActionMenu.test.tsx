@@ -595,7 +595,10 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     const descriptor = linkItem.querySelector('[slot="descriptor"]');
     expect(descriptor).toBeInTheDocument();
-    expect(descriptor?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    // Upstream S2 renders the link-out descriptor as a RAW ui-icon (`LinkOutIcon`)
+    // with no aria-hidden at the call site — it surfaces as an unnamed `img` in the
+    // AX tree, matching react-spectrum. (parity rule #1/#2)
+    expect(descriptor?.querySelector("svg")).not.toHaveAttribute("aria-hidden");
     expect(descriptor?.querySelector("svg")).toHaveAttribute("width", "14");
 
     visibleDescriptor.unmount();
@@ -672,7 +675,9 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     const descriptor = submenuTrigger.querySelector('[slot="descriptor"]');
     expect(descriptor).toBeInTheDocument();
-    expect(descriptor?.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    // Upstream S2 renders the submenu chevron as a RAW ui-icon (`ChevronRightIcon`)
+    // with no aria-hidden at the call site. (parity rule #1/#2)
+    expect(descriptor?.querySelector("svg")).not.toHaveAttribute("aria-hidden");
     expect(descriptor?.querySelector("svg")).toHaveAttribute("width", "12");
 
     await user.hover(submenuTrigger);

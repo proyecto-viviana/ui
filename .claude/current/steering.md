@@ -29,8 +29,9 @@ component, against the live upstream oracle.
 ## Current Focus
 
 Name/surface parity is closed (all pin guards green). Depth parity is the
-recertification march: ~35/70 styled components certified (Tiers 1–2 done,
-Tier 3 in flight at Toast). The 2026-07-06 validation pass confirmed the
+recertification march: ~36/70 styled components certified (Tiers 1–2 done,
+Tier 3 with Toast done 2026-07-06, next DropZone/FileTrigger). The 2026-07-06
+validation pass confirmed the
 certified tiers are genuinely strong — and found that the biggest current risk
 is **process, not code**: CI has been dark on main since 2026-06-24, the
 release train is jammed, and live rot (7 unit failures, 2 a11y smoke failures,
@@ -51,8 +52,12 @@ then keep marching.
   cluster asserted the pre-CP9.34 heading-slot divergence; the Toolbar `End` /
   ActionBar `Home` tests asserted Home/End that CP9.3 removed as invented. Tests
   realigned to upstream + format drift fixed. check / test:run / a11y:check green.
-- **Finish Toast** (recertification CP9.35, 24/37 → green) — first D6
-  announcement evidence lands with it.
+- ~~**Finish Toast**~~ (recertification CP9.35) — DONE 2026-07-06, **37/37 green**.
+  Landed the first D6 live-region evidence (`role="alert"` in the AX tree), a D7
+  `<span>` wrapper fix, and — root-causing the D6 dismiss-cross miss — a **global**
+  bare-ui-icon fix in `createUIIcon` (no forced `role="img"`/auto-`aria-hidden`,
+  matching upstream's raw svg assets), which retired the `ui-icon-decorative-ax-node`
+  cross-cutting divergence and kept axe green. `info` glyph D3 sub-pixel waiver only.
 
 ## Next (P1 — before/into Tier 4)
 

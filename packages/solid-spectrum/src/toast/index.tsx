@@ -525,6 +525,12 @@ const toastContent = style({
 
 const toastText = style({
   minWidth: 0,
+  // Title/description are `<span>` (faithful to upstream `<Text slot="title">`,
+  // which RAC renders as a span). A flex column blockifies them so the port's
+  // optional description stacks below the title instead of flowing inline; a
+  // title-only toast (upstream's only shape) renders paint-identically.
+  display: "flex",
+  flexDirection: "column",
 });
 
 const toastDescription = style({

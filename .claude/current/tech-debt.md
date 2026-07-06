@@ -430,9 +430,29 @@ tasks:
       switch handle or when the shared form-field ref surface is standardized.
   - id: ui-icon-decorative-ax-node
     title: Reconcile decorative-icon AX exposure — React shows a bare img node, the port stamps aria-hidden
-    state: open
+    state: resolved
+    resolved: 2026-07-06
     roadmap: upstream-api-parity
     note: >-
+      RESOLVED by Toast CP9.35 (2026-07-06), globally. Root cause confirmed exactly as
+      this ticket suspected: the port's `createUIIcon` (icon/spectrum-icon.tsx) forced
+      `role="img"` + auto `aria-hidden` on every ui-icon, while upstream renders the RAW
+      imported svg asset — the generated `@react-spectrum/s2` ui-icon components spread
+      `{...otherProps}` onto an asset carrying NO `role` and NO `aria-hidden`. Fix: a new
+      `bare` mode on `createIconForBase` (passed by `createUIIcon`) drops both — ui-icons
+      now render as bare `<svg>`, exactly upstream. This also answers the ticket's open
+      axe question: Chrome exposes a bare `<svg>` as an unnamed `img` (matching React's AX
+      tree, so D6 passes), but axe's `svg-img-alt` only flags an *explicit* `svg[role="img"]`,
+      so removing the forced role keeps a11y:smoke green (44/44 re-verified) — the previous
+      auto-`aria-hidden` was NOT load-bearing for axe. Workflow icons (`createIcon`) and
+      illustrations keep `role="img"`+auto-hide (upstream `Icon.tsx` does). Blast radius
+      verified faithful: 5 regression snapshots regenerated (Checkbox/NumberField/SearchField/
+      ComboBox/Breadcrumbs — each renders its ui-icon raw upstream), 2 ActionMenu assertions
+      realigned (Menu.tsx renders link-out + submenu chevron raw), full unit suite 270 files/
+      5528 green, 6 ui-icon certified specs 178 pass. The per-component D6 route-arounds noted
+      below (Checkbox roots.control, SearchField read-only case) are now unnecessary but were
+      left in place — they still certify correctly and can be un-scoped opportunistically on
+      each component's next recert. ORIGINAL NOTE follows:
       Surfaced by the Checkbox recertification (CP9.15): upstream exposes the decorative
       Checkmark/Dash <svg> inside the box as a bare `img` accessibility node, while the
       port stamps `aria-hidden` on it so the node is absent from the AX tree. D6 (AX)
@@ -661,15 +681,19 @@ tasks:
       batching, or (b) normalize orderings in the D4 oracle and document the
       divergence as structural. Owner decision; gates the Tier 4 march start.
   - id: d6-announcement-calibration
-    title: First passing live-region announcement evidence — calibrate D6 announcements via Toast
+    title: Live-transcript announcement oracle over a body-portaled toast (structural live-region done)
     state: open
     roadmap: recertification
     note: >-
-      Announcements have never had a passing test anywhere in the repo. Toast
-      (CP9.35 in flight) is the natural calibration target — live-region semantics
-      are its core a11y contract. Exit: a D6 announcement pair assertion green in
-      the Toast certified spec, and the technique documented in recertification.md
-      for reuse.
+      PARTIALLY CLOSED by Toast CP9.35 (2026-07-06). The structural half is done:
+      the D6 AX driver certifies the `role="alert"` live region appearing in the
+      Toast alertdialog subtree (the announce-on-appear surface), green in
+      toast.certified.spec.ts. What remains is the *transcript* oracle — asserting
+      the announced string is spoken into the live region on add/remove — over a
+      body-portaled toast whose queue lives in a separate module instance per panel.
+      That is an announcement-mechanism assertion, not a live-region-structure one,
+      and needs its own harness; deferred as its own follow-up rather than blocking
+      the paint/AX cert.
   - id: dnd-subsystem-port
     title: Port the drag-and-drop subsystem (6 missing S2 exports; TableView/TreeView/GridList DnD)
     state: open
@@ -880,10 +904,10 @@ The recertification harness runs D1–D8 only. Consequences, found 2026-07-06:
   (`d4-event-ordering-decision`): 5 deferred reds on Tabs/Dialog trace to React
   batched-effects vs Solid synchronous updates; collections multiply the
   exposure, and per-component waivers would rot into noise.
-- **Live-region announcements have never had a passing test**
-  (`d6-announcement-calibration`): the D6 driver covers AX-tree shape but no
-  announcement assertion has ever gone green. Toast (in flight, CP9.35) is the
-  calibration target.
+- **Live-region announcements — structure certified, transcript oracle deferred**
+  (`d6-announcement-calibration`): Toast CP9.35 (done 2026-07-06) certifies the
+  `role="alert"` live region in the AX tree (structural). The transcript oracle
+  (asserting the spoken string on add/remove over a body-portaled toast) remains.
 
 **Exit:** each per the task notes above; collectively, the certified suite runs
 D1–D10 and at least one announcement pair assertion is green.

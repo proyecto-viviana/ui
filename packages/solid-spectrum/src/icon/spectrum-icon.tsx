@@ -114,13 +114,24 @@ export function createUIIcon(
   Component: Component<SpectrumSvgComponentProps>,
   context = IconContext,
 ) {
-  return createIconForBase(Component, context, uiIconBaseStyles);
+  // UI icons (Cross, Chevron, Checkmark, …) are rendered as the RAW svg upstream
+  // (`@react-spectrum/s2` imports `../ui-icons/*` directly — the generated
+  // components spread `{...otherProps}` onto the imported asset and never pass
+  // through the `Icon` wrapper). Those assets carry NO `role` and NO `aria-hidden`,
+  // so upstream ui-icons are bare `<svg>`: Chrome still exposes them as unnamed
+  // `img` nodes (matching the CloseButton cross React shows in the AX tree), but
+  // axe's `svg-img-alt` rule only flags an *explicit* `svg[role="img"]`, so
+  // upstream stays clean. Mirror that exactly — `bare` mode drops the forced
+  // `role="img"` and the auto `aria-hidden`; only pass what a call site asks for.
+  // (parity rule #1/#2)
+  return createIconForBase(Component, context, uiIconBaseStyles, true);
 }
 
 function createIconForBase(
   Component: Component<SpectrumSvgComponentProps>,
   context: typeof IconContext,
   baseStyles: typeof iconBaseStyles,
+  bare = false,
 ) {
   return (props: SpectrumIconProps): JSX.Element => {
     const ctx = useContext(context);
@@ -159,7 +170,7 @@ function createIconForBase(
         .join(" ");
 
     const ariaHidden = () => {
-      if (local["aria-label"]) {
+      if (local["aria-label"] || bare) {
         return local["aria-hidden"] || undefined;
       }
 
@@ -171,7 +182,7 @@ function createIconForBase(
         {...rest}
         ref={mergeContextRefs((rest as { ref?: RefLike<SVGSVGElement> }).ref, skeletonRef)}
         focusable={false}
-        role="img"
+        role={bare ? undefined : "img"}
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
         data-slot={slot()}

@@ -963,7 +963,13 @@ export function CloseButton(props: CloseButtonProps): JSX.Element {
       class={getClassName}
       style={getPressScaleStyle}
     >
-      <CrossIcon size={closeButtonIconSize[local.size ?? "M"]} aria-hidden="true" />
+      {/*
+        Raw ui-icon, no aria-hidden — mirrors upstream S2 CloseButton.tsx
+        (`<CrossIcon size={props.size} />`). The cross surfaces as an unnamed
+        `img` inside the aria-labelled dismiss button, exactly as React does.
+        (parity rule #1/#2)
+      */}
+      <CrossIcon size={closeButtonIconSize[local.size ?? "M"]} />
     </HeadlessButton>
   );
 }

@@ -562,10 +562,14 @@ export function ToastTitle(props: ToastTitleProps): JSX.Element {
   const context = useContext(ToastAriaContext);
   const { ref: _ref, ...ariaTitleProps } = (context?.titleProps ?? {}) as Record<string, unknown>;
 
+  // Upstream S2 Toast renders the title via `<Text slot="title">`, and RAC `Text`
+  // defaults to `elementType="span"` — so the title's text-node container is a
+  // `<span>`, not a `<div>`. Mirror that (the D7 contrast descriptor keys on the
+  // container tag name; a `<div>` here diverged on every variant × theme). (parity rule #1/#2)
   return (
-    <div data-solidaria-toast-title="" {...ariaTitleProps} class={props.class} style={props.style}>
+    <span data-solidaria-toast-title="" {...ariaTitleProps} class={props.class} style={props.style}>
       {props.children}
-    </div>
+    </span>
   );
 }
 
@@ -585,15 +589,18 @@ export function ToastDescription(props: ToastDescriptionProps): JSX.Element {
     unknown
   >;
 
+  // Match the title: upstream toast text is rendered in `<span>` elements (RAC
+  // `Text`). The port additionally supports a description (upstream S2 has only a
+  // title); keep it as a `<span>` sibling so its text-node container tag is faithful.
   return (
-    <div
+    <span
       data-solidaria-toast-description=""
       {...ariaDescriptionProps}
       class={props.class}
       style={props.style}
     >
       {props.children}
-    </div>
+    </span>
   );
 }
 

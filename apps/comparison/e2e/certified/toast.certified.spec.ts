@@ -120,6 +120,20 @@ const toastCloseButton: TargetResolver = ({ page }) =>
 const toastIcon: TargetResolver = ({ page }) =>
   page.getByRole("alertdialog").locator("svg").first();
 
+// D3 sub-pixel waiver — same artifact as `contextualhelp-trigger-glyph-subpixel`.
+// The `info` variant's InfoCircle workflow-icon glyph is byte-identical to React's
+// (same S2 asset, same size/fill/color — verified: the box AX/contrast/state drivers
+// and the other three variants pass at threshold 0), but the two comparison panels
+// lay out at a half-pixel x-offset, so the glyph rasterizes at a different sub-pixel
+// phase and one column of edge-AA pixels drifts: ≤13/26760px on the box crop,
+// ≤13/7056px on the tighter glyph crop. Dimensions match exactly (maxDimensionDelta:0),
+// so a real geometry/asset regression still fails. Scoped to `info` only; tracked in
+// recertification.md D3 sub-pixel burn-down (a shared measurement-layer x-phase fix
+// retires this and the ContextualHelp waiver together).
+const glyphSubpixel = { maxMismatchRatio: 0.002, maxDimensionDelta: 0, pixelThreshold: 0 };
+const glyphSubpixelReason =
+  "toast-info-glyph-subpixel: byte-identical InfoCircle workflow-icon glyph drifts ≤13/7056px at the edge under the comparison panels' sub-pixel x-phase mismatch (same artifact as contextualhelp-trigger-glyph-subpixel)";
+
 /** Scenario 1 — the toast box across the four variants. Certifies the per-variant
  *  background/radius/shadow/padding/font (the default allowlist plus the box's
  *  min-height/max-width/box-sizing constraints) and the faithful close button. */
@@ -143,6 +157,17 @@ const toastScenario: DriverScenario = {
   },
   styleProps: {
     add: ["min-height", "max-width", "box-sizing"],
+  },
+  pixel: {
+    waivers: [
+      {
+        caseId: "info",
+        state: "*",
+        theme: "*",
+        threshold: glyphSubpixel,
+        reason: glyphSubpixelReason,
+      },
+    ],
   },
   // D6: the `role="alertdialog"` subtree — the accessible name (title), the
   // `role="alert"` content live region, and the RAC dismiss button. Structure is
@@ -175,6 +200,17 @@ const toastIconScenario: DriverScenario = {
     { id: "negative", params: { variant: "negative" } },
     { id: "info", params: { variant: "info" } },
   ],
+  pixel: {
+    waivers: [
+      {
+        caseId: "info",
+        state: "*",
+        theme: "*",
+        threshold: glyphSubpixel,
+        reason: glyphSubpixelReason,
+      },
+    ],
+  },
 };
 
 registerStateMatrixDriver(toastScenario);

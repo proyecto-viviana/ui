@@ -58,10 +58,11 @@ next task and which workstreams are live.
 
 ## Current priorities
 
-0. **P0 stabilization first** (steering.md Now): `ci-main-gate-wiring`,
-   `release-train-unjam`, `main-rot-burndown-2026-07` (all in `tech-debt.md`),
-   and finishing Toast (CP9.35). Everything below waits on a green, CI-covered
-   main.
+0. **P0 stabilization first** (steering.md Now): `ci-main-gate-wiring` and
+   `release-train-unjam` (both in `tech-debt.md`) remain — both blocked on an
+   owner push/publish. `main-rot-burndown-2026-07` (done 2026-07-06) and Toast
+   CP9.35 (done 2026-07-06, 37/37) are cleared. Everything below waits on a
+   green, CI-covered main.
 1. The recertification program (`recertification.md`) is the plan of record:
    the per-component red→green march, Tier 3 in flight. Pick its topmost
    unchecked item; note the two owner decisions gating Tier 4 (D4 policy,
@@ -80,8 +81,8 @@ next task and which workstreams are live.
 ## Active workstreams
 
 - **Recertification march** — the plan of record (`recertification.md`): Tiers
-  1–2 complete (28 components), Tier 3 at Toast; then DropZone/FileTrigger,
-  then Tier 4 starting with Picker.
+  1–2 complete (28 components), Tier 3 with Toast done (CP9.35); next
+  DropZone/FileTrigger, then Tier 4 starting with Picker.
 - **Pipeline stabilization** _(opened 2026-07-06)_ — CI-on-main, release-train
   unjam, live-rot burndown; tickets in `tech-debt.md`, direction in
   `steering.md` Now.
