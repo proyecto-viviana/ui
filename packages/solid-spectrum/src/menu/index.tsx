@@ -140,7 +140,7 @@ export interface MenuProps<T> extends Omit<HeadlessMenuProps<T>, "class" | "styl
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
   /** Ref for the menu element. */
-  ref?: RefLike<HTMLUListElement>;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface MenuItemProps<T> extends Omit<
@@ -155,8 +155,8 @@ export interface MenuItemProps<T> extends Omit<
   UNSAFE_className?: string;
   /** Additional inline styles. Use only as a last resort. */
   UNSAFE_style?: JSX.CSSProperties;
-  /** Ref for the menu item element. */
-  ref?: RefLike<HTMLLIElement>;
+  /** Ref for the menu item element (a `<div>`, or an `<a>` for link items). */
+  ref?: RefLike<HTMLElement>;
   /**
    * Optional icon to display before the label.
    * Use a function returning JSX for SSR compatibility: `icon={() => <MyIcon />}`
@@ -580,7 +580,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const isLinkOut = () => headlessProps.href != null && headlessProps.target === "_blank";
   const chevronStyle = () =>
     locale().direction === "rtl" ? ({ transform: "scaleX(-1)" } as JSX.CSSProperties) : undefined;
-  const [itemElement, setItemElement] = createSignal<HTMLLIElement | null>(null);
+  const [itemElement, setItemElement] = createSignal<HTMLElement | null>(null);
   const mergedStyles = () => (typeof local.styles === "function" ? local.styles() : local.styles);
 
   const getClassName = (renderProps: MenuItemRenderProps): string => {
@@ -786,7 +786,7 @@ export interface MenuSeparatorProps {
  * A visual separator between menu items.
  */
 export function MenuSeparator(props: MenuSeparatorProps): JSX.Element {
-  return <li role="separator" class={`my-1 border-t border-primary-600 ${props.class ?? ""}`} />;
+  return <div role="separator" class={`my-1 border-t border-primary-600 ${props.class ?? ""}`} />;
 }
 
 function ChevronIcon(props: { class?: string }): JSX.Element {

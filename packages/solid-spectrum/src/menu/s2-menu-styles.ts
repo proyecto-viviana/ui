@@ -135,8 +135,9 @@ export const menu = style<MenuRenderProps & S2MenuStyleProps>({
   fontFamily: "sans",
   fontSize: controlFont(),
   gridAutoRows: "min-content",
+  // The menu root is a `<div role="menu">` (faithful to upstream RAC), so no
+  // list-element compensation is needed; `margin: 0` matches upstream's div.
   margin: 0,
-  listStyleType: "none",
 });
 
 export const menuItem = style<S2MenuItemStyleProps>({

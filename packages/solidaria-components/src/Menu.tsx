@@ -128,10 +128,10 @@ export interface MenuProps<T>
   /** Whether the menu should close when an item is selected. */
   shouldCloseOnSelect?: boolean;
   /** Ref for the menu element. */
-  ref?: RefLike<HTMLUListElement>;
+  ref?: RefLike<HTMLDivElement>;
   /** Custom renderer for the menu element. */
   render?: (
-    props: JSX.HTMLAttributes<HTMLUListElement>,
+    props: JSX.HTMLAttributes<HTMLDivElement>,
     renderProps: MenuRenderProps,
   ) => JSX.Element;
   /** Drag and drop hooks from `useDragAndDrop`. */
@@ -189,11 +189,11 @@ export interface MenuItemProps<T>
   onHoverEnd?: () => void;
   /** Handler called when hover state changes. */
   onHoverChange?: (isHovered: boolean) => void;
-  /** Ref for the menu item element. */
-  ref?: RefLike<HTMLLIElement>;
+  /** Ref for the menu item element (a `<div>`, or an `<a>` for link items). */
+  ref?: RefLike<HTMLElement>;
   /** Custom renderer for the menu item element. */
   render?: (
-    props: JSX.HTMLAttributes<HTMLLIElement>,
+    props: JSX.HTMLAttributes<HTMLElement>,
     renderProps: MenuItemRenderProps,
   ) => JSX.Element;
 }
@@ -261,7 +261,7 @@ interface MenuItemContextValue {
   props?: () => JSX.HTMLAttributes<HTMLElement>;
   closeOnSelect?: boolean;
   onAction?: () => void;
-  setItemRef?: (el: HTMLLIElement | null) => void;
+  setItemRef?: (el: HTMLElement | null) => void;
 }
 
 interface StaticMenuCollectionItem {
@@ -400,7 +400,7 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
     },
   });
 
-  let triggerRef: HTMLLIElement | null = null;
+  let triggerRef: HTMLElement | null = null;
   const triggerId = createUniqueId();
   const menuId = createUniqueId();
   let hoverTimeout: number | undefined;
@@ -479,7 +479,7 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
     },
     triggerRef: () => triggerRef,
     setTriggerRef: (el: HTMLElement | null) => {
-      triggerRef = el as HTMLLIElement | null;
+      triggerRef = el;
     },
     triggerId,
     trigger: "SubmenuTrigger",
@@ -699,7 +699,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
 
   const triggerContext = useContext(MenuTriggerContext);
 
-  const [menuRef, setMenuRef] = createSignal<HTMLUListElement | null>(null);
+  const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
   const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
   const staticItemMap = new Map<Key, StaticMenuCollectionItem>();
   const sectionSelectionMap = new Map<Key, MenuSectionSelectionContextValue>();
@@ -935,7 +935,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     const { ref: _ref4, ...rest } = labelProps as Record<string, unknown>;
     return rest;
   };
-  const setResolvedMenuRef = (el: HTMLUListElement): void => {
+  const setResolvedMenuRef = (el: HTMLDivElement): void => {
     setMenuRef(el);
     assignRef(local.ref, el);
   };
@@ -1139,24 +1139,24 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const menuListChildren = () => (
     <SharedElementTransition>
       {state.collection().size === 0 && !usesStaticChildren() && local.renderEmptyState ? (
-        <li role="presentation" data-empty-state>
+        <div role="presentation" data-empty-state>
           <div role="menuitem" style={{ display: "contents" }}>
             {local.renderEmptyState()}
           </div>
-        </li>
+        </div>
       ) : usesStaticChildren() ? (
         renderStaticChildren()
       ) : hasSections() ? (
         <For each={sectionedRenderEntries()}>
           {(entry) =>
             entry.type === "section" ? (
-              <li role="presentation" data-section-wrapper>
+              <div role="presentation" data-section-wrapper>
                 <Section class="solidaria-Menu-section">
                   {entry.section.title != null && (
                     <Header class="solidaria-Menu-sectionHeader">{entry.section.title}</Header>
                   )}
                   <Group class="solidaria-Menu-sectionGroup">
-                    <ul role="group" aria-label={entry.section["aria-label"]}>
+                    <div role="group" aria-label={entry.section["aria-label"]}>
                       <For each={entry.items}>
                         {(indexedItem) => (
                           <>
@@ -1170,10 +1170,10 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                           </>
                         )}
                       </For>
-                    </ul>
+                    </div>
                   </Group>
                 </Section>
-              </li>
+              </div>
             ) : (
               <>
                 {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
@@ -1187,7 +1187,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       ) : (
         <>
           {virtualRange()?.offsetTop ? (
-            <li
+            <div
               role="presentation"
               aria-hidden="true"
               style={{ height: `${virtualRange()!.offsetTop}px` }}
@@ -1214,7 +1214,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
             }}
           </For>
           {virtualRange()?.offsetBottom ? (
-            <li
+            <div
               role="presentation"
               aria-hidden="true"
               style={{ height: `${virtualRange()!.offsetBottom}px` }}
@@ -1243,7 +1243,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       "data-empty": state.collection().size === 0 || undefined,
       "data-drop-target": isRootDropTarget() || undefined,
       children: menuListChildren(),
-    }) as JSX.HTMLAttributes<HTMLUListElement>;
+    }) as JSX.HTMLAttributes<HTMLDivElement>;
 
   // Only use FocusScope when inside a MenuTrigger (for popover behavior)
   // Standalone menus don't need focus restoration
@@ -1274,7 +1274,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                     {local.render ? (
                       local.render(menuListProps(), renderValues())
                     ) : (
-                      <ul
+                      <div
                         ref={setResolvedMenuRef}
                         {...mergeProps(
                           domProps(),
@@ -1294,7 +1294,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                         data-drop-target={isRootDropTarget() || undefined}
                       >
                         {menuListChildren()}
-                      </ul>
+                      </div>
                     )}
                   </>
                 </CollectionRendererContext.Provider>
@@ -1351,7 +1351,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const sectionSelection = useContext(MenuSectionSelectionContext);
   const sectionSelectionRegistry = useContext(MenuSectionSelectionRegistryContext);
   const itemCloseRegistry = useContext(MenuItemCloseRegistryContext);
-  // Tracks the focusable menuitem element (the <li>, or the inner <a> for link
+  // Tracks the focusable menuitem element (the <div>, or the <a> for link
   // items) so roving focus can be moved onto it imperatively.
   const [ref, setRef] = createSignal<HTMLElement | null>(null);
   const contextProps = () => itemContext?.props?.() ?? {};
@@ -1632,7 +1632,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     ) : (
       renderProps.renderChildren()
     );
-  const setResolvedItemRef = (el: HTMLLIElement | null) => {
+  const setResolvedItemRef = (el: HTMLElement | null) => {
     setRef(el);
     itemContext?.setItemRef?.(el);
     if (el) assignRef(local.ref, el);
@@ -1652,7 +1652,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       style: renderProps.style(),
       ...dataAttrs(),
       children: childContent(),
-    }) as JSX.HTMLAttributes<HTMLLIElement>;
+    }) as JSX.HTMLAttributes<HTMLElement>;
   const linkMenuItemProps = () =>
     ({
       ...mergeProps(
@@ -1668,7 +1668,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       style: renderProps.style(),
       ...dataAttrs(),
       children: childContent(),
-    }) as JSX.HTMLAttributes<HTMLLIElement>;
+    }) as JSX.HTMLAttributes<HTMLElement>;
 
   if (local.render && !isLink()) {
     return local.render(menuItemProps(), renderValues());
@@ -1678,7 +1678,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     <Show
       when={isLink()}
       fallback={
-        <li
+        <div
           ref={(el) => {
             setRef(el);
             itemContext?.setItemRef?.(el);
@@ -1697,41 +1697,36 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
           {...dataAttrs()}
         >
           {childContent()}
-        </li>
+        </div>
       }
     >
-      <li
-        ref={(el) => {
-          setRef(el);
-          itemContext?.setItemRef?.(el);
-          assignRef(local.ref, el);
-        }}
-        role="presentation"
-      >
-        {local.render ? (
-          local.render(linkMenuItemProps(), renderValues())
-        ) : (
-          <a
-            // Point the focus ref at the actual focusable menuitem (the <a>),
-            // not the presentation <li> wrapper, so roving focus lands correctly.
-            ref={(el) => setRef(el)}
-            {...mergeProps(
-              cleanItemPropsForLink(),
-              contextProps() as Record<string, unknown>,
-              domProps(),
-              cleanHoverProps(),
-              linkDomProps(),
-              (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
-              (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
-            )}
-            class={renderProps.class()}
-            style={renderProps.style()}
-            {...dataAttrs()}
-          >
-            {childContent()}
-          </a>
-        )}
-      </li>
+      {local.render ? (
+        local.render(linkMenuItemProps(), renderValues())
+      ) : (
+        // Upstream renders the link menuitem as a bare <a role="menuitem"> (no
+        // presentation wrapper); the <div> root makes the wrapper unnecessary.
+        <a
+          ref={(el) => {
+            setRef(el);
+            itemContext?.setItemRef?.(el);
+            assignRef(local.ref, el);
+          }}
+          {...mergeProps(
+            cleanItemPropsForLink(),
+            contextProps() as Record<string, unknown>,
+            domProps(),
+            cleanHoverProps(),
+            linkDomProps(),
+            (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
+            (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
+          )}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          {...dataAttrs()}
+        >
+          {childContent()}
+        </a>
+      )}
     </Show>
   );
 }

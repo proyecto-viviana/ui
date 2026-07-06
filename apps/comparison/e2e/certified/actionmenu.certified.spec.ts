@@ -37,9 +37,9 @@ import { expect } from "@playwright/test";
  * SCOPE — applicable drivers: D1 (trigger button + item parts), D3 (pixel:
  * icon-only trigger glyph + painted list), D7 (contrast: item copy on `layer-2`).
  * The LIST scenario carries CP9.32's tracked/deferred artifacts UNCHANGED:
- *   - `styleProps.remove:["outline-color"]` — an unobservable computed-style
- *     artifact of the deferred `<div>`(upstream RAC)-vs-`<ul>`(port) element-type
- *     divergence (`outline-style:none` on both, zero paint; see CP9.32).
+ *   - `styleProps.remove:["outline-color"]` — an unobservable computed-style channel
+ *     (both stacks now `<div role="menu">`; `outline-style:none` on both, zero paint).
+ *     A `color`-inheritance delta, NOT retired by the ul→div refactor (see CP9.37).
  *   - D6 (AX): the item accessible DESCRIPTION gap (stripped `aria-describedby` /
  *     unassigned description+keyboard ids) is the same shared two-context `Text`
  *     delegation follow-up as Menu — deferred, registered when that unit lands.
@@ -133,10 +133,10 @@ const listScenario: DriverScenario = {
     icon: itemIcon,
   },
   // Add the list-box constraints beyond the default allowlist (`max-width` cap +
-  // both `overflow` axes); remove the unobservable `outline-color` computed
-  // artifact of the deferred `<div>`-vs-`<ul>` element-type divergence (CP9.32 —
+  // both `overflow` axes); remove the unobservable `outline-color` channel — a
+  // `color`-inheritance delta (both stacks now `<div role="menu">`;
   // `outline-style:none` on both, zero paint; `outline-style`/`outline-width` stay
-  // asserted). Dropped when the tracked `ul`->`div` refactor lands.
+  // asserted). NOT retired by the ul→div refactor (CP9.37); tracked separately.
   styleProps: {
     add: ["max-width", "overflow-x", "overflow-y"],
     remove: ["outline-color"],

@@ -2382,8 +2382,9 @@ rgb(219,219,219))` fill). Regenerated AlertDiamond to match — the correct fix 
      `description` has NO `transition`. Removed the line.
      After those three, D1's remaining red was `outline-color` (React `rgb(16,16,16)` theme-invariant vs Solid
      `currentColor`). Root-caused via a matches-based rule probe: **neither element carries any outline-color
-     CSS rule and both compute `outline-style:none`** — the delta is a pure `<div>`(upstream RAC)-vs-`<ul>`(port)
-     UA computed-value quirk with **zero paint** (D3 confirms 6/6). Excluded via `styleProps.remove:
+     CSS rule and both compute `outline-style:none`** — a **zero paint** channel (D3 confirms 6/6). [CP9.32
+     mis-attributed this to a `<div>`-vs-`<ul>` UA quirk; CP9.37 disproved that — it is a `color`-inheritance
+     delta, still zero-paint, and the removal stays.] Excluded via `styleProps.remove:
 ["outline-color"]` (keeping `outline-style`/`outline-width`, both `none`/`0`, so the "no outline" contract
      is still certified); the removal is dropped when the tracked `ul`→`div` refactor lands. `vp test run menu`
      stayed `215/215` green (no snapshot captured the changed `transition`/`overflow` atomics).
@@ -2392,8 +2393,9 @@ rgb(219,219,219))` fill). Regenerated AlertDiamond to match — the correct fix 
     the port renders `<ul role="menu">` (+ `<ul role="group">` sections, `<li>` items), compensated with
     `margin:0`/`list-style-type:none` resets so the box paints identically. The faithful fix is the
     structural `ul`/`li`→`div` swap in headless `Menu.tsx` (+ roving-focus refs + Menu/ActionMenu/submenu/
-    section snapshots) — its own unit + regression sweep, not an overlay commit. Owns the `outline-color`
-    artifact above.
+    section snapshots) — its own unit + regression sweep, not an overlay commit. **DONE 2026-07-06 (CP9.37).**
+    CORRECTION: this refactor was expected to also retire the `outline-color` artifact above, but did NOT — that
+    divergence is a `color`-inheritance delta independent of the element type (see CP9.37); the removal stays.
   - **D6 accessible description / two-context `Text` delegation.** Menu role/name + `menuitem` roles match,
     but item accessible DESCRIPTION is absent (`aria-describedby` stripped; description/keyboard elements get
     no ids). Faithful repair = restore upstream's two-context `Text`/`Keyboard` delegation (headless MenuItem
@@ -2556,6 +2558,36 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      **Tier 3 complete** (10 overlay/box units); the pre-march `dropzone-visual.spec.ts`
      stays as the drag/drop behavioural + callback-count coverage this paint cert doesn't
      duplicate.
+
+- ✓ **Menu/ActionMenu ul→div element-type parity done 2026-07-06 (CP9.37 — Tier-3 backfill):** landed the
+  structural `ul`/`li`→`div` swap the CP9.32 Menu entry deferred (`menu-actionmenu-d5-d6-backfill`, phase 1).
+  Headless `Menu.tsx` now renders `<div role="menu">` root + `<div role="group">` sections + `<div role="menuitem">`
+  items (bare `<a role="menuitem">` for links, no `<li>` presentation wrapper), the S2 `MenuSeparator` is a
+  `<div>`, and `s2-menu-styles.ts` drops the `list-style-type:none` reset (kept `margin:0`, which matches
+  upstream's div). Ref types updated (`HTMLUListElement`/`HTMLLIElement`→`HTMLElement`), unit suites regenerated
+  green (`solidaria-components/Menu` 105, `solid-spectrum/Menu` 62, `regression` snapshot 51 — the Menu/ActionMenu
+  snapshots now show `<div role="menu">`/`<div role="menuitem">` and lost the list-style-type class). Certified
+  menu+actionmenu stayed **44/44 green** (D1/D3/D7 unaffected — the div box paints identically). This closes the
+  `tag`-field divergence that D5 focus-trail and D6 AX-tree snapshots key on, so it is the prerequisite for both.
+  **TWO premises of the CP9.32 plan were DISPROVEN by this landing and are corrected here:**
+  1. **ul→div does NOT retire the `outline-color` workaround.** CP9.32 charged the `outline-color` divergence
+     (upstream `rgb(16,16,16)` vs port `currentColor`) to a `<ul>`-vs-`<div>` UA quirk and said the refactor would
+     retire it. FALSE: verified empirically the port `<div role="menu">` STILL resolves `outline-color:currentColor`
+     (`light-dark(rgb(41,41,41), rgb(219,219,219))`) vs upstream's `rgb(16,16,16)` — dropping `styleProps.remove:
+     ["outline-color"]` fails 12 D1 cases. The real cause is a `color`-INHERITANCE delta (both unpainted,
+     `outline-style:none`), independent of the element type. The removal STAYS; closing it for real means aligning
+     the menu root's inherited `color`, tracked separately (zero paint effect, low priority).
+  2. **ul→div does NOT make D5 green on its own.** With `tag` parity fixed, the D5 focus-trail driver surfaces
+     THREE deeper divergences the refactor does not touch: (a) the hand-rolled popover's `role="dialog"` wrapper
+     has no accessible name in the port (the deferred popover-surface gap, captured because `snapshotFocus` walks
+     the WHOLE overlay with no root/subtree scope); (b) the menu CONTAINER roving `tabindex` reads `-1` (react) vs
+     `0` (solid) because under the driver's programmatic `start.focus()` + pointer modality (from the `.click()`
+     open) `manager.focusedKey` stays `null` in the port; (c) item navigation diverges (ArrowDown lands Copy vs
+     Delete). (b)/(c) mirror the documented GridList programmatic-focus artifact (memory: "enter via a real Tab
+     instead") — so they may be DRIVER artifacts (programmatic focus is the known-bad pattern) rather than real
+     port bugs, but disambiguating needs either a driver enhancement (root-scoped roving snapshot + keyboard entry
+     instead of `.focus()`) or a real focus-sync investigation. **D5/D6 remain deferred pending that fork**
+     (`menu-actionmenu-d5-d6-backfill` phase 2/3, still open); this CP9.37 lands only the structural prerequisite.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

@@ -153,22 +153,22 @@ const listScenario: DriverScenario = {
   // `overflow-x`/`overflow-y` pair (upstream's popover `overflow:auto` on both
   // axes).
   //
-  // REMOVE `outline-color`: it is an UNOBSERVABLE computed-style artifact of the
-  // deferred element-type divergence, not an independent style bug. Upstream (RAC)
-  // renders the menu as `<div role="menu">`; the port renders `<ul role="menu">`
-  // (+ `<li>` items, compensated with `margin:0`/`list-style-type:none` so the box
-  // paints identically — D3 confirms). Neither element carries ANY outline-color
-  // CSS rule, and both compute `outline-style: none`, so nothing paints. Chromium
-  // still reports a computed `outline-color`: for upstream's `<div>` it resolves to
-  // a theme-invariant UA value (`rgb(16,16,16)`), for the port's `<ul>` it resolves
-  // to `currentColor` (the neutral text color, `light-dark(rgb(41,41,41),
-  // rgb(219,219,219))`). That delta is a pure `<div>`-vs-`<ul>` UA quirk with zero
-  // visual effect. `outline-style` + `outline-width` STAY in the comparison (both
-  // `none`/`0` on both stacks), so the "menu list paints no outline" contract is
-  // still certified; only the unpainted `outline-color` channel is excluded. When
-  // the tracked `<ul>`→`<div>` structural refactor lands (recertification.md
-  // CP9.32, "Menu ul→div element-type parity"), this removal is dropped and
-  // `outline-color` matches natively.
+  // REMOVE `outline-color`: it is an UNOBSERVABLE computed-style channel, not an
+  // independent style bug. Both stacks now render the menu as `<div role="menu">`
+  // (the ul→div element-type refactor landed — recertification.md CP9.37) and
+  // NEITHER element carries ANY outline-color CSS rule; both compute
+  // `outline-style: none`, so nothing paints. Chromium still reports a computed
+  // `outline-color`: upstream resolves it to a theme-invariant value
+  // (`rgb(16,16,16)`), the port to `currentColor` (the neutral menu text color,
+  // `light-dark(rgb(41,41,41), rgb(219,219,219))`). This is a `color`-INHERITANCE
+  // delta, NOT the `<ul>`-vs-`<div>` UA quirk it was first charged to: the div↔div
+  // refactor did NOT retire it (verified empirically — dropping this removal fails
+  // 12 D1 cases with `outline-color` `rgb(16,16,16)`↔`currentColor`). `outline-style`
+  // + `outline-width` STAY in the comparison (both `none`/`0` on both stacks), so
+  // the "menu list paints no outline" contract is still certified; only the
+  // unpainted `outline-color` channel is excluded. Closing it for real means
+  // aligning the menu root's inherited `color` so `currentColor` matches upstream's
+  // value — tracked separately, zero paint effect.
   styleProps: {
     add: ["max-width", "overflow-x", "overflow-y"],
     remove: ["outline-color"],

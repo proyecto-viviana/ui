@@ -357,7 +357,7 @@ describe("Menu (solid-spectrum)", () => {
 
       const menu = screen.getByRole("menu");
       expect(menu).toBeInTheDocument();
-      expect(menu.tagName).toBe("UL");
+      expect(menu.tagName).toBe("DIV");
     });
 
     it("applies generated S2 menu styles for size variants", () => {
@@ -473,7 +473,7 @@ describe("Menu (solid-spectrum)", () => {
     });
 
     it("supports MenuContext slots, refs, unsafe classes, and unsafe styles", () => {
-      let menuElement: HTMLUListElement | undefined;
+      let menuElement: HTMLDivElement | undefined;
       render(() => (
         <MenuContext.Provider
           value={{

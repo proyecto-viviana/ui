@@ -417,9 +417,9 @@ describe("Menu", () => {
     });
 
     it("should support refs", () => {
-      let menuRef: HTMLUListElement | null = null;
+      let menuRef: HTMLDivElement | null = null;
       let sectionRef: HTMLDivElement | null = null;
-      let itemRef: HTMLLIElement | null = null;
+      let itemRef: HTMLElement | null = null;
 
       render(() => (
         <Menu<TestItem>
@@ -1850,10 +1850,9 @@ describe("MenuTrigger", () => {
       expect(items[1]).toHaveAttribute("href", "https://example.com/dog");
       expect(items[2]).toHaveAttribute("href", "https://example.com/kangaroo");
 
-      // The <a> should be wrapped in a <li> with role="presentation"
-      const listItems = items[0].closest("li");
-      expect(listItems).toBeTruthy();
-      expect(listItems!.getAttribute("role")).toBe("presentation");
+      // Upstream renders the link menuitem as a bare <a role="menuitem"> with no
+      // presentation wrapper (the menu root is a <div role="menu">).
+      expect(items[0].closest("li")).toBeNull();
     });
 
     it("MenuItem with href supports target and rel", () => {
@@ -1936,9 +1935,9 @@ describe("MenuTrigger", () => {
       const items = screen.getAllByRole("menuitem");
       expect(items).toHaveLength(3);
 
-      // Each menuitem should be an <li> element (not <a>)
+      // Each non-link menuitem is a <div> element (not <a>), matching upstream RAC.
       for (const item of items) {
-        expect(item.tagName).toBe("LI");
+        expect(item.tagName).toBe("DIV");
         expect(item).not.toHaveAttribute("href");
       }
     });
