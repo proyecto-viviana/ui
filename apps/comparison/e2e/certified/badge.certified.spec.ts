@@ -46,8 +46,7 @@ const badgeScenario: DriverScenario = {
   // diffed here directly. `.last()` resolves the text span in every case (for
   // `icon-start` the DOM order is [icon-center-span, text-span]).
   parts: {
-    text: ({ canvas }) =>
-      canvas.locator('[data-comparison-control-root="badge"] span').last(),
+    text: ({ canvas }) => canvas.locator('[data-comparison-control-root="badge"] span').last(),
   },
   cases: [
     { id: "default", params: {} },

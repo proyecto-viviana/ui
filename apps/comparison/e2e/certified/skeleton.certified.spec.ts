@@ -82,21 +82,29 @@ const skeletonScenario: DriverScenario = {
   // `<SkeletonText>`. (Only the `loading` case is a D1 steady state, so the
   // inner span always resolves.)
   target: ({ canvas }) =>
-    canvas.locator('[data-comparison-control-root="skeleton"] .comparison-skeleton-copy > *:nth-child(1) > span'),
+    canvas.locator(
+      '[data-comparison-control-root="skeleton"] .comparison-skeleton-copy > *:nth-child(1) > span',
+    ),
   parts: {
     // The OUTER title `<Text>` span — carries `-webkit-text-fill-color:
     // transparent` (the ellipsis-hiding skeleton signal) over the demo's title
     // font longhands.
     titleOuter: ({ canvas }) =>
-      canvas.locator('[data-comparison-control-root="skeleton"] .comparison-skeleton-copy > *:nth-child(1)'),
+      canvas.locator(
+        '[data-comparison-control-root="skeleton"] .comparison-skeleton-copy > *:nth-child(1)',
+      ),
     // The body copy's inner `<SkeletonText>` line-box — a second skeleton text
     // line (different font size) proving the treatment is per-`<Text>`.
     bodyInner: ({ canvas }) =>
-      canvas.locator('[data-comparison-control-root="skeleton"] .comparison-skeleton-copy > *:nth-child(2) > span'),
+      canvas.locator(
+        '[data-comparison-control-root="skeleton"] .comparison-skeleton-copy > *:nth-child(2) > span',
+      ),
     // The inline meta line's inner `<SkeletonText>` — the meta `<Text>` is
     // child 2 of the inline row (the icon is child 1).
     metaInner: ({ canvas }) =>
-      canvas.locator('[data-comparison-control-root="skeleton"] .comparison-skeleton-inline > *:nth-child(2) > span'),
+      canvas.locator(
+        '[data-comparison-control-root="skeleton"] .comparison-skeleton-inline > *:nth-child(2) > span',
+      ),
     // The skeleton `<Icon>` svg — a single element carrying iconStyles +
     // `border-radius: sm` (useSkeletonIcon) + `loadingStyle`, identical DOM on
     // both stacks (upstream clones the svg inside SkeletonWrapper; the port

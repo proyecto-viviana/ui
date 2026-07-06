@@ -234,10 +234,7 @@ import {
   serializeButtonDemoProps,
   type ButtonDemoProps,
 } from "@comparison/data/button-demo";
-import {
-  dispatchComparisonCallback,
-  pressCallbackLoggers,
-} from "@comparison/data/event-log";
+import { dispatchComparisonCallback, pressCallbackLoggers } from "@comparison/data/event-log";
 import {
   checkboxDemoPropsFromWindow,
   initialCheckboxDemoSelected,

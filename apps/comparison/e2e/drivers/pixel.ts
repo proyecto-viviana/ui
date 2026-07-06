@@ -72,8 +72,12 @@ export function registerPixelDriver(scenario: DriverScenario) {
               const solidPath = test.info().outputPath(`${state}-solid.png`);
               await writeFile(reactPath, reactPng);
               await writeFile(solidPath, solidPng!);
-              await test.info().attach(`${label} · react`, { path: reactPath, contentType: "image/png" });
-              await test.info().attach(`${label} · solid`, { path: solidPath, contentType: "image/png" });
+              await test
+                .info()
+                .attach(`${label} · react`, { path: reactPath, contentType: "image/png" });
+              await test
+                .info()
+                .attach(`${label} · solid`, { path: solidPath, contentType: "image/png" });
               throw error;
             }
           }

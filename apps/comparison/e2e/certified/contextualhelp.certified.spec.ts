@@ -84,8 +84,7 @@ const triggerIcon: TargetResolver = ({ canvas }) =>
 const contentDialog: TargetResolver = ({ page }) => page.getByRole("dialog");
 /** The Heading — a headless `<Heading>` renders at the RAC default level (`<h3>`)
  *  in both fixtures, so address it by bare role. */
-const contentHeading: TargetResolver = ({ page }) =>
-  page.getByRole("dialog").getByRole("heading");
+const contentHeading: TargetResolver = ({ page }) => page.getByRole("dialog").getByRole("heading");
 /** The frame (`wrappingDiv`): the Heading's grandparent (Heading -> inner -> frame,
  *  identical nesting in both stacks; Providers are context, not DOM). */
 const contentFrame: TargetResolver = ({ page }) =>
@@ -97,8 +96,7 @@ const contentInner: TargetResolver = ({ page }) =>
 const contentBody: TargetResolver = ({ page }) =>
   page.getByRole("dialog").getByText(contentText, { exact: true });
 /** The `<footer>` (marginTop 16, body-sm) — a stable element in both stacks. */
-const contentFooter: TargetResolver = ({ page }) =>
-  page.getByRole("dialog").locator("footer");
+const contentFooter: TargetResolver = ({ page }) => page.getByRole("dialog").locator("footer");
 
 /** Click this panel's trigger to open its (and only its) popover. */
 const openHelp = async ({ canvas, page }: PanelContext) => {
@@ -155,9 +153,27 @@ const triggerScenario: DriverScenario = {
   },
   pixel: {
     waivers: [
-      { caseId: "help-xs", state: "*", theme: "*", threshold: glyphSubpixel, reason: glyphSubpixelReason },
-      { caseId: "info-xs", state: "*", theme: "*", threshold: glyphSubpixel, reason: glyphSubpixelReason },
-      { caseId: "info-s", state: "*", theme: "*", threshold: glyphSubpixel, reason: glyphSubpixelReason },
+      {
+        caseId: "help-xs",
+        state: "*",
+        theme: "*",
+        threshold: glyphSubpixel,
+        reason: glyphSubpixelReason,
+      },
+      {
+        caseId: "info-xs",
+        state: "*",
+        theme: "*",
+        threshold: glyphSubpixel,
+        reason: glyphSubpixelReason,
+      },
+      {
+        caseId: "info-s",
+        state: "*",
+        theme: "*",
+        threshold: glyphSubpixel,
+        reason: glyphSubpixelReason,
+      },
     ],
   },
 };

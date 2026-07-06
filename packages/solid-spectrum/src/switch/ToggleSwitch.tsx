@@ -1,6 +1,10 @@
 // @ts-nocheck
 import { type JSX, splitProps, mergeProps, Show, useContext } from "solid-js";
-import { getSlottedContextProps, mergeContextStyles, mergeContextUnsafeStyle } from "../button/spectrum-context";
+import {
+  getSlottedContextProps,
+  mergeContextStyles,
+  mergeContextUnsafeStyle,
+} from "../button/spectrum-context";
 import { SwitchContext } from ".";
 import { type AriaSwitchProps, type Direction, useLocale } from "@proyecto-viviana/solidaria";
 import {
@@ -63,7 +67,9 @@ type SwitchStyleState = ToggleSwitchRenderProps & SwitchStyleProps;
 // Unlike the Checkbox field, upstream Switch passes `isInForm` to the field, so
 // the `gridColumnStart:{isInForm:'field'}` branch is live here (dormant for the
 // demo, which is never in a Form).
-const switchFieldStyle = style<SwitchStyleState & { isInForm?: boolean; isNoVisibleLabel?: boolean }>(
+const switchFieldStyle = style<
+  SwitchStyleState & { isInForm?: boolean; isNoVisibleLabel?: boolean }
+>(
   {
     display: "grid",
     gridTemplateColumns: {
@@ -370,7 +376,9 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
             {(renderProps: SwitchButtonRenderProps) => (
               <>
                 <CenterBaseline>
-                  <div class={track({ ...renderProps, size: size(), isEmphasized: isEmphasized() })}>
+                  <div
+                    class={track({ ...renderProps, size: size(), isEmphasized: isEmphasized() })}
+                  >
                     <div
                       ref={handleElement}
                       class={handle({ ...renderProps, size: size(), isEmphasized: isEmphasized() })}

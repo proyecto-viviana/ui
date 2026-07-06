@@ -226,7 +226,8 @@ const sliderScenario: DriverScenario = {
       group: groupTarget,
     },
     knownDivergences: {
-      default: "slider-thumb-native-input-semantics: div[role=slider] omits AX value vs native input",
+      default:
+        "slider-thumb-native-input-semantics: div[role=slider] omits AX value vs native input",
     },
   },
   // D7: the label + output value text, resting + disabled, both themes.

@@ -104,12 +104,10 @@ async function captureMotion(
           .info()
           .outputPath(`${caseDef.id}-${trigger.id}-${ctx.framework}-f${fraction}.png`);
         await writeFile(path, shot);
-        await test
-          .info()
-          .attach(`${trigger.id} · ${ctx.framework} · f=${fraction}`, {
-            path,
-            contentType: "image/png",
-          });
+        await test.info().attach(`${trigger.id} · ${ctx.framework} · f=${fraction}`, {
+          path,
+          contentType: "image/png",
+        });
       }
     }
 
@@ -146,17 +144,8 @@ export function registerMotionDriver(scenario: DriverScenario) {
               test.fixme(true, trigger.knownDivergence);
             }
             test.setTimeout(150_000);
-            const snaps = await captureMotion(
-              scenario,
-              trigger,
-              caseDef,
-              page,
-              frames,
-              filmstrip,
-            );
-            expect(JSON.stringify(snaps.solid, null, 2)).toBe(
-              JSON.stringify(snaps.react, null, 2),
-            );
+            const snaps = await captureMotion(scenario, trigger, caseDef, page, frames, filmstrip);
+            expect(JSON.stringify(snaps.solid, null, 2)).toBe(JSON.stringify(snaps.react, null, 2));
           });
         }
       }
@@ -180,9 +169,7 @@ export function registerMotionDriver(scenario: DriverScenario) {
           test.setTimeout(150_000);
           await page.emulateMedia({ reducedMotion: "reduce" });
           const snaps = await captureMotion(scenario, trigger, caseDef, page, frames, false);
-          expect(JSON.stringify(snaps.solid, null, 2)).toBe(
-            JSON.stringify(snaps.react, null, 2),
-          );
+          expect(JSON.stringify(snaps.solid, null, 2)).toBe(JSON.stringify(snaps.react, null, 2));
         });
       }
     }
@@ -209,9 +196,7 @@ export function registerMotionDriver(scenario: DriverScenario) {
               await trigger.run({ ...ctx, target });
               await ctx.page.waitForTimeout(trigger.settleMs ?? defaultFreezeSettleMs);
               const filmTarget =
-                trigger.filmstripTarget?.(ctx) ??
-                scenario.pixelTarget?.(ctx) ??
-                ctx.canvas;
+                trigger.filmstripTarget?.(ctx) ?? scenario.pixelTarget?.(ctx) ?? ctx.canvas;
               for (const fraction of frames) {
                 await seekAnimations(ctx.page, fraction, scopes);
                 await ctx.page.waitForTimeout(30);

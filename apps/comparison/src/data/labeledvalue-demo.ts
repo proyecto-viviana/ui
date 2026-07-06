@@ -65,16 +65,12 @@ export function normalizeLabeledValueDemoProps(
 ): LabeledValueDemoProps {
   return {
     label:
-      typeof props.label === "string" && props.label
-        ? props.label
-        : labeledValueDemoDefaults.label,
+      typeof props.label === "string" && props.label ? props.label : labeledValueDemoDefaults.label,
     value: typeof props.value === "string" ? props.value : labeledValueDemoDefaults.value,
     valueType: isOneOf(props.valueType, labeledValueValueTypeOptions)
       ? props.valueType
       : labeledValueDemoDefaults.valueType,
-    size: isOneOf(props.size, labeledValueSizeOptions)
-      ? props.size
-      : labeledValueDemoDefaults.size,
+    size: isOneOf(props.size, labeledValueSizeOptions) ? props.size : labeledValueDemoDefaults.size,
     labelPosition: isOneOf(props.labelPosition, labeledValueLabelPositionOptions)
       ? props.labelPosition
       : labeledValueDemoDefaults.labelPosition,

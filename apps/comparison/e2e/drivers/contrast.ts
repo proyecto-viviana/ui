@@ -165,8 +165,7 @@ async function captureContrast(root: Locator): Promise<ContrastEntry[]> {
       // Bear text either via a direct text-node child (normal elements) or via a
       // form control's `.value` (textarea). Form controls bypass the child-node
       // check so the port's property-bound value is measured like React's.
-      const bearsText =
-        controlText !== null ? controlText.trim().length > 0 : hasDirectText(node);
+      const bearsText = controlText !== null ? controlText.trim().length > 0 : hasDirectText(node);
       if (!bearsText || !isVisible(node)) {
         continue;
       }

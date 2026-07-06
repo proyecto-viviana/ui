@@ -62,10 +62,7 @@ function Dash_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       {...rest}
       class={className}
     >
-      <path
-        fill="var(--iconPrimary, #222)"
-        d="M8.5 6h-7a1 1 0 1 1 0-2h7a1 1 0 1 1 0 2"
-      />
+      <path fill="var(--iconPrimary, #222)" d="M8.5 6h-7a1 1 0 1 1 0-2h7a1 1 0 1 1 0 2" />
     </svg>
   );
 }

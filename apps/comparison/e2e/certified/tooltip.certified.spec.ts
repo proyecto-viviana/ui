@@ -149,14 +149,16 @@ const surfaceScenario: DriverScenario = {
         state: "*",
         theme: "*",
         threshold: { maxMismatchRatio: 0.003, maxDimensionDelta: 0, pixelThreshold: 0 },
-        reason: "tooltip-arrow-overlayarrow-subpixel: hand-rolled arrow frame vs OverlayArrow arrowProps",
+        reason:
+          "tooltip-arrow-overlayarrow-subpixel: hand-rolled arrow frame vs OverlayArrow arrowProps",
       },
       {
         caseId: "placement-right",
         state: "*",
         theme: "*",
         threshold: { maxMismatchRatio: 0.003, maxDimensionDelta: 0, pixelThreshold: 0 },
-        reason: "tooltip-arrow-overlayarrow-subpixel: hand-rolled arrow frame vs OverlayArrow arrowProps",
+        reason:
+          "tooltip-arrow-overlayarrow-subpixel: hand-rolled arrow frame vs OverlayArrow arrowProps",
       },
     ],
   },

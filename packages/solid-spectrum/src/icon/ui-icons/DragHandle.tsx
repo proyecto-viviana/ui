@@ -24,42 +24,12 @@ function DragHandle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       {...rest}
       class={className}
     >
-      <circle
-        cx="3.2"
-        cy="8.6"
-        r="0.9"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="3.2"
-        cy="5"
-        r="0.9"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="3.2"
-        cy="1.4"
-        r="0.9"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="6.8"
-        cy="8.6"
-        r="0.9"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="6.8"
-        cy="5"
-        r="0.9"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="6.8"
-        cy="1.4"
-        r="0.9"
-        fill="var(--iconPrimary, #222)"
-      />
+      <circle cx="3.2" cy="8.6" r="0.9" fill="var(--iconPrimary, #222)" />
+      <circle cx="3.2" cy="5" r="0.9" fill="var(--iconPrimary, #222)" />
+      <circle cx="3.2" cy="1.4" r="0.9" fill="var(--iconPrimary, #222)" />
+      <circle cx="6.8" cy="8.6" r="0.9" fill="var(--iconPrimary, #222)" />
+      <circle cx="6.8" cy="5" r="0.9" fill="var(--iconPrimary, #222)" />
+      <circle cx="6.8" cy="1.4" r="0.9" fill="var(--iconPrimary, #222)" />
     </svg>
   );
 }
@@ -75,42 +45,12 @@ function DragHandle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       {...rest}
       class={className}
     >
-      <circle
-        cx="3"
-        cy="9"
-        r="1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="3"
-        cy="5"
-        r="1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="3"
-        cy="1"
-        r="1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="7"
-        cy="9"
-        r="1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="7"
-        cy="5"
-        r="1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="7"
-        cy="1"
-        r="1"
-        fill="var(--iconPrimary, #222)"
-      />
+      <circle cx="3" cy="9" r="1" fill="var(--iconPrimary, #222)" />
+      <circle cx="3" cy="5" r="1" fill="var(--iconPrimary, #222)" />
+      <circle cx="3" cy="1" r="1" fill="var(--iconPrimary, #222)" />
+      <circle cx="7" cy="9" r="1" fill="var(--iconPrimary, #222)" />
+      <circle cx="7" cy="5" r="1" fill="var(--iconPrimary, #222)" />
+      <circle cx="7" cy="1" r="1" fill="var(--iconPrimary, #222)" />
     </svg>
   );
 }
@@ -126,42 +66,12 @@ function DragHandle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       {...rest}
       class={className}
     >
-      <circle
-        cx="3.8"
-        cy="10.4"
-        r="1.1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="3.8"
-        cy="6"
-        r="1.1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="3.8"
-        cy="1.6"
-        r="1.1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="8.2"
-        cy="10.4"
-        r="1.1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="8.2"
-        cy="6"
-        r="1.1"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="8.2"
-        cy="1.6"
-        r="1.1"
-        fill="var(--iconPrimary, #222)"
-      />
+      <circle cx="3.8" cy="10.4" r="1.1" fill="var(--iconPrimary, #222)" />
+      <circle cx="3.8" cy="6" r="1.1" fill="var(--iconPrimary, #222)" />
+      <circle cx="3.8" cy="1.6" r="1.1" fill="var(--iconPrimary, #222)" />
+      <circle cx="8.2" cy="10.4" r="1.1" fill="var(--iconPrimary, #222)" />
+      <circle cx="8.2" cy="6" r="1.1" fill="var(--iconPrimary, #222)" />
+      <circle cx="8.2" cy="1.6" r="1.1" fill="var(--iconPrimary, #222)" />
     </svg>
   );
 }
@@ -177,42 +87,12 @@ function DragHandle_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       {...rest}
       class={className}
     >
-      <circle
-        cx="4.6"
-        cy="11.8"
-        r="1.2"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="4.6"
-        cy="7"
-        r="1.2"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="4.6"
-        cy="2.2"
-        r="1.2"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="9.4"
-        cy="11.8"
-        r="1.2"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="9.4"
-        cy="7"
-        r="1.2"
-        fill="var(--iconPrimary, #222)"
-      />
-      <circle
-        cx="9.4"
-        cy="2.2"
-        r="1.2"
-        fill="var(--iconPrimary, #222)"
-      />
+      <circle cx="4.6" cy="11.8" r="1.2" fill="var(--iconPrimary, #222)" />
+      <circle cx="4.6" cy="7" r="1.2" fill="var(--iconPrimary, #222)" />
+      <circle cx="4.6" cy="2.2" r="1.2" fill="var(--iconPrimary, #222)" />
+      <circle cx="9.4" cy="11.8" r="1.2" fill="var(--iconPrimary, #222)" />
+      <circle cx="9.4" cy="7" r="1.2" fill="var(--iconPrimary, #222)" />
+      <circle cx="9.4" cy="2.2" r="1.2" fill="var(--iconPrimary, #222)" />
     </svg>
   );
 }

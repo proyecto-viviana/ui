@@ -34,7 +34,11 @@ const toggleButtonScenario: DriverScenario = {
     { id: "size-s", params: { size: "S" } },
     { id: "size-xl", params: { size: "XL" } },
     { id: "disabled", params: { isDisabled: "true" }, states: ["default"] },
-    { id: "disabled-selected", params: { isDisabled: "true", isSelected: "true" }, states: ["default"] },
+    {
+      id: "disabled-selected",
+      params: { isDisabled: "true", isSelected: "true" },
+      states: ["default"],
+    },
   ],
   // D4: the toggle press. On the canonical case a full press cycle flips
   // selection, so the log must show press events AND onChange at the same

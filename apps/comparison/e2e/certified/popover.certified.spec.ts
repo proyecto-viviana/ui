@@ -92,7 +92,8 @@ const triggerLabel = "Feedback";
 const popoverName = "Feedback";
 
 /** The `role="dialog"` surface `<div>` — the D1/D3/AX/contrast root. */
-const popoverSurface: TargetResolver = ({ page }) => page.getByRole("dialog", { name: popoverName });
+const popoverSurface: TargetResolver = ({ page }) =>
+  page.getByRole("dialog", { name: popoverName });
 /** The directional arrow `<svg>` — the only svg inside the surface (the
  *  `showForm:false` content is a plain `<div><p>`), carrying the byte-copied
  *  `arrowStyles`. */

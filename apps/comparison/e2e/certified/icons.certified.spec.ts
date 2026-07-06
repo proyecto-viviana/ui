@@ -72,8 +72,7 @@ const iconsScenario: DriverScenario = {
     // The svg inside the accent Button — resized/margined by the Button's
     // IconContext. `[data-comparison-icon="button-context"]` is on the Button, so
     // ` svg` (descendant) resolves its single icon.
-    buttonIcon: ({ canvas }) =>
-      canvas.locator('[data-comparison-icon="button-context"] svg'),
+    buttonIcon: ({ canvas }) => canvas.locator('[data-comparison-icon="button-context"] svg'),
   },
   cases: [
     // Default: the labelled icon exposes its name "Create item" (role=img).

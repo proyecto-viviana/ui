@@ -67,8 +67,7 @@ const progressBarScenario: DriverScenario = {
     // `:has(> div)` disambiguates), and the fill is that grandchild div.
     label: ({ canvas }) =>
       canvas.locator('[data-comparison-progressbar="controlled"] > div > span'),
-    value: ({ canvas }) =>
-      canvas.locator('[data-comparison-progressbar="controlled"] > span'),
+    value: ({ canvas }) => canvas.locator('[data-comparison-progressbar="controlled"] > span'),
     track: ({ canvas }) =>
       canvas.locator('[data-comparison-progressbar="controlled"] > div:has(> div)'),
     fill: ({ canvas }) =>

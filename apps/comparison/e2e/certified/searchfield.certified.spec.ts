@@ -105,8 +105,7 @@ const labelTarget: TargetResolver = ({ canvas }) =>
   canvas.locator(`${root} > div:nth-child(1) > label`);
 /** The bordered FieldGroup `<div role="group">` (second grid child) — border/background/
  *  focus ring + pill radius + the icon/input/clear-button flex row. */
-const groupTarget: TargetResolver = ({ canvas }) =>
-  canvas.locator(`${root} > div:nth-child(2)`);
+const groupTarget: TargetResolver = ({ canvas }) => canvas.locator(`${root} > div:nth-child(2)`);
 /** The `<input type="search">` — transparent chrome + flex-grow + truncate. */
 const inputTarget: TargetResolver = ({ canvas }) => canvas.locator(`${root} input`);
 /** The HelpText `<span slot="description">` (revert). */

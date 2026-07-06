@@ -218,9 +218,7 @@ function joinClass(...classes: Array<string | undefined | null | false>): string
   return classes.filter(Boolean).join(" ");
 }
 
-const dialogOverlay = style<
-  ModalRenderProps & { colorScheme: ColorScheme }
->({
+const dialogOverlay = style<ModalRenderProps & { colorScheme: ColorScheme }>({
   ...setColorScheme(),
   position: "fixed",
   inset: 0,

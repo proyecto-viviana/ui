@@ -415,7 +415,7 @@ function ModalContent(props: ModalProps): JSX.Element {
     internalContext?.setModalRef?.(element);
   };
   const isModalEntering = createEnterAnimation(() => modalEl(), isOpen);
-  const isModalExiting = () => internalContext?.isExiting?.() ?? (local.isExiting ?? false);
+  const isModalExiting = () => internalContext?.isExiting?.() ?? local.isExiting ?? false;
 
   // Keep this modal in a global stack so nested modals dismiss in top-down order.
   createEffect(() => {

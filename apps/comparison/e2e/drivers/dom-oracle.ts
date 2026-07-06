@@ -504,8 +504,7 @@ export function comparisonOracleInit(): void {
           continue;
         }
         const timing = effect.getComputedTiming();
-        const isTransition =
-          typeof CSSTransition !== "undefined" && anim instanceof CSSTransition;
+        const isTransition = typeof CSSTransition !== "undefined" && anim instanceof CSSTransition;
         // `getKeyframes()` yields computed keyframes with stack-neutral values.
         // Drop `composite`/`offset` (kept via `computedOffset`); the CSS
         // `@keyframes` name never appears here, so no hashed macro name leaks.
@@ -522,8 +521,7 @@ export function comparisonOracleInit(): void {
           target: describe(target),
           kind: isTransition ? "transition" : "animation",
           property: isTransition ? (anim as CSSTransition).transitionProperty : null,
-          duration:
-            typeof timing.duration === "number" ? normInfinity(timing.duration) : 0,
+          duration: typeof timing.duration === "number" ? normInfinity(timing.duration) : 0,
           delay: timing.delay ?? 0,
           endDelay: timing.endDelay ?? 0,
           iterations: normInfinity(timing.iterations ?? 1),
@@ -633,9 +631,7 @@ export async function installOracle(page: Page, canvas: Locator): Promise<void> 
 }
 
 export async function startEventRecording(page: Page): Promise<void> {
-  await page.evaluate((types) => window.__comparisonOracle!.start(types), [
-    ...recordedEventTypes,
-  ]);
+  await page.evaluate((types) => window.__comparisonOracle!.start(types), [...recordedEventTypes]);
 }
 
 export async function flushEventLog(page: Page): Promise<OracleRecordedEvent[]> {

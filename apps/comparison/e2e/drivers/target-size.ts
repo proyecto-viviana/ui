@@ -151,7 +151,9 @@ export function registerTargetSizeDriver(scenario: DriverScenario) {
           .map((entry) => `${entry.descriptor} · ${entry.width}×${entry.height}`);
         if (sub24.length > 0) {
           testInfo.annotations.push({
-            type: config.assert24 ? "target-size-sub-24 (asserted)" : "target-size-sub-24 (reported)",
+            type: config.assert24
+              ? "target-size-sub-24 (asserted)"
+              : "target-size-sub-24 (reported)",
             description: sub24.join("\n"),
           });
         }
@@ -161,7 +163,9 @@ export function registerTargetSizeDriver(scenario: DriverScenario) {
           "target-size driver measured no interactive elements — check the root resolver",
         ).toBeGreaterThan(0);
 
-        expect(JSON.stringify(captures.solid, null, 2)).toBe(JSON.stringify(captures.react, null, 2));
+        expect(JSON.stringify(captures.solid, null, 2)).toBe(
+          JSON.stringify(captures.react, null, 2),
+        );
 
         if (config.assert24 && sub24.length > 0) {
           throw new Error(`D8 24px floor failed (Tier-6 assert):\n${sub24.join("\n")}`);

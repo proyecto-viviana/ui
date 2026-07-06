@@ -71,8 +71,7 @@ const illustrationsScenario: DriverScenario = {
   parts: {
     // The decorative DropZone illustration — the `aria-hidden: true` branch of the
     // gate, at the M 96px step of the size scale (a different size from target).
-    decorative: ({ canvas }) =>
-      canvas.locator('[data-comparison-illustration="decorative"]'),
+    decorative: ({ canvas }) => canvas.locator('[data-comparison-illustration="decorative"]'),
   },
   cases: [
     // Default: labelled = Plan at S (48), decorative = DropZone at M (96). One
