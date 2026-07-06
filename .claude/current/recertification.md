@@ -769,8 +769,9 @@ certification landing to catch this rot early (`ci-main-push-skips-tests`).
 Phase 2 (Tier 3 — overlays): `✓ Tooltip (2026-07-04)`, `✓ Popover (2026-07-04)`,
 `✓ Modal (2026-07-04)`, `✓ AlertDialog (2026-07-04)`, `✓ Menu (2026-07-04)`,
 `✓ ActionMenu (2026-07-04)`, `✓ ContextualHelp (2026-07-05)`,
-`✓ Toast (2026-07-06 — CP9.35, 37/37 green)` — **Tier 3 in progress.**
-Next: DropZone/FileTrigger. Same marking
+`✓ Toast (2026-07-06 — CP9.35, 37/37 green)`,
+`✓ DropZone/FileTrigger (2026-07-06 — CP9.36, 31/31 green)` — **Tier 3 complete.**
+Next: Tier 4 (collections/pickers), opening with Picker. Same marking
 rule (`✓ name (date)` / `blocked: name (reason)`). NOTE the remaining
 Field-composite units (every field that shows a label/description/error row) still
 benefit from the shared FieldLabel + HelpText/FieldError extraction
@@ -2518,6 +2519,43 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      event-ordering epic (Dialog escape-close ×2), unchanged. `a11y:check` **44/44** (axe
      `svg-img-alt` gone). The `createUIIcon` over-hide is now RESOLVED (was latent across the
      whole styled set — see tech-debt).
+
+- ✓ **DropZone/FileTrigger done 2026-07-06 (CP9.36 — Tier-3 last unit):** certified
+  **31/31 green on the first run — zero port fixes needed** (fully faithful). Three
+  scenarios, all sharing slug `dropzone`, all measuring the RAC root box:
+  `dropzone` (resting, S/M/L × D1+D3, D6 AX, D7 contrast), `dropzone` focus-visible
+  (M × D1+D3), `dropzone` drop target (`empty`/`filled` × D1+D3). DropZone is NOT an
+  overlay — a static on-canvas box — so targets resolve from `canvas`. FileTrigger is
+  a headless wrapper with no paint surface, so it carries no independent visual state.
+  STATE MODEL: the box's non-resting states aren't reachable through the walk's four
+  gesture states, so `beforePanel` establishes each persistent state and the walk
+  captures the "default" step over it (Toast's overlay pattern):
+  1. **focus-visible** — `beforePanel` focuses the VisuallyHidden `<button>`; the root
+     mirrors it to `data-focus-visible` (border → blue-800). The walk can't drive this
+     as a gesture because it `.focus()`es the measured target (the box), which is not
+     itself focusable — only the inner button is.
+  2. **drop-target** — `beforePanel` fires synthetic `dragenter`/`dragover` (the proven
+     `dropzone-visual.spec.ts` DataTransfer gesture) so `data-drop-target` flips the
+     border solid blue-800 + background blue-200; the `filled` case additionally paints
+     the absolute accent replace banner (covered by the D3 box crop).
+     FAITHFULNESS verified against `react-aria-components/src/DropZone.tsx` +
+     `@react-spectrum/s2/src/DropZone.tsx`: the route passes `id`/`aria-describedby`/
+     `aria-details` to the root, but **neither stack forwards them** — upstream RAC does
+     `delete DOMProps.id` and `filterDOMProps(props,{global:true})` (which drops
+     describedby/details, not global attributes), and the port splits the same three into
+     a `local` bag that is never re-applied. Both roots render without those attributes →
+     identical AX trees (this is the "runtime is the authority, not the broad API table"
+     decision the accepted DropZone validation note already records, not a port gap). The
+     `dropzone`/`banner` style tokens are byte-identical to S2 — the D1/D3 pair diffs are
+     the proof. NOT registered: D2 (drop-target enter is a token color change certified as
+     a steady state), D4/D5 (drag/drop event ordering + click→focus delegation are
+     interaction behaviours), D8 (the only interactive element is the 1px VisuallyHidden
+     button — a headless VisuallyHidden concern, not this box's hit area, which has no
+     interactive role). No D3 sub-pixel waiver: the box has no phase-sensitive centered
+     glyph (the illustration is not a ui-icon crop), so every case passes at threshold 0.
+     **Tier 3 complete** (10 overlay/box units); the pre-march `dropzone-visual.spec.ts`
+     stays as the drag/drop behavioural + callback-count coverage this paint cert doesn't
+     duplicate.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

@@ -29,8 +29,9 @@ component, against the live upstream oracle.
 ## Current Focus
 
 Name/surface parity is closed (all pin guards green). Depth parity is the
-recertification march: ~36/70 styled components certified (Tiers 1–2 done,
-Tier 3 with Toast done 2026-07-06, next DropZone/FileTrigger). The 2026-07-06
+recertification march: ~37/70 styled components certified (Tiers 1–3 done —
+Tier 3 closed 2026-07-06 with DropZone/FileTrigger; next Tier 4, opening with
+Picker). The 2026-07-06
 validation pass confirmed the
 certified tiers are genuinely strong — and found that the biggest current risk
 is **process, not code**: CI has been dark on main since 2026-06-24, the
@@ -58,6 +59,11 @@ then keep marching.
   bare-ui-icon fix in `createUIIcon` (no forced `role="img"`/auto-`aria-hidden`,
   matching upstream's raw svg assets), which retired the `ui-icon-decorative-ax-node`
   cross-cutting divergence and kept axe green. `info` glyph D3 sub-pixel waiver only.
+- ~~**Certify DropZone/FileTrigger**~~ (recertification CP9.36) — DONE 2026-07-06,
+  **31/31 first-run green, zero port fixes** (fully faithful). Closes Tier 3. Drove
+  the non-gesture states (focus-visible, drop-target) via `beforePanel`; confirmed the
+  `id`/`aria-describedby`/`aria-details` drop matches upstream's `delete DOMProps.id` +
+  `filterDOMProps` filtering. No sub-pixel waiver (no ui-icon glyph in the box).
 
 ## Next (P1 — before/into Tier 4)
 
