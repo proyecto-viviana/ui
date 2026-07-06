@@ -220,7 +220,7 @@ test.describe("Playground Page", () => {
     await checkNoHydrationErrors(errors);
   });
 
-  test("toolbar section keeps arrow/Home/End navigation working", async ({ page }) => {
+  test("toolbar section keeps arrow-key navigation working", async ({ page }) => {
     const errors = await setupErrorCapture(page);
     const section = await ensureSectionVisible(page, "toolbar");
 
@@ -231,14 +231,20 @@ test.describe("Playground Page", () => {
     const italic = toolbar.getByRole("button", { name: "Italic" }).first();
     const underline = toolbar.getByRole("button", { name: "Underline" }).first();
 
+    // Upstream useToolbar binds ArrowLeft/ArrowRight (and Tab to leave) only — it
+    // does NOT bind Home/End (the port removed that invented navigation in CP9.3,
+    // "upstream binds neither"). Navigate the ends with arrows. (parity rule #1)
     await bold.focus();
     await page.keyboard.press("ArrowRight");
     await expect(italic).toBeFocused();
 
-    await page.keyboard.press("End");
+    await page.keyboard.press("ArrowRight");
     await expect(underline).toBeFocused();
 
-    await page.keyboard.press("Home");
+    await page.keyboard.press("ArrowLeft");
+    await expect(italic).toBeFocused();
+
+    await page.keyboard.press("ArrowLeft");
     await expect(bold).toBeFocused();
 
     await checkNoHydrationErrors(errors);
@@ -255,11 +261,17 @@ test.describe("Playground Page", () => {
     const archive = toolbar.getByRole("button", { name: "Archive" }).first();
     const del = toolbar.getByRole("button", { name: "Delete" }).first();
 
+    // ActionBar renders a toolbar; upstream useToolbar binds arrows only (no
+    // Home/End — removed in CP9.3 as invented). Reach the first item with
+    // ArrowLeft, not Home. (parity rule #1)
     await archive.focus();
     await page.keyboard.press("ArrowRight");
     await expect(del).toBeFocused();
 
-    await page.keyboard.press("Home");
+    await page.keyboard.press("ArrowLeft");
+    await expect(archive).toBeFocused();
+
+    await page.keyboard.press("ArrowLeft");
     await expect(clear).toBeFocused();
 
     await page.keyboard.press("Escape");
