@@ -840,7 +840,9 @@ describe("ActionMenu (solid-spectrum)", () => {
           </SubpathMenuItem>
           <ContextualHelpPopover>
             <>
-              <SubpathHeading level={2}>Locked action</SubpathHeading>
+              <SubpathHeading slot="title" level={2}>
+                Locked action
+              </SubpathHeading>
               <SubpathText>Ask an admin to enable this command.</SubpathText>
             </>
           </ContextualHelpPopover>

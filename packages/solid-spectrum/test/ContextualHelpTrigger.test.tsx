@@ -83,8 +83,13 @@ describe("ContextualHelp (solid-spectrum)", () => {
       }),
     );
 
+    // Upstream S2 ContextualHelp names the dialog via a `slot="title"` heading
+    // only (ContextualHelp.tsx: the popover's `aria-labelledby={titleId}` and the
+    // HeadingContext default slot carries styles ONLY — no id). The trigger's
+    // variant label ("Help") names the BUTTON, not the dialog; with plain content
+    // and no title heading the dialog is intentionally unnamed. (parity rule #1)
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Help" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
     expect(screen.getByText("Touch-accessible help content")).toBeInTheDocument();
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
@@ -100,8 +105,10 @@ describe("ContextualHelp (solid-spectrum)", () => {
     ));
 
     expect(screen.getByRole("button", { name: "Information", hidden: true })).toBeInTheDocument();
+    // The "Information" variant label names the trigger button; the dialog itself
+    // is unnamed without a slot="title" heading (upstream parity — see above).
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Information" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
   });
 
@@ -127,7 +134,7 @@ describe("ContextualHelp (solid-spectrum)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Open externally" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Help" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
     expect(screen.getByText("Controlled help content")).toBeInTheDocument();
   });
@@ -138,8 +145,10 @@ describe("ContextualHelp (solid-spectrum)", () => {
     const trigger = screen.getByRole("button", { name: "Why unavailable? Help" });
     fireEvent.click(trigger);
 
+    // triggerLabel names the button ("Why unavailable? Help"); the dialog is
+    // unnamed without a slot="title" heading (upstream parity — see above).
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Why unavailable? Help" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
     expect(screen.getByText("Alias help content")).toBeInTheDocument();
   });
@@ -147,14 +156,16 @@ describe("ContextualHelp (solid-spectrum)", () => {
   it("styles Heading, Content, and Footer children using the S2 contextual help slots", async () => {
     render(() => (
       <ContextualHelp isOpen>
-        <Heading>Permission required</Heading>
+        <Heading slot="title">Permission required</Heading>
         <Content>Your admin must grant permission.</Content>
         <Footer>Learn more about segments</Footer>
       </ContextualHelp>
     ));
 
+    // A slot="title" heading mints the id + level 2 that names the dialog
+    // (upstream ContextualHelp.tsx HeadingContext `title` slot).
     await waitFor(() => {
-      expect(screen.getByRole("dialog", { name: "Help" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Permission required" })).toBeInTheDocument();
     });
     const heading = screen.getByRole("heading", { name: "Permission required", level: 2 });
     expect(heading.id).toBeTruthy();

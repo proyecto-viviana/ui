@@ -70,7 +70,7 @@ describe("Menu (solid-spectrum)", () => {
               </MenuItem>
               <ContextualHelpPopover>
                 <>
-                  <Heading>Locked action</Heading>
+                  <Heading slot="title">Locked action</Heading>
                   <Text>Ask an admin to enable this command.</Text>
                 </>
               </ContextualHelpPopover>
