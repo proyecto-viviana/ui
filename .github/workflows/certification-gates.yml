@@ -3,11 +3,17 @@ name: Certification Gates (report-only)
 # Non-blocking projection of the full certification gate ladder
 # (.claude/current/certification.md). These gates exist in package.json but no
 # other workflow invokes them, so drift they would catch can merge green. This
-# job runs each on every PR and posts a status table WITHOUT failing the build,
-# making the real state visible before the ladder is made required
-# (see the `ci-gates-required` task in .claude/current/tech-debt.md).
+# job runs each and posts a status table WITHOUT failing the build, making the
+# real state visible before the ladder is made required (see the
+# `ci-gates-required` task in .claude/current/tech-debt.md).
+#
+# Trigger: PRs AND push-to-main. Work on this repo lands direct-to-main, so a
+# PR-only ladder structurally never fires (`ci-main-gate-wiring`) — the main
+# push is what keeps the projection honest on the branch people commit to.
 
 on:
+  push:
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
@@ -95,6 +101,19 @@ jobs:
         continue-on-error: true
         run: pnpm run guard:docs-routes
 
+      # Orphaned guards (`ci-main-gate-wiring`): both exist in package.json but
+      # were wired into no workflow, so the deopt-size budget and the upstream
+      # test-vocab parity could drift green. Projected here alongside the rest.
+      - name: guard jsx-deopt-size
+        id: guard_jsx_deopt_size
+        continue-on-error: true
+        run: pnpm run guard:jsx-deopt-size
+
+      - name: guard upstream-test-parity
+        id: guard_upstream_test_parity
+        continue-on-error: true
+        run: pnpm run guard:upstream-test-parity
+
       - name: docs:check
         id: docs_check
         continue-on-error: true
@@ -114,6 +133,16 @@ jobs:
         id: pair
         continue-on-error: true
         run: pnpm run comparison:test:pair
+
+      # The recertification bar itself (`ci-main-gate-wiring`): wired into no
+      # workflow until now. Expected ❌ while the deferred D4 event-ordering reds
+      # stand (recertification.md Open decisions) — report-only keeps that
+      # honest without blocking; a filtered/required invocation lands with
+      # `ci-gates-required` once the D4 policy is decided.
+      - name: comparison certified suite
+        id: certified
+        continue-on-error: true
+        run: pnpm run comparison:test:certified
 
       # Ungated axe: the blocking gate excludes color-contrast and the stricter
       # scans; a11y:full runs them all (non-blocking here).
@@ -145,10 +174,13 @@ jobs:
           O_GUARD_FRESHNESS: ${{ steps.guard_upstream_freshness.outcome }}
           O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
+          O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
+          O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
           O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
           O_CONTRACT: ${{ steps.contract.outcome }}
           O_PAIR: ${{ steps.pair.outcome }}
+          O_CERTIFIED: ${{ steps.certified.outcome }}
           O_AXE_FULL: ${{ steps.axe_full.outcome }}
         run: |
           icon() {
@@ -176,11 +208,15 @@ jobs:
             echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") |"
             echo "| \`guard:spectrum-tokens-pin\` | $(icon "$O_GUARD_TOKENS_PIN") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
+            echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
+            echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"
             echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
             echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
+            echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") |"
             echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") |"
             echo ""
             echo "_\`typecheck\` passes today only because 35 \`solid-spectrum\` files carry \`@ts-nocheck\`; it starts surfacing breakage as those are removed._"
+            echo "_\`comparison:test:certified\` is expected ❌ while the deferred D4 event-ordering reds stand (\`recertification.md\` Open decisions); report-only keeps it visible without blocking._"
           } >> "$GITHUB_STEP_SUMMARY"
