@@ -103,10 +103,17 @@ export async function captureComputedStyles(
   }, properties as string[]);
 }
 
-type PartStyles = Record<string, Record<string, string>>;
+export type PartStyles = Record<string, Record<string, string>>;
 type PanelCaptures = Map<GestureStateId, PartStyles>;
 
-async function capturePartStyles(
+/**
+ * Captures the target's (and every named part's) computed styles for one walk
+ * step. Exported so the D9 (forced-colors) and D10 (RTL) drivers can re-run
+ * this exact capture under a different `page.emulateMedia` / locale context
+ * instead of reimplementing it — same allowlist-driven capture, new
+ * environment.
+ */
+export async function capturePartStyles(
   step: WalkStepContext,
   properties: readonly string[],
 ): Promise<PartStyles> {

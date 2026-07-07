@@ -9492,6 +9492,7 @@ function SolidSpectrumToggleButtonDemo() {
     toggleButtonDemoPropsFromWindow(),
   );
   const [selected, setSelected] = createSignal(demoProps().isSelected);
+  const locale = buttonDemoLocaleFromWindow();
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
@@ -9540,7 +9541,7 @@ function SolidSpectrumToggleButtonDemo() {
 
   return hc(
     SolidSpectrumProvider,
-    { colorScheme: "dark", background: "base", style: providerShellStyle },
+    { colorScheme: "dark", locale, background: "base", style: providerShellStyle },
     [
       hc(
         "div",

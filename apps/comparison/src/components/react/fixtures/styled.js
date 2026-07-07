@@ -3408,6 +3408,7 @@ function ReactLinkDemo() {
 function ReactToggleButtonDemo() {
   const [demoProps, setDemoProps] = useState(toggleButtonDemoPropsFromWindow);
   const [selected, setSelected] = useState(demoProps.isSelected);
+  const locale = buttonDemoLocaleFromWindow();
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "togglebutton") {
@@ -3441,6 +3442,8 @@ function ReactToggleButtonDemo() {
         children: renderSingleButtonFamilyChildren(demoProps.children, demoProps.iconPlacement),
       }),
     }),
+    undefined,
+    locale,
   );
 }
 

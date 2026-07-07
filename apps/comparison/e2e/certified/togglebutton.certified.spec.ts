@@ -2,8 +2,10 @@ import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerEventSequenceDriver, standardPressGestures } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
+import { registerForcedColorsDriver } from "../drivers/forced-colors";
 import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
+import { registerRtlDriver } from "../drivers/rtl";
 import type { DriverScenario } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 import { registerTargetSizeDriver } from "../drivers/target-size";
@@ -102,3 +104,13 @@ registerMotionDriver(toggleButtonScenario);
 registerAxTreeDriver(toggleButtonScenario);
 registerContrastDriver(toggleButtonScenario);
 registerTargetSizeDriver(toggleButtonScenario);
+// D9: forced-colors re-run of the D1 state matrix — every steady-state case
+// (registerForcedColorsDriver mirrors D1's full case × theme sweep, same as
+// registerStateMatrixDriver above).
+registerForcedColorsDriver(toggleButtonScenario);
+// D10: RTL re-run of D1 + D5 under `?locale=ar-AE`. `default` and `selected`
+// cover the toggle's two fill states; the Tab-cycle D5 walk re-runs under the
+// same locale (this scenario carries no arrow-key walk, so direction
+// inversion itself isn't exercised here — the RTL environment plumbing and
+// D1/D5 pair-oracle re-run are what this pilot proves out).
+registerRtlDriver(toggleButtonScenario, { cases: ["default", "selected"] });

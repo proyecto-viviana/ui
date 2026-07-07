@@ -11,7 +11,11 @@ export const buttonFillStyleOptions = ["fill", "outline"] as const;
 export const buttonSizeOptions = ["S", "M", "L", "XL"] as const;
 export const buttonStaticColorOptions = ["white", "black", "auto"] as const;
 export const buttonIconPlacementOptions = ["none", "start", "only"] as const;
-export const buttonDemoLocaleOptions = ["en-US", "ar-SA"] as const;
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md);
+// ar-SA predates it as the original button-family RTL demo route. Both are
+// RTL Arabic locales — kept side by side so the driver's exact contract
+// locale is always a valid route param without disturbing the older routes.
+export const buttonDemoLocaleOptions = ["en-US", "ar-SA", "ar-AE"] as const;
 
 export type ButtonDemoVariant = (typeof buttonVariantOptions)[number];
 export type ButtonDemoFillStyle = (typeof buttonFillStyleOptions)[number];
