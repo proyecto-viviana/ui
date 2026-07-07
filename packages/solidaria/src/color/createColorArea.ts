@@ -9,6 +9,7 @@ import type { Color, ColorAreaState, ColorChannel } from "@proyecto-viviana/soli
 import { parseColor } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
+import { createColorStringFormatter } from "./intl";
 import type { AriaColorAreaOptions, ColorAreaAria } from "./types";
 
 /**
@@ -22,6 +23,7 @@ export function createColorArea(
   const getProps = () => props();
   const getState = () => state();
   const locale = useLocale();
+  const stringFormatter = createColorStringFormatter();
   const isRTL = () => locale().direction === "rtl";
   const [focusedInput, setFocusedInput] = createSignal<"x" | "y" | null>(null);
   const [valueChangedViaKeyboard, setValueChangedViaKeyboard] = createSignal(false);
@@ -32,11 +34,18 @@ export function createColorArea(
   const xInputId = createId();
   const yInputId = createId();
 
-  const colorPickerLabel = () => "Color picker";
+  const colorPickerLabel = () => stringFormatter().format("colorPicker");
   const colorInputLabel = () => {
     const ariaLabel = getProps()["aria-label"];
-    return ariaLabel ? `${ariaLabel}, ${colorPickerLabel()}` : colorPickerLabel();
+    return ariaLabel
+      ? stringFormatter().format("colorInputLabel", {
+          label: ariaLabel,
+          channelLabel: colorPickerLabel(),
+        })
+      : colorPickerLabel();
   };
+  // Upstream joins the group label with a literal ", " (useColorArea.ts:488),
+  // NOT the colorInputLabel message.
   const colorAreaLabel = () => {
     const ariaLabel = getProps()["aria-label"];
     return ariaLabel ? `${ariaLabel}, ${colorPickerLabel()}` : undefined;
@@ -44,7 +53,10 @@ export function createColorArea(
   const formatChannelValueText = (channel: ColorChannel) => {
     const value = getState().getDisplayColor();
     const loc = locale().locale;
-    return `${value.getChannelName(channel, loc)}: ${value.formatChannelValue(channel, loc)}`;
+    return stringFormatter().format("colorNameAndValue", {
+      name: value.getChannelName(channel, loc),
+      value: value.formatChannelValue(channel, loc),
+    });
   };
   const getAriaValueTextForChannel = (channel: ColorChannel) => {
     const s = getState();
@@ -355,7 +367,7 @@ export function createColorArea(
       type: "range",
       id: p.id ?? xInputId,
       "aria-label": colorInputLabel(),
-      "aria-roledescription": "2D slider",
+      "aria-roledescription": stringFormatter().format("twoDimensionalSlider"),
       "aria-valuetext": getAriaValueTextForChannel(s.xChannel),
       "aria-orientation": "horizontal" as const,
       "aria-describedby": p["aria-describedby"],
@@ -400,7 +412,7 @@ export function createColorArea(
       type: "range",
       id: p.id ?? yInputId,
       "aria-label": colorInputLabel(),
-      "aria-roledescription": "2D slider",
+      "aria-roledescription": stringFormatter().format("twoDimensionalSlider"),
       "aria-valuetext": getAriaValueTextForChannel(s.yChannel),
       "aria-orientation": "vertical" as const,
       "aria-describedby": p["aria-describedby"],

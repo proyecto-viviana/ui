@@ -16,6 +16,11 @@ import type {
   HSLColor,
   HSBColor,
 } from "./types";
+import {
+  getColorStringForLocale,
+  formatColorMessage,
+  type ColorStringKey,
+} from "./intl";
 
 // Channel ranges
 const RGB_CHANNEL_RANGE: ColorChannelRange = {
@@ -44,18 +49,6 @@ const PERCENT_CHANNEL_RANGE: ColorChannelRange = {
   maxValue: 100,
   step: 1,
   pageSize: 10,
-};
-
-// Channel names (English only for now)
-const CHANNEL_NAMES: Record<ColorChannel, string> = {
-  hue: "Hue",
-  saturation: "Saturation",
-  brightness: "Brightness",
-  lightness: "Lightness",
-  red: "Red",
-  green: "Green",
-  blue: "Blue",
-  alpha: "Alpha",
 };
 
 // React Stately uses OKLCH for color names so that lightness is perceptually
@@ -257,9 +250,9 @@ function hsbToRgb(h: number, s: number, b: number): { r: number; g: number; b: n
   };
 }
 
-function getOklchHueName(l: number, c: number, h: number): [string, number] {
+function getOklchHueName(l: number, c: number, h: number, locale: string): [string, number] {
   if (c < GRAY_THRESHOLD) {
-    return ["gray", l];
+    return [getColorStringForLocale("gray", locale), l];
   }
 
   for (let i = 0; i < OKLCH_HUES.length; i += 1) {
@@ -280,27 +273,29 @@ function getOklchHueName(l: number, c: number, h: number): [string, number] {
         hueName = "yellow green";
       }
 
-      return [hueName.toLocaleLowerCase(), l];
+      const name = getColorStringForLocale(hueName as ColorStringKey, locale).toLocaleLowerCase(
+        locale
+      );
+      return [name, l];
     }
   }
 
-  return ["pink", l];
+  return [getColorStringForLocale("pink", locale).toLocaleLowerCase(locale), l];
 }
 
-function getColorNameFromColor(color: Color): string {
+function getColorNameFromColor(color: Color, locale: string): string {
   let [l, c, h] = toOKLCH(color);
-  const alpha = color.getChannelValue("alpha");
 
   if (l > 0.999) {
-    return alpha < 1 ? `white ${Math.round((1 - alpha) * 100)}% transparent` : "white";
+    return getColorStringForLocale("white", locale);
   }
 
   if (l < 0.001) {
-    return alpha < 1 ? `black ${Math.round((1 - alpha) * 100)}% transparent` : "black";
+    return getColorStringForLocale("black", locale);
   }
 
   let hue: string;
-  [hue, l] = getOklchHueName(l, c, h);
+  [hue, l] = getOklchHueName(l, c, h, locale);
 
   let chroma = "";
   if (c <= 0.1 && c >= GRAY_THRESHOLD) {
@@ -322,17 +317,34 @@ function getColorNameFromColor(color: Color): string {
     lightness = "very light";
   }
 
-  const name = [lightness, chroma, hue].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
-  if (alpha < 1) {
-    return `${Math.round((1 - alpha) * 100)}% transparent ${name}`.trim();
+  if (chroma) {
+    chroma = getColorStringForLocale(chroma as ColorStringKey, locale);
+  }
+  if (lightness) {
+    lightness = getColorStringForLocale(lightness as ColorStringKey, locale);
   }
 
-  return name;
+  const alpha = color.getChannelValue("alpha");
+  if (alpha < 1) {
+    const percentTransparent = new Intl.NumberFormat(locale, { style: "percent" }).format(1 - alpha);
+    return formatColorMessage("transparentColorName", locale, {
+      lightness,
+      chroma,
+      hue,
+      percentTransparent,
+    })
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  return formatColorMessage("colorName", locale, { lightness, chroma, hue })
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function getHueNameFromColor(color: Color): string {
+function getHueNameFromColor(color: Color, locale: string): string {
   const [l, c, h] = toOKLCH(color);
-  const [name] = getOklchHueName(l, c, h);
+  const [name] = getOklchHueName(l, c, h, locale);
   return name;
 }
 
@@ -543,8 +555,8 @@ class RGBColorImpl implements Color {
     }
   }
 
-  getChannelName(channel: ColorChannel, _locale: string): string {
-    return CHANNEL_NAMES[channel] || channel;
+  getChannelName(channel: ColorChannel, locale: string): string {
+    return getColorStringForLocale(channel as ColorStringKey, locale);
   }
 
   getChannelFormatOptions(channel: ColorChannel): Intl.NumberFormatOptions {
@@ -576,12 +588,12 @@ class RGBColorImpl implements Color {
     return ["red", "green", "blue"];
   }
 
-  getColorName(_locale: string): string {
-    return getColorNameFromColor(this);
+  getColorName(locale: string): string {
+    return getColorNameFromColor(this, locale);
   }
 
-  getHueName(_locale: string): string {
-    return getHueNameFromColor(this);
+  getHueName(locale: string): string {
+    return getHueNameFromColor(this, locale);
   }
 }
 
@@ -711,8 +723,8 @@ class HSLColorImpl implements Color {
     }
   }
 
-  getChannelName(channel: ColorChannel, _locale: string): string {
-    return CHANNEL_NAMES[channel] || channel;
+  getChannelName(channel: ColorChannel, locale: string): string {
+    return getColorStringForLocale(channel as ColorStringKey, locale);
   }
 
   getChannelFormatOptions(channel: ColorChannel): Intl.NumberFormatOptions {
@@ -750,12 +762,12 @@ class HSLColorImpl implements Color {
     return ["hue", "saturation", "lightness"];
   }
 
-  getColorName(_locale: string): string {
-    return getColorNameFromColor(this);
+  getColorName(locale: string): string {
+    return getColorNameFromColor(this, locale);
   }
 
-  getHueName(_locale: string): string {
-    return getHueNameFromColor(this);
+  getHueName(locale: string): string {
+    return getHueNameFromColor(this, locale);
   }
 }
 
@@ -884,8 +896,8 @@ class HSBColorImpl implements Color {
     }
   }
 
-  getChannelName(channel: ColorChannel, _locale: string): string {
-    return CHANNEL_NAMES[channel] || channel;
+  getChannelName(channel: ColorChannel, locale: string): string {
+    return getColorStringForLocale(channel as ColorStringKey, locale);
   }
 
   getChannelFormatOptions(channel: ColorChannel): Intl.NumberFormatOptions {
@@ -923,12 +935,12 @@ class HSBColorImpl implements Color {
     return ["hue", "saturation", "brightness"];
   }
 
-  getColorName(_locale: string): string {
-    return getColorNameFromColor(this);
+  getColorName(locale: string): string {
+    return getColorNameFromColor(this, locale);
   }
 
-  getHueName(_locale: string): string {
-    return getHueNameFromColor(this);
+  getHueName(locale: string): string {
+    return getHueNameFromColor(this, locale);
   }
 }
 

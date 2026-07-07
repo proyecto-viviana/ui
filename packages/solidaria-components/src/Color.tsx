@@ -28,6 +28,7 @@ import {
   createFocusRing,
   createHover,
   mergeProps,
+  useLocale,
   type AriaColorSliderOptions,
   type AriaColorAreaOptions,
   type AriaColorWheelOptions,
@@ -233,7 +234,11 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
     ],
   );
 
-  // Create color slider state
+  const locale = useLocale();
+
+  // Create color slider state. The locale drives the thumb value label's
+  // channel-value formatting (e.g. hue "50°" vs ar-AE "50 درجة"), mirroring
+  // RAC ColorSlider passing `useLocale().locale` into useColorSliderState.
   const state = createColorSliderState(() => ({
     value: stateProps.value ?? pickerContext?.value,
     defaultValue: stateProps.defaultValue,
@@ -243,6 +248,7 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
     colorSpace: stateProps.colorSpace,
     orientation: ariaProps.orientation,
     isDisabled: ariaProps.isDisabled,
+    locale: locale().locale,
   }));
 
   let trackRef: HTMLDivElement | undefined;

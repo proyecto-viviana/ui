@@ -44,7 +44,7 @@ export function createColorSlider(
     const p = getProps();
     if (p.channelName) return p.channelName;
     const s = getState();
-    return s.value.getChannelName(s.channel, "en-US");
+    return s.value.getChannelName(s.channel, locale().locale);
   });
 
   const orientation = () => getProps().orientation ?? "horizontal";

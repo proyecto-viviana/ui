@@ -170,7 +170,11 @@ function expectIdToMatchOrBeGenerated(
   expect(solidId, label).toBe(reactId);
 }
 
-function expectColorAreaContractToMatch(solid: ColorAreaContract, react: ColorAreaContract) {
+function expectColorAreaContractToMatch(
+  solid: ColorAreaContract,
+  react: ColorAreaContract,
+  expectedRoleDescription = "2D slider",
+) {
   expect(solid.missing).toBe(false);
   expect(react.missing).toBe(false);
   if (solid.missing || react.missing) return;
@@ -213,14 +217,14 @@ function expectColorAreaContractToMatch(solid: ColorAreaContract, react: ColorAr
     min: "0",
     max: "255",
     tabIndex: 0,
-    ariaRoleDescription: "2D slider",
+    ariaRoleDescription: expectedRoleDescription,
     ariaOrientation: "horizontal",
   });
   expect(solid.inputs[1]).toMatchObject({
     min: "0",
     max: "255",
     tabIndex: -1,
-    ariaRoleDescription: "2D slider",
+    ariaRoleDescription: expectedRoleDescription,
     ariaOrientation: "vertical",
     ariaHidden: "true",
   });
@@ -362,6 +366,7 @@ test.describe("comparison ColorArea visual parity", () => {
     const react = await colorAreaContract(fixtures.reactRoot);
     const solid = await colorAreaContract(fixtures.solidRoot);
 
-    expectColorAreaContractToMatch(solid, react);
+    // ar-AE localizes the "2D slider" roledescription to "مُنزلق 2D".
+    expectColorAreaContractToMatch(solid, react, "مُنزلق 2D");
   });
 });

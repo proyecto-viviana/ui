@@ -721,7 +721,9 @@ describe("Color Components", () => {
           </I18nProvider>
         ));
 
-        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        // ar-AE localizes the colorPicker label; the group name folds the
+        // aria-label with the localized "أداة انتقاء اللون".
+        const area = screen.getByRole("group", { name: "Color picker, أداة انتقاء اللون" });
         const thumb = document.querySelector(".solidaria-ColorArea-thumb") as HTMLElement;
         const input = area.querySelector<HTMLInputElement>(
           'input[type="range"]',
