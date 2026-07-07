@@ -308,11 +308,6 @@ export function createColorWheel(
         const target = e.target as HTMLInputElement;
         s.setHue(parseFloat(target.value));
       },
-      onBlur: () => {
-        if (s.isDragging) {
-          s.setDragging(false);
-        }
-      },
       style: {
         position: "absolute" as const,
         width: "100%",

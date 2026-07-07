@@ -375,11 +375,6 @@ export function createColorArea(
       onKeyDown,
       onInput: (e: Event) => updateFromInput(e, "x"),
       onChange: (e: Event) => updateFromInput(e, "x"),
-      onBlur: () => {
-        if (s.isDragging) {
-          s.setDragging(false);
-        }
-      },
       tabIndex: !focusedInput() || focusedInput() === "x" ? undefined : -1,
       style: {
         position: "absolute" as const,
