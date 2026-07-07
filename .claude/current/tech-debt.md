@@ -24,13 +24,16 @@ tasks:
       add it as repo secret NPM_TOKEN, and add NPM_TOKEN to the changesets step env.
       Then re-attempt via `gh workflow run release.yml` (workflow_dispatch is enabled;
       changesets are already consumed, so it re-publishes any package not yet on npm).
-      DECISION 2026-07-06: path (b) chosen. NPM_TOKEN is threaded into the changesets
-      step env (commit 345df316, pushed). @proyecto-viviana is an npm ORG owned by
-      account `emoporemilio` (sole maintainer of the packages), so the granular token
-      needs Packages-and-scopes = Read+Write on the @proyecto-viviana scope;
-      Organizations permission is NOT needed (that axis only administers org
-      membership/settings, not publishing). Remaining: create the token + set the
-      NPM_TOKEN repo secret, then re-trigger.
+      DECISION 2026-07-06 (final): path (a) OIDC chosen — better end state (no stored
+      credential to rotate/leak, automatic provenance, zero maintenance). The
+      NPM_TOKEN env line briefly added in 345df316 was REVERTED; the workflow is back
+      to pure tokenless OIDC (it was already built for it: id-token: write + npm
+      >=11.5.1). @proyecto-viviana is an npm ORG owned by account `emoporemilio` (sole
+      maintainer), who can register the publisher on all 5 packages. Remaining
+      (npm-account action, cannot be done from CI): for EACH of the 5 packages on
+      npmjs.com → Settings → Trusted Publisher → add GitHub Actions publisher (org
+      proyecto-viviana, repo ui, workflow release.yml, environment blank). Then
+      re-trigger `gh workflow run release.yml`.
   - id: pkg-build-spectrum-dts
     title: Move solid-spectrum dts to Vite Plus packaging
     state: in-progress
