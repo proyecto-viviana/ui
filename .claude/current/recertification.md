@@ -800,13 +800,13 @@ A full-project validation pass (parity / functionality / a11y / process) was run
 2. **Tier 4 starts with Picker/Select** — it is production-broken for
    installed consumers (`picker-popover-anchor`, `picker-item-checkmark`); its
    certification is the highest-value single unit in the remaining march.
-3. **Two owner decisions gate the Tier 4 start** (steering.md Open Decisions):
-   the D4 event-ordering policy (`d4-event-ordering-decision` — microtask
-   deferral in the ports vs oracle normalization; collections multiply the
-   exposure, per-component waivers would rot), and D9/D10 sequencing
-   (`recert-drivers-d9-d12` — director recommendation: land forced-colors +
-   RTL drivers BEFORE Tier 4 and re-run the certified set, because certifying
-   Tier 4 first means re-marching Tiers 1–3 later).
+3. **The two owner decisions that gated Tier 4 are RESOLVED 2026-07-06.** (i)
+   D4 event-ordering policy → **microtask-defer the ports** (`d4-microtask-defer`
+   implements it; oracle normalization rejected as a compounding divergence).
+   (ii) D9/D10 sequencing → **before Tier 4** (`recert-drivers-d9-d12`: land
+   forced-colors + RTL and re-run the certified Tiers 1–3 first). Tier 4 now runs
+   as a three-track parallel program (steering.md Next): Track A D9/D10 drivers ∥
+   Track B D4-defer (both independent), then Track C Picker/Select once A+B land.
 4. **D6 announcements** — Toast (CP9.35, done 2026-07-06) certified the
    `role="alert"` live region structurally in the AX snapshot, which was the
    calibration target for `d6-announcement-calibration`. The live-_transcript_

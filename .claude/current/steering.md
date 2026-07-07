@@ -68,24 +68,33 @@ then keep marching.
   `id`/`aria-describedby`/`aria-details` drop matches upstream's `delete DOMProps.id` +
   `filterDOMProps` filtering. No sub-pixel waiver (no ui-icon glyph in the box).
 
-## Next (P1 — before/into Tier 4)
+## Next (P1 — the Tier 4-enabling tracks, run in parallel)
 
-- **Backfill D5/D6 on Menu and ActionMenu** (`menu-actionmenu-d5-d6-backfill`):
-  both certified without focus-trail or AX-tree drivers; keyboard composites
-  must not certify on D1/D7 alone.
-- **Decide the D4 event-ordering epic** before Tier 4 (`recertification.md`
-  Open decisions): collections multiply intra-gesture ordering divergence; the
-  5 deferred reds need a policy (microtask deferral in ports vs oracle
-  normalization), not per-component waivers.
-- **Land D9 (forced-colors) + D10 (RTL) before the Tier 4 march** — zero
-  coverage repo-wide today; certifying Tier 4 first means re-running the whole
-  certified set later.
-- **Pull Picker first in Tier 4** (`picker-popover-anchor`,
-  `picker-item-checkmark`): it is production-broken for installed consumers —
-  highest-value single certification.
+Decisions resolved 2026-07-06 (see Open Decisions). All three certified-march
+prerequisites are now execution tracks, run concurrently where they don't touch
+the same files. Dependency edges noted; the full task graph mirrors these.
+
+- ~~**Backfill D5/D6 on Menu and ActionMenu**~~ (`menu-actionmenu-d5-d6-backfill`)
+  — DONE 2026-07-06 (CP9.37–9.39). Was the test case for the keyboard-composite
+  bar, now adopted into `certification.md`.
+- **Track A — D9/D10 drivers** (`recert-drivers-d9-d12`): land forced-colors
+  (D9) + RTL/i18n (D10) as re-run modes over the existing D1/D5 oracles,
+  calibrate on a pilot (ToggleButton), then re-run the certified Tiers 1–3.
+  *Independent of the port source — parallelizable with Track B.* Blocks Picker
+  (Picker certifies against the full applicable driver set including D9/D10).
+- **Track B — D4 microtask-defer** (`d4-microtask-defer`): land the callback
+  defer mechanism in the ports and clear the 5 deferred D4 reds (Tabs ×2,
+  Dialog ×2 + the ActionButton-class memo-rebuild watch-list). *Touches
+  collection/overlay port source — must NOT run concurrently on the same files
+  as Picker.* Blocks Picker's D4 driver.
+- **Track C — Picker/Select cert** (`picker-popover-anchor`,
+  `picker-item-checkmark`): the highest-value single certification —
+  production-broken for installed consumers (popover at 0,0; checkmark on every
+  row). *Blocked by Track A (driver set) and Track B (D4 on a collection).*
+  Certify against the full applicable driver set once A + B land.
 - **`macro-route-styled`** (`tech-debt.md`): 14 components ship unstyled to
-  installed consumers; app CSS masks it in-repo. Consumer-delivery priority
-  alongside Picker.
+  installed consumers; app CSS masks it in-repo. Consumer-delivery priority,
+  independent — can slot alongside any track.
 
 ## Later
 
@@ -99,15 +108,28 @@ then keep marching.
 
 ## Open Decisions
 
-- **D4 event-ordering policy.** (a) microtask-defer Solid callbacks to match
-  React batching, (b) normalize orderings in the oracle and document the
-  divergence. Owner decision gates Tier 4.
-- **D9/D10 sequencing.** Land forced-colors + RTL drivers before Tier 4 (and
-  re-certify Tiers 1–3 against them), or after the march completes. Director
-  recommendation: before.
-- **Certification bar for keyboard composites.** Adopt "D5+D6 mandatory for
-  keyboard-heavy composites" into `certification.md` gates (Menu/ActionMenu
-  backfill is the test case).
+None currently open — the three that gated the Tier 4 start were resolved
+2026-07-06 (owner call). The march now runs four active tracks (release unjam
+under "Now" + the three Tier-4-enabling tracks under "Next") in parallel where
+they don't touch the same files; the dependency edges are in "Next".
+
+**Resolved 2026-07-06:**
+
+- **D4 event-ordering policy → (a) microtask-defer the ports.** Solid callbacks
+  are deferred to match React's batched-effect ordering so installed consumers
+  see the faithful upstream event order; this keeps the parity rule (diverge only
+  where React→Solid makes it genuinely impossible, then a documented per-case
+  waiver — not a standing oracle-normalized divergence that compounds across
+  collections). Implementation tracked as `d4-microtask-defer` in `tech-debt.md`;
+  it lands the defer mechanism + clears the 5 deferred reds (Tabs ×2, Dialog ×2,
+  and the ActionButton-class watch-list) before Picker's D4 driver runs.
+- **D9/D10 sequencing → before Tier 4.** Forced-colors (D9) + RTL/i18n (D10)
+  drivers land and the certified Tiers 1–3 re-run against them first, so we don't
+  re-march the certified set later. Tracked as `recert-drivers-d9-d12`.
+- **Certification bar for keyboard composites → adopted.** "D5+D6 mandatory for
+  keyboard-heavy composites" is now in `certification.md` ("Driver
+  applicability"); the Menu/ActionMenu backfill (`menu-actionmenu-d5-d6-backfill`,
+  CP9.37–9.39) was the test case and is complete.
 
 ## Non-Goals
 

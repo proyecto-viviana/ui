@@ -672,27 +672,54 @@ tasks:
       composites" adopted into certification.md ("Driver applicability").
   - id: recert-drivers-d9-d12
     title: Land the remaining pair-oracle drivers — D9 forced-colors, D10 RTL, D11 timing, D12 SSR
-    state: open
+    state: next
     roadmap: recertification
     note: >-
       D1–D8 are landed and calibrated; D9–D12 exist only as plan text, so
-      forced-colors and RTL have zero coverage repo-wide. Director recommendation:
-      land D9+D10 BEFORE the Tier 4 march and re-run the certified set against them
-      (certifying Tier 4 first means re-marching Tiers 1–3 later); D11/D12 can
-      follow. Owner sequencing decision tracked in steering.md Open Decisions.
-      Exit: drivers land with the same calibration discipline as D4/D5 (a pilot
-      component red→green each), and the certified suite runs them.
+      forced-colors and RTL have zero coverage repo-wide. SEQUENCING RESOLVED
+      2026-07-06 (owner call): land D9+D10 BEFORE the Tier 4 march and re-run the
+      certified set against them (certifying Tier 4 first means re-marching Tiers
+      1–3 later); D11/D12 can follow. D9 = D1 re-run under `forcedColors: 'active'`
+      comparing resolved system-color keywords; D10 = D1+D5 re-run under `dir=rtl`
+      + `ar-AE` (icon mirroring, arrow inversion, date/number formatting equality)
+      — both are re-run modes over the existing pixel/state-matrix/focus oracles,
+      not new oracles. This is Track A of the parallel Tier-4 program (steering.md
+      Next); independent of the port source, so it runs concurrently with Track B
+      (`d4-microtask-defer`). Blocks Track C (Picker certifies against the full
+      driver set incl. D9/D10). Exit: drivers land with the same calibration
+      discipline as D4/D5 (a pilot component red→green each — ToggleButton), and
+      the certified suite runs them across Tiers 1–3.
   - id: d4-event-ordering-decision
     title: Decide the D4 event-ordering policy before Tier 4 (microtask deferral vs oracle normalization)
-    state: open
+    state: done
+    finished: 2026-07-06
     roadmap: recertification
     note: >-
-      The 5 deferred D4 reds (Tabs/Dialog) trace to React batched-effects vs Solid
-      synchronous updates interleaving callback/focus events differently
-      intra-gesture. Tier 4 collections multiply the exposure — pick a policy, not
-      per-component waivers: (a) microtask-defer port callbacks to match React
-      batching, or (b) normalize orderings in the D4 oracle and document the
-      divergence as structural. Owner decision; gates the Tier 4 march start.
+      RESOLVED 2026-07-06 (owner call) → policy (a): microtask-defer the ports.
+      The 5 deferred D4 reds (Tabs ×2, Dialog ×2) trace to React batched-effects
+      vs Solid synchronous updates interleaving callback/focus events differently
+      intra-gesture; Tier 4 collections multiply the exposure. Decision: defer
+      Solid callbacks to match React's batched-effect ordering so consumers see
+      the faithful upstream event order, keeping the parity rule (oracle
+      normalization was rejected as a standing divergence that compounds across
+      collections). Implementation is `d4-microtask-defer`.
+  - id: d4-microtask-defer
+    title: Land the D4 microtask-defer mechanism in the ports and clear the 5 deferred reds
+    state: next
+    roadmap: recertification
+    note: >-
+      Implements the resolved `d4-event-ordering-decision` (policy a). Land a
+      callback-defer mechanism in the ports so Solid state-change callbacks fire
+      on the same microtask boundary React's batched effects do, then clear the 5
+      deferred D4 reds (Tabs touch-tap, Tabs arrow-next-from-selected, Dialog
+      escape-close, Dialog ×1 more) that trace to the sync-vs-batched divergence.
+      Scope the mechanism against upstream's batching first (parity rule) — the
+      ActionButton CP9.1 finding shows some "reds" are fixture memo-rebuilds, not
+      port defects, so triage each red (real port ordering bug vs fixture
+      anti-pattern) before deferring. Gates Track C: Picker's D4 driver runs a
+      collection through this mechanism. Exit: the defer mechanism lands with a
+      pilot red→green, the 5 reds are green or reclassified, no regression to the
+      existing certified D4 passes.
   - id: d6-announcement-calibration
     title: Live-transcript announcement oracle over a body-portaled toast (structural live-region done)
     state: open
