@@ -2,6 +2,28 @@
 kind: reference
 status: current
 tasks:
+  - id: release-oidc-trusted-publisher-unregistered
+    title: npm publish blocked — no OIDC trusted publisher registered for the 5 packages
+    state: open
+    priority: P0
+    filed: 2026-07-06
+    roadmap: release-train
+    note: >-
+      PR #7 (version packages) merged to main (repo now solidaria/solidaria-components/
+      solid-stately/ui @0.4.0, solid-spectrum @0.6.0) but the publish step of Release
+      run 28834107097 FAILED E404-on-PUT for all 5 packages. Log confirms the workflow
+      chose OIDC ("No NPM_TOKEN found, but OIDC is available - using npm trusted
+      publishing"); the 404 is npm's unauthorized-publish response because npmjs.com
+      has NO trusted publisher registered for these packages. Workflow side is correct
+      (id-token: write, npm>=11.5.1). npm still serves the OLD versions (0.3.x / 0.5.3),
+      so the version gap is now WIDER than before the merge. Fix = an npm-account action
+      (cannot be done from CI/sandbox): EITHER (a) register a GitHub Actions trusted
+      publisher on each of the 5 packages (org proyecto-viviana, repo ui, workflow
+      release.yml) — zero workflow change, keeps the tokenless design; OR (b) create a
+      granular/automation npm token with publish rights to the @proyecto-viviana scope,
+      add it as repo secret NPM_TOKEN, and add NPM_TOKEN to the changesets step env.
+      Then re-attempt via `gh workflow run release.yml` (workflow_dispatch is enabled;
+      changesets are already consumed, so it re-publishes any package not yet on npm).
   - id: pkg-build-spectrum-dts
     title: Move solid-spectrum dts to Vite Plus packaging
     state: in-progress
