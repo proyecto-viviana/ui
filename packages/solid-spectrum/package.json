@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/solid-spectrum",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "description": "Spectrum 2-compatible styled components for SolidJS",
   "keywords": [
     "components",
