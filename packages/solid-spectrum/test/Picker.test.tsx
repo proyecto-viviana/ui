@@ -91,7 +91,11 @@ describe("Picker (solid-spectrum)", () => {
       />
     ));
 
-    const button = screen.getByRole("button", { name: "API Docs section" });
+    // Upstream `useSelect` folds the selected value ahead of the field label in the
+    // trigger name (`aria-labelledby=[valueId, labelId]`). Here the custom renderValue
+    // is "API section" and the label is "Docs section", so the accessible name is the
+    // concatenation "API section Docs section".
+    const button = screen.getByRole("button", { name: "API section Docs section" });
     const description = screen.getByText("Pick a docs anchor");
     const contextualHelp = document.querySelector('[data-slot="contextualHelp"]');
 

@@ -186,11 +186,15 @@ export interface SelectTriggerRenderProps {
   isFocusVisible: boolean;
   /** Whether the trigger is hovered. */
   isHovered: boolean;
+  /** Whether the trigger is pressed. */
+  isPressed: boolean;
   /** Whether the trigger is disabled. */
   isDisabled: boolean;
 }
 
 export interface SelectTriggerProps extends SlotProps {
+  /** A ref callback/object for the underlying trigger button element. */
+  ref?: RefLike<HTMLButtonElement>;
   /** The children of the trigger. A function may be provided to receive render props. */
   children?: RenderChildren<SelectTriggerRenderProps>;
   /** The CSS className for the element. */
@@ -241,6 +245,8 @@ export interface SelectOptionRenderProps {
 }
 
 export interface SelectOptionProps<T> extends Omit<AriaOptionProps, "children" | "key">, SlotProps {
+  /** A ref callback/object for the underlying option element. */
+  ref?: RefLike<HTMLDivElement>;
   /** The unique key for the option. */
   id: Key;
   /** The item value. */
@@ -269,6 +275,7 @@ interface SelectContextValue<T> {
   isOpen: Accessor<boolean>;
   isFocused: Accessor<boolean>;
   isFocusVisible: Accessor<boolean>;
+  isPressed: Accessor<boolean>;
   isDisabled: Accessor<boolean>;
   placeholder?: string;
   items: T[];
@@ -398,8 +405,16 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return clean as typeof ariaProps;
   });
 
-  const { labelProps, triggerProps, valueProps, menuProps, isFocused, isFocusVisible, isOpen } =
-    createSelect<T>(selectAriaProps, state);
+  const {
+    labelProps,
+    triggerProps,
+    valueProps,
+    menuProps,
+    isFocused,
+    isFocusVisible,
+    isOpen,
+    isPressed,
+  } = createSelect<T>(selectAriaProps, state);
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
@@ -579,6 +594,17 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
 
     return (
       <>
+        <Show when={ariaProps.label}>
+          <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
+        </Show>
+        {selectChildren}
+        {/*
+          The HiddenSelect (native `<select>` for form autofill/submission) renders
+          AFTER the trigger button, mirroring upstream RAC `Select` which emits
+          `{renderProps.children}` then `<HiddenSelect>` (Select.tsx:288-289). Order
+          matters for the DOM tab/focus trail: the visible button must precede the
+          form-only hidden control.
+        */}
         <div {...containerProps}>
           <select
             {...hiddenSelectProps}
@@ -652,10 +678,6 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
             />
           </Show>
         </div>
-        <Show when={ariaProps.label}>
-          <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
-        </Show>
-        {selectChildren}
       </>
     );
   };
@@ -711,6 +733,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           isOpen,
           isFocused,
           isFocusVisible,
+          isPressed,
           isDisabled: resolveDisabled,
           placeholder: ariaProps.placeholder,
           items: stateProps.items,
@@ -731,17 +754,18 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
  * The trigger button for a select.
  */
 export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children", "ref"]);
 
   const context = useContext(SelectContext);
   if (!context) {
     throw new Error("SelectTrigger must be used within a Select");
   }
-  const { isOpen, isFocused, isFocusVisible, state } = context;
+  const { isOpen, isFocused, isFocusVisible, isPressed, state } = context;
   let triggerRef: HTMLButtonElement | undefined;
   const setTriggerRef = (el: HTMLButtonElement) => {
     triggerRef = el;
     context.setTriggerRef(el);
+    assignRef(local.ref, el);
   };
 
   createEffect(() => {
@@ -761,6 +785,7 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
+    isPressed: isPressed(),
     isDisabled: state.isDisabled,
   }));
 
@@ -926,6 +951,14 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     if (!isOpen()) {
       return;
     }
+    // On open the listbox takes collection focus. Upstream `useSelect` sets
+    // `menuProps.autoFocus = state.focusStrategy || true`, so the ListBox's
+    // `useSelectableCollection` auto-focuses on mount — setting the selection
+    // manager's `isFocused` true and focusing the selected option. Our
+    // `createListBox` reimplements keyboard nav inline (no `autoFocus` effect),
+    // so we set the manager focus here to match. Without it the selected option
+    // never paints its focus-visible background (`data-focused` stays unset).
+    state.selectionManager.setFocused(true);
     if (state.focusedKey() != null) {
       return;
     }
@@ -935,7 +968,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     }
   });
 
-  let listBoxRef: HTMLUListElement | undefined;
+  let listBoxRef: HTMLDivElement | undefined;
 
   createInteractOutside({
     ref: () => rootRef() ?? listBoxRef ?? null,
@@ -949,7 +982,14 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     },
   });
 
-  const { listBoxProps } = createListBox(
+  // Keep the hook result intact — destructuring `{ listBoxProps }` invokes the
+  // `get listBoxProps()` getter ONCE and freezes it (the Solid "destructuring a
+  // get-prop freezes reactivity" gotcha). The listbox `tabIndex` is computed from
+  // `focusedKey` (`focusedKey != null ? -1 : 0`); on open the effect above sets a
+  // focused key, so a frozen snapshot would leave the listbox tabbable (`0`) when
+  // upstream flips it to `-1`. Reading `listBoxHook.listBoxProps` per access keeps
+  // it reactive.
+  const listBoxHook = createListBox(
     {
       ...(menuProps as unknown as AriaListBoxProps),
       shouldSelectOnPressUp: true,
@@ -982,8 +1022,25 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     return rest;
   };
   const cleanListBoxProps = () => {
-    const { ref: _ref2, ...rest } = listBoxProps as Record<string, unknown>;
-    return rest;
+    const {
+      ref: _ref2,
+      "aria-activedescendant": _activeDescendant,
+      ...rest
+    } = listBoxHook.listBoxProps as Record<string, unknown>;
+    // Faithful Select listbox focus model: the focused option receives REAL DOM
+    // focus (the open effect above + `createSelectableItem`'s self-focus move
+    // `document.activeElement` onto it), mirroring upstream `useSelect`. So the
+    // listbox must (a) leave the tab sequence once an option is focused —
+    // `useSelectableCollection` uses `tabIndex = focusedKey == null ? 0 : -1`
+    // (useSelectableCollection.ts:687-690) — and (b) NOT expose
+    // `aria-activedescendant`, which is the virtual-focus channel upstream Select
+    // never uses. These are overridden here, not in the shared `createListBox`,
+    // because the standalone `ListBox` keeps its container-focus model (focus
+    // stays on the listbox, `aria-activedescendant` is its AT channel).
+    return {
+      ...rest,
+      tabIndex: state.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,
+    };
   };
 
   const items = () => Array.from(state.collection());
@@ -1003,7 +1060,12 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   });
 
   const listBox = () => (
-    <ul
+    // Upstream RAC ListBox (and our own Menu.tsx) render a `<div role="listbox">`
+    // over `<div role="option">` rows, NOT `<ul>`/`<li>` — the collection is
+    // div-based for virtualization parity. `<ul>`/`<li>` here was a self-inflicted
+    // structural divergence surfaced by the Picker recertification (D5/D6/D8 saw
+    // `li[option]`/`ul[listbox]` where the React oracle sees `div`).
+    <div
       ref={(el) => (listBoxRef = el)}
       {...domProps}
       {...cleanMenuProps()}
@@ -1014,9 +1076,9 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       data-empty={state.collection().size === 0 || undefined}
     >
       {state.collection().size === 0 && local.renderEmptyState ? (
-        <li role="option" style={{ display: "contents" }} data-empty-state>
+        <div role="option" style={{ display: "contents" }} data-empty-state>
           {local.renderEmptyState()}
-        </li>
+        </div>
       ) : (
         <Show
           when={local.children}
@@ -1040,7 +1102,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
           {local.renderLoadMore?.()}
         </ListBoxLoadMoreItem>
       </Show>
-    </ul>
+    </div>
   );
 
   return (
@@ -1070,6 +1132,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     "id",
     "item",
     "textValue",
+    "ref",
   ]);
 
   const context = useContext(SelectStateContext);
@@ -1078,7 +1141,11 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
   }
   const state = context as SelectState<T>;
   const selectContext = useContext(SelectContext) as SelectContextValue<T> | null;
-  const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
+  const [ref, setRefSignal] = createSignal<HTMLDivElement | null>(null);
+  const setRef = (el: HTMLDivElement | null) => {
+    setRefSignal(el);
+    assignRef(local.ref, el as HTMLDivElement);
+  };
 
   const optionAria = createOption<T>(
     {
@@ -1187,7 +1254,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
           selectOption();
         }
       });
-    }) as JSX.EventHandler<HTMLLIElement, MouseEvent>;
+    }) as JSX.EventHandler<HTMLDivElement, MouseEvent>;
     return rest;
   };
   const selectOption = () => {
@@ -1209,7 +1276,9 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
 
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
-      <li
+      {/* `<div role="option">`, not `<li>` — see the SelectListBox note; upstream
+          RAC options are div-based. */}
+      <div
         ref={setRef}
         {...cleanOptionProps()}
         class={renderProps.class()}
@@ -1226,7 +1295,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
         ) : (
           renderProps.renderChildren()
         )}
-      </li>
+      </div>
     </SelectionIndicatorContext.Provider>
   );
 }

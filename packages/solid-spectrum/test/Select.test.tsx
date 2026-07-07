@@ -39,7 +39,10 @@ function renderSelect(props: Partial<Parameters<typeof Select<AnimalItem>>[0]> =
 describe("Select (solid-spectrum)", () => {
   it("wires visible label to trigger button via aria-labelledby", () => {
     renderSelect();
-    const trigger = screen.getByRole("button", { name: "Animals" });
+    // Upstream `useSelect` folds the selected value ahead of the field label in the
+    // trigger name (`aria-labelledby=[valueId, labelId]`), so the accessible name is
+    // "Choose an animal Animals" (placeholder value + label) — match on /Animals/.
+    const trigger = screen.getByRole("button", { name: /Animals/ });
     expect(trigger).toHaveAttribute("aria-labelledby");
     expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
   });
@@ -47,7 +50,7 @@ describe("Select (solid-spectrum)", () => {
   it("wires description text to trigger button aria-describedby", () => {
     renderSelect({ description: "Pick one option." });
 
-    const trigger = screen.getByRole("button", { name: "Animals" });
+    const trigger = screen.getByRole("button", { name: /Animals/ });
     const description = screen.getByText("Pick one option.");
     expect(trigger.getAttribute("aria-describedby")).toContain(description.id);
   });
@@ -59,7 +62,7 @@ describe("Select (solid-spectrum)", () => {
       errorMessage: "Selection is required.",
     });
 
-    const trigger = screen.getByRole("button", { name: "Animals" });
+    const trigger = screen.getByRole("button", { name: /Animals/ });
     const error = screen.getByText("Selection is required.");
     expect(trigger.getAttribute("aria-describedby")).toContain(error.id);
     expect(screen.queryByText("Pick one option.")).not.toBeInTheDocument();

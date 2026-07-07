@@ -73,6 +73,8 @@ export interface SelectAria<T> {
   isFocusVisible: Accessor<boolean>;
   /** Whether the select is currently open. */
   isOpen: Accessor<boolean>;
+  /** Whether the trigger button is currently pressed (for `pressScale`). */
+  isPressed: Accessor<boolean>;
   /** The currently selected item. */
   selectedItem: Accessor<CollectionNode<T> | null>;
 }
@@ -196,7 +198,7 @@ export function createSelect<T>(
     }
   };
 
-  const { pressProps } = createPress({
+  const { pressProps, isPressed } = createPress({
     get isDisabled() {
       return getProps().isDisabled ?? state.isDisabled;
     },
@@ -385,6 +387,15 @@ export function createSelect<T>(
           "aria-disabled": isDisabled || undefined,
           "aria-required": p.isRequired || undefined,
           "aria-describedby": p["aria-describedby"] || undefined,
+          // Mirror upstream `useSelect`: the trigger's accessible name folds the
+          // SELECTED VALUE ("Pro") ahead of the field label ("Plan") → "Pro Plan"
+          // via `aria-labelledby=[valueId, labelId]`. Only wire this when there is
+          // a real visible label; with an `aria-label` (no `labelledby`) the field
+          // props' `aria-label` stays the trigger name (label-less legacy path,
+          // keeps TabsPicker/label-less Select unchanged).
+          "aria-labelledby": fieldProps["aria-labelledby"]
+            ? [valueId, fieldProps["aria-labelledby"]].filter(Boolean).join(" ")
+            : undefined,
           onKeyDown,
           onFocus: handleFocus,
           onBlur: handleBlur,
@@ -409,11 +420,21 @@ export function createSelect<T>(
         id: valueId,
       } as JSX.HTMLAttributes<HTMLElement>;
     },
+    // Surfaced so the styled layer (S2 Picker) can apply the `pressScale` press
+    // effect on the trigger button — upstream S2 wires `pressScale(buttonRef)` on
+    // the RAC Button, which needs the button's live `isPressed`.
+    isPressed,
     get menuProps() {
       return {
         id: listBoxId,
         role: "listbox",
-        "aria-labelledby": buttonId,
+        // Mirror upstream `useSelect`: the listbox is labelled by the FIELD LABEL
+        // (`fieldProps['aria-labelledby']` → the visible "Plan" label), NOT the
+        // trigger button — the button's own accessible name folds in the selected
+        // value ("Pro Plan"), which must not leak onto the listbox. Only when
+        // there is no visible label (an `aria-label` on the field) does it fall
+        // back to the trigger id (unchanged legacy behavior for label-less use).
+        "aria-labelledby": fieldProps["aria-labelledby"] ?? buttonId,
         "aria-multiselectable": state.selectionMode() === "multiple" ? true : undefined,
         tabIndex: -1,
         onBlur: (e: FocusEvent) => {

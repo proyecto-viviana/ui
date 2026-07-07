@@ -128,7 +128,10 @@ describe("Select", () => {
         </Select>
       ));
 
-      const trigger = screen.getByRole("button", { name: "Animals" });
+      // Upstream `useSelect` folds the selected VALUE ahead of the field label in
+      // the trigger's accessible name (`aria-labelledby=[valueId, labelId]`), so the
+      // name is "Select an option Animals" (placeholder value + label), not "Animals".
+      const trigger = screen.getByRole("button", { name: /Animals/ });
       const label = screen.getByText("Animals");
       expect(trigger.getAttribute("aria-labelledby")).toContain(label.id);
     });

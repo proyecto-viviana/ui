@@ -57,6 +57,7 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
+import { pressScale } from "../pressScale";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import { useProviderProps, useTheme } from "../provider";
 import { Divider } from "../divider";
@@ -265,6 +266,21 @@ const pickerValue = style<PickerValueStyleProps>({
   },
 });
 
+// Faithful to upstream S2 `Picker`: the selected value text is mirrored from the
+// option's rendered content, and `PickerItem` wraps a string child in
+// `<Text slot="label">` (Picker.tsx:854). Inside `SelectValue` the `TextContext`
+// `label` slot styles that span `display: block; flex-grow: 1; truncate`
+// (Picker.tsx:718-731). Our port renders `selectedText` as a plain string, so we
+// wrap it in the equivalent label-slot span — otherwise the value text sits
+// directly on the flex `pickerValue` container and inherits its
+// `display: flex; align-items: center; height: 100%` instead of the block
+// text-height the `label` slot paints.
+const pickerValueText = style({
+  display: "block",
+  flexGrow: 1,
+  truncate: true,
+});
+
 const pickerChevron = style<{ size?: S2PickerSize; isLoading?: boolean }>({
   size: {
     size: {
@@ -418,7 +434,9 @@ const pickerOption = style<PickerOptionStyleProps>({
     default: "default",
     isDisabled: "default",
   },
-  transition: "default",
+  // Upstream `menuitem` (shared by Picker options) uses `transition: 'transform'`
+  // (transform-scoped, paired with `pressScale`), NOT the broad `'default'` set.
+  transition: "transform",
 });
 
 const pickerOptionLabel = style<{ size?: S2PickerSize }>({
@@ -623,6 +641,7 @@ function PickerListBoxPopover(props: {
 }
 
 function PickerLabel(props: {
+  id?: string;
   label: JSX.Element;
   size: S2PickerSize;
   isDisabled: boolean;
@@ -644,6 +663,7 @@ function PickerLabel(props: {
       })}
     >
       <span
+        id={props.id}
         class={pickerLabel({
           size: props.size,
           isDisabled: props.isDisabled,
@@ -692,15 +712,20 @@ function pickerValueContent<T>(
   valueProps: SelectValueRenderProps<T>,
   renderValue: ((selectedItems: T[]) => JSX.Element) | undefined,
 ) {
+  // Upstream wraps a custom `renderValue` in `<div style={{display:'contents'}}>`
+  // (Picker.tsx:743) so it lays out transparently in the flex value container.
   if (valueProps.selectedItems.length > 0 && renderValue) {
-    return renderValue(selectedValues(valueProps));
+    return <div style={{ display: "contents" }}>{renderValue(selectedValues(valueProps))}</div>;
   }
 
-  if (valueProps.selectedItems.length > 1) {
-    return `${valueProps.selectedItems.length} selected`;
-  }
+  // The default single/multi/placeholder text mirrors upstream's `<Text slot="label">`
+  // (block, flex-grow:1, truncate) — see `pickerValueText`.
+  const text =
+    valueProps.selectedItems.length > 1
+      ? `${valueProps.selectedItems.length} selected`
+      : (valueProps.selectedText ?? valueProps.placeholder ?? "");
 
-  return valueProps.selectedText ?? valueProps.placeholder ?? "";
+  return <span class={pickerValueText}>{text}</span>;
 }
 
 function loadingSpinnerLabel(loadingState: PickerLoadingState | undefined) {
@@ -800,6 +825,8 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
     },
   });
   const descriptionId = createUniqueId();
+  const labelId = createUniqueId();
+  const [triggerEl, setTriggerEl] = createSignal<HTMLButtonElement | null>(null);
   const selectDescribedBy = () => {
     const explicitDescribedBy = (headlessProps as Record<string, unknown>)["aria-describedby"] as
       | string
@@ -834,6 +861,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   const labelContent = (renderProps: SelectRenderProps) =>
     local.label ? (
       <PickerLabel
+        id={labelId}
         label={local.label}
         size={size()}
         isDisabled={renderProps.isDisabled}
@@ -853,36 +881,29 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       size: size(),
       isInvalid: isInvalid(),
     });
-  const itemTextForKey = (key: Key | null | undefined) => {
-    if (key == null) {
-      return undefined;
-    }
-    const propsRecord = headlessProps as Record<string, unknown>;
-    const items = propsRecord.items as T[] | undefined;
-    const getKey = propsRecord.getKey as ((item: T) => Key) | undefined;
-    const getTextValue = propsRecord.getTextValue as ((item: T) => string) | undefined;
-    const item = items?.find((candidate) => {
-      const itemRecord = candidate as Record<string, unknown>;
-      return (getKey?.(candidate) ?? itemRecord.key ?? itemRecord.id ?? String(candidate)) === key;
-    });
-    if (item == null) {
-      return undefined;
-    }
-    const itemRecord = item as Record<string, unknown>;
-    return String(getTextValue?.(item) ?? itemRecord.textValue ?? itemRecord.label ?? item);
-  };
+  // Labelling mirrors upstream `useSelect`: a REAL visible label is associated by
+  // id (`aria-labelledby` → `labelId`), letting the headless hook fold the value
+  // into the trigger name ("Pro Plan") while the listbox is named by the label
+  // alone ("Plan"). We only synthesize an `aria-label` when there is NO visible
+  // label (nothing to point at) — using the caller's explicit `aria-label` if
+  // given. Previously the port ALWAYS synthesized "value + label" as an
+  // `aria-label`, which leaked the selected value onto the listbox name.
   const ariaLabel = () => {
     const propsRecord = headlessProps as Record<string, unknown>;
     const explicitLabel = propsRecord["aria-label"];
     if (typeof explicitLabel === "string") {
       return explicitLabel;
     }
-    if (typeof local.label !== "string") {
-      return undefined;
+    return undefined;
+  };
+  const ariaLabelledBy = () => {
+    const explicitLabelledBy = (headlessProps as Record<string, unknown>)["aria-labelledby"] as
+      | string
+      | undefined;
+    if (!local.label) {
+      return explicitLabelledBy;
     }
-    const selectedText = itemTextForKey(selectedKey() ?? defaultSelectedKey());
-    const requiredText = propsRecord.isRequired ? " (required)" : "";
-    return selectedText ? `${selectedText} ${local.label}${requiredText}` : local.label;
+    return [explicitLabelledBy, labelId].filter(Boolean).join(" ") || undefined;
   };
 
   const listBoxChildren = (item: T) => {
@@ -911,6 +932,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       <HeadlessSelect
         {...selectProps}
         aria-label={ariaLabel()}
+        aria-labelledby={ariaLabelledBy()}
         aria-describedby={selectDescribedBy()}
         isInvalid={isInvalid()}
         class={rootClass}
@@ -919,6 +941,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
           <>
             <Show when={local.label}>{labelContent(renderProps)}</Show>
             <HeadlessSelectTrigger
+              ref={setTriggerEl}
               class={(triggerProps) =>
                 pickerTrigger({
                   ...triggerProps,
@@ -927,6 +950,10 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                   isInvalid: isInvalid(),
                 })
               }
+              // Faithful to upstream S2 `Picker` (`style={pressScale(buttonRef)}`):
+              // the trigger carries the Spectrum press-scale effect, which also
+              // emits the resting `will-change: transform` hint.
+              style={(triggerProps) => pressScale(() => triggerEl())(triggerProps)}
             >
               {(triggerProps) => (
                 <>
@@ -950,10 +977,12 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                       <PickerProgressCircle size={size()} loadingState={local.loadingState} />
                     </CenterBaseline>
                   </Show>
+                  {/* Faithful to upstream S2 `Picker.tsx` (the ChevronIcon carries
+                      NO `aria-hidden`), the trigger chevron is exposed as an `img`
+                      in the AX tree — mirroring the selected-option checkmark. */}
                   <ChevronIcon
                     size={size()}
                     styles={pickerChevron({ size: size(), isLoading: isTriggerLoading() })}
-                    aria-hidden="true"
                     data-open={triggerProps.isOpen ? "true" : undefined}
                   />
                   <Show when={triggerProps.isFocusVisible && isQuiet()}>
@@ -1021,6 +1050,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     "children",
   ]);
   const size = useContext(PickerSizeContext);
+  const [optionEl, setOptionEl] = createSignal<HTMLDivElement | null>(null);
 
   const optionClass = (renderProps: SelectOptionRenderProps) =>
     [
@@ -1038,7 +1068,14 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
       .join(" ");
 
   return (
-    <HeadlessSelectOption {...headlessProps} class={optionClass} style={local.UNSAFE_style}>
+    <HeadlessSelectOption
+      {...headlessProps}
+      ref={setOptionEl}
+      class={optionClass}
+      // Faithful to upstream S2 `Picker` (`style={pressScale(ref, props.UNSAFE_style)}`):
+      // options carry the press-scale effect + resting `will-change: transform`.
+      style={pressScale(() => optionEl(), local.UNSAFE_style)}
+    >
       {(renderProps) => (
         <>
           <CheckmarkIcon
@@ -1053,7 +1090,11 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             // the caller's `className` raw; our `class` prop is the raw path.
             class={pickerCheckmark({ ...renderProps, size })}
             style={pickerCheckmarkIconStyle(size)}
-            aria-hidden="true"
+            // No `aria-hidden`: upstream S2 `Picker` renders the selected-option
+            // checkmark as a bare `<CheckmarkIcon>` with NO `aria-hidden`, so the
+            // selected row exposes the checkmark as an `img` node in the AX tree
+            // (D6). Unselected rows' checkmarks are `visibility: hidden`, so they
+            // are pruned from the tree automatically — matching the React oracle.
           />
           {isTextOnlyChildren(local.children) ? (
             <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
