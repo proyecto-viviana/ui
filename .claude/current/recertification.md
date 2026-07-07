@@ -148,10 +148,11 @@ March order (dependency/leverage; within a tier, top to bottom):
   FieldError/HelpText, LabeledValue
 - **Tier 3 — overlays:** Tooltip, Popover, Dialog, Modal, AlertDialog, Menu,
   ActionMenu, ContextualHelp, Toast, DropZone/FileTrigger
-- **Tier 4 — collections:** Picker/Select **first** (director pass 2026-07-06:
-  production-broken for installed consumers — `picker-popover-anchor` +
-  `picker-item-checkmark` in tech-debt; highest-value single certification),
-  then ListBox, GridList, TagGroup, ComboBox, Autocomplete, Tabs, Breadcrumbs,
+- **Tier 4 — collections:** Picker/Select **✓ certified 2026-07-06 (CP9.40,
+  52/52)** — was first per the director pass (production-broken for installed
+  consumers — `picker-popover-anchor` + `picker-item-checkmark` in tech-debt
+  remain open as consumer-delivery items); D9/D10 for this unit deferred
+  (`picker-d10-rtl-driver`). Then ListBox, GridList, TagGroup, ComboBox, Autocomplete, Tabs, Breadcrumbs,
   Disclosure/Accordion, ActionBar, ActionGroup, Toolbar, TableView, TreeView,
   StepList, Virtualizer (via its hosts), DnD (via its hosts). Two gates before
   this tier starts: the D4 event-ordering policy decision and the D9/D10
@@ -2653,6 +2654,40 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   D1/D3/D5/D6/D7 across both units + the ActionMenu trigger), menu unit **215 green**, field+text unit **580 green**
   (shared infra untouched, confirmed), axe smoke **72 green**. `menu-actionmenu-d5-d6-backfill` is **DONE** (phases
   1 ul→div / 2 D5 / 3 D6 all landed). Gate adopted below.
+
+- ✓ **Picker/Select certified 2026-07-06 (CP9.40 — Tier-4 opener, `592ebc3e`):** FIRST collections unit certified.
+  `picker.certified.spec.ts` — two scenarios (trigger + open list) across D1/D3/D5/D6/D7/D8 = **52/52 green**. Four
+  faithful port fixes, plus the `ul/li → div[role=listbox]/div[role=option]` structural fix and ref/isPressed/
+  pressScale threading:
+  1. **Trigger accessible name folds the value ahead of the label.** `createSelect.ts` triggerProps
+     `aria-labelledby` is now `[valueId, fieldLabelledBy].filter(Boolean).join(" ")` (was label-only), mirroring
+     `useSelect.ts:224-227` — the name leads with the selected value ("Pro Plan …") not the bare field label. menuProps
+     `aria-labelledby` stays the FIELD label (listbox named by label, not the value-folded trigger). Stale unit tests
+     that matched the exact old name were loosened to `/Animals/` (+ the Picker "API section Docs section" fold).
+  2. **HiddenSelect renders AFTER the trigger** (`Select.tsx` RootChildren) — matches RAC `Select.tsx:288-289`
+     (button before HiddenSelect). Fixes the D5 tab-cycle order (visible button precedes the hidden native `<select>`).
+     Regenerated the two affected regression snapshots (Select + Tabs — the Tabs overflow menu embeds a Select).
+  3. **Selected option paints focus-visible on open.** The open effect now arms `state.selectionManager.setFocused(true)`
+     before the `focusedKey != null` guard (faithful to RAC `menuProps.autoFocus`). ROOT CAUSE worth remembering:
+     `createListBox` reimplements keyboard nav INLINE (imports only `createFocusWithin` + `createTypeSelect`), so
+     `createSelectableCollection`'s autoFocus effect never runs for a listbox built via `createListBox` — the Select
+     layer must arm collection focus itself.
+  4. **Listbox tabIndex/activedescendant scoped to the Select layer, `createListBox` UNTOUCHED.** Kept the hook object
+     (`listBoxHook`, not `const { listBoxProps } = …`) to dodge the destructure-freeze reactivity gotcha, then the
+     Select-layer `cleanListBoxProps` overrides `tabIndex` from `focusedKey` (`useSelectableCollection.ts:687-690`:
+     `-1` when a key is focused, else `0`) and STRIPS `aria-activedescendant`. Faithful ONLY at the Select layer because
+     Select uses REAL option focus (option becomes `document.activeElement`); standalone ListBox keeps its
+     container-focus model where `aria-activedescendant` is the live AT channel, so a shared-spine edit broke 3 ListBox
+     tests — reverted, moved here. GridList/Menu spine untouched. ListBox 149 / Select 140 / Picker 142 unit + full
+     solidaria-components 2158 + solid-spectrum 988 all green.
+  - **Deferred follow-ups (tracked, not blocking the cert):** (a) **`select-value-content-mirror`** — the trigger
+    mirrors only the selected option's TEXT; upstream `SelectValue` mirrors the full rendered node, so an option with
+    an icon/avatar slot loses it in the trigger. (b) **`picker-d10-rtl-driver`** — the picker fixture has no `?locale`
+    param, so no D10 RtlDriver scenario runs yet (D9 forced-colors likewise not wired for this unit). (c) **standalone
+    ListBox container-focus vs upstream real-option-focus** — a pre-existing whole-widget divergence (test at
+    `ListBox` container `.toHaveFocus()` after tab encodes it); out of scope for the Picker cert, flagged for a
+    dedicated pass. The two consumer-facing bugs (`picker-popover-anchor`, `picker-item-checkmark`) remain separately
+    tracked in `tech-debt.md`.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
