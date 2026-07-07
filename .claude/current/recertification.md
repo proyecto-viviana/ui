@@ -2689,6 +2689,38 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     dedicated pass. The two consumer-facing bugs (`picker-popover-anchor`, `picker-item-checkmark`) remain separately
     tracked in `tech-debt.md`.
 
+- ✓ **Color i18n/RTL parity — ColorArea + ColorSlider (`9d9b97de`):** closed the two pre-existing color
+  RTL visual reds. Root cause was English-only color intl, at two layers:
+  1. **solid-stately `Color`** returned hardcoded-English channel names / color names / hue names
+     (`getChannelName`/`getColorName`/`getHueName` ignored their `locale` param). Ported
+     `@react-stately/color`'s 34-locale catalog verbatim as an inline TS module
+     (`packages/solid-stately/src/color/intl/index.ts`) — hue names, chroma/lightness descriptors,
+     channel names, and the `colorName`/`transparentColorName` `{var}` messages — plus a minimal
+     `getColorStringForLocale` (exact→language→en-US fallback, mirrors `LocalizedStringDictionary`)
+     and `formatColorMessage`. **No new dependency** (didn't pull in `@internationalized/string`; the
+     class takes a `locale` string, not a reactive signal, so the upstream dictionary/formatter
+     semantics are hand-rolled). The OKLCH color-name ALGORITHM was already faithful — only the string
+     lookups were missing. Also dropped a divergent `white/black … % transparent` branch to match
+     upstream's plain localized `white`/`black`.
+  2. **ColorSlider thumb value label formatted in en-US regardless of locale.** `createColorSliderState`
+     reads `locale` from its own props (default `"en-US"`), but the `ColorSlider` component
+     (`solidaria-components/Color.tsx`) never passed it — so `getThumbValueLabel()` →
+     `formatChannelValue("hue", "en-US")` rendered `"50°"` while the color-name suffix (from
+     `createColorSlider`'s own `useLocale()`) was already Arabic, and the un-localized value label sized
+     the grid's auto output column (177px/15px vs React 155px/37px). Fix mirrors RAC `ColorSlider.tsx:69`
+     (`let {locale} = useLocale(); useColorSliderState({...props, locale})`): pass `locale().locale` into
+     `createColorSliderState`. Under ar-AE `Intl.NumberFormat` degree/narrow is `"50 درجة"` (verified in
+     Chromium), matching React. Also fixed a hardcoded `"en-US"` in `createColorSlider` `channelName`.
+  - ColorArea already reformats its own value text via `useLocale()`, and ColorWheel too — no state-locale
+    gap there. **Reusable gotcha:** a state hook that reads `locale` from PROPS (not `useLocale()`) is an
+    en-US landmine unless every component that builds the state threads the locale in; grep
+    `create*State(() => ({` for a missing `locale:` when a value label won't localize.
+  - Stale-literal test updates (the localization fix is correct; the assertions predated it):
+    `colorarea-visual.spec.ts` parameterizes the roledescription (`"2D slider"` default, `"مُنزلق 2D"`
+    for the RTL call); the ar-AE `Color.test.tsx` unit test expects the folded
+    `"Color picker, أداة انتقاء اللون"`. Full color visual suite **20/20**, solid-stately **887**,
+    solidaria-components Color **97**, solid-spectrum **988** green.
+
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
   x (409). `clonedElementScreenshot` pins the cloned frame at an integer viewport origin, but the residual
