@@ -1036,7 +1036,11 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         <>
           <CheckmarkIcon
             size={size === "S" ? "XS" : size}
-            styles={checkClass(renderProps)}
+            // Apply via `class` (raw), not `styles`: the icon `styles` path
+            // filters through `iconAllowedOverrides`, which omits `visibility`
+            // and would strip the checkmark's `visibility` toggle, leaving it
+            // visible on every option. Mirrors upstream S2 ComboBox `className`.
+            class={checkClass(renderProps)}
             style={comboBoxCheckmarkIconStyle(size)}
             aria-hidden="true"
           />

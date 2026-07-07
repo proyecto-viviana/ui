@@ -326,7 +326,12 @@ function TabsPickerOption(props: HeadlessSelectOptionProps<TabsPickerItem>): JSX
           <TextContext.Provider value={textContextValue}>
             <CheckmarkIcon
               size="M"
-              styles={menuItemCheckmark({
+              // Apply via `class` (raw), not `styles`: the icon `styles` path
+              // filters through `iconAllowedOverrides`, which omits `visibility`
+              // and would strip the checkmark's `visibility` toggle, leaving it
+              // visible on every item. Matches the sibling Menu usage and
+              // upstream S2 `className`.
+              class={menuItemCheckmark({
                 isSelected: renderProps.isSelected,
                 isDisabled: renderProps.isDisabled,
               })}

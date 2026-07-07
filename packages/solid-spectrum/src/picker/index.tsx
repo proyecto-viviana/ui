@@ -1043,7 +1043,15 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
         <>
           <CheckmarkIcon
             size={size === "S" ? "XS" : size}
-            styles={pickerCheckmark({ ...renderProps, size })}
+            // Mirror upstream S2 `Picker` (Picker.tsx): the checkmark style is
+            // applied via `className`, NOT the icon `styles` override. The icon
+            // `styles` path filters overrides through `iconAllowedOverrides`,
+            // which (faithfully) omits `visibility` — routing the checkmark
+            // through it silently strips the `visibility: { default: hidden,
+            // isSelected: visible }` atom, leaving the checkmark visible on
+            // every option. Upstream's hand-written ui-icon Checkmark applies
+            // the caller's `className` raw; our `class` prop is the raw path.
+            class={pickerCheckmark({ ...renderProps, size })}
             style={pickerCheckmarkIconStyle(size)}
             aria-hidden="true"
           />
