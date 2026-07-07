@@ -22,6 +22,7 @@ import {
   createOverlayTrigger,
   createPopover,
   FocusScope,
+  useLocale,
   useUNSAFE_PortalContext,
   visuallyHiddenStyles,
   type AriaLabelingProps,
@@ -285,6 +286,14 @@ export function Popover(props: PopoverProps): JSX.Element {
   // False on the server and during hydration; true after onMount. Gates the Portal
   // so overlay content only ever renders client-side, post-hydration.
   const isHydrated = useIsHydrated();
+
+  // Mirrors upstream S2 Popover (Popover.mjs: `el.lang = locale; el.dir =
+  // direction`): the overlay portals out of the app root, so it must carry both
+  // the locale `lang` AND writing `direction` — otherwise the portaled
+  // listbox/dialog stays LTR and keeps the Latin font under an RTL Provider (the
+  // `:lang(ar)` font swap needs a `lang` ancestor the portal would otherwise
+  // escape). RAC's own Popover only threads `dir`; S2 adds `lang` on top.
+  const locale = useLocale();
 
   const triggerContext = useContext(PopoverTriggerContext);
   const dialogTriggerContext = useContext(DialogTriggerContext);
@@ -578,6 +587,8 @@ export function Popover(props: PopoverProps): JSX.Element {
           tabIndex={shouldBeDialog() ? -1 : undefined}
           class={renderProps.class()}
           style={mergedStyle()}
+          lang={locale().locale}
+          dir={locale().direction}
           data-trigger={resolvedTrigger()}
           data-placement={popoverAria.placement()}
           data-entering={dataAttr(local.isEntering)}

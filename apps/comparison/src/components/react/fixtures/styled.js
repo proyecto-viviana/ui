@@ -355,6 +355,7 @@ import {
 } from "@comparison/data/numberfield-demo";
 import {
   normalizePickerDemoProps,
+  pickerDemoLocaleFromWindow,
   pickerDemoPropsFromWindow,
   pickerItems,
   pickerSelectedKeysForMode,
@@ -4189,6 +4190,7 @@ function ReactPickerDemo() {
   );
   const [loadMoreCount, setLoadMoreCount] = useState(0);
   const colorScheme = useComparisonResolvedTheme();
+  const locale = pickerDemoLocaleFromWindow();
   const menuWidth = Number.parseInt(demoProps.menuWidth, 10);
   const numericMenuWidth = Number.isFinite(menuWidth) && menuWidth > 0 ? menuWidth : undefined;
   const disabledKeys = demoProps.disableEnterprise ? ["enterprise"] : undefined;
@@ -4323,6 +4325,7 @@ function ReactPickerDemo() {
       ],
     }),
     colorScheme,
+    locale,
   );
 }
 

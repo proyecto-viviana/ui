@@ -3,6 +3,7 @@ import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerForcedColorsDriver } from "../drivers/forced-colors";
 import { registerPixelDriver } from "../drivers/pixel";
+import { registerRtlDriver } from "../drivers/rtl";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 import { registerTargetSizeDriver } from "../drivers/target-size";
@@ -50,16 +51,18 @@ import { expect } from "@playwright/test";
  * Tab in/out of the trigger; arrow-key roving through the open list), D6 (AX:
  * the trigger's button semantics; the `role="listbox"` subtree + per-option
  * `aria-selected`), D7 (contrast: value text on the field; option copy on
- * `layer-2`), D8 (target size: trigger + option hit areas), D9 (forced colors).
+ * `layer-2`), D8 (target size: trigger + option hit areas), D9 (forced colors),
+ * D10 (RTL: the trigger value/chevron mirrored under `ar-AE`; the open list's
+ * option roving re-run under RTL). The Picker fixture routes `?locale` into the
+ * S2 `Provider` (picker-demo.ts `pickerDemoLocaleFromWindow`), matching the
+ * button/accordion locale wiring, so the D10 driver's `locale: "ar-AE"` case
+ * merge flips both stacks to `dir="rtl"`.
  * NOT registered here:
  *   - D2 (motion): the popover enter/exit fade is the hand-rolled Picker popover
  *     surface concern shared with Menu's overlay-realignment follow-up.
  *   - D4 (events): open-on-press, type-ahead, `onSelectionChange`, focus
  *     restoration are `Select`/collection interaction behaviors, covered by
  *     picker-visual.spec.ts, not the surfaces' paint.
- *   - D10 (RTL): the Picker fixture does not yet route `?locale`; tracked as a
- *     follow-up (add `locale` passthrough to the picker fixture, then register
- *     `registerRtlDriver`), matching the button/accordion locale wiring.
  */
 
 /** The closed field trigger `button[aria-haspopup=listbox]` in THIS panel. Its
@@ -242,6 +245,7 @@ registerAxTreeDriver(triggerScenario);
 registerContrastDriver(triggerScenario);
 registerTargetSizeDriver(triggerScenario);
 registerForcedColorsDriver(triggerScenario);
+registerRtlDriver(triggerScenario, { cases: ["size-m"] });
 
 registerStateMatrixDriver(listScenario);
 registerPixelDriver(listScenario);
@@ -250,3 +254,4 @@ registerAxTreeDriver(listScenario);
 registerContrastDriver(listScenario);
 registerTargetSizeDriver(listScenario);
 registerForcedColorsDriver(listScenario);
+registerRtlDriver(listScenario, { cases: ["size-m"] });

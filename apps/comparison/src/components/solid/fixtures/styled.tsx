@@ -385,6 +385,7 @@ import {
 } from "@comparison/data/numberfield-demo";
 import {
   normalizePickerDemoProps,
+  pickerDemoLocaleFromWindow,
   pickerDemoPropsFromWindow,
   pickerItems,
   pickerSelectedKeysForMode,
@@ -7453,6 +7454,7 @@ function SolidSpectrumPickerDemo() {
     pickerSelectedKeysForMode(demoProps().selectedKey, demoProps().selectionMode),
   );
   const [loadMoreCount, setLoadMoreCount] = createSignal(0);
+  const locale = pickerDemoLocaleFromWindow();
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -7504,6 +7506,7 @@ function SolidSpectrumPickerDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      locale,
       background: "base",
       style: providerShellStyle,
     },

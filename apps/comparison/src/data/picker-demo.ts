@@ -13,6 +13,10 @@ export const pickerDirectionOptions = ["bottom", "top"] as const;
 export const pickerAlignOptions = ["start", "end"] as const;
 export const pickerValidationBehaviorOptions = ["native", "aria"] as const;
 export const pickerLoadingStateOptions = ["idle", "loading", "loadingMore"] as const;
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// Picker fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
+// can re-run D1/D5 mirrored, matching the button/accordion locale wiring.
+export const pickerDemoLocaleOptions = ["en-US", "ar-AE"] as const;
 
 export type PickerDemoSize = (typeof pickerSizeOptions)[number];
 export type PickerDemoKey = (typeof pickerKeyOptions)[number];
@@ -268,6 +272,22 @@ export function pickerDemoPropsFromWindow(): PickerDemoProps {
   }
 
   return pickerDemoPropsFromSearch(window.location.search);
+}
+
+// Locale is threaded separately from the demo props: the D10 (RTL/i18n) driver
+// re-mounts the fixture with `?locale=ar-AE` so the S2 `Provider` computes
+// `dir="rtl"`, and the picker fixture passes it straight into that Provider.
+export function pickerDemoLocaleFromSearch(search: string) {
+  const locale = new URLSearchParams(search).get("locale");
+  return isOneOf(locale, pickerDemoLocaleOptions) ? locale : undefined;
+}
+
+export function pickerDemoLocaleFromWindow() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return pickerDemoLocaleFromSearch(window.location.search);
 }
 
 export function serializePickerDemoProps(props: PickerDemoProps) {

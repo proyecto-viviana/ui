@@ -151,8 +151,9 @@ March order (dependency/leverage; within a tier, top to bottom):
 - **Tier 4 — collections:** Picker/Select **✓ certified 2026-07-06 (CP9.40,
   52/52)** — was first per the director pass (production-broken for installed
   consumers — `picker-popover-anchor` + `picker-item-checkmark` in tech-debt
-  remain open as consumer-delivery items); D9/D10 for this unit deferred
-  (`picker-d10-rtl-driver`). Then ListBox, GridList, TagGroup, ComboBox, Autocomplete, Tabs, Breadcrumbs,
+  remain open as consumer-delivery items); D9 shipped, D10 now shipped too
+  (`picker-d10-rtl-driver` DONE — caught + fixed an app-wide portal-locale
+  `lang`/`dir` bug in the shared Popover). Then ListBox, GridList, TagGroup, ComboBox, Autocomplete, Tabs, Breadcrumbs,
   Disclosure/Accordion, ActionBar, ActionGroup, Toolbar, TableView, TreeView,
   StepList, Virtualizer (via its hosts), DnD (via its hosts). Two gates before
   this tier starts: the D4 event-ordering policy decision and the D9/D10
@@ -2680,10 +2681,11 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      container-focus model where `aria-activedescendant` is the live AT channel, so a shared-spine edit broke 3 ListBox
      tests — reverted, moved here. GridList/Menu spine untouched. ListBox 149 / Select 140 / Picker 142 unit + full
      solidaria-components 2158 + solid-spectrum 988 all green.
-  - **Deferred follow-ups (tracked, not blocking the cert):** (a) **`select-value-content-mirror`** — the trigger
-    mirrors only the selected option's TEXT; upstream `SelectValue` mirrors the full rendered node, so an option with
-    an icon/avatar slot loses it in the trigger. (b) **`picker-d10-rtl-driver`** — the picker fixture has no `?locale`
-    param, so no D10 RtlDriver scenario runs yet (D9 forced-colors likewise not wired for this unit). (c) **standalone
+  - **Deferred follow-ups (tracked, not blocking the cert):** (a) **`select-value-content-mirror`** ✓ DONE
+    (`6823c0b2`) — the trigger now mirrors the full rendered node (icon/avatar + label), not just TEXT. (b)
+    **`picker-d10-rtl-driver`** ✓ DONE — the picker fixture now routes `?locale`, D10 RTL runs for both trigger +
+    list, and it caught + fixed an app-wide portal-locale `lang`/`dir` bug in the shared Popover (D9 forced-colors
+    was already wired). (c) **standalone
     ListBox container-focus vs upstream real-option-focus** — a pre-existing whole-widget divergence (test at
     `ListBox` container `.toHaveFocus()` after tab encodes it); out of scope for the Picker cert, flagged for a
     dedicated pass. The two consumer-facing bugs (`picker-popover-anchor`, `picker-item-checkmark`) remain separately
@@ -2741,6 +2743,28 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   Verified: solid-spectrum **989** unit (+1) / SSR 2 / hydrate 1, and all **61** Picker e2e (D1/D3/D5/D6/D7/D8/D9 —
   the D3 pixel diffs confirm the text-only trigger is pixel-identical to before). Remaining CP9.40 follow-ups still
   open: `picker-d10-rtl-driver`, standalone-ListBox container-focus.
+
+- ✓ **`picker-d10-rtl-driver` DONE — Picker now runs the D10 RTL/i18n driver, and it caught a real
+  portal-locale bug.** (Deferred follow-up (b) from the CP9.40 Picker cert, above.) Wired the picker fixture's
+  `?locale` passthrough exactly like button/accordion: `picker-demo.ts` gains `pickerDemoLocaleOptions`
+  (`["en-US","ar-AE"]`) + `pickerDemoLocaleFromSearch`/`pickerDemoLocaleFromWindow`; both the React
+  (`renderReactSpectrumReference(..., colorScheme, locale)`) and Solid (`SolidSpectrumProvider locale`)
+  fixtures thread it into the S2 `Provider`. Registered `registerRtlDriver` for BOTH the trigger and list
+  scenarios (`cases: ["size-m"]`), so D10 re-runs D1 (state matrix, +`direction`) and D5 (focus trail) under
+  `ar-AE`. **The driver immediately went red on the LIST scenario (trigger was green):** the portaled listbox
+  rendered `direction: ltr` (and the Latin font) under an RTL `Provider`, because the overlay portals OUT of
+  the app root, escaping the `Provider`'s `dir`/`lang` DOM ancestry — the trigger, being inside the Provider,
+  was fine. **Root-caused + fixed faithfully in `solidaria-components/src/Popover.tsx`:** upstream S2 Popover
+  (`Popover.mjs`: `el.lang = locale; el.dir = direction` in a ref callback) sets BOTH `lang` and `dir` on the
+  popover element precisely because it portals away — RAC's own Popover threads only `dir`, and S2 layers `lang`
+  on top so the `:lang(ar)` font swap survives the portal. Mirrored that: the Popover now reads `useLocale()`
+  and sets `lang={locale().locale} dir={locale().direction}` on the overlay div. This is an **app-wide overlay
+  fix** (Menu/ComboBox/DatePicker/Dialog/Tooltip all portal through this Popover); verified no regression —
+  solidaria-components Popover/Dialog/Menu **172** unit green, solid-spectrum Picker **9** unit green, and the
+  Picker certified suite is **58** green (52 prior + 6 new D10). The 5 pre-existing red visual specs
+  (combobox/datepicker/dialog `*-visual`, all interaction/measurement rot on `main`) were confirmed to fail
+  identically WITHOUT this change (stash-rebuild-rerun), so they are not regressions. Last CP9.40 follow-up
+  still open: standalone-ListBox container-focus vs upstream real-option-focus.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
