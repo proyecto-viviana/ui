@@ -17,7 +17,11 @@ concurrency:
 
 jobs:
   release:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    # npm provenance (auto-enabled by OIDC trusted publishing) requires a
+    # GitHub-hosted runner; Blacksmith runners are seen as "self-hosted" and
+    # fail sigstore verification with E422. Release runs rarely, so the
+    # Blacksmith speed loss here is immaterial.
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
