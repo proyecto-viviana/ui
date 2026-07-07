@@ -629,6 +629,10 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         "data-rsp-slot": "text",
       },
       description: {
+        // Carry the headless description-slot id so the item's
+        // `aria-describedby` resolves to this element (upstream two-context
+        // `Text` delegation).
+        id: renderProps.descriptionProps?.id,
         styles: () => menuItemDescription(itemStyleProps(renderProps)),
         "data-rsp-slot": "text",
       },
@@ -639,6 +643,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     },
   });
   const keyboardContextValue = (renderProps: MenuItemRenderProps) => ({
+    // Carry the headless keyboard-slot id so it too is referenced by the item's
+    // `aria-describedby`.
+    id: renderProps.keyboardShortcutProps?.id,
     styles: () => menuItemKeyboard(itemStyleProps(renderProps)),
   });
   const MenuItemContents = (contentProps: { renderProps: MenuItemRenderProps }) => {

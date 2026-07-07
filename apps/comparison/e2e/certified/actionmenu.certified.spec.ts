@@ -1,3 +1,4 @@
+import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -37,15 +38,13 @@ import { expect } from "@playwright/test";
  *
  * SCOPE — applicable drivers: D1 (trigger button + item parts), D3 (pixel:
  * icon-only trigger glyph + painted list), D5 (focus: arrow-key roving through the
- * open list — same roving-tabindex contract certified on Menu, CP9.37), D7
- * (contrast: item copy on `layer-2`).
+ * open list — same roving-tabindex contract certified on Menu, CP9.37), D6 (AX:
+ * the `role="menu"` subtree + each item's accessible name AND description —
+ * shared with Menu, landed in CP9.39), D7 (contrast: item copy on `layer-2`).
  * The LIST scenario carries CP9.32's tracked/deferred artifacts UNCHANGED:
  *   - `styleProps.remove:["outline-color"]` — an unobservable computed-style channel
  *     (both stacks now `<div role="menu">`; `outline-style:none` on both, zero paint).
  *     A `color`-inheritance delta, NOT retired by the ul→div refactor (see CP9.37).
- *   - D6 (AX): the item accessible DESCRIPTION gap (stripped `aria-describedby` /
- *     unassigned description+keyboard ids) is the same shared two-context `Text`
- *     delegation follow-up as Menu — deferred, registered when that unit lands.
  *   - D2 (motion): the hand-rolled `ActionMenuPopover` enter/exit fade is the same
  *     surface concern as Menu's `menuPopover`, tracked with the overlay realignment.
  *   - D4/D8 (open-on-press, type-ahead, `onAction`, hit-area) are
@@ -167,6 +166,16 @@ const listScenario: DriverScenario = {
       },
     ],
   },
+  // D6: the `role="menu"` subtree — roles/names/states plus each item's
+  // accessible DESCRIPTION (description text + keyboard shortcut). ActionMenu
+  // items render through the same certified `MenuItem`, so this shares Menu's
+  // two-context `Text`/`Keyboard` id delegation (CP9.39).
+  ax: {
+    cases: ["size-m"],
+    roots: {
+      menu: menuList,
+    },
+  },
 };
 
 registerStateMatrixDriver(triggerScenario);
@@ -176,3 +185,4 @@ registerStateMatrixDriver(listScenario);
 registerPixelDriver(listScenario);
 registerContrastDriver(listScenario);
 registerFocusTrailDriver(listScenario);
+registerAxTreeDriver(listScenario);

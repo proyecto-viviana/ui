@@ -108,6 +108,21 @@ diverge. It is a discovery aid, not a floor. Every flag is reconciled against th
 authoritative source before a test changes (see `upstream-sync.md`, which also
 defines how new upstream releases are absorbed).
 
+### Driver applicability (recertification march)
+
+A recertification unit runs a component through every **applicable** pair-oracle
+driver (D1–D10; see `recertification.md`). Which drivers are in-scope is a
+per-component judgement, with one hard floor: **D5 (focus trail) and D6 (AX tree)
+are mandatory for every keyboard-heavy composite** — any component with roving
+focus, arrow-key navigation, type-ahead, or a collection of focusable items
+(menus, listboxes, grids, trees, tabs, toolbars, comboboxes, pickers, and their
+compositions). Certifying such a component on paint drivers alone (D1/D3/D7) is
+insufficient: it cannot catch a regression of the `menu-focus-roving` class (real
+DOM focus not following `focusedKey`) or a lost/dangling item description — both
+were REAL port bugs the Menu/ActionMenu D5+D6 backfill surfaced only once these
+drivers were registered (recertification.md CP9.38/CP9.39). A keyboard-heavy unit
+that omits D5 or D6 is `partial`, not `accepted`.
+
 ## Refresh
 
 Status is refreshed from commands and reports; the snapshot lives in `status.md`.

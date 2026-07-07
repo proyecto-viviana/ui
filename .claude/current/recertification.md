@@ -787,13 +787,16 @@ A full-project validation pass (parity / functionality / a11y / process) was run
 2026-07-06; findings live as tickets in `tech-debt.md` and the refreshed
 `status.md`/`steering.md`. What changes for THIS march:
 
-1. **Driver-applicability bar tightened for keyboard composites.** Menu
-   (CP9.32) and ActionMenu (CP9.33) certified without D5 focus-trail or D6
-   AX-tree coverage — the certified suite would not catch a regression of the
-   `menu-focus-roving` class of bug (real focus not following `focusedKey`).
-   Backfill both certs (`menu-actionmenu-d5-d6-backfill`) and treat D5+D6 as
-   mandatory for every keyboard-heavy composite from here on; propagate the
-   rule into `certification.md` gates when the backfill lands.
+1. **Driver-applicability bar tightened for keyboard composites. DONE
+   2026-07-06 (CP9.37–9.39).** Menu (CP9.32) and ActionMenu (CP9.33) certified
+   without D5 focus-trail or D6 AX-tree coverage — the certified suite would not
+   catch a regression of the `menu-focus-roving` class of bug (real focus not
+   following `focusedKey`). Both certs are now backfilled
+   (`menu-actionmenu-d5-d6-backfill` complete: phase 1 ul→div CP9.37, phase 2 D5
+   CP9.38, phase 3 D6 CP9.39) and each caught a real port bug (D5: container
+   roving tabindex; D6: stripped item `aria-describedby`). The rule — **D5+D6 are
+   mandatory for every keyboard-heavy composite** — is now propagated into
+   `certification.md` (see "Driver applicability" under the acceptance gates).
 2. **Tier 4 starts with Picker/Select** — it is production-broken for
    installed consumers (`picker-popover-anchor`, `picker-item-checkmark`); its
    certification is the highest-value single unit in the remaining march.
@@ -2620,6 +2623,36 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   the last open phase** of `menu-actionmenu-d5-d6-backfill` (two-context `Text`/`Keyboard` id delegation + restore the
   stripped item `aria-describedby` + field-regression sweep); the gate adoption ("D5+D6 mandatory for keyboard-heavy
   composites" in `certification.md`) lands with it.
+
+- ✓ **Menu/ActionMenu D6 AX-tree certified 2026-07-06 (CP9.39 — backfill phase 3, `menu-actionmenu-d5-d6-backfill`
+  DONE):** closed the last phase — restored upstream's TWO-CONTEXT item description delegation so each `menuitem`
+  exposes its description text + keyboard shortcut as an accessible DESCRIPTION (previously the port stripped the
+  item's `aria-describedby` and never assigned the description/keyboard ids, so `snapshotDescriptions` read `[]`
+  while upstream read `"Copy the selected layer Cmd+C"` etc.). The repair, faithful to `useMenuItem` and staying
+  strictly menu-scoped (the shared `Text`/`Keyboard` source was NOT touched — so no field-regression risk
+  materialized):
+  1. **Headless id generation via `createSlotId`** (`solidaria/src/menu/createMenuItem.ts`). The item's `descriptionId`
+     /`keyboardId` were static `${key}-desc`/`${key}-kbd` strings emitted unconditionally; swapped to `createSlotId()`
+     (the repo's 1:1 port of upstream `useSlotId`), which resolves to `undefined` unless an element carrying that id
+     is actually in the DOM. `aria-describedby` is now `[descriptionId(), keyboardId()].filter(Boolean).join(" ") ||
+     undefined` — exactly upstream's shape — so a description-less item leaves it UNSET instead of dangling (verified:
+     72/72 axe tests green, no `aria-describedby` reference violation anywhere in the playground). `descriptionProps`
+     /`keyboardShortcutProps` became getters so the reactively-cleared slot id re-tracks.
+  2. **Thread the id-carrying props through the render channel** (`solidaria-components/src/Menu.tsx`). Stopped
+     stripping `aria-describedby` in `cleanItemProps`, and added `descriptionProps`/`keyboardShortcutProps` (from
+     `itemAria`) to `MenuItemRenderProps` (the memo the styled layer receives). This DATA channel (not a nested
+     Solid context) sidesteps the owner-binding fragility that bites cross-provider id delegation in Solid: the S2
+     `MenuItem` already receives `renderValues` as its render-prop argument, deterministically, for every render path.
+  3. **Merge the ids into the styled contexts** (`solid-spectrum/src/menu/index.tsx`). `textContextValue`'s
+     `description` slot now carries `id: renderProps.descriptionProps?.id` and `keyboardContextValue` carries
+     `id: renderProps.keyboardShortcutProps?.id`, so the rendered `Text slot="description"` (`id={props.id ??
+     contextProps?.id}`) and `Keyboard` (`getContentDomProps` spreads `id`) carry the ids the item's
+     `aria-describedby` references. ActionMenu items render through this SAME certified `MenuItem`, so the one edit
+     certifies both.
+  Result: **D6 green on both** (`menu` + `actionmenu` AX tree), full certified suites **48/48 green** (every driver
+  D1/D3/D5/D6/D7 across both units + the ActionMenu trigger), menu unit **215 green**, field+text unit **580 green**
+  (shared infra untouched, confirmed), axe smoke **72 green**. `menu-actionmenu-d5-d6-backfill` is **DONE** (phases
+  1 ul→div / 2 D5 / 3 D6 all landed). Gate adopted below.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

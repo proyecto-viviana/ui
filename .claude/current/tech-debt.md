@@ -654,15 +654,22 @@ tasks:
       check (0 errors), test:run (5524 passed), a11y:check (44/44).
   - id: menu-actionmenu-d5-d6-backfill
     title: Backfill D5 focus-trail + D6 AX-tree evidence on the Menu and ActionMenu certifications
-    state: open
+    state: done
     roadmap: recertification
     note: >-
-      Menu (CP9.32, 14/14) and ActionMenu (CP9.33, 30/30) certified without D5/D6
-      coverage — for keyboard composites those are exactly the drivers that would
-      catch an SR-operability regression (the menu-focus-roving class of bug). Add
-      D5/D6 sections to both certified specs; adopt "D5+D6 mandatory for
-      keyboard-heavy composites" into the certification.md gates. Exit: both certs
-      green including D5/D6, and the bar text updated.
+      DONE 2026-07-06 (CP9.37 ul→div, CP9.38 D5, CP9.39 D6). Menu (CP9.32) and
+      ActionMenu (CP9.33) certified without D5/D6 coverage — for keyboard composites
+      those are exactly the drivers that would catch an SR-operability regression
+      (the menu-focus-roving class of bug). Both phases each surfaced a REAL port
+      bug: D5 caught the menu container roving tabindex (hard-coded 0 vs upstream
+      `focusedKey==null ? 0 : -1`, fixed as a getter that survives mergeProps);
+      D6 caught the stripped item `aria-describedby` + unassigned description/
+      keyboard ids (restored via createSlotId in createMenuItem + id-props threaded
+      through MenuItemRenderProps into the S2 TextContext/KeyboardContext slots;
+      shared Text/Keyboard source untouched, so no field regression). Both certs
+      green including D5/D6 (48/48 across both units), 215 menu unit + 580 field/
+      text unit + 72 axe smoke green. Rule "D5+D6 mandatory for keyboard-heavy
+      composites" adopted into certification.md ("Driver applicability").
   - id: recert-drivers-d9-d12
     title: Land the remaining pair-oracle drivers — D9 forced-colors, D10 RTL, D11 timing, D12 SSR
     state: open
@@ -904,14 +911,16 @@ the exit's Playwright contract exists and passes —
 code + the passing contract on 2026-07-06; this section previously still
 described the pre-fix state.
 
-What remains is certification-level, not operability-level: Menu and ActionMenu
+What remained was certification-level, not operability-level: Menu and ActionMenu
 were recertified (CP9.32/9.33) without D5 focus-trail or D6 AX-tree drivers, so
 the certified suite would not catch a regression of exactly this bug. Tracked as
-`menu-actionmenu-d5-d6-backfill`.
+`menu-actionmenu-d5-d6-backfill` — **DONE 2026-07-06 (CP9.38 D5, CP9.39 D6).**
 
-**Exit (backfill):** Menu and ActionMenu certified specs include D5+D6 sections
-and pass; `certification.md` gates state that keyboard-heavy composites do not
-certify on D1/D7 alone.
+**Exit (backfill) — met:** Menu and ActionMenu certified specs now include D5+D6
+sections and pass (48/48 across both units); `certification.md` ("Driver
+applicability") states that keyboard-heavy composites do not certify on the paint
+drivers alone. Registering the drivers surfaced two real port bugs (D5 container
+roving tabindex; D6 stripped item `aria-describedby`), both fixed faithfully.
 
 ## Pair-oracle drivers D9–D12 unlanded; D4 policy undecided; D6 announcements never green
 

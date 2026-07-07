@@ -12,6 +12,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { getEventTarget } from "../utils/dom";
 import { isVirtualClick } from "../utils/events";
+import { createSlotId } from "../ssr";
 import { getMenuData } from "./createMenu";
 import type { MenuState, Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
 
@@ -327,10 +328,15 @@ export function createMenuItem<T>(
   // Handle focus ring
   const { isFocusVisible, focusProps } = createFocusRing();
 
-  // Generate unique IDs for label and description
+  // Generate unique IDs for label and description. The description + keyboard
+  // ids use `createSlotId` (a 1:1 port of upstream `useSlotId`): each resolves
+  // to `undefined` unless an element carrying that id is actually rendered, so
+  // an item with no description/shortcut leaves `aria-describedby` unset instead
+  // of pointing at a non-existent element. Mirrors useMenuItem's
+  // `[props['aria-describedby'], descriptionId, keyboardId].filter(Boolean)`.
   const labelId = `${getProps().key}-label`;
-  const descriptionId = `${getProps().key}-desc`;
-  const keyboardId = `${getProps().key}-kbd`;
+  const descriptionId = createSlotId();
+  const keyboardId = createSlotId();
 
   return {
     get menuItemProps() {
@@ -354,7 +360,7 @@ export function createMenuItem<T>(
         "aria-checked": mode !== "none" && !trigger ? selected : undefined,
         "aria-label": ariaLabel,
         "aria-labelledby": !ariaLabel ? labelId : undefined,
-        "aria-describedby": [descriptionId, keyboardId].filter(Boolean).join(" "),
+        "aria-describedby": [descriptionId(), keyboardId()].filter(Boolean).join(" ") || undefined,
         "aria-controls": p["aria-controls"],
         "aria-haspopup": p["aria-haspopup"],
         "aria-expanded": p["aria-expanded"],
@@ -388,12 +394,14 @@ export function createMenuItem<T>(
     labelProps: {
       id: labelId,
     },
-    descriptionProps: {
-      id: descriptionId,
+    // Getters so the slot id stays reactive: `createSlotId` may clear the id
+    // (to `undefined`) after mount if no element registered it, and consumers
+    // reading these props re-track that change.
+    get descriptionProps() {
+      return { id: descriptionId() };
     },
-    keyboardShortcutProps: {
-      id: keyboardId,
-      "aria-hidden": true,
+    get keyboardShortcutProps() {
+      return { id: keyboardId(), "aria-hidden": true };
     },
     isFocused,
     isFocusVisible: () => isFocused() && isFocusVisible(),

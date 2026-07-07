@@ -130,10 +130,7 @@ export interface MenuProps<T>
   /** Ref for the menu element. */
   ref?: RefLike<HTMLDivElement>;
   /** Custom renderer for the menu element. */
-  render?: (
-    props: JSX.HTMLAttributes<HTMLDivElement>,
-    renderProps: MenuRenderProps,
-  ) => JSX.Element;
+  render?: (props: JSX.HTMLAttributes<HTMLDivElement>, renderProps: MenuRenderProps) => JSX.Element;
   /** Drag and drop hooks from `useDragAndDrop`. */
   dragAndDropHooks?: DragAndDropHooks<T>;
 }
@@ -157,6 +154,18 @@ export interface MenuItemRenderProps {
   hasSubmenu: boolean;
   /** Whether the submenu is currently open. */
   isOpen: boolean;
+  /**
+   * Internal: props (carrying the slot `id` the item's `aria-describedby`
+   * references) for the item's description text element. Threaded to the styled
+   * `Text slot="description"` so it receives the id — mirrors upstream's
+   * `TextContext` description-slot delegation.
+   */
+  descriptionProps?: JSX.HTMLAttributes<HTMLElement>;
+  /**
+   * Internal: props (id + `aria-hidden`) for the item's keyboard-shortcut
+   * element, threaded to the styled `Keyboard`.
+   */
+  keyboardShortcutProps?: JSX.HTMLAttributes<HTMLElement>;
 }
 
 export interface MenuItemProps<T>
@@ -1518,6 +1527,8 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       isDisabled: itemAria.isDisabled(),
       hasSubmenu: Boolean(contextProps()["aria-haspopup"]),
       isOpen: contextProps()["aria-expanded"] === true,
+      descriptionProps: itemAria.descriptionProps,
+      keyboardShortcutProps: itemAria.keyboardShortcutProps,
     };
   });
 
@@ -1537,11 +1548,13 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   };
 
   const cleanItemProps = () => {
-    const {
-      ref: _ref1,
-      "aria-describedby": _ariaDescribedby,
-      ...rest
-    } = itemAria.menuItemProps as Record<string, unknown>;
+    // Keep `aria-describedby`: the headless emits it (via `createSlotId`) only
+    // when a description/keyboard element is actually rendered, so it points at
+    // the styled `Text slot="description"` + `Keyboard` ids threaded through
+    // `renderValues` below — restoring upstream's two-context description
+    // delegation. `createSlotId` clears it to `undefined` on description-less
+    // items, so nothing dangles.
+    const { ref: _ref1, ...rest } = itemAria.menuItemProps as Record<string, unknown>;
     if (!hasPrimitiveLabel() && rest["aria-label"] == null) {
       delete rest["aria-labelledby"];
     }

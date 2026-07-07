@@ -1,3 +1,4 @@
+import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -56,24 +57,21 @@ import { expect } from "@playwright/test";
  *
  * SCOPE — applicable drivers: D1 (list box + item parts), D3 (pixel: the painted
  * list — icon glyphs are byte-identical across the two fixtures, so the strict
- * diff is clean), D7 (contrast: the item label/description on `layer-2`, both
- * themes). NOT registered here:
- *   - D6 (AX tree): the `role="menu"` subtree, accessible name, and the three
- *     `menuitem` roles DO match, but upstream's menu items expose an accessible
- *     DESCRIPTION (the "Copy the selected layer / Cmd+C" description+shortcut) and
- *     the port's do not — the item's `aria-describedby` is stripped and its
- *     description/keyboard elements never receive ids. The faithful repair is to
- *     restore upstream's TWO-CONTEXT `Text` delegation: the headless MenuItem must
- *     provide the RAC-equivalent `TextContext` (ids) + `KeyboardContext` (ids)
- *     around its children (mirroring react-aria-components Menu.tsx:613-627), and
- *     the S2 `Text`/`Keyboard` must read that headless id context IN ADDITION to
- *     the S2 styling context. That is shared `Text`/`Keyboard` infrastructure that
- *     8 already-certified field units (TextField, SearchField, NumberField,
- *     Switch, Checkbox, RadioGroup, ComboBox, DateField) already provide/consume,
- *     so it is a cross-cutting change that needs its own unit + a field-regression
- *     sweep, not a change smuggled into this overlay commit. Tracked as a DEFERRED
- *     follow-up (recertification.md CP9.32, "Menu item accessible description /
- *     two-context Text delegation"); D6 is registered when that unit lands.
+ * diff is clean), D5 (focus: arrow-key roving through the open list), D6 (AX tree:
+ * the `role="menu"` subtree, accessible name, AND each item's accessible
+ * DESCRIPTION), D7 (contrast: the item label/description on `layer-2`, both
+ * themes).
+ *
+ * D6 NOTE — each `menuitem` exposes its label as the accessible name AND its
+ * description text + keyboard shortcut as the accessible DESCRIPTION. This
+ * restores upstream's TWO-CONTEXT `Text` delegation: the headless `createMenuItem`
+ * assigns the description/keyboard slot ids via `createSlotId` (≡ upstream
+ * `useSlotId`, so a description-less item leaves `aria-describedby` unset instead
+ * of dangling), threads those id-carrying props through `MenuItemRenderProps`, and
+ * the S2 `MenuItem` merges them into its `TextContext` (description slot) +
+ * `KeyboardContext` so the rendered `Text`/`Keyboard` elements carry the ids the
+ * item's `aria-describedby` references (recertification.md CP9.39). NOT registered
+ * here:
  *   - D2 (motion): the popover enter/exit fade is a `menuPopover`-surface concern
  *     (the port does not internally drive `isEntering`), tracked with the shared
  *     headless-overlay realignment follow-up.
@@ -199,9 +197,21 @@ const listScenario: DriverScenario = {
       },
     ],
   },
+  // D6: the `role="menu"` subtree — roles/names/states via `ariaSnapshot` plus
+  // the accessible-description pass. Certifies that each `menuitem` exposes its
+  // label as the accessible name AND its description + keyboard shortcut as the
+  // accessible DESCRIPTION (upstream's two-context `Text`/`Keyboard` id
+  // delegation), size-independent so one case is the whole subtree.
+  ax: {
+    cases: ["size-m"],
+    roots: {
+      menu: menuList,
+    },
+  },
 };
 
 registerStateMatrixDriver(listScenario);
 registerPixelDriver(listScenario);
 registerContrastDriver(listScenario);
 registerFocusTrailDriver(listScenario);
+registerAxTreeDriver(listScenario);
