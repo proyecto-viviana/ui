@@ -63,21 +63,17 @@ changesets exist it creates/updates the Changesets version PR; when that version
 PR merges, it publishes the changed npm packages. So a feature merge triggers
 release automation, but the registry publish happens on the version-PR merge.
 
-The workflow is wired for **npm trusted publishing (OIDC)**: `id-token: write` is
-set, npm is upgraded to `>=11.5.1`, no `NPM_TOKEN` secret is stored. **BLOCKED as
-of 2026-07-06:** the registry-side half was never done — no trusted publisher is
-registered on npmjs.com for the 5 packages, so the first real publish (PR #7 merge,
-run 28834107097) failed `E404 Not Found - PUT` on every package while the log
-confirmed `OIDC is available - using npm trusted publishing`. npm returns 404 (not
-403) on an unauthorized publish. Consequence: PR #7 is merged (repo at 0.4.0 /
-solid-spectrum 0.6.0) but npm is still at the old versions (0.3.x / 0.5.3) — the
-version gap is now wider, not closed. Unblock requires an npm-account action (see
-`tech-debt.md` `release-oidc-trusted-publisher-unregistered`): register a GitHub
-Actions trusted publisher (org `proyecto-viviana`, repo `ui`, workflow
-`release.yml`) on each package, *or* add a granular `NPM_TOKEN` secret and thread
-it into the workflow env. Then re-run publish via `gh workflow run release.yml`
-(workflow_dispatch is enabled; changesets are already consumed, so it re-attempts
-publish for any package whose version isn't yet on npm).
+The workflow publishes via **npm trusted publishing (OIDC)** — `id-token: write`,
+npm `>=11.5.1`, **no `NPM_TOKEN` secret** — and the release job runs on a
+**github-hosted runner** (`ubuntu-latest`), which is mandatory: OIDC auto-enables
+sigstore provenance, and npm rejects provenance from self-hosted/third-party
+(e.g. Blacksmith) runners with `E422`. Two prerequisites, both one-time and both
+now satisfied (2026-07-06): a GitHub Actions trusted publisher registered on each
+of the 5 packages on npmjs.com (org `proyecto-viviana`, repo `ui`, workflow
+`release.yml`), and the github-hosted runner. History of getting here is in
+`tech-debt.md` `release-oidc-trusted-publisher-unregistered` (E404 → register
+publisher → E422 → github-hosted runner → green, run 28836083269 published all 5
+with provenance).
 
 ## Scope
 

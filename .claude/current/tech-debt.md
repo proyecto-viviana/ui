@@ -4,10 +4,21 @@ status: current
 tasks:
   - id: release-oidc-trusted-publisher-unregistered
     title: npm publish blocked — no OIDC trusted publisher registered for the 5 packages
-    state: open
+    state: done
+    finished: 2026-07-06
     priority: P0
     filed: 2026-07-06
     roadmap: release-train
+    resolution: >-
+      RESOLVED via OIDC (path a). Two fixes: (1) owner registered a GitHub Actions
+      trusted publisher on all 5 packages (org proyecto-viviana, repo ui, workflow
+      release.yml) — cleared the E404. (2) Then hit E422 "Unsupported GitHub Actions
+      runner environment: self-hosted" because OIDC auto-enables sigstore provenance,
+      which npm only accepts from github-hosted runners; the release job ran on a
+      Blacksmith runner. Fixed by switching the release job to ubuntu-latest (commit
+      e43d29f0). Run 28836083269 published all 5 at solidaria/-components/solid-stately/
+      ui 0.4.0 + solid-spectrum 0.6.0, with signed provenance. Design lesson for
+      future release-infra: trusted publishing REQUIRES a github-hosted runner.
     note: >-
       PR #7 (version packages) merged to main (repo now solidaria/solidaria-components/
       solid-stately/ui @0.4.0, solid-spectrum @0.6.0) but the publish step of Release
