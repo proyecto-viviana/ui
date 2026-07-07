@@ -1025,6 +1025,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     const {
       ref: _ref2,
       "aria-activedescendant": _activeDescendant,
+      onFocus: _onFocus,
       ...rest
     } = listBoxHook.listBoxProps as Record<string, unknown>;
     // Faithful Select listbox focus model: the focused option receives REAL DOM
@@ -1037,6 +1038,17 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     // never uses. These are overridden here, not in the shared `createListBox`,
     // because the standalone `ListBox` keeps its container-focus model (focus
     // stays on the listbox, `aria-activedescendant` is its AT channel).
+    //
+    // We also drop `createListBox`'s container-focus TRAMPOLINE (`onFocus`): it
+    // marshals the first key when the container is focused with `focusedKey ==
+    // null`, which is exactly Select's deliberate click-open state (the open
+    // effect sets `isFocused` true but leaves `focusedKey` null when nothing is
+    // selected, so the first arrow enters the first item). Upstream's own
+    // trampoline no-ops in this case because it guards on `manager.isFocused`
+    // (already true); our shared guard uses `focusedKey == null` for the
+    // standalone ListBox, so we strip it here to preserve Select's faithful
+    // model. (Auto-selecting on focus under replace behavior would also toggle
+    // the first item selected on open — the bug this override prevents.)
     return {
       ...rest,
       tabIndex: state.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,

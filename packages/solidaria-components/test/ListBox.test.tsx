@@ -789,8 +789,17 @@ describe("ListBox", () => {
 
       await user.tab();
 
+      // A standalone listbox is a focus trampoline (mirrors upstream React Aria
+      // useSelectableCollection): tabbing into the container marshals focus to the
+      // first option via real roving DOM focus — data-focused + tabindex roll onto
+      // the option, the container rolls to tabindex -1, and no aria-activedescendant
+      // is emitted (that channel belongs to the virtual-focus combobox path).
       const listbox = screen.getByRole("listbox");
-      expect(listbox).toHaveFocus();
+      const options = screen.getAllByRole("option");
+      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[0]).toHaveAttribute("tabindex", "0");
+      expect(listbox).toHaveAttribute("tabindex", "-1");
+      expect(listbox).not.toHaveAttribute("aria-activedescendant");
     });
 
     it("should move focus with Arrow Down", async () => {
@@ -799,13 +808,14 @@ describe("ListBox", () => {
       const listbox = screen.getByRole("listbox");
       listbox.focus();
 
+      // Trampoline enters the first option, so the first ArrowDown moves to the second.
       await user.keyboard("{ArrowDown}");
 
       const options = screen.getAllByRole("option");
-      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("data-focused");
     });
 
-    it("should expose aria-activedescendant on the listbox during keyboard navigation", async () => {
+    it("uses roving real focus (no aria-activedescendant) during keyboard navigation", async () => {
       render(() => <TestListBox listBoxProps={{ selectionMode: "single" }} />);
 
       const listbox = screen.getByRole("listbox");
@@ -813,7 +823,14 @@ describe("ListBox", () => {
       await user.keyboard("{ArrowDown}");
 
       const options = screen.getAllByRole("option");
-      expect(listbox).toHaveAttribute("aria-activedescendant", options[0].id);
+      // Standalone listbox announces the active option via real DOM focus (roving
+      // tabindex), never aria-activedescendant — that is the virtual-focus channel
+      // used only by ComboBox/Autocomplete.
+      expect(listbox).not.toHaveAttribute("aria-activedescendant");
+      expect(options[1]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("tabindex", "0");
+      expect(options[0]).toHaveAttribute("tabindex", "-1");
+      expect(listbox).toHaveAttribute("tabindex", "-1");
     });
 
     it("should move focus with Arrow Up", async () => {
@@ -822,16 +839,13 @@ describe("ListBox", () => {
       const listbox = screen.getByRole("listbox");
       listbox.focus();
 
-      // Move down first
+      // Trampoline enters option 0; down twice reaches option 2, then up returns to option 1.
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
-
-      // Then up
       await user.keyboard("{ArrowUp}");
 
       const options = screen.getAllByRole("option");
-      // First option should be focused after going down twice and up once
-      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("data-focused");
     });
 
     it("should focus first with Home", async () => {
@@ -1000,7 +1014,7 @@ describe("ListBox", () => {
       expect(dogOption).toHaveAttribute("aria-disabled", "true");
       const listbox = screen.getByRole("listbox");
       listbox.focus();
-      await user.keyboard("{ArrowDown}");
+      // Trampoline enters option 0; ArrowDown skips the disabled Dog to reach Kangaroo.
       expect(options[0]).toHaveAttribute("data-focused");
       await user.keyboard("{ArrowDown}");
       expect(options[2]).toHaveAttribute("data-focused");
@@ -1074,10 +1088,11 @@ describe("ListBox", () => {
       const listbox = screen.getByRole("listbox");
       listbox.focus();
 
+      // Trampoline enters option 0; ArrowDown advances data-focused to option 1.
       await user.keyboard("{ArrowDown}");
 
       const options = screen.getAllByRole("option");
-      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("data-focused");
     });
 
     it("should set data-focus-visible on keyboard focus", async () => {
@@ -1312,19 +1327,19 @@ describe("ListBox", () => {
       const listbox = screen.getByRole("listbox");
       listbox.focus();
 
-      // ArrowDown should move to first option in RTL (same as LTR for vertical)
-      await user.keyboard("{ArrowDown}");
-
+      // Trampoline enters option 0; vertical arrows behave identically to LTR.
       const options = screen.getAllByRole("option");
       expect(options[0]).toHaveAttribute("data-focused");
 
-      // ArrowDown again should move to second option
       await user.keyboard("{ArrowDown}");
       expect(options[1]).toHaveAttribute("data-focused");
 
+      await user.keyboard("{ArrowDown}");
+      expect(options[2]).toHaveAttribute("data-focused");
+
       // ArrowUp should move back
       await user.keyboard("{ArrowUp}");
-      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("data-focused");
     });
 
     it("Home/End should work correctly in RTL", async () => {
@@ -1385,19 +1400,21 @@ describe("ListBox", () => {
       listbox.focus();
       const options = screen.getAllByRole("option");
 
-      // Nothing focused yet: Right enters at the first item.
-      await user.keyboard("{ArrowRight}");
+      // Trampoline enters at the first item via real focus — no aria-activedescendant.
       expect(options[0]).toHaveAttribute("data-focused");
-      expect(listbox).toHaveAttribute("aria-activedescendant", options[0].id);
+      expect(listbox).not.toHaveAttribute("aria-activedescendant");
 
       // Right advances along the inline axis.
       await user.keyboard("{ArrowRight}");
       expect(options[1]).toHaveAttribute("data-focused");
-      expect(listbox).toHaveAttribute("aria-activedescendant", options[1].id);
+      expect(listbox).not.toHaveAttribute("aria-activedescendant");
+
+      await user.keyboard("{ArrowRight}");
+      expect(options[2]).toHaveAttribute("data-focused");
 
       // Left walks back.
       await user.keyboard("{ArrowLeft}");
-      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("data-focused");
     });
 
     it("Arrow Down/Up still navigate the block axis when horizontal", async () => {
@@ -1409,14 +1426,17 @@ describe("ListBox", () => {
       listbox.focus();
       const options = screen.getAllByRole("option");
 
-      await user.keyboard("{ArrowDown}");
+      // Trampoline enters option 0; block-axis arrows advance from there.
       expect(options[0]).toHaveAttribute("data-focused");
 
       await user.keyboard("{ArrowDown}");
       expect(options[1]).toHaveAttribute("data-focused");
 
+      await user.keyboard("{ArrowDown}");
+      expect(options[2]).toHaveAttribute("data-focused");
+
       await user.keyboard("{ArrowUp}");
-      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("data-focused");
     });
 
     it("ArrowLeft/ArrowRight are no-ops in a vertical (default) listbox", async () => {
@@ -1426,16 +1446,19 @@ describe("ListBox", () => {
       listbox.focus();
       const options = screen.getAllByRole("option");
 
+      // Trampoline enters option 0; the inline arrows must not move focus off it.
+      expect(options[0]).toHaveAttribute("data-focused");
+
       await user.keyboard("{ArrowRight}");
-      expect(options[0]).not.toHaveAttribute("data-focused");
+      expect(options[0]).toHaveAttribute("data-focused");
       expect(listbox).not.toHaveAttribute("aria-activedescendant");
 
       await user.keyboard("{ArrowLeft}");
-      expect(options[0]).not.toHaveAttribute("data-focused");
+      expect(options[0]).toHaveAttribute("data-focused");
 
       // The block axis is still live, confirming the handler isn't disabled.
       await user.keyboard("{ArrowDown}");
-      expect(options[0]).toHaveAttribute("data-focused");
+      expect(options[1]).toHaveAttribute("data-focused");
     });
 
     it("RTL flips the horizontal axis (ArrowLeft=next, ArrowRight=previous)", async () => {
@@ -1449,8 +1472,7 @@ describe("ListBox", () => {
       listbox.focus();
       const options = screen.getAllByRole("option");
 
-      // Nothing focused: either arrow enters at the first item.
-      await user.keyboard("{ArrowLeft}");
+      // Trampoline enters at the first item.
       expect(options[0]).toHaveAttribute("data-focused");
 
       // In RTL, ArrowLeft advances to the next item...

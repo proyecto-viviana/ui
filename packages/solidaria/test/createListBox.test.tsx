@@ -146,16 +146,44 @@ describe("createListBox", () => {
       });
     });
 
-    it("sets aria-activedescendant to the focused option id", () => {
+    it("does not set aria-activedescendant on a standalone (real-focus) listbox", () => {
       createRoot((dispose) => {
+        // A standalone listbox uses real roving DOM focus (the option becomes
+        // document.activeElement), so aria-activedescendant — the virtual-focus
+        // AT channel — is never set. Instead the container tabIndex rolls to -1
+        // once an option is focused. Mirrors useSelectableCollection (tabIndex
+        // 0/-1) + the absence of activedescendant on a non-virtual listbox.
         const state = createBasicListState();
         const listBoxAria = createListBox({}, state);
 
+        expect(listBoxAria.listBoxProps.tabIndex).toBe(0);
+
         state.setFocusedKey("c");
-        expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBe("c");
+        expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBeUndefined();
+        expect(listBoxAria.listBoxProps.tabIndex).toBe(-1);
 
         state.setFocusedKey(null);
         expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBeUndefined();
+        expect(listBoxAria.listBoxProps.tabIndex).toBe(0);
+        dispose();
+      });
+    });
+
+    it("sets aria-activedescendant only under virtual focus (combobox path)", () => {
+      createRoot((dispose) => {
+        // With shouldUseVirtualFocus, DOM focus stays on the input and the
+        // active option is announced via aria-activedescendant; the container
+        // keeps a flat tabIndex 0 (it is not the roving element).
+        const state = createBasicListState();
+        const listBoxAria = createListBox({ shouldUseVirtualFocus: true }, state);
+
+        state.setFocusedKey("c");
+        expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBe("c");
+        expect(listBoxAria.listBoxProps.tabIndex).toBe(0);
+
+        state.setFocusedKey(null);
+        expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBeUndefined();
+        expect(listBoxAria.listBoxProps.tabIndex).toBe(0);
         dispose();
       });
     });

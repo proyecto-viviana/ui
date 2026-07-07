@@ -250,6 +250,57 @@ export function createListBox<T>(
     },
   });
 
+  // Focus marshalling — the container is a trampoline. When a standalone
+  // listbox receives DOM focus with nothing focused yet (e.g. Tab lands on the
+  // container, whose roving tabIndex is 0 only while `focusedKey == null`), move
+  // the focused key to the first/last option; `createSelectableItem`'s focus
+  // effect then pulls REAL DOM focus onto that option and the container rolls to
+  // tabIndex -1. This mirrors `useSelectableCollection`'s `onFocus`
+  // (useSelectableCollection.ts:409-454) and is why upstream never needs
+  // `aria-activedescendant` on a standalone listbox — real focus IS the AT
+  // channel. Skipped under `shouldUseVirtualFocus` (ComboBox/Autocomplete keep
+  // DOM focus on the input and drive an activedescendant via the virtual-focus
+  // channel instead).
+  //
+  // NOTE on the guard: unlike upstream (whose selectable `onFocus` sets
+  // `manager.setFocused(true)` itself and guards on `manager.isFocused`), our
+  // `createFocusWithin` already flips `setFocused(true)` via `onFocusWithinChange`
+  // — and mergeProps chains it BEFORE this handler — so `manager.isFocused` is
+  // already true here. Guard on `focusedKey() == null` instead (only marshal when
+  // no option is focused yet). `onFocus` is non-bubbling in Solid, so this fires
+  // only when the container element itself receives focus, not on child focus.
+  const onListBoxFocus: JSX.EventHandler<HTMLElement, FocusEvent> = (e) => {
+    const p = getProps();
+    if (p.isDisabled || p.shouldUseVirtualFocus) return;
+    // Ignore focus events that bubbled through a portal.
+    if (!e.currentTarget.contains(e.target as Node)) return;
+    if (state.focusedKey() != null) return;
+
+    const manager = state.selectionManager;
+    const selectOnFocus = state.selectionBehavior() === "replace";
+    const navigateToKey = (key: Key | null | undefined) => {
+      if (key == null) return;
+      state.setFocusedKey(key);
+      if (selectOnFocus && !manager.isSelected(key)) {
+        state.replaceSelection(key);
+      }
+    };
+
+    const collection = state.collection();
+    const relatedTarget = e.relatedTarget as Element | null;
+    // Detect tab direction: if focus came from an element that FOLLOWS the
+    // listbox in the document, the user is shift-tabbing backward into it, so
+    // enter at the last item; otherwise enter at the first.
+    if (
+      relatedTarget &&
+      e.currentTarget.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING
+    ) {
+      navigateToKey(manager.lastSelectedKey ?? collection.getLastKey());
+    } else {
+      navigateToKey(manager.firstSelectedKey ?? collection.getFirstKey());
+    }
+  };
+
   // Keyboard navigation
   const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
     const p = getProps();
@@ -410,6 +461,24 @@ export function createListBox<T>(
     get listBoxProps() {
       const p = getProps();
       const selectionMode = state.selectionMode();
+      const virtualFocus = p.shouldUseVirtualFocus ?? false;
+      const focusedKey = state.focusedKey();
+
+      // Roving container tabIndex mirrors `useSelectableCollection`
+      // (useSelectableCollection.ts:687-690): with real option focus, the
+      // container is tabbable (0) only while nothing is focused, then rolls to
+      // -1 once focus lands on an option so Tab exits the widget. Under virtual
+      // focus (ComboBox) the container isn't the roving element, so keep the
+      // flat 0. `aria-activedescendant` is the virtual-focus AT channel and is
+      // emitted ONLY on that path — a standalone listbox announces the active
+      // option through real DOM focus, so upstream never sets it there.
+      const tabIndex = p.isDisabled
+        ? undefined
+        : virtualFocus
+          ? 0
+          : focusedKey != null
+            ? -1
+            : 0;
 
       const baseProps = mergeProps(
         domProps(),
@@ -417,12 +486,13 @@ export function createListBox<T>(
         fieldProps as Record<string, unknown>,
         {
           role: "listbox",
-          tabIndex: p.isDisabled ? undefined : 0,
+          tabIndex,
           "aria-disabled": p.isDisabled || undefined,
           "aria-multiselectable": selectionMode === "multiple" ? true : undefined,
           "aria-activedescendant":
-            state.focusedKey() != null ? String(state.focusedKey()) : undefined,
+            virtualFocus && focusedKey != null ? String(focusedKey) : undefined,
           onKeyDown,
+          onFocus: onListBoxFocus,
         },
       );
 

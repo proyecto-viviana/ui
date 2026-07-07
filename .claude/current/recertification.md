@@ -2686,9 +2686,19 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     **`picker-d10-rtl-driver`** ✓ DONE — the picker fixture now routes `?locale`, D10 RTL runs for both trigger +
     list, and it caught + fixed an app-wide portal-locale `lang`/`dir` bug in the shared Popover (D9 forced-colors
     was already wired). (c) **standalone
-    ListBox container-focus vs upstream real-option-focus** — a pre-existing whole-widget divergence (test at
-    `ListBox` container `.toHaveFocus()` after tab encodes it); out of scope for the Picker cert, flagged for a
-    dedicated pass. The two consumer-facing bugs (`picker-popover-anchor`, `picker-item-checkmark`) remain separately
+    ListBox container-focus vs upstream real-option-focus** ✓ DONE — the dedicated pass landed the shared-spine fix
+    in `createListBox` (superseding the earlier "keep it Select-layer only" note in point 4 above): the standalone
+    listbox now uses upstream's **real roving DOM focus** — it (i) rolls the container `tabIndex`
+    (`focusedKey == null ? 0 : -1`, `useSelectableCollection.ts:687-690`), (ii) NO LONGER emits
+    `aria-activedescendant` on the non-virtual path (that channel is ComboBox/Autocomplete-only), and (iii) adds the
+    container **focus trampoline** (`onFocus` marshals `firstSelectedKey ?? getFirstKey()`, or last by tab direction
+    via `compareDocumentPosition`), all gated on `shouldUseVirtualFocus` so ComboBox stays byte-identical. Guard is
+    `focusedKey == null` (not upstream's `isFocused`) because our `createFocusWithin` flips `isFocused` true before the
+    handler runs. Select STRIPS the trampoline `onFocus` in `cleanListBoxProps` (it drives its own faithful click-open
+    model — `isFocused` true but `focusedKey` null until the first arrow), which restored Select's 4 regressed tests.
+    Verified: solidaria `createListBox` 66 + full solidaria 1488 + full solidaria-components 2158 (ListBox/Select/
+    Color/ComboBox) + certified e2e all green (5 unrelated pre-existing datepicker/daterangepicker *-visual reds only).
+    The two consumer-facing bugs (`picker-popover-anchor`, `picker-item-checkmark`) remain separately
     tracked in `tech-debt.md`.
 
 - ✓ **Color i18n/RTL parity — ColorArea + ColorSlider (`9d9b97de`):** closed the two pre-existing color
