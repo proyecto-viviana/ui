@@ -24,6 +24,13 @@ tasks:
       add it as repo secret NPM_TOKEN, and add NPM_TOKEN to the changesets step env.
       Then re-attempt via `gh workflow run release.yml` (workflow_dispatch is enabled;
       changesets are already consumed, so it re-publishes any package not yet on npm).
+      DECISION 2026-07-06: path (b) chosen. NPM_TOKEN is threaded into the changesets
+      step env (commit 345df316, pushed). @proyecto-viviana is an npm ORG owned by
+      account `emoporemilio` (sole maintainer of the packages), so the granular token
+      needs Packages-and-scopes = Read+Write on the @proyecto-viviana scope;
+      Organizations permission is NOT needed (that axis only administers org
+      membership/settings, not publishing). Remaining: create the token + set the
+      NPM_TOKEN repo secret, then re-trigger.
   - id: pkg-build-spectrum-dts
     title: Move solid-spectrum dts to Vite Plus packaging
     state: in-progress
